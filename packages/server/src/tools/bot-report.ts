@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { BOT_DIFFICULTIES, CHARACTER_PROFILES, bodyClass, getLook, getMountDef, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getItem, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
 import { BreakthroughMode, CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
+import { SquadMeter, squadText, squadTotals, type SquadRow } from './squadMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
 
 /**
@@ -38,6 +39,8 @@ import { drawNavPictures } from './navPictures.ts';
  *                                                 (the nightly's results held to bot-limits.json's limits; the nav
  *                                                  pictures with each map's failed searches)
  *   pnpm bot-report iron_coast --mode=core.breakthrough --players=48 --seeds=1,2 --seconds=900
+ *   pnpm bot-report riot_junction --mode=core.tdm --fireteams=5 --orders   (Fireteams on, squads of 5, scripted
+ *     orders every 30 s; every report measures squads: cohesion, survival, orders carried out: squadMeasures.ts)
  *                                                 (Breakthrough: sectors taken, when each fell, how the round ended and
  *                                                  the attackers' reinforcements left; a match stops when its last round
  *                                                  is over)
@@ -210,6 +213,8 @@ export interface MatchRow {
   routes?: { team: string; to: [number, number, number]; corridors: number; use: number[]; other: number; cross?: number[]; crossOther?: number; follow?: [number, number, number] }[];
   /** Group pushes per team (the team brain, bots/teamBrain.ts PushStats): waves set out, got there, lost half first, metres gained and seconds. */
   pushes?: Record<string, { started: number; reached: number; lostHalf: number; metres: number; seconds: number }>;
+  /** Fireteams' measures (squadMeasures.ts): cohesion, survival, orders; with the variant off, the same squads measured. */
+  squads?: SquadRow;
   /** The weapon set it played (sim/weaponSets.ts: --set, else the map's default), and the bots' kills by weapon id (not suicides). */
   set?: string;
   weaponKills?: Record<string, number>;
@@ -272,6 +277,9 @@ const seconds = Number(opt('seconds') ?? 240);
 const players = opt('players') ? Number(opt('players')) : null;
 const style = opt('style') as 'mixed' | 'arena' | 'tactical' | undefined;
 const showSpells = flags.includes('--spells');
+/** --fireteams=N: the Fireteams variant on, squads of N (4-6); --orders: each squad given an order every 30 s. */
+const fireteamsArg = opt('fireteams') ? Number(opt('fireteams')) : null;
+const scriptOrders = flags.includes('--orders');
 const showBots = flags.includes('--bots');
 const quiet = flags.includes('--quiet');
 const jsonOut = opt('json');
@@ -373,6 +381,7 @@ const FIGHTING = new Set<string>(['fight', 'cover', 'retreat', 'chaseHold', 'thr
 function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, set?: string): MatchRow {
   const base = rulesForMode(map, mode);
   const rules = { ...base, scoreLimit: 0, timeLimitSeconds: 0, ...(style ? { botStyle: style } : {}), ...(set ? { weaponSet: set } : {}) };
+  if (fireteamsArg) rules.fireteams = fireteamsArg;
   if (rouletteArg.has('lunar')) Object.assign(rules, { gravity: 0.4, fallDamage: false, lunar: true });
   if (rouletteArg.has('rerolls')) rules.rouletteRerolls = true;
   if (rouletteArg.has('swap')) rules.rouletteSwapOnKill = true;
@@ -416,6 +425,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   const lastStuck = new Map<number, number>();
   const stuckAt = new Map<string, number>();
   const behaviour = new Behaviour(match);
+  const squads = match.teams ? new SquadMeter(match, scriptOrders, fireteamsArg ?? 5) : null;
   type WedgeMount = { def: { id: string; vehicle?: unknown; seats: { role: string }[]; half: [number, number, number] }; pos: { x: number; y: number; z: number }; seats: (number | null)[]; drive: { forward: number }; wedged?: unknown; alive: boolean; body: unknown };
   const wedgeMounts = ((match as unknown as { mounts: WedgeMount[] }).mounts ?? []).filter((m) => m.def.vehicle);
   const lastPos = new Map<WedgeMount, { x: number; z: number; run: number }>();
@@ -502,6 +512,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
       }
     }
     if (k % TICK_RATE === 0) behaviour.sample(match);
+    squads?.step(match.tick);
+    if (k % TICK_RATE === 0) squads?.sample();
     if (tankIds.size) {
       // Crew killed with their tank: a wreck kill of someone aboard one last tick.
       for (const e of events as GameEvent[]) if (e.e === 'kill' && e.weapon === 'core.wreck' && tankCrew.has(e.victim)) tanks.crewKilled++;
@@ -807,6 +819,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     if (st && st.started) pushes[team] = { ...st, metres: Math.round(st.metres), seconds: Math.round(st.seconds) };
   }
   if (Object.keys(pushes).length) out.pushes = pushes;
+  if (squads) out.squads = squads.result();
   const sorted = [...tickMs].sort((x, y) => x - y);
   out.tickMs = tickMs.reduce((x, y) => x + y, 0) / tickMs.length;
   out.tickP95 = sorted[Math.floor(sorted.length * 0.95)]!;
@@ -984,6 +997,7 @@ function printMatch(m: MatchRow): void {
   if (m.rounds) console.log(`rounds: ${m.rounds.length} finished${m.rounds.length ? `, ${(sum(m.rounds, (r) => r) / m.rounds.length).toFixed(0)} s on average (${m.rounds.join(', ')})` : ''}`);
   if (m.pieces !== undefined) console.log(`forts: ${m.pieces} pieces built`);
   if (m.breakthrough) console.log(`breakthrough: ${breakthroughText(m.breakthrough)}`);
+  if (m.squads) console.log(squadText(m.squads));
   if (m.roulette) for (const line of rouletteText(m.roulette)) console.log(line);
   if (m.wedges) console.log(`vehicles: stalled ${m.wedges.stalls} times (${m.wedges.stallTicks} ticks), wedged ${m.wedges.times} times (${m.wedges.ticks} ticks aboard)${Object.values(m.wedges.byVehicle).some((r) => r[0] || r[2]) ? ` | by vehicle (stalls/wedged): ${Object.entries(m.wedges.byVehicle).filter(([, r]) => r[0] || r[2]).map(([k, [n, , st]]) => `${k} ${st}/${n}`).join(', ')}` : ''}${m.wedges.at.length ? ` | stalls where: ${m.wedges.at.map(([k, v]) => `${k} ${v}`).join(', ')}` : ''}`);
   if (m.wedges?.inside !== undefined) console.log(`vehicles inside the level: ${m.wedges.inside} vehicle-seconds${m.wedges.insideAt?.length ? ` (${m.wedges.insideAt.map(([k, v]) => `${k} ${v} s`).join(', ')})` : ''} | at the end: ${m.wedges.parked?.join(', ')}`);
@@ -1324,6 +1338,7 @@ function printSummary(rs: readonly MatchRow[]): void {
   }
   const sets = weaponSetTable(rs);
   if (sets.length) console.log(`\n${sets.join('\n')}`);
+  printSquads(rs);
   // Roulette over every match: kills spread over characters and sizes, picks taken.
   const rls = rs.filter((r) => r.roulette).map((r) => r.roulette!);
   if (rls.length > 1) {
@@ -1379,6 +1394,7 @@ export function sizeLine(ms: readonly MatchRow[]): string {
 }
 
 function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): void {
+  printSquads(after, before);
   const a = new Map(perMap(before).map((m) => [m.key, m]));
   const b = perMap(after);
   const f = (x: number | undefined, d = 1, k = 1) => (x === undefined ? '-' : (x * k).toFixed(d));
@@ -1467,3 +1483,28 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
 }
 
 await main();
+
+/** Squads per map (Fireteams' measures): cohesion, within 10 m, survival, and orders carried out (done/given, mean s). */
+function printSquads(rs: readonly MatchRow[], before?: readonly MatchRow[]): void {
+  const by = (list: readonly MatchRow[]) => {
+    const out = new Map<string, SquadRow[]>();
+    for (const r of list) if (r.squads) out.set(`${r.map} ${r.mode.slice(5)}`, [...(out.get(`${r.map} ${r.mode.slice(5)}`) ?? []), r.squads]);
+    return out;
+  };
+  const now = by(rs);
+  if (!now.size) return;
+  const was = before ? by(before) : null;
+  const cell = (rows: SquadRow[] | undefined) => {
+    if (!rows?.length) return ['-', '-', '-', '-', '-'];
+    const t = squadTotals(rows);
+    const orders = Object.entries(t.orders).map(([k, [g, d, s]]) => `${k} ${d}/${g} ${d ? `${s.toFixed(1)} s` : ''}`.trim()).join(', ') || '-';
+    return [`${rows[0]!.on ? 'on' : 'off'} (${rows[0]!.size})`, t.cohesion.toFixed(1), (t.within10 * 100).toFixed(0), (t.survival * 100).toFixed(0), orders];
+  };
+  console.log(`\n| Map | Fireteams | to the leader m | within 10 m % | members alive % | orders carried out (done/given, mean) |`);
+  console.log('|---|---|---|---|---|---|');
+  for (const [k, rows] of now) {
+    const a = cell(rows);
+    const b = was ? cell(was.get(k)) : null;
+    console.log(`| ${k} | ${a.map((v, i) => (b ? `${b[i]} → ${v}` : v)).join(' | ')} |`);
+  }
+}

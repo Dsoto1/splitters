@@ -69,6 +69,12 @@ export interface MatchRules {
    * Deathmatch, where downing an enemy leader scores LEADER_BOUNTY extra.
    */
   leaders?: boolean | 'vip';
+  /**
+   * Fireteams (sim/fireteams.ts, docs/FIRETEAMS_PLAN.md): every person leads a fixed squad of bots of this size (their
+   * leader included, 4-6), bot-led squads of the same size fill each team, and leaders order their squad by a wheel.
+   * Team modes FIRETEAM_MODES. Absent: off.
+   */
+  fireteams?: number;
   /** Capture the Flag: seconds a dropped flag lies before it goes home on its own (default 30). */
   flagReturnSeconds?: number;
   /** King of the Hill: seconds before the hill moves to the next spot (default 60). */

@@ -20,6 +20,33 @@ made only on a commit that passed CI on a check branch.
   size (±5 to ±30 %, within the prop's allowed scale) and variant where the prop has them. The preview shows the
   next one, so what you see is what you place.
 
+**Fireteams, part 1** (owner-approved, 2026-11-08; docs/FIRETEAMS_PLAN.md):
+- A new **variant** for Team Deathmatch, Capture the Flag, King of the Hill, Bomb, Hostage and Breakthrough (Match
+  setup's Variants row; servers `rules fireteams 5`). The host picks the **squad size**: 4, 5 or 6, you included.
+- **You lead your own squad of bots.** Nobody joins another player's squad; bot-led squads of the same size fill the
+  rest of each team. A friend joining mid-match takes over a bot-led squad (its leader steps down; nobody respawns);
+  when a player leaves, a bot leads their squad.
+- **The order wheel:** hold **B** (a quick tap still opens the quick messages), hold a controller's **d-pad up** (a tap
+  still pings), or tap **Orders** on a phone. Follow me, Hold here, Go there (where you ping or aim), Attack that (the
+  enemy you aim at or ping), Defend the objective, Regroup. A squadmate answers in the chat ("Holding here!"), and the
+  HUD shows your squad's order. The orders are checked by the match.
+- **Your squad respawns near you** when it's safe there, else at your team's spawn. While you're down your squad holds
+  its ground and fights; when you're back it forms up on you.
+- Bot-led squads play the team brain's pushes as squads. `pnpm bot-report` measures squads (distance to the leader,
+  members alive, orders carried out; `--fireteams=5 --orders`), and `pnpm bench --fireteams=5`.
+
+**Passengers ride with the vehicle** (owner's bug report, 2026-11-08):
+- **Riders stay in their seats at speed.** Driver and passengers, bots and people, are drawn on their seats of the
+  vehicle as you see it this frame (bumps and tilt included), in every vehicle, online and offline, whoever is
+  watching. Before, they were drawn where their own, slightly older, position had them: at full speed a passenger
+  slid 2-3 m out of the back of a Buggy and slid back in as it slowed. Getting in and out still eases into and out of
+  the seat.
+- **No footsteps from a seat.** Riders, you included, no longer make footsteps (or a landing) as the vehicle carries
+  them.
+- **Engines.** A vehicle anyone rides runs its engine, pitched up with speed (lower for the Tank, higher for
+  hovercraft and flyers): yours as you ride, and the two nearest others from where they are. A placeholder until the
+  sound pass's recorded engine loops.
+
 **Play on with friends: vote on the next map, parties** (owner, 2026-11-08):
 - **Vote on the next map.** When a match ends, the scoreboard (and its awards) shares the screen with two or three of
   our maps that fit the players and the mode, the rotation's next first. Press 1-3, click or tap; change your mind

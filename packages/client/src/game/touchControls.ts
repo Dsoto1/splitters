@@ -22,7 +22,8 @@ const DEADZONE = 0.12;
  *   Fire        hold to fire; drag it to aim while firing
  *   Aim         tap to aim down the sights, tap again to stop
  *   Melee       a punch, kick or swing (Y)
- *   Reload, Use (E: vehicles, doors, pickups), Throw (hold to aim, let go), Weapons (the wheel), pause
+ *   Reload, Use (E: vehicles, doors, pickups), Throw (hold to aim, let go), Weapons (the wheel), Orders
+ *   (Fireteams' order wheel, while you lead a squad), pause
  */
 export class TouchControls {
   readonly el: HTMLDivElement;
@@ -30,6 +31,8 @@ export class TouchControls {
   private readonly abort = new AbortController();
   private readonly aimBtn: HTMLButtonElement;
   private readonly wheelBtn: HTMLButtonElement;
+  /** Fireteams: the order wheel's button (shown while you lead a squad). */
+  private readonly ordersBtn: HTMLButtonElement;
   private readonly watchBar: HTMLDivElement;
   private readonly joinBtn: HTMLButtonElement;
 
@@ -64,8 +67,10 @@ export class TouchControls {
     const use = btn('tc-use', 'Use', 'Use: vehicles, doors, pickups');
     const thrw = btn('tc-throw', 'Throw', 'Hold to aim a throw, let go to throw');
     this.wheelBtn = btn('tc-wheel', 'Weapons', 'Weapon wheel');
+    this.ordersBtn = btn('tc-orders', 'Orders', 'Squad orders (the order wheel)');
+    this.ordersBtn.hidden = true;
     const pause = btn('tc-pause', 'II', 'Pause');
-    this.el.append(look, pad, fire, this.aimBtn, melee, reload, use, thrw, this.wheelBtn, pause);
+    this.el.append(look, pad, fire, this.aimBtn, melee, reload, use, thrw, this.wheelBtn, this.ordersBtn, pause);
     // Watching (dead, or spectating): previous / next player, follow or free camera, and Join (spectators).
     this.watchBar = div('tc-watch');
     this.watchBar.hidden = true;
@@ -185,6 +190,13 @@ export class TouchControls {
       },
       up: () => undefined,
     });
+    track(this.ordersBtn, {
+      down: () => {
+        if (this.input.wheelOpen) this.input.closeWheel(false);
+        else this.input.openWheel('touch', 'order');
+      },
+      up: () => undefined,
+    });
     track(pause, { down: () => this.hooks.pause(), up: () => undefined });
 
     // The pad: an analog stick drawn as a d-pad; its middle is jump (tap) and crouch (hold).
@@ -291,7 +303,9 @@ export class TouchControls {
   /** Once a frame: the toggle buttons show their state. */
   update(): void {
     this.aimBtn.classList.toggle('on', this.input.held('KeyX'));
-    this.wheelBtn.classList.toggle('on', this.input.wheelOpen);
+    this.wheelBtn.classList.toggle('on', this.input.wheelOpen && this.input.wheelKind === 'weapon');
+    if (this.ordersBtn.hidden === this.input.ordersOn) this.ordersBtn.hidden = !this.input.ordersOn;
+    this.ordersBtn.classList.toggle('on', this.input.wheelOpen && this.input.wheelKind === 'order');
   }
 
   dispose(): void {

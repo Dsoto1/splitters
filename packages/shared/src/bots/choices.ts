@@ -57,6 +57,12 @@ export const PUSH_NOTICE = 12;
 export const HOLD_NOTICE = 12;
 /** Under a person's order: only what happens this close (m) draws the bot off it. */
 export const ORDER_NOTICE = 10;
+/** A member of a bot-led fireteam (OrderGoal.squad): only what happens this close (m) draws it away from its leader. */
+export const SQUAD_NOTICE = 15;
+/** A person's order (OrderGoal.order: the B menu's, a Fireteams order): above everything but a carrier's run, cover and a gun. */
+export const ORDER_WEIGHT = 2.4;
+/** Keeping with a bot leader's fireteam (OrderGoal.squad): above any objective of its own, below a fresh chase or noise. */
+export const SQUAD_WEIGHT = 1.3;
 /** A camper or sniper on its spot (or on its way there) leaves it only for something this close (m). */
 export const POST_NOTICE = 10;
 
@@ -92,7 +98,8 @@ export interface ChoiceInput {
 export function goalWeight(g: OrderGoal, p: BotProfile): number {
   const care = (p.objectivePriority / 100) * 0.3;
   if (g.run) return 6;
-  if (g.order) return 2.4;
+  if (g.order) return ORDER_WEIGHT;
+  if (g.squad) return SQUAD_WEIGHT + care;
   if (g.push) return 1 + care;
   if (g.watch) return 0.9 + care;
   return 0.8 + care;
@@ -109,6 +116,7 @@ export function leaveCost(g: OrderGoal | null, d: number, at: Vec3): number {
   if (!g) return 0;
   if (g.run) return Infinity;
   if (g.order) return d > ORDER_NOTICE ? Infinity : 0;
+  if (g.squad) return d > SQUAD_NOTICE ? Infinity : 0;
   if (g.push) return d > PUSH_NOTICE ? Infinity : 0;
   const off = horizontalDistance(g.pos, at) - g.radius;
   return Math.min(1.6, Math.max(0, (off - HOLD_NOTICE) / 12));

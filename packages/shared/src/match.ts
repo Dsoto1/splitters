@@ -8,6 +8,7 @@ export * from './bots/choices.ts';
 export * from './bots/sniper.ts';
 export * from './bots/playbooks.ts';
 export { VantageBoard, computeVantage, vantageFor, type VantageKind, type VantageSpot } from './bots/vantage.ts';
+export { leadAbility } from './bots/director.ts';
 export * from './nav/index.ts';
 export * from './nav/audit.ts';
 export * from './nav/corridors.ts';

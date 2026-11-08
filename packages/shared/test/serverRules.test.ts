@@ -27,6 +27,7 @@ const PARITY: [string, unknown, GameMode, Partial<MatchSetup>, (keyof MatchRules
   ['teamnames', ['Reds', 'Blues'], 'core.tdm', { teamNames: ['Reds', 'Blues'] }, ['teamNames']],
   ['teamcolors', ['#ff0000', '#0000ff'], 'core.tdm', { teamColors: ['#ff0000', '#0000ff'] }, ['teamColors']],
   ['leaders', 'vip', 'core.tdm', { leaders: 'vip' }, ['leaders']],
+  ['fireteams', '6', 'core.ctf', { fireteams: true, squadSize: 6 }, ['fireteams']],
   ['squadspawn', false, 'core.tdm', { squadSpawn: false }, ['squadSpawn']],
   ['streaks', false, 'core.deathmatch', { killstreaks: false }, ['killstreaks']],
   ['sizes', false, 'core.deathmatch', { sizes: false }, ['bodySizes']],

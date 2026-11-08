@@ -116,6 +116,18 @@ export class InputState {
   respawnQueued = false;
   /** The quick-message menu is open (B): digits pick a message instead of a weapon. */
   msgMenu = false;
+  /**
+   * Fireteams: the order wheel may open now (set by the session: you lead a squad, alive, on foot). Then B held opens
+   * the order wheel (a tap still opens the quick-message menu), as does a controller's d-pad up held (a tap pings),
+   * and the Orders button on a phone.
+   */
+  ordersOn = false;
+  /** When B (orders on) or the d-pad's up went down (0: not held), and whether that press opened the order wheel. */
+  private msgKeyAt = 0;
+  private msgWheeled = false;
+  private padOrderAt = 0;
+  /** How the order wheel last closed, until the session reads it (as wheelClosed is for weapons). */
+  private orderClosed: boolean | null = null;
   /** A quick message or emote to send with the next input. */
   private sayQueued = 0;
   /** Classes: how many classes there are (0: the match has none), and whether the class screen is open (L or ,): digits pick a class. */
@@ -151,6 +163,8 @@ export class InputState {
   /** Weapon wheel: its key, whether it's open, and where it points (x right, y down; length up to 1). */
   wheelKey = loadWheelKey();
   wheelOpen = false;
+  /** Which wheel is open: the weapon wheel or (Fireteams) the order wheel. Only one at a time. */
+  wheelKind: 'weapon' | 'order' = 'weapon';
   readonly wheelAim = { x: 0, y: 0 };
   /** Set by the session each frame: whether the wheel may open now (alive, on foot). */
   canOpenWheel = true;
@@ -293,7 +307,13 @@ export class InputState {
     // Hold G to aim a throw (the arc shows), let go to throw.
     if (e.code === 'KeyG' && !e.repeat) this.throwAiming = true;
     // B opens the quick-message menu; N dances.
-    if (e.code === 'KeyB' && !e.repeat) this.msgMenu = !this.msgMenu;
+    // (Fireteams: held, B opens the order wheel instead: frame() opens it, keyUp tells a tap from a hold.)
+    if (e.code === 'KeyB' && !e.repeat) {
+      if (this.ordersOn) {
+        this.msgKeyAt = performance.now();
+        this.msgWheeled = false;
+      } else this.msgMenu = !this.msgMenu;
+    }
     if (e.code === 'KeyN' && !e.repeat) this.sayQueued = EMOTE_DANCE;
     if (e.code === 'KeyT' && !e.repeat) this.sayQueued = PING;
     if ((e.code === 'KeyL' || e.code === 'Comma') && !e.repeat && this.classCount) {
@@ -320,10 +340,19 @@ export class InputState {
 
   private keyUp(code: string): void {
     this.keys.delete(code);
+    if (code === 'KeyB' && this.msgKeyAt) {
+      const wheeled = this.msgWheeled;
+      this.msgKeyAt = 0;
+      this.msgWheeled = false;
+      // Let go of a held B: the order the wheel points at. A tap: the quick-message menu, as without Fireteams.
+      if (this.wheelOpen && this.wheelKind === 'order' && this.wheelBy === 'key') this.closeWheel(true);
+      else if (!wheeled) this.msgMenu = !this.msgMenu;
+      return;
+    }
     if (code === this.wheelKey) {
       const held = this.wheelKeyAt;
       this.wheelKeyAt = 0;
-      if (this.wheelOpen && this.wheelBy === 'key') this.closeWheel(true);
+      if (this.wheelOpen && this.wheelBy === 'key' && this.wheelKind === 'weapon') this.closeWheel(true);
       // A tap: the key's own job (Q: back to your last weapon).
       else if (held && !this.wheelOpen) this.onToggle.get(code)?.();
       return;
@@ -375,21 +404,40 @@ export class InputState {
     this.onEngage?.();
   }
 
-  /** Open the weapon wheel (when the session allows it now). */
-  openWheel(by: 'key' | 'pad' | 'touch'): void {
-    if (this.wheelOpen || !this.canOpenWheel) return;
+  /** Open the weapon wheel, or (`kind` 'order') the order wheel, when the session allows it now. True if it opened. */
+  openWheel(by: 'key' | 'pad' | 'touch', kind: 'weapon' | 'order' = 'weapon'): boolean {
+    if (this.wheelOpen || !(kind === 'order' ? this.ordersOn : this.canOpenWheel)) return false;
     this.wheelOpen = true;
+    this.wheelKind = kind;
     this.wheelBy = by;
     this.wheelAim.x = this.wheelAim.y = 0;
-    this.wheelClosed = null;
+    if (kind === 'order') {
+      this.orderClosed = null;
+      this.msgMenu = false;
+    } else this.wheelClosed = null;
+    return true;
   }
 
-  /** Close the wheel: `pick` switches to the weapon it points at; otherwise nothing changes. */
+  /** Close the wheel: `pick` takes what it points at (the weapon, or the order); otherwise nothing changes. */
   closeWheel(pick: boolean): void {
     if (!this.wheelOpen) return;
     this.wheelOpen = false;
     this.wheelBy = null;
-    this.wheelClosed = pick;
+    if (this.wheelKind === 'order') this.orderClosed = pick;
+    else this.wheelClosed = pick;
+    this.wheelKind = 'weapon';
+  }
+
+  /** How the order wheel closed since last asked: true (give the order it points at), false (cancelled) or null. */
+  takeOrderClose(): boolean | null {
+    const c = this.orderClosed;
+    this.orderClosed = null;
+    return c;
+  }
+
+  /** Send `say` (an order: fireteams.ts orderSay) with the next input. */
+  queueSay(say: number): void {
+    this.sayQueued = say;
   }
 
   /** How the wheel closed since last asked: true (pick), false (cancelled) or null (it didn't). */
@@ -437,8 +485,9 @@ export class InputState {
       this.closeWheel(false);
       return;
     }
-    // The wheel key held past a tap opens the wheel.
+    // The wheel key held past a tap opens the wheel; so does B (Fireteams), the order wheel.
     if (this.wheelKeyAt && !this.wheelOpen && performance.now() - this.wheelKeyAt >= WHEEL_HOLD_MS) this.openWheel('key');
+    if (this.msgKeyAt && !this.msgWheeled && !this.wheelOpen && performance.now() - this.msgKeyAt >= WHEEL_HOLD_MS && this.openWheel('key', 'order')) this.msgWheeled = true;
     if (!this.fireDown && !this.keyFire && !this.pad.fire) this.fireLatch = false;
     const scale = this.sensitivityScale * this.mouse.sensitivity;
     const invert = this.mouse.invertY ? -1 : 1;
@@ -507,13 +556,24 @@ export class InputState {
     if (pressed(PAD.y)) this.padWheelAt = performance.now();
     if (down[PAD.y] && this.padWheelAt && !this.wheelOpen && performance.now() - this.padWheelAt >= WHEEL_HOLD_MS) this.openWheel('pad');
     if (!down[PAD.y] && p.prev[PAD.y]) {
-      if (this.wheelOpen && this.wheelBy === 'pad') this.closeWheel(true);
+      if (this.wheelOpen && this.wheelBy === 'pad' && this.wheelKind === 'weapon') this.closeWheel(true);
       else if (this.padWheelAt && performance.now() - this.padWheelAt < WHEEL_HOLD_MS) this.wheelSteps += 1;
       this.padWheelAt = 0;
     }
     if (pressed(PAD.right)) this.wheelSteps += 1;
     if (pressed(PAD.left)) this.wheelSteps -= 1;
-    if (pressed(PAD.up)) this.sayQueued = PING;
+    // D-pad up: a tap pings; held (Fireteams, leading a squad), the order wheel (the right stick points, let go to give it).
+    if (!this.ordersOn) {
+      if (pressed(PAD.up)) this.sayQueued = PING;
+    } else {
+      if (pressed(PAD.up)) this.padOrderAt = performance.now();
+      if (down[PAD.up] && this.padOrderAt && !this.wheelOpen && performance.now() - this.padOrderAt >= WHEEL_HOLD_MS) this.openWheel('pad', 'order');
+      if (!down[PAD.up] && p.prev[PAD.up]) {
+        if (this.wheelOpen && this.wheelBy === 'pad' && this.wheelKind === 'order') this.closeWheel(true);
+        else if (this.padOrderAt && performance.now() - this.padOrderAt < WHEEL_HOLD_MS) this.sayQueued = PING;
+        this.padOrderAt = 0;
+      }
+    }
     if (pressed(PAD.down)) this.respawnQueued = true;
     // LB: hold to aim a throw, let go to throw (like G).
     if (pressed(PAD.lb)) this.throwAiming = true;
