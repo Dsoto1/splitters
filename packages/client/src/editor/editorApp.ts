@@ -23,6 +23,11 @@ import {
   type PlacementCheck,
   BudgetTracker,
   budgetCulprits,
+  FLY_KEYS,
+  FLY_PAUSE_KEYS,
+  FREE_PLACE_KEYS,
+  matchEditorKey,
+  type KeyAction,
   BUILD_LEVELS,
   buildZone,
   levelName,
@@ -297,6 +302,7 @@ import {
 import { tileIcon } from './tileIcon.ts';
 import { raycastBoxes, type BoxHit } from './raycast.ts';
 import { BudgetBar } from './budgetBar.ts';
+import { KeyOverlay } from './keyOverlay.ts';
 import { materialThumbnail } from '../materials/patterns.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
@@ -692,7 +698,7 @@ export class EditorApp {
 
   /** One placement rule for every kind: hold Ctrl (or Shift) to place without snapping. */
   private freePlacing(): boolean {
-    return ['ControlLeft', 'ControlRight', 'MetaLeft', 'ShiftLeft', 'ShiftRight'].some((k) => this.keys.has(k));
+    return FREE_PLACE_KEYS.some((k) => this.keys.has(k));
   }
   /** Last pointer position over the view, for the hover card. */
   private pointerAt: { x: number; y: number } | null = null;
@@ -957,12 +963,13 @@ export class EditorApp {
   frame(dt: number): void {
     if (!this.active) return;
     const typing = isTyping();
-    if (!typing && !this.keys.has('ControlLeft') && !this.keys.has('ControlRight') && !this.keys.has('MetaLeft')) {
+    // The fly camera's held keys come from the key table (keymap.ts), as the `?` overlay lists them.
+    if (!typing && !FLY_PAUSE_KEYS.some((c) => this.keys.has(c))) {
       const k = (c: string) => (this.keys.has(c) ? 1 : 0);
-      const speed = FLY_SPEED * (this.keys.has('ShiftLeft') ? 3 : 1) * dt;
-      const f = k('KeyW') - k('KeyS');
-      const r = k('KeyD') - k('KeyA');
-      const u = k('KeyE') - k('KeyQ');
+      const speed = FLY_SPEED * (this.keys.has(FLY_KEYS.fast) ? 3 : 1) * dt;
+      const f = k(FLY_KEYS.forward) - k(FLY_KEYS.back);
+      const r = k(FLY_KEYS.right) - k(FLY_KEYS.left);
+      const u = k(FLY_KEYS.up) - k(FLY_KEYS.down);
       if (f || r || u) this.view.fly(f * speed, r * speed, u * speed);
     }
     if (this.stroke) this.strokeStep(dt);
@@ -1147,7 +1154,7 @@ export class EditorApp {
     const hintEl = $('ed-toolhint');
     hintEl.className = `tool-${tool.kind === 'erase' ? 'erase' : PLACING.has(tool.kind) ? 'place' : 'other'}`;
     hintEl.innerHTML = `<b>${escapeHtml(name + what)}</b> ${escapeHtml(hint)}`;
-    $('ed-hint').textContent = 'Right-drag look · WASD/QE fly · wheel zoom · V select · P place · X erase · B paint · O walls · T terrain · N scatter · G paths · Esc: Select tool';
+    $('ed-hint').textContent = 'Right-drag look · WASD/QE fly · wheel zoom · V select · P place · X erase · B paint · O walls · T terrain · N scatter · G paths · Esc: Select tool · ? every key';
     this.updateHover();
   }
 
@@ -2383,129 +2390,91 @@ export class EditorApp {
       this.drawMarquee();
     });
     window.addEventListener('keyup', (e) => this.keys.delete(e.code));
+    // Every key comes from the one key table (keymap.ts): it finds the binding, `keyActions` runs it. The `?` overlay
+    // lists the same table.
     window.addEventListener('keydown', (e) => {
       if (!this.active) return;
-      if (e.code === 'F5') {
+      const b = matchEditorKey(e);
+      if (b?.always) {
         e.preventDefault();
-        this.test();
+        this.keyActions[b.action](e);
         return;
       }
       if (isTyping() || document.querySelector('#editor dialog[open]')) return;
       this.keys.add(e.code);
-      const mod = e.ctrlKey || e.metaKey;
-      if (mod) {
-        const k = e.code;
-        if (k === 'KeyZ' && e.shiftKey) this.redo();
-        else if (k === 'KeyZ') this.undo();
-        else if (k === 'KeyY') this.redo();
-        else if (k === 'KeyS') this.save();
-        else if (k === 'KeyD') this.duplicate();
-        else return;
-        e.preventDefault();
-        return;
-      }
-      // \ folds the palette away (and back), Shift+\ the side panel.
-      if (e.code === 'Backslash') {
-        this.toggleSidebar(e.shiftKey ? 'right' : 'pal');
-        e.preventDefault();
-        return;
-      }
-      switch (e.code) {
-        case 'KeyR':
-          this.rotate(e.shiftKey);
-          break;
-        case 'KeyM':
-          this.mirror();
-          break;
-        case 'KeyF':
-          this.focusSelection();
-          break;
-        case 'Home':
-          this.resetView();
-          break;
-        case 'KeyL':
-          this.logic.toggle();
-          break;
-        case 'KeyB':
-          this.setTool({ kind: 'paint' });
-          break;
-        case 'KeyT': {
-          const i = this.tool.kind === 'terrain' ? (TERRAIN_BRUSHES.indexOf(this.terrainBrush) + 1) % TERRAIN_BRUSHES.length : TERRAIN_BRUSHES.indexOf(this.terrainBrush);
-          this.setTerrainBrush(TERRAIN_BRUSHES[i]!);
-          break;
-        }
-        case 'KeyO':
-          this.wallsTool(this.tool.kind === 'edge');
-          break;
-        case 'KeyX':
-          this.setTool({ kind: 'erase' });
-          break;
-        // G: Paths (Shift+G: Paths on the race track), N: Scatter (the last set you used).
-        case 'KeyG':
-          if (e.shiftKey) this.paths.preset('race');
-          this.setTool({ kind: 'path' });
-          break;
-        case 'KeyN':
-          this.setTool({ kind: 'scatter', set: this.lastScatter });
-          break;
-        case 'KeyP':
-          this.placeTool();
-          break;
-        case 'KeyI':
-          if (this.tool.kind === 'paint') this.pickStyleAtHover();
-          break;
-        case 'KeyV':
-        case 'Escape':
-          if (this.tool.kind === 'select') this.setSelection(emptySelection());
-          this.setTool({ kind: 'select' });
-          break;
-        case 'KeyH':
-          this.setShowAll(!this.showAll);
-          break;
-        case 'Slash':
-          // Search the palette.
-          $<HTMLInputElement>('ed-search').focus();
-          $<HTMLInputElement>('ed-search').select();
-          break;
-        case 'Delete':
-        case 'Backspace':
-          if (this.tool.kind === 'path' && this.paths.deleteSelected()) break;
-          if (this.tool.kind === 'route' && this.routes.deleteSelected()) break;
-          this.deleteSelection();
-          break;
-        // One meaning per key: PgUp/PgDn change the level (Shift: move the selection a level), [ ] the brush size.
-        case 'PageUp':
-          if (e.shiftKey) this.nudge(0, 0, 1);
-          else this.setLevel(this.level + 1);
-          break;
-        case 'PageDown':
-          if (e.shiftKey) this.nudge(0, 0, -1);
-          else this.setLevel(this.level - 1);
-          break;
-        case 'BracketRight':
-          if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius + 2);
-          break;
-        case 'BracketLeft':
-          if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius - 2);
-          break;
-        case 'ArrowUp':
-          this.nudge(0, 1, 0);
-          break;
-        case 'ArrowDown':
-          this.nudge(0, -1, 0);
-          break;
-        case 'ArrowLeft':
-          this.nudge(-1, 0, 0);
-          break;
-        case 'ArrowRight':
-          this.nudge(1, 0, 0);
-          break;
-        default:
-          return;
-      }
+      if (!b) return;
+      this.keyActions[b.action](e);
       e.preventDefault();
     });
   }
+
+  /** What each key in the table does (one handler per action: a Record, so none is left out). */
+  private readonly keyActions: Record<KeyAction, (e: KeyboardEvent) => void> = {
+    test: () => this.test(),
+    undo: () => this.undo(),
+    redo: () => this.redo(),
+    save: () => this.save(),
+    duplicate: () => this.duplicate(),
+    togglePalette: () => this.toggleSidebar('pal'),
+    toggleSidePanel: () => this.toggleSidebar('right'),
+    rotate: () => this.rotate(false),
+    rotateFine: () => this.rotate(true),
+    mirror: () => this.mirror(),
+    focus: () => this.focusSelection(),
+    resetView: () => this.resetView(),
+    logic: () => this.logic.toggle(),
+    paint: () => this.setTool({ kind: 'paint' }),
+    terrain: () => {
+      const i = this.tool.kind === 'terrain' ? (TERRAIN_BRUSHES.indexOf(this.terrainBrush) + 1) % TERRAIN_BRUSHES.length : TERRAIN_BRUSHES.indexOf(this.terrainBrush);
+      this.setTerrainBrush(TERRAIN_BRUSHES[i]!);
+    },
+    walls: () => this.wallsTool(this.tool.kind === 'edge'),
+    erase: () => this.setTool({ kind: 'erase' }),
+    // G: Paths (Shift+G: Paths on the race track), N: Scatter (the last set you used).
+    paths: () => this.setTool({ kind: 'path' }),
+    raceTrack: () => {
+      this.paths.preset('race');
+      this.setTool({ kind: 'path' });
+    },
+    scatter: () => this.setTool({ kind: 'scatter', set: this.lastScatter }),
+    place: () => this.placeTool(),
+    pickStyle: () => {
+      if (this.tool.kind === 'paint') this.pickStyleAtHover();
+    },
+    select: () => {
+      if (this.tool.kind === 'select') this.setSelection(emptySelection());
+      this.setTool({ kind: 'select' });
+    },
+    showAll: () => this.setShowAll(!this.showAll),
+    search: () => {
+      $<HTMLInputElement>('ed-search').focus();
+      $<HTMLInputElement>('ed-search').select();
+    },
+    keys: () => this.keyOverlay.open(),
+    delete: () => {
+      if (this.tool.kind === 'path' && this.paths.deleteSelected()) return;
+      if (this.tool.kind === 'route' && this.routes.deleteSelected()) return;
+      this.deleteSelection();
+    },
+    // One meaning per key: PgUp/PgDn change the level (Shift: move the selection a level), [ ] the brush size.
+    levelUp: () => this.setLevel(this.level + 1),
+    levelDown: () => this.setLevel(this.level - 1),
+    liftSelection: () => this.nudge(0, 0, 1),
+    lowerSelection: () => this.nudge(0, 0, -1),
+    brushBigger: () => {
+      if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius + 2);
+    },
+    brushSmaller: () => {
+      if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius - 2);
+    },
+    nudgeNorth: () => this.nudge(0, 1, 0),
+    nudgeSouth: () => this.nudge(0, -1, 0),
+    nudgeWest: () => this.nudge(-1, 0, 0),
+    nudgeEast: () => this.nudge(1, 0, 0),
+  };
+
+  /** The `?` overlay: every key in the table, grouped (keyOverlay.ts). */
+  private readonly keyOverlay = new KeyOverlay($('editor'));
 
   // ---------------------------------------------------------------- UI
 
@@ -2558,6 +2527,7 @@ export class EditorApp {
     bar.append(sep);
     add('ed-tb-rotate', 'rotate', 'Rotate', 'R', 'Rotate the selection, or the piece you are placing (Shift+R: a finer step)', () => this.rotate());
     add('ed-tb-delete', 'delete', 'Delete', 'Del', 'Delete the selection', () => this.deleteSelection());
+    this.keyOverlay.mountButton(bar);
     this.syncToolbar();
   }
 

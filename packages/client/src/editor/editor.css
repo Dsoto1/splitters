@@ -596,3 +596,19 @@ span.ed-budget-name { text-decoration: none; }
 .ed-budget-word { font: 700 10px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
 .ed-budget-row.lvl-near .ed-budget-word { color: #ffc46b; }
 .ed-budget-row.lvl-over .ed-budget-word { color: #ff8a80; }
+
+/* The `?` overlay (MapMaker overhaul Phase 1 item 5): every key, grouped, from the key table (keymap.ts). */
+dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86vh; padding: 0; overflow: hidden; }
+.ed-keys-inner { display: flex; flex-direction: column; max-height: 86vh; }
+.ed-keys header { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.ed-keys h2 { margin: 0; font: 700 18px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text); }
+.ed-keys-hint { flex: 1; color: var(--muted); font-size: 12px; }
+.ed-keys header button { width: 28px; height: 28px; padding: 0; }
+.ed-keys-grid { columns: 3 300px; column-gap: 22px; padding: 10px 14px 14px; overflow-y: auto; }
+.ed-keys-group { break-inside: avoid; margin-bottom: 12px; }
+.ed-keys-group h3 { margin: 0 0 4px; font: 600 11px var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: var(--cyan); }
+.ed-keys-group dl { margin: 0; display: grid; gap: 3px; }
+.ed-keys-row { display: grid; grid-template-columns: 104px 1fr; gap: 8px; align-items: baseline; font-size: 12px; }
+.ed-keys-row dt { color: var(--text); white-space: nowrap; }
+.ed-keys-row dd { margin: 0; color: var(--muted); }
+.ed-keys-row kbd { display: inline-block; min-width: 0; height: auto; padding: 1px 5px; font-size: 11px; background: var(--surface-3); color: var(--text); border: 1px solid var(--line); border-radius: 3px; }
