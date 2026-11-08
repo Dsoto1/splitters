@@ -72,6 +72,19 @@ The workflow is unchanged (CLAUDE.md):
      without keep-right and the strafing rule 0.21, without both 0.17. Neither explains the drop; at 48 matches
      captures move about ±10 between builds, and the drop is under two standard errors. The strafing rule does cut
      stuck recoveries (1.43 → 1.32). Not ablated: ground that goes, corridor routes.
+   - **Part 2, large bots route round low roofs (owner's option a): done, held back for the owner** (`wip/bots-lowroof`
+     @ fc4d701 and its docs commits; green on `check/bots-lowroof`, run 42428308885). BOT_AI_PLAN.md, "Part 2", has the tables.
+     - **How:** the navmesh marks ground with less headroom than a large body (2.12 m) as `LOW_AREA` (`nav/solo.ts`,
+       Recast splits polygons there); tall bodies' searches price it at 1,000 a metre (`findPath` `tall`), small and
+       standard ones don't change. A route that still goes under (no way round, or it starts or ends there) turns on
+       the duck (`lowRoute`, `mustDuck`). `botLowRoof.test.ts`.
+     - **Measured against main b8854c6:** stuck 1.31 → 1.12 a bot-minute (large bodies 1.54 → 1.01; Diamond Park 2.17
+       → 1.04 over seeds 1-12), ducking 0.0 s a match; TDM stuck 1.04 → 0.76, kills the same; the Range 19 → 19.
+       **But captures 50 → 43** (48 matches), all of it Diamond Park and Qasr Medina: Diamond Park 13 → 5 over seeds
+       1-12, flag takes up, returns 36 → 51 (large bodies' 6 → 17). Un-stuck large defenders, not crouching carriers.
+       A moderate price (4 a metre) gave Diamond Park 9 captures, ducking 6 s a match.
+     - **The owner's call:** land it, land it with the moderate price, or neither. Not landed: the goal was the stuck
+       reduction without the capture loss.
    - **Next:** route spread (CTF's busiest way about 60 %): route loose side-lane bots through a corridor's via
      instead of `laneWaypoint`, measured on the 48 matches.
    - **The measuring commands** (run each on the branch and on a detached worktree of main; `--compare=a.json,b.json`
@@ -218,6 +231,61 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - f5cc70b Capitol Mall domes, roofs; Capitol Dome / Copper Dome / Pediment / Pyramidion props; room Roof surface.
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
+
+### Tanks 2: balance and the Ammo Box (`wip/tanks-2`, agent, 2026-11-08; owner's decisions on the Tanks items)
+
+**Owner decisions (2026-11-08):** (1) keep "the driver fires the cannon while its seat is empty" (no change; noted in
+tank.json, CONTENT_PIPELINE and GUNPLAY_SPEC §48); (2) tanks were too strong: bots fetch launchers for a tank, and
+rockets hurt vehicles more; (3) the cannon refills only from the general Ammo Box.
+
+**What changed:**
+- **Rockets x2 against vehicles** (weapon `vehicleDamage`, data in content/weapons; tools/content/weapons.mjs checks
+  0-5): rockets, guided, swarm, blast_rockets and mount_rockets are 2. It multiplies what a weapon does to a vehicle
+  (kind `vehicle`) only, before its armour share (`Match.damageMount`, given the weapon id by splash, a projectile's
+  direct hit and bullets); players, turrets and sentries take what they did. Tank armour unchanged (blasts 1.25): a
+  Rocket Launcher side hit is 2 x (40 + 120) x 1.25 = 400 of 1200, so 3 kill it (4 at an angle; was 6), Guided 412
+  (3), Blast Rockets 288 (5), a full Swarm volley 500. Unarmoured vehicles go quicker too: a Rocket Launcher hit is
+  320 (buggy 450 in 2, was 3; kart, speeder, hover bike, snow sled in 1).
+- **Ammo Box only** (seat `ammo.pickups`, vehicles.mjs checks the ids are ammo pickups; the Tank `["core.ammo"]`):
+  `Match.resupply` takes only a named pickup and refills only the guns it names; other ammo pickups are left lying.
+  Bots out of shells look only for those (`SeatView.refills` -> `ammoPickupFor`).
+- **Bots vs armour** (bots/brain.ts `watchArmour`): an armoured vehicle (`MountView.armoured`: armour.bullets < 0.5,
+  or sealed) with an enemy aboard within 60 m is remembered 12 s. Then a bot whose weapons don't hurt vehicles (frag
+  grenades no longer count while a tank is about) goes up to 60 m for a launcher (30 m for other vehicles), values
+  launcher pickups and ammo for an empty launcher 3x (`ARMOUR_PICKUP_BOOST`), draws a carried launcher even with no
+  target (`chooseWeapon` vehicle flag), and aims explosives at the middle of the hull (`aimPos`: before, a rocket at the
+  sealed crew went over the 2 m deck through the non-solid turret). `antiVehicle` = vehicleDamage > 1 or splash >= 50.
+- **bot-report:** the tanks line adds "launchers picked up" (every pickup of an anti-vehicle weapon on a map with a
+  tank, not only while one is near). Workbench: weapon "Damage to vehicles", seat "ammo pickups".
+
+**Tests** (packages/shared/test/tanks.test.ts, 29): rocket vs grenade blast on a tank (x2) and on a player (same);
+3-4 live rockets kill a tank; the data names only core.ammo, and Light/Rifle/Shells/Sniper/Explosives leave it at 2
+shells and lie there; a rifle bot fetches a Rocket Launcher 42 m away with an enemy tank about and leaves it without;
+a bot carrying rockets draws them and puts at least 400 into the hull.
+
+**Bot results** (`pnpm bot-report iron_tide iron_maw coldwater_gulch frost_basin --seeds=1,2,3 --seconds=180`, CTF, 12
+matches; before = main 110ee71 with the launcher counter):
+| | before | after |
+|---|---|---|
+| tanks destroyed | 1 | 4 |
+| bailed about to blow | 1 | 3 |
+| drives | 33 | 31 |
+| driven (bot-s) | 685 | 536 |
+| kills from aboard | 56 (cannon 45, MG 8, roadkill 3) | 33 (cannon 24, MG 7, roadkill 1, barrel 1) |
+| shells fired | 95 | 73 |
+| launchers picked up | 90 | 134 |
+| ammo trips / refills | 1 / 2 | 0 / 0 |
+| given up stuck | 8 | 11 |
+Destroyable now, still worth driving (about 3 kills a tank-match). Crew died with it: 0 both times (they bail at a
+quarter). Stuck give-ups are the known spots (Iron Tide centre), not changed here. Tick times in the after run are
+inflated by other agents' suites on the box.
+
+**For the owner:**
+1. Light vehicles: rockets x2 applies to every vehicle (the brief said vehicles and tanks): a Rocket Launcher now
+   one-shots a kart, speeder, hover bike or snow sled and two-shots a buggy. Keep, or limit `vehicleDamage` to
+   armoured vehicles?
+2. Ammo trips fell to 0: with only Ammo Boxes counting, few are within 120 m of where tanks fight on these maps; the
+   cannon still refills one every 15 s. Place Ammo Boxes near tank routes in MapMaker, or fine as is?
 
 ### Tanks (`wip/tanks`, agent, 2026-11-07; Queued item 1; CI on `check/tanks`)
 

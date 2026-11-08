@@ -25,6 +25,13 @@ the wheel you fire the cannon yourself; it turns on the spot. Bots drive tanks, 
 shells for targets worth one, refill at ammo pickups and get out under a quarter of its health. All in the tank's
 vehicle data (Workbench).
 
+**Tanks can be beaten** (owner, 2026-11-08): rockets do twice their damage to vehicles (never to players), so 3 or 4
+Rocket Launcher hits destroy a tank instead of about 6 (the Guided Rocket, Swarm Launcher, Blast Rockets and Mounted
+Rockets too; light vehicles go down quicker as well). Bots with nothing that hurts a tank go further for a launcher
+when one is about, draw a launcher they carry and aim it at the hull. The cannon now refills only from the general
+Ammo Box (Light, Rifle, Shells and Sniper rounds don't), and tank drivers out of shells drive to one. Rockets'
+`vehicleDamage` and the seat's `ammo.pickups` are data.
+
 **Iron Coast (MAP 21), part 1: the beach assault and Breakthrough's showcase** (MapMaker only, from the owner's reference)
 - **A new map, Iron Coast** (`iron_coast`): 380 × 320 m of coast for 24-32 a side (24 v 24 is the Map's pick; 16 to 64
   players). Landing craft beached on the sand, an irregular cliff (8 m at the grand stair's
@@ -80,6 +87,12 @@ wall, where the walkable ground nearest it was the room behind the wall (Capitol
 toward ground it can walk to instead of pushing into the wall; bots following their group's corridor are counted on
 it, so the team spreads its groups by them. Measured on 48 CTF matches: as before.
 (Large bots ducking under low roofs is held back for a decision: fewer stuck bots, but fewer captures.)
+
+**Bot AI Phase C follow-up, part 2** (docs/BOT_AI_PLAN.md, "Part 2"; on `wip/bots-lowroof`, held back for the owner):
+large bots go round roofs too low for them to stand under (a dugout's stair top, a low doorway) instead of walking into
+them and sticking there, and crouch through one only where nothing else gets them where they're going. Small and
+standard bots keep their routes. Measured on 48 CTF matches: about 15 % fewer stuck recoveries, no ducking, but fewer captures
+on Diamond Park (its large defenders are back in play).
 
 **Bot AI Phase C, items 1-4** (docs/BOT_AI_PLAN.md, "Phase C items 1-4, measured"; docs/BOTS.md):
 - Bots drop off ledges, jump gaps and jump up onto ledges as players do: links found at load and each checked by

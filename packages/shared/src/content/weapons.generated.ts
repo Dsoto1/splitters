@@ -266,6 +266,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       muzzleAt: [0, 0.072, 0.435],
     },
   },
+  // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // design: Benchmark rocket: rewards predicting where they will be. A slow 30 m/s rocket (a runner moves 4 m while it crosses 25 m), a 5 m blast and a direct hit that kills outright; your own blast hurts you three quarters as much. Quick to bring back: a rocket every 1.5 s, fire again as soon as it is loaded.
   'core.rockets': {
     id: 'core.rockets',
@@ -294,6 +295,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     ammo: 'explosive',
     botDesirability: 0.8,
     botRange: [7, 40],
+    vehicleDamage: 2,
     damage: 0,
     pellets: 1,
     spread: 0,
@@ -1077,6 +1079,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.nail',
     },
   },
+  // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // group: The extended arsenal: every one fires differently. 8: heavy.
   'core.swarm': {
     id: 'core.swarm',
@@ -1094,6 +1097,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 30,
     botDesirability: 0.78,
     botRange: [8, 45],
+    vehicleDamage: 2,
     ammo: 'explosive',
     projectile: {
       speed: 20,
@@ -1117,6 +1121,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.swarm',
     },
   },
+  // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // group: The extended arsenal: every one fires differently. 8: heavy.
   // design: Laser-guided: the rocket flies wherever you keep your crosshair. Slow, so steer it round corners.
   'core.guided': {
@@ -1134,6 +1139,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 32,
     botDesirability: 0.7,
     botRange: [10, 60],
+    vehicleDamage: 2,
     ammo: 'explosive',
     projectile: {
       speed: 17,
@@ -1335,6 +1341,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.rifle',
     },
   },
+  // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // design: A gun on a turret or vehicle (slot 0: never carried or picked up). It runs on heat, so a gunner never reloads but has to pace the trigger.
   'core.mount_rockets': {
     id: 'core.mount_rockets',
@@ -1349,6 +1356,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 0,
     botDesirability: 0,
     botRange: [0, 80],
+    vehicleDamage: 2,
     heat: { perShot: 0.3, coolPerTick: 0.004 },
     projectile: {
       speed: 34,
@@ -1672,6 +1680,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'long', grip: [0, -0.06, -0.06], support: [0, -0.022, 0.142], shoulder: [0, -0.076, -0.43] },
     },
   },
+  // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // design: A variant of an existing weapon for Disc Arena and Classes. Blast rockets: a Rocket Launcher with a four-rocket drum and the knockback to rocket-jump.
   'core.blast_rockets': {
     id: 'core.blast_rockets',
@@ -1688,6 +1697,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 28,
     botDesirability: 0.78,
     botRange: [6, 40],
+    vehicleDamage: 2,
     ammo: 'explosive',
     projectile: {
       speed: 26,

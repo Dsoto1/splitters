@@ -1,6 +1,6 @@
 import type { LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
-import type { NavWorld } from '../nav/index.ts';
+import { TALL_SIZE, type NavWorld } from '../nav/index.ts';
 import type { Corridor } from '../nav/corridors.ts';
 import { parkourAlong, parkourInput, type ParkourKind, type ParkourLink } from '../nav/parkour.ts';
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
@@ -327,6 +327,16 @@ const PICKUP_GIVE_UP_SECONDS = 90;
 const RIDE_REACH = 25;
 /** Enemy vehicles: how far (m, plus height) a bot goes for a rocket or grenade launcher once one has been seen lately (VEHICLE_MEMORY s). */
 const LAUNCHER_DETOUR = 30;
+/**
+ * An enemy tank (or other armoured vehicle, MountView.armoured) about (owner, 2026-11-08: bots grab launchers when a
+ * tank is around): crewed by an enemy within ARMOUR_ALERT_RANGE (m: its engine and tracks are heard that far), a bot
+ * with nothing that hurts vehicles goes this far (m) for a launcher (ARMOUR_LAUNCHER_DETOUR), values launcher pickups
+ * (and ammo for an empty one) this many times more (ARMOUR_PICKUP_BOOST), and draws a launcher it carries. Remembered
+ * for VEHICLE_MEMORY s.
+ */
+const ARMOUR_ALERT_RANGE = 60;
+const ARMOUR_LAUNCHER_DETOUR = 60;
+const ARMOUR_PICKUP_BOOST = 3;
 /** An objective at least this far off is gone to by a lane of the bot's own (orderTarget). */
 const LANE_FROM = 50;
 /**
@@ -564,6 +574,16 @@ export class BotBrain {
   private yaw = 0;
   private pitch = 0;
   private stuckCheck: { tick: number; pos: Vec3 } | null = null;
+  /**
+   * The route goes under a low roof (NavWorld.lastLow: a tall body with no way round, or a goal under one): it crouches
+   * where there's no room to stand (mustDuck). Off on every other route, so a tall body never ducks on its way
+   * anywhere a way round exists.
+   */
+  private lowRoute = false;
+  /** Ducking under something too low for its body, until then (mustDuck). */
+  private duckUntil = -Infinity;
+  /** Ticks this bot spent ducking under a low roof (measuring: how rare the fallback is). */
+  duckTicks = 0;
   private jumpNext = false;
   private lastPos: Vec3 | null = null;
   /** The tick of the previous think (big matches skip some ticks for bots with nobody to fight). */
@@ -627,6 +647,9 @@ export class BotBrain {
   private targetMount: MountView | null = null;
   /** Last tick an enemy in a vehicle was in sight (launchers are worth fetching for a while after). */
   private vehicleSeenTick = -Infinity;
+  /** Last tick an enemy-crewed armoured vehicle (a tank) was about (watchArmour), and which. */
+  private armourSeenTick = -Infinity;
+  private armourMount: MountView | null = null;
   /** Getting out of an enemy vehicle's way: which way, until when, and whether to sprint. */
   private dodge: { yaw: number; until: number; sprint: boolean } | null = null;
   /** The vehicle bearing down (mount index), when it was first noticed, and whether this bot reacts to it at all this time. */
@@ -767,6 +790,8 @@ export class BotBrain {
     this.hurtTick = this.underFireTick = -Infinity;
     this.retreatGoal = null;
     this.retreatMode = null;
+    this.lowRoute = false;
+    this.duckUntil = -Infinity;
     this.link = null;
     this.linkClock = null;
     this.spacing = 'hold';
@@ -836,7 +861,7 @@ export class BotBrain {
 
     const ctx = this.aimContext(view);
     const ta = simProfile.on ? performance.now() : 0;
-    this.aim.track(ctx, target ? { slot: target.slot, pos: target.pos, stance: target.stance } : null);
+    this.aim.track(ctx, target ? { slot: target.slot, pos: this.aimPos(view.seat?.weapon ?? ctx.weapon, target), stance: target.stance } : null);
     if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
 
     // Out of a plane (or a flyer) in the air: the canopy opens straight away (act()), not at the automatic opener's
@@ -1256,6 +1281,7 @@ export class BotBrain {
 
     // Enemy vehicles about: out of the way of one bearing down.
     this.watchTraffic(view);
+    this.watchArmour(view);
     const armedForVehicles = this.canHurtVehicles(view);
 
     // A lift from a teammate is worth taking even when hurt or with someone about.
@@ -1517,7 +1543,7 @@ export class BotBrain {
     const aimAtTarget = (t: CombatantView) => {
       aimedTarget = true;
       const ta = simProfile.on ? performance.now() : 0;
-      sol = this.aim.solve(ctx, { slot: t.slot, pos: t.pos, stance: this.aimStance(def, t), size: t.size ?? 1, box: t.box ?? null, yaw: t.yaw, hitScale: t.hitScale ?? 1, bodyStance: t.stance ?? 0 });
+      sol = this.aim.solve(ctx, { slot: t.slot, pos: this.aimPos(def, t), stance: this.aimStance(def, t), size: t.size ?? 1, box: t.box ?? null, yaw: t.yaw, hitScale: t.hitScale ?? 1, bodyStance: t.stance ?? 0 });
       if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
       this.turnToward(sol.yaw, sol.pitch);
       lookDone = true;
@@ -2146,6 +2172,13 @@ export class BotBrain {
     }
     if (this.zipPress || me.riding) doing = 'zip';
     this.zipPress = false;
+    // A tall body on a route under a low roof (no way round it: lowRoute) ducks where it can't stand, as a player does.
+    // Only then: on every other route it goes round, and keeps its sprint (a carrier that crouched home lost captures).
+    if (this.lowRoute && moveYaw !== null && this.mustDuck(view, moveYaw)) {
+      stance = Math.max(stance, 1) as Stance;
+      sprint = false;
+      this.duckTicks++;
+    }
     if (sprint && moveYaw !== null && forward > 0.3) buttons |= BUTTON_SPRINT;
     else if (stance === 2) buttons |= BUTTON_PRONE;
     else if (stance === 1) buttons |= BUTTON_CROUCH;
@@ -2233,7 +2266,7 @@ export class BotBrain {
     const ta = simProfile.on ? performance.now() : 0;
     const aimed = this.aimed;
     aimed.slot = target.slot;
-    aimed.pos = target.pos;
+    aimed.pos = this.aimPos(ctx.weapon, target);
     aimed.stance = this.aimStance(ctx.weapon, target) ?? 0;
     aimed.size = target.size ?? 1;
     this.aim.track(ctx, aimed);
@@ -2823,23 +2856,66 @@ export class BotBrain {
     return (!!view.seat?.weapon && antiVehicle(view.seat.weapon) && view.seat.shells !== 0) || this.canHurtVehicles(view);
   }
 
-  /** Carries something that hurts vehicles properly: a launcher with rounds, or a grenade with a big blast. */
+  /**
+   * Carries something that hurts vehicles properly: a launcher with rounds, or a grenade with a big blast. With an
+   * enemy tank about (armourAbout) grenades don't count: two frags barely mark one (100 x 1.25 of its 1200 each).
+   */
   private canHurtVehicles(view: BotWorldView): boolean {
-    for (const w of view.inventory) if (antiVehicle(w.def) && w.mag + w.reserve > 0) return true;
+    if (this.hasLauncher(view)) return true;
+    if (this.armourAbout(view.tick)) return false;
     const t = view.throwable;
     return !!t && t !== 'mine' && t !== 'sandbag' && (view.throwables ?? 0) > 0 && THROWABLE_DEFS[t].projectile.splashDamage >= ANTI_VEHICLE_SPLASH;
   }
 
+  /** Carries a weapon that hurts vehicles (antiVehicle: a rocket or grenade launcher) with rounds left. */
+  private hasLauncher(view: BotWorldView): boolean {
+    for (const w of view.inventory) if (antiVehicle(w.def) && w.mag + w.reserve > 0) return true;
+    return false;
+  }
+
+  /**
+   * An enemy tank about (any armoured vehicle with an enemy aboard, alive, within ARMOUR_ALERT_RANGE): remembered for
+   * VEHICLE_MEMORY s, as an enemy vehicle seen (fetchLauncher), even while its sealed crew isn't the target.
+   */
+  private watchArmour(view: BotWorldView): void {
+    const mounts = view.mounts;
+    if (!mounts?.length) return;
+    const me = view.self.pos;
+    const hostile = slotsOf(view.others);
+    let best: MountView | null = null;
+    let bestD = ARMOUR_ALERT_RANGE;
+    for (const m of mounts) {
+      if (m.kind !== 'vehicle' || !m.alive || !(m.armoured || m.sealed)) continue;
+      const d = horizontalDistance(me, m.pos);
+      if (d >= bestD) continue;
+      let enemy = false;
+      for (const s of m.seats) if (s.by !== undefined && hostile.has(s.by)) enemy = true;
+      if (!enemy) continue;
+      best = m;
+      bestD = d;
+    }
+    if (!best) return;
+    this.armourMount = best;
+    this.armourSeenTick = view.tick;
+    this.vehicleSeenTick = view.tick;
+  }
+
+  /** An enemy tank was about lately (watchArmour). */
+  private armourAbout(tick: number): boolean {
+    return tick - this.armourSeenTick <= TICK_RATE * VEHICLE_MEMORY;
+  }
+
   /**
    * An enemy vehicle seen lately (or in sight, not too close) and nothing
-   * that hurts it: go for a launcher lying close by. True when it set off.
+   * that hurts it: go for a launcher lying close by (further with a tank
+   * about). True when it set off.
    */
   private fetchLauncher(view: BotWorldView, target: CombatantView | undefined): boolean {
     const tick = view.tick;
     if (tick - this.vehicleSeenTick > TICK_RATE * VEHICLE_MEMORY || view.orderGoal) return false;
     // Fighting someone on foot, or a vehicle right on top of us: fight (or dodge) first.
     if (target && (this.targetMount?.kind !== 'vehicle' || horizontalDistance(view.self.pos, target.pos) < 15)) return false;
-    const p = this.pickupGoal(view, 'weapon', LAUNCHER_DETOUR, antiVehicle);
+    const p = this.pickupGoal(view, 'weapon', this.armourAbout(tick) ? ARMOUR_LAUNCHER_DETOUR : LAUNCHER_DETOUR, antiVehicle);
     if (!p) return false;
     this.roamGoal = p;
     this.gunNearby = p;
@@ -2910,12 +2986,13 @@ export class BotBrain {
     return false;
   }
 
-  /** An ammo pickup that is up, within AMMO_DETOUR of `from` (a tank out of shells drives over it), or null. */
-  private ammoPickupFor(view: BotWorldView, from: Vec3): Vec3 | null {
+  /** One of the pickups that refill the gun (`refills`, SeatAmmo.pickups: the Ammo Box) that is up, within AMMO_DETOUR of `from` (a tank out of shells drives over it), or null. */
+  private ammoPickupFor(view: BotWorldView, from: Vec3, refills: readonly string[] | undefined): Vec3 | null {
+    if (!refills?.length) return null;
     let best: Vec3 | null = null;
     let bestD = AMMO_DETOUR;
     for (const p of view.pickups) {
-      if (!p.available || p.item.effect.kind !== 'ammo') continue;
+      if (!p.available || !refills.includes(p.item.id)) continue;
       const d = horizontalDistance(p.pos, from) + Math.abs(p.pos.y - from.y) * 3;
       if (d < bestD) {
         best = p.pos;
@@ -2928,6 +3005,23 @@ export class BotBrain {
   /** Explosives at an enemy in a vehicle go at the hull (low), not at the head poking out of it. */
   private aimStance(def: WeaponDefinition | undefined, t: CombatantView): Stance | undefined {
     return def && this.targetMount && t.slot === this.targetSlot && antiVehicle(def) ? 2 : t.stance;
+  }
+
+  private hullAim: Vec3 = { x: 0, y: 0, z: 0 };
+
+  /**
+   * Where to aim at `t`: a weapon that hurts vehicles at an enemy in a vehicle goes at the middle of its hull (a tank's
+   * crew can't be hit and its turret isn't solid: a rocket at the gunner flies over the deck), with aimStance's low aim
+   * point (prone: 0.6 of 0.8 m up) landing on the box's centre. Anyone else: where they stand.
+   */
+  private aimPos(def: WeaponDefinition | undefined, t: CombatantView): Vec3 {
+    const m = this.targetMount;
+    if (!def || !m || m.kind !== 'vehicle' || t.slot !== this.targetSlot || !antiVehicle(def)) return t.pos;
+    const h = this.hullAim;
+    h.x = m.pos.x;
+    h.y = m.pos.y + (m.half?.[1] ?? 0.8) - STANCES[2].height * 0.6 * (t.size ?? 1);
+    h.z = m.pos.z;
+    return h;
   }
 
   /**
@@ -3044,7 +3138,7 @@ export class BotBrain {
     if (!worth) fireAt = undefined;
     if (seat.role === 'driver' && m) {
       // Out of shells with an ammo pickup up close by: go and drive over it (it refills them all).
-      const resupply = seat.shells === 0 ? this.ammoPickupFor(view, m.pos) : null;
+      const resupply = seat.shells === 0 ? this.ammoPickupFor(view, m.pos, seat.refills) : null;
       const goal = resupply ?? this.roamGoal ?? view.orderGoal?.pos ?? farthest(view.spawnPoints, m.pos) ?? m.pos;
       const left = horizontalDistance(m.pos, goal);
       if (!this.goal || horizontalDistance(this.goal, goal) > 3 || tick - this.lastPathTick > TICK_RATE * 2) {
@@ -3171,7 +3265,7 @@ export class BotBrain {
       if (!fireAt) this.turnToward(m.yaw + (seat.facing ?? 0), 0);
     }
     if (fireAt) {
-      const sol = this.aim.solve(gunCtx, { slot: fireAt.slot, pos: fireAt.pos, stance: this.aimStance(gunCtx.weapon, fireAt) });
+      const sol = this.aim.solve(gunCtx, { slot: fireAt.slot, pos: this.aimPos(gunCtx.weapon, fireAt), stance: this.aimStance(gunCtx.weapon, fireAt) });
       this.turnToward(sol.yaw, sol.pitch);
       const cool = !seat.overheated && seat.heat < 0.85;
       if (cool && this.aim.trigger(gunCtx, sol, this.yaw, this.pitch, this.reacted(view, fireAt))) buttons |= BUTTON_FIRE;
@@ -3219,10 +3313,12 @@ export class BotBrain {
   private chooseWeapon(view: BotWorldView, target: CombatantView | undefined): number {
     const dist = target ? distance(view.self.pos, target.pos) : this.lastKnown ? Math.min(30, distance(view.self.pos, this.lastKnown.pos)) : 15;
     const others = view.inventory.filter((w) => w.def.magazine === 0 || w.mag > 0).length;
+    // Fighting someone in a vehicle, or nobody in sight with an enemy tank about: a launcher in hand.
+    const vehicle = target ? this.targetMount?.kind === 'vehicle' : this.armourAbout(view.tick);
     let best = view.held;
     let bestScore = -Infinity;
     for (const w of view.inventory) {
-      const score = weaponScore(w, { dist, target, held: weaponCode(w.def) === view.held, loadedElsewhere: others - (w.def.magazine === 0 || w.mag > 0 ? 1 : 0) > 0, profile: this.profile, vehicle: !!target && this.targetMount?.kind === 'vehicle' });
+      const score = weaponScore(w, { dist, target, held: weaponCode(w.def) === view.held, loadedElsewhere: others - (w.def.magazine === 0 || w.mag > 0 ? 1 : 0) > 0, profile: this.profile, vehicle });
       if (score > bestScore) {
         bestScore = score;
         best = weaponCode(w.def);
@@ -3263,6 +3359,7 @@ export class BotBrain {
     let best: { pos: Vec3; score: number } | null = null;
     const owned = new Map(view.inventory.map((w) => [w.def.id, w]));
     const bestOwned = bestLoadedDesirability(view.inventory);
+    let armour: boolean | undefined;
     for (const p of view.pickups) {
       // Arena bots time the respawns: head for an item that will be back by the time they get there.
       const timed = this.arena && p.respawnIn !== undefined && p.respawnIn < horizontalDistance(me.pos, p.pos) / 5 + 1;
@@ -3275,6 +3372,8 @@ export class BotBrain {
       if (need <= 0) continue;
       // A new gun is worth what it adds: a rifle to a bot holding a pistol, far more than a second SMG.
       if (e.kind === 'weapon' && !owned.has(e.weapon)) need *= clamp(1 + (getWeapon(e.weapon).botDesirability - bestOwned) * 2.5, 0.4, 2);
+      // An enemy tank about and nothing that hurts it: a launcher (or rounds for an empty one) is worth far more.
+      if ((armour ??= this.armourAbout(view.tick) && !this.canHurtVehicles(view)) && this.fightsArmour(e, view.inventory)) need *= ARMOUR_PICKUP_BOOST;
       const greed = 0.3 + (this.profile.itemGreed / 100) * 1.2;
       const d = horizontalDistance(me.pos, p.pos) + Math.abs(me.pos.y - p.pos.y) * 2;
       if (d > within) continue;
@@ -3282,6 +3381,14 @@ export class BotBrain {
       if (score > 0.12 && (!best || score > best.score)) best = { pos: p.pos, score };
     }
     return best ? { pos: { ...best.pos }, score: best.score } : null;
+  }
+
+  /** Pickup effect `e` gives something that hurts vehicles: a launcher, or ammo for an empty one carried. */
+  private fightsArmour(e: ItemEffect, inventory: readonly InventoryView[]): boolean {
+    if (e.kind === 'weapon') return antiVehicle(getWeapon(e.weapon));
+    if (e.kind !== 'ammo') return false;
+    for (const w of inventory) if (antiVehicle(w.def) && w.def.magazine > 0 && w.mag + w.reserve <= 0 && (e.ammo === undefined || e.ammo === w.def.ammo)) return true;
+    return false;
   }
 
   /** `goal` is a pickup this bot can't get to (stuck on the way, or no way there): leave it alone for a good while. */
@@ -3620,6 +3727,32 @@ export class BotBrain {
     return Math.atan2(wx + px, wz + pz);
   }
 
+  /**
+   * A body taller than the navmesh's standing on its ground: whether there's no room to stand a step ahead along
+   * `moveYaw` (or here) but room to crouch; then it ducks for a moment. Looked at every few ticks (a shape query), only
+   * on a route under a low roof (lowRoute).
+   */
+  private mustDuck(view: BotWorldView, moveYaw: number): boolean {
+    const me = view.self;
+    const k = me.size ?? 1;
+    if (k <= TALL_SIZE || me.grounded === false) return false;
+    const tick = view.tick;
+    if (tick < this.duckUntil) return true;
+    if ((tick + this.slot) % DECIDE_TICKS !== 0) return false;
+    const r = PLAYER.radius * k;
+    // (A step up ahead counts: the head rises with the feet.)
+    for (const ahead of [0, 0.5, 1]) {
+      for (const up of [0, PLAYER.maxStepHeight - 0.02]) {
+        const at = { x: me.pos.x + Math.sin(moveYaw) * ahead, y: me.pos.y + up, z: me.pos.z + Math.cos(moveYaw) * ahead };
+        if (!view.physics.headroom(at, STANCES[0].height * k, r) && view.physics.headroom(at, STANCES[1].height * k, r)) {
+          this.duckUntil = tick + Math.round(TICK_RATE * 0.6);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   /** Heading for a ladder's foot (within a few metres) or up or down one: the path's leg there is too steep to walk. */
   private atLadder(me: Vec3): boolean {
     const i = this.pathIndex;
@@ -3715,12 +3848,18 @@ export class BotBrain {
         const agile = this.agile(view);
         // Along its group's corridor (orderTarget asked for it just now), else the usual search.
         const al = this.along;
+        // A body taller than the navmesh's (a large look) routes round low roofs (NavWorld.findPath `tall`).
+        const tall = this.tall(view);
+        this.lowRoute = false;
         if (al && view.tick - al.tick <= DECIDE_TICKS * 2 && !offLifts && !this.standIn) {
-          found = view.nav.pathAlong(me.pos, al.c.polys, to, view.shut ?? 0);
+          found = view.nav.pathAlong(me.pos, al.c.polys, to, view.shut ?? 0, tall);
           if (found) this.alongRoutes++;
           else al.failed = view.tick;
         }
-        found ??= (offLifts && view.nav.findPath(me.pos, to, offLifts, false, this.coverRoutes, agile)) || view.nav.findPath(me.pos, to, 0, true, this.coverRoutes, agile);
+        if (!found) {
+          found = (offLifts && view.nav.findPath(me.pos, to, offLifts, false, this.coverRoutes, agile, tall)) || view.nav.findPath(me.pos, to, 0, true, this.coverRoutes, agile, tall);
+          this.lowRoute = tall && !!found && view.nav.lastLow;
+        }
       }
       if (!backedOff && !onto) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
@@ -3764,19 +3903,21 @@ export class BotBrain {
         // spawned inside its bunker, where the shortest way out is the blast door only the attackers can open: they
         // stood there until they died, with their own rear door a few steps away).
         if (!this.pressPlan && view.shut) {
-          const round = view.nav.findPath(me.pos, goal, view.shut);
+          const round = view.nav.findPath(me.pos, goal, view.shut, false, 0, false, this.tall(view));
           if (round) {
             this.path = round;
+            this.lowRoute = view.nav.lastLow;
             if (this.pathBlocked(view)) this.path = [];
           }
           // No way round either (a gate a button opens now and then, on cooldown): as near the goal as it gets this side
           // of what's shut, to wait there (keeping watch) for it to open or a button to be ready, asking again every
           // second. Before, it stood at the button, pressing a button that did nothing, every 3 s.
           if (!this.path.length) {
-            const near = view.nav.findPath(me.pos, goal, view.shut, true);
+            const near = view.nav.findPath(me.pos, goal, view.shut, true, 0, false, this.tall(view));
             const end = near?.[near.length - 1];
             if (near && end && horizontalDistance(end, goal) > 1) {
               this.path = near;
+              this.lowRoute = view.nav.lastLow;
               this.standIn = end;
             }
           }
@@ -3849,6 +3990,11 @@ export class BotBrain {
   }
 
   /** Flankers, recon, snipers and Arena bots: parkour links cost them no more than walking (NavWorld.findPath `agile`). */
+  /** A body taller than the navmesh's 1.8 m (a large look): routes round low roofs (NavWorld.findPath `tall`). */
+  private tall(view: BotWorldView): boolean {
+    return (view.self.size ?? 1) > TALL_SIZE;
+  }
+
   private agile(view: BotWorldView): boolean {
     const plan = view.plan;
     return this.arena || plan?.role === 'sniper' || plan?.job?.group === 'flank' || plan?.job?.group === 'recon';

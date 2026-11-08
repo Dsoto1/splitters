@@ -34,7 +34,7 @@ const { num, int, str, bool, en, tup, arr, obj, vec3, notes } = shape;
 export function schemas() {
   const seat = obj({
     role: en(['driver', 'gunner', 'passenger']), label: str, offset: vec3, 'weapon?': str, 'arc?': num, 'facing?': num, 'seated?': bool, 'legDrop?': num, 'straddle?': num,
-    'ammo?': obj({ max: int, 'start?': int, refillSeconds: num }), 'driverFires?': bool,
+    'ammo?': obj({ max: int, 'start?': int, refillSeconds: num, 'pickups?': arr(str, 1) }), 'driverFires?': bool,
   });
   const armour = obj({ 'surface?': str, 'sealed?': bool, 'bullets?': num, 'blasts?': num, 'melee?': num });
   const suspension = obj({
@@ -87,6 +87,7 @@ export function build(content, root = ROOT) {
   const sounds = new Set(Object.keys(readJson(root, 'content/sounds.json').sounds));
   for (const s of MOUNT_SOUNDS) if (!sounds.has(s)) problems.push(`content/sounds.json: ${s} is missing (every mount plays it)`);
   const surfaces = new Set(readJson(root, 'content/surface-types.json').types.map((t) => t.id));
+  const ammoPickups = new Set(readJson(root, 'content/pickups.json').pickups.filter((p) => p.effect?.kind === 'ammo').map((p) => p.id));
   const procedural = new Set([...readFileSync(join(root, 'packages/client/src/content/models.ts'), 'utf8').matchAll(/path === '(procedural\/[\w-]+)'/g)].map((m) => m[1]));
   const modelExists = (p) => procedural.has(p) || existsSync(join(root, 'packages/client/public/models', p));
   const mountedWeapon = (where, w) => {
@@ -135,6 +136,7 @@ export function build(content, root = ROOT) {
       if (s.straddle !== undefined && (s.straddle < 0 || s.straddle > 0.8)) problems.push(`${where}: straddle must be 0 to 0.8 rad`);
       if (s.ammo && !s.weapon) problems.push(`${where}: ammo is for a mounted weapon`);
       if (s.ammo && (s.ammo.max < 1 || s.ammo.refillSeconds < 0 || (s.ammo.start !== undefined && (s.ammo.start < 0 || s.ammo.start > s.ammo.max)))) problems.push(`${where}: ammo needs max 1 or more, refillSeconds 0 or more (0: none back over time) and start 0 to max`);
+      for (const id of s.ammo?.pickups ?? []) if (!ammoPickups.has(id)) problems.push(`${where}: ammo.pickups: ${id} is not an ammo pickup (content/pickups.json)`);
       if (s.driverFires && (s.role !== 'gunner' || !s.weapon)) problems.push(`${where}: driverFires is for a gunner seat with a weapon`);
       if (s.driverFires && d.seats.some((x) => x.role === 'driver' && x.weapon)) problems.push(`${where}: driverFires needs a driver without a weapon of their own`);
       if (s.driverFires && d.kind !== 'vehicle') problems.push(`${where}: driverFires is for vehicles (a driver)`);

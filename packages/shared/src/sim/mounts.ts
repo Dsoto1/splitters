@@ -87,7 +87,8 @@ export interface SeatDef {
   /**
    * Limited ammunition for this seat's mounted gun (the Tank's cannon): `max` rounds aboard (and at a respawn, `start`
    * if given), one more back every `refillSeconds` (0: none back over time), and all of them back when the vehicle,
-   * crewed, drives over an ammo pickup. Absent: it never runs dry (heat paces it, if anything).
+   * crewed, drives over one of the ammo pickups `pickups` names (the Tank's: the Ammo Box only). Absent: it never runs
+   * dry (heat paces it, if anything).
    */
   ammo?: SeatAmmo;
   /**
@@ -102,7 +103,12 @@ export interface SeatAmmo {
   max: number;
   start?: number;
   refillSeconds: number;
+  /** The pickup ids (ammo pickups, content/pickups.json) that refill it all when the crewed vehicle drives over one; absent: none does. */
+  pickups?: readonly string[];
 }
+
+/** Pickup `item` refills this limited mounted ammunition (SeatAmmo.pickups). */
+export const ammoRefilledBy = (a: SeatAmmo, item: string): boolean => !!a.pickups?.includes(item);
 
 /**
  * Armour (MountDef.armour): what the hull is made of for bullets (a surface type: its ballistic class decides

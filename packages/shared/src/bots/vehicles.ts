@@ -95,6 +95,8 @@ export interface MountView {
   wedged?: boolean;
   /** Its crew is shut in (MountArmour.sealed, the Tank): safe inside until it blows, and dead if still in when it does. */
   sealed?: boolean;
+  /** Armoured (MountDef.armour taking under half of bullets' damage, the Tank): only what hurts vehicles wears it down. */
+  armoured?: boolean;
   /** Get out below this share of health (MountDef.bailHealth); absent: BAIL_HEALTH. */
   bailHealth?: number;
   /** Turns on the spot (tracks: the vehicle's `pivot`). */
@@ -252,6 +254,8 @@ export interface SeatView {
   /** Limited ammunition (SeatDef.ammo: the Tank's shells): rounds aboard, of `maxShells`. Absent: it never runs dry. */
   shells?: number;
   maxShells?: number;
+  /** The pickup ids that refill them (SeatAmmo.pickups: the Tank's cannon, the Ammo Box only); absent: none does. */
+  refills?: readonly string[];
 }
 
 /** Is `p` inside a seat's firing arc and range from the mount? */
@@ -453,8 +457,8 @@ export function mountOf(mounts: readonly MountView[], slot: number): { mount: Mo
   return null;
 }
 
-/** A weapon that does real damage to vehicles: big splash (rockets, grenade launchers). */
-export const antiVehicle = (def: WeaponDefinition): boolean => (def.projectile?.splashDamage ?? 0) >= ANTI_VEHICLE_SPLASH;
+/** A weapon that does real damage to vehicles: one that says so (vehicleDamage above 1: the rockets), or a big splash (grenade launchers). */
+export const antiVehicle = (def: WeaponDefinition): boolean => (def.vehicleDamage ?? 1) > 1 || (def.projectile?.splashDamage ?? 0) >= ANTI_VEHICLE_SPLASH;
 
 /**
  * A vehicle bearing down on `p`: going faster than ROADKILL_SPEED with `p`
