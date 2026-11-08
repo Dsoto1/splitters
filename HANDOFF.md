@@ -427,11 +427,15 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   sooner than a loaded page looked again).
 - **weaponsets** Match setup: Advanced rules is opened by its `aria-expanded` state until its Weapons fold shows (a
   click while the setup redrew left it shut, locally).
-- **characters3** far bodies (`core.hyena` drawn 1.5 of 2.12 m, three times on CI, never another look; not reproduced
-  locally, where no hyena was among the measured bots): the drawn low-detail level is now measured against the
-  full-detail mesh in the same pose (and a 50% floor of the standing height), not against the standing height alone.
-  If it fails again with "full detail in that pose" near 2.1 m, the hyena's low-detail level really is short (content).
-  The message also says where you are against the crowd's setup and whether you died.
+- **characters3** far bodies (`core.hyena` drawn 1.5-1.8 of 2.12 m, four times on CI, never another look): **not
+  fixed, a content lead.** The message now gives the full-detail mesh's height in the same pose: 2.09-2.12 m, so Hyena
+  Warrior's low-detail level (`meshy_hyena_lod`) is drawn 15-30% shorter than its full body in the same pose (its bind
+  pose heights match, 1.98 m both). 43% of its low-detail vertices match no full-body vertex within 2 mm (Alien: 0%,
+  Alien Biker 21%), so the far copy may not be cut from the body it ships with; `ONLY=meshy_hyena node
+  tools/content/relod-built.mjs` remakes it from the body in the file (tried as a trial: one skin, the same 2,750
+  triangles), to be checked in the characters3 flow with a hyena among the measured bots. The check is as it was
+  (75% of the standing height: fails at 1.5 m, passes at 1.8). Measuring every vertex instead of one in three made no
+  difference in bind pose.
 - **characters3**, scope check: `__give` already puts the marksman in hand; pressing 3 while only the view lagged cycled
   on to the rifle in the same slot. It waits for the held gun and presses only while it isn't the marksman.
 - **party** (a real bug): a friend sent `travel` (the vote's winner, the rotation, Change map) rejoined the host's code
