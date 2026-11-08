@@ -159,6 +159,8 @@ describe('host controls on a dedicated server', () => {
       server = await startServer({
         port: 0, map: join(dir, 'room_a.json'), mapsDir: dir, botFill: 2, seed: 1, startGate: false,
         rules: { ...DEFAULT_DEATHMATCH_RULES, intermissionTicks: 60 }, adminToken: 'sesame',
+        // Plain rotation (no vote on the next map: chain.test.ts has that).
+        mapVote: false,
         rotation: ['room_b:deathmatch', 'not_ours:tdm', 'room_c:ctf', 'room_c'],
       });
     } finally {

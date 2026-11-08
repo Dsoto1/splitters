@@ -184,6 +184,8 @@ for (const id of maps) {
     await ctx.addInitScript((g) => {
       try {
         localStorage.setItem('tiletrigger.graphics', g);
+          // One map measured: the match replays when it ends (no vote that travels to another map and a fresh worker).
+          localStorage.setItem('cs.mapVote', '0');
         localStorage.setItem('tiletrigger.frameCap', '0');
       } catch {}
     }, GRAPHICS);

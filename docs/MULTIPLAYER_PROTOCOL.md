@@ -601,3 +601,19 @@ docs/WEAPON_SETS_PLAN.md):
 - Nothing new crosses the wire in play: loadouts and inventories travel as before (private state), and what a pickup
   holds is the snapshot's `pw`, as for random pickups. A life's random spawn gun (Chaos, Mixed bag) is the host's roll
   from its match seed, the slot and the life.
+
+## 21. Between matches: the next-map vote and parties (November 2026)
+
+docs/GAME_MODES.md, "Between matches". No hub change: everything rides on the host's existing links.
+
+- **ClientMessage** `{ t: "vote", i }` (index into the open vote's options); anyone in the match may send it, bots
+  never do. `hello` gains `party` (`/^[A-Za-z0-9]{6,12}$/`, net/party.ts). Older hosts ignore both.
+- **ServerMessage** `{ t: "vote", v }`: `v` = `{ o: [{ map, name, mode }], n: [votes], left: seconds, w?: winner,
+  by?: "votes" | "host" | "order" | "none" }` when it opens, on each vote, every second, and with the winner;
+  `null` once over (the match replayed). Sent to anyone who joins meanwhile. Clients check it (`parseVoteState`).
+  Then the usual `travel` (dedicated) or the browser host's own map change.
+- **RosterEntry** `py`: a person's party tag. **HostCommand** `{ c: "rotation", vote }` and **RotationState** `vote`.
+- Hosts refuse a join past the map's player cap for the mode (`reject` "match full …").
+- The match holds its intermission while the vote runs (`Match.holdIntermission`), so it never restarts itself
+  under the vote.
+

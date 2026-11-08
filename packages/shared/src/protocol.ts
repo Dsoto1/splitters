@@ -6,6 +6,7 @@ import type { GameMode, MatchRules } from './sim/rules.ts';
 import type { MatchCheckpoint } from './net/handoff.ts';
 import type { RoulettePrivate } from './sim/roulette.ts';
 import type { MatchAward } from './sim/awards.ts';
+import type { VoteState } from './sim/mapVote.ts';
 
 /**
  * Wire protocol, version 1. JSON over WebSocket for Phase 0; the message shapes
@@ -24,7 +25,10 @@ export type ClientMessage =
    * ban can hold on to. `ticket`: the hub's signed account ticket for this join code (signed-in players;
    * server/src/tickets.ts), so a host knows the account without seeing the player's sign-in token.
    */
-  | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string; pk?: string; ticket?: string }
+  /** `party`: the party tag this player came with (net/party.ts: from the invite link they followed, or their own). */
+  | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string; pk?: string; ticket?: string; party?: string }
+  /** Between matches: this player's vote for the next map (index into the open vote's options; sim/mapVote.ts). Older hosts ignore it. */
+  | { t: 'vote'; i: number }
   | { t: 'input'; inputs: PlayerInput[] }
   /** `rtt`: the sender's measured round trip (ms), shown on everyone's scoreboard. */
   | { t: 'ping'; id: number; ct: number; rtt?: number }
@@ -76,8 +80,12 @@ export type HostCommand =
   | { c: 'kick'; slot: number; reason?: string }
   /** Remove a player and keep them out: their account when signed in, else their browser key and address (weak). `minutes`: 0 or absent, for good. */
   | { c: 'ban'; slot: number; minutes?: number; reason?: string }
-  /** The whole list (each map of our suite, in a mode it plays; at most ROTATION_MAX), and/or shuffle. */
-  | { c: 'rotation'; entries?: RotationEntry[]; shuffle?: boolean }
+  /**
+   * The whole list (each map of our suite, in a mode it plays; at most ROTATION_MAX), and/or shuffle, and/or `vote`:
+   * everyone votes on the next map at the end of a match (sim/mapVote.ts; on by default), or plain rotation (off).
+   * Hosts that don't know `vote` ignore it (their RotationState has no `vote`).
+   */
+  | { c: 'rotation'; entries?: RotationEntry[]; shuffle?: boolean; vote?: boolean }
   | { c: 'skip' };
 
 /** Commands about one player (kick, ban): the host's connections handle them, not the match. */
@@ -419,6 +427,8 @@ export interface RosterEntry {
   acct?: 1;
   /** A spectator by choice: not in the match (no body, no team, no score in the snapshot); their slot is kept for them. */
   sp?: 1;
+  /** The party this person came with (net/party.ts): people sharing it are marked as your party on the scoreboard. */
+  py?: string;
 }
 
 export interface ServerStats {
@@ -660,4 +670,10 @@ export type ServerMessage =
   | { t: 'successor'; code: string; slot?: number; name?: string }
   /** Host handoff: the match as it stands, to the successor only, every few seconds. */
   | { t: 'checkpoint'; cp: MatchCheckpoint }
+  /**
+   * Between matches (sim/mapVote.ts): the vote on the next map as it stands (whenever it changes, every second while
+   * open, and once more with the winner), or null once it is over. Sent to anyone who joins while it's open. Older
+   * clients ignore it.
+   */
+  | { t: 'vote'; v: VoteState | null }
   | ({ t: 'stats' } & ServerStats);

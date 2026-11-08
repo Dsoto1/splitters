@@ -271,6 +271,8 @@ export interface Spectator {
   name: string;
   look: string;
   account?: boolean;
+  /** Their party (Combatant.party), kept for when they join again. */
+  party?: string;
   kills: number;
   deaths: number;
   selfKills: number;
@@ -346,6 +348,11 @@ export interface Combatant {
   away?: { name: string; key: string | null; why: 'afk' | 'dropped'; until: number | null; since?: number };
   /** A signed-in player playing under their username, checked by the host (account ticket): shown as a verified account. */
   account?: boolean;
+  /**
+   * The party this person came with (net/party.ts: the tag in the invite link they joined by, or their own): team
+   * modes put a joining member on the team most of their party is on (takeOverBot). People only; the roster says it (`py`).
+   */
+  party?: string;
   name: string;
   collider: RAPIER.Collider;
   move: MoveState;
@@ -1531,7 +1538,7 @@ export class Match {
    * else, at a spawn point, never in the bot's place. Null when there is no bot
    * to remove or no free slot after.
    */
-  takeOverBot(name: string, look?: string): Combatant | null {
+  takeOverBot(name: string, look?: string, party?: string): Combatant | null {
     const all = this.combatants();
     // An away player's place is held for them: never given to someone else.
     const bots = all.filter((c) => c.kind === 'bot' && !c.away);
@@ -1542,15 +1549,44 @@ export class Match {
     // Random or fixed assignment: the team is chosen first and one of its bots makes room.
     const want = this.teams && this.rules.teamAssign && this.rules.teamAssign !== 'balanced' ? this.factionFor('human') : undefined;
     const mine = (c: Combatant) => (want !== undefined && c.faction === want ? 0 : 1);
-    bots.sort((a, b) => mine(a) - mine(b) || people(a.faction) - people(b.faction) || setRank(a) - setRank(b) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
+    // A party stays together: the team most of the joiner's party is on, while it has a bot to give way.
+    const with_ = party ? this.partyTeam(party) : undefined;
+    const near = (c: Combatant) => (with_ !== undefined && c.faction === with_ ? 0 : 1);
+    bots.sort((a, b) => mine(a) - mine(b) || near(a) - near(b) || people(a.faction) - people(b.faction) || setRank(a) - setRank(b) || score(a) - score(b) || a.kills - b.kills || b.slot - a.slot);
     const out = bots[0]!;
     const from = out.name;
     this.botThought.delete(out.slot);
     this.raceBots.delete(out.slot);
     this.remove(out.slot);
     const c = this.addHuman(name, look, want !== undefined && out.faction === want ? want : out.faction);
-    if (c) this.pendingEvents.push({ e: 'takeover', s: c.slot, from, to: name });
+    if (c) {
+      if (party) c.party = party;
+      this.pendingEvents.push({ e: 'takeover', s: c.slot, from, to: name });
+    }
     return c;
+  }
+
+  /** Team modes: the team most of `party`'s people are on now (ties: the first team), or undefined (none in the match, or no teams). */
+  partyTeam(party: string): string | undefined {
+    if (!this.teams) return undefined;
+    const n = new Map<string, number>();
+    for (const c of this.combatants()) if (c.party === party && (c.kind === 'human' || c.away) && c.faction) n.set(c.faction, (n.get(c.faction) ?? 0) + 1);
+    let best: string | undefined;
+    for (const t of this.teams) if ((n.get(t.id) ?? 0) > (best === undefined ? 0 : (n.get(best) ?? 0))) best = t.id;
+    return best;
+  }
+
+  /**
+   * Between matches (sim/mapVote.ts): keep the scoreboard up until at least `tick` (the vote, then its winner, before
+   * the host travels), so the match doesn't start itself over meanwhile. Never shortens a longer hold.
+   */
+  holdIntermission(tick: number): void {
+    if (this.phase === 'intermission') this.phaseEndTick = Math.max(this.phaseEndTick, tick);
+  }
+
+  /** The tick the intermission ends at (the next round starts) while there is one, else null. */
+  get intermissionEnds(): number | null {
+    return this.phase === 'intermission' ? this.phaseEndTick : null;
   }
 
   /**
@@ -1563,6 +1599,7 @@ export class Match {
     const from = c.name;
     c.kind = 'bot';
     c.name = name;
+    delete c.party;
     c.queue = [];
     c.prevButtons = 0;
     this.readySlots.delete(slot);
@@ -1775,7 +1812,7 @@ export class Match {
   spectate(slot: number): boolean {
     const c = this.slots[slot];
     if (!c || c.kind !== 'human') return false;
-    const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}) };
+    const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}), ...(c.party ? { party: c.party } : {}) };
     // Their client stays loaded: a spectator counts for the start gate as a player does.
     const loaded = this.readySlots.has(slot);
     this.remove(slot);
@@ -1799,6 +1836,7 @@ export class Match {
     c.selfKills = s.selfKills;
     c.objective = s.objective;
     if (s.account) c.account = true;
+    if (s.party) c.party = s.party;
     // Their client has the match loaded already (the start gate needn't wait for them).
     this.readySlots.add(slot);
     this.resetIdle(slot);
@@ -6522,10 +6560,10 @@ export class Match {
   }
 
   roster(): RosterEntry[] {
-    const players = this.combatants().map((c): RosterEntry => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}) }));
+    const players = this.combatants().map((c): RosterEntry => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}), ...(c.party && c.kind === 'human' ? { py: c.party } : {}) }));
     // Spectators by choice, last: on no team, marked `sp`.
     if (!this.spectators.size) return players;
-    return [...players, ...[...this.spectators].map(([slot, s]): RosterEntry => ({ slot, name: s.name, bot: false, look: s.look, team: null, sp: 1, ...(s.account ? { acct: 1 as const } : {}) }))];
+    return [...players, ...[...this.spectators].map(([slot, s]): RosterEntry => ({ slot, name: s.name, bot: false, look: s.look, team: null, sp: 1, ...(s.account ? { acct: 1 as const } : {}), ...(s.party ? { py: s.party } : {}) }))];
   }
 
   destroy(): void {
@@ -6828,8 +6866,12 @@ export class BotFiller {
    * to make room (Match.takeOverBot) and they spawn normally, or they get a slot
    * of their own when there is no bot. Then the fill is kept.
    */
-  join(name: string, look: string | undefined, fill: number): Combatant | null {
-    const c = this.match.takeOverBot(name, look) ?? this.match.addHuman(name, look);
+  join(name: string, look: string | undefined, fill: number, party?: string): Combatant | null {
+    let c = this.match.takeOverBot(name, look, party);
+    if (!c) {
+      c = this.match.addHuman(name, look, party ? this.match.partyTeam(party) : undefined);
+      if (c && party) c.party = party;
+    }
     this.rebalance(fill);
     return c;
   }
@@ -7008,6 +7050,7 @@ export class BotFiller {
     const c = this.match.slots[slot];
     if (!c?.away) return;
     delete c.away;
+    delete c.party;
     c.name = this.nameFor(c.look, c);
     this.warned.delete(slot);
   }

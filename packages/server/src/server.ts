@@ -30,6 +30,11 @@ import {
   mapPlayerCaps,
   travelNotice,
   MapRotation,
+  MapVote,
+  VOTE_RESULT_SECONDS,
+  VOTE_SECONDS,
+  pickVoteOptions,
+  type RotationEntry,
   validateRotation,
   botSetLabel,
   applyServerRules,
@@ -59,7 +64,7 @@ import {
 } from '@tiletrigger/shared';
 import { AWAY, BotFiller, HostControl, Match, initNavigation, simProfile, validateNavigation } from '@tiletrigger/shared/match';
 import { answerDiscovery, lanAddresses } from './lan.ts';
-import { expandRotation, readRotationPresets, suiteLookup } from './rotation.ts';
+import { expandRotation, readRotationPresets, suiteLookup, suitePool } from './rotation.ts';
 import { readBotSetPresets, resolveBotSet } from './botSets.ts';
 import { SpikeLog, StatsWindow } from './stats.ts';
 
@@ -114,6 +119,11 @@ export interface ServerOptions {
   rotation?: readonly unknown[];
   /** Play the rotation in a random order (a new one each time round). */
   rotationShuffle?: boolean;
+  /**
+   * Between matches, everyone votes on the next map (MAP_VOTE; shared sim/mapVote.ts): two or three of our maps
+   * that fit the people here, the rotation's next first. Default on; false: plain rotation (an empty one replays).
+   */
+  mapVote?: boolean;
   /**
    * The host's own bots (BOTSET; shared sim/botSet.ts): a built-in set's id (maps/botsets/<id>.json), the text
    * form ("Sir Clank, core.knight, hard; Zorp"), or a set object. Kept across map changes; admins change it live.
@@ -210,6 +220,8 @@ export interface RunningServer {
   setAdminToken(token: string | undefined): void;
   /** The map rotation now (what admins see), and as config items ("frost_basin:tdm") for saving. */
   rotation(): RotationState & { items: string[] };
+  /** The next-map vote between matches is on (MAP_VOTE; admins switch it with the rotation command's `vote`). */
+  mapVote(): boolean;
   /** The built-in rotations (maps/rotations/) a host can pick. */
   readonly rotationPresets: readonly RotationPreset[];
   /** The bot set the host chose (null: none; the map's own bots, else random ones, play). */
@@ -376,6 +388,13 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const lookup = suiteLookup(mapsDir);
   const rotationPresets = readRotationPresets(mapsDir, lookup);
   const rotation = new MapRotation([], { shuffle: opts.rotationShuffle });
+  /** Between matches: the next-map vote (on unless MAP_VOTE is off), the one open now, and our suite's maps for it. */
+  let voteOn = opts.mapVote !== false;
+  let vote: MapVote | null = null;
+  const pool = suitePool(mapsDir);
+  // Read the suite's caps in the background a while after starting (the first vote then has them to hand).
+  const warmTimer = setTimeout(() => voteOn && !stopped && pool.warm(), 20_000);
+  warmTimer.unref?.();
   const nameOf = (id: string) => lookup(id)?.name ?? id;
   /**
    * Set the rotation from config items or a command's entries; what's dropped is logged. A list where nothing
@@ -396,7 +415,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     console.log(`[rotation] ${rotation.entries.length} map${rotation.entries.length === 1 ? '' : 's'}${rotation.shuffle ? ', shuffled' : ''}${up ? `; next: ${nameOf(up.entry.map)} (${MODE_LABELS[up.entry.mode]})` : ''}`);
   }
   /** The admin's view: the match's settings and the rotation. */
-  const hostSettings = () => ({ ...control.state(), rotation: rotation.state(nameOf) });
+  const hostSettings = () => ({ ...control.state(), rotation: { ...rotation.state(nameOf), vote: voteOn } });
   /** The token compared in constant time (as hashes, so lengths don't matter). */
   let adminHash = opts.adminToken ? createHash('sha256').update(opts.adminToken).digest() : null;
   const isAdminToken = (token: string | undefined) => !!adminHash && !!token && timingSafeEqual(adminHash, createHash('sha256').update(token).digest());
@@ -450,6 +469,10 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       const refused = cmd.entries ? setRotation(cmd.entries) : null;
       if (refused) return refused;
       if (cmd.shuffle !== undefined) rotation.setShuffle(cmd.shuffle);
+      if (cmd.vote !== undefined && cmd.vote !== voteOn) {
+        voteOn = cmd.vote;
+        event(`${by} turned the next-map vote ${voteOn ? 'on' : 'off'}`);
+      }
       const up = rotation.peek();
       event(`${by} set the map rotation: ${rotation.entries.length} map${rotation.entries.length === 1 ? '' : 's'}${rotation.shuffle ? ', shuffled' : ''}${up ? `, next ${nameOf(up.entry.map)} (${MODE_LABELS[up.entry.mode]})` : ' (matches replay)'}`);
       refreshAdmins();
@@ -600,7 +623,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         // where it stands (team that needs a player), or a free slot.
         const key = awayKey(who);
         const back = key ? bots.reclaim(key, name) : null;
-        const player = back ?? bots.join(name, msg.look, control.fill);
+        // The map's player cap for this mode (MapMaker's, else the automatic one): bots fill up to it, people too.
+        // (Or the match's size, when the admin set more.)
+        const cap = Math.max(mapPlayerCaps(map, match.rules.mode).max, control.fill);
+        if (!back && humans() >= cap) return refuse(`match full (${map.metadata.name} takes ${cap} players in ${MODE_LABELS[match.rules.mode]})`, 4002);
+        const player = back ?? bots.join(name, msg.look, control.fill, msg.party);
         if (!player) {
           send(client, { t: 'reject', reason: 'server full' });
           conn.close(4002, 'full');
@@ -632,6 +659,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           ...(lan.length ? { lan } : {}),
         });
         broadcast({ t: 'roster', players: match.roster() });
+        // Between matches: the vote as it stands.
+        if (vote) send(client, { t: 'vote', v: vote.state(match.tick) });
         if (motd) send(client, { t: 'notice', text: motd });
         client.admin = isAdminToken(msg.admin);
         if (client.admin) hostState(client);
@@ -659,6 +688,9 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           notice(msg.on ? `${name} is spectating` : `${name} joined the game`);
           broadcast({ t: 'roster', players: match.roster() });
         }
+      } else if (msg.t === 'vote' && client.slot !== null) {
+        // People vote (bots don't); a later vote replaces an earlier one.
+        if (vote?.cast(client.slot, msg.i)) broadcast({ t: 'vote', v: vote.state(match.tick) });
       } else if (msg.t === 'ready' && client.slot !== null) {
         client.loaded = true;
         match.ready(client.slot);
@@ -671,6 +703,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     conn.onClose(() => {
       clearTimeout(helloTimer);
       if (!clients.delete(client)) return;
+      if (client.slot !== null && vote?.forget(client.slot)) broadcast({ t: 'vote', v: vote.state(match.tick) });
       if (client.slot !== null && !stopped) {
         // Dropped (not kicked): a bot plays their place, kept for them a while (their next connection takes it back).
         const kept = client.gone ? (bots.leave(client.slot, control.fill), false) : bots.hold(client.slot, 'dropped', awayKey(client.who), control.fill);
@@ -770,10 +803,52 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     event(`next map: ${m.metadata.name} (${MODE_LABELS[rules.mode]})`);
     refreshAdmins();
   };
+  /**
+   * A match ended with nowhere else to go, and the vote is on: two or three of our maps that fit the people here
+   * (the rotation's next first), the scoreboard held while everyone votes. False when there's no vote to have
+   * (off, or fewer than two maps fit): the rotation goes on as before.
+   */
+  const planVote = (): boolean => {
+    if (!voteOn) return false;
+    const people = humans();
+    const fits = (e: RotationEntry) => {
+      const m = pool.entry(e.map, e.mode);
+      return !!m && m.max >= people;
+    };
+    // Past rotation maps too small for the people here, as the rotation itself would go.
+    const up = rotation.peekFitting(fits);
+    const ahead = up ? rotation.upcomingEntries().flatMap((e) => pool.entry(e.map, e.mode) ?? []) : [];
+    const options = pickVoteOptions({ rotation: ahead, suite: pool.forMode(match.rules.mode), current: map.metadata.id, people });
+    if (options.length < 2) return false;
+    vote = new MapVote(options, match.tick + VOTE_SECONDS * TICK_RATE, null);
+    match.holdIntermission(match.tick + MapVote.ticks() + TICK_RATE);
+    broadcast({ t: 'vote', v: vote.state(match.tick) });
+    event(`vote for the next map: ${options.map((o) => o.name).join(', ')}`);
+    return true;
+  };
+  /** The vote closed: travel to its winner after a moment on screen. */
+  const voteClosed = () => {
+    const v = vote!;
+    const won = v.winner!;
+    broadcast({ t: 'vote', v: v.state(match.tick) });
+    const m = suiteMap(won.map);
+    if (!m) {
+      console.warn(`[vote] ${won.map} didn't load: replaying ${map.metadata.name}`);
+      vote = null;
+      return;
+    }
+    // A rotation map: the rotation carries on after it.
+    rotation.moveTo(won);
+    travelTo(m, won.mode, match.tick + VOTE_RESULT_SECONDS * TICK_RATE);
+    match.holdIntermission(match.tick + VOTE_RESULT_SECONDS * TICK_RATE + TICK_RATE);
+    event(`next map (voted): ${m.metadata.name} (${MODE_LABELS[won.mode]})`);
+    refreshAdmins();
+  };
   /** Change map: everyone gets `travel` and reconnects to the new match, keeping what the chain carries. */
   const doTravel = () => {
     const t = travel!;
     travel = null;
+    vote = null;
     carried = new Map();
     for (const c of match.combatants()) {
       if (c.kind !== 'human') continue;
@@ -822,8 +897,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       for (const ev of events) {
         if (ev.e !== 'round_end') continue;
         if (ev.outcome === 'victory') planTravel(ev.next);
-        // Nowhere to go from a chain: the rotation's next map (an empty rotation replays, as before).
-        if (!travel) planRotation(ev);
+        // Nowhere to go from a chain: a vote on the next map, else the rotation's next (an empty rotation replays, as before).
+        if (!travel && !planVote()) planRotation(ev);
         const top = [...match.combatants()].filter((c) => c.kind !== 'npc').sort((a, b) => b.kills - a.kills)[0];
         event(`match over on ${map.metadata.name}: ${ev.team ? `team ${ev.team} wins` : ev.winner !== null ? `${match.slots[ev.winner]?.name ?? 'someone'} wins` : 'a draw'}${top ? ` (top: ${top.name}, ${top.kills} kills)` : ''}`);
       }
@@ -838,6 +913,12 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         sendSnapshots();
         snapMs = performance.now() - s0;
         if (split) simProfile.add('snapshot', snapMs);
+      }
+      if (vote && !vote.closed) {
+        // The scoreboard stays up until the vote has had its time and the winner its moment.
+        match.holdIntermission(vote.planned + (VOTE_RESULT_SECONDS + 1) * TICK_RATE);
+        if (vote.tick(match.tick, match.intermissionEnds)) voteClosed();
+        else if (match.tick % TICK_RATE === 0) broadcast({ t: 'vote', v: vote.state(match.tick) });
       }
       if (travel && match.tick >= travel.atTick) doTravel();
       const took = performance.now() - t0;
@@ -930,7 +1011,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     info,
     notice: (text: string) => broadcast({ t: 'notice', text }),
     command: runCommand,
-    rotation: () => ({ ...rotation.state(nameOf), items: rotation.items() }),
+    rotation: () => ({ ...rotation.state(nameOf), vote: voteOn, items: rotation.items() }),
+    mapVote: () => voteOn,
     rotationPresets,
     botSet: () => bots.hostSet,
     botSetPresets,
@@ -1004,6 +1086,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       }),
     close: async () => {
       stopped = true;
+      clearTimeout(warmTimer);
+      pool.forget();
       if (split) simProfile.on = false;
       clearTimeout(timer);
       discovery?.close();

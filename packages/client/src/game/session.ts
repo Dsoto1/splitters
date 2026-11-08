@@ -123,7 +123,14 @@ import {
   type RotationLookup,
   mapIdentity,
   WEAPONS_BY_SLOT,
+  parseVoteState,
+  pickVoteOptions,
+  VOTE_RESULT_SECONDS,
+  type VoteCandidate,
+  type VoteState,
 } from '@tiletrigger/shared';
+import { MapVoteHud } from './mapVoteHud.ts';
+import { myParty } from './party.ts';
 import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
@@ -227,7 +234,19 @@ export interface SessionOptions {
    * after each match the next of its maps instead of a replay. `load` fetches a map of our suite;
    * `info` is a map's name and the modes it plays (null: not one of ours).
    */
-  rotation?: { list: MapRotation; load(id: string): Promise<MapDocument | null>; info: RotationLookup };
+  rotation?: {
+    list: MapRotation;
+    load(id: string): Promise<MapDocument | null>;
+    info: RotationLookup;
+    /** Our suite's maps that play `mode`, each with its player cap for it (the next-map vote's ballot: sim/mapVote.ts). */
+    pool(mode: GameMode): VoteCandidate[];
+    /** The host's "Vote on the next map" setting (on by default; kept by the page). */
+    vote: { get(): boolean; set(on: boolean): void };
+  };
+  /** A suite map's picture by ID (the vote's cards), or null. */
+  mapPicture?: (id: string) => string | null;
+  /** Joined a friend's game by its code (Join by code, an invite link): the pause menu offers an invite link to it. */
+  joinCode?: string;
   /** The tutorial (tutorial.ts): its step card over the match, Skip in it and in the pause menu (back to the menu). */
   tutorial?: boolean;
   /** First-time tips (tips.ts); off in the tutorial and in browser tests (main.ts). */
@@ -461,6 +480,10 @@ export class GameSession {
   private modeHud: ModeHud | null = null;
   /** The end-of-match awards and the revenge and nemesis callouts (awardsHud.ts), every mode. */
   private awardsHud: AwardsHud | null = null;
+  /** Between matches: the vote on the next map (mapVoteHud.ts), and whether Esc asked for the pause menu over it. */
+  private voteHud: MapVoteHud | null = null;
+  private votePause = false;
+  private voteTravelling = false;
   /** Kills in this life by slot (the kill-streak burst at 3, 5, 10...: content/vfx.json map.gameplay streak). */
   private readonly lifeKills = new Map<number, number>();
 
@@ -900,6 +923,11 @@ export class GameSession {
           if (pageHoldsEscape() && !e.repeat) document.exitPointerLock();
           return;
         }
+        if (!paused && this.voteHud?.open && !this.votePause) {
+          // Over the vote: Esc opens the pause menu (Resume goes back to the vote).
+          this.votePause = true;
+          return this.updatePause();
+        }
         if (!paused) return;
         // The menu takes this Esc: a dialog under it (the Bots window) doesn't also act on it.
         e.preventDefault();
@@ -993,7 +1021,8 @@ export class GameSession {
 
   private updatePause(): void {
     const was = $('pause').hidden;
-    $('pause').hidden = this.input.locked || !this.local || this.closed;
+    // The vote between matches holds the screen (the mouse is free to pick a map) until Esc asks for the menu.
+    $('pause').hidden = this.input.locked || !this.local || this.closed || (!!this.voteHud?.open && !this.votePause);
     if (was && !$('pause').hidden) {
       this.drawPause(true);
       ($('resume') as HTMLButtonElement).focus({ preventScroll: true });
@@ -1117,17 +1146,13 @@ export class GameSession {
     if (this.closed) return;
     const hubRelay = !!this.peerHost?.relay;
     this.relayOn = !!loadRelay() || hubRelay;
-    const q = new URLSearchParams(location.search);
-    const peer = q.get('peer');
-    // Friends must use the same broker: carry the hub unless it's the site's built-in one.
-    const hub = hubSetting() && hubSetting() !== builtHub() ? hubSetting() : null;
-    const link = `${location.origin}${location.pathname}?join=${code}${peer ? `&peer=${encodeURIComponent(peer)}` : ''}${hub ? `&hub=${encodeURIComponent(hub)}` : ''}${relayParams()}`;
+    const link = this.inviteLink(code);
     // "localhost" only works on this machine: friends need the address the game is served from.
     const onlyHere = /^(localhost|127\.|\[::1\])/.test(location.hostname);
     const hubHere = /^(\w+:\/\/)?(localhost|127\.|\[::1\])/.test(hubSetting());
     btn.hidden = true;
     info.hidden = false;
-    info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places. Your browser runs the match: keep this tab open.${hubRelay ? ' The hub provides a relay, so friends on strict networks can connect too.' : loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options and send a new link.'}</p>${hubHere ? '<p class="hint" style="color:#ffb03b">Your community hub is set to localhost, which other computers can\'t reach. Friends elsewhere: clear the hub (Online → Game browser → empty → Use) and host again. Same Wi-Fi: use your computer\'s network address for the hub.</p>' : ''}${phoneHost() ? '<p class="hint" style="color:#ffb03b">You\'re hosting from a phone or tablet: the match runs on it, so if its screen turns off or you switch apps it stops for everyone. Keep it awake and plugged in, or host from a computer (or a dedicated Host Service) for a game that keeps going.</p>' : ''}${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
+    info.innerHTML = `<div class="host-code">Join code <b>${code}</b></div><input readonly value="${link}" /><button id="host-copy">Copy invite link</button><p class="hint">Friends open the link (or Online → Join by code). They take bots' places; with the link they join your side (your party), and stay together into the next map. Your browser runs the match: keep this tab open.${hubRelay ? ' The hub provides a relay, so friends on strict networks can connect too.' : loadRelay() ? ' The link carries your relay settings.' : ' If a friend gets &quot;couldn\'t connect&quot;, set a relay in Options and send a new link.'}</p>${hubHere ? '<p class="hint" style="color:#ffb03b">Your community hub is set to localhost, which other computers can\'t reach. Friends elsewhere: clear the hub (Online → Game browser → empty → Use) and host again. Same Wi-Fi: use your computer\'s network address for the hub.</p>' : ''}${phoneHost() ? '<p class="hint" style="color:#ffb03b">You\'re hosting from a phone or tablet: the match runs on it, so if its screen turns off or you switch apps it stops for everyone. Keep it awake and plugged in, or host from a computer (or a dedicated Host Service) for a game that keeps going.</p>' : ''}${onlyHere ? '<p class="hint" style="color:#ffb03b">This link says localhost, which only works on your computer. Friends on your network: open the game at your computer\'s network address (for example http://192.168.1.20:5173) and host from there; over the internet, host from the published site.</p>' : ''}`;
     info.querySelector('#host-copy')!.addEventListener('click', () => void navigator.clipboard?.writeText(link).then(() => this.hud.pickup('Invite link copied')));
     if (onlyHere) void this.lanInvite(info, code, link);
     this.hud.showMessage(`Hosting: join code ${code}`, 5);
@@ -1283,7 +1308,7 @@ export class GameSession {
     const t = this.opts.transport;
     if (!r || !(t instanceof LocalTransport)) return;
     const name = (id: string) => r.info(id)?.name ?? id;
-    panel.setRotation(r.list.state(name));
+    panel.setRotation({ ...r.list.state(name), vote: r.vote.get() });
     const up = r.list.peek();
     t.setUpNext(up ? { map: name(up.entry.map), mode: up.entry.mode } : null);
   }
@@ -1301,6 +1326,7 @@ export class GameSession {
       r.list.set(v.entries, s ? { map: s.map, mode: s.mode } : null);
     }
     if (cmd.shuffle !== undefined) r.list.setShuffle(cmd.shuffle);
+    if (cmd.vote !== undefined) r.vote.set(cmd.vote);
     this.hostPanel.setStatus('');
     this.showRotation();
   }
@@ -1315,6 +1341,98 @@ export class GameSession {
     if (!map) return this.hostPanel.setStatus(`${r.info(up.entry.map)?.name ?? up.entry.map} didn't load`, true);
     r.list.advance();
     this.changeMap(map, up.entry.mode);
+  }
+
+  /**
+   * A match ended with nowhere else to go, the host's vote is on: two or three of our maps that fit the people here
+   * (the rotation's next first; sim/mapVote.ts), and the match holds the scoreboard while everyone votes. False when
+   * there's no vote to have (off, not this browser's match, fewer than two maps fit): the rotation goes on as before.
+   */
+  private openVote(): boolean {
+    const r = this.ownRotation;
+    const t = this.opts.transport;
+    if (!r || !(t instanceof LocalTransport) || !r.vote.get() || !this.rules || !this.map) return false;
+    const people = Math.max(1, (this.lastRoster ?? []).filter((p) => !p.bot).length);
+    const ahead = r.list.upcomingEntries().flatMap((e) => r.pool(e.mode).filter((c) => c.map === e.map));
+    const options = pickVoteOptions({ rotation: ahead, suite: r.pool(this.rules.mode), current: this.map.metadata.id, people });
+    if (options.length < 2) return false;
+    t.openVote(options);
+    return true;
+  }
+
+  /** The vote as the host sends it: the cards under the scoreboard, the mouse freed to pick; the winner, then (hosting) the travel. */
+  private voteMessage(v: VoteState | null): void {
+    const hud = this.voteHud;
+    if (!hud) return;
+    const was = hud.open;
+    hud.update(v);
+    if (v && !was) {
+      // The mouse is free to pick a map (the menu stays away until Esc).
+      this.votePause = false;
+      if (document.pointerLockElement) document.exitPointerLock();
+    }
+    // The scoreboard's line: the vote while it's open, then where everyone goes.
+    const lead = hud.leader();
+    this.hud.nextMap = v && v.w === undefined ? 'Voting on the next map' : lead && v ? nextMapLine(lead.map, lead.mode) : this.hud.nextMap;
+    if (v?.w !== undefined) void this.voteWon(v);
+    this.updatePause();
+  }
+
+  /** This browser runs the match and the vote closed: everyone to the winner, with the host's settings (as the rotation goes). */
+  private async voteWon(v: VoteState): Promise<void> {
+    const r = this.ownRotation;
+    const t = this.opts.transport;
+    const won = v.o[v.w!];
+    if (!r || !(t instanceof LocalTransport) || !won || this.travel || this.voteTravelling) return;
+    this.voteTravelling = true;
+    const t0 = performance.now();
+    const map = await r.load(won.map);
+    const s = this.hostState;
+    const live = t.liveRules() ?? this.rules;
+    const rules = live && withPending(live, s?.pending);
+    this.voteTravelling = false;
+    if (this.closed || this.travel || !s || !rules) return;
+    if (!map) return void console.warn(`vote: ${won.map} didn't load; the match replays`);
+    // A rotation map: the rotation carries on after it.
+    r.list.moveTo(won);
+    const next = rulesForTravel(rules, map, s.fill, won.mode, s.teamSize);
+    this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: s.skill, botSet: s.mapBots ? null : (s.botSet ?? null) } };
+    this.showRotation();
+    window.setTimeout(() => !this.closed && this.exit('travel'), Math.max(0, VOTE_RESULT_SECONDS * 1000 - (performance.now() - t0)));
+  }
+
+  /** An invite link to this match: its code, the hub and relay friends need, and your party (they join your side). */
+  private inviteLink(code: string): string {
+    const q = new URLSearchParams(location.search);
+    const peer = q.get('peer');
+    // Friends must use the same broker: carry the hub unless it's the site's built-in one.
+    const hub = hubSetting() && hubSetting() !== builtHub() ? hubSetting() : null;
+    return `${location.origin}${location.pathname}?join=${code}&party=${myParty()}${peer ? `&peer=${encodeURIComponent(peer)}` : ''}${hub ? `&hub=${encodeURIComponent(hub)}` : ''}${relayParams()}`;
+  }
+
+  /** Joined a friend's game by code: the Match tab's invite link, so you can bring more friends (they join your party). */
+  private showInvite(): void {
+    const box = document.getElementById('pause-invite');
+    const code = this.opts.joinCode;
+    if (!box) return;
+    box.hidden = !code;
+    if (!code) return box.replaceChildren();
+    const link = this.inviteLink(code);
+    const input = document.createElement('input');
+    input.readOnly = true;
+    input.value = link;
+    input.id = 'pause-invite-link';
+    const copy = document.createElement('button');
+    copy.id = 'pause-invite-copy';
+    copy.textContent = 'Copy invite link';
+    copy.addEventListener('click', () => void navigator.clipboard?.writeText(link).then(() => this.hud.pickup('Invite link copied')));
+    const head = document.createElement('div');
+    head.className = 'host-code';
+    head.innerHTML = `Invite friends · code <b>${code}</b>`;
+    const hint = document.createElement('p');
+    hint.className = 'hint';
+    hint.textContent = "Friends who open your link join this match on your side (your party), taking bots' places; the party stays together into the next map.";
+    box.replaceChildren(head, input, copy, hint);
   }
 
   /** A match ended with nowhere else to go: after the scoreboard, the rotation's next map (an empty rotation replays). */
@@ -1620,6 +1738,8 @@ export class GameSession {
     this.raceHud?.dispose();
     this.rouletteHud?.dispose();
     this.awardsHud?.dispose();
+    this.voteHud?.dispose();
+    this.voteHud = null;
     this.coach?.dispose();
     document.getElementById('pause-skip-tutorial')?.remove();
     this.hud.hide();
@@ -1681,6 +1801,10 @@ export class GameSession {
         // The end-of-match awards and the revenge and nemesis callouts (every mode: awardsHud.ts).
         this.awardsHud?.dispose();
         this.awardsHud = new AwardsHud(this.hud, () => this.slot);
+        // Between matches: the vote on the next map (hosts that have one send it; mapVoteHud.ts).
+        this.voteHud?.dispose();
+        this.voteHud = new MapVoteHud((i) => this.opts.transport.sendVote?.(i), (id) => this.opts.mapPicture?.(id) ?? null);
+        this.showInvite();
         if (rouletteOn(msg.rules)) {
           // Roulette: its HUD, outlines in the team's colour (its Teams variant) and a jackpot's glow, warmed up at loading.
           this.rouletteHud = new RouletteHud(this.hud, this.input, loaded.map, () => this.rules, () => this.slot, this.opts.portraitOf);
@@ -1722,7 +1846,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder }), mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick() };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder }), mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick() };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -2008,7 +2132,8 @@ export class GameSession {
           } else if (ev.e === 'round_end') {
             if (ev.outcome === 'victory') this.chainOn(ev.next);
             // Nowhere else to go: this browser's rotation moves on after the scoreboard.
-            if (!this.travel && !ev.next) void this.rotateOn();
+            // Or, with the vote on, everyone votes on where it goes (the page picks the maps: openVote).
+            if (!this.travel && !ev.next && !this.openVote()) void this.rotateOn();
             // Everyone's scoreboard says where the match goes next (a server's or host's rotation).
             this.hud.nextMap = ev.up ? nextMapLine(ev.up.map, ev.up.mode) : '';
             this.winner = ev.team !== undefined ? (this.hud.teamById(ev.team)?.name ?? null) : ev.winner === null ? null : this.hud.name(ev.winner);
@@ -2016,6 +2141,8 @@ export class GameSession {
           } else if (ev.e === 'round_start') {
             this.outcome = null;
             this.hud.nextMap = '';
+            // A new round: any vote is over (the match replayed).
+            if (this.voteHud?.open) this.voteMessage(null);
             this.view.clearCorpses();
             this.npcInfo.clear();
           } else if (ev.e === 'say') {
@@ -2099,6 +2226,9 @@ export class GameSession {
       case 'notice':
         this.hud.note(msg.text);
         this.hud.showMessage(msg.text, 4);
+        break;
+      case 'vote':
+        this.voteMessage(msg.v === null ? null : parseVoteState(msg.v));
         break;
       case 'travel':
         // The server is changing map: reconnect to play the next one.

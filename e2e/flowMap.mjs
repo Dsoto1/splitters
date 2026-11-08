@@ -23,7 +23,7 @@ export const COVERAGE_MAP = 'test_coverage';
 export const FLOWS = [
   'editor', 'editorux', 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
   'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer', 'fireteams',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer', 'fireteams',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -151,11 +151,11 @@ const RULES = [
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
   // New players: the tutorial, first-time tips and their HUD (Quick Play is frontend/).
   [/^packages\/client\/src\/game\/(tutorial|tips|coachHud)\.ts$|^packages\/client\/src\/game\/coach\.css$/, ['newplayer', 'offline', 'mobile'], ['client']],
-  [/^packages\/client\/src\/frontend\//, ['newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'hostgame', 'hostcontrols', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
+  [/^packages\/client\/src\/frontend\//, ['newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline'], ['client']],
-  [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'lobby', 'dedicatedhost'], ['client']],
-  [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost'], ['client']],
+  [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'party', 'lobby', 'dedicatedhost'], ['client']],
+  [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode|party|mapVoteHud)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost'], ['client']],
   [/^packages\/client\/src\/game\/hostLeft\.ts$/, ['hostgame', 'handoff'], ['client']],
   [/^packages\/client\/src\/game\/spectatorCam\.ts$/, ['offline', 'teams', 'hostgame'], ['client']],
   [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera)\.ts$/, ['vehicles', 'race'], ['client']],
@@ -163,7 +163,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/fortsClient\.ts$/, ['forts'], ['client']],
   [/^packages\/client\/src\/game\/rouletteHud\.ts$/, ['roulette', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'breakthrough', 'zombies', 'teams', 'race', 'classes', 'flashing'], ['client']],
-  [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols'], ['client']],
+  [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party'], ['client']],
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
   // Reduce flashing (the setting, steady lightning, the hurt vignette): its check, and where else they show.
@@ -173,7 +173,7 @@ const RULES = [
 
   // The server (dedicated server, hub, lobby).
   [/^packages\/server\/src\/tools\//, NONE, ['server']],
-  [/^packages\/server\//, ['online', 'hostgame', 'hostcontrols', 'lobby', 'handoff', 'dedicatedhost', 'hostpage'], ['server', 'host']],
+  [/^packages\/server\//, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost', 'hostpage'], ['server', 'host']],
   // The Host Service (dedicated host); its packaging tool runs in CI's host-release job.
   [/^packages\/host\/tools\//, NONE, []],
   [/^packages\/host\//, ['dedicatedhost', 'hostpage'], ['host']],

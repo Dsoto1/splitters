@@ -126,9 +126,10 @@ async function service(): Promise<void> {
       if (sup.state === 'running' && h?.rotation && sup.config) {
         const items = h.rotation.items;
         const shuffle = h.rotation.shuffle;
-        if (items.join(' ') !== (sup.config.rotation ?? []).join(' ') || shuffle !== !!sup.config.rotationShuffle) {
-          const { rotation: _r, rotationShuffle: _s, ...rest } = sup.config;
-          sup.config = { ...rest, ...(items.length ? { rotation: items } : {}), ...(shuffle ? { rotationShuffle: true } : {}) };
+        const vote = h.rotation.vote !== false;
+        if (items.join(' ') !== (sup.config.rotation ?? []).join(' ') || shuffle !== !!sup.config.rotationShuffle || vote !== (sup.config.mapVote !== false)) {
+          const { rotation: _r, rotationShuffle: _s, mapVote: _v, ...rest } = sup.config;
+          sup.config = { ...rest, ...(items.length ? { rotation: items } : {}), ...(shuffle ? { rotationShuffle: true } : {}), ...(vote ? {} : { mapVote: false }) };
           state.save(sup.config, true);
         }
       }

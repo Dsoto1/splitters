@@ -35,6 +35,7 @@ import { seededRng, testMode } from './testMode.ts';
 import { bootStep, finishBoot, preloadImage } from './boot.ts';
 import { SHIPPED_PORTRAITS } from './frontend/portraitIndex.ts';
 import { shippedPicture } from './frontend/mapThumbs.ts';
+import { joinParty, myParty, rememberJoin } from './game/party.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
@@ -65,6 +66,18 @@ function storage(key: string, value?: string): string | null {
     return null;
   }
 }
+
+/**
+ * The host's "Vote on the next map" (pause menu → Host → Rotation): on unless turned off, remembered here. Browser tests
+ * (?test=1) play on as they always did (a match that ends replays its map) unless they ask for the vote (&vote=1).
+ */
+const mapVoteOn = (): boolean => {
+  const asked = params.get('vote');
+  if (asked === '1' || asked === '0') return asked === '1';
+  const saved = storage('cs.mapVote');
+  return TEST ? saved === '1' : saved !== '0';
+};
+const saveMapVote = (on: boolean): void => void storage('cs.mapVote', on ? '1' : '0');
 
 type Mode = 'menu' | 'editor' | 'game' | 'designer';
 
@@ -481,6 +494,13 @@ class App {
       const e = inSuite(id) && !isRetiredMap(id) ? MAP_INDEX.find((m) => m.key === id) : undefined;
       return e ? { name: e.metadata.name, modes: e.modes } : null;
     },
+    // The next-map vote's ballot: our suite's maps that play the mode, with the most players each takes in it.
+    pool: (mode) =>
+      MAP_INDEX.flatMap((e) => {
+        const i = e.modes.indexOf(mode);
+        return i >= 0 && inSuite(e.key) && !isRetiredMap(e.key) ? [{ map: e.key, mode, name: e.metadata.name, max: e.caps?.[i] ?? e.metadata.recommendedPlayers.max }] : [];
+      }),
+    vote: { get: () => mapVoteOn(), set: (on) => saveMapVote(on) },
   });
 
   /**
@@ -503,7 +523,7 @@ class App {
   }
 
   private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean }): void {
-    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, ...(carry ? { carry } : {}), ...(extra.restore ? { restore: extra.restore } : {}), ...(extra.spectate ? { spectate: true } : {}), ...(TEST ? { test: TEST } : {}) }), {
+    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, party: myParty(), ...(carry ? { carry } : {}), ...(extra.restore ? { restore: extra.restore } : {}), ...(extra.spectate ? { spectate: true } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,
@@ -611,9 +631,12 @@ class App {
         exitLabel: 'Leave match',
         exitOnF5: false,
         ...(o.greeting ? { greeting: o.greeting } : {}),
+        joinCode: code,
         onReady: () => {
           ready = true;
           window.clearTimeout(deadline);
+          // Online → Join a friend's game offers it again for a while (back after closing the tab, say).
+          rememberJoin(code, '');
           this.reconnected();
           o.onReady?.();
         },
@@ -785,7 +808,7 @@ class App {
     reconnectBanner(null);
   }
 
-  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; greeting?: string; rotation?: SessionOptions['rotation']; tutorial?: boolean; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void; onReady?: () => void }): GameSession {
+  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; greeting?: string; rotation?: SessionOptions['rotation']; tutorial?: boolean; joinCode?: string; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void; onReady?: () => void }): GameSession {
     // A match has its own loading screen (players, map and weapons).
     finishBoot();
     $('menu').hidden = true;
@@ -809,6 +832,12 @@ class App {
       ...(o.greeting ? { greeting: o.greeting } : {}),
       mapPicker: this.mapPicker(m),
       ...(o.rotation ? { rotation: o.rotation } : {}),
+      ...(o.joinCode ? { joinCode: o.joinCode } : {}),
+      // The vote's cards: a suite map's own picture, else the shipped one.
+      mapPicture: (id) => {
+        const e = MAP_INDEX.find((x) => x.key === id);
+        return e ? (e.metadata.thumbnail ?? shippedPicture(e.metadata.id)) : null;
+      },
       ...(o.tutorial ? { tutorial: true } : {}),
       // First-time tips: off in browser tests (?test=1, automated browsers) unless asked for (&tips=1, &newplayer=1).
       tips: (!TEST && !navigator.webdriver) || params.get('tips') === '1' || params.get('newplayer') === '1',
@@ -937,6 +966,10 @@ else if (params.has('offline')) {
   const classes = params.get('classes');
   const weapons = params.get('weapons');
   void app.playOffline(which || 'arena', params.get('gamemode'), { ...(classes ? { classes: true, ...(Number(classes) > 1 ? { classLimit: Number(classes) } : {}) } : {}), ...(weapons ? { weaponSet: weapons } : {}) }, Math.max(0, Math.min(96, Number(params.get('bots')) || 0)));
-} else if (params.has('join')) void app.init().then(() => app.joinCode(params.get('join') ?? '', app.front!.displayName || 'Player'));
+} else if (params.has('join')) {
+  // An invite link: the friend's game, on their side (the link's party).
+  joinParty(params.get('party'));
+  void app.init().then(() => app.joinCode(params.get('join') ?? '', app.front!.displayName || 'Player'));
+}
 else if (params.has('autojoin')) void app.init().then(() => app.playOnline(app.front!.server, app.front!.name));
 else void app.showMenu();

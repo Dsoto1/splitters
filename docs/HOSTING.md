@@ -430,6 +430,7 @@ builds the downloads (CI does this for every green `main` and `vX.Y.Z`).
 | `BOT_DIFFICULTY`, `BOT_TAKEBACK`, `LEADERS`, `PLAYLIST` | | as the dedicated server |
 | `ROTATION` | none | the map rotation: after each match the next of these maps instead of a replay, round and round. `frost_basin:tdm,diamond_park:ctf` (no mode: the map's first), or `preset:flag_run` (maps/rotations/); in a config file also a list. Maps that aren't ours and modes a map can't play are dropped with a log line. Edited live with the console's `rotation` and `skip`, the launcher's Rotation card or the admin's pause menu, and kept for the next start |
 | `ROTATION_SHUFFLE` | off | play the rotation in a random order (a new one each time round) |
+| `MAP_VOTE` | on | between matches everyone votes on the next map (2-3 of our maps that fit; docs/GAME_MODES.md, "Between matches"); `0` for plain rotation |
 | `BOTSET` | none | your own bots (see Host controls → Bot sets): a built-in set's id (`knights_vs_space`, `zombie_horde`, `classic_mix`: maps/botsets/), a JSON file of one (`BOTSET=bots.json`), or a list, one bot per `;`: `Sir Clank, core.knight, hard, -, 1, Vanguard; Zorp, core.visitor` (name, look, skill, style, team from 1, squad; `-` or blank for the default; a first item `only` keeps the match to these bots). In a config file also a `{ name, entries, fill }` object. Edited live with the console's `botset`, the launcher's Bots card or the admin's pause menu (Bots…), and kept for the next start |
 | `CONTROL_PORT` | 7797 | the control API (127.0.0.1 only) |
 | `STATUS_EVERY` | 60 | seconds between status lines (0: none) |
@@ -479,6 +480,7 @@ mode playing.
 | Mode (Match setup; pause menu → Change map) | Map & mode card | `mode <mode>` | `MODE` | live (the match travels) |
 | Map (Change map…) | Map & mode card | `map <map>` | `MAP` | live (travels) |
 | Map rotation, shuffle, skip (pause menu) | Rotation card | `rotation …`, `skip` | `ROTATION`, `ROTATION_SHUFFLE` | live |
+| Vote on the next map (pause menu → Rotation) | config `mapVote` | (none) | `MAP_VOTE` | live, kept for the next start |
 | Players / squad (FFA, co-op) | Players + bots | `bots <n>` | `BOT_FILL` | live |
 | Team sizes, uneven teams (team editor) | Team size | `teams <n>`, `teams 10 8` | `BOT_FILL` | live |
 | Number of teams (2–8) | Match rules → Teams | `rules teams 4` | `RULES.teams` | next match |
@@ -764,6 +766,7 @@ Other settings (environment variables):
 | `LEADERS=on` / `vip` | Team leaders (gold star; their Follow me / Hold here orders every bot on the team). `vip`: Leader hunt, downing a leader scores 3 for Team Deathmatch. |
 | `PLAYLIST=maps/playlists/night_shift.json` | Plays a scenario chain: each won map moves everyone on to the next (see GAME_MODES.md, Scenario chains). |
 | `ROTATION=frost_basin:tdm,diamond_park:ctf` | Map rotation: after each match (the scoreboard), the next of these instead of a replay, round and round; `preset:<id>` adds a built-in one (maps/rotations/). `ROTATION_SHUFFLE=1` plays them in a random order. See Host controls → Rotation. |
+| `MAP_VOTE=0` | No vote on the next map between matches (on by default: two or three of our maps that fit the people in the match, the rotation's next first; ties go to the first on the ballot, as the server has no player of its own). |
 | `BOTSET=knights_vs_space` | Your own bots: a built-in set (maps/botsets/), a JSON file (`BOTSET=bots.json`) or a list (`Sir Clank, core.knight, hard; Zorp`). See Host controls → Bot sets. |
 | `SERVER_NAME` | Name shown in Online → LAN. |
 | `ADMIN_TOKEN` | Lets a player run the match from the pause menu (Match: players or team size, bot skill and style, change map, restart, end). A player is admin when they join with `?admin=<token>` in the page address (`/?autojoin&server=ws://…&admin=<token>`) or enter it under pause menu → Server admin. Unset: nobody can. Five wrong tokens close the connection. |

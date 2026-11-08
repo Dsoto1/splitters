@@ -202,6 +202,7 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
     leaders: config.leaders,
     ...(config.rotation?.length ? { rotation: config.rotation } : {}),
     rotationShuffle: config.rotationShuffle,
+    ...(config.mapVote === false ? { mapVote: false } : {}),
     ...(config.botSet !== undefined ? { botSet: config.botSet } : {}),
     // The Host Service keeps its own match rules (RULES): every match it plays takes them.
     serverRules: config.rules ?? {},

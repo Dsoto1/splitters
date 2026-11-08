@@ -32,6 +32,11 @@ import {
   type MatchRules,
   type PlayerInput,
   type ServerMessage,
+  type VoteOption,
+  MapVote,
+  VOTE_RESULT_SECONDS,
+  VOTE_SECONDS,
+  mapPlayerCaps,
 } from '@tiletrigger/shared';
 import { Zipper } from '@tiletrigger/shared/peerZip';
 
@@ -62,6 +67,8 @@ export interface LocalMatchOptions {
   maxPlayers?: number;
   /** This browser's player starts as a spectator (Match setup → Spectate): a bot plays the place; J joins the game. */
   spectate?: boolean;
+  /** The party this browser's player is in (shared net/party.ts): friends whose invite link carries it join their team. */
+  party?: string;
 }
 
 /** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts): its name only. */
@@ -154,6 +161,9 @@ interface Remote {
   upAt?: number;
 }
 
+/** The match's player cap for its mode (MapMaker's, else the automatic one), worked out once per match. */
+const capOf = (map: MapDocument, rules: MatchRules): number => mapPlayerCaps(map, rules.mode).max;
+
 /** A friend's link that sends nothing this long is closed; their place is kept for them (AWAY.holdSeconds) to reconnect. */
 const FRIEND_SILENT_MS = 20_000;
 /** …and one still loading the match (no `ready` yet: a slow machine building a big map can't answer meanwhile). */
@@ -203,6 +213,9 @@ export class MatchHost {
    * that ends says so to everyone (round_end `up`), and the page takes everyone there after the scoreboard.
    */
   private upNext: { map: string; mode: GameMode } | null = null;
+  /** Between matches: the vote on the next map (the page picks the maps and travels to the winner; sim/mapVote.ts). */
+  private vote: MapVote | null = null;
+  private cap = Infinity;
   /** Called with the match once it runs (the page's test hooks). */
   onMatch?: (match: MatchT, me: Combatant, mod: MatchModule) => void;
   /** Ticking time and wake count, for perf probes on the page's thread: (ms, ticks) per wake, without delivery to the local player. */
@@ -236,6 +249,7 @@ export class MatchHost {
       if (cp.listing) this.listing = { name: cp.listing.name };
     } else {
       me = match.addHuman(this.opts.name, this.opts.look)!;
+      if (this.opts.party) me.party = this.opts.party;
       if (this.opts.carry) match.applyCarry(me, this.opts.carry);
     }
     me.account = !!this.opts.verified;
@@ -245,6 +259,7 @@ export class MatchHost {
     // The rules saved for the next match went into play as a new round began (Save for next match): everyone follows.
     control.onNextRules = () => this.rulesChanged();
     Object.assign(this, { match, me, mod, control, bots });
+    this.cap = capOf(this.map, rules);
     if (!cp) bots.rebalance(control.fill);
     // Spectate from the start: out of play before the welcome, so the page opens on the spectator camera (and the
     // start gate counts the spectator, once loaded, like a player).
@@ -288,6 +303,7 @@ export class MatchHost {
         // A match that ends with nowhere else to go ("Next map" logic): everyone sees where the rotation goes next.
         if (this.upNext) for (const ev of stepped) if (ev.e === 'round_end' && !ev.next) ev.up = { ...this.upNext };
         events.push(...stepped);
+        if (this.vote) this.tendVote(match, stepped);
         if (match.tick % SNAPSHOT_INTERVAL_TICKS === 0) {
           const snap = match.snapshot(events);
           const l0 = performance.now();
@@ -461,6 +477,51 @@ export class MatchHost {
     return this.stopped ? null : (this.control?.state() ?? null);
   }
 
+  /**
+   * Between matches: the page (which knows our suite) opens the vote on these maps; the scoreboard stays up while
+   * everyone votes. Only during the intermission, and only once per match end.
+   */
+  openVote(options: VoteOption[]): void {
+    const { match, me } = this;
+    if (!match || !me || this.stopped || this.vote || match.intermissionEnds === null || options.length < 2) return;
+    this.vote = new MapVote(options.slice(0, 4), match.tick + VOTE_SECONDS * TICK_RATE, me.slot);
+    match.holdIntermission(match.tick + MapVote.ticks() + TICK_RATE);
+    this.voteToAll();
+  }
+
+  /** This browser's player votes (the host: its vote breaks a tie). */
+  voteLocal(i: number): void {
+    if (this.me) this.castVote(this.me.slot, i);
+  }
+
+  private castVote(slot: number, i: number): void {
+    // People vote; bots don't (their slots never send one).
+    if (this.vote?.cast(slot, i)) this.voteToAll();
+  }
+
+  private voteToAll(): void {
+    const v = this.vote;
+    if (v && this.match) this.announce({ t: 'vote', v: v.state(this.match.tick) });
+  }
+
+  /** Each tick of an open vote: close it on time (the page travels to the winner), a fresh count every second; over once a round starts. */
+  private tendVote(match: MatchT, stepped: GameEvent[]): void {
+    const v = this.vote!;
+    if (stepped.some((e) => e.e === 'round_start')) {
+      // The page didn't travel (the winner failed to load): the match replayed; the vote is over.
+      this.vote = null;
+      return this.announce({ t: 'vote', v: null });
+    }
+    if (v.closed) return;
+    // The scoreboard stays up until the vote has had its time and the winner its moment (a shorter hold never cuts it).
+    match.holdIntermission(v.planned + (VOTE_RESULT_SECONDS + 1) * TICK_RATE);
+    if (v.tick(match.tick, match.intermissionEnds)) {
+      // The winner on everyone's screen a moment before the travel.
+      match.holdIntermission(match.tick + (VOTE_RESULT_SECONDS + 4) * TICK_RATE);
+      this.voteToAll();
+    } else if (match.tick % TICK_RATE === 0) this.voteToAll();
+  }
+
   /** Where the map rotation goes after this match (null: nowhere, the match replays). */
   setUpNext(next: { map: string; mode: GameMode } | null): void {
     this.upNext = next;
@@ -578,7 +639,15 @@ export class MatchHost {
       }
       // A place kept by a handoff is held under the hashed key (the old host's checkpoint never carried keys themselves).
       const back = key ? (bots.reclaim(key, name) ?? bots.reclaim(handoffKey(key), name)) : null;
-      const player = back ?? bots.join(name, msg.look, control.fill);
+      // The map's player cap for this mode (or the match's size, when the host set more): people fill up to it, as
+      // bots do (a back player's place is theirs).
+      const people = match.combatants().filter((c) => c.kind === 'human').length + match.spectatorCount;
+      const most = Math.max(this.cap, control.fill);
+      if (!back && people >= most) {
+        this.sink.send(id, JSON.stringify({ t: 'reject', reason: `match full (${this.map.metadata.name} takes ${most} players in this mode)` } satisfies ServerMessage));
+        return this.drop(id);
+      }
+      const player = back ?? bots.join(name, msg.look, control.fill, msg.party);
       if (!player) {
         this.sink.send(id, JSON.stringify({ t: 'reject', reason: 'match full' }));
         return this.drop(id);
@@ -589,6 +658,8 @@ export class MatchHost {
       this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState(), spectate: 1 } satisfies ServerMessage));
       if (back) this.announce({ t: 'notice', text: `${name} is back` });
       this.rosterToAll();
+      // Between matches: the vote as it stands.
+      if (this.vote) this.sink.send(id, JSON.stringify({ t: 'vote', v: this.vote.state(match.tick) } satisfies ServerMessage));
       // Who takes over if this host goes: everyone knows in advance.
       if (this.successorSent) this.sink.send(id, this.successorSent);
     } else if (msg.t === 'input' && r.slot !== null) {
@@ -599,6 +670,7 @@ export class MatchHost {
       }
     }
     else if (msg.t === 'spectate' && r.slot !== null) this.friendSpectates(r as Remote & { slot: number }, msg.on);
+    else if (msg.t === 'vote' && r.slot !== null) this.castVote(r.slot, msg.i);
     else if (msg.t === 'ready' && r.slot !== null) {
       r.loaded = true;
       match.ready(r.slot);
@@ -625,6 +697,7 @@ export class MatchHost {
     if (!r) return;
     this.remotes.delete(id);
     if (r.slot === null || this.stopped || !this.control) return;
+    if (this.vote?.forget(r.slot)) this.voteToAll();
     this.control.bots.hold(r.slot, 'dropped', r.account ? `sub:${r.account.sub}` : r.pk ? `pk:${r.pk}` : null, this.control.fill);
     this.sink.guest(r.id, null);
     this.rosterToAll();
@@ -857,6 +930,9 @@ export type ToSimHost =
   | { k: 'cmd'; cmd: Exclude<HostCommand, { c: 'map' } | RotationCommand> }
   /** The map rotation's next map and mode (the page keeps the rotation), for the end-of-match scoreboard. */
   | { k: 'upnext'; next: { map: string; mode: GameMode } | null }
+  /** Between matches: open the vote on these maps (the page picked them), and this browser's player's vote. */
+  | { k: 'voteopen'; options: VoteOption[] }
+  | { k: 'vote'; i: number }
   | { k: 'drop'; reason: string }
   | { k: 'notice'; text: string; guestsOnly?: boolean }
   /** `zip`: the link wants the compressed stream (the match host compresses it: see sinkTo). */
@@ -933,6 +1009,10 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
     }
     case 'upnext':
       return host.setUpNext(m.next);
+    case 'voteopen':
+      return host.openVote(m.options);
+    case 'vote':
+      return host.voteLocal(m.i);
     case 'drop':
       return host.dropGuests(m.reason);
     case 'notice':
