@@ -65,8 +65,12 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   retiring old big pieces via Replace all + aliases, MAP 21 sea wall and breach); redo Step Temple's (eye level) and
   Shingle Point's card shots with Phase 3 item 8's card-shot camera; bot hints in MapMaker (Phase 4 item 3 = Bot AI
   Phase D's MapMaker part; keep the format small, document it in docs/BOTS.md); Environment Phase 3's MapMaker tools
-  once Environment Phase 2 lands. The other session keeps Iron Coast, race removal, Environment Phase 2 and the map
-  rebuilds (Sandfall Colosseum, Whiteout Station).
+  once Environment Phase 2 lands. The other session keeps Iron Coast, race removal and Environment Phase 2.
+- **Map builds also in this lane (owner, 2026-11-08):** the Sandfall Colosseum rebuild (docs/map-briefs/sandfall_colosseum),
+  the Whiteout Station rebuild from MAP 03 Frostbite Station, and two new maps from their briefs (concepts approved):
+  MAP 02 The Spillway and MAP 04 Verdant Protocol (docs/map-briefs/). Build with MapMaker only, using our generated
+  foliage (no Kenney trees, bushes, flowers or grass anywhere; owner 2026-11-08). The full pass over every map comes
+  after all of this, one map at a time, judging whether each map needs it.
 
 **In flight at the switch** (each branch pushed, tree clean; scratchpad files did not survive the switch):
 1. **Friendly fire** (`wip/friendly-fire` @ 318023ed). Green at 1a347140 (run 42408271804, with its new e2e check).
