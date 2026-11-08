@@ -278,6 +278,64 @@ Iron Maw and Frost Basin tanks never got down to 3 shells. Driving/shell totals 
 **For the owner:** (1) the spots above are first picks; move them in MapMaker if a lane reads better elsewhere. (2) a
 general Ammo Box also refills infantry: the Coldwater and Frost Basin ones sit on open lanes 16-40 m from other ammo,
 none in a chokepoint.
+### New players: Quick Play, the tutorial, first-time tips (`wip/quickplay`, agent, 2026-11-08; owner-approved brief; CI on `check/quickplay`)
+
+**Quick Play** (`frontend/quickPlay.ts`, FrontEnd `openQuickPlay`/`quickPlay`): first item of the main menu (`#nav-quick`,
+highlighted by default). It opens a small choice over the menu: Team Deathmatch or Deathmatch (the last one marked
+"Last played" and focused; Enter, arrows, Esc and controller B work), plus "New here? Tutorial" and "Choose map and
+rules…" (Match setup). Rules:
+- maps from `QUICK_MAPS` only (TDM: sandgate, canyon, crossroads, halcyon_station, frost_basin; DM: citadel,
+  crossroads, bunker_cross, halcyon_station: the maps the TDM/DM tables and bot-report samples play), only official
+  entries (no `group`), only if they play the mode;
+- maps whose recommended most (metadata) is over this device's limit are left out when any fit (phones);
+- not the map played last time when there's another; random among the rest (test mode: the first);
+- players: `mapPlayerCaps(map, mode).recommended`, capped by the device; DM = you + rec−1 bots, TDM = two even teams
+  of ⌊rec/2⌋; normal bots; the mode's own score, time following the size; offline, through `rulesFromSetup` →
+  `hooks.playLocal` (Match setup's own path). Remembered: `localStorage tiletrigger.quickPlay` {mode, last}.
+  Match setup's saved setup (`cs.arcade`) is left alone.
+
+**Tutorial** (`game/tutorial.ts` rules, `game/coachHud.ts` + `coach.css` the card, session.ts `coachFrame`; main.ts
+`playTutorial`, also `?tutorial`): Training Range, Deathmatch, no bots, no time or score limit. Ten steps, each done
+by its action as the session sees it (inputs sampled each tick and the predicted player, never a timer): look (2 rad
+of turning), move (5 m with a movement input), sprint (1.2 s), crouch (0.4 s), shoot (3 rounds), aim (2 rounds while
+aiming or scoped), reload (a reload running), switch (another weapon in hand), throw (a throwable count going down),
+drive (15 m in a vehicle's driver seat; the HUD marker points at the nearest vehicle, held at the screen's side when
+it's out of view). The card: "Tutorial n / 10", dots, the step's words for keyboard and mouse or for the touch
+controls (`[X]` → key caps), a progress bar, Skip (on the card, tappable on touch; and `#pause-skip-tutorial` beside
+Resume, since Esc pauses). Skip or Leave → main menu. About 1.5-2.5 minutes with reading.
+- Offered once: a first visit's main menu shows a "New here?" card (`#first-run`: Start tutorial / Not now; on short
+  screens it takes the featured map's place). `localStorage tiletrigger.tutorial`: offered → skipped / done. Also in
+  Quick Play's choice and Options → General → Tutorial.
+- **Map (MapMaker, Playwright driving Import → palette → inspector X/Z → Export; the export took it to format 29):**
+  Training Range gained a Buggy and Frag Grenades by each spawn group: buggy (-26, 30) and grenades (-12, 24) west,
+  buggy (206, -32) and grenades (194, -24) east (two east spawns exist). Nothing else changed; validate-map 0 issues.
+  (wip/gunplay-audit may edit the range too: these are behind/beside the spawn rows, away from the lanes.)
+
+**First-time tips** (`game/tips.ts` TipBook, shown by coachHud): reload (magazine at a quarter or less, rounds in
+reserve), vehicle (one in reach to enter), pickup (one 1-8 m ahead), armour (you picked some up), shield (spawn
+protection on you), death (you died: spectate keys). Once each ever (`localStorage tiletrigger.tips` {off, seen}),
+one at a time (6 s, 1.5 s gap; a waiting tip older than 12 s is dropped unseen), low in the middle (73 %; phones 67 %,
+left of the Use button), never over the crosshair, fade only (nothing for Reduce flashing to calm). Options → HUD:
+First-time tips (switch) and Show tips again (reset). Off in the tutorial.
+- **Browser tests:** the first-visit offer and tips are off under `?test=1` and in automated browsers
+  (`navigator.webdriver`), unless the page asks (`&newplayer=1`; tips also `&tips=1`), so other flows and baselines
+  don't see them. Hooks: `window.__tutorial` (state, goTo, skip), `window.__tips` (current, trigger), `window.__quickPlay`.
+
+**Menu on short screens:** six buttons now; at ≤380 px tall (a phone sideways with browser bars) they go in two
+columns (touch keeps its 40 px buttons). Menu baseline regenerated (only menu.png).
+
+**Tests:** `packages/client/test/newPlayer.test.ts` (each step on its own action and not by waiting, dead frames,
+timing; tips once only, one at a time, stale dropped, off; Quick Play's map choice and sizes); e2e flow `newplayer`
+(offer, Start tutorial, a step completing from input, Skip back to the menu, Quick Play → Deathmatch, remembered
+choice, a tip once and clear of the crosshair, touch words on a phone), mapped in flowMap (tutorial/tips/coachHud,
+frontend/, training_range). offline flow's nav check now expects `nav-quick` first. Pictures (agent scratchpad
+`quickplay/`): 01-menu-first-visit-*, 02-quick-play-*, 10-tutorial-step01..11-*, 20-tip-vehicle-* (desktop 1280×720
+and phone 750×342 touch).
+
+**For the owner:**
+1. Quick Play's map lists (above): add or drop maps? The lists live in `frontend/quickPlay.ts`.
+2. Quick Play is the highlighted first item, so Enter on the main menu opens it (it was Play). Keep?
+3. The tutorial's drive step uses the Buggy; the range has two (one per spawn group). Fine, or a different vehicle?
 
 ### Deathmatch and Team Deathmatch (`wip/tdm-dm`, agent, 2026-11-08; owner-approved brief; green on `check/tdm-dm` at 95f3f80, run 42455479068; LANDED: main 95f3f80)
 
