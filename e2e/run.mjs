@@ -2227,6 +2227,9 @@ async function physicsfxFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
+  // The bots stand where they spawn, firing nothing: left to play, they drove vehicles onto the open ground the bodies
+  // are thrown on, and shot you off your mark (the checks below place them where they need them).
+  await holdBots(page);
   await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model') && n.rotationQuaternion && Math.abs(n.rotationQuaternion.x) + Math.abs(n.rotationQuaternion.z) > 0.01), null, { timeout: T(15000) }).catch(() => {});
   // Rocks, logs and plants lean with the slope; trees stay upright; nothing floats.
   const props = await page.evaluate(() => {
@@ -2275,6 +2278,8 @@ async function physicsfxFlow(browser) {
       for (const c of cells) {
         const y = groundAt(c.x, c.z);
         if (y === null || !clearAround(c.x, y, c.z)) continue;
+        // (No vehicle or turret standing there either.)
+        if (m.mounts.some((v) => Math.hypot(v.pos.x - c.x, v.pos.z - c.z) < 10)) continue;
         checked++;
         // You 10 m off (the first of eight ways with ground near its height, room to stand and a clear sight of it).
         for (let k = 0; k < 8; k++) {
@@ -2477,7 +2482,7 @@ async function physicsfxFlow(browser) {
     const bot = at0 && m.slots.find((c) => c && c !== me && c.alive && !c.mount);
     // (Not one seated in a vehicle: a blast doesn't throw a seated rider.)
     if (!bot) return null;
-    if (bot.bot && !bot.queue.massHeld) {
+    if (bot.bot && !bot.queue.massHeld && !bot.queue.held) {
       bot.queue.push = (...inputs) => Array.prototype.push.apply(bot.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
       bot.queue.massHeld = true;
     }
@@ -2506,8 +2511,10 @@ async function physicsfxFlow(browser) {
   }, null, { timeout: T(5000), polling: 16 }).then(() => true, () => false);
   const out = !blast ? 0 : await page.evaluate(() => {
     const b = window.__blastBot;
-    delete b.queue.push;
-    delete b.queue.massHeld;
+    if (b.queue.massHeld) {
+      delete b.queue.push;
+      delete b.queue.massHeld;
+    }
     return Math.hypot(b.move.pos.x - window.__blastFrom.x, b.move.pos.z - window.__blastFrom.z);
   });
   // (Where it lands depends on the bot: it steers in the air, and a wall can stop it.)
@@ -2661,7 +2668,7 @@ async function physicsfxFlow(browser) {
     const z = me.move.pos.z + (f.z / len) * 22;
     const hit = v.raycastLevel({ x, y: me.move.pos.y + 30, z }, { x: 0, y: -1, z: 0 }, 80);
     const spot = { x, y: hit ? me.move.pos.y + 30 - hit.dist + 0.05 : me.move.pos.y, z };
-    if (bot.bot && !bot.queue.massHeld) {
+    if (bot.bot && !bot.queue.massHeld && !bot.queue.held) {
       bot.queue.push = (...inputs) => Array.prototype.push.apply(bot.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
       bot.queue.massHeld = true;
     }
@@ -2856,7 +2863,8 @@ async function glassChecks(browser) {
     return { health: s ? s[1] : null, cracks: window.__cs.view.scenario.glass.counts.cracks };
   });
   check(proof.health !== null && proof.health > 0 && proof.health < 100 && proof.cracks > 0, `bulletproof glass stops the rounds, cracks where they strike and holds (${JSON.stringify(proof)})`);
-  await fireAt(z(0), 5, () => window.__match.scenario.destructibleAlive('panel_0') === false);
+  // (Until it breaks: one round a shot.)
+  await fireAt(z(0), 20, () => window.__match.scenario.destructibleAlive('panel_0') === false);
   await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'glassShard'), null, { timeout: T(5000) }).catch(() => {});
   const broke = await page.evaluate(() => ({ alive: window.__match.scenario.destructibleAlive('panel_0'), shards: window.__cs.view.scene.meshes.filter((m) => m.name === 'glassShard').length }));
   check(broke.alive === false && broke.shards > 0, `the glass panel shatters into shards (${JSON.stringify(broke)})`);
