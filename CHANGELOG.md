@@ -8,6 +8,19 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Play on with friends: vote on the next map, parties** (owner, 2026-11-08):
+- **Vote on the next map.** When a match ends, the scoreboard (and its awards) shares the screen with two or three of
+  our maps that fit the players and the mode, the rotation's next first. Press 1-3, click or tap; change your mind
+  until the vote closes (12 s). The winner shows for 3 s and everyone goes there: the next match starts about 20 s
+  after the last, no trip to the menu. Bots don't vote; a tie goes to the host's vote, else the first on the ballot.
+  Browser hosts, dedicated servers and offline alike. Pause menu → Host → Rotation → **Vote on the next map** turns it
+  off (plain rotation); dedicated servers `MAP_VOTE=0`.
+- **Parties.** Invite links carry your party: friends who follow yours play on your side in team modes (taking bots'
+  places there) and stay together into the next map. Players who joined by code get an invite link of their own in
+  the pause menu; the scoreboard marks your party. Online → Join a friend's game takes a pasted invite link and offers
+  **Rejoin your last friend's game**.
+- **Player caps hold for people too:** a join past the map's most for the mode is turned away ("match full").
+
 **Deathmatch and Team Deathmatch play better** (owner, 2026-11-08):
 - **Safer spawns.** Every spawn point is scored for its distance to the nearest enemy, enemy sight lines to it and
   fresh deaths near it, and one is picked at random among the safest few, the same for people and bots. Team modes

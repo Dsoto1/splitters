@@ -99,6 +99,29 @@ The workflow is unchanged (CLAUDE.md):
 4. **Roulette** (`wip/roulette`, main 0531b29 merged in): CI fixed, landing from `check/roulette` (see "Roulette mode"
    below for the fix, the pictures and the bench).
 
+5. **Party join and the vote between matches** (`wip/party`, agent, 2026-11-08; owner-approved brief). docs/GAME_MODES.md
+   "Between matches", MULTIPLAYER_PROTOCOL.md §21, HOSTING.md (`MAP_VOTE`).
+   - **Vote:** `shared/sim/mapVote.ts` (`pickVoteOptions`, `tallyVotes`, `MapVote`; 12 s vote + 3 s winner). Ballot: 2-3
+     suite maps for the mode that fit the people (caps), rotation's next first, never the map just played (unless
+     nothing else fits). Bots don't vote; ties: the host's vote, else ballot order (dedicated); no votes: the first.
+     Dedicated: `server.ts` `planVote`/`voteClosed`, suite caps read in the background 20 s after start
+     (`server/src/rotation.ts` `suitePool`). Browser host/offline: the page picks (`session.ts` `openVote`, map index
+     now carries `caps` per mode), `matchHost.ts` runs the vote, the page travels on the winner (`voteWon`).
+     `Match.holdIntermission` holds the scoreboard; a held scoreboard keeps the vote open (tests use that).
+     HUD `game/mapVoteHud.ts` (`#map-vote`), Esc over it opens the pause menu. Setting: Rotation card checkbox
+     (`cs.mapVote`), `MAP_VOTE`/Host Service `mapVote` (in-game changes kept).
+   - **Parties:** `net/party.ts`, client `game/party.ts` (tab tag in sessionStorage; `?join=CODE&party=TAG`); `hello.party`,
+     `Combatant.party`, roster `py`, `Match.takeOverBot` prefers the party's team (`partyTeam`). Joins past
+     max(map cap, match size) are refused on both hosts. Guests get `#pause-invite`; Online's form takes links and offers
+     Rejoin (6 h, `tiletrigger.lastJoin`).
+   - **No hub change, nothing to deploy on AWS.** The Lightsail box only needs the usual update for dedicated servers.
+   - Tests: shared `mapVote.test.ts` (ballot, tally, ties, hold, rotation moveTo, party sides and carry-over), server
+     `chain.test.ts` (vote travel, MAP_VOTE off), client `localHost.test.ts` (cap, party side, vote count); e2e `party`
+     (offline ?test=1 vote with keys → next map same players; phone tap; online invite link → same side → both vote →
+     travel together). hostcontrols e2e and server hostControls test play with the vote off (plain rotation checks).
+   - Open: the launcher/site /host have no vote toggle (config/env and in-game only); the successor of a handoff doesn't
+     carry parties or an open vote; free-for-all parties only get the scoreboard mark.
+
 **Queued, in the owner's order:**
 1. **Tanks** (owner, 2026-11-07). Bots drive and fire tanks sensibly, and bail out when nearly dead.
    - **Occupants:** whoever drives or rides a tank can't be shot from outside.
