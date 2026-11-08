@@ -230,7 +230,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // seats: Moved onto the new model, roles, weapons and arcs unchanged: the driver from the deck under the new turret to the front left of the deck (feet 1.95 m); both gunners up 0.15 m onto the turret roof, the roof gun from beside the roof (x 0.9) onto it.
   // cockpitEye: The driver's hatch, front left of the deck, over the glacis (was the commander's hatch on the old turret).
   // armour: Tanks (owner, 2026-11-07): armour plate (surface armor: rounds stop on it and spark, nothing goes through), bullets do a tenth of their damage (the roof MG's 11 a round does 1.1: about 70 s of fire alone to kill it), blasts and shells 1.25 times theirs (rocket 40 + 120: about 6 rockets; the cannon's 60 + 150: 5 shells; a frag grenade 100: 10), melee nothing. Sealed: the crew can't be shot, blasted or struck from outside; when it is destroyed everyone still inside dies with it.
-  // ammo: The cannon carries 10 shells (5 kill another tank), one back every 15 s (empty to full in 150 s), all back when the crewed tank drives over an ammo pickup (owner-approved, 2026-11-07). With the cannon seat empty the driver fires it (driverFires): a crew of one can fight. The roof gun runs on heat, as every mounted gun.
+  // ammo: The cannon carries 10 shells (5 kill another tank), one back every 15 s (empty to full in 150 s), all back when the crewed tank drives over an Ammo Box (`ammo.pickups`: the general core.ammo only, owner 2026-11-08; Light, Rifle, Shells and Sniper rounds and the rest no longer refill it; refill over time owner-approved, 2026-11-07). With the cannon seat empty the driver fires it (driverFires): a crew of one can fight (owner kept it, 2026-11-08). The roof gun runs on heat, as every mounted gun.
   // pivot: Tracks (2026-11-07): it turns on the spot at 0.8 rad/s (a half turn in 4 s), fading out by 5 m/s: out of a dead end without a three-point turn, and a crew holding still can swing the gun onto a target.
   // bailHealth: Bots get out under a quarter of its health (300 of 1200: under two rockets left), not the 0.3 of other vehicles: inside is safe until it blows. It catches fire under 0.15 and blows 5 s later.
   // turret: The cannon gunner's aim turns the turret (within the seat's 0.6 rad arc) and pitches the barrel (drawn within -0.17..0.35 rad); the roof gun no longer turns it. Shots still leave from the gunner's eye, as for every mounted weapon.
@@ -250,7 +250,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
         offset: [-0.3, 3.05, -0.3],
         weapon: 'core.tank_cannon',
         arc: 0.6,
-        ammo: { max: 10, refillSeconds: 15 },
+        ammo: { max: 10, refillSeconds: 15, pickups: ['core.ammo'] },
         driverFires: true,
       },
       { role: 'gunner', label: 'Roof gun', offset: [0.4, 3.05, 0.1], weapon: 'core.mount_mg' },

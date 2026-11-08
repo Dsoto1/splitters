@@ -400,17 +400,36 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
      rockets, grenades, shells) and `melee` (each default 1; crashes, falls and hazards always take full damage), and
      `sealed`: nobody aboard can be shot, blasted or struck from outside, and everyone still inside dies with it when it
      is destroyed (credited to whoever destroyed it). The Tank: `armor`, bullets 0.1, blasts 1.25, melee 0, sealed.
-   - A seat's `ammo` (`max`, optional `start`, `refillSeconds`): limited rounds for its mounted gun, one back every
-     `refillSeconds` (0: none over time) and all of them when the vehicle, crewed, drives over any ammo pickup that is
-     up (it takes it). The HUD counts them (`PrivateState.mo[3]`). The Tank's cannon: 10, one every 15 s.
+   - A seat's `ammo` (`max`, optional `start`, `refillSeconds`, `pickups`): limited rounds for its mounted gun, one
+     back every `refillSeconds` (0: none over time) and all of them when the vehicle, crewed, drives over one of the
+     ammo pickups `pickups` names (ids from content/pickups.json, ammo pickups only; absent: none refills it) while it is
+     up (it takes it; any other pickup is left lying). The HUD counts them (`PrivateState.mo[3]`). The Tank's cannon:
+     10, one every 15 s, `pickups: ["core.ammo"]` (the general Ammo Box only, owner 2026-11-08: Light, Rifle, Shells,
+     Sniper rounds and the rest no longer refill it).
    - A gunner seat's `driverFires`: while it is empty the driver fires its gun, the shot kept within its arc (and a
-     turret seat's aim turns the model's turret). At most one per vehicle; the driver must have no gun of their own.
+     turret seat's aim turns the model's turret). At most one per vehicle; the driver must have no gun of their own. The
+     Tank's cannon has it (kept by the owner, 2026-11-08: a crew of one can fight).
+   - Weapons that hurt vehicles more say so in their own data (content/weapons/<name>.json): `vehicleDamage`
+     multiplies what the weapon's rounds, direct hits and blasts do to a vehicle (kind `vehicle`; players, turrets and
+     sentries take the usual), before the vehicle's `armour` share; above 1 it also marks the weapon as one bots fetch
+     and draw against vehicles (as a splash of 50 or more does: grenade launchers). The rockets (owner, 2026-11-08):
+     `core.rockets`, `core.guided`, `core.swarm`, `core.blast_rockets` and `core.mount_rockets` are 2. Against the Tank
+     (blasts 1.25): a Rocket Launcher hit on its side is 2 × (40 + 120) × 1.25 = 400, so 3 kill it (4 off its front or
+     at an angle; 6 before), a Guided Rocket 412 (3), a Blast Rocket 288 (5), a full Swarm volley 500 (3); a grenade
+     launcher's grenade stays 125 (10), a cannon shell 262 (5). Light vehicles go quicker too: a Rocket Launcher hit is
+     320 to anything unarmoured (a buggy, 450, in 2; a kart, speeder or hover bike in 1).
    - `vehicle.pivot` (rad/s): tracks, turning on the spot, fading out by 5 m/s. The Tank: 0.8.
    - `bailHealth`: bots get out below this share of health (default 0.3; the Tank 0.25), or when it is on fire.
    Bots: drivers fight from a sealed vehicle (close to 28 m, hold and turn the hull onto the target), fire limited
    shells only at targets worth one (a vehicle, a turret or a sentry; someone on foot past 10 m while over 30 % of the
-   load is left, or with another enemy beside them), drive to an ammo pickup within 120 m when out, and prefer a tank
-   to another vehicle (15 m further, 20 m more detour). `pnpm bot-report` prints a `tanks` line for maps with one.
+   load is left, or with another enemy beside them), drive to one of the pickups the seat's `ammo.pickups` names
+   (the Ammo Box) within 120 m when out, and prefer a tank to another vehicle (15 m further, 20 m more detour).
+   Against one (owner, 2026-11-08): an armoured vehicle (`armour.bullets` under 0.5, or sealed) with an enemy aboard
+   within 60 m is remembered for 12 s; a bot carrying no weapon that hurts vehicles (frag grenades don't count against
+   armour) goes up to 60 m for a launcher (30 m for other vehicles), values launcher pickups (and ammo for an empty
+   launcher) 3 times more, draws a launcher it carries even before it has a target, and aims explosives at the middle of
+   the hull (the crew can't be hit and the turret isn't solid). `pnpm bot-report` prints a `tanks` line for maps with
+   one (with the launchers picked up).
 5. **Generate and check:** `pnpm content:vehicles` (`node tools/content/vehicles.mjs`) checks the schema (an unknown
    field is an error), the weapons, the models, the seats by kind and the order, and writes
    `packages/shared/src/content/mounts.generated.ts`; `--check` only verifies it is up to date.

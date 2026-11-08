@@ -15,6 +15,13 @@ the wheel you fire the cannon yourself; it turns on the spot. Bots drive tanks, 
 shells for targets worth one, refill at ammo pickups and get out under a quarter of its health. All in the tank's
 vehicle data (Workbench).
 
+**Tanks can be beaten** (owner, 2026-11-08): rockets do twice their damage to vehicles (never to players), so 3 or 4
+Rocket Launcher hits destroy a tank instead of about 6 (the Guided Rocket, Swarm Launcher, Blast Rockets and Mounted
+Rockets too; light vehicles go down quicker as well). Bots with nothing that hurts a tank go further for a launcher
+when one is about, draw a launcher they carry and aim it at the hull. The cannon now refills only from the general
+Ammo Box (Light, Rifle, Shells and Sniper rounds don't), and tank drivers out of shells drive to one. Rockets'
+`vehicleDamage` and the seat's `ammo.pickups` are data.
+
 **Iron Coast (MAP 21), part 1: the beach assault and Breakthrough's showcase** (MapMaker only, from the owner's reference)
 - **A new map, Iron Coast** (`iron_coast`): 380 × 320 m of coast for 24-32 a side (24 v 24 is the Map's pick; 16 to 64
   players). Landing craft beached on the sand, an irregular cliff (8 m at the grand stair's

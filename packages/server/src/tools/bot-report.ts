@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOT_DIFFICULTIES, CHARACTER_PROFILES, bodyClass, getLook, getMountDef, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
+import { BOT_DIFFICULTIES, CHARACTER_PROFILES, bodyClass, getLook, getMountDef, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getItem, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
 import { BreakthroughMode, CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
@@ -210,7 +210,7 @@ export interface MatchRow {
    * stuck, bail-outs about to blow, trips to an ammo pickup); tanks destroyed and crew who died with them; and the
    * health a tank lost by what hit it is not measured (the sim keeps no tally).
    */
-  tanks?: { stuckAt: [number, number, number][]; count: number; driving: number; gunning: number; moving: number; metres: number; shells: number; kills: Record<string, number>; drives: number; backOuts: number; stuck: number; bails: number; resupply: number; destroyed: number; crewKilled: number; refills: number };
+  tanks?: { stuckAt: [number, number, number][]; count: number; driving: number; gunning: number; moving: number; metres: number; shells: number; kills: Record<string, number>; drives: number; backOuts: number; stuck: number; bails: number; resupply: number; destroyed: number; crewKilled: number; refills: number; launchers?: number };
   /**
    * Roulette (sim/roulette.ts): lives dealt and kills by character (the killer's look) and by body size, characters
    * played, picks earned (3 kills in a life) and taken, reroll tokens spent, jackpot lives, Giant Slayer and air kills,
@@ -396,7 +396,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   const weaponKills: Record<string, number> = {};
   // Tanks: the sealed mounts, and who sat in which last tick (the crew killed with one are out of it by the kill event).
   const tankIds = new Set(match.mountStates().filter((m) => getMountDef(m.id)?.armour?.sealed).map((m) => m.index));
-  const tanks: NonNullable<MatchRow['tanks']> = { stuckAt: [], count: tankIds.size, driving: 0, gunning: 0, moving: 0, metres: 0, shells: 0, kills: {}, drives: 0, backOuts: 0, stuck: 0, bails: 0, resupply: 0, destroyed: 0, crewKilled: 0, refills: 0 };
+  const tanks: NonNullable<MatchRow['tanks']> = { stuckAt: [], count: tankIds.size, driving: 0, gunning: 0, moving: 0, metres: 0, shells: 0, kills: {}, drives: 0, backOuts: 0, stuck: 0, bails: 0, resupply: 0, destroyed: 0, crewKilled: 0, refills: 0, launchers: 0 };
   const tankCrew = new Map<number, number>();
   const tankLast = new Map<number, { shells: number; alive: boolean; x: number; z: number }>();
   const rl: MatchRow['roulette'] = match.roulette ? { lives: {}, kills: {}, bySize: { small: [0, 0], standard: [0, 0], large: [0, 0] }, earned: 0, picks: 0, rerolls: 0, jackpots: 0, giant: 0, air: 0, bonus: 0, awards: {} } : undefined;
@@ -456,6 +456,12 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
         });
       }
       for (const e of events as GameEvent[]) {
+        // Launchers picked up (anything that hurts vehicles: big splash, or a vehicle damage multiplier) on a map with a tank.
+        if (e.e === 'pickup' && rec.has(e.s)) {
+          const fx = getItem(e.item)?.effect;
+          const w = fx?.kind === 'weapon' ? CORE_WEAPONS[fx.weapon] : undefined;
+          if (w && ((w.projectile?.splashDamage ?? 0) >= 50 || ((w as { vehicleDamage?: number }).vehicleDamage ?? 1) > 1)) tanks.launchers = (tanks.launchers ?? 0) + 1;
+        }
         if (e.e !== 'kill' || e.killer === null || e.killer === undefined || e.killer === e.victim) continue;
         const c = match.actor(e.killer);
         if (c?.mount && tankIds.has(match.mountStates()[c.mount.index]?.index ?? -1)) tanks.kills[e.weapon] = (tanks.kills[e.weapon] ?? 0) + 1;
@@ -901,7 +907,7 @@ function printMatch(m: MatchRow): void {
   if (m.tanks) {
     const t = m.tanks;
     const kills = Object.entries(t.kills).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${w.replace(/^core\./, '')} ${n}`).join(', ') || 'none';
-    console.log(`tanks (${t.count}): driven ${t.driving} bot-s (moving ${t.moving} s, ${t.metres} m), guns manned ${t.gunning} bot-s | drives ${t.drives}, back-outs ${t.backOuts}, given up stuck ${t.stuck}, bailed about to blow ${t.bails}, to an ammo pickup ${t.resupply} (refills ${t.refills}) | shells fired ${t.shells}, kills from aboard: ${kills} | destroyed ${t.destroyed}, crew died with it ${t.crewKilled}${t.stuckAt?.length ? ` | given up at ${t.stuckAt.map((p) => `(${p.join(', ')})`).join(' ')}` : ''}`);
+    console.log(`tanks (${t.count}): driven ${t.driving} bot-s (moving ${t.moving} s, ${t.metres} m), guns manned ${t.gunning} bot-s | drives ${t.drives}, back-outs ${t.backOuts}, given up stuck ${t.stuck}, bailed about to blow ${t.bails}, to an ammo pickup ${t.resupply} (refills ${t.refills}) | shells fired ${t.shells}, kills from aboard: ${kills} | destroyed ${t.destroyed}, crew died with it ${t.crewKilled} | launchers picked up ${t.launchers ?? 0}${t.stuckAt?.length ? ` | given up at ${t.stuckAt.map((p) => `(${p.join(', ')})`).join(' ')}` : ''}`);
   }
   const searches = sum(m.bots, (r) => r.searches);
   const failures = sum(m.bots, (r) => r.pathFailures);
