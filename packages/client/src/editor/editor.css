@@ -691,3 +691,13 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-mirror #ed-mirror-why.err { color: var(--error); }
 /* New map → Start from (templatePicker.ts). */
 .ed-new-sizes.off, label.off { opacity: 0.45; }
+/* Environment brush (envTools.ts): the mix, two-up number pairs, the seed row. */
+.ed-env { padding: 2px 0 6px; }
+.ed-env .ed-row-buttons button.on { background: var(--accent, #3b82f6); color: #fff; }
+.ed-env-pair, .ed-env-seed { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; align-items: end; }
+.ed-env-seed button { margin: 6px 0; }
+.ed-env-species { display: grid; gap: 2px; margin: 4px 0 6px; max-height: 260px; overflow-y: auto; }
+.ed-env-sp { display: grid; grid-template-columns: 1fr 52px 74px; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.ed-env-sp.on { color: var(--text, #e8edf5); }
+.ed-env-sp span.blocks::after { content: " \25CF"; color: #ff6a55; font-size: 9px; vertical-align: 2px; }
+.ed-env-sp input, .ed-env-sp select { width: 100%; min-width: 0; }

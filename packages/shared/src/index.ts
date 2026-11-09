@@ -120,6 +120,7 @@ export * from './editor/clipboard.ts';
 export * from './editor/templates.ts';
 export * from './editor/changeGrid.ts';
 export * from './editor/mapModes.ts';
+export * from './editor/envBrush.ts';
 export * from './sim/forts.ts';
 export * from './sim/classes.ts';
 export * from './sim/discs.ts';
