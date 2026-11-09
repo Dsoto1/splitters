@@ -8,6 +8,7 @@ import { rng } from './rng.mjs';
 import { fbm3 } from './noise.mjs';
 import { Mesh, add, dot, len, lerp3, mul, norm, perp, rotate, sub } from './mesh.mjs';
 import { card, chains, pipeRadii, spread, tubes } from './branches.mjs';
+import { BARK_STRIPS } from './textures.mjs';
 
 const GOLDEN = (137.5 * Math.PI) / 180;
 
@@ -43,6 +44,15 @@ export function broadleafSkeleton(seed, g) {
       rz: g.crownRadius * r.range(0.72, 1.0),
     });
   }
+  // An umbrella crown (acacia): the same lobes, drawn out flat and wide across the top (no extra random numbers, so
+  // the other species keep their trees).
+  if (g.umbrella) {
+    const top = H - (H - crownBase) * g.umbrella.depth * 0.5;
+    for (const [i, l] of lobes.entries()) {
+      l.c = [centre[0] + (l.c[0] - centre[0]) * g.umbrella.spread, top - (i ? (H - crownBase) * 0.08 : 0), centre[2] + (l.c[2] - centre[2]) * g.umbrella.spread];
+      l.ry = (H - crownBase) * g.umbrella.depth * (0.75 + 0.25 * (l.rx / g.crownRadius));
+    }
+  }
   const edge = fbm3(seed + 101, 3);
   const inCrown = (q) => lobes.some((l) => ((q[0] - l.c[0]) / l.rx) ** 2 + ((q[1] - l.c[1]) / l.ry) ** 2 + ((q[2] - l.c[2]) / l.rz) ** 2 < 1 + 0.35 * edge(q[0] * 0.5, q[1] * 0.5, q[2] * 0.5)) && q[1] < H - 0.1 && q[1] > crownBase + 0.4;
   // Scaffold limbs: from the top of the bole, by the golden angle, rising and bending up.
@@ -59,7 +69,7 @@ export function broadleafSkeleton(seed, g) {
     const steps = r.int(3, 5);
     for (let k = 0; k < steps; k++) {
       d = norm(add(d, [r.jitter(0.12), 0.1, r.jitter(0.12)]));
-      q = add(q, mul(d, 0.42));
+      q = add(q, mul(d, g.limbStep ?? 0.42));
       nodes.push({ p: q, parent });
       parent = nodes.length - 1;
     }
@@ -155,7 +165,7 @@ export function broadleafMesh(seed, sk, g, lod, look, atlas) {
     sides: (rad) => (lod.sides.find(([lim]) => rad >= lim) ?? [0, 3])[1],
     step: lod.step,
     stepBelow: lod.stepBelow ?? 0.06,
-    uv: { u0: 0, u1: 0.5 },
+    uv: BARK_STRIPS.oak,
     colour: (p, rad) => {
       // Darker low down and in the crown's shade; a greener cast at the foot (moss and damp).
       const ao = 0.62 + 0.38 * Math.min(1, p[1] / (sk.crownBase + 1));
@@ -176,7 +186,7 @@ export function broadleafMesh(seed, sk, g, lod, look, atlas) {
     else if (n.r < 0.04) spots.push([i, 0]);
   });
   const chosen = spread(spots, lod.cards);
-  const cards = ['oak.0', 'oak.1', 'oak.2', 'oak.3'];
+  const cards = g.cards ?? ['oak.0', 'oak.1', 'oak.2', 'oak.3'];
   const leaves = look.leaves.map(toLinear);
   for (const [i, second] of chosen) {
     const n = second ? { p: add(nodes[i].p, mul(r.unit(), 0.35)), parent: nodes[i].parent } : nodes[i];
@@ -195,7 +205,7 @@ export function broadleafMesh(seed, sk, g, lod, look, atlas) {
     const size = g.cardSize * lod.cardScale * r.range(0.85, 1.15);
     // Bigger cards on lighter levels sit further in, so the crown keeps its outline.
     const c = add(lerp3(n.p, sk.centre, Math.min(0.4, 0.22 * (lod.cardScale - 1))), mul(up, size * 0.2));
-    card(leaf, { c, up, face, size, card: atlas.cards[cards[r.int(0, 3)]], colour, lit, bend: lod.bend ?? 0, wind: (q) => [Math.min(1, Math.max(0, (q[1] - 1) / (H - 1))) ** 1.6, 1] });
+    card(leaf, { c, up, face, size, card: atlas.cards[cards[r.int(0, 3) % cards.length]], colour, lit, bend: lod.bend ?? 0, wind: (q) => [Math.min(1, Math.max(0, (q[1] - 1) / (H - 1))) ** 1.6, 1] });
   }
   return { bark, leaf };
 }

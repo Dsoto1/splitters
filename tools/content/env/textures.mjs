@@ -1,10 +1,11 @@
 // The environment's shared pictures, drawn here from seeded noise (no photos, no third-party images):
 //
-// - bark: 512 × 512, two vertical strips 256 px wide (broadleaf bark left, conifer bark right), each tileable on
-//   its own; a colour picture and a normal map. A tree's bark u runs once round the trunk inside its strip.
+// - bark: 1024 × 512, four vertical strips 256 px wide (BARK_STRIPS: broadleaf, conifer, palm, cactus), each
+//   tileable on its own; a colour picture and a normal map. A trunk's bark u runs once round it inside its strip.
 // - rock: 512 × 512, tileable; colour and normal map (boulders and cliffs, box-projected).
-// - leaves: 1024 × 1024 RGBA, a 4 × 4 grid of 256 px cells, each one cut-out card picture (leaf clusters, needle
-//   sprays, shrub sprigs). Alpha is tested, never blended. Each card's rectangle is trimmed to its picture.
+// - leaves: 1024 × 1280 RGBA, a 4 × 5 grid of 256 px cells, each one cut-out card picture (leaf clusters, needle
+//   sprays, shrub sprigs, flowers, a fern frond, palm fronds, an acacia spray, clipped-hedge leaves). Alpha is
+//   tested, never blended. Each card's rectangle is trimmed to its picture.
 //
 // The pictures are near-neutral in colour: a vertex colour per card or per vertex gives the species and season
 // (summer green, autumn gold, snow), so material variants share every picture.
@@ -36,9 +37,12 @@ function normalMap(H, w, h, strength) {
 
 const webp = (raw, w, h, channels, opts = {}) => sharp(raw, { raw: { width: w, height: h, channels } }).webp({ quality: 84, effort: 4, ...opts }).toBuffer();
 
+/** Where each bark lives in the bark picture: [u0, u1] (a trunk's u runs once round it inside its strip). */
+export const BARK_STRIPS = { oak: { u0: 0, u1: 0.25 }, pine: { u0: 0.25, u1: 0.5 }, palm: { u0: 0.5, u1: 0.75 }, cactus: { u0: 0.75, u1: 1 } };
+
 /** Bark: [colour, normal] WebP buffers, plus raw colour for the impostor rasteriser. */
 export async function barkTextures(seed) {
-  const W = 512;
+  const W = 1024;
   const Hh = 512;
   const S = 256;
   const H = new Float32Array(W * Hh);
@@ -52,14 +56,47 @@ export async function barkTextures(seed) {
   const pineCells = tileWorley2(seed + 4, 5, 7);
   const pineWarp = tileFbm2(seed + 5, 3, 3, 3);
   const pineFine = tileFbm2(seed + 7, 16, 16, 3);
+  // Palm: leaf-scar rings round the trunk (a ring every 1/14 of the strip's height, each a little uneven), coarse
+  // vertical fibres between them, grey-buff.
+  const palmWarp = tileFbm2(seed + 8, 2, 7, 3);
+  const palmFibre = tileFbm2(seed + 9, 40, 4, 3);
+  const palmBlot = tileFbm2(seed + 10, 3, 6, 3);
+  // Cactus: a waxy skin with faint vertical streaks and the areoles (pale felt dots with dark spines) in a column on
+  // each rib crest (u = k / 12: the cactus generator puts its 12 crests there), every 1/24 of the height.
+  const cactusStreak = tileFbm2(seed + 21, 24, 3, 3);
+  const cactusBlot = tileFbm2(seed + 22, 4, 4, 3);
   for (let y = 0; y < Hh; y++)
     for (let x = 0; x < W; x++) {
-      const pine = x >= S;
+      const strip = Math.floor(x / S);
+      const pine = strip === 1;
       const u = (x % S) / S;
       const v = y / Hh;
       let h;
       let c;
-      if (!pine) {
+      if (strip === 2) {
+        const rv = v * 14 + 0.25 * palmWarp(u, v);
+        const d = Math.abs(rv - Math.round(rv));
+        const scar = 1 - smoothstep(0.02, 0.16, d);
+        const lip = smoothstep(0.16, 0.3, d) * (1 - smoothstep(0.3, 0.5, d));
+        const fibre = palmFibre(u, v);
+        h = clamp(0.55 + 0.2 * lip - 0.28 * scar + 0.2 * (fibre - 0.5) + 0.1 * palmBlot(u, v));
+        const t = 0.42 + 0.58 * h;
+        c = [t * 0.97, t * 0.93, t * 0.86];
+      } else if (strip === 3) {
+        const ku = u * 12;
+        const du = Math.abs(ku - Math.round(ku)) / 12;
+        const kv = v * 24;
+        const dv = Math.abs(kv - Math.round(kv)) / 24;
+        // Distance to the nearest areole, in strip units (a strip is twice as tall as it is wide).
+        const dd = Math.hypot(du, dv * 2);
+        const felt = 1 - smoothstep(0.008, 0.013, dd);
+        const spine = (1 - smoothstep(0.0, 0.004, Math.abs(du - dv * 0.6))) * (1 - smoothstep(0.012, 0.03, dd)) * (1 - felt);
+        const streak = cactusStreak(u, v);
+        h = clamp(0.62 + 0.12 * (streak - 0.5) + 0.25 * felt - 0.1 * spine);
+        const t = 0.72 + 0.2 * (streak - 0.5) + 0.06 * cactusBlot(u, v);
+        // Near-white skin (the vertex colour greens it); the felt pale, the spines dark.
+        c = [t * (1 - 0.55 * spine) + felt * 0.25, t * (1 - 0.55 * spine) + felt * 0.22, t * (1 - 0.6 * spine) + felt * 0.12];
+      } else if (!pine) {
         const [f1, f2] = oakCells(u + oakWarp(u, v) * 0.06, v + oakWarp(v, u) * 0.03);
         const ridge = smoothstep(0.0, 0.3, f2 - f1);
         const grain = oakGrain(u, v);
@@ -189,7 +226,10 @@ export async function rockTextures(seed) {
 
 const CELL = 256;
 const GRID = 4;
+const ROWS = 5;
 export const ATLAS_SIZE = CELL * GRID;
+/** The atlas is ATLAS_SIZE wide and ATLAS_HEIGHT tall (ROWS rows of cells). */
+export const ATLAS_HEIGHT = CELL * ROWS;
 
 /**
  * The atlas cells and what each holds. Card pictures are drawn to fill their cell; the card rectangle (uv) is
@@ -200,6 +240,7 @@ export const ATLAS_CELLS = {
   'needle.0': [0, 1], 'needle.1': [1, 1], 'needle.2': [2, 1], 'needle.3': [3, 1],
   'shrub.0': [0, 2], 'shrub.1': [1, 2], 'shrub.2': [2, 2], 'shrub.3': [3, 2],
   'flower.0': [0, 3], 'flower.1': [1, 3], 'flower.2': [2, 3], 'fern.0': [3, 3],
+  'palm.0': [0, 4], 'palm.1': [1, 4], 'acacia.0': [2, 4], 'hedge.0': [3, 4],
 };
 
 /** A filled leaf: centre (x, y) px, direction a (radians), length, half width, lobes (oak) and a brightness. */
@@ -306,6 +347,60 @@ function drawCell(img, key, seed) {
         leaf(img, ox, oy, sx, sy, a, len, len * (oak ? 0.34 : 0.4), oak ? 4.5 : 0, 0.7 + 0.3 * r.next(), r);
       }
     }
+  } else if (kind === 'palm') {
+    // A palm frond seen flat: a rachis up the middle, curving a little, with long narrow leaflets close together on
+    // both sides, swept forward, longest at the middle third and short at the base and tip (so the trimmed card is
+    // mostly leaflets). 1: an older, ragged frond (some leaflets short or missing, a split or two).
+    const ragged = key === 'palm.1';
+    const bend = r.jitter(10);
+    const at = (s) => [root[0] + bend * s * s, root[1] - (CELL - 8) * s];
+    for (let k = 0; k < 40; k++) {
+      const s0 = k / 40;
+      const s1 = (k + 1) / 40;
+      line(img, ox, oy, ...at(s0), ...at(s1), 3.4 * (1 - 0.6 * s0), 0.4);
+    }
+    const n = 46;
+    for (let k = 0; k < n; k++) {
+      const s = 0.03 + (k / n) * 0.95;
+      const [bx, by] = at(s);
+      for (const side of [-1, 1]) {
+        if (ragged && r.chance(0.12)) continue;
+        // Leaflets sweep toward the tip, flatter near the base.
+        const a = -Math.PI / 2 + side * (1.15 - 0.45 * s + r.jitter(0.06));
+        const reach = (CELL * 0.5 - 6) * Math.sin(Math.PI * Math.min(1, 0.18 + 0.92 * s)) ** 0.55 * (ragged && r.chance(0.25) ? r.range(0.45, 0.8) : r.range(0.92, 1.02)) / Math.max(0.55, Math.abs(Math.sin(a)));
+        leaf(img, ox, oy, bx, by, a, Math.min(reach, 150), 6.2 * (1 - 0.35 * s), 0, 0.68 + 0.28 * r.next(), r);
+      }
+    }
+  } else if (key === 'acacia.0') {
+    // An acacia spray: a fork of twigs, each set with pairs of tiny leaflets (bipinnate, feathery), packed into a
+    // flat, round-ended mass.
+    const c = [CELL / 2 + r.jitter(5), CELL * 0.62];
+    line(img, ox, oy, root[0], CELL * 0.92, c[0], c[1], 2.6, 0.4);
+    const n0 = 9;
+    for (let k = 0; k < n0; k++) {
+      const a = -Math.PI / 2 + (k / (n0 - 1) - 0.5) * Math.PI * 1.7 + r.jitter(0.1);
+      const reach = (k === 0 || k === n0 - 1 ? 92 : 112) * (0.9 + 0.12 * r.next());
+      const e = [c[0] + Math.cos(a) * reach, c[1] + Math.sin(a) * reach * 0.78];
+      line(img, ox, oy, c[0], c[1], e[0], e[1], 1.4, 0.42);
+      const L = Math.hypot(e[0] - c[0], e[1] - c[1]);
+      for (let d = 8; d < L; d += 3.4)
+        for (const side of [-1, 1]) {
+          const bx = c[0] + Math.cos(a) * d;
+          const by = c[1] + Math.sin(a) * d * 0.78;
+          const la = a + side * (1.25 + r.jitter(0.2));
+          leaf(img, ox, oy, bx, by, la, 17 + 9 * r.next(), 5.2, 0, 0.66 + 0.3 * r.next(), r);
+        }
+    }
+  } else if (key === 'hedge.0') {
+    // Clipped hedge leaves (privet, yew): small oval leaves every way round, packed into a rounded clump with a
+    // ragged edge (cards overlap, so no straight card edge shows), solid in the middle (the hedge's core samples it).
+    const c = CELL / 2;
+    for (let k = 0; k < 1700; k++) {
+      const a = r.next() * Math.PI * 2;
+      const d = Math.sqrt(r.next()) * (c - 14);
+      if (d > (c - 14) * (0.78 + 0.22 * Math.sin(a * 5 + 1.3)) && r.chance(0.7)) continue;
+      leaf(img, ox, oy, c + Math.cos(a) * d, c + Math.sin(a) * d, r.next() * Math.PI * 2, 15 + 10 * r.next(), 6.2, 0, 0.55 + 0.42 * r.next(), r);
+    }
   } else if (key === 'flower.0' || key === 'flower.1') {
     // Flower heads seen face on. 0: a daisy (many narrow white rays round a yellow disc); 1: a buttercup (five broad
     // round petals, a green-gold eye). Petals near-white, so the variant's vertex colour sets their colour.
@@ -388,7 +483,7 @@ function drawCell(img, key, seed) {
  * The leaves atlas: { webp, raw RGBA, cards: { key: { uv: [u0, v0, u1, v1] (glTF uv, v down), aspect, coverage } } }.
  */
 export async function leafAtlas(seed) {
-  const img = new Uint8Array(ATLAS_SIZE * ATLAS_SIZE * 4);
+  const img = new Uint8Array(ATLAS_SIZE * ATLAS_HEIGHT * 4);
   for (const key of Object.keys(ATLAS_CELLS)) drawCell(img, key, seed + Object.keys(ATLAS_CELLS).indexOf(key) * 31);
   const cards = {};
   for (const [key, [cx, cy]] of Object.entries(ATLAS_CELLS)) {
@@ -409,16 +504,16 @@ export async function leafAtlas(seed) {
     // Card rectangle: the drawn pixels' bounds (cards are placed round their centre, so nothing pins an edge).
     const area = (x1 - x0) * (y1 - y0);
     cards[key] = {
-      uv: [(cx * CELL + x0) / ATLAS_SIZE, (cy * CELL + y0) / ATLAS_SIZE, (cx * CELL + x1) / ATLAS_SIZE, (cy * CELL + y1) / ATLAS_SIZE],
+      uv: [(cx * CELL + x0) / ATLAS_SIZE, (cy * CELL + y0) / ATLAS_HEIGHT, (cx * CELL + x1) / ATLAS_SIZE, (cy * CELL + y1) / ATLAS_HEIGHT],
       aspect: (x1 - x0) / (y1 - y0),
       /** Share of the card's rectangle the picture covers (alpha-tested pixels drawn, not wasted overdraw). */
       coverage: Math.round((filled / area) * 1000) / 1000,
     };
   }
   const raw = Buffer.from(img);
-  dilate(raw, ATLAS_SIZE, ATLAS_SIZE, 6);
-  const webpBuf = await sharp(raw, { raw: { width: ATLAS_SIZE, height: ATLAS_SIZE, channels: 4 } }).webp({ quality: 82, alphaQuality: 100, effort: 4 }).toBuffer();
-  return { webp: webpBuf, raw: { data: raw, width: ATLAS_SIZE, height: ATLAS_SIZE, channels: 4 }, cards };
+  dilate(raw, ATLAS_SIZE, ATLAS_HEIGHT, 6);
+  const webpBuf = await sharp(raw, { raw: { width: ATLAS_SIZE, height: ATLAS_HEIGHT, channels: 4 } }).webp({ quality: 82, alphaQuality: 100, effort: 4 }).toBuffer();
+  return { webp: webpBuf, raw: { data: raw, width: ATLAS_SIZE, height: ATLAS_HEIGHT, channels: 4 }, cards };
 }
 
 /** A small RGBA picture as PNG (impostor cards embedded in GLBs). */

@@ -24,6 +24,9 @@ import { crossedImpostor } from './env/impostor.mjs';
 import { broadleafMesh, broadleafShapes, broadleafSkeleton } from './env/tree.mjs';
 import { coniferMesh, coniferShapes, coniferSkeleton } from './env/conifer.mjs';
 import { eelgrassMesh, fernMesh, flowerMesh, grassMesh, shrubMesh, shrubSkeleton } from './env/plants.mjs';
+import { palmMesh, palmShapes, palmSkeleton } from './env/palm.mjs';
+import { cactusMesh, cactusShapes, cactusSkeleton } from './env/cactus.mjs';
+import { hedgeMesh, hedgeShapes, hedgeSkeleton } from './env/hedge.mjs';
 import { boulderHull, boulderMesh, boulderShapes, boulderSurface, cliffMesh, cliffShapes, pebblesMesh } from './env/rock.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -35,7 +38,7 @@ const SHARED = 'packages/shared/src/content/environment.generated.ts';
 const CLIENT = 'packages/client/src/content/environment.generated.ts';
 
 export const CATEGORIES = ['tree', 'plant', 'groundcover', 'rock', 'boulder', 'cliff'];
-const KINDS = { broadleaf: 'tree', conifer: 'tree', shrub: 'plant', grass: 'groundcover', flower: 'groundcover', fern: 'groundcover', eelgrass: 'groundcover', pebbles: 'rock', boulder: 'boulder', cliff: 'cliff' };
+const KINDS = { broadleaf: 'tree', conifer: 'tree', palm: 'tree', cactus: 'tree', shrub: 'plant', hedge: 'plant', grass: 'groundcover', flower: 'groundcover', fern: 'groundcover', eelgrass: 'groundcover', pebbles: 'rock', boulder: 'boulder', cliff: 'cliff' };
 const { num, int, str, bool, en, tup, arr, obj, map } = shape;
 const ID = /^env\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
 const mm = (v) => Math.round(v * 1000) / 1000;
@@ -62,7 +65,7 @@ export function validate(content, root = ROOT) {
     for (const k of Object.keys(data)) if (!['$comment', 'family', 'species'].includes(k)) problems.push(`${file}: unknown field "${k}"`);
     const spec = obj({
       id: str, displayName: str, category: en(CATEGORIES), assetVersion: int, notes: map(str), nominalHeight: num,
-      nav: en(['none', 'obstacle', 'boundary']), role: en(['decorative', 'cover', 'blocking']), 'conceals?': bool,
+      nav: en(['none', 'obstacle', 'boundary']), role: en(['decorative', 'cover', 'blocking']), 'conceals?': bool, 'surface?': str,
       placement: obj({ maxSlopeDegrees: num, minSpacing: num, scale: tup(2) }),
       generator: obj({ kind: en(Object.keys(KINDS)), seed: int }),
       lods: arr(obj({ distance: num }), 1),
@@ -90,6 +93,7 @@ export function validate(content, root = ROOT) {
       // Ground cover and small rocks never collide or steer bots; ground cover that hides a player (a fern) is cover, the rest decoration.
       if ((s.category === 'groundcover' || s.category === 'rock') && (s.nav !== 'none' || s.role !== (s.conceals ? 'cover' : 'decorative'))) problems.push(`${where}: ${s.category === 'rock' ? 'small rocks' : 'ground cover'} have nav none and role ${s.conceals ? 'cover (it conceals)' : 'decorative'}`);
       if (s.category === 'rock' && s.conceals) problems.push(`${where}: small rocks do not conceal`);
+      if (s.surface !== undefined && !surfaces.has(s.surface)) problems.push(`${where}: surface ${s.surface} is not a surface type (content/surface-types.json)`);
       species.push({ ...s, family: data.family, file });
     }
   }
@@ -137,6 +141,15 @@ export async function build(content, species) {
             const mesh = coniferMesh(g.seed, structure, g, l, look, atlas);
             return { distance: l.distance, parts: [{ material: 'env.bark', mesh: mesh.bark }, { material: 'env.leaf', mesh: mesh.leaf }] };
           });
+        case 'palm':
+          return s.lods.map((l) => {
+            const mesh = palmMesh(g.seed, structure, g, l, look, atlas);
+            return { distance: l.distance, parts: [{ material: 'env.bark', mesh: mesh.bark }, { material: 'env.leaf', mesh: mesh.leaf }] };
+          });
+        case 'cactus':
+          return s.lods.map((l) => ({ distance: l.distance, parts: [{ material: 'env.bark', mesh: cactusMesh(g.seed, structure, g, l, look).bark }] }));
+        case 'hedge':
+          return s.lods.map((l) => ({ distance: l.distance, parts: [{ material: 'env.leaf', mesh: hedgeMesh(g.seed, structure, g, l, look, atlas).leaf }] }));
         case 'shrub':
           return s.lods.map((l) => {
             const mesh = shrubMesh(g.seed, structure, g, l, look, atlas);
@@ -168,6 +181,15 @@ export async function build(content, species) {
     } else if (g.kind === 'conifer') {
       structure = coniferSkeleton(g.seed, g);
       shapes = coniferShapes(structure, g);
+    } else if (g.kind === 'palm') {
+      structure = palmSkeleton(g.seed, g);
+      shapes = palmShapes(structure, g);
+    } else if (g.kind === 'cactus') {
+      structure = cactusSkeleton(g.seed, g);
+      shapes = cactusShapes(structure, { ...g, surface: s.surface ?? 'bark' });
+    } else if (g.kind === 'hedge') {
+      structure = hedgeSkeleton(g.seed, g);
+      shapes = hedgeShapes(structure).map((sh) => ({ ...sh, surface: s.surface ?? sh.surface }));
     } else if (g.kind === 'shrub') structure = shrubSkeleton(g.seed, g);
     else if (g.kind === 'boulder') {
       const hull = boulderHull(g.seed, g);
@@ -218,7 +240,7 @@ export async function build(content, species) {
     const conceals = s.conceals ? { radius: mm(Math.min(size[0], size[2]) / 2), height: size[1] } : null;
     sharedSpecies.push({
       id: s.id, assetVersion: s.assetVersion, family, category: s.category, displayName: s.displayName, nominalHeight: s.nominalHeight,
-      surface: s.category === 'tree' ? 'bark' : s.category === 'plant' || s.category === 'groundcover' ? 'foliage' : 'rock',
+      surface: s.surface ?? (s.category === 'tree' ? 'bark' : s.category === 'plant' || s.category === 'groundcover' ? 'foliage' : 'rock'),
       nav: s.nav, role: s.role, conceals,
       placement: s.placement,
       variants: s.variants.map((v) => ({ index: v.index, name: v.name, seed: g.seed, size, shapes: shapes.map(round) })),

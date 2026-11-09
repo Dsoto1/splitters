@@ -26,7 +26,7 @@ import { BackdropVisuals } from '../backdrop.ts';
 import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
 import { EnvironmentVisuals } from '../environment/environmentVisuals.ts';
-import { envRendererOn } from '../environment/envFlag.ts';
+import { envBatchedOn } from '../environment/envFlag.ts';
 import type { ClientMount } from './mountState.ts';
 import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, setAura } from './arsenalVisuals.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
@@ -404,7 +404,7 @@ export class GameView {
   private zoneVisuals!: ZoneVisuals;
   private readonly viewRoot: TransformNode;
   private readonly foliage: FoliageVisuals;
-  /** The environment renderer (?env=1, environment/environmentVisuals.ts): made with the first map that has species. */
+  /** The environment renderer (environment/environmentVisuals.ts; off with ?env=0): made with the first map that has species. */
   environment: EnvironmentVisuals | null = null;
   private viewmodel?: TransformNode;
   private viewWeapon?: string;
@@ -604,8 +604,8 @@ export class GameView {
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
     const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
-    // Environment species (`env.*`) with the new renderer (?env=1): chunked thin instances, not a node each.
-    const env = envRendererOn() ? doc.entities.filter((e): e is PropEntity => e.kind === 'prop' && !carried.has(e.id) && EnvironmentVisuals.draws(e)) : [];
+    // Environment species (`env.*`) with the environment renderer (on unless ?env=0): chunked thin instances, not a node each.
+    const env = envBatchedOn() ? doc.entities.filter((e): e is PropEntity => e.kind === 'prop' && !carried.has(e.id) && EnvironmentVisuals.draws(e)) : [];
     if (env.length) {
       this.environment ??= new EnvironmentVisuals(this.scene, loadGraphicsQuality());
       void this.environment.setPlacements(env, doc.terrain);

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 30,
   "metadata": {
     "id": "fort_meadow",
     "name": "Fort Meadow",
@@ -667,9 +667,9 @@
         58.21
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.564,
-      "scale": 1.02,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -705,13 +705,13 @@
       "id": "prop_058",
       "position": [
         8.66,
-        2.04,
+        2.05,
         -64.99
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 4.392,
-      "scale": 1.06,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -719,13 +719,13 @@
       "id": "prop_059",
       "position": [
         -8.66,
-        2.02,
+        2.04,
         64.99
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.288,
-      "scale": 1.11,
+      "scale": 0.88,
       "solid": true,
       "tint": null
     },
@@ -733,13 +733,13 @@
       "id": "prop_060",
       "position": [
         -47.86,
-        3.17,
+        3.19,
         -65.79
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.653,
-      "scale": 1.31,
+      "scale": 1.03,
       "solid": true,
       "tint": null
     },
@@ -747,13 +747,13 @@
       "id": "prop_061",
       "position": [
         47.86,
-        3.12,
+        3.14,
         65.79
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.648,
-      "scale": 1.16,
+      "scale": 0.92,
       "solid": true,
       "tint": null
     },
@@ -761,13 +761,13 @@
       "id": "prop_062",
       "position": [
         -59.9,
-        2.37,
+        2.39,
         37.36
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.224,
-      "scale": 1.35,
+      "scale": 1.07,
       "solid": true,
       "tint": null
     },
@@ -775,13 +775,13 @@
       "id": "prop_063",
       "position": [
         59.9,
-        2.4,
+        2.42,
         -37.36
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.171,
-      "scale": 1.26,
+      "scale": 0.99,
       "solid": true,
       "tint": null
     },
@@ -807,9 +807,9 @@
         -51.22
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 5.254,
-      "scale": 1.38,
+      "scale": 1.09,
       "solid": true,
       "tint": null
     },
@@ -817,13 +817,13 @@
       "id": "prop_066",
       "position": [
         -43.69,
-        0.98,
+        0.99,
         63.71
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.881,
-      "scale": 1.35,
+      "scale": 1.07,
       "solid": true,
       "tint": null
     },
@@ -905,9 +905,9 @@
         53.21
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 5.025,
-      "scale": 1.18,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -919,9 +919,9 @@
         -53.21
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 6.085,
-      "scale": 1.12,
+      "scale": 0.88,
       "solid": true,
       "tint": null
     },
@@ -933,9 +933,9 @@
         52.05
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.564,
-      "scale": 1.4,
+      "scale": 1.1,
       "solid": true,
       "tint": null
     },
@@ -947,9 +947,9 @@
         -52.05
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.715,
-      "scale": 1.06,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -971,13 +971,13 @@
       "id": "prop_077",
       "position": [
         30.35,
-        1.09,
+        1.1,
         -63.84
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 5.684,
-      "scale": 1.07,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -989,9 +989,9 @@
         -25.97
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.16,
-      "scale": 1.16,
+      "scale": 0.92,
       "solid": true,
       "tint": null
     },
@@ -1003,9 +1003,9 @@
         25.97
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.463,
-      "scale": 1.08,
+      "scale": 0.85,
       "solid": true,
       "tint": null
     },
@@ -1027,13 +1027,13 @@
       "id": "prop_081",
       "position": [
         55.62,
-        2.18,
+        2.21,
         65.19
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.501,
-      "scale": 1.4,
+      "scale": 1.1,
       "solid": true,
       "tint": null
     },
@@ -1129,9 +1129,9 @@
         -59.58
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.018,
-      "scale": 1.08,
+      "scale": 0.85,
       "solid": true,
       "tint": null
     },
@@ -1143,9 +1143,9 @@
         59.58
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.934,
-      "scale": 1.01,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     }

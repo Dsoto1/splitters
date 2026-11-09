@@ -18,7 +18,7 @@ describe('environment generator', () => {
 
   it('the content is valid', () => {
     expect(problems).toEqual([]);
-    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.oak', 'env.cliff.face', 'env.conifer.pine_tall', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.rock.boulder_angular', 'env.rock.pebbles', 'env.shrub.broadleaf', 'env.water.eelgrass']);
+    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.pebbles', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass']);
   });
 
   it('builds byte-identical output twice, the same as is shipped and locked', async () => {
