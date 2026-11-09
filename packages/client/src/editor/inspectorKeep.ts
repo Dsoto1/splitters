@@ -41,11 +41,12 @@ export function rebuildKeepingEdit(panel: HTMLElement, build: () => void): void 
   if (!carry || carry.index < 0) return;
   const f = now[carry.index];
   if (!f || `${f.tagName}:${f.type}` !== carry.kind) return;
-  // The value the typing started from is still what the field shows: the typed value goes back in.
-  if (carry.from !== undefined && carry.value !== carry.from && f.value === carry.from) {
-    f.value = carry.value;
-    shown.set(f, carry.from);
-  }
+  // Only an edit not yet committed is carried: typed (it differs from what the field showed) and the rebuilt field still
+  // shows the value the typing started from. A committed edit (Enter: the field now shows it) lets the focus go, as
+  // before, so the map's keys (Ctrl+Z, Delete) work on the map again.
+  if (carry.from === undefined || carry.value === carry.from || f.value !== carry.from) return;
+  f.value = carry.value;
+  shown.set(f, carry.from);
   f.focus({ preventScroll: true });
   if (carry.start !== null) {
     try {
