@@ -135,7 +135,7 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
 - Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
-- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, bunker_cross, concrete_annex, iron_tide, ironhold_prison, pump_tower, silo_complex, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
+- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
 - **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
   (team kills and roulette).
   - **Symptom:** the party never reaches the voted map: `{"s2":{},"fill1":8,"fill2":8}`.
