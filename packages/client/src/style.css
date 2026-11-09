@@ -975,7 +975,8 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #squad-hud .sq-mate.down { opacity: 0.5; border-top-color: var(--muted); }
 #squad-hud .sq-mate.down img { filter: grayscale(1); }
 #squad-hud .sq-mate.down::after { content: 'Down'; position: absolute; top: 18px; left: 0; right: 0; text-align: center; font: 700 10px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); text-shadow: 0 1px 2px #000; }
-html.touch #squad-hud { left: calc(8px + env(safe-area-inset-left)); bottom: auto; top: 182px; transform: scale(0.72); transform-origin: top left; }
+/* (A phone: beside your vitals, clear of the move stick below them.) */
+html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: auto; top: 118px; transform: scale(0.62); transform-origin: top left; }
 #msg-menu { position: absolute; left: 24px; top: 40%; padding: 10px 14px; background: rgba(12, 16, 26, 0.85); border-left: 3px solid var(--cyan, #00d1ff); font: 500 14px var(--font-display); color: var(--text); }
 #msg-menu b { display: block; margin-bottom: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
 #msg-menu kbd { display: inline-block; min-width: 18px; text-align: center; margin-right: 6px; background: #2a3142; border-radius: 3px; }

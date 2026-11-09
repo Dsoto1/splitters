@@ -2749,7 +2749,7 @@ export class Match {
   private readonly squadWorld = {
     member: (slot: number) => {
       const c = this.slots[slot];
-      return c ? { alive: c.alive, pos: c.move.pos, yaw: c.yaw } : null;
+      return c ? { alive: c.alive, pos: c.move.pos, yaw: c.yaw, carrying: !!this.mode?.blocksVehicle(c) } : null;
     },
     target: (slot: number) => {
       const c = this.actor(slot);

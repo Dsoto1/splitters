@@ -201,8 +201,8 @@ export type SquadNote = { a: 'lead'; squad: Squad; slot: number; human: boolean;
 
 /** What `step` needs of the match: a member's state (null: not in play), and an attack target's position (null: down or gone). */
 export interface SquadWorld {
-  /** `yaw` the way it faces. */
-  member(slot: number): { alive: boolean; pos: Vec3; yaw?: number } | null;
+  /** `yaw` the way it faces; `carrying` the objective (a flag, the bomb: ModeLogic.blocksVehicle). */
+  member(slot: number): { alive: boolean; pos: Vec3; yaw?: number; carrying?: boolean } | null;
   target(slot: number): Vec3 | null;
   /**
    * Formations (absent: none, members go to the leader or the place itself): how far (m) the way from `a` to `b` is
@@ -461,6 +461,15 @@ export class Fireteams {
         if (next !== null) {
           this.lead(s, next, false, tick, notes, true);
           lead = world.member(next);
+        }
+      }
+      // Objective first: a bot-led squad's member carrying the objective (a flag, the bomb) leads it home, the squad
+      // round it as its escort.
+      if (!s.human && lead?.alive && !lead.carrying) {
+        const carrier = s.members.find((m) => m !== s.leader && world.member(m)?.carrying && world.member(m)?.alive);
+        if (carrier !== undefined) {
+          this.lead(s, carrier, false, tick, notes, true);
+          lead = world.member(carrier);
         }
       }
       const up = !!lead?.alive;

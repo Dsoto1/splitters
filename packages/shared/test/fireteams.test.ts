@@ -259,7 +259,7 @@ describe('Fireteams: the order in the scored choice', () => {
 // ---------------------------------------------------------------- Part 2: formations, spacing, objective first
 
 /** A flat world with walls: `clear` stops a sight line at the first wall it crosses (walls along x = wall, any z). */
-function flatWorld(pos: Map<number, { alive: boolean; pos: Vec3; busy?: boolean; ahead?: Vec3 | null }>, walls: number[] = [], corridor: number | null = null): SquadWorld {
+function flatWorld(pos: Map<number, { alive: boolean; pos: Vec3; carrying?: boolean }>, walls: number[] = [], corridor: number | null = null): SquadWorld {
   return {
     member: (m) => pos.get(m) ?? null,
     target: () => null,
@@ -407,7 +407,7 @@ describe('Fireteams Part 2: objective first', () => {
     expect(memberGoal(s, 1, at(0), null, { tick: 150 })?.half).toBeUndefined();
   });
 
-  it("a bot-led squad whose leader falls is led on by its best member alive (the squad keeps its push); a person's squad holds", () => {
+  it("a bot-led squad whose leader falls is led on by its best member alive, and its carrier leads it home; a person's squad holds", () => {
     const ft = new Fireteams(4);
     ft.sync([bot(1, 'a', 9), bot(2, 'a', 5), bot(3, 'a', 7), bot(4, 'a', 1), person(10, 'b'), bot(11, 'b'), bot(12, 'b')], 0);
     const s = ft.squadOf(1)!;
@@ -422,6 +422,10 @@ describe('Fireteams Part 2: objective first', () => {
     ft.step(12, flatWorld(pos));
     expect(s.leader).toBe(3);
     expect(s.members).toContain(1);
+    // A member carrying the objective (a flag) leads the squad home, the squad round it.
+    (pos.get(4) as { carrying?: boolean }).carrying = true;
+    ft.step(15, flatWorld(pos));
+    expect(s.leader).toBe(4);
     // A person's squad: it holds for them.
     const mine = ft.squadOf(10)!;
     pos.get(10)!.alive = false;
