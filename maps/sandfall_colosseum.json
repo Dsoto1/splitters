@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_qxud5ypgkhe5jhcf",
-      "revision": 22,
-      "contentHash": "sha256:1edef4d01d3c24ebc727ef02b815421a6e3841e4cff94bd508770cdd8af06511",
+      "versionId": "v_y6epbcs3bpmgumvl",
+      "revision": 23,
+      "contentHash": "sha256:6ce518b7ee490abd39e6daea85438fdee2c4f87f5fd38fbd507dc7889612b7dc",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-09T01:28:43.682Z"
+      "releasedAt": "2026-11-09T01:30:40.081Z"
     }
   },
   "classicStructure": {
@@ -20920,7 +20920,7 @@
         29.5
       ],
       "model": "prop.im_vexillum",
-      "yaw": 0,
+      "yaw": 3.142,
       "scale": 1,
       "solid": true,
       "tint": null
