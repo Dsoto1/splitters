@@ -5983,6 +5983,8 @@ async function trafficFlow(browser) {
     cars = await page.waitForFunction(() => window.__editor.doc.paths?.find((p) => p.uses.includes('race'))?.race?.ambient === 5, null, { timeout: T(2000) }).then(() => 5, async () => raceOf(await doc())?.race?.ambient);
   }
   check(cars === 5, `the Paths pane sets the track's NPC cars (${cars})`);
+  // (The pane is rebuilt after the edit, now with the NPC car's vehicle.)
+  await page.waitForSelector('#ed-path-ambient-vehicle', { state: 'attached', timeout: T(3000) }).catch(() => {});
   const pane = await page.evaluate(() => ({
     gone: ['ed-path-laps', 'ed-path-grid', 'ed-path-vehicle', 'ed-path-combat'].filter((id) => document.getElementById(id)),
     kept: ['ed-path-ambient', 'ed-path-ambient-vehicle', 'ed-path-pit', 'ed-path-curbs'].filter((id) => !document.getElementById(id)),
