@@ -7491,6 +7491,12 @@ async function farBodies(browser) {
   await page.click('#resume').catch(() => {});
   await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot' && c.alive).length >= 20, null, T(30000));
   await holdBots(page);
+  // No end to the round: on a slow CI runner this flow passes Deathmatch's 10 minutes, and the round's end (the
+  // scoreboard, then the next round) left the known looks' check below with nobody to measure.
+  await sim(page, (m) => {
+    m.phaseEndTick = Infinity;
+    m.rules.scoreLimit = 0;
+  });
   // Open ground from where you are: the first way with a clear eye-high sight line 36 m out and ground under the spots.
   const setup = await sim(page, (m, me) => {
     const p = me.move.pos;

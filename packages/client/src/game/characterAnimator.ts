@@ -438,7 +438,12 @@ export class CharacterAnimator {
         const probe = CharacterAnimator.skinProbe;
         const t = probe ? performance.now() : 0;
         prepare(dontCheckFrameId);
-        if (this.blend.on) this.blendSkin(sk, prepare, true);
+        // Only the frame's own skinning (the scene's, once a frame) records the evaluated pose. A read in the middle
+        // of the after-clip work (prepare(true): TorsoSurface.measure on a first long-gun grip, before the arms and
+        // the gun are placed) recorded that half-done pose as the evaluation's, and the drawn skin was put back to it:
+        // a far character's first evaluation drew its hands 10-25 cm off the gun until the next one (seconds on a
+        // slow page; characters3, CI runs 42563794663 and 42567649540).
+        if (this.blend.on && !dontCheckFrameId) this.blendSkin(sk, prepare, true);
         // The performance split: skinning (bone matrices) on its own, and how many skeletons it posed.
         probe?.(t);
       };
