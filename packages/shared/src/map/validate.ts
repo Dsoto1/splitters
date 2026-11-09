@@ -84,10 +84,11 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
     };
   }
   const library = opts.library ?? builtInSetPieces();
-  // As played, a retired tile plays as the set piece that replaced it (setPieceAliases.ts); MapMaker keeps it as made
-  // and offers Replace all.
+  // The map is checked as written (a retired tile is still a tile, and its release hash is the file's); as played a
+  // retired tile plays as the set piece that replaced it (setPieceAliases.ts: the piece covers exactly its cells, so
+  // nothing new can overlap), and MapMaker keeps it as made and offers Replace all.
+  const issues = validateMap(parsed.data, catalog, library);
   const doc = opts.forEditing ? parsed.data : withTileAliases(parsed.data);
-  const issues = validateMap(doc, catalog, library);
   if (issues.some((i) => i.severity === 'error') && !(opts.forEditing && opts.openWithErrors)) return { ok: false, issues };
   // MapMaker (`forEditing`) keeps the map as made: its set pieces as placements, its paths, and its own ground, which
   // it never lowers under a floor, so the parts, the laid paths and the ground kept under the floors follow a piece, a
