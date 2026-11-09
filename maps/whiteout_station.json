@@ -1,31 +1,38 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 32,
   "metadata": {
     "id": "whiteout_station",
     "name": "Whiteout Station",
     "author": "Tile Trigger",
-    "description": "An arctic research outpost on the shore of a frozen lake (Style Pack 12: Snow Outpost). The Embers hold the vehicle hangar and barracks on the south shore; the Tide hold the radar dome, the comms mast and their barracks on the north shore. Cross the lake between pressure ridges (mind the thin ice over the holes), take the frozen ridge in the west up its snow drifts (the sniper waits up there), or push up the east side past the bunkers, along the pipe catwalk and the snow road where the snowmobiles run. Climb onto hut and barracks roofs by their outside stairs; roll the hangar door down from the button inside.",
+    "description": "An arctic research station packed into a snowbound hollow: a two-storey main lab and its data wing, a lab wing round a glowing core, the comms annex under its mast, the snow vehicle garage, the fuel tanks and the radar shelter up on its ridge, an ice cave in the rocks. Fight room to room, cross the yard between huts and crates, or take the tunnel under it; climb the ridge for the long look over the station.",
     "createdAt": "2026-10-31T00:00:00.000Z",
     "updatedAt": "2026-10-31T00:00:00.000Z",
     "parentId": null,
     "recommendedPlayers": {
       "min": 8,
-      "max": 24
+      "max": 16
     },
     "supportedModes": [
       "core.deathmatch",
-      "core.tdm",
-      "core.ctf",
-      "core.koth"
+      "core.tdm"
     ],
     "release": {
       "mapId": "m_ldufdn43f3lmrdmn",
-      "versionId": "v_ooxpnqrl6fumni76",
-      "revision": 1,
-      "contentHash": "sha256:358bb1f60c373013162221d873ade8fa5a0f9817f03cf931c2494b8aa914a6b6",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:04:25.776Z"
+      "versionId": "v_untpprqqkkwzngqx",
+      "revision": 17,
+      "contentHash": "sha256:ea8807ea18d4903a326cf0e889d013311def3e3535a6c26f701ba1df4428f785",
+      "schemaVersion": 32,
+      "releasedAt": "2026-11-09T09:11:54.091Z"
+    },
+    "cardCamera": {
+      "position": [
+        -6,
+        1.7,
+        -13
+      ],
+      "yaw": 0.62,
+      "pitch": 0.03
     }
   },
   "classicStructure": {
@@ -34,2184 +41,598 @@
     "theme": "core.snow_outpost",
     "tiles": [
       {
-        "id": "tile_cx13cbuoau",
+        "id": "tile_la8hiaxzf5",
+        "tile": "core.stairs",
+        "x": -1,
+        "y": 0,
+        "z": -1,
+        "rotation": 2,
+        "edges": {
+          "0,0,1:E": "door"
+        }
+      },
+      {
+        "id": "tile_g4r2rs3qer",
+        "tile": "core.corridor",
+        "x": 0,
+        "y": 0,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_mytafqib1i",
+        "tile": "core.corridor",
+        "x": 1,
+        "y": 0,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_9kgwoeqnn2",
+        "tile": "core.stairs",
+        "x": 2,
+        "y": 0,
+        "z": -1,
+        "rotation": 0,
+        "edges": {
+          "0,0,1:E": "door"
+        }
+      },
+      {
+        "id": "tile_7qpd25ahs7",
+        "tile": "core.yard_crates",
+        "x": -1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vxluffubff",
+        "tile": "core.yard",
+        "x": 0,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_u10nby7gxi",
+        "tile": "core.yard_wall",
+        "x": 1,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_am9puaxle5",
+        "tile": "core.yard",
+        "x": 2,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3xo0cu89ss",
+        "tile": "core.yard",
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_myejqyoa8b",
+        "tile": "core.yard_crates",
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_gp64eq74mn",
+        "tile": "core.yard",
+        "x": -1,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_v7kkucy9gl",
+        "tile": "core.yard_wall",
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_t46sr3ycht",
+        "tile": "core.yard_crates",
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "rotation": 2
+      },
+      {
+        "id": "tile_1wow3ur0ox",
+        "tile": "core.yard",
+        "x": 2,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ulkw497zsq",
+        "tile": "core.platform_rail",
+        "x": -2,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1fl4q7nkev",
+        "tile": "core.stairs_open",
+        "x": -2,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_krvux0uab3",
+        "tile": "core.platform_rail",
+        "x": -6,
+        "y": 0,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2yrxqbwtwy",
+        "tile": "core.stairs_open",
+        "x": -6,
+        "y": -1,
+        "z": 0,
+        "rotation": 3
+      },
+      {
+        "id": "tile_1b1atszzab",
+        "tile": "core.corridor",
+        "x": -4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_b4gr2b3yos",
+        "tile": "snow.barracks",
+        "x": -5,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_yp0cm0l5gm",
+        "tile": "snow.comms_hut",
+        "x": -3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_zpd11oaa8w",
         "tile": "snow.hangar",
         "x": 0,
-        "y": -6,
+        "y": -3,
         "z": 0,
-        "rotation": 2
+        "rotation": 0
       },
       {
-        "id": "tile_fet20c34t9",
+        "id": "tile_mbd3dn783f",
         "tile": "snow.barracks",
-        "x": -4,
-        "y": -7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_0o94k91j3i",
-        "tile": "snow.barracks",
-        "x": 2,
-        "y": -7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_5klv4dzeak",
-        "tile": "snow.hut",
-        "x": -5,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_8etyken53b",
-        "tile": "snow.hut",
-        "x": 1,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_7j6gry0p3d",
-        "tile": "snow.fuel_depot",
-        "x": 2,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_mof0huejfg",
-        "tile": "snow.watchtower",
         "x": 4,
-        "y": -5,
+        "y": 1,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_ez2cgkztxg",
+        "tile": "snow.fuel_depot",
+        "x": 5,
+        "y": 0,
         "z": 0,
         "rotation": 0
       },
       {
-        "id": "tile_fokq9sqri7",
-        "tile": "snow.watchtower",
-        "x": -6,
-        "y": -8,
+        "id": "tile_4o7ize804l",
+        "tile": "snow.fuel_depot",
+        "x": 5,
+        "y": 1,
         "z": 0,
         "rotation": 0
       },
       {
-        "id": "tile_zer8twdy2p",
+        "id": "tile_sv9p1uf6yh",
+        "tile": "snow.fuel_depot",
+        "x": 5,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_awgp1dimtf",
+        "tile": "snow.drift_ramp",
+        "x": 4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jfhbfj43c8",
+        "tile": "snow.metal_stair",
+        "x": 6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_w1in3xuncq",
+        "tile": "snow.drift_ramp",
+        "x": 3,
+        "y": 5,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_ds9hyupnjj",
         "tile": "snow.radar_dome",
-        "x": 0,
-        "y": 7,
+        "x": 5,
+        "y": 4,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_iv40n9inri",
+        "tile": "snow.fuel_depot",
+        "x": -5,
+        "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
-        "id": "tile_ptwzh6p2ae",
-        "tile": "snow.comms_hut",
-        "x": -1,
-        "y": 7,
-        "z": 0,
-        "rotation": 2
-      },
-      {
-        "id": "tile_ybjytpiz5m",
-        "tile": "snow.barracks",
-        "x": -3,
-        "y": 7,
-        "z": 0,
-        "rotation": 2
-      },
-      {
-        "id": "tile_b306kwf0az",
-        "tile": "snow.barracks",
-        "x": 3,
-        "y": 7,
-        "z": 0,
-        "rotation": 2
-      },
-      {
-        "id": "tile_9hexlzwnpy",
+        "id": "tile_4b8dzji9tj",
         "tile": "snow.hut",
-        "x": 1,
-        "y": 5,
-        "z": 0,
-        "rotation": 2
-      },
-      {
-        "id": "tile_l034pbm6qk",
-        "tile": "snow.hut",
-        "x": -5,
-        "y": 5,
-        "z": 0,
-        "rotation": 2
-      },
-      {
-        "id": "tile_6wehsbcpnt",
-        "tile": "snow.fuel_depot",
-        "x": -2,
-        "y": 6,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_6riohcdbpb",
-        "tile": "snow.watchtower",
-        "x": 4,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_ttkylwedhf",
-        "tile": "snow.watchtower",
-        "x": 6,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_t59t189v5u",
-        "tile": "snow.frozen_lake",
-        "x": -2,
+        "x": -4,
         "y": -3,
         "z": 0,
         "rotation": 0
       },
       {
-        "id": "tile_6vhajjv9bf",
-        "tile": "snow.frozen_lake",
-        "x": -2,
-        "y": -2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_skvllbp0fl",
-        "tile": "snow.frozen_lake",
-        "x": -2,
-        "y": -1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_gfblmuzqzc",
-        "tile": "snow.frozen_lake",
-        "x": -2,
-        "y": 0,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_gg68polvvi",
-        "tile": "snow.frozen_lake",
-        "x": -2,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_rb3gai56xh",
-        "tile": "snow.frozen_lake",
-        "x": -2,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_4cgbtf3er6",
-        "tile": "snow.frozen_lake",
-        "x": -2,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_znrzvkcyhp",
-        "tile": "snow.frozen_lake",
-        "x": -1,
-        "y": -3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_vdeg6izug1",
-        "tile": "snow.frozen_lake",
-        "x": -1,
-        "y": -2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_07el14yb0n",
+        "id": "tile_ih23z04jv9",
         "tile": "snow.ice_hole",
-        "x": -1,
-        "y": -1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_iie18c6nqc",
-        "tile": "snow.frozen_lake",
-        "x": -1,
-        "y": 0,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_3vk52svm3a",
-        "tile": "snow.frozen_lake",
-        "x": -1,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_aq8kvm09np",
-        "tile": "snow.ice_ridge",
-        "x": -1,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_cwybdz8ndj",
-        "tile": "snow.frozen_lake",
-        "x": -1,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_vcdbwkghdn",
-        "tile": "snow.frozen_lake",
-        "x": 0,
-        "y": -3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_da5vnfdq0u",
-        "tile": "snow.frozen_lake",
-        "x": 0,
-        "y": -2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_i7v92z0pd4",
-        "tile": "snow.frozen_lake",
-        "x": 0,
-        "y": -1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_c2tcd8ztgt",
-        "tile": "snow.ice_ridge",
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_sdvfvrbt1z",
-        "tile": "snow.frozen_lake",
-        "x": 0,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_am9o4eijez",
-        "tile": "snow.frozen_lake",
-        "x": 0,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_se6pd2jp5a",
-        "tile": "snow.frozen_lake",
-        "x": 0,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_o0e2hrpvh9",
-        "tile": "snow.frozen_lake",
-        "x": 1,
-        "y": -3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_ds24wv6lqk",
-        "tile": "snow.ice_ridge",
-        "x": 1,
-        "y": -2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_lgl2tv918e",
-        "tile": "snow.frozen_lake",
-        "x": 1,
-        "y": -1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_7ja8eh9tmc",
-        "tile": "snow.frozen_lake",
-        "x": 1,
-        "y": 0,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_sw5cgxjxtc",
-        "tile": "snow.ice_hole",
-        "x": 1,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_905vfn2276",
-        "tile": "snow.frozen_lake",
-        "x": 1,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_9wn3m8k8l1",
-        "tile": "snow.frozen_lake",
-        "x": 1,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_hgr88ve6v5",
-        "tile": "snow.frozen_lake",
-        "x": 2,
-        "y": -3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_cjxg3369he",
-        "tile": "snow.frozen_lake",
-        "x": 2,
-        "y": -2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_dig0e0ws0l",
-        "tile": "snow.frozen_lake",
-        "x": 2,
-        "y": -1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_30gu6lgj0d",
-        "tile": "snow.frozen_lake",
-        "x": 2,
-        "y": 0,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_we22jj00ya",
-        "tile": "snow.frozen_lake",
-        "x": 2,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_stlandhrbu",
-        "tile": "snow.frozen_lake",
-        "x": 2,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_tkuk3itp73",
-        "tile": "snow.frozen_lake",
-        "x": 2,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_ssdiuaptj3",
-        "tile": "snow.ice_cliff",
-        "x": -5,
-        "y": -2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_yla41hpxxq",
-        "tile": "snow.ice_cliff",
-        "x": -5,
-        "y": -1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_x52dfz54db",
-        "tile": "snow.ice_cliff",
-        "x": -5,
-        "y": 0,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_u5ab8d4mjb",
-        "tile": "snow.ice_cliff",
-        "x": -5,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_2cxsdwtm8a",
-        "tile": "snow.ice_cliff",
-        "x": -5,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_xea7bh3pw1",
-        "tile": "snow.drift_ramp",
-        "x": -5,
-        "y": -3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_1ue061k7sx",
-        "tile": "snow.drift_ramp",
-        "x": -5,
-        "y": 3,
-        "z": 0,
-        "rotation": 2
-      },
-      {
-        "id": "tile_qp74ro8605",
-        "tile": "snow.ice_cliff",
-        "x": -4,
-        "y": -2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_89zy3uphwz",
-        "tile": "snow.ice_cliff",
-        "x": -4,
-        "y": -1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_qtn6tp3zyh",
-        "tile": "snow.ice_cliff",
-        "x": -4,
-        "y": 0,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_x3one385wq",
-        "tile": "snow.ice_cliff",
-        "x": -4,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_3oooese8b3",
-        "tile": "snow.ice_cliff",
-        "x": -4,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_pjq20s8z7b",
-        "tile": "snow.drift_ramp",
-        "x": -4,
-        "y": -3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_wjahc3kcum",
-        "tile": "snow.drift_ramp",
-        "x": -4,
-        "y": 3,
-        "z": 0,
-        "rotation": 2
-      },
-      {
-        "id": "tile_0m4yu4limd",
-        "tile": "snow.ice_wall",
-        "x": -6,
-        "y": -3,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_shlf6adkmv",
-        "tile": "snow.ice_wall",
-        "x": -6,
-        "y": -2,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_gj7idhnv54",
-        "tile": "snow.ice_wall",
-        "x": -6,
-        "y": -1,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_hp3a9k1no4",
-        "tile": "snow.ice_wall",
-        "x": -6,
-        "y": 0,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_9qnnw5m1aa",
-        "tile": "snow.ice_wall",
-        "x": -6,
-        "y": 1,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_tgqoat5205",
-        "tile": "snow.ice_wall",
-        "x": -6,
-        "y": 2,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_9w8w2x95tc",
-        "tile": "snow.ice_wall",
-        "x": -6,
-        "y": 3,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_jfngdmauah",
-        "tile": "snow.metal_stair",
-        "x": 3,
-        "y": -3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_l0c9t7i61j",
-        "tile": "snow.catwalk",
-        "x": 3,
-        "y": -2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_9aynp6dcis",
-        "tile": "snow.catwalk",
-        "x": 3,
-        "y": -1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_v8gb5er6cl",
-        "tile": "snow.catwalk",
-        "x": 3,
-        "y": 0,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_hvw47tifgx",
-        "tile": "snow.catwalk",
-        "x": 3,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_t5t4h907q7",
-        "tile": "snow.catwalk",
-        "x": 3,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_1z7syp730j",
-        "tile": "snow.metal_stair",
-        "x": 3,
-        "y": 3,
-        "z": 0,
-        "rotation": 2
-      },
-      {
-        "id": "tile_adq9wbdyja",
-        "tile": "snow.bunker",
-        "x": 4,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_bsjfl12vn8",
-        "tile": "snow.bunker",
-        "x": 4,
-        "y": -1,
-        "z": 0,
-        "rotation": 2
-      },
-      {
-        "id": "tile_0pnr15escs",
-        "tile": "snow.road",
-        "x": 5,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_8np4beqz3x",
-        "tile": "snow.road",
-        "x": 5,
-        "y": -4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_xkhwwxk120",
-        "tile": "snow.road",
-        "x": 5,
-        "y": -3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_4c4ddo6ql7",
-        "tile": "snow.road",
-        "x": 5,
-        "y": -2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_mqx8avkf96",
-        "tile": "snow.road",
-        "x": 5,
-        "y": -1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_d1f15gbshx",
-        "tile": "snow.road",
-        "x": 5,
-        "y": 0,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_xqykqbmxyv",
-        "tile": "snow.road",
-        "x": 5,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_aoitr9q1ml",
-        "tile": "snow.road",
-        "x": 5,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_f09m1onq9q",
-        "tile": "snow.road",
-        "x": 5,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_wjho37o8nu",
-        "tile": "snow.road",
-        "x": 5,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_zwl17u4zxw",
-        "tile": "snow.road",
-        "x": 5,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_01cepw6utr",
-        "tile": "snow.ice_wall",
-        "x": 6,
-        "y": -3,
-        "z": 0,
-        "rotation": 3
-      },
-      {
-        "id": "tile_e2g7mjvlps",
-        "tile": "snow.ice_wall",
-        "x": 6,
-        "y": -2,
-        "z": 0,
-        "rotation": 3
-      },
-      {
-        "id": "tile_k6pnzlppz8",
-        "tile": "snow.ice_wall",
-        "x": 6,
-        "y": -1,
-        "z": 0,
-        "rotation": 3
-      },
-      {
-        "id": "tile_euktkysopg",
-        "tile": "snow.ice_wall",
-        "x": 6,
-        "y": 0,
-        "z": 0,
-        "rotation": 3
-      },
-      {
-        "id": "tile_61hqbv4cvf",
-        "tile": "snow.ice_wall",
-        "x": 6,
-        "y": 1,
-        "z": 0,
-        "rotation": 3
-      },
-      {
-        "id": "tile_l3rprz72ls",
-        "tile": "snow.ice_wall",
-        "x": 6,
-        "y": 2,
-        "z": 0,
-        "rotation": 3
-      },
-      {
-        "id": "tile_xhnppu3yww",
-        "tile": "snow.ice_wall",
-        "x": 6,
-        "y": 3,
-        "z": 0,
-        "rotation": 3
-      },
-      {
-        "id": "tile_ztuo2yr8jy",
-        "tile": "snow.fuel_depot",
-        "x": 6,
-        "y": -4,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_x7bhe9umxp",
-        "tile": "snow.fuel_depot",
-        "x": 6,
-        "y": 4,
-        "z": 0,
-        "rotation": 1
-      },
-      {
-        "id": "tile_vevmpjti6k",
-        "tile": "core.yard",
-        "x": -6,
-        "y": -7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_cvtwbyhn8u",
-        "tile": "core.yard",
-        "x": -6,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_b8bgiarnho",
-        "tile": "core.yard",
-        "x": -6,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_it4bx772ia",
-        "tile": "core.yard",
-        "x": -6,
-        "y": -4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_e1zl0xehnn",
-        "tile": "core.yard",
-        "x": -6,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_digadbsibw",
-        "tile": "core.yard",
-        "x": -6,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_5tmhr2ee0t",
-        "tile": "core.yard",
-        "x": -6,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_m2h84oype9",
-        "tile": "core.yard",
-        "x": -6,
-        "y": 7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_ov2ycsqhnl",
-        "tile": "core.yard",
-        "x": -6,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_3r22t8tkl8",
-        "tile": "core.yard",
-        "x": -5,
-        "y": -8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_tw2s338yl7",
-        "tile": "core.yard",
-        "x": -5,
-        "y": -7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_zytwf8j705",
-        "tile": "core.yard",
-        "x": -5,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_tgpth5i4qj",
-        "tile": "core.yard",
-        "x": -5,
-        "y": -4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_i8fc9bvkv1",
-        "tile": "core.yard",
-        "x": -5,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_0kazn16huy",
-        "tile": "core.yard",
-        "x": -5,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_1zyzu9ktub",
-        "tile": "core.yard",
-        "x": -5,
-        "y": 7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_ra0q01wbey",
-        "tile": "core.yard",
-        "x": -5,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_rqp9plpei9",
-        "tile": "core.yard",
-        "x": -4,
-        "y": -8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_pg4cnvpe9o",
-        "tile": "core.yard",
-        "x": -4,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_ia3v12ga63",
-        "tile": "core.yard",
-        "x": -4,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_80afj67czt",
-        "tile": "core.yard",
-        "x": -4,
-        "y": -4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_f8hfa04tnd",
-        "tile": "core.yard",
-        "x": -4,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_wap4j9sif8",
-        "tile": "core.yard",
-        "x": -4,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_2dyc270cs4",
-        "tile": "core.yard",
-        "x": -4,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_dfc9l2qydf",
-        "tile": "core.yard",
-        "x": -4,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_25c6lp7u4p",
-        "tile": "core.yard",
-        "x": -3,
-        "y": -8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_zwf4cfwopn",
-        "tile": "core.yard",
-        "x": -3,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_65j5al5m89",
-        "tile": "core.yard",
-        "x": -3,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_xb71o5d5d9",
-        "tile": "core.yard",
-        "x": -3,
-        "y": -4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_0ulnzmolwx",
-        "tile": "core.yard",
-        "x": -3,
-        "y": -3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_28zib332ub",
-        "tile": "core.yard",
-        "x": -3,
-        "y": -2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_f5etbeyl2i",
-        "tile": "core.yard",
-        "x": -3,
-        "y": -1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_z6xvt5r5co",
-        "tile": "core.yard",
-        "x": -3,
-        "y": 0,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_3549bteyl0",
-        "tile": "core.yard",
-        "x": -3,
-        "y": 1,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_z3hf84627d",
-        "tile": "core.yard",
-        "x": -3,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_kmhfu54jxk",
-        "tile": "core.yard",
-        "x": -3,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_jfhinrdkna",
-        "tile": "core.yard",
-        "x": -3,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_kfvsnx6t7e",
-        "tile": "core.yard",
-        "x": -3,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_65a3w3qwyu",
-        "tile": "core.yard",
-        "x": -3,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_ilwos04kir",
-        "tile": "core.yard",
-        "x": -3,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_83e1wgmvnm",
-        "tile": "core.yard",
         "x": -2,
-        "y": -8,
+        "y": -1,
         "z": 0,
         "rotation": 0
       },
       {
-        "id": "tile_xoidl3n8kn",
-        "tile": "core.yard",
-        "x": -2,
-        "y": -7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_1uwp79ol5k",
-        "tile": "core.yard",
-        "x": -2,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_vngwzxg051",
-        "tile": "core.yard",
-        "x": -2,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_2s2g1jf0eu",
-        "tile": "core.yard",
-        "x": -2,
+        "id": "tile_hwydc9uqyy",
+        "tile": "core.room_large",
+        "x": 6,
         "y": -4,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.lake_ice",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.glacier_ice",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.glacier_ice",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,1,0:N": "wide",
+          "0,0,0:W": "wide"
+        },
+        "options": {
+          "layout": "rubble",
+          "ceiling": "roof"
+        }
       },
       {
-        "id": "tile_vmnvo6qbzf",
-        "tile": "core.yard",
-        "x": -2,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_7gq9ujqcpl",
-        "tile": "core.yard",
-        "x": -2,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_20f44m9hv8",
-        "tile": "core.yard",
-        "x": -2,
-        "y": 7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_8nkm7t290k",
-        "tile": "core.yard",
-        "x": -2,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_6m09k29ler",
-        "tile": "core.yard",
-        "x": -1,
-        "y": -8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_jpesi4dk5a",
-        "tile": "core.yard",
-        "x": -1,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_qvjhz8dkjz",
-        "tile": "core.yard",
-        "x": -1,
+        "id": "tile_8ar4eg66wx",
+        "tile": "snow.ice_cliff",
+        "x": 6,
         "y": -4,
-        "z": 0,
+        "z": 1,
         "rotation": 0
       },
       {
-        "id": "tile_hg8qe8s2on",
-        "tile": "core.yard",
-        "x": -1,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_dlz5zwx5eo",
-        "tile": "core.yard",
-        "x": -1,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_pw08u9jcxb",
-        "tile": "core.yard",
-        "x": -1,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_ofhxb3u5tc",
-        "tile": "core.yard",
-        "x": -1,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_56onbs4y7d",
-        "tile": "core.yard",
-        "x": 0,
-        "y": -8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_hv47z180gh",
-        "tile": "core.yard",
-        "x": 0,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_j6m2ow1mrw",
-        "tile": "core.yard",
-        "x": 0,
+        "id": "tile_z5pp2nul6y",
+        "tile": "snow.ice_cliff",
+        "x": 7,
         "y": -4,
-        "z": 0,
+        "z": 1,
         "rotation": 0
       },
       {
-        "id": "tile_ghrzzq1uhr",
-        "tile": "core.yard",
-        "x": 0,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_olf8y35kk0",
-        "tile": "core.yard",
-        "x": 0,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_mchs16d0dd",
-        "tile": "core.yard",
-        "x": 0,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_2jfvedzn71",
-        "tile": "core.yard",
-        "x": 0,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_41ytjcmetv",
-        "tile": "core.yard",
-        "x": 1,
-        "y": -8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_2286goz92d",
-        "tile": "core.yard",
-        "x": 1,
-        "y": -7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_ap3j6473kr",
-        "tile": "core.yard",
-        "x": 1,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_hywkaht961",
-        "tile": "core.yard",
-        "x": 1,
-        "y": -4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_nsdm324lvr",
-        "tile": "core.yard",
-        "x": 1,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_iytdowyw2t",
-        "tile": "core.yard",
-        "x": 1,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_9u4d72hctx",
-        "tile": "core.yard",
-        "x": 1,
-        "y": 7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_usc6etn4q1",
-        "tile": "core.yard",
-        "x": 1,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_2t0rsh6fb2",
-        "tile": "core.yard",
-        "x": 2,
-        "y": -8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_0rexs08vpv",
-        "tile": "core.yard",
-        "x": 2,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_49zaj2oc5u",
-        "tile": "core.yard",
-        "x": 2,
-        "y": -4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_hqfo5ud0t4",
-        "tile": "core.yard",
-        "x": 2,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_lfw3hokt4e",
-        "tile": "core.yard",
-        "x": 2,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_rbwtokyg09",
-        "tile": "core.yard",
-        "x": 2,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_npvkjqpgwy",
-        "tile": "core.yard",
-        "x": 2,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_act22hvrjr",
-        "tile": "core.yard",
-        "x": 3,
-        "y": -8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_9t3xkps28h",
-        "tile": "core.yard",
-        "x": 3,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_zq9c5dg0us",
-        "tile": "core.yard",
-        "x": 3,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_a4yhnqn6z1",
-        "tile": "core.yard",
-        "x": 3,
-        "y": -4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_bfvn57i467",
-        "tile": "core.yard",
-        "x": 3,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_9gd83gogtf",
-        "tile": "core.yard",
-        "x": 3,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_d90i3kj413",
-        "tile": "core.yard",
-        "x": 3,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_td3oroguxy",
-        "tile": "core.yard",
-        "x": 3,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_j2r70tl23h",
-        "tile": "core.yard",
-        "x": 4,
-        "y": -8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_lr67ybmykz",
-        "tile": "core.yard",
-        "x": 4,
-        "y": -7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_l4rn3s51ez",
-        "tile": "core.yard",
-        "x": 4,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_o8nc5wsxfn",
-        "tile": "core.yard",
-        "x": 4,
-        "y": -4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_816pk3vsqy",
-        "tile": "core.yard",
-        "x": 4,
+        "id": "tile_vjjpej225i",
+        "tile": "snow.ice_cliff",
+        "x": 6,
         "y": -3,
-        "z": 0,
+        "z": 1,
         "rotation": 0
       },
       {
-        "id": "tile_0qsblqgfis",
-        "tile": "core.yard",
-        "x": 4,
-        "y": -2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_uuhlnjffu3",
-        "tile": "core.yard",
-        "x": 4,
-        "y": 0,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_p993770vac",
-        "tile": "core.yard",
-        "x": 4,
-        "y": 2,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_sajcsc2ap3",
-        "tile": "core.yard",
-        "x": 4,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_axlebll2m0",
-        "tile": "core.yard",
-        "x": 4,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_av38kq8u21",
-        "tile": "core.yard",
-        "x": 4,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_1c6tvqiqu4",
-        "tile": "core.yard",
-        "x": 4,
-        "y": 7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_yme0r6u6ol",
-        "tile": "core.yard",
-        "x": 4,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_2jrkv0d21k",
-        "tile": "core.yard",
-        "x": 5,
-        "y": -8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_bybf78k7u1",
-        "tile": "core.yard",
-        "x": 5,
-        "y": -7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_zgqhqzyw7r",
-        "tile": "core.yard",
-        "x": 5,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_w3tib562yg",
-        "tile": "core.yard",
-        "x": 5,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_x27wo0j445",
-        "tile": "core.yard",
-        "x": 5,
-        "y": 7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_ssjsfen26b",
-        "tile": "core.yard",
-        "x": 5,
-        "y": 8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_heqhb321ps",
-        "tile": "core.yard",
-        "x": 6,
-        "y": -8,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_jp3927g5pd",
-        "tile": "core.yard",
-        "x": 6,
-        "y": -7,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_3axripzniq",
-        "tile": "core.yard",
-        "x": 6,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_n2sjf8mmy8",
-        "tile": "core.yard",
-        "x": 6,
-        "y": -5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_wmmkqoeejd",
-        "tile": "core.yard",
-        "x": 6,
-        "y": 5,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_nh885jv7jy",
-        "tile": "core.yard",
-        "x": 6,
-        "y": 6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_f4pjy82320",
-        "tile": "core.yard",
-        "x": 6,
-        "y": 7,
-        "z": 0,
+        "id": "tile_imzcerah0g",
+        "tile": "snow.ice_cliff",
+        "x": 7,
+        "y": -3,
+        "z": 1,
         "rotation": 0
       }
     ]
   },
   "entities": [
     {
-      "id": "spawn_001",
+      "id": "spawn_xxtrr7qxvk",
       "position": [
-        -36,
+        -50,
         0,
-        -66
+        36
       ],
       "kind": "spawn",
-      "yaw": 0,
-      "faction": "embers"
+      "yaw": 2.355,
+      "faction": "tide"
     },
     {
-      "id": "spawn_002",
+      "id": "spawn_7yjz86nuv6",
       "position": [
-        -28,
+        -40,
         0,
-        -62
+        38
       ],
       "kind": "spawn",
-      "yaw": 0,
-      "faction": "embers"
+      "yaw": 2.355,
+      "faction": "tide"
     },
     {
-      "id": "spawn_003",
+      "id": "spawn_xbxkhapnl0",
+      "position": [
+        -30,
+        0,
+        38
+      ],
+      "kind": "spawn",
+      "yaw": 3.14,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_0xb0iif1d2",
       "position": [
         -20,
         0,
-        -66
+        34
       ],
       "kind": "spawn",
-      "yaw": 0,
-      "faction": "embers"
+      "yaw": 3.14,
+      "faction": "tide"
     },
     {
-      "id": "spawn_004",
+      "id": "spawn_upath7ls4y",
       "position": [
         -12,
         0,
-        -66
+        38
       ],
       "kind": "spawn",
-      "yaw": 0,
-      "faction": "embers"
+      "yaw": 2.352,
+      "faction": "tide"
     },
     {
-      "id": "spawn_005",
+      "id": "spawn_kifmmn1ekt",
       "position": [
-        12,
-        0,
-        -66
+        -52,
+        0.13,
+        24
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 1.564,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_w9goywu72y",
+      "position": [
+        -52,
+        0,
+        14
+      ],
+      "kind": "spawn",
+      "yaw": 1.564,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_uoypxpb926",
+      "position": [
+        -36,
+        0,
+        31
+      ],
+      "kind": "spawn",
+      "yaw": 3.134,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_sypgz5gte5",
+      "position": [
+        30,
+        0,
+        -40
+      ],
+      "kind": "spawn",
+      "yaw": -0.009,
       "faction": "embers"
     },
     {
-      "id": "spawn_006",
+      "id": "spawn_xubr78xbkf",
       "position": [
         20,
         0,
-        -62
+        -40
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.009,
       "faction": "embers"
     },
     {
-      "id": "spawn_007",
+      "id": "spawn_qqh1oy2vka",
       "position": [
-        28,
+        10,
         0,
-        -66
+        -42
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.012,
       "faction": "embers"
     },
     {
-      "id": "spawn_008",
+      "id": "spawn_dtyzwqjdk9",
       "position": [
-        44,
+        40,
         0,
-        -66
+        -26
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.012,
       "faction": "embers"
     },
     {
-      "id": "spawn_009",
+      "id": "spawn_z74092e9j1",
       "position": [
-        36,
+        48,
         0,
-        -54
+        -14
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.012,
       "faction": "embers"
     },
     {
-      "id": "spawn_010",
+      "id": "spawn_bnk4rnesb1",
       "position": [
-        -44,
-        0,
-        -50
+        55,
+        0.22,
+        -12
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.8,
       "faction": "embers"
     },
     {
-      "id": "spawn_011",
+      "id": "spawn_9ijnzhk1on",
       "position": [
         -20,
         0,
-        -50
+        -38
       ],
       "kind": "spawn",
-      "yaw": 0,
-      "faction": "embers"
-    },
-    {
-      "id": "spawn_012",
-      "position": [
-        20,
-        0,
-        -48
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": "embers"
-    },
-    {
-      "id": "spawn_013",
-      "position": [
-        -36,
-        0,
-        66
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_014",
-      "position": [
-        -28,
-        0,
-        62
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_015",
-      "position": [
-        -12,
-        0,
-        66
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_016",
-      "position": [
-        -4,
-        0,
-        66
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_017",
-      "position": [
-        12,
-        0,
-        66
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_018",
-      "position": [
-        20,
-        0,
-        62
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_019",
-      "position": [
-        28,
-        0,
-        66
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_020",
-      "position": [
-        36,
-        0,
-        66
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_021",
-      "position": [
-        44,
-        0,
-        56
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_022",
-      "position": [
-        -44,
-        0,
-        46
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_023",
-      "position": [
-        -24,
-        0,
-        48
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_024",
-      "position": [
-        20,
-        0,
-        50
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": "tide"
-    },
-    {
-      "id": "spawn_025",
-      "position": [
-        -24,
-        0,
-        -32
-      ],
-      "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.018,
       "faction": null
     },
     {
-      "id": "spawn_026",
+      "id": "spawn_lc2mglvofc",
       "position": [
         24,
         0,
-        -32
+        10
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -2.376,
       "faction": null
     },
     {
-      "id": "spawn_027",
+      "id": "spawn_fgcv9jf7lh",
       "position": [
-        -24,
+        20,
         0,
-        32
+        38
       ],
       "kind": "spawn",
-      "yaw": 3.141592653589793,
+      "yaw": 3.119,
       "faction": null
     },
     {
-      "id": "spawn_028",
+      "id": "spawn_x9ot4m7r8s",
       "position": [
-        24,
-        0,
-        32
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": null
-    },
-    {
-      "id": "spawn_029",
-      "position": [
-        -24,
-        0,
-        0
-      ],
-      "kind": "spawn",
-      "yaw": 1.5707963267948966,
-      "faction": null
-    },
-    {
-      "id": "spawn_030",
-      "position": [
-        -46,
-        0,
-        -16
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": null
-    },
-    {
-      "id": "spawn_031",
-      "position": [
-        -46,
-        0,
-        16
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": null
-    },
-    {
-      "id": "spawn_032",
-      "position": [
-        40,
-        0,
-        8
-      ],
-      "kind": "spawn",
-      "yaw": -1.5707963267948966,
-      "faction": null
-    },
-    {
-      "id": "spawn_033",
-      "position": [
-        40,
-        0,
-        -8
-      ],
-      "kind": "spawn",
-      "yaw": -1.5707963267948966,
-      "faction": null
-    },
-    {
-      "id": "spawn_034",
-      "position": [
-        40,
-        0,
-        20
-      ],
-      "kind": "spawn",
-      "yaw": 3.141592653589793,
-      "faction": null
-    },
-    {
-      "id": "spawn_035",
-      "position": [
-        40,
-        0,
-        -20
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": null
-    },
-    {
-      "id": "spawn_036",
-      "position": [
-        8,
-        0,
-        -32
-      ],
-      "kind": "spawn",
-      "yaw": 0,
-      "faction": null
-    },
-    {
-      "id": "flag_embers",
-      "position": [
-        -4,
-        0,
-        -66
-      ],
-      "kind": "flag",
-      "yaw": 0,
-      "team": "embers"
-    },
-    {
-      "id": "flag_tide",
-      "position": [
+        50,
         4,
-        0,
-        66
+        26
       ],
-      "kind": "flag",
-      "yaw": 3.141592653589793,
-      "team": "tide"
+      "kind": "spawn",
+      "yaw": -2.379,
+      "faction": null
     },
     {
-      "id": "hill_lake",
+      "id": "spawn_kjc7gd1qdi",
       "position": [
+        -40,
         0,
-        0,
-        0
+        -40
       ],
-      "kind": "hill",
-      "radius": 6
+      "kind": "spawn",
+      "yaw": 0.758,
+      "faction": null
     },
     {
-      "id": "hill_ridge",
+      "id": "spawn_pncg7koq5o",
       "position": [
-        -36,
+        56,
+        0,
+        2
+      ],
+      "kind": "spawn",
+      "yaw": -1.6,
+      "faction": null
+    },
+    {
+      "id": "pickup_ldnsmcqq0s",
+      "position": [
+        52,
         4,
-        0
-      ],
-      "kind": "hill",
-      "radius": 5
-    },
-    {
-      "id": "hill_catwalk",
-      "position": [
-        32,
-        0,
-        0
-      ],
-      "kind": "hill",
-      "radius": 6
-    },
-    {
-      "id": "pickup_037",
-      "position": [
-        -36,
-        4,
-        4
+        36
       ],
       "kind": "pickup",
       "item": "core.weapon_sniper",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_038",
+      "id": "pickup_u61w9522s5",
       "position": [
-        24,
+        -8,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_l5sunr1l89",
+      "position": [
+        -40,
+        0,
+        -8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_smg",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_yxrw3gvh7d",
+      "position": [
         4,
+        -4,
         0
       ],
       "kind": "pickup",
@@ -2219,1438 +640,810 @@
       "respawnSeconds": null
     },
     {
-      "id": "pickup_039",
+      "id": "pickup_0ia13mlq5z",
+      "position": [
+        -24,
+        0,
+        24
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_marksman",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_27zc7faitx",
+      "position": [
+        16,
+        0,
+        8
+      ],
+      "kind": "pickup",
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_5p80elwdle",
+      "position": [
+        -16,
+        0,
+        -16
+      ],
+      "kind": "pickup",
+      "item": "core.grenades",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_6m5v2gmua6",
+      "position": [
+        52,
+        0,
+        -28
+      ],
+      "kind": "pickup",
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_3we7niuofq",
       "position": [
         32,
         0,
-        -8
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_cclw341pg2",
+      "position": [
+        -32,
+        0,
+        16
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_yb8x8by7at",
+      "position": [
+        8,
+        0,
+        -24
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_zctm7r0y2i",
+      "position": [
+        24,
+        0,
+        28
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_2w227ebpb5",
+      "position": [
+        48,
+        0,
+        10
+      ],
+      "kind": "pickup",
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_89extscm3z",
+      "position": [
+        -52,
+        0,
+        2
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_flwp1kfu2j",
+      "position": [
+        24,
+        0,
+        -18
+      ],
+      "kind": "pickup",
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_yd4tnjvadz",
+      "position": [
+        4,
+        4,
+        -13.5
       ],
       "kind": "pickup",
       "item": "core.weapon_lmg",
       "respawnSeconds": null
     },
     {
-      "id": "pickup_040",
-      "position": [
-        32,
-        0,
-        8
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_flamethrower",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_041",
-      "position": [
-        0,
-        0,
-        -12
-      ],
-      "kind": "pickup",
-      "item": "core.armor_large",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_042",
-      "position": [
-        0,
-        0,
-        12
-      ],
-      "kind": "pickup",
-      "item": "core.armor_large",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_043",
-      "position": [
-        32,
-        7,
-        -42.6
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_marksman",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_044",
-      "position": [
-        32,
-        7,
-        37.4
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_marksman",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_045",
-      "position": [
-        -28,
-        0,
-        -57
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_shotgun",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_046",
-      "position": [
-        28,
-        0,
-        57
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_shotgun",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_047",
-      "position": [
-        20,
-        0,
-        -57
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_smg",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_048",
-      "position": [
-        -20,
-        0,
-        57
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_smg",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_049",
-      "position": [
-        -4,
-        0,
-        -52
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_rifle",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_050",
-      "position": [
-        4,
-        0,
-        52
-      ],
-      "kind": "pickup",
-      "item": "core.weapon_rifle",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_051",
-      "position": [
-        -24,
-        0,
-        -20
-      ],
-      "kind": "pickup",
-      "item": "core.grenades",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_052",
-      "position": [
-        24,
-        0,
-        20
-      ],
-      "kind": "pickup",
-      "item": "core.grenades",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_053",
-      "position": [
-        40,
-        0,
-        0
-      ],
-      "kind": "pickup",
-      "item": "core.mines",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_054",
-      "position": [
-        -24,
-        0,
-        20
-      ],
-      "kind": "pickup",
-      "item": "core.health_large",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_055",
-      "position": [
-        24,
-        0,
-        -20
-      ],
-      "kind": "pickup",
-      "item": "core.health_large",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_056",
-      "position": [
-        -12,
-        0,
-        -28
-      ],
-      "kind": "pickup",
-      "item": "core.health_small",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_057",
-      "position": [
-        12,
-        0,
-        28
-      ],
-      "kind": "pickup",
-      "item": "core.health_small",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_058",
-      "position": [
-        -48,
-        0,
-        -28
-      ],
-      "kind": "pickup",
-      "item": "core.health_small",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_059",
-      "position": [
-        48,
-        0,
-        28
-      ],
-      "kind": "pickup",
-      "item": "core.health_small",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_060",
-      "position": [
-        -48,
-        0,
-        28
-      ],
-      "kind": "pickup",
-      "item": "core.armor_small",
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_061",
-      "position": [
-        48,
-        0,
-        -28
-      ],
-      "kind": "pickup",
-      "item": "core.armor_small",
-      "respawnSeconds": null
-    },
-    {
-      "id": "mount_062",
+      "id": "spawn_weqie931r8",
       "position": [
         36,
         0,
-        -46
+        -34
       ],
-      "kind": "mount",
-      "model": "snow_sled",
-      "yaw": 0,
-      "faction": "embers",
-      "respawnSeconds": null
+      "kind": "spawn",
+      "yaw": -0.788,
+      "faction": "embers"
     },
     {
-      "id": "mount_063",
-      "position": [
-        44,
-        0,
-        -46
-      ],
-      "kind": "mount",
-      "model": "snow_sled",
-      "yaw": 0,
-      "faction": "embers",
-      "respawnSeconds": null
-    },
-    {
-      "id": "mount_064",
-      "position": [
-        36,
-        0,
-        46
-      ],
-      "kind": "mount",
-      "model": "snow_sled",
-      "yaw": 3.141592653589793,
-      "faction": "tide",
-      "respawnSeconds": null
-    },
-    {
-      "id": "mount_065",
-      "position": [
-        44,
-        0,
-        46
-      ],
-      "kind": "mount",
-      "model": "snow_sled",
-      "yaw": 3.141592653589793,
-      "faction": "tide",
-      "respawnSeconds": null
-    },
-    {
-      "id": "hangar_door_panel",
-      "position": [
-        -4,
-        4.4,
-        -44.35
-      ],
-      "name": "Roll-up door",
-      "kind": "block",
-      "size": [
-        6,
-        4.6,
-        0.2
-      ],
-      "yaw": 3.141592653589793,
-      "material": "core.pbr_grey_corrugated",
-      "tint": "#d8dce0",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "hangar_door",
-      "position": [
-        -4,
-        4.4,
-        -44.35
-      ],
-      "name": "Roll-up door",
-      "kind": "mover",
-      "yaw": 3.141592653589793,
-      "blocks": [
-        "hangar_door_panel"
-      ],
-      "points": [
-        [
-          0,
-          0,
-          0
-        ],
-        [
-          0,
-          -4.4,
-          0
-        ]
-      ],
-      "mode": "trigger",
-      "speed": 1.6,
-      "turnSpeed": 45,
-      "wait": 0,
-      "startActive": true
-    },
-    {
-      "id": "hangar_button",
-      "position": [
-        -8.6,
-        1.2,
-        -44.8
-      ],
-      "kind": "button",
-      "yaw": 6.283185307179586,
-      "label": "Hangar door",
-      "once": false,
-      "cooldownSeconds": 1,
-      "startEnabled": true
-    },
-    {
-      "id": "thin_ice_066",
-      "position": [
-        -8,
-        -0.13,
-        -8
-      ],
-      "kind": "block",
-      "size": [
-        4,
-        0.15,
-        4
-      ],
-      "yaw": 0,
-      "material": "core.lake_ice",
-      "tint": "#c8e4f0",
-      "behaviour": "crumble",
-      "trigger": "step",
-      "delaySeconds": 0.7,
-      "respawnSeconds": 12,
-      "health": 60
-    },
-    {
-      "id": "water_067",
-      "position": [
-        -8,
-        -2,
-        -8
-      ],
-      "kind": "water",
-      "size": [
-        3.6,
-        1.6,
-        3.6
-      ],
-      "liquid": "water",
-      "tint": "#1a3a4a"
-    },
-    {
-      "id": "thin_ice_068",
-      "position": [
-        8,
-        -0.13,
-        8
-      ],
-      "kind": "block",
-      "size": [
-        4,
-        0.15,
-        4
-      ],
-      "yaw": 0,
-      "material": "core.lake_ice",
-      "tint": "#c8e4f0",
-      "behaviour": "crumble",
-      "trigger": "step",
-      "delaySeconds": 0.7,
-      "respawnSeconds": 12,
-      "health": 60
-    },
-    {
-      "id": "water_069",
-      "position": [
-        8,
-        -2,
-        8
-      ],
-      "kind": "water",
-      "size": [
-        3.6,
-        1.6,
-        3.6
-      ],
-      "liquid": "water",
-      "tint": "#1a3a4a"
-    },
-    {
-      "id": "ice_070",
-      "position": [
-        -10,
-        0,
-        6
-      ],
-      "kind": "block",
-      "size": [
-        2,
-        1.4,
-        1
-      ],
-      "yaw": 0.3,
-      "material": "core.glacier_ice",
-      "tint": null,
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 150
-    },
-    {
-      "id": "ice_071",
-      "position": [
-        10,
-        0,
-        -6
-      ],
-      "kind": "block",
-      "size": [
-        2,
-        1.4,
-        1
-      ],
-      "yaw": -0.3,
-      "material": "core.glacier_ice",
-      "tint": null,
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 150
-    },
-    {
-      "id": "ice_072",
-      "position": [
-        -14,
-        0,
-        -16
-      ],
-      "kind": "block",
-      "size": [
-        2,
-        1.4,
-        1
-      ],
-      "yaw": 0,
-      "material": "core.glacier_ice",
-      "tint": null,
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 150
-    },
-    {
-      "id": "ice_073",
-      "position": [
-        14,
-        0,
-        16
-      ],
-      "kind": "block",
-      "size": [
-        2,
-        1.4,
-        1
-      ],
-      "yaw": 0,
-      "material": "core.glacier_ice",
-      "tint": null,
-      "behaviour": "breakable",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 30,
-      "health": 150
-    },
-    {
-      "id": "prop_074",
-      "position": [
-        -36,
-        4,
-        -8
-      ],
-      "kind": "prop",
-      "model": "prop.sandbag_nest",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_075",
-      "position": [
-        -36,
-        4,
-        10
-      ],
-      "kind": "prop",
-      "model": "prop.sandbag_nest",
-      "yaw": 3.141592653589793,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_076",
-      "position": [
-        -44,
-        4,
-        0
-      ],
-      "kind": "prop",
-      "model": "prop.so_snow_pile",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_077",
-      "position": [
-        -46,
-        4,
-        -14
-      ],
-      "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_078",
-      "position": [
-        -42,
-        4,
-        14
-      ],
-      "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_079",
-      "position": [
-        -40,
-        4,
-        -2
-      ],
-      "kind": "prop",
-      "model": "prop.ammo_stack",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_080",
-      "position": [
-        -24,
-        0,
-        -28
-      ],
-      "kind": "prop",
-      "model": "prop.so_snow_pile",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_081",
-      "position": [
-        -24,
-        0,
-        28
-      ],
-      "kind": "prop",
-      "model": "prop.so_snow_pile",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_082",
-      "position": [
-        16,
-        0,
-        -28
-      ],
-      "kind": "prop",
-      "model": "prop.so_snow_pile",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_083",
+      "id": "spawn_weoiisisak",
       "position": [
         -16,
         0,
-        28
+        2
       ],
-      "kind": "prop",
-      "model": "prop.so_snow_pile",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
+      "kind": "spawn",
+      "yaw": 1.567,
+      "faction": null
     },
     {
-      "id": "prop_084",
+      "id": "spawn_qkbyy435xg",
       "position": [
-        -8,
+        -4,
         0,
-        -30
+        -40
       ],
-      "kind": "prop",
-      "model": "prop.so_snow_pile",
+      "kind": "spawn",
       "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
+      "faction": "embers"
     },
     {
-      "id": "prop_085",
+      "id": "spawn_c68dpoyy87",
       "position": [
-        8,
+        -48,
         0,
-        30
+        -26
+      ],
+      "kind": "spawn",
+      "yaw": 0.785,
+      "faction": null
+    },
+    {
+      "id": "prop_kv6g5itgtx",
+      "position": [
+        4,
+        0,
+        -6
       ],
       "kind": "prop",
-      "model": "prop.so_snow_pile",
+      "model": "prop.so_tarp_crates",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_086",
+      "id": "prop_f5nvjzsw7u",
       "position": [
-        -20,
+        12,
+        0,
+        5
+      ],
+      "kind": "prop",
+      "model": "prop.so_tarp_crates",
+      "yaw": 1.572,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_otcxpyjxf1",
+      "position": [
+        -6,
+        0,
+        6
+      ],
+      "kind": "prop",
+      "model": "prop.so_drums",
+      "yaw": 0.005,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_a3wl5l7z19",
+      "position": [
+        18,
         0,
         -10
       ],
       "kind": "prop",
-      "model": "prop.nt_boulder_snow",
-      "yaw": 0.4,
+      "model": "prop.so_drums",
+      "yaw": 0.005,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_087",
+      "id": "prop_iiow2wq1dt",
       "position": [
-        -20,
+        6,
         0,
-        12
-      ],
-      "kind": "prop",
-      "model": "prop.nt_boulder_snow",
-      "yaw": -0.3,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_088",
-      "position": [
-        -26,
-        0,
-        -12
-      ],
-      "kind": "prop",
-      "model": "prop.nt_rock_snow",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_089",
-      "position": [
-        -26,
-        0,
-        14
-      ],
-      "kind": "prop",
-      "model": "prop.nt_rock_snow",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_090",
-      "position": [
-        44,
-        0,
-        34
-      ],
-      "kind": "prop",
-      "model": "prop.nt_rock_snow",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_091",
-      "position": [
-        44,
-        0,
-        -34
-      ],
-      "kind": "prop",
-      "model": "prop.nt_rock_snow",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_092",
-      "position": [
-        -44,
-        0,
-        -62
-      ],
-      "kind": "prop",
-      "model": "prop.so_satellite_dish",
-      "yaw": 0.7853981633974483,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_093",
-      "position": [
-        12,
-        0,
-        -50
-      ],
-      "kind": "prop",
-      "model": "prop.so_generator",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_094",
-      "position": [
-        4,
-        0,
-        -36
+        9
       ],
       "kind": "prop",
       "model": "prop.so_heater",
-      "yaw": 0,
+      "yaw": 0.005,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_095",
+      "id": "prop_hhvd9tinj4",
       "position": [
-        -12,
         0,
-        -40
-      ],
-      "kind": "prop",
-      "model": "prop.so_tarp_crates",
-      "yaw": 0.2,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_096",
-      "position": [
-        -30,
-        0,
-        -44
-      ],
-      "kind": "prop",
-      "model": "prop.so_drums",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_097",
-      "position": [
-        40,
-        0,
-        -60
-      ],
-      "kind": "prop",
-      "model": "prop.so_supply_sled",
-      "yaw": 0.1,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_098",
-      "position": [
-        4,
-        0,
-        -48
+        -0.18,
+        -33
       ],
       "kind": "prop",
       "model": "prop.so_snowmobile",
-      "yaw": 0.5,
+      "yaw": 0.267,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_099",
+      "id": "prop_wpo0pvuksc",
       "position": [
-        -4,
-        0,
-        -60
+        6,
+        -0.18,
+        -33
       ],
       "kind": "prop",
-      "model": "prop.so_flagpole",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_100",
-      "position": [
-        -20,
-        0,
-        -42
-      ],
-      "kind": "prop",
-      "model": "prop.so_lamp_post",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_101",
-      "position": [
-        28,
-        0,
-        -42
-      ],
-      "kind": "prop",
-      "model": "prop.so_lamp_post",
-      "yaw": 3.141592653589793,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_102",
-      "position": [
-        -36,
-        0,
-        -50
-      ],
-      "kind": "prop",
-      "model": "prop.so_ski_rack",
-      "yaw": 0,
+      "model": "prop.so_snowmobile",
+      "yaw": -0.252,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_103",
+      "id": "prop_lkz8e2edll",
       "position": [
-        48,
-        0,
-        -52
-      ],
-      "kind": "prop",
-      "model": "prop.cargo_container",
-      "yaw": 1.5707963267948966,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_104",
-      "position": [
-        -48,
-        0,
-        -40
-      ],
-      "kind": "prop",
-      "model": "prop.so_chainlink_fence",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_105",
-      "position": [
-        -44,
-        0,
-        -40
-      ],
-      "kind": "prop",
-      "model": "prop.so_chainlink_fence",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_106",
-      "position": [
-        16,
-        0,
-        -40
-      ],
-      "kind": "prop",
-      "model": "prop.so_snow_fence",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_107",
-      "position": [
-        44,
-        0,
-        62
-      ],
-      "kind": "prop",
-      "model": "prop.so_satellite_dish",
-      "yaw": -2.356194490192345,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_108",
-      "position": [
-        -28,
-        0,
-        44
-      ],
-      "kind": "prop",
-      "model": "prop.so_antenna_mast",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_109",
-      "position": [
-        -12,
-        0,
-        50
-      ],
-      "kind": "prop",
-      "model": "prop.so_generator",
-      "yaw": 3.141592653589793,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_110",
-      "position": [
-        -2.4,
-        0,
-        56
-      ],
-      "kind": "prop",
-      "model": "prop.so_radio_console",
-      "yaw": 1.5707963267948966,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_111",
-      "position": [
-        -4,
-        0,
-        36
-      ],
-      "kind": "prop",
-      "model": "prop.so_heater",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_112",
-      "position": [
-        12,
-        0,
-        40
-      ],
-      "kind": "prop",
-      "model": "prop.so_tarp_crates",
-      "yaw": -0.2,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_113",
-      "position": [
-        30,
-        0,
-        44
-      ],
-      "kind": "prop",
-      "model": "prop.so_drums",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_114",
-      "position": [
-        40,
-        0,
-        60
+        -7,
+        -0.18,
+        -33
       ],
       "kind": "prop",
       "model": "prop.so_supply_sled",
-      "yaw": 3.141592653589793,
+      "yaw": 1.582,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_115",
+      "id": "prop_o47ei2rfqv",
       "position": [
-        4,
-        0,
-        60
-      ],
-      "kind": "prop",
-      "model": "prop.so_flagpole",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_116",
-      "position": [
-        20,
-        0,
-        42
+        -20,
+        -0.18,
+        -30
       ],
       "kind": "prop",
       "model": "prop.so_lamp_post",
-      "yaw": 3.141592653589793,
+      "yaw": 0.015,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_117",
+      "id": "prop_80bdv3486h",
       "position": [
-        -28,
-        0,
-        36
+        14,
+        -0.18,
+        -30
       ],
       "kind": "prop",
       "model": "prop.so_lamp_post",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_118",
-      "position": [
-        -48,
-        0,
-        52
-      ],
-      "kind": "prop",
-      "model": "prop.cargo_container_red",
-      "yaw": 1.5707963267948966,
+      "yaw": 0.015,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_119",
+      "id": "prop_ori15n5fre",
       "position": [
-        48,
-        0,
-        40
+        26,
+        -0.18,
+        -34
       ],
       "kind": "prop",
-      "model": "prop.so_chainlink_fence",
-      "yaw": 0,
+      "model": "prop.jersey_barrier",
+      "yaw": 1.587,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_120",
+      "id": "prop_yoyi9ud8zo",
       "position": [
-        44,
-        0,
-        40
-      ],
-      "kind": "prop",
-      "model": "prop.so_chainlink_fence",
-      "yaw": 0,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_121",
-      "position": [
-        -16,
-        0,
-        40
+        -32,
+        -0.04,
+        -40
       ],
       "kind": "prop",
       "model": "prop.so_snow_fence",
-      "yaw": 0,
+      "yaw": 0.02,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_122",
+      "id": "prop_4fiftfdpoq",
       "position": [
-        27.5,
-        0,
-        -12
+        -44,
+        -0.18,
+        -34
       ],
       "kind": "prop",
-      "model": "prop.so_pipe_run",
-      "yaw": 1.5707963267948966,
+      "model": "prop.so_drums",
+      "yaw": 0.02,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_123",
+      "id": "prop_cpccs3soi1",
       "position": [
-        27.5,
-        0,
+        -24,
+        -0.18,
+        -24
+      ],
+      "kind": "prop",
+      "model": "prop.so_generator",
+      "yaw": 1.592,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_4qcfvdw40z",
+      "position": [
+        54,
+        -0.18,
         -4
       ],
       "kind": "prop",
-      "model": "prop.so_pipe_run",
-      "yaw": 1.5707963267948966,
+      "model": "prop.storage_tank",
+      "yaw": 0.025,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_124",
+      "id": "prop_3cq70e5zpi",
       "position": [
-        27.5,
-        0,
-        4
+        52,
+        -0.18,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.fuel_tank",
+      "yaw": 1.597,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ii0v6ovcdm",
+      "position": [
+        40,
+        -0.18,
+        16
       ],
       "kind": "prop",
       "model": "prop.so_pipe_run",
-      "yaw": 1.5707963267948966,
+      "yaw": 1.597,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_125",
+      "id": "prop_dltlwe2phm",
       "position": [
-        27.5,
-        0,
-        12
+        44,
+        -0.18,
+        -16
       ],
       "kind": "prop",
-      "model": "prop.so_pipe_run",
-      "yaw": 1.5707963267948966,
+      "model": "prop.fuel_drum",
+      "yaw": 0.03,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_126",
+      "id": "prop_yqmdvmqgdg",
       "position": [
-        36,
-        0,
-        14
+        54,
+        4,
+        44
       ],
       "kind": "prop",
-      "model": "prop.so_drums",
-      "yaw": 0,
+      "model": "prop.so_satellite_dish",
+      "yaw": -2.323,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_127",
+      "id": "prop_79jyoa9v9x",
       "position": [
-        36,
-        0,
-        -14
+        38,
+        4,
+        25
       ],
       "kind": "prop",
-      "model": "prop.so_drums",
-      "yaw": 0,
+      "model": "prop.sandbag_nest",
+      "yaw": -2.323,
       "scale": 1,
       "solid": true,
       "tint": null
     },
     {
-      "id": "prop_128",
+      "id": "prop_2owgouuu9f",
       "position": [
-        46,
-        0,
-        0
+        34,
+        4,
+        38
       ],
       "kind": "prop",
       "model": "prop.so_lamp_post",
-      "yaw": -1.5707963267948966,
+      "yaw": 0.035,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_129",
+      "id": "prop_el40np9cfr",
       "position": [
-        -50,
-        0,
-        -67
+        -54,
+        -0.18,
+        32
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
-      "yaw": 0,
+      "model": "prop.so_antenna_mast",
+      "yaw": 0.035,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_130",
+      "id": "prop_gdoyltd75o",
       "position": [
-        -50,
-        0,
-        67
+        -26,
+        -0.18,
+        31
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
-      "yaw": 0,
+      "model": "prop.so_ski_rack",
+      "yaw": 0.035,
       "scale": 1,
-      "solid": false,
+      "solid": true,
       "tint": null
     },
     {
-      "id": "prop_131",
-      "position": [
-        -42,
-        0,
-        -67
-      ],
-      "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_132",
-      "position": [
-        -42,
-        0,
-        67
-      ],
-      "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_133",
-      "position": [
-        50,
-        0,
-        -67
-      ],
-      "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "prop_134",
-      "position": [
-        50,
-        0,
-        67
-      ],
-      "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
-      "yaw": 0,
-      "scale": 1,
-      "solid": false,
-      "tint": null
-    },
-    {
-      "id": "light_135",
-      "position": [
-        0,
-        8.6,
-        56
-      ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ff3020",
-      "intensity": 1.4,
-      "range": 12,
-      "fixture": "bulb",
-      "blink": 1.5
-    },
-    {
-      "id": "light_136",
+      "id": "prop_0w7h1gy4ah",
       "position": [
         -4,
-        7.5,
-        -44
+        -0.18,
+        34
       ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffb060",
-      "intensity": 1.2,
-      "range": 14,
-      "fixture": "bulb"
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "yaw": 0.035,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     },
     {
-      "id": "light_137",
+      "id": "prop_dcsplnoorh",
       "position": [
-        40,
-        6,
-        0
+        8,
+        -0.18,
+        41
       ],
-      "kind": "light",
-      "yaw": 0,
-      "color": "#ffd090",
-      "intensity": 1,
-      "range": 14,
-      "fixture": "bulb"
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "yaw": 0.035,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6x9149bm2p",
+      "position": [
+        14,
+        -0.18,
+        32
+      ],
+      "kind": "prop",
+      "model": "prop.jersey_barrier",
+      "yaw": 1.607,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_yhmfs1yp53",
+      "position": [
+        -56,
+        -0.18,
+        18
+      ],
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "yaw": 0.04,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_dfnaiy2z7r",
+      "position": [
+        56,
+        -0.18,
+        -16
+      ],
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "yaw": 0.04,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wx6lhwc7uk",
+      "position": [
+        -48,
+        -0.18,
+        -36
+      ],
+      "kind": "prop",
+      "model": "prop.so_chainlink_fence",
+      "yaw": 1.612,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_tbr5bnnc0l",
+      "position": [
+        -55,
+        -0.18,
+        46.48
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": -2.45,
+      "scale": 0.96,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_lnjhav3uvw",
+      "position": [
+        -51.91,
+        -0.18,
+        41.08
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": 1.29,
+      "scale": 0.93,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_c4bosugqle",
+      "position": [
+        -49.76,
+        -0.18,
+        46.02
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": -0.78,
+      "scale": 0.96,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wvbfmpv6ol",
+      "position": [
+        -21.84,
+        -0.03,
+        49.16
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": 1.37,
+      "scale": 1.22,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_d8arana2z5",
+      "position": [
+        -27.27,
+        -0.18,
+        43.99
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": -1.03,
+      "scale": 0.94,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2ukh3wzld5",
+      "position": [
+        15.92,
+        0,
+        46.11
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": -2.05,
+      "scale": 1.04,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_i8g3o81do4",
+      "position": [
+        23.35,
+        0.07,
+        46.23
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": 0.64,
+      "scale": 1.17,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_8jg806g6oo",
+      "position": [
+        -51.33,
+        -0.18,
+        -39.89
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": 0.8,
+      "scale": 0.99,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_9wg5izjbqy",
+      "position": [
+        -25.54,
+        0.29,
+        -44.6
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": 1.91,
+      "scale": 0.83,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_rkuriaktyl",
+      "position": [
+        -27.47,
+        -0.08,
+        -38.42
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": 1.02,
+      "scale": 1.25,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_x3ob5x1uc4",
+      "position": [
+        55.21,
+        -0.18,
+        -35.85
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": 0.87,
+      "scale": 1.05,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_rngcryktf1",
+      "position": [
+        50.47,
+        5.19,
+        -42.82
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": -2.24,
+      "scale": 1.13,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0t8fcnay3t",
+      "position": [
+        55.51,
+        4.4,
+        -43.66
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": -0.99,
+      "scale": 1.04,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_shq8rlru60",
+      "position": [
+        58.39,
+        0.07,
+        14.4
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": -1.24,
+      "scale": 0.87,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_rpbw9j1dw0",
+      "position": [
+        50.28,
+        -0.18,
+        12.82
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": 2.16,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mz8spn7jt6",
+      "position": [
+        52.65,
+        -0.18,
+        18.28
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": 0.5,
+      "scale": 0.9,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -3658,45 +1451,193 @@
     "variables": [],
     "timers": [],
     "objectives": [],
-    "rules": [
-      {
-        "id": "rule_hangar_door",
-        "name": "Hangar roll-up door",
-        "enabled": true,
-        "once": false,
-        "when": {
-          "event": "button_pressed",
-          "target": "hangar_button"
-        },
-        "if": [],
-        "do": [
-          {
-            "type": "sound",
-            "target": null,
-            "value": 0,
-            "text": "",
-            "state": "buzzer"
-          },
-          {
-            "type": "mover_go",
-            "target": "hangar_door",
-            "value": 0,
-            "text": "",
-            "state": ""
-          }
-        ]
-      }
-    ]
+    "rules": []
   },
-  "terrain": null,
+  "terrain": {
+    "origin": [
+      -88,
+      -80
+    ],
+    "spacing": 2,
+    "cols": 89,
+    "rows": 81,
+    "baseY": -0.15,
+    "heights": [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 6, 17, 24, 34, 32, 30, 27, 22, 21, 21, 24, 29, 27, 28, 23, 21, 22, 20, 22, 21, 20, 20, 19, 22, 23, 24, 25, 22, 24, 23, 22, 21, 18, 21, 22, 22, 22, 18, 20, 19, 20, 22, 22, 27, 27, 27, 26, 23, 26, 26, 25, 24, 21, 25, 28, 30, 30, 26, 28, 27, 26, 26, 22, 24, 23, 23, 23, 21, 23, 22, 31, 48, 42, 37, 14, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 6, 20, 44, 73, 113, 136, 151, 141, 125, 119, 106, 108, 120, 119, 126, 117, 118, 109, 101, 103, 98, 101, 98, 95, 102, 102, 111, 115, 112, 116, 109, 111, 107, 99, 102, 98, 105, 106, 100, 100, 94, 99, 102, 102, 116, 120, 128, 127, 121, 126, 119, 122, 119, 115, 122, 121, 131, 138, 134, 138, 128, 131, 128, 119, 119, 111, 113, 112, 105, 109, 113, 139, 173, 175, 167, 131, 97, 46, 14, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 6, 27, 68, 132, 205, 278, 327, 339, 336, 313, 287, 279, 272, 274, 290, 291, 288, 273, 263, 253, 251, 245, 236, 236, 243, 246, 259, 260, 268, 279, 274, 274, 260, 253, 254, 249, 249, 246, 246, 250, 247, 243, 237, 244, 264, 279, 294, 295, 298, 305, 297, 298, 285, 284, 293, 296, 307, 309, 318, 332, 328, 325, 309, 300, 299, 286, 284, 269, 262, 265, 269, 302, 345, 375, 397, 364, 311, 220, 134, 60, 14, 0, 0, 0, 0,
+      0, 0, 0, 0, 20, 73, 153, 267, 379, 479, 571, 583, 573, 551, 513, 493, 476, 478, 491, 497, 488, 474, 463, 452, 428, 417, 409, 409, 413, 431, 437, 447, 461, 476, 479, 462, 449, 438, 439, 434, 424, 419, 419, 431, 435, 420, 419, 426, 460, 481, 491, 508, 509, 521, 522, 508, 494, 490, 501, 523, 524, 530, 543, 562, 568, 559, 533, 514, 513, 502, 486, 467, 457, 458, 483, 535, 603, 651, 660, 626, 527, 403, 259, 134, 46, 0, 0, 0, 0,
+      0, 0, 0, 6, 52, 124, 257, 424, 594, 713, 775, 844, 827, 773, 739, 691, 666, 668, 684, 696, 671, 652, 626, 621, 585, 577, 589, 569, 576, 601, 609, 633, 632, 653, 667, 641, 624, 619, 611, 605, 600, 592, 601, 574, 579, 597, 576, 597, 643, 669, 677, 710, 708, 718, 719, 706, 687, 698, 709, 738, 733, 747, 751, 782, 794, 760, 741, 725, 707, 709, 677, 646, 632, 630, 708, 782, 852, 910, 917, 888, 758, 581, 395, 216, 97, 14, 0, 0, 0,
+      0, 0, 0, 20, 77, 188, 365, 563, 723, 917, 1033, 1032, 1007, 968, 884, 850, 815, 802, 817, 821, 815, 778, 801, 719, 743, 691, 688, 685, 694, 721, 739, 746, 775, 804, 800, 764, 763, 742, 737, 722, 726, 704, 728, 704, 722, 702, 729, 756, 770, 794, 816, 863, 871, 872, 862, 853, 843, 854, 851, 888, 883, 910, 934, 919, 942, 924, 893, 882, 841, 826, 810, 783, 771, 779, 837, 968, 1055, 1153, 1149, 1091, 956, 754, 523, 302, 128, 37, 0, 0, 0,
+      0, 0, 0, 25, 102, 234, 423, 650, 896, 1029, 1168, 1167, 1152, 1054, 947, 893, 871, 859, 860, 886, 866, 846, 813, 792, 795, 723, 742, 767, 755, 787, 774, 794, 812, 826, 845, 823, 818, 796, 769, 769, 778, 771, 780, 725, 735, 721, 788, 792, 826, 844, 877, 916, 923, 905, 938, 903, 908, 907, 905, 918, 947, 968, 973, 981, 986, 965, 976, 937, 889, 908, 845, 861, 838, 840, 912, 1047, 1194, 1314, 1333, 1259, 1098, 880, 615, 348, 158, 40, 0, 0, 0,
+      0, 0, 0, 30, 114, 263, 471, 702, 967, 1142, 1185, 1201, 1124, 1039, 913, 834, 825, 830, 827, 811, 797, 808, 791, 729, 699, 707, 698, 679, 708, 715, 751, 744, 777, 786, 790, 776, 763, 750, 723, 728, 720, 704, 723, 704, 692, 685, 732, 744, 764, 786, 826, 841, 881, 872, 866, 857, 827, 846, 847, 858, 883, 916, 912, 923, 942, 922, 905, 890, 857, 828, 810, 779, 783, 805, 890, 1062, 1227, 1326, 1397, 1363, 1166, 943, 657, 384, 165, 45, 0, 0, 0,
+      0, 0, 0, 24, 122, 267, 489, 725, 946, 1086, 1177, 1137, 1061, 914, 797, 697, 668, 668, 680, 688, 669, 650, 624, 597, 597, 601, 561, 591, 574, 609, 617, 627, 652, 653, 667, 637, 634, 615, 603, 615, 592, 596, 587, 574, 600, 576, 589, 594, 641, 661, 691, 704, 708, 720, 727, 696, 687, 696, 703, 734, 727, 739, 761, 776, 796, 778, 739, 721, 705, 713, 673, 648, 648, 659, 767, 942, 1117, 1262, 1367, 1338, 1164, 951, 664, 376, 170, 27, 0, 0, 0,
+      0, 0, 0, 20, 105, 269, 471, 702, 883, 1035, 1078, 1020, 895, 745, 590, 513, 478, 478, 493, 499, 494, 474, 447, 452, 428, 405, 405, 407, 417, 439, 443, 447, 457, 468, 475, 468, 447, 434, 435, 434, 432, 425, 425, 416, 420, 423, 419, 428, 450, 477, 493, 504, 509, 519, 526, 512, 492, 490, 499, 527, 530, 532, 547, 558, 572, 557, 535, 518, 511, 498, 484, 467, 459, 473, 583, 756, 964, 1159, 1260, 1233, 1117, 903, 628, 361, 148, 21, 0, 0, 0,
+      0, 0, 0, 19, 103, 255, 449, 644, 820, 927, 929, 860, 715, 540, 386, 298, 272, 274, 290, 291, 290, 273, 263, 257, 251, 241, 236, 236, 243, 250, 259, 260, 268, 279, 276, 274, 260, 253, 252, 247, 251, 246, 246, 247, 244, 240, 237, 244, 264, 277, 294, 295, 298, 305, 299, 298, 285, 284, 293, 296, 307, 309, 318, 332, 328, 325, 309, 300, 299, 288, 282, 269, 262, 294, 382, 569, 783, 978, 1094, 1098, 1008, 821, 570, 327, 127, 29, 0, 0, 0,
+      0, 0, 0, 22, 97, 246, 429, 608, 736, 819, 804, 713, 550, 365, 216, 128, 108, 120, 119, 126, 117, 118, 109, 101, 103, 98, 101, 103, 107, 118, 114, 116, 115, 112, 116, 109, 111, 107, 99, 102, 98, 105, 106, 100, 100, 94, 99, 102, 102, 116, 120, 128, 127, 121, 126, 119, 122, 119, 115, 122, 121, 131, 138, 134, 138, 128, 131, 128, 119, 119, 111, 113, 112, 132, 233, 397, 620, 831, 970, 1018, 914, 771, 531, 298, 124, 27, 0, 0, 0,
+      0, 0, 0, 21, 103, 240, 414, 583, 715, 776, 741, 616, 445, 267, 125, 42, 21, 24, 29, 27, 28, 23, 21, 22, 20, 22, 21, 32, 48, 54, 50, 35, 24, 25, 22, 24, 23, 22, 21, 18, 21, 22, 22, 22, 18, 20, 19, 20, 22, 22, 27, 27, 27, 26, 23, 26, 26, 25, 24, 21, 25, 28, 30, 30, 26, 340, 521, 476, 432, 461, 432, 432, 471, 496, 495, 534, 632, 688, 845, 929, 860, 707, 507, 298, 120, 29, 0, 0, 0,
+      0, 0, 0, 21, 103, 246, 422, 603, 718, 777, 731, 598, 428, 246, 103, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 16, 35, 42, 35, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 154, 620, 663, 659, 655, 660, 656, 655, 661, 661, 660, 660, 664, 665, 727, 911, 862, 713, 500, 294, 126, 21, 0, 0, 0,
+      0, 0, 0, 22, 101, 256, 438, 618, 735, 778, 754, 608, 438, 256, 101, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 28, 35, 28, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 154, 620, 663, 659, 655, 660, 656, 655, 661, 661, 660, 662, 664, 665, 709, 890, 829, 692, 491, 286, 123, 20, 0, 0, 0,
+      0, 0, 0, 21, 109, 258, 455, 632, 771, 805, 745, 624, 455, 258, 109, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 12, 16, 12, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 325, 513, 468, 424, 455, 423, 424, 464, 488, 485, 597, 663, 664, 708, 822, 780, 649, 472, 275, 112, 27, 0, 0, 0,
+      0, 0, 0, 24, 108, 270, 462, 633, 775, 798, 789, 647, 464, 270, 108, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 108, 532, 663, 665, 702, 805, 750, 648, 454, 255, 108, 24, 0, 0, 0,
+      0, 0, 0, 24, 116, 270, 469, 664, 793, 845, 789, 646, 469, 270, 116, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 100, 531, 662, 664, 684, 767, 741, 608, 432, 253, 100, 24, 0, 0, 0,
+      0, 0, 0, 24, 117, 279, 483, 676, 811, 872, 827, 668, 479, 279, 117, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 103, 491, 661, 663, 693, 778, 716, 614, 425, 247, 103, 15, 0, 0, 0,
+      0, 0, 0, 25, 116, 293, 506, 706, 856, 912, 856, 704, 506, 293, 116, 25, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 103, 488, 657, 663, 698, 769, 752, 618, 438, 247, 103, 15, 0, 0, 0,
+      0, 0, 0, 24, 125, 299, 523, 738, 874, 931, 882, 740, 529, 299, 125, 31, 17, 23, 17, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 100, 515, 661, 664, 688, 757, 758, 609, 442, 254, 100, 24, 0, 0, 0,
+      0, 0, 0, 27, 125, 314, 540, 746, 918, 955, 890, 750, 542, 314, 125, 44, 40, 50, 40, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 109, 535, 663, 665, 696, 785, 760, 633, 447, 255, 109, 24, 0, 0, 0,
+      0, 0, 0, 27, 135, 319, 543, 764, 907, 986, 925, 760, 543, 319, 138, 50, 50, 60, 50, 23, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 112, 522, 661, 664, 705, 815, 797, 621, 460, 272, 112, 27, 0, 0, 0,
+      0, 0, 0, 29, 142, 321, 547, 751, 903, 963, 913, 763, 547, 321, 142, 46, 40, 50, 40, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 120, 472, 655, 666, 739, 823, 813, 670, 473, 277, 120, 20, 0, 0, 0,
+      0, 0, 0, 32, 134, 322, 552, 746, 908, 963, 894, 752, 548, 324, 134, 39, 17, 23, 17, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 119, 412, 635, 667, 761, 879, 810, 667, 483, 279, 119, 20, 0, 0, 0,
+      0, 0, 0, 28, 132, 308, 531, 738, 864, 939, 858, 738, 531, 306, 132, 28, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 111, 334, 560, 670, 795, 861, 814, 647, 472, 278, 111, 26, 0, 0, 0,
+      0, 0, 0, 27, 115, 286, 483, 683, 807, 878, 821, 671, 493, 286, 115, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 24, 114, 268, 480, 659, 801, 832, 786, 649, 468, 268, 114, 24, 0, 0, 0,
+      0, 0, 0, 21, 107, 254, 447, 640, 781, 804, 787, 638, 445, 254, 107, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 22, 30, 22, 9, 26, 109, 270, 460, 638, 758, 818, 773, 640, 458, 270, 109, 26, 0, 0, 0,
+      0, 0, 0, 18, 95, 238, 424, 608, 738, 802, 750, 596, 422, 238, 95, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 52, 65, 52, 22, 20, 112, 262, 449, 620, 745, 817, 751, 632, 455, 262, 112, 20, 0, 0, 0,
+      0, 0, 0, 18, 90, 239, 422, 587, 742, 749, 736, 589, 424, 239, 90, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -98, -134, -133, -134, -134, -133, -133, -133, -133, -133, -132, -132, -133, -131, -61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 30, 65, 78, 65, 30, 23, 108, 253, 440, 603, 744, 773, 736, 617, 440, 255, 108, 19, 0, 0, 0,
+      0, 0, 0, 19, 101, 244, 437, 609, 739, 788, 741, 613, 435, 246, 101, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -132, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -129, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 52, 65, 52, 22, 23, 98, 244, 419, 575, 707, 745, 729, 582, 413, 244, 98, 23, 0, 0, 0,
+      0, 0, 0, 23, 106, 263, 448, 617, 753, 790, 735, 609, 440, 263, 106, 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -133, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 22, 30, 22, 9, 20, 96, 233, 415, 602, 713, 768, 728, 602, 415, 233, 96, 20, 0, 0, 0,
+      0, 0, 0, 26, 117, 270, 462, 632, 784, 817, 760, 632, 458, 270, 117, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -132, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 21, 93, 244, 427, 588, 756, 760, 753, 596, 427, 244, 93, 21, 0, 0, 0,
+      0, 0, 0, 27, 121, 281, 485, 651, 787, 871, 783, 669, 481, 281, 121, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -132, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 106, 259, 447, 639, 786, 815, 789, 627, 459, 259, 106, 16, 0, 0, 0,
+      0, 0, 0, 26, 118, 287, 489, 672, 799, 883, 819, 688, 497, 291, 118, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -132, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 120, 278, 478, 669, 815, 833, 806, 654, 487, 275, 120, 19, 0, 0, 0,
+      0, 0, 0, 23, 121, 290, 505, 684, 847, 841, 815, 680, 509, 290, 121, 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -132, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 122, 297, 497, 685, 850, 864, 843, 700, 497, 297, 122, 31, 0, 0, 0,
+      0, 0, 0, 24, 111, 281, 489, 679, 790, 842, 822, 683, 489, 281, 111, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -132, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 29, 130, 301, 517, 717, 834, 897, 846, 724, 509, 301, 130, 29, 0, 0, 0,
+      0, 0, 0, 24, 112, 265, 461, 651, 771, 827, 784, 647, 457, 265, 112, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -128, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 126, 306, 518, 704, 834, 920, 857, 721, 518, 306, 126, 32, 0, 0, 0,
+      0, 0, 0, 23, 109, 262, 457, 638, 782, 826, 792, 644, 456, 262, 109, 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -131, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -135, -101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 129, 294, 515, 692, 842, 912, 868, 692, 497, 290, 129, 21, 0, 0, 0,
+      0, 0, 0, 22, 106, 271, 467, 648, 794, 838, 794, 649, 467, 270, 106, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -73, -132, -134, -133, -134, -132, -132, -134, -134, -134, -132, -133, -132, -114, -26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 116, 275, 474, 668, 816, 853, 786, 668, 483, 279, 116, 18, 0, 0, 0,
+      0, 0, 0, 21, 114, 272, 477, 670, 797, 847, 798, 664, 482, 273, 114, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 101, 262, 449, 637, 777, 848, 796, 622, 453, 262, 101, 23, 0, 0, 0,
+      0, 0, 0, 24, 112, 279, 475, 659, 799, 843, 804, 659, 479, 280, 112, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 100, 246, 441, 636, 756, 783, 768, 629, 435, 246, 100, 20, 0, 0, 0,
+      0, 0, 0, 26, 118, 275, 471, 666, 792, 841, 806, 666, 473, 275, 118, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 99, 250, 427, 597, 745, 775, 735, 599, 429, 250, 99, 23, 0, 0, 0,
+      0, 0, 0, 26, 118, 277, 475, 657, 824, 858, 796, 677, 475, 277, 118, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 107, 255, 435, 611, 743, 790, 735, 621, 443, 253, 107, 18, 0, 0, 0,
+      0, 0, 0, 24, 113, 285, 488, 671, 826, 872, 820, 683, 488, 285, 113, 24, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 315, 398, 398, 398, 398, 396, 341, 280, 355, 397, 397, 397, 398, 398, 356, 270, 252, 340, 486, 647, 726, 754, 797, 756, 607, 444, 256, 110, 19, 0, 0, 0,
+      0, 0, 0, 21, 117, 282, 496, 687, 851, 890, 836, 705, 490, 282, 117, 26, 12, 16, 12, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 399, 400, 400, 400, 400, 400, 399, 398, 399, 400, 400, 400, 400, 400, 399, 396, 419, 495, 651, 821, 912, 775, 772, 743, 608, 439, 260, 104, 25, 0, 0, 0,
+      0, 0, 0, 23, 111, 285, 481, 682, 806, 877, 826, 682, 493, 285, 111, 35, 28, 35, 28, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 376, 399, 400, 400, 400, 400, 399, 400, 399, 400, 400, 400, 400, 400, 399, 399, 421, 506, 655, 845, 974, 796, 788, 746, 631, 444, 256, 107, 22, 0, 0, 0,
+      0, 0, 0, 25, 118, 280, 488, 700, 836, 889, 855, 700, 488, 280, 120, 41, 35, 42, 35, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 330, 398, 400, 399, 399, 398, 399, 399, 398, 399, 400, 399, 399, 400, 399, 424, 504, 659, 836, 965, 794, 784, 731, 622, 441, 260, 104, 25, 0, 0, 0,
+      0, 0, 0, 26, 122, 293, 513, 733, 888, 938, 874, 731, 511, 293, 122, 38, 28, 35, 28, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 290, 398, 399, 400, 400, 399, 399, 400, 399, 399, 400, 399, 399, 399, 399, 418, 510, 655, 841, 970, 805, 797, 745, 617, 437, 256, 110, 19, 0, 0, 0,
+      0, 0, 0, 26, 125, 321, 549, 768, 940, 997, 927, 756, 547, 319, 125, 31, 12, 16, 12, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 270, 397, 399, 400, 399, 399, 400, 399, 399, 400, 399, 399, 399, 399, 399, 418, 506, 648, 826, 958, 774, 788, 714, 596, 431, 251, 107, 18, 0, 0, 0,
+      0, 0, 0, 26, 142, 338, 595, 810, 980, 1026, 992, 802, 585, 340, 142, 26, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 248, 396, 398, 399, 399, 398, 399, 400, 399, 399, 398, 398, 399, 400, 399, 422, 497, 643, 813, 943, 754, 744, 717, 575, 420, 245, 98, 23, 0, 0, 0,
+      0, 0, 0, 32, 145, 355, 600, 822, 983, 1059, 983, 826, 604, 357, 145, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 381, 400, 400, 398, 399, 399, 400, 400, 399, 399, 399, 399, 399, 400, 399, 420, 496, 634, 806, 966, 790, 744, 696, 588, 415, 235, 97, 20, 0, 0, 0,
+      0, 0, 0, 34, 154, 355, 598, 833, 990, 1046, 1003, 830, 602, 355, 154, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 398, 400, 400, 399, 399, 399, 400, 399, 399, 400, 399, 399, 400, 399, 399, 422, 493, 637, 805, 954, 783, 750, 702, 575, 404, 238, 94, 22, 0, 0, 0,
+      0, 0, 0, 34, 152, 351, 598, 840, 1022, 1086, 992, 819, 592, 351, 152, 34, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 398, 400, 400, 399, 398, 398, 399, 398, 399, 400, 400, 400, 400, 400, 399, 415, 498, 639, 819, 948, 761, 742, 698, 588, 410, 237, 100, 16, 0, 0, 0,
+      0, 0, 0, 30, 141, 348, 592, 799, 996, 1054, 1003, 806, 596, 345, 141, 30, 0, 0, 0, 0, 7, 17, 23, 17, 7, 0, 0, 0, 0, 0, 0, 0, 5, 12, 16, 12, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 397, 400, 400, 399, 399, 399, 399, 399, 399, 400, 400, 399, 400, 400, 399, 417, 503, 637, 816, 936, 771, 743, 685, 581, 420, 238, 103, 17, 0, 0, 0,
+      0, 0, 0, 25, 138, 329, 568, 787, 950, 997, 970, 797, 578, 329, 138, 25, 0, 0, 0, 0, 17, 40, 50, 40, 17, 0, 0, 0, 0, 0, 0, 0, 12, 28, 35, 28, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 17, 23, 17, 7, 0, 395, 400, 400, 400, 399, 399, 400, 399, 399, 400, 399, 399, 400, 399, 399, 424, 497, 642, 810, 934, 758, 745, 702, 566, 411, 243, 98, 24, 0, 0, 0,
+      0, 0, 0, 24, 122, 316, 534, 768, 907, 956, 907, 762, 548, 313, 122, 24, 0, 0, 0, 3, 23, 50, 60, 50, 23, 3, 0, 0, 0, 0, 0, 2, 16, 35, 42, 35, 16, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 40, 50, 40, 17, 0, 393, 400, 400, 399, 399, 398, 399, 400, 400, 399, 398, 398, 400, 400, 400, 422, 501, 637, 814, 934, 774, 762, 710, 598, 421, 239, 101, 22, 0, 0, 0,
+      0, 0, 0, 26, 120, 292, 504, 712, 883, 929, 886, 729, 507, 292, 120, 26, 0, 0, 0, 0, 17, 40, 50, 40, 17, 0, 0, 0, 0, 0, 0, 0, 12, 28, 35, 28, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 23, 50, 60, 50, 23, 3, 370, 400, 400, 399, 400, 399, 399, 400, 399, 400, 400, 399, 399, 400, 399, 423, 499, 645, 815, 923, 765, 773, 689, 584, 426, 246, 99, 24, 0, 0, 0,
+      0, 0, 0, 26, 121, 283, 493, 687, 837, 900, 838, 690, 491, 283, 121, 26, 0, 0, 0, 0, 7, 17, 23, 17, 7, 0, 0, 0, 0, 0, 0, 0, 5, 12, 16, 12, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 40, 50, 40, 17, 0, 368, 399, 399, 400, 399, 399, 400, 399, 399, 400, 399, 399, 400, 399, 399, 417, 504, 646, 823, 956, 797, 787, 734, 593, 424, 247, 105, 17, 0, 0, 0,
+      0, 0, 0, 25, 115, 289, 491, 682, 831, 879, 833, 689, 502, 303, 132, 43, 13, 13, 18, 18, 18, 13, 17, 21, 21, 21, 14, 14, 21, 21, 21, 14, 14, 21, 23, 22, 15, 15, 22, 20, 19, 11, 11, 19, 20, 21, 14, 15, 24, 23, 22, 12, 17, 33, 40, 35, 20, 14, 409, 420, 419, 410, 410, 416, 417, 418, 411, 413, 421, 421, 420, 413, 413, 437, 525, 667, 837, 990, 847, 809, 729, 592, 430, 250, 105, 17, 0, 0, 0,
+      0, 0, 0, 22, 118, 284, 507, 709, 854, 916, 882, 745, 558, 348, 192, 97, 81, 81, 77, 80, 78, 85, 89, 87, 91, 88, 93, 93, 88, 91, 88, 93, 93, 89, 93, 91, 97, 97, 89, 87, 80, 82, 82, 79, 85, 87, 97, 101, 96, 96, 88, 86, 78, 70, 77, 76, 85, 89, 405, 484, 477, 466, 451, 465, 473, 476, 484, 489, 487, 490, 488, 493, 492, 511, 590, 733, 910, 1026, 850, 787, 758, 630, 435, 251, 99, 24, 0, 0, 0,
+      0, 0, 0, 24, 113, 297, 517, 734, 890, 965, 925, 815, 633, 449, 279, 208, 187, 192, 192, 185, 197, 198, 207, 214, 208, 219, 218, 218, 219, 209, 219, 218, 215, 222, 214, 226, 226, 223, 218, 200, 202, 198, 197, 199, 196, 216, 228, 232, 233, 217, 216, 201, 189, 182, 173, 189, 198, 204, 206, 380, 391, 240, 346, 575, 572, 588, 597, 607, 613, 607, 619, 617, 617, 641, 709, 853, 1019, 1116, 902, 839, 789, 636, 460, 260, 106, 22, 0, 0, 0,
+      0, 0, 0, 24, 128, 305, 523, 738, 899, 988, 992, 894, 725, 554, 417, 334, 320, 325, 330, 329, 333, 345, 366, 366, 371, 372, 382, 378, 374, 381, 378, 390, 382, 375, 388, 385, 392, 383, 371, 358, 345, 344, 343, 342, 354, 373, 389, 402, 389, 378, 372, 362, 338, 324, 322, 323, 338, 349, 349, 337, 328, 324, 528, 704, 708, 721, 741, 753, 762, 765, 768, 783, 783, 801, 868, 994, 1136, 1189, 997, 909, 808, 652, 468, 276, 113, 24, 0, 0, 0,
+      0, 0, 0, 26, 139, 305, 521, 730, 899, 997, 1003, 930, 813, 634, 547, 447, 448, 470, 451, 482, 462, 499, 509, 515, 531, 508, 530, 534, 506, 535, 509, 529, 514, 544, 550, 534, 543, 533, 514, 500, 477, 496, 475, 482, 511, 502, 537, 551, 542, 546, 490, 494, 471, 457, 459, 439, 485, 493, 479, 469, 443, 458, 511, 803, 836, 857, 858, 880, 861, 883, 903, 911, 916, 918, 1010, 1076, 1162, 1115, 975, 909, 824, 665, 468, 273, 126, 22, 0, 0, 0,
+      0, 0, 0, 33, 130, 299, 495, 700, 871, 943, 944, 959, 806, 722, 593, 553, 546, 554, 565, 569, 595, 602, 592, 633, 631, 647, 643, 631, 631, 606, 616, 606, 627, 621, 655, 649, 649, 649, 618, 604, 595, 584, 585, 591, 604, 618, 636, 653, 666, 632, 596, 612, 566, 541, 528, 557, 567, 574, 590, 555, 570, 572, 549, 624, 752, 676, 652, 675, 696, 675, 714, 727, 722, 731, 799, 855, 909, 990, 948, 903, 771, 636, 439, 257, 111, 26, 0, 0, 0,
+      0, 0, 0, 26, 113, 256, 436, 603, 735, 842, 906, 901, 784, 670, 592, 561, 576, 600, 566, 582, 618, 618, 639, 636, 647, 662, 673, 691, 681, 674, 691, 655, 702, 679, 689, 687, 693, 689, 645, 630, 624, 642, 610, 599, 644, 651, 704, 702, 679, 654, 648, 626, 605, 594, 581, 580, 598, 626, 601, 613, 596, 565, 553, 551, 565, 600, 625, 619, 656, 637, 647, 679, 703, 702, 713, 749, 841, 912, 891, 797, 705, 552, 385, 219, 94, 22, 0, 0, 0,
+      0, 0, 0, 21, 82, 209, 352, 514, 653, 722, 718, 764, 690, 624, 545, 535, 536, 556, 543, 564, 578, 614, 595, 610, 606, 636, 639, 633, 633, 612, 650, 637, 657, 645, 652, 650, 652, 643, 617, 592, 604, 596, 599, 591, 592, 616, 650, 653, 653, 637, 619, 606, 548, 563, 563, 557, 565, 578, 596, 555, 542, 563, 558, 516, 523, 546, 567, 600, 627, 616, 618, 639, 621, 623, 652, 712, 735, 773, 741, 685, 578, 454, 307, 173, 71, 18, 0, 0, 0,
+      0, 0, 0, 7, 56, 138, 257, 377, 470, 560, 556, 592, 525, 475, 454, 425, 446, 458, 464, 462, 474, 505, 491, 487, 516, 506, 542, 538, 516, 529, 503, 546, 532, 535, 547, 528, 547, 540, 511, 509, 483, 490, 485, 476, 499, 522, 545, 557, 551, 536, 518, 500, 459, 440, 459, 452, 469, 483, 479, 489, 454, 458, 448, 415, 461, 447, 475, 503, 490, 531, 528, 517, 547, 515, 525, 550, 583, 593, 556, 512, 431, 323, 217, 117, 49, 5, 0, 0, 0,
+      0, 0, 0, 0, 28, 77, 156, 244, 313, 365, 389, 376, 355, 332, 317, 310, 324, 331, 328, 329, 333, 345, 366, 357, 371, 374, 384, 378, 378, 369, 370, 372, 373, 375, 388, 384, 388, 384, 369, 358, 349, 348, 341, 342, 358, 365, 389, 396, 393, 388, 363, 356, 338, 315, 322, 319, 346, 349, 351, 337, 331, 324, 321, 307, 313, 321, 344, 356, 363, 371, 371, 374, 374, 368, 370, 385, 410, 404, 388, 346, 285, 214, 135, 69, 21, 0, 0, 0, 0,
+      0, 0, 0, 0, 7, 35, 77, 125, 175, 198, 219, 209, 200, 187, 173, 184, 187, 188, 192, 185, 197, 201, 207, 214, 208, 219, 216, 216, 219, 209, 219, 218, 219, 222, 214, 226, 225, 224, 218, 200, 202, 196, 197, 199, 196, 216, 224, 232, 233, 217, 216, 201, 189, 182, 173, 189, 196, 204, 206, 193, 194, 184, 178, 177, 172, 189, 196, 207, 214, 208, 219, 215, 218, 219, 209, 221, 228, 224, 220, 192, 159, 112, 65, 27, 5, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 7, 28, 56, 74, 89, 92, 94, 82, 71, 74, 75, 81, 81, 77, 80, 78, 85, 89, 87, 91, 88, 93, 93, 88, 91, 88, 93, 93, 89, 93, 91, 97, 97, 89, 87, 80, 82, 82, 79, 85, 87, 97, 101, 96, 96, 88, 86, 78, 70, 74, 76, 85, 89, 85, 85, 78, 78, 74, 69, 74, 76, 85, 89, 87, 91, 88, 93, 93, 88, 91, 88, 94, 96, 87, 79, 61, 43, 21, 5, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 7, 21, 23, 25, 13, 10, 16, 17, 18, 13, 13, 18, 18, 18, 13, 14, 21, 21, 21, 14, 14, 21, 21, 21, 14, 14, 21, 21, 22, 15, 15, 22, 20, 19, 11, 11, 19, 20, 21, 14, 15, 24, 23, 22, 12, 10, 16, 17, 18, 13, 14, 21, 20, 19, 11, 10, 16, 17, 18, 13, 14, 21, 21, 21, 14, 14, 21, 21, 21, 14, 14, 22, 19, 16, 5, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ],
+    "materials": [
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 5, 5, 5, 2, 5, 5, 2, 2, 2, 2, 5, 2, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 2, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 2, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 2, 5, 5, 2, 2, 5, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 2, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 2, 2, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 2, 2, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 2, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 2, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 2, 5, 5, 5, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 5, 5, 2, 2, 2, 2, 2, 5, 2, 2, 5, 2, 5, 5, 5, 5, 5, 2, 5, 5, 2, 2, 2, 5, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 2, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5,
+      5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 5, 5, 2, 2, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
+    ],
+    "boundary": true,
+    "foliage": []
+  },
   "bounds": {
     "min": [
-      -52,
-      -68
+      -60,
+      -46
     ],
     "max": [
-      52,
-      68
+      60,
+      52
     ],
     "style": "invisible",
     "height": 20
@@ -3706,17 +1647,81 @@
     "scenery": "peaks",
     "ground": "snow",
     "haze": 0.6,
-    "mist": 0.25,
-    "border": "concrete_wall"
+    "mist": 0.25
   },
   "physics": null,
   "blood": null,
   "teamSetup": {
     "sizes": [
-      12,
-      12
+      8,
+      8
     ]
   },
+  "weaponSet": "military",
   "dependencies": [],
-  "weaponSet": "military"
+  "setPieces": [
+    {
+      "id": "setpiece_505bqgjgcz",
+      "piece": "setpiece.reactor_room",
+      "x": -1,
+      "y": 2,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_vtbjqb7lee",
+      "piece": "setpiece.server_vault",
+      "x": 3,
+      "y": 3,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_pp02jpbpii",
+      "piece": "setpiece.power_core_hall",
+      "x": -5,
+      "y": -1,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_851iun8m1d",
+      "piece": "setpiece.loading_dock",
+      "x": 2,
+      "y": -3,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_vfxnrxfhrn",
+      "piece": "setpiece.trench_end_sandbag",
+      "x": -3,
+      "y": -2,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_41yrqtgw2a",
+      "piece": "setpiece.trench_straight_sandbag",
+      "x": -2,
+      "y": -2,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_yu8ok35jvm",
+      "piece": "setpiece.trench_end_sandbag",
+      "x": -1,
+      "y": -2,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    }
+  ]
 }

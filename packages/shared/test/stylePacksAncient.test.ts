@@ -180,26 +180,36 @@ describe('Ancient pack demo maps', () => {
     nav.destroy();
   });
 
-  it('Sandfall Colosseum has its arena, gates, lift cages, beast lift, traps and the hypogeum portal', () => {
+  it("Sandfall Colosseum (the owner's Flavius Rule board, rebuilt in MapMaker) has its sand, gates, emperor's box, stands, hypogeum and village", () => {
     const map = load('sandfall_colosseum');
     expect(map.classicStructure.theme).toBe('core.imperial');
-    const tiles = new Set(map.classicStructure.tiles.map((x) => x.tile));
-    for (const id of ['imperial.seating', 'imperial.seating_corner', 'imperial.gate', 'imperial.emperor_box', 'imperial.arena_hatch', 'imperial.arcade', 'imperial.arcade_stair', 'imperial.hypogeum', 'imperial.hypogeum_lift', 'imperial.tunnel', 'imperial.forum', 'imperial.temple', 'imperial.triumphal_arch', 'imperial.aqueduct', 'imperial.colonnade']) expect(tiles.has(id), id).toBe(true);
-    expect(map.entities.filter((e) => e.kind === 'door' && e.style === 'portcullis')).toHaveLength(3);
-    expect(liftLinks(map).length).toBe(4);
-    expect(map.entities.some((e) => e.kind === 'block' && e.behaviour === 'trapdoor' && e.trigger === 'logic')).toBe(true);
-    expect(map.entities.filter((e) => e.kind === 'trap' && e.trap === 'spikes').length).toBeGreaterThanOrEqual(4);
-    const portals = mapPortals(map.entities);
-    expect(portals.map((p) => p.link)).toEqual([1, 0]);
-    expect(portals[0]!.pos.y).toBe(-4);
-    expect(map.logic.rules.find((r) => r.id === 'rule_seal')!.do.some((a) => a.type === 'disable' && a.target === 'portal_hypogeum')).toBe(true);
+    expect(map.weaponSet).toBe('medieval');
+    const tiles = map.classicStructure.tiles;
+    const ids = new Set(tiles.map((x) => x.tile));
+    for (const id of ['imperial.seating', 'imperial.gate', 'imperial.emperor_box', 'core.cavea', 'core.cavea_vomitorium', 'core.gallery_grand', 'core.tunnel_vault', 'core.tunnel_vault_t', 'core.tunnel_vault_cross', 'core.hatch_corner', 'core.stairwell', 'core.stairs_open', 'imperial.forum', 'imperial.temple', 'imperial.triumphal_arch', 'imperial.colonnade']) expect(ids.has(id), id).toBe(true);
+    // The emperor's box is back, at the centre of the north stand; the four corner gates at the north and south stands' ends.
+    expect(tiles.filter((x) => x.tile === 'imperial.emperor_box').map((x) => [x.x, x.y, x.z])).toEqual([[0, 4, 0]]);
+    expect(tiles.filter((x) => x.tile === 'imperial.gate').map((x) => `${x.x},${x.y}`).sort()).toEqual(['-3,-4', '-3,4', '3,-4', '3,4']);
+    // The sand: 7 × 7 cells at ground level, the board's twelve pillars on its 4 m squares, its four hatches.
+    expect(tiles.filter((x) => (x.tile === 'core.yard' || x.tile === 'core.hatch_corner') && x.z === 0 && Math.abs(x.x) <= 3 && Math.abs(x.y) <= 3)).toHaveLength(49);
+    const pillars = map.entities.filter((e) => e.kind === 'prop' && e.model === 'prop.im_column_ionic').map((e) => `${e.position[0]},${e.position[2]}`).sort();
+    expect(pillars).toEqual(['-16,-16', '-16,16', '-24,0', '-8,-8', '-8,8', '0,-24', '0,24', '16,-16', '16,16', '24,0', '8,-8', '8,8']);
+    expect(map.entities.filter((e) => e.kind === 'ladder')).toHaveLength(4);
+    // Stands seven storeys high (the attic walk on level 6).
+    expect(Math.max(...tiles.map((x) => x.z))).toBeGreaterThanOrEqual(6);
+    // Modes: five King of the Hill medallions, a flag base each side, the beast pit's traps.
+    expect(map.entities.filter((e) => e.kind === 'hill')).toHaveLength(5);
+    expect(map.entities.filter((e) => e.kind === 'flag').map((e) => (e as Extract<MapEntity, { kind: 'flag' }>).team).sort()).toEqual(['embers', 'tide']);
+    expect(map.entities.filter((e) => e.kind === 'trap').length).toBeGreaterThanOrEqual(4);
+    expect(map.backdrop?.scenery).toBe('volcano');
   });
 
   it("Pharaoh's Reach has its temple, pyramid, tomb with traps and the curse, the river and its boats, and the tomb portal", () => {
     const map = load('pharaohs_reach');
     expect(map.classicStructure.theme).toBe('core.egypt');
-    const tiles = new Set(map.classicStructure.tiles.map((x) => x.tile));
-    for (const id of ['egypt.pylon', 'egypt.hypostyle', 'egypt.sanctuary', 'egypt.pyramid', 'egypt.tomb_entrance', 'egypt.tomb_corridor', 'egypt.tomb_chamber', 'egypt.quay', 'egypt.river', 'egypt.avenue', 'egypt.house']) expect(tiles.has(id), id).toBe(true);
+    // Tiles and set pieces: set pieces part 6 swapped the old egypt.pylon for setpiece.temple_pylon in MapMaker.
+    const tiles = new Set([...map.classicStructure.tiles.map((x) => x.tile), ...(JSON.parse(read('maps/pharaohs_reach.json')).setPieces ?? []).map((p: { piece: string }) => p.piece)]);
+    for (const id of ['setpiece.temple_pylon', 'egypt.hypostyle', 'egypt.sanctuary', 'egypt.pyramid', 'egypt.tomb_entrance', 'egypt.tomb_corridor', 'egypt.tomb_chamber', 'egypt.quay', 'egypt.river', 'egypt.avenue', 'egypt.house']) expect(tiles.has(id), id).toBe(true);
     expect(map.entities.some((e) => e.kind === 'water')).toBe(true);
     expect(map.entities.filter((e) => e.kind === 'mover' && e.props?.length).length).toBe(2);
     expect(map.entities.filter((e) => e.kind === 'trap' && e.position[1] < -3).length).toBeGreaterThanOrEqual(5);

@@ -1,5 +1,5 @@
 import { Color4, CreateLineSystem, Vector3, type LinesMesh, type Scene } from '@babylonjs/core';
-import { describeSegment, formatLength, segmentParts, measurePath, type MeasurePoint, type Measurement, type Vec3 } from '@tiletrigger/shared';
+import { describeSegment, formatLength, segmentParts, measureSegment, type MeasurePoint, type MeasureSegment, type MeasureWorld, type Measurement, type Vec3 } from '@tiletrigger/shared';
 
 /**
  * MapMaker's measure tool (overhaul Phase 1, item 3; the maths is shared editor/measure.ts). Click two points for the
@@ -13,6 +13,8 @@ export interface MeasureHost {
   project(p: Vec3): { x: number; y: number } | null;
   /** Where the labels go (over the view). */
   overlay: HTMLElement;
+  /** The map as shown (its boxes and ground, both cached per edit): the jump hint samples it along each stretch. */
+  world(): MeasureWorld;
 }
 
 export class MeasureTool {
@@ -25,6 +27,9 @@ export class MeasureTool {
   private lines?: LinesMesh;
   private labels: HTMLElement[] = [];
   private drawnKey = '';
+  /** Stretches worked out, by their ends, for the map as it was (sampling the ground is done once per stretch). */
+  private segs = new Map<string, MeasureSegment>();
+  private segsFor: { boxes: unknown; ground: unknown } | null = null;
 
   constructor(private readonly host: MeasureHost) {}
 
@@ -84,14 +89,36 @@ export class MeasureTool {
 
   /** The measurement clicked so far (the live stretch left out). */
   get measurement(): Measurement {
-    return measurePath(this.shown());
+    return this.path(this.shown());
+  }
+
+  /** A path's stretches, each judged on the ground along it (shared measure.ts), cached until the map changes. */
+  private path(points: readonly Vec3[]): Measurement {
+    const world = this.host.world();
+    if (this.segsFor?.boxes !== world.boxes || this.segsFor?.ground !== world.ground) {
+      this.segs.clear();
+      this.segsFor = { boxes: world.boxes, ground: world.ground };
+    }
+    const segments: MeasureSegment[] = [];
+    for (let i = 1; i < points.length; i++) {
+      const a = points[i - 1]!;
+      const b = points[i]!;
+      const key = `${a.x},${a.y},${a.z};${b.x},${b.y},${b.z}`;
+      let s = this.segs.get(key);
+      if (!s) {
+        if (this.segs.size > 256) this.segs.clear();
+        this.segs.set(key, (s = measureSegment(a, b, world)));
+      }
+      segments.push(s);
+    }
+    return { segments, total: segments.reduce((t, x) => t + x.distance, 0) };
   }
 
   /** The status line: the stretch to the pointer (or the last one) and the total, or what to do. */
   summary(): string {
     const live = this.live();
     const pts = live ? [...this.shown(), live[1]] : this.shown();
-    const m = measurePath(pts);
+    const m = this.path(pts);
     const last = m.segments.at(-1);
     if (!last) return this.points.length && !this.fresh ? 'Click the second point' : this.hover ? `Measure from here · ${snapWord(this.hover)}` : 'Click two points to measure';
     return `${describeSegment(last)}${m.segments.length > 1 ? ` · total ${formatLength(m.total)} over ${m.segments.length}` : ''}`;
@@ -144,7 +171,7 @@ export class MeasureTool {
     this.lines = CreateLineSystem('measureLines', { lines, colors, useVertexAlpha: true }, this.host.scene);
     this.lines.isPickable = false;
     this.lines.renderingGroupId = 1;
-    const m = measurePath(pts);
+    const m = this.path(pts);
     m.segments.forEach((s, i) => {
       const el = document.createElement('div');
       el.className = 'ed-measure-label';
@@ -161,7 +188,7 @@ export class MeasureTool {
       el.className = 'ed-measure-label live';
       el.dataset.live = '';
       // Two short lines (the length; the rise, slope and verdict in a word): the whole sentence is in the status line.
-      const parts = segmentParts(measurePath(live).segments[0]!);
+      const parts = segmentParts(this.path(live).segments[0]!);
       el.innerHTML = `<b></b><span></span>`;
       el.querySelector('b')!.textContent = parts.length;
       el.querySelector('span')!.textContent = `${parts.rise} · ${parts.slope} · ${parts.verdict}`;

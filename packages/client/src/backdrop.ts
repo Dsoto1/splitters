@@ -353,7 +353,103 @@ export class BackdropVisuals {
       case 'ocean':
         this.ridge(area, r0 + 420, 380, base - 1, rand, { height: [0, 45], roughness: 0.3, low: '#4f6648', high: '#6a7d5a', islands: true });
         break;
+      case 'volcano':
+        this.ridge(area, r0 + 60, 380, base, rand, { height: [14, 45], roughness: 0.3, low: '#7d6c4a', high: '#9c8b5f' });
+        this.volcano(area, r0 + 560, base, rand);
+        break;
     }
+  }
+
+  /**
+   * A lone volcano far to the north of the map (beyond the hills): a broad cone scored with gullies, a crater with a
+   * dull ember glow on its floor and a plume of smoke leaning downwind. All of it still: nothing flickers or flashes,
+   * so it needs nothing from Reduce flashing (CLAUDE.md, "Accessibility").
+   */
+  private volcano(area: PlayArea, distance: number, base: number, rand: () => number): void {
+    const cx = area.centre[0] + (rand() - 0.5) * distance * 0.3;
+    const cz = area.centre[1] + distance;
+    const radius = 560;
+    const height = 330;
+    const seg = 96;
+    const phase = rand() * Math.PI * 2;
+    // Profile from the foot to the crater floor: [radius fraction, height fraction, colour].
+    const profile: [number, number, string][] = [
+      [1, 0, '#6e5f45'],
+      [0.72, 0.16, '#5e5040'],
+      [0.48, 0.42, '#4a4038'],
+      [0.28, 0.74, '#3c3532'],
+      [0.15, 0.97, '#34302e'],
+      [0.12, 1, '#2e2a28'],
+      [0.1, 0.93, '#231c19'],
+      [0.05, 0.86, '#1c1512'],
+    ];
+    const positions: number[] = [];
+    const colors: number[] = [];
+    const indices: number[] = [];
+    for (let i = 0; i <= seg; i++) {
+      const a = (i / seg) * Math.PI * 2;
+      // Gullies down the flanks: the radius and height wobble round the cone, more on the steep upper slopes.
+      const gully = Math.sin(a * 11 + phase) * 0.035 + Math.sin(a * 5 - phase) * 0.05;
+      for (const [rf, hf, c] of profile) {
+        const r = radius * rf * (1 + gully * (1 - hf * 0.5));
+        positions.push(cx + Math.sin(a) * r, base + height * hf * (1 + gully * hf * 0.6), cz + Math.cos(a) * r);
+        const col = Color3.FromHexString(c);
+        colors.push(col.r, col.g, col.b, 1);
+      }
+    }
+    const n = profile.length;
+    for (let i = 0; i < seg; i++) for (let r = 0; r < n - 1; r++) {
+      const a = i * n + r;
+      const b = (i + 1) * n + r;
+      indices.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+    this.addMesh('backdrop_volcano', positions, indices, colors);
+    // The crater floor's glow: a steady, dull ember colour (no light, no flicker).
+    const top = base + height * 0.86;
+    const glow: number[] = [cx, top + 0.5, cz];
+    const glowIdx: number[] = [];
+    const glowCol: number[] = [1, 1, 1, 1];
+    for (let i = 0; i <= seg; i++) {
+      const a = (i / seg) * Math.PI * 2;
+      glow.push(cx + Math.sin(a) * radius * 0.055, top + 1, cz + Math.cos(a) * radius * 0.055);
+      glowCol.push(1, 1, 1, 1);
+      if (i > 0) glowIdx.push(0, i, i + 1);
+    }
+    const ember = this.addMesh('backdrop_volcano_glow', glow, glowIdx, glowCol);
+    const emberMat = ember.material as StandardMaterial;
+    emberMat.disableLighting = true;
+    emberMat.emissiveColor = Color3.FromHexString('#b4471c');
+    // The plume: puffs rising from the crater, growing and leaning east with the wind, see-through grey.
+    const puffs: number[] = [];
+    const puffIdx: number[] = [];
+    const puffCol: number[] = [];
+    const lat = 6;
+    const lon = 10;
+    for (let k = 0; k < 9; k++) {
+      const pr = 34 + k * 16 + rand() * 10;
+      const px = cx + k * k * 4.5 + k * 10;
+      const py = base + height * 0.95 + 25 + k * 52;
+      const pz = cz + (rand() - 0.5) * 30;
+      const shade = 0.42 + k * 0.035;
+      const start = puffs.length / 3;
+      for (let i = 0; i <= lat; i++) {
+        const t = (i / lat) * Math.PI;
+        for (let j = 0; j <= lon; j++) {
+          const p = (j / lon) * Math.PI * 2;
+          puffs.push(px + Math.sin(t) * Math.cos(p) * pr, py + Math.cos(t) * pr * 0.7, pz + Math.sin(t) * Math.sin(p) * pr);
+          puffCol.push(shade, shade, shade * 0.98, 1);
+        }
+      }
+      for (let i = 0; i < lat; i++) for (let j = 0; j < lon; j++) {
+        const a = start + i * (lon + 1) + j;
+        const b = a + lon + 1;
+        puffIdx.push(a, b, a + 1, a + 1, b, b + 1);
+      }
+    }
+    const plume = this.addMesh('backdrop_volcano_smoke', puffs, puffIdx, puffCol);
+    const smokeMat = plume.material as StandardMaterial;
+    smokeMat.alpha = 0.62;
+    smokeMat.emissiveColor = new Color3(0.25, 0.24, 0.23);
   }
 
   /** A ring of land round the map: a crest line from layered noise, coloured from its foot up. */
@@ -736,6 +832,8 @@ const BELTS: Record<string, BeltProfile> = {
   dunes: { berm: 6, hills: 9, props: ['rock_flat', 'rock_large', SAGUARO, 'env.palm.leaning', 'debris'], buildings: false, density: 0.35 },
   city: { berm: 0.6, hills: 0, props: ['barrier', 'barrier_high', 'container', 'lightpost', 'trashcan', 'skip'], buildings: true, density: 0.9 },
   ocean: { berm: 0.5, hills: 0, props: ['env.palm.coconut', 'env.palm.leaning', 'rock_large', 'rock_flat'], buildings: false, density: 0.4 },
+  // Rocks only: no trees or bushes from the props (owner, 2026-11-08: our generated foliage only on new maps).
+  volcano: { berm: 5, hills: 12, props: ['rock_large', 'rocks_tall', 'rock_flat', 'rock_large', 'debris'], buildings: false, density: 0.45 },
 };
 /** Themes whose surroundings are their own, whatever the scenery past them. */
 const THEME_BELTS: Record<string, Partial<BeltProfile>> = {

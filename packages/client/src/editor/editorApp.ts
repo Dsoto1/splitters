@@ -20,6 +20,7 @@ import {
   tileGhostCheck,
   checkNote,
   entityGhostNote,
+  ghostRefuses,
   zoneNote as zoneGhostNote,
   type GhostNote,
   type GhostEntityKind,
@@ -85,6 +86,8 @@ import {
   autoPlayerCaps,
   isTeamMode,
   MODE_LABELS,
+  hasRemovedMode,
+  withMainMode,
   SCENARIO_PALETTE,
   STYLE_PACKS,
   getStylePack,
@@ -134,6 +137,7 @@ import {
   type TileDefinition,
   type ValidationIssue,
   type Vec3,
+  type BotHintKind,
   EDGE_STYLES,
   EDGE_STYLE_LABELS,
   CEILINGS,
@@ -330,23 +334,25 @@ import { raycastBoxes, type BoxHit } from './raycast.ts';
 import { BudgetBar } from './budgetBar.ts';
 import { KeyOverlay } from './keyOverlay.ts';
 import { MeasureTool } from './measureTool.ts';
+import { MapTestPanel } from './mapTestPanel.ts';
 import { RotateRing } from './rotateRing.ts';
 import { quickFacings } from './quickFacings.ts';
-import { isRetiredTile, retiredTilePanel } from './retiredTiles.ts';
+import { isRetiredTile, replaceTilePanel } from './retiredTiles.ts';
 import { PropPlaceOptions } from './propPlaceOptions.ts';
 import { SurfaceBoxes } from './surfaceBoxes.ts';
 import { testMode } from '../testMode.ts';
 import { materialThumbnail } from '../materials/patterns.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
+import { removedModesRow } from './removedModes.ts';
 import { PathTool, pathLabel, type PathKind } from './pathTool.ts';
+import { EnvTools } from './envTools.ts';
 import { RouteTool } from './routeTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
 import { Palette } from './palette.ts';
 import { PaletteAtlas } from './paletteAtlas.ts';
 import {
   GROUND_COVER_IDS,
-  GROUND_COVER_SPECIES,
   NATURE_PROP_CATEGORIES,
   PROP_GROUPS,
   REPLACEMENTS,
@@ -363,6 +369,7 @@ import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { PlanView } from './planView.ts';
 import { cardShotSection, type CardShotHost } from './cardShot.ts';
 import { NoteTool } from './noteTool.ts';
+import { BotHintTool } from './botHintTool.ts';
 import { groupSection, type GroupHost } from './groupPanel.ts';
 import { openMirrorDialog } from './mirrorDialog.ts';
 import { openChangeGridDialog } from './changeGridDialog.ts';
@@ -436,7 +443,7 @@ function starterMap(size: number | null, ground: TerrainMaterial): MapDocument {
   return size ? { ...doc, terrain: { ...newTerrain(size, 2, [0, 0], ground), baseY: -0.15 } } : doc;
 }
 
-type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'path' } | { kind: 'route' } | { kind: 'measure' } | { kind: 'note' };
+type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'path' } | { kind: 'route' } | { kind: 'measure' } | { kind: 'note' } | { kind: 'bothint'; hint: BotHintKind } | { kind: 'envbrush' };
 
 /** What the pointer can pick: a tile, an entity, or a set piece (any of its parts picks the whole placement). */
 type Hit = { kind: 'tile' | 'entity' | 'setpiece'; id: string };
@@ -591,6 +598,8 @@ function toolKey(tool: Tool): string {
       return `scatter:${tool.set}`;
     case 'npc':
       return `npc:${tool.key}`;
+    case 'bothint':
+      return `bothint:${tool.hint}`;
     default:
       return tool.kind;
   }
@@ -723,7 +732,7 @@ export class EditorApp {
   private spawnYaw = 0;
   private scenarioYaw = 0;
   readonly logic: LogicPanel;
-  /** The Road tool (race tracks). */
+  /** The Road tool (roads, the track for NPC traffic, routes). */
   private readonly paths: PathTool;
   /** Mover and plane routes, drawn on the map with the Paths tool's hands. */
   private readonly routes: RouteTool;
@@ -732,8 +741,15 @@ export class EditorApp {
   private readonly budgetBar: BudgetBar;
   /** The measure tool (U): its points and labels, editor-only. */
   private readonly measure: MeasureTool;
+  /** The top bar's Bot test (overhaul Phase 4): a bot test run's heatmaps and spawn exposure, in a worker. */
+  readonly mapTest: MapTestPanel;
+  /** Environment Phase 3: the Environment group, its brush and the collision preview (envTools.ts). */
+  private readonly env: EnvTools;
   /** Note pins (J; noteTool.ts): notes for the map's makers, drawn over the view. */
   private readonly notes: NoteTool;
+  /** Bot hints (Y; botHintTool.ts, MapMaker overhaul Phase 4 item 3): drawn over the view, edited in the inspector. */
+  private readonly hints: BotHintTool;
+  private lastHint: BotHintKind = 'choke';
   /** The prop tool's placing options: Randomise. */
   private readonly propOpts: PropPlaceOptions;
   /** What props and the measure tool land on, per document version and view. */
@@ -824,7 +840,27 @@ export class EditorApp {
       pointer: () => this.pointerAt,
     });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
-    this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor') });
+    this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor'), world: () => ({ boxes: this.surfaceBoxes(), ground: this.shownGround }) });
+    this.mapTest = new MapTestPanel({ doc: () => this.doc, played: () => {
+        const r = loadMap(this.doc);
+        return r.ok ? r.map : this.doc;
+      }, errors: () => this.allIssues().filter((i) => i.severity === 'error').length, issuesChanged: () => this.renderIssues(), toast: (t, bad) => this.toast(t, bad), root: $('editor'), overlay: { scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor') } });
+    this.env = new EnvTools({
+      doc: () => this.doc,
+      run: (label, cmd) => this.run(label, cmd),
+      ground: () => this.shownGround,
+      floorY: () => this.level * this.doc.classicStructure.levelHeight,
+      scene: () => this.view.scene,
+      budgets: () => this.budgets.counts,
+      radius: () => this.brushRadius,
+      setRadius: (r) => this.setBrushRadius(r),
+      toast: (t, bad) => this.toast(t, bad),
+      useBrush: () => this.setTool({ kind: 'envbrush' }),
+      group: (c, id, title, opts) => this.palette.group(c, id, title, opts),
+      heading: (g, t) => this.palette.heading(g, t),
+      propCard: (g, def, tags, picture) => this.propButton(g, def, tags, picture),
+      register: (el, key, name, tags) => this.palette.register(el, { key, name, tags }),
+    });
     this.notes = new NoteTool({
       doc: () => this.doc,
       run: (label, cmd) => this.run(label, cmd),
@@ -838,6 +874,39 @@ export class EditorApp {
       tool: () => this.tool.kind === 'note',
       pickTool: () => this.setTool({ kind: 'note' }),
       shown: (y) => this.showAll || y < (this.level + 1) * this.doc.classicStructure.levelHeight - 0.01,
+      overlay: $('editor'),
+    });
+    this.hints = new BotHintTool({
+      doc: () => this.doc,
+      run: (label, cmd) => this.run(label, cmd),
+      toast: (t, bad) => this.toast(t, bad),
+      project: (p) => this.view.projectInView(p),
+      pointAt: (x, y) => {
+        this.updatePointer(x, y);
+        return this.hintPointAtHover();
+      },
+      focus: (p) => (this.plan.on ? this.plan.centre(p.x, p.z) : this.view.focus(p)),
+      tool: () => (this.tool.kind === 'bothint' ? this.tool.hint : null),
+      pickTool: (hint) => this.setTool({ kind: 'bothint', hint }),
+      shown: (y) => this.showAll || y < (this.level + 1) * this.doc.classicStructure.levelHeight - 0.01,
+      lookYaw: () => this.view.yaw,
+      viewRect: () => {
+        // Between the palette, the top bar and the right panel (each counts only while it is shown).
+        const box = (id: string) => {
+          const r = document.getElementById(id)?.getBoundingClientRect();
+          return r && r.width > 0 && r.height > 0 ? r : null;
+        };
+        const pal = box('ed-palette');
+        const top = box('ed-top');
+        const right = box('ed-right');
+        return { left: pal?.right ?? 0, top: top?.bottom ?? 0, right: right?.left ?? innerWidth, bottom: innerHeight };
+      },
+      teams: () => mapTeams(this.doc),
+      picked: () => {
+        if (this.hints.selected() && this.selCount()) this.setSelection(emptySelection(), true, true);
+        this.renderInspector();
+      },
+      wantComputed: () => this.validate(),
       overlay: $('editor'),
     });
     this.ring = new RotateRing(
@@ -879,13 +948,13 @@ export class EditorApp {
     // The live budget bar: counters kept from each edit (budgetCounters.ts), drawn when the document changes.
     this.budgets = new BudgetTracker(this.history.doc, this.setPieceLib);
     this.history.onChange = (c) => (c.reset ? this.budgets.reset(c.reset) : this.budgets.apply(c.command, c.doc));
-    this.budgetBar = new BudgetBar($('editor'), (id, row) => {
+    this.budgetBar = new BudgetBar($('ed-bottom'), (id, row) => {
       const ids = budgetCulprits(this.doc, id);
       if (!ids.length) return this.toast(`Nothing to select for ${row.label.toLowerCase()}${this.doc.setPieces?.length ? ' (set pieces count as their parts: select the set pieces themselves)' : ''}`, true);
       this.setTool({ kind: 'select' });
       this.setSelection({ tiles: [], entities: ids });
       this.toast(`Selected ${ids.length} counted as ${row.label.toLowerCase()} (${row.what})`);
-    });
+    }, $('ed-target'));
     this.logic = new LogicPanel({
       doc: () => this.doc,
       commit: (label, after) => this.run(label, { kind: 'setLogic', before: this.doc.logic, after }),
@@ -962,9 +1031,9 @@ export class EditorApp {
     return this.placeLibCache.lib;
   }
 
-  /** Replace all of a retired tile with the set piece that replaced it (one undo step), and select them. */
-  private replaceRetired(tile: string): void {
-    const r = replaceTilesWithSetPieceCommand(this.doc, tile, undefined, coreCatalog, this.setPieceLib);
+  /** Replace all of a tile with a set piece (a retired tile's own replacement, or any), one undo step, and select them. */
+  private replaceTiles(tile: string, piece: string): void {
+    const r = replaceTilesWithSetPieceCommand(this.doc, tile, piece, coreCatalog, this.setPieceLib);
     if (!this.run('Replace all', 'error' in r ? r : r.command) || 'error' in r) return;
     this.setSelection({ tiles: [], entities: [], setPieces: r.placements.map((p) => p.id) });
     this.toast(`Replaced ${r.placements.length} ${coreCatalog.get(tile)?.displayName ?? tile} with ${this.pieceDef(r.placements[0]!.piece)?.displayName ?? r.placements[0]!.piece}`);
@@ -1108,7 +1177,9 @@ export class EditorApp {
     if (this.stroke) this.strokeStep(dt);
     this.refresh(false);
     this.measure.frame();
+    this.mapTest.frame();
     this.notes.frame();
+    this.hints.frame();
     this.plan.update();
     this.view.render();
   }
@@ -1148,6 +1219,8 @@ export class EditorApp {
       this.paths.refresh();
       this.routes.refresh();
       this.paths.renderPane($('ed-paths'));
+      this.env.refresh();
+      this.env.updateStatus();
       if (!force) this.scheduleAutosave();
     }
   }
@@ -1232,10 +1305,12 @@ export class EditorApp {
     if (PLACING.has(tool.kind)) this.lastPlace = tool;
     if (tool.kind === 'scatter') this.lastScatter = tool.set;
     if (tool.kind === 'edge') this.edgeStyle = tool.style;
-    const pane: Partial<Record<Tool['kind'], string>> = { paint: 'paint', edge: 'advanced', terrain: 'terrain' };
+    const pane: Partial<Record<Tool['kind'], string>> = { paint: 'paint', edge: 'advanced', terrain: 'terrain', envbrush: 'plants' };
     this.paths.setActive(tool.kind === 'path');
     this.routes.setActive(tool.kind === 'route');
     this.measure.setActive(tool.kind === 'measure');
+    this.hints.setActive(tool.kind === 'bothint');
+    if (tool.kind === 'bothint') this.lastHint = tool.hint;
     // The pane holding the tool's card (props sit in Props, Nature or Vehicles; scenario pieces in several tabs).
     const card = document.querySelector<HTMLElement>(`#ed-palette .ed-pane [data-tool="${CSS.escape(toolKey(tool))}"]`);
     const at = card?.closest<HTMLElement>('.ed-pane')?.dataset.pane ?? pane[tool.kind];
@@ -1261,6 +1336,7 @@ export class EditorApp {
           (tool.kind === 'scatter' && t === `scatter:${tool.set}`) ||
           (tool.kind === 'terrain' && t === `terrain:${this.terrainBrush}`) ||
           (tool.kind === 'npc' && t === `npc:${tool.key}`) ||
+          (tool.kind === 'bothint' && t === `bothint:${tool.hint}`) ||
           (t === 'place' && PLACING.has(tool.kind)) ||
           t === tool.kind,
       );
@@ -1283,9 +1359,11 @@ export class EditorApp {
       mount: ['Place', 'Click places it · right-click removes a vehicle · R turns it 15° (Shift+R 5°) · players get in and out with E'],
       terrain: ['Terrain', 'Hold to sculpt or paint · Shift: the opposite (lower / raise) · [ ] brush size · T cycles brushes'],
       scatter: ['Place', 'Click or drag plants patches · right-click (Shift+drag) clears that kind of plant · [ ] brush size'],
+      envbrush: ['Environment brush', 'Click or drag paints the mix (one stroke, one undo step) · right-click or Shift+drag erases · [ ] brush size · settings in the Nature tab'],
       path: ['Paths', 'Click adds a point after the selected one (two clicks start a path) · click the first point with the last selected to join the ends · right-click or Del removes one · drag a point to move it · Shift+click a path inserts one · click another path to edit it'],
       route: ['Route', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click a stretch inserts one · Esc when done'],
       note: ['Note pins', 'Click the map to pin a note for its makers (shown in MapMaker only, never in play) · click a pin to edit or delete it · drag a pin to move it · Map properties lists every note'],
+      bothint: ['Bot hints', "Click the map to mark a spot for bots (a jump link: its start, then its landing) · it faces the way you look · click a pin to edit it in the inspector · drag a pin to move it · R turns the selected one · Del deletes · What bots know shows bots' own spots"],
       measure: ['Measure', "Click two points: distance, height and slope · a third click chains a path with its total · snaps to the grid, surfaces and objects' tops (Ctrl or Alt: no snap) · right-click takes a point back · Esc clears"],
     };
     // A zipline's ends go where you click (the Route tool's hands, two points only).
@@ -1326,7 +1404,8 @@ export class EditorApp {
   }
 
   /** Select: anything in a group brings its whole group (groups.ts), unless `single` (Alt-click: just that one). */
-  private setSelection(sel: Selection, single = false): void {
+  private setSelection(sel: Selection, single = false, keepHint = false): void {
+    if (!keepHint) this.hints.deselect();
     this.selection = single ? sel : withGroups(this.doc, sel);
     this.updateSelectionVisuals();
     this.renderInspector();
@@ -1477,6 +1556,8 @@ export class EditorApp {
   }
 
   private placeAtHover(): void {
+    // Spawns, pickups, props, vehicles and NPCs over nothing or outside the boundary: the ghost is red and says why, and the click places nothing (ghostWhy.ts).
+    if (ghostRefuses(this.entityGhost()?.note)) return;
     if (this.tool.kind === 'setpiece' && this.hoverCell) {
       const [x, y, z] = this.hoverCell;
       this.placeSetPiece(this.tool.piece, x, y, z);
@@ -1506,6 +1587,7 @@ export class EditorApp {
       const { at: p, yaw, scale, variant } = this.propPlacement(this.tool.model);
       const id = newId('prop');
       const name = getProp(this.tool.model)?.displayName ?? 'prop';
+      if (!this.env.confirmPlace(this.tool.model, p!, scale, variant)) return;
       if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'prop', position: p!, model: this.tool.model, yaw, scale, solid: true, tint: null, ...(variant !== undefined ? { variant } : {}) }] })) {
         this.propOpts.placed();
         this.setSelection({ tiles: [], entities: [id] });
@@ -1666,6 +1748,8 @@ export class EditorApp {
         return this.edgeAtHover('auto');
       case 'scatter':
         return this.scatterAtHover(tool.set, true);
+      case 'envbrush':
+        return this.hoverPoint ? this.env.dab(this.hoverPoint.x, this.hoverPoint.z, true) : undefined;
       case 'path':
         return this.paths.erase(this.hoverPoint);
       case 'route':
@@ -1677,6 +1761,7 @@ export class EditorApp {
         return this.toast('Terrain: Shift-drag does the opposite (lower, or raise)');
       case 'erase':
       case 'note':
+      case 'bothint':
         return;
     }
     const hit = this.pick();
@@ -1789,6 +1874,7 @@ export class EditorApp {
       b.key = key;
       return this.edgeAtHover(b.invert ? 'auto' : tool.style);
     }
+    if (tool.kind === 'envbrush') return this.env.drag(this.hoverPoint, b.invert || b.alt, first);
     if (tool.kind === 'scatter') {
       const p = this.hoverPoint;
       if (!p || (b.at && Math.hypot(p.x - b.at.x, p.z - b.at.z) < this.brushRadius * 0.8)) return;
@@ -1940,6 +2026,7 @@ export class EditorApp {
 
   /** R turns what you are placing, or the selection, by that kind's step (yawStep); Shift+R by the finer step. */
   private rotate(fine = false): void {
+    if (!this.selCount() && this.tool.kind !== 'tile' && this.tool.kind !== 'setpiece' && this.hints.turnSelected(fine)) return;
     const deg = (yaw: number) => `Facing ${Math.round((yaw * 180) / Math.PI)}°`;
     if (this.tool.kind === 'tile' || this.tool.kind === 'setpiece') {
       if (fine) this.toast(`${this.tool.kind === 'tile' ? 'Tiles' : 'Set pieces'} turn in quarter turns`);
@@ -2109,6 +2196,14 @@ export class EditorApp {
   }
 
   /** The measure tool's point under the pointer: snapped to the grid, surfaces and objects' tops (Ctrl or Alt: free). */
+  /** Where a bot hint goes under the pointer: the top of what is there (a roof, a ledge, the ground), else the level's plane. */
+  private hintPointAtHover(): Vec3 | null {
+    const ray = this.ray;
+    const hit = ray ? surfaceHit(ray.origin, ray.dir, this.surfaceBoxes(), this.shownGround) : null;
+    const p = hit && hit.on !== 'side' ? hit.point : this.hoverPoint;
+    return p && { x: Math.round(p.x * 100) / 100, y: Math.round(p.y * 100) / 100, z: Math.round(p.z * 100) / 100 };
+  }
+
   private measurePointAtHover(): MeasurePoint | null {
     const ray = this.ray;
     if (!ray) return null;
@@ -2291,9 +2386,9 @@ export class EditorApp {
         // Spawns, pickups, props, vehicles, NPCs and objects: shown only when there is something to say.
         const g = this.entityGhost()!;
         title = g.title;
-        tone = g.note.tone === 'warn' ? 'warn' : 'place';
-        marks.set(lines.push(`${g.note.tone === 'warn' ? '⚠' : 'ℹ'} ${g.note.text}`) - 1, g.note.tone === 'warn' ? 'warn' : 'note');
-        lines.push('Click to place');
+        tone = g.note.tone === 'note' ? 'place' : g.note.tone;
+        marks.set(lines.push(`${g.note.tone === 'bad' ? '✗' : g.note.tone === 'warn' ? '⚠' : 'ℹ'} ${g.note.text}`) - 1, g.note.tone);
+        lines.push(g.note.tone === 'bad' ? "Can't be placed here" : 'Click to place');
       } else if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
         const hit = this.pick();
         if (hit) {
@@ -2339,9 +2434,11 @@ export class EditorApp {
       : t.kind === 'spawn' ? { kind: 'spawn', model: 'spawn', at: this.placeSpot(), yaw: this.spawnYaw }
       : t.kind === 'pickup' ? { kind: 'pickup', model: t.item, at: this.placeSpot(), yaw: 0 }
       : null;
-    this.view.setPropGhost(ghost?.model ?? null, ghost?.at ?? null, ghost?.yaw ?? 0, ghost?.kind ?? 'prop', ghost?.scale !== undefined ? { scale: ghost.scale, ...(ghost.variant !== undefined ? { variant: ghost.variant } : {}) } : undefined);
+    // Red where the click is refused (over nothing, outside the boundary: ghostWhy.ts).
+    const refused = !this.looking && ghostRefuses(this.entityGhost()?.note);
+    this.view.setPropGhost(ghost?.model ?? null, ghost?.at ?? null, ghost?.yaw ?? 0, ghost?.kind ?? 'prop', ghost?.scale !== undefined ? { scale: ghost.scale, ...(ghost.variant !== undefined ? { variant: ghost.variant } : {}) } : undefined, refused);
     const objects = this.looking ? null : this.objectGhost();
-    this.view.setEntityGhost(this.doc, objects?.key ?? null, objects?.entities ?? []);
+    this.view.setEntityGhost(this.doc, objects?.key ?? null, objects?.entities ?? [], refused);
     this.updatePieceGhost();
     if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
       // Select: the rotate ring round the selection lights under the pointer (and, held, turns it).
@@ -2372,10 +2469,11 @@ export class EditorApp {
       this.view.setGhost(this.doc, null, null, 0, true);
       return;
     }
-    if (this.tool.kind === 'scatter') {
+    if (this.tool.kind === 'scatter' || this.tool.kind === 'envbrush') {
       const p = this.hoverPoint;
-      this.view.setBrushRing(p ? this.shownGround : null, p?.x ?? 0, p?.z ?? 0, this.brushRadius, '#6fdc6a');
-      $('ed-target').textContent = p ? `${SCATTER_SETS[this.tool.set].label} · radius ${this.brushRadius} m` : '';
+      const env = this.tool.kind === 'envbrush';
+      this.view.setBrushRing(p ? this.shownGround : null, p?.x ?? 0, p?.z ?? 0, this.brushRadius, env && this.env.mode === 'erase' ? '#ff7a4d' : '#6fdc6a');
+      $('ed-target').textContent = !p ? '' : this.tool.kind === 'envbrush' ? this.env.hoverLabel() : `${SCATTER_SETS[this.tool.set].label} · radius ${this.brushRadius} m`;
       this.view.setFaceHighlight(null, null);
       this.view.setHoverCell(this.doc, null);
       this.view.setGhost(this.doc, null, null, 0, true);
@@ -2433,6 +2531,9 @@ export class EditorApp {
     } else if (this.tool.kind === 'setpiece' && this.pieceHover) {
       const g = this.pieceHover;
       $('ed-target').textContent = `${g.def.displayName}: ${g.ok ? (g.blocked ? `fits; ${g.blocked} port${g.blocked === 1 ? '' : 's'} face${g.blocked === 1 ? 's' : ''} a wall` : 'fits here') : `can't go here: ${g.reason}`}`;
+    } else if (refused) {
+      const g = this.entityGhost()!;
+      $('ed-target').textContent = `${g.title} can't be placed here: ${g.note.text.charAt(0).toLowerCase()}${g.note.text.slice(1)}`;
     } else $('ed-target').textContent = this.zoneNote();
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'setpiece' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
@@ -2507,12 +2608,14 @@ export class EditorApp {
     else if (t.kind === 'prop') [kind, at, title, model] = ['prop', this.propSpot(t.model), getProp(t.model)?.displayName ?? 'Prop', t.model];
     else if (t.kind === 'mount') [kind, at, title] = ['mount', this.placeSpot(), MOUNT_DEFS[t.model].displayName];
     else if (t.kind === 'npc') [kind, at, title] = ['npc', this.placeSpot(), NPC_PALETTE.find((x) => x.key === t.key)?.label ?? 'NPC'];
-    else if (t.kind === 'scenario') [kind, at, title] = ['object', this.scenarioSpot(t.key)?.p ?? null, SCENARIO_PALETTE.find((x) => x.key === t.key)?.label ?? 'Object'];
+    else if (t.kind === 'scenario') [kind, at, title] = [t.key.startsWith('spawn:') ? 'spawn' : 'object', this.scenarioSpot(t.key)?.p ?? null, SCENARIO_PALETTE.find((x) => x.key === t.key)?.label ?? 'Object'];
     else return null;
     if (!at) return null;
-    const key = `${t.kind}:${title}:${at.join(',')}:${this.history.revision}`;
+    const key = `${t.kind}:${title}:${at.join(',')}:${this.history.revision}:${this.level}:${this.showAll}`;
     if (this.entityGhostAt?.key !== key) {
-      const note = entityGhostNote(this.doc, kind, at, { boxes: this.mapBoxes(), terrain: this.shownGround }, model);
+      // What it would stand on: the map as drawn with its blocks and solid props (surfaceBoxes), the ground as shown, liquids.
+      const liquids = this.viewDoc.entities.filter((e) => e.kind === 'water');
+      const note = entityGhostNote(this.doc, kind, at, { boxes: this.surfaceBoxes(), terrain: this.shownGround, liquids }, model);
       this.entityGhostAt = { key, value: note && { title, note } };
     }
     return this.entityGhostAt.value;
@@ -2666,7 +2769,7 @@ export class EditorApp {
       if (this.tool.kind === 'paint' && e.altKey) return this.pickStyleAtHover();
       if (this.tool.kind === 'terrain') return this.startStroke(e.shiftKey);
       // Paint, Walls, Scatter and Erase paint as you drag (one undo step); Shift does the opposite.
-      if (this.tool.kind === 'paint' || this.tool.kind === 'edge' || this.tool.kind === 'scatter' || this.tool.kind === 'erase') {
+      if (this.tool.kind === 'paint' || this.tool.kind === 'edge' || this.tool.kind === 'scatter' || this.tool.kind === 'envbrush' || this.tool.kind === 'erase') {
         this.history.beginStroke();
         this.brush = { invert: e.shiftKey, alt: e.altKey, key: null, at: null };
         this.brushAtHover(true);
@@ -2679,6 +2782,7 @@ export class EditorApp {
         return this.updateHover();
       }
       if (this.tool.kind === 'note') return this.notes.place(this.hoverPoint);
+      if (this.tool.kind === 'bothint') return this.hints.place(this.hintPointAtHover());
       if (this.tool.kind !== 'select') return this.placeAtHover();
       // The rotate ring round the selection: a drag turns it.
       if (this.ring.begin({ x: e.clientX, y: e.clientY })) {
@@ -2735,6 +2839,7 @@ export class EditorApp {
         if (this.brush) {
           this.brush = null;
           this.history.endStroke();
+          this.env.strokeEnd();
         }
         if (this.marquee) this.endMarquee();
         this.endStroke();
@@ -2807,6 +2912,8 @@ export class EditorApp {
     copy: () => this.copy(),
     paste: () => this.paste(),
     notes: () => this.setTool({ kind: 'note' }),
+    // MapMaker overhaul Phase 4 item 3: bot hints (the last kind picked).
+    botHints: () => this.setTool({ kind: 'bothint', hint: this.lastHint }),
     focus: () => this.focusSelection(),
     resetView: () => this.resetView(),
     logic: () => this.logic.toggle(),
@@ -2819,7 +2926,7 @@ export class EditorApp {
     erase: () => this.setTool({ kind: 'erase' }),
     // U: the measure tool (MapMaker overhaul Phase 1 item 3).
     measure: () => this.setTool({ kind: 'measure' }),
-    // G: Paths (Shift+G: Paths on the race track), N: Scatter (the last set you used).
+    // G: Paths (Shift+G: Paths on the track, NPC traffic), N: Scatter (the last set you used).
     paths: () => this.setTool({ kind: 'path' }),
     raceTrack: () => {
       this.paths.preset('race');
@@ -2836,6 +2943,8 @@ export class EditorApp {
       if (this.ring.cancel()) return this.updateHover();
       // Esc clears a measurement first (the measure tool stays in hand).
       if (this.measure.clear() && this.tool.kind === 'measure') return this.updateHover();
+      // Esc drops a jump link half placed, else lets the selected bot hint go.
+      if (this.hints.escape()) return this.updateHover();
       this.selectTool();
     },
     showAll: () => this.setShowAll(!this.showAll),
@@ -2847,6 +2956,7 @@ export class EditorApp {
     delete: () => {
       if (this.tool.kind === 'path' && this.paths.deleteSelected()) return;
       if (this.tool.kind === 'route' && this.routes.deleteSelected()) return;
+      if (!this.selCount() && this.hints.deleteSelected()) return;
       this.deleteSelection();
     },
     // One meaning per key: PgUp/PgDn change the level (Shift: move the selection a level), [ ] the brush size.
@@ -2855,10 +2965,10 @@ export class EditorApp {
     liftSelection: () => this.nudge(0, 0, 1),
     lowerSelection: () => this.nudge(0, 0, -1),
     brushBigger: () => {
-      if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius + 2);
+      if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter' || this.tool.kind === 'envbrush') this.setBrushRadius(this.brushRadius + 2);
     },
     brushSmaller: () => {
-      if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter') this.setBrushRadius(this.brushRadius - 2);
+      if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter' || this.tool.kind === 'envbrush') this.setBrushRadius(this.brushRadius - 2);
     },
     nudgeNorth: () => this.nudge(0, 1, 0),
     nudgeSouth: () => this.nudge(0, -1, 0),
@@ -3051,6 +3161,9 @@ export class EditorApp {
       scenarioGrid(pane, group).append(b);
       this.palette.register(b, { key: b.dataset.tool, name: entry.label, tags: entry.search });
     }
+    // Bot hints (MapMaker overhaul Phase 4 item 3; botHintTool.ts), last in the Entities tab.
+    const hintGrid = this.palette.group($('ed-entities'), 'gameplay:bothints', 'Bot hints', { note: 'Spots for bots on top of what they work out: chokepoints, sniper, camp and staging spots, jump links (Y). Shown in MapMaker only.' });
+    this.hints.fillPalette(hintGrid, (el, key, name, tags) => this.palette.register(el, { key, name, tags }));
     for (const item of CORE_ITEMS) {
       const b = document.createElement('button');
       b.className = 'tile-btn';
@@ -3065,8 +3178,8 @@ export class EditorApp {
     this.buildPropPalette();
     this.buildMountPalette();
     this.buildTerrainPalette();
-    // Paths: one tool for roads, streets, trails and walkways, the race track and AI routes, in the Terrain pane
-    // (roads lie on the ground and shape it). The race track and route cards open it on that kind of path.
+    // Paths: one tool for roads, streets, trails and walkways, the track (NPC traffic) and AI routes, in the Terrain
+    // pane (roads lie on the ground and shape it). The track and route cards open it on that kind of path.
     const pathGroup = this.palette.group($('ed-terrain-paths'), 'terrain:paths', 'Paths, Roads & Routes');
     const pathCard = (tool: string, kind: PathKind, svg: string, label: string, title: string, tags: string) => {
       const b = document.createElement('button');
@@ -3103,9 +3216,9 @@ export class EditorApp {
     pathPane.id = 'ed-paths';
     pathGroup.after(pathPane);
     this.paths.renderPane(pathPane);
-    const track = this.palette.group($('ed-mounts'), 'vehicles:track', 'Race Track');
+    const track = this.palette.group($('ed-mounts'), 'vehicles:track', 'Track (NPC traffic)');
     track.append(
-      pathCard('path-race', 'race', '<path d="M8 50 C8 20 48 36 48 6" stroke="#3a3f48" stroke-width="12" fill="none"/><path d="M8 50 C8 20 48 36 48 6" stroke="#f2f2f2" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/><path d="M40 4h12v4H40zM40 8h4v4h-4zM48 8h4v4h-4z" fill="#f2f2f2"/>', 'Race Track', 'Race track (Shift+G): a path used as the race track: click its points (a circuit at once), then set laps and the start grid in the Paths pane', 'road track race circuit lap checkpoint'),
+      pathCard('path-race', 'race', '<path d="M8 50 C8 20 48 36 48 6" stroke="#3a3f48" stroke-width="12" fill="none"/><path d="M8 50 C8 20 48 36 48 6" stroke="#f2f2f2" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/><path d="M40 4h12v4H40zM40 8h4v4h-4zM48 8h4v4h-4z" fill="#f2f2f2"/>', 'Track', 'Track for NPC traffic (Shift+G): a path NPC cars lap in every mode: click its points (a circuit at once), then set how many cars, their vehicle and the pit lane in the Paths pane', 'road track circuit traffic npc cars race lap'),
     );
 
     // Palette (after the reference board): the top bar's workspace picks a row of sub-tabs, a sub-tab one pane;
@@ -3552,6 +3665,7 @@ export class EditorApp {
       $<HTMLInputElement>(id).value = String(this.brushRadius);
       $(`${id}-v`).textContent = `${this.brushRadius} m`;
     }
+    this.env.syncRadius(this.brushRadius);
     this.updateHover();
   }
 
@@ -4013,15 +4127,9 @@ export class EditorApp {
     for (const cat of NATURE_PROP_CATEGORIES) {
       const grid = this.palette.group($('ed-nature'), `nature:${cat}`, cat);
       for (const def of CORE_PROPS.filter((d) => d.category === cat && !RETIRED_PROPS.has(d.id))) this.propButton(grid, def, 'nature');
-      // Our own species (the plants brush's grass, flowers, fern, shrub, eelgrass and pebbles) in place of the retired pieces, pictured from their first variant.
-      for (const id of GROUND_COVER_SPECIES[cat] ?? []) this.propButton(grid, getProp(id)!, 'nature environment procedural grass flowers fern shrub bush eelgrass pebbles stones ground cover');
     }
-    // The procedural environment's species (Phase 1 preview, docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): with ?env=1 only,
-    // no palette picture yet (their pictures join the atlas when they ship).
-    if (envRendererOn()) {
-      const grid = this.palette.group($('ed-nature'), 'nature:environment', 'Environment (preview)', { note: 'Procedural species: trees, shrub, grass, boulder, cliff · variants in the inspector' });
-      for (const s of ENV_SPECIES) if (!GROUND_COVER_IDS.includes(s.id)) this.propButton(grid, getProp(s.id)!, 'nature environment procedural preview', false);
-    }
+    // Our species (Environment Phase 3): the Environment group, first in the tab, by category, with its brush.
+    this.env.buildPalette($('ed-nature'), GROUND_COVER_IDS);
   }
 
 
@@ -4755,7 +4863,7 @@ export class EditorApp {
   }
 
   /**
-   * Players by mode (the map's player caps, metadata.playerCaps): for each mode the map plays (squads and races keep
+   * Players by mode (the map's player caps, metadata.playerCaps): for each mode the map plays (squads keep
    * their own sizes), the recommended and most players. Empty fields show the automatic caps (worked out from the
    * map's size and spawn points: sim/matchSetup.ts autoPlayerCaps); typing one sets the mode's own, Auto goes back.
    */
@@ -4812,6 +4920,9 @@ export class EditorApp {
     this.renderSkyPane();
     const el = $('ed-inspector');
     el.replaceChildren();
+    // A bot hint picked (botHintTool.ts): its own inspector.
+    const hint = this.selCount() === 0 ? this.hints.inspector() : null;
+    if (hint) return void el.append(hint);
     const { tiles, entities } = this.selection;
     const pieces = this.selPieces();
     const doc = this.doc;
@@ -4848,9 +4959,9 @@ export class EditorApp {
       el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
       const mode = document.createElement('select');
       const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
-      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.breakthrough', 'Breakthrough'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena'], ['core.race', 'Race']] as const) mode.append(new Option(label, id, false, id === current));
+      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.breakthrough', 'Breakthrough'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena']] as const) mode.append(new Option(label, id, false, id === current));
       // The main mode (the map's pick, what TEST plays) changes; the modes it also offers stay.
-      mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value, ...doc.metadata.supportedModes.slice(1).filter((m) => m !== mode.value)] } }));
+      mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: withMainMode([mode.value, ...doc.metadata.supportedModes.slice(1)], mode.value) } }));
       const teams = mapTeams(doc);
       const help: Record<string, string> = {
         'core.coop': 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".',
@@ -4864,12 +4975,12 @@ export class EditorApp {
         'core.bomb': 'Bomb: place Bomb Sites (A and B) away from both team spawns; the first team attacks.',
         'core.koth': 'King of the Hill: place one or more Hills (Entities tab). The hill moves to the next one every minute; a team scores while it alone stands on it.',
         'core.elim': 'Elimination: round-based Team Deathmatch. No respawns until the next round; the last team standing wins it.',
-        'core.race': 'Race: draw the track with the Paths tool (Shift+G, or Vehicles → Race Track) and tick Race track. Everyone starts on the grid behind its green first point in the track\'s vehicle; checkpoints are spaced along it in point order (laps on a loop, one run on an open path). Spawn points are only used before the race puts you in your car.',
       };
       // Maps with flag bases or hills also offer those modes in the Arcade, whatever the main mode is.
       const extra = playableModes(doc).filter((m) => m !== current && m !== 'core.elim');
       if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
       el.append(row('Mode', mode), small(help[mode.value] ?? ''));
+      if (hasRemovedMode(doc.metadata.supportedModes)) el.append(removedModesRow(doc.metadata.supportedModes, (next) => this.run('Drop Race from the modes', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: next } })));
       // Modes the map offers besides its main one (the rest follow from its pieces: flag bases, hills, sectors...).
       const also = document.createElement('div');
       also.id = 'ed-prop-also';
@@ -4978,8 +5089,7 @@ export class EditorApp {
     } else if (tiles.length === 1 && entities.length === 0 && !pieces.length) {
       const t = doc.classicStructure.tiles.find((x) => x.id === tiles[0])!;
       el.append(h2(coreCatalog.get(t.tile)?.displayName ?? t.tile));
-      const retired = retiredTilePanel(doc, t.tile, (id) => this.pieceDef(id)?.displayName ?? id, (tile) => this.replaceRetired(tile));
-      if (retired) el.append(retired);
+      el.append(replaceTilePanel(doc, t.tile, [...piecesFor(doc, this.setPieceLib).values()], (tile, piece) => this.replaceTiles(tile, piece)));
       const type = document.createElement('select');
       for (const def of coreCatalog.all()) type.append(new Option(def.displayName, def.id, false, def.id === t.tile));
       type.addEventListener('change', () => this.run('Replace tile', updateTileCommand(doc, t, { ...t, tile: type.value })));
@@ -6026,7 +6136,10 @@ export class EditorApp {
         await initPhysics();
         // The navmesh as the match builds it, and the navigation audit (traps, spawn points, objectives and pickups
         // cut off): warnings for creators (errors only on the official maps' own checks).
-        this.navIssues = validateMapNavigation(doc, false).issues;
+        const nav = validateMapNavigation(doc, false, { computed: this.hints.computedOn });
+        this.navIssues = nav.issues;
+        // "What bots know" (bot hints): the bots' own spots, worked out on the same navmesh.
+        this.hints.setComputed(nav.computed ?? null);
       } catch (e) {
         this.navIssues = [{ severity: 'warning', code: 'nav.failed', message: `navigation could not be generated: ${(e as Error).message}` }];
       }
@@ -6068,7 +6181,7 @@ export class EditorApp {
 
   private allIssues(): ValidationIssue[] {
     const order = { error: 0, warning: 1, suggestion: 2 } as const;
-    return [...this.issues, ...this.navIssues, ...this.zIssues].sort((a, b) => order[a.severity] - order[b.severity]);
+    return [...this.issues, ...this.navIssues, ...this.zIssues, ...this.mapTest.issues()].sort((a, b) => order[a.severity] - order[b.severity]);
   }
 
   private renderIssues(): void {

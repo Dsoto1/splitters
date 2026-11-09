@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 31,
   "metadata": {
     "id": "market_town",
     "name": "Market Town",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_d3ml2watxrhzzmt6",
-      "versionId": "v_hyizmfmm3pobfl3l",
-      "revision": 3,
-      "contentHash": "sha256:6d819dbe1cc0ea52f4698ee75f7482dc608bbaf4d329982c58b4199369051fd2",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:15:33.279Z"
+      "versionId": "v_2tusbfos62xoih74",
+      "revision": 5,
+      "contentHash": "sha256:875353cc7d4ad598f10a42dddeac75f4af47c2e3bd19ad6d94d9c51f074de8ab",
+      "schemaVersion": 31,
+      "releasedAt": "2026-11-09T04:21:26.353Z"
     }
   },
   "classicStructure": {
@@ -53,14 +53,6 @@
         "id": "tile_hgh0adrfls",
         "tile": "medieval.town_wall",
         "x": -2,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_p6qcpylmxv",
-        "tile": "medieval.town_gate",
-        "x": -1,
         "y": -6,
         "z": 0,
         "rotation": 0
@@ -679,7 +671,10 @@
         "x": 0,
         "y": -7,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "open"
+        }
       },
       {
         "id": "tile_fz5l5o4gpx",
@@ -775,7 +770,10 @@
         "x": 0,
         "y": -5,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "open"
+        }
       },
       {
         "id": "tile_5uhow53ima",
@@ -2073,7 +2071,7 @@
       "position": [
         0,
         0,
-        -50.5
+        -52
       ],
       "kind": "door",
       "yaw": 0,
@@ -2081,18 +2079,6 @@
       "startOpen": true,
       "locked": false,
       "auto": false
-    },
-    {
-      "id": "ladder_gate",
-      "position": [
-        1.85,
-        4,
-        -45.6
-      ],
-      "kind": "ladder",
-      "yaw": 1.5707963267948966,
-      "height": 4,
-      "width": 0.9
     },
     {
       "id": "block_9g8hhmbb36",
@@ -3280,6 +3266,17 @@
       12
     ]
   },
+  "weaponSet": "medieval",
   "dependencies": [],
-  "weaponSet": "medieval"
+  "setPieces": [
+    {
+      "id": "tile_p6qcpylmxv",
+      "piece": "setpiece.courtyard_gate_wall",
+      "x": -1,
+      "y": -6,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    }
+  ]
 }
