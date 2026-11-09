@@ -444,7 +444,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
-### Gunplay pass 2: identities, readouts, the Battle Rifle (`wip/gunplay-2`, agent, 2026-11-08; owner-approved candidates 1-6 of the audit plus spec gap G2; CHECK_STATUS)
+### Gunplay pass 2: identities, readouts, the Battle Rifle (`wip/gunplay-2`, agent, 2026-11-08; owner-approved candidates 1-6 of the audit plus spec gap G2; green on `check/gunplay-2` at 2673702, run 42531571292, then with main merged in; LANDED on main by fast-forward from `check/gunplay-2`)
 
 docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunplay pass 2"; `pnpm gun-report` re-run
 (docs/gunplay-audit.json, docs/gunplay-ttk.svg).
