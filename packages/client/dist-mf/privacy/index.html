@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy · Tile Trigger by ToshiroPlay</title>
+    <meta name="description" content="What Tile Trigger (ToshiroPlay) collects, why, and how long it keeps it." />
+    <style>
+      :root { color-scheme: dark light; --bg: #0b0f18; --text: #e6e9ef; --muted: #a3acbd; --accent: #ffb347; --line: #252c3b; }
+      @media (prefers-color-scheme: light) { :root { --bg: #f7f8fb; --text: #141821; --muted: #4f586a; --accent: #a65b00; --line: #d9dde6; } }
+      body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+      main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+      h1 { font-size: 30px; margin: 0 0 4px; }
+      h2 { font-size: 20px; margin: 32px 0 8px; border-top: 1px solid var(--line); padding-top: 20px; }
+      p, li { color: var(--text); }
+      .muted { color: var(--muted); font-size: 14px; }
+      a { color: var(--accent); }
+      table { border-collapse: collapse; width: 100%; font-size: 15px; }
+      th, td { text-align: left; vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); }
+      th { color: var(--muted); font-weight: 600; }
+      .placeholder { border: 1px dashed var(--accent); padding: 2px 6px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Privacy Policy</h1>
+      <p class="muted">Tile Trigger, a browser game by ToshiroPlay, at trigger.toshiroplay.com. Effective 27 October 2026.</p>
+      <p>
+        This policy explains what Tile Trigger collects and why. We keep it to the minimum the game needs. Tile Trigger is free, plays in your
+        browser, and never requires an account. We use no advertising, no analytics and no tracking cookies, and we never sell, rent or
+        share your information.
+      </p>
+
+      <h2>Playing without signing in</h2>
+      <p>
+        Offline matches, MapMaker and the character designer run entirely in your browser. Your settings, saved setups and the maps you make are kept
+        in your browser's own storage on your device. We do not receive them.
+      </p>
+
+      <h2>Signing in with Google (optional)</h2>
+      <p>Signing in is only needed for features tied to an account, such as managing a server you host. When you choose Sign in with Google, Google shares the following with us through Amazon Cognito, our sign-in service:</p>
+      <ul>
+        <li>your Google account identifier (a number that tells accounts apart)</li>
+        <li>your name</li>
+        <li>your email address</li>
+      </ul>
+      <p>We ask only for the basic openid, email and profile permissions. We cannot see your password, contacts, files or anything else in your Google account.</p>
+
+      <h2>What we keep</h2>
+      <table>
+        <tr><th>What</th><th>Why</th><th>How long</th></tr>
+        <tr><td>Your sign-in account (Google identifier, name, email)</td><td>To recognise you when you use account features.</td><td>Held by Amazon Cognito until you ask us to delete it. We keep no other user records.</td></tr>
+        <tr><td>Your sign-in session</td><td>So you stay signed in while you play.</td><td>In your browser for the open tab only; gone when you close it or sign out.</td></tr>
+        <tr><td>Your IP address</td><td>To connect you to games and our servers, and to limit abuse (rate limits).</td><td>In memory for minutes. Server logs, which can include IP addresses, are deleted after 14 days.</td></tr>
+        <tr><td>Game listings (game name, host name, map, player count)</td><td>To show a game you host in the game browser.</td><td>Removed when you stop hosting, or about a minute after your game stops checking in.</td></tr>
+        <tr><td>Relay credentials</td><td>To connect players whose networks block direct connections.</td><td>Expire after about an hour.</td></tr>
+      </table>
+
+      <h2>What other players see</h2>
+      <p>
+        The player name you choose, your character, the games you host or join, and what happens in a match. Your email address is never shown
+        to other players. Tile Trigger has no chat.
+      </p>
+      <p>
+        Online matches run in a player's browser or on a player's computer and connect players directly (peer to peer). As with any direct
+        connection, players in a match can see each other's IP addresses, unless the connection goes through our relay.
+      </p>
+
+      <h2>How we use it</h2>
+      <p>
+        Only to run the game: to sign you in, list and connect games, keep matches fair and prevent abuse. We do not use it for advertising and we
+        do not send marketing email.
+      </p>
+
+      <h2>Where it is stored</h2>
+      <p>
+        Tile Trigger's servers run on Amazon Web Services in the United States (us-east-1): Amazon Lightsail for the site and game browser, and Amazon
+        Cognito for sign-in. Browsers use public STUN servers (for example Google's) to find a direct connection; those see your IP address.
+        The game's fonts and files are served from our own server.
+      </p>
+
+      <h2>Cookies and your browser</h2>
+      <p>
+        Tile Trigger sets no cookies of its own. If you sign in, the sign-in service at login.toshiroplay.com uses cookies needed for signing in and out,
+        and nothing else. The game uses your browser's storage for your settings and your sign-in session; you can clear it at any time in
+        your browser settings.
+      </p>
+
+      <h2>Your choices</h2>
+      <ul>
+        <li>Play without signing in: nothing about you is kept beyond the short-lived items above.</li>
+        <li>Sign out at any time from the main menu.</li>
+        <li>To see or delete your account and everything tied to it, email us from the address you sign in with (below). We will act on your request within 30 days.</li>
+        <li>You can remove Tile Trigger's access to your Google account at any time at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
+      </ul>
+
+      <h2>Google user data</h2>
+      <p>
+        Tile Trigger's use and transfer of information received from Google APIs adheres to the
+        <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.
+      </p>
+
+      <h2>Children</h2>
+      <p>Tile Trigger is not intended for children under 13, and we do not knowingly collect information from them. If you believe a child has signed in, contact us and we will delete the account.</p>
+
+      <h2>Changes</h2>
+      <p>If this policy changes, we will update this page and its effective date. Significant changes will also be noted in the game.</p>
+
+      <h2>Contact</h2>
+      <p>ToshiroPlay: <a href="mailto:flaviusrule@gmail.com">flaviusrule@gmail.com</a></p>
+      <p class="muted"><a href="/">Back to the game</a></p>
+    </main>
+  </body>
+</html>

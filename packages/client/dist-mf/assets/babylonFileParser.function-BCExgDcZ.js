@@ -1,0 +1,1 @@
+const a={},s={};function o(r,n){a[r]=n}function l(r,n){s[r]=n}function d(r){return s[r]?s[r]:null}function u(r,n,i,t){for(const e in a)Object.prototype.hasOwnProperty.call(a,e)&&a[e](r,n,i,t)}export{o as A,d as G,u as P,l as a};

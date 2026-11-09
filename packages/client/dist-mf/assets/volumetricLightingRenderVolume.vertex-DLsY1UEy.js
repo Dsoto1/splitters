@@ -1,0 +1,4 @@
+import{K as e}from"./babylon-89dYjaND.js";import{s as i}from"./sceneVertexDeclaration-Bw5zloAR.js";import{s}from"./sceneUboDeclaration-DIVgotUo.js";import{m as n}from"./shadowMap.vertex-XXfUR2vs.js";import{m as a}from"./meshUboDeclaration-BvSCfH30.js";import"./bakedVertexAnimation-B93q2Y_I.js";import"./morphTargetsVertex-BSsIJc8Z.js";import"./helperFunctions-DuJdYcOd.js";import"./clipPlaneVertex-CC-XN0sz.js";const r="volumetricLightingRenderVolumeVertexShader",t=`#include<__decl__sceneVertex>
+#include<__decl__meshVertex>
+attribute vec3 position;varying vec4 vWorldPos;void main(void) {vec4 worldPos=world*vec4(position,1.0);vWorldPos=worldPos;gl_Position=viewProjection*worldPos;}
+`;e.ShadersStore[r]||(e.ShadersStore[r]=t);const c=[i,s,n,a];for(const o of c)e.IncludesShadersStore[o.name]||(e.IncludesShadersStore[o.name]=o.shader);const _={name:r,shader:t};export{_ as volumetricLightingRenderVolumeVertexShader};
