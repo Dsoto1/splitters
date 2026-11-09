@@ -1125,13 +1125,17 @@ async function editorEnvironmentChecks(browser) {
     const heights = t.heights.map((h, i) => Math.round(Math.min(24, Math.max(0, xOf(i) * 0.6)) * 100));
     const materials = t.materials.map((m, i) => (t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing > 0 && t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing < 40 ? 2 : m));
     ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights, materials } });
-    ed.history.execute('Spawn', { kind: 'addEntities', entities: [{ id: 'spawn_env', kind: 'spawn', position: [-20, 0, 0], yaw: 0, team: null }] });
+    ed.history.execute('Spawn', { kind: 'addEntities', entities: [{ id: 'spawn_env', kind: 'spawn', position: [-20, 0, 0], yaw: 0, faction: null }] });
     ed.history.execute('Route', { kind: 'setPaths', before: ed.doc.paths ?? null, after: [{ id: 'route_env', points: [[-45, 0, 12], [-5, 0, 12]], uses: ['route'], style: 'dirt', width: 3, closed: false, lay: false }] });
   });
   const envCount = () => page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.')).length);
   const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
   // Over a point, from far enough back that a stroke's ends are in view (between the palette and the side panel).
-  const look = (x, z, y = 0) => page.evaluate(([x, z, y]) => { const v = window.__editor.view; v.focus({ x, y, z }); v.dolly(-30); }, [x, z, y]);
+  // (Then a few frames, so the view's matrices, which project() reads, follow the camera.)
+  const look = async (x, z, y = 0) => {
+    await page.evaluate(([x, z, y]) => { const v = window.__editor.view; v.yaw = 0; v.focus({ x, y, z }); v.dolly(-30); }, [x, z, y]);
+    await frames(page, 3);
+  };
   await frames(page, 3);
   await look(-15, 0);
 
@@ -1231,6 +1235,31 @@ async function editorEnvironmentChecks(browser) {
   await look(30, 0, 24);
   await frames(page, 4);
   await shot('hillside-top');
+  if (shots) {
+    // For the record (screenshots only): the whole hillside painted Alpine, seen at eye level from its foot.
+    await page.fill('#ed-env-slope-max', '40');
+    await page.dispatchEvent('#ed-env-slope-max', 'change');
+    await page.evaluate(() => window.__editor.setBrushRadius(14));
+    for (const z of [-24, -6, 12]) {
+      await look(20, z, 12);
+      await stroke([4, z], [36, z + 6]);
+    }
+    await page.evaluate(() => {
+      const v = window.__editor.view;
+      // From the flat south-west of the hill, looking up it (north-east), clear of the starter room.
+      v.camera.position.set(-6, 1.7, -42);
+      v.yaw = 0.6;
+      v.pitch = 0.08;
+      v.applyCamera();
+    });
+    await frames(page, 30);
+    await page.evaluate(() => document.getElementById('ed-pal-toggle')?.click());
+    await frames(page, 10);
+    await shot('hillside-eye');
+    await page.evaluate(() => document.getElementById('ed-pal-toggle')?.click());
+    await page.evaluate(() => document.getElementById('ed-env-slope-max').scrollIntoView());
+    await shot('filters');
+  }
 
   // ---- Collision and nav preview: what blocks movement (red), shots (orange) and sight (blue), the zones (yellow).
   await page.check('#ed-env-blockers');
@@ -1257,13 +1286,14 @@ async function editorEnvironmentChecks(browser) {
   await page.mouse.click(onSpawn.x, onSpawn.y);
   await frames(page, 2);
   const placed = (await envCount()) === n0 + 1;
-  const away = await at(-35, 0, -14);
+  const away = await at(-12, 0, -20);
   const askedOnSpawn = [...asked];
+  const awayOk = await page.evaluate((p) => { const l = document.getElementById('ed-palette').getBoundingClientRect().right; const r = document.getElementById('ed-right').getBoundingClientRect().left; return p.x > l && p.x < r; }, away);
   asked.length = 0;
   await page.mouse.move(away.x, away.y);
   await page.mouse.click(away.x, away.y);
   await frames(page, 2);
-  check(refused && placed && (await envCount()) === n0 + 2 && !asked.length, `a tree on the spawn asks first (No keeps it off, Yes places it); elsewhere it just places (${JSON.stringify({ refused, placed, askedOnSpawn, askedAway: asked, count: (await envCount()) - n0 })})`);
+  check(refused && placed && (await envCount()) === n0 + 2 && !asked.length, `a tree on the spawn asks first (No keeps it off, Yes places it); elsewhere it just places (${JSON.stringify({ refused, placed, askedOnSpawn, askedAway: asked, count: (await envCount()) - n0, awayOk })})`);
   await page.keyboard.press('Control+KeyZ');
   await page.keyboard.press('Control+KeyZ');
 
@@ -1274,12 +1304,20 @@ async function editorEnvironmentChecks(browser) {
   await stroke([-30, -8], [-10, 4], true);
   const n2 = await envCount();
   check(n2 < n1 && (await page.evaluate(() => window.__editor.history.undoLabel)) === 'Erase plants', `Shift-drag erases the brush's species (${n1} → ${n2})`);
+  if (shots) {
+    await page.click('#ed-env-mode-erase');
+    const p = await at(-20, 0, -2);
+    await page.mouse.move(p.x, p.y);
+    await frames(page, 3);
+    await shot('erase');
+    await page.click('#ed-env-mode-paint');
+  }
   await page.keyboard.press('Control+KeyZ');
   check((await envCount()) === n1, 'undo brings the erased stroke back');
 
   // ---- Round trip: Export, then Import the file: every plant exactly as it was.
   // (Compared key by key: the order of an object's keys is not part of the map.)
-  const canon = () => page.evaluate(() => JSON.stringify(window.__editor.doc.entities.map((e) => Object.fromEntries(Object.entries(e).sort(([a], [b]) => (a < b ? -1 : 1))))));
+  const canon = () => page.evaluate(() => JSON.stringify(window.__editor.doc.entities.filter((e) => e.kind === 'prop').map((e) => Object.fromEntries(Object.entries(e).sort(([a], [b]) => (a < b ? -1 : 1))))));
   const before = await canon();
   const [download] = await Promise.all([page.waitForEvent('download'), page.click('#ed-export')]);
   const text = readFileSync(await download.path(), 'utf8');
@@ -1295,16 +1333,25 @@ async function editorEnvironmentChecks(browser) {
   await page.dispatchEvent('#ed-env-density', 'change');
   await page.evaluate(() => { const v = window.__editor.view; v.focus({ x: -40, y: 0, z: 0 }); v.dolly(-90); });
   await frames(page, 2);
-  await page.evaluate(() => {
-    window.__envFrames = [];
-    let last = performance.now();
-    const tick = (t) => { window.__envFrames.push(t - last); last = t; if (window.__envFrames.length < 600) requestAnimationFrame(tick); };
-    requestAnimationFrame(tick);
-  });
-  await stroke([-55, -20], [-25, 20]);
-  const big = await page.evaluate(() => ({ stroke: window.__envStroke, frames: window.__envFrames.slice(1), count: window.__editor.doc.entities.length }));
-  const worst = Math.max(...big.frames);
-  check(big.stroke.added > 150 && big.stroke.ms < T(400), `a 40 m stroke: ${big.stroke.added} plants in ${big.stroke.dabs} dabs, the slowest dab ${big.stroke.ms.toFixed(0)} ms of brush work; the slowest frame ${worst.toFixed(0)} ms (${big.count} entities; ${JSON.stringify(big.stroke)})`);
+  // Twice: the first stroke also loads the species' models; the second (after an undo) is the brush and the redraw alone.
+  const timed = async () => {
+    await page.evaluate(() => {
+      window.__envFrames = [];
+      let last = performance.now();
+      const tick = (t) => { window.__envFrames.push(t - last); last = t; if (window.__envFrames.length < 600) requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+    });
+    await stroke([-55, -20], [-25, 20]);
+    await frames(page, 5);
+    return page.evaluate(() => { const f = window.__envFrames.slice(1).sort((a, b) => a - b); return { stroke: window.__envStroke, worst: f[f.length - 1], median: f[f.length >> 1], frames: f.length, count: window.__editor.doc.entities.length }; });
+  };
+  // The frames with nothing happening, for comparison (this machine's software renderer is slow with hundreds of trees in view).
+  const idle = await page.evaluate(async () => { const f = []; let last = performance.now(); for (let i = 0; i < 20; i++) { const t = await new Promise(requestAnimationFrame); f.push(t - last); last = t; } f.sort((a, b) => a - b); return f[10]; });
+  const cold = await timed();
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 3);
+  const big = await timed();
+  check(big.stroke?.added > 150 && big.stroke.ms < T(400), `a 40 m stroke: ${big.stroke?.added} plants in ${big.stroke?.dabs} dabs, the slowest dab ${big.stroke?.ms.toFixed(0)} ms of brush work; frames while painting: median ${big.median.toFixed(0)} ms, slowest ${big.worst.toFixed(0)} ms (idle median ${idle.toFixed(0)} ms) (the first time, loading the models: ${cold.worst.toFixed(0)} ms) (${big.count} entities)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
