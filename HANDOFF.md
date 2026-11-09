@@ -195,12 +195,6 @@ The workflow is unchanged (CLAUDE.md):
 
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/sandfall_colosseum.json` (rebuild), MapMaker lane, 2026-11-08.
-- Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
-- Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
-- Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
-- Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
-- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, neon_spire, riot_junction, underdrain, blackout, crossroads, pharaohs_reach, qasr_medina, sunken_kingdom (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
-- Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
 - **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
   (team kills and roulette).
@@ -228,8 +222,6 @@ The workflow is unchanged (CLAUDE.md):
   landed on main with this answer): every bot holds fire and the air is clear before the shots, the teammate's spawn
   shield is cleared, and its damage is logged by attacker (`hurt` = your rounds; friendly fire off also needs nothing
   lost). Merge origin/main and the teams flow should hold.
-- Claimed: `maps/test_coverage.json` (the Town Wall Gatehouse, through MapMaker; set pieces part 6, `wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-09.
-- Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
   Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
@@ -353,8 +345,6 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 
-**Landing now: MapMaker train (check/train-<timestamp>), please hold code pushes to main.** (MapMaker lane, 2026-11-09; followups, bothints, p4, env3, setpieces6, sandfall, whiteout.)
-
 **Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
 for the owner's review, not landed).**
 - Made in the real MapMaker only (a scratch Playwright driver: Import, plan-view drag-box Delete, Create terrain and
@@ -466,6 +456,27 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - heatmaps stay in memory.
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
+- **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
+  - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
+  - bot hints (map format v33);
+  - Phase 4 (bot test, spawn exposure);
+  - the Environment tools and the race wording;
+  - set pieces part 6 (the swaps on 9 maps);
+  - the Sandfall Colosseum and Whiteout Station rebuilds.
+
+  The map claims for the swaps (iron_maw included) are released.
+  - **Still waiting:**
+    - `wip/mapmaker-p5` (green at 741f305e, map format v34);
+    - The Spillway;
+    - the Sandfall and Whiteout follow-ups.
+  - **Known:** the wider top bar makes Export, Import and Publish fold into the compact menu sooner near 1400 px.
+  - **Known:** the `editorux` flow is now about 1,340 s on CI, too long for a retry inside the 45-minute job. Split it
+    next.
+- **Phase 5 questions** (the lane's recommendations, as the owner asked):
+  - fog caps bots' sight at the players' distance;
+  - the lane proposes a time and weather per official map, set in MapMaker;
+  - otherwise as built: grey skies keep their own look at dawn and dusk; no lightning; host weather from the next
+    match; no Random weather; a 62° noon sun.
 - **Landing cadence (owner, 2026-11-09: "less landings, since I won't be testing until Tuesday afternoon"):** the
   MapMaker lane stops landing each branch on its own. Green branches wait. They land together as one train
   (`tools/ci/train.mjs`) on Tuesday 2026-11-10 morning (UTC), ready for the owner's Tuesday-afternoon testing; a
