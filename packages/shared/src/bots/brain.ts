@@ -1,5 +1,5 @@
 import type { LookHitbox } from '../sim/hitbox.ts';
-import { botBand, botEdge } from './weaponBands.ts';
+import { botBand, botEdge, ttkEdge } from './weaponBands.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import { TALL_SIZE, type NavWorld } from '../nav/index.ts';
 import type { Corridor } from '../nav/corridors.ts';
@@ -4417,6 +4417,9 @@ export function barrelReach(alt: AltFire): number {
   return Math.min(alt.range ?? 10, (alt.falloff?.end ?? 16) * 0.45);
 }
 
+/** weaponScore's weight on how much faster than the benchmark guns a gun kills at the distance (weaponBands.ts ttkEdge). */
+const EDGE_WEIGHT = 0.4;
+
 export function weaponScore(w: InventoryView, c: WeaponChoiceContext): number {
   const { def } = w;
   const rounds = w.mag + w.reserve;
@@ -4428,6 +4431,9 @@ export function weaponScore(w: InventoryView, c: WeaponChoiceContext): number {
   const barrel = def.kind === 'melee' && def.alt?.kind === 'hitscan' && (w.alt ?? 0) >= def.alt.cost ? def.alt : null;
   const hi = barrel ? Math.max(reach, barrelReach(barrel)) : reach;
   let score = def.botDesirability + (dist >= lo && dist <= hi ? 0.6 : -Math.min(dist < lo ? lo - dist : dist - hi, 20) * 0.03);
+  // And how it kills at this distance against what others carry (measured): a shotgun over a Precision Rifle at arm's
+  // length, though both can kill there.
+  score += EDGE_WEIGHT * ttkEdge(def.id, dist);
   if (def.projectile && dist < def.projectile.splashRadius + 1) score -= 1.5 * (profile.selfPreservation / 100);
   if (profile.tags.includes('EXPLOSIVES_FAN') && def.projectile) score += 0.4;
   if (def.kind === 'melee') score += (profile.meleePreference / 100) * 0.5;

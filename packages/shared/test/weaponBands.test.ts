@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CORE_WEAPONS, getWeapon } from '../src/index.ts';
 import { BOT_TTK, BOT_TTK_DISTANCES } from '../src/bots/weaponBands.generated.ts';
-import { botBand, botEdge, edgeOf, effectiveBand, measuredBand } from '../src/bots/weaponBands.ts';
+import { botBand, botEdge, edgeOf, effectiveBand, measuredBand, ttkEdge } from '../src/bots/weaponBands.ts';
 
 const D = [5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 75, 100, 125, 150];
 
@@ -53,6 +53,14 @@ describe("bots' weapon bands (G4: from gun-report's measured TTK)", () => {
     expect(botEdge(getWeapon('core.sniper'))[0]).toBeGreaterThanOrEqual(20);
     expect(botEdge(getWeapon('core.smg'))[0]).toBe(0);
     expect(botEdge(getWeapon('core.shotgun'))[0]).toBe(0);
+  });
+
+  it('scores a gun at a distance against the benchmark median: the shotgun at arm\'s length, the Precision Rifle far off', () => {
+    expect(ttkEdge('core.shotgun', 2)).toBeGreaterThan(ttkEdge('core.sniper', 2));
+    expect(ttkEdge('core.sniper', 2)).toBeLessThan(0);
+    expect(ttkEdge('core.sniper', 100)).toBeGreaterThan(ttkEdge('core.smg', 100));
+    expect(ttkEdge('core.shotgun', 40)).toBe(-1);
+    expect(ttkEdge('core.knife', 2)).toBe(0);
   });
 
   it('keeps the hand-set range for weapons without a measurement (melee)', () => {

@@ -93,6 +93,36 @@ for (const [id, ttk] of Object.entries(BOT_TTK)) {
   if (edge) edges.set(id, edge);
 }
 
+/** A curve's value at `d` (m), straight between the measured distances, held at the ends (null: no kill there). */
+function curveAt(ttk: readonly (number | null)[], distances: readonly number[], d: number): number {
+  const v = (i: number) => ttk[i] ?? Infinity;
+  if (d <= distances[0]!) return v(0);
+  for (let i = 1; i < distances.length; i++) {
+    if (d > distances[i]!) continue;
+    const a = v(i - 1);
+    const b = v(i);
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return Math.max(a, b);
+    const u = (d - distances[i - 1]!) / (distances[i]! - distances[i - 1]!);
+    return a + (b - a) * u;
+  }
+  return v(distances.length - 1);
+}
+
+/**
+ * How much faster (+) or slower (-) this gun kills at `dist` than the benchmark guns' median there, measured: from 1
+ * (it kills at once, or nothing else can) to -1 (it can't kill there, or takes twice as long or more). 0 without a
+ * measurement. weaponScore adds it, weighted, so a bot draws the gun that wins the fight at hand.
+ */
+export function ttkEdge(id: string, dist: number): number {
+  const ttk = BOT_TTK[id];
+  if (!ttk) return 0;
+  const t = curveAt(ttk, BOT_TTK_DISTANCES, dist);
+  const m = curveAt(median, BOT_TTK_DISTANCES, dist);
+  if (!Number.isFinite(t)) return -1;
+  if (!Number.isFinite(m)) return 1;
+  return Math.max(-1, Math.min(1, (m - t) / Math.max(1, m)));
+}
+
 /**
  * The distances (m) a bot holding this gun tries to fight at: its band, starting where it gets the edge (a long gun
  * stays out of the range where everyday guns out-kill it). The band itself when it has no edge, or no measurement.
