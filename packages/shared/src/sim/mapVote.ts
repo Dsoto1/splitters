@@ -126,6 +126,26 @@ export class MapVote {
     this.planned = closeAt;
   }
 
+  /**
+   * Host handoff (net/handoff.ts CheckpointVote): the vote the old host had open, carried on by its successor:
+   * the same ballot and votes (by their new slots), closing at `closeAt`, or already won (`won`: the old host's
+   * result, which its own vote may have decided, so it isn't tallied again).
+   */
+  static resumed(options: readonly VoteOption[], closeAt: number, host: number | null, votes: readonly (readonly [number, number])[], won?: { w: number; by?: VoteWin } | null): MapVote {
+    const v = new MapVote(options, closeAt, host);
+    for (const [slot, i] of votes) if (Number.isInteger(i) && i >= 0 && i < options.length) v.votes.set(slot, i);
+    if (won && won.w >= 0 && won.w < options.length) {
+      const counts = tallyVotes(v.votes, options.length).counts;
+      v.result = { winner: won.w, counts, by: won.by ?? 'votes' };
+    }
+    return v;
+  }
+
+  /** Every vote cast so far: [slot, option index] (a handoff checkpoint carries them). */
+  ballots(): [number, number][] {
+    return [...this.votes];
+  }
+
   /** The ticks a vote takes, open to travel. */
   static ticks(): number {
     return (VOTE_SECONDS + VOTE_RESULT_SECONDS) * TICK_RATE;

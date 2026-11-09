@@ -6209,6 +6209,7 @@ export class Match {
         ...(key ? { key } : {}),
         ...(c.slot === successor ? { succ: 1 as const } : {}),
         ...(c.account ? { acct: 1 as const } : {}),
+        ...(person && c.party ? { py: c.party } : {}),
         look: c.look,
         team: c.faction,
         k: c.kills,
@@ -6239,6 +6240,8 @@ export class Match {
     c.selfKills = p.x ?? 0;
     c.objective = p.o ?? 0;
     c.account = p.acct === 1;
+    // Their party stays together with the new host (team modes: one side; free-for-all: friendly names, spawns).
+    if (p.py && p.kind === 'human') c.party = p.py;
     if (p.alive && p.p) {
       if (!c.alive) this.spawn(c);
       this.leaveMount(c, false);
@@ -7033,11 +7036,11 @@ export class BotFiller {
    * player, marked `succ`) as a player, and everyone else as an away player whose place a bot keeps, held
    * for their next connection by their hashed key (reclaim). Returns the successor's own player.
    */
-  restore(cp: MatchCheckpoint, fill: number, me: { name: string; look?: string }): Combatant | null {
+  restore(cp: MatchCheckpoint, fill: number, me: { name: string; look?: string }, placed?: Map<number, Combatant>): Combatant | null {
     let mine: Combatant | null = null;
-    // People first (their teams as they were), then the bots.
-    const order = [...cp.players].sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'human' ? -1 : 1));
-    for (const p of order) {
+    // People first (their teams as they were), then the bots. `placed`: each checkpoint player's index → their new place.
+    const order = cp.players.map((p, i) => ({ p, i })).sort((a, b) => (a.p.kind === b.p.kind ? 0 : a.p.kind === 'human' ? -1 : 1));
+    for (const { p, i } of order) {
       if (p.kind === 'bot') {
         const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
         this.counter++;
@@ -7045,12 +7048,14 @@ export class BotFiller {
         if (!c) continue;
         c.look = validLookId(p.look);
         this.match.restoreCombatant(c, p);
+        placed?.set(i, c);
         continue;
       }
       const self = p.succ === 1 && !mine;
       const c = this.match.addHuman(self ? me.name : p.name, self ? (me.look ?? p.look) : p.look, p.team);
       if (!c) continue;
       this.match.restoreCombatant(c, p);
+      placed?.set(i, c);
       if (self) mine = c;
       // Their place waits for them (twice the usual hold: everyone is reconnecting at once, some on slow machines);
       // with no key, a bot takes it over for good.
