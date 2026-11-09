@@ -1095,6 +1095,218 @@ async function editoruxFlow(browser) {
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
+  await editorEnvironmentChecks(browser);
+}
+
+/**
+ * Environment Phase 3 (docs/PROCEDURAL_ENVIRONMENT.md §8): the Nature tab's Environment group (species by category,
+ * single placement with a confirmation where a tree would block a spawn), the environment brush (a preset, a stroke =
+ * one undo step, the same seed repaints the same plants, filters, keep-clear, erase), the collision preview, the
+ * round trip through Export and Import, and a big stroke's cost.
+ */
+async function editorEnvironmentChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1, acceptDownloads: true })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-env-${name}.png` }).catch(() => {}) : Promise.resolve());
+  // Dialogs: the next answer is set before each one is expected (accept by default).
+  let answer = true;
+  const asked = [];
+  page.on('dialog', (d) => (asked.push(d.message()), answer ? d.accept() : d.dismiss()));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await newMap(page, 160);
+  // A hillside: flat grass west of x = 0, a 31° stone slope up to a 24 m plateau; a spawn and a route on the flat.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    const xOf = (i) => t.origin[0] + (i % t.cols) * t.spacing;
+    const heights = t.heights.map((h, i) => Math.round(Math.min(24, Math.max(0, xOf(i) * 0.6)) * 100));
+    const materials = t.materials.map((m, i) => (t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing > 0 && t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing < 40 ? 2 : m));
+    ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights, materials } });
+    ed.history.execute('Spawn', { kind: 'addEntities', entities: [{ id: 'spawn_env', kind: 'spawn', position: [-20, 0, 0], yaw: 0, team: null }] });
+    ed.history.execute('Route', { kind: 'setPaths', before: ed.doc.paths ?? null, after: [{ id: 'route_env', points: [[-45, 0, 12], [-5, 0, 12]], uses: ['route'], style: 'dirt', width: 3, closed: false, lay: false }] });
+  });
+  const envCount = () => page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.')).length);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  // Over a point, from far enough back that a stroke's ends are in view (between the palette and the side panel).
+  const look = (x, z, y = 0) => page.evaluate(([x, z, y]) => { const v = window.__editor.view; v.focus({ x, y, z }); v.dolly(-30); }, [x, z, y]);
+  await frames(page, 3);
+  await look(-15, 0);
+
+  // ---- The Environment group: first in the Nature tab, our species by category, the brush card.
+  await clickTool(page, '[data-tool="envbrush"]');
+  const pal = await page.evaluate(() => {
+    const nature = document.getElementById('ed-nature');
+    const sec = nature.querySelector('section[data-group="nature:environment"]');
+    return {
+      first: nature.querySelector('section')?.dataset.group,
+      heads: [...(sec?.querySelectorAll('.tile-cat') ?? [])].map((h) => h.textContent),
+      species: [...(sec?.querySelectorAll('[data-tool^="prop:env."]') ?? [])].length,
+      kenney: [...(sec?.querySelectorAll('[data-tool^="prop:prop."]') ?? [])].length,
+      dupes: [...nature.querySelectorAll('[data-tool="prop:env.broadleaf.oak"]')].length,
+      pane: !!document.getElementById('ed-env-preset') && !!document.getElementById('ed-env-species'),
+    };
+  });
+  check(pal.first === 'nature:environment' && ['Trees', 'Plants', 'Ground cover', 'Rocks', 'Boulders', 'Cliffs'].every((h) => pal.heads.includes(h)) && pal.species >= 19 && !pal.kenney && pal.dupes === 1 && pal.pane, `the Nature tab opens on the Environment group: Trees, Plants, Ground cover, Rocks, Boulders and Cliffs of our species, and the brush (${JSON.stringify(pal)})`);
+  await shot('palette');
+
+  // ---- The brush: the Temperate preset, seed 5, a stroke across the flat = one undo step.
+  await page.selectOption('#ed-env-preset', 'temperate');
+  await page.fill('#ed-env-seed', '5');
+  await page.dispatchEvent('#ed-env-seed', 'change');
+  await page.evaluate(() => window.__editor.setBrushRadius(8));
+  const stroke = async (from, to, shift = false) => {
+    // The hillside's height under a point (as sculpted above).
+    const hy = (x) => Math.min(24, Math.max(0, x * 0.6));
+    const a = await at(from[0], hy(from[0]), from[1]);
+    const b = await at(to[0], hy(to[0]), to[1]);
+    // Both ends on the 3D view (not under the palette or the side panel), and no stroke report left from before.
+    const inView = await page.evaluate(([a, b]) => {
+      const l = document.getElementById('ed-palette').getBoundingClientRect().right;
+      const r = document.getElementById('ed-right').getBoundingClientRect().left;
+      window.__envStroke = null;
+      return [a, b].every((p) => p.x > l + 4 && p.x < r - 4 && p.y > 80 && p.y < innerHeight - 40);
+    }, [a, b]);
+    if (!inView) check(false, `the stroke ${JSON.stringify(from)} → ${JSON.stringify(to)} is on the 3D view (${JSON.stringify([a, b])})`);
+    await page.mouse.move(a.x, a.y);
+    // (Let the palette's hover card go and the pointer's ground be found first.)
+    await frames(page, 3);
+    if (shift) await page.keyboard.down('Shift');
+    await page.mouse.down();
+    await page.mouse.move(b.x, b.y, { steps: 12 });
+    await page.mouse.up();
+    if (shift) await page.keyboard.up('Shift');
+    await frames(page, 2);
+  };
+  const plants = () => page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.')).map((e) => `${e.model}#${e.variant ?? 0}@${e.position.join(',')}/${e.yaw}/${e.scale}`).sort());
+  const undoLabel0 = await page.evaluate(() => window.__editor.history.undoLabel);
+  await stroke([-30, -8], [-10, 4]);
+  const painted = await plants();
+  const s1 = await page.evaluate(() => window.__envStroke);
+  const label = await page.evaluate(() => window.__editor.history.undoLabel);
+  check(painted.length > 20 && s1?.dabs >= 2 && label === 'Paint Temperate woods' && painted.some((p) => p.startsWith('env.broadleaf.')) && painted.some((p) => p.startsWith('env.grass.')), `a stroke of the Temperate brush paints trees, shrubs and ground cover (${painted.length} plants in ${s1?.dabs} dabs, step "${label}")`);
+  // Trunks, boulders and hiding bushes keep off the spawn and the route; ground cover may go on them.
+  const clear = await page.evaluate(() => {
+    const blocking = /env\.(broadleaf|conifer|palm|cactus|rock\.boulder|cliff|hedge|shrub)/;
+    const ps = window.__editor.doc.entities.filter((e) => e.kind === 'prop' && blocking.test(e.model));
+    return { onSpawn: ps.filter((e) => Math.hypot(e.position[0] + 20, e.position[2]) < 3).length, onRoute: ps.filter((e) => e.position[0] > -45 && e.position[0] < -5 && Math.abs(e.position[2] - 12) < 2.5).length };
+  });
+  check(s1.keptClear > 0 && clear.onSpawn === 0 && clear.onRoute === 0, `nothing that blocks play lands on the spawn or the route (${s1.keptClear} kept clear; ${JSON.stringify(clear)})`);
+  await shot('brush');
+  await page.keyboard.press('Control+KeyZ');
+  const undone = await envCount();
+  await page.keyboard.press('Control+KeyY');
+  const redone = await envCount();
+  check(undone === 0 && redone === painted.length && (await page.evaluate(() => window.__editor.history.undoLabel)) === 'Paint Temperate woods', `the whole stroke is one undo step (undo ${undone}, redo ${redone} of ${painted.length}; before it "${undoLabel0}")`);
+  // Undo, then the same stroke with the same seed: the same plants (turns, sizes, variants and all).
+  await page.keyboard.press('Control+KeyZ');
+  await stroke([-30, -8], [-10, 4]);
+  const again = await plants();
+  check(again.length === painted.length && again.every((p, i) => p === painted[i]), `the same seed and stroke paint the same plants (${again.length} of ${painted.length} the same)`);
+
+  // ---- Filters: on the 31° slope, oaks and maples (30° at most) stay off; the slope filter at 10° keeps everything off.
+  await look(20, 0, 12);
+  await page.fill('#ed-env-slope-max', '10');
+  await page.dispatchEvent('#ed-env-slope-max', 'change');
+  const beforeSlope = await envCount();
+  await stroke([12, -6], [28, 6]);
+  const s2 = await page.evaluate(() => window.__envStroke);
+  check((await envCount()) === beforeSlope, `the slope filter (at most 10°) paints nothing on the hillside (${(await envCount()) - beforeSlope} painted)`);
+  await page.fill('#ed-env-slope-max', '60');
+  await page.dispatchEvent('#ed-env-slope-max', 'change');
+  // Only stone: the brush paints the slope (pebbles, boulders and grass), never a broadleaf tree there.
+  await page.evaluate(() => {
+    if (!document.getElementById('ed-env-mat-stone').checked) document.getElementById('ed-env-mat-stone').click();
+    for (const m of ['grass', 'dirt', 'sand', 'gravel', 'snow', 'moss', 'mud']) { const i = document.getElementById(`ed-env-mat-${m}`); if (i.checked) i.click(); }
+  });
+  await stroke([12, -6], [28, 6]);
+  const slope = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.') && e.position[0] > 2 && e.position[0] < 38).map((e) => e.model));
+  check(s2?.filtered > 0 && slope.length > 0 && !slope.some((m) => m.startsWith('env.broadleaf.')), `on the stone slope: ${slope.length} plants, no broadleaf trees (their 30° limit) (${[...new Set(slope)].join(', ')}; the 10° stroke: ${JSON.stringify(s2)})`);
+  await page.selectOption('#ed-env-preset', 'alpine');
+  await page.evaluate(() => { for (const m of ['grass', 'dirt', 'sand', 'gravel', 'snow', 'moss', 'mud']) { const i = document.getElementById(`ed-env-mat-${m}`); if (i && !i.checked) i.click(); } });
+  await look(52, 0, 24);
+  await stroke([44, -8], [60, 6]);
+  await look(30, 0, 24);
+  await frames(page, 4);
+  await shot('hillside-top');
+
+  // ---- Collision and nav preview: what blocks movement (red), shots (orange) and sight (blue), the zones (yellow).
+  await page.check('#ed-env-blockers');
+  await frames(page, 3);
+  const overlay = await page.evaluate(() => { const m = window.__editor.view.scene.getMeshByName('envBlockers'); return m ? m.getTotalVertices() : 0; });
+  check(overlay > 100, `Show what blocks draws the plants' collision footprints and the keep-clear zones (${overlay} vertices)`);
+  await look(-15, 0);
+  await frames(page, 3);
+  await shot('blockers');
+  await page.uncheck('#ed-env-blockers');
+
+  // ---- One tree, placed with the prop tool: on the spawn it asks first (No: nothing placed; Yes: placed).
+  await clickTool(page, '[data-tool="prop:env.broadleaf.oak"]');
+  const onSpawn = await at(-20, 0, 0.5);
+  await page.mouse.move(onSpawn.x, onSpawn.y);
+  await frames(page, 2);
+  const n0 = await envCount();
+  answer = false;
+  asked.length = 0;
+  await page.mouse.click(onSpawn.x, onSpawn.y);
+  await frames(page, 2);
+  const refused = (await envCount()) === n0 && asked.some((m) => /Player Spawn/.test(m));
+  answer = true;
+  await page.mouse.click(onSpawn.x, onSpawn.y);
+  await frames(page, 2);
+  const placed = (await envCount()) === n0 + 1;
+  const away = await at(-35, 0, -14);
+  const askedOnSpawn = [...asked];
+  asked.length = 0;
+  await page.mouse.move(away.x, away.y);
+  await page.mouse.click(away.x, away.y);
+  await frames(page, 2);
+  check(refused && placed && (await envCount()) === n0 + 2 && !asked.length, `a tree on the spawn asks first (No keeps it off, Yes places it); elsewhere it just places (${JSON.stringify({ refused, placed, askedOnSpawn, askedAway: asked, count: (await envCount()) - n0 })})`);
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+
+  // ---- Erase: Shift-drag with the brush takes the brush's species under it, in one undo step.
+  await clickTool(page, '[data-tool="envbrush"]');
+  await page.selectOption('#ed-env-preset', 'temperate');
+  const n1 = await envCount();
+  await stroke([-30, -8], [-10, 4], true);
+  const n2 = await envCount();
+  check(n2 < n1 && (await page.evaluate(() => window.__editor.history.undoLabel)) === 'Erase plants', `Shift-drag erases the brush's species (${n1} → ${n2})`);
+  await page.keyboard.press('Control+KeyZ');
+  check((await envCount()) === n1, 'undo brings the erased stroke back');
+
+  // ---- Round trip: Export, then Import the file: every plant exactly as it was.
+  // (Compared key by key: the order of an object's keys is not part of the map.)
+  const canon = () => page.evaluate(() => JSON.stringify(window.__editor.doc.entities.map((e) => Object.fromEntries(Object.entries(e).sort(([a], [b]) => (a < b ? -1 : 1))))));
+  const before = await canon();
+  const [download] = await Promise.all([page.waitForEvent('download'), page.click('#ed-export')]);
+  const text = readFileSync(await download.path(), 'utf8');
+  await page.setInputFiles('#ed-import-file', { name: 'env.cmap.json', mimeType: 'application/json', buffer: Buffer.from(text) });
+  await page.waitForFunction((n) => window.__editor.doc.entities.length === n && window.__editor.history.revision > 0, JSON.parse(before).length, { timeout: T(10000) }).catch(() => {});
+  const after = await canon();
+  const firstDiff = JSON.parse(after).findIndex((e, i) => JSON.stringify(e) !== JSON.stringify(JSON.parse(before)[i]));
+  check(after === before, `Export then Import keeps every plant exactly (${JSON.parse(after).length} of ${JSON.parse(before).length} entities, ${after === before ? 'identical' : `first difference: ${JSON.stringify(JSON.parse(before)[firstDiff])} → ${JSON.stringify(JSON.parse(after)[firstDiff])}`})`);
+
+  // ---- A big stroke (radius 40 m, dense) stays cheap: each dab's own work, and the frames while painting.
+  await page.evaluate(() => window.__editor.setBrushRadius(40));
+  await page.fill('#ed-env-density', '20');
+  await page.dispatchEvent('#ed-env-density', 'change');
+  await page.evaluate(() => { const v = window.__editor.view; v.focus({ x: -40, y: 0, z: 0 }); v.dolly(-90); });
+  await frames(page, 2);
+  await page.evaluate(() => {
+    window.__envFrames = [];
+    let last = performance.now();
+    const tick = (t) => { window.__envFrames.push(t - last); last = t; if (window.__envFrames.length < 600) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  });
+  await stroke([-55, -20], [-25, 20]);
+  const big = await page.evaluate(() => ({ stroke: window.__envStroke, frames: window.__envFrames.slice(1), count: window.__editor.doc.entities.length }));
+  const worst = Math.max(...big.frames);
+  check(big.stroke.added > 150 && big.stroke.ms < T(400), `a 40 m stroke: ${big.stroke.added} plants in ${big.stroke.dabs} dabs, the slowest dab ${big.stroke.ms.toFixed(0)} ms of brush work; the slowest frame ${worst.toFixed(0)} ms (${big.count} entities; ${JSON.stringify(big.stroke)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**

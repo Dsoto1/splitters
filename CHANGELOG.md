@@ -32,6 +32,18 @@ made only on a commit that passed CI on a check branch.
   start and the pit lane, and no longer shows Laps, Start grid, Vehicle or Combat (nothing reads them now). Map
   properties no longer offers Race as a mode, and a map that still lists it gets a **Drop Race** button (undo brings
   it back); picking a main mode drops it too.
+
+**MapMaker: paint our trees and plants (Environment Phase 3):**
+- **The Nature tab opens on Environment:** our species by Trees, Plants, Ground cover, Rocks, Boulders and Cliffs.
+  Click one to place it like a prop (it lands on what's under the pointer, R turns it, Randomise varies it).
+- **The Environment brush** paints or erases a mix in strokes (one undo step each): Temperate, Jungle, Alpine and
+  Arid presets (mix any species you like), density, brush size, seed (the same seed repaints the same plants), size
+  and turn variation, a weight and variant per species, and where it grows: slope, height and ground material, never
+  inside buildings.
+- **Keeps play clear:** trees, boulders, cliffs, hedges and the bushes you hide in stay off spawns, routes,
+  objectives, vehicles and pickups unless you say otherwise; placing one there by hand asks first. **Show what
+  blocks** draws what stops movement, shots and sight.
+- The brush stops at the map's environment budget, and painted plants export and import exactly as placed.
 **MapMaker: a finer terrain grid, Change grid, and the coast border** (map format v32; the editor half of the Iron
 Coast job):
 - **A finer grid:** a terrain can be up to 321 vertices a side (was 161), so a 380 m map can be 1.25 m apart. New

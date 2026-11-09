@@ -1283,7 +1283,7 @@ template automatically.
 
 ## Backdrops and plants
 
-Skies, distant scenery, ground past the border, terrain plants and the scatter brush are covered in [SCENERY.md](SCENERY.md).
+Skies, distant scenery, ground past the border, terrain plants, the scatter brush and the Nature tab's Environment group and brush (our trees, plants, rocks and cliffs: placing, painting, presets, filters, keep-clear and the collision preview) are covered in [SCENERY.md](SCENERY.md).
 
 Free blocks (sky platforms, crumbling floors, trapdoors, pitched ramps and roofs, movers), liquids (and their colours) and the jetpack are in [SET_PIECES.md](SET_PIECES.md); size limits in [MAP_BUDGETS.md](MAP_BUDGETS.md).
 
