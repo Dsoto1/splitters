@@ -36,6 +36,18 @@ radius, facing and jump arcs in the 3D view and the plan view, edited in the ins
 a hint outside the boundary or off the navmesh, a jump a player couldn't make and duplicates. "What bots know" shows
 the bots' own computed spots (vantage spots, parkour links), read-only. Bots don't use the hints yet (the data is
 documented in docs/BOTS.md, "Bot hints (map data)").
+**Time of day and weather** (MapMaker overhaul Phase 5; map format v34):
+- **Time of day:** Map properties → Time of day sets the hour (a slider, or Dawn, Morning, Noon, Afternoon, Dusk,
+  Night). The sun crosses the sky (east at dawn, high in the south at noon, west at dusk; the moon by night), and its
+  light, the haze and the sky picture blend between the sky presets: night, dusk, sunrise, the map's own sky by day,
+  sunset. The slider previews live; the time is fixed for the match. Maps without a time look exactly as before.
+- **Weather:** rain or snow (how hard), wind and fog banks, with rain and wind sounds (our own synthesiser). Fog is
+  its one effect on play: everyone sees less far. Under a roof the rain fades out and is heard on it. Low graphics
+  (phones) draw no rain or snow, only the fog. No lightning, nothing that flashes; the flicker check has heavy rain
+  and a blizzard at night among its moments.
+- **The host may play another weather** (Match setup's Advanced rules, the pause menu's Host tab: Clear, Rain, Heavy
+  rain, Snow, Blizzard, Fog); from the Host tab it plays from the next match.
+- MapMaker: the boulder and cliff face species show their pictures in the palette, not text cards.
 
 **MapMaker: a bot test run and spawn exposure** (MapMaker overhaul Phase 4, items 1 and 2):
 - **Bot test** in the top bar opens the Test panel. **Run bots** plays a bot match on the map you're editing in the
@@ -127,6 +139,13 @@ definition out of the map too; it stays in your library, and one undo brings bot
   format is unchanged.
 - **Apex Ring** and **Sandsweep Circuit** no longer list Race (MapMaker, Map properties): Apex Ring plays Deathmatch,
   Team Deathmatch, CTF and King of the Hill with its karts lapping; Sandsweep plays Deathmatch.
+**MapMaker: bot hints** (map format v33; MapMaker overhaul Phase 4 item 3, Bot AI Phase D item 5): mark chokepoints,
+sniper, camp and staging spots and jump links for bots (the Bot hints tool, Y; the Entities tab). Pins with their
+radius, facing and jump arcs in the 3D view and the plan view, edited in the inspector, one undo step each; warnings for
+a hint outside the boundary or off the navmesh, a jump a player couldn't make and duplicates. "What bots know" shows
+the bots' own computed spots (vantage spots, parkour links), read-only. Bots don't use the hints yet (the data is
+documented in docs/BOTS.md, "Bot hints (map data)").
+
 **MapMaker: a finer terrain grid, Change grid, and the coast border** (map format v32; the editor half of the Iron
 Coast job):
 - **A finer grid:** a terrain can be up to 321 vertices a side (was 161), so a 380 m map can be 1.25 m apart. New

@@ -190,6 +190,11 @@ export interface MatchRules {
    * advanced ones are slower and drop more. Absent: standard.
    */
   ballistics?: 'arcade' | 'standard' | 'advanced';
+  /**
+   * The weather the host chose (map/weather.ts WEATHER_CHOICES: clear, rain, storm, snow, blizzard, fog). Absent: the
+   * map's own (MapDocument.weather). Fixed for a match: a change from the Host tab plays from the next one.
+   */
+  weather?: string;
 }
 
 /**

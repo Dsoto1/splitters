@@ -368,6 +368,7 @@ import { envRendererOn } from '../environment/envFlag.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { PlanView } from './planView.ts';
 import { cardShotSection, type CardShotHost } from './cardShot.ts';
+import { skyWeatherSection, type SkyWeatherHost } from './skyWeatherSection.ts';
 import { NoteTool } from './noteTool.ts';
 import { BotHintTool } from './botHintTool.ts';
 import { groupSection, type GroupHost } from './groupPanel.ts';
@@ -1099,6 +1100,9 @@ export class EditorApp {
     const side = ({ N: 'north', E: 'east', S: 'south', W: 'west' } as Record<string, string>)[s.side];
     return `the ${s.kind === 'door' ? 'door' : 'opening'} on the ${side} side (${levelName(s.z)})`;
   }
+
+  /** Map properties' time of day and weather (skyWeatherSection.ts). */
+  private readonly skyWeatherHost: SkyWeatherHost = { current: () => this.doc, run: (label, cmd) => this.run(label, cmd), preview: (h, w) => this.view.previewSky(this.doc, h, w) };
 
   /** What the card shot (cardShot.ts) needs from the editor. */
   private readonly cardHost: CardShotHost = {
@@ -4129,7 +4133,8 @@ export class EditorApp {
       for (const def of CORE_PROPS.filter((d) => d.category === cat && !RETIRED_PROPS.has(d.id))) this.propButton(grid, def, 'nature');
     }
     // Our species (Environment Phase 3): the Environment group, first in the tab, by category, with its brush.
-    this.env.buildPalette($('ed-nature'), GROUND_COVER_IDS);
+    // Every species has a palette picture (pictureKeys lists them all, boulders and cliff faces included).
+    this.env.buildPalette($('ed-nature'), ENV_SPECIES.map((s) => s.id));
   }
 
 
@@ -5007,6 +5012,8 @@ export class EditorApp {
       this.renderWeaponSet(el);
       this.renderMapBots(el);
       this.renderPlayerCaps(el);
+      // Time of day and weather (MapMaker overhaul Phase 5).
+      el.append(skyWeatherSection(this.skyWeatherHost));
       const layersHead = document.createElement('h3');
       layersHead.id = 'ed-layers-head';
       layersHead.textContent = 'Map layers';

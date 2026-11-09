@@ -347,6 +347,21 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
+**MapMaker: time of day and weather (`wip/mapmaker-p5`, map format v34, MapMaker lane, 2026-11-09).** Overhaul Phase 5
+(docs/MAPMAKER_OVERHAUL_PLAN.md "As built"), chained after v33 (bot hints). Lands in a train.
+- **Data:** `timeOfDay` (hours) and `weather` (`fall`, `amount`, `wind`, `fog`); absent on every map so far, which
+  look and play exactly as before. No map was changed.
+- **For the session that owns Match Setup and the Host tab** (kept small, please keep or reshape as you like):
+  `MatchSetup.weather` / `MatchRules.weather` (`WEATHER_CHOICES`, absent: the map's own; `matchWeather(rules, map)`),
+  one row in Match setup's Advanced rules (`frontEnd.ts`, id `weather`, control `weatherSelect` in setupControls.ts,
+  in Reset's list), one row in the Host tab (`hostPanel.ts`, `hc-weather`, marked restart: `HostRulesPatch.weather`
+  waits for the next match like the score limit; `HostState.mapWeather` is the map's own in words). `weather` is in
+  hostRules' KEPT (a host's "Clear" carries across map changes). The server's CLI rules have no weather yet.
+- **Play:** `View.setWeather` from the session on welcome and on a `rules` message (a new round); `WeatherVisuals`
+  (`client/weatherVisuals.ts`) adds to the haze after the backdrop is built; smoke and water snapshot the haze with it.
+  Fog is the only play effect and it is visual only: **bots still see as far as before** (owner question).
+- **Leftover done first:** the environment atlas now holds every species (Angular Boulder, Cliff Face were text
+  cards; `pictureKeys`), rebuilt with content:rebuild's atlas step.
 
 **Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
 for the owner's review, not landed).**

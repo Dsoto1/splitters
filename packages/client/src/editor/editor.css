@@ -207,6 +207,16 @@ dialog { border-top: 3px solid var(--cyan); }
 #ed-tr-materials { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; }
 #ed-tr-create button, #ed-tr-edit > button { width: 100%; margin: 6px 0; }
 .ed-note { color: var(--muted); font-size: 11px; line-height: 1.4; margin: 4px 0 8px; }
+/* Map properties → Time of day & weather (skyWeatherSection.ts). */
+.ed-skyweather .sub-h { margin-top: 6px; }
+.ed-skyweather .row > input[type='checkbox'] { margin-left: auto; }
+.ed-skyweather .row > input[type='range'] { flex: 0 1 60%; min-width: 0; }
+.ed-tod-row { display: flex; margin: 0 0 4px; }
+.ed-tod-row #ed-tod { flex: 1; min-width: 0; }
+.ed-tod-label { min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+.ed-tod-presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 2px 0 8px; }
+.ed-tod-presets button { padding: 3px 4px; font-size: 11px; min-height: 0; }
+.ed-tod-presets button.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 label.check { display: flex; align-items: center; gap: 6px; color: var(--muted); margin: 8px 0; font-size: 12px; }
 label.stack > span { float: right; color: var(--text, #e8edf5); }
 button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }

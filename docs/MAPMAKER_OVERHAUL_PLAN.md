@@ -294,6 +294,29 @@ Already done from the owner's earlier ask: **the real buildable area.**
    - Phone tiers: Low draws no particles, only the mist.
    - It is a map setting the host may override.
    - Its effect on play is kept small: what you can see, through fog.
+- **As built (2026-11-09, `wip/mapmaker-p5`, map format v34):**
+  - **time of day:** `MapDocument.timeOfDay` (hours 0-24; absent: the sky's own look, as before). `shared/map/timeOfDay.ts`
+    `sunAt`: the sun's arc (east at 06:00, south at noon at 62°, west at 18:00; the moon by night, west at dusk to east
+    at dawn, never under 6°), the light (hemisphere, sun, colour), the haze colours and the sky picture blended between
+    key times (night, dusk, sunrise, the map's own day sky, sunset, dusk, night; a grey day sky keeps its own picture at
+    sunrise and sunset). `client/backdrop.ts` draws the blend (a second sky box faded over the first) and sets the sun
+    once when the map is built, so the shadow cache stays valid; `previewTime` is MapMaker's live preview;
+  - **weather:** `MapDocument.weather` (`fall` none/rain/snow, `amount`, `wind`, `fog`, 0-1; `shared/map/weather.ts`).
+    `client/weatherVisuals.ts`: the fall is one mesh of quads placed by the vertex shader round the camera (wrapped in
+    a 36 m box; one draw), fog banks a second mesh of large soft sprites; the haze thickened by `weatherFogDensity`
+    (fog 0.5: about 360 m of sight; 1: 180 m), on every tier. Low draws no particles (`WEATHER_PARTICLES` low 0,
+    medium 2,500, high 6,000 at full amount). Under a roof (a ray up from the camera, four times a second) the fall
+    fades out. Sounds: `weather.rain` and `weather.wind`, synth recipes `rain` and `wind` (`game/weatherAudio.ts`,
+    docs/AUDIO.md). No lightning;
+  - **the host's override:** `MatchRules.weather` (`WEATHER_CHOICES`: clear, rain, storm, snow, blizzard, fog;
+    `matchWeather`): Match setup's Advanced rules (`MatchSetup.weather`) and the Host tab (`HostRulesPatch.weather`,
+    saved for the next match like the score limit; the weather never changes mid-match);
+  - **MapMaker:** Map properties → Time of day & weather (`client/editor/skyWeatherSection.ts`; the commands
+    `setTimeOfDay` and `setWeather`, `shared/editor/skyWeather.ts`): the sliders preview live (`EditorView.previewSky`)
+    and make one undo step when let go;
+  - **tests:** unit `shared/test/timeOfDayWeather.test.ts` (the sun maths, v33 → v34, the settings, the host
+    override), `client/test/weatherAudio.test.ts`; e2e `editorux` → `editorSkyWeatherChecks` (the controls, the live
+    preview, TEST starts with the map's weather), `flashing` → the `rain` and `snow` moments.
 
 ## Phase 6: a guided first-time tour
 A short, skippable, interactive tour, remembered once done: place a room, a spawn and a pickup, then test it. It comes

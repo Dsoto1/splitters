@@ -4,7 +4,7 @@
  * atlas each piece's preview lives in. Plain data, no Babylon, so the atlas
  * tool (tools/content/palette-items.ts) and the tests read the same rules.
  */
-import { CORE_PROPS, MOUNT_DEFS, MOUNT_MODELS, builtInSetPieces, coreCatalog, envModelFile, type PropDefinition, type SetPieceDefinition } from '@tiletrigger/shared';
+import { CORE_PROPS, ENV_SPECIES, MOUNT_DEFS, MOUNT_MODELS, builtInSetPieces, coreCatalog, envModelFile, type PropDefinition, type SetPieceDefinition } from '@tiletrigger/shared';
 
 /** Palette categories: each tab has one, with one colour used on the tab, its headings and a thin accent on its pieces. */
 export const PALETTE_CATEGORIES = {
@@ -173,12 +173,16 @@ export function atlasGroup(key: string, propPack?: string): string {
   return propPack ? `props-${propPack}` : 'other';
 }
 
-/** Every shipped piece that has a model picture: tiles, props, the Nature tab's generated species, vehicles/turrets and set pieces, by palette key. */
+/**
+ * Every shipped piece that has a model picture: tiles, props, the generated species (the Nature tab's, then the rest:
+ * boulders, cliff faces and the like, pictured from their first variant), vehicles/turrets and set pieces, by palette key.
+ */
 export function pictureKeys(): { key: string; tile?: string; file?: string; setPiece?: string }[] {
   return [
     ...coreCatalog.all().map((d) => ({ key: `tile:${d.id}`, tile: d.id })),
     ...CORE_PROPS.map((p) => ({ key: `prop:${p.id}`, file: p.file })),
     ...GROUND_COVER_IDS.map((id) => ({ key: `prop:${id}`, file: envModelFile(id)! })),
+    ...ENV_SPECIES.filter((s) => !GROUND_COVER_IDS.includes(s.id)).map((s) => ({ key: `prop:${s.id}`, file: envModelFile(s.id)! })),
     ...MOUNT_MODELS.map((m) => ({ key: `mount:${m}`, file: MOUNT_DEFS[m].model })),
     ...[...builtInSetPieces().pieces.keys()].map((id) => ({ key: `setpiece:${id}`, setPiece: id })),
   ];

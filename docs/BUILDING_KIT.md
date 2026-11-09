@@ -1337,6 +1337,19 @@ tab → **Bot hints** (or **Y**, the last kind you used).
 
 Skies, distant scenery, ground past the border, terrain plants, the scatter brush and the Nature tab's Environment group and brush (our trees, plants, rocks and cliffs: placing, painting, presets, filters, keep-clear and the collision preview) are covered in [SCENERY.md](SCENERY.md).
 
+### Time of day and weather (map format v34)
+
+Map properties (nothing selected) → **Time of day & weather**:
+- **Time of day:** tick it and drag the slider (quarter hours), or click Dawn, Morning, Noon, Afternoon, Dusk or Night.
+  The view shows the time as you drag; letting go sets it (one undo step). The map's sky (Environment → Sky) is its
+  look by day; the time moves the sun (east at dawn, high in the south at noon, west at dusk, the moon at night) and
+  blends the light and the sky towards sunrise, sunset, dusk and night. Untick it for the sky's own look. A starfield
+  has no sun: the time changes nothing under it. It is fixed for the match.
+- **Weather:** None, Rain or Snow, then **How hard**, **Wind** and **Fog banks** (each 0-100, previewed as you drag,
+  one undo step each). Fog is the weather's one effect on play: everyone sees less far (fog banks at 50: about 360 m;
+  at 100: about 180 m). Rain and wind have their sounds; rain fades under a roof. Low graphics draw no rain or snow,
+  only the fog. The host may play another weather (Match setup, the Host tab).
+
 Free blocks (sky platforms, crumbling floors, trapdoors, pitched ramps and roofs, movers), liquids (and their colours) and the jetpack are in [SET_PIECES.md](SET_PIECES.md); size limits in [MAP_BUDGETS.md](MAP_BUDGETS.md).
 
 Map format v20 adds: the `mover` entity; light `off`/`blink`; block

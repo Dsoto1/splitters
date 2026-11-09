@@ -6,7 +6,7 @@ import { fireteamMode } from './fireteams.ts';
 import { MODE_LABELS, isTeamMode, isTwoTeamMode, mapCanRun, rulesForMap, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /** Rules that aren't about the map or the mode: they stay as the host set them when the map changes. */
-const KEPT = ['teamAssign', 'hostTeam', 'bodySizes', 'characterStats', 'randomCharacters', 'emotes', 'botStyle', 'botCast', 'killstreaks', 'mixPickups', 'dropWeapons', 'weaponSet', 'squadSpawn', 'friendlyFire', 'weapons', 'classes', 'classLimit', 'vehicleDamage', 'gravity', 'fallDamage', 'lunar'] as const;
+const KEPT = ['teamAssign', 'hostTeam', 'bodySizes', 'characterStats', 'randomCharacters', 'emotes', 'botStyle', 'botCast', 'killstreaks', 'mixPickups', 'dropWeapons', 'weaponSet', 'weather', 'squadSpawn', 'friendlyFire', 'weapons', 'classes', 'classLimit', 'vehicleDamage', 'gravity', 'fallDamage', 'lunar'] as const;
 /** Kept too when the mode stays the same (they mean different things in different modes). */
 const SAME_MODE = ['scoreLimit', 'timeLimitSeconds', 'respawnDelayTicks', 'fortBuildSeconds', 'fortCombatSeconds', 'fortCycles', 'fortBudget', 'breakthroughPool', 'breakthroughSectorSeconds', 'breakthroughSwap', 'roulette', 'rouletteSignature', 'rouletteJackpots', 'rouletteStreakPick', 'rouletteRerolls', 'rouletteSwapOnKill', 'rouletteVariety', 'teamOutlines'] as const;
 
@@ -61,8 +61,11 @@ export function rulesForTravel(prev: MatchRules, map: MapDocument, fill: number,
  */
 export function withPending(rules: MatchRules, pending: HostRulesPatch | null | undefined): MatchRules {
   if (!pending || !Object.keys(pending).length) return rules;
-  const { weaponSet, ...rest } = pending;
+  const { weaponSet, weather, ...rest } = pending;
   const out: MatchRules = { ...rules, ...rest };
+  // The weather saved for the next match (null: the map's own).
+  if (weather) out.weather = weather;
+  else if (weather === null) delete out.weather;
   if (pending.friendlyFire === 'off') delete out.friendlyFire;
   // (A weapon set plays at once, so it never waits; null is the map's default.)
   if (weaponSet) out.weaponSet = weaponSet;
