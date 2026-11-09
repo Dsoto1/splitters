@@ -360,6 +360,8 @@ class LabClient {
   private aimOffset = { side: 0, up: 1.2 };
   private boxFor: (slot: number) => { box: HitBody['box']; scale: number } | null = () => null;
   welcomed = false;
+  /** Snapshot frames kept for judging shots afterwards (the whole run). */
+  keepFrames = TICK_RATE * 4;
   measuring = false;
   closed = false;
 
@@ -415,7 +417,7 @@ class LabClient {
     const bodies = new Map<number, DrawnBody>();
     for (const p of msg.players) if (p.alive) bodies.set(p.s, { slot: p.s, x: p.p[0], y: p.p[1], z: p.p[2], yaw: p.yaw, stance: (p.sn ?? 0) as Stance });
     this.frames.push({ tick: msg.tick, bodies });
-    while (this.frames.length > TICK_RATE * 4) this.frames.shift();
+    while (this.frames.length > this.keepFrames) this.frames.shift();
     const me = msg.players.find((p) => p.s === this.slot);
     if (me) {
       if (me.hp < this.lastHp) this.hurtAt = now;
@@ -626,6 +628,8 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
 
   // The host's own record: where everyone was each tick, every round it fired, inputs it dropped.
   const poses = new Map<number, Map<number, HostPose>>();
+  // Kept for the whole run: every shot is judged at the end.
+  const keepTicks = Math.ceil((warmup + seconds + 15) * TICK_RATE);
   const hostShots = new Map<string, HostShot>();
   let measuring = false;
   let droppedInputs = 0;
@@ -645,7 +649,7 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
       for (const w of c.weapons.values()) if (w.def.magazine > 0) w.reserve = Math.max(w.reserve, w.def.magazine * 2);
     }
     poses.set(match.tick, at);
-    poses.delete(match.tick - TICK_RATE * 4);
+    poses.delete(match.tick - keepTicks);
     if (measuring) for (const ev of events) if (ev.e === 'kill' && ev.killer !== null) kills++;
     return events;
   };
@@ -688,6 +692,7 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
     const down = new LossyLink<Uint8Array>(o.condition, rng, (1000 / TICK_RATE) * SNAPSHOT_INTERVAL_TICKS, (bytes) => client?.receive(bytes));
     channel = new LabChannel(down);
     client = new LabClient(`Net${i + 1}`, up, rng, weaponCode(def));
+    client.keepFrames = Math.ceil(keepTicks / SNAPSHOT_INTERVAL_TICKS);
     client.setBodies((slot) => {
       const c = match.slots[slot];
       return c ? { box: c.hitbox, scale: c.hitScale * c.size } : null;
@@ -745,7 +750,9 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
           // Where the host had that body for this round: its rewound tick, plus the ticks of flight.
           const rewound = Math.max(h.tick - MAX_REWIND_TICKS, Math.min(h.tick, h.viewTick)) + s.rec.screenK;
           const p = poses.get(rewound)?.get(s.rec.screenHit);
-          if (p && h.tick - h.viewTick <= MAX_REWIND_TICKS) (s.rec.ahead > 0.5 ? lagAheadCm : lagCm).push(Math.hypot(p.x - s.rec.screenAt.x, p.z - s.rec.screenAt.z) * 100);
+          const cm = p ? Math.hypot(p.x - s.rec.screenAt.x, p.z - s.rec.screenAt.z) * 100 : Infinity;
+          // (More than 6 m apart is a respawn the screen hadn't drawn yet, not an error in the rewind.)
+          if (cm < 600 && h.tick - h.viewTick <= MAX_REWIND_TICKS) (s.rec.ahead > 0.5 ? lagAheadCm : lagCm).push(cm);
         }
       }
       shots.push(s.rec);

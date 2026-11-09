@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { BOT_DIFFICULTIES, BUTTON_FIRE, CORE_BOT_PROFILES, getWeapon, DEFAULT_DEATHMATCH_RULES, MAX_PLAYER_SLOTS, PLAYER, initPhysics, lookAngles, type GameEvent } from '../src/index.ts';
-import { Match, initNavigation } from '../src/match.ts';
+import { MAX_QUEUED_INPUTS, Match, initNavigation } from '../src/match.ts';
 import { loadArena, makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -115,6 +115,25 @@ describe('Match', () => {
     const inp = (seq: number) => ({ seq, forward: 1, right: 0, yaw: 0, pitch: 0, buttons: 0 });
     match.queueInputs(a.slot, [inp(1), inp(2), inp(2), inp(1), inp(3)]);
     expect(a.queue.map((i) => i.seq)).toEqual([1, 2, 3]);
+  });
+
+  it('keeps the burst of inputs a resent packet releases at 250 ms, and plays every one (net-report, G3)', () => {
+    const match = new Match(makeMap([{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }]));
+    const a = match.addHuman('a')!;
+    runTicks(match, 30);
+    // A link held for a 250 ms round trip plus the resend's wait: about 20 ticks' inputs arrive together, with two
+    // still waiting from before.
+    const inp = (seq: number) => ({ seq, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: seq === 3 ? BUTTON_FIRE : 0 });
+    match.queueInputs(a.slot, [inp(1), inp(2)]);
+    match.queueInputs(a.slot, Array.from({ length: 20 }, (_, i) => inp(i + 3)));
+    expect(a.queue.map((i) => i.seq)).toEqual(Array.from({ length: 22 }, (_, i) => i + 1));
+    const events = runTicks(match, 15);
+    expect(a.lastSeq).toBe(22);
+    // The round in the oldest of them was fired, not dropped with it.
+    expect(events.some((e) => e.e === 'shot' && e.s === a.slot)).toBe(true);
+    // Past the cap the oldest still go: a player can't bank more than MAX_QUEUED_INPUTS.
+    match.queueInputs(a.slot, Array.from({ length: MAX_QUEUED_INPUTS + 10 }, (_, i) => inp(i + 100)));
+    expect(a.queue.length).toBe(MAX_QUEUED_INPUTS);
   });
 });
 
