@@ -8,6 +8,16 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Small fixes (owner, 2026-11-08)**:
+- Bots no longer queue 10-20 s for Fernwood Moon's north rope lift: they hop down off the north deck onto its ramp
+  when the lift is away (the navmesh had lost that 0.7 m hop).
+- The armour pickup's sparkle, armour breaking, heavy hits and kill-streak bursts read across a room: seen from
+  further than 3 m they keep the size they have 3 m off (an armour pickup 7 m off was a speck).
+- The tutorial shows no Deathmatch score bar (You / Leader).
+- Far-off characters are drawn in the same pose as up close: 74 characters' low-detail copies moved onto their body's
+  skeleton (Hyena Warrior was drawn 15-30% short at a distance, Honest Abe 15%).
+- capture-map-shots can write pictures outside the build (SHOT_OUT, SHOT_SUFFIX, SHOT_QUALITY, SHOT_TEST,
+  SHOT_RENDERED).
 **Maps: no more spots you can't get out of** (owner's "Fix all", 2026-11-08; all in MapMaker):
 - Skyward: the two spawn points on the one-way gun towers are on the central deck now.
 - Sky Islands: a jump pad on the sky platform drops you back onto the west arm.

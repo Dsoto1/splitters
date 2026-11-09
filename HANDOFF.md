@@ -14,6 +14,37 @@ arsenal, weaponsets and hostgame, as on other branches that hour, and passed on 
 released v0.9.0 from that build (tag and release with its assets). Fireteams part 1 and MapMaker's measure tool and
 turning by mouse went in with it.
 
+**Small fixes of 2026-11-08 (`wip/small-fixes`, agent, 2026-11-09; owner-approved list).**
+- **Fernwood Moon's rope-lift waits (bots).** Cause: the north deck's only walkable way down was the north rope lift
+  (17 s round trip; bots waited 10-23 s at the top). Its 0.7 m hop down onto the ramp at (0, 14, 87) was a parkour drop
+  candidate that lost `MAX_DROPS` (50): Fernwood has 275 drop candidates with no walk round, nearly all off roofs and
+  tops only parkour reaches, and the ties went by place (west first). `nav/parkour.ts` now ranks candidates off ground
+  the spawns walk to (with the map's links) first. fernwood_moon TDM 90 s, seeds 1-4: lift idle spells of 3 s+ 13 → 2,
+  of 10 s+ 2 → 0. No map edit (the map is Environment Phase 2's claim).
+  The check's other 10 s+ spells were all posts (campers and snipers holding a vantage spot, 18-50 s by design): the
+  spell measures leave posts out (`ON_PURPOSE` in bot-report.ts, docs/BOTS.md) and `checkLimits.all` is back to
+  `spells10` 1.5 and `longestIdle` 45: `pnpm bot-report --check` holds every limit (10 s+ spells 0.25 a match; on main
+  with the old limits it was 1.75, 7 of them posts).
+- **Bursts at a distance.** Pickups, armour breaking, heavy hits and streak bursts keep the size on screen they have
+  3 m off (`fxMap.ts farFxSize`, `View.farSize`, up to 4×): an armour pickup 7 m off was a few pixels on the page's frame
+  clock, now 2.3× as big. Nearer than 3 m nothing changes. The `flashing` flow's fight moment adds an armour pickup 3 m
+  off and one at your own chest.
+- **Tutorial:** no score bar (`Hud.showScorebar`); `newplayer` checks it hidden, and shown again in Quick Play.
+- **Far characters' pose (the characters3 flake).** The import added each Meshy character's far copy and then quantized
+  each mesh on its own: the far copy got a skin of its own, the game a second skeleton for it, posed apart from the
+  body's. 74 of 116 Meshy characters were so; their far copies are remade on the body's skin (`relod-built.mjs`), and
+  `prepare-meshy-characters.mjs` quantizes in one volume (`quantizationVolume: 'scene'`). `tools/content/lod-audit.mjs`
+  (new) checks every far copy against its body (own skin, unmatched vertices, 6 poses): 161 far copies, 0 off. The
+  characters3 far-bodies check then deals eight known looks (Hyena Warrior first) and holds each far copy to 90% of its
+  body's height in the same pose, on the same skeleton (before, locally: Honest Abe 1.75 of 2.06 m at 27 m).
+- **Old branches:** `wip/roster-cleanup` (helmets on four looks): dropped, main has model gear with fitted helmets
+  (headFit.ts) and those four looks are retired. `wip/host-handoff-uncommitted`: dropped, every change in it is on main
+  (pageHeardAt, `linked`, LINKED_WAIT_MS, the 120 s hold, HANDOFF_JOIN_SECONDS 10). `wip/map-review`:
+  capture-map-shots' SHOT_OUT, SHOT_SUFFIX, SHOT_QUALITY, SHOT_TEST, SHOT_RENDERED and the load time brought over;
+  SHOT_SIZE dropped (the frame is MapMaker's card frame now). `/home/user/wt-mapreview` removed. Branches kept.
+- **Not done: Iron Maw's player count** (`maps/iron_maw.json` is in the MapMaker lane's set pieces part 6 claim). Asked
+  of the MapMaker lane below.
+
 **Team kills (`wip/tk`, 2026-11-08; the owner's bug report).** "Teamkills should not count towards a kill streak
 (should end one) or show anything rewarding. It should actually show in the upper right that it was a TK."
 - **Where:** every kill goes through `Match.kill` (bullets, splash, grenades, roadkill, turrets, burns, barrels, a
@@ -138,6 +169,9 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, bunker_cross, concrete_annex, iron_tide, ironhold_prison, pump_tower, silo_complex, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
 - Note for both sessions: the e2e `party` flow fails intermittently on check branches (the party never reaches the voted map; runs 42519820533, 42530655386, and p3a's first run). It passes on re-run. Its owner may want to look.
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` low-detail levels, `content/meshy.lock.json`), the pickup/hit/streak bursts in `content/vfx.json`, small fixes of 2026-11-08 (`wip/small-fixes`), 2026-11-09. (Iron Maw's player count and Fernwood Moon's lift are inside other claims: not edited here.)
+- Asked of the MapMaker lane (with its `iron_maw` claim): Iron Maw's Map properties say 16-32 players
+  (`recommendedPlayers`); with 97 spawn points and a 16 v 16 team layout its automatic caps are 32 best, up to 96.
+  Suggested: Players 16-64 (as Iron Coast, 96 spawns, says), in MapMaker's Map properties; small fixes, 2026-11-09.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
 - Claimed: `maps/<id>.json` for apex_ring, atomic_court, backwoods, blackout, canyon, capitol_mall, citadel, coldwater_gulch, crossroads, dead_reel, dockside_depot, dune_harbor, dustwater, eagle_spires, fernwood_moon, fort_meadow, gallows_yard, hollowmere_manor, iron_coast, jungle_steps, norman_shores, pharaohs_reach, primeval_park, qasr_medina, rail_stockyard, sandgate, sandsweep, serene_city, st_johns, sunken_kingdom, sunstone_crag (their Kenney trees, bushes, hedges and cacti → our species, MapMaker's Replace all driven in the real editor), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
