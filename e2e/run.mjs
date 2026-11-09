@@ -7603,7 +7603,13 @@ async function farBodies(browser) {
     return !looks[i] || (!!a?.anim?.ch && JSON.parse(a.specKey).look === looks[i] && a.anim.current === 'run');
   }).length, [setup.slots, looks]);
   await until(async () => (await dealt()) >= setup.slots.length, T(120000));
-  const r2 = await wholeBodies(page, 12, setup.slots);
+  // (A few tries: on a slow runner the dealt looks can still be loading, or out of view, the first time.)
+  let r2 = await wholeBodies(page, 12, setup.slots);
+  for (let i = 0; i < 3 && !r2.heights.some((h) => h.look === 'core.hyena'); i++) {
+    await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), setup.yaw);
+    await until(async () => (await dealt()) >= setup.slots.length, T(30000));
+    r2 = await wholeBodies(page, 12, setup.slots);
+  }
   const shared = await page.evaluate((slots) => slots.flatMap((s) => {
     const ch = window.__cs.view.avatars.get(s)?.anim?.ch;
     return (ch?.meshes ?? []).flatMap((m) => (m.getLODLevels?.() ?? []).filter((l) => l.mesh && l.mesh.skeleton !== m.skeleton).map(() => JSON.parse(window.__cs.view.avatars.get(s).specKey).look));
