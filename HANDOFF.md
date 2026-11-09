@@ -285,6 +285,21 @@ For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.
 
 - Claimed: `maps/whiteout_station.json` (the rebuild from MAP 03 Frostbite Station, in MapMaker; `wip/mapmaker-whiteout`), MapMaker lane, 2026-11-09.
 
+**Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
+for the owner's review, not landed).**
+- Made in the real MapMaker only (a scratch Playwright driver: Import, plan-view drag-box Delete, Create terrain and
+  the brushes, palette clicks, the Walls tool, the inspector, Map properties, Set card shot, Export). No map code.
+- What it is, the choices and the owner's questions: docs/map-briefs/whiteout_station/ (DECISIONS_AND_DEVIATIONS.md
+  and MAP_IMPLEMENTATION_MANIFEST.md, "Rebuild 2026-11"; QA_REPORT.md).
+- Modes now DM and TDM only (CTF and KotH dropped, the brief names no objectives); 8-16 players, 8 v 8; no vehicles.
+- `shared/test/stylePacksSnow.test.ts`'s Whiteout block checks the rebuild (landmarks, the tunnel, modes, navigation
+  as validate-map builds it, the tunnel and ridge both ways).
+- Pitfalls for the next map build: an unconnected port is capped with a wall (open tunnel/stair tops with the Walls
+  tool); a hut tile's own model walls ignore edge choices (the hangar has no mezzanine door north); terrain over a
+  roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
+  its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
+  panel miss (zoom out a notch after Home).
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.

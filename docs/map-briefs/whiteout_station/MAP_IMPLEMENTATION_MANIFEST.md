@@ -111,3 +111,57 @@ Everything above is the old build (2026-10-31). This part is the rebuild, made i
 | Ice cave | x 6..7, y −4..−3 | Large Room (roof, rubble, glacier-ice walls, lake-ice floor; wide doorways west and north); Frozen Cliff on level 1 over all four cells; the ground raised against its south and east walls |
 | Service trench | y −2, x −3..−1 | Trench End (Sandbags) r2, Trench (Sandbags), Trench End (Sandbags) r0 |
 | South-west | | Fuel Depot (−5, −3), Prefab Hut (−4, −3), Ice Hole (−2, −1) |
+
+## Spawns (24; world metres, facing in degrees, 0 = north)
+- Tide (8, north-west): (−50, 36) 135, (−40, 38) 135, (−30, 38) 180, (−20, 34) 180, (−12, 38) 135, (−52, 24) 90,
+  (−52, 14) 90, (−36, 31) 180.
+- Embers (8, south-east): (30, −40) 0, (20, −40) 0, (10, −42) 0, (−4, −40) 0, (40, −26) 0, (48, −14) 0, (55, −12) 315,
+  (36, −34) 315.
+- Shared (8, Deathmatch): (−20, −38) 0, (24, 10) 225, (20, 38) 180, (50, 4, 26) 225 on the ridge, (−40, −40) 45,
+  (56, 2) 270, (−16, 2) 90, (−48, −26) 45.
+- All on the navmesh and in the main area (validate-map); spawn deaths 0 % (TDM) and 4 % (DM) in the bot runs.
+
+## Pickups (registry ids, default respawn)
+`core.weapon_sniper` (52, 4, 36) ridge; `core.weapon_shotgun` (−8, 0, 16) reactor hall; `core.weapon_smg` (−40, 0, −8)
+lab wing; `core.weapon_lmg` (4, 4, −13.5) hangar mezzanine; `core.weapon_rockets` (4, −4, 0) tunnel;
+`core.weapon_marksman` (−24, 0, 24) comms hut; `core.weapon_rifle` (16, 0, 8) yard; `core.grenades` (−16, 0, −16) by
+the trench; `core.armor_large` (52, 0, −28) ice cave; `core.armor_small` (−52, 0, 2) west flank, (24, 0, −18) loading
+dock; `core.health_large` (32, 0, 2) pump house; `core.health_small` (−32, 0, 16) annex, (8, 0, −24) hangar,
+(24, 0, 28) server vault, (48, 0, 10) east flank.
+
+## Combat zones
+| Zone | Extent (world m) | Range | Cover |
+|---|---|---|---|
+| Central yard | x −12..20, z −12..12 | mid (8-30 m) | the two tunnel huts, crate stacks, low walls, tarps, drums |
+| Main lab and vault | x −12..28, z 12..28 | short, two storeys | the reactor's catwalk, the control room's glass, racks |
+| Lab wing | x −44..−20, z −12..12 | short, two storeys | eight columns round the core, the gallery |
+| Garage | x −4..36, z −28..−12 | short inside, mid on the apron | workbench, crates, the dock's truck and cargo |
+| Fuel tanks / east flank | x 28..60, z −20..20 | mid | the depots' bund walls and tanks, the pump house |
+| Radar ridge | x 28..60, z 20..52, 4 m up | long (to about 90 m over the yard to the south-west) | the dome, sandbags, the dish |
+| Ice cave | x 44..60, z −36..−20 | short | ice rubble |
+| West flank, south road, north lane | the ring inside the boundary | mid | snow piles, trench, barriers, fences, pines |
+
+## Traversal
+- **Tunnel**: the west hut (−8, 0) down to level −1, two corridors east, up the east hut (16, 0); doorways at both tops.
+- **Ridge**: Snow Drift (32, 16) from the pump house's north door, Metal Stair (48, 16) from the east flank, Snow Drift
+  (24, 40) from the north lane.
+- **Lab wing gallery**: block stairs inside; its doors east and west onto railed platforms with open stairs down.
+- **Indoors**: reactor ↔ server vault (the airlock and the fire exit), the lab wing ↔ the annex corridor ↔ barracks.
+
+## QA (2026-11-09)
+- `pnpm validate-map maps/whiteout_station.json`: OK (0 issues; navigation included, official rules). Nav audit:
+  0 traps; islands only inside the server vault (two small rooms behind its auto doors) and on the bank outside the
+  boundary.
+- Z-fight audit (`zfight.test.ts`, map and props): passes. `stylePacksSnow.test.ts` (rebuilt map's landmarks, tunnel,
+  modes, navigation, the tunnel and ridge both ways): passes.
+- Budgets: 38 tiles, 7 set pieces, 24 spawns, 16 pickups, 45 props and plants, about 1,500 collision boxes (the
+  shipped maps' 2,700-3,900), 33 of 80 prop models; lights only the set pieces' own (well under 256).
+- bot-report, 16 bots, 180 s (load 15-20 on 4 cores): TDM seed 1 embers 41 · tide 32, 73 kills, stuck recoveries 26,
+  no route 0 %, spawn deaths 0; TDM seed 2 embers 44 · tide 29, 74 kills, stuck 23; DM 176 kills, stuck 24, spawn
+  deaths 4 %; Elimination 2 rounds, 68 s each. Stuck spots: the gap between the lab wing and the west hut (−12..−24,
+  0..8), the yard's south-west corner (−8, −8), the east hut's exit (24, 12).
+- Bench (server tick, 16 bots, TDM, 60 s, load 15): avg 4.4 ms, p95 11.4 ms of 16.7.
+- e2e `maps` (E2E_MAPS=whiteout_station, CI timings): match starts, you spawn on solid ground; opens in MapMaker with
+  nothing lost.
+- Card shot: `packages/client/public/maps/shots/whiteout_station.jpg` from the map's card camera (eye level in the
+  yard's south-west corner looking north-east), capture-map-shots.
