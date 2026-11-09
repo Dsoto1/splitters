@@ -8,6 +8,20 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Parties and the next-map vote, part 2** (owner-approved follow-ups, 2026-11-08):
+- **Host handoff keeps the party together:** when a browser host leaves and a friend takes over, everyone keeps their
+  party and side, and a vote on the next map that was open goes on with the new host (the same maps, votes and time
+  left; one that had just closed keeps its winner).
+- **Free-for-all parties:** friends who came together see each other's names in a friendly colour (kill feed,
+  messages, scoreboard) with the ally marker over their heads, and tend to spawn near each other (never at the cost of
+  a safe spawn). They can still shoot each other: damage and scoring are unchanged.
+- **The /host page** gets "Vote on the next map" and every Match setup rule (score, time, respawn, friendly fire,
+  weapon set, teams and the rest under More rules), each tagged with when it applies. Stopped, they go with Start;
+  running, a change reaches the match at once. The Host Service launcher's Rotation card gets the vote box too, and
+  the console `rotation vote on|off`.
+- **The menu's first download** is 32 kB smaller (746 → 714 kB gzip): the hit-shape table loads with the match, not
+  the menu. The budget goes back to 800 kB.
+
 **Our own trees, bushes and hedges everywhere; no more Kenney foliage** (Environment Phase 2, owner-approved
 2026-11-08: "I don't want to see those"):
 - **Nine new generated species**, grounded and natural rather than toy-like: Field Maple (summer, autumn), Umbrella

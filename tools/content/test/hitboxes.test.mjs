@@ -4,7 +4,8 @@
 import { describe, expect, it } from 'vitest';
 import { MEASURED_HITBOXES } from '../../../packages/shared/src/content/hitboxes.generated.ts';
 import { BODY_SIZES, HITBOX_MARGIN } from '../../../packages/shared/src/sim/constants.ts';
-import { lookHitbox, rayBody, lastHit } from '../../../packages/shared/src/sim/hitbox.ts';
+import { rayBody, lastHit } from '../../../packages/shared/src/sim/hitbox.ts';
+import { lookHitbox } from '../../../packages/shared/src/sim/lookHitbox.ts';
 import { hitZone } from '../../../packages/shared/src/sim/weapons.ts';
 import { getLook } from '../../../packages/shared/src/content/looks.ts';
 import { outsideShapes, pointsOf, subjects } from '../hitboxes.mjs';

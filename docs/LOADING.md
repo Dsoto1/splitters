@@ -113,7 +113,9 @@ to 6.1 MB (the match worker no longer carries its own copy of Rapier).
 `tools/ci/bundle-budget.mjs` (CI's build and site jobs) adds up the JS a first
 visit loads before the menu (index.html's entry and everything it imports
 statically, i.e. its modulepreloads), gzipped as the hub serves it, and fails
-over **840 kB gzip / 3 MB raw** (raised from 800 kB / 2.9 MB for the Snow and Desert City packs, ad1ba06, before step 1 below took the menu down to 649 kB). Over budget usually means a static import
+over **800 kB gzip / 2.8 MB raw** (it was 840 kB / 3 MB from the Snow and Desert City packs, ad1ba06, until
+2026-11-09: step 1 below took the menu down to 649 kB, it grew back to 746 kB, and moving the measured hit-shape table
+out of the menu, below, brought it to 714 kB / 2513 kB raw). Over budget usually means a static import
 pulled something the menu doesn't draw back into the first load: make it a
 dynamic `import()` at the mode switch that needs it. Raise the budget only on
 purpose, in the commit that needs it (`BUDGET_GZIP_KB`, `BUDGET_RAW_KB`).
@@ -122,6 +124,14 @@ Content scalability step 1 (2026-11-03) took the menu's first JS from
 837.0 to 649.0 kB gzip (2970 to 2305 kB raw; `index` 396.1 to 208.1 kB gzip)
 by moving the map content out (above). The map content is about 149 kB gzip
 (550 kB raw), fetched with the first map.
+
+**The hit-shape table** (2026-11-09): `content/hitboxes.generated.ts` (~193 kB raw, ~32 kB gzip) rode in the menu's
+`index` chunk because `sim/hitbox.ts` (reached by the menu through `sim/weapons.ts`) also held the look lookups the
+match uses: Rollup puts a module's used code in the chunk of whoever reaches it first, and the lookups read the table.
+The lookups now live in `sim/lookHitbox.ts` (match code, hitbox overlay), so the table loads with the match. To find
+what's in the menu chunk, a throwaway Vite config with a `generateBundle` hook that lists each chunk's
+`modules[id].renderedLength` (and gzips `code`) does it without source maps (a source-mapped build ran out of memory
+here).
 
 Measure a change: `pnpm build && node tools/ci/bundle-budget.mjs`, and
 `node tools/perf/first-load.mjs [dist …]` for times (it serves each build the

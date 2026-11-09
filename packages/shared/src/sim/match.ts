@@ -48,7 +48,8 @@ import {
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE, type Stance } from './constants.ts';
 import { CORE_WEAPONS } from '../content/weapons.generated.ts';
-import { lastHit, lookHitbox, npcHitbox, type LookHitbox } from './hitbox.ts';
+import { lastHit, type LookHitbox } from './hitbox.ts';
+import { lookHitbox, npcHitbox } from './lookHitbox.ts';
 import { classStats, matchStats, type CharacterStats } from './characterStats.ts';
 import { randomLook } from './randomLooks.ts';
 import { RouletteDirector } from './roulette.ts';
