@@ -385,6 +385,7 @@ import { SHIPPED_IDS, itemIcon, CARD_HIDDEN_KINDS, STARTER_TERRAIN, NEW_MAP_SIZE
 import { TerrainTools } from './terrainTools.ts';
 import { SetPieceTools } from './setPieceTools.ts';
 import { PaletteBuilder } from './paletteBuilder.ts';
+import { TopBar } from './topBar.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -409,6 +410,8 @@ export interface EditorHost {
  * templates are loaded on purpose from Open….
  */
 export class EditorApp {
+  /** The top bar and the tool bar: file buttons, workspace tabs, levels, grid, overlaps, snap, theme, the counts line, and folding the side panels (topBar.ts). */
+  readonly topBar: TopBar;
   /** The palette's contents: every tab's cards (tiles, walls, gameplay, pickups, props, vehicles, paint, NPCs, paths, real places), the Style Pack picker and the palette's pictures (paletteBuilder.ts). */
   readonly palettes: PaletteBuilder;
   /** Set pieces: placing them (the ghost, its ports, the look), the Set pieces palette and the player's own pieces, saving a selection as a piece, exploding one and the set piece inspector (setPieceTools.ts). */
@@ -472,7 +475,7 @@ export class EditorApp {
   /** Style the Walls tool builds with. */
   private edgeStyle: EdgeStyle = 'window';
   /** Top bar Snap: 'normal' keeps each tool's own step (50 cm, props 25 cm). */
-  private snapMode: 'fine' | 'normal' | 'coarse' | 'off' = 'normal';
+  snapMode: 'fine' | 'normal' | 'coarse' | 'off' = 'normal';
   private snapStep(normal: number): number {
     if (this.freePlacing()) return 0.01;
     return { fine: 0.25, normal, coarse: 1, off: 0.01 }[this.snapMode];
@@ -504,9 +507,9 @@ export class EditorApp {
   private navTimer?: number;
   /** Coplanar overlaps (geometry.coplanar), worked out a moment after each edit like navigation. */
   private zIssues: ValidationIssue[] = [];
-  private zSpots: CoplanarSpot[] = [];
+  zSpots: CoplanarSpot[] = [];
   private zTimer?: number;
-  private overlapsOn = false;
+  overlapsOn = false;
   private navToken = 0;
   private toastTimer?: number;
   private active = false;
@@ -523,6 +526,7 @@ export class EditorApp {
   paintScope: PaintScope = 'surface';
 
   constructor(private readonly host: EditorHost) {
+    this.topBar = new TopBar(this);
     this.palettes = new PaletteBuilder(this);
     this.pieces = new SetPieceTools(this);
     this.terrain = new TerrainTools(this);
@@ -658,10 +662,10 @@ export class EditorApp {
       commit: (label, after) => this.run(label, { kind: 'setLogic', before: this.doc.logic, after }),
       commitFactions: (label, after) => this.run(label, { kind: 'setFactions', before: this.doc.factions, after }),
       focusEntity: (id) => this.focusEntity(id),
-      openChanged: () => this.syncWorkspaceTabs(),
+      openChanged: () => this.topBar.syncWorkspaceTabs(),
     });
     this.palettes.buildPalette();
-    this.bindUi();
+    this.topBar.bindUi();
     this.bindInput();
     this.view.focus({ x: 0, y: 0, z: 0 });
     $('ed-reset-view').addEventListener('click', () => this.resetView());
@@ -842,7 +846,7 @@ export class EditorApp {
       this.renderedLevel = this.level;
       this.renderedShowAll = this.showAll;
       this.updateSelectionVisuals();
-      this.updateCounts();
+      this.topBar.updateCounts();
       this.renderLevels();
     }
     if (docChanged) {
@@ -855,11 +859,11 @@ export class EditorApp {
       };
       this.pieces.renderMyPieces();
       this.updateSelectionVisuals();
-      this.syncToolbar();
+      this.topBar.syncToolbar();
       this.validate();
       this.budgetBar.update(this.budgets.counts);
       this.renderInspector();
-      this.updateTopBar();
+      this.topBar.updateTopBar();
       this.updateHover();
       this.logic.render();
       this.terrain.syncTerrainUi();
@@ -871,46 +875,6 @@ export class EditorApp {
       if (!force) this.scheduleAutosave();
     }
   }
-
-  // ---------------------------------------------------------------- sidebars
-
-  /** Fold the palette or the side panel away (and back): their tabs, Backslash and Shift+Backslash; remembered in this browser. */
-  private setupSidebars(): void {
-    const root = $('editor');
-    const key = 'tiletrigger.editor.sidebars';
-    let saved: { pal?: boolean; right?: boolean } = {};
-    try {
-      saved = JSON.parse(localStorage.getItem(key) ?? '{}') as typeof saved;
-    } catch {
-      // Storage blocked: both open.
-    }
-    const apply = (side: 'pal' | 'right', collapsed: boolean) => {
-      root.classList.toggle(`${side}-collapsed`, collapsed);
-      const btn = $(side === 'pal' ? 'ed-pal-toggle' : 'ed-right-toggle');
-      const name = side === 'pal' ? 'the palette' : 'the side panel';
-      btn.textContent = (side === 'pal') === collapsed ? '›' : '‹';
-      btn.title = `${collapsed ? 'Show' : 'Hide'} ${name} (${side === 'pal' ? '\\' : 'Shift+\\'})`;
-      btn.setAttribute('aria-label', `${collapsed ? 'Show' : 'Hide'} ${name}`);
-      btn.setAttribute('aria-expanded', String(!collapsed));
-    };
-    this.toggleSidebar = (side) => {
-      const collapsed = !root.classList.contains(`${side}-collapsed`);
-      apply(side, collapsed);
-      saved[side] = collapsed;
-      try {
-        localStorage.setItem(key, JSON.stringify(saved));
-      } catch {
-        // This page only.
-      }
-    };
-    apply('pal', !!saved.pal);
-    apply('right', !!saved.right);
-    $('ed-pal-toggle').addEventListener('click', () => this.toggleSidebar('pal'));
-    $('ed-right-toggle').addEventListener('click', () => this.toggleSidebar('right'));
-  }
-  private toggleSidebar: (side: 'pal' | 'right') => void = () => undefined;
-  private countedDoc: MapDocument | null = null;
-  private countedBoxes = 0;
 
   // ---------------------------------------------------------------- editing
 
@@ -931,12 +895,12 @@ export class EditorApp {
     }
   }
 
-  private undo(): void {
+  undo(): void {
     const label = this.history.undo();
     this.toast(label ? `Undo: ${label}` : 'Nothing to undo');
   }
 
-  private redo(): void {
+  redo(): void {
     const label = this.history.redo();
     this.toast(label ? `Redo: ${label}` : 'Nothing to redo');
   }
@@ -1051,7 +1015,7 @@ export class EditorApp {
     this.selection = single ? sel : withGroups(this.doc, sel);
     this.updateSelectionVisuals();
     this.renderInspector();
-    this.syncToolbar();
+    this.topBar.syncToolbar();
   }
 
   private updateSelectionVisuals(offset?: [number, number, number], bad = false): void {
@@ -1117,7 +1081,7 @@ export class EditorApp {
     });
   }
 
-  private setLevel(level: number, quiet = false): void {
+  setLevel(level: number, quiet = false): void {
     const next = Math.max(-16, Math.min(16, level));
     if (next === this.level) {
       if (!quiet && next !== level) this.toast(`${levelName(next)} is the build limit: levels go ${BUILD_LEVELS.max} up and ${-BUILD_LEVELS.min} down`);
@@ -1653,7 +1617,7 @@ export class EditorApp {
     }
   }
 
-  private deleteSelection(): void {
+  deleteSelection(): void {
     const n = this.selCount();
     if (!n) return this.toast('Nothing selected: click something with Select (V) first, or use Erase (X)', true);
     if (this.run(n > 1 ? `Delete ${n} items` : 'Delete', deleteCommand(this.doc, this.selection))) this.setSelection(emptySelection());
@@ -2464,8 +2428,8 @@ export class EditorApp {
     redo: () => this.redo(),
     save: () => this.save(),
     duplicate: () => this.duplicate(),
-    togglePalette: () => this.toggleSidebar('pal'),
-    toggleSidePanel: () => this.toggleSidebar('right'),
+    togglePalette: () => this.topBar.toggleSidebar('pal'),
+    toggleSidePanel: () => this.topBar.toggleSidebar('right'),
     rotate: () => this.rotate(false),
     rotateFine: () => this.rotate(true),
     mirror: () => this.mirror(),
@@ -2547,12 +2511,12 @@ export class EditorApp {
   }
 
   /** The `?` overlay: every key in the table, grouped (keyOverlay.ts). */
-  private readonly keyOverlay = new KeyOverlay($('editor'));
+  readonly keyOverlay = new KeyOverlay($('editor'));
 
   // ---------------------------------------------------------------- UI
 
   /** Walls & Openings tool; `cycle` moves on to the next style. */
-  private wallsTool(cycle: boolean): void {
+  wallsTool(cycle: boolean): void {
     const styles = EDGE_STYLES.filter((x) => x !== 'auto');
     const now = this.tool.kind === 'edge' ? this.tool.style : this.edgeStyle;
     const next = cycle ? styles[(styles.indexOf(now as (typeof styles)[number]) + 1) % styles.length]! : now;
@@ -2560,79 +2524,16 @@ export class EditorApp {
   }
 
   /** Pick the last placed piece up again, or point at the palette. */
-  private placeTool(): void {
+  placeTool(): void {
     if (this.lastPlace) return this.setTool(this.lastPlace);
     this.showPane('tiles');
     this.toast('Pick a piece, prop, item or NPC from the palette on the left to place it');
   }
 
-  private setShowAll(on: boolean, quiet = false): void {
+  setShowAll(on: boolean, quiet = false): void {
     this.showAll = on;
     $<HTMLInputElement>('ed-showall').checked = on;
     if (!quiet) this.toast(on ? 'Showing every level (the others ghosted)' : `Showing ${levelName(this.level)} and below`);
-  }
-
-  /** The always-visible tool bar over the view: modes, then actions, each with its key. */
-  buildToolbar(): void {
-    const bar = $('ed-toolbar');
-    const add = (id: string, icon: string, label: string, key: string, title: string, onClick: () => void, tool?: string) => {
-      const b = document.createElement('button');
-      b.id = id;
-      b.className = 'tb-btn';
-      if (tool) b.dataset.tool = tool;
-      b.title = `${title} (${key})`;
-      b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${TOOL_ICONS[icon]}</svg><span class="tb-label">${label}</span>${id === 'ed-tb-place' ? '<small id="ed-tb-place-what"></small>' : ''}<kbd>${key}</kbd>`;
-      b.addEventListener('click', () => {
-        onClick();
-        b.blur();
-      });
-      bar.append(b);
-      return b;
-    };
-    add('ed-tb-select', 'select', 'Select', 'V', 'Select, move and edit things', () => this.setTool({ kind: 'select' }), 'select');
-    add('ed-tb-place', 'place', 'Place', 'P', 'Place the last piece you picked from the palette', () => this.placeTool(), 'place');
-    add('ed-tb-erase', 'erase', 'Erase', 'X', 'Erase: click anything to delete it', () => this.setTool({ kind: 'erase' }), 'erase');
-    add('ed-tb-paint', 'paint', 'Paint', 'B', 'Paint surfaces', () => this.setTool({ kind: 'paint' }), 'paint');
-    add('ed-tb-walls', 'edge', 'Walls', 'O', 'Walls & openings: doors, windows, arches on any side', () => this.wallsTool(false), 'edge');
-    add('ed-tb-terrain', 'terrain', 'Terrain', 'T', 'Sculpt and paint the terrain', () => this.terrain.setTerrainBrush(this.terrain.terrainBrush), 'terrain');
-    add('ed-tb-measure', 'measure', 'Measure', 'U', 'Measure: distance, height difference and slope between points', () => this.setTool({ kind: 'measure' }), 'measure');
-    const sep = document.createElement('span');
-    sep.className = 'tb-sep';
-    bar.append(sep);
-    add('ed-tb-rotate', 'rotate', 'Rotate', 'R', 'Rotate the selection, or the piece you are placing (Shift+R: a finer step)', () => this.rotate());
-    add('ed-tb-delete', 'delete', 'Delete', 'Del', 'Delete the selection', () => this.deleteSelection());
-    this.keyOverlay.mountButton(bar);
-    this.syncToolbar();
-  }
-
-  /** Selection actions are only live with something selected. */
-  private syncToolbar(): void {
-    $<HTMLButtonElement>('ed-tb-delete').disabled = !this.selCount();
-    const save = document.getElementById('ed-sp-save') as HTMLButtonElement | null;
-    if (save) save.disabled = !this.selCount();
-  }
-
-  /**
-   * Top-bar workspaces (reference board): Build, Entities and Environment
-   * pick the palette's sub-tabs; Logic opens the rules panel; Test plays the map.
-   */
-  setWorkspace(ws: string): void {
-    if (ws === 'test') return this.test();
-    if (ws === 'logic') {
-      if (!this.logic.isOpen) this.logic.open();
-      return;
-    }
-    if (this.logic.isOpen) this.logic.close();
-    const first: Record<string, string> = { build: 'tiles', entities: 'entities', environment: 'paint' };
-    this.paletteWs = ws;
-    this.showPane(first[ws] ?? 'tiles');
-    if (ws === 'environment' && this.selCount()) this.setSelection(emptySelection());
-  }
-
-  /** Light the top bar's workspace tab: Logic while its panel is open, else the palette's workspace. */
-  syncWorkspaceTabs(): void {
-    const on = this.logic?.isOpen ? 'logic' : this.paletteWs;
-    for (const b of document.querySelectorAll<HTMLElement>('#ed-modes .tab')) b.classList.toggle('on', b.dataset.ws === on);
   }
 
   // ---------------------------------------------------------------- the map's own bots
@@ -2991,115 +2892,6 @@ export class EditorApp {
     return { doc, models };
   }
 
-  private bindUi(): void {
-    $('ed-home').addEventListener('click', () => this.quit());
-    $('ed-undo').addEventListener('click', () => this.undo());
-    $('ed-redo').addEventListener('click', () => this.redo());
-    $('ed-save').addEventListener('click', () => this.save());
-    $('ed-export').addEventListener('click', () => {
-      // Keep the identity the export stamped (map ID, version, hash), so the next export continues it.
-      const release = exportMap(this.doc).metadata.release;
-      if (release) this.doc.metadata.release = release;
-    });
-    $('ed-new').addEventListener('click', () => this.newMapDialog());
-    $('ed-open').addEventListener('click', () => this.openDialog());
-    $('ed-import').addEventListener('click', () => $('ed-import-file').click());
-    $('ed-publish').addEventListener('click', () => {
-      void openPublishDialog($<HTMLDialogElement>('ed-publish-dialog'), { doc: () => this.doc, builtIn: isBuiltInMap, toast: (t, err) => this.toast(t, err) });
-    });
-    $<HTMLInputElement>('ed-import-file').addEventListener('change', async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      (e.target as HTMLInputElement).value = '';
-      if (!file) return;
-      const r = await importMapFile(file);
-      if (!('map' in r)) return this.toast(`Import failed: ${r.issues[0]?.message ?? 'unknown error'}`, true);
-      this.keepDraft();
-      this.replaceDocument(r.map);
-      const errors = r.issues.filter((i) => i.severity === 'error').length;
-      this.toast(`Imported ${r.map.metadata.name}${errors ? ` (${errors} problem${errors === 1 ? '' : 's'} to fix before it plays: see the list)` : ''}`);
-    });
-    $('ed-test').addEventListener('click', () => this.test());
-    $('ed-test-here').addEventListener('click', () => this.playFromHere());
-    $('ed-plan').addEventListener('click', (e) => {
-      this.plan.toggle();
-      (e.currentTarget as HTMLElement).blur();
-    });
-    this.setupSidebars();
-    $('ed-status').addEventListener('click', () => $('ed-issues').scrollIntoView({ behavior: 'smooth' }));
-    $('ed-level-up').addEventListener('click', () => this.setLevel(this.level + 1));
-    $('ed-level-down').addEventListener('click', () => this.setLevel(this.level - 1));
-    $<HTMLInputElement>('ed-showall').addEventListener('change', (e) => this.setShowAll((e.target as HTMLInputElement).checked));
-
-    const name = $<HTMLInputElement>('ed-name');
-    name.addEventListener('change', () => {
-      const v = name.value.trim().slice(0, 80) || 'Untitled Map';
-      if (v !== this.doc.metadata.name) this.run('Rename map', { kind: 'setMetadata', before: { name: this.doc.metadata.name }, after: { name: v } });
-    });
-    name.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') name.blur();
-    });
-
-    const bots = $<HTMLSelectElement>('ed-bots');
-    for (let i = 0; i <= 15; i++) bots.append(new Option(`${i} bot${i === 1 ? "" : "s"}`, String(i), i === 3, i === 3));
-
-    $('ed-grid').addEventListener('click', () => {
-      const on = !$('ed-grid').classList.contains('on');
-      $('ed-grid').classList.toggle('on', on);
-      $('ed-grid').setAttribute('aria-pressed', String(on));
-      this.view.setGridVisible(on);
-      // Off also leaves the full grid.
-      if (!on && this.view.area.gridFull) this.setGridFull(false);
-    });
-    // Full grid: over the whole build area, out to the build limit (owner, 2026-11-05); turns Grid on.
-    $('ed-grid-full').addEventListener('click', () => this.setGridFull(!this.view.area.gridFull));
-    // Overlaps: highlight where two pieces' faces share a plane (the geometry.coplanar warning's places).
-    $('ed-overlaps').addEventListener('click', () => {
-      this.overlapsOn = !this.overlapsOn;
-      $('ed-overlaps').classList.toggle('on', this.overlapsOn);
-      $('ed-overlaps').setAttribute('aria-pressed', String(this.overlapsOn));
-      this.view.setOverlaps(this.overlapsOn ? this.zSpots : null);
-    });
-    $<HTMLSelectElement>('ed-snap').addEventListener('change', (e) => (this.snapMode = (e.target as HTMLSelectElement).value as typeof this.snapMode));
-    const theme = $<HTMLSelectElement>('ed-theme');
-    for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id));
-    theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
-  }
-
-  private setGridFull(on: boolean): void {
-    this.view.setGridFull(on);
-    $('ed-grid-full').classList.toggle('on', on);
-    $('ed-grid-full').setAttribute('aria-pressed', String(on));
-    if (on && !$('ed-grid').classList.contains('on')) $('ed-grid').click();
-  }
-
-  private updateTopBar(): void {
-    $<HTMLSelectElement>('ed-theme').value = this.doc.classicStructure.theme;
-    const name = $<HTMLInputElement>('ed-name');
-    if (document.activeElement !== name) name.value = this.doc.metadata.name;
-    $('ed-dirty').classList.toggle('on', this.isDirty());
-    $<HTMLButtonElement>('ed-undo').disabled = !this.history.canUndo;
-    $<HTMLButtonElement>('ed-redo').disabled = !this.history.canRedo;
-    $('ed-undo').title = this.history.undoLabel ? `Undo ${this.history.undoLabel} (Ctrl+Z)` : 'Undo (Ctrl+Z)';
-    $('ed-redo').title = this.history.redoLabel ? `Redo ${this.history.redoLabel} (Ctrl+Y)` : 'Redo (Ctrl+Y)';
-  }
-
-  private updateCounts(): void {
-    const tiles = this.doc.classicStructure.tiles.length;
-    const spawns = this.doc.entities.filter((e) => e.kind === 'spawn').length;
-    const pickups = this.doc.entities.filter((e) => e.kind === 'pickup').length;
-    const npcs = this.doc.entities.filter((e) => e.kind === 'encounter').length;
-    const scenario = this.doc.entities.length - spawns - pickups - npcs;
-    const rules = this.doc.logic.rules.length;
-    const pieces = this.doc.setPieces?.length ?? 0;
-    // Counted once per version of the document (refresh runs this on every edit and level change), set pieces expanded.
-    if (this.countedDoc !== this.doc) {
-      this.countedDoc = this.doc;
-      this.countedBoxes = this.mapBoxes().length;
-    }
-    const boxes = this.countedBoxes;
-    $('ed-counts').textContent = `${tiles} tiles${pieces ? ` · ${pieces} set piece${pieces === 1 ? '' : 's'}` : ''} · ${spawns} spawns · ${pickups} pickups · ${scenario} scenario objects · ${npcs} NPC squads · ${rules} rules · ${boxes} collision boxes`;
-  }
-
   /** Environment → Sky: the backdrop's one home, kept in step with the map. */
   private renderSkyPane(): void {
     const el = document.getElementById('ed-sky');
@@ -3368,7 +3160,7 @@ export class EditorApp {
     el.append(idRow);
 
     const sky = button('Sky, scenery & border…', () => {
-      this.setWorkspace('environment');
+      this.topBar.setWorkspace('environment');
       this.showPane('sky');
     });
     sky.title = 'The sky, distant scenery, haze and the border live in Environment → Sky';
@@ -4476,7 +4268,7 @@ export class EditorApp {
 
   // ---------------------------------------------------------------- persistence / test
 
-  private isDirty(): boolean {
+  isDirty(): boolean {
     return this.history.revision !== this.savedRevision;
   }
 
@@ -4494,13 +4286,13 @@ export class EditorApp {
   }
 
   /** Before switching maps: unsaved changes stay in Open… as a draft. */
-  private keepDraft(): void {
+  keepDraft(): void {
     if (!this.isDirty()) return;
     this.flushDraft();
     this.toast(`Unsaved changes to "${this.doc.metadata.name}" kept as a draft in Open…`);
   }
 
-  private save(): boolean {
+  save(): boolean {
     const stored = saveToLibrary(this.doc);
     if (!stored) {
       this.toast('Could not save to browser storage — use Export to keep a copy', true);
@@ -4510,7 +4302,7 @@ export class EditorApp {
     this.autosaveTimer = undefined;
     clearDraft(stored.metadata.id);
     this.savedRevision = this.history.revision;
-    this.updateTopBar();
+    this.topBar.updateTopBar();
     this.toast(`Saved "${stored.metadata.name}"`);
     return true;
   }
@@ -4519,7 +4311,7 @@ export class EditorApp {
    * Quit to the main menu. With unsaved changes it asks first: Save & quit
    * (naming a map that was never saved), Quit without saving, or Cancel.
    */
-  private quit(): void {
+  quit(): void {
     if (!this.isDirty()) return this.host.goHome();
     const dialog = $<HTMLDialogElement>('ed-quit-dialog');
     const saved = inLibrary(this.doc.metadata.id);
@@ -4546,7 +4338,7 @@ export class EditorApp {
     if (!saved) name.select();
   }
 
-  private replaceDocument(doc: MapDocument): void {
+  replaceDocument(doc: MapDocument): void {
     this.plan.exit();
     this.history.reset(doc);
     this.savedRevision = this.history.revision;
@@ -4557,7 +4349,7 @@ export class EditorApp {
   }
 
   /** New: pick a size of open ground (or the sky, with no terrain) and a ground material. */
-  private newMapDialog(): void {
+  newMapDialog(): void {
     const dialog = $<HTMLDialogElement>('ed-new-dialog');
     const sizes = $('ed-new-sizes');
     let size = STARTER_TERRAIN;
@@ -4599,7 +4391,7 @@ export class EditorApp {
     (sizes.querySelector('button.on') as HTMLButtonElement | null)?.focus();
   }
 
-  private openDialog(): void {
+  openDialog(): void {
     const dialog = $<HTMLDialogElement>('ed-open-dialog');
     const list = $('ed-library');
     list.replaceChildren();
@@ -4640,7 +4432,7 @@ export class EditorApp {
         this.replaceDocument(draft.map);
         // Still unsaved: the dirty dot stays on and Quit asks to save.
         this.savedRevision = -1;
-        this.updateTopBar();
+        this.topBar.updateTopBar();
         this.toast(`Opened the unsaved draft of "${draft.map.metadata.name}"`);
       }, () => clearDraft(draft.map.metadata.id), 'draft', { load: () => draft.map, shipped: SHIPPED_IDS.has(draft.map.metadata.id) });
     }

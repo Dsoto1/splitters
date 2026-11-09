@@ -71,7 +71,7 @@ export class PaletteBuilder {
   }
 
   buildPalette(): void {
-    this.app.buildToolbar();
+    this.app.topBar.buildToolbar();
     this.app.palette = new Palette($('ed-palette'), $<HTMLInputElement>('ed-search'), this.app.paletteAtlas, (key) => this.thumbFor(key));
     this.buildNpcPalette();
     this.buildPaintPalette();
@@ -218,7 +218,7 @@ export class PaletteBuilder {
       }
       for (const p of document.querySelectorAll<HTMLElement>('#ed-palette .ed-pane')) p.hidden = p.dataset.pane !== pane;
       $('ed-palette').dataset.cat = btn.dataset.cat ?? '';
-      this.app.syncWorkspaceTabs();
+      this.app.topBar.syncWorkspaceTabs();
     };
     this.app.showPane = showPane;
     tabs.addEventListener('click', (e) => {
@@ -235,7 +235,7 @@ export class PaletteBuilder {
     });
     $('ed-modes').addEventListener('click', (e) => {
       const ws = (e.target as HTMLElement).closest<HTMLElement>('.tab')?.dataset.ws;
-      if (ws) this.app.setWorkspace(ws);
+      if (ws) this.app.topBar.setWorkspace(ws);
     });
     this.buildPackPicker();
     this.app.palette.refresh();
