@@ -27,16 +27,18 @@ and maps").** Game side only; the MapMaker wording is asked of its lane ("In fli
   to nobody, shootable, take the wheel) and `withTrackVehicles(map)` (now ambient cars only).
 - **Old maps:** a map that still lists `core.race` loads; `isGameMode` drops it, so it isn't offered (alone it falls
   back to Deathmatch); `validateTrack` warns `race.removed`. The other track warnings say "traffic", not "races".
-- **Maps:** no map file changed. Only apex_ring and sandsweep list Race, both claimed by Environment Phase 2 (asked
-  above). Apex Ring already offered DM/TDM/CTF/KOTH: in TDM its 12 karts lap while the teams fight (bot-report TDM
-  120 s: 24 kills, cars never stalled; the e2e `traffic` flow). neon_spire (MapMaker lane), serene_city and
-  undergate_transit don't list Race; their NPC speeders keep lapping.
+- **Maps:** only apex_ring and sandsweep listed Race (released by Environment Phase 2, claimed, then edited in the
+  real MapMaker: Import, Map properties' Mode, Export; format 30 → 31 on export, nothing else changed). Apex Ring:
+  Race picked as the main mode and then Deathmatch, which drops it: now DM/TDM/CTF/KOTH; in TDM its 12 karts lap
+  (each ~1.1 laps of the 1.37 km circuit in 90 s, no wrecks) while the teams fight (bot-report TDM 120 s: 24 kills,
+  vehicles never stalled or wedged). Sandsweep: main mode Deathmatch (its only other mode). neon_spire, serene_city
+  and undergate_transit never listed Race; their NPC speeders keep lapping (2-3 cars, ~4 laps in 90 s, no wrecks).
 - **Tests:** `shared/test/trackTraffic.test.ts` (was race.test.ts): Race offered nowhere, maps that list it load,
   NPC cars lap in Deathmatch and in Team Deathmatch (each over a lap in 40 s), run a walker over. e2e `race` is now
   `traffic` (MapMaker's Paths tool on a track, then Apex Ring in TDM: no race, you on foot, 12 cars belonging to
   nobody, each drives ~70-190 m in 12 s); flowMap: `apex_ring` → traffic (sandsweep no longer opened by a flow).
 - **Question for the owner:** Sandsweep Circuit was built as a race (a podrace loop round a mesa, 8 spawns, no
-  cover, no NPC cars). It still offers Deathmatch. Keep it as a Deathmatch map, give it NPC speeders and cover in
+  cover, no NPC cars; bot-report TDM 120 s: 165 kills, 82 a minute, pistols only). It now offers Deathmatch only. Keep it as a Deathmatch map, give it NPC speeders and cover in
   MapMaker, or tick its Test map box?
 
 **Team kills (`wip/tk`, 2026-11-08; the owner's bug report).** "Teamkills should not count towards a kill streak
@@ -176,15 +178,8 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` low-detail levels, `content/meshy.lock.json`), the pickup/hit/streak bursts in `content/vfx.json`, small fixes of 2026-11-08 (`wip/small-fixes`), 2026-11-09. (Iron Maw's player count and Fernwood Moon's lift are inside other claims: not edited here.)
 - **For the session owning team kills and friendly fire:** the e2e `teams` flow's friendly-fire and team-kill checks contradict themselves between attempts on check/mapmaker-setpieces (run 42549709174, job 128943570176). Attempt 1: friendly fire off still hurt a teammate (70.5), and a team kill wasn't marked TK (killer 5 was a bot). Attempt 2: friendly fire on hurt 0, and TK was marked fine. It looks like stray shots from bots or other teammates in the test match, not set pieces. The failed job was re-run once.
 - Claimed: `maps/test_coverage.json` (the Town Wall Gatehouse, through MapMaker; set pieces part 6, `wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-09.
-- Claimed: `maps/apex_ring.json` and `maps/sandsweep.json` (drop Race from their modes in MapMaker's Map properties; released by Environment Phase 2), race removal (`wip/race-removal`), 2026-11-09.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
-- **Asked of Environment Phase 2 (`wip/env-p2`) by race removal, 2026-11-09** (it holds apex_ring, sandsweep and
-  serene_city): while each map is open in MapMaker, drop **Race** from its modes in Map properties (apex_ring lists it
-  fifth: pick Race as the main mode, then Deathmatch again, which drops it; sandsweep's main mode is Race: pick
-  Deathmatch). serene_city doesn't list it (nothing to do). Until then they load and leave Race out (`race.removed`
-  warning). Sandsweep as a battle map is weak (bot-report, TDM, 120 s: 165 kills, 82/min, pistols only, 8 spawns, no
-  cover, no NPC cars); the owner's call whether to tick its **Test map** box (question in race removal's entry).
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
   Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
   1.25 m cells on a 380 m map) and a Terrain → Change grid tool that resamples heights, paint and plants; (2) a "coast"
@@ -250,7 +245,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     pane" (l. 3096); the Paths card's tip "...the race track and AI routes" (l. 3083); Map properties' **Mode** list
     still offers `['core.race', 'Race']` (l. 4826) with its help `'core.race': 'Race: draw the track...'` (l. 4842):
     drop both, and have Map properties drop `core.race` from `supportedModes` (today it can only be dropped by picking
-    Race as the main mode and then another; Apex Ring lists it fifth); comments at l. 723, 2811, 3056-3057, 4733.
+    Race as the main mode and then another, as race removal did for Apex Ring); comments at l. 723, 2811, 3056-3057, 4733.
   - `shared/src/editor/keymap.ts`: `raceTrack` "Paths, on the race track" (Shift+G, l. 122).
   - `client/index.html` l. 228 (the Vehicles tab's title "...parked vehicles and race tracks"; MapMaker UI, so left
     to this lane too).

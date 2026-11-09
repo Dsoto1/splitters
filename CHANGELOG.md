@@ -17,6 +17,8 @@ made only on a commit that passed CI on a check branch.
   Roads still grip better on a track map.
 - **Old maps** that list Race load and simply don't offer it; MapMaker's checks say to drop it from the modes. The map
   format is unchanged.
+- **Apex Ring** and **Sandsweep Circuit** no longer list Race (MapMaker, Map properties): Apex Ring plays Deathmatch,
+  Team Deathmatch, CTF and King of the Hill with its karts lapping; Sandsweep plays Deathmatch.
 **Our own trees, bushes and hedges everywhere; no more Kenney foliage** (Environment Phase 2, owner-approved
 2026-11-08: "I don't want to see those"):
 - **Nine new generated species**, grounded and natural rather than toy-like: Field Maple (summer, autumn), Umbrella

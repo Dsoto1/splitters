@@ -90,11 +90,10 @@ describe('Race is no longer a mode', () => {
     expect(validateMap(old).filter((i) => i.severity === 'error')).toEqual([]);
     // Race alone: it falls back to Deathmatch rather than offering nothing.
     expect(playableModes(trackMap(oval(), ['core.race']))[0]).toBe('core.deathmatch');
-    // The shipped maps that list it (until their lanes drop it in MapMaker) load and offer only battle modes.
+    // The two shipped maps that listed it (Apex Ring, Sandsweep) had it dropped in MapMaker's Map properties.
     for (const id of ['apex_ring', 'sandsweep']) {
       const map = shipped(id);
-      expect(map.metadata.supportedModes.every((m) => m === 'core.race' || isGameMode(m))).toBe(true);
-      expect(playableModes(map)).not.toContain('core.race');
+      expect(map.metadata.supportedModes).not.toContain('core.race');
       expect(playableModes(map)).toContain('core.deathmatch');
     }
   });
