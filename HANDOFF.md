@@ -400,8 +400,6 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
-**Landing now: MapMaker train (p5, fixes2), please hold code pushes to main.** (MapMaker lane, 2026-11-09.)
-
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
@@ -514,6 +512,14 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - **Known:** the wider top bar makes Export, Import and Publish fold into the compact menu sooner near 1400 px.
   - **Known:** the `editorux` flow is now about 1,340 s on CI, too long for a retry inside the 45-minute job. Split it
     next.
+- **Landed 2026-11-09, train 2** (`check/train-20261109-223100`, main a182254): Phase 5 (time of day and weather,
+  map format v34) and MapMaker fixes 2. Fixes 2's questions, answered with the lane's recommendations: automatic
+  ground lowering stays at 3 m (with "Cut ground to floors" for deeper); the stair-foot rule stays general; Mirror's
+  terrain-and-paths checkbox is for half the map only.
+- **For the other session, bot vehicle routing (found on Whiteout Station):**
+  - bots plan a vehicle's drive on the walking route, checked only for the vehicle's width (`routeFits`);
+  - a hangar whose doorway is too low or narrow passes that check, and the sled then stalls at its north door;
+  - details are in `docs/map-briefs/whiteout_station/DECISIONS_AND_DEVIATIONS.md`.
 - **Phase 5 questions** (the lane's recommendations, as the owner asked):
   - fog caps bots' sight at the players' distance;
   - the lane proposes a time and weather per official map, set in MapMaker;
