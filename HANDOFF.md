@@ -296,8 +296,8 @@ For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.
 
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
-**The Spillway built from MAP 02 (`wip/mapmaker-spillway`, MapMaker lane, 2026-11-09; waits for the owner's review, not
-landed).**
+**The Spillway built from MAP 02 (`wip/mapmaker-spillway`, MapMaker lane, 2026-11-09; green on `check/mapmaker-spillway`
+at 60c0c184, run 42677907883; waits for the owner's review, not landed).**
 - A new map made in the real MapMaker only (a scratch Playwright driver: New map, Create terrain and the brushes,
   palette clicks, the inspector, Map properties, the scatter brush, Sky, Set card shot, Export). No map code.
 - What it is, the choices, the owner's questions: docs/map-briefs/the_spillway/ (DECISIONS_AND_DEVIATIONS.md,
