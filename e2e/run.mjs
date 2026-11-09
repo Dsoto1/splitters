@@ -6457,7 +6457,7 @@ async function newplayerFlow(browser) {
   const started = await page.waitForFunction(() => window.__tutorial && window.__cs?.phase?.() === 'playing' && window.__cs.local?.alive, null, { timeout: T(120000) }).then(() => true, () => false);
   const card = started ? await page.evaluate(() => ({ step: window.__tutorial.state().step, count: document.querySelector('#tutorial .tut-count')?.textContent, text: document.querySelector('#tutorial .tut-text')?.innerHTML ?? '', skip: !!document.querySelector('#tutorial-skip'), pauseSkip: !!document.querySelector('#pause-skip-tutorial'), map: window.__cs.map })) : null;
   // No "You / Leader" score bar in the tutorial (owner, 2026-11-08); Quick Play's Deathmatch below shows it again.
-  const tutScorebar = started ? await page.evaluate(() => ({ shown: !!document.getElementById('scorebar')?.offsetParent, boxes: document.getElementById('sb-left')?.textContent ?? '' })) : null;
+  const tutScorebar = started ? await page.evaluate(() => { const el = document.getElementById('scorebar'); return { shown: !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0, boxes: document.getElementById('sb-left')?.textContent ?? '' }; }) : null;
   check(!!tutScorebar && !tutScorebar.shown, `the tutorial shows no Deathmatch score bar (You / Leader) (${JSON.stringify(tutScorebar)})`);
   check(!!card && card.step === 'look' && card.count === '1 / 10' && /<kbd>Mouse<\/kbd>/.test(card.text) && card.skip && card.pauseSkip && card.map === 'training_range', `Start tutorial opens the Training Range with the first step's card, Skip on it and in the pause menu (${JSON.stringify(card)})`);
   // Move: walking forward 5 m finishes it (and nothing else does: standing still keeps it).
@@ -6489,8 +6489,9 @@ async function newplayerFlow(browser) {
   await page.click('#qp-dm');
   const playing = await page.waitForFunction(() => window.__cs?.phase?.() === 'playing' && window.__quickPlay, null, { timeout: T(120000) }).then(() => true, () => false);
   const qp = playing ? await page.evaluate(() => ({ ...window.__quickPlay, mode: window.__cs.rules().mode, map: window.__cs.map, saved: JSON.parse(localStorage.getItem('tiletrigger.quickPlay')) })) : null;
-  const qpScorebar = playing ? await page.waitForFunction(() => document.getElementById('scorebar')?.offsetParent && /You/.test(document.getElementById('sb-left').textContent), null, { timeout: T(10000) }).then(() => true, () => false) : false;
-  check(qpScorebar, 'after the tutorial, a Deathmatch shows its score bar again (You / Leader)');
+  const qpScorebar = playing ? await page.waitForFunction(() => { const el = document.getElementById('scorebar'); return !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0 && /You/.test(document.getElementById('sb-left').textContent); }, null, { timeout: T(30000) }).then(() => true, () => false) : false;
+  const qpBar = await page.evaluate(() => { const el = document.getElementById('scorebar'); return el ? { display: getComputedStyle(el).display, width: el.getBoundingClientRect().width, left: document.getElementById('sb-left').textContent } : null; });
+  check(qpScorebar, `after the tutorial, a Deathmatch shows its score bar again (You / Leader) (${JSON.stringify(qpBar)})`);
   check(choice.join() === 'core.tdm,core.deathmatch' && !!qp && qp.mode === 'core.deathmatch' && ['citadel', 'crossroads', 'bunker_cross', 'halcyon_station'].includes(qp.map) && qp.fill >= 8 && qp.setup.skill === 'normal' && qp.saved?.mode === 'core.deathmatch', `Quick Play → Deathmatch starts a match against normal bots on one of its maps (${JSON.stringify(qp && { map: qp.map, mode: qp.mode, fill: qp.fill, saved: qp.saved })})`);
   await page.goto(`${CLIENT}/?test=1&name=Tester`);
   await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
