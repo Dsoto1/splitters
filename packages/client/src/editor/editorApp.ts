@@ -332,6 +332,7 @@ import { raycastBoxes, type BoxHit } from './raycast.ts';
 import { BudgetBar } from './budgetBar.ts';
 import { KeyOverlay } from './keyOverlay.ts';
 import { MeasureTool } from './measureTool.ts';
+import { MapTestPanel } from './mapTestPanel.ts';
 import { RotateRing } from './rotateRing.ts';
 import { quickFacings } from './quickFacings.ts';
 import { isRetiredTile, retiredTilePanel } from './retiredTiles.ts';
@@ -737,6 +738,8 @@ export class EditorApp {
   private readonly budgetBar: BudgetBar;
   /** The measure tool (U): its points and labels, editor-only. */
   private readonly measure: MeasureTool;
+  /** The top bar's Bot test (overhaul Phase 4): a bot test run's heatmaps and spawn exposure, in a worker. */
+  readonly mapTest: MapTestPanel;
   /** Note pins (J; noteTool.ts): notes for the map's makers, drawn over the view. */
   private readonly notes: NoteTool;
   /** Bot hints (Y; botHintTool.ts, MapMaker overhaul Phase 4 item 3): drawn over the view, edited in the inspector. */
@@ -833,6 +836,10 @@ export class EditorApp {
     });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
     this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor'), world: () => ({ boxes: this.surfaceBoxes(), ground: this.shownGround }) });
+    this.mapTest = new MapTestPanel({ doc: () => this.doc, played: () => {
+        const r = loadMap(this.doc);
+        return r.ok ? r.map : this.doc;
+      }, errors: () => this.allIssues().filter((i) => i.severity === 'error').length, issuesChanged: () => this.renderIssues(), toast: (t, bad) => this.toast(t, bad), root: $('editor'), overlay: { scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor') } });
     this.notes = new NoteTool({
       doc: () => this.doc,
       run: (label, cmd) => this.run(label, cmd),
@@ -1149,6 +1156,7 @@ export class EditorApp {
     if (this.stroke) this.strokeStep(dt);
     this.refresh(false);
     this.measure.frame();
+    this.mapTest.frame();
     this.notes.frame();
     this.hints.frame();
     this.plan.update();
@@ -6149,7 +6157,7 @@ export class EditorApp {
 
   private allIssues(): ValidationIssue[] {
     const order = { error: 0, warning: 1, suggestion: 2 } as const;
-    return [...this.issues, ...this.navIssues, ...this.zIssues].sort((a, b) => order[a.severity] - order[b.severity]);
+    return [...this.issues, ...this.navIssues, ...this.zIssues, ...this.mapTest.issues()].sort((a, b) => order[a.severity] - order[b.severity]);
   }
 
   private renderIssues(): void {

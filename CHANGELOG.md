@@ -8,6 +8,18 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**MapMaker: a bot test run and spawn exposure** (MapMaker overhaul Phase 4, items 1 and 2):
+- **Bot test** in the top bar opens the Test panel. **Run bots** plays a bot match on the map you're editing in the
+  background (pick the mode, bots a team or in all, and 30 seconds to 5 minutes), with progress and Cancel; you can
+  keep building meanwhile.
+- **Afterwards, heatmaps** over the map, in 3D and in the plan view, each on its own switch: where bots went, where
+  they got stuck, where they died and where their routes failed. A short summary says the kills, stuck recoveries,
+  failed route searches and when the objective's moments first happened.
+- **Check spawns** labels every spawn with how much of the map can see it and from how far, draws its longest lines
+  of sight and the map's long sightlines (50 m and more), and warns about spawns half the map can see in the list of
+  problems (until the map changes).
+- Nothing is saved in the map.
+
 **Tests**:
 - The e2e `teams` flow's friendly fire and team kill checks no longer fail at random: every bot holds fire while your
   rounds are tested, the teammate's spawn shield is cleared, and its damage is counted by who dealt it.

@@ -1265,6 +1265,21 @@ template automatically.
   the camera in the map (`metadata.cardCamera`), Esc cancels; Preview shows the saved shot in the frame; Clear goes
   back to the automatic camera. The card picture (`maps/shots/<id>.jpg`, 640×360) is rendered from it by
   `tools/content/capture-map-shots.mjs`; MapMaker stores no picture for it (Set thumbnail is the maker's own picture).
+- **Bot test (the top bar).** Opens the Test panel, beside the view; keep building while it's open.
+  - **Run bots:** a bot match on the map as it is now, played in the background (its own worker): the mode (those the
+    map plays), Bots a team (team modes) or Bots (free-for-all, up to 32), and the length (30 s to 5 min). The bar shows
+    how far it got; Cancel ends it at once. Then a summary (kills, stuck recoveries, failed route searches, the
+    objective's first moments; King of the Hill's hill time) and four heatmaps, each on its own box: **where bots
+    went** (blue few, red many), **where they got stuck** (magenta), **where they died** (red) and **where routes
+    failed** (orange), lying on the floors they happened on. They show from above in the plan view too (levels above
+    the one shown are cut away). Read them as: red blobs of "went" are the busy lanes, blue or empty rooms nobody
+    uses; stuck and failed spots are places to open up (a step too high, a gap, a door with no way round).
+  - **Check spawns:** each spawn labelled with the share of the map that sees it (places anyone can walk to, looking
+    from eye height at a player's chest, out to 120 m) and how far off the furthest is; its three longest lines of
+    sight drawn (red when it's exposed), with the map's long sightlines (yellow, 50 m and more). Spawns half the map
+    or more can see are warned about in the list of problems until the map is edited; check again after fixing them
+    (a wall, a crate, a corner).
+  - Nothing here goes in the map. Clear removes what's drawn.
 
 ## Groups, copy and paste, templates, mirror and notes (MapMaker)
 

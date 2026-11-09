@@ -1116,6 +1116,10 @@ match's bot pipeline, wall clock); and per mode: CTF takes, captures and returns
 team alone on the hill) and contested; Bomb plants and defuses; Hostage rescues; Elimination (and Bomb and Hostage)
 round times; Fort Wars pieces built.
 
+Stuck recoveries and failed searches are read through `bots/botTrace.ts` (`BotTrace.look`, the counts since the last
+look), which MapMaker's bot test run (`editor/mapTest.ts`, overhaul Phase 4) shares: its heatmaps of where bots got
+stuck and where routes failed count exactly what the scorecard counts.
+
 - `--suite=<mode>` plays the maps that list the mode (ctf, koth, bomb, hostage, elim, forts, tdm); `--suite=all`
   every scorecard mode on its maps.
 - **Limits** live in `packages/server/src/tools/bot-limits.json`, like the perf budgets: per mode (`core.ctf`), for

@@ -280,6 +280,21 @@ For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.
   paint and plants, the command and undo, v31 → v32), `shared/test/borderCoast.test.ts`, `client/test/terrainDraw.test.ts`;
   e2e `editorux` → `editorTerrainGridChecks` (Change grid on a 96 m terrain and undo; coast chosen per side and drawn).
 
+**MapMaker: bot test run and spawn exposure (`wip/mapmaker-p4`, MapMaker lane, 2026-11-09; overhaul Phase 4 items 1
+and 2; waits for Tuesday's train).** docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under Phase 4 items 1 and 2.
+- **What:** the top bar's **Bot test** → the Test panel (`client/editor/mapTestPanel.ts`, `mapTestOverlay.ts`,
+  `mapTestWorker.ts` + `mapTestWorkerCore.ts`): a headless bot match in a worker (mode, bots, 30 s-5 min, progress,
+  Cancel), then four heatmaps (went, stuck, died, routes failed; 3D and plan view) and a summary; **Check spawns**:
+  per-spawn exposure labels, sightlines, `spawn.exposed` warnings. Logic in `shared/editor/mapTest.ts` (match subpath
+  only: it imports Match), `heatmap.ts`, `spawnExposure.ts`, `botTestSummary.ts`; `shared/bots/botTrace.ts` is now
+  how bot-report reads stuck recoveries and failed searches (same output).
+- **editorApp.ts:** five wiring lines (import, field, constructor, `frame()`, `allIssues()`); `editorView.photoMode`
+  hides `edMapTest*` meshes.
+- **Pitfalls:** nothing is in the map (no format bump). Exposure warnings stand only while `doc` is the object checked
+  (any edit drops them). The worker is ended, never asked to stop: Cancel is `terminate()`.
+- **Owner's questions:** in the report (exposure threshold, team-aware exposure, bot count cap, a quick on-every-edit
+  exposure pass).
+
 **For the other session: Iron Coast's editor half has landed (MapMaker lane, 2026-11-09).**
 - **What's on main:**
   - map format v32;
@@ -310,6 +325,7 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
+- Claimed: MapMaker's bot test run and spawn exposure (Phase 4 items 1 and 2; new modules under `client/src/editor/` and `shared/src/editor/`, a few wiring lines in editorApp.ts, `shared/src/bots/botTrace.ts` shared with bot-report; no format bump; `wip/mapmaker-p4`), MapMaker lane, 2026-11-09.
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` LODs, `content/meshy.lock.json`, the e2e `characters3` flow's far-copy checks; `wip/far-copies`), far-copies agent, 2026-11-09.
 
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.

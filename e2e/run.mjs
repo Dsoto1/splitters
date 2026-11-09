@@ -11,6 +11,7 @@ import { spawn } from 'node:child_process';
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium, devices } from 'playwright';
 import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
@@ -1100,6 +1101,7 @@ async function editoruxFlow(browser) {
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
   await editorBotHintChecks(browser);
+  await editorMapTestChecks(browser);
 }
 
 /**
@@ -1224,6 +1226,128 @@ async function editorBotHintChecks(browser) {
   await shot('bothints-known');
   await page.uncheck('#ed-hints-computed');
   check((await page.evaluate(() => window.__editor.hints.computed)) === null && (await hints()).length === spots.doc, 'turned off, the overlay goes (and the map is untouched)');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker overhaul Phase 4 items 1 and 2 (mapTestPanel.ts): on Skyward, a 30 s bot test run in the background
+ * (MapMaker keeps drawing and taking clicks meanwhile) gives heatmaps, drawn in 3D and in the plan view, and a
+ * summary; Cancel ends a run at once; the spawn check labels every spawn with its exposure, draws the sightlines and
+ * warns about exposed spawns in the validator's list.
+ */
+async function editorMapTestChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: process.env.E2E_SHOTS ? 2 : 1 })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  page.on('dialog', (d) => d.accept());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await page.setInputFiles('#ed-import-file', fileURLToPath(new URL('../maps/skyward.json', import.meta.url)));
+  await page.waitForFunction(() => window.__editor.doc.metadata.id === 'skyward', null, { timeout: T(30000) });
+  await page.click('#ed-maptest');
+  const opened = await page.evaluate(() => ({ shown: !document.getElementById('ed-maptest-panel').hidden, modes: [...document.querySelectorAll('#ed-mt-mode option')].map((o) => o.value), pressed: document.getElementById('ed-maptest').getAttribute('aria-pressed') }));
+  check(opened.shown && opened.pressed === 'true' && opened.modes[0] === 'core.deathmatch' && opened.modes.includes('core.tdm'), `Bot test opens the Test panel with the modes the map plays, its main one first (${JSON.stringify(opened)})`);
+  await page.selectOption('#ed-mt-mode', 'core.deathmatch');
+  await page.fill('#ed-mt-bots', '6');
+  // A 5-minute run: it goes on in the background while MapMaker draws and takes clicks (the match is in its own
+  // worker), then Cancel ends it at once.
+  await page.selectOption('#ed-mt-length', '300');
+  await page.click('#ed-mt-run');
+  await page.waitForFunction(() => /^\d:\d\d of 5:00 played/.test(document.getElementById('ed-mt-status').textContent), null, { timeout: T(60000) }).catch(() => {});
+  // (A click on the page while it runs: the grid toggle, then Cancel at once, before a slow software-drawn frame
+  // lets the match finish.)
+  const during = await page.evaluate(() => {
+    document.getElementById('ed-grid').click();
+    return { running: window.__editor.mapTest.running, grid: document.getElementById('ed-grid').classList.contains('on'), status: document.getElementById('ed-mt-status').textContent, bar: document.getElementById('ed-mt-bar').value };
+  });
+  // (Clicked in the page: a software-drawn frame for Playwright's own click can take seconds, the match not.)
+  await page.evaluate(() => document.getElementById('ed-mt-cancel').click());
+  const cancelled = await page.evaluate(() => ({ running: window.__editor.mapTest.running, progress: !document.getElementById('ed-mt-progress').hidden, result: !!window.__editor.mapTest.result, run: !document.getElementById('ed-mt-run').disabled, frames: window.__editor.mapTest.frames.count }));
+  check(during.running && !during.grid && during.bar > 0, `the bot test run goes on in the background, its progress shown, while MapMaker draws and takes a click (${JSON.stringify(during)}, ${cancelled.frames} frames drawn meanwhile)`);
+  check(!cancelled.running && !cancelled.progress && !cancelled.result && cancelled.run, `Cancel ends the run at once, with no result (${JSON.stringify(cancelled)})`);
+  await page.click('#ed-grid');
+  if (process.env.E2E_SHOTS) {
+    // The picture of a run going: another, cancelled after the shot.
+    await page.click('#ed-mt-run');
+    await page.waitForFunction(() => /^\d:\d\d of 5:00 played/.test(document.getElementById('ed-mt-status').textContent), null, { timeout: T(60000) }).catch(() => {});
+    await shot('bottest-running');
+    await page.evaluate(() => document.getElementById('ed-mt-cancel').click());
+    await page.waitForFunction(() => !window.__editor.mapTest.running, null, { timeout: T(60000) }).catch(() => {});
+    await page.evaluate(() => (window.__editor.mapTest.result = null));
+  }
+  // A 30-second run to the end, with a 50 ms timer on the page's thread measuring how late it fires (the editor's
+  // thread blocked), apart from drawing.
+  await page.evaluate(() => {
+    const probe = (window.__mtProbe = { worst: 0, n: 0, at: performance.now() });
+    probe.timer = setInterval(() => {
+      const now = performance.now();
+      probe.worst = Math.max(probe.worst, now - probe.at - 50);
+      probe.n++;
+      probe.at = now;
+    }, 50);
+  });
+  await page.selectOption('#ed-mt-length', '30');
+  await page.click('#ed-mt-run');
+  await page.waitForFunction(() => !window.__editor.mapTest.running && window.__editor.mapTest.result, null, { timeout: T(180000) }).catch(() => {});
+  const done = await page.evaluate(() => {
+    const ed = window.__editor;
+    const r = ed.mapTest.result;
+    const went = ed.view.scene.getMeshByName('edMapTest_went');
+    return { summary: [...document.querySelectorAll('#ed-mt-summary li')].map((l) => l.textContent), cells: r ? Object.fromEntries(Object.entries(r.layers).map(([k, v]) => [k, v.length])) : null, kills: r?.summary.kills, quads: went ? went.getTotalVertices() / 4 : 0, cost: document.getElementById('ed-mt-cost').textContent, longest: Math.round(ed.mapTest.frames.longest) };
+  });
+  check(done.summary[0] === 'Deathmatch, 6 bots, 0:30 played' && done.summary.some((l) => /^Kills: \d+/.test(l)) && done.summary.some((l) => /^Stuck recoveries: \d+/.test(l)) && done.summary.some((l) => /^Failed route searches: \d+/.test(l)), `the run's summary: kills, stuck recoveries, failed searches (${done.summary.join(' | ')})`);
+  check(done.cells && done.cells.went > 20 && done.quads === done.cells.went && done.cells.died > 0, `heatmaps: where bots went drawn cell by cell, where they died (${JSON.stringify(done.cells)}, ${done.kills} kills)`);
+  const probe = await page.evaluate(() => (clearInterval(window.__mtProbe.timer), { worst: Math.round(window.__mtProbe.worst), n: window.__mtProbe.n }));
+  console.log(`bot test run: the page's 50 ms timer at most ${probe.worst} ms late over ${probe.n} ticks; ${done.cost}`);
+  check(/^In the background: [\d.]+ s for 0:30 of match \([\d.]+ ms of the worker's time a match second\)/.test(done.cost), `the cost is measured: the worker's time and MapMaker's longest frame (${done.cost})`);
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await frames(page, 4);
+  await shot('bottest-heatmap');
+  // A layer goes off and on with its box.
+  await page.click('#ed-mt-layers input[data-layer="went"]');
+  const off = await page.evaluate(() => !window.__editor.view.scene.getMeshByName('edMapTest_went'));
+  await page.click('#ed-mt-layers input[data-layer="went"]');
+  const on = await page.evaluate(() => !!window.__editor.view.scene.getMeshByName('edMapTest_went'));
+  check(off && on, `a heatmap layer turns off and on (${off}, ${on})`);
+  // The plan view shows them too, from above.
+  await page.click('#ed-plan');
+  await frames(page, 4);
+  const plan = await page.evaluate(() => ({ plan: window.__editor.plan.on, went: !!window.__editor.view.scene.getMeshByName('edMapTest_went')?.isEnabled() }));
+  check(plan.plan && plan.went, `the heatmaps show in the plan view (${JSON.stringify(plan)})`);
+  await shot('bottest-plan');
+  await page.click('#ed-plan');
+  // Spawn exposure: a label on every spawn, sightlines, warnings for the exposed ones.
+  await page.click('#ed-mt-exposure');
+  await page.waitForFunction(() => window.__editor.mapTest.exposure, null, { timeout: T(60000) }).catch(() => {});
+  const exp = await page.evaluate(() => {
+    const ed = window.__editor;
+    const x = ed.mapTest.exposure;
+    return {
+      spawns: ed.doc.entities.filter((e) => e.kind === 'spawn').length,
+      labels: [...document.querySelectorAll('#editor > .ed-exposure-label')].map((l) => l.textContent),
+      exposed: x ? x.spawns.filter((s) => s.share >= 0.5).length : -1,
+      warned: ed.allIssues().filter((i) => i.code === 'spawn.exposed').length,
+      lines: !!ed.view.scene.getMeshByName('edMapTest_lines'),
+      list: document.querySelectorAll('#ed-mt-exp li').length,
+    };
+  });
+  check(exp.labels.length === exp.spawns && exp.labels.every((t) => /^\d+%(seen to \d+ m|unseen)$/.test(t)), `every spawn is labelled with its exposure (${exp.labels.length} of ${exp.spawns}: ${exp.labels.slice(0, 3).join(', ')})`);
+  check(exp.exposed > 0 && exp.warned === exp.exposed && exp.lines && exp.list > 0, `exposed spawns are warned in the validator's list and lines of sight drawn (${JSON.stringify(exp)})`);
+  const spawn = await page.evaluate(() => window.__editor.mapTest.exposure.spawns.slice().sort((a, b) => b.share - a.share)[0].pos);
+  await page.evaluate(([x, y, z]) => window.__editor.view.focus({ x, y, z }), [spawn.x, spawn.y, spawn.z]);
+  await frames(page, 4);
+  await shot('exposure');
+  // An edit makes the check stale: its warnings leave the list until it is run again.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const s = ed.doc.entities.find((e) => e.kind === 'spawn');
+    ed.history.execute('Move', { kind: 'updateEntities', before: [s], after: [{ ...s, position: [s.position[0] + 0.5, s.position[1], s.position[2]] }] });
+  });
+  await frames(page, 3);
+  const stale = await page.evaluate(() => window.__editor.allIssues().filter((i) => i.code === 'spawn.exposed').length);
+  check(stale === 0, `after an edit the exposure warnings wait for the next check (${stale})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
