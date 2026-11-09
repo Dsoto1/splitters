@@ -1281,6 +1281,23 @@ template automatically.
   to read or edit it (Ctrl+Enter saves), drag it to move it. Map properties → Notes lists them. They are saved in the
   map and never shown in play.
 
+## Bot hints (MapMaker, format v33)
+
+Bots work out good spots themselves (sniper and camp spots, parkour jumps). Bot hints add what they miss: the Entities
+tab → **Bot hints** (or **Y**, the last kind you used).
+- **Chokepoint, Sniper spot, Camp spot, Staging spot:** click the ground, a floor or a roof. It faces the way you look
+  (in 45° steps); R turns the selected one (Shift+R a finer step).
+- **Jump link:** click where the jump starts, then where it lands (Esc drops a half-placed one). The inspector says
+  whether a player can make it, and the issues list warns when one can't.
+- Each shows as an icon pin with its radius and facing (a jump: its arc) in the 3D view and the plan view (K), in
+  MapMaker only. Click a pin to edit it in the inspector: kind, facing, radius, which team it is for (or every side),
+  where it is (and a jump's landing), Go to, Delete. With the tool in hand, drag a pin to move it. Each edit is one undo
+  step.
+- **What bots know** (the tick box in the group) draws the bots' own computed spots in grey, read-only: sniper and camp
+  spots and parkour links. Add hints only where they're missing. (Bots work out no chokepoints or staging spots.)
+- Warnings: a hint outside the boundary or off the navmesh (no bot can stand there), a jump no one could make, two of a
+  kind on one spot. The format is in docs/BOTS.md, "Bot hints (map data)".
+
 ## Backdrops and plants
 
 Skies, distant scenery, ground past the border, terrain plants and the scatter brush are covered in [SCENERY.md](SCENERY.md).

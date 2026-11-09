@@ -24,6 +24,7 @@ export type KeyAction =
   | 'copy'
   | 'paste'
   | 'notes'
+  | 'botHints'
   | 'focus'
   | 'resetView'
   | 'logic'
@@ -116,6 +117,7 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   tool('erase', 'X', 'KeyX', 'Erase: click anything to delete it'),
   tool('measure', 'U', 'KeyU', 'Measure: distance, height difference and slope between points'),
   tool('notes', 'J', 'KeyJ', 'Note pins: click to pin a note for the map\'s makers, click a pin to edit it, drag to move it'),
+  tool('botHints', 'Y', 'KeyY', 'Bot hints: mark chokepoints, sniper, camp and staging spots and jump links for bots'),
   tool('paint', 'B', 'KeyB', 'Paint surfaces'),
   tool('walls', 'O', 'KeyO', 'Walls & openings (again: the next style)'),
   tool('terrain', 'T', 'KeyT', 'Terrain (again: the next brush)'),
