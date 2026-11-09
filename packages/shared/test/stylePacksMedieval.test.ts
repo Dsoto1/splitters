@@ -201,8 +201,9 @@ describe('Market Town (the pack\'s demo map)', () => {
     expect(r.issues).toEqual([]);
     const map = r.map;
     expect(map.classicStructure.theme).toBe('core.medieval');
-    const tiles = new Set(map.classicStructure.tiles.map((x) => x.tile));
-    for (const id of ['medieval.house', 'medieval.house_shop', 'medieval.house_balcony', 'medieval.outside_stair', 'medieval.walkway', 'medieval.market_square', 'medieval.market_hall', 'medieval.town_wall', 'medieval.wall_stair', 'medieval.town_gate', 'medieval.bell_tower', 'medieval.watchtower', 'medieval.stream', 'medieval.bridge', 'medieval.road', 'medieval.forge']) expect(tiles.has(id), id).toBe(true);
+    // Tiles and set pieces: set pieces part 6 swapped the old medieval.town_gate for setpiece.courtyard_gate_wall in MapMaker.
+    const tiles = new Set([...map.classicStructure.tiles.map((x) => x.tile), ...(JSON.parse(read('maps/market_town.json')).setPieces ?? []).map((p: { piece: string }) => p.piece)]);
+    for (const id of ['medieval.house', 'medieval.house_shop', 'medieval.house_balcony', 'medieval.outside_stair', 'medieval.walkway', 'medieval.market_square', 'medieval.market_hall', 'medieval.town_wall', 'medieval.wall_stair', 'setpiece.courtyard_gate_wall', 'medieval.bell_tower', 'medieval.watchtower', 'medieval.stream', 'medieval.bridge', 'medieval.road', 'medieval.forge']) expect(tiles.has(id), id).toBe(true);
     const spawns = map.entities.filter((e) => e.kind === 'spawn');
     for (const team of ['embers', 'tide']) expect(spawns.filter((e) => e.faction === team).length, team).toBeGreaterThanOrEqual(12);
     expect(map.entities.filter((e) => e.kind === 'flag')).toHaveLength(2);

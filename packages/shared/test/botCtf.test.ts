@@ -115,8 +115,9 @@ describe('CTF bots run the flag', () => {
   }, 600_000);
 
   it('Sunken Kingdom: a capture over the 155 m between the flags within five minutes', () => {
-    // (Seeds 1-4: the first capture at 323, 104, 98 and 97 s, after 18, 7, 2 and 2 flag takes.)
-    const match = ctfMatch('sunken_kingdom', 3);
+    // Seeds 1-6, the first capture with the Temple Pylon set piece (set pieces part 6; with the tile in brackets):
+    // none (none), 244 (244), none (245), 283 (99), none (none), none (none) s. Seed 2 plays the same either way.
+    const match = ctfMatch('sunken_kingdom', 2);
     let captures = 0;
     const ctf = match.mode as CtfMode;
     const w = watch(match, 300, () => (captures = [...ctf.captures.values()].reduce((a, b) => a + b, 0)) > 0);

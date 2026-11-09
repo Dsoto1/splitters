@@ -116,7 +116,8 @@ describe('style pack demo maps', () => {
   ])('%s validates with no errors or warnings, and every spawn and pickup is reachable', { timeout: 180_000 }, (id, theme) => {
     const map = load(id);
     expect(map.classicStructure.theme).toBe(theme);
-    const issues = validateMap(map).filter((i) => i.severity !== 'suggestion');
+    // Validated as saved (loadMap's issues): the loaded map has its set pieces expanded, which its release stamp doesn't describe.
+    const issues = loadMap(readFileSync(new URL(`../../../maps/${id}.json`, import.meta.url), 'utf8')).issues.filter((i) => i.severity !== 'suggestion');
     expect(issues).toEqual([]);
     const geometry = buildMapGeometry(map);
     const physics = new PhysicsWorld(geometry, mapTerrainMesh(map));
