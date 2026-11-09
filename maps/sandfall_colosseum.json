@@ -10,22 +10,21 @@
     "updatedAt": "2026-11-04T00:58:15.320Z",
     "parentId": null,
     "recommendedPlayers": {
-      "min": 4,
-      "max": 16
+      "min": 8,
+      "max": 24
     },
     "supportedModes": [
-      "core.deathmatch",
       "core.tdm",
       "core.koth",
       "core.ctf"
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_6zdk6fjgyhpyu675",
-      "revision": 18,
-      "contentHash": "sha256:5fa74a4f87ad05b247b9c4905dc7bb52a823444cdbfed17bfb4721f620cfda4d",
+      "versionId": "v_nubainmyfn7mbupb",
+      "revision": 20,
+      "contentHash": "sha256:87ed1297eb1c508c3dd821d229885533ea511e500cbe23622123e3a943bd3691",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-09T00:06:04.355Z"
+      "releasedAt": "2026-11-09T00:13:19.093Z"
     }
   },
   "classicStructure": {
@@ -72479,8 +72478,8 @@
   "blood": null,
   "teamSetup": {
     "sizes": [
-      8,
-      8
+      12,
+      12
     ]
   },
   "weaponSet": "medieval",
