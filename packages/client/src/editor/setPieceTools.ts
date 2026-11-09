@@ -293,7 +293,7 @@ export class SetPieceTools {
     }
     for (const b of grid.querySelectorAll<HTMLElement>('[data-tool]')) b.classList.toggle('active', this.app.tool.kind === 'setpiece' && b.dataset.tool === `setpiece:${this.app.tool.piece}`);
     this.app.palette.refresh();
-    if (this.app.stylePack) this.app.filterPalette();
+    if (this.app.palettes.stylePack) this.app.palettes.filterPalette();
   }
 
   /** A look picker: the map theme's, the looks the piece suits, then every other look. */

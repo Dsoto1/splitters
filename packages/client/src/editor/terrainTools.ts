@@ -179,7 +179,7 @@ export class TerrainTools {
   }
 
   buildTerrainPalette(): void {
-    this.app.buildRealPlaceTools();
+    this.app.palettes.buildRealPlaceTools();
     const icons: Record<TerrainBrush, string> = {
       raise: '<path d="M6 46 Q28 6 50 46Z" fill="#8fbf5a"/><path d="M28 12v-6m-5 5l5-5 5 5" stroke="#ffd34d" stroke-width="3" fill="none"/>',
       lower: '<path d="M6 20 Q28 56 50 20V50H6Z" fill="#8a6a3f"/><path d="M28 8v10m-5-5l5 5 5-5" stroke="#ff7a4d" stroke-width="3" fill="none"/>',
