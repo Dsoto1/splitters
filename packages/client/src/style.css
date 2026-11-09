@@ -957,11 +957,25 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 
 #feed .say { font-style: italic; }
 /* Fireteams: your squad's order (orange: orders and objectives), above your portrait; the order wheel is the weapon wheel's ring in orange. */
-#squad-order { position: absolute; left: 18px; bottom: 112px; display: flex; gap: 8px; align-items: baseline; padding: 4px 12px 4px 10px; background: linear-gradient(90deg, rgba(11, 15, 26, 0.9), rgba(11, 15, 26, 0.45)); border-left: 3px solid var(--orange); font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
-#squad-order[hidden] { display: none; }
+/* Fireteams' squad HUD (Part 2, squadHud.ts): the order line over your squadmates' cards, above your vitals. */
+#squad-hud { position: absolute; left: 18px; bottom: 112px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; pointer-events: none; }
+#squad-hud[hidden] { display: none; }
+#squad-order { display: flex; gap: 8px; align-items: baseline; padding: 4px 12px 4px 10px; background: linear-gradient(90deg, rgba(11, 15, 26, 0.9), rgba(11, 15, 26, 0.45)); border-left: 3px solid var(--orange); font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
 #squad-order small { font: 600 11px var(--font-display); color: var(--muted); }
 #squad-order b { font: 700 14px var(--font-display); color: var(--orange); }
-html.touch #squad-order { left: calc(8px + env(safe-area-inset-left)); bottom: auto; top: 186px; transform: scale(0.85); transform-origin: top left; }
+#squad-order i { font: 600 11px var(--font-display); font-style: normal; color: var(--text); padding-left: 8px; border-left: 1px solid var(--line); }
+#squad-order i[hidden] { display: none; }
+#squad-hud .sq-mates { display: flex; gap: 6px; }
+#squad-hud .sq-mate { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 52px; padding: 4px 4px 5px; background: rgba(11, 15, 26, 0.78); border-top: 2px solid var(--orange); font-family: var(--font-display); }
+#squad-hud .sq-mate img { width: 40px; height: 40px; object-fit: cover; background: radial-gradient(circle at 50% 30%, #2a3a55, #121827); border: 1px solid rgba(255, 179, 71, 0.45); }
+#squad-hud .sq-name { max-width: 50px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 10px var(--font-display); color: var(--text); }
+#squad-hud .sq-hp { width: 44px; height: 4px; background: rgba(142, 162, 192, 0.25); }
+#squad-hud .sq-hp i { display: block; height: 100%; background: var(--success); transition: width 0.25s ease-out; }
+#squad-hud .sq-mate.low .sq-hp i { background: var(--error); }
+#squad-hud .sq-mate.down { opacity: 0.5; border-top-color: var(--muted); }
+#squad-hud .sq-mate.down img { filter: grayscale(1); }
+#squad-hud .sq-mate.down::after { content: 'Down'; position: absolute; top: 18px; left: 0; right: 0; text-align: center; font: 700 10px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); text-shadow: 0 1px 2px #000; }
+html.touch #squad-hud { left: calc(8px + env(safe-area-inset-left)); bottom: auto; top: 182px; transform: scale(0.72); transform-origin: top left; }
 #msg-menu { position: absolute; left: 24px; top: 40%; padding: 10px 14px; background: rgba(12, 16, 26, 0.85); border-left: 3px solid var(--cyan, #00d1ff); font: 500 14px var(--font-display); color: var(--text); }
 #msg-menu b { display: block; margin-bottom: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
 #msg-menu kbd { display: inline-block; min-width: 18px; text-align: center; margin-right: 6px; background: #2a3142; border-radius: 3px; }

@@ -6,7 +6,7 @@ import { botSetInUse, mapBotSet, type BotEntry, type BotSet } from './botSet.ts'
 import { SightCache } from '../bots/sight.ts';
 import { ViewGrid } from '../bots/grid.ts';
 import { BotDirector, CLUSTER_MIN_PLAYERS, assignRoles, leadAbility, type DirectorMember } from '../bots/director.ts';
-import { Fireteams, REFUSALS, checkOrder, fireteamMode, memberGoal, orderFromSay, ORDER_KINDS, type SquadNote, type OrderKind } from './fireteams.ts';
+import { Fireteams, REFUSALS, SQUAD_SPACINGS, checkOrder, squadHalf, squadSnapshot, fireteamMode, memberGoal, orderFromSay, ORDER_KINDS, type SquadNote, type OrderKind } from './fireteams.ts';
 import type { TeamBrain } from '../bots/teamBrain.ts';
 import { regionLayout } from '../bots/regions.ts';
 import { VantageBoard, vantageFor } from '../bots/vantage.ts';
@@ -107,6 +107,10 @@ import { blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpa
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
 const MAX_INPUTS_PER_TICK = 2;
+/** Fireteams' formations: a spot's walkable ground is looked for this far round it (a step up or down, not a floor away). */
+const SPOT_GROUND = { x: 0.8, y: 1.6, z: 0.8 };
+/** Fireteams: a bot leader's members this near (m) are told where its enemy is. */
+const SQUAD_ALERT = 45;
 const MAX_QUEUED_INPUTS = 16;
 /** The default look's shapes (a new combatant's until its look is set). */
 const DEFAULT_HITBOX = lookHitbox(DEFAULT_LOOK);
@@ -2335,6 +2339,8 @@ export class Match {
           ordered: ordered || !!c.botSet?.squad || follower,
           mounted: !!c.mount,
           seen: seen && this.tick - seen.tick < TICK_RATE * 1.5 ? seen.pos : null,
+          // (Fireteams: a bot-led squad's member plays its leader's play: the same group, corridor and staging.)
+          ...(follower && team && !team.human && team.leader !== null ? { unit: team.leader } : {}),
         });
       }
       const towards = this.spawnPoints.filter((s) => s.team !== null && s.team !== t.id && !s.generated).map((s) => s.pos);
@@ -2353,6 +2359,11 @@ export class Match {
 
   /** Where a bot is told to go (squad orders, teammates' orders, co-op and mode goals), or null to roam. */
   private botGoal(c: Combatant, hostiles: Combatant[], zombies: boolean, coop: boolean): { pos: Vec3; radius: number } | null {
+    const g = this.botGoalOf(c, hostiles, zombies, coop);
+    return this.fireteams && c.bot && c.kind === 'bot' ? this.fireteamPlayGoal(c, g) : g;
+  }
+
+  private botGoalOf(c: Combatant, hostiles: Combatant[], zombies: boolean, coop: boolean): { pos: Vec3; radius: number } | null {
     const npc = c.npc;
     if (npc) return npc.role === 'zombie' ? this.nearestGoal(c, hostiles, 1.5) : this.encounters.goalFor(c.slot);
     // Fireteams: a squad member does what its squad was told (its leader's order, following its leader), unless it
@@ -2710,19 +2721,47 @@ export class Match {
       const roster = this.combatants().map((c) => ({ slot: c.slot, team: c.faction, human: c.kind === 'human', lead: c.bot ? leadAbility(c.bot.profile) : 0, pos: c.move.pos }));
       this.squadNotes(ft.sync(roster, this.tick));
     }
+    // Objective first (Part 2): the mode gives a bot-led squad one role for all of it (CTF: attack or defend together).
+    this.mode?.botUnits?.(this.squadUnit);
     if (this.phase === 'playing' && this.tick % 6 === 0) this.squadNotes(ft.step(this.tick, this.squadWorld));
+    // A bot leader in a fight: its members not in one are told where its enemy is (once a second, squads staggered).
+    if (this.phase === 'playing') {
+      for (const s of ft.squads) {
+        if (s.human || s.leader === null || (this.tick + s.id * 7) % TICK_RATE !== 0) continue;
+        const l = this.slots[s.leader];
+        const seen = l?.alive && l.bot && l.bot.target !== null ? l.bot.lastSeen : null;
+        if (!seen) continue;
+        for (const m of s.members) {
+          const b = this.slots[m];
+          if (b && b !== l && b.alive && b.bot && b.bot.target === null && horizontalDistance(b.move.pos, l!.move.pos) < SQUAD_ALERT) b.bot.alert(seen.pos, this.tick);
+        }
+      }
+    }
   }
 
-  /** What the squads' step reads of the match. */
+  /** Fireteams: a bot's unit for the mode's roles (its bot-led squad's id; null: in a person's squad; undefined: none). */
+  private readonly squadUnit = (slot: number): number | null | undefined => {
+    const s = this.fireteams?.squadOf(slot);
+    return s ? (s.human ? null : s.id) : undefined;
+  };
+
+  /** What the squads' step reads of the match (formations: sight lines at chest height, the walkable ground). */
   private readonly squadWorld = {
     member: (slot: number) => {
       const c = this.slots[slot];
-      return c ? { alive: c.alive, pos: c.move.pos } : null;
+      return c ? { alive: c.alive, pos: c.move.pos, yaw: c.yaw } : null;
     },
     target: (slot: number) => {
       const c = this.actor(slot);
       return c?.alive ? c.move.pos : null;
     },
+    clear: (a: Vec3, b: Vec3) => {
+      const d = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
+      if (d < 1e-3) return 0;
+      const hit = this.physics.raycastWorld(a, { x: (b.x - a.x) / d, y: (b.y - a.y) / d, z: (b.z - a.z) / d }, d);
+      return hit === null ? d : hit;
+    },
+    ground: (p: Vec3) => this.nav.closestPoint(p, SPOT_GROUND),
   };
 
   /** The squads' news as events: a new leader, an order (the match's own, as a squad forms up or an order ends). */
@@ -2764,7 +2803,9 @@ export class Match {
     }
     ft.order(s, kind, r.pos, r.target, this.tick);
     const k = ORDER_KINDS.indexOf(kind);
-    this.pendingEvents.push({ e: 'squad', a: 'order', s: c.slot, sq: s.id, k, team: s.team });
+    // (Spread out / Stay tight: what the spacing is now, SQUAD_SPACINGS index.)
+    const sp = kind === 'spacing' ? { n: SQUAD_SPACINGS.indexOf(s.spacing) } : {};
+    this.pendingEvents.push({ e: 'squad', a: 'order', s: c.slot, sq: s.id, k, ...sp, team: s.team });
     // The first member alive answers; an attack tells everyone where the enemy is.
     const target = r.target !== null ? this.actor(r.target) : null;
     let answered = false;
@@ -2773,7 +2814,7 @@ export class Match {
       if (!b || b === c || !b.alive || b.kind !== 'bot') continue;
       if (!answered) {
         answered = true;
-        this.pendingEvents.push({ e: 'squad', a: 'ack', s: b.slot, sq: s.id, k, team: s.team });
+        this.pendingEvents.push({ e: 'squad', a: 'ack', s: b.slot, sq: s.id, k, ...sp, team: s.team });
       }
       if (target) b.bot?.alert(target.move.pos, this.tick);
     }
@@ -2802,8 +2843,20 @@ export class Match {
     if (!s || s.leader === null || s.leader === c.slot) return null;
     const leader = this.slots[s.leader];
     const t = s.order.kind === 'attack' && s.order.target !== null ? this.actor(s.order.target) : null;
-    // (Following the squad's anchor: the leader's position, moved on every few metres, so routes aren't asked afresh every think.)
-    return memberGoal(s, c.slot, leader?.alive ? (s.anchor ?? leader.move.pos) : null, t?.alive ? t.move.pos : null);
+    // (Following the squad's anchor: the leader's position, moved on every few metres, so routes aren't asked afresh
+    // every think.)
+    return memberGoal(s, c.slot, leader?.alive ? (s.anchor ?? leader.move.pos) : null, t?.alive ? t.move.pos : null, { me: c.move.pos, tick: this.tick });
+  }
+
+  /**
+   * Fireteams (Part 2): a bot-led squad playing its play (the mode's goal, the leader's team-brain job) bounds by its
+   * halves while it is on the move (the leader and every other member, then the rest: `OrderGoal.half`), so one half
+   * covers, firing at where the enemy went, while the other moves up. Any other bot: as it was.
+   */
+  private fireteamPlayGoal(c: Combatant, g: { pos: Vec3; radius: number } | null): { pos: Vec3; radius: number } | null {
+    const s = this.fireteams!.squadOf(c.slot);
+    if (!s || s.human || !g || this.tick >= s.movingUntil || !(g as OrderGoal).push || (g as OrderGoal).half !== undefined) return g;
+    return { ...g, half: squadHalf(s, c.slot) } as OrderGoal;
   }
 
   /**
@@ -6501,6 +6554,7 @@ export class Match {
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),
       ...(this.rules.leaders && this.teams ? { ld: this.teams.map((t) => this.leaderOf.get(t.id) ?? -1) } : {}),
+      ...(this.fireteams && this.teams ? { fs: this.fireteams.squads.map((q) => squadSnapshot(q, this.teams!.findIndex((t) => t.id === q.team))) } : {}),
       ...(this.roulette?.snapshot() ? { rl: this.roulette.snapshot()! } : {}),
       ...(this.mode ? { md: this.mode.snapshot() } : this.zombies ? { md: { ts: [this.zombies.wave], zb: this.zombies.snapshot() } } : {}),
     };
