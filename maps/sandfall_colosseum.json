@@ -16,15 +16,16 @@
     "supportedModes": [
       "core.tdm",
       "core.koth",
-      "core.ctf"
+      "core.ctf",
+      "core.deathmatch"
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_7vvesaadbbk3r3aa",
-      "revision": 24,
-      "contentHash": "sha256:30df7c13b6076799fcb4fa86eb73f120a4558554b6b7a934fdb9014de33d8997",
+      "versionId": "v_vzcbbatmgyg6i6pp",
+      "revision": 25,
+      "contentHash": "sha256:9a56f1f28a01d098e05d3caf6cf45d33af366dc406c3451134af360bba2ff4f1",
       "schemaVersion": 32,
-      "releasedAt": "2026-11-09T18:23:54.788Z"
+      "releasedAt": "2026-11-09T19:29:08.517Z"
     }
   },
   "classicStructure": {
@@ -1279,7 +1280,7 @@
       },
       {
         "id": "sp_setpiece_zfgnmgw7wt_56",
-        "tile": "core.tunnel_vault",
+        "tile": "core.tunnel_vault_walled",
         "x": 0,
         "y": 10,
         "z": -1,
@@ -1507,7 +1508,7 @@
       },
       {
         "id": "sp_setpiece_zfgnmgw7wt_64",
-        "tile": "core.tunnel_vault",
+        "tile": "core.tunnel_vault_walled",
         "x": 0,
         "y": -10,
         "z": -1,
@@ -1735,7 +1736,7 @@
       },
       {
         "id": "sp_setpiece_zfgnmgw7wt_72",
-        "tile": "core.tunnel_vault",
+        "tile": "core.tunnel_vault_walled",
         "x": 10,
         "y": 0,
         "z": -1,
@@ -1963,7 +1964,7 @@
       },
       {
         "id": "sp_setpiece_zfgnmgw7wt_80",
-        "tile": "core.tunnel_vault",
+        "tile": "core.tunnel_vault_walled",
         "x": -10,
         "y": 0,
         "z": -1,
@@ -21364,6 +21365,186 @@
       "respawnSeconds": 8,
       "health": 120,
       "name": "Stand fill: W outer wall"
+    },
+    {
+      "id": "door_tedtw6qchd",
+      "kind": "door",
+      "position": [
+        24,
+        0,
+        -29
+      ],
+      "yaw": 0,
+      "startOpen": true,
+      "locked": false,
+      "auto": false,
+      "style": "portcullis",
+      "name": "Gate 1"
+    },
+    {
+      "id": "button_aesi98f74a",
+      "kind": "button",
+      "position": [
+        22.9,
+        0,
+        -31.5
+      ],
+      "yaw": 1.571,
+      "label": "Raise / lower the portcullis",
+      "once": false,
+      "cooldownSeconds": 2,
+      "startEnabled": true,
+      "name": "Gate 1 winch"
+    },
+    {
+      "id": "button_tdbkixisa7",
+      "kind": "button",
+      "position": [
+        21.4,
+        0,
+        -27.6
+      ],
+      "yaw": 0,
+      "label": "Raise / lower the portcullis",
+      "once": false,
+      "cooldownSeconds": 2,
+      "startEnabled": true,
+      "name": "Gate 1 chain"
+    },
+    {
+      "id": "door_6g7izdtngz",
+      "kind": "door",
+      "position": [
+        -24,
+        0,
+        -29
+      ],
+      "yaw": 0,
+      "startOpen": true,
+      "locked": false,
+      "auto": false,
+      "style": "portcullis",
+      "name": "Gate 2"
+    },
+    {
+      "id": "button_0wvzby1ezn",
+      "kind": "button",
+      "position": [
+        -22.9,
+        0,
+        -31.5
+      ],
+      "yaw": -1.571,
+      "label": "Raise / lower the portcullis",
+      "once": false,
+      "cooldownSeconds": 2,
+      "startEnabled": true,
+      "name": "Gate 2 winch"
+    },
+    {
+      "id": "button_z2c6dw50xs",
+      "kind": "button",
+      "position": [
+        -21.4,
+        0,
+        -27.6
+      ],
+      "yaw": 0,
+      "label": "Raise / lower the portcullis",
+      "once": false,
+      "cooldownSeconds": 2,
+      "startEnabled": true,
+      "name": "Gate 2 chain"
+    },
+    {
+      "id": "door_tl8joym4q8",
+      "kind": "door",
+      "position": [
+        -24,
+        0,
+        29
+      ],
+      "yaw": 0,
+      "startOpen": true,
+      "locked": false,
+      "auto": false,
+      "style": "portcullis",
+      "name": "Gate 3"
+    },
+    {
+      "id": "button_5muruxmphb",
+      "kind": "button",
+      "position": [
+        -22.9,
+        0,
+        31.5
+      ],
+      "yaw": -1.571,
+      "label": "Raise / lower the portcullis",
+      "once": false,
+      "cooldownSeconds": 2,
+      "startEnabled": true,
+      "name": "Gate 3 winch"
+    },
+    {
+      "id": "button_iq7slrxa5o",
+      "kind": "button",
+      "position": [
+        -21.4,
+        0,
+        27.6
+      ],
+      "yaw": 3.142,
+      "label": "Raise / lower the portcullis",
+      "once": false,
+      "cooldownSeconds": 2,
+      "startEnabled": true,
+      "name": "Gate 3 chain"
+    },
+    {
+      "id": "door_hfbwg4io6i",
+      "kind": "door",
+      "position": [
+        24,
+        0,
+        29
+      ],
+      "yaw": 0,
+      "startOpen": true,
+      "locked": false,
+      "auto": false,
+      "style": "portcullis",
+      "name": "Gate 4"
+    },
+    {
+      "id": "button_ae2gd16e0e",
+      "kind": "button",
+      "position": [
+        22.9,
+        0,
+        31.5
+      ],
+      "yaw": 1.571,
+      "label": "Raise / lower the portcullis",
+      "once": false,
+      "cooldownSeconds": 2,
+      "startEnabled": true,
+      "name": "Gate 4 winch"
+    },
+    {
+      "id": "button_nmt2tpnmfu",
+      "kind": "button",
+      "position": [
+        21.4,
+        0,
+        27.6
+      ],
+      "yaw": 3.142,
+      "label": "Raise / lower the portcullis",
+      "once": false,
+      "cooldownSeconds": 2,
+      "startEnabled": true,
+      "name": "Gate 4 chain"
     }
   ],
   "factions": [],
@@ -21371,7 +21552,224 @@
     "variables": [],
     "timers": [],
     "objectives": [],
-    "rules": []
+    "rules": [
+      {
+        "id": "rule_p2m7f72v5l",
+        "name": "Button pressed: Gate 1 winch",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "button_aesi98f74a"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "door_toggle",
+            "target": "door_tedtw6qchd",
+            "value": 4,
+            "text": "Something happened!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 4,
+            "text": "Something happened!",
+            "state": "buzzer"
+          }
+        ]
+      },
+      {
+        "id": "rule_8nia7sir2d",
+        "name": "Button pressed: Gate 1 chain",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "button_tdbkixisa7"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "door_toggle",
+            "target": "door_tedtw6qchd",
+            "value": 4,
+            "text": "Something happened!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 4,
+            "text": "Something happened!",
+            "state": "buzzer"
+          }
+        ]
+      },
+      {
+        "id": "rule_svyomxnw1s",
+        "name": "Button pressed: Gate 2 winch",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "button_0wvzby1ezn"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "door_toggle",
+            "target": "door_6g7izdtngz",
+            "value": 4,
+            "text": "Something happened!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 4,
+            "text": "Something happened!",
+            "state": "buzzer"
+          }
+        ]
+      },
+      {
+        "id": "rule_7d66djocm9",
+        "name": "Button pressed: Gate 2 chain",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "button_z2c6dw50xs"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "door_toggle",
+            "target": "door_6g7izdtngz",
+            "value": 4,
+            "text": "Something happened!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 4,
+            "text": "Something happened!",
+            "state": "buzzer"
+          }
+        ]
+      },
+      {
+        "id": "rule_hfxqze4a0r",
+        "name": "Button pressed: Gate 3 winch",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "button_5muruxmphb"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "door_toggle",
+            "target": "door_tl8joym4q8",
+            "value": 4,
+            "text": "Something happened!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 4,
+            "text": "Something happened!",
+            "state": "buzzer"
+          }
+        ]
+      },
+      {
+        "id": "rule_8qwj7r6nre",
+        "name": "Button pressed: Gate 3 chain",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "button_iq7slrxa5o"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "door_toggle",
+            "target": "door_tl8joym4q8",
+            "value": 4,
+            "text": "Something happened!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 4,
+            "text": "Something happened!",
+            "state": "buzzer"
+          }
+        ]
+      },
+      {
+        "id": "rule_dgott454sw",
+        "name": "Button pressed: Gate 4 winch",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "button_ae2gd16e0e"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "door_toggle",
+            "target": "door_hfbwg4io6i",
+            "value": 4,
+            "text": "Something happened!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 4,
+            "text": "Something happened!",
+            "state": "buzzer"
+          }
+        ]
+      },
+      {
+        "id": "rule_c0xfcpn0jd",
+        "name": "Button pressed: Gate 4 chain",
+        "enabled": true,
+        "once": false,
+        "when": {
+          "event": "button_pressed",
+          "target": "button_nmt2tpnmfu"
+        },
+        "if": [],
+        "do": [
+          {
+            "type": "door_toggle",
+            "target": "door_hfbwg4io6i",
+            "value": 4,
+            "text": "Something happened!",
+            "state": ""
+          },
+          {
+            "type": "sound",
+            "target": null,
+            "value": 4,
+            "text": "Something happened!",
+            "state": "buzzer"
+          }
+        ]
+      }
+    ]
   },
   "terrain": {
     "origin": [
