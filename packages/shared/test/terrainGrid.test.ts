@@ -231,11 +231,11 @@ describe('Change grid: the command', () => {
 
 describe('format v32', () => {
   it('a v31 map migrates unchanged and loads', () => {
-    expect(MAP_FORMAT_VERSION).toBe(32);
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(32);
     const v31 = { ...JSON.parse(readFileSync(new URL('./fixtures/iron_compound_v26.json', import.meta.url), 'utf8')), formatVersion: 31 };
     const { doc, fromVersion } = migrateMapDocument(structuredClone(v31));
     expect(fromVersion).toBe(31);
-    expect(doc).toEqual({ ...v31, formatVersion: 32 });
+    expect(doc).toEqual({ ...v31, formatVersion: MAP_FORMAT_VERSION });
     expect(loadMap(structuredClone(v31)).ok).toBe(true);
   });
 });

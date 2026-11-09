@@ -84,7 +84,10 @@ describe('MapMaker key table and the ? overlay (Phase 1, item 5)', () => {
                         ? 'mirrorDialog'
                         : code === 'KeyJ' && !mod
                           ? 'notes'
-                          : null;
+                          : // Phase 4 item 3: Y bot hints.
+                            code === 'KeyY' && !mod
+                            ? 'botHints'
+                            : null;
           const want = added ?? (code === 'Slash' && shift && !mod ? 'keys' : before(code, shift, mod));
           expect(now, `${mod ? 'Ctrl+' : ''}${shift ? 'Shift+' : ''}${code}`).toBe(want);
           // ⌘ on a Mac is Ctrl.

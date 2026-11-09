@@ -1099,6 +1099,133 @@ async function editoruxFlow(browser) {
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
+  await editorBotHintChecks(browser);
+}
+
+/**
+ * Bot hints in MapMaker (map format v33; MAPMAKER_OVERHAUL_PLAN.md Phase 4 item 3): the Bot hints tool (Y) places a
+ * spot and a jump link, the inspector edits and deletes them (each one undo step), the checks warn of a jump no one
+ * could make and a spot off the navmesh, the plan view shows them, and "What bots know" draws the bots' own spots.
+ */
+async function editorBotHintChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const hints = () => page.evaluate(() => window.__editor.doc.botHints ?? []);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const clickAt = async (x, y, z) => {
+    const p = await at(x, y, z);
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.click(p.x, p.y);
+  };
+  // A palette card, clicked as a person would (its own click: the Entities tab's thumbnails load and shift the cards).
+  const pickHint = (kind) => page.evaluate((k) => document.querySelector(`[data-tool="bothint:${k}"]`).click(), kind);
+  // The new map's spawn out on the open ground (bots' main area is the ground the spawns route to; the starting room
+  // has no door), then the camera on the middle.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const sp = ed.doc.entities.find((e) => e.kind === 'spawn');
+    ed.history.execute('Move spawn', { kind: 'updateEntities', before: [sp], after: [{ ...sp, position: [10, 0, 18] }] });
+  });
+  await page.evaluate(() => window.__editor.view.focus({ x: 4, y: 0, z: 4 }));
+  await frames(page, 3);
+  // Y: the Bot hints tool (the last kind, a chokepoint first), its cards in the Entities tab.
+  await page.keyboard.press('KeyY');
+  const tool = await page.evaluate(() => ({ tool: window.__editor.tool, lit: document.querySelector('[data-tool="bothint:choke"]')?.classList.contains('active'), hint: document.getElementById('ed-toolhint').textContent }));
+  check(tool.tool.kind === 'bothint' && tool.tool.hint === 'choke' && tool.lit && tool.hint.includes('Bot hints'), `Y picks up the Bot hints tool (${JSON.stringify(tool.tool)})`);
+  await pickHint('sniper');
+  await clickAt(12, 0, 6);
+  let h = await hints();
+  const sniper = h[0];
+  check(h.length === 1 && sniper.kind === 'sniper' && Math.abs(sniper.position[0] - 12) < 0.5 && Math.abs(sniper.position[2] - 6) < 0.5 && sniper.radius === 1.5 && typeof sniper.yaw === 'number', `a click places a sniper spot where it points, facing the way the camera looks (${JSON.stringify(sniper)})`);
+  await frames(page, 2);
+  const shown = await page.evaluate((id) => ({ pin: !!document.querySelector(`.ed-hint-pin[data-hint="${id}"]:not([hidden])`), inspector: document.getElementById('ed-hint-inspector')?.dataset.hint }), sniper?.id);
+  check(shown.pin && shown.inspector === sniper?.id, `the new hint shows as a pin and opens in the inspector (${JSON.stringify(shown)})`);
+  // The inspector: radius, kind, team and facing, each one undo step.
+  await page.fill('#ed-hint-radius', '5');
+  await page.press('#ed-hint-radius', 'Enter');
+  await page.selectOption('#ed-hint-kind', 'camp');
+  const teams = await page.$$eval('#ed-hint-team option', (o) => o.map((x) => x.value));
+  await page.selectOption('#ed-hint-team', teams[1]);
+  await page.fill('#ed-hint-yaw', '90');
+  await page.press('#ed-hint-yaw', 'Enter');
+  h = await hints();
+  check(h.length === 1 && h[0].kind === 'camp' && h[0].radius === 5 && h[0].team === teams[1] && Math.abs(h[0].yaw - Math.PI / 2) < 0.01, `the inspector edits the kind, radius, team and facing (${JSON.stringify(h[0])})`);
+  await page.keyboard.press('Control+KeyZ');
+  h = await hints();
+  const undone = h[0]?.yaw;
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  h = await hints();
+  check(Math.abs(undone - sniper.yaw) < 1e-9 && h[0]?.kind === 'sniper' && h[0].radius === 1.5 && !h[0].team, `undo takes each edit back, one at a time (${JSON.stringify(h[0])})`);
+  for (let i = 0; i < 4; i++) await page.keyboard.press('Control+KeyY');
+  h = await hints();
+  check(h[0]?.kind === 'camp' && h[0].radius === 5, 'redo puts them back');
+  // A jump link: two clicks, its start then its landing; one a player makes, one too far.
+  await pickHint('jump');
+  await clickAt(8, 0, -2);
+  await frames(page, 2);
+  const pending = await page.evaluate(() => !document.querySelector('.ed-hint-pending').hidden);
+  await clickAt(12, 0, -2);
+  await frames(page, 2);
+  h = await hints();
+  const jump = h.find((x) => x.kind === 'jump');
+  const verdict = await page.evaluate(() => document.getElementById('ed-hint-verdict')?.textContent ?? '');
+  check(pending && jump && Math.abs(jump.to[0] - jump.position[0] - 4) < 0.5 && /can make it/.test(verdict), `a jump link from its start to its landing; the inspector says a player can make it (${verdict})`);
+  await clickAt(-4, 0, 10);
+  await clickAt(8, 0, 10);
+  await frames(page, 2);
+  const far = await page.evaluate(() => document.getElementById('ed-hint-verdict')?.textContent ?? '');
+  await page.waitForFunction(() => /couldn't make it/.test(document.getElementById('ed-issues')?.textContent ?? ''), null, { timeout: T(10000) }).catch(() => {});
+  const farIssue = await page.evaluate(() => [...document.querySelectorAll('#ed-issues li')].map((l) => l.textContent).find((t) => /couldn't make it/.test(t)) ?? '');
+  check(/couldn't make it/.test(far) && /across/.test(farIssue), `a jump too far: the inspector and the issues list say a player couldn't make it (${farIssue})`);
+  await shot('bothints');
+  // A spot lifted off the ground: the navigation check warns it is off the navmesh.
+  const camp = (await hints()).find((x) => x.kind === 'camp');
+  await page.click(`.ed-hint-pin[data-hint="${camp.id}"]:not(.landing)`);
+  await frames(page, 2);
+  check((await page.evaluate(() => document.getElementById('ed-hint-inspector')?.dataset.hint)) === camp.id, 'a click on a pin selects that hint for the inspector');
+  await page.fill('#ed-hint-at-y', '9');
+  await page.press('#ed-hint-at-y', 'Enter');
+  const offNav = await page.waitForFunction(() => /off the navmesh/.test(document.getElementById('ed-issues')?.textContent ?? ''), null, { timeout: T(30000) }).then(() => true, () => false);
+  check(offNav, 'a hint off the navmesh is a warning in the issues list');
+  await page.keyboard.press('Control+KeyZ');
+  await shot('bothints-inspector');
+  // Delete (the inspector's button), and undo brings it back.
+  const before = (await hints()).length;
+  await page.click('#ed-hint-delete');
+  const afterDelete = (await hints()).length;
+  await page.keyboard.press('Control+KeyZ');
+  check(afterDelete === before - 1 && (await hints()).length === before && (await hints()).some((x) => x.id === camp.id), `Delete removes the hint, undo brings it back (${before} → ${afterDelete})`);
+  // The plan view shows them too.
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('KeyK');
+  await frames(page, 4);
+  const plan = await page.evaluate(() => [...document.querySelectorAll('.ed-hint-pin')].filter((p) => !p.hidden).length);
+  check(plan >= 4, `the plan view shows the hints' pins (${plan} shown)`);
+  await shot('bothints-plan');
+  await page.keyboard.press('KeyK');
+  await frames(page, 2);
+  // What bots know: the bots' own spots, worked out on the navmesh, read-only; off again clears them.
+  await pickHint('choke');
+  await page.check('#ed-hints-computed');
+  const known = await page.waitForFunction(() => window.__editor.hints.computed, null, { timeout: T(30000) }).then(() => true, () => false);
+  const knownNote = await page.textContent('#ed-hints-computed-note');
+  const spots = await page.evaluate(() => ({ v: window.__editor.hints.computed?.vantage.length ?? -1, p: window.__editor.hints.computed?.parkour.length ?? -1, doc: (window.__editor.doc.botHints ?? []).length }));
+  check(known && spots.v > 0 && /Bots work out \d+ sniper and \d+ camp spots and \d+ parkour links/.test(knownNote), `What bots know shows the bots' own spots (${JSON.stringify(spots)}; ${knownNote})`);
+  await page.evaluate(() => window.__editor.view.focus({ x: 4, y: 0, z: 4 }));
+  await frames(page, 4);
+  await shot('bothints-known');
+  await page.uncheck('#ed-hints-computed');
+  check((await page.evaluate(() => window.__editor.hints.computed)) === null && (await hints()).length === spots.doc, 'turned off, the overlay goes (and the map is untouched)');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**

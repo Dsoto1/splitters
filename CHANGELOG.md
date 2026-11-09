@@ -30,6 +30,13 @@ made only on a commit that passed CI on a check branch.
   format is unchanged.
 - **Apex Ring** and **Sandsweep Circuit** no longer list Race (MapMaker, Map properties): Apex Ring plays Deathmatch,
   Team Deathmatch, CTF and King of the Hill with its karts lapping; Sandsweep plays Deathmatch.
+**MapMaker: bot hints** (map format v33; MapMaker overhaul Phase 4 item 3, Bot AI Phase D item 5): mark chokepoints,
+sniper, camp and staging spots and jump links for bots (the Bot hints tool, Y; the Entities tab). Pins with their
+radius, facing and jump arcs in the 3D view and the plan view, edited in the inspector, one undo step each; warnings for
+a hint outside the boundary or off the navmesh, a jump a player couldn't make and duplicates. "What bots know" shows
+the bots' own computed spots (vantage spots, parkour links), read-only. Bots don't use the hints yet (the data is
+documented in docs/BOTS.md, "Bot hints (map data)").
+
 **MapMaker: a finer terrain grid, Change grid, and the coast border** (map format v32; the editor half of the Iron
 Coast job):
 - **A finer grid:** a terrain can be up to 321 vertices a side (was 161), so a 380 m map can be 1.25 m apart. New

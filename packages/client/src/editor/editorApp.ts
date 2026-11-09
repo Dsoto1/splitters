@@ -135,6 +135,7 @@ import {
   type TileDefinition,
   type ValidationIssue,
   type Vec3,
+  type BotHintKind,
   EDGE_STYLES,
   EDGE_STYLE_LABELS,
   CEILINGS,
@@ -364,6 +365,7 @@ import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { PlanView } from './planView.ts';
 import { cardShotSection, type CardShotHost } from './cardShot.ts';
 import { NoteTool } from './noteTool.ts';
+import { BotHintTool } from './botHintTool.ts';
 import { groupSection, type GroupHost } from './groupPanel.ts';
 import { openMirrorDialog } from './mirrorDialog.ts';
 import { openChangeGridDialog } from './changeGridDialog.ts';
@@ -437,7 +439,7 @@ function starterMap(size: number | null, ground: TerrainMaterial): MapDocument {
   return size ? { ...doc, terrain: { ...newTerrain(size, 2, [0, 0], ground), baseY: -0.15 } } : doc;
 }
 
-type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'path' } | { kind: 'route' } | { kind: 'measure' } | { kind: 'note' };
+type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'path' } | { kind: 'route' } | { kind: 'measure' } | { kind: 'note' } | { kind: 'bothint'; hint: BotHintKind };
 
 /** What the pointer can pick: a tile, an entity, or a set piece (any of its parts picks the whole placement). */
 type Hit = { kind: 'tile' | 'entity' | 'setpiece'; id: string };
@@ -592,6 +594,8 @@ function toolKey(tool: Tool): string {
       return `scatter:${tool.set}`;
     case 'npc':
       return `npc:${tool.key}`;
+    case 'bothint':
+      return `bothint:${tool.hint}`;
     default:
       return tool.kind;
   }
@@ -735,6 +739,9 @@ export class EditorApp {
   private readonly measure: MeasureTool;
   /** Note pins (J; noteTool.ts): notes for the map's makers, drawn over the view. */
   private readonly notes: NoteTool;
+  /** Bot hints (Y; botHintTool.ts, MapMaker overhaul Phase 4 item 3): drawn over the view, edited in the inspector. */
+  private readonly hints: BotHintTool;
+  private lastHint: BotHintKind = 'choke';
   /** The prop tool's placing options: Randomise. */
   private readonly propOpts: PropPlaceOptions;
   /** What props and the measure tool land on, per document version and view. */
@@ -839,6 +846,39 @@ export class EditorApp {
       tool: () => this.tool.kind === 'note',
       pickTool: () => this.setTool({ kind: 'note' }),
       shown: (y) => this.showAll || y < (this.level + 1) * this.doc.classicStructure.levelHeight - 0.01,
+      overlay: $('editor'),
+    });
+    this.hints = new BotHintTool({
+      doc: () => this.doc,
+      run: (label, cmd) => this.run(label, cmd),
+      toast: (t, bad) => this.toast(t, bad),
+      project: (p) => this.view.projectInView(p),
+      pointAt: (x, y) => {
+        this.updatePointer(x, y);
+        return this.hintPointAtHover();
+      },
+      focus: (p) => (this.plan.on ? this.plan.centre(p.x, p.z) : this.view.focus(p)),
+      tool: () => (this.tool.kind === 'bothint' ? this.tool.hint : null),
+      pickTool: (hint) => this.setTool({ kind: 'bothint', hint }),
+      shown: (y) => this.showAll || y < (this.level + 1) * this.doc.classicStructure.levelHeight - 0.01,
+      lookYaw: () => this.view.yaw,
+      viewRect: () => {
+        // Between the palette, the top bar and the right panel (each counts only while it is shown).
+        const box = (id: string) => {
+          const r = document.getElementById(id)?.getBoundingClientRect();
+          return r && r.width > 0 && r.height > 0 ? r : null;
+        };
+        const pal = box('ed-palette');
+        const top = box('ed-top');
+        const right = box('ed-right');
+        return { left: pal?.right ?? 0, top: top?.bottom ?? 0, right: right?.left ?? innerWidth, bottom: innerHeight };
+      },
+      teams: () => mapTeams(this.doc),
+      picked: () => {
+        if (this.hints.selected() && this.selCount()) this.setSelection(emptySelection(), true, true);
+        this.renderInspector();
+      },
+      wantComputed: () => this.validate(),
       overlay: $('editor'),
     });
     this.ring = new RotateRing(
@@ -1110,6 +1150,7 @@ export class EditorApp {
     this.refresh(false);
     this.measure.frame();
     this.notes.frame();
+    this.hints.frame();
     this.plan.update();
     this.view.render();
   }
@@ -1237,6 +1278,8 @@ export class EditorApp {
     this.paths.setActive(tool.kind === 'path');
     this.routes.setActive(tool.kind === 'route');
     this.measure.setActive(tool.kind === 'measure');
+    this.hints.setActive(tool.kind === 'bothint');
+    if (tool.kind === 'bothint') this.lastHint = tool.hint;
     // The pane holding the tool's card (props sit in Props, Nature or Vehicles; scenario pieces in several tabs).
     const card = document.querySelector<HTMLElement>(`#ed-palette .ed-pane [data-tool="${CSS.escape(toolKey(tool))}"]`);
     const at = card?.closest<HTMLElement>('.ed-pane')?.dataset.pane ?? pane[tool.kind];
@@ -1262,6 +1305,7 @@ export class EditorApp {
           (tool.kind === 'scatter' && t === `scatter:${tool.set}`) ||
           (tool.kind === 'terrain' && t === `terrain:${this.terrainBrush}`) ||
           (tool.kind === 'npc' && t === `npc:${tool.key}`) ||
+          (tool.kind === 'bothint' && t === `bothint:${tool.hint}`) ||
           (t === 'place' && PLACING.has(tool.kind)) ||
           t === tool.kind,
       );
@@ -1287,6 +1331,7 @@ export class EditorApp {
       path: ['Paths', 'Click adds a point after the selected one (two clicks start a path) · click the first point with the last selected to join the ends · right-click or Del removes one · drag a point to move it · Shift+click a path inserts one · click another path to edit it'],
       route: ['Route', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click a stretch inserts one · Esc when done'],
       note: ['Note pins', 'Click the map to pin a note for its makers (shown in MapMaker only, never in play) · click a pin to edit or delete it · drag a pin to move it · Map properties lists every note'],
+      bothint: ['Bot hints', "Click the map to mark a spot for bots (a jump link: its start, then its landing) · it faces the way you look · click a pin to edit it in the inspector · drag a pin to move it · R turns the selected one · Del deletes · What bots know shows bots' own spots"],
       measure: ['Measure', "Click two points: distance, height and slope · a third click chains a path with its total · snaps to the grid, surfaces and objects' tops (Ctrl or Alt: no snap) · right-click takes a point back · Esc clears"],
     };
     // A zipline's ends go where you click (the Route tool's hands, two points only).
@@ -1327,7 +1372,8 @@ export class EditorApp {
   }
 
   /** Select: anything in a group brings its whole group (groups.ts), unless `single` (Alt-click: just that one). */
-  private setSelection(sel: Selection, single = false): void {
+  private setSelection(sel: Selection, single = false, keepHint = false): void {
+    if (!keepHint) this.hints.deselect();
     this.selection = single ? sel : withGroups(this.doc, sel);
     this.updateSelectionVisuals();
     this.renderInspector();
@@ -1680,6 +1726,7 @@ export class EditorApp {
         return this.toast('Terrain: Shift-drag does the opposite (lower, or raise)');
       case 'erase':
       case 'note':
+      case 'bothint':
         return;
     }
     const hit = this.pick();
@@ -1943,6 +1990,7 @@ export class EditorApp {
 
   /** R turns what you are placing, or the selection, by that kind's step (yawStep); Shift+R by the finer step. */
   private rotate(fine = false): void {
+    if (!this.selCount() && this.tool.kind !== 'tile' && this.tool.kind !== 'setpiece' && this.hints.turnSelected(fine)) return;
     const deg = (yaw: number) => `Facing ${Math.round((yaw * 180) / Math.PI)}°`;
     if (this.tool.kind === 'tile' || this.tool.kind === 'setpiece') {
       if (fine) this.toast(`${this.tool.kind === 'tile' ? 'Tiles' : 'Set pieces'} turn in quarter turns`);
@@ -2112,6 +2160,14 @@ export class EditorApp {
   }
 
   /** The measure tool's point under the pointer: snapped to the grid, surfaces and objects' tops (Ctrl or Alt: free). */
+  /** Where a bot hint goes under the pointer: the top of what is there (a roof, a ledge, the ground), else the level's plane. */
+  private hintPointAtHover(): Vec3 | null {
+    const ray = this.ray;
+    const hit = ray ? surfaceHit(ray.origin, ray.dir, this.surfaceBoxes(), this.shownGround) : null;
+    const p = hit && hit.on !== 'side' ? hit.point : this.hoverPoint;
+    return p && { x: Math.round(p.x * 100) / 100, y: Math.round(p.y * 100) / 100, z: Math.round(p.z * 100) / 100 };
+  }
+
   private measurePointAtHover(): MeasurePoint | null {
     const ray = this.ray;
     if (!ray) return null;
@@ -2689,6 +2745,7 @@ export class EditorApp {
         return this.updateHover();
       }
       if (this.tool.kind === 'note') return this.notes.place(this.hoverPoint);
+      if (this.tool.kind === 'bothint') return this.hints.place(this.hintPointAtHover());
       if (this.tool.kind !== 'select') return this.placeAtHover();
       // The rotate ring round the selection: a drag turns it.
       if (this.ring.begin({ x: e.clientX, y: e.clientY })) {
@@ -2817,6 +2874,8 @@ export class EditorApp {
     copy: () => this.copy(),
     paste: () => this.paste(),
     notes: () => this.setTool({ kind: 'note' }),
+    // MapMaker overhaul Phase 4 item 3: bot hints (the last kind picked).
+    botHints: () => this.setTool({ kind: 'bothint', hint: this.lastHint }),
     focus: () => this.focusSelection(),
     resetView: () => this.resetView(),
     logic: () => this.logic.toggle(),
@@ -2846,6 +2905,8 @@ export class EditorApp {
       if (this.ring.cancel()) return this.updateHover();
       // Esc clears a measurement first (the measure tool stays in hand).
       if (this.measure.clear() && this.tool.kind === 'measure') return this.updateHover();
+      // Esc drops a jump link half placed, else lets the selected bot hint go.
+      if (this.hints.escape()) return this.updateHover();
       this.selectTool();
     },
     showAll: () => this.setShowAll(!this.showAll),
@@ -2857,6 +2918,7 @@ export class EditorApp {
     delete: () => {
       if (this.tool.kind === 'path' && this.paths.deleteSelected()) return;
       if (this.tool.kind === 'route' && this.routes.deleteSelected()) return;
+      if (!this.selCount() && this.hints.deleteSelected()) return;
       this.deleteSelection();
     },
     // One meaning per key: PgUp/PgDn change the level (Shift: move the selection a level), [ ] the brush size.
@@ -3061,6 +3123,9 @@ export class EditorApp {
       scenarioGrid(pane, group).append(b);
       this.palette.register(b, { key: b.dataset.tool, name: entry.label, tags: entry.search });
     }
+    // Bot hints (MapMaker overhaul Phase 4 item 3; botHintTool.ts), last in the Entities tab.
+    const hintGrid = this.palette.group($('ed-entities'), 'gameplay:bothints', 'Bot hints', { note: 'Spots for bots on top of what they work out: chokepoints, sniper, camp and staging spots, jump links (Y). Shown in MapMaker only.' });
+    this.hints.fillPalette(hintGrid, (el, key, name, tags) => this.palette.register(el, { key, name, tags }));
     for (const item of CORE_ITEMS) {
       const b = document.createElement('button');
       b.className = 'tile-btn';
@@ -4822,6 +4887,9 @@ export class EditorApp {
     this.renderSkyPane();
     const el = $('ed-inspector');
     el.replaceChildren();
+    // A bot hint picked (botHintTool.ts): its own inspector.
+    const hint = this.selCount() === 0 ? this.hints.inspector() : null;
+    if (hint) return void el.append(hint);
     const { tiles, entities } = this.selection;
     const pieces = this.selPieces();
     const doc = this.doc;
@@ -6036,7 +6104,10 @@ export class EditorApp {
         await initPhysics();
         // The navmesh as the match builds it, and the navigation audit (traps, spawn points, objectives and pickups
         // cut off): warnings for creators (errors only on the official maps' own checks).
-        this.navIssues = validateMapNavigation(doc, false).issues;
+        const nav = validateMapNavigation(doc, false, { computed: this.hints.computedOn });
+        this.navIssues = nav.issues;
+        // "What bots know" (bot hints): the bots' own spots, worked out on the same navmesh.
+        this.hints.setComputed(nav.computed ?? null);
       } catch (e) {
         this.navIssues = [{ severity: 'warning', code: 'nav.failed', message: `navigation could not be generated: ${(e as Error).message}` }];
       }
