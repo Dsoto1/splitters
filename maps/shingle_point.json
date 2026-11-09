@@ -18,6 +18,15 @@
       "core.tdm",
       "core.koth"
     ],
+    "cardCamera": {
+      "position": [
+        -32.6,
+        23.71,
+        8.28
+      ],
+      "yaw": 2.75,
+      "pitch": -0.24
+    },
     "release": {
       "mapId": "m_vql6e6ixmth3q6cb",
       "versionId": "v_kfav2xo2srjcni7v",
@@ -25,15 +34,6 @@
       "contentHash": "sha256:92281a8675974260bd0fb6c506f17698cc69c4f1cfcb0c4c1e8eefdda5cbcc03",
       "schemaVersion": 29,
       "releasedAt": "2026-11-08T05:24:56.366Z"
-    },
-    "cardCamera": {
-      "position": [
-        -30,
-        17.55,
-        2
-      ],
-      "yaw": 2.75,
-      "pitch": -0.24
     }
   },
   "classicStructure": {
@@ -10123,12 +10123,12 @@
     },
     {
       "id": "pickup_ekrqxstr16",
-      "kind": "pickup",
       "position": [
         32,
         15.24,
         72
       ],
+      "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
     }
