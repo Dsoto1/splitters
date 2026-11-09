@@ -166,6 +166,8 @@ The workflow is unchanged (CLAUDE.md):
   docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md and the owner's screenshots described in this file's Iron Coast
   part 2 entry.
 
+- Claimed: map format v33 (bot hints in MapMaker, `wip/mapmaker-bothints`), MapMaker lane, 2026-11-09.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
