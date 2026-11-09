@@ -30,5 +30,42 @@
 - **Emperor's box** (owner: it must come back): the north stand's centre line, the podium bay exploded and its seating
   swapped for the Emperor's Box tile, facing the main entrance across the sand.
 
+- **Corner courts and towers** (the seating chart's dark corner squares): the stands are straight, so the corners
+  between them (7 × 7 cells each) are open courts at ground level, each with a Stair Tower (8 levels) against the end
+  of the north or south stand (its hall's arches open into the stand at every level and into the court), a stair down
+  into the hypogeum, and paving over the ring's corner. Filling them with arcades would have doubled the collision
+  boxes (see "Budgets").
+- **Gates** are passages straight out from the sand under the stands (the Gladiator Gate tile, then Grand Arcades to
+  the facade), at the board's corner squares' columns (x ±24 m). The main entrance from the village is the south
+  facade's arcade behind the triumphal arch, with the south tunnel's stairs beside it.
+
 ## Choices
-- (filled in as the build goes)
+- **Built in pieces, through MapMaker's own tools.** On this machine (4 shared cores, load 7-13, SwiftShader) the
+  driven MapMaker takes 60-80 s a placement on the full map. So: the north stand was placed line by line (93 pieces),
+  then selected (a drag box per level), duplicated (Ctrl+D), turned (R) and moved (the arrow keys) for the south, east
+  and west stands; the hypogeum and the sand, and the village, were built in a blank MapMaker map, saved as set pieces
+  (Save selection as set piece), placed in the colosseum and exploded to ordinary tiles. Everything stays editable as
+  ordinary tiles, set pieces and entities.
+- **The ground under the hypogeum.** Terrain is a height grid: a tunnel under it is roofed by the ground unless the
+  ground is pulled down under the tunnel's floor (within 3 m, settle.ts). Where pulled-down ground met ground left at
+  −0.15 m, the terrain sloped through the tunnel and closed it (the nav audit found the ring cut off). So the ground over
+  the whole hypogeum (the sand, the ring, the four branches out to the facade) is flattened to −1.5 m: it all goes
+  under the tunnels, and it is hidden under the sand and the stands' floors. The ring's corners lie under the open
+  courts, so each has a Platform tile over it (paving at ground level).
+- **Stairs out**: Open Stairs (one level) in cuts flattened to −4.4 m, at the four ends of the branches (beyond the
+  facade, in the ring street) and in the four courts.
+- **Pillars**: the Ionic Column at 1.6× (2.1 m thick, 9.6 m tall), so it is cover to fight round, not a post.
+- **Modes and teams**: TDM first, CTF and King of the Hill offered (the owner's answers); Deathmatch is no longer
+  listed. 12 v 12, 8-24 players: the map is far bigger than the old one (a 168 m colosseum, the village to ±120 m).
+- **Volcano**: a backdrop scenery (Hills and a volcano), not terrain: a terrain is at most 400 m across, so a volcano
+  in it could not be "in the distance". It stands far north, behind the emperor's box, seen from the village square
+  over the colosseum.
+- **What the old map had and this one doesn't** (the owner may want some back): the lift cages and the beast lift
+  through a logic trapdoor, the portcullis main gate worked from a winch, the hypogeum portal to the forum, the
+  aqueduct. See the report's questions.
+- **Foliage** (owner, 2026-11-08): the foliage layer only (Grassy on the grass past the village); no prop plants.
+
+## Budgets
+- 432 tiles, 367 set pieces (as placed), ~31,800 collision boxes (shipped maps: 2,700-3,900; the stands are most of
+  it: 772 a radial line), lights 253 of 256 (the stands' bays and the hypogeum's torches: no room for braziers).
+- Server tick (bench, 24 bots, TDM, load 13): avg 3.9 ms, p95 10.3 ms (budget 16.7). Navmesh build 8-15 s.

@@ -8,6 +8,25 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Sandfall Colosseum, rebuilt** (the owner's Flavius Rule board, built in MapMaker; docs/map-briefs/sandfall_colosseum/):
+- **The arena** is the board at 4 m a square: 52 m of sand (7 × 7 cells) with its twelve pillars, five medallions
+  (King of the Hill's hills), four hatches down to the hypogeum and the beast pit's spikes and fire jets in the middle.
+- **The stands** rise seven storeys on all four sides (28 bays of podium, two upper tiers with vomitoria, the
+  arcaded facade and the attic walk at 28 m); the **emperor's box** is back at the centre of the north side, facing
+  the main entrance; **gates 1-4** at the corners; a stair tower in each corner court climbs to the top.
+- **The hypogeum** runs round under the podium: hatch halls, beast cages north, south and east, the gladiators'
+  cells west, and stairs up into the corner courts and out to the village on all four sides.
+- **The Roman village** round it: sixteen insulae and the main square (triumphal arch, forum, temple, colonnades)
+  leading north to the arena; a volcano smokes far off behind the emperor's box.
+- Team Deathmatch, Capture the Flag (gates 3/4 against gates 1/2) and King of the Hill; 12 v 12; the Medieval set.
+
+**Backdrop: Hills and a volcano** (Map properties → Environment → Sky → Scenery): dry hills round the map and a lone
+volcano far to the north, a steady ember glow in its crater and a still plume of smoke. Nothing in it moves or
+flickers, so it is the same with Reduce flashing on.
+
+**MapMaker:** exploding or deleting the last placement of a map's own set piece (one saved from a selection) takes its
+definition out of the map too; it stays in your library, and one undo brings both back.
+
 **MapMaker: feedback while building** (MapMaker overhaul Phase 1, part A; docs/MAPMAKER_OVERHAUL_PLAN.md):
 - **The ghost says why.** Beside the pointer, before you click, a refused tile or set piece says why in a few words
   ("Overlaps the Corridor on Ground", "Past the build limit (16 levels up or down)"; the status line has the whole

@@ -615,16 +615,13 @@ papyrus reeds, fire stand, gilded chest, stele, Bastet statue.
 | Portal Pair | See *Portals* below. |
 | Spike floors, fire jets, crushers, crumbling floors, trapdoors, sliding stone doors | The existing traps, blocks and movers, suggested by the pickers with notes for each pack (spike pits in the sand and the tomb corridors, the pharaoh's curse). |
 
-**Demo maps.** *Sandfall Colosseum* (`maps/sandfall_colosseum.json`, script
-`maps/sandfall_colosseum.json`): a 40 × 24 m arena of
-sand ringed by seating with the emperor's box on the north, three gladiator
-gates (the main one a portcullis worked from a winch in its passage or a chain
-on the sand, the side ones rising as anyone comes), two lift cages rising from
-the hypogeum through hatches, a beast lift the emperor sends up through a
-logic trapdoor, spike traps and fire jets on the sand, outer arcades all round
-with four stairs up to the seating, a forum with a temple, colonnade and
-triumphal arch to the east, an aqueduct to the west, and a portal from the
-hypogeum's west tunnel to the forum that the emperor can seal for 15 s.
+**Demo maps.** *Sandfall Colosseum* (`maps/sandfall_colosseum.json`; rebuilt 2026-11-08 from the owner's Flavius Rule
+board, docs/map-briefs/sandfall_colosseum/): 52 m of sand (the 13 × 13 board at 4 m a square) with the board's twelve
+pillars, five medallions and four corner hatches down to the hypogeum, a beast pit of spike traps and fire jets in the
+middle; seven-storey stands of the Arena stands set pieces on all four sides, the emperor's box at the centre of the
+north side, gates 1-4 at the corners, a stair tower in each corner court; the hypogeum (Hypogeum set pieces) round
+under the podium with cages, the gladiators' cells and stairs out to the courts and the village; sixteen insulae and a
+main square (triumphal arch, forum, temple, colonnades); the "Hills and a volcano" backdrop.
 *Pharaoh's Reach* (`maps/pharaohs_reach.json`): from the Nile quay a sphinx
 avenue leads between obelisks and seated colossi to the pylon (terrace up its
 back stairs), a hypostyle hall and the sanctuary; a step pyramid with a
@@ -1184,6 +1181,17 @@ buildings, and Dress / Re-roll / Clear. The pieces are ordinary props (IDs
 delete what they like; dressing again or re-rolling replaces them. The map
 panel's **Dress all bare rooms** dresses every room with no props in it as a
 type guessed from its size and the theme.
+
+**Hills and a volcano** (Environment → Sky → Scenery, any map): dry hills round the map and a lone volcano far to the
+north (`client/src/backdrop.ts` `volcano`): a cone scored with gullies, a steady ember glow on its crater floor (an
+unlit colour, no light) and a still plume of see-through smoke puffs leaning east. Nothing moves or flickers, so it is
+the same under Reduce flashing. The belt past the border is rocks only.
+
+**A saved piece's definition goes with its last placement:** a map carries the definitions of its own set pieces
+(`setPieceDefs`) only while something places them; exploding or deleting the last placement drops it (one undo step
+brings both back; the piece stays in your library). A saved piece's frame starts at the least cell and level of what
+was selected, entities included: a light or ladder a level below the tiles puts the tiles a level up in the piece, so
+place it a level lower (or leave such entities out of the selection).
 
 ## Every map is made in MapMaker
 
