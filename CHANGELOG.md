@@ -8,6 +8,12 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**New map: The Spillway** (MAP 02, built in MapMaker; waits for the owner's review):
+- A hydroelectric dam across a mountain gorge, for big team battles (24 v 24, room for 32 v 32). Fight along the dam
+  crest high over the gorge, through the powerhouse's generator halls at its foot, and across the rocky basin where
+  the tailrace runs out; the west maintenance yard steps down its terraces, and in the east the switchyard sits on its
+  ledge over a service tunnel through the rock.
+- Team Deathmatch, Capture the Flag and King of the Hill; the Military weapon set by default.
 **Small fixes (owner, 2026-11-08)**:
 - Bots no longer queue 10-20 s for Fernwood Moon's north rope lift: they hop down off the north deck onto its ramp
   when the lift is away (the navmesh had lost that 0.7 m hop).

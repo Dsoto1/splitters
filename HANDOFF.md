@@ -287,6 +287,20 @@ For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.
 
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
+**The Spillway built from MAP 02 (`wip/mapmaker-spillway`, MapMaker lane, 2026-11-09; waits for the owner's review, not
+landed).**
+- A new map made in the real MapMaker only (a scratch Playwright driver: New map, Create terrain and the brushes,
+  palette clicks, the inspector, Map properties, the scatter brush, Sky, Set card shot, Export). No map code.
+- What it is, the choices, the owner's questions: docs/map-briefs/the_spillway/ (DECISIONS_AND_DEVIATIONS.md,
+  MAP_IMPLEMENTATION_MANIFEST.md, QA_REPORT.md). TDM main (CTF and KotH from its flags and hills), 24 v 24, 64 spawns,
+  Military weapon set, no vehicles.
+- Map lists, MapMaker templates, the all-maps test and the map tour pick it up by itself (maps/ is scanned); its card
+  picture is `packages/client/public/maps/shots/the_spillway.jpg` from its card camera.
+- Pitfalls for the next build (also docs/BUILDING_KIT.md, Terrain): ground is lowered under a floor only within 3 m
+  (cut a deep tunnel's slot with Flatten); a stair's foot on new terrain needs the ground flattened to the floor's
+  height (the 0.15 m offset plus the first step is a lip bots can't climb); hold Flatten on each spot (it levels at a
+  rate a frame) and overlap neighbouring areas; the inspector can drop the first edit after a placement.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
