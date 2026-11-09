@@ -3654,20 +3654,34 @@ async function friendlyFireChecks(browser) {
     await page.click('#nav-play');
     await page.click('#arcade-start');
     await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+    // Only your rounds fly: every bot holds fire (enemies had shot the teammate placed in front of you, hurting them
+    // with friendly fire off and killing them before your round did, or killed them so that they stood there
+    // spawn-shielded), and what was already in the air has landed, and you are alive.
+    await holdBots(page);
+    await simWait(page, (m, me) => me.alive && !m.bullets.some((b) => b.owner !== me.slot) && !m.projectiles.some((p) => p.owner !== me.slot), null, T(30000));
     // A teammate held 4 m in front of you, three rounds of your gun fired straight at their chest.
     const shot = await sim(page, (m, me) => {
       const mate = m.combatants().find((c) => c !== me && c.alive && c.faction === me.faction && !c.mount);
       if (!mate) return { rule: m.rules.friendlyFire ?? 'off', mate: false, tick: m.tick };
       const at = { x: me.move.pos.x + Math.sin(me.yaw) * 4, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * 4 };
-      if (mate.bot && !mate.queue.ffHeld) {
-        mate.queue.push = (...inputs) => Array.prototype.push.apply(mate.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
-        mate.queue.ffHeld = true;
-      }
       mate.move = { ...mate.move, pos: at, velY: 0, vx: 0, vz: 0, grounded: true };
       mate.health = mate.maxHealth;
       mate.armor = 0;
       mate.invulnerable = false;
+      mate.shieldUntil = 0;
       globalThis.__ffMate = mate;
+      // Who took how much health off the teammate: your rounds, and anything else (that should be nothing).
+      const hits = (globalThis.__ffHits = []);
+      if (!m.__ffLogged) {
+        const damage = m.damage;
+        m.damage = function (victim, amount, attacker, ...rest) {
+          const before = victim.alive ? victim.health : 0;
+          const r = damage.call(this, victim, amount, attacker, ...rest);
+          if (victim === globalThis.__ffMate) globalThis.__ffHits.push({ by: attacker ? attacker.slot : -1, n: before - (victim.alive ? victim.health : 0) });
+          return r;
+        };
+        m.__ffLogged = true;
+      }
       const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.6, z: me.move.pos.z };
       const chest = { x: at.x, y: at.y + 1.2, z: at.z };
       const clear = m.physics.lineOfSight(eye, chest);
@@ -3678,20 +3692,17 @@ async function friendlyFireChecks(browser) {
     });
     // Ballistic rounds fly a tick or two: a third of a second of match time is plenty.
     await simWait(page, (m, me, t) => m.tick > t + 20, shot.tick, T(10000));
-    const after = await sim(page, () => {
+    const after = await sim(page, (m, me) => {
       const mate = globalThis.__ffMate;
       if (!mate) return null;
-      const r = { hurt: mate.maxHealth - (mate.alive ? mate.health : 0) };
-      if (mate.queue?.ffHeld) {
-        delete mate.queue.push;
-        delete mate.queue.ffHeld;
-      }
-      return r;
+      const hits = globalThis.__ffHits ?? [];
+      const sum = (list) => list.reduce((n, h) => n + h.n, 0);
+      return { hurt: sum(hits.filter((h) => h.by === me.slot)), others: sum(hits.filter((h) => h.by !== me.slot)), lost: mate.maxHealth - (mate.alive ? mate.health : 0) };
     });
     // A team kill (friendly fire on): the feed marks it TK, and nothing rewards it: no kill, the streak ends, no
     // streak burst or "in a row", no kill marker. Primed one kill short of the first burst and streak reward.
     if (ff === 'on') out.tk = await teamKillCheck(page);
-    out[ff] = { ...shot, hurt: after?.hurt ?? null, errors: errors.join('; ') };
+    out[ff] = { ...shot, hurt: after?.hurt ?? null, others: after?.others ?? null, lost: after?.lost ?? null, errors: errors.join('; ') };
     await page.context().close();
   }
   const tk = out.tk;
@@ -3699,7 +3710,7 @@ async function friendlyFireChecks(browser) {
   check(tk?.dead && tk.kills === tk.kills0 && tk.streak === 0 && !tk.bursts && !tk.inARow && !tk.marker && tk.lifeKills === 0, `a team kill rewards nothing: no kill, the streak ends, no streak burst, no kill marker (${JSON.stringify(tk)})`);
   check(out.on.rule === 'on' && out.off.rule === 'off', `Match setup's friendly fire reaches the match (on: ${out.on.rule}, off: ${out.off.rule})`);
   check(out.on.mate && out.on.clear && out.on.hurt > 0, `friendly fire on: your rounds hurt a teammate in front of you (${JSON.stringify(out.on)})`);
-  check(out.off.mate && out.off.clear && out.off.hurt === 0, `friendly fire off: your rounds pass through a teammate unhurt (${JSON.stringify(out.off)})`);
+  check(out.off.mate && out.off.clear && out.off.hurt === 0 && out.off.lost === 0, `friendly fire off: your rounds pass through a teammate unhurt (${JSON.stringify(out.off)})`);
   check(!out.on.errors && !out.off.errors, `no page errors in the friendly fire matches (${out.on.errors}${out.off.errors})`);
 }
 
