@@ -1149,6 +1149,9 @@ async function editorTerrainGridChecks(browser) {
   const mainHasCoast = await page.evaluate(() => [...document.querySelectorAll('#ed-bd-border option')].some((o) => o.value === 'coast'));
   await page.click('#ed-bd-border-sides summary');
   await page.selectOption('#ed-bd-border-south', 'water');
+  // (The panel is drawn again from the new backdrop before the next side is set.)
+  await page.waitForFunction(() => window.__editor.doc.backdrop?.borderSides?.south === 'water', null, { timeout: T(5000) }).catch(() => {});
+  await frames(page, 3);
   await page.selectOption('#ed-bd-border-east', 'coast');
   await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'border_coast' && !m.isDisposed()), null, { timeout: T(10000) }).catch(() => {});
   const coast = await page.evaluate(() => {

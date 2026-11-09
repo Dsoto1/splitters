@@ -116,7 +116,11 @@ export function buildCoast(scene: Scene, styler: MapStyler, sides: readonly Coas
     }
     // ---- the forest's stretches: inland only
     const [prev, next] = opts.neighbours(e);
-    for (const [p, q] of c.inland) {
+    for (const [p0, q0] of c.inland) {
+      // The forest's dark canopy band runs on 40 m past a free end: kept that far back from the shore.
+      const p = p0 <= 0 ? p0 : p0 + 40;
+      const q = q0 >= e.length ? q0 : q0 - 40;
+      if (q - p < 6) continue;
       const a = at(p, 0);
       const b = at(q, 0);
       forest.push({ edge: { side: e.side, style: 'forest', a, b, out: e.out, length: q - p }, ends: [p <= 0 ? prev : 'coast', q >= e.length ? next : 'coast'] });

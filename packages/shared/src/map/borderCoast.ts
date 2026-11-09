@@ -9,8 +9,9 @@ import { resolveBackdrop } from './backdrop.ts';
  *
  * - the shore (the stretch of the line from a seaward end, ground within BEACH m of the sea): sand and shallow water
  *   carry on along the shoreline at their own height, the sea over them;
- * - higher ground (cliffs, the crest behind them): kept up close, then easing down to low headlands (a third of its
- *   height over the beach) and rounded along the line as it goes out, with dunes on the low ground behind the shore;
+ * - higher ground by the shore (cliffs, the crest behind them): kept up close, then easing down to low headlands (a
+ *   third of its height over the beach) and rounded along the line as it goes out, with dunes on the low ground behind
+ *   the shore; further inland the ground carries on at its height;
  * - forest only inland: the stretches of the line more than INLAND m from the shore.
  *
  * Scenery only, like `water`: no collision and no navigation (borderBoxes gives it none). The client draws it from
@@ -138,17 +139,20 @@ export function coastSides(map: Pick<MapDocument, 'bounds' | 'terrain' | 'backdr
   return out;
 }
 
-/** Whether `u` (along the line) is on a shore stretch, 0..1, easing off over 15 m past it. */
-export function coastShoreWeight(c: CoastSide, u: number): number {
-  let w = 0;
+/** How far `u` (along the line) is from the shore (0 on it; Infinity without one). A shore at an end runs on round the corner. */
+export function coastShoreDistance(c: CoastSide, u: number): number {
+  let best = Infinity;
   for (const [a, b] of c.shore) {
-    // A shore at an end runs on round the corner.
     const lo = a <= 0 ? -Infinity : a;
     const hi = b >= c.edge.length ? Infinity : b;
-    const d = u < lo ? lo - u : u > hi ? u - hi : 0;
-    w = Math.max(w, 1 - Math.min(1, d / 15));
+    best = Math.min(best, u < lo ? lo - u : u > hi ? u - hi : 0);
   }
-  return w;
+  return best;
+}
+
+/** Whether `u` (along the line) is on a shore stretch, 0..1, easing off over 15 m past it. */
+export function coastShoreWeight(c: CoastSide, u: number): number {
+  return 1 - Math.min(1, coastShoreDistance(c, u) / 15);
 }
 
 /** The ground at the line averaged over `radius` m either side of `u` (the line's own ground at radius 0). */
@@ -183,7 +187,10 @@ export function coastHeight(c: CoastSide, u: number, v: number): number {
   let y: number;
   if (rel <= COAST_BEACH) y = p;
   else {
-    const keep = HEADLAND + (1 - HEADLAND) * Math.exp(-vv / HEADLAND_FALL);
+    // Only by the shore (the cliffs and crest where they meet it): from 5 m past the shore to 35 m on (where the
+    // forest starts) the easing fades out, and inland the ground carries on at its height under the forest.
+    const near = 1 - Math.min(1, Math.max(0, (coastShoreDistance(c, u) - 5) / (INLAND - 5)));
+    const keep = 1 - near * (1 - HEADLAND) * (1 - Math.exp(-vv / HEADLAND_FALL));
     y = c.sea + COAST_BEACH + (rel - COAST_BEACH) * keep;
   }
   // Dunes: low dry ground near (not on) the shore, growing out from the line.

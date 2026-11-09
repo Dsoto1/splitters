@@ -188,7 +188,7 @@ For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.
   The ground at the line carried out 120 m: the shore (from a seaward end, a Shoreline & sea side or ground under the
   sea, while within 1.5 m of the sea) at its own height with the sea over it; higher ground eased to a third of its
   height over the beach (headlands) and rounded along the line further out, dunes behind the shore, rock where steep;
-  BorderVisuals' own forest only on stretches 35 m+ inland of the shore. The sea level is the neighbouring water
+  inland (35 m+ past the shore) the ground keeps its height and BorderVisuals' own forest stands on it (canopy from 35 m, trees from about 65 m). The sea level is the neighbouring water
   side's (the same rule its beach uses) or the map's water touching the line. No collision, no nav. On Iron Coast:
   set east and west to Coast (south stays Shoreline & sea, north Forest wall).
 - **Performance** (this 4-core box at load 13-16, so ±30%). Server/shared, Iron Coast 2.5 m (153 × 129) → 1.25 m
