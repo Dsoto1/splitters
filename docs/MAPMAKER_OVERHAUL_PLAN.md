@@ -43,6 +43,17 @@ Already done from the owner's earlier ask: **the real buildable area.**
      amber ⚠, blue ℹ, each with its words); the status line has the whole reason. Worked out once per cell / spot and
      document version. Entities are warned, not refused (owner's call, HANDOFF). Tests `shared/test/ghostWhy.test.ts`;
      e2e in `editorux` (`editorPhase1aChecks`).
+   - **As built, the owner's follow-up (2026-11-09, `wip/mapmaker-followups`; owner 5b: "refuse"):** spawns, pickups,
+     props, vehicles and NPCs over nothing, and spawns, pickups, vehicles and NPCs outside the playable boundary or
+     past the build limit, are refused: `entityGhostNote` gives `bad`, the ghost is tinted red (`EditorView`
+     `setPropGhost`/`setEntityGhost`, an overlay over its own look), the card says ✗ and "Can't be placed here", the
+     status line the reason, and `placeAtHover` places nothing (`ghostRefuses`). What it stands on is the map as drawn
+     with blocks and solid props (`surfaceBoxes`, so a pickup on a crate is fine) and liquids (a boat on a pool).
+     Props outside the boundary keep the scenery-zone note (`PROPS_REFUSED_OUTSIDE = false`, the owner's call);
+     objects (doors, zones, lights, logic) are never refused. Moving, pasting and editing aren't refused. Checked
+     against every map in `maps/` and `maps/templates/`: no entity there needs placing over nothing (wall shelves,
+     torches and the boats were placed on a floor or the ground and raised or moved after; placing then moving still
+     works). Tests `ghostWhy.test.ts`; e2e `editorPhase1aChecks` (a spawn and a prop over nothing: red, no place).
 2. **A live budget bar.**
    - It covers entities, destructibles, vehicles, lights, props and draw estimate, the environment budget and the map's
      size (RESOURCE_BUDGETS, MAP_BUDGETS.md).
@@ -59,6 +70,10 @@ Already done from the owner's earlier ask: **the real buildable area.**
      naming the worst budget; its name selects what it counts (`budgetCulprits`); the arrow lists every row. Test
      `shared/test/budgetCounters.test.ts` (counters = full count after commands, a batch, a stroke, every undo and
      redo; over a budget exactly when the validator warns).
+   - **As built, the owner's follow-up (2026-11-09, `wip/mapmaker-followups`; owner 8b):** the bar is a compact item
+     in the bottom status bar (between the counts and the status line): the colour, the word and the budget it names,
+     the name still selecting what it counts and the arrow still listing every row (above the bar). The status line
+     gives way (ellipsis) on a narrow window. e2e: `editorPhase1aChecks` checks it sits in the bar.
 3. **A measure tool.** Click two points to get the distance, the height difference and the slope. It snaps to cells
    and surfaces.
    - **As built** (`wip/mapmaker-p1b`): the Measure tool, U and the tool bar (`editor/measureTool.ts`; the maths in
@@ -69,6 +84,17 @@ Already done from the owner's earlier ask: **the real buildable area.**
      could make it, from `PLAYER` (`sim/constants.ts`, as `sim/movement.ts` moves): the step (walk ≤ 0.3 m, jump ≤
      1.22 m, "too high") and the gap (a sprinting jump's reach to that height). Labels are DOM over the view; nothing
      is stored. e2e: `editorMeasureChecks` in `editorux`.
+   - **As built, the owner's follow-up (2026-11-09, `wip/mapmaker-followups`; owner 4b):** the jump hint samples the
+     ground along the line. `sampleProfile` (shared `editor/measure.ts`) reads what is under the stretch every 25 cm
+     (`restUnder` on the map as drawn and the ground as shown, nothing higher than a jump above the higher end, so roofs
+     and bridges overhead aren't the floor); `profileVerdict` judges it against `PLAYER`: neighbouring rises steeper than
+     50° and over a step add up to one step (the steepest is the verdict's step); a fall that comes back near its height
+     is a gap only when you couldn't climb out of it (deeper than a jump, or nothing under it), its width on the long
+     side to within a sample; a ditch you can climb out of is a drop and a step. The labels and the status line give the
+     step's height and the gap's width. `MeasureTool` keeps each stretch's verdict until the map changes (sampling once
+     per stretch, not per frame). Tests in `mapmakerTools.test.ts` (a ramp walkable, a stair walkable, a ledge a step,
+     a pit a gap, jumpable and too far, a deep pit, a ditch); e2e `measureRampCheck` (a 30° ramp of ground in the real
+     editor: walkable, its ends 4.6 m apart).
 4. **Props snap to surfaces, with randomise.**
    - A prop drops onto whatever is under the cursor: a tabletop, a roof, the ground.
    - Optionally, each placement gets a random turn, size and variant within a range.
@@ -217,12 +243,49 @@ Already done from the owner's earlier ask: **the real buildable area.**
    - A headless bot match on the map, run in a worker for a few minutes.
    - Heatmaps afterwards: where bots went, got stuck, died, and where their routes failed.
    - It builds on Bot AI Phase A (the scorecard and the navigation audit, docs/BOT_AI_PLAN.md).
+   - **As built** (`wip/mapmaker-p4`, 2026-11-09; no format change, nothing stored in the map): the top bar's **Bot
+     test** opens the Test panel (`client/editor/mapTestPanel.ts`): mode (the map's playable modes), bots a team or
+     in all (up to 32), 30 s to 5 min; a progress bar and Cancel (`Worker.terminate`). The run is
+     `shared/editor/mapTest.ts` `BotTestRun`: the same Match `pnpm bot-report` plays (bots added as the server adds
+     them, no limits), stepped 15 ticks at a time in a worker of its own (`mapTestWorker.ts` / `mapTestWorkerCore.ts`,
+     split as the match worker is for Safari). Stuck recoveries and failed searches come through `bots/botTrace.ts`
+     `BotTrace`, which bot-report now reads its own stuck spots and failed searches through, so both count the same.
+     Heatmaps (`shared/editor/heatmap.ts`): sparse cells (2 m, up to 8 m on big maps) split into 2.5 m height bands so
+     storeys stay apart, drawn by `mapTestOverlay.ts` as one mesh a layer of squares on the floors (went: blue to red;
+     stuck magenta, died red, failed orange), each on its own box, in 3D and from above in the plan view. Summary
+     (`editor/botTestSummary.ts`): kills (a minute), stuck recoveries, failed searches of all, the objective's first
+     moments (flag, hill, bomb, hostage, sector, round), King of the Hill hill time. **Cost:** the editor's thread only
+     posts the map and draws the result; the panel times MapMaker's frames during a run and shows the longest with the
+     result. On this 4-core box at load 10-13: 75-100 ms of the worker's time a match second with 6-8 bots (a 5-minute
+     run about 25-30 s), a navmesh build first (70 ms on Phase 0 Arena, 1.5 s on Diamond Park). e2e
+     `editorux` → `editorMapTestChecks`; unit `shared/test/mapTest.test.ts`.
 2. **Sightlines and spawn exposure.**
    - For each spawn: how much can see it, and from how far.
    - Long sightlines drawn on the map.
    - Warnings for exposed spawns.
+   - **As built** (`wip/mapmaker-p4`): an on-demand check (the panel's **Check spawns**), in the same kind of worker:
+     too slow for every validation (Diamond Park 2.9 s: its navmesh, 400 places × 54 spawns of rays), and MapMaker
+     already builds the navmesh on its own thread for the navigation audit. `shared/editor/spawnExposure.ts`: the
+     places are the navmesh's main-area places (`NavWorld.mainPlaces`, plus points 3.5 m round each so small arenas
+     have enough: `densePlaces`), at most 400; a place sees a spawn when `PhysicsWorld.lineOfSight` (the ray bots spot
+     and aim along) runs clear from a 1.5 m eye to the spawned player's 1.2 m chest, 4-120 m away. Per spawn: the
+     share of places that see it, nearest / median / furthest, its three longest lines. Long sightlines: pairs of
+     places 50 m+ apart that see each other, longest first, 24 at most, one per view (ends within 12 m). Exposed
+     (`EXPOSED_SHARE`, 0.5: the owner's call) spawns become `spawn.exposed` warnings in the validator's list while the
+     map is the one checked. Labels by every spawn (`.ed-exposure-label`, the share and the furthest distance).
 3. **Bot hints:** chokepoints, sniper and camp spots, staging spots, jump links. These are Bot AI Phase D's hints,
    placed here.
+   - **As built (2026-11-09, `wip/mapmaker-bothints`, map format v33):**
+     - the data: `botHints` (`map/schema.ts` `BotHint`: kind, position, yaw, radius, team, a jump's `to`), read through
+       `map/botHints.ts` (`mapBotHints`; docs/BOTS.md, "Bot hints (map data)"); bots don't read them yet;
+     - the commands (`editor/botHints.ts`: add, edit, move, delete; one `setBotHints` = one undo step);
+     - the Bot hints tool (Y; the Entities tab's Bot hints group; `client/editor/botHintTool.ts`): icon pins over a
+       canvas of radii, facings and jump arcs, in the 3D and plan views; the inspector edits the selected one;
+     - checks (warnings): outside the boundary, a jump a player couldn't make (the movement numbers), duplicates
+       (validateMap); off the navmesh (the navigation validator);
+     - "What bots know": the computed vantage spots and parkour links, read-only, from `validateMapNavigation`'s
+       `computed` (worked out with the navigation check, only while it is on);
+     - unit `botHints.test.ts`; e2e `editorux` → `editorBotHintChecks`.
 
 ## Phase 5: time of day and weather (map data, a format bump)
 1. **Time of day:** a sun time per map (sun angle, light colour, sky blend) between the existing sky presets.
@@ -244,6 +307,17 @@ last, once the interface has settled.
     undo step, a preview of vertices, triangles and the file against its budget;
   - the **coast** border side (`shared/map/borderCoast.ts`, `client/borderCoast.ts`), per side in Sky → Border;
   - e2e `editorux` → `editorTerrainGridChecks`; unit `terrainGrid.test.ts`, `borderCoast.test.ts`.
+
+### Environment Phase 3's MapMaker tools (lane item, owner 2026-11-08)
+- **As built (2026-11-09, `wip/mapmaker-env3`, no format change):** the Nature tab's Environment group (Trees, Plants,
+  Ground cover, Rocks, Boulders, Cliffs of our species; single placement is the prop tool with surface snap and
+  Randomise), the Environment brush (paint / erase, density, radius, seed, size and turn, per-species weights and
+  variants, four presets, slope / altitude / material filters, keep-clear of spawns, routes and objectives with a
+  confirmation to turn it off or to place a blocker there by hand), Show what blocks, the environment budget in the
+  pane and as the brush's stop. Logic `shared/editor/envBrush.ts`, UI `client/editor/envTools.ts`; unit
+  `envBrush.test.ts`, e2e `editorux` → `editorEnvironmentChecks`. Docs: SCENERY.md "Environment group and brush".
+- **Race wording (same branch):** the race layer reads track / NPC traffic; Map properties drops Race
+  (`shared/editor/mapModes.ts`).
 
 ## Order
 - **After set pieces part 2.** Both touch the palette, the ghost and selection, and set pieces give groups their

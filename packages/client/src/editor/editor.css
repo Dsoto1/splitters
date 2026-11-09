@@ -352,9 +352,9 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 }
 
 /* Top bar icon buttons (file actions, grid). */
-#ed-top .ed-file button, #ed-grid, #ed-grid-full, #ed-overlaps, #ed-plan { display: flex; align-items: center; gap: 5px; }
-#ed-top .ed-file svg, #ed-grid svg, #ed-grid-full svg, #ed-overlaps svg, #ed-plan svg { width: 16px; height: 16px; flex: none; }
-#ed-grid.on, #ed-grid-full.on, #ed-overlaps.on, #ed-plan.on { color: var(--cyan); border-color: rgba(0, 209, 255, 0.5); }
+#ed-top .ed-file button, #ed-grid, #ed-grid-full, #ed-overlaps, #ed-plan, #ed-maptest { display: flex; align-items: center; gap: 5px; }
+#ed-top .ed-file svg, #ed-grid svg, #ed-grid-full svg, #ed-overlaps svg, #ed-plan svg, #ed-maptest svg { width: 16px; height: 16px; flex: none; }
+#ed-grid.on, #ed-grid-full.on, #ed-overlaps.on, #ed-plan.on, #ed-maptest.on { color: var(--cyan); border-color: rgba(0, 209, 255, 0.5); }
 #ed-snap { padding: 4px 5px; font-size: 12px; }
 @media (max-width: 1400px) {
   #ed-top .ed-file button { padding: 5px 6px; }
@@ -538,7 +538,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-top.fit-3 #ed-name { width: 96px; }
 #ed-top.fit-3 #ed-snap { max-width: 84px; }
 #ed-top.fit-4 #ed-skill { display: none; }
-#ed-top.fit-4 #ed-grid, #ed-top.fit-4 #ed-grid-full, #ed-top.fit-4 #ed-overlaps, #ed-top.fit-4 #ed-plan { padding: 5px; }
+#ed-top.fit-4 #ed-grid, #ed-top.fit-4 #ed-grid-full, #ed-top.fit-4 #ed-overlaps, #ed-top.fit-4 #ed-plan, #ed-top.fit-4 #ed-maptest { padding: 5px; }
 #ed-top.fit-4 #ed-theme { max-width: 84px; }
 #ed-tr-edit .ed-tr-swap { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0; }
 #ed-tr-edit .ed-tr-swap label { flex: 1; margin: 0; }
@@ -577,14 +577,20 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 .ed-sp-problems li.error { color: var(--error); }
 .ed-sp-problems li.warning { color: #ffc46b; }
 
-/* The live budget bar (MapMaker overhaul Phase 1 item 2): a pill beside the level strip, its colour and its word; the
-   arrow opens every row above it. Green OK, amber Near (80 % of a budget), red Over. */
+/* The live budget bar (MapMaker overhaul Phase 1 item 2): a compact item in the bottom status bar (owner, 2026-11-08),
+   its colour, its word and the budget it names; the arrow opens every row above it. Green OK, amber Near (80 % of a
+   budget), red Over. The status bar lets the rows show over the view (only the hint and status line are clipped). */
+#ed-bottom { overflow: visible; }
+#ed-target { flex-shrink: 1 !important; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .ed-budget {
-  position: absolute; left: calc(var(--ed-pal-w) + 152px); bottom: 48px; max-width: calc(100% - var(--ed-pal-w) - var(--ed-right-w) - 176px);
-  display: flex; align-items: center; gap: 6px; padding: 4px 4px 4px 8px; pointer-events: auto;
-  background: rgba(18, 24, 39, 0.94); border: 1px solid rgba(46, 204, 113, 0.45); border-left: 3px solid var(--success); border-radius: 6px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); font-size: 12px; color: var(--muted); white-space: nowrap;
+  position: relative; flex-shrink: 0; height: 26px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 4px; padding: 0 2px 0 7px; pointer-events: auto;
+  background: rgba(18, 24, 39, 0.6); border: 1px solid rgba(46, 204, 113, 0.45); border-left: 3px solid var(--success); border-radius: 5px;
+  font-size: 12px; color: var(--muted); white-space: nowrap;
 }
+#ed-bottom .ed-budget b { min-width: 0; }
+#ed-bottom .ed-budget button.ed-budget-name { height: 20px; padding: 0 4px; }
+#ed-bottom .ed-budget-toggle { width: 20px; height: 20px; padding: 0; }
 .ed-budget[data-level='near'] { border-color: rgba(255, 196, 107, 0.6); border-left-color: #ffc46b; }
 .ed-budget[data-level='over'] { border-color: rgba(231, 76, 60, 0.6); border-left-color: var(--error); }
 .ed-budget-sum { display: flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; }
@@ -599,6 +605,7 @@ span.ed-budget-name { text-decoration: none; }
 .ed-budget-toggle { width: 22px; height: 22px; padding: 0; font-size: 11px; }
 .ed-budget-rows { position: absolute; left: -1px; bottom: calc(100% + 4px); min-width: 300px; display: grid; gap: 2px; padding: 6px; background: rgba(18, 24, 39, 0.97); border: 1px solid rgba(0, 209, 255, 0.28); border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
 .ed-budget-rows[hidden] { display: none; }
+#ed-bottom .ed-budget-rows { z-index: 30; font-family: var(--font-body); }
 .ed-budget-row { display: grid; grid-template-columns: 96px 1fr auto 36px; align-items: center; gap: 6px; }
 .ed-budget-row .ed-budget-name { justify-self: start; }
 .ed-budget-meter { height: 6px; min-width: 50px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
@@ -691,3 +698,80 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-mirror #ed-mirror-why.err { color: var(--error); }
 /* New map → Start from (templatePicker.ts). */
 .ed-new-sizes.off, label.off { opacity: 0.45; }
+/* Bot hints (botHintTool.ts): icon pins over a canvas of radii, facings and jump arcs; MapMaker only. */
+#editor > .ed-bothints { position: absolute; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; }
+.ed-bothints canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.ed-hint-pin {
+  position: absolute; left: 0; top: 0; width: 26px; height: 26px; min-width: 0; padding: 3px; margin: -13px 0 0 -13px;
+  pointer-events: auto; cursor: pointer; border-radius: 50%; background: rgba(11, 15, 26, 0.88); border: 2px solid currentColor;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+}
+.ed-hint-pin svg { width: 100%; height: 100%; display: block; }
+.ed-hint-pin.landing { width: 16px; height: 16px; margin: -8px 0 0 -8px; padding: 2px; }
+.ed-hint-pin.sel { box-shadow: 0 0 0 2px #fff; }
+.ed-hint-pin[hidden] { display: none; }
+.ed-bothints.tool .ed-hint-pin { cursor: grab; }
+.ed-hint-pending { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 4px; margin: -12px 0 0 -12px; color: #ffd34d; pointer-events: none; }
+.ed-hint-pending svg { width: 24px; height: 24px; }
+.ed-hint-pending span { padding: 2px 6px; border-radius: 4px; background: rgba(11, 15, 26, 0.86); color: var(--fg); font-size: 11px; white-space: nowrap; }
+.ed-hint-pending[hidden] { display: none; }
+.ed-hint-known { margin: 4px 0 6px; }
+.ed-hint-known label.check { margin: 4px 0 2px; color: var(--text, #e8edf5); }
+#ed-hint-inspector .ed-hint-xyz { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+#ed-hint-inspector .ed-hint-xyz input { width: 100%; min-width: 0; }
+#ed-hint-inspector #ed-hint-verdict.bad { color: #ff8a7a; }
+#ed-hint-inspector #ed-hint-verdict.ok { color: #7be0a8; }
+
+/* MapMaker overhaul Phase 4 (mapTestPanel.ts): the Test panel, the bot test run's progress and summary, the spawn
+   exposure labels (mapTestOverlay.ts). Editor-only. */
+#ed-maptest.busy svg { animation: ed-mt-pulse 1.6s ease-in-out infinite; }
+@keyframes ed-mt-pulse { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { #ed-maptest.busy svg { animation: none; } }
+#editor > .ed-maptest {
+  position: absolute; top: 56px; right: 12px; z-index: 6; width: 320px; max-height: calc(100% - 80px); overflow: auto; padding: 10px 12px;
+  background: var(--surface-2); color: var(--fg); border: 1px solid rgba(142, 162, 192, 0.28); border-top: 3px solid var(--cyan); border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+.ed-maptest[hidden] { display: none; }
+.ed-mt-head { display: flex; align-items: center; justify-content: space-between; }
+.ed-mt-head h2 { margin: 0; font-size: 15px; }
+.ed-mt-head button { padding: 2px 8px; }
+.ed-maptest section { border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 8px; padding-top: 6px; }
+.ed-maptest h3 { margin: 2px 0 4px; font-size: 13px; color: var(--cyan); }
+.ed-maptest .ed-dialog-field { margin: 0 0 6px; font-size: 12px; }
+.ed-maptest .ed-dialog-field > span { width: 84px; flex: none; }
+.ed-maptest .ed-dialog-field[hidden] { display: none; }
+.ed-maptest .ed-dialog-field input, .ed-maptest .ed-dialog-field select { flex: 1; min-width: 0; }
+.ed-mt-progress { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 8px 0 0; font-size: 12px; }
+.ed-mt-progress > span { flex: 1 0 100%; color: var(--muted); }
+.ed-mt-progress[hidden] { display: none; }
+.ed-mt-progress progress { flex: 1; min-width: 60px; }
+.ed-mt-summary { margin: 8px 0 6px; padding-left: 18px; font-size: 12px; line-height: 1.45; }
+.ed-mt-layers { display: grid; gap: 3px; font-size: 12px; }
+.ed-mt-check { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-right: auto; }
+.ed-mt-check i { width: 12px; height: 12px; border-radius: 2px; flex: none; }
+.ed-mt-layer-went i { background: linear-gradient(90deg, #1a33e6, #1ad9f2, #ffe626, #ff2619); }
+.ed-mt-layer-stuck i { background: #ff40f2; }
+.ed-mt-layer-died i { background: #ff1f14; }
+.ed-mt-layer-failed i { background: #ff990d; }
+.ed-mt-spawns { margin: 4px 0 0; padding-left: 20px; font-size: 12px; line-height: 1.45; color: var(--muted); }
+.ed-mt-spawns li.exposed { color: #ff8a80; font-weight: 700; }
+#editor > .ed-exposure-label {
+  position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; white-space: nowrap; padding: 2px 6px; text-align: center;
+  background: rgba(11, 15, 26, 0.88); border: 1px solid rgba(255, 153, 51, 0.55); border-radius: 4px; font-size: 10px; color: var(--muted);
+}
+#editor > .ed-exposure-label b { display: block; color: #ffb36b; font: 700 13px var(--font-display); }
+#editor > .ed-exposure-label.exposed { border-color: #ff5a4d; }
+#editor > .ed-exposure-label.exposed b { color: #ff6b5e; }
+#editor > .ed-exposure-label.exposed b::before { content: '! '; }
+.ed-exposure-label[hidden] { display: none; }
+/* Environment brush (envTools.ts): the mix, two-up number pairs, the seed row. */
+.ed-env { padding: 2px 0 6px; }
+.ed-env .ed-row-buttons button.on { background: var(--accent, #3b82f6); color: #fff; }
+.ed-env-pair, .ed-env-seed { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; align-items: end; }
+.ed-env-seed button { margin: 6px 0; }
+.ed-env-species { display: grid; gap: 2px; margin: 4px 0 6px; max-height: 260px; overflow-y: auto; }
+.ed-env-sp { display: grid; grid-template-columns: 1fr 48px 88px; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.ed-env-sp.on { color: var(--text, #e8edf5); }
+.ed-env-sp span.blocks::after { content: " \25CF"; color: #ff6a55; font-size: 9px; vertical-align: 2px; }
+.ed-env-sp input, .ed-env-sp select { width: 100%; min-width: 0; }

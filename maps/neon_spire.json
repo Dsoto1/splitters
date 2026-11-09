@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 31,
   "metadata": {
     "id": "neon_spire",
     "name": "Neon Spire",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_blh4e3anqsjhglti",
-      "versionId": "v_jdxaphlgpjz5ha45",
-      "revision": 1,
-      "contentHash": "sha256:7c8f2ef228e1eec290ceeafff8b56031ca27913e1aa2100a0e1986a042e9e6b5",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:08:14.469Z"
+      "versionId": "v_7qf2burye2hxsryw",
+      "revision": 2,
+      "contentHash": "sha256:6929110d09e6984f8d109641f917b3ab749e01521a2dbe5208b618c2c364e809",
+      "schemaVersion": 31,
+      "releasedAt": "2026-11-09T05:08:55.051Z"
     }
   },
   "classicStructure": {
@@ -32,14 +32,6 @@
     "levelHeight": 4,
     "theme": "core.neon_megacity",
     "tiles": [
-      {
-        "id": "tile_001",
-        "tile": "city.crossroads",
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "rotation": 0
-      },
       {
         "id": "tile_002",
         "tile": "city.street",
@@ -1307,6 +1299,62 @@
         "tile": "core.yard",
         "x": 7,
         "y": 7,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ztpjf6vwgd",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1rb0d4x87y",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7bp7y9au06",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_21yqt27glq",
+        "tile": "core.platform",
+        "x": 3,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hbdf99sgqp",
+        "tile": "core.platform",
+        "x": 0,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_tu28mte8sr",
+        "tile": "core.platform",
+        "x": 1,
+        "y": 3,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1hwbwe85nm",
+        "tile": "core.platform",
+        "x": 2,
+        "y": 3,
         "z": 0,
         "rotation": 0
       }
@@ -14839,6 +14887,17 @@
       7
     ]
   },
+  "weaponSet": "scifi",
   "dependencies": [],
-  "weaponSet": "scifi"
+  "setPieces": [
+    {
+      "id": "tile_001",
+      "piece": "setpiece.crossroads_plaza",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    }
+  ]
 }

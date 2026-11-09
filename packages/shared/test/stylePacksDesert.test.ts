@@ -197,8 +197,9 @@ describe('Qasr Medina (the pack\'s demo map)', () => {
     expect(r.issues).toEqual([]);
     const map = r.map;
     expect(map.classicStructure.theme).toBe('core.desert_city');
-    const tiles = new Set(map.classicStructure.tiles.map((x) => x.tile));
-    for (const id of ['desert.house', 'desert.house_ashlar', 'desert.house_shop', 'desert.outside_stair', 'desert.rope_bridge', 'desert.courtyard', 'desert.bazaar', 'desert.market_street', 'desert.dome', 'desert.tower', 'desert.minaret', 'desert.city_gate', 'desert.city_wall']) expect(tiles.has(id), id).toBe(true);
+    // Tiles and set pieces: set pieces part 6 swapped the old desert.city_gate for setpiece.city_gate_wall in MapMaker.
+    const tiles = new Set([...map.classicStructure.tiles.map((x) => x.tile), ...(JSON.parse(read('maps/qasr_medina.json')).setPieces ?? []).map((p: { piece: string }) => p.piece)]);
+    for (const id of ['desert.house', 'desert.house_ashlar', 'desert.house_shop', 'desert.outside_stair', 'desert.rope_bridge', 'desert.courtyard', 'desert.bazaar', 'desert.market_street', 'desert.dome', 'desert.tower', 'desert.minaret', 'setpiece.city_gate_wall', 'desert.city_wall']) expect(tiles.has(id), id).toBe(true);
     const spawns = map.entities.filter((e) => e.kind === 'spawn');
     for (const team of ['embers', 'tide']) expect(spawns.filter((e) => e.faction === team).length, team).toBeGreaterThanOrEqual(8);
     expect(map.entities.filter((e) => e.kind === 'flag')).toHaveLength(2);
