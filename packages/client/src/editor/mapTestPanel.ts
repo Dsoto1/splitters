@@ -226,7 +226,7 @@ export class MapTestPanel {
       li.textContent = t;
       ul.append(li);
     }
-    this.$('ed-mt-cost').textContent = `In the background: ${(wallMs / 1000).toFixed(1)} s for ${matchClock(s.seconds)} of match (${s.msPerSecond} ms of the worker's time a match second). MapMaker's longest frame meanwhile: ${Math.round(this.frames.longest)} ms over ${this.frames.count} frames.`;
+    this.$('ed-mt-cost').textContent = `In the background: ${(wallMs / 1000).toFixed(1)} s for ${matchClock(s.seconds)} of match (${s.msPerSecond} ms of the worker's time a match second).${this.frames.count > 1 ? ` MapMaker's longest frame meanwhile: ${Math.round(this.frames.longest)} ms over ${this.frames.count} frames.` : ''}`;
     for (const input of this.el.querySelectorAll<HTMLInputElement>('#ed-mt-layers input')) {
       const layer = input.dataset.layer as HeatLayer;
       const n = r.layers[layer].reduce((a, c) => a + c.value, 0);

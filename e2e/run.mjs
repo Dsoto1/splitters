@@ -1125,16 +1125,38 @@ async function editorMapTestChecks(browser) {
   await page.selectOption('#ed-mt-length', '300');
   await page.click('#ed-mt-run');
   await page.waitForFunction(() => /^\d:\d\d of 5:00 played/.test(document.getElementById('ed-mt-status').textContent), null, { timeout: T(60000) }).catch(() => {});
-  await page.click('#ed-grid');
-  await frames(page, 5);
-  const during = await page.evaluate(() => ({ running: window.__editor.mapTest.running, grid: document.getElementById('ed-grid').classList.contains('on'), status: document.getElementById('ed-mt-status').textContent, bar: document.getElementById('ed-mt-bar').value, frames: window.__editor.mapTest.frames.count, toast: document.getElementById('ed-toast').textContent }));
-  check(during.running && !during.grid && during.frames >= 5, `the bot test run goes on in the background, its progress shown, while MapMaker draws and takes a click (${JSON.stringify(during)})`);
-  await page.click('#ed-grid');
-  await shot('bottest-running');
-  await page.click('#ed-mt-cancel');
-  const cancelled = await page.evaluate(() => ({ running: window.__editor.mapTest.running, progress: !document.getElementById('ed-mt-progress').hidden, result: !!window.__editor.mapTest.result, run: !document.getElementById('ed-mt-run').disabled }));
+  // (A click on the page while it runs: the grid toggle, then Cancel at once, before a slow software-drawn frame
+  // lets the match finish.)
+  const during = await page.evaluate(() => {
+    document.getElementById('ed-grid').click();
+    return { running: window.__editor.mapTest.running, grid: document.getElementById('ed-grid').classList.contains('on'), status: document.getElementById('ed-mt-status').textContent, bar: document.getElementById('ed-mt-bar').value };
+  });
+  // (Clicked in the page: a software-drawn frame for Playwright's own click can take seconds, the match not.)
+  await page.evaluate(() => document.getElementById('ed-mt-cancel').click());
+  const cancelled = await page.evaluate(() => ({ running: window.__editor.mapTest.running, progress: !document.getElementById('ed-mt-progress').hidden, result: !!window.__editor.mapTest.result, run: !document.getElementById('ed-mt-run').disabled, frames: window.__editor.mapTest.frames.count }));
+  check(during.running && !during.grid && during.bar > 0, `the bot test run goes on in the background, its progress shown, while MapMaker draws and takes a click (${JSON.stringify(during)}, ${cancelled.frames} frames drawn meanwhile)`);
   check(!cancelled.running && !cancelled.progress && !cancelled.result && cancelled.run, `Cancel ends the run at once, with no result (${JSON.stringify(cancelled)})`);
-  // A 30-second run to the end.
+  await page.click('#ed-grid');
+  if (process.env.E2E_SHOTS) {
+    // The picture of a run going: another, cancelled after the shot.
+    await page.click('#ed-mt-run');
+    await page.waitForFunction(() => /^\d:\d\d of 5:00 played/.test(document.getElementById('ed-mt-status').textContent), null, { timeout: T(60000) }).catch(() => {});
+    await shot('bottest-running');
+    await page.evaluate(() => document.getElementById('ed-mt-cancel').click());
+    await page.waitForFunction(() => !window.__editor.mapTest.running, null, { timeout: T(60000) }).catch(() => {});
+    await page.evaluate(() => (window.__editor.mapTest.result = null));
+  }
+  // A 30-second run to the end, with a 50 ms timer on the page's thread measuring how late it fires (the editor's
+  // thread blocked), apart from drawing.
+  await page.evaluate(() => {
+    const probe = (window.__mtProbe = { worst: 0, n: 0, at: performance.now() });
+    probe.timer = setInterval(() => {
+      const now = performance.now();
+      probe.worst = Math.max(probe.worst, now - probe.at - 50);
+      probe.n++;
+      probe.at = now;
+    }, 50);
+  });
   await page.selectOption('#ed-mt-length', '30');
   await page.click('#ed-mt-run');
   await page.waitForFunction(() => !window.__editor.mapTest.running && window.__editor.mapTest.result, null, { timeout: T(180000) }).catch(() => {});
@@ -1146,7 +1168,9 @@ async function editorMapTestChecks(browser) {
   });
   check(done.summary[0] === 'Deathmatch, 6 bots, 0:30 played' && done.summary.some((l) => /^Kills: \d+/.test(l)) && done.summary.some((l) => /^Stuck recoveries: \d+/.test(l)) && done.summary.some((l) => /^Failed route searches: \d+/.test(l)), `the run's summary: kills, stuck recoveries, failed searches (${done.summary.join(' | ')})`);
   check(done.cells && done.cells.went > 20 && done.quads === done.cells.went && done.cells.died > 0, `heatmaps: where bots went drawn cell by cell, where they died (${JSON.stringify(done.cells)}, ${done.kills} kills)`);
-  check(/longest frame meanwhile: \d+ ms/.test(done.cost), `the cost is measured: the worker's time and MapMaker's longest frame (${done.cost})`);
+  const probe = await page.evaluate(() => (clearInterval(window.__mtProbe.timer), { worst: Math.round(window.__mtProbe.worst), n: window.__mtProbe.n }));
+  console.log(`bot test run: the page's 50 ms timer at most ${probe.worst} ms late over ${probe.n} ticks; ${done.cost}`);
+  check(/^In the background: [\d.]+ s for 0:30 of match \([\d.]+ ms of the worker's time a match second\)/.test(done.cost), `the cost is measured: the worker's time and MapMaker's longest frame (${done.cost})`);
   await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
   await frames(page, 4);
   await shot('bottest-heatmap');

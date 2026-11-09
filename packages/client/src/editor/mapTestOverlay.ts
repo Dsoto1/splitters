@@ -52,7 +52,7 @@ export class MapTestOverlay {
       // A square root lifts the quiet cells into sight (a few busy cells would otherwise wash the rest out).
       const s = Math.sqrt(c.share);
       const [r, g, b] = layer === 'went' ? heatColor(s) : LAYER_TINT[layer];
-      const a = layer === 'went' ? 0.35 + 0.4 * s : 0.45 + 0.5 * s;
+      const a = layer === 'went' ? 0.5 + 0.4 * s : 0.55 + 0.45 * s;
       const base = positions.length / 3;
       const y = c.y + lift;
       positions.push(c.x - half, y, c.z - half, c.x + half, y, c.z - half, c.x + half, y, c.z + half, c.x - half, y, c.z + half);
@@ -129,8 +129,22 @@ export class MapTestOverlay {
 
   /** Keep the spawn labels on their spawns as the camera moves (one projection each a frame). */
   frame(): void {
+    if (!this.labels.length) return;
+    // Only over the open view: not over the top bar, the palette, the side panel or the status bar.
+    const o = this.host.overlay.getBoundingClientRect();
+    const edge = (id: string, side: 'left' | 'right' | 'top' | 'bottom', fallback: number) => {
+      const el = document.getElementById(id);
+      if (!el || el.hidden || !el.offsetParent) return fallback;
+      const r = el.getBoundingClientRect();
+      return side === 'left' || side === 'right' ? r[side] - o.left : r[side] - o.top;
+    };
+    const minX = edge('ed-palette', 'right', 0);
+    const maxX = edge('ed-right', 'left', o.width);
+    const minY = edge('ed-top', 'bottom', 0);
+    const maxY = o.height - 36;
     for (const l of this.labels) {
-      const s = this.host.project(l.at);
+      const p = this.host.project(l.at);
+      const s = p && p.x > minX + 30 && p.x < maxX - 30 && p.y > minY + 34 && p.y < maxY ? p : null;
       l.el.hidden = !s;
       if (s) l.el.style.transform = `translate(${Math.round(s.x)}px, ${Math.round(s.y)}px) translate(-50%, -100%)`;
     }
