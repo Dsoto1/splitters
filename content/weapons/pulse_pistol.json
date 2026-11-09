@@ -10,6 +10,7 @@
   "spread": 0.004,
   "fireIntervalTicks": 9,
   "range": 110,
+  "falloff": { "start": 15, "end": 45, "min": 0.45, "curve": "linear" },
   "magazine": 15,
   "reserveMax": 90,
   "pickupAmmo": 30,

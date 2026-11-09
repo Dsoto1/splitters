@@ -100,7 +100,7 @@ describe('the sets (content/weapon-sets.json)', () => {
   it("the plan's table (owner, 2026-11-06), the knife in every set (owner, 2026-11-07), the grenades as approved", () => {
     expect(set('military').spawn).toEqual(['core.knife', 'core.pistol', 'core.rifle']);
     expect(set('military').sniper).toBe('core.marksman');
-    expect([...setWeaponIds(set('military'))!].sort()).toEqual(['core.auto_shotgun', 'core.burst_rifle', 'core.hand_cannon', 'core.knife', 'core.launcher', 'core.lmg', 'core.machine_pistol', 'core.marksman', 'core.pistol', 'core.revolver', 'core.rifle', 'core.rockets', 'core.sawed_off', 'core.shotgun', 'core.smg', 'core.sniper']);
+    expect([...setWeaponIds(set('military'))!].sort()).toEqual(['core.auto_shotgun', 'core.battle_rifle', 'core.burst_rifle', 'core.hand_cannon', 'core.knife', 'core.launcher', 'core.lmg', 'core.machine_pistol', 'core.marksman', 'core.pistol', 'core.revolver', 'core.rifle', 'core.rockets', 'core.sawed_off', 'core.shotgun', 'core.smg', 'core.sniper']);
     expect(set('scifi').spawn).toEqual(['core.knife', 'core.pulse_pistol', 'core.plasma']);
     expect(set('scifi').sniper).toBe('core.railgun');
     expect([...setWeaponIds(set('scifi'))!].sort()).toEqual(['core.arc_caster', 'core.disc_launcher', 'core.guided', 'core.knife', 'core.laser_rifle', 'core.plasma', 'core.pulse_pistol', 'core.railgun', 'core.swarm']);
@@ -186,11 +186,11 @@ describe('pickups roll within the set', () => {
 
   it('by category, else the nearest categories the set has (a sniper pickup in Sci-fi is the railgun)', () => {
     expect(weaponsOf(pool('scifi', { item: 'core.weapon_sniper' }))).toEqual(['core.railgun']);
-    expect(weaponsOf(pool('military', { item: 'core.weapon_rifle' }))).toEqual(['core.rifle', 'core.burst_rifle']);
-    expect(weaponsOf(pool('military', { item: 'core.weapon_plasma' }))).toEqual(['core.rifle', 'core.burst_rifle']);
+    expect(weaponsOf(pool('military', { item: 'core.weapon_rifle' }))).toEqual(['core.rifle', 'core.burst_rifle', 'core.battle_rifle']);
+    expect(weaponsOf(pool('military', { item: 'core.weapon_plasma' }))).toEqual(['core.rifle', 'core.burst_rifle', 'core.battle_rifle']);
     // Military has no melee or specials: a battle axe is a shotgun; a special an explosive, a sidearm or a rifle.
     expect(weaponsOf(pool('military', { item: 'core.weapon_battle_axe' })).sort()).toEqual(['core.auto_shotgun', 'core.sawed_off', 'core.shotgun']);
-    expect(weaponsOf(pool('military', { item: 'core.weapon_singularity' })).sort()).toEqual(['core.burst_rifle', 'core.hand_cannon', 'core.launcher', 'core.revolver', 'core.rifle', 'core.rockets']);
+    expect(weaponsOf(pool('military', { item: 'core.weapon_singularity' })).sort()).toEqual(['core.battle_rifle', 'core.burst_rifle', 'core.hand_cannon', 'core.launcher', 'core.revolver', 'core.rifle', 'core.rockets']);
     // Sci-fi has no SMGs or shotguns.
     expect(weaponsOf(pool('scifi', { item: 'core.weapon_smg' })).sort()).toEqual(['core.laser_rifle', 'core.plasma', 'core.pulse_pistol']);
     expect(weaponsOf(pool('scifi', { item: 'core.weapon_shotgun' })).sort()).toEqual(['core.arc_caster', 'core.laser_rifle', 'core.plasma', 'core.pulse_pistol']);
@@ -321,7 +321,7 @@ describe('in a match', () => {
     expect(host.state().rules?.weaponSet).toBe('military');
     expect(a.weaponSet?.id).toBe('military');
     expect(['core.weapon_sniper', 'core.weapon_marksman']).toContain(item(a, 0).id);
-    expect(['core.weapon_rifle', 'core.weapon_burst_rifle']).toContain(item(a, 1).id);
+    expect(['core.weapon_rifle', 'core.weapon_burst_rifle', 'core.weapon_battle_rifle']).toContain(item(a, 1).id);
     expect(['core.grenades', 'core.mines', 'core.smoke_grenades']).toContain(item(a, 4).id);
     // Back to the map's default.
     expect(host.apply({ c: 'rules', rules: { weaponSet: null } }).notice).toMatch(/the map's \(Sci-fi\)/);

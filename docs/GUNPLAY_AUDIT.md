@@ -5,9 +5,75 @@ and bots run), driven by `pnpm gun-report` (`packages/server/src/tools/gun-repor
 and one standard target (100 health, standard look, no character stats). Machine-readable results:
 [gunplay-audit.json](gunplay-audit.json). Judged against [GUNPLAY_DIRECTION.md](GUNPLAY_DIRECTION.md) (arcade
 responsiveness + ballistic depth + modern polish; responsiveness > realism) and [GUNPLAY_SPEC.md](GUNPLAY_SPEC.md).
-No weapon was changed. The October feel pass that set today's tuning is in git (78c11a0, cc5c673).
+The audit itself changed no weapon (main f1a16d3); **pass 2 (below) tuned candidates 1-6 the same day**, and every
+table here, the chart and the JSON are re-measured after it. The October feel pass is in git (78c11a0, cc5c673).
 
 ![Time to kill by distance for the benchmark seven](gunplay-ttk.svg)
+
+## Pass 2: the tuning of 2026-11-08 (owner-approved candidates 1-6, and the Battle Rifle)
+
+`wip/gunplay-2`. Body TTK, ideal, in seconds (before → **after**); `pnpm gun-report` before and after, the same tool
+and settings. Unchanged guns are as in the audit.
+
+| Gun | 5 m | 10 m | 15 m | 20 m | 25 m | 50 m | 100 m | 150 m | hip 25 m |
+|---|---|---|---|---|---|---|---|---|---|
+| Submachine Gun | .60 → **.40** | .60 → **.40** | .60 → **.40** | .75 → **.55** | .97 → **.63** | 1.17 → **.90** | 1.28 → **1.02** | 1.42 → **1.15** | 3.43 → **.77** |
+| Assault Rifle | .50 | .50 | .50 | .50 | .52 | .65 → **.75** | .80 → **1.00** | .87 → **1.07** | .52 |
+| Shotgun | 0 | 1.50 → **.75** | 6.32 → **2.25** | – → **6.32** | – | – | – | – | – |
+| Sawed-Off | .23 → **0** | 5.13 → **1.63** | – → **3.38** | – | – | – | – | – | – |
+| Auto Shotgun | .60 → **.30** | 3.08 → **.60** | – → **4.07** | – | – | – | – | – | – |
+| Precision Rifle (`core.sniper`) | 1.25 → **.83** | 1.25 → **.83** | 1.25 → **.83** | 1.25 → **.83** | 1.27 → **.85** | 1.28 → **.87** | 1.33 → **.92** | 1.38 → **.97** | – → **3.85** |
+| Marksman Rifle | .47 → **.60** | .47 → **.60** | .47 → **.60** | .47 → **.60** | .48 → **.62** | .50 → **.63** | .57 → **1.00** | .85 → **1.05** | .72 → **1.07** |
+| Pulse Pistol | .60 | .60 | .60 | .60 | .60 → **.75** | .60 → **1.35** | .60 → **1.35** | – | .60 → **.75** |
+| Burst Rifle (rifle family) | .53 | .53 | .53 | .53 | .55 | .85 → **.92** | .97 → **1.30** | 1.03 → **1.37** | .55 |
+| Battle Rifle (new) | **.60** | **.60** | **.60** | **.60** | **.62** | **.83** | **1.10** | **1.15** | **.62** |
+| Pistol, Heavy Revolver (for reference) | .67, .67 | .67, .67 | .68, .68 | .68, .70 | .70, .72 | 1.10, .80 | 1.23, .97 | 1.37, 1.13 | .70, 1.05 |
+
+1. **SMG vs Assault Rifle** (data): SMG damage 11 → 15 and its falloff from 15 m (was 12); the rifle family's falloff
+   now 25-70 m down to 60 % (was 30-80 m, 75 %). The SMG wins to about 17 m (0.40 s against 0.50 at 5-15 m; hip at
+   25 m 0.77 s, was 3.4), the rifle from 20 m. (A wider rifle hip cone, 5 mrad with 1 mrad aimed, was tried and taken
+   out: it changes nothing up close, and it stalled the CTF bot matches `botCtf.test.ts` and `forts.test.ts` measure:
+   no capture on Sunken Kingdom in five minutes.) Fastest body kill of the seven by range: SMG to 15 m, rifle
+   20-50 m, Heavy Revolver 60-75 m, Precision Rifle from 100 m (the rifle 1.00 s at 100 m against 0.92).
+2. **Shotguns at room range** (data): the pump shell is 10 × 12 in a 55 mrad pattern (was 75), the family's falloff
+   8-28 m (was 6-22): one shell kills a body to 9 m (was 5), two to 12 m. The Sawed-Off 14 × 10 in 85 mrad (was 8 in
+   150): one barrel kills to 7 m, both barrels to 9 m (0.23 s); the Auto Shotgun 8 × 8 in 65 mrad (was 7 × 7 in 90):
+   two shells to 8 m (0.30 s), three at 10 m (was eight). Past 15 m all three stay hopeless.
+3. **Damage numbers** (client option, off by default; Options → HUD): see "Hit feedback" below.
+4. **Precision Rifle body case, Pulse Pistol, Marksman** (data): the Precision Rifle hits 90 (was 80) and its bolt
+   cycles in 50 ticks (was 75): two body shots in 0.83-0.97 s at every range (was 1.25-1.38), the head still one. The
+   Pulse Pistol's beam now falls off (15-45 m to 45 %): it out-paces the Pistol to 20 m (0.60 against 0.67-0.68 s) and
+   loses from 35 m (1.35 s at 50-100 m against 1.10-1.23). The Marksman 34 damage (was 38) at 200 rpm (was 257): three
+   rounds to 60 m (0.60-0.67 s), four past it (1.00 s at 100 m): the Marksman is the mid-range body killer, the
+   Precision Rifle the long one (and the one-shot head).
+5. **Reloads** (sim): a quick-melee press breaks a reload where it is, struck or not (the punch already did on the
+   host; client prediction now does too, so the HUD no longer shows a reload the host has stopped); **auto-reload**
+   (Options → Controls, **on by default**: GUNPLAY_DIRECTION.md "minimal lockout", "fewer moments where input feels
+   ignored"): an emptied magazine starts its reload once the gun is ready, without a trigger pull, as an input bit
+   (`BUTTON_AUTO_RELOAD`) the host and prediction both read (`autoReloadDue`, gunplay.ts), not while sprinting forward or
+   holding quick melee. The Spin Gun's draw 1233 → 933 ms (raise 48 → 30 ticks; the spin-up is unchanged).
+6. **Recoil readout** (client option, off by default; Options → HUD, "Spray pattern"): a small HUD panel plots where
+   your last burst went, round by round (milliradians from the first round, a dashed ring the width of a body at 25 m),
+   with the group's spread and how long the aim took to settle. It works at any wall, the Training Range's recoil wall
+   included; a board on the map that draws the pattern would need a new MapMaker piece (editor code, the MapMaker
+   lane's claim): not done, see HANDOFF.
+
+**Hit feedback.** With damage numbers on, each of your hits floats its damage up from the target for 0.9 s: white on
+a body, gold for a head hit, cyan where armour took part, bolder for the kill, and grey on a board, crate or barrel
+(the damage that round would do to a body there, falloff included: the Training Range's boards now read out falloff).
+The host sums a shotgun shell's pellets into one number. The host sends them only to the shooter, in their private
+state (`dd`: tick, amount, flags, position; a few snapshots' worth, the client shows each tick once). They fade, never
+flash (Reduce flashing).
+
+**The Battle Rifle** (`core.battle_rifle`, spec gap G2): the `battle_rifle` family (880 m/s, 1800 energy) with 25
+damage at 300 rpm, 20 rounds, its own falloff (40-100 m to 75 %), a 1 mrad first shot from the hip, a hard climbing
+kick (26-34 mrad a round). Four rounds kill to 40 m (0.60 s), two to the head anywhere (0.20-0.50 s); five at 50 m,
+six past 85 m. On paper never the quickest body kill (the rifle and the SMG are, closer; the Precision Rifle further),
+its case is the true first shot (hip at 25 m equals its ideal, 0.62 s), two head hits anywhere and penetration;
+through armour it is slower than the rifle (1.40 s at 10 m against 1.10). Model: the Meshy Community Frontier Rifle (already built, unused);
+slot 3, rifle ammo, the Military set and the Training Range's front rack (x -2, z 20). **Lever action: not made**: the
+Frontier Rifle is a scoped modern rifle, not a lever gun, and no lever-action model is in the repo or the Drive (see
+HANDOFF for the proposal).
 
 **Reading the numbers.** TTK runs from the first round leaving the barrel to the kill: flight time, reloads and
 burns count. *Ideal* puts every round where it is aimed (the gunplay cone off; a shotgun keeps its pattern), with
@@ -21,20 +87,20 @@ seconds unless marked.
 | | Service Pistol | Heavy Revolver | SMG | Assault Rifle | Shotgun | Precision Rifle | Rocket Launcher |
 |---|---|---|---|---|---|---|---|
 | Weapon | `core.pistol` | `core.revolver` | `core.smg` | `core.rifle` | `core.shotgun` | `core.sniper` | `core.rockets` |
-| Body STK 10 / 25 / 50 / 100 | 5 / 5 / 7 / 7 | 2 / 2 / 2 / 2 | 10 / 15 / 17 / 17 | 6 / 6 / 7 / 8 | 3 / – / – / – | 2 / 2 / 2 / 2 | 1 / 1 / 1 / 1 |
-| Body TTK ideal 10 / 25 / 50 / 100 | .67 / .70 / 1.10 / 1.23 | .67 / .72 / .80 / .97 | .60 / .97 / 1.17 / 1.28 | .50 / .52 / .65 / .80 | 1.50 / – / – / – | 1.25 / 1.27 / 1.28 / 1.33 | .28 / .78 / 1.62 / 3.28 |
-| Head TTK 10 / 25 / 50 / 100 | .33 / .37 / .60 / .73 | 0 / .05 / .13 / .30 | .40 / .63 / .83 / .95 | .20 / .22 / .35 / .40 | 2.25 / – | 0 / .02 / .03 / .08 | as body |
-| Armoured body 10 / 25 / 50 / 100 | 1.33 / 1.53 / 3.20 / 3.33 | 1.33 / 1.38 / 1.47 / 2.30 | 1.20 / 1.90 / 3.50 / 3.62 | 1.10 / 1.12 / 1.25 / 1.50 | 3.00 / – | 2.50 / 2.52 / 2.53 / 2.58 | 1.78 / 2.28 / 3.12 / 4.78 |
-| Body TTK hip / ADS at 25 m | .70 / .70 | .72 / .72 | **3.50** / 1.93 | .52 / .52 | – / – | 3.14 / 1.27 | .78 / .78 |
-| Body TTK hip / ADS at 50 m | 1.27 / 1.10 | 7.23 / .80 | **6.80** / 3.87 | .65 / .65 | – | – / 1.28 | 1.62 |
+| Body STK 10 / 25 / 50 / 100 | 5 / 5 / 7 / 7 | 2 / 2 / 2 / 2 | 7 / 10 / 13 / 13 | 6 / 6 / 8 / 10 | 2 / – / – / – (1 to 9 m) | 2 / 2 / 2 / 2 | 1 / 1 / 1 / 1 |
+| Body TTK ideal 10 / 25 / 50 / 100 | .67 / .70 / 1.10 / 1.23 | .67 / .72 / .80 / .97 | .40 / .63 / .90 / 1.02 | .50 / .52 / .75 / 1.00 | .75 / – / – / – | .83 / .85 / .87 / .92 | .28 / .78 / 1.62 / 3.28 |
+| Head TTK 10 / 25 / 50 / 100 | .33 / .37 / .60 / .73 | 0 / .05 / .13 / .30 | .27 / .43 / .63 / .75 | .20 / .22 / .35 / .50 | .75 / – | 0 / .02 / .03 / .08 | as body |
+| Armoured body 10 / 25 / 50 / 100 | 1.33 / 1.53 / 3.20 / 3.33 | 1.33 / 1.38 / 1.47 / 2.30 | .87 / 1.30 / 1.70 / 1.82 | 1.10 / 1.12 / 1.45 / 1.90 | 1.50 / – | 1.67 / 1.68 / 1.70 / 1.75 | 1.78 / 2.28 / 3.12 / 4.78 |
+| Body TTK hip / ADS at 25 m | .70 / .70 | .72 / .72 | .77 / .67 | .52 / .52 | – / – | 3.85 / .85 | .78 / .78 |
+| Body TTK hip / ADS at 50 m | 1.27 / 1.10 | 7.23 / .80 | 3.67 / 3.57 | .75 / .75 | – | – / .87 | 1.62 |
 | First shot from idle | 0 ms | 0 | 0 | 0 | 0 | 0 | 0 |
 | Draw (switch in to first shot) | 133 ms | 250 | 183 | 317 | 250 | 483 | 517 |
 | Reload tactical / empty | .85 / 1.12 | 1.08 / 1.98 (rounds) | .92 / 1.22 | 1.42 / 1.82 | 1.35 / 2.25 (shells; 1st .55) | 1.52 / 1.85 | – / .92 |
 | Reload cancel: fire / swap to Pistol | 0 / – | 0 / 133 ms | 0 / 133 | 0 / 133 | 0 / 133 | 0 / 133 | – / 133 |
 | One round's kick, settles in | 12 mrad, 100 ms | 121, 767 ms | 3, 67 ms | 10, 150 ms | 60, 417 ms | 70, 467 ms | – |
 | 10-round spray offset, settles in | – | – | 61 mrad, 150 ms | 87 mrad, 350 ms | – | – | – |
-| Cone hip / ADS / running (mrad) | 2 / 1.2 / 8 | 0.5 / 0.3 / 12.5 | 6 / 4.8 / 10 (round 10: 32) | 1.5 / 0.6 / 9.5 (round 10: 8.7) | 75 pattern | 30 / 0 / 60 | 0 |
-| Falloff (damage at 25 / 50 / 100 m) | 91 / 65 / 65 % | 100 / 76 / 70 % | 64 / 55 / 55 % | 100 / 91 / 75 % | 25 % past 22 m | 100 % | none |
+| Cone hip / ADS / running (mrad) | 2 / 1.2 / 8 | 0.5 / 0.3 / 12.5 | 6 / 4.8 / 10 (round 10: 32) | 1.5 / 0.6 / 9.5 (round 10: 8.7) | 55 pattern | 30 / 0 / 60 | 0 |
+| Falloff (damage at 25 / 50 / 100 m) | 91 / 65 / 65 % | 100 / 76 / 70 % | 66 / 55 / 55 % | 100 / 77 / 60 % | 25 % past 28 m | 100 % | none |
 
 ## What's strong
 
@@ -56,6 +122,9 @@ seconds unless marked.
 
 ## What's weak against the direction
 
+As the audit found them (items 1-4 are tuned in pass 2, above; item 5, the Machine Pistol, is not).
+
+
 1. **The Assault Rifle out-classes the SMG at the SMG's own range.** Ideal body TTK 0.50 vs 0.60 s at 10 m, and the
    rifle's hip cone is a quarter of the SMG's (1.5 vs 6 mrad), so hip at 25 m is 0.52 vs 3.50 s. The SMG's only edges
    are draw (183 vs 317 ms) and reload (0.92 vs 1.42 s). The direction calls the SMG a hip-fire specialist that "should
@@ -76,29 +145,29 @@ seconds unless marked.
 
 | Gun | What the sim says | Kind |
 |---|---|---|
-| Submachine Gun | slower than the Assault Rifle at every distance; hip 3.5 s at 25 m | dominated by the rifle |
+| Submachine Gun | slower than the Assault Rifle at every distance; hip 3.5 s at 25 m | dominated by the rifle. **Pass 2:** 0.40 s to 15 m (rifle 0.50), hip 0.77 s at 25 m |
 | Machine Pistol | 29 rounds to kill at 25 m, 2.4 s (falloff to 50 % by 25 m) | dominated by the SMG |
-| Sawed-Off, Auto Shotgun | 8 shells at 10 m (5.1 s, 2.1 s); 2-3 at 5 m | TTK too slow for the class past 6 m |
-| Pistol vs Pulse Pistol | Pulse: 5 shots at every range (beam: no travel, no drop, no falloff), 0.60 s at 100 m; Pistol 1.23 s. Both in the Standard set | Pistol dominated at range |
-| Marksman vs Precision Rifle | Marksman 3 shots in 0.47-0.57 s at 10-100 m, ADS 0.3 mrad; the Precision Rifle's body kill is 1.25-1.33 s | Precision dominated for body shots |
+| Sawed-Off, Auto Shotgun | 8 shells at 10 m (5.1 s, 2.1 s); 2-3 at 5 m | TTK too slow for the class past 6 m. **Pass 2:** both barrels kill to 9 m, the Auto Shotgun 3 shells at 10 m (0.60 s) |
+| Pistol vs Pulse Pistol | Pulse: 5 shots at every range (beam: no travel, no drop, no falloff), 0.60 s at 100 m; Pistol 1.23 s. Both in the Standard set | Pistol dominated at range. **Pass 2:** the beam falls off (15-45 m to 45 %): 1.35 s from 50 m |
+| Marksman vs Precision Rifle | Marksman 3 shots in 0.47-0.57 s at 10-100 m, ADS 0.3 mrad; the Precision Rifle's body kill is 1.25-1.33 s | Precision dominated for body shots. **Pass 2:** Marksman 0.60-0.67 s to 60 m, 1.00 s at 100 m; Precision 0.83-0.97 s everywhere |
 | Railgun, Gilded Pistol | one shot kills at any range (Railgun 100 damage after a 383 ms charge; Gilded 999) | power weapons: fine where placed as such (§32) |
-| Spin Gun | 1.23 s from switch to first round, 3.5 s reload, then the fastest sustained gun (0.55 s at 10 m, 0.87 at 100 m) | the slowest handling of any gun; watch, not a fault |
+| Spin Gun | 1.23 s (pass 2: 0.93 s) from switch to first round, 3.5 s reload, then the fastest sustained gun (0.55 s at 10 m, 0.87 at 100 m) | the slowest handling of any gun; watch, not a fault |
 | Flamethrower | reach ~9 m (17 m/s for 0.55 s): no kill at 10 m | short by design; botRange 0-8 matches |
 | Plasma, Nailgun, Goo, launchers | no head multiplier (projectiles); Plasma 5 hits everywhere but 2.25 s at 100 m from 55 m/s travel | by design |
 
 Armour roughly doubles every TTK (it takes two thirds of each hit until 150 damage are spent: 200 effective health);
 the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 
-## Candidate improvements (ranked; none implemented)
+## Candidate improvements (ranked; 1-6 done in pass 2)
 
 | # | Area | What | Expected effect | Size |
 |---|---|---|---|---|
-| 1 | Feel: identity | SMG vs Assault Rifle: give the SMG the close-range crown (e.g. damage 11 → 13, or rifle falloff starting closer and its hip cone wider than the SMG's) | SMG wins inside ~12 m, rifle owns mid range; the two stop overlapping | small (data + benchmarks.test) |
-| 2 | Feel: identity | Shotguns: one-shell kill to ~7 m and two to ~12 m (tighter pattern or slower falloff); Sawed-Off a true two-barrel ambush, Auto Shotgun a clear middle | closing distance pays off in rooms | small (data) |
-| 3 | Hit feedback | Optional damage numbers (spec §21 "only if enabled", §44 range readout): a HUD setting, on by default in the Training Range | players and the owner read TTK, falloff and armour by eye | medium (client HUD + option) |
-| 4 | Feel: recoil | Precision Rifle body case (e.g. 2-shot kill with a faster bolt, or 100 body at range) and the Pulse/Marksman dominance checked per weapon set | each long gun answers "why pick me" | small (data) |
-| 5 | Feel: reload / switch | Melee doesn't break a reload (spec §16 lists it); auto-reload when a magazine runs dry without a trigger pull; Spin Gun draw (1.23 s) | fewer moments where input feels ignored | small (sim + prediction test) |
-| 6 | Feel: recoil | Recoil wall readout: draw each spray's pattern on the range's recoil wall (impact decals already there) and print the settle time | recoil patterns become learnable by sight | medium |
+| 1 ✅ | Feel: identity | SMG vs Assault Rifle: give the SMG the close-range crown (e.g. damage 11 → 13, or rifle falloff starting closer and its hip cone wider than the SMG's) | SMG wins inside ~12 m, rifle owns mid range; the two stop overlapping | small (data + benchmarks.test) |
+| 2 ✅ | Feel: identity | Shotguns: one-shell kill to ~7 m and two to ~12 m (tighter pattern or slower falloff); Sawed-Off a true two-barrel ambush, Auto Shotgun a clear middle | closing distance pays off in rooms | small (data) |
+| 3 ✅ (off by default) | Hit feedback | Optional damage numbers (spec §21 "only if enabled", §44 range readout): a HUD setting, on by default in the Training Range | players and the owner read TTK, falloff and armour by eye | medium (client HUD + option) |
+| 4 ✅ | Feel: recoil | Precision Rifle body case (e.g. 2-shot kill with a faster bolt, or 100 body at range) and the Pulse/Marksman dominance checked per weapon set | each long gun answers "why pick me" | small (data) |
+| 5 ✅ | Feel: reload / switch | Melee doesn't break a reload (spec §16 lists it; it did on the host, not in prediction); auto-reload when a magazine runs dry without a trigger pull; Spin Gun draw (1.23 s) | fewer moments where input feels ignored | small (sim + prediction test) |
+| 6 🟡 (a HUD panel, not a board) | Feel: recoil | Recoil wall readout: draw each spray's pattern on the range's recoil wall (impact decals already there) and print the settle time | recoil patterns become learnable by sight | medium |
 | 7 | Network (G3) | An 8-client harness: latency 50-150 ms, jitter, 1-5 % loss, checking prediction vs host, hit registration and kill validation (today: one client at 100 ms, no loss, prediction.test.ts:13) | proves "lead for travel, never for latency" under real conditions | medium-large |
 | 8 | Bots (G4) | Weapon choice and ranges from measured TTK (`gun-report` JSON) instead of hand-set `botRange` (e.g. Machine Pistol 0-14 m while it needs 16 rounds at 10 m); a bot-report line of hits/shots by weapon | bots pick and fight with each gun where it is good | medium |
 
@@ -116,7 +185,7 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 | G0 leading | ✅ | `ballistics.test.ts:172` (runner hit only with travel-time lead) |
 | G0 recoil and recovery | ✅ | `gunplay.ts:268` `recoilShot`, `:284` counter, `:309` `recoilIdle`; `shared/test/recoil.test.ts:87,110,141` |
 | G0 reload interruption | ✅ | fire `match.ts:2905-2910`, sprint/use `:2900`, swap `:3003`; stages `gunplay.ts:444`; `shared/test/reload.test.ts:127,142,170,215` |
-| G0 hit feedback | 🟡 | body / head / armour markers `client/src/game/hud.ts:805`; no damage numbers, no shield or weak-point marker |
+| G0 hit feedback | 🟡 | body / head / armour markers `client/src/game/hud.ts:805`; damage numbers as an option (pass 2: `client/src/game/combatReadouts.ts`, privateState `dd`); no shield or weak-point marker |
 | G0 kill confirmation | ✅ | X marker growing per kill in a row `hud.ts:819`; climbing crunch `client/src/game/sessionAudio.ts:357` |
 | **G1** glass | ✅ | breakable panes `shared/src/sim/scenario.ts:497` `shootGlass`; `shared/test/glass.test.ts` |
 | G1 wood, concrete, metal (+ 13 classes) | ✅ | `gunplay.ts:584` `MATERIAL_BALLISTICS`; surface types `content/surface-types.json` |
@@ -128,7 +197,8 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 | G2 LMG | ✅ | `content/weapons/lmg.json` (Spin Gun: spin-up 28 ticks, 120 rounds, 3.5 s reload) |
 | G2 rocket launcher | ✅ | `content/weapons/rockets.json` (30 m/s, splash, self-damage) |
 | G2 burst rifle | ✅ | `match.ts:2937` burst trigger; `content/weapons/burst_rifle.json` |
-| G2 lever action | ❌ | no weapon, no family (the `battle_rifle` family, `families.json:158`, has no weapon either) |
+| G2 lever action | ❌ | no weapon, no family, no model (pass 2: the Frontier Rifle is not a lever gun; HANDOFF has the proposal) |
+| G2 battle rifle | ✅ | pass 2: `content/weapons/battle_rifle.json` (the `battle_rifle` family's first weapon) |
 | G2 handling extras | ❌ | no sprint-exit time, per-weapon movement speed or scope holdover marks (spec §35, §5) |
 | **G3** server authority, kill validation | ✅ | hits and damage only on the host: `match.ts:5305` `damage`, `kill` after it |
 | G3 latency simulation | 🟡 | one client at ~100 ms, prediction exact: `client/test/prediction.test.ts:13`; rewind bounded at 18 ticks `match.ts:112` |
@@ -154,21 +224,22 @@ TTK, first shot, draw, reload (tactical / empty, or heat cool-down), one round's
 | Pistol | pistol | semi 360 · 12 | 5/5/7/7 | .67 / .70 / 1.10 / 1.23 | .33 / .37 / .60 / .73 | 1.33 / 1.53 / 3.20 / 3.33 | .67 / .70 / 1.27 / 3.75 | .67 / .70 / 1.10 / 2.62 | 0 | 133 | 850 / 1117 | 100 | 2 / 1.2 / 8 |
 | Heavy Revolver | pistol | semi 90 · 5 | 2/2/2/2 | .67 / .72 / .80 / .97 | 0 / .05 / .13 / .30 | 1.33 / 1.38 / 1.47 / 2.30 | .67 / .72 / 7.23 / – | .67 / .72 / .80 / – | 0 | 250 | 1083 / 1983 | 767 | 0.5 / 0.3 / 12.5 |
 | Hand Cannon | pistol | semi 120 · 6 | 2/2/3/3 | .50 / .55 / 1.13 / 1.30 | 0 / .05 / .63 / .80 | 1.50 / 1.55 / 2.13 / 2.30 | .50 / .55 / 6.05 / – | .50 / .55 / 2.97 / 4.97 | 0 | 350 | 1683 / 1683 | 767 | 0.5 / 0.3 / 12.5 |
-| Pulse Pistol | pistol | semi 400 · 15 | 5/5/5/5 | .60 / .60 / .60 / .60 | .30 / .30 / .30 / .30 | 1.20 / 1.20 / 1.20 / 1.20 | .60 / .60 / .60 / .53 | .60 / .60 / .60 / .60 | 0 | 183 | 933 / 933 | 150 | 4 / 2.2 / 18 |
-| Submachine Gun | smg | auto 900 · 32 | 10/15/17/17 | .60 / .97 / 1.17 / 1.28 | .40 / .63 / .83 / .95 | 1.20 / 1.90 / 3.50 / 3.62 | .60 / 3.50 / 6.80 / – | .60 / 1.93 / 3.87 / 7.02 | 0 | 183 | 917 / 1217 | 67 | 6 / 4.8 / 10 |
+| Pulse Pistol | pistol | semi 400 · 15 | 5/6/10/10 | .60 / .75 / 1.35 / 1.35 | .30 / .30 / .60 / .60 | 1.20 / 1.50 / 3.62 / 3.62 | .60 / .75 / 1.35 / 1.27 | .60 / .75 / 1.35 / 1.35 | 0 | 183 | 933 / 933 | 150 | 4 / 2.2 / 18 |
+| Submachine Gun | smg | auto 900 · 32 | 7/10/13/13 | .40 / .63 / .90 / 1.02 | .27 / .43 / .63 / .75 | .87 / 1.30 / 1.70 / 1.82 | .40 / .77 / 3.67 / 6.98 | .40 / .67 / 3.57 / 3.85 | 0 | 183 | 917 / 1217 | 67 | 6 / 4.8 / 10 |
 | Machine Pistol | smg | auto 1200 · 24 | 16/29/29/– | .75 / 2.43 / 2.50 / – | .50 / .98 / 1.05 / – | 2.50 / 4.88 / 4.95 / – | .93 / – / – / – | .88 / – / – / – | 0 | 183 | 1017 / 1017 | 67 | 12 / 10.2 / 18 |
-| Spin Gun | smg | auto 1200 · 120 | 12/12/13/16 | .55 / .57 / .65 / .87 | .35 / .37 / .45 / .62 | 1.10 / 1.12 / 1.25 / 1.67 | .55 / .57 / 2.15 / – | .55 / .57 / .65 / – | 450 | 1233 | 3517 / 3517 | 117 | 12 / 8.4 / 42 |
+| Spin Gun | smg | auto 1200 · 120 | 12/12/13/16 | .55 / .57 / .65 / .87 | .35 / .37 / .45 / .62 | 1.10 / 1.12 / 1.25 / 1.67 | .55 / .57 / 2.38 / – | .55 / .57 / .68 / – | 450 | 933 | 3517 / 3517 | 117 | 12 / 8.4 / 42 |
 | Nailgun | smg | auto 720 · 50 | 10/10/10/10 | .85 / 1.05 / 1.38 / 2.05 | .87 / 1.07 / 1.40 / 2.07 | 1.60 / 1.80 / 2.13 / 2.80 | .85 / 1.07 / 1.94 / 5.34 | .85 / 1.05 / 1.40 / 3.11 | 0 | 283 | 1350 / 1350 | – | 20 / 11 / 34 |
-| Assault Rifle | rifle | auto 600 · 30 | 6/6/7/8 | .50 / .52 / .65 / .80 | .20 / .22 / .35 / .40 | 1.10 / 1.12 / 1.25 / 1.50 | .50 / .52 / .65 / .80 | .50 / .52 / .65 / .80 | 0 | 317 | 1417 / 1817 | 150 | 1.5 / 0.6 / 9.5 |
-| Burst Rifle | rifle | burst 150 · 24 | 6/6/7/9 | .53 / .55 / .85 / .97 | .13 / .15 / .45 / .50 | 1.33 / 1.35 / 1.65 / 2.10 | .53 / .55 / .85 / 1.17 | .53 / .55 / .85 / .97 | 0 | 317 | 1433 / 1433 | 350 | 1.5 / 0.6 / 9.5 |
+| Assault Rifle | rifle | auto 600 · 30 | 6/6/8/10 | .50 / .52 / .75 / 1.00 | .20 / .22 / .35 / .50 | 1.10 / 1.12 / 1.45 / 1.90 | .50 / .52 / .75 / 1.30 | .50 / .52 / .75 / 1.00 | 0 | 317 | 1417 / 1817 | 150 | 1.5 / 0.6 / 9.5 |
+| Burst Rifle | rifle | burst 150 · 24 | 6/6/8/11 | .53 / .55 / .92 / 1.30 | .13 / .15 / .45 / .57 | 1.33 / 1.35 / 2.05 / 2.57 | .53 / .55 / .92 / 1.77 | .53 / .55 / .92 / 1.30 | 0 | 317 | 1433 / 1433 | 350 | 1.5 / 0.6 / 9.5 |
+| Battle Rifle | rifle | auto 300 · 20 | 4/4/5/6 | .60 / .62 / .83 / 1.10 | .20 / .22 / .43 / .50 | 1.40 / 1.42 / 1.63 / 2.10 | .60 / .62 / 1.03 / 7.30 | .60 / .62 / .83 / 1.10 | 0 | 350 | 1683 / 2117 | 267 | 1 / 0.3 / 21 |
 | Plasma Rifle | rifle | auto 514 · 40 | 5/5/5/5 | .62 / .88 / 1.35 / 2.25 | as body | 1.20 / 1.47 / 1.93 / 2.83 | .62 / .88 / 1.35 / 2.67 | .62 / .88 / 1.35 / 2.27 | 0 | 317 | 1517 / 1517 | – | 10 / 5.5 / 24 |
 | Laser Rifle | rifle | auto 1800 · heat | 25/25/25/– | .80 / .80 / .80 / – | .40 / .40 / .40 / – | 1.67 / 1.67 / 1.67 / – | .80 / .80 / .80 / – | .80 / .80 / .80 / – | 0 | 317 | cool 1667 | – | 0 / 0 / 14 |
-| Marksman Rifle | sniper | semi 257 · 10 | 3/3/3/3 | .47 / .48 / .50 / .57 | .23 / .25 / .27 / .33 | 1.17 / 1.18 / 1.20 / 1.27 | .47 / .48 / 1.08 / – | .47 / .48 / .50 / .57 | 0 | 350 | 1517 / 1517 | 283 | 13 / 0.3 / 38 |
-| Sniper Rifle | sniper | bolt 48 · 5 | 2/2/2/2 | 1.25 / 1.27 / 1.28 / 1.33 | 0 / .02 / .03 / .08 | 2.50 / 2.52 / 2.53 / 2.58 | 1.25 / 3.14 / – / – | 1.25 / 1.27 / 1.28 / 1.33 | 0 | 483 | 1517 / 1850 | 467 | 30 / 0 / 60 |
+| Marksman Rifle | sniper | semi 200 · 10 | 3/3/3/4 | .60 / .62 / .63 / 1.00 | .30 / .32 / .33 / .40 | 1.50 / 1.52 / 1.53 / 1.90 | .60 / 1.07 / 4.68 / – | .60 / .62 / .63 / 1.00 | 0 | 350 | 1517 / 1517 | 283 | 13 / 0.3 / 38 |
+| Sniper Rifle | sniper | bolt 72 · 5 | 2/2/2/2 | .83 / .85 / .87 / .92 | 0 / .02 / .03 / .08 | 1.67 / 1.68 / 1.70 / 1.75 | .83 / 3.85 / – / – | .83 / .85 / .87 / .92 | 0 | 483 | 1517 / 1850 | 467 | 30 / 0 / 60 |
 | Railgun | sniper | charge 90 · 4 | 1/1/1/1 | 0 / 0 / 0 / 0 | 0 | .67 / .67 / .67 / .67 | 0 / 0 / .33 / – | 0 / 0 / 0 / 0 | 383 | 833 | 1850 / 1850 | 333 | 12 / 0 / 26 |
-| Shotgun | shotgun | pump 80 · 6 | 3/–/–/– | 1.50 / – | 2.25 / – | 3.00 / – | 1.50 / – | 1.50 / – | 0 | 250 | 1350 / 2250 | 417 | 75 pattern |
-| Sawed-Off | shotgun | semi 257 · 2 | 8/–/–/– | 5.13 / – | 5.83 / – | – | 4.90 / – | 4.90 / – | 0 | 217 | 1183 / 1183 | 417 | 150 pattern |
-| Auto Shotgun | shotgun | auto 200 · 8 | 8/–/–/– | 2.10 / – | 4.67 / – | 6.02 / – | 2.10 / – | 2.10 / – | 0 | 350 | 1683 / 1683 | 417 | 90 pattern |
+| Shotgun | shotgun | pump 80 · 6 | 2/–/–/– | .75 / – | .75 / – | 1.50 / – | .75 / – | .75 / – | 0 | 250 | 1350 / 2250 | 417 | 55 pattern |
+| Sawed-Off | shotgun | semi 257 · 2 | 3/–/–/– | 1.63 / – | 1.63 / – | 3.27 / – | .23 / – | .23 / – | 0 | 217 | 1183 / 1183 | 417 | 85 pattern |
+| Auto Shotgun | shotgun | auto 200 · 8 | 3/–/–/– | .60 / – | 1.20 / – | 1.50 / – | .60 / – | .60 / – | 0 | 350 | 1683 / 1683 | 417 | 65 pattern |
 | Flak Cannon | shotgun | auto 72 · 4 | 2/6/–/– | 1.02 / 6.32 / – | 1.84 / 7.08 / – | 2.26 / – | 1.02 / 5.87 / – | 1.00 / 2.17 / 7.61 / – | 0 | 383 | 1600 / 1600 | – | 80 / 44 / 85 |
 | Grenade Launcher | explosive | auto 65 · 4 | 2/2/2/– | 1.25 / 1.83 / 3.08 / – | as body | 2.17 / 2.75 / 4.00 / – | as ideal | as ideal | 0 | 617 | 1683 / 1683 | – | 0 |
 | Rocket Launcher | explosive | auto 100 · 1 | 1/1/1/1 | .28 / .78 / 1.62 / 3.28 | as body | 1.78 / 2.28 / 3.12 / 4.78 | as ideal | as ideal | 0 | 517 | – / 917 | – | 0 |
