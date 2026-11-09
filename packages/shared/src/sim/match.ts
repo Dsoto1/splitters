@@ -1586,6 +1586,13 @@ export class Match {
     return c;
   }
 
+  /** Free-for-all: the living people (and kept places) of `c`'s party, besides `c` (none: an empty set). */
+  private partyNear(c: Combatant): Set<Combatant> {
+    const out = new Set<Combatant>();
+    for (const o of this.combatants()) if (o !== c && o.alive && o.party === c.party && (o.kind === 'human' || o.away)) out.add(o);
+    return out;
+  }
+
   /** Team modes: the team most of `party`'s people are on now (ties: the first team), or undefined (none in the match, or no teams). */
   partyTeam(party: string): string | undefined {
     if (!this.teams) return undefined;
@@ -5870,10 +5877,12 @@ export class Match {
     const relook = this.relookOnSpawn(c);
     const enemies: Vec3[] = [];
     const occupants: Vec3[] = [];
+    // Free-for-all parties (net/party.ts): the members aren't a danger the spawn avoids, and it leans their way.
+    const party = !this.teams && c.party ? this.partyNear(c) : null;
     for (const o of this.actors()) {
       if (!o.alive || o === c) continue;
       occupants.push(o.move.pos);
-      if (this.hostile(c, o)) enemies.push(o.move.pos);
+      if (this.hostile(c, o) && !party?.has(o)) enemies.push(o.move.pos);
     }
     // A mode may say where (Breakthrough: the side's spawn group for the sector in play).
     const forMode = this.mode?.spawnSpots?.(c) ?? null;
@@ -5890,7 +5899,8 @@ export class Match {
     const side = rotating && c.faction ? this.spawnSides.of(c.faction) : null;
     // Made-up spawn points on a side: the ones nearer the side's base are preferred (they are on its own third anyway).
     const home = own.length && own.some((sp) => sp.generated) && c.faction ? this.sideHome(c.faction) : null;
-    const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), home, side, deaths: this.recentDeaths, sees: (a, b) => this.sees(a, b), rng: this.rng });
+    const partyAt = party?.size ? [...party].filter((o) => (o.hurtAt ?? -Infinity) < calm).map((o) => o.move.pos) : [];
+    const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), ...(partyAt.length ? { party: partyAt } : {}), home, side, deaths: this.recentDeaths, sees: (a, b) => this.sees(a, b), rng: this.rng });
     const best = candidates[pick];
     // Team modes: usually beside a teammate who's out of the fight and out of enemy sight, else the safest spawn point.
     // Fireteams: a squadmate beside its leader when that's safe, else at the team's spawn.
