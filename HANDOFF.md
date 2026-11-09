@@ -345,6 +345,8 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 
+- Claimed: content tile ids `core.tunnel_vault_walled`, `core.tunnel_vault_bend_walled`, `core.tunnel_vault_t_walled`, `core.tunnel_vault_cross_walled` (the Side walls tile option; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-09.
+
 **Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
 for the owner's review, not landed).**
 - Made in the real MapMaker only (a scratch Playwright driver: Import, plan-view drag-box Delete, Create terrain and
@@ -850,6 +852,23 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   main 3 / 5 / 5 / 4, this branch 9 / 6 / 2 / 2 (17 against 19). Revert with a fix for the lift wait.
 - **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
   screenshots; the skipped maps above; card pictures.
+
+### Sandfall Colosseum follow-ups (`wip/mapmaker-sandfall`, agent, 2026-11-09; the owner's answers of 2026-11-09; CI on `check/mapmaker-sandfall`)
+- **Collision boxes 31,724 → 22,240:** the arcades under the tiers (all sides, gate lines kept) and the east and west
+  facades deleted in MapMaker, limestone "Stand fill" Sky Blocks in their place. The look from the sand is the same.
+  The rest is the tiers, the north/south facades, towers, village and hypogeum: going on to ~4,000 needs the owner
+  (report: coarser Grand-arch collision in the game, or cutting what you see).
+- **Portcullis gates 1-4** on winch and chain buttons (rules: Toggle door + buzzer), raised at the start;
+  **Deathmatch** offered; **side walls** on the four exit tunnels; the **hatch ladders turned round** (their tops let
+  you off over the hatch, so bots fell back: KotH stuck recoveries 604 → 98).
+- **MapMaker: tile options as tiles of their own** (`optionOf` in content/tiles/core.json; `shared/editor/tileVariants.ts`,
+  `client/editor/tileOptionPanel.ts`): the Vaulted Tunnels' **Side walls** (four new tile ids
+  `core.tunnel_vault*_walled`, hidden from the palette; the inspector's Options checkbox). No format change.
+- Docs: map-briefs/sandfall_colosseum DECISIONS ("Follow-ups") and manifest; BUILDING_KIT (Side walls);
+  MAPMAKER_OVERHAUL_PLAN ("Map follow-ups: tile options").
+- Note: an orphaned MapMaker driver from the first Sandfall session (`node server.mjs` in the scratchpad's `drv/`, and
+  its Chromium, since 2026-11-08) and a `vite preview` on port 4950 from a deleted worktree were still running and
+  using a core and a half; they weren't this session's to stop.
 
 ### Sandfall Colosseum rebuilt in MapMaker (`wip/mapmaker-sandfall`, agent, 2026-11-08/09; the owner's brief docs/map-briefs/sandfall_colosseum/BRIEF.md; CI on `check/mapmaker-sandfall`)
 - **What:** the map rebuilt from the Flavius Rule board (manifest and decisions in docs/map-briefs/sandfall_colosseum/):

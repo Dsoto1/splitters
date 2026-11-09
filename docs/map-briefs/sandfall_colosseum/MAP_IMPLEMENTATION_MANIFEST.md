@@ -7,7 +7,7 @@
 | Author / date | Tile Trigger, rebuilt in MapMaker 2026-11-08 (branch `wip/mapmaker-sandfall`) |
 | Status | Part 1: the playable build (structures, routes, modes, spawns, pickups). See "Progress" and "Left" |
 | Players | 12 v 12 (Map's pick), 8-24 recommended |
-| Modes | Team Deathmatch, Capture the Flag (gates 3/4 against gates 1/2), King of the Hill (the five medallions), Deathmatch |
+| Modes | Team Deathmatch, Capture the Flag (gates 3/4 against gates 1/2), King of the Hill (the five medallions), Deathmatch (offered again 2026-11-09) |
 | Weapon set | Medieval |
 
 ## World
@@ -74,3 +74,21 @@
 - Bots linger at the hatch ladders (the stuck spots above).
 - Lights are at 253 of 256 (the stands' bay lights): braziers on the sand need lights freed first.
 - The owner's questions (the report).
+
+## Follow-ups (2026-11-09)
+- **Stands:** the arcades under the tiers gone on all four sides (gate lines kept) and the east and west facades;
+  "Stand fill" Sky Blocks (limestone): N/S under the low tiers (0, 0, ±52) 40 × 8 × 16 m, under the high tiers
+  (0, 0, ±68) 40 × 16 × 16; E/W under the low tiers (±52, 0, 0) 16 × 8 × 56, under the high tiers (±68, 0, 0)
+  16 × 16 × 56, outer walls (±80, 0, 0) 8 × 24 × 56.
+- **Gates 1-4:** Portcullis doors "Gate 1" (24, 0, −29), "Gate 2" (−24, 0, −29), "Gate 3" (−24, 0, 29), "Gate 4"
+  (24, 0, 29), starting raised; buttons "Gate N winch" (in the passage, 2.5 m back) and "Gate N chain" (on the sand);
+  eight rules "Button pressed: Gate N winch/chain" → Toggle door, Play sound (buzzer).
+- **Tunnels:** Vaulted Tunnel (Side Walls) at (0, ±10) and (±10, 0), level −1.
+- **Hatch ladders** turned to face the other way (tops onto the sand).
+- **QA (2026-11-09, load 15-20 on 4 cores):** validate-map OK (0 issues); nav audit 0 traps, 0 errors (islands as
+  before); zfight.test.ts and stylePacksAncient.test.ts pass. Collision boxes 22,240. bot-report, 24 bots, 240 s:
+  TDM seed 1 embers 80 · tide 55 (136 kills, stuck 160, spawn deaths 0), seeds 2/3 (before the ladder fix) 38 · 36 and
+  28 · 33; CTF seed 1 embers 7 · tide 0 (7 captures, stuck 223); King of the Hill seed 1 embers 70 · tide 0 (hill
+  held 70 s, stuck 98); Deathmatch seed 1 275 kills, spawn deaths 11%. Stuck spots left: the court stairs down into the
+  hypogeum ((±36, −2, ±36), (−28, −2, −40)). Bench (24 bots, TDM, 60 s): CPU 3.85 ms a tick (p95 9.45) of 16.7.
+  Card shot redone (capture-map-shots: the aerial from the west).

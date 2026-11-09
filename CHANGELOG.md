@@ -81,12 +81,14 @@ documented in docs/BOTS.md, "Bot hints (map data)").
 
 **Sandfall Colosseum, the owner's follow-ups** (2026-11-09, in MapMaker):
 - **Lighter to load:** the arcades under the tiers (all four sides; the gate passages kept) and the east and west
-  stands' outer arcades are gone, solid limestone in their place: 31,724 collision boxes → BOXES_AFTER. From the sand
+  stands' outer arcades are gone, solid limestone in their place: 31,724 collision boxes → 22,240. From the sand
   it looks the same: the podium, the tiers, the vomitoria and the attic walk are all there.
 - **The portcullis gates are back:** each of gates 1-4 has a portcullis in its opening onto the sand, worked by a
   winch in the passage and a chain on the sand (press either to raise or drop it, with the buzzer). They start raised.
 - **Deathmatch** is offered again, beside Team Deathmatch, Capture the Flag and King of the Hill.
 - The vaulted tunnels at the four ways out have side walls (below), so the ground beside them meets masonry.
+- The hatch ladders now let you off onto the sand at the top (they let you off over the open hatch, and bots fell
+  back in): bots no longer queue at them.
 
 **MapMaker: tunnels with side walls.** Select a Vaulted Tunnel (or its Bend, Junction or Crossing; one or several) and
 tick **Side walls** in the inspector's Options: its masonry rises to a kerb at ground level and the ground round it
