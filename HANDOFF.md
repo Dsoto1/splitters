@@ -185,6 +185,8 @@ The workflow is unchanged (CLAUDE.md):
   (`recommendedPlayers`); with 97 spawn points and a 16 v 16 team layout its automatic caps are 32 best, up to 96.
   Suggested: Players 16-64 (as Iron Coast, 96 spawns, says), in MapMaker's Map properties; small fixes, 2026-11-09.
 - **For the session owning team kills and friendly fire:** the e2e `teams` flow's friendly-fire and team-kill checks contradict themselves between attempts on check/mapmaker-setpieces (run 42549709174, job 128943570176). Attempt 1: friendly fire off still hurt a teammate (70.5), and a team kill wasn't marked TK (killer 5 was a bot). Attempt 2: friendly fire on hurt 0, and TK was marked fine. It looks like stray shots from bots or other teammates in the test match, not set pieces. The failed job was re-run once.
+- Claimed: `maps/test_coverage.json` (the Town Wall Gatehouse, through MapMaker; set pieces part 6, `wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-09.
+- Claimed: `maps/apex_ring.json` and `maps/sandsweep.json` (drop Race from their modes in MapMaker's Map properties; released by Environment Phase 2), race removal (`wip/race-removal`), 2026-11-09.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
