@@ -9,8 +9,8 @@ made only on a commit that passed CI on a check branch.
 ## Unreleased
 
 **Whiteout Station, the owner's follow-ups** (2026-11-09, in MapMaker): King of the Hill on three hills (the yard, the
-radar ridge and the ice cave); three snow sleds to drive on the south road (the two parked on the garage apron are
-real ones now); Tide's spawns a cell nearer the yard, so Team Deathmatch comes out even.
+radar ridge and the ice cave); three snow sleds to drive at the south road's west end (the two
+parked snowmobiles on the garage apron are gone); Tide's spawns a cell nearer the yard, so Team Deathmatch comes out even.
 
 **Fireteams, part 2** (owner-approved 2026-11-08):
 - **Bot squads play the objective first.** A bot-led squad goes for the flag, the hill or the bomb site together, on
