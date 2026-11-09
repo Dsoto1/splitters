@@ -34,7 +34,13 @@
 - 48 bots: tick avg 3.35 ms (p95 9.1), process CPU 1.88 ms a tick; 0 failed path queries.
 - 64 bots: tick avg 8.74 ms (p95 24.7, the box at load 20), process CPU 3.81 ms a tick; stuck recoveries 3.
 
-## Screenshots
-See the report (scratchpad paths): the plan export, the card picture
-(`packages/client/public/maps/shots/the_spillway.jpg`, from the card camera at eye level in the basin looking at the
-dam), eye level on the crest, in the powerhouse, in the downstream basin, and along the routes.
+## Screenshots (deviceScaleFactor 2; kept in the agent's scratchpad, not the repo)
+- The plan view's Export PNG (ground level, spawns, flags, hills, pickups).
+- The card picture (`packages/client/public/maps/shots/the_spillway.jpg`), rendered by capture-map-shots from the map's
+  card camera, at eye level in the basin looking north at the dam and the powerhouse.
+- Eye level in MapMaker's 3D view (the top level being edited, so nothing is see-through): the dam crest, inside the
+  west generator hall, the downstream basin, and along the routes (the service tunnel, the west yard's terraces, the
+  toe deck, the catwalk bridge, the switchyard, the dam-face stair tower).
+- In the game (Play from here): the crest at eye level. A second Play from here in the same session carried on in the
+  first test match instead of starting at the new camera, and each one took ~12 min to load on the shared machine, so
+  the other views are MapMaker's.
