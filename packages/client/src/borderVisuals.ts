@@ -18,6 +18,7 @@ import {
   borderNoise,
   borderSeed,
   borderStyles,
+  coastSides,
   getProp,
   resolveBackdrop,
   type BorderEdge,
@@ -31,6 +32,7 @@ import type { MapStyler } from './mapMeshes.ts';
 import { windows } from './backdrop.ts';
 import { loadGraphicsQuality } from './game/graphicsSettings.ts';
 import { reduceFlashing } from './game/reduceFlashing.ts';
+import { buildCoast } from './borderCoast.ts';
 import { EnvScatter, type EnvCopy } from './environment/envScatter.ts';
 
 type V3 = [number, number, number];
@@ -100,6 +102,7 @@ export class BorderVisuals {
     if (of('forest').length) waits.push(this.forest(of('forest'), ctx, build));
     if (of('fence').length) this.fence(of('fence'), ctx);
     if (of('water').length) this.water(of('water'), ctx);
+    if (of('coast').length) waits.push(this.coast(ctx, build));
     const walled = edges.filter((e) => PROP_FENCES[e.style]);
     if (walled.length) waits.push(this.propFence(walled, ctx, build));
     this.ready = Promise.all(waits).then(() => this.count());
@@ -374,7 +377,9 @@ export class BorderVisuals {
         const ground = ctx.ground(...f.at(Math.min(e.length, Math.max(0, u)), 0));
         bandRows.forEach(([v, k], b) => {
           const [x, z] = f.at(u, v);
-          g.vert(x, ground + k * (0.75 + 0.5 * borderNoise(ctx.seed, i * 7 + b)), z, b === 0 ? darker : dark);
+          // On a coast the ground falls away outwards: the band follows it there.
+          const under = ctx.groundOut ? ctx.ground(...f.at(Math.min(e.length, Math.max(0, u)), v)) : ground;
+          g.vert(x, under + k * (0.75 + 0.5 * borderNoise(ctx.seed, i * 7 + b)), z, b === 0 ? darker : dark);
         });
       }
       g.grid(n + 1, bandRows.length);
@@ -464,6 +469,17 @@ export class BorderVisuals {
     for (const m of made.flat()) this.add(m);
   }
 
+  // ---------------------------------------------------------------- coast
+
+  /** The coast sides (borderCoast.ts): the shore carried on past the line, headlands and dunes, the forest only inland. */
+  private async coast(ctx: Ctx, build: number): Promise<void> {
+    const made = buildCoast(this.scene, this.styler, coastSides(ctx.doc, ctx.floorY), ctx);
+    for (const m of made.meshes) this.add(m);
+    this.materials.push(...made.materials);
+    const ends = new Map(made.forest.map((f) => [f.edge, f.ends] as const));
+    if (ends.size) await this.forest([...ends.keys()], { ...ctx, ground: made.ground, groundOut: true, neighbours: (e) => ends.get(e) ?? ctx.neighbours(e) }, build);
+  }
+
   // ---------------------------------------------------------------- water
 
   /** A beach that runs down from the line into the sea, and the sea out to the horizon. */
@@ -536,6 +552,8 @@ interface Ctx {
   sandy: boolean;
   /** Desert country: cliffs in red sandstone. */
   redRock: boolean;
+  /** The ground changes going out from the line (a coast's land): the forest's canopy band follows it. */
+  groundOut?: boolean;
   /** Styles of the sides before and after this edge (round the corners at its a and b ends). */
   neighbours: (e: BorderEdge) => [BorderStyle, BorderStyle];
 }
