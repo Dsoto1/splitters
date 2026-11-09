@@ -113,7 +113,7 @@ import { SteadyArcs } from './steadyArcs.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
 import { PropFlames } from './propFlames.ts';
-import { ACCENT_RANGE, arcFx, explosionFor, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
+import { ACCENT_RANGE, arcFx, explosionFor, farFxSize, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
 import { buildPathMeshes } from '../pathMeshes.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
@@ -1226,6 +1226,15 @@ export class GameView {
     if (d < by * 2) return at;
     const k = by / d;
     return { x: at.x + (cam.x - at.x) * k, y: at.y + (cam.y - at.y) * k, z: at.z + (cam.z - at.z) * k };
+  }
+
+  /**
+   * A size for a burst at `at` that keeps it as big on screen as it is 3 m off (fxMap.ts farFxSize: 1 nearer, at most 4): a pickup's sparkle or a streak's burst seen across a room reads, and one beside you is no bigger.
+   */
+  farSize(at: Vec3): number {
+    const cam = this.scene.activeCamera?.globalPosition;
+    if (!cam) return 1;
+    return farFxSize(Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z));
   }
 
   /** A moment of play's effect (content/vfx.json map.gameplay: `pickup.health`, `spawn`, `portal`, `pad`, `trap.shock`, `zipline` …). */

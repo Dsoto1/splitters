@@ -188,3 +188,10 @@ export function mappedEffects(): FxRef[] {
 export function mappedPacks(): string[] {
   return [...new Set(mappedEffects().map((r) => r.pack))];
 }
+
+/** Bursts seen from afar (View.farSize) keep the size on screen they have this far off (m; the flashing flow's moments are 3 m off), growing up to this many times. */
+const FAR_FX_NEAR = 3;
+const FAR_FX_MOST = 4;
+
+/** A burst's size `d` m off that keeps it as big on screen as FAR_FX_NEAR m off (1 nearer, at most FAR_FX_MOST). */
+export const farFxSize = (d: number): number => Math.max(1, Math.min(FAR_FX_MOST, d / FAR_FX_NEAR));

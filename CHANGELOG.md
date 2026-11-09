@@ -8,6 +8,14 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Small fixes (owner, 2026-11-08)**:
+- Bots no longer queue 10-20 s for Fernwood Moon's north rope lift: they hop down off the north deck onto its ramp
+  when the lift is away (the navmesh had lost that 0.7 m hop).
+- The armour pickup's sparkle, armour breaking, heavy hits and kill-streak bursts read across a room: seen from
+  further than 3 m they keep the size they have 3 m off (an armour pickup 7 m off was a speck).
+- The tutorial shows no Deathmatch score bar (You / Leader).
+- capture-map-shots can write pictures outside the build (SHOT_OUT, SHOT_SUFFIX, SHOT_QUALITY, SHOT_TEST,
+  SHOT_RENDERED).
 **Race mode removed** (owner, 2026-11-08: "steer away from racing and focus on battles and maps"):
 - **No more Race** in Match Setup, Quick Play, the next-map vote, rotations, playlists, the host panel or the server
   rules (`laps`, `racevehicle`, `racecombat` are gone). The race HUD (lap, place, running order, countdown), the race
