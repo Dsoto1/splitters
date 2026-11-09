@@ -223,6 +223,17 @@ Already done from the owner's earlier ask: **the real buildable area.**
    - Warnings for exposed spawns.
 3. **Bot hints:** chokepoints, sniper and camp spots, staging spots, jump links. These are Bot AI Phase D's hints,
    placed here.
+   - **As built (2026-11-09, `wip/mapmaker-bothints`, map format v33):**
+     - the data: `botHints` (`map/schema.ts` `BotHint`: kind, position, yaw, radius, team, a jump's `to`), read through
+       `map/botHints.ts` (`mapBotHints`; docs/BOTS.md, "Bot hints (map data)"); bots don't read them yet;
+     - the commands (`editor/botHints.ts`: add, edit, move, delete; one `setBotHints` = one undo step);
+     - the Bot hints tool (Y; the Entities tab's Bot hints group; `client/editor/botHintTool.ts`): icon pins over a
+       canvas of radii, facings and jump arcs, in the 3D and plan views; the inspector edits the selected one;
+     - checks (warnings): outside the boundary, a jump a player couldn't make (the movement numbers), duplicates
+       (validateMap); off the navmesh (the navigation validator);
+     - "What bots know": the computed vantage spots and parkour links, read-only, from `validateMapNavigation`'s
+       `computed` (worked out with the navigation check, only while it is on);
+     - unit `botHints.test.ts`; e2e `editorux` → `editorBotHintChecks`.
 
 ## Phase 5: time of day and weather (map data, a format bump)
 1. **Time of day:** a sun time per map (sun angle, light colour, sky blend) between the existing sky presets.

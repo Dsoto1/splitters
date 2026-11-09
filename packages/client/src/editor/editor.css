@@ -691,3 +691,26 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-mirror #ed-mirror-why.err { color: var(--error); }
 /* New map → Start from (templatePicker.ts). */
 .ed-new-sizes.off, label.off { opacity: 0.45; }
+/* Bot hints (botHintTool.ts): icon pins over a canvas of radii, facings and jump arcs; MapMaker only. */
+#editor > .ed-bothints { position: absolute; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; }
+.ed-bothints canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.ed-hint-pin {
+  position: absolute; left: 0; top: 0; width: 26px; height: 26px; min-width: 0; padding: 3px; margin: -13px 0 0 -13px;
+  pointer-events: auto; cursor: pointer; border-radius: 50%; background: rgba(11, 15, 26, 0.88); border: 2px solid currentColor;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+}
+.ed-hint-pin svg { width: 100%; height: 100%; display: block; }
+.ed-hint-pin.landing { width: 16px; height: 16px; margin: -8px 0 0 -8px; padding: 2px; }
+.ed-hint-pin.sel { box-shadow: 0 0 0 2px #fff; }
+.ed-hint-pin[hidden] { display: none; }
+.ed-bothints.tool .ed-hint-pin { cursor: grab; }
+.ed-hint-pending { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 4px; margin: -12px 0 0 -12px; color: #ffd34d; pointer-events: none; }
+.ed-hint-pending svg { width: 24px; height: 24px; }
+.ed-hint-pending span { padding: 2px 6px; border-radius: 4px; background: rgba(11, 15, 26, 0.86); color: var(--fg); font-size: 11px; white-space: nowrap; }
+.ed-hint-pending[hidden] { display: none; }
+.ed-hint-known { margin: 4px 0 6px; }
+.ed-hint-known label.check { margin: 4px 0 2px; color: var(--text, #e8edf5); }
+#ed-hint-inspector .ed-hint-xyz { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+#ed-hint-inspector .ed-hint-xyz input { width: 100%; min-width: 0; }
+#ed-hint-inspector #ed-hint-verdict.bad { color: #ff8a7a; }
+#ed-hint-inspector #ed-hint-verdict.ok { color: #7be0a8; }

@@ -218,6 +218,20 @@ For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.
   per line.
 - **Phones:** Low graphics draws fine terrain at half resolution; collision and nav keep every vertex.
 
+**MapMaker: bot hints (`wip/mapmaker-bothints`, map format v33, MapMaker lane, 2026-11-09).** Overhaul Phase 4 item 3,
+Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
+- **For the session that owns the bots:** the data is ready to read, bots don't use it yet. `MapDocument.botHints`
+  (kind `choke` / `sniper` / `camp` / `staging` / `jump`, position, yaw, radius, team, a jump's `to`), read with
+  `mapBotHints(map, kind?, team?)` (`shared/src/map/botHints.ts`); the format in docs/BOTS.md, "Bot hints (map data)".
+  No bot code was changed. `validateMapNavigation` gained an optional third argument (`{ computed: true }`: also
+  returns the vantage spots and parkour links, for MapMaker's "What bots know") and warns of hints off the navmesh.
+- **MapMaker:** the Bot hints tool (Y; Entities tab → Bot hints; `client/editor/botHintTool.ts`): pins and a canvas of
+  radii, facings and jump arcs (3D and plan view), the inspector edits the selected one; each edit one undo step
+  (`shared/editor/botHints.ts`, `setBotHints`). Warnings in validateMap (outside the boundary, a jump a player couldn't
+  make, duplicates). "What bots know" works the computed spots out with the navigation check, only while it's ticked.
+- **Tests:** unit `shared/test/botHints.test.ts` (v32 → v33, commands and undo, the accessor, the checks, a real
+  navmesh); e2e `editorux` → `editorBotHintChecks`.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.

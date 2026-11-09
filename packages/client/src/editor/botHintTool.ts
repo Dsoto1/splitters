@@ -561,16 +561,6 @@ export class BotHintTool {
     wrap.append(acts);
     return wrap;
   }
-
-  /** Map properties: how many hints there are, by kind. */
-  summary(): string {
-    const hints = mapBotHints(this.host.doc());
-    if (!hints.length) return 'none';
-    return BOT_HINT_KINDS.map((k) => [k, hints.filter((h) => h.kind === k).length] as const)
-      .filter(([, n]) => n)
-      .map(([k, n]) => `${n} ${BOT_HINT_SPECS[k].label.toLowerCase()}${n === 1 ? '' : 's'}`)
-      .join(', ');
-  }
 }
 
 function row(label: string, control: HTMLElement): HTMLElement {
