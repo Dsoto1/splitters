@@ -4578,233 +4578,11 @@ export class EditorApp {
     const { tiles, entities } = this.selection;
     const pieces = this.selPieces();
     const doc = this.doc;
-    if (this.selCount() === 0) {
-      el.append(h2('Map properties'));
-      // The map's picture (Set thumbnail) and plan (reference board: map properties).
-      el.append(thumbnailSection(this.thumbHost));
-      // The menu card shot's camera (MapMaker overhaul Phase 3 item 8).
-      el.append(cardShotSection(this.cardHost));
-      // Note pins (MapMaker overhaul Phase 3 item 7): every note, to go to or delete.
-      el.append(this.notes.section());
-      const name = document.createElement('input');
-      name.type = 'text';
-      name.id = 'ed-prop-name';
-      name.value = doc.metadata.name;
-      name.maxLength = 80;
-      name.addEventListener('change', () => {
-        const v = name.value.trim().slice(0, 80) || 'Untitled Map';
-        if (v !== this.doc.metadata.name) this.run('Rename map', { kind: 'setMetadata', before: { name: this.doc.metadata.name }, after: { name: v } });
-      });
-      el.append(row('Name', name));
-      const theme = document.createElement('select');
-      for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
-      theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
-      el.append(row('Theme', theme));
-      const occupied = [...doc.classicStructure.tiles.flatMap((t) => placementCells(t) ?? []), ...[...this.expansion.footprints.values()].flat()];
-      if (occupied.length) {
-        const span = (i: 0 | 1 | 2) => Math.max(...occupied.map((c) => c[i])) - Math.min(...occupied.map((c) => c[i])) + 1;
-        el.append(row('Size', text(`${span(0)} × ${span(1)} cells · ${span(2)} level${span(2) === 1 ? '' : 's'}`)));
-      }
-      const rp = doc.metadata.recommendedPlayers;
-      const setPlayers = (min: number, max: number) =>
-        this.run('Set player count', { kind: 'setMetadata', before: { recommendedPlayers: rp }, after: { recommendedPlayers: { min: Math.max(1, Math.min(96, min)), max: Math.max(1, Math.min(96, max)) } } });
-      el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
-      const mode = document.createElement('select');
-      const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
-      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.breakthrough', 'Breakthrough'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena']] as const) mode.append(new Option(label, id, false, id === current));
-      // The main mode (the map's pick, what TEST plays) changes; the modes it also offers stay.
-      mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: withMainMode([mode.value, ...doc.metadata.supportedModes.slice(1)], mode.value) } }));
-      const teams = mapTeams(doc);
-      const help: Record<string, string> = {
-        'core.coop': 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".',
-        'core.zombies': 'Zombies: everyone holds out against endless waves. Zombies rise from your NPC spawners (vents, hatches, burrows) first, then out-of-sight spawn points and open floor. Every map can be played this way.',
-        'core.tdm': `Team Deathmatch: ${teams.map((t) => t.name).join(' against ')}. Give spawns a team in their inspector; teams without spawns of their own use the shared ones.`,
-        'core.deathmatch': 'Deathmatch: everyone for themselves. NPC squads fight everyone.',
-        'core.ctf': `Capture the Flag: ${teams.slice(0, 2).map((t) => t.name).join(' against ')}. Place a Flag Base (Entities tab) for each team; bring the enemy flag to yours while yours is home. Other modes ignore flag bases.`,
-        'core.hostage': 'Hostage Rescue: place Hostages and at least one Rescue Zone; the first team rescues.',
-        'core.breakthrough': 'Breakthrough: the first team attacks through the sectors in order, the second holds each line in turn. Entities tab (Spawns & Objectives): place a Sector for each line (1, 2, 3…, facing the way the attackers push), its objectives (Capture Zones, Destroy Targets, a Final Hold in the last) and an Attackers\' and a Defenders\' Spawn group for each sector.',
-        'core.discs': 'Disc Arena: everyone throws bouncing discs that knock players about; knocking someone into the void scores. Build decks over nothing (free blocks), join them with jump pads, add walls to bank discs off, and place power disc pickups.',
-        'core.bomb': 'Bomb: place Bomb Sites (A and B) away from both team spawns; the first team attacks.',
-        'core.koth': 'King of the Hill: place one or more Hills (Entities tab). The hill moves to the next one every minute; a team scores while it alone stands on it.',
-        'core.elim': 'Elimination: round-based Team Deathmatch. No respawns until the next round; the last team standing wins it.',
-      };
-      // Maps with flag bases or hills also offer those modes in the Arcade, whatever the main mode is.
-      const extra = playableModes(doc).filter((m) => m !== current && m !== 'core.elim');
-      if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
-      el.append(row('Mode', mode), small(help[mode.value] ?? ''));
-      if (hasRemovedMode(doc.metadata.supportedModes)) el.append(removedModesRow(doc.metadata.supportedModes, (next) => this.run('Drop Race from the modes', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: next } })));
-      // Modes the map offers besides its main one (the rest follow from its pieces: flag bases, hills, sectors...).
-      const also = document.createElement('div');
-      also.id = 'ed-prop-also';
-      also.className = 'ed-layers';
-      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.coop', 'Co-op mission']] as const) {
-        if (id === current) continue;
-        const box = document.createElement('input');
-        box.type = 'checkbox';
-        box.dataset.mode = id;
-        box.checked = doc.metadata.supportedModes.includes(id);
-        box.addEventListener('change', () => {
-          const now = this.doc.metadata.supportedModes;
-          const next = box.checked ? [...now.filter((m) => m !== id), id] : now.filter((m) => m !== id);
-          this.run(box.checked ? `Also offer ${label}` : `Stop offering ${label}`, { kind: 'setMetadata', before: { supportedModes: now }, after: { supportedModes: next.length ? next : [current] } });
-        });
-        const lab = document.createElement('label');
-        lab.append(box, document.createTextNode(label));
-        also.append(lab);
-      }
-      const alsoRow = row('Also offered', also);
-      alsoRow.title = 'Other modes Match Setup offers on this map; the Mode above is its own pick and what TEST plays';
-      el.append(alsoRow);
-      if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim' || current === 'core.breakthrough') this.renderTeamSetup(el);
-      this.renderWeaponSet(el);
-      this.renderMapBots(el);
-      this.renderPlayerCaps(el);
-      // Time of day and weather (MapMaker overhaul Phase 5).
-      el.append(skyWeatherSection(this.skyWeatherHost));
-      const layersHead = document.createElement('h3');
-      layersHead.id = 'ed-layers-head';
-      layersHead.textContent = 'Map layers';
-      const layers = document.createElement('div');
-      layers.className = 'ed-layers';
-      for (const [key, label] of [['tile', 'Tiles'], ['prop', 'Props'], ['pickup', 'Pickups'], ['logic', 'Logic & traps'], ['spawn', 'Spawn points']] as const) {
-        const box = document.createElement('input');
-        box.type = 'checkbox';
-        box.dataset.layer = key;
-        box.checked = !this.view.hiddenLayers.has(key);
-        box.addEventListener('change', () => {
-          if (box.checked) this.view.hiddenLayers.delete(key);
-          else this.view.hiddenLayers.add(key);
-          this.view.applyTileLayer();
-          this.updateSelectionVisuals();
-        });
-        const lab = document.createElement('label');
-        lab.append(box, document.createTextNode(label));
-        layers.append(lab);
-      }
-      el.append(layersHead, layers);
-      const desc = document.createElement('textarea');
-      desc.rows = 3;
-      desc.value = doc.metadata.description;
-      desc.placeholder = 'Description';
-      desc.addEventListener('change', () => this.run('Edit description', { kind: 'setMetadata', before: { description: doc.metadata.description }, after: { description: desc.value.slice(0, 2000) } }));
-      el.append(desc);
-      // A map for the tests (maps/test_coverage.json): no map list, template list, rotation or host picker offers it.
-      const testOnly = document.createElement('input');
-      testOnly.type = 'checkbox';
-      testOnly.id = 'ed-prop-testonly';
-      testOnly.checked = !!doc.metadata.testOnly;
-      testOnly.addEventListener('change', () => this.run(testOnly.checked ? 'Mark as test map' : 'Unmark test map', { kind: 'setMetadata', before: { testOnly: doc.metadata.testOnly }, after: { testOnly: testOnly.checked || undefined } }));
-      const testRow = row('Test map', testOnly);
-      testRow.title = 'A map for the automated tests: hidden from the map lists, templates, rotations and the host picker';
-      el.append(testRow);
-      // The map's ID (its file name in maps/: `iron_coast` is maps/iron_coast.json), for a new official or test map.
-      const mapId = document.createElement('input');
-      mapId.type = 'text';
-      mapId.id = 'ed-prop-id';
-      mapId.value = doc.metadata.id;
-      mapId.maxLength = 64;
-      mapId.pattern = '[a-z0-9_]{4,64}';
-      mapId.addEventListener('change', () => {
-        const v = mapId.value.trim();
-        if (!/^[a-z0-9_]{4,64}$/.test(v)) {
-          mapId.value = doc.metadata.id;
-          return this.toast('A map ID is 4 to 64 lowercase letters, digits and underscores (its file name in maps/)', true);
-        }
-        if (v !== this.doc.metadata.id) this.run('Change map ID', { kind: 'setMetadata', before: { id: this.doc.metadata.id }, after: { id: v } });
-      });
-      const idRow = row('Map ID', mapId);
-      idRow.title = "The map's ID: lowercase letters, digits and underscores; an official map's file is maps/<ID>.json. Set it once, before the map is shared: a published or exported map keeps its ID.";
-      el.append(idRow);
-
-      const sky = button('Sky, scenery & border…', () => {
-        this.setWorkspace('environment');
-        this.showPane('sky');
-      });
-      sky.title = 'The sky, distant scenery, haze and the border live in Environment → Sky';
-      el.append(sky);
-      this.renderBloodPanel(el);
-      this.renderPhysicsPanel(el);
-      if (doc.classicStructure.tiles.some((t) => dressable(coreCatalog.get(t.tile)))) {
-        const all = button('Dress all bare rooms', () => this.dressAllRooms());
-        all.id = 'ed-dress-all';
-        all.title = 'Furnish every room with no props in it, as a room type guessed from its size and the theme (undo takes it back)';
-        el.append(all);
-      }
-      if (doc.terrain && doc.entities.some((e) => e.kind === 'prop')) {
-        const settle = button('Settle all props on ground', () => this.settleProps());
-        settle.id = 'ed-settle-all';
-        el.append(settle, small('Beds every prop standing on the terrain into the slope under it; props on floors and blocks stay put.'));
-      }
-      this.renderBoundsPanel(el);
-      return;
-    }
+    if (this.selCount() === 0) return this.renderMapProperties(el);
     if (pieces.length === 1 && tiles.length + entities.length === 0) {
       this.pieceInspector(el, pieces[0]!);
     } else if (tiles.length === 1 && entities.length === 0 && !pieces.length) {
-      const t = doc.classicStructure.tiles.find((x) => x.id === tiles[0])!;
-      el.append(h2(coreCatalog.get(t.tile)?.displayName ?? t.tile));
-      el.append(replaceTilePanel(doc, t.tile, [...piecesFor(doc, this.setPieceLib).values()], (tile, piece) => this.replaceTiles(tile, piece)));
-      const type = document.createElement('select');
-      for (const def of coreCatalog.all()) type.append(new Option(def.displayName, def.id, false, def.id === t.tile));
-      type.addEventListener('change', () => this.run('Replace tile', updateTileCommand(doc, t, { ...t, tile: type.value })));
-      const set = (patch: Partial<typeof t>) => this.run('Edit tile', updateTileCommand(doc, t, { ...t, ...patch }));
-      el.append(
-        row('Type', type),
-        row('X', numberInput(t.x, 1, (v) => set({ x: v }))),
-        row('Y', numberInput(t.y, 1, (v) => set({ y: v }))),
-        row('Level', numberInput(t.z, 1, (v) => set({ z: v }))),
-        row('Rotation', text(`${t.rotation * 90}°`)),
-        this.quickFacings({ tiles: [t.id], entities: [] }, (t.rotation * Math.PI) / 2),
-      );
-      const def = coreCatalog.get(t.tile);
-      const wallsHead = document.createElement('h3');
-      wallsHead.textContent = 'Walls';
-      el.append(wallsHead);
-      if (def && def.cells.length === 1) {
-        for (const side of SIDES) {
-          const target = { cell: [t.x, t.y, t.z] as [number, number, number], side };
-          const sel = document.createElement('select');
-          const now = edgeChoiceAt(doc, target);
-          for (const style of EDGE_STYLES) sel.append(new Option(EDGE_STYLE_LABELS[style], style, false, style === now));
-          // The same choices as the Walls tool: a style, and glass in a window.
-          const glass = document.createElement('select');
-          glass.title = 'Glass in this window';
-          glass.append(new Option('No glass', ''), ...GLASS_KINDS.map((k) => new Option(GLASS_KIND_LABELS[k], k)));
-          glass.value = edgeGlassAt(doc, target) ?? '';
-          glass.hidden = !GLASS_EDGES.has(now as never);
-          const apply = () => this.setEdge(target, sel.value as EdgeStyle, (glass.value || null) as GlassKind | null);
-          sel.addEventListener('change', () => {
-            if (GLASS_EDGES.has(sel.value as never) && !edgeGlassAt(this.doc, target)) glass.value = this.edgeGlass ?? '';
-            apply();
-          });
-          glass.addEventListener('change', apply);
-          const pair = document.createElement('span');
-          pair.className = 'ed-wall-pick';
-          pair.append(sel, glass);
-          el.append(row({ N: 'North', E: 'East', S: 'South', W: 'West' }[side], pair));
-        }
-      } else el.append(small('Use the Walls & Openings tool (O) to change any side of this piece.'));
-      if (def?.configurable) this.roomOptionsPanel(el, t);
-      const tileOpts = tileOptionPanel(doc, [t.id], (label, cmd) => this.run(label, cmd));
-      if (tileOpts) el.append(tileOpts);
-      this.upperFloorsPanel(el, t);
-      if (def && dressable(def)) this.dressPanel(el, t);
-      const h3 = document.createElement('h3');
-      h3.textContent = 'Surfaces';
-      el.append(h3);
-      // The Paint tool's own "Apply to", shared: a change here is a change there.
-      const scope = document.createElement('select');
-      scope.id = 'ed-insp-scope';
-      for (const [v, label] of [['surface', 'This surface'], ['sameType', 'Same piece type'], ['level', 'Whole level'], ['all', 'Whole map']] as const) scope.append(new Option(label, v, false, v === this.paintScope));
-      scope.addEventListener('change', () => {
-        this.paintScope = scope.value as PaintScope;
-        $<HTMLSelectElement>('ed-scope').value = scope.value;
-      });
-      el.append(row('Apply to', scope));
-      // The roof's top only where the room has a roof (room option Ceiling).
-      const roofed = !!t.options?.ceiling && t.options.ceiling !== 'open';
-      for (const slot of SURFACE_SLOTS) if (slot !== 'roof' || roofed || t.surfaces?.roof) el.append(this.surfaceRow(t, slot));
-      el.append(small(`ID ${t.id}`));
+      this.tileInspector(el, doc.classicStructure.tiles.find((x) => x.id === tiles[0])!);
     } else if (entities.length === 1 && tiles.length === 0 && !pieces.length) {
       this.entityInspector(el, doc.entities.find((x) => x.id === entities[0])!);
     } else if (tiles.length === 0 && !pieces.length && this.wholeBuild(entities)) {
@@ -4848,6 +4626,236 @@ export class EditorApp {
       settle.title = 'Bed the selected props into the terrain under them (no floating corners on slopes)';
       el.append(settle);
     }
+  }
+
+  /** Nothing selected: Map properties (name, theme, players, modes, teams, weapons, bots, sky and weather, layers…). */
+  private renderMapProperties(el: HTMLElement): void {
+    const doc = this.doc;
+    el.append(h2('Map properties'));
+    // The map's picture (Set thumbnail) and plan (reference board: map properties).
+    el.append(thumbnailSection(this.thumbHost));
+    // The menu card shot's camera (MapMaker overhaul Phase 3 item 8).
+    el.append(cardShotSection(this.cardHost));
+    // Note pins (MapMaker overhaul Phase 3 item 7): every note, to go to or delete.
+    el.append(this.notes.section());
+    const name = document.createElement('input');
+    name.type = 'text';
+    name.id = 'ed-prop-name';
+    name.value = doc.metadata.name;
+    name.maxLength = 80;
+    name.addEventListener('change', () => {
+      const v = name.value.trim().slice(0, 80) || 'Untitled Map';
+      if (v !== this.doc.metadata.name) this.run('Rename map', { kind: 'setMetadata', before: { name: this.doc.metadata.name }, after: { name: v } });
+    });
+    el.append(row('Name', name));
+    const theme = document.createElement('select');
+    for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
+    theme.addEventListener('change', () => this.run('Change theme', setThemeCommand(this.doc, theme.value)));
+    el.append(row('Theme', theme));
+    const occupied = [...doc.classicStructure.tiles.flatMap((t) => placementCells(t) ?? []), ...[...this.expansion.footprints.values()].flat()];
+    if (occupied.length) {
+      const span = (i: 0 | 1 | 2) => Math.max(...occupied.map((c) => c[i])) - Math.min(...occupied.map((c) => c[i])) + 1;
+      el.append(row('Size', text(`${span(0)} × ${span(1)} cells · ${span(2)} level${span(2) === 1 ? '' : 's'}`)));
+    }
+    const rp = doc.metadata.recommendedPlayers;
+    const setPlayers = (min: number, max: number) =>
+      this.run('Set player count', { kind: 'setMetadata', before: { recommendedPlayers: rp }, after: { recommendedPlayers: { min: Math.max(1, Math.min(96, min)), max: Math.max(1, Math.min(96, max)) } } });
+    el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
+    const mode = document.createElement('select');
+    const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
+    for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.breakthrough', 'Breakthrough'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena']] as const) mode.append(new Option(label, id, false, id === current));
+    // The main mode (the map's pick, what TEST plays) changes; the modes it also offers stay.
+    mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: withMainMode([mode.value, ...doc.metadata.supportedModes.slice(1)], mode.value) } }));
+    const teams = mapTeams(doc);
+    const help: Record<string, string> = {
+      'core.coop': 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".',
+      'core.zombies': 'Zombies: everyone holds out against endless waves. Zombies rise from your NPC spawners (vents, hatches, burrows) first, then out-of-sight spawn points and open floor. Every map can be played this way.',
+      'core.tdm': `Team Deathmatch: ${teams.map((t) => t.name).join(' against ')}. Give spawns a team in their inspector; teams without spawns of their own use the shared ones.`,
+      'core.deathmatch': 'Deathmatch: everyone for themselves. NPC squads fight everyone.',
+      'core.ctf': `Capture the Flag: ${teams.slice(0, 2).map((t) => t.name).join(' against ')}. Place a Flag Base (Entities tab) for each team; bring the enemy flag to yours while yours is home. Other modes ignore flag bases.`,
+      'core.hostage': 'Hostage Rescue: place Hostages and at least one Rescue Zone; the first team rescues.',
+      'core.breakthrough': 'Breakthrough: the first team attacks through the sectors in order, the second holds each line in turn. Entities tab (Spawns & Objectives): place a Sector for each line (1, 2, 3…, facing the way the attackers push), its objectives (Capture Zones, Destroy Targets, a Final Hold in the last) and an Attackers\' and a Defenders\' Spawn group for each sector.',
+      'core.discs': 'Disc Arena: everyone throws bouncing discs that knock players about; knocking someone into the void scores. Build decks over nothing (free blocks), join them with jump pads, add walls to bank discs off, and place power disc pickups.',
+      'core.bomb': 'Bomb: place Bomb Sites (A and B) away from both team spawns; the first team attacks.',
+      'core.koth': 'King of the Hill: place one or more Hills (Entities tab). The hill moves to the next one every minute; a team scores while it alone stands on it.',
+      'core.elim': 'Elimination: round-based Team Deathmatch. No respawns until the next round; the last team standing wins it.',
+    };
+    // Maps with flag bases or hills also offer those modes in the Arcade, whatever the main mode is.
+    const extra = playableModes(doc).filter((m) => m !== current && m !== 'core.elim');
+    if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
+    el.append(row('Mode', mode), small(help[mode.value] ?? ''));
+    if (hasRemovedMode(doc.metadata.supportedModes)) el.append(removedModesRow(doc.metadata.supportedModes, (next) => this.run('Drop Race from the modes', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: next } })));
+    // Modes the map offers besides its main one (the rest follow from its pieces: flag bases, hills, sectors...).
+    const also = document.createElement('div');
+    also.id = 'ed-prop-also';
+    also.className = 'ed-layers';
+    for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.coop', 'Co-op mission']] as const) {
+      if (id === current) continue;
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.dataset.mode = id;
+      box.checked = doc.metadata.supportedModes.includes(id);
+      box.addEventListener('change', () => {
+        const now = this.doc.metadata.supportedModes;
+        const next = box.checked ? [...now.filter((m) => m !== id), id] : now.filter((m) => m !== id);
+        this.run(box.checked ? `Also offer ${label}` : `Stop offering ${label}`, { kind: 'setMetadata', before: { supportedModes: now }, after: { supportedModes: next.length ? next : [current] } });
+      });
+      const lab = document.createElement('label');
+      lab.append(box, document.createTextNode(label));
+      also.append(lab);
+    }
+    const alsoRow = row('Also offered', also);
+    alsoRow.title = 'Other modes Match Setup offers on this map; the Mode above is its own pick and what TEST plays';
+    el.append(alsoRow);
+    if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim' || current === 'core.breakthrough') this.renderTeamSetup(el);
+    this.renderWeaponSet(el);
+    this.renderMapBots(el);
+    this.renderPlayerCaps(el);
+    // Time of day and weather (MapMaker overhaul Phase 5).
+    el.append(skyWeatherSection(this.skyWeatherHost));
+    const layersHead = document.createElement('h3');
+    layersHead.id = 'ed-layers-head';
+    layersHead.textContent = 'Map layers';
+    const layers = document.createElement('div');
+    layers.className = 'ed-layers';
+    for (const [key, label] of [['tile', 'Tiles'], ['prop', 'Props'], ['pickup', 'Pickups'], ['logic', 'Logic & traps'], ['spawn', 'Spawn points']] as const) {
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.dataset.layer = key;
+      box.checked = !this.view.hiddenLayers.has(key);
+      box.addEventListener('change', () => {
+        if (box.checked) this.view.hiddenLayers.delete(key);
+        else this.view.hiddenLayers.add(key);
+        this.view.applyTileLayer();
+        this.updateSelectionVisuals();
+      });
+      const lab = document.createElement('label');
+      lab.append(box, document.createTextNode(label));
+      layers.append(lab);
+    }
+    el.append(layersHead, layers);
+    const desc = document.createElement('textarea');
+    desc.rows = 3;
+    desc.value = doc.metadata.description;
+    desc.placeholder = 'Description';
+    desc.addEventListener('change', () => this.run('Edit description', { kind: 'setMetadata', before: { description: doc.metadata.description }, after: { description: desc.value.slice(0, 2000) } }));
+    el.append(desc);
+    // A map for the tests (maps/test_coverage.json): no map list, template list, rotation or host picker offers it.
+    const testOnly = document.createElement('input');
+    testOnly.type = 'checkbox';
+    testOnly.id = 'ed-prop-testonly';
+    testOnly.checked = !!doc.metadata.testOnly;
+    testOnly.addEventListener('change', () => this.run(testOnly.checked ? 'Mark as test map' : 'Unmark test map', { kind: 'setMetadata', before: { testOnly: doc.metadata.testOnly }, after: { testOnly: testOnly.checked || undefined } }));
+    const testRow = row('Test map', testOnly);
+    testRow.title = 'A map for the automated tests: hidden from the map lists, templates, rotations and the host picker';
+    el.append(testRow);
+    // The map's ID (its file name in maps/: `iron_coast` is maps/iron_coast.json), for a new official or test map.
+    const mapId = document.createElement('input');
+    mapId.type = 'text';
+    mapId.id = 'ed-prop-id';
+    mapId.value = doc.metadata.id;
+    mapId.maxLength = 64;
+    mapId.pattern = '[a-z0-9_]{4,64}';
+    mapId.addEventListener('change', () => {
+      const v = mapId.value.trim();
+      if (!/^[a-z0-9_]{4,64}$/.test(v)) {
+        mapId.value = doc.metadata.id;
+        return this.toast('A map ID is 4 to 64 lowercase letters, digits and underscores (its file name in maps/)', true);
+      }
+      if (v !== this.doc.metadata.id) this.run('Change map ID', { kind: 'setMetadata', before: { id: this.doc.metadata.id }, after: { id: v } });
+    });
+    const idRow = row('Map ID', mapId);
+    idRow.title = "The map's ID: lowercase letters, digits and underscores; an official map's file is maps/<ID>.json. Set it once, before the map is shared: a published or exported map keeps its ID.";
+    el.append(idRow);
+
+    const sky = button('Sky, scenery & border…', () => {
+      this.setWorkspace('environment');
+      this.showPane('sky');
+    });
+    sky.title = 'The sky, distant scenery, haze and the border live in Environment → Sky';
+    el.append(sky);
+    this.renderBloodPanel(el);
+    this.renderPhysicsPanel(el);
+    if (doc.classicStructure.tiles.some((t) => dressable(coreCatalog.get(t.tile)))) {
+      const all = button('Dress all bare rooms', () => this.dressAllRooms());
+      all.id = 'ed-dress-all';
+      all.title = 'Furnish every room with no props in it, as a room type guessed from its size and the theme (undo takes it back)';
+      el.append(all);
+    }
+    if (doc.terrain && doc.entities.some((e) => e.kind === 'prop')) {
+      const settle = button('Settle all props on ground', () => this.settleProps());
+      settle.id = 'ed-settle-all';
+      el.append(settle, small('Beds every prop standing on the terrain into the slope under it; props on floors and blocks stay put.'));
+    }
+    this.renderBoundsPanel(el);
+  }
+
+  /** One tile selected: its type, place, walls, room options, upper floors, dressing and surfaces. */
+  private tileInspector(el: HTMLElement, t: TilePlacement): void {
+    const doc = this.doc;
+      el.append(h2(coreCatalog.get(t.tile)?.displayName ?? t.tile));
+    el.append(replaceTilePanel(doc, t.tile, [...piecesFor(doc, this.setPieceLib).values()], (tile, piece) => this.replaceTiles(tile, piece)));
+    const type = document.createElement('select');
+    for (const def of coreCatalog.all()) type.append(new Option(def.displayName, def.id, false, def.id === t.tile));
+    type.addEventListener('change', () => this.run('Replace tile', updateTileCommand(doc, t, { ...t, tile: type.value })));
+    const set = (patch: Partial<typeof t>) => this.run('Edit tile', updateTileCommand(doc, t, { ...t, ...patch }));
+    el.append(
+      row('Type', type),
+      row('X', numberInput(t.x, 1, (v) => set({ x: v }))),
+      row('Y', numberInput(t.y, 1, (v) => set({ y: v }))),
+      row('Level', numberInput(t.z, 1, (v) => set({ z: v }))),
+      row('Rotation', text(`${t.rotation * 90}°`)),
+      this.quickFacings({ tiles: [t.id], entities: [] }, (t.rotation * Math.PI) / 2),
+    );
+    const def = coreCatalog.get(t.tile);
+    const wallsHead = document.createElement('h3');
+    wallsHead.textContent = 'Walls';
+    el.append(wallsHead);
+    if (def && def.cells.length === 1) {
+      for (const side of SIDES) {
+        const target = { cell: [t.x, t.y, t.z] as [number, number, number], side };
+        const sel = document.createElement('select');
+        const now = edgeChoiceAt(doc, target);
+        for (const style of EDGE_STYLES) sel.append(new Option(EDGE_STYLE_LABELS[style], style, false, style === now));
+        // The same choices as the Walls tool: a style, and glass in a window.
+        const glass = document.createElement('select');
+        glass.title = 'Glass in this window';
+        glass.append(new Option('No glass', ''), ...GLASS_KINDS.map((k) => new Option(GLASS_KIND_LABELS[k], k)));
+        glass.value = edgeGlassAt(doc, target) ?? '';
+        glass.hidden = !GLASS_EDGES.has(now as never);
+        const apply = () => this.setEdge(target, sel.value as EdgeStyle, (glass.value || null) as GlassKind | null);
+        sel.addEventListener('change', () => {
+          if (GLASS_EDGES.has(sel.value as never) && !edgeGlassAt(this.doc, target)) glass.value = this.edgeGlass ?? '';
+          apply();
+        });
+        glass.addEventListener('change', apply);
+        const pair = document.createElement('span');
+        pair.className = 'ed-wall-pick';
+        pair.append(sel, glass);
+        el.append(row({ N: 'North', E: 'East', S: 'South', W: 'West' }[side], pair));
+      }
+    } else el.append(small('Use the Walls & Openings tool (O) to change any side of this piece.'));
+    if (def?.configurable) this.roomOptionsPanel(el, t);
+    const tileOpts = tileOptionPanel(doc, [t.id], (label, cmd) => this.run(label, cmd));
+    if (tileOpts) el.append(tileOpts);
+    this.upperFloorsPanel(el, t);
+    if (def && dressable(def)) this.dressPanel(el, t);
+    const h3 = document.createElement('h3');
+    h3.textContent = 'Surfaces';
+    el.append(h3);
+    // The Paint tool's own "Apply to", shared: a change here is a change there.
+    const scope = document.createElement('select');
+    scope.id = 'ed-insp-scope';
+    for (const [v, label] of [['surface', 'This surface'], ['sameType', 'Same piece type'], ['level', 'Whole level'], ['all', 'Whole map']] as const) scope.append(new Option(label, v, false, v === this.paintScope));
+    scope.addEventListener('change', () => {
+      this.paintScope = scope.value as PaintScope;
+      $<HTMLSelectElement>('ed-scope').value = scope.value;
+    });
+    el.append(row('Apply to', scope));
+    // The roof's top only where the room has a roof (room option Ceiling).
+    const roofed = !!t.options?.ceiling && t.options.ceiling !== 'open';
+    for (const slot of SURFACE_SLOTS) if (slot !== 'roof' || roofed || t.surfaces?.roof) el.append(this.surfaceRow(t, slot));
+    el.append(small(`ID ${t.id}`));
   }
 
   /**
