@@ -1559,6 +1559,78 @@
       "notes": {
         "design": "The Fort Ring with its middle (south-west, turned with it) a gateway: 4.4 m between the piers' inner faces along the wall, 3 m clear under a lintel as thick as the wall, the piers 0.8 m wide standing 0.3 m proud of both faces and 0.3 m over the wall's top. A slit either side of the gate covers the approach."
       }
+    },
+    {
+      "id": "core.arena_pit",
+      "category": "Open",
+      "displayName": "Arena Pit",
+      "blurb": "Open floor sunk 2 m: the middle of a sunken arena (Arena Tiers round it). Its floor carves the terrain",
+      "cells": [[0,0,-1],[0,0,0]],
+      "floors": [],
+      "ports": [{"allSides":0}],
+      "open": true,
+      "edgeDefault": "open",
+      "extraFloors": [
+        {"box":[-4,-2.3,-4,4,-2,4]}
+      ],
+      "notes": {
+        "design": "Set pieces part 5 (docs/SET_PIECES_PLAN.md): the Sunken Arena's floor, 2 m under the level, so on terrain it carves its own hollow (settle.ts terrainUnderFloors reaches 3 m under the ground). On a map without terrain the ground is drawn at the lowest floor."
+      }
+    },
+    {
+      "id": "core.arena_tiers",
+      "category": "Open",
+      "displayName": "Arena Tiers",
+      "blurb": "Ground along the north edge, then three tiers 0.5 m apart down to an arena floor 2 m down, with a stair down the middle: the side of a sunken arena",
+      "cells": [[0,0,-1],[0,0,0]],
+      "floors": [],
+      "ports": [{"allSides":0}],
+      "open": true,
+      "edgeDefault": "open",
+      "extraFloors": [
+        {"box":[-4,-2,2,4,0,4]},
+        {"box":[-4,-2,1,-1,-0.5,2]},
+        {"box":[1,-2,1,4,-0.5,2]},
+        {"box":[-4,-2,0,-1,-1,1]},
+        {"box":[1,-2,0,4,-1,1]},
+        {"box":[-4,-2,-1,-1,-1.5,0]},
+        {"box":[1,-2,-1,4,-1.5,0]},
+        {"box":[-1,-2.3,-1,1,-2,2]},
+        {"box":[-4,-2.3,-4,4,-2,-1]},
+        {"box":[-3.7,-2.6,-3.7,3.7,-2.3,3.7]}
+      ],
+      "solids": [
+        {"flight":{"axis":"z","dir":1,"from":-2,"across":[-1,1],"steps":8,"base":-2,"run":0.5,"floor":-2}}
+      ],
+      "notes": {
+        "design": "Set pieces part 5: the ground (solid down to the arena floor, so nothing shows under it) along the local north, three tiers 1 m deep and 0.5 m high (a jump up, a step down; seats to fight from), then 3 m of the arena floor 2 m down. The stair (eight 0.25 m steps of 0.5 m, 2 m wide) climbs north up the middle from the arena floor, on a floor of its own, so the terrain is carved under it too. Every box is a floor, so on terrain the tiers carve their own slot; a buried carve floor 0.3 m inside the cell edge under all of it (as the sunken trench's) takes the ground under the risers below the arena floor, so no ground shows at the foot of a tier."
+      }
+    },
+    {
+      "id": "core.arena_tiers_corner",
+      "category": "Open",
+      "displayName": "Arena Tiers (Corner)",
+      "blurb": "The corner of a sunken arena: ground along the north and east edges, three tiers turning the corner down to the arena floor 2 m down",
+      "cells": [[0,0,-1],[0,0,0]],
+      "floors": [],
+      "ports": [{"allSides":0}],
+      "open": true,
+      "edgeDefault": "open",
+      "extraFloors": [
+        {"box":[-4,-2,2,4,0,4]},
+        {"box":[2,-2,-4,4,0,2]},
+        {"box":[-4,-2,1,2,-0.5,2]},
+        {"box":[1,-2,-4,2,-0.5,1]},
+        {"box":[-4,-2,0,1,-1,1]},
+        {"box":[0,-2,-4,1,-1,0]},
+        {"box":[-4,-2,-1,0,-1.5,0]},
+        {"box":[-1,-2,-4,0,-1.5,-1]},
+        {"box":[-4,-2.3,-4,-1,-2,-1]},
+        {"box":[-3.7,-2.6,-3.7,3.7,-2.3,3.7]}
+      ],
+      "notes": {
+        "design": "Set pieces part 5: Arena Tiers turning the corner (north and east), meeting an Arena Tiers on each side, the arena floor in the south-west 3 m square, the buried carve floor under it all. No stair: the sides have them."
+      }
     }
   ]
 }

@@ -25,6 +25,7 @@ export * from './map/sectors.ts';
 export * from './map/setPieces.ts';
 export * from './map/setPieceCheck.ts';
 export * from './map/setPieceLibrary.ts';
+export * from './map/setPieceAliases.ts';
 export * from './map/identity.ts';
 export * from './map/budgets.ts';
 export * from './sim/constants.ts';

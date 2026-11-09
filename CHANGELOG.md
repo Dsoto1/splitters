@@ -19,6 +19,15 @@ made only on a commit that passed CI on a check branch.
   format is unchanged.
 - **Apex Ring** and **Sandsweep Circuit** no longer list Race (MapMaker, Map properties): Apex Ring plays Deathmatch,
   Team Deathmatch, CTF and King of the Hill with its karts lapping; Sandsweep plays Deathmatch.
+**Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall** (docs/SET_PIECES_PLAN.md, "As built: part 5"):
+- **Twelve new set pieces** in MapMaker's Set pieces tab, each in its own group: Power Core Hall, Catwalk Bridge (three
+  lengths), Twin-Stair Overlook, Atrium Tower, Loading Dock, Sunken Arena, Reactor Room, Bunker Cluster, Courtyard
+  Gate, Server Vault, Crossroads Plaza and Ramp Junction, themed by the looks they suit. New kit tiles: Arena Pit,
+  Arena Tiers and Arena Tiers (Corner) (a pit 2 m down that carves the terrain).
+- **Retired tiles:** the Catwalk Gantry leaves the Tiles tab for the Catwalk Bridge (Up). Maps that place it still
+  load and play it as the bridge; its inspector in MapMaker offers **Replace all** (one undo step).
+- **Sea Wall** and **Sea Wall (Breached)** for MAP 21 (Iron Coast): a bay of concrete sea wall with a wave lip and a
+  fire step, and the same bay blown open with a rubble ramp through the gap.
 **Our own trees, bushes and hedges everywhere; no more Kenney foliage** (Environment Phase 2, owner-approved
 2026-11-08: "I don't want to see those"):
 - **Nine new generated species**, grounded and natural rather than toy-like: Field Maple (summer, autumn), Umbrella
