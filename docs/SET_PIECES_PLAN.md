@@ -582,10 +582,25 @@ one, through MapMaker. Iron Compound stays as it is (its Catwalk Gantry plays as
     Blackout 34 → 35, Crossroads 39 → 43, Pharaoh's Reach 103 → 108, Qasr Medina 101 → 92, Sunken Kingdom 121 → 121
     (no bot goes near its pylons); failed searches 0.00 % everywhere (Qasr Medina 0.03 → 0.02 %); two routes or more
     100 % of team trips everywhere; captures Pharaoh's Reach 1 → 1, Qasr Medina 2 → 1 (two matches: noise).
+  - **Sunken Kingdom's CTF captures** (botCtf.test, five minutes a match; seeds 1-12, matches with a capture): the
+    tile 9 (seeds 2-4, 7-12), the set piece 6 (2, 4, 7, 10-12), and the tile plus one 1 m block buried out of reach in
+    a corner 5 (3, 6-8, 12). The bots play the set piece as they played the tile:
+    - The set piece's blocks are 'floor' boxes where the tile's masonry was 'solid'. That kind is read only by the
+      ground kept under floors (the played terrain comes out the same), the kill height and the bounds' walls (the
+      map's lowest floor is unchanged), rendering and dressing. No navmesh, bot, sight or cover code reads it.
+    - Around both pylons (2 m grid, ground and terrace, as a match builds them) the navmesh, the routes from the first
+      spawn, the bots' places and the sight between 14,173 pairs of eye points are the same with the tile and the set
+      piece.
+    - The two matches first part at 149 s (seed 3) by a millimetre, for a bot 70 m from either pylon. The buried block
+      makes them part at the second tick. Which seed captures is chaotic, so botCtf's Sunken Kingdom check now wants a
+      capture in one of seeds 2, 3 and 4 (the tile: all three; the set piece: 2 and 4; the buried block: 3).
+    - What does differ: the reliefs, pilasters and gilding were decor on the tile and are blocks here (5-8 cm proud of
+      the face, the gilded band under the lintel 20 cm below it). The masonry stops shots as its material does
+      (`core.pbr_sandstone_blocks` is soil, 5000) where tile structure counts as concrete (7000): the towers are metres
+      thick either way.
 - **Not swapped:** Coldwater Gulch places no Bunker tile (Bunker theme only); Whiteout Station's rebuild handles its
-  hangar; Iron Compound stays as it is (owner). The six maps with the Bunker theme (`core.bunker`) place no Bunker
-  tile. Bunker Cross, Concrete Annex, Iron Tide, Ironhold Prison, Pump Tower and Silo Complex still place old big pieces
-  and weren't in this part's claim.
+  hangar; Iron Compound stays as it is (owner). The seven maps with the Bunker theme (`core.bunker`) place no Bunker
+  tile (Bunker Cross, Coldwater Gulch, Concrete Annex, Iron Tide, Ironhold Prison, Pump Tower, Silo Complex).
 
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks

@@ -774,7 +774,11 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
   (`setpiece.temple_pylon`) set pieces; Blackout and Crossroads (Loading Dock, Bunker), Pharaoh's Reach and Sunken
   Kingdom (Temple Pylon), Qasr Medina (City Wall Gatehouse) swapped in MapMaker; both pieces on the coverage map.
 - **Left:** Coldwater Gulch needs none (Bunker theme only); Whiteout Station (its rebuild). Bunker Cross, Concrete
-  Annex, Iron Tide, Ironhold Prison, Pump Tower and Silo Complex still place old big pieces (not claimed here).
+  Annex, Iron Tide, Ironhold Prison, Pump Tower and Silo Complex only use the Bunker theme (no old big tile). Iron
+  Compound still places a Bunker tile and the Catwalk Gantry (owner: leave it as it is).
+- **Pitfall:** a bot match parts another way after any change to a map's entities, even a block buried out of reach,
+  so a capture or kill count from one seed tells nothing about a swap: compare many seeds (SET_PIECES_PLAN, "As
+  built: part 6", Sunken Kingdom).
 - **Pitfall:** MapMaker with `?test=1` makes ids from a fixed sequence, so placing into a map that was itself built
   under `?test=1` (the coverage map) can collide ("ID … already exists"): drive real edits without `test=1`.
 
