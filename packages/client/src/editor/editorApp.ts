@@ -4893,8 +4893,6 @@ export class EditorApp {
       el.append(thumbnailSection(this.thumbHost));
       // The menu card shot's camera (MapMaker overhaul Phase 3 item 8).
       el.append(cardShotSection(this.cardHost));
-      // Time of day and weather (MapMaker overhaul Phase 5).
-      el.append(skyWeatherSection(this.skyWeatherHost));
       // Note pins (MapMaker overhaul Phase 3 item 7): every note, to go to or delete.
       el.append(this.notes.section());
       const name = document.createElement('input');
@@ -4970,6 +4968,8 @@ export class EditorApp {
       this.renderWeaponSet(el);
       this.renderMapBots(el);
       this.renderPlayerCaps(el);
+      // Time of day and weather (MapMaker overhaul Phase 5).
+      el.append(skyWeatherSection(this.skyWeatherHost));
       const layersHead = document.createElement('h3');
       layersHead.id = 'ed-layers-head';
       layersHead.textContent = 'Map layers';
