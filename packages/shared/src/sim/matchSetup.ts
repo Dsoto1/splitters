@@ -6,6 +6,7 @@ import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from './spawns.ts';
 import { botSetInUse, validateBotSet, type BotSet } from './botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
 import { isWeaponSetId } from './weaponSets.ts';
+import { isWeatherChoice } from '../map/weather.ts';
 import { fireteamMode, fireteamSize } from './fireteams.ts';
 
 /**
@@ -61,6 +62,8 @@ export interface MatchSetup {
   dropWeapons?: boolean;
   /** Weapon set (sim/weaponSets.ts: standard, military, scifi, medieval, chaos, mixed). Absent: the map's default. */
   weaponSet?: string;
+  /** Weather (map/weather.ts WEATHER_CHOICES). Absent: the map's own. */
+  weather?: string;
   squadSpawn?: boolean;
   gravity?: number;
   fallDamage?: boolean;
@@ -843,6 +846,7 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSE
   if (s.mixPickups) rules.mixPickups = true;
   if (s.dropWeapons === false) rules.dropWeapons = false;
   if (isWeaponSetId(s.weaponSet)) rules.weaponSet = s.weaponSet;
+  if (isWeatherChoice(s.weather)) rules.weather = s.weather;
   if (s.squadSpawn === false) rules.squadSpawn = false;
   if (s.gravity !== undefined) rules.gravity = s.gravity;
   if (s.fallDamage !== undefined) rules.fallDamage = s.fallDamage;
@@ -947,6 +951,7 @@ export function normalizeSetup(raw: unknown, modes?: readonly GameMode[]): Match
   if (out.playerTeam !== undefined) out.playerTeam = Math.round(num(out.playerTeam, 0, MAX_TEAMS - 1, 0));
   // A weapon set this build doesn't have (a setup saved by another version): the map's default instead.
   if (out.weaponSet !== undefined && !isWeaponSetId(out.weaponSet)) delete out.weaponSet;
+  if (out.weather !== undefined && !isWeatherChoice(out.weather)) delete out.weather;
   if (o.botSet !== undefined) {
     const v = validateBotSet(o.botSet)?.set;
     if (v && botSetInUse(v)) out.botSet = v;

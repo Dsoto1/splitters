@@ -31,7 +31,7 @@ export function openMirrorDialog(host: MirrorHost): void {
   const [mx, mz] = host.middle();
   dialog.innerHTML = `
     <h2>Mirror</h2>
-    <p class="ed-note">For team maps: build one side, mirror it onto the other. In a mirrored copy, team things swap sides (spawns, flag bases, team zones, doors and buttons). Terrain and paths stay as they are.</p>
+    <p class="ed-note">For team maps: build one side, mirror it onto the other. In a mirrored copy, team things swap sides (spawns, flag bases, team zones, doors, buttons and bot hints). Half the map brings its bot hints, and its terrain and paths when you tick them.</p>
     <fieldset class="ed-mirror-what"><legend>What</legend>
       <label><input type="radio" name="ed-mirror-what" value="selection" id="ed-mirror-sel"> The selection (<span></span>)</label>
       <label><input type="radio" name="ed-mirror-what" value="half" id="ed-mirror-half-on"> Half the map: <select id="ed-mirror-half"></select></label>
@@ -45,6 +45,7 @@ export function openMirrorDialog(host: MirrorHost): void {
     </div>
     <label class="ed-mirror-check"><input type="checkbox" id="ed-mirror-keep" checked> Keep the original (add a mirrored copy)</label>
     <label class="ed-mirror-check"><input type="checkbox" id="ed-mirror-swap" checked> Team things swap sides in the copy</label>
+    <label class="ed-mirror-check" title="Half the map only: the far half's terrain (heights, paint and plant cover) becomes the near half's mirror image, and the paths wholly on the near half are copied"><input type="checkbox" id="ed-mirror-ground"> Terrain and paths too (half the map)</label>
     <p id="ed-mirror-why" class="ed-note"></p>
     <div class="ed-dialog-actions"><button id="ed-mirror-go" class="primary">Mirror</button><button id="ed-mirror-cancel">Cancel</button></div>`;
   host.root.append(dialog);
@@ -57,6 +58,7 @@ export function openMirrorDialog(host: MirrorHost): void {
   const z = $<HTMLInputElement>('ed-mirror-z');
   const keep = $<HTMLInputElement>('ed-mirror-keep');
   const swap = $<HTMLInputElement>('ed-mirror-swap');
+  const ground = $<HTMLInputElement>('ed-mirror-ground');
   const why = $('ed-mirror-why');
   const go = $<HTMLButtonElement>('ed-mirror-go');
   selRadio.parentElement!.querySelector('span')!.textContent = count ? `${count} thing${count === 1 ? '' : 's'}` : 'nothing selected';
@@ -76,11 +78,11 @@ export function openMirrorDialog(host: MirrorHost): void {
   $('ed-mirror-selmid').addEventListener('click', () => (selMid && setAt(selMid), update()));
   const plane = (): MirrorPlane => ({ across: across.value as MirrorAcross, at: [Number(x.value) || 0, Number(z.value) || 0] });
   /** The command it would run, or why not. */
-  const plan = (): { label: string; r: MirrorResult & { onLine?: number } } | { error: string } => {
+  const plan = (): { label: string; r: MirrorResult & { onLine?: number; hints?: number; paths?: number; terrain?: boolean } } | { error: string } => {
     const p = plane();
     const d = host.doc();
     if (halfRadio.checked) {
-      const r = mirrorHalfCommand(d, p, half.value as MapHalf, { swapTeams: swap.checked });
+      const r = mirrorHalfCommand(d, p, half.value as MapHalf, { swapTeams: swap.checked, ground: ground.checked });
       return 'error' in r ? r : { label: 'Mirror half the map', r };
     }
     const r = mirrorCommand(d, host.selection(), p, { copy: keep.checked, swapTeams: swap.checked });
@@ -96,6 +98,7 @@ export function openMirrorDialog(host: MirrorHost): void {
     z.disabled = a === 'eastWest';
     keep.disabled = halfRadio.checked;
     swap.disabled = !halfRadio.checked && !keep.checked;
+    ground.disabled = !halfRadio.checked;
     const r = plan();
     go.disabled = 'error' in r;
     if ('error' in r) {
@@ -107,11 +110,12 @@ export function openMirrorDialog(host: MirrorHost): void {
     const n = r.r.selection.tiles.length + r.r.selection.entities.length + (r.r.selection.setPieces?.length ?? 0);
     const at = snapMirrorAt(plane().at, cell);
     const where = a === 'eastWest' ? `x = ${at[0]} m` : a === 'northSouth' ? `z = ${at[1]} m` : `(${at[0]}, ${at[1]})`;
+    const extra = [r.r.hints ? `${r.r.hints} bot hint${r.r.hints === 1 ? '' : 's'}` : '', r.r.paths ? `${r.r.paths} path${r.r.paths === 1 ? '' : 's'}` : '', r.r.terrain ? 'the terrain' : ''].filter(Boolean);
     why.textContent = halfRadio.checked || keep.checked
-      ? `Adds ${n} mirrored thing${n === 1 ? '' : 's'} (${where})${r.r.swapped ? `; ${r.r.swapped} swap team` : ''}${r.r.onLine ? `; ${r.r.onLine} on the line stay as they are` : ''}.`
+      ? `Adds ${n} mirrored thing${n === 1 ? '' : 's'}${extra.length ? ` and ${extra.join(', ')}` : ''} (${where})${r.r.swapped ? `; ${r.r.swapped} swap team` : ''}${r.r.onLine ? `; ${r.r.onLine} on the line stay as they are` : ''}.`
       : `Flips the ${n} selected over (${where}); teams stay as they are.`;
   };
-  for (const el of [selRadio, halfRadio, half, across, keep, swap]) el.addEventListener('change', update);
+  for (const el of [selRadio, halfRadio, half, across, keep, swap, ground]) el.addEventListener('change', update);
   for (const el of [x, z]) el.addEventListener('input', update);
   update();
   go.addEventListener('click', () => {

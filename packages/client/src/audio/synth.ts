@@ -11,9 +11,9 @@
 
 export const SYNTH_RATE = 44100;
 
-export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark' | 'hum' | 'hithead' | 'hitarmor' | 'killconfirm' | 'splash' | 'crack' | 'engine';
+export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark' | 'hum' | 'hithead' | 'hitarmor' | 'killconfirm' | 'splash' | 'crack' | 'engine' | 'rain' | 'wind';
 
-export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark', 'hum', 'hithead', 'hitarmor', 'killconfirm', 'splash', 'crack', 'engine'];
+export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark', 'hum', 'hithead', 'hitarmor', 'killconfirm', 'splash', 'crack', 'engine', 'rain', 'wind'];
 
 /** Small seeded PRNG (mulberry32) returning [-1, 1). */
 function noiseSource(seed: number): () => number {
@@ -449,6 +449,44 @@ function renderEngine(seed: number): Float32Array<ArrayBuffer> {
   });
 }
 
+/**
+ * Rain (weather, map format v34): a hiss of high, band-limited noise with a patter of drops on it (short ticks at
+ * random pitches), 2.4 s with a sine-squared fade at both ends: copies restarted every 1.2 s add up to a steady wash
+ * (game/weatherAudio.ts).
+ */
+function renderRain(seed: number): Float32Array<ArrayBuffer> {
+  const hiss = new Biquad('bandpass').set(3800, 0.5);
+  const low = new Biquad('lowpass').set(900, 0.6);
+  const tick = new Biquad('bandpass').set(2600, 4);
+  let drop = 0;
+  return render(2.4, seed, (_t, u, rnd) => {
+    if (rnd() > 0.9965) {
+      drop = 0.6 + Math.abs(rnd()) * 0.6;
+      tick.set(1800 + Math.abs(rnd()) * 3200, 5);
+    }
+    drop *= 0.992;
+    const n = rnd();
+    return (hiss.run(n) * 0.9 + low.run(n) * 0.25 + tick.run(rnd()) * drop * 2.2) * Math.sin(Math.PI * u) ** 2;
+  });
+}
+
+/**
+ * Wind (weather): low-passed noise whose brightness and loudness swell in slow gusts, with a faint whistle on the
+ * gusts, 2.4 s with a sine-squared fade at both ends (copies every 1.2 s overlap into a steady wind).
+ */
+function renderWind(seed: number): Float32Array<ArrayBuffer> {
+  const body = new Biquad('lowpass').set(500, 0.7);
+  const whistle = new Biquad('bandpass').set(900, 9);
+  const gust = (seed % 13) / 13;
+  let i = 0;
+  return render(2.4, seed, (t, u, rnd) => {
+    const g = 0.6 + 0.4 * Math.sin(t * 2.1 + gust * 6) * Math.sin(t * 0.9 + gust * 3);
+    if (i++ % 64 === 0) body.set(260 + g * 520, 0.7);
+    const n = rnd();
+    return (body.run(n) * (0.8 + g * 0.6) + whistle.run(n) * g * g * 0.5) * Math.sin(Math.PI * u) ** 2;
+  });
+}
+
 /** Bubble: a wobbling upward bloop. */
 function renderBubble(seed: number): Float32Array<ArrayBuffer> {
   const o = osc();
@@ -609,5 +647,9 @@ export function synthesize(recipe: SynthRecipe, variant: number): Float32Array<A
       return renderKillConfirm(seed);
     case 'engine':
       return renderEngine(seed);
+    case 'rain':
+      return renderRain(seed);
+    case 'wind':
+      return renderWind(seed);
   }
 }

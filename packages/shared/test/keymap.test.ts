@@ -36,7 +36,7 @@ function before(code: string, shift: boolean, mod: boolean): KeyAction | null {
     KeyX: 'erase',
     KeyU: 'measure',
     KeyG: shift ? 'raceTrack' : 'paths',
-    KeyN: 'scatter',
+    KeyN: 'envBrush',
     KeyP: 'place',
     KeyI: 'pickStyle',
     KeyV: 'select',

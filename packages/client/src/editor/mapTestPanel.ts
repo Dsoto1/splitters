@@ -60,8 +60,8 @@ export class MapTestPanel {
         <h3>Bot test run</h3>
         <p class="ed-note">A bot match on this map in the background, then heatmaps of where bots went, got stuck, died and where their routes failed. You can keep building meanwhile.</p>
         <label class="ed-dialog-field"><span>Mode</span><select id="ed-mt-mode"></select></label>
-        <label class="ed-dialog-field" id="ed-mt-team-row"><span>Bots a team</span><input id="ed-mt-team" type="number" min="1" max="16" step="1" value="4" /></label>
-        <label class="ed-dialog-field" id="ed-mt-bots-row"><span>Bots</span><input id="ed-mt-bots" type="number" min="2" max="32" step="1" value="8" /></label>
+        <label class="ed-dialog-field" id="ed-mt-team-row"><span>Bots a team</span><input id="ed-mt-team" type="number" min="1" max="32" step="1" value="4" /></label>
+        <label class="ed-dialog-field" id="ed-mt-bots-row"><span>Bots</span><input id="ed-mt-bots" type="number" min="2" max="64" step="1" value="8" /></label>
         <label class="ed-dialog-field"><span>Length</span><select id="ed-mt-length"></select></label>
         <div class="ed-dialog-actions"><button id="ed-mt-run" type="button" class="primary">Run bots</button></div>
         <div id="ed-mt-progress" class="ed-mt-progress" hidden><progress id="ed-mt-bar" max="1" value="0"></progress><button id="ed-mt-cancel" type="button">Cancel</button><span id="ed-mt-status"></span></div>
@@ -132,7 +132,7 @@ export class MapTestPanel {
     sel.replaceChildren(...modes.map((m) => new Option(MODE_LABELS[m], m)));
     sel.value = modes.includes(was as GameMode) ? was : modes[0]!;
     const team = this.host.doc().teamSetup?.sizes[0];
-    if (team && !this.result) this.$<HTMLInputElement>('ed-mt-team').value = String(Math.min(16, team));
+    if (team && !this.result) this.$<HTMLInputElement>('ed-mt-team').value = String(Math.min(32, team));
     this.modeChanged();
   }
 
@@ -153,7 +153,7 @@ export class MapTestPanel {
     const mode = this.$<HTMLSelectElement>('ed-mt-mode').value as GameMode;
     const seconds = Number(this.$<HTMLSelectElement>('ed-mt-length').value);
     const num = (id: string, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.round(Number(this.$<HTMLInputElement>(id).value) || lo)));
-    const opts = { mode, teamSize: num('ed-mt-team', 1, 16), bots: num('ed-mt-bots', 2, 32), seconds, seed: 1 };
+    const opts = { mode, teamSize: num('ed-mt-team', 1, 32), bots: num('ed-mt-bots', 2, 64), seconds, seed: 1 };
     const w = this.newWorker();
     this.worker = w;
     const started = performance.now();

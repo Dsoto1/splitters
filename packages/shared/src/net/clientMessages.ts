@@ -6,6 +6,7 @@ import { validateBotSet } from '../sim/botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
 import { SCORE_LIMIT_MAX, isGameMode, type GameMode } from '../sim/rules.ts';
 import { isWeaponSetId } from '../sim/weaponSets.ts';
+import { isWeatherChoice } from '../map/weather.ts';
 import type { PlayerInput } from '../sim/movement.ts';
 
 /**
@@ -138,6 +139,11 @@ function parseHostCommand(raw: unknown): HostCommand | null {
       if (p.weaponSet !== undefined) {
         if (p.weaponSet !== null && !isWeaponSetId(p.weaponSet)) return null;
         rules.weaponSet = p.weaponSet;
+      }
+      // A weather by name, or null for the map's own.
+      if (p.weather !== undefined) {
+        if (p.weather !== null && !isWeatherChoice(p.weather)) return null;
+        rules.weather = p.weather;
       }
       return { c: 'rules', rules };
     }

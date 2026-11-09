@@ -173,8 +173,11 @@ describe('a bot test run and exposure on a real map', () => {
     const map = arena();
     expect(botTestRules(map, { mode: 'core.deathmatch', teamSize: 4, bots: 6, seconds: 10 }).total).toBe(6);
     expect(botTestRules(map, { mode: 'core.tdm', teamSize: 5, bots: 6, seconds: 10 }).total).toBe(10);
-    expect(botTestRules(map, { mode: 'core.tdm', teamSize: 99, bots: 6, seconds: 10 }).total).toBe(32);
-    expect(botTestRules(map, { mode: 'core.deathmatch', teamSize: 4, bots: 200, seconds: 10 }).total).toBe(32);
+    // Up to 64 bots (owner, 2026-11-09).
+    expect(botTestRules(map, { mode: 'core.tdm', teamSize: 99, bots: 6, seconds: 10 }).total).toBe(64);
+    expect(botTestRules(map, { mode: 'core.tdm', teamSize: 32, bots: 6, seconds: 10 }).total).toBe(64);
+    expect(botTestRules(map, { mode: 'core.deathmatch', teamSize: 4, bots: 64, seconds: 10 }).total).toBe(64);
+    expect(botTestRules(map, { mode: 'core.deathmatch', teamSize: 4, bots: 200, seconds: 10 }).total).toBe(64);
   });
 
   it('plays a short match in slices and gives heatmaps and a summary', () => {

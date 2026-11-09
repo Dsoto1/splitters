@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { MODEL_FACADES, SCENARIO_PALETTE, THEME_BACKDROPS, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreThemes, getItem, getProp, getStylePack, initPhysics, loadMap, newScenarioEntities, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
+import { MODEL_FACADES, SCENARIO_PALETTE, THEME_BACKDROPS, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreThemes, getItem, getProp, getStylePack, initPhysics, loadMap, newScenarioEntities, playableModes, validateMap, type MapDocument, type MapEntity, type Rotation } from '../src/index.ts';
 import { NavWorld, initNavigation, mapNavigation, validateMapNavigation } from '../src/match.ts';
 import { makeMap, propManifest } from './helpers.ts';
 
@@ -155,9 +155,20 @@ describe('Whiteout Station (the pack\'s demo map, rebuilt from MAP 03 Frostbite 
     const corridors = under.filter((x) => x.tile === 'core.corridor');
     expect(corridors.length).toBeGreaterThanOrEqual(2);
     for (const c of corridors) expect(tiles.some((x) => x.z === 0 && x.x === c.x && x.y === c.y && x.tile.startsWith('core.yard')), `${c.x},${c.y}`).toBe(true);
-    // Modes as the brief recommends (Elimination comes with Team Deathmatch); no objectives invented.
+    // Modes: Deathmatch and Team Deathmatch (Elimination with it), and King of the Hill (owner, 2026-11-09) on three
+    // hills: the yard, the radar ridge and the ice cave. No flags.
     expect(map.metadata.supportedModes).toEqual(['core.deathmatch', 'core.tdm']);
-    expect(map.entities.filter((e) => e.kind === 'flag' || e.kind === 'hill')).toEqual([]);
+    expect(map.entities.filter((e) => e.kind === 'flag')).toEqual([]);
+    const hills = map.entities.filter((e): e is Extract<MapEntity, { kind: 'hill' }> => e.kind === 'hill');
+    expect(hills.map((h) => h.name).sort()).toEqual(['Ice cave', 'Radar ridge', 'Yard']);
+    expect(playableModes(map)).toContain('core.koth');
+    expect(hills.find((h) => h.name === 'Radar ridge')!.position[1]).toBeGreaterThan(3.5);
+    // Two to four drivable snow sleds on the south road (z under -30), none left as a parked prop.
+    const sleds = map.entities.filter((e) => e.kind === 'mount' && e.model === 'snow_sled');
+    expect(sleds.length).toBeGreaterThanOrEqual(2);
+    expect(sleds.length).toBeLessThanOrEqual(4);
+    for (const s of sleds) expect(s.position[2]).toBeLessThan(-30);
+    expect(map.entities.some((e) => e.kind === 'prop' && e.model === 'prop.so_snowmobile')).toBe(false);
     const spawns = map.entities.filter((e) => e.kind === 'spawn');
     for (const team of ['embers', 'tide']) expect(spawns.filter((e) => e.faction === team).length, team).toBeGreaterThanOrEqual(8);
     expect(spawns.length).toBeGreaterThanOrEqual(16);

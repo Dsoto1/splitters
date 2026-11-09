@@ -1409,6 +1409,33 @@
       }
     },
     {
+      "id": "core.tunnel_vault_walled",
+      "category": "Corridors",
+      "displayName": "Vaulted Tunnel (Side Walls)",
+      "blurb": "A barrel-vaulted passage 3.6 m wide running north–south (a hypogeum, a sewer, a crypt), walled up to ground level so the ground round it meets masonry",
+      "optionOf": {"tile":"core.tunnel_vault","option":"sideWalls"},
+      "cells": [[0,0,0]],
+      "floors": [],
+      "ports": [{"side":"N","level":0},{"side":"S","level":0}],
+      "edgeDefault": "open",
+      "extraFloors": [
+        {"box":[-3.7,-0.2,-4,3.7,0,4]},
+        {"box":[-4,3.5,-4,-1.8,3.75,4]},
+        {"box":[1.8,3.5,-4,4,3.75,4]},
+        {"box":[-3.7,-0.3,-4,-1.85,0.6,4]},
+        {"box":[1.85,-0.3,-4,3.7,0.6,4]}
+      ],
+      "solids": [
+        {"box":[-4,0,-4,-1.8,3.5,4],"kind":"wall"},
+        {"box":[1.8,0,-4,4,3.5,4],"kind":"wall"},
+        {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"box":[-0.2,0,-4,0.2,0.02,4],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
+      ],
+      "notes": {
+        "design": "Sandfall follow-up (owner, 2026-11-09): the Side walls option of the Vaulted Tunnel (MapMaker's tile inspector; a tile of its own, so maps need no new field). Its masonry is capped 0.25 m under the level above (a kerb at ground level), and its floors keep the terrain round it at that kerb: the passage's floor is inset 0.3 m from the closed sides, so the ground on the cell's edge there is pulled only to the cap (settle.ts terrainUnderFloors), not down to the passage; a buried floor inside each wall (-0.3 to 0.6 m) carries the ground under the wall down to the passage's floor, so no slope of earth shows in the passage. The ground over the tunnel itself must still be within 3 m of its floor (flattened), as for the plain tile."
+      }
+    },
+    {
       "id": "core.tunnel_vault_bend",
       "category": "Corridors",
       "displayName": "Vaulted Tunnel Bend",
@@ -1426,6 +1453,38 @@
         {"box":[-0.2,0,-4,0.2,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
         {"box":[0.2,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
       ]
+    },
+    {
+      "id": "core.tunnel_vault_bend_walled",
+      "category": "Corridors",
+      "displayName": "Vaulted Tunnel Bend (Side Walls)",
+      "blurb": "The vaulted passage comes in from the south and turns east, walled up to ground level so the ground round it meets masonry",
+      "optionOf": {"tile":"core.tunnel_vault_bend","option":"sideWalls"},
+      "cells": [[0,0,0]],
+      "floors": [],
+      "ports": [{"side":"S","level":0},{"side":"E","level":0}],
+      "edgeDefault": "open",
+      "extraFloors": [
+        {"box":[-3.7,-0.2,-4,4,0,3.7]},
+        {"box":[-4,3.5,-4,-1.8,3.75,4]},
+        {"box":[-1.8,3.5,1.8,4,3.75,4]},
+        {"box":[1.8,3.5,-4,4,3.75,-1.8]},
+        {"box":[-3.7,-0.3,-4,-1.85,0.6,3.7]},
+        {"box":[-1.75,-0.3,1.85,4,0.6,3.7]},
+        {"box":[1.85,-0.3,-4,4,0.6,-1.85]}
+      ],
+      "solids": [
+        {"box":[-4,0,-4,-1.8,3.5,4],"kind":"wall"},
+        {"box":[-1.8,0,1.8,4,3.5,4],"kind":"wall"},
+        {"box":[1.8,0,-4,4,3.5,-1.8],"kind":"wall"},
+        {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,1.8],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"vault":{"axis":"x","span":[-1.8,1.8],"along":[-1.8,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"box":[-0.2,0,-4,0.2,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[0.2,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
+      ],
+      "notes": {
+        "design": "Sandfall follow-up (owner, 2026-11-09): the Side walls option of the Vaulted Tunnel Bend (MapMaker's tile inspector; a tile of its own, so maps need no new field). Its masonry is capped 0.25 m under the level above (a kerb at ground level), and its floors keep the terrain round it at that kerb: the passage's floor is inset 0.3 m from the closed sides, so the ground on the cell's edge there is pulled only to the cap (settle.ts terrainUnderFloors), not down to the passage; a buried floor inside each wall (-0.3 to 0.6 m) carries the ground under the wall down to the passage's floor, so no slope of earth shows in the passage. The ground over the tunnel itself must still be within 3 m of its floor (flattened), as for the plain tile."
+      }
     },
     {
       "id": "core.tunnel_vault_t",
@@ -1447,6 +1506,38 @@
       ]
     },
     {
+      "id": "core.tunnel_vault_t_walled",
+      "category": "Corridors",
+      "displayName": "Vaulted Tunnel Junction (Side Walls)",
+      "blurb": "The vaulted passage runs east–west with a branch south, walled up to ground level so the ground round it meets masonry",
+      "optionOf": {"tile":"core.tunnel_vault_t","option":"sideWalls"},
+      "cells": [[0,0,0]],
+      "floors": [],
+      "ports": [{"side":"E","level":0},{"side":"W","level":0},{"side":"S","level":0}],
+      "edgeDefault": "open",
+      "extraFloors": [
+        {"box":[-4,-0.2,-4,4,0,3.7]},
+        {"box":[-4,3.5,1.8,4,3.75,4]},
+        {"box":[-4,3.5,-4,-1.8,3.75,-1.8]},
+        {"box":[1.8,3.5,-4,4,3.75,-1.8]},
+        {"box":[-4,-0.3,1.85,4,0.6,3.7]},
+        {"box":[-4,-0.3,-4,-1.85,0.6,-1.85]},
+        {"box":[1.85,-0.3,-4,4,0.6,-1.85]}
+      ],
+      "solids": [
+        {"box":[-4,0,1.8,4,3.5,4],"kind":"wall"},
+        {"box":[-4,0,-4,-1.8,3.5,-1.8],"kind":"wall"},
+        {"box":[1.8,0,-4,4,3.5,-1.8],"kind":"wall"},
+        {"vault":{"axis":"x","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,1.8],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"box":[-4,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[-0.2,0,-4,0.2,0.02,-0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
+      ],
+      "notes": {
+        "design": "Sandfall follow-up (owner, 2026-11-09): the Side walls option of the Vaulted Tunnel Junction (MapMaker's tile inspector; a tile of its own, so maps need no new field). Its masonry is capped 0.25 m under the level above (a kerb at ground level), and its floors keep the terrain round it at that kerb: the passage's floor is inset 0.3 m from the closed sides, so the ground on the cell's edge there is pulled only to the cap (settle.ts terrainUnderFloors), not down to the passage; a buried floor inside each wall (-0.3 to 0.6 m) carries the ground under the wall down to the passage's floor, so no slope of earth shows in the passage. The ground over the tunnel itself must still be within 3 m of its floor (flattened), as for the plain tile."
+      }
+    },
+    {
       "id": "core.tunnel_vault_cross",
       "category": "Corridors",
       "displayName": "Vaulted Tunnel Crossing",
@@ -1466,6 +1557,42 @@
         {"box":[-0.2,0,-4,0.2,0.02,-0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
         {"box":[-0.2,0,0.2,0.2,0.02,4],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
       ]
+    },
+    {
+      "id": "core.tunnel_vault_cross_walled",
+      "category": "Corridors",
+      "displayName": "Vaulted Tunnel Crossing (Side Walls)",
+      "blurb": "Two vaulted passages crossing under a groin vault, walled up to ground level so the ground round it meets masonry",
+      "optionOf": {"tile":"core.tunnel_vault_cross","option":"sideWalls"},
+      "cells": [[0,0,0]],
+      "floors": [],
+      "ports": [{"allSides":0}],
+      "edgeDefault": "open",
+      "extraFloors": [
+        {"box":[-4,-0.2,-4,4,0,4]},
+        {"box":[-4,3.5,-4,-1.8,3.75,-1.8]},
+        {"box":[1.8,3.5,-4,4,3.75,-1.8]},
+        {"box":[-4,3.5,1.8,-1.8,3.75,4]},
+        {"box":[1.8,3.5,1.8,4,3.75,4]},
+        {"box":[-4,-0.3,-4,-1.85,0.6,-1.85]},
+        {"box":[1.85,-0.3,-4,4,0.6,-1.85]},
+        {"box":[-4,-0.3,1.85,-1.85,0.6,4]},
+        {"box":[1.85,-0.3,1.85,4,0.6,4]}
+      ],
+      "solids": [
+        {"box":[-4,0,-4,-1.8,3.5,-1.8],"kind":"wall"},
+        {"box":[1.8,0,-4,4,3.5,-1.8],"kind":"wall"},
+        {"box":[-4,0,1.8,-1.8,3.5,4],"kind":"wall"},
+        {"box":[1.8,0,1.8,4,3.5,4],"kind":"wall"},
+        {"vault":{"axis":"x","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"box":[-4,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[-0.2,0,-4,0.2,0.02,-0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[-0.2,0,0.2,0.2,0.02,4],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
+      ],
+      "notes": {
+        "design": "Sandfall follow-up (owner, 2026-11-09): the Side walls option of the Vaulted Tunnel Crossing (MapMaker's tile inspector; a tile of its own, so maps need no new field). Its masonry is capped 0.25 m under the level above (a kerb at ground level), and its floors keep the terrain round it at that kerb: the passage's floor is inset 0.3 m from the closed sides, so the ground on the cell's edge there is pulled only to the cap (settle.ts terrainUnderFloors), not down to the passage; a buried floor inside each wall (-0.3 to 0.6 m) carries the ground under the wall down to the passage's floor, so no slope of earth shows in the passage. The ground over the tunnel itself must still be within 3 m of its floor (flattened), as for the plain tile."
+      }
     },
     {
       "id": "core.gallery_grand",
