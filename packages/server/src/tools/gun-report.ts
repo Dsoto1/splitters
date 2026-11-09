@@ -758,6 +758,11 @@ if (bandsOut) {
       ...rows,
       '};',
       '',
+      '/** Draw (ms): switching to the gun until its first round leaves (spin-up and charge included). */',
+      'export const BOT_DRAW_MS: Readonly<Record<string, number>> = {',
+      ...reports.filter((r) => r.botSweep && r.drawMs !== null).map((r) => `  '${r.id}': ${r.drawMs},`),
+      '};',
+      '',
     ].join('\n'),
   );
   console.log(`wrote ${p}`);

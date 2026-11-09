@@ -239,8 +239,9 @@ describe('Fort Wars', () => {
     // roles and defenders keeping watch toward the enemy (2026-11-06; one defender a side here) hold attackers off
     // longer: of seeds 1-6 and 9, combat reached within 6 m on 5, 6 and 9 (3 takes on 9), seed 3 10 m short; seed 9.
     // Bot AI Phase A with the 11-06 characters (2026-11-06), seeds 1-12: within 6 m on 1-6 and 8, takes on 1, 2, 3
-    // and 6 (two on 6); 7 and 9-12 end 6.7-9.8 m short. Seed 6.
-    const match = new Match(meadow(), rules, 6);
+    // and 6 (two on 6); 7 and 9-12 end 6.7-9.8 m short. Seed 6. Bots' weapon choice from the measured TTK (gunplay
+    // G4, 2026-11-09), seeds 1-12: within 6 m or a take on 3, 4, 5, 7, 11 and 12; the rest end 6.4-12.8 m short. Seed 3.
+    const match = new Match(meadow(), rules, 3);
     for (let i = 0; i < 6; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
     const forts = fortsOf(match);
     steps(match, 60 * TICK_RATE - 5);

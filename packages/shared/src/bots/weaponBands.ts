@@ -1,5 +1,5 @@
 import type { WeaponDefinition } from '../sim/weapons.ts';
-import { BOT_TTK, BOT_TTK_DISTANCES } from './weaponBands.generated.ts';
+import { BOT_DRAW_MS, BOT_TTK, BOT_TTK_DISTANCES } from './weaponBands.generated.ts';
 
 /**
  * Where each gun is good, for bots (GUNPLAY_SPEC §40 and Phase G4; docs/GUNPLAY_AUDIT.md "G4"): from the time to kill
@@ -110,13 +110,14 @@ function curveAt(ttk: readonly (number | null)[], distances: readonly number[], 
 
 /**
  * How much faster (+) or slower (-) this gun kills at `dist` than the benchmark guns' median there, measured: from 1
- * (it kills at once, or nothing else can) to -1 (it can't kill there, or takes twice as long or more). 0 without a
- * measurement. weaponScore adds it, weighted, so a bot draws the gun that wins the fight at hand.
+ * (it kills at once, or nothing else can) to -1 (it can't kill there, or takes twice as long or more). A gun not in
+ * hand (`held` false) pays its measured draw first: switching only pays when the new gun still wins after it. 0
+ * without a measurement. weaponScore adds it, weighted, so a bot draws the gun that wins the fight at hand.
  */
-export function ttkEdge(id: string, dist: number): number {
+export function ttkEdge(id: string, dist: number, held = true): number {
   const ttk = BOT_TTK[id];
   if (!ttk) return 0;
-  const t = curveAt(ttk, BOT_TTK_DISTANCES, dist);
+  const t = curveAt(ttk, BOT_TTK_DISTANCES, dist) + (held ? 0 : (BOT_DRAW_MS[id] ?? 0));
   const m = curveAt(median, BOT_TTK_DISTANCES, dist);
   if (!Number.isFinite(t)) return -1;
   if (!Number.isFinite(m)) return 1;
