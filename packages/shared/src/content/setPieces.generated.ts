@@ -616,8 +616,8 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     parts: [
       { kind: 'tile', tile: 'medieval.town_wall', x: 0, y: 0, z: 0, rotation: 0 },
       { kind: 'tile', tile: 'medieval.town_wall', x: 2, y: 0, z: 0, rotation: 0 },
-      { kind: 'tile', tile: 'core.room', x: 1, y: 0, z: 0, rotation: 0, edges: { '0,0,0:N': 'arch_segmental', '0,0,0:S': 'arch_segmental', '0,0,0:E': 'wall', '0,0,0:W': 'wall' }, surfaces: { floor: { role: 'paving' }, walls: { role: 'stone' }, solids: { role: 'stone' }, trim: { role: 'trim' } }, options: { ceiling: 'vault' } },
-      { kind: 'tile', tile: 'core.room', x: 1, y: 0, z: 1, rotation: 0, edges: { '0,0,0:N': 'window', '0,0,0:S': 'slit', '0,0,0:E': 'arch', '0,0,0:W': 'arch' }, surfaces: { floor: { role: 'floor' }, walls: { role: 'stone' }, solids: { role: 'wood' }, underside: { role: 'stone' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { ceiling: 'open' } },
+      { kind: 'tile', tile: 'core.room', x: 1, y: 0, z: 0, rotation: 0, edges: { '0,0,0:N': 'arch_segmental', '0,0,0:S': 'arch_segmental', '0,0,0:E': 'wall', '0,0,0:W': 'wall' }, surfaces: { floor: { role: 'paving' }, walls: { role: 'stone' }, solids: { role: 'stone' }, trim: { material: 'core.stone_trim' } }, options: { ceiling: 'vault', facade: 'none' } },
+      { kind: 'tile', tile: 'core.room', x: 1, y: 0, z: 1, rotation: 0, edges: { '0,0,0:N': 'window', '0,0,0:S': 'slit', '0,0,0:E': 'arch', '0,0,0:W': 'arch' }, surfaces: { floor: { role: 'floor' }, walls: { role: 'stone' }, solids: { role: 'wood' }, underside: { role: 'stone' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { ceiling: 'open', facade: 'none' } },
       { kind: 'block', name: 'Roof', position: [8, 7.6, -1.25], size: [7, 0.4, 4.5], material: { role: 'roof' } },
       { kind: 'block', name: 'Roof', position: [6.75, 7.6, 2.25], size: [4.5, 0.4, 2.5], material: { role: 'roof' } },
       { kind: 'block', name: 'Roof', position: [10.95, 7.6, 2.25], size: [1.1, 0.4, 2.5], material: { role: 'roof' } },
