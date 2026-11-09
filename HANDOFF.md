@@ -469,6 +469,26 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+### Sandfall Colosseum rebuilt in MapMaker (`wip/mapmaker-sandfall`, agent, 2026-11-08/09; the owner's brief docs/map-briefs/sandfall_colosseum/BRIEF.md; CI on `check/mapmaker-sandfall`)
+- **What:** the map rebuilt from the Flavius Rule board (manifest and decisions in docs/map-briefs/sandfall_colosseum/):
+  the 52 m sand with the board's pillars, medallions (KotH), hatches and beast pit; seven-storey stands of the Arena
+  stands set pieces on four sides; gates 1-4; the emperor's box back at north centre; corner courts with stair towers;
+  the hypogeum (ring, hatch halls, cages, gladiators' cells, eight stairs out); sixteen insulae and the main square;
+  TDM / CTF / KotH, 12 v 12, Medieval. Built only through MapMaker (a scratch Playwright driver, as for Iron Coast).
+- **MapMaker / shared code:** backdrop scenery **Hills and a volcano** (`SCENERY_IDS` + client `backdrop.ts`
+  `volcano`, still: nothing for Reduce flashing to calm; `client/test/backdropVolcano.test.ts`); exploding or deleting
+  the last placement of a map's own set piece drops its `setPieceDefs` entry (`operations.ts` `unusedDefsCommand`,
+  `setPieceEdit.test.ts`). No format bump. `stylePacksAncient.test.ts`'s Sandfall test follows the rebuild.
+- **Proof:** validate-map 0 issues; nav audit 0 traps, 0 errors; z-fight audit passes; bot-report and bench numbers in
+  DECISIONS ("Budgets") and the manifest.
+- **Driver tricks (new):** Save selection as set piece takes the least cell *and level* of the selection, entities
+  included (a light a level below lifts the tiles a level in the piece); a piece's frame is at most 33 cells a side
+  (split a big selection); its footprint claims every level from its lowest to its highest for every cell (keep a
+  piece on one level if it must pass under other things). Terrain over a tunnel must be pulled under its floor
+  everywhere along it (flatten to within 3 m), or the slope between pulled and unpulled ground closes the tunnel.
+  Open Stairs climb east as placed. Duplicate (Ctrl+D) + R + arrow keys moves 90 placements at once.
+- **Left / owner's calls:** see the report (lift cages and the portal back? the aqueduct? lights budget full).
+
 ### Fireteams, part 1 (`wip/fireteams`, agent, 2026-11-08; owner said "Go"; green on `check/fireteams` at 4610a3b, run 42493762584; LANDED: main 4610a3b; docs/FIRETEAMS_PLAN.md "Part 1", docs/BOTS.md "Fireteams")
 - **What players see:** a **Fireteams** variant chip in Match setup for TDM, CTF, KotH, Bomb, Hostage and
   Breakthrough, with **Squad size 4 / 5 / 6** (5 standard) beside the score. In play, "You lead a fireteam of 5 ·
