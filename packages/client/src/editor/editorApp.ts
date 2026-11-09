@@ -4081,11 +4081,11 @@ export class EditorApp {
       // Our own species (the plants brush's grass, flowers, fern, shrub, eelgrass and pebbles) in place of the retired pieces, pictured from their first variant.
       for (const id of GROUND_COVER_SPECIES[cat] ?? []) this.propButton(grid, getProp(id)!, 'nature environment procedural grass flowers fern shrub bush eelgrass pebbles stones ground cover');
     }
-    // The procedural environment's species (Phase 1 preview, docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): with ?env=1 only,
-    // no palette picture yet (their pictures join the atlas when they ship).
+    // The procedural environment's other species (boulders, cliff faces…; docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): with
+    // ?env=1 only, pictured from the `environment` atlas like the rest.
     if (envRendererOn()) {
       const grid = this.palette.group($('ed-nature'), 'nature:environment', 'Environment (preview)', { note: 'Procedural species: trees, shrub, grass, boulder, cliff · variants in the inspector' });
-      for (const s of ENV_SPECIES) if (!GROUND_COVER_IDS.includes(s.id)) this.propButton(grid, getProp(s.id)!, 'nature environment procedural preview', false);
+      for (const s of ENV_SPECIES) if (!GROUND_COVER_IDS.includes(s.id)) this.propButton(grid, getProp(s.id)!, 'nature environment procedural preview');
     }
   }
 
