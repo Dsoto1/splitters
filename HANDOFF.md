@@ -8,6 +8,31 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Map line-up (`wip/maps-retire`, 2026-11-09; owner's decisions of 2026-11-09).**
+- **Retired (files deleted; git history keeps them):** fogbound, bottling (Bottling Plant), dune_harbor, no_mans_field,
+  overhang, starhaven: `maps/<id>.json`, their card pictures (`client/public/maps/shots/<id>.jpg`), `inspirations.ts`
+  lines, rotations, tests and current docs. Not added to `RETIRED_MAPS` (that list is for maps whose files stay; the
+  deleted ones of the earlier map review weren't either). No e2e flow, flowMap entry, bot-report/bot-limits default,
+  Quick Play list, playlist, server/host default or `test_coverage` named them.
+- **Rotation replacements** (same mode, not retired): Deathmatch Classics bottling → pump_tower, overhang → razor_edge;
+  Objective Mix (Bomb) dune_harbor → iron_tide, starhaven → runway_nine; Flag Run (CTF) no_mans_field → market_town
+  (not on BOTS.md's "still without a capture" list).
+- **Tests:** `rotation.test.ts`'s stub suite uses razor_edge for overhang; `hoverCeiling.test.ts`'s Dune Harbor doorway
+  (0.9 m sill, lintel at 2.5 m, roof at 3.5 m) is now built in the test's yard (Speeder through, Hauler stops and backs
+  out; passes). Code comments naming the retired maps reworded.
+- **Renamed in the real MapMaker** (Playwright: Import, Map properties' Name, Export; ids kept): iron_tide **Midnight
+  Keel**, ironhold_prison **Cormorant Isle** (also its match-start Logic message, "Cormorant Isle. Lights on: ..."),
+  jungle_steps **Cradle of Idols**. Checked unique first against every map name on origin/main and the unlanded
+  wip/mapmaker-* branches (no shared word, no shared 4-letter start, "of"/"the" ignored). Card pictures show no name
+  (unchanged). Docs, test titles and comments use the new names (CHANGELOG/HANDOFF history keeps the old ones).
+- **Iron Maw:** Players 16-64 in Map properties (was 16-32).
+- Every exported file differs from before only in that field (and the Logic text), `formatVersion` → 33 and the
+  release stamp (semantic diff); the terrain is written a row per line now, so the text diffs are large.
+  validate-map: 0 issues on all four.
+- Locally (box at load 9-22): typecheck, content:check, test:changed (6 timeouts under load; the map ones pass alone);
+  e2e maps/vehicles/hostcontrols/dedicatedhost timed out under load (iron_tide's offline match took 90 s against the
+  flow's 60 s; it starts and plays). CI ran the full suite (deleted card pictures are unmapped paths).
+
 **Release 0.9.0 (2026-11-08, owner-approved "wait for the passenger fix, then release together"):** main 4d8f205
 (green on `check/release-090`, run 42502393727; three e2e shards failed first in flows the release doesn't touch,
 arsenal, weaponsets and hostgame, as on other branches that hour, and passed on a re-run of the failed jobs). CI
