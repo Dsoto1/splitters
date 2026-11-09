@@ -377,7 +377,9 @@ export class BorderVisuals {
         const ground = ctx.ground(...f.at(Math.min(e.length, Math.max(0, u)), 0));
         bandRows.forEach(([v, k], b) => {
           const [x, z] = f.at(u, v);
-          g.vert(x, ground + k * (0.75 + 0.5 * borderNoise(ctx.seed, i * 7 + b)), z, b === 0 ? darker : dark);
+          // On a coast the ground falls away outwards: the band follows it there.
+          const under = ctx.groundOut ? ctx.ground(...f.at(Math.min(e.length, Math.max(0, u)), v)) : ground;
+          g.vert(x, under + k * (0.75 + 0.5 * borderNoise(ctx.seed, i * 7 + b)), z, b === 0 ? darker : dark);
         });
       }
       g.grid(n + 1, bandRows.length);
@@ -475,7 +477,7 @@ export class BorderVisuals {
     for (const m of made.meshes) this.add(m);
     this.materials.push(...made.materials);
     const ends = new Map(made.forest.map((f) => [f.edge, f.ends] as const));
-    if (ends.size) await this.forest([...ends.keys()], { ...ctx, ground: made.ground, neighbours: (e) => ends.get(e) ?? ctx.neighbours(e) }, build);
+    if (ends.size) await this.forest([...ends.keys()], { ...ctx, ground: made.ground, groundOut: true, neighbours: (e) => ends.get(e) ?? ctx.neighbours(e) }, build);
   }
 
   // ---------------------------------------------------------------- water
@@ -550,6 +552,8 @@ interface Ctx {
   sandy: boolean;
   /** Desert country: cliffs in red sandstone. */
   redRock: boolean;
+  /** The ground changes going out from the line (a coast's land): the forest's canopy band follows it. */
+  groundOut?: boolean;
   /** Styles of the sides before and after this edge (round the corners at its a and b ends). */
   neighbours: (e: BorderEdge) => [BorderStyle, BorderStyle];
 }
