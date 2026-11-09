@@ -1085,7 +1085,10 @@ round times; Fort Wars pieces built.
 - **Limits** live in `packages/server/src/tools/bot-limits.json`, like the perf budgets: per mode (`core.ctf`), for
   all modes (`all`) and per map where it matters (`core.ctf/eagle_spires`). Each measure is a most (failed searches,
   idle, frozen, stuck recoveries a bot-minute, spawn deaths, think ms) or a least (captures, takes, hill time,
-  coverage, going to the goal); `METRICS` in bot-report.ts says which. A worse number fails.
+  coverage, going to the goal); `METRICS` in bot-report.ts says which. A worse number fails. The idle-spell
+  measures (10 s+ spells a match, the longest) leave out posts held (a camper's or sniper's vantage spot, still on
+  purpose for 18-50 s: `ON_PURPOSE` in bot-report.ts; 2026-11-09, when the check's spells were all posts); `--spells`
+  still lists them.
 - `pnpm bot-report --check` plays the file's `check` list (Diamond Park and Eagle Spires CTF, Shingle Point King of
   the Hill, Fernwood Moon TDM; one seed, 90 s each: about a minute and a half on a CI runner) and holds it to
   `checkLimits`. CI runs it (the `bots` job, under `stop-on-failure.sh` like the other gating jobs) when a change

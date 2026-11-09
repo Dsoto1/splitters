@@ -110,7 +110,7 @@ interface Candidate {
  * Dijkstra over the graph, stopping at the limit. Into `dist` (Infinity where not reached); the polygons it reached are
  * returned so the caller can reset them.
  */
-function walkFrom(g: NavGraph, centre: Float32Array, from: number, limit: number, dist: Float64Array): number[] {
+function walkFrom(g: NavGraph, centre: Float32Array, from: number, limit: number, dist: Float64Array, extra?: ReadonlyMap<number, readonly number[]>): number[] {
   const touched: number[] = [from];
   dist[from] = 0;
   // A binary heap of polygons by cost.
@@ -155,8 +155,10 @@ function walkFrom(g: NavGraph, centre: Float32Array, from: number, limit: number
       }
     }
     if (c > dist[a]!) continue;
-    for (let l = g.linkStart[a]!; l < g.linkStart[a + 1]!; l++) {
-      const b = g.links[l]!;
+    const more = extra?.get(a);
+    const end = g.linkStart[a + 1]! + (more?.length ?? 0);
+    for (let l = g.linkStart[a]!; l < end; l++) {
+      const b = l < g.linkStart[a + 1]! ? g.links[l]! : more![l - g.linkStart[a + 1]!]!;
       if (disabled(g, b)) continue;
       const d = c + hypot(centre[a * 3]! - centre[b * 3]!, centre[a * 3 + 2]! - centre[b * 3 + 2]!) + Math.abs(centre[a * 3 + 1]! - centre[b * 3 + 1]!);
       if (d > limit || d >= dist[b]!) continue;
@@ -363,8 +365,26 @@ function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts
   for (const c of cands) parkourStats.cands[c.kind] = (parkourStats.cands[c.kind] ?? 0) + 1;
   const t1 = performance.now();
   parkourStats.findMs = t1 - t0;
-  // Best savings first (no walk round at all first), then by place: deterministic.
-  cands.sort((a, b) => b.saving - a.saving || a.start.x - b.start.x || a.start.z - b.start.z || a.start.y - b.start.y);
+  // Ground the spawns walk to (with the build's other links: lifts, ladders) first: ledges players stand on, before roofs
+  // and tops only parkour gets onto. Fernwood Moon has hundreds of those; with no walk round they tied, filled MAX_DROPS
+  // by place (west first), and the north deck lost its 0.7 m hop down onto its ramp: the rope lift (a 17 s round trip)
+  // was its only way down, and bots waited 10-23 s for it. Then the best savings (no walk round at all first), then by
+  // place: deterministic.
+  const walked = new Uint8Array(n);
+  const seeds = spawns.flatMap((p) => {
+    const hit = nav.nearestPoly(p, { x: 1, y: 1, z: 1 });
+    return hit ? [hit.index] : [];
+  });
+  if (!seeds.length) walked.fill(1);
+  for (const s of seeds) {
+    if (walked[s]) continue;
+    const touched = walkFrom(g, centre, s, Infinity, dist, extraFrom);
+    for (const p of touched) {
+      walked[p] = 1;
+      dist[p] = Infinity;
+    }
+  }
+  cands.sort((a, b) => walked[b.from]! - walked[a.from]! || b.saving - a.saving || a.start.x - b.start.x || a.start.z - b.start.z || a.start.y - b.start.y);
   const out: ParkourLink[] = [];
   const ends: [number, number][] = [];
   const kinds: Record<ParkourKind, number> = { drop: 0, gap: 0, up: 0 };
