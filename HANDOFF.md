@@ -40,7 +40,7 @@ turning by mouse went in with it.
   volume (`quantizationVolume: 'scene'`), and `tools/content/lod-audit.mjs` checks every far copy against its body
   (own skin, unmatched vertices, 6 poses): 161 far copies, 0 off. After, drawn far / full detail in the same pose:
   Hyena Warrior 1.91/1.92 m at 17 m, Honest Abe 1.91/1.91 m at 30 m, every dealt look within 1 cm. characters3's
-  three reds before landing (green on `check/far-copies`, run 42636289055; characters3 locally green 5 runs in a row):
+  three reds before landing (green on `check/far-copies`, run 42636289055, and again after the MapMaker train; characters3 locally green 5 runs in a row):
   - **Bots' hands 13-15 cm off their guns at 160 m:** not the far copies (the probe already measured the level drawn,
     and the far copy's hands match the body's within 0.5 cm) but the smoothed animation LOD. A first long-gun grip
     measures the torso's skin (`TorsoSurface.measure`, `skeleton.prepare(true)`) part way through the after-clip work;
