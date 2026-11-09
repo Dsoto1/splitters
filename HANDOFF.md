@@ -219,6 +219,14 @@ The workflow is unchanged (CLAUDE.md):
   (`recommendedPlayers`); with 97 spawn points and a 16 v 16 team layout its automatic caps are 32 best, up to 96.
   Suggested: Players 16-64 (as Iron Coast, 96 spawns, says), in MapMaker's Map properties; small fixes, 2026-11-09.
 - **For the session owning team kills and friendly fire:** the e2e `teams` flow's friendly-fire and team-kill checks contradict themselves between attempts on check/mapmaker-setpieces (run 42549709174, job 128943570176). Attempt 1: friendly fire off still hurt a teammate (70.5), and a team kill wasn't marked TK (killer 5 was a bot). Attempt 2: friendly fire on hurt 0, and TK was marked fine. It looks like stray shots from bots or other teammates in the test match, not set pieces. The failed job was re-run once.
+- **Answer from the session owning team kills (2026-11-09):** a test race, not a game bug and not set pieces. Under load
+  the "a third of a second" wait after your shots ran 500-2,400 ticks while the enemy bots kept fighting (only the
+  teammate was held): they shot the placed teammate (friendly fire off "hurt" 51-95, every one of four local repeats of
+  the old setup), killed it so that it respawned at full health (friendly fire on "hurt 0"), and landed the kill on the
+  1-HP teammate before your round (TK by bot 5, not marked TK, correctly). Fixed in e2e `friendlyFireChecks` (landed on main with this answer,
+  `wip/teams-flaky`): every bot holds fire and the air is clear before the shots, the teammate's spawn shield is
+  cleared, and the damage it takes is logged by attacker (`hurt` = your rounds; friendly fire off also needs nothing
+  lost). Merge origin/main once it lands.
 - Claimed: `maps/test_coverage.json` (the Town Wall Gatehouse, through MapMaker; set pieces part 6, `wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-09.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.

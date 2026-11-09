@@ -8,6 +8,9 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Tests**:
+- The e2e `teams` flow's friendly fire and team kill checks no longer fail at random: every bot holds fire while your
+  rounds are tested, the teammate's spawn shield is cleared, and its damage is counted by who dealt it.
 **Small fixes (owner, 2026-11-08)**:
 - Bots no longer queue 10-20 s for Fernwood Moon's north rope lift: they hop down off the north deck onto its ramp
   when the lift is away (the navmesh had lost that 0.7 m hop).
