@@ -356,6 +356,20 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 
 **Landing now: MapMaker train (check/train-<timestamp>), please hold code pushes to main.** (MapMaker lane, 2026-11-09; followups, bothints, p4, env3, setpieces6, sandfall, whiteout.)
+**Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
+for the owner's review, not landed).**
+- Made in the real MapMaker only (a scratch Playwright driver: Import, plan-view drag-box Delete, Create terrain and
+  the brushes, palette clicks, the Walls tool, the inspector, Map properties, Set card shot, Export). No map code.
+- What it is, the choices and the owner's questions: docs/map-briefs/whiteout_station/ (DECISIONS_AND_DEVIATIONS.md
+  and MAP_IMPLEMENTATION_MANIFEST.md, "Rebuild 2026-11"; QA_REPORT.md).
+- Modes now DM and TDM only (CTF and KotH dropped, the brief names no objectives); 8-16 players, 8 v 8; no vehicles.
+- `shared/test/stylePacksSnow.test.ts`'s Whiteout block checks the rebuild (landmarks, the tunnel, modes, navigation
+  as validate-map builds it, the tunnel and ridge both ways).
+- Pitfalls for the next map build: an unconnected port is capped with a wall (open tunnel/stair tops with the Walls
+  tool); a hut tile's own model walls ignore edge choices (the hangar has no mezzanine door north); terrain over a
+  roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
+  its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
+  panel miss (zoom out a notch after Home).
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.

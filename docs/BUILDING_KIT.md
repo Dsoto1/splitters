@@ -838,7 +838,9 @@ grenades, discs, spears) go through too.
 
 From the owner's concept sheet "Tileset 05 – Snow Outpost". Theme `core.snow_outpost` (packed snow floors,
 red prefab walls, snowy concrete), backdrop: snowy sky, snowy peaks, snow, light mist. Demo map
-`maps/whiteout_station.json`. Tiles in `map/packTilesSnow.ts` (box helpers shared with packTilesMedieval.ts):
+`maps/whiteout_station.json` (rebuilt in MapMaker from MAP 03 Frostbite Station, 2026-11: terrain, the pack's hangar,
+comms tower, radar dome, fuel depots, drifts and frozen cliffs with the Reactor Room, Server Vault, Power Core Hall
+and Loading Dock set pieces; docs/map-briefs/whiteout_station/). Tiles in `map/packTilesSnow.ts` (box helpers shared with packTilesMedieval.ts):
 
 | Tile | Cells | What it is |
 |---|---|---|

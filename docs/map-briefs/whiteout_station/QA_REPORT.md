@@ -17,3 +17,20 @@
 | Performance | **NOT TESTED** | no perf run |
 | In-game look | **Looked at** | `screenshots/` and the automatic map card |
 | Manual walk-through on a real GPU | **NOT TESTED** | routes checked on the navmesh and by bots only |
+
+# Rebuild 2026-11 (MAP 03 Frostbite Station)
+See MAP_IMPLEMENTATION_MANIFEST.md, "Rebuild 2026-11" → QA, for the numbers.
+
+| Check | Result |
+|---|---|
+| Saved in the real format (MapMaker's Export), loads with no warnings or lost objects | **PASS** (validate-map 0 issues; e2e maps: opens in MapMaker with nothing lost) |
+| Landmarks identifiable overhead | **PASS** (plan export and overview screenshots) |
+| Underground route has real entrances and exits | **PASS** (both huts; nav reachable both ways, unit test) |
+| No unavoidable one-route choke | **PASS** (three flanks, the yard, the tunnel, indoor links) |
+| Bots reach the zones, pickups from valid spawns | **PASS** (validate-map navigation; bot-report no-route 0 %) |
+| Collision on structures, stairs, ramps | **PASS** (kit tiles and set pieces; z-fight audit 0) |
+| Spawns not in geometry or hazards | **PASS** (validate-map); line of fire at 16 players: spawn deaths 0 % TDM, 4 % DM |
+| Pickup ids resolve | **PASS** (unit test) |
+| Bot match at the target count (16) | **PASS** (TDM ×2, DM, Elimination; see the manifest) |
+| Performance | **PASS** server tick (bench); client frame time NOT TESTED (SwiftShader here) |
+| Manual walk-through on a real GPU | **NOT TESTED** |
