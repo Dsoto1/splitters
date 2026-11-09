@@ -668,8 +668,8 @@ Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key lis
 3. **Sound pass 2** (Sonniss and Freesound). Both are approved, and their hosts are on the environment's allowlist.
    - Sonniss sits behind a Cloudflare browser check, so the owner puts the chosen packs in the Drive.
    - Freesound needs an API key: ask with the credential form, never in chat.
-4. ~~**Fireteams.**~~ Part 1 done: see "Fireteams, part 1" below. Parts 2 (formations, bounding, the squad HUD) and 3
-   (squad scores, MVP, the party preset) are next.
+4. ~~**Fireteams.**~~ Parts 1 and 2 done: see "Fireteams, part 1" and "part 2" below. Part 3 (squad scores, MVP, the
+   party preset) is next.
 5. **The MapMaker overhaul.** Its Phase 3 item 9 is the rotate ring.
 6. **Community maps.**
 7. **Kit-prop generators.**
