@@ -60,8 +60,10 @@ sprites (one draw). The haze it adds is the scene's own fog (no cost).
 | Medium | 2,500 | 10 | 2 |
 | High | 6,000 | 18 | 2 |
 
-Light rain or snow draws a quarter of these (`weatherParticles`: 25 % + 75 % × how hard). Measured in
-`WEATHER_MEASURE` below.
+Light rain or snow draws a quarter of these (`weatherParticles`: 25 % + 75 % × how hard). Measured (2026-11-09, a
+96 m new map in TEST, the counts from `View.weather.stats`): the tiers draw exactly the rows above, two draw calls or
+none; frame time on the agent's shared, software-rendered machine was noise (1.4-1.7 s a frame with or without
+weather, Low), so the GPU cost still wants a look on the owner's M1 at High in a heavy storm.
 
 ## Asset budgets
 
