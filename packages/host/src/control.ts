@@ -1,7 +1,7 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { GAME_MODES, KeyedLimiter, MAX_PLAYER_SLOTS, isMapId } from '@tiletrigger/shared';
+import { GAME_MODES, KeyedLimiter, MAX_PLAYER_SLOTS, isMapId, parseRuleValue, ruleSpec } from '@tiletrigger/shared';
 import { BOTSET_MAX_TEXT, ConfigError, parseConfig, type HostConfig } from './config.ts';
 import type { BanList } from './bans.ts';
 import type { Supervisor } from './supervisor.ts';
@@ -19,7 +19,8 @@ import { launcherCsp, launcherPage, type LauncherInfo, type LogBuffer } from './
  *    opens /host with it in the address's #fragment (never sent to any
  *    server), and the page keeps it in its own storage.
  * The command set is closed (MULTIPLAYER_SECURITY.md SEC-HOST-002): status,
- * start with a validated config, stop, restart, quit. No paths, URLs or
+ * start with a validated config, stop, restart, quit, and two live settings
+ * of a running match (one match rule, the next-map vote). No paths, URLs or
  * shell text: a map is one of our suite's IDs, the hub is the service's own.
  *
  * It also serves the launcher (launcher.ts) at `/`: the service's own page,
@@ -109,6 +110,28 @@ export function startConfig(body: unknown, base: HostConfig, suite: ReadonlySet<
   const c = parseConfig(merged);
   if (c.botFill > MAX_PLAYER_SLOTS) throw new ConfigError('too many players');
   return { ...c, hub: base.hub, map: (o.map as string | undefined) ?? (isMapId(base.map) ? base.map : 'frost_basin') };
+}
+
+/**
+ * A live setting from the site's /host page as the console command it is (commands.ts): `rules [map] <rule> <value>`
+ * or `rotation vote on|off`. Only a known rule with a valid value, never text the console would read otherwise.
+ */
+export function liveArgs(path: '/api/rules' | '/api/vote' | string, body: unknown): string[] {
+  const b = (typeof body === 'object' && body !== null ? body : {}) as { key?: unknown; value?: unknown; map?: unknown; on?: unknown };
+  if (path === '/api/vote') {
+    if (typeof b.on !== 'boolean') throw new ConfigError('on must be true or false');
+    return ['rotation', 'vote', b.on ? 'on' : 'off'];
+  }
+  const spec = typeof b.key === 'string' ? ruleSpec(b.key) : undefined;
+  if (!spec) throw new ConfigError('key must be a match rule');
+  if (b.map !== undefined && typeof b.map !== 'boolean') throw new ConfigError('map must be true or false');
+  let word = 'default';
+  if (b.value !== null && b.value !== undefined && b.value !== 'default') {
+    const v = parseRuleValue(spec, b.value);
+    if (!v.ok) throw new ConfigError(v.error);
+    word = spec.type.kind === 'bool' ? (v.value ? 'on' : 'off') : Array.isArray(v.value) ? (v.value.join(', ') || 'default') : String(v.value);
+  }
+  return ['rules', ...(b.map ? ['map'] : []), spec.key, ...word.split(' ')];
 }
 
 function readJson(req: IncomingMessage): Promise<unknown> {
@@ -244,6 +267,16 @@ export async function startControl(o: ControlOptions): Promise<{ port: number; s
           const text = await sup.command(path === '/api/kick' ? 'kick' : 'ban', args, args.join(' '));
           o.log?.(`/host: ${text}`);
           return send(/^(kicked|banned)/.test(text) ? 200 : 400, { ok: /^(kicked|banned)/.test(text), text });
+        }
+        // A running match's settings, live (the launcher's Match rules and Rotation cards do the same through the console):
+        // one rule (a known rule, its value checked; null: back to the default), or the next-map vote on or off.
+        if (path === '/api/rules' || path === '/api/vote') {
+          if (sup.state !== 'running') throw new ConfigError('the server is not running: these go with Start');
+          const args = liveArgs(path, await readJson(req));
+          const text = await sup.command(args[0]!, args.slice(1), args.slice(1).join(' '));
+          const ok = !/^(refused|usage|no rule|the server is|no answer)/.test(text);
+          o.log?.(`/host: ${text.split('\n')[0]}`);
+          return send(ok ? 200 : 400, { ok, text });
         }
         if (path === '/api/unban') {
           const b = (await readJson(req)) as { id?: unknown };
