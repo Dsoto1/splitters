@@ -7,6 +7,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import type { BaseTexture } from '@babylonjs/core/Materials/Textures/baseTexture';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { MaterialPluginBase } from '@babylonjs/core/Materials/materialPluginBase';
+import { RegisterClass } from '@babylonjs/core/Misc/typeStore';
 import type { MaterialDefines } from '@babylonjs/core/Materials/materialDefines';
 import type { UniformBuffer } from '@babylonjs/core/Materials/uniformBuffer';
 import type { SubMesh } from '@babylonjs/core/Meshes/subMesh';
@@ -53,7 +54,8 @@ export const ENV_WIND_KIND = 'envWind';
 class EnvWindPlugin extends MaterialPluginBase {
   constructor(
     material: Material,
-    private readonly params: { time: number; strength: number },
+    // A copy Babylon makes (material.clone, e.g. MapMaker's see-through ghost) comes without the shared wind: it stands still.
+    private readonly params: { time: number; strength: number } = { time: 0, strength: 0 },
   ) {
     super(material, 'EnvWind', 200, { ENVWIND: false });
     this._enable(true);
@@ -115,6 +117,10 @@ class EnvWindPlugin extends MaterialPluginBase {
     };
   }
 }
+
+// Cloning a material re-creates its plugins by class name (Tools.Instantiate): without this, cloning a species'
+// material (MapMaker's ghost of a tree in hand) threw "reading 'EnvWindPlugin'".
+RegisterClass('BABYLON.EnvWindPlugin', EnvWindPlugin);
 
 /**
  * Rock drawn tri-planar in world space (medium and high): the rock picture (albedo, roughness in its alpha) and its

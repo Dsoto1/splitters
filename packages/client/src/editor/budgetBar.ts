@@ -5,10 +5,10 @@ const LEVEL_WORDS: Record<BudgetLevel, string> = { ok: 'OK', near: 'Near', over:
 const RANK: Record<BudgetLevel, number> = { ok: 0, near: 1, over: 2 };
 
 /**
- * MapMaker's live budget bar (docs/MAPMAKER_OVERHAUL_PLAN.md, Phase 1 item 2): one small pill over the view's bottom
- * left, green, amber or red with its word, naming the budget nearest its limit; clicking that name selects what it
- * counts (where those are things you can select). The arrow opens every row. It only draws the counts it is given
- * (BudgetTracker, updated on each edit), so it costs nothing between edits.
+ * MapMaker's live budget bar (docs/MAPMAKER_OVERHAUL_PLAN.md, Phase 1 item 2): a compact item in the bottom status bar
+ * (owner, 2026-11-08), green, amber or red with its word, naming the budget nearest its limit; clicking that name
+ * selects what it counts (where those are things you can select). The arrow opens every row above it. It only draws
+ * the counts it is given (BudgetTracker, updated on each edit), so it costs nothing between edits.
  */
 export class BudgetBar {
   readonly root: HTMLElement;
@@ -17,9 +17,11 @@ export class BudgetBar {
   private readonly toggle: HTMLButtonElement;
   private last = '';
 
+  /** `parent`: the status bar; it goes before `before` there (or last). */
   constructor(
     parent: HTMLElement,
     private readonly select: (id: BudgetId, row: BudgetRow) => void,
+    before: Element | null = null,
   ) {
     this.root = document.createElement('div');
     this.root.id = 'ed-budget';
@@ -53,7 +55,7 @@ export class BudgetBar {
       (b as HTMLButtonElement).blur?.();
     });
     this.root.append(this.rows, this.sum, this.toggle);
-    parent.append(this.root);
+    parent.insertBefore(this.root, before);
   }
 
   update(counts: BudgetCounts): void {
@@ -74,7 +76,7 @@ export class BudgetBar {
     const over = rated.filter((r) => r.level === 'over').length;
     this.sum.innerHTML =
       level === 'ok'
-        ? `<span class="ed-budget-dot" aria-hidden="true"></span><b>Budget ${LEVEL_WORDS.ok}</b> <span class="ed-budget-most">${worst.row.label} ${amount(worst)}</span>`
+        ? `<span class="ed-budget-dot" aria-hidden="true"></span><b>Budget ${LEVEL_WORDS.ok}</b> <span class="ed-budget-most" title="The budget nearest its limit: ${worst.row.what}">${worst.row.label} ${amount(worst)}</span>`
         : `<span class="ed-budget-dot" aria-hidden="true"></span><b>${LEVEL_WORDS[level]}:</b> ${name(worst)} <span class="ed-budget-amt">${amount(worst)}</span>${over > 1 ? ` <span class="ed-budget-more">+${over - 1} more</span>` : ''}`;
     this.rows.innerHTML = rated
       .map(

@@ -825,6 +825,42 @@ on top of the spread-out samples, and a sniper spot there is worth 0.45 more (`b
 on ten big maps together (measured at load 11 on 4 cores; Qasr Medina, with its 280 drop candidates off flat roofs, the
 most: a second or so).
 
+## Bot hints (map data)
+Map format v33 (BOT_AI_PLAN.md Phase D item 5; MapMaker overhaul Phase 4 item 3): places the map's maker marks for bots
+in MapMaker (the Bot hints tool, Y). They are **map data on top of what bots work out themselves**: the computed spots
+(vantage spots, parkour links) stay the default, and a map with no hints plays as before. **Bots don't read them yet**:
+this is the data, its placement, checks and display; the bot side is the bots session's to build.
+
+**The format** (`MapDocument.botHints`, `map/schema.ts` `BotHint`; absent: none; at most 256 a map):
+
+| Field | What |
+|---|---|
+| `id` | a stable id (`hint_…`) |
+| `kind` | `choke` (a chokepoint: a doorway, a bridge, a gap between buildings, worth holding or pushing through), `sniper` (a long-sight spot to hold), `camp` (a tucked-in spot to hold), `staging` (where a side gathers before a push), `jump` (a jump a player can make) |
+| `position` | `[x, y, z]` world metres, on the ground or a floor (a jump link's start) |
+| `to` | a jump link's landing `[x, y, z]`, on the ground; only jump links have it, and they always do |
+| `yaw` | radians, as a spawn's (0 north, +z; `viewDirection`): the way through (choke), to watch (sniper, camp), to push (staging); absent: no particular way (jump links never have one: they run from `position` to `to`) |
+| `radius` | metres, 0.5-40: how far round the spot counts (new ones: choke 4, sniper and camp 1.5, staging 6, jump 1) |
+| `team` | a faction id, as a spawn's (`mapTeams`): only that team's bots use it; absent: every side's |
+
+**Reading them** (read-only, `map/botHints.ts`, exported from the shared index): `mapBotHints(map, kind?, team?)` (a
+team gets its own and every side's), `hintAt(h)` and `hintTo(h)` as `Vec3`, `BOT_HINT_SPECS` (labels, default radii,
+whether the facing means something), `hintJumpReach(rise, gravity)` and `jumpTrouble(h, physics)` (the movement numbers'
+verdict on a jump link). They are in the content hash: changing them changes the map.
+
+**Checks** (warnings only; the hints are advice, bots do without): validateMap (`botHintIssues`): a spot or end outside
+the map's boundary (`bothint.outside`), a jump link a player couldn't make by the movement numbers (`bothint.jump`: a
+running jump at the map's gravity, the legs tucked for a ledge over the jump's own height, as parkour's jumps up; a metre's
+slack for the two points; a drop that hurts with fall damage on), two of a kind and team within a metre (both ends, for
+jump links: `bothint.duplicate`). The navigation validator (`validateMapNavigation`, MapMaker's and validate-map's):
+a spot or end off the navmesh (`bothint.offNav`, more than 1.2 m across or 1.6 m up or down from it). Not "out of
+reach": a jump link's landing is often ground only that jump gets to.
+
+**What bots already know** (MapMaker's "What bots know", read-only): `validateMapNavigation(map, official, { computed:
+true })` also returns `computed` (`ComputedBotSpots`): the vantage spots (`vantageFor` on the main area's places and the
+parkour places, as the match works them out before the trips' lanes reweigh them) and the parkour links. Bots work out
+no chokepoints or staging spots of their own today.
+
 ## Ground that goes (Bot AI Phase C item 2)
 The navmesh is fixed for the match and has breakable props and free blocks that crumble, break, hide or show, and
 movers' blocks, as they start (a mover's at its first point). Doors and walls that block paths were openings already
@@ -1079,6 +1115,10 @@ coverage a minute and spread; spawn deaths (within 3 s of spawning); kills a min
 match's bot pipeline, wall clock); and per mode: CTF takes, captures and returns; King of the Hill time held (one
 team alone on the hill) and contested; Bomb plants and defuses; Hostage rescues; Elimination (and Bomb and Hostage)
 round times; Fort Wars pieces built.
+
+Stuck recoveries and failed searches are read through `bots/botTrace.ts` (`BotTrace.look`, the counts since the last
+look), which MapMaker's bot test run (`editor/mapTest.ts`, overhaul Phase 4) shares: its heatmaps of where bots got
+stuck and where routes failed count exactly what the scorecard counts.
 
 - `--suite=<mode>` plays the maps that list the mode (ctf, koth, bomb, hostage, elim, forts, tdm); `--suite=all`
   every scorecard mode on its maps.

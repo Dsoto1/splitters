@@ -211,6 +211,7 @@
         <select id="ed-bots" title="Bots in TEST"></select>
         <select id="ed-skill" title="Bot skill in TEST"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select>
         <button id="ed-plan" class="ed-toggle" aria-pressed="false" title="Plan view: the level being edited from straight above, with spawns, objectives and pickups (K)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2z M9 3v16M15 5v16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span class="wide">Plan</span></button>
+        <button id="ed-maptest" class="ed-toggle" aria-pressed="false" title="Test the map: a bot match in the background with heatmaps of where bots went, got stuck and died, and how exposed each spawn is"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="19" cy="6" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span class="wide">Bot test</span></button>
         <button id="ed-test-here" title="Play from here: a test match with you standing below the camera, facing where it looks (Shift+F5)">▶ <span class="wide">Here</span></button>
         <button id="ed-test" class="primary" title="Play the map now with these bots (F5)">▶ PLAY TEST</button>
       </header>
@@ -225,7 +226,7 @@
             <button class="tab" data-ws="build" data-pane="props" data-cat="props" title="Props by theme: home &amp; town, industrial, sci-fi, medieval, dungeons, western, ancient">Props</button>
             <button class="tab" data-ws="entities" data-pane="entities" data-cat="gameplay" title="Gameplay: spawns, game-mode objectives and pickups" hidden>Gameplay</button>
             <button class="tab" data-ws="entities" data-pane="npcs" data-cat="npcs" title="NPCs: soldiers, squads and spawners" hidden>NPCs</button>
-            <button class="tab" data-ws="entities" data-pane="vehicles" data-cat="vehicles" title="Vehicles &amp; turrets, parked vehicles and race tracks" hidden>Vehicles</button>
+            <button class="tab" data-ws="entities" data-pane="vehicles" data-cat="vehicles" title="Vehicles &amp; turrets, parked vehicles and tracks for NPC traffic" hidden>Vehicles</button>
             <button class="tab" data-ws="entities" data-pane="scenario" data-cat="objects" title="Objects &amp; logic: doors, buttons, triggers, lifts, platforms, destructibles and traps" hidden>Objects</button>
             <button class="tab" data-ws="entities" data-pane="lights" data-cat="lights" title="Lights &amp; FX: lamps, neon, fire and liquids" hidden>Lights</button>
             <button class="tab" data-ws="environment" data-pane="paint" data-cat="paint" title="Paint: materials and tints for any surface" hidden>Paint</button>

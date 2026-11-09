@@ -8,6 +8,65 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**MapMaker follow-ups** (the owner's answers, 2026-11-08):
+- **The measure tool's jump hint looks at the ground along the line**, not only at its two ends: a slope you can walk
+  up reads walkable, a ledge reads a step (with its height), and a pit you couldn't climb out of reads a gap (with its
+  width, jumpable or too far). A ditch you can climb out of is a drop and a step.
+- **Nothing is placed over nothing:** spawns, pickups, props, vehicles and NPCs with no floor, ground or water under
+  them are refused; the ghost goes red and says why, and the click does nothing. Spawns, pickups, vehicles and NPCs
+  outside the playable boundary are refused the same way. Props outside it are scenery, as before.
+- **The budget bar sits in the bottom status bar**, compact: its colour, its word and the budget it names; the name
+  still selects what it counts and the arrow still lists every budget.
+
+**MapMaker: bot hints** (map format v33; MapMaker overhaul Phase 4 item 3, Bot AI Phase D item 5): mark chokepoints,
+sniper, camp and staging spots and jump links for bots (the Bot hints tool, Y; the Entities tab). Pins with their
+radius, facing and jump arcs in the 3D view and the plan view, edited in the inspector, one undo step each; warnings for
+a hint outside the boundary or off the navmesh, a jump a player couldn't make and duplicates. "What bots know" shows
+the bots' own computed spots (vantage spots, parkour links), read-only. Bots don't use the hints yet (the data is
+documented in docs/BOTS.md, "Bot hints (map data)").
+
+**MapMaker: a bot test run and spawn exposure** (MapMaker overhaul Phase 4, items 1 and 2):
+- **Bot test** in the top bar opens the Test panel. **Run bots** plays a bot match on the map you're editing in the
+  background (pick the mode, bots a team or in all, and 30 seconds to 5 minutes), with progress and Cancel; you can
+  keep building meanwhile.
+- **Afterwards, heatmaps** over the map, in 3D and in the plan view, each on its own switch: where bots went, where
+  they got stuck, where they died and where their routes failed. A short summary says the kills, stuck recoveries,
+  failed route searches and when the objective's moments first happened.
+- **Check spawns** labels every spawn with how much of the map can see it and from how far, draws its longest lines
+  of sight and the map's long sightlines (50 m and more), and warns about spawns half the map can see in the list of
+  problems (until the map changes).
+- Nothing is saved in the map.
+
+**MapMaker says track / NPC traffic:** the Race Track card, the Paths pane, the key list (Shift+G) and the Vehicles
+  tab call it the track (NPC traffic). The track's pane keeps its NPC cars, their vehicle, the curbs, where the cars
+  start and the pit lane, and no longer shows Laps, Start grid, Vehicle or Combat (nothing reads them now). Map
+  properties no longer offers Race as a mode, and a map that still lists it gets a **Drop Race** button (undo brings
+  it back); picking a main mode drops it too.
+
+**MapMaker: paint our trees and plants (Environment Phase 3):**
+- **The Nature tab opens on Environment:** our species by Trees, Plants, Ground cover, Rocks, Boulders and Cliffs.
+  Click one to place it like a prop (it lands on what's under the pointer, R turns it, Randomise varies it).
+- **The Environment brush** paints or erases a mix in strokes (one undo step each): Temperate, Jungle, Alpine and
+  Arid presets (mix any species you like), density, brush size, seed (the same seed repaints the same plants), size
+  and turn variation, a weight and variant per species, and where it grows: slope, height and ground material, never
+  inside buildings.
+- **Keeps play clear:** trees, boulders, cliffs, hedges and the bushes you hide in stay off spawns, routes,
+  objectives, vehicles and pickups unless you say otherwise; placing one there by hand asks first. **Show what
+  blocks** draws what stops movement, shots and sight.
+- The brush stops at the map's environment budget, and painted plants export and import exactly as placed.
+
+**Set pieces, part 6: swapping the old big pieces** (docs/SET_PIECES_PLAN.md, "As built: part 6"):
+- **Replace all with a set piece…** in every tile's inspector in MapMaker: every placement of a tile becomes a set piece
+  where it stands, one undo step.
+- **Town Wall Gatehouse**, a new set piece: Market Town's gate is now one (the walks through its guard room, its roof up
+  a ladder).
+- **Bunker**, a new set piece the size of the Bunker tile: Iron Maw and Shingle Point's bunkers are now Bunkers, their
+  warehouses Loading Docks; Neon Spire, Riot Junction and Underdrain's 4 × 4 crossroads are the Crossroads Plaza.
+- **City Wall Gatehouse** and **Temple Pylon**, new set pieces: Qasr Medina's gate is now the gatehouse, Pharaoh's
+  Reach and Sunken Kingdom's pylons the Temple Pylon set piece; Blackout and Crossroads' warehouses are Loading Docks,
+  their bunkers Bunkers.
+- Shingle Point's card picture is taken from a few metres further back, so the cliff-top buildings show.
+
 **Sandfall Colosseum, rebuilt** (the owner's Flavius Rule board, built in MapMaker; docs/map-briefs/sandfall_colosseum/):
 - **The arena** is the board at 4 m a square: 52 m of sand (7 × 7 cells) with its twelve pillars, five medallions
   (King of the Hill's hills), four hatches down to the hypogeum and the beast pit's spikes and fire jets in the middle.
@@ -39,6 +98,14 @@ flickers, so it is the same with Reduce flashing on.
 
 **MapMaker:** exploding or deleting the last placement of a map's own set piece (one saved from a selection) takes its
 definition out of the map too; it stays in your library, and one undo brings both back.
+
+**Whiteout Station rebuilt (MAP 03 Frostbite Station, made in MapMaker)**:
+- A compact arctic research station in a snowbound hollow, for 8-16 players: an offset central yard with a tunnel
+  under it, the two-storey main lab and its server vault, a two-storey lab wing round a glowing core, the comms
+  annex under its mast, the snow vehicle garage, the fuel tanks, the radar shelter up on its ridge (the long look over
+  the station) and an ice cave in the rocks; three outdoor flanks and a sunken service trench.
+- Deathmatch and Team Deathmatch (Elimination with it); the old map's flags and hills are gone. Military weapons.
+
 **Tests**:
 - The e2e `teams` flow's friendly fire and team kill checks no longer fail at random: every bot holds fire while your
   rounds are tested, the teammate's spawn shield is cleared, and its damage is counted by who dealt it.

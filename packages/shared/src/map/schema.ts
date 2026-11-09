@@ -20,7 +20,8 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * and the camera it was taken from, `metadata.thumbnailCamera`, v23 one path primitive, v24 random weapon pickups:
  * a pickup's `random` category and `keepFixed`, v25 the `zipline` entity, v27 set pieces, v28 the weapon set, v29 Breakthrough's
  * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`, v30 the menu card shot's camera,
- * `metadata.cardCamera`, v31 MapMaker's groups and note pins, `groups` and `editorNotes`).
+ * `metadata.cardCamera`, v31 MapMaker's groups and note pins, `groups` and `editorNotes`, v32 a terrain up to 321 vertices a side and the border
+ * style `coast`, v33 bot hints, `botHints`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -1193,6 +1194,37 @@ export const EditorNote = z.object({
 });
 export type EditorNote = z.infer<typeof EditorNote>;
 
+/**
+ * A bot hint (v33; MapMaker's Bot hints tool, Y; map/botHints.ts; docs/BOTS.md, "Bot hints (map data)"): a place the
+ * map's maker marks for bots, on top of what bots work out for themselves (the computed spots stay the default).
+ * - `choke`: a chokepoint (a doorway, a bridge, a gap between buildings) worth holding or pushing through;
+ * - `sniper`: a long-sight spot to hold, watching `yaw`;
+ * - `camp`: a tucked-in spot to hold, watching `yaw`;
+ * - `staging`: where a side gathers before a push (to wait for each other);
+ * - `jump`: a jump a player can make, from `position` to `to` (both on the ground).
+ * `position` is on the ground (world metres). `yaw` (radians, as a spawn's: 0 north) is the way to watch or go; absent:
+ * no particular way (a jump runs from `position` to `to`). `radius` (m): how far round the spot counts. `team`
+ * (a faction id, as a spawn's): only that team's bots use it; absent: every side's.
+ */
+export const BOT_HINT_KINDS = ['choke', 'sniper', 'camp', 'staging', 'jump'] as const;
+export const BotHint = z
+  .object({
+    id: StableId,
+    kind: z.enum(BOT_HINT_KINDS),
+    position: Vec3Tuple,
+    yaw: z.number().finite().optional(),
+    radius: z.number().finite().min(0.5).max(40),
+    team: z
+      .string()
+      .regex(/^[a-z0-9_.]{2,64}$/)
+      .optional(),
+    /** A jump's landing (jump links only). */
+    to: Vec3Tuple.optional(),
+  })
+  .refine((h) => (h.kind === 'jump') === (h.to !== undefined), { message: 'a jump link has a `to`, and only a jump link does', path: ['to'] });
+export type BotHint = z.infer<typeof BotHint>;
+export type BotHintKind = (typeof BOT_HINT_KINDS)[number];
+
 export const MapDocument = z.object({
   format: z.literal(MAP_FORMAT),
   formatVersion: z.literal(MAP_FORMAT_VERSION),
@@ -1248,6 +1280,8 @@ export const MapDocument = z.object({
   groups: z.array(MapGroup).max(256).optional(),
   /** Notes for the map's makers, pinned on the map (v31): shown in MapMaker, never in play. Absent: none. */
   editorNotes: z.array(EditorNote).max(256).optional(),
+  /** Bot hints (v33): chokepoints, sniper, camp and staging spots and jump links the maker marks for bots. Absent: none. */
+  botHints: z.array(BotHint).max(256).optional(),
 });
 
 export type MapDocument = z.infer<typeof MapDocument>;

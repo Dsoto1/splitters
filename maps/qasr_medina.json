@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 30,
+  "formatVersion": 32,
   "metadata": {
     "id": "qasr_medina",
     "name": "Qasr Medina",
@@ -18,7 +18,15 @@
       "core.tdm",
       "core.ctf",
       "core.koth"
-    ]
+    ],
+    "release": {
+      "mapId": "m_4mydszgwmmpfbne5",
+      "versionId": "v_go2lf2g3dlkmmk7x",
+      "revision": 1,
+      "contentHash": "sha256:4ba8a90aa632cf0e59f36465779e4f2eb63960c0ec9e9ec0ee780c2c96a01e01",
+      "schemaVersion": 32,
+      "releasedAt": "2026-11-09T07:12:59.702Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -45,14 +53,6 @@
         "id": "tile_ucj5x2sd1l",
         "tile": "desert.city_wall",
         "x": -2,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_pl96g9qu15",
-        "tile": "desert.city_gate",
-        "x": -1,
         "y": -6,
         "z": 0,
         "rotation": 0
@@ -111,7 +111,10 @@
         "x": 0,
         "y": -5,
         "z": 0,
-        "rotation": 0
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "open"
+        }
       },
       {
         "id": "tile_xk82oeo5ew",
@@ -767,6 +770,9 @@
             "material": "core.pbr_sand",
             "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "open"
         }
       },
       {
@@ -2581,10 +2587,10 @@
       "position": [
         0,
         0,
-        -48
+        -52
       ],
       "kind": "door",
-      "yaw": 1.5707963267948966,
+      "yaw": 0,
       "style": "portcullis",
       "startOpen": true,
       "locked": false,
@@ -3649,5 +3655,16 @@
       12
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "setPieces": [
+    {
+      "id": "tile_pl96g9qu15",
+      "piece": "setpiece.city_gate_wall",
+      "x": -1,
+      "y": -6,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    }
+  ]
 }
