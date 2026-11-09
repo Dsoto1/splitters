@@ -196,7 +196,6 @@ The workflow is unchanged (CLAUDE.md):
 - **Disk:** each session's container is its own; remove a worktree once its branch has landed.
 
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
-- Claimed: `maps/sandfall_colosseum.json` (rebuild), MapMaker lane, 2026-11-08.
 - **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
 - **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
   (team kills and roulette).
@@ -361,7 +360,6 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - **Tests:** unit `shared/test/botHints.test.ts` (v32 → v33, commands and undo, the accessor, the checks, a real
   navmesh); e2e `editorux` → `editorBotHintChecks`.
 
-- Claimed: `maps/whiteout_station.json` (the rebuild from MAP 03 Frostbite Station, in MapMaker; `wip/mapmaker-whiteout`), MapMaker lane, 2026-11-09.
 
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
@@ -409,8 +407,6 @@ for the owner's review, not landed).**
   roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
-
-**Landing now: MapMaker train 3 (sandfall, whiteout follow-ups), please hold code pushes to main.** (MapMaker lane, 2026-11-09.)
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
@@ -528,6 +524,13 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   map format v34) and MapMaker fixes 2. Fixes 2's questions, answered with the lane's recommendations: automatic
   ground lowering stays at 3 m (with "Cut ground to floors" for deeper); the stair-foot rule stays general; Mirror's
   terrain-and-paths checkbox is for half the map only.
+- **Landed 2026-11-09, train 3** (main cab7683): the Sandfall follow-ups (collision boxes 31,724 → 22,240, the
+  portcullis gates back, Deathmatch again, a Side walls tile option on vaulted tunnels, the hatch ladders turned) and
+  the Whiteout follow-ups (King of the Hill even at 378·375, three sleds, Tide's spawns moved). Owner's answers (the
+  lane's recommendations): Sandfall keeps 22,240 for now, its gates start raised, and its plain outer walls stay;
+  Whiteout's sleds stay at the road's west end until vehicle routing is fixed.
+- **For the other session, a request:** Sandfall's Grand arch would drop about 7,000 collision boxes with a coarser
+  collision shape and no visible change. That's game code, yours if you take it.
 - **For the other session, bot vehicle routing (found on Whiteout Station):**
   - bots plan a vehicle's drive on the walking route, checked only for the vehicle's width (`routeFits`);
   - a hangar whose doorway is too low or narrow passes that check, and the sled then stalls at its north door;
