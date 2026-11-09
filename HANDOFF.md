@@ -329,6 +329,8 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - **Leftover done first:** the environment atlas now holds every species (Angular Boulder, Cliff Face were text
   cards; `pictureKeys`), rebuilt with content:rebuild's atlas step.
 
+**Landing now: MapMaker train (check/train-<timestamp>), please hold code pushes to main.** (MapMaker lane, 2026-11-09; followups, bothints, p4, env3, setpieces6, sandfall, whiteout.)
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
@@ -389,6 +391,42 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - `shared/src/editor/keymap.ts`: `raceTrack` "Paths, on the race track" (Shift+G, l. 122).
   - `client/index.html` l. 228 (the Vehicles tab's title "...parked vehicles and race tracks"; MapMaker UI, so left
     to this lane too).
+- **The owner's answers, 2026-11-09 ("ur recs": the lane's recommendations, adopted):**
+  - **Phase 3 B:**
+    - paste across themes is allowed: pieces take the new map's theme and keep their paint;
+    - Mirror of half the map refuses while the far half isn't empty;
+    - terrain and paths mirror as a checkbox;
+    - Breakthrough spawn groups keep their side;
+    - tiles with no mirror image are refused, and named;
+    - the note tool stays on J and in Map properties.
+  - **Sandfall:**
+    - keep 4 m a square, open corner courts, 12 v 12;
+    - bring back the portcullis gates (not the lifts or the portal);
+    - offer Deathmatch again;
+    - add a side-wall option to the tunnel tiles in MapMaker;
+    - trim the collision boxes well down (drop arcades on the far sides or the attic walk); aim near the shipped
+      maps.
+  - **Terrain:** plants on fine grids as dense as at 2.5 m; Real-place imports stay at 161 a side; phones draw half
+    resolution on Low only.
+  - **Follow-ups:** props outside the boundary stay scenery; moving and pasting aren't refused; the status line gives
+    way first.
+  - **Bot hints:** chokepoints and staging are marked by hand for now; Mirror swaps teamed hints like spawns; jump
+    checks stay on the movement numbers; hints stay in the content hash.
+  - **Whiteout Station:**
+    - add King of the Hill (hills in the yard, on the ridge and in the cave);
+    - add 2–4 drivable snow sleds on the south road;
+    - move Tide's spawns a cell nearer the yard;
+    - keep the ridge, the cave and the tanks as built.
+  - **Environment tools:** every plant stays stored one by one; a blocking tree asks only on spawns, routes and
+    objectives; retire the old Scatter Brush sets; add the missing palette pictures.
+  - **Phase 4:**
+    - a spawn is exposed at 50 %;
+    - exposure counts every walkable place;
+    - the spawn check runs on demand;
+    - the bot test allows up to 64 bots;
+    - heatmaps stay in memory.
+  - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
+    until it's gone (docs are fine).
 - **Landing cadence (owner, 2026-11-09: "less landings, since I won't be testing until Tuesday afternoon"):** the
   MapMaker lane stops landing each branch on its own. Green branches wait. They land together as one train
   (`tools/ci/train.mjs`) on Tuesday 2026-11-10 morning (UTC), ready for the owner's Tuesday-afternoon testing; a
