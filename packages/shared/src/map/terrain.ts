@@ -34,7 +34,14 @@ export const TERRAIN_SURFACES: Record<TerrainMaterial, string> = {
   mud: 'core.pbr_hex_paving',
 };
 
-export const MAX_TERRAIN_VERTS = 161;
+/**
+ * The most vertices a terrain has along a side (map format v32; it was 161): 321, so a 380 m map can be 1.25 m apart
+ * (MapMaker → Terrain → Change grid). A new terrain is still made within DEFAULT_TERRAIN_VERTS (2 to 4 m apart); a
+ * finer grid is a choice, four times the triangles to collide, navigate and draw.
+ */
+export const MAX_TERRAIN_VERTS = 321;
+/** The most vertices a side a new terrain (and a height-grid import) gets: the grid all maps had before v32. */
+export const DEFAULT_TERRAIN_VERTS = 161;
 
 /** Terrain as stored in the map (validated by the schema in schema.ts). */
 export interface TerrainData {
@@ -70,11 +77,11 @@ export function cellFoliage(t: TerrainData, i: number): number {
 
 /**
  * The grid a new terrain `width` × `depth` metres gets: 2 m apart, or the next of 2.5, 3 and 4 m that keeps both sides
- * within MAX_TERRAIN_VERTS vertices (a 400 × 320 m terrain is 2.5 m apart, 161 × 129 vertices).
+ * within DEFAULT_TERRAIN_VERTS vertices (a 400 × 320 m terrain is 2.5 m apart, 161 × 129 vertices). Finer: Change grid.
  */
 export function terrainSpacingFor(width: number, depth = width): number {
   const longest = Math.max(width, depth);
-  return [2, 2.5, 3, 4].find((s) => Math.round(longest / s) + 1 <= MAX_TERRAIN_VERTS) ?? 4;
+  return [2, 2.5, 3, 4].find((s) => Math.round(longest / s) + 1 <= DEFAULT_TERRAIN_VERTS) ?? 4;
 }
 
 /**
