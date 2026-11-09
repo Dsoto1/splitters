@@ -136,6 +136,11 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - bot hints in MapMaker (Phase 4 item 3, and Bot AI Phase D's MapMaker part; the format goes in docs/BOTS.md);
   - Environment Phase 3's MapMaker tools (PROCEDURAL_ENVIRONMENT §11), after the other session's Environment Phase 2
     lands. Please note it here when it does.
+  - **Environment Phase 2 is on main (2026-11-09): the MapMaker lane may start Environment Phase 3's MapMaker tools.**
+    New species ids: `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`,
+    `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew` (plus Phase 1's oak,
+    tall pine, shrub, grass, flowers, fern, pebbles, eelgrass, boulder, cliff). Still Kenney, left for when their claims
+    are released: reactor, serpent_gorge, sky_islands, test_coverage (see "Environment Phase 2" below).
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
@@ -397,6 +402,60 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - f5cc70b Capitol Mall domes, roofs; Capitol Dome / Copper Dome / Pediment / Pyramidion props; room Roof surface.
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
+
+### Environment Phase 2: our trees, bushes and hedges; no Kenney foliage (`wip/env-p2`, agent, 2026-11-08/09; owner-approved; CHANGELOG "Our own trees, bushes and hedges everywhere")
+- **Species** (content/environment/*.json, docs/CONTENT_PIPELINE.md "Environment Phase 2"): `env.broadleaf.maple`
+  (summer, autumn), `env.broadleaf.acacia` (green, dry; umbrella crown), `env.conifer.spruce` (summer, snow),
+  `env.palm.coconut`, `env.palm.leaning` (green, dry; new generator `env/palm.mjs`), `env.cactus.saguaro` (green, dry;
+  `env/cactus.mjs`), `env.shrub.laurel` (green, dry; conceals), `env.hedge.privet` (green, autumn), `env.hedge.yew`
+  (green, snow) (`env/hedge.mjs`). All assetVersion 1, fixture entries, LODs + stand-ins, budgets (plant budget now
+  700 / 200 / 8). Collision per §6: palm trunks and the saguaro capsules (block all, bark); hedges one hull (block
+  all, nav obstacle, role blocking, surface `bark` = full cover like the Kenney hedges, which were concrete by id
+  guess; a species may name its `surface`); laurel none, conceals. `envTilts`: plants without shapes only.
+  Bark picture 1024 × 512 (four strips), leaves atlas 1024 × 1280 (row 5: palm.0/1, acacia.0, hedge.0): every env
+  GLB rebuilt for the uv; shapes/sizes unchanged (fixture holds).
+- **Maps** (MapMaker Replace all, Keep height, driven in the real editor without ?test=1 by the scratchpad driver
+  `env2/tools/maker.mjs`; undo/redo checked per map; Export; release stamp dropped by `env2/tools/finalize.py`;
+  `compare.py`: nothing else changed but the format migration): 1,466 placements on 31 maps: norman_shores 267,
+  primeval_park 209, st_johns 136, eagle_spires 126, backwoods 92, iron_coast 61, jungle_steps 60, sunstone_crag 58,
+  hollowmere_manor 53, coldwater_gulch 51, sandsweep 48, citadel 45, sandgate 32, fernwood_moon 32, crossroads 31,
+  canyon 30, blackout 19, fort_meadow 19, apex_ring 16, atomic_court 14, capitol_mall 12, qasr_medina 12,
+  sunken_kingdom 10, gallows_yard 9, dustwater 6, rail_stockyard 6, serene_city 5, dockside_depot 4, dead_reel 1,
+  dune_harbor 1, pharaohs_reach 1. Mapping: oak/oak_dark/tree_detailed → oak; tree_round/fat/thin/tree/tree_tall →
+  maple; tree_plateau → acacia; pine_tall/pine/pine_crooked → pine; pine_round → spruce (snow variants on snow);
+  palm/palm_tall → coconut; palm_bent → leaning; cacti → saguaro; bush/bush_leafy → shrub; bush_large/cone → laurel
+  (dry on sand maps); hedge → privet; hedge_large → yew. validate-map 0 issues on all 31 (Fernwood Moon: pine
+  `prop_851` moved 1.7 m off `spawn_1112` in the inspector: its trunk reached the spawn). Apex Ring and Sandsweep's
+  export turned their old `track` into paths: `unifiedPaths.test.ts` now checks them against their old tracks
+  (fixtures/race-tracks-before-paths.json): identical.
+- **Skipped (claimed elsewhere), still Kenney: please run the same Replace all when their claims are released:**
+  reactor (bush_large 4), serpent_gorge (bush_large 5, palm_bent 3), sky_islands (pine_small, bush_large, tree_round,
+  bush_leafy 1 each) (trap spots), test_coverage (mushroom_tall 1; MapMaker lane), and with no species yet:
+  verdant_ziggurat's 4 hanging moss. Potted plants and `plant_small` (furniture kit, 91 indoors) were left as decor
+  (question for the owner). Card pictures (`maps/shots/`) of the changed maps still show the old trees.
+- **Palette / brushes** (data-only edits inside the MapMaker lane's editor claim, asked in the claim lines):
+  `paletteCatalog.ts` retires every Kenney tree, bush, hedge, cactus and plant (`RETIRED_PROPS`), Nature → Trees and
+  Plants & Flowers list the species (`GROUND_COVER_SPECIES`), `REPLACEMENTS` suggests each; the Kenney hedges moved
+  to category Plants & Flowers (content/props/kenney-fantasy-town-kit.json) so the retirement hides them;
+  `shared/src/editor/scatter.ts` sets plant our species.
+- **Scenery:** `client/src/environment/envScatter.ts` (an EnvironmentVisuals of its own, 160–400 m squares): the
+  forest border (were Quaternius `nt_*` + cones; cones stay only without a model library), the backdrop belt's
+  plants (were Kenney) and the scenery forest's far trees (stand-ins only, forced level). The environment renderer is
+  on by default in matches (`envBatchedOn`, `?env=0` off; MapMaker keeps prop nodes; `?env=1` still opens MapMaker's
+  preview group).
+- **Screenshots** (session scratchpad `env2/`): `before-*/after-*` at eye level (iron_coast north/east/west/village,
+  norman_shores, primeval_park, hollowmere_manor, sandsweep, eagle_spires); `lab*-trees2/small2/palms` (envlab's new
+  Phase 2 lineup, views `trees2`, `small2`, `palms`, beside the old pieces with `before-…`); `palette-env.png`.
+- **Perf** (client-perf, medium, 20 s, SwiftShader at load ~7, two interleaved pairs, main 6c601df vs this; counts
+  only): Norman Shores 562 / 541 → 710 / 456 draws, 1.67 / 1.33 → 1.17 / 0.85 M triangles, casters 103 / 78 → 157 /
+  156; Primeval Park 300 / 361 → 756 / 376 draws, 1.00 / 1.17 → 1.55 / 0.92 M, casters 102 / 85 → 234 / 173; Iron
+  Coast 295 / 510 → 274 / 465 draws, 0.61 / 0.79 → 0.29 / 0.36 M, casters 122 / 583 → 227 / 274. Triangles down,
+  shadow casters up (each env batch near the camera casts); the camera turns, so draws swing. Server (`pnpm bench 48 40`, TDM, two
+  interleaved pairs, load ~7): avg tick Norman Shores 4.0 / 3.6 → 3.8 / 3.6 ms (CPU 4.73 / 4.97 → 4.93 / 5.48), Primeval
+  Park 6.5 / 4.8 → 5.7 / 4.8 ms (CPU 7.11 / 7.30 → 7.15 / 6.94): within the noise (capsule trunks for box trunks).
+  Not measured: a real GPU (the M1).
+- **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
+  screenshots; the skipped maps above; card pictures.
 
 ### Fireteams, part 1 (`wip/fireteams`, agent, 2026-11-08; owner said "Go"; green on `check/fireteams` at 4610a3b, run 42493762584; LANDED: main 4610a3b; docs/FIRETEAMS_PLAN.md "Part 1", docs/BOTS.md "Fireteams")
 - **What players see:** a **Fireteams** variant chip in Match setup for TDM, CTF, KotH, Bomb, Hostage and
