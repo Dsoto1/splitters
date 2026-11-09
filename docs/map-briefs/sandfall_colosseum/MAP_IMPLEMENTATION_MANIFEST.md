@@ -49,3 +49,28 @@
   hypogeum, the sand and its pillars built in a scratch map and brought in as saved set pieces (MapMaker's Save
   selection as set piece), placed and exploded; the stairs out and their cuts; the village the same way; the boundary
   and backdrop; the spawns; the flags, hills, traps and pickups.
+- 2026-11-09: the sand found a level high (a saved piece's frame starts at its lowest entity: the hall lights) and
+  lowered a level (Shift+PgDn) with its pillars; the stairs out turned to climb out (Open Stairs climb east as placed);
+  the ground over the whole hypogeum flattened to −1.5 m and paving over the ring's corners (the nav audit had the
+  ring cut off); 16 legion standards on the podium walls; the ring street in gravel, the square paved, grass and the
+  foliage layer past the village; Map properties: TDM (CTF, KotH offered), 12 v 12, 8-24 players.
+
+## QA (2026-11-09)
+- `pnpm validate-map maps/sandfall_colosseum.json`: OK (0 issues). Nav audit: 0 traps, 0 errors (islands: the void
+  under the stands and the insulae's flat roofs, nobody gets in). Z-fight audit (zfight.test.ts): passes.
+- bot-report, 24 bots, 240 s (load 9 on 4 cores): TDM seed 1 embers 65 · tide 61 (131 kills, stuck recoveries 311,
+  spawn deaths 0.8%); seed 2 40 · 45 (157 stuck; where: the hatch halls under the ladders (12, −4, 8), (−16, −4, −12),
+  the gate passage (−24, 0, −60)); CTF seed 1 tide 3 caps (743 stuck, frozen 8.1%, ladder idles 4%); KotH seed 1 tide
+  75 · embers 10 (537 stuck).
+- Bench (server tick, 24 bots, TDM, load 13): avg 3.9 ms, p95 10.3 ms of 16.7.
+- perf96 (24 bots, medium, SwiftShader under load, so frame times mean nothing here): draws 170 (spread) / 408
+  (clump: in the stands), triangles 0.7 M / 2.6 M, shadow casters 5 / 158 (the hypogeum's pieces), lights 3 shown.
+- Card shot: `packages/client/public/maps/shots/sandfall_colosseum.jpg` (capture-map-shots, 33 KB, the aerial from the
+  west the tool chose).
+
+## Left
+- The tunnels' sides: the Vaulted Tunnel pieces have no side walls, so where the ground is pulled down under a tunnel
+  its earth banks show along the sides (a cut, not masonry). A side wall option for the tunnel tiles would fix it.
+- Bots linger at the hatch ladders (the stuck spots above).
+- Lights are at 253 of 256 (the stands' bay lights): braziers on the sand need lights freed first.
+- The owner's questions (the report).
