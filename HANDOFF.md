@@ -300,6 +300,8 @@ For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.
 
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 
+- Claimed: `maps/iron_coast.json` (Iron Coast part 3: the 1.25 m grid, natural cliffs, inland banks, coast border sides, A1/A2 zone time; in MapMaker, `wip/iron-coast-3`), Iron Coast session, 2026-11-09.
+
 **Landing now: MapMaker train (check/train-<timestamp>), please hold code pushes to main.** (MapMaker lane, 2026-11-09; followups, bothints, p4, env3, setpieces6, sandfall, whiteout.)
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
