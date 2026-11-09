@@ -377,8 +377,10 @@ export class BorderVisuals {
         const ground = ctx.ground(...f.at(Math.min(e.length, Math.max(0, u)), 0));
         bandRows.forEach(([v, k], b) => {
           const [x, z] = f.at(u, v);
-          // On a coast the ground falls away outwards: the band follows it there.
-          const under = ctx.groundOut ? ctx.ground(...f.at(Math.min(e.length, Math.max(0, u)), v)) : ground;
+          // On a coast the ground falls away outwards: the band follows it there, and past a free end of the stretch
+          // too (the band runs on 40 m towards the shore, where the headland eases down; held at the end's height
+          // it floated over the headland).
+          const under = ctx.groundOut ? ctx.ground(...f.at(u, v)) : ground;
           g.vert(x, under + k * (0.75 + 0.5 * borderNoise(ctx.seed, i * 7 + b)), z, b === 0 ? darker : dark);
         });
       }
