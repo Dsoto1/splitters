@@ -743,7 +743,7 @@ if (bandsOut) {
   const p = resolve(root, bandsOut === 'true' ? 'packages/shared/src/bots/weaponBands.generated.ts' : bandsOut);
   const rows = reports
     .filter((r) => r.botSweep)
-    .map((r) => `  '${r.id}': [${SWEEP.map((d) => r.botSweep![d] ?? null).join(', ')}],`);
+    .map((r) => `  '${r.id}': [${SWEEP.map((d) => r.botSweep![d] ?? 'null').join(', ')}],`);
   if (!rows.length) throw new Error('no bot curves in this run (an older JSON? measure again)');
   writeFileSync(
     p,

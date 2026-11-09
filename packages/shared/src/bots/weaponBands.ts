@@ -56,6 +56,6 @@ export const measuredBand = (id: string): readonly [number, number] | undefined 
 export function botBand(def: WeaponDefinition): readonly [number, number] {
   const m = bands.get(def.id);
   if (!m) return def.botRange;
-  const splash = def.projectile?.splashRadius ?? 0;
+  const splash = def.projectile && def.projectile.selfDamageScale > 0 ? def.projectile.splashRadius : 0;
   return splash > 0 && m[0] < splash + 1 ? [splash + 1, Math.max(m[1], splash + 3)] : m;
 }
