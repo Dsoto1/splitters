@@ -444,7 +444,7 @@ neon bands and shopfronts with half-raised shutters.
 | Tower Elevator | A 3 m cab riding three storeys up and back (a mover); set the second point's height to reach any roof. Bots ride lifts. |
 | Sky Tram | A tram car (floor, roof on posts) on a mover running 24 m along its facing and back: ride it roof to roof. |
 | Neon Sign, Holo Billboard | Light fixtures `sign` and `billboard` with *Words* and a size: lit letters on a dark box with a neon tube border, or a glowing, see-through screen with scanlines. They are lights, so logic switches, recolours, flashes and blinks them (a blackout console). |
-| Transit | A race track with *Ambient cars* laid on an elevated deck: hover cabs lap it all match, run down anyone in the way and can be shot up or taken (Neon Spire's skytrain, as in Undergate Transit). |
+| Transit | A track (Paths → Track, NPC traffic) with *NPC cars* laid on an elevated deck: hover cabs lap it all match, run down anyone in the way and can be shot up or taken (Neon Spire's skytrain, as in Undergate Transit). |
 
 **Demo maps.** *Halcyon Station* (`maps/halcyon_station.json`, script
 `maps/halcyon_station.json`): a station ring round a
@@ -1322,7 +1322,7 @@ tab → **Bot hints** (or **Y**, the last kind you used).
 
 ## Backdrops and plants
 
-Skies, distant scenery, ground past the border, terrain plants and the scatter brush are covered in [SCENERY.md](SCENERY.md).
+Skies, distant scenery, ground past the border, terrain plants, the scatter brush and the Nature tab's Environment group and brush (our trees, plants, rocks and cliffs: placing, painting, presets, filters, keep-clear and the collision preview) are covered in [SCENERY.md](SCENERY.md).
 
 Free blocks (sky platforms, crumbling floors, trapdoors, pitched ramps and roofs, movers), liquids (and their colours) and the jetpack are in [SET_PIECES.md](SET_PIECES.md); size limits in [MAP_BUDGETS.md](MAP_BUDGETS.md).
 

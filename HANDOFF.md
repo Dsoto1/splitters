@@ -242,6 +242,31 @@ The workflow is unchanged (CLAUDE.md):
   part 2 entry.
 
 - Claimed: map format v33 (bot hints in MapMaker, `wip/mapmaker-bothints`), MapMaker lane, 2026-11-09.
+**MapMaker: track / NPC traffic wording, and Environment Phase 3's tools (`wip/mapmaker-env3`, green on `check/mapmaker-env3` at 63989680, run 42599981528; waits for the train; MapMaker lane,
+2026-11-09; no format change).**
+- **Race wording (item 1; also on `wip/mapmaker-race-wording` at 14d2ab06, green on `check/mapmaker-env3`, run
+  42578435360):** pathTool / editorApp / keymap / index.html say track (NPC traffic). The track pane hides Laps,
+  Start grid, Vehicle and Combat (the data stays, read by nothing) and keeps NPC cars, their vehicle, curbs, Start
+  here and the pit lane. Map properties no longer offers Race; a map that lists it gets **Drop Race**
+  (`client/editor/removedModes.ts`, `shared/editor/mapModes.ts`), and picking a main mode drops it too. e2e
+  `traffic` now sets `#ed-path-ambient` (not `#ed-path-laps`) and checks the pane and Drop Race.
+- **Environment Phase 3 (docs/PROCEDURAL_ENVIRONMENT.md §8 / §11; docs/SCENERY.md "Environment group and brush"):**
+  - `shared/editor/envBrush.ts`: the deterministic dab (seed from the brush's seed and the spot), presets
+    (temperate, jungle, alpine, arid), filters (slope with each species' own limit, altitude, terrain material, not in
+    tile cells), keep-clear zones (spawns 3 m, objectives their radius, vehicles 4 m, pickups 1.5 m, every path its
+    half-width + 1 m) for species that block movement or sight (`envImpact`, `blockingPlacement`), the environment
+    budget as `room`, `envEraseDab`. Plants are ordinary `env.*` props with their own transforms (authoritative;
+    nothing client-side only, so sight, cover and movement can't differ).
+  - `client/editor/envTools.ts`: the Nature tab's **Environment** group first (species by category; the env species
+    moved out of Trees / Plants & Flowers / Rocks & Wood; the ?env=1 preview group is gone), the brush card
+    (`envbrush` tool: one stroke = one undo step via the editor's brush stroke), the pane (`#ed-env-*`), the
+    keep-clear confirmation for single placement (`confirmPlace`, before the prop tool's Place) and the
+    **Show what blocks** overlay (one line mesh `envBlockers`, rebuilt only when the document changes).
+  - Fix outside the editor: `environment/envMaterials.ts` registers `BABYLON.EnvWindPlugin` (and a still default
+    wind), because cloning a species' material (MapMaker's see-through ghost of a tree in hand) threw "reading
+    'EnvWindPlugin'".
+  - Tests: unit `shared/test/envBrush.test.ts`, `mapModes.test.ts`; e2e `editorux` → `editorEnvironmentChecks`.
+
 **MapMaker: the Iron Coast job's editor half (`wip/mapmaker-terrain`, map format v32, MapMaker lane, 2026-11-09).**
 For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.json`).
 - **Format v32** (no-op migration after v31): a terrain up to **321** vertices a side (`MAX_TERRAIN_VERTS`; was 161) and

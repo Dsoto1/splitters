@@ -49,8 +49,8 @@ const HANDLE_OTHER = 0.7;
 
 /** What a new path is drawn as (the pane's choice, or the palette card / Shift+G that opened the tool). */
 export type PathKind = 'road' | 'race' | 'route';
-const KIND_LABELS: Record<PathKind, string> = { road: 'Road, street or trail', race: 'Race track', route: 'Route (AI guide line)' };
-/** A new path of each kind: its uses, style, width, and whether it starts closed (a race is a circuit at once). */
+const KIND_LABELS: Record<PathKind, string> = { road: 'Road, street or trail', race: 'Track (NPC traffic)', route: 'Route (AI guide line)' };
+/** A new path of each kind: its uses, style, width, and whether it starts closed (a track is a circuit at once). */
 const KIND_DEFAULTS: Record<PathKind, { uses: PathUse[]; style: PathStyle; width: number; closed: boolean; lay: boolean }> = {
   road: { uses: ['road'], style: 'dirt', width: 3, closed: false, lay: true },
   race: { uses: ['road', 'race'], style: 'asphalt', width: 12, closed: true, lay: true },
@@ -58,20 +58,20 @@ const KIND_DEFAULTS: Record<PathKind, { uses: PathUse[]; style: PathStyle; width
 };
 const USE_LABELS: Record<PathUse, [string, string]> = {
   road: ['Road (drawn)', 'Drawn in the game in its style; laid into the ground if you like'],
-  race: ['Race track', 'Race mode races it: checkpoints along it in point order, laps on a loop, one run on an open path. One race track per map'],
+  race: ['Track (NPC traffic)', 'NPC cars lap it in every mode (set how many below), and wrecked ones come back from its pit lane. One track per map'],
   route: ['Route (AI guide)', 'An invisible line for the AI: bots driving vehicles follow it, and NPC squads told to patrol it walk it. Shown dashed here, never drawn in the game'],
 };
 const VEHICLE_LABELS: Record<(typeof RACE_VEHICLES)[number], string> = { kart: 'Go-Kart', speeder: 'Speeder', buggy: 'Buggy' };
 
 /** A short name for a path (the pane's list, the encounter inspector's route picker). */
 export function pathLabel(p: MapPath, i: number): string {
-  const what = p.uses.map((u) => (u === 'road' ? PATH_LOOKS[p.style].label : u === 'race' ? 'Race track' : 'Route')).join(' + ');
+  const what = p.uses.map((u) => (u === 'road' ? PATH_LOOKS[p.style].label : u === 'race' ? 'Track' : 'Route')).join(' + ');
   return `${i + 1}. ${what} · ${p.closed ? 'loop' : 'open'} · ${Math.round(pathGeometry(p).length)} m`;
 }
 
 /**
  * MapMaker's Paths tool: one tool for every path (schema.ts MapPath) a map
- * has: roads, streets, trails and walkways, the race track, and routes for
+ * has: roads, streets, trails and walkways, the track (NPC traffic), and routes for
  * the AI. Click to add a point after the selected one (the first two clicks
  * start a path), drag a point to move it, Shift-click a path to put a point
  * in it, right-click or Delete removes one (a path's last two points remove
@@ -79,7 +79,7 @@ export function pathLabel(p: MapPath, i: number): string {
  * Clicking the first point while the last is selected (or the last while
  * the first is) joins the ends into a loop; the pane's Close loop / Open and
  * Reverse direction do the same by button. The pane lists the paths and sets
- * the selected one's uses (road, race track, route) and their settings.
+ * the selected one's uses (road, track, route) and their settings.
  * Every change is one undo step (`setPaths`). Lines show which way each
  * path runs (arrows); routes are dashed (they are never drawn in the game).
  */
@@ -132,7 +132,7 @@ export class PathTool {
     this.drawMarkers();
   }
 
-  /** The next new path is a road, the race track or a route (palette cards, Shift+G); edits the race track if there is one. */
+  /** The next new path is a road, the track or a route (palette cards, Shift+G); edits the track if there is one. */
   preset(kind: PathKind): void {
     this.kind = kind;
     this.style = KIND_DEFAULTS[kind].style;
@@ -306,9 +306,9 @@ export class PathTool {
       }
       const made = this.newPath([this.pending, at]);
       this.pending = null;
-      // One race track per map: a new one takes over from the old.
+      // One track per map: a new one takes over from the old.
       const rest = made.uses.includes('race') ? this.paths.map((q) => (pathUses(q, 'race') ? { ...q, uses: q.uses.filter((u) => u !== 'race') } : q)).filter((q) => q.uses.length) : this.paths;
-      if (this.commit(made.uses.includes('race') ? 'Lay race track' : made.uses.includes('route') ? 'Draw route' : 'Draw path', [...rest, made])) {
+      if (this.commit(made.uses.includes('race') ? 'Lay track' : made.uses.includes('route') ? 'Draw route' : 'Draw path', [...rest, made])) {
         this.current = made.id;
         this.selected = 1;
         if (this.pane) this.renderPane(this.pane);
@@ -425,7 +425,7 @@ export class PathTool {
    * Handles and centre lines, drawn over everything (rendering group 1) so a
    * bump in the ground never hides them: each point a ball sitting on the
    * road over it, the edited path's bigger, its selected point orange, its
-   * first point green (where it starts: a race's start line) and the one
+   * first point green (where it starts: where a track's NPC cars line up) and the one
    * under the pointer yellow; each path's line follows its curve (the middle
    * of the ribbon), the edited path's bright, a hovered one lighter, dashed
    * for a path that isn't drawn in the game (a route), with arrows the way
@@ -489,7 +489,7 @@ export class PathTool {
     note.className = 'ed-note';
     note.textContent = path
       ? 'Click to add a point after the selected one (orange) · drag a point to move it · Shift-click the path to add a point there · right-click or Del removes one · click the first point (green) with the last selected to join the ends · click another path to edit it.'
-      : 'Click the ground twice to start a path, then keep clicking to draw it: roads, streets and trails, the race track, and routes for the AI (vehicles follow them, patrols walk them).';
+      : 'Click the ground twice to start a path, then keep clicking to draw it: roads, streets and trails, the track for NPC traffic, and routes for the AI (vehicles follow them, patrols walk them).';
     el.append(note);
     const row = (label: string, control: HTMLElement) => {
       const l = document.createElement('label');
@@ -584,7 +584,7 @@ export class PathTool {
     const info = document.createElement('div');
     info.className = 'ed-note';
     info.id = 'ed-path-info';
-    info.textContent = `${path.points.length} points · ${Math.round(g.length)} m · ${path.closed ? 'a loop' : 'open (two ends)'}${race ? ` · ${g.gates.length} checkpoints` : ''}${path.oneWay ? ' · one-way' : ''}`;
+    info.textContent = `${path.points.length} points · ${Math.round(g.length)} m · ${path.closed ? 'a loop' : 'open (two ends)'}${path.oneWay ? ' · one-way' : ''}`;
     el.append(info);
     // Uses: one path can be several things at once.
     heading('Used as');
@@ -597,16 +597,16 @@ export class PathTool {
           return this.renderPane(el);
         }
         const patch: Partial<MapPath> = { uses: PATH_USE_ORDER.filter((u) => uses.includes(u)) };
-        // A race track is at least 5 m wide; a new one starts with the default settings.
+        // A track is at least 5 m wide; a new one starts with the default settings.
         if (on && use === 'race') {
           if (path.width < 5) patch.width = 8;
           patch.race = path.race ?? { ...DEFAULT_RACE };
         }
-        const what = on ? `Use path as ${use === 'race' ? 'the race track' : `a ${use}`}` : `Path no longer a ${use === 'race' ? 'race track' : use}`;
-        // One race track per map: this one takes over.
+        const what = on ? `Use path as ${use === 'race' ? 'the track' : `a ${use}`}` : `Path no longer ${use === 'race' ? 'the track' : `a ${use}`}`;
+        // One track per map: this one takes over.
         const others = on && use === 'race' ? this.paths.filter((q) => q.id !== path.id && pathUses(q, 'race')) : [];
         const after = this.paths.map((q) => (q.id === path.id ? { ...q, ...patch } : others.includes(q) ? { ...q, uses: q.uses.filter((u) => u !== 'race') } : q)).filter((q) => q.uses.length);
-        if (this.commit(what, after) && others.length) this.host.toast('This path is the race track now (one per map)');
+        if (this.commit(what, after) && others.length) this.host.toast('This path is the track now (one per map)');
       });
     }
     buttons([
@@ -616,7 +616,7 @@ export class PathTool {
         path.closed ? 'Open the loop after the selected point (or between the last point and the first)' : 'Join the last point back to the first (or click the first point with the last selected)',
         () => this.setClosed(path, !path.closed),
       ],
-      ['ed-path-reverse', 'Reverse direction', 'Run the path the other way: the race direction, one-way traffic and the order new points go in (a loop keeps its start)', () => this.reverse(path)],
+      ['ed-path-reverse', 'Reverse direction', 'Run the path the other way: the way NPC cars lap it, one-way traffic and the order new points go in (a loop keeps its start)', () => this.reverse(path)],
       ['ed-path-remove', 'Remove path', 'Delete this path (undo brings it back)', () => {
         if (this.commit('Remove path', this.paths.filter((q) => q.id !== path.id))) this.startNew();
       }],
@@ -644,7 +644,11 @@ export class PathTool {
     }
   }
 
-  /** The race track's settings (the path's `race`) and its start line and pit lane. */
+  /**
+   * The track's settings (the path's `race`): its NPC cars, their vehicle, the curbs, where the cars start and the
+   * pit lane. Race mode is gone (2026-11-09), so its laps, start grid, race vehicle and combat switch are not shown
+   * (they stay in the data, read by nothing).
+   */
   private racePane(
     el: HTMLElement,
     path: MapPath,
@@ -660,30 +664,20 @@ export class PathTool {
     const h = document.createElement('div');
     h.className = 'ed-note';
     h.style.fontWeight = '600';
-    h.textContent = racePath(this.host.doc())?.id === path.id ? 'Race track (the green point is the start line)' : 'Race track (not raced: another path is the race track)';
+    h.textContent = racePath(this.host.doc())?.id === path.id ? 'Track: NPC traffic (the green point is where the cars start)' : 'Track (no traffic: another path is the track)';
     el.append(h);
     const vehicles = RACE_VEHICLES.map((v) => [v, VEHICLE_LABELS[v]] as const);
-    if (path.closed) row('Laps', num('ed-path-laps', r.laps, 1, 20, 1, (v) => v !== undefined && setRace('Laps', { laps: v })));
-    else {
-      const p = document.createElement('p');
-      p.className = 'ed-note';
-      p.textContent = 'Point to point: one run from the first point to the last. Close the loop for laps.';
-      el.append(p);
-    }
-    row('Start grid places', num('ed-path-grid', r.grid, 2, 16, 1, (v) => v !== undefined && setRace('Start grid', { grid: v })));
-    row('Vehicle', select('ed-path-vehicle', vehicles, r.vehicle, (v) => setRace('Race vehicle', { vehicle: v as RaceSettings['vehicle'] })));
-    check('ed-path-curbs', 'Red and white curbs', 'Curbs along both edges of the race road', r.curbs, (v) => setRace('Curbs', { curbs: v }));
-    check('ed-path-combat', 'Combat race (weapons, vehicle guns and sentries live)', 'Arcade can change it per match', r.combat, (v) => setRace('Combat race', { combat: v }));
-    row('Ambient cars (lap the track in every mode)', num('ed-path-ambient', r.ambient, 0, 12, 1, (v) => v !== undefined && setRace('Ambient cars', { ambient: v })));
-    if (r.ambient) row('Ambient car', select('ed-path-ambient-vehicle', vehicles, r.ambientVehicle, (v) => setRace('Ambient car', { ambientVehicle: v as RaceSettings['vehicle'] })));
+    check('ed-path-curbs', 'Red and white curbs', 'Curbs along both edges of the track', r.curbs, (v) => setRace('Curbs', { curbs: v }));
+    row('NPC cars (lap the track in every mode)', num('ed-path-ambient', r.ambient, 0, 12, 1, (v) => v !== undefined && setRace('NPC cars', { ambient: v })));
+    if (r.ambient) row('NPC car', select('ed-path-ambient-vehicle', vehicles, r.ambientVehicle, (v) => setRace('NPC car', { ambientVehicle: v as RaceSettings['vehicle'] })));
     buttons([
-      ['ed-path-start', 'Start here', 'Move the start line (and the grid behind it) to the selected point', () => {
+      ['ed-path-start', 'Start here', 'Move where the NPC cars start (and the default pit lane) to the selected point', () => {
         const i = this.selected;
         if (i <= 0) return this.host.toast('Select a point first (click it)');
         if (!path.closed) return this.host.toast('A point-to-point track starts at its first point: reverse it to start from the other end', true);
         if (set('Move the start', { points: [...path.points.slice(i), ...path.points.slice(0, i)] })) this.selected = 0;
       }],
-      ['ed-path-pit', 'Pit lane here', 'Wrecked ambient cars come back just off the road beside the selected point (lined up behind it)', () => {
+      ['ed-path-pit', 'Pit lane here', 'Wrecked NPC cars come back just off the road beside the selected point (lined up behind it)', () => {
         const p = path.points[this.selected];
         const near = p && pathGeometry(path).nearest(p[0], p[2], 20);
         if (!p || !near) return this.host.toast('Select a point first (click it)');

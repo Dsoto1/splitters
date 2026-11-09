@@ -121,7 +121,7 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   tool('paint', 'B', 'KeyB', 'Paint surfaces'),
   tool('walls', 'O', 'KeyO', 'Walls & openings (again: the next style)'),
   tool('terrain', 'T', 'KeyT', 'Terrain (again: the next brush)'),
-  { action: 'raceTrack', group: 'Tools', keys: 'Shift+G', what: 'Paths, on the race track', codes: ['KeyG'], shift: true },
+  { action: 'raceTrack', group: 'Tools', keys: 'Shift+G', what: 'Paths, on the track (NPC traffic)', codes: ['KeyG'], shift: true },
   tool('paths', 'G', 'KeyG', 'Paths: roads, walks and tracks'),
   tool('scatter', 'N', 'KeyN', 'Scatter: the last set of plants or rocks'),
   tool('logic', 'L', 'KeyL', 'Open or close the logic panel'),

@@ -124,6 +124,8 @@ export * from './editor/changeGrid.ts';
 export * from './editor/heatmap.ts';
 export * from './editor/botTestSummary.ts';
 export * from './editor/spawnExposure.ts';
+export * from './editor/mapModes.ts';
+export * from './editor/envBrush.ts';
 export * from './sim/forts.ts';
 export * from './sim/classes.ts';
 export * from './sim/discs.ts';

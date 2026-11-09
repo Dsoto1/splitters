@@ -308,6 +308,17 @@ last, once the interface has settled.
   - the **coast** border side (`shared/map/borderCoast.ts`, `client/borderCoast.ts`), per side in Sky → Border;
   - e2e `editorux` → `editorTerrainGridChecks`; unit `terrainGrid.test.ts`, `borderCoast.test.ts`.
 
+### Environment Phase 3's MapMaker tools (lane item, owner 2026-11-08)
+- **As built (2026-11-09, `wip/mapmaker-env3`, no format change):** the Nature tab's Environment group (Trees, Plants,
+  Ground cover, Rocks, Boulders, Cliffs of our species; single placement is the prop tool with surface snap and
+  Randomise), the Environment brush (paint / erase, density, radius, seed, size and turn, per-species weights and
+  variants, four presets, slope / altitude / material filters, keep-clear of spawns, routes and objectives with a
+  confirmation to turn it off or to place a blocker there by hand), Show what blocks, the environment budget in the
+  pane and as the brush's stop. Logic `shared/editor/envBrush.ts`, UI `client/editor/envTools.ts`; unit
+  `envBrush.test.ts`, e2e `editorux` → `editorEnvironmentChecks`. Docs: SCENERY.md "Environment group and brush".
+- **Race wording (same branch):** the race layer reads track / NPC traffic; Map properties drops Race
+  (`shared/editor/mapModes.ts`).
+
 ## Order
 - **After set pieces part 2.** Both touch the palette, the ghost and selection, and set pieces give groups their
   machinery.
