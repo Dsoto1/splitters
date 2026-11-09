@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 31,
   "metadata": {
     "id": "riot_junction",
     "name": "Riot Junction",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_ruc3fnxenmg4ganz",
-      "versionId": "v_r3l6m5nh7eyf3six",
-      "revision": 2,
-      "contentHash": "sha256:482cab7f1588f5b991f963d490fe131a3211a7096827ea53ca5f4a55cb78979d",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:00:55.879Z"
+      "versionId": "v_thkmdnc56ycilatt",
+      "revision": 3,
+      "contentHash": "sha256:217079c835fa5966c175d29682e5024a594a983e88519ad7f7081d2d63c80f62",
+      "schemaVersion": 31,
+      "releasedAt": "2026-11-09T05:21:12.026Z"
     }
   },
   "classicStructure": {
@@ -35,14 +35,6 @@
     "levelHeight": 4,
     "theme": "core.city",
     "tiles": [
-      {
-        "id": "tile_001",
-        "tile": "city.crossroads",
-        "x": 11,
-        "y": 11,
-        "z": 0,
-        "rotation": 0
-      },
       {
         "id": "tile_002",
         "tile": "city.street",
@@ -12382,6 +12374,62 @@
           "0,0,0:E": "high",
           "0,0,0:N": "high"
         }
+      },
+      {
+        "id": "tile_fthgqvb8s0",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 11,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_rrcn1ylpwc",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 12,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_c84q2apnvj",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 13,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_hhg1ws2r9r",
+        "tile": "core.platform",
+        "x": 14,
+        "y": 14,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0z2vy42uy6",
+        "tile": "core.platform",
+        "x": 11,
+        "y": 14,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_4ffhkic5ue",
+        "tile": "core.platform",
+        "x": 12,
+        "y": 14,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_u9rddgavah",
+        "tile": "core.platform",
+        "x": 13,
+        "y": 14,
+        "z": 0,
+        "rotation": 0
       }
     ]
   },
@@ -16840,7 +16888,7 @@
       "id": "pickup_846",
       "position": [
         100,
-        0,
+        0.15,
         100
       ],
       "kind": "pickup",
@@ -25288,6 +25336,29 @@
       16
     ]
   },
+  "weaponSet": "military",
   "dependencies": [],
-  "weaponSet": "military"
+  "setPieces": [
+    {
+      "id": "tile_001",
+      "piece": "setpiece.crossroads_plaza",
+      "x": 11,
+      "y": 11,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "hide": [
+          9,
+          10,
+          15,
+          16,
+          21,
+          22,
+          27,
+          28
+        ]
+      }
+    }
+  ]
 }

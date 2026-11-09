@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 30,
+  "formatVersion": 31,
   "metadata": {
     "id": "shingle_point",
     "name": "Shingle Point",
@@ -29,11 +29,11 @@
     },
     "release": {
       "mapId": "m_vql6e6ixmth3q6cb",
-      "versionId": "v_kfav2xo2srjcni7v",
-      "revision": 5,
-      "contentHash": "sha256:92281a8675974260bd0fb6c506f17698cc69c4f1cfcb0c4c1e8eefdda5cbcc03",
-      "schemaVersion": 29,
-      "releasedAt": "2026-11-08T05:24:56.366Z"
+      "versionId": "v_bfow3fp55jkti3rc",
+      "revision": 6,
+      "contentHash": "sha256:904e22f13ca3d8b7bbcf9413bfbb8efde48f0e08a642683a887a1b4e24cd1a36",
+      "schemaVersion": 31,
+      "releasedAt": "2026-11-09T04:56:37.138Z"
     }
   },
   "classicStructure": {
@@ -41,58 +41,6 @@
     "levelHeight": 4,
     "theme": "core.military",
     "tiles": [
-      {
-        "id": "tile_220",
-        "tile": "core.bunker",
-        "x": -11,
-        "y": 1,
-        "z": 4,
-        "rotation": 2,
-        "edges": {
-          "0,0,0:S": "door",
-          "0,0,0:W": "door",
-          "1,0,0:E": "door"
-        }
-      },
-      {
-        "id": "tile_221",
-        "tile": "core.bunker",
-        "x": -3,
-        "y": 1,
-        "z": 4,
-        "rotation": 2,
-        "edges": {
-          "0,0,0:S": "door",
-          "0,0,0:W": "door",
-          "1,0,0:E": "door"
-        }
-      },
-      {
-        "id": "tile_222",
-        "tile": "core.bunker",
-        "x": 0,
-        "y": 1,
-        "z": 4,
-        "rotation": 2,
-        "edges": {
-          "0,0,0:S": "door",
-          "0,0,0:W": "door",
-          "1,0,0:E": "door"
-        }
-      },
-      {
-        "id": "tile_223",
-        "tile": "core.bunker",
-        "x": 11,
-        "y": 1,
-        "z": 4,
-        "rotation": 2,
-        "edges": {
-          "0,0,0:S": "door",
-          "0,0,0:W": "door",
-          "1,0,0:E": "door"
-        }
-      },
       {
         "id": "tile_224",
         "tile": "core.room",
@@ -265,34 +213,6 @@
           "0,0,0:S": "door",
           "1,0,0:E": "door",
           "1,1,0:N": "door"
-        }
-      },
-      {
-        "id": "tile_272",
-        "tile": "core.warehouse",
-        "x": 8,
-        "y": 13,
-        "z": 4,
-        "rotation": 0,
-        "surfaces": {
-          "floor": {
-            "material": "core.pbr_floorboards",
-            "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_planks",
-            "tint": null
-          },
-          "solids": {
-            "material": "core.pbr_planks",
-            "tint": null
-          }
-        },
-        "edges": {
-          "0,0,0:S": "wide",
-          "2,0,0:S": "door",
-          "0,1,0:W": "door",
-          "2,0,0:E": "door"
         }
       },
       {
@@ -9257,7 +9177,7 @@
       "id": "light_809",
       "position": [
         64,
-        23.1,
+        19.3,
         104
       ],
       "kind": "light",
@@ -9271,7 +9191,7 @@
       "id": "light_810",
       "position": [
         72,
-        23.1,
+        19.3,
         104
       ],
       "kind": "light",
@@ -9285,7 +9205,7 @@
       "id": "light_811",
       "position": [
         80,
-        23.1,
+        19.3,
         104
       ],
       "kind": "light",
@@ -9299,7 +9219,7 @@
       "id": "light_812",
       "position": [
         64,
-        23.1,
+        19.3,
         112
       ],
       "kind": "light",
@@ -9313,7 +9233,7 @@
       "id": "light_813",
       "position": [
         72,
-        23.1,
+        19.3,
         112
       ],
       "kind": "light",
@@ -9327,7 +9247,7 @@
       "id": "light_814",
       "position": [
         80,
-        23.1,
+        19.3,
         112
       ],
       "kind": "light",
@@ -60864,5 +60784,52 @@
     ]
   },
   "weaponSet": "military",
-  "dependencies": []
+  "dependencies": [],
+  "setPieces": [
+    {
+      "id": "tile_272",
+      "piece": "setpiece.loading_dock",
+      "x": 8,
+      "y": 13,
+      "z": 4,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "tile_220",
+      "piece": "setpiece.bunker",
+      "x": -11,
+      "y": 1,
+      "z": 4,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "tile_221",
+      "piece": "setpiece.bunker",
+      "x": -3,
+      "y": 1,
+      "z": 4,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "tile_222",
+      "piece": "setpiece.bunker",
+      "x": 0,
+      "y": 1,
+      "z": 4,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "tile_223",
+      "piece": "setpiece.bunker",
+      "x": 11,
+      "y": 1,
+      "z": 4,
+      "rotation": 2,
+      "mirror": false
+    }
+  ]
 }
