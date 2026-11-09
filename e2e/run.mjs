@@ -7195,10 +7195,11 @@ async function environmentFlow(browser) {
 }
 
 /**
- * Fireteams (docs/FIRETEAMS_PLAN.md, Part 1): the variant on in Match setup (its squad size beside the score) → you
- * lead a squad of bots (the HUD's order line) → hold B: the order wheel (a tap of B is still the quick-message menu) →
- * pick Hold here → a bot answers, and the squad holds there while you go off. Screenshot of the wheel:
- * e2e-artifacts/fireteams-wheel-desktop.png. (The phone's Orders button: packages/client/test/inputWheel.test.ts; a
+ * Fireteams (docs/FIRETEAMS_PLAN.md, Parts 1 and 2): the variant on in Match setup (its squad size beside the score) →
+ * you lead a squad of bots (the HUD's order line) → hold B: the order wheel (a tap of B is still the quick-message menu)
+ * → pick Hold here → a bot answers; the squad HUD shows a card per squadmate → Spread out from the wheel (the squad
+ * keeps its order, the HUD says so) → the squad holds there while you go off. Screenshots:
+ * e2e-artifacts/fireteams-wheel-desktop.png, fireteams-hud-desktop.png. (The phone's Orders button: packages/client/test/inputWheel.test.ts; a
  * second match on a phone here would cost another minute and a half of the shards' budget.)
  */
 async function fireteamsFlow(browser) {
@@ -7230,16 +7231,18 @@ async function fireteamsFlow(browser) {
   await page.keyboard.press('KeyB');
   await page.waitForFunction(() => document.getElementById('msg-menu')?.hidden !== false, null, { timeout: T(5000) }).catch(() => {});
   check(menu, 'a tap of B opens the quick-message menu, not the order wheel');
-  // Hold B: the order wheel, six orders, your squad's current one ringed.
+  // Hold B: the order wheel, seven orders (Part 2's Spread out / Stay tight last), your squad's current one ringed.
   const at = await sim(page, (m, me) => ({ x: me.move.pos.x, z: me.move.pos.z }));
   await page.keyboard.down('KeyB');
-  const opened = await page.waitForFunction(() => !document.getElementById('order-wheel').hidden && document.querySelectorAll('#order-wheel .ww-item').length === 6, null, { timeout: T(5000) }).then(() => true, () => false);
+  const opened = await page.waitForFunction(() => !document.getElementById('order-wheel').hidden && document.querySelectorAll('#order-wheel .ww-item').length === 7, null, { timeout: T(5000) }).then(() => true, () => false);
   const items = await page.$$eval('#order-wheel .ww-item', (is) => is.map((i) => ({ name: i.querySelector('b').textContent, held: i.classList.contains('held'), dim: i.classList.contains('empty') })));
-  check(opened && items.map((i) => i.name).join('|') === 'Follow me|Hold here|Go there|Attack that|Defend the objective|Regroup', `holding B opens the order wheel (${items.map((i) => i.name).join(', ')})`);
+  check(opened && items.map((i) => i.name).join('|') === 'Follow me|Hold here|Go there|Attack that|Defend the objective|Regroup|Spread out', `holding B opens the order wheel (${items.map((i) => i.name).join(', ')})`);
   check(items[0]?.held && items[4]?.dim, `the wheel rings your squad's order (Follow me) and dims Defend the objective in Team Deathmatch (${JSON.stringify(items)})`);
+  // (The wheel's items go clockwise from the top: item i of n at i / n of a turn.)
+  const towards = (i) => [Math.sin((i / 7) * Math.PI * 2), -Math.cos((i / 7) * Math.PI * 2)];
   const box = await page.locator('#order-wheel .ww-item[data-code="2"]').boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.evaluate(() => window.__cs.input.aimWheel(0.87, -0.5));
+  await page.evaluate(([x, y]) => window.__cs.input.aimWheel(x, y), towards(1));
   await page.waitForFunction(() => document.querySelector('#order-wheel .ww-item.on b')?.textContent === 'Hold here', null, { timeout: T(5000) }).catch(() => {});
   await page.screenshot({ path: `${ARTIFACTS}/fireteams-wheel-desktop.png` });
   // Let go of B on Hold here: the order goes, a bot answers, the HUD says Hold here.
@@ -7248,6 +7251,23 @@ async function fireteamsFlow(browser) {
   const ack = await page.waitForFunction(() => [...document.querySelectorAll('#feed .say, .say')].some((l) => /Holding here!/.test(l.textContent)) && document.querySelector('#squad-order b')?.textContent === 'Hold here', null, { timeout: T(10000) }).then(() => true, () => false);
   check(held, 'letting go of B on Hold here gives your squad the order (checked by the match)');
   check(ack, 'a squadmate answers "Holding here!" and the HUD shows Hold here');
+  // The squad HUD (Part 2): a card for each squadmate (portrait, name, health), the order's place on the minimap.
+  const cards = await page.waitForFunction(() => {
+    const hud = window.__cs.squad().hud;
+    const list = [...document.querySelectorAll('#squad-hud .sq-mate')];
+    return hud && hud.place && list.length === hud.members.length - 1 && list.every((c) => c.querySelector('.sq-name')?.textContent && c.querySelector('.sq-hp i')) ? list.map((c) => ({ name: c.querySelector('.sq-name').textContent, hp: c.querySelector('.sq-hp i').style.width, down: c.classList.contains('down') })) : null;
+  }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
+  check(!!cards && cards.length === 4 && cards.every((c) => c.down || parseInt(c.hp, 10) > 0), `the squad HUD shows your 4 squadmates' cards with their health (${JSON.stringify(cards)})`);
+  await page.screenshot({ path: `${ARTIFACTS}/fireteams-hud-desktop.png` });
+  // Spread out (Part 2): the wheel's last entry; the squad keeps its order, spreads its ring, and the HUD says so.
+  await page.keyboard.down('KeyB');
+  await page.waitForFunction(() => !document.getElementById('order-wheel').hidden, null, { timeout: T(5000) }).catch(() => {});
+  await page.evaluate(([x, y]) => window.__cs.input.aimWheel(x, y), towards(6));
+  await page.waitForFunction(() => document.querySelector('#order-wheel .ww-item.on b')?.textContent === 'Spread out', null, { timeout: T(5000) }).catch(() => {});
+  await page.keyboard.up('KeyB');
+  const spread = await simWait(page, (m, me) => m.fireteams?.squadOf(me.slot)?.spacing === 'spread' && m.fireteams.squadOf(me.slot).order.kind === 'hold', null, T(10000));
+  const spreadHud = await page.waitForFunction(() => document.querySelector('#squad-order i')?.textContent === 'Spread out' && [...document.querySelectorAll('#feed .say, .say')].some((l) => /Spreading out!/.test(l.textContent)), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(spread && spreadHud, 'Spread out from the wheel: the squad spreads (keeping Hold here), a squadmate answers "Spreading out!", the HUD says Spread out');
   const spot = await sim(page, (m, me) => m.fireteams.squadOf(me.slot).order.pos);
   // You go off (to a teammate of another squad, out of sight of the spot); the squad stays where you told it.
   const away = await sim(page, (m, me, p) => {
