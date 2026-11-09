@@ -1,5 +1,5 @@
 import type { LookHitbox } from '../sim/hitbox.ts';
-import { botBand, botEdge, ttkEdge } from './weaponBands.ts';
+import { botBand, ttkEdge } from './weaponBands.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import { TALL_SIZE, type NavWorld } from '../nav/index.ts';
 import type { Corridor } from '../nav/corridors.ts';
@@ -1300,8 +1300,9 @@ export class BotBrain {
     const def = this.heldDef(view);
     const base = 4 + (this.profile.rangePreference / 100) * 22;
     if (!def) return base;
-    // Where the gun out-kills what others carry (weaponBands.ts botEdge: measured), not just where it can kill.
-    const [lo, hi] = botEdge(def);
+    // How far to stand stays hand-set: measured distances (weaponBands.ts botEdge) kept CTF attackers standing off and
+    // cost Diamond Park its captures (docs/GUNPLAY_AUDIT.md, "G4"). Which gun to hold is measured (weaponScore).
+    const [lo, hi] = def.botRange;
     return clamp(base, lo + 1, Math.max(lo + 2, Math.min(hi - 2, hi * 0.7)));
   }
 

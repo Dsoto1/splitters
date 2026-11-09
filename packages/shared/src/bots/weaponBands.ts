@@ -125,8 +125,10 @@ export function ttkEdge(id: string, dist: number, held = true): number {
 }
 
 /**
- * The distances (m) a bot holding this gun tries to fight at: its band, starting where it gets the edge (a long gun
- * stays out of the range where everyday guns out-kill it). The band itself when it has no edge, or no measurement.
+ * The distances (m) a bot holding this gun would fight at by the measurements: its band, starting where it gets the
+ * edge (a long gun out of the range where everyday guns out-kill it). The band itself when it has no edge, or no
+ * measurement. Not used by the brain yet: preferredRange keeps the hand-set botRange (measured, CTF attackers stood off
+ * and Diamond Park lost its captures; docs/GUNPLAY_AUDIT.md, "G4"). For the owner's decision.
  */
 export function botEdge(def: WeaponDefinition): readonly [number, number] {
   const band = botBand(def);
@@ -147,3 +149,4 @@ export function botBand(def: WeaponDefinition): readonly [number, number] {
   const splash = def.projectile && def.projectile.selfDamageScale > 0 ? def.projectile.splashRadius : 0;
   return splash > 0 && m[0] < splash + 1 ? [splash + 1, Math.max(m[1], splash + 3)] : m;
 }
+
