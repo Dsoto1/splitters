@@ -47,6 +47,22 @@ Suggested sizes by player count:
 | Standard | 4–12 | 100–200 m | 200–800 tiles or a 160 m terrain, up to 800 props |
 | Large (vehicles) | 8–24 | 200–400 m | 240–320 m terrain, up to 1,500 props, 4–10 vehicles |
 
+### Weather (map format v34)
+
+Weather is drawn round the camera, so its cost doesn't grow with the map. The fall (rain or snow) is one mesh of
+quads, each placed by the vertex shader from its seed, the time and the wind: one draw call, no work per drop on the
+CPU (a few uniforms a frame, and a ray up for a roof four times a second). Fog banks are a second mesh of large soft
+sprites (one draw). The haze it adds is the scene's own fog (no cost).
+
+| Graphics | Drops or flakes (heavy) | Fog bank sprites (thick) | Draws added |
+|---|---|---|---|
+| Low (phones) | 0 | 0 | 0 (the haze only) |
+| Medium | 2,500 | 10 | 2 |
+| High | 6,000 | 18 | 2 |
+
+Light rain or snow draws a quarter of these (`weatherParticles`: 25 % + 75 % × how hard). Measured in
+`WEATHER_MEASURE` below.
+
 ## Asset budgets
 
 Enforced by `pnpm content:check` for every imported model:

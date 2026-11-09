@@ -8,6 +8,19 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Time of day and weather** (MapMaker overhaul Phase 5; map format v34):
+- **Time of day:** Map properties → Time of day sets the hour (a slider, or Dawn, Morning, Noon, Afternoon, Dusk,
+  Night). The sun crosses the sky (east at dawn, high in the south at noon, west at dusk; the moon by night), and its
+  light, the haze and the sky picture blend between the sky presets: night, dusk, sunrise, the map's own sky by day,
+  sunset. The slider previews live; the time is fixed for the match. Maps without a time look exactly as before.
+- **Weather:** rain or snow (how hard), wind and fog banks, with rain and wind sounds (our own synthesiser). Fog is
+  its one effect on play: everyone sees less far. Under a roof the rain fades out and is heard on it. Low graphics
+  (phones) draw no rain or snow, only the fog. No lightning, nothing that flashes; the flicker check has heavy rain
+  and a blizzard at night among its moments.
+- **The host may play another weather** (Match setup's Advanced rules, the pause menu's Host tab: Clear, Rain, Heavy
+  rain, Snow, Blizzard, Fog); from the Host tab it plays from the next match.
+- MapMaker: the boulder and cliff face species show their pictures in the palette, not text cards.
+
 **Tests**:
 - The e2e `teams` flow's friendly fire and team kill checks no longer fail at random: every bot holds fire while your
   rounds are tested, the teammate's spawn shield is cleared, and its damage is counted by who dealt it.
