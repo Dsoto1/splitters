@@ -237,14 +237,19 @@ thumbnail) hides all of it.
 **The ghost says why** (`shared/src/editor/ghostWhy.ts`): beside the pointer, a
 refused tile or set piece says why in a few words ("Overlaps the Corridor on
 Ground", "Past the build limit (16 levels up or down)"), and the status bar has
-the whole reason. Spawns, pickups, props, vehicles and NPCs say "No floor under
-it" over nothing, and outside the boundary say so (a warning: they still place).
-In the scenery zone the card notes it.
+the whole reason. Spawns, pickups, props, vehicles and NPCs over nothing ("No
+floor under it": no ground within 1.5 m, no floor, block, wall or prop top
+within 1 m, no water) are refused: the ghost goes red with the reason beside it
+and on the status bar, and the click places nothing. Spawns, pickups, vehicles
+and NPCs outside the playable boundary (or past the build limit) are refused the
+same way. Props outside the boundary are scenery: the card notes the scenery
+zone, as for tiles. Only placing is refused: moving, pasting or editing what is
+already on the map still works (the validator warns as before).
 
-**The budget bar** (beside the level strip; `shared/src/editor/budgetCounters.ts`)
+**The budget bar** (in the bottom status bar; `shared/src/editor/budgetCounters.ts`)
 shows the budget nearest its limit: green OK, amber Near (80 %), red Over, each
 with its word. Click the name to select what it counts; the arrow lists every
-budget (docs/MAP_BUDGETS.md).
+budget above it (docs/MAP_BUDGETS.md).
 
 **Keys:** `?` (or the tool bar's Keys button) lists every key MapMaker binds,
 from the same table its keys are bound with (`shared/src/editor/keymap.ts`).
@@ -1199,8 +1204,10 @@ template automatically.
 ## Measuring and placing props (MapMaker)
 
 - **Measure (U).** Click two points: the distance, the height difference and the slope (degrees and percent), and
-  whether a player could make it: the step (walk up to 0.3 m, jump up to 1.22 m) and the gap (how far a sprinting
-  jump carries you to that height). A third click chains a path and shows its total. Points snap to the grid (the
+  whether a player could make it, from the ground and surfaces along the line (sampled every 25 cm): the steepest
+  step (walk up to 0.3 m, jump up to 1.22 m; a slope you can walk up, under 50°, is no step) and the widest gap (a pit
+  you couldn't climb out of; jumpable when a sprinting jump to the far edge's height carries that far). A ditch you can
+  climb out of is a drop and a step, not a gap. A third click chains a path and shows its total. Points snap to the grid (the
   Snap setting), to surfaces and to the middle of an object's top; Ctrl or Alt for no snap. Right-click takes a point
   back; Esc clears it. Nothing measured goes in the map.
 - **Props drop onto what's under the pointer**: a tabletop, a roof, a ledge, the ground. The see-through preview shows
