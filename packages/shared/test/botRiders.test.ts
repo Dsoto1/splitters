@@ -72,6 +72,7 @@ describe('bots riding with a teammate at the wheel', () => {
     let travelled = 0;
     let last = { ...buggy.pos };
     let out = -1;
+    let farthest = 0;
     for (let k = 0; k < TICK_RATE * 60; k++) {
       // Weaving across Iron Maw's slopes, with a 3 s stop every 20 s. The weave is blind: where it ends up hangs on
       // every bump on the way (a prop's collision a hand's width off sent it over the mine pit's edge, 48 m down), and
@@ -82,12 +83,15 @@ describe('bots riding with a teammate at the wheel', () => {
       match.step();
       travelled += Math.hypot(buggy.pos.x - last.x, buggy.pos.z - last.z);
       last = { ...buggy.pos };
+      farthest = Math.max(farthest, Math.hypot(buggy.pos.x - start.x, buggy.pos.z - start.z));
       if (out < 0 && !riders.every((r) => r.mount)) out = k;
     }
     expect(out).toBe(-1);
-    // It really went somewhere (over the map's slopes), and wasn't on fire.
+    // It really went somewhere (over the map's slopes), and wasn't on fire. How far away it got, not where the blind
+    // weave happens to leave it at the minute: that drifts with any change to the map, even one far off (set pieces
+    // part 6's swaps on the other side of Iron Maw left it 38 m from the start, after it had been over 50 m out).
     expect(travelled).toBeGreaterThan(300);
-    expect(Math.hypot(buggy.pos.x - start.x, buggy.pos.z - start.z)).toBeGreaterThan(40);
+    expect(farthest).toBeGreaterThan(40);
     expect(buggy.burning).toBe(false);
     // Set on fire while driving: both out within a second and a half (each after its own reaction).
     buggy.burning = true;

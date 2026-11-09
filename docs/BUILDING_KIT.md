@@ -179,6 +179,9 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   uploaded.
 - **The owner** also sees **Export for content/setpieces/**: the piece as a family file (its id `setpiece.<name>`) to
   add to `content/setpieces/` and ship, the way official maps are files (docs/CONTENT_PIPELINE.md, "Set pieces").
+- **Replace all with a set piece…** (every tile's inspector; set pieces part 6): pick a piece, and every placement of
+  that tile in the map becomes it at the same cell, level and turn, selected, one undo step. A piece bigger than the
+  tile must fit where it lands (MapMaker says what's in the way).
 - **Retired tiles and Replace all** (set pieces part 5): an old big tile a set piece replaces leaves the Tiles tab
   (`content/setpieces/aliases.json`; so far the **Catwalk Gantry**, replaced by **Catwalk Bridge (Up)**). A map that
   places one still opens with it; its inspector says what replaced it and offers **Replace all N with …**: every
@@ -248,14 +251,19 @@ thumbnail) hides all of it.
 **The ghost says why** (`shared/src/editor/ghostWhy.ts`): beside the pointer, a
 refused tile or set piece says why in a few words ("Overlaps the Corridor on
 Ground", "Past the build limit (16 levels up or down)"), and the status bar has
-the whole reason. Spawns, pickups, props, vehicles and NPCs say "No floor under
-it" over nothing, and outside the boundary say so (a warning: they still place).
-In the scenery zone the card notes it.
+the whole reason. Spawns, pickups, props, vehicles and NPCs over nothing ("No
+floor under it": no ground within 1.5 m, no floor, block, wall or prop top
+within 1 m, no water) are refused: the ghost goes red with the reason beside it
+and on the status bar, and the click places nothing. Spawns, pickups, vehicles
+and NPCs outside the playable boundary (or past the build limit) are refused the
+same way. Props outside the boundary are scenery: the card notes the scenery
+zone, as for tiles. Only placing is refused: moving, pasting or editing what is
+already on the map still works (the validator warns as before).
 
-**The budget bar** (beside the level strip; `shared/src/editor/budgetCounters.ts`)
+**The budget bar** (in the bottom status bar; `shared/src/editor/budgetCounters.ts`)
 shows the budget nearest its limit: green OK, amber Near (80 %), red Over, each
 with its word. Click the name to select what it counts; the arrow lists every
-budget (docs/MAP_BUDGETS.md).
+budget above it (docs/MAP_BUDGETS.md).
 
 **Keys:** `?` (or the tool bar's Keys button) lists every key MapMaker binds,
 from the same table its keys are bound with (`shared/src/editor/keymap.ts`).
@@ -439,7 +447,7 @@ neon bands and shopfronts with half-raised shutters.
 | Tower Elevator | A 3 m cab riding three storeys up and back (a mover); set the second point's height to reach any roof. Bots ride lifts. |
 | Sky Tram | A tram car (floor, roof on posts) on a mover running 24 m along its facing and back: ride it roof to roof. |
 | Neon Sign, Holo Billboard | Light fixtures `sign` and `billboard` with *Words* and a size: lit letters on a dark box with a neon tube border, or a glowing, see-through screen with scanlines. They are lights, so logic switches, recolours, flashes and blinks them (a blackout console). |
-| Transit | A race track with *Ambient cars* laid on an elevated deck: hover cabs lap it all match, run down anyone in the way and can be shot up or taken (Neon Spire's skytrain, as in Undergate Transit). |
+| Transit | A track (Paths → Track, NPC traffic) with *NPC cars* laid on an elevated deck: hover cabs lap it all match, run down anyone in the way and can be shot up or taken (Neon Spire's skytrain, as in Undergate Transit). |
 
 **Demo maps.** *Halcyon Station* (`maps/halcyon_station.json`, script
 `maps/halcyon_station.json`): a station ring round a
@@ -626,16 +634,13 @@ papyrus reeds, fire stand, gilded chest, stele, Bastet statue.
 | Portal Pair | See *Portals* below. |
 | Spike floors, fire jets, crushers, crumbling floors, trapdoors, sliding stone doors | The existing traps, blocks and movers, suggested by the pickers with notes for each pack (spike pits in the sand and the tomb corridors, the pharaoh's curse). |
 
-**Demo maps.** *Sandfall Colosseum* (`maps/sandfall_colosseum.json`, script
-`maps/sandfall_colosseum.json`): a 40 × 24 m arena of
-sand ringed by seating with the emperor's box on the north, three gladiator
-gates (the main one a portcullis worked from a winch in its passage or a chain
-on the sand, the side ones rising as anyone comes), two lift cages rising from
-the hypogeum through hatches, a beast lift the emperor sends up through a
-logic trapdoor, spike traps and fire jets on the sand, outer arcades all round
-with four stairs up to the seating, a forum with a temple, colonnade and
-triumphal arch to the east, an aqueduct to the west, and a portal from the
-hypogeum's west tunnel to the forum that the emperor can seal for 15 s.
+**Demo maps.** *Sandfall Colosseum* (`maps/sandfall_colosseum.json`; rebuilt 2026-11-08 from the owner's Flavius Rule
+board, docs/map-briefs/sandfall_colosseum/): 52 m of sand (the 13 × 13 board at 4 m a square) with the board's twelve
+pillars, five medallions and four corner hatches down to the hypogeum, a beast pit of spike traps and fire jets in the
+middle; seven-storey stands of the Arena stands set pieces on all four sides, the emperor's box at the centre of the
+north side, gates 1-4 at the corners, a stair tower in each corner court; the hypogeum (Hypogeum set pieces) round
+under the podium with cages, the gladiators' cells and stairs out to the courts and the village; sixteen insulae and a
+main square (triumphal arch, forum, temple, colonnades); the "Hills and a volcano" backdrop.
 *Pharaoh's Reach* (`maps/pharaohs_reach.json`): from the Nile quay a sphinx
 avenue leads between obelisks and seated colossi to the pylon (terrace up its
 back stairs), a hypostyle hall and the sanctuary; a step pyramid with a
@@ -833,7 +838,9 @@ grenades, discs, spears) go through too.
 
 From the owner's concept sheet "Tileset 05 – Snow Outpost". Theme `core.snow_outpost` (packed snow floors,
 red prefab walls, snowy concrete), backdrop: snowy sky, snowy peaks, snow, light mist. Demo map
-`maps/whiteout_station.json`. Tiles in `map/packTilesSnow.ts` (box helpers shared with packTilesMedieval.ts):
+`maps/whiteout_station.json` (rebuilt in MapMaker from MAP 03 Frostbite Station, 2026-11: terrain, the pack's hangar,
+comms tower, radar dome, fuel depots, drifts and frozen cliffs with the Reactor Room, Server Vault, Power Core Hall
+and Loading Dock set pieces; docs/map-briefs/whiteout_station/). Tiles in `map/packTilesSnow.ts` (box helpers shared with packTilesMedieval.ts):
 
 | Tile | Cells | What it is |
 |---|---|---|
@@ -1213,6 +1220,17 @@ delete what they like; dressing again or re-rolling replaces them. The map
 panel's **Dress all bare rooms** dresses every room with no props in it as a
 type guessed from its size and the theme.
 
+**Hills and a volcano** (Environment → Sky → Scenery, any map): dry hills round the map and a lone volcano far to the
+north (`client/src/backdrop.ts` `volcano`): a cone scored with gullies, a steady ember glow on its crater floor (an
+unlit colour, no light) and a still plume of see-through smoke puffs leaning east. Nothing moves or flickers, so it is
+the same under Reduce flashing. The belt past the border is rocks only.
+
+**A saved piece's definition goes with its last placement:** a map carries the definitions of its own set pieces
+(`setPieceDefs`) only while something places them; exploding or deleting the last placement drops it (one undo step
+brings both back; the piece stays in your library). A saved piece's frame starts at the least cell and level of what
+was selected, entities included: a light or ladder a level below the tiles puts the tiles a level up in the piece, so
+place it a level lower (or leave such entities out of the selection).
+
 ## Every map is made in MapMaker
 
 Official maps are their files in `maps/<id>.json`, made and edited in
@@ -1227,8 +1245,10 @@ template automatically.
 ## Measuring and placing props (MapMaker)
 
 - **Measure (U).** Click two points: the distance, the height difference and the slope (degrees and percent), and
-  whether a player could make it: the step (walk up to 0.3 m, jump up to 1.22 m) and the gap (how far a sprinting
-  jump carries you to that height). A third click chains a path and shows its total. Points snap to the grid (the
+  whether a player could make it, from the ground and surfaces along the line (sampled every 25 cm): the steepest
+  step (walk up to 0.3 m, jump up to 1.22 m; a slope you can walk up, under 50°, is no step) and the widest gap (a pit
+  you couldn't climb out of; jumpable when a sprinting jump to the far edge's height carries that far). A ditch you can
+  climb out of is a drop and a step, not a gap. A third click chains a path and shows its total. Points snap to the grid (the
   Snap setting), to surfaces and to the middle of an object's top; Ctrl or Alt for no snap. Right-click takes a point
   back; Esc clears it. Nothing measured goes in the map.
 - **Props drop onto what's under the pointer**: a tabletop, a roof, a ledge, the ground. The see-through preview shows
@@ -1258,6 +1278,21 @@ template automatically.
   the camera in the map (`metadata.cardCamera`), Esc cancels; Preview shows the saved shot in the frame; Clear goes
   back to the automatic camera. The card picture (`maps/shots/<id>.jpg`, 640×360) is rendered from it by
   `tools/content/capture-map-shots.mjs`; MapMaker stores no picture for it (Set thumbnail is the maker's own picture).
+- **Bot test (the top bar).** Opens the Test panel, beside the view; keep building while it's open.
+  - **Run bots:** a bot match on the map as it is now, played in the background (its own worker): the mode (those the
+    map plays), Bots a team (team modes) or Bots (free-for-all, up to 32), and the length (30 s to 5 min). The bar shows
+    how far it got; Cancel ends it at once. Then a summary (kills, stuck recoveries, failed route searches, the
+    objective's first moments; King of the Hill's hill time) and four heatmaps, each on its own box: **where bots
+    went** (blue few, red many), **where they got stuck** (magenta), **where they died** (red) and **where routes
+    failed** (orange), lying on the floors they happened on. They show from above in the plan view too (levels above
+    the one shown are cut away). Read them as: red blobs of "went" are the busy lanes, blue or empty rooms nobody
+    uses; stuck and failed spots are places to open up (a step too high, a gap, a door with no way round).
+  - **Check spawns:** each spawn labelled with the share of the map that sees it (places anyone can walk to, looking
+    from eye height at a player's chest, out to 120 m) and how far off the furthest is; its three longest lines of
+    sight drawn (red when it's exposed), with the map's long sightlines (yellow, 50 m and more). Spawns half the map
+    or more can see are warned about in the list of problems until the map is edited; check again after fixing them
+    (a wall, a crate, a corner).
+  - Nothing here goes in the map. Clear removes what's drawn.
 
 ## Groups, copy and paste, templates, mirror and notes (MapMaker)
 
@@ -1281,9 +1316,26 @@ template automatically.
   to read or edit it (Ctrl+Enter saves), drag it to move it. Map properties → Notes lists them. They are saved in the
   map and never shown in play.
 
+## Bot hints (MapMaker, format v33)
+
+Bots work out good spots themselves (sniper and camp spots, parkour jumps). Bot hints add what they miss: the Entities
+tab → **Bot hints** (or **Y**, the last kind you used).
+- **Chokepoint, Sniper spot, Camp spot, Staging spot:** click the ground, a floor or a roof. It faces the way you look
+  (in 45° steps); R turns the selected one (Shift+R a finer step).
+- **Jump link:** click where the jump starts, then where it lands (Esc drops a half-placed one). The inspector says
+  whether a player can make it, and the issues list warns when one can't.
+- Each shows as an icon pin with its radius and facing (a jump: its arc) in the 3D view and the plan view (K), in
+  MapMaker only. Click a pin to edit it in the inspector: kind, facing, radius, which team it is for (or every side),
+  where it is (and a jump's landing), Go to, Delete. With the tool in hand, drag a pin to move it. Each edit is one undo
+  step.
+- **What bots know** (the tick box in the group) draws the bots' own computed spots in grey, read-only: sniper and camp
+  spots and parkour links. Add hints only where they're missing. (Bots work out no chokepoints or staging spots.)
+- Warnings: a hint outside the boundary or off the navmesh (no bot can stand there), a jump no one could make, two of a
+  kind on one spot. The format is in docs/BOTS.md, "Bot hints (map data)".
+
 ## Backdrops and plants
 
-Skies, distant scenery, ground past the border, terrain plants and the scatter brush are covered in [SCENERY.md](SCENERY.md).
+Skies, distant scenery, ground past the border, terrain plants, the scatter brush and the Nature tab's Environment group and brush (our trees, plants, rocks and cliffs: placing, painting, presets, filters, keep-clear and the collision preview) are covered in [SCENERY.md](SCENERY.md).
 
 Free blocks (sky platforms, crumbling floors, trapdoors, pitched ramps and roofs, movers), liquids (and their colours) and the jetpack are in [SET_PIECES.md](SET_PIECES.md); size limits in [MAP_BUDGETS.md](MAP_BUDGETS.md).
 

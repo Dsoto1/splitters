@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   CORE_BOT_PROFILES,
@@ -7,19 +8,32 @@ import {
   TICK_RATE,
   checkOrder,
   initPhysics,
+  loadMap,
   memberGoal,
   orderFromSay,
   orderSay,
   rulesFromSetup,
   setVariant,
   variantStates,
+  FILE_WIDTH,
+  CATCH_UP,
+  OPEN_WIDTH,
+  ORDER_KINDS,
+  formationOffset,
+  formationShape,
+  layFormation,
+  readSquad,
+  spacingLabel,
+  squadHalf,
+  squadSnapshot,
   type GameEvent,
   type OrderContext,
+  type SquadWorld,
   type SquadRosterEntry,
   type Vec3,
 } from '../src/index.ts';
 import { OPT_COVER, OPT_GOAL, OPT_NOISE, OPTIONS, bestChoice, scoreChoices, type ChoiceInput } from '../src/bots/choices.ts';
-import { BotFiller, Match, initNavigation, type Combatant } from '../src/match.ts';
+import { BotFiller, CtfMode, Match, ctfSquadRoles, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -139,8 +153,8 @@ describe('Fireteams: orders', () => {
   const ctx = (o: Partial<OrderContext> = {}): OrderContext => ({ leads: true, alive: true, pos: at(1), aim: at(30), aimEnemy: null, ping: null, objective: null, ...o });
 
   it('say codes round-trip, and nothing else reads as an order', () => {
-    for (const k of ['follow', 'hold', 'go', 'attack', 'defend', 'regroup'] as const) expect(orderFromSay(orderSay(k))).toBe(k);
-    for (const say of [undefined, 1, 7, 100, 101, 109, 116, 180, 200]) expect(orderFromSay(say)).toBeNull();
+    for (const k of ['follow', 'hold', 'go', 'attack', 'defend', 'regroup', 'spacing'] as const) expect(orderFromSay(orderSay(k))).toBe(k);
+    for (const say of [undefined, 1, 7, 100, 101, 109, 117, 180, 200]) expect(orderFromSay(say)).toBeNull();
   });
 
   it('checked: only a living leader; Go there by a fresh ping, else the aim; Attack that an enemy; Defend an objective', () => {
@@ -165,8 +179,10 @@ describe('Fireteams: orders', () => {
     const bots = ft.squadOf(5)!;
     expect(memberGoal(s, 0, at(0), null)).toBeNull();
     expect(memberGoal(s, 1, at(0), null)).toMatchObject({ pos: at(0), order: true });
-    expect(memberGoal(bots, 6, at(5), null)).toMatchObject({ pos: at(5), squad: true });
-    expect(memberGoal(bots, 6, at(5), null)?.order).toBeUndefined();
+    // (A bot-led squad's member plays the squad's play itself, Part 2: no goal of the squad's while near its leader.)
+    expect(memberGoal(bots, 6, at(5), null)).toBeNull();
+    expect(memberGoal(bots, 6, at(5), null, { me: at(80) })).toMatchObject({ pos: at(5), squad: true });
+    expect(memberGoal(bots, 6, at(5), null, { me: at(80) })?.order).toBeUndefined();
     ft.order(s, 'hold', at(10), null, 1);
     expect(memberGoal(s, 1, at(0), null)).toMatchObject({ pos: at(10), radius: 4, order: true });
     ft.order(s, 'attack', null, 33, 2);
@@ -239,6 +255,207 @@ describe('Fireteams: the order in the scored choice', () => {
   });
 });
 
+
+// ---------------------------------------------------------------- Part 2: formations, spacing, objective first
+
+/** A flat world with walls: `clear` stops a sight line at the first wall it crosses (walls along x = wall, any z). */
+function flatWorld(pos: Map<number, { alive: boolean; pos: Vec3; carrying?: boolean }>, walls: number[] = [], corridor: number | null = null): SquadWorld {
+  return {
+    member: (m) => pos.get(m) ?? null,
+    target: () => null,
+    clear: (a, b) => {
+      const d = Math.hypot(b.x - a.x, b.z - a.z);
+      let free = d;
+      for (const w of walls) {
+        if ((a.x - w) * (b.x - w) < 0) free = Math.min(free, (Math.abs(w - a.x) / Math.abs(b.x - a.x)) * d);
+      }
+      // A corridor along z, `corridor` m wide round x = 0: walls either side.
+      if (corridor !== null) {
+        for (const w of [-corridor / 2, corridor / 2]) if ((a.x - w) * (b.x - w) < 0) free = Math.min(free, (Math.abs(w - a.x) / Math.abs(b.x - a.x)) * d);
+      }
+      return free;
+    },
+    ground: (p) => ({ ...p, y: 0 }),
+  };
+}
+
+describe('Fireteams Part 2: formations', () => {
+  it('the shape follows the free width across the way: single file in a corridor, a wedge, open on open ground; spacing scales it', () => {
+    expect(formationShape(FILE_WIDTH - 1, 'normal')).toBe('file');
+    expect(formationShape(FILE_WIDTH - 1, 'spread')).toBe('file');
+    expect(formationShape(12, 'normal')).toBe('wedge');
+    expect(formationShape(12, 'spread')).toBe('open');
+    expect(formationShape(OPEN_WIDTH + 1, 'normal')).toBe('open');
+    expect(formationShape(OPEN_WIDTH + 1, 'tight')).toBe('wedge');
+    // Alternate sides, a rank further back every two; spread is wider, tight narrower.
+    expect(formationOffset('wedge', 0, 'normal').side).toBeLessThan(0);
+    expect(formationOffset('wedge', 1, 'normal').side).toBeGreaterThan(0);
+    expect(formationOffset('wedge', 2, 'normal').ahead).toBeLessThan(formationOffset('wedge', 0, 'normal').ahead);
+    expect(Math.abs(formationOffset('open', 0, 'spread').side)).toBeGreaterThan(Math.abs(formationOffset('open', 0, 'normal').side));
+    expect(Math.abs(formationOffset('wedge', 0, 'tight').side)).toBeLessThan(Math.abs(formationOffset('wedge', 0, 'normal').side));
+    expect(formationOffset('file', 3, 'normal').side).toBe(0);
+  });
+
+  it("a person's squad forms up round them as they move: a wedge on open ground, single file along their trail in a corridor", () => {
+    const ft = new Fireteams(5);
+    ft.sync([person(1), bot(2), bot(3), bot(4), bot(5)], 0);
+    const s = ft.squadOf(1)!;
+    const pos = new Map<number, { alive: boolean; pos: Vec3 }>([1, 2, 3, 4, 5].map((m) => [m, { alive: true, pos: { x: 0, y: 0, z: -m } }]));
+    // Open ground: the leader walks up z.
+    let tick = 0;
+    for (let z = 0; z <= 30; z += 4) {
+      pos.get(1)!.pos = { x: 0, y: 0, z };
+      ft.step((tick += 6), flatWorld(pos));
+    }
+    expect(s.shape).toBe('open');
+    expect(s.spots.size).toBe(4);
+    const lead = s.anchor!;
+    const spots = [...s.spots.values()];
+    // Spread to both sides, behind the leader.
+    expect(spots.some((p) => p.x < -3) && spots.some((p) => p.x > 3)).toBe(true);
+    for (const p of spots) expect(p.z).toBeLessThan(lead.z);
+    // The member's goal is its spot.
+    expect(memberGoal(s, 2, lead, null, { me: at(0), tick })).toMatchObject({ pos: s.spots.get(2), order: true });
+    // A corridor 4 m wide: single file, each on the leader's own trail.
+    for (let z = 34; z <= 60; z += 4) {
+      pos.get(1)!.pos = { x: 0, y: 0, z };
+      ft.step((tick += 6), flatWorld(pos, [], 4));
+    }
+    expect(s.shape).toBe('file');
+    for (const p of s.spots.values()) expect(Math.abs(p.x)).toBeLessThan(0.01);
+    const zs = [...s.spots.values()].map((p) => p.z);
+    expect(zs).toEqual([...zs].sort((a, b) => b - a));
+  });
+
+  it('a spot is kept short of a wall between it and the leader', () => {
+    const ft = new Fireteams(4);
+    ft.sync([person(1), bot(2), bot(3), bot(4)], 0);
+    const s = ft.squadOf(1)!;
+    const pos = new Map<number, { alive: boolean; pos: Vec3 }>([1, 2, 3, 4].map((m) => [m, { alive: true, pos: at(0, -m) }]));
+    let tick = 0;
+    for (let z = 0; z <= 20; z += 4) {
+      pos.get(1)!.pos = at(0, z);
+      ft.step((tick += 6), flatWorld(pos, [2]));
+    }
+    for (const p of s.spots.values()) expect(p.x).toBeLessThan(2);
+  });
+
+  it('round a place: Hold here, Go there and Defend the objective put each member on a ring round it, not on one spot', () => {
+    const ft = new Fireteams(5);
+    ft.sync([person(0), bot(1), bot(2), bot(3), bot(4)], 0);
+    const s = ft.squadOf(0)!;
+    const pos = new Map<number, { alive: boolean; pos: Vec3 }>([0, 1, 2, 3, 4].map((m) => [m, { alive: true, pos: at(m) }]));
+    ft.order(s, 'defend', at(40, 10), null, 1);
+    ft.step(6, flatWorld(pos));
+    const ring = [...s.spots.values()];
+    expect(ring).toHaveLength(4);
+    for (const p of ring) expect(Math.hypot(p.x - 40, p.z - 10)).toBeCloseTo(5, 0);
+    expect(new Set(ring.map((p) => `${p.x.toFixed(1)},${p.z.toFixed(1)}`)).size).toBe(4);
+    expect(memberGoal(s, 1, at(0), null)).toMatchObject({ pos: s.spots.get(1), order: true });
+    // Spread out widens the ring; it keeps the order.
+    ft.order(s, 'spacing', null, null, 10);
+    ft.step(12, flatWorld(pos));
+    expect(s.order.kind).toBe('defend');
+    expect(s.spacing).toBe('spread');
+    for (const p of s.spots.values()) expect(Math.hypot(p.x - 40, p.z - 10)).toBeCloseTo(8, 0);
+  });
+
+  it('Spread out / Stay tight: one wheel entry that toggles, named for what it does now', () => {
+    const ft = new Fireteams(5);
+    ft.sync([person(0), bot(1), bot(2)], 0);
+    const s = ft.squadOf(0)!;
+    expect(ORDER_KINDS).toContain('spacing');
+    expect(spacingLabel(s.spacing)).toBe('Spread out');
+    ft.order(s, 'spacing', null, null, 1);
+    expect(s.spacing).toBe('spread');
+    expect(spacingLabel(s.spacing)).toBe('Stay tight');
+    ft.order(s, 'spacing', null, null, 2);
+    expect(s.spacing).toBe('tight');
+    expect(spacingLabel(s.spacing)).toBe('Spread out');
+    expect(s.order.kind).toBe('follow');
+    expect(checkOrder('spacing', { leads: true, alive: true, pos: at(0), aim: null, aimEnemy: null, ping: null, objective: null })).toEqual({ ok: true, pos: null, target: null });
+    // The snapshot carries it for the HUD.
+    const v = readSquad(squadSnapshot(s, 0));
+    expect(v).toMatchObject({ id: s.id, leader: 0, order: 'follow', spacing: 'tight', human: true, members: s.members });
+  });
+});
+
+describe('Fireteams Part 2: objective first', () => {
+  it("a bot-led squad's member plays the squad's play itself (no goal of the squad's), and catches up first when far behind", () => {
+    const ft = new Fireteams(4);
+    ft.sync([bot(1, 'a', 9), bot(2), bot(3), bot(4)], 0);
+    const s = ft.squadOf(1)!;
+    expect(memberGoal(s, 2, at(10), null, { me: at(8) })).toBeNull();
+    expect(memberGoal(s, 2, at(10), null, { me: at(10 + CATCH_UP + 1) })).toMatchObject({ pos: at(10), push: true, squad: true });
+    // A place order still holds it (a scripted one: measured), round the place.
+    ft.order(s, 'hold', at(40), null, 1);
+    expect(memberGoal(s, 2, at(10), null, { me: at(8) })).toMatchObject({ pos: at(40), squad: true });
+    // A person's squad follows the person.
+    const mine = new Fireteams(4);
+    mine.sync([person(0), bot(2), bot(3)], 0);
+    expect(memberGoal(mine.squadOf(0)!, 2, at(90), null, { me: at(95) })).toMatchObject({ pos: at(90), order: true });
+  });
+
+  it('bounding halves: the leader and every other member, then the rest, while the squad is on the move', () => {
+    const ft = new Fireteams(5);
+    ft.sync([person(0), bot(1), bot(2), bot(3), bot(4)], 0);
+    const s = ft.squadOf(0)!;
+    expect([0, 1, 2, 3, 4].map((m) => squadHalf(s, m))).toEqual([0, 1, 0, 1, 0]);
+    s.movingUntil = 100;
+    expect(memberGoal(s, 1, at(0), null, { tick: 50 })).toMatchObject({ half: 1 });
+    expect(memberGoal(s, 2, at(0), null, { tick: 50 })).toMatchObject({ half: 0 });
+    expect(memberGoal(s, 1, at(0), null, { tick: 150 })?.half).toBeUndefined();
+  });
+
+  it("a bot-led squad whose leader falls is led on by its best member alive, and its carrier leads it home; a person's squad holds", () => {
+    const ft = new Fireteams(4);
+    ft.sync([bot(1, 'a', 9), bot(2, 'a', 5), bot(3, 'a', 7), bot(4, 'a', 1), person(10, 'b'), bot(11, 'b'), bot(12, 'b')], 0);
+    const s = ft.squadOf(1)!;
+    const pos = new Map<number, { alive: boolean; pos: Vec3 }>([1, 2, 3, 4, 10, 11, 12].map((m) => [m, { alive: true, pos: at(m) }]));
+    pos.get(1)!.alive = false;
+    const notes = ft.step(6, flatWorld(pos));
+    expect(s.leader).toBe(3);
+    expect(s.downAt).toBeNull();
+    expect(notes).toContainEqual(expect.objectContaining({ a: 'lead', slot: 3, from: 1 }));
+    // The fallen one is a member now: back, it catches up with the squad.
+    pos.get(1)!.alive = true;
+    ft.step(12, flatWorld(pos));
+    expect(s.leader).toBe(3);
+    expect(s.members).toContain(1);
+    // A member carrying the objective (a flag) leads the squad home, the squad round it.
+    (pos.get(4) as { carrying?: boolean }).carrying = true;
+    ft.step(15, flatWorld(pos));
+    expect(s.leader).toBe(4);
+    // A person's squad: it holds for them.
+    const mine = ft.squadOf(10)!;
+    pos.get(10)!.alive = false;
+    ft.step(18, flatWorld(pos));
+    expect(mine.leader).toBe(10);
+    expect(mine.downAt).toBe(18);
+  });
+
+  it('CTF: bot-led squads take their role together; a squad defends only when it fits in the defenders', () => {
+    // (Squads of 3 with 3 defenders wanted: one defends, the rest attack.)
+    expect(ctfSquadRoles([3, 3, 3], 3)).toEqual(['defend', 'attack', 'attack']);
+    expect(ctfSquadRoles([4, 4], 3)).toEqual(['attack', 'attack']);
+    const { match } = ctfFireteamMatch();
+    play(match);
+    const mode = match.mode as CtfMode;
+    for (let i = 0; i < TICK_RATE * 6; i++) match.step();
+    for (const s of match.fireteams!.squads) {
+      const roles = new Set(s.members.map((m) => mode.botPlan.roles.get(m)));
+      expect(roles.size).toBe(1);
+    }
+    // 12 a side, squads of 4 (3 a side), 3 defenders wanted: no squad of 4 fits, so all three attack.
+    for (const team of match.teams!.map((t) => t.id)) {
+      const sq = match.fireteams!.teamSquads(team);
+      const defend = sq.filter((s) => mode.botPlan.roles.get(s.leader!) === 'defend');
+      expect(defend).toHaveLength(0);
+      expect(sq.length).toBe(3);
+    }
+  });
+});
+
 // ---------------------------------------------------------------- in a match
 
 const yard = () => {
@@ -256,6 +473,14 @@ function fireteamMatch(seed = 1, size = 5, teams: [number, number] = [6, 6]) {
   const me = filler.join('me', undefined, teams[0] + teams[1])!;
   for (let i = 0; i < teams[0] + teams[1] - 1; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!);
   return { match, filler, me };
+}
+
+function ctfFireteamMatch() {
+  const r = loadMap(readFileSync(new URL('../../../maps/twin_spires.json', import.meta.url), 'utf8'));
+  if (!r.ok) throw new Error('twin_spires failed to load');
+  const match = new Match(r.map, { ...DEFAULT_RULES['core.ctf'], teamSizes: [12, 12], fireteams: 4, scoreLimit: 0, timeLimitSeconds: 0 }, 2);
+  for (let i = 0; i < 24; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!);
+  return { match };
 }
 
 /** Step until the match is in play (every body spawned). */

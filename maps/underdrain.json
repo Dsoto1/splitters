@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 31,
   "metadata": {
     "id": "underdrain",
     "name": "Underdrain",
@@ -19,21 +19,21 @@
       "core.ctf",
       "core.koth",
       "core.zombies"
-    ]
+    ],
+    "release": {
+      "mapId": "m_wtaygxmgpnk3xung",
+      "versionId": "v_c4k3xtebwtcvniia",
+      "revision": 1,
+      "contentHash": "sha256:249757e99884c1659556c27a8bfcd89a93cb89c07b65b62c46cee4beb12d1466",
+      "schemaVersion": 31,
+      "releasedAt": "2026-11-09T05:39:09.118Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
     "levelHeight": 4,
     "theme": "core.city",
     "tiles": [
-      {
-        "id": "tile_833",
-        "tile": "city.crossroads",
-        "x": -6,
-        "y": -1,
-        "z": 0,
-        "rotation": 0
-      },
       {
         "id": "tile_834",
         "tile": "city.street",
@@ -129,6 +129,62 @@
           "ceiling": "roof",
           "facade": "plaster"
         }
+      },
+      {
+        "id": "tile_t7rk8b5evi",
+        "tile": "core.platform",
+        "x": -3,
+        "y": -1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7vfd4f5mjq",
+        "tile": "core.platform",
+        "x": -3,
+        "y": 0,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_0s1ahajl79",
+        "tile": "core.platform",
+        "x": -3,
+        "y": 1,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_uaih9frqvp",
+        "tile": "core.platform",
+        "x": -3,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xvf1q4sjsr",
+        "tile": "core.platform",
+        "x": -6,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fr0gpflz1v",
+        "tile": "core.platform",
+        "x": -5,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_bv2onvtn84",
+        "tile": "core.platform",
+        "x": -4,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
       }
     ]
   },
@@ -23530,5 +23586,16 @@
       7
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "setPieces": [
+    {
+      "id": "tile_833",
+      "piece": "setpiece.crossroads_plaza",
+      "x": -6,
+      "y": -1,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    }
+  ]
 }

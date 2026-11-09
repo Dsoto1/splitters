@@ -170,6 +170,15 @@ describe('set pieces: commands and undo', () => {
     expect(strip(expandSetPieces(mine, library).map)).toEqual(strip(expandSetPieces(doc, library).map));
     // A local piece needs a local id.
     expect('error' in addSetPieceDefCommand(base(), { ...made.definition, id: 'setpiece.mine' })).toBe(true);
+    // Exploded (or deleted), its last placement takes the map's copy of the definition with it; undo brings both back.
+    const placementId = mine.setPieces![0]!.id;
+    const ex = ok(explodeSetPieceCommand(mine, placementId));
+    const flat = applyCommand(mine, ex.command);
+    expect(flat.setPieceDefs).toBeUndefined();
+    expect(flat.setPieces ?? []).toEqual([]);
+    expect(applyCommand(flat, invertCommand(ex.command)).setPieceDefs?.map((d) => d.id)).toEqual(['local.my_gate']);
+    expect(applyCommand(mine, deleteCommand(mine, { tiles: [], entities: [], setPieces: [placementId] })).setPieceDefs).toBeUndefined();
+    expect(applyCommand(mine, deleteSetPieceCommand(mine, [placementId])).setPieceDefs).toBeUndefined();
   });
 
   it('save selection: only tiles, blocks, props, doors, ladders and lights; nothing selected says so', () => {

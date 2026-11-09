@@ -622,6 +622,13 @@ export type ServerMessage =
       hold?: number[];
       /** Team leaders (rules.leaders): each team's leader slot, in team order (-1: none). */
       ld?: number[];
+      /**
+       * Fireteams' squads (sim/fireteams.ts squadSnapshot; the squad HUD, its minimap markers and its colour): per squad
+       * [id, team index, leader slot (-1: none), order (ORDER_KINDS index), spacing (SQUAD_SPACINGS index), formation
+       * (FORMATION_SHAPES index), a person leads it (1/0), the order's place x and z (dm; 0 0 with none, see the order),
+       * ...member slots]. Absent: the variant is off. Sent when it changes.
+       */
+      fs?: number[][];
       /** Roulette with Lunar: the gravity storm, [phase (0 calm, 1 warning, 2 blowing), seconds left in it, gravity now ×100, the storm's gravity ×100]. */
       rl?: [number, number, number, number];
     }

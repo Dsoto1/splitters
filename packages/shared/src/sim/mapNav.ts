@@ -12,6 +12,9 @@ import { PhysicsWorld } from './physics.ts';
 import { DOOR, destructibleBox, doorway, type OBox } from './scenarioDefs.ts';
 import { windowPanes } from './glass.ts';
 import { matchPhysics, type MatchRules } from './rules.ts';
+import { botHintNavIssues } from '../map/botHints.ts';
+import { vantageFor, type VantageSpot } from '../bots/vantage.ts';
+import type { ParkourKind } from '../nav/parkour.ts';
 
 /**
  * The highest drop a ledge-drop link takes (m, at normal gravity) with fall damage on: one that costs at most about
@@ -83,16 +86,35 @@ export function buildMapNav(map: MapDocument, geometry: readonly WorldBox[], phy
  * its navmesh and physics built as the match builds them, then validateNavigation with the navigation audit.
  * `official`: a map in maps/ (the audit's findings and blocked spawn points are errors; for creators, warnings).
  */
-export function validateMapNavigation(map: MapDocument, official: boolean): { issues: ValidationIssue[]; audit: NavAudit } {
+export function validateMapNavigation(map: MapDocument, official: boolean, opts: { computed?: boolean } = {}): { issues: ValidationIssue[]; audit: NavAudit; computed?: ComputedBotSpots } {
   const built = mapNavigation(map);
   try {
-    const opts = { ...dropOptions(map, built.physics, built.geometry, built.phys), official };
-    const audit = auditNavigation(map, built.nav, built.physics, opts);
-    return { issues: validateNavigation(map, built.nav, built.physics, { ...opts, done: audit }), audit };
+    const drop = { ...dropOptions(map, built.physics, built.geometry, built.phys), official };
+    const audit = auditNavigation(map, built.nav, built.physics, drop);
+    // Bot hints (v33) off the navmesh: warnings (map/botHints.ts).
+    const issues = [...validateNavigation(map, built.nav, built.physics, { ...drop, done: audit }), ...botHintNavIssues(map, built.nav)];
+    return { issues, audit, ...(opts.computed ? { computed: computedBotSpots(built) } : {}) };
   } finally {
     built.physics.free();
     built.nav.destroy();
   }
+}
+
+/**
+ * What bots work out for themselves on a map (MapMaker's "What bots know" overlay, read-only): the vantage spots
+ * campers and snipers pick from (bots/vantage.ts vantageFor, from the main area's places, as the match does before the
+ * trips' lanes reweigh them) and the parkour links routes take (nav/parkour.ts). Bots work out no chokepoints or staging
+ * spots of their own today.
+ */
+export interface ComputedBotSpots {
+  vantage: VantageSpot[];
+  parkour: { kind: ParkourKind; start: Vec3; end: Vec3 }[];
+}
+
+function computedBotSpots(built: { nav: NavWorld; physics: PhysicsWorld }): ComputedBotSpots {
+  const { nav, physics } = built;
+  const vantage = vantageFor(nav.mainPlaces(), (o, d, max) => physics.raycastWorld(o, d, max), nav.parkourPlaces()).map((v) => ({ ...v, pos: { ...v.pos } }));
+  return { vantage, parkour: nav.parkour.map((l) => ({ kind: l.kind, start: { ...l.start }, end: { ...l.end } })) };
 }
 
 /**

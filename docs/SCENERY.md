@@ -173,6 +173,36 @@ set's props inside the brush. Each click is one undo step and adds at most 60
 props. Plants keep clear of spawns, pickups and vehicles. Trees and rocks are
 solid (bots path round them); bushes, flowers and grass can be walked through.
 
+## Environment group and brush (Nature tab)
+
+Environment Phase 3 (docs/PROCEDURAL_ENVIRONMENT.md §8). The Nature tab opens on the **Environment** group: our
+species by **Trees, Plants, Ground cover, Rocks, Boulders and Cliffs** (no Kenney foliage), and the **Environment
+brush**.
+
+- **One at a time:** click a species and place it like any prop: it lands on what is under the pointer, R turns it,
+  Randomise varies turn, size and variant, the inspector scales it, Ctrl+Z takes it back. A species that blocks play
+  (movement or sight) placed on a spawn, route, objective, vehicle or pickup asks first.
+- **The brush:** Paint or Erase (right-click or Shift-drag erases too); one stroke is one undo step.
+  - **Preset:** Temperate woods, Jungle, Alpine or Arid: a mix of species and the ground it suits. Any weight can be
+    changed afterwards (the preset then reads Custom mix), so families mix freely.
+  - **Brush size** (or `[` `]`), **density** (plants per 100 m²; each species keeps its own spacing, and undergrowth
+    only keeps off trunks), **seed** (the same seed paints the same plants on the same spot; New seed picks
+    another), **smallest / largest** size and **turn**.
+  - **Species (weights):** every species with a weight (0: not painted) and its variant (or *mixed*). A red dot
+    marks species that block movement.
+  - **Where it grows:** slope from / to (a species' own steepest still applies: broadleaf trees 30°, conifers 35°),
+    height from / to (blank: any), the terrain materials it paints on, and never inside a building. **Keep clear of
+    spawns, routes and objectives** (on): trunks, boulders, cliffs, hedges and the bushes you hide in stay off them
+    (grass, flowers and pebbles may go anywhere); turning it off asks first.
+  - **Erase every species** (off: the eraser takes only the species the brush paints).
+  - **Show what blocks:** each plant's collision footprint on the ground (red: stops movement, bots route round it;
+    orange: stops shots only, limbs overhead), the bushes you hide in (blue: block sight) and the keep-clear circles
+    round spawns, objectives, vehicles and pickups (yellow).
+  - The line under the brush shows the environment budget (plants and colliding ones); the brush stops at it.
+- **Stored as placed:** every plant is an ordinary `env.*` prop with its own position, turn, size and variant, so the
+  host, every client and the navmesh read the same trees, and Export / Import round-trips them exactly. No format
+  change. A dab paints at most 150 plants.
+
 ## Sources
 
 - **Skies:** Poly Haven pure-sky photographs (CC0) by Greg Zaal, Jarod Guest

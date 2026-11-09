@@ -35,19 +35,29 @@ export interface Measurement {
   total: number;
 }
 
-export function measureSegment(a: Vec3, b: Vec3): MeasureSegment {
+/**
+ * What the measure tool stands on: the map's boxes as shown (tiles, blocks, solid props) and the ground as shown. With
+ * it, each stretch's verdict samples the ground along the line (`profileVerdict`); without it, only the two ends.
+ */
+export interface MeasureWorld {
+  boxes: readonly WorldBox[];
+  ground: TerrainData | null;
+}
+
+export function measureSegment(a: Vec3, b: Vec3, world?: MeasureWorld): MeasureSegment {
   const run = Math.hypot(b.x - a.x, b.z - a.z);
   const rise = b.y - a.y;
   const distance = Math.hypot(run, rise);
   const slopeDeg = run < 1e-9 && Math.abs(rise) < 1e-9 ? 0 : (Math.atan2(rise, run) * 180) / Math.PI;
   const slopePct = run < 1e-9 ? null : (rise / run) * 100;
-  return { a, b, distance, run, rise, slopeDeg, slopePct, verdict: jumpVerdict(run, rise) };
+  const verdict = world && run >= SAMPLE_STEP ? profileVerdict(sampleProfile(a, b, world)) : jumpVerdict(run, rise);
+  return { a, b, distance, run, rise, slopeDeg, slopePct, verdict };
 }
 
 /** A path of points (a third click chains): every stretch, and the total. */
-export function measurePath(points: readonly Vec3[]): Measurement {
+export function measurePath(points: readonly Vec3[], world?: MeasureWorld): Measurement {
   const segments: MeasureSegment[] = [];
-  for (let i = 1; i < points.length; i++) segments.push(measureSegment(points[i - 1]!, points[i]!));
+  for (let i = 1; i < points.length; i++) segments.push(measureSegment(points[i - 1]!, points[i]!, world));
   return { segments, total: segments.reduce((s, x) => s + x.distance, 0) };
 }
 
@@ -77,30 +87,164 @@ export function jumpReach(rise: number): number | null {
 }
 
 /**
- * Could a player get from a to b on foot, treating the stretch as a step up (or down) and a gap across:
+ * Could a player get from a to b on foot.
  * - `step`: 'walk' (no higher than a step), 'jumpable' (a jump lifts you that high), 'too high', or 'drop' (down,
  *   further than a step: you can always drop; the fall may hurt);
- * - `gap`: whether a sprinting jump carries you that far across to that height ('jumpable' or 'too far'), with its
- *   `reach`; null when the step is too high to jump at all.
- * It knows only the two ends, not what lies between (a slope you walk up reads as a step and a gap).
+ * - `gap`: whether a sprinting jump carries you across ('jumpable' or 'too far'), with its `reach`; null when there is
+ *   nothing to judge (no gap, or the step is too high to jump at all).
+ * Without the map (`jumpVerdict`) it knows only the two ends: the stretch is one step up (or down) and one gap across,
+ * so a slope you walk up reads as a step and a gap. With the map (`profileVerdict`, owner 2026-11-08) it samples the
+ * ground and surfaces along the line, and `sampled` holds the steepest step up and the widest gap it found.
  */
 export interface JumpVerdict {
   step: 'walk' | 'jumpable' | 'too high' | 'drop';
   gap: 'jumpable' | 'too far' | null;
   /** How far a sprinting jump carries you to that height (m), or null. */
   reach: number | null;
+  /** From the ground along the line: the steepest step up (m) and the widest gap across (m; null: none). */
+  sampled?: { step: number; gap: number | null };
 }
 
 export function jumpVerdict(run: number, rise: number): JumpVerdict {
   const reach = jumpReach(rise);
-  const step: JumpVerdict['step'] = rise > PLAYER_JUMP.height + 1e-9 ? 'too high' : rise > PLAYER_JUMP.step + 1e-9 ? 'jumpable' : rise < -PLAYER_JUMP.step - 1e-9 ? 'drop' : 'walk';
   const gap = reach === null ? null : run <= reach + 1e-9 ? 'jumpable' : 'too far';
-  return { step, gap, reach };
+  return { step: stepWord(rise), gap, reach };
 }
 
-/** The verdict in words: "step jumpable · gap jumpable (5.9 m at most)". */
+function stepWord(rise: number): JumpVerdict['step'] {
+  return rise > PLAYER_JUMP.height + 1e-9 ? 'too high' : rise > PLAYER_JUMP.step + 1e-9 ? 'jumpable' : rise < -PLAYER_JUMP.step - 1e-9 ? 'drop' : 'walk';
+}
+
+/** How far apart the profile's samples are (m): under a stair's tread, so a ledge is never stepped over between two. */
+export const SAMPLE_STEP = 0.25;
+/** At most this many samples a stretch (a 540 m diagonal stays near 0.25 m apart). */
+const MAX_SAMPLES = 2400;
+
+/**
+ * The ground and surfaces along a stretch, as a player walking it meets them: the height of what is under each sample
+ * (the highest box top or the ground there, `restUnder`), null over nothing. Only what lies no higher than a jump above
+ * the higher end counts, so a roof or a bridge overhead isn't read as the floor. `spacing`: across the ground between
+ * samples (m).
+ */
+export interface GroundProfile {
+  heights: (number | null)[];
+  spacing: number;
+}
+
+export function sampleProfile(a: Vec3, b: Vec3, world: MeasureWorld): GroundProfile {
+  const run = Math.hypot(b.x - a.x, b.z - a.z);
+  const n = Math.max(1, Math.min(MAX_SAMPLES, Math.ceil(run / SAMPLE_STEP - 1e-9)));
+  const fromY = Math.max(a.y, b.y) + PLAYER_JUMP.height;
+  // Only the boxes the stretch passes over (a turned box by its reach round its middle).
+  const lo = [Math.min(a.x, b.x) - 0.1, Math.min(a.z, b.z) - 0.1] as const;
+  const hi = [Math.max(a.x, b.x) + 0.1, Math.max(a.z, b.z) + 0.1] as const;
+  const near = world.boxes.filter((bx) => {
+    if (bx.kind === 'barrier' || bx.min[1] > fromY + 0.1) return false;
+    const r = bx.yaw ? Math.hypot(bx.max[0] - bx.min[0], bx.max[2] - bx.min[2]) / 2 : 0;
+    const cx = (bx.min[0] + bx.max[0]) / 2;
+    const cz = (bx.min[2] + bx.max[2]) / 2;
+    const hx = r || (bx.max[0] - bx.min[0]) / 2;
+    const hz = r || (bx.max[2] - bx.min[2]) / 2;
+    return cx + hx >= lo[0] && cx - hx <= hi[0] && cz + hz >= lo[1] && cz - hz <= hi[1];
+  });
+  const heights: (number | null)[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    heights.push(restUnder(near, world.ground, a.x + (b.x - a.x) * t, a.z + (b.z - a.z) * t, fromY)?.y ?? null);
+  }
+  // The ends stand where the points were put when nothing is under them (a point on a wall's face).
+  if (heights[0] === null) heights[0] = a.y;
+  if (heights[n] === null) heights[n] = b.y;
+  return { heights, spacing: run / n };
+}
+
+/**
+ * Judge a profile against PLAYER's numbers (a standard body at normal gravity).
+ * - **Steps:** a rise between two samples higher than a step and steeper than the steepest walkable slope
+ *   (`maxSlopeDegrees`) is part of a step up; neighbouring steep rises add up to one step (a ledge, a cliff). A slope
+ *   you can walk up is never a step, however high it climbs; stairs are many small steps.
+ * - **Gaps:** the ground falls away (more than a step, steeply) and comes back to near where it fell from. That is a gap
+ *   only when you couldn't climb back out on the far side (a pit deeper than a jump, or nothing under it); a ditch you
+ *   can climb out of is a drop and a step. Its width is between the edges; it is jumpable when a sprinting jump to the
+ *   far edge's height (`jumpReach`) carries that far. A far edge higher than a jump is a step too high.
+ * - **Drops:** ground that falls away and never comes back to that height.
+ * The verdict is the steepest step up and the widest gap (the one a jump clears by least).
+ */
+export function profileVerdict(profile: GroundProfile): JumpVerdict {
+  const h = profile.heights;
+  const ds = profile.spacing;
+  const steep = Math.max(PLAYER_JUMP.step, ds * Math.tan((PLAYER.maxSlopeDegrees * Math.PI) / 180));
+  const n = h.length - 1;
+  const at = (i: number) => h[i] ?? -Infinity;
+  const climbs: number[] = [];
+  const gaps: { width: number; rise: number }[] = [];
+  let dropped = false;
+  let climb = 0;
+  let i = 0;
+  while (i < n) {
+    // Over nothing (past a drop into the void): no step up from there.
+    if (at(i) === -Infinity) {
+      i++;
+      continue;
+    }
+    const d = at(i + 1) - at(i);
+    if (d > steep) {
+      climb += d;
+      i++;
+      continue;
+    }
+    if (climb > 0) climbs.push(climb);
+    climb = 0;
+    if (d < -steep) {
+      // The ground falls away after i: where does it come back to near this height (within a step)?
+      // Or, lower down, rises in a wall too high to climb out by: its top is the far edge (a jump down across).
+      const from = at(i);
+      let j = i + 1;
+      let bottom = Infinity;
+      while (j <= n && at(j) < from - PLAYER_JUMP.step) {
+        if (bottom > -Infinity && at(j) - bottom > PLAYER_JUMP.height + 1e-9) {
+          while (j < n && at(j + 1) - at(j) > steep) j++;
+          break;
+        }
+        bottom = Math.min(bottom, at(j++));
+      }
+      if (j <= n && (bottom === -Infinity || at(j) - bottom > PLAYER_JUMP.height + 1e-9)) {
+        // A pit you couldn't climb out of: jump it, from i to j (its width to within a sample, on the long side).
+        gaps.push({ width: (j - i) * ds, rise: at(j) - from });
+        i = j;
+        continue;
+      }
+      // It never comes back up (a drop), or you climb out of it (a drop, then its far side's step).
+      dropped = true;
+    }
+    i++;
+  }
+  if (climb > 0) climbs.push(climb);
+  const stepUp = Math.max(0, ...climbs, ...gaps.map((g) => g.rise));
+  // The widest gap: the one a jump clears by least (the far edge's height counts: higher carries you less far).
+  let worst: { width: number; reach: number | null; margin: number } | null = null;
+  for (const g of gaps) {
+    const reach = jumpReach(g.rise);
+    const margin = reach === null ? -Infinity : reach - g.width;
+    if (!worst || margin < worst.margin) worst = { width: g.width, reach, margin };
+  }
+  const step = stepUp > PLAYER_JUMP.step + 1e-9 ? stepWord(stepUp) : dropped ? 'drop' : 'walk';
+  const gap = !worst ? null : worst.margin >= -1e-9 ? 'jumpable' : 'too far';
+  return { step, gap, reach: worst?.reach ?? null, sampled: { step: round2(stepUp), gap: worst ? round2(worst.width) : null } };
+}
+
+const round2 = (v: number) => Math.round(v * 100) / 100 + 0;
+
+/** The verdict in words: "step jumpable · gap jumpable (5.9 m at most)"; sampled, with the step's height and the gap's width. */
 export function describeVerdict(v: JumpVerdict): string {
-  const step = v.step === 'walk' ? 'step walkable' : v.step === 'drop' ? 'a drop' : v.step === 'jumpable' ? 'step jumpable' : `too high (a jump lifts ${formatLength(PLAYER_JUMP.height)})`;
+  const sv = v.sampled;
+  const tall = sv && (v.step === 'jumpable' || v.step === 'too high') ? ` ${formatLength(sv.step)}` : '';
+  const step = v.step === 'walk' ? 'step walkable' : v.step === 'drop' ? 'a drop' : v.step === 'jumpable' ? `step${tall} jumpable` : `too high${tall ? `: a step of${tall}` : ''} (a jump lifts ${formatLength(PLAYER_JUMP.height)})`;
+  if (sv) {
+    if (v.gap === null) return `${step} · no gap`;
+    const width = formatLength(sv.gap ?? 0);
+    return `${step} · gap ${width} ${v.gap === 'jumpable' ? 'jumpable' : 'too far'}${v.reach !== null ? ` (${formatLength(v.reach)} at most)` : ''}`;
+  }
   if (v.gap === null || v.reach === null) return step;
   return `${step} · gap ${v.gap === 'jumpable' ? 'jumpable' : 'too far'} (${formatLength(v.reach)} at most)`;
 }

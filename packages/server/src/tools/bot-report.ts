@@ -3,7 +3,7 @@ import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOT_DIFFICULTIES, CHARACTER_PROFILES, bodyClass, getLook, getMountDef, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getItem, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
-import { BreakthroughMode, CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
+import { BotTrace, BreakthroughMode, CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
 import { SquadMeter, squadText, squadTotals, type SquadRow } from './squadMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
@@ -430,8 +430,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   const pieceIds = new Set<number>();
   const fails: FailSpot[] = [];
   let failsSeen = 0;
-  const lastFails = new Map<number, number>();
-  const lastStuck = new Map<number, number>();
+  const trace = new BotTrace();
   const stuckAt = new Map<string, number>();
   const behaviour = new Behaviour(match);
   const squads = match.teams ? new SquadMeter(match, scriptOrders, fireteamsArg ?? 5) : null;
@@ -656,18 +655,16 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
       const r = rec.get(c.slot)!;
       const b = c.bot!;
       // Stuck recoveries since the last sample: where (and what the bot was doing).
-      const stuckNow = b.stuckCount - (lastStuck.get(c.slot) ?? 0);
-      if (stuckNow > 0) {
-        lastStuck.set(c.slot, b.stuckCount);
-        const key = `${Math.round(c.move.pos.x / 4) * 4},${Math.round(c.move.pos.y)},${Math.round(c.move.pos.z / 4) * 4} ${b.doing}`;
-        stuckAt.set(key, (stuckAt.get(key) ?? 0) + stuckNow);
+      // (BotTrace: the same stuck and failed-search counts MapMaker's bot test run draws as heatmaps.)
+      const tr = trace.look(c)!;
+      if (tr.stuck > 0) {
+        const key = `${Math.round(tr.at.x / 4) * 4},${Math.round(tr.at.y)},${Math.round(tr.at.z / 4) * 4} ${tr.doing}`;
+        stuckAt.set(key, (stuckAt.get(key) ?? 0) + tr.stuck);
       }
       // Failed searches since the last sample: where the last of them was (from, toward). Past FAIL_SPOTS, every third
       // one overwrites an older one in turn (deterministic), so late ones show too.
-      const failed = b.pathFailures - (lastFails.get(c.slot) ?? 0);
-      if (failed > 0) {
-        lastFails.set(c.slot, b.pathFailures);
-        const f = b.lastNoRoute;
+      if (tr.failed > 0) {
+        const f = tr.noRoute;
         if (f) {
           failsSeen++;
           const spot = [f.from.x, f.from.y, f.from.z, f.goal.x, f.goal.y, f.goal.z].map((v) => Math.round(v * 10) / 10) as FailSpot;

@@ -223,6 +223,12 @@ export interface OrderGoal {
    * above any objective of its own, below a chase or a noise close by (SQUAD_NOTICE).
    */
   squad?: boolean;
+  /**
+   * Fireteams (Part 2): its squad's bounding half while the squad is on the move (the leader 0, its members 1, 0, ...):
+   * in a fight at range on the way, the halves take turns covering and moving (`boundPhase`), whatever the bot's style
+   * but Arena's, rather than by slot.
+   */
+  half?: 0 | 1;
 }
 
 export type BotState = 'roam' | 'advance' | 'engage' | 'cover' | 'chase' | 'investigate' | 'retreat' | 'hold' | 'mount' | 'mounted' | 'dead';
@@ -305,6 +311,8 @@ const GUN_DETOUR = 30;
 /** Bounding (boundPhase): fights this far off or more (m); Mixed-style bots only from BOUND_MIXED. */
 const BOUND_FROM = 12;
 const BOUND_MIXED = 18;
+/** Covering fire (a fireteam's covering half): at most this long (s) after its turn to cover, at an enemy seen this lately. */
+const COVER_FIRE_SECONDS = 2.5;
 /** How far a sniper-role bot goes for a scoped gun (m, plus height). */
 const SCOPE_DETOUR = 70;
 /** A sniper whose target looks straight at it (this or more: within about 25°) a moment is spotted: it moves on. */
@@ -708,6 +716,13 @@ export class BotBrain {
 
   /** Bounding (boundPhase): this half moving from cover to cover, or covering; null when not bounding. */
   private bound: 'move' | 'cover' | null = null;
+  /**
+   * Covering fire (Fireteams Part 2): a squad's covering half keeps firing at where its enemy went out of sight, from
+   * its cover, while the other half moves, until this tick; and the ticks it fired so (measuring).
+   */
+  private coverFireUntil = -1;
+  coverShots = 0;
+
   /** Where its last vantage spot was (a sniper moves on somewhere else, not back the way it came). */
   private prevSpot: Vec3 | null = null;
   /** Snipers: shots held for a better one, and spots left after a shot or two or for being spotted (measuring). */
@@ -1006,12 +1021,16 @@ export class BotBrain {
    * the open shooting when there's none. Null: not bounding.
    */
   private boundPhase(view: BotWorldView, target: CombatantView | undefined, goal: OrderGoal | null | undefined): 'move' | 'cover' | null {
-    if (!target || !goal?.push || goal.run || this.arena || this.berserker || view.self.mounted) return null;
+    // (A fireteam on the move bounds by its halves, a person's squad too: Fireteams Part 2.)
+    const squadHalf = goal?.half;
+    if (!target || !goal || !(goal.push || (squadHalf !== undefined && goal.order)) || goal.run || this.arena || this.berserker || view.self.mounted) return null;
     const dist = horizontalDistance(view.self.pos, target.pos);
     // (A playbook that has everyone bound, Breakthrough's: every style but Arena's from BOUND_FROM.)
     const all = !!view.plan?.job?.bound;
     if (dist < BOUND_FROM || (!this.methodical && !all && dist < BOUND_MIXED)) return null;
     const period = TICK_RATE * (this.methodical ? 3.5 : 4.5);
+    // A squad's halves share one clock (a Tactical member's turn as long as a Mixed one's): one half moves while the other covers.
+    if (squadHalf !== undefined) return (Math.floor(view.tick / (TICK_RATE * 4)) + squadHalf) % 2 === 0 ? 'move' : 'cover';
     return (Math.floor(view.tick / period) + this.slot) % 2 === 0 ? 'move' : 'cover';
   }
 
@@ -1328,6 +1347,8 @@ export class BotBrain {
 
     // Cover-to-cover advance (Phase B item 6): on the way to an objective, in a fight at range, by style.
     this.bound = this.boundPhase(view, target, goal);
+    // (A squad's covering half: its enemy ducking out of sight, it keeps their heads down while the others move.)
+    if (this.bound === 'cover' && goal?.half !== undefined) this.coverFireUntil = tick + Math.round(TICK_RATE * COVER_FIRE_SECONDS);
     // Cover: under fire, fighting at range, reloading or hurt, for bots that play tactically.
     const threat = target?.pos ?? (underFire ? this.threatFrom : null);
     // Better bots take cover far more often; arena bots mostly keep moving instead.
@@ -1608,6 +1629,20 @@ export class BotBrain {
             sprint = r.sprint;
             stance = r.stance;
             moveScale = r.moveScale;
+            // Covering fire (a fireteam's covering half, while the other half moves): at where the enemy went out of
+            // sight, only while the rounds reach it (suppress: clearShot), so from a peek, not into its own cover.
+            const lk = this.lastKnown;
+            if (tick < this.coverFireUntil && !sprint && lk && tick - lk.tick < TICK_RATE * COVER_FIRE_SECONDS && horizontalDistance(me.pos, lk.pos) > 6) {
+              const sup = this.suppress(view, lk.pos, ctx);
+              if (sup) {
+                sol = sup;
+                wantFire = true;
+                this.lookAt(view, lk.pos, 1.2);
+                lookDone = true;
+                this.coverShots++;
+                break;
+              }
+            }
           }
           // Hold the angle where they were.
           if (threat && !sprint) this.lookAt(view, threat, 1.2);

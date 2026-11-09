@@ -204,6 +204,8 @@ The workflow is unchanged (CLAUDE.md):
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
 
+**Landing now: gunplay pass 3 (`check/gunplay-3`; this session), please hold code pushes to main.** (Gunplay agent, 2026-11-09; one check run, then a fast-forward.)
+
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
   `packages/client/src/editor/**`, `packages/shared/src/editor/**`, the map schema or `MAP_FORMAT_VERSION`
@@ -227,12 +229,6 @@ The workflow is unchanged (CLAUDE.md):
 
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/sandfall_colosseum.json` (rebuild), MapMaker lane, 2026-11-08.
-- Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
-- Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
-- Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
-- Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
-- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, neon_spire, riot_junction, underdrain, blackout, crossroads, pharaohs_reach, qasr_medina, sunken_kingdom (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
-- Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
 - **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
   (team kills and roulette).
@@ -251,8 +247,15 @@ The workflow is unchanged (CLAUDE.md):
   (`recommendedPlayers`); with 97 spawn points and a 16 v 16 team layout its automatic caps are 32 best, up to 96.
   Suggested: Players 16-64 (as Iron Coast, 96 spawns, says), in MapMaker's Map properties; small fixes, 2026-11-09.
 - **For the session owning team kills and friendly fire:** the e2e `teams` flow's friendly-fire and team-kill checks contradict themselves between attempts on check/mapmaker-setpieces (run 42549709174, job 128943570176). Attempt 1: friendly fire off still hurt a teammate (70.5), and a team kill wasn't marked TK (killer 5 was a bot). Attempt 2: friendly fire on hurt 0, and TK was marked fine. It looks like stray shots from bots or other teammates in the test match, not set pieces. The failed job was re-run once.
-- Claimed: `maps/test_coverage.json` (the Town Wall Gatehouse, through MapMaker; set pieces part 6, `wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-09.
-- Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
+- **Answer from the session owning team kills (2026-11-09):** a test race, not a game bug and not set pieces. Under load
+  the "a third of a second" wait after your shots ran 500-2,400 ticks while the enemy bots kept fighting (only the
+  teammate was held). Eight local repeats of the old setup, damage logged by attacker: enemy rounds hit the placed
+  teammate in all four with friendly fire off (it lost 51 and 95, or died and respawned) and in two of four with it on,
+  killing it so that it stood there respawned at full health ("hurt 0"); on the 1-HP teammate an enemy can land the
+  kill before your round (killer 5, not a TK, correctly unmarked). Fixed in e2e `friendlyFireChecks` (`wip/teams-flaky`,
+  landed on main with this answer): every bot holds fire and the air is clear before the shots, the teammate's spawn
+  shield is cleared, and its damage is logged by attacker (`hurt` = your rounds; friendly fire off also needs nothing
+  lost). Merge origin/main and the teams flow should hold.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
   Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
@@ -263,6 +266,31 @@ The workflow is unchanged (CLAUDE.md):
   (natural cliffs, inland drops to slopes, the coast edge on its east and west ends, A1/A2 zone time). Details:
   docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md and the owner's screenshots described in this file's Iron Coast
   part 2 entry.
+
+**MapMaker: track / NPC traffic wording, and Environment Phase 3's tools (`wip/mapmaker-env3`, green on `check/mapmaker-env3` at 63989680, run 42599981528; waits for the train; MapMaker lane,
+2026-11-09; no format change).**
+- **Race wording (item 1; also on `wip/mapmaker-race-wording` at 14d2ab06, green on `check/mapmaker-env3`, run
+  42578435360):** pathTool / editorApp / keymap / index.html say track (NPC traffic). The track pane hides Laps,
+  Start grid, Vehicle and Combat (the data stays, read by nothing) and keeps NPC cars, their vehicle, curbs, Start
+  here and the pit lane. Map properties no longer offers Race; a map that lists it gets **Drop Race**
+  (`client/editor/removedModes.ts`, `shared/editor/mapModes.ts`), and picking a main mode drops it too. e2e
+  `traffic` now sets `#ed-path-ambient` (not `#ed-path-laps`) and checks the pane and Drop Race.
+- **Environment Phase 3 (docs/PROCEDURAL_ENVIRONMENT.md §8 / §11; docs/SCENERY.md "Environment group and brush"):**
+  - `shared/editor/envBrush.ts`: the deterministic dab (seed from the brush's seed and the spot), presets
+    (temperate, jungle, alpine, arid), filters (slope with each species' own limit, altitude, terrain material, not in
+    tile cells), keep-clear zones (spawns 3 m, objectives their radius, vehicles 4 m, pickups 1.5 m, every path its
+    half-width + 1 m) for species that block movement or sight (`envImpact`, `blockingPlacement`), the environment
+    budget as `room`, `envEraseDab`. Plants are ordinary `env.*` props with their own transforms (authoritative;
+    nothing client-side only, so sight, cover and movement can't differ).
+  - `client/editor/envTools.ts`: the Nature tab's **Environment** group first (species by category; the env species
+    moved out of Trees / Plants & Flowers / Rocks & Wood; the ?env=1 preview group is gone), the brush card
+    (`envbrush` tool: one stroke = one undo step via the editor's brush stroke), the pane (`#ed-env-*`), the
+    keep-clear confirmation for single placement (`confirmPlace`, before the prop tool's Place) and the
+    **Show what blocks** overlay (one line mesh `envBlockers`, rebuilt only when the document changes).
+  - Fix outside the editor: `environment/envMaterials.ts` registers `BABYLON.EnvWindPlugin` (and a still default
+    wind), because cloning a species' material (MapMaker's see-through ghost of a tree in hand) threw "reading
+    'EnvWindPlugin'".
+  - Tests: unit `shared/test/envBrush.test.ts`, `mapModes.test.ts`; e2e `editorux` → `editorEnvironmentChecks`.
 
 **MapMaker: the Iron Coast job's editor half (`wip/mapmaker-terrain`, map format v32, MapMaker lane, 2026-11-09).**
 For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.json`).
@@ -302,6 +330,21 @@ For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.
   paint and plants, the command and undo, v31 → v32), `shared/test/borderCoast.test.ts`, `client/test/terrainDraw.test.ts`;
   e2e `editorux` → `editorTerrainGridChecks` (Change grid on a 96 m terrain and undo; coast chosen per side and drawn).
 
+**MapMaker: bot test run and spawn exposure (`wip/mapmaker-p4`, MapMaker lane, 2026-11-09; overhaul Phase 4 items 1
+and 2; waits for Tuesday's train).** docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under Phase 4 items 1 and 2.
+- **What:** the top bar's **Bot test** → the Test panel (`client/editor/mapTestPanel.ts`, `mapTestOverlay.ts`,
+  `mapTestWorker.ts` + `mapTestWorkerCore.ts`): a headless bot match in a worker (mode, bots, 30 s-5 min, progress,
+  Cancel), then four heatmaps (went, stuck, died, routes failed; 3D and plan view) and a summary; **Check spawns**:
+  per-spawn exposure labels, sightlines, `spawn.exposed` warnings. Logic in `shared/editor/mapTest.ts` (match subpath
+  only: it imports Match), `heatmap.ts`, `spawnExposure.ts`, `botTestSummary.ts`; `shared/bots/botTrace.ts` is now
+  how bot-report reads stuck recoveries and failed searches (same output).
+- **editorApp.ts:** five wiring lines (import, field, constructor, `frame()`, `allIssues()`); `editorView.photoMode`
+  hides `edMapTest*` meshes.
+- **Pitfalls:** nothing is in the map (no format bump). Exposure warnings stand only while `doc` is the object checked
+  (any edit drops them). The worker is ended, never asked to stop: Cancel is `terminate()`.
+- **Owner's questions:** in the report (exposure threshold, team-aware exposure, bot count cap, a quick on-every-edit
+  exposure pass).
+
 **For the other session: Iron Coast's editor half has landed (MapMaker lane, 2026-11-09).**
 - **What's on main:**
   - map format v32;
@@ -313,13 +356,44 @@ For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.
 - **File size:** at 1.25 m Iron Coast is about 1.1 MB of its 2 MB budget, because terrain is now written one row
   per line.
 - **Phones:** Low graphics draws fine terrain at half resolution; collision and nav keep every vertex.
-- Claimed: map format v33 (bot hints in MapMaker, `wip/mapmaker-bothints`), MapMaker lane, 2026-11-09.
+
+**MapMaker: bot hints (`wip/mapmaker-bothints`, map format v33, MapMaker lane, 2026-11-09).** Overhaul Phase 4 item 3,
+Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
+- **For the session that owns the bots:** the data is ready to read, bots don't use it yet. `MapDocument.botHints`
+  (kind `choke` / `sniper` / `camp` / `staging` / `jump`, position, yaw, radius, team, a jump's `to`), read with
+  `mapBotHints(map, kind?, team?)` (`shared/src/map/botHints.ts`); the format in docs/BOTS.md, "Bot hints (map data)".
+  No bot code was changed. `validateMapNavigation` gained an optional third argument (`{ computed: true }`: also
+  returns the vantage spots and parkour links, for MapMaker's "What bots know") and warns of hints off the navmesh.
+- **MapMaker:** the Bot hints tool (Y; Entities tab → Bot hints; `client/editor/botHintTool.ts`): pins and a canvas of
+  radii, facings and jump arcs (3D and plan view), the inspector edits the selected one; each edit one undo step
+  (`shared/editor/botHints.ts`, `setBotHints`). Warnings in validateMap (outside the boundary, a jump a player couldn't
+  make, duplicates). "What bots know" works the computed spots out with the navigation check, only while it's ticked.
+- **Tests:** unit `shared/test/botHints.test.ts` (v32 → v33, commands and undo, the accessor, the checks, a real
+  navmesh); e2e `editorux` → `editorBotHintChecks`.
 
 - Claimed: `maps/whiteout_station.json` (the rebuild from MAP 03 Frostbite Station, in MapMaker; `wip/mapmaker-whiteout`), MapMaker lane, 2026-11-09.
 
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` LODs, `content/meshy.lock.json`, the e2e `characters3` flow's far-copy checks; `wip/far-copies`), far-copies agent, 2026-11-09.
+
+- Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
+- Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
+
+**Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
+for the owner's review, not landed).**
+- Made in the real MapMaker only (a scratch Playwright driver: Import, plan-view drag-box Delete, Create terrain and
+  the brushes, palette clicks, the Walls tool, the inspector, Map properties, Set card shot, Export). No map code.
+- What it is, the choices and the owner's questions: docs/map-briefs/whiteout_station/ (DECISIONS_AND_DEVIATIONS.md
+  and MAP_IMPLEMENTATION_MANIFEST.md, "Rebuild 2026-11"; QA_REPORT.md).
+- Modes now DM and TDM only (CTF and KotH dropped, the brief names no objectives); 8-16 players, 8 v 8; no vehicles.
+- `shared/test/stylePacksSnow.test.ts`'s Whiteout block checks the rebuild (landmarks, the tunnel, modes, navigation
+  as validate-map builds it, the tunnel and ridge both ways).
+- Pitfalls for the next map build: an unconnected port is capped with a wall (open tunnel/stair tops with the Walls
+  tool); a hut tile's own model walls ignore edge choices (the hangar has no mezzanine door north); terrain over a
+  roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
+  its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
+  panel miss (zoom out a notch after Home).
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
@@ -381,6 +455,63 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - `shared/src/editor/keymap.ts`: `raceTrack` "Paths, on the race track" (Shift+G, l. 122).
   - `client/index.html` l. 228 (the Vehicles tab's title "...parked vehicles and race tracks"; MapMaker UI, so left
     to this lane too).
+- **The owner's answers, 2026-11-09 ("ur recs": the lane's recommendations, adopted):**
+  - **Phase 3 B:**
+    - paste across themes is allowed: pieces take the new map's theme and keep their paint;
+    - Mirror of half the map refuses while the far half isn't empty;
+    - terrain and paths mirror as a checkbox;
+    - Breakthrough spawn groups keep their side;
+    - tiles with no mirror image are refused, and named;
+    - the note tool stays on J and in Map properties.
+  - **Sandfall:**
+    - keep 4 m a square, open corner courts, 12 v 12;
+    - bring back the portcullis gates (not the lifts or the portal);
+    - offer Deathmatch again;
+    - add a side-wall option to the tunnel tiles in MapMaker;
+    - trim the collision boxes well down (drop arcades on the far sides or the attic walk); aim near the shipped
+      maps.
+  - **Terrain:** plants on fine grids as dense as at 2.5 m; Real-place imports stay at 161 a side; phones draw half
+    resolution on Low only.
+  - **Follow-ups:** props outside the boundary stay scenery; moving and pasting aren't refused; the status line gives
+    way first.
+  - **Bot hints:** chokepoints and staging are marked by hand for now; Mirror swaps teamed hints like spawns; jump
+    checks stay on the movement numbers; hints stay in the content hash.
+  - **Whiteout Station:**
+    - add King of the Hill (hills in the yard, on the ridge and in the cave);
+    - add 2–4 drivable snow sleds on the south road;
+    - move Tide's spawns a cell nearer the yard;
+    - keep the ridge, the cave and the tanks as built.
+  - **Environment tools:** every plant stays stored one by one; a blocking tree asks only on spawns, routes and
+    objectives; retire the old Scatter Brush sets; add the missing palette pictures.
+  - **Phase 4:**
+    - a spawn is exposed at 50 %;
+    - exposure counts every walkable place;
+    - the spawn check runs on demand;
+    - the bot test allows up to 64 bots;
+    - heatmaps stay in memory.
+  - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
+    until it's gone (docs are fine).
+- **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
+  - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
+  - bot hints (map format v33);
+  - Phase 4 (bot test, spawn exposure);
+  - the Environment tools and the race wording;
+  - set pieces part 6 (the swaps on 9 maps);
+  - the Sandfall Colosseum and Whiteout Station rebuilds.
+
+  The map claims for the swaps (iron_maw included) are released.
+  - **Still waiting:**
+    - `wip/mapmaker-p5` (green at 741f305e, map format v34);
+    - The Spillway;
+    - the Sandfall and Whiteout follow-ups.
+  - **Known:** the wider top bar makes Export, Import and Publish fold into the compact menu sooner near 1400 px.
+  - **Known:** the `editorux` flow is now about 1,340 s on CI, too long for a retry inside the 45-minute job. Split it
+    next.
+- **Phase 5 questions** (the lane's recommendations, as the owner asked):
+  - fog caps bots' sight at the players' distance;
+  - the lane proposes a time and weather per official map, set in MapMaker;
+  - otherwise as built: grey skies keep their own look at dawn and dusk; no lightning; host weather from the next
+    match; no Random weather; a 62° noon sun.
 - **Landing cadence (owner, 2026-11-09: "less landings, since I won't be testing until Tuesday afternoon"):** the
   MapMaker lane stops landing each branch on its own. Green branches wait. They land together as one train
   (`tools/ci/train.mjs`) on Tuesday 2026-11-10 morning (UTC), ready for the owner's Tuesday-afternoon testing; a
@@ -570,8 +701,8 @@ Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key lis
 3. **Sound pass 2** (Sonniss and Freesound). Both are approved, and their hosts are on the environment's allowlist.
    - Sonniss sits behind a Cloudflare browser check, so the owner puts the chosen packs in the Drive.
    - Freesound needs an API key: ask with the credential form, never in chat.
-4. ~~**Fireteams.**~~ Part 1 done: see "Fireteams, part 1" below. Parts 2 (formations, bounding, the squad HUD) and 3
-   (squad scores, MVP, the party preset) are next.
+4. ~~**Fireteams.**~~ Parts 1 and 2 done: see "Fireteams, part 1" and "part 2" below. Part 3 (squad scores, MVP, the
+   party preset) is next.
 5. **The MapMaker overhaul.** Its Phase 3 item 9 is the rotate ring.
 6. **Community maps.**
 7. **Kit-prop generators.**
@@ -754,6 +885,26 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   main 3 / 5 / 5 / 4, this branch 9 / 6 / 2 / 2 (17 against 19). Revert with a fix for the lift wait.
 - **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
   screenshots; the skipped maps above; card pictures.
+
+### Sandfall Colosseum rebuilt in MapMaker (`wip/mapmaker-sandfall`, agent, 2026-11-08/09; the owner's brief docs/map-briefs/sandfall_colosseum/BRIEF.md; CI on `check/mapmaker-sandfall`)
+- **What:** the map rebuilt from the Flavius Rule board (manifest and decisions in docs/map-briefs/sandfall_colosseum/):
+  the 52 m sand with the board's pillars, medallions (KotH), hatches and beast pit; seven-storey stands of the Arena
+  stands set pieces on four sides; gates 1-4; the emperor's box back at north centre; corner courts with stair towers;
+  the hypogeum (ring, hatch halls, cages, gladiators' cells, eight stairs out); sixteen insulae and the main square;
+  TDM / CTF / KotH, 12 v 12, Medieval. Built only through MapMaker (a scratch Playwright driver, as for Iron Coast).
+- **MapMaker / shared code:** backdrop scenery **Hills and a volcano** (`SCENERY_IDS` + client `backdrop.ts`
+  `volcano`, still: nothing for Reduce flashing to calm; `client/test/backdropVolcano.test.ts`); exploding or deleting
+  the last placement of a map's own set piece drops its `setPieceDefs` entry (`operations.ts` `unusedDefsCommand`,
+  `setPieceEdit.test.ts`). No format bump. `stylePacksAncient.test.ts`'s Sandfall test follows the rebuild.
+- **Proof:** validate-map 0 issues; nav audit 0 traps, 0 errors; z-fight audit passes; bot-report and bench numbers in
+  DECISIONS ("Budgets") and the manifest.
+- **Driver tricks (new):** Save selection as set piece takes the least cell *and level* of the selection, entities
+  included (a light a level below lifts the tiles a level in the piece); a piece's frame is at most 33 cells a side
+  (split a big selection); its footprint claims every level from its lowest to its highest for every cell (keep a
+  piece on one level if it must pass under other things). Terrain over a tunnel must be pulled under its floor
+  everywhere along it (flatten to within 3 m), or the slope between pulled and unpulled ground closes the tunnel.
+  Open Stairs climb east as placed. Duplicate (Ctrl+D) + R + arrow keys moves 90 placements at once.
+- **Left / owner's calls:** see the report (lift cages and the portal back? the aqueduct? lights budget full).
 ### Gunplay pass 2: identities, readouts, the Battle Rifle (`wip/gunplay-2`, agent, 2026-11-08; owner-approved candidates 1-6 of the audit plus spec gap G2; green on `check/gunplay-2` at 2673702, run 42531571292, then with main merged in; LANDED on main by fast-forward from `check/gunplay-2`)
 
 docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunplay pass 2"; `pnpm gun-report` re-run
@@ -790,6 +941,33 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
     latency/loss harness) and 8 (bot weapon choice from measured TTK) are next on the audit's list.
   - The MapMaker editor with `?test=1` makes the same entity ids every session: a pickup placed there collided with
     one the audit placed (`pickup_ekrqxstr16`); placing without `?test=1` worked. For the MapMaker lane.
+
+### Fireteams, part 2 (`wip/fireteams-2`, agent, 2026-11-09; owner-approved 2026-11-08; green on `check/fireteams-2` at fe9b180, run 42684293550; LANDED on main by fast-forward; docs/FIRETEAMS_PLAN.md "Part 2", docs/BOTS.md "Fireteams Part 2")
+- **What players see:** bot squads go for the objective together; your own squad forms up round you (single file in
+  corridors, a wedge, spread on open ground; a ring round a Hold / Go / Defend place); **Spread out / Stay tight** as
+  the wheel's seventh entry; half the squad covering while the other half moves up; the **squad HUD** (squadmates'
+  portraits, health, "Down", the order line with the spacing; ringed orange squad dots and the order's place on the
+  minimap; orange markers over squadmates). Phone: the panel sits beside your health, clear of the move stick.
+- **Code:** `sim/fireteams.ts` (`layFormation`, `formationShape`, `formationOffset`, `squadHalf`, `spacing`, the
+  leader handover and carrier lead in `step`, `squadSnapshot`/`readSquad`), `match.ts` (`fireteamPlayGoal`,
+  `squadWorld.clear/ground`, `squadUnit` → `ModeLogic.botUnits`, leader alerts, the snapshot's `fs`), `ctfBots.ts`
+  (`ctfSquadRoles`), `director.ts` (`DirectorMember.unit`: a member takes its leader's job), `brain.ts` (`OrderGoal.half`
+  in `boundPhase`, covering fire), protocol `fs` (REPEATABLE), client `squadHud.ts`, `minimap.ts` (`ring` blips),
+  `session.ts` (the HUD, the wheel's spacing entry), `style.css` (`#squad-hud`; `#squad-order` moved inside it).
+- **Proof:** unit `shared/test/fireteams.test.ts` (+9: shapes and offsets, a person's squad in the open and in a
+  corridor, walls, rings, spacing toggle and snapshot, bot-led members play the play, halves, the leader handover and
+  the carrier, CTF roles by squad), `client/test/squadHud.test.ts`; e2e `fireteams` extended (7 wheel entries, the
+  HUD's cards, Spread out answered and shown); bot-report off / Part 1 / Part 2 and bench in FIRETEAMS_PLAN.md.
+- **Measured:** TDM kills above off (Riot Junction 136 / 118, Eagle Spires 76 / 66), the hill held as long (106 / 102 s),
+  cohesion better than off everywhere; CTF captures Bunker Cross 1.5 / 2.0, **Diamond Park 0.25 / 1.25** (both flags
+  out at once: every squad attacks). Kills on Bunker Cross and Shingle Point about a quarter under off.
+- **Screenshots** (this session's scratchpad, may not survive): `fireteams2/fireteams2-hud-desktop.png`,
+  `fireteams2-hold-desktop.png`, `fireteams2-wheel-desktop.png`, `fireteams2-hud-phone.png`, `fireteams2-hold-phone.png`.
+- **For the owner:**
+  1. CTF with Fireteams: keep every squad attacking (more kills and takes, few captures on Diamond Park), or have the
+     team's smallest squad hold the base when a team has 3+ squads (measured: no captures on Diamond Park either)?
+  2. Formations are for your own squad; bot squads play the objective in the team's plan instead (formations round
+     bot leaders cost about a third of the kills). Keep that split?
 
 ### Fireteams, part 1 (`wip/fireteams`, agent, 2026-11-08; owner said "Go"; green on `check/fireteams` at 4610a3b, run 42493762584; LANDED: main 4610a3b; docs/FIRETEAMS_PLAN.md "Part 1", docs/BOTS.md "Fireteams")
 - **What players see:** a **Fireteams** variant chip in Match setup for TDM, CTF, KotH, Bomb, Hostage and
@@ -838,6 +1016,25 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
 
+### Set pieces, part 6: swapping the old big pieces (`wip/mapmaker-setpieces6`, agent, 2026-11-09; MapMaker lane)
+- **Done:** Replace all with a set piece… in every tile's inspector; the Town Wall Gatehouse (`setpiece.courtyard_gate_wall`)
+  and Market Town's gate swapped to it in MapMaker; Shingle Point's card camera backed up (card picture recaptured);
+  the coverage map's Tall Mushroom replaced by our Bracken Fern (a Kenney log stack keeps the Nature Kit pack covered).
+- **Also done (owner's answers):** the Bunker set piece (`setpiece.bunker`, the Bunker tile's size); Iron Maw and Shingle
+  Point (Warehouses → Loading Dock, Bunkers → Bunker), Neon Spire, Riot Junction and Underdrain (City Crossroads → Crossroads
+  Plaza, the ring filled with Platforms) swapped in MapMaker; checks and bot reports in docs/SET_PIECES_PLAN.md, "As built: part 6".
+- **Also done (Environment Phase 2 maps):** the City Wall Gatehouse (`setpiece.city_gate_wall`) and Temple Pylon
+  (`setpiece.temple_pylon`) set pieces; Blackout and Crossroads (Loading Dock, Bunker), Pharaoh's Reach and Sunken
+  Kingdom (Temple Pylon), Qasr Medina (City Wall Gatehouse) swapped in MapMaker; both pieces on the coverage map.
+- **Left:** Coldwater Gulch needs none (Bunker theme only); Whiteout Station (its rebuild). Bunker Cross, Concrete
+  Annex, Iron Tide, Ironhold Prison, Pump Tower and Silo Complex only use the Bunker theme (no old big tile). Iron
+  Compound still places a Bunker tile and the Catwalk Gantry (owner: leave it as it is).
+- **Pitfall:** a bot match parts another way after any change to a map's entities, even a block buried out of reach,
+  so a capture or kill count from one seed tells nothing about a swap: compare many seeds (SET_PIECES_PLAN, "As
+  built: part 6", Sunken Kingdom).
+- **Pitfall:** MapMaker with `?test=1` makes ids from a fixed sequence, so placing into a map that was itself built
+  under `?test=1` (the coverage map) can collide ("ID … already exists"): drive real edits without `test=1`.
+
 ### Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall (`wip/mapmaker-setpieces`, agent, 2026-11-08; MapMaker lane)
 - **Built** (docs/SET_PIECES_PLAN.md, "As built: part 5"): twelve pieces (the catwalk bridge in three lengths) in their
   own families: Power Core Hall, Catwalk Bridge, Twin-Stair Overlook, Atrium Tower, Loading Dock, Sunken Arena (new kit
@@ -852,6 +1049,20 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
   "walled" with nothing built beyond; e2e `editorSetPiecePart5Checks` in editorux.
 - **Pitfall:** core.room_tall, core.atrium and orbital.reactor_hall have no roof of their own; a piece that tops out
   with them needs a roof block (the three here have one).
+
+### MapMaker follow-ups: the sampled jump hint, refused ghosts, the budget bar in the status bar (`wip/mapmaker-followups`, agent, 2026-11-09; the owner's answers 4b, 5b, 8b)
+- **Built:** the measure tool's jump hint samples the ground along the line (`sampleProfile`, `profileVerdict` in
+  shared `editor/measure.ts`; `MeasureTool` caches each stretch's verdict per map version); spawns, pickups, props,
+  vehicles and NPCs over nothing, and the gameplay ones outside the boundary, are refused (shared `editor/ghostWhy.ts`
+  `bad` notes, `ghostRefuses`; the ghost tinted red in `editorView.ts`; `placeAtHover` returns); the budget bar is a
+  compact item in `#ed-bottom` (`budgetBar.ts`, `editor.css`). As built: docs/MAPMAKER_OVERHAUL_PLAN.md under Phase 1
+  items 1-3. No map field, no format bump, no map changed.
+- **Owner's calls, built the conservative way:** props outside the boundary keep the scenery note
+  (`PROPS_REFUSED_OUTSIDE = false` in ghostWhy.ts); only placing is refused (moving, pasting, the inspector's height
+  aren't).
+- **Pitfall:** the ghost's "something under it" is `surfaceBoxes()` (tiles shown, blocks, solid props) plus `water`
+  entities, not `mapBoxes()` (tiles only) as before.
+
 ### MapMaker overhaul: Play from here, the plan view, the card shot (`wip/mapmaker-p3a`, agent, 2026-11-08; Phase 3 items 1, 2 and 8)
 - **Built:** Play from here (Shift+F5, ▶ Here), the plan view (K, Plan; Export PNG), the card-shot camera (Map
   properties → Card shot: Set card shot…, eye level, Preview, Clear). As built: docs/MAPMAKER_OVERHAUL_PLAN.md under
