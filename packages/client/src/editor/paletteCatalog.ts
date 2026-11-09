@@ -199,6 +199,20 @@ export const SET_PIECE_FAMILIES: readonly (readonly [family: string, label: stri
   ['hypogeum', 'Hypogeum'],
   ['insula', 'Insulae'],
   ['landing', 'Landing craft'],
+  ['fort', 'Forts'],
+  ['powercore', 'Power core halls'],
+  ['reactor', 'Reactor rooms'],
+  ['servervault', 'Server vaults'],
+  ['loadingdock', 'Loading docks'],
+  ['atrium', 'Atrium towers'],
+  ['catwalk', 'Catwalk bridges'],
+  ['overlook', 'Overlooks'],
+  ['rampjunction', 'Ramp junctions'],
+  ['courtyardgate', 'Courtyard gates'],
+  ['bunkercluster', 'Bunker clusters'],
+  ['sunkenarena', 'Sunken arenas'],
+  ['plaza', 'Plazas'],
+  ['seawall', 'Sea walls'],
 ];
 
 /** A family's label in the Set pieces tab. */

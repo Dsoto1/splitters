@@ -1,0 +1,6 @@
+{
+  "$comment": "Retired tiles and the set pieces that replace them (docs/SET_PIECES_PLAN.md, \"As built: part 5\"). A retired tile leaves MapMaker's palette but stays readable: a map that places one plays it as the set piece (loadMap, as played: the placement becomes the piece at the same cell, level and turn, its id the tile's), and MapMaker offers \"Replace all\" in the tile's inspector, so an exported map names the piece. A piece listed here covers exactly the tile's cells and levels unturned (checked). An entry is never removed: maps saved with the tile still load. Edit, then run `node tools/content/setpieces.mjs`.",
+  "tiles": [
+    { "tile": "military.gantry", "piece": "setpiece.catwalk_bridge_2", "since": "2026-11-08", "notes": "The Catwalk Gantry (1 x 2 cells, levels 0-1: stairs up to a railed catwalk 4 m up on legs, meeting the level above at its north end) as the Catwalk Bridge (Up): the same cells, levels and ways in, open ground under the deck; its stair 4 m wide (the gantry's 2.4 m) and its deck 3 m (2.4 m)." }
+  ]
+}

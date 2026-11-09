@@ -132,6 +132,8 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/sandfall_colosseum.json` (rebuild), MapMaker lane, 2026-11-08.
 - Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
+- Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
+- Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
@@ -150,6 +152,8 @@ The workflow is unchanged (CLAUDE.md):
   - **Please fix**, or tell us here which commit to land against.
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` low-detail levels, `content/meshy.lock.json`), the pickup/hit/streak bursts in `content/vfx.json`, small fixes of 2026-11-08 (`wip/small-fixes`), 2026-11-09. (Iron Maw's player count and Fernwood Moon's lift are inside other claims: not edited here.)
 - **For the session owning team kills and friendly fire:** the e2e `teams` flow's friendly-fire and team-kill checks contradict themselves between attempts on check/mapmaker-setpieces (run 42549709174, job 128943570176). Attempt 1: friendly fire off still hurt a teammate (70.5), and a team kill wasn't marked TK (killer 5 was a bot). Attempt 2: friendly fire on hurt 0, and TK was marked fine. It looks like stray shots from bots or other teammates in the test match, not set pieces. The failed job was re-run once.
+- Claimed: `maps/test_coverage.json` (the Town Wall Gatehouse, through MapMaker; set pieces part 6, `wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-09.
+- Claimed: `maps/apex_ring.json` and `maps/sandsweep.json` (drop Race from their modes in MapMaker's Map properties; released by Environment Phase 2), race removal (`wip/race-removal`), 2026-11-09.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
@@ -164,6 +168,7 @@ The workflow is unchanged (CLAUDE.md):
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
+- Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
   randomise), then Phase 3 item 9 (the rotate ring, quick facings) and the rest of Phase 3 that doesn't need the split.
 - **Also in this lane** (owner's addendum, 2026-11-08; the other session took these off its queue):
@@ -198,6 +203,11 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - "fix em all": swap every old big piece that has a set-piece version (town and city gate, pylon, warehouse,
       hangar, bunker, city crossroads) on every map that uses one, in MapMaker. Each map is claimed first; the other
       session's maps get asked first.
+- **Landing cadence (owner, 2026-11-09: "less landings, since I won't be testing until Tuesday afternoon"):** the
+  MapMaker lane stops landing each branch on its own. Green branches wait. They land together as one train
+  (`tools/ci/train.mjs`) on Tuesday 2026-11-10 morning (UTC), ready for the owner's Tuesday-afternoon testing; a
+  second train only if something urgent comes up. Until then, MapMaker branches merge `origin/main` only when they
+  need something from it.
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
@@ -650,6 +660,20 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
 
+### Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall (`wip/mapmaker-setpieces`, agent, 2026-11-08; MapMaker lane)
+- **Built** (docs/SET_PIECES_PLAN.md, "As built: part 5"): twelve pieces (the catwalk bridge in three lengths) in their
+  own families: Power Core Hall, Catwalk Bridge, Twin-Stair Overlook, Atrium Tower, Loading Dock, Sunken Arena (new kit
+  tiles Arena Pit / Tiers / Tiers (Corner)), Reactor Room, Bunker Cluster, Courtyard Gate, Server Vault, Crossroads
+  Plaza, Ramp Junction; and **Sea Wall** / **Sea Wall (Breached)** for Iron Coast (not placed there: main hands them over).
+- **Retired tiles:** `content/setpieces/aliases.json` (generated into `SET_PIECE_TILE_ALIASES`); `map/setPieceAliases.ts`
+  plays a retired tile as its piece (loadMap as played); MapMaker keeps it and offers Replace all in the tile inspector
+  (`editor/retiredTiles.ts`, `replaceTilesWithSetPieceCommand`). Only `military.gantry` → Catwalk Bridge (Up) so far;
+  the other old pieces are parked (owner questions in the plan's table). No format change.
+- **Tests:** `setPieces5.test.ts` (bots along every way through and up both ends of every climb, in every turn and
+  mirror; players climb; the alias; Replace all and undo; the sea wall and breach); `setPiecePlay.test.ts` judges
+  "walled" with nothing built beyond; e2e `editorSetPiecePart5Checks` in editorux.
+- **Pitfall:** core.room_tall, core.atrium and orbital.reactor_hall have no roof of their own; a piece that tops out
+  with them needs a roof block (the three here have one).
 ### MapMaker overhaul: Play from here, the plan view, the card shot (`wip/mapmaker-p3a`, agent, 2026-11-08; Phase 3 items 1, 2 and 8)
 - **Built:** Play from here (Shift+F5, ▶ Here), the plan view (K, Plan; Export PNG), the card-shot camera (Map
   properties → Card shot: Set card shot…, eye level, Preview, Clear). As built: docs/MAPMAKER_OVERHAUL_PLAN.md under

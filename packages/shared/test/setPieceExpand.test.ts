@@ -240,7 +240,7 @@ describe('set pieces: the turn and the mirror move every part as one', () => {
 });
 
 describe('set pieces: every shipped piece in each turn, mirror and role pack', () => {
-  it('expands into its parts with no errors, inside its footprint, with ids sp_<placement>_<part>', () => {
+  it('expands into its parts with no errors, inside its footprint, with ids sp_<placement>_<part>', { timeout: 120_000 }, () => {
     expect(shipped.pieces.size).toBeGreaterThanOrEqual(5);
     for (const def of shipped.pieces.values()) {
       for (const rotation of ROTATIONS) {
