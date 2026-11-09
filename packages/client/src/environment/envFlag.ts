@@ -11,3 +11,16 @@ export function envRendererOn(): boolean {
     return false;
   }
 }
+
+/**
+ * Whether a match draws placed species with the environment renderer (chunked thin instances, levels of detail):
+ * on by default since Environment Phase 2 (the official maps' trees and bushes are species now); `?env=0` draws them
+ * as prop nodes instead (one each, level 0), as MapMaker does.
+ */
+export function envBatchedOn(): boolean {
+  try {
+    return new URLSearchParams(location.search).get('env') !== '0';
+  } catch {
+    return true;
+  }
+}

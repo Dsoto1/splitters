@@ -81,9 +81,9 @@ describe('our fern and shrub hide players as the Kenney fern and small bush did'
     return { ...map, entities: map.entities.map((e) => (e.id === 'bush' && e.kind === 'prop' ? ({ ...e, model, scale, ...(variant !== undefined ? { variant } : {}) } as PropEntity) : e)) };
   };
   /** The plant as "Replace all" turns `from` (at `scale`) into `to`. */
-  const replaced = (from: string, scale: number, to: string): { model: string; scale: number; variant?: number } => {
+  const replaced = (from: string, scale: number, to: string, size: 'height' | 'scale' = 'height'): { model: string; scale: number; variant?: number } => {
     const doc = yardWith(from, scale);
-    const e = applyCommand(doc, replacePropsCommand(doc, from, to, 'height')).entities.find((x) => x.id === 'bush') as { model: string; scale: number; variant?: number };
+    const e = applyCommand(doc, replacePropsCommand(doc, from, to, size)).entities.find((x) => x.id === 'bush') as { model: string; scale: number; variant?: number };
     return { model: e.model, scale: e.scale, variant: e.variant };
   };
   /** Whether a player in each stance, `dx` m east of the plant's middle, is hidden. */
@@ -103,7 +103,7 @@ describe('our fern and shrub hide players as the Kenney fern and small bush did'
     return out;
   };
 
-  for (const [from, to, scale] of [
+  for (const [from, to, scale, size, slack] of [
     ['prop.fern', 'env.fern.bracken', 1],
     ['prop.fern', 'env.fern.bracken', 1.3],
     ['prop.fern', 'env.fern.bracken#1', 0.85],
@@ -115,15 +115,25 @@ describe('our fern and shrub hide players as the Kenney fern and small bush did'
     ['prop.nt_bush_leafy', 'env.shrub.broadleaf', 1.5],
     ['prop.nt_bush_leafy', 'env.shrub.broadleaf', 2],
     ['prop.bush_large', 'env.shrub.broadleaf', 1.1],
+    // Environment Phase 2: the rest of the Kenney bushes, as the official maps were moved (Replace all, Keep height).
+    ['prop.bush_large', 'env.shrub.laurel', 1],
+    ['prop.bush_large', 'env.shrub.laurel', 1.4],
+    ['prop.bush_large', 'env.shrub.laurel#1', 0.8],
+    // The leafy bush is wide and low: by height our shrub's cylinder is 5 cm narrower (0.95 m against 1.0 m), so its
+    // edge check stands 10 cm in.
+    ['prop.bush_leafy', 'env.shrub.broadleaf', 1, 'height', 0.1],
+    ['prop.bush_cone', 'env.shrub.laurel', 1],
+    ['prop.bush', 'env.shrub.broadleaf', 1],
+    ['prop.bush', 'env.shrub.broadleaf', 1.3],
   ] as const) {
     it(`${from} ×${scale} → ${to}: hidden in the same stances, at the middle and near the edge`, () => {
-      const r = replaced(from, scale, to);
+      const r = replaced(from, scale, to, size);
       expect(r.model).toBe(to.split('#')[0]);
       expect(getEnvSpecies(r.model)!.conceals).not.toBeNull();
       const before = yardWith(from, scale);
       const after = yardWith(r.model, r.scale, r.variant);
       // Just inside the Kenney piece's own radius at this scale: inside both cylinders.
-      const edge = (Math.min(getProp(from)!.size[0], getProp(from)!.size[2]) * scale) / 2 - 0.05;
+      const edge = (Math.min(getProp(from)!.size[0], getProp(from)!.size[2]) * scale) / 2 - (slack ?? 0.05);
       for (const dx of [0, edge]) expect(hiddenBy(after, dx), `${r.model} ×${r.scale}, ${dx} m from the middle`).toEqual(hiddenBy(before, dx));
     });
   }
