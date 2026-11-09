@@ -7511,7 +7511,7 @@ async function farBodies(browser) {
     m.rules.scoreLimit = 0;
   });
   // Open ground from where you are: the first way with a clear eye-high sight line 36 m out and ground under the spots.
-  const setup = await sim(page, (m, me) => {
+  const findGround = (m, me) => {
     const p = me.move.pos;
     const ground = (x, z) => {
       const d = m.physics.raycastWorld({ x, y: p.y + 6, z }, { x: 0, y: -1, z: 0 }, 14);
@@ -7547,7 +7547,16 @@ async function farBodies(browser) {
       return { yaw, slots: bots.map((c) => c.slot), from: { x: p.x, y: p.y, z: p.z } };
     }
     return null;
-  });
+  };
+  let setup = await sim(page, findGround);
+  // Not from every spawn (a spawn in a gully): from the next ones you respawn at.
+  for (let i = 0; i < 6 && !setup; i++) {
+    await sim(page, (m, me) => m.kill(me, null, 'core.respawn'));
+    await page.waitForFunction(() => !window.__cs.local.alive, null, { timeout: T(10000) }).catch(() => {});
+    await page.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(30000) }).catch(() => {});
+    await page.click('#resume').catch(() => {});
+    setup = await sim(page, findGround);
+  }
   if (!setup) {
     check(false, 'far bodies: found open ground 36 m out for the crowd');
     await page.context().close();
