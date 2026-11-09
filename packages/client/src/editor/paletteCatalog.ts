@@ -176,7 +176,8 @@ export function atlasGroup(key: string, propPack?: string): string {
 /** Every shipped piece that has a model picture: tiles, props, the Nature tab's generated species, vehicles/turrets and set pieces, by palette key. */
 export function pictureKeys(): { key: string; tile?: string; file?: string; setPiece?: string }[] {
   return [
-    ...coreCatalog.all().map((d) => ({ key: `tile:${d.id}`, tile: d.id })),
+    // A tile option's twin (the Vaulted Tunnel with side walls) isn't in the palette: no picture.
+    ...coreCatalog.all().filter((d) => !d.optionOf).map((d) => ({ key: `tile:${d.id}`, tile: d.id })),
     ...CORE_PROPS.map((p) => ({ key: `prop:${p.id}`, file: p.file })),
     ...GROUND_COVER_IDS.map((id) => ({ key: `prop:${id}`, file: envModelFile(id)! })),
     ...MOUNT_MODELS.map((m) => ({ key: `mount:${m}`, file: MOUNT_DEFS[m].model })),

@@ -1095,6 +1095,56 @@ async function editoruxFlow(browser) {
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
+  await editorTileOptionChecks(browser);
+}
+
+/**
+ * Tile options (Sandfall follow-up, owner 2026-11-09): the Vaulted Tunnel's Side walls, a checkbox in the tile
+ * inspector that swaps the tile for its walled twin (one undo step, and for several tunnels at once); the twin is kept
+ * out of the palette.
+ */
+async function editorTileOptionChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 0);
+  const palette = await page.evaluate(() => ({ plain: !!document.querySelector('[data-tool="tile:core.tunnel_vault"]'), twin: !!document.querySelector('[data-tool="tile:core.tunnel_vault_walled"]') }));
+  check(palette.plain && !palette.twin, `the palette has the Vaulted Tunnel, not its side-walled twin (${JSON.stringify(palette)})`);
+  // Two tunnels on level -1 (as the palette would place them), one selected.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Place', { kind: 'addTiles', tiles: [{ id: 'tile_tun_a', tile: 'core.tunnel_vault', x: 2, y: 0, z: -1, rotation: 0 }, { id: 'tile_tun_b', tile: 'core.tunnel_vault', x: 2, y: 1, z: -1, rotation: 0 }] });
+    ed.setSelection({ tiles: ['tile_tun_a'], entities: [] });
+  });
+  await frames(page, 2);
+  const box = await page.$('#ed-tile-opt-sideWalls');
+  check(!!box && !(await box.isChecked()), 'a Vaulted Tunnel\'s inspector has a Side walls option, off');
+  await page.click('#ed-tile-opt-sideWalls');
+  await frames(page, 2);
+  const on = await page.evaluate(() => ({ tiles: window.__editor.doc.classicStructure.tiles.filter((t) => t.id.startsWith('tile_tun')).map((t) => t.tile), undo: window.__editor.history.undoLabel, ticked: document.getElementById('ed-tile-opt-sideWalls')?.checked }));
+  check(on.tiles[0] === 'core.tunnel_vault_walled' && on.tiles[1] === 'core.tunnel_vault' && on.ticked && on.undo === 'Add side walls', `ticking it makes that tunnel side-walled, one undo step (${JSON.stringify(on)})`);
+  await page.evaluate(() => window.__editor.view.focus({ x: 16, y: -4, z: 4 }));
+  await frames(page, 3);
+  await shot('tunnel-side-walls');
+  // Both tunnels selected: the box is half ticked; a click walls both.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: ['tile_tun_a', 'tile_tun_b'], entities: [] }));
+  await frames(page, 2);
+  const half = await page.evaluate(() => ({ ind: document.getElementById('ed-tile-opt-sideWalls')?.indeterminate, label: document.querySelector('.ed-tile-options label span')?.textContent }));
+  check(half.ind === true && half.label === 'Side walls (1 of 2)', `with both selected it shows one of two walled (${JSON.stringify(half)})`);
+  await page.click('#ed-tile-opt-sideWalls');
+  await frames(page, 2);
+  const both = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.filter((t) => t.id.startsWith('tile_tun')).map((t) => t.tile));
+  check(both.every((t) => t === 'core.tunnel_vault_walled'), `a click walls both (${both})`);
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  const undone = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.filter((t) => t.id.startsWith('tile_tun')).map((t) => t.tile));
+  check(undone.every((t) => t === 'core.tunnel_vault'), `two undos take both back to the plain tunnel (${undone})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**

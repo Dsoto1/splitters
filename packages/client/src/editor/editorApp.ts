@@ -39,6 +39,7 @@ import {
   setUpperFloorsCommand,
   upperFloorLevels,
   coreCatalog,
+  isTileOptionTwin,
   deleteCommand,
   duplicateCommand,
   emptySelection,
@@ -333,6 +334,7 @@ import { MeasureTool } from './measureTool.ts';
 import { RotateRing } from './rotateRing.ts';
 import { quickFacings } from './quickFacings.ts';
 import { isRetiredTile, retiredTilePanel } from './retiredTiles.ts';
+import { tileOptionPanel } from './tileOptionPanel.ts';
 import { PropPlaceOptions } from './propPlaceOptions.ts';
 import { SurfaceBoxes } from './surfaceBoxes.ts';
 import { testMode } from '../testMode.ts';
@@ -2989,7 +2991,7 @@ export class EditorApp {
     for (const category of TILE_CATEGORIES) {
       const grid = this.palette.group($('ed-tiles'), `tiles:${category}`, category);
       // Retired tiles (a set piece replaced them) stay out of the palette: maps that place one still load.
-      for (const def of coreCatalog.all().filter((d) => d.category === category && !isRetiredTile(d.id))) this.paletteButton(grid, def, tilePack(def.id));
+      for (const def of coreCatalog.all().filter((d) => d.category === category && !isRetiredTile(d.id) && !isTileOptionTwin(d))) this.paletteButton(grid, def, tilePack(def.id));
     }
     this.buildSetPiecePalette();
     const edges = this.palette.group($('ed-edges'), 'walls', 'Walls & Openings', { note: 'Pick a style, then click any side of a room or corridor to build it that way (O cycles styles, right-click resets).' });
@@ -5021,6 +5023,8 @@ export class EditorApp {
         }
       } else el.append(small('Use the Walls & Openings tool (O) to change any side of this piece.'));
       if (def?.configurable) this.roomOptionsPanel(el, t);
+      const tileOpts = tileOptionPanel(doc, [t.id], (label, cmd) => this.run(label, cmd));
+      if (tileOpts) el.append(tileOpts);
       this.upperFloorsPanel(el, t);
       if (def && dressable(def)) this.dressPanel(el, t);
       const h3 = document.createElement('h3');
@@ -5049,6 +5053,8 @@ export class EditorApp {
     } else {
       el.append(h2(`${this.selCount()} selected`));
       el.append(text(`${tiles.length} tiles, ${entities.length} entities${pieces.length ? `, ${pieces.length} set piece${pieces.length === 1 ? '' : 's'}` : ''}`));
+      const tileOpts = tiles.length ? tileOptionPanel(doc, tiles, (label, cmd) => this.run(label, cmd)) : null;
+      if (tileOpts) el.append(tileOpts);
       // Groups (MapMaker overhaul Phase 3 item 3): its name and Ungroup, or Group.
       el.append(groupSection(this.groupHost));
       // Box-selected pieces can become a set piece of their own.
