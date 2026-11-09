@@ -346,7 +346,7 @@ Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key lis
      aren't offered from the suite there (their paths migrate on load); a race rotation still votes.
    - ~~Open: the launcher/site /host have no vote toggle; the successor of a handoff doesn't carry parties or an open
      vote; free-for-all parties only get the scoreboard mark.~~ Done in item 6 below.
-6. **Parties and the vote, part 2** (`wip/party-2`, agent, 2026-11-09; owner-approved follow-ups of 2026-11-08).
+6. **Parties and the vote, part 2** (`wip/party-2`, agent, 2026-11-09; owner-approved follow-ups of 2026-11-08; green on `check/party-2`, runs 42559855115 (full suite) and 42563092863; LANDED: main 24db6d0).
    - **/host and the launcher:** the site's /host page (`client/src/hostPage.ts` `rulesSection`) has **Vote on the
      next map** and every Match setup rule (the shared `SERVER_RULES`, the launcher's Match rules list: main rules,
      the rest under More rules, each tagged now / at the restart / next match, with what waits). Stopped: sent with
