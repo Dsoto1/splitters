@@ -19,6 +19,11 @@ made only on a commit that passed CI on a check branch.
   format is unchanged.
 - **Apex Ring** and **Sandsweep Circuit** no longer list Race (MapMaker, Map properties): Apex Ring plays Deathmatch,
   Team Deathmatch, CTF and King of the Hill with its karts lapping; Sandsweep plays Deathmatch.
+- **MapMaker says track / NPC traffic:** the Race Track card, the Paths pane, the key list (Shift+G) and the Vehicles
+  tab call it the track (NPC traffic). The track's pane keeps its NPC cars, their vehicle, the curbs, where the cars
+  start and the pit lane, and no longer shows Laps, Start grid, Vehicle or Combat (nothing reads them now). Map
+  properties no longer offers Race as a mode, and a map that still lists it gets a **Drop Race** button (undo brings
+  it back); picking a main mode drops it too.
 **MapMaker: a finer terrain grid, Change grid, and the coast border** (map format v32; the editor half of the Iron
 Coast job):
 - **A finer grid:** a terrain can be up to 321 vertices a side (was 161), so a 380 m map can be 1.25 m apart. New

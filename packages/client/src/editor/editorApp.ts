@@ -85,6 +85,8 @@ import {
   autoPlayerCaps,
   isTeamMode,
   MODE_LABELS,
+  hasRemovedMode,
+  withMainMode,
   SCENARIO_PALETTE,
   STYLE_PACKS,
   getStylePack,
@@ -339,6 +341,7 @@ import { testMode } from '../testMode.ts';
 import { materialThumbnail } from '../materials/patterns.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
 import { LogicPanel } from './logicPanel.ts';
+import { removedModesRow } from './removedModes.ts';
 import { PathTool, pathLabel, type PathKind } from './pathTool.ts';
 import { RouteTool } from './routeTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
@@ -723,7 +726,7 @@ export class EditorApp {
   private spawnYaw = 0;
   private scenarioYaw = 0;
   readonly logic: LogicPanel;
-  /** The Road tool (race tracks). */
+  /** The Road tool (roads, the track for NPC traffic, routes). */
   private readonly paths: PathTool;
   /** Mover and plane routes, drawn on the map with the Paths tool's hands. */
   private readonly routes: RouteTool;
@@ -2819,7 +2822,7 @@ export class EditorApp {
     erase: () => this.setTool({ kind: 'erase' }),
     // U: the measure tool (MapMaker overhaul Phase 1 item 3).
     measure: () => this.setTool({ kind: 'measure' }),
-    // G: Paths (Shift+G: Paths on the race track), N: Scatter (the last set you used).
+    // G: Paths (Shift+G: Paths on the track, NPC traffic), N: Scatter (the last set you used).
     paths: () => this.setTool({ kind: 'path' }),
     raceTrack: () => {
       this.paths.preset('race');
@@ -3065,8 +3068,8 @@ export class EditorApp {
     this.buildPropPalette();
     this.buildMountPalette();
     this.buildTerrainPalette();
-    // Paths: one tool for roads, streets, trails and walkways, the race track and AI routes, in the Terrain pane
-    // (roads lie on the ground and shape it). The race track and route cards open it on that kind of path.
+    // Paths: one tool for roads, streets, trails and walkways, the track (NPC traffic) and AI routes, in the Terrain
+    // pane (roads lie on the ground and shape it). The track and route cards open it on that kind of path.
     const pathGroup = this.palette.group($('ed-terrain-paths'), 'terrain:paths', 'Paths, Roads & Routes');
     const pathCard = (tool: string, kind: PathKind, svg: string, label: string, title: string, tags: string) => {
       const b = document.createElement('button');
@@ -3103,9 +3106,9 @@ export class EditorApp {
     pathPane.id = 'ed-paths';
     pathGroup.after(pathPane);
     this.paths.renderPane(pathPane);
-    const track = this.palette.group($('ed-mounts'), 'vehicles:track', 'Race Track');
+    const track = this.palette.group($('ed-mounts'), 'vehicles:track', 'Track (NPC traffic)');
     track.append(
-      pathCard('path-race', 'race', '<path d="M8 50 C8 20 48 36 48 6" stroke="#3a3f48" stroke-width="12" fill="none"/><path d="M8 50 C8 20 48 36 48 6" stroke="#f2f2f2" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/><path d="M40 4h12v4H40zM40 8h4v4h-4zM48 8h4v4h-4z" fill="#f2f2f2"/>', 'Race Track', 'Race track (Shift+G): a path used as the race track: click its points (a circuit at once), then set laps and the start grid in the Paths pane', 'road track race circuit lap checkpoint'),
+      pathCard('path-race', 'race', '<path d="M8 50 C8 20 48 36 48 6" stroke="#3a3f48" stroke-width="12" fill="none"/><path d="M8 50 C8 20 48 36 48 6" stroke="#f2f2f2" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/><path d="M40 4h12v4H40zM40 8h4v4h-4zM48 8h4v4h-4z" fill="#f2f2f2"/>', 'Track', 'Track for NPC traffic (Shift+G): a path NPC cars lap in every mode: click its points (a circuit at once), then set how many cars, their vehicle and the pit lane in the Paths pane', 'road track circuit traffic npc cars race lap'),
     );
 
     // Palette (after the reference board): the top bar's workspace picks a row of sub-tabs, a sub-tab one pane;
@@ -4755,7 +4758,7 @@ export class EditorApp {
   }
 
   /**
-   * Players by mode (the map's player caps, metadata.playerCaps): for each mode the map plays (squads and races keep
+   * Players by mode (the map's player caps, metadata.playerCaps): for each mode the map plays (squads keep
    * their own sizes), the recommended and most players. Empty fields show the automatic caps (worked out from the
    * map's size and spawn points: sim/matchSetup.ts autoPlayerCaps); typing one sets the mode's own, Auto goes back.
    */
@@ -4848,9 +4851,9 @@ export class EditorApp {
       el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
       const mode = document.createElement('select');
       const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
-      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.breakthrough', 'Breakthrough'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena'], ['core.race', 'Race']] as const) mode.append(new Option(label, id, false, id === current));
+      for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.breakthrough', 'Breakthrough'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena']] as const) mode.append(new Option(label, id, false, id === current));
       // The main mode (the map's pick, what TEST plays) changes; the modes it also offers stay.
-      mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: [mode.value, ...doc.metadata.supportedModes.slice(1).filter((m) => m !== mode.value)] } }));
+      mode.addEventListener('change', () => this.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: withMainMode([mode.value, ...doc.metadata.supportedModes.slice(1)], mode.value) } }));
       const teams = mapTeams(doc);
       const help: Record<string, string> = {
         'core.coop': 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".',
@@ -4864,12 +4867,12 @@ export class EditorApp {
         'core.bomb': 'Bomb: place Bomb Sites (A and B) away from both team spawns; the first team attacks.',
         'core.koth': 'King of the Hill: place one or more Hills (Entities tab). The hill moves to the next one every minute; a team scores while it alone stands on it.',
         'core.elim': 'Elimination: round-based Team Deathmatch. No respawns until the next round; the last team standing wins it.',
-        'core.race': 'Race: draw the track with the Paths tool (Shift+G, or Vehicles → Race Track) and tick Race track. Everyone starts on the grid behind its green first point in the track\'s vehicle; checkpoints are spaced along it in point order (laps on a loop, one run on an open path). Spawn points are only used before the race puts you in your car.',
       };
       // Maps with flag bases or hills also offer those modes in the Arcade, whatever the main mode is.
       const extra = playableModes(doc).filter((m) => m !== current && m !== 'core.elim');
       if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
       el.append(row('Mode', mode), small(help[mode.value] ?? ''));
+      if (hasRemovedMode(doc.metadata.supportedModes)) el.append(removedModesRow(doc.metadata.supportedModes, (next) => this.run('Drop Race from the modes', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: next } })));
       // Modes the map offers besides its main one (the rest follow from its pieces: flag bases, hills, sectors...).
       const also = document.createElement('div');
       also.id = 'ed-prop-also';

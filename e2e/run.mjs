@@ -5938,7 +5938,7 @@ async function trafficFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  // MapMaker: the Paths tool lays the race track (a path used as a race): three clicks, drag a point, undo, set the laps, delete a point.
+  // MapMaker: the Paths tool lays the track (a path used as a track, NPC traffic): three clicks, drag a point, undo, set its NPC cars, delete a point.
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
@@ -5974,13 +5974,21 @@ async function trafficFlow(browser) {
   t = raceOf(await doc());
   check(t && Math.hypot(t.points[1][0] - 16, t.points[1][2] + 6) < 1, 'undo puts it back');
   // The pane is rebuilt after the undo; if the edit hit the old input, set it again on the new one.
-  let laps;
-  for (let tries = 0; tries < 3 && laps !== 5; tries++) {
-    await page.fill('#ed-path-laps', '5');
-    await page.dispatchEvent('#ed-path-laps', 'change');
-    laps = await page.waitForFunction(() => window.__editor.doc.paths?.find((p) => p.uses.includes('race'))?.race?.laps === 5, null, { timeout: T(2000) }).then(() => 5, async () => raceOf(await doc())?.race?.laps);
+  // Race mode is gone: the track's pane offers its NPC cars (and their vehicle, curbs, start and pit lane), not laps,
+  // a start grid, a race vehicle or combat.
+  let cars;
+  for (let tries = 0; tries < 3 && cars !== 5; tries++) {
+    await page.fill('#ed-path-ambient', '5');
+    await page.dispatchEvent('#ed-path-ambient', 'change');
+    cars = await page.waitForFunction(() => window.__editor.doc.paths?.find((p) => p.uses.includes('race'))?.race?.ambient === 5, null, { timeout: T(2000) }).then(() => 5, async () => raceOf(await doc())?.race?.ambient);
   }
-  check(laps === 5, `the Paths pane sets the race laps (${laps})`);
+  check(cars === 5, `the Paths pane sets the track's NPC cars (${cars})`);
+  const pane = await page.evaluate(() => ({
+    gone: ['ed-path-laps', 'ed-path-grid', 'ed-path-vehicle', 'ed-path-combat'].filter((id) => document.getElementById(id)),
+    kept: ['ed-path-ambient', 'ed-path-ambient-vehicle', 'ed-path-pit', 'ed-path-curbs'].filter((id) => !document.getElementById(id)),
+    race: /\brace\b/i.test(document.getElementById('ed-paths')?.textContent ?? ''),
+  }));
+  check(!pane.gone.length && !pane.kept.length && !pane.race, `the track pane says track / NPC traffic: no laps, grid, vehicle or combat, NPC cars and the pit lane kept (${JSON.stringify(pane)})`);
   await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0), null, { timeout: T(5000) }).catch(() => {});
   check(await page.evaluate(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0)), 'MapMaker draws the road ribbon');
   const del = await at(13, 4);
@@ -5989,6 +5997,17 @@ async function trafficFlow(browser) {
   t = raceOf(await doc());
   check(t?.points.length === 2, `right-click deletes a road point (${t?.points.length})`);
   await page.keyboard.press('Escape');
+  // Map properties: Race is no longer a mode. It isn't offered, and a map that still lists it can drop it (undo puts it back).
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => window.__editor.run('Old modes', { kind: 'setMetadata', before: { supportedModes: window.__editor.doc.metadata.supportedModes }, after: { supportedModes: ['core.race', 'core.tdm'] } }));
+  await page.waitForSelector('#ed-prop-drop-race', { state: 'attached', timeout: T(5000) });
+  const raceOffered = await page.evaluate(() => !!document.querySelector('option[value="core.race"]'));
+  await page.evaluate(() => document.getElementById('ed-prop-drop-race').click());
+  const dropped = await page.evaluate(() => window.__editor.doc.metadata.supportedModes.join(','));
+  check(!raceOffered && dropped === 'core.tdm', `Map properties doesn't offer Race and drops it from an old map's modes (offered ${raceOffered}, now ${dropped})`);
+  await page.keyboard.press('Control+KeyZ');
+  const undone = await page.evaluate(() => window.__editor.doc.metadata.supportedModes.join(','));
+  check(undone === 'core.race,core.tdm', `undo brings Race back to the list (${undone})`);
 
   // Team Deathmatch on Apex Ring: its track's NPC cars lap as traffic while the teams fight (Race mode is gone).
   await page.goto(`${CLIENT}/?offline=apex_ring&gamemode=core.tdm&test=1`);
