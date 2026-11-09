@@ -425,10 +425,10 @@ function mainGround(t: TerrainData): number {
   return best;
 }
 
-/** The top bar's compact layouts (editor.css, fit-1..4): the fewest that make its contents fit its width. */
+/** The top bar's compact layouts (editor.css, fit-1..5): the fewest that make its contents fit its width. */
 function fitTopBar(top: HTMLElement): void {
   if (top.offsetParent === null) return;
-  const levels = ['fit-1', 'fit-2', 'fit-3', 'fit-4'];
+  const levels = ['fit-1', 'fit-2', 'fit-3', 'fit-4', 'fit-5'];
   top.classList.remove(...levels);
   for (const c of levels) {
     if (top.scrollWidth <= top.clientWidth + 1) break;

@@ -1087,6 +1087,15 @@ async function editoruxFlow(browser) {
   check((await doc()).entities.length === before, 'a stroke undoes in one step');
   await editorPhase1aChecks(page, { doc, at, clickAt, settle, shot });
   await editorInspectorKeepChecks(page, { doc, clickAt, settle });
+  // At 1400 px the top bar keeps Export and Import (and the owner's Publish) beside the Bot test button.
+  await settle();
+  const bar1400 = await page.evaluate(() => {
+    const t = document.getElementById('ed-top');
+    const shown = (id) => getComputedStyle(document.getElementById(id)).display !== 'none';
+    return { fits: t.scrollWidth <= t.clientWidth + 1, shown: ['ed-export', 'ed-import', 'ed-maptest', 'ed-skill'].filter(shown), cls: t.className, width: innerWidth };
+  });
+  check(bar1400.fits && bar1400.shown.length === 4, `at 1400 px the top bar fits with Export, Import, Bot test and the bots' skill shown (${JSON.stringify(bar1400)})`);
+  await shot('topbar-1400');
   // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.evaluate(() => document.querySelector('#ed-modes [data-ws="build"]').click());
@@ -1643,7 +1652,7 @@ async function editorEnvironmentChecks(browser) {
   // (Compared key by key: the order of an object's keys is not part of the map.)
   const canon = () => page.evaluate(() => JSON.stringify(window.__editor.doc.entities.filter((e) => e.kind === 'prop').map((e) => Object.fromEntries(Object.entries(e).sort(([a], [b]) => (a < b ? -1 : 1))))));
   const before = await canon();
-  // Export's own click, in the page: when the top bar is crowded its compact layout (fit-3) hides the File group's
+  // Export's own click, in the page: when the top bar is crowded its compact layout (fit-4) hides the File group's
   // later buttons, Export among them, and Playwright's click would wait for it to show.
   const [download] = await Promise.all([page.waitForEvent('download'), page.evaluate(() => document.getElementById('ed-export').click())]);
   const text = readFileSync(await download.path(), 'utf8');
