@@ -18,7 +18,7 @@ export const WEAPON_SET_DEFS: Readonly<Record<(typeof WEAPON_SET_IDS)[number], W
     blurb: 'Real-world guns: everyone spawns with a knife, a pistol and an assault rifle; sniper-role bots carry a marksman rifle.',
     spawn: ['core.knife', 'core.pistol', 'core.rifle'],
     sniper: 'core.marksman',
-    weapons: ['core.rifle', 'core.burst_rifle', 'core.smg', 'core.machine_pistol', 'core.lmg', 'core.shotgun', 'core.auto_shotgun', 'core.sawed_off', 'core.sniper', 'core.marksman', 'core.launcher', 'core.rockets', 'core.pistol', 'core.revolver', 'core.hand_cannon'],
+    weapons: ['core.rifle', 'core.burst_rifle', 'core.battle_rifle', 'core.smg', 'core.machine_pistol', 'core.lmg', 'core.shotgun', 'core.auto_shotgun', 'core.sawed_off', 'core.sniper', 'core.marksman', 'core.launcher', 'core.rockets', 'core.pistol', 'core.revolver', 'core.hand_cannon'],
     throwables: ['frag', 'mine', 'smoke'],
   },
   scifi: {

@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { BUTTON_JUMP, PhysicsWorld, initPhysics, loadMap, type PlayerInput, type PlayerSnapshot, type PrivateState } from '@tiletrigger/shared';
-import { Match, initNavigation } from '@tiletrigger/shared/match';
+import { BUTTON_AUTO_RELOAD, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_RELOAD, PhysicsWorld, getWeapon, weaponCode, initPhysics, loadMap, type PlayerInput, type PlayerSnapshot, type PrivateState } from '@tiletrigger/shared';
+import { Match, heldWeapon, initNavigation } from '@tiletrigger/shared/match';
 import { LocalPlayer } from '../src/game/prediction.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -94,6 +94,45 @@ describe('client prediction', () => {
     // Exactly one correction: when the server reports the pickup (the client does not predict pickups).
     // The boost counting down and expiring 15 s later is predicted exactly.
     expect(local.corrections).toBe(1);
+    match.destroy();
+  });
+
+  it('predicts reloads as the host runs them: auto-reload on an empty magazine, a melee press breaking one', () => {
+    const loaded = loadMap(readFileSync(arenaPath, 'utf8'));
+    if (!loaded.ok) throw new Error('arena invalid');
+    const match = new Match(loaded.map, undefined, 5);
+    const me = match.addHuman('me')!;
+    const local = new LocalPlayer(new PhysicsWorld(match.geometry));
+    match.step();
+    match.step();
+    const def = getWeapon('core.smg');
+    me.weapons.set(weaponCode(def), { def, mag: 3, reserve: 60, alt: 0 });
+    me.current = weaponCode(def);
+    me.raiseTicks = 0;
+    local.reconcile(match.playerSnapshots().find((p) => p.s === me.slot)!, me.lastSeq, match.privateState(me.slot));
+    let mismatches = 0;
+    let reloads = 0;
+    let broken = 0;
+    for (let t = 0; t < 400; t++) {
+      // Empty the magazine and let auto-reload start; punch mid-way (it starts again, from the stage reached); then
+      // empty a whole magazine and reload by hand the time after.
+      const fire = t < 20 || (t >= 150 && t < 290) ? BUTTON_FIRE : 0;
+      const melee = t === 40 ? BUTTON_MELEE : 0;
+      const reload = t === 380 ? BUTTON_RELOAD : 0;
+      const { input } = local.tick({ forward: 0, right: 0, buttons: BUTTON_AUTO_RELOAD | fire | melee | reload }, 0, 0, weaponCode(def), 0);
+      const was = me.reloadTicks;
+      match.queueInputs(me.slot, [input]);
+      match.step();
+      if (me.reloadTicks > 0 && was === 0) reloads++;
+      if (melee && was > 0 && me.reloadTicks === 0) broken++;
+      if (local.reloadTicks !== me.reloadTicks || (local.reload?.stage ?? -1) !== (me.reload?.stage ?? -1)) mismatches++;
+      local.reconcile(match.playerSnapshots().find((p) => p.s === me.slot)!, me.lastSeq, match.privateState(me.slot));
+    }
+    expect(heldWeapon(me).def.id).toBe('core.smg');
+    expect(reloads).toBeGreaterThanOrEqual(3);
+    expect(broken).toBe(1);
+    expect(mismatches).toBe(0);
+    expect(local.corrections).toBe(0);
     match.destroy();
   });
 });

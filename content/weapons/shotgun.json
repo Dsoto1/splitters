@@ -8,7 +8,7 @@
   "family": "shotgun",
   "damage": 12,
   "pellets": 10,
-  "spread": 0.075,
+  "spread": 0.055,
   "fireIntervalTicks": 45,
   "range": 40,
   "magazine": 6,
