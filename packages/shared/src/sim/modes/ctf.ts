@@ -183,6 +183,11 @@ export class CtfMode implements ModeLogic {
     return { attack, intercept: carrier !== null ? { pos: { ...own.pos }, to: { ...enemy.base }, slot: carrier } : null, playbook: playbookFor('core.ctf').team };
   }
 
+  /** Fireteams (Part 2): bot-led squads take their CTF role together (CtfBotPlan.unitOf). */
+  botUnits(unitOf: (slot: number) => number | null | undefined): void {
+    this.botPlan.unitOf = unitOf;
+  }
+
   /** Fireteams' "Defend the objective": our flag where it is (at its base, or lying where it fell; its base while carried off). */
   defendSpot(team: string): Vec3 | null {
     const own = this.flagOf(team);
