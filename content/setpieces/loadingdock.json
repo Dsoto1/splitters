@@ -1,0 +1,46 @@
+{
+  "$comment": "Loading dock family (part 5). Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "loadingdock",
+  "pieces": [
+    {
+      "id": "setpiece.loading_dock",
+      "displayName": "Loading Dock",
+      "category": "Industrial",
+      "blurb": "An open-fronted goods shed with its floor 1 m up, a dock edge the length of it with three sets of steps, a truck backed up on the apron and cargo on the dock: 3 × 2 cells.",
+      "packs": ["military", "harbor", "snow", "suburban", "neon", "frontier"],
+      "footprint": { "cells": [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]], "levels": [0,0] },
+      "mirror": "free",
+      "ports": [
+        {"side":"S","cell":[0,0],"level":0,"kind":"opening"},
+        {"side":"S","cell":[1,0],"level":0,"kind":"opening"},
+        {"side":"S","cell":[2,0],"level":0,"kind":"opening"},
+        {"side":"W","cell":[0,0],"level":0,"kind":"opening"},
+        {"side":"E","cell":[2,0],"level":0,"kind":"opening"}
+      ],
+      "parts": [
+        {"kind":"tile","tile":"core.room","x":0,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:S":"open","0,0,0:N":"wall","0,0,0:E":"open","0,0,0:W":"wall"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"wood"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"beams"}},
+        {"kind":"tile","tile":"core.room","x":1,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:S":"open","0,0,0:N":"wall","0,0,0:E":"open","0,0,0:W":"open"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"wood"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"beams"}},
+        {"kind":"tile","tile":"core.room","x":2,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:S":"open","0,0,0:N":"wall","0,0,0:E":"wall","0,0,0:W":"open"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"wood"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"beams"}},
+        {"kind":"tile","tile":"core.terrace","x":0,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:S":"open","0,0,0:W":"open"},"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.terrace","x":1,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:S":"open"},"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.terrace","x":2,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:S":"open","0,0,0:E":"open"},"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"block","name":"Dock floor","position":[8,0,7.875],"size":[23.5,1,7.75],"material":{"role":"stone"}},
+        {"kind":"block","name":"Dock bumper","position":[-2.8,0.2,0.85],"size":[0.6,0.6,0.3],"material":{"role":"metal"}},
+        {"kind":"block","name":"Dock bumper","position":[4,0.2,0.85],"size":[0.6,0.6,0.3],"material":{"role":"metal"}},
+        {"kind":"block","name":"Dock bumper","position":[12,0.2,0.85],"size":[0.6,0.6,0.3],"material":{"role":"metal"}},
+        {"kind":"block","name":"Dock bumper","position":[18.8,0.2,0.85],"size":[0.6,0.6,0.3],"material":{"role":"metal"}},
+        {"kind":"prop","model":"prop.supply_truck","position":[12,0,-1.25],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"prop.pallet","position":[1,1,7],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.crate_large","position":[1,1,7],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.cargo_crate_stack","position":[14.5,1,9.5],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.crate_large","position":[17.5,1,6],"yaw":0.3,"scale":1},
+        {"kind":"prop","model":"prop.barrel","position":[-2.6,1,10.6],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.barrel","position":[-1.6,1,10.7],"yaw":0,"scale":1},
+        {"kind":"light","position":[0,3.3,8],"fixture":"bulb","color":"#ffe2b0","intensity":0.9,"range":9},
+        {"kind":"light","position":[8,3.3,8],"fixture":"bulb","color":"#ffe2b0","intensity":0.9,"range":9},
+        {"kind":"light","position":[16,3.3,8],"fixture":"bulb","color":"#ffe2b0","intensity":0.9,"range":9}
+      ],
+      "notes": {"design":"Three Terraces make the apron and the dock edge (their 1 m step-up along the back); three Rooms open to the south and to each other make the shed, with a block floor 1 m up so the dock runs straight in. A truck and crates for cover."}
+    }
+  ]
+}

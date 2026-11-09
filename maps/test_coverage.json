@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_54htejxn4dkzjz7p",
-      "revision": 6,
-      "contentHash": "sha256:0ea216f1796e054dd30dbc4da9c1d9c5132b021571a75ed7c33c5f6b0bfa1764",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T04:40:33.345Z"
+      "versionId": "v_b3zcsi722wm7g7jx",
+      "revision": 7,
+      "contentHash": "sha256:f2521f14279ea16394a1fbcb13927bf3ff718e9c524d4edf72890f422f49caae",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T20:05:33.841Z"
     },
     "testOnly": true
   },
@@ -827,6 +827,30 @@
         "tile": "core.tunnel_vault_cross",
         "x": 15,
         "y": -15,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ivcnj4spsr",
+        "tile": "core.arena_pit",
+        "x": -4,
+        "y": -44,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ru7sjb46g0",
+        "tile": "core.arena_tiers",
+        "x": -2,
+        "y": -44,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_i8b91fjzo9",
+        "tile": "core.arena_tiers_corner",
+        "x": 0,
+        "y": -44,
         "z": 0,
         "rotation": 0
       }
@@ -56954,6 +56978,150 @@
       "piece": "setpiece.cliff_stair_gate",
       "x": 21,
       "y": -32,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_7uar2m0i99",
+      "piece": "setpiece.power_core_hall",
+      "x": -18,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_uzvhpr479j",
+      "piece": "setpiece.catwalk_bridge_2",
+      "x": -14,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_soabhlvmd7",
+      "piece": "setpiece.catwalk_bridge_3",
+      "x": -12,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_m8jm44lcxl",
+      "piece": "setpiece.catwalk_bridge_4",
+      "x": -10,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_0k9l5mqjxn",
+      "piece": "setpiece.twin_stair_overlook",
+      "x": -8,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_kt84oj5at5",
+      "piece": "setpiece.atrium_tower",
+      "x": -4,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_rleokbu6da",
+      "piece": "setpiece.loading_dock",
+      "x": 0,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_ycv3x7inc2",
+      "piece": "setpiece.sunken_arena",
+      "x": 4,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_vilfj3cdq6",
+      "piece": "setpiece.reactor_room",
+      "x": 8,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_wpajxx4ytg",
+      "piece": "setpiece.bunker_cluster",
+      "x": 12,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_sih5ot68yj",
+      "piece": "setpiece.courtyard_gate",
+      "x": 16,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_s46ym6p3bn",
+      "piece": "setpiece.server_vault",
+      "x": 20,
+      "y": -38,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_q0d528so4u",
+      "piece": "setpiece.crossroads_plaza",
+      "x": -18,
+      "y": -44,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_ttbvgdzaxy",
+      "piece": "setpiece.ramp_junction",
+      "x": -14,
+      "y": -44,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_e9zuoew6wy",
+      "piece": "setpiece.sea_wall",
+      "x": -10,
+      "y": -44,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_fhzubd5s2b",
+      "piece": "setpiece.sea_wall_breach",
+      "x": -8,
+      "y": -44,
       "z": 0,
       "rotation": 0,
       "mirror": false

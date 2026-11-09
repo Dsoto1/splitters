@@ -1088,6 +1088,7 @@ async function editoruxFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await editorSetPieceChecks(browser);
+  await editorSetPiecePart5Checks(browser);
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
   await editorTurnChecks(browser);
@@ -1897,6 +1898,65 @@ async function editorSetPieceChecks(browser) {
   check(ports.warn.length === 1 && /west side \(Ground\) faces a wall: the Room's wall/.test(ports.warn[0]) && !!ports.issue && ports.red === 1, `a door facing a wall is warned about, and red on the outline (${JSON.stringify(ports)})`);
   await shot('ports');
   check(errors.length === 0, `no page errors with set pieces (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * Set pieces part 5 (docs/SET_PIECES_PLAN.md, "As built: part 5") in MapMaker: the brainstorm list's families in the
+ * Set pieces tab, one placed from it, and a retired tile (the Catwalk Gantry): out of the palette, its inspector's
+ * Replace all swaps it for the Catwalk Bridge (Up) in one undo step. Screenshots go to E2E_SHOTS when set.
+ */
+async function editorSetPiecePart5Checks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/setpieces5-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await newMap(page);
+  await page.evaluate(() => window.__editor.view.focus({ x: 16, y: 0, z: 16 }));
+  await frames(page, 3);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+
+  // The tab has the new families, and a click places one of their pieces as one placement.
+  await page.click('#ed-pal-tabs [data-pane="setpieces"]');
+  const groups = await page.evaluate(() => [...document.querySelectorAll('#ed-setpieces .ed-group .ttl')].map((t) => t.textContent));
+  const want = ['Power core halls', 'Catwalk bridges', 'Overlooks', 'Atrium towers', 'Loading docks', 'Sunken arenas', 'Reactor rooms', 'Bunker clusters', 'Courtyard gates', 'Server vaults', 'Plazas', 'Ramp junctions', 'Sea walls'];
+  check(want.every((g) => groups.includes(g)), `the Set pieces tab has the brainstorm list's families and the sea wall (${groups.join(', ')})`);
+  await clickTool(page, '#ed-setpieces [data-tool="setpiece:setpiece.twin_stair_overlook"]');
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 16, y: 0, z: 16 }));
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 3);
+  await page.mouse.click(p.x, p.y);
+  await frames(page, 3);
+  const placed = (await doc()).setPieces ?? [];
+  check(placed.length === 1 && placed[0].piece === 'setpiece.twin_stair_overlook' && placed[0].x === 2 && placed[0].y === 2, `a click places the Twin-Stair Overlook as one placement (${JSON.stringify(placed)})`);
+  await shot('overlook');
+
+  // A retired tile: not in the palette; a map that has one opens with it, and its inspector replaces all of them.
+  const inPalette = await page.evaluate(() => document.querySelectorAll('[data-tool="tile:military.gantry"]').length);
+  check(inPalette === 0, `the retired Catwalk Gantry is out of the palette (${inPalette})`);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Old gantries', { kind: 'addTiles', tiles: [{ id: 'gantry_e2e_a', tile: 'military.gantry', x: -3, y: 3, z: 0, rotation: 0 }, { id: 'gantry_e2e_b', tile: 'military.gantry', x: -6, y: 3, z: 0, rotation: 1 }] });
+    ed.setSelection({ tiles: ['gantry_e2e_a'], entities: [], setPieces: [] });
+  });
+  await page.waitForSelector('#ed-retired-replace', { timeout: T(5000) }).catch(() => {});
+  const label = await page.textContent('#ed-retired-replace').catch(() => '');
+  check(/Replace all 2 with Catwalk Bridge \(Up\)/.test(label ?? ''), `a retired tile's inspector offers Replace all with its set piece (${label})`);
+  await shot('retired');
+  await page.click('#ed-retired-replace').catch(() => {});
+  await frames(page, 3);
+  const after = await doc();
+  const bridges = (after.setPieces ?? []).filter((x) => x.piece === 'setpiece.catwalk_bridge_2').map((x) => [x.id, x.x, x.y, x.rotation]);
+  check(!after.classicStructure.tiles.some((t) => t.tile === 'military.gantry') && JSON.stringify(bridges) === JSON.stringify([['gantry_e2e_a', -3, 3, 0], ['gantry_e2e_b', -6, 3, 1]]), `Replace all swaps every gantry for the Catwalk Bridge (Up) where it stood (${JSON.stringify(bridges)})`);
+  check(JSON.stringify(await page.evaluate(() => window.__editor.selection.setPieces)) === '["gantry_e2e_a","gantry_e2e_b"]', 'the new pieces are selected');
+  await shot('replaced');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  const undone = await doc();
+  check(undone.classicStructure.tiles.filter((t) => t.tile === 'military.gantry').length === 2 && !(undone.setPieces ?? []).some((x) => x.piece === 'setpiece.catwalk_bridge_2'), 'one undo puts the gantries back');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
 

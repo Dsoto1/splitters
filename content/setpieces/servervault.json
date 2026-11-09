@@ -1,0 +1,44 @@
+{
+  "$comment": "Server vault family (part 5). Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "servervault",
+  "pieces": [
+    {
+      "id": "setpiece.server_vault",
+      "displayName": "Server Vault",
+      "category": "Interiors",
+      "blurb": "A secure server floor behind a vault door: a lobby and a guard post behind armoured glass, then two rows of racks on a raised floor, a fire exit out the far side: 2 × 2 cells.",
+      "packs": ["neon", "orbital", "military", "suburban", "snow"],
+      "footprint": { "cells": [[0,0],[1,0],[0,1],[1,1]], "levels": [0,0] },
+      "mirror": "free",
+      "ports": [
+        {"side":"S","cell":[0,0],"level":0,"kind":"door"},
+        {"side":"E","cell":[1,1],"level":0,"kind":"door"}
+      ],
+      "markers": [
+        {"name":"server_floor","kind":"spot","parts":[2,3]}
+      ],
+      "parts": [
+        {"kind":"tile","tile":"core.room","x":0,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:S":"door","0,0,0:W":"wall","0,0,0:E":"windows","0,0,0:N":"door"},"glass":{"0,0,0:E":"reinforced"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"metal"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
+        {"kind":"tile","tile":"core.room","x":1,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:S":"wall","0,0,0:E":"wall","0,0,0:W":"windows","0,0,0:N":"door"},"glass":{"0,0,0:W":"reinforced"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"metal"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
+        {"kind":"tile","tile":"core.room","x":0,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:S":"door","0,0,0:W":"wall","0,0,0:N":"wall","0,0,0:E":"open"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"metal"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
+        {"kind":"tile","tile":"core.room","x":1,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:S":"door","0,0,0:E":"door","0,0,0:N":"wall","0,0,0:W":"open"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"metal"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
+        {"kind":"prop","model":"prop.computer_bank","position":[4,0,6.3],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"prop.computer_bank","position":[4,0,9.7],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"prop.computer_bank","position":[-2.1,0,9.4],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"prop.computer_bank","position":[10.1,0,9.4],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"prop.desk","position":[8,0,-1.5],"yaw":3.141593,"scale":1},
+        {"kind":"prop","model":"prop.chair","position":[8,0,-0.4],"yaw":0,"scale":1},
+        {"kind":"prop","model":"prop.computer","position":[8,0.8,-1.7],"yaw":3.141593,"scale":1},
+        {"kind":"door","name":"Vault door","position":[0,0,4],"yaw":0,"style":"vault","auto":true},
+        {"kind":"door","name":"Lobby door","position":[0,0,-4],"yaw":0,"style":"sliding","auto":true},
+        {"kind":"door","name":"Guard post door","position":[8,0,4],"yaw":0,"style":"sliding","auto":true},
+        {"kind":"door","name":"Fire exit","position":[12,0,8],"yaw":1.570796,"style":"blast","auto":true},
+        {"kind":"light","position":[0,3.3,0],"fixture":"strip","color":"#e8f0ff","intensity":0.8,"range":8},
+        {"kind":"light","position":[8,3.3,0],"fixture":"strip","color":"#e8f0ff","intensity":0.7,"range":8},
+        {"kind":"light","position":[0,3.3,8],"fixture":"strip","color":"#8fc8ff","intensity":0.9,"range":9},
+        {"kind":"light","position":[8,3.3,8],"fixture":"strip","color":"#8fc8ff","intensity":0.9,"range":9}
+      ],
+      "notes": {"design":"Four Rooms: the lobby (its door south, the vault door north), the guard post (armoured windows onto the lobby, its own door onto the server floor) and two server rooms open to each other on a raised floor. The racks stand on the raised floor at 0.5 m."}
+    }
+  ]
+}

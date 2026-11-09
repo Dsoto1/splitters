@@ -1,0 +1,46 @@
+{
+  "$comment": "Atrium tower family (part 5). Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "atrium",
+  "pieces": [
+    {
+      "id": "setpiece.atrium_tower",
+      "displayName": "Atrium Tower",
+      "category": "Towers",
+      "blurb": "A four-storey tower round a glazed atrium (two Atriums stacked, balconies all round), a lobby, offices up the east side and a stairwell joining the first floor to the second: 3 × 2 cells, levels 0-3.",
+      "packs": ["neon", "suburban", "harbor", "orbital", "military", "collegiate"],
+      "footprint": { "cells": [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]], "levels": [0,3] },
+      "mirror": "none",
+      "roles": {"glass":"breakable"},
+      "ports": [
+        {"side":"S","cell":[0,0],"level":0,"kind":"door"},
+        {"side":"W","cell":[0,1],"level":0,"kind":"door"},
+        {"side":"E","cell":[2,0],"level":0,"kind":"door"},
+        {"side":"N","cell":[2,1],"level":0,"kind":"door"}
+      ],
+      "parts": [
+        {"kind":"tile","tile":"core.atrium","x":0,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:S":"door","0,1,0:W":"door","0,0,0:W":"wall","0,1,0:N":"wall","1,1,0:N":"wall","1,0,0:S":"wall","0,0,1:S":"windows","1,0,1:S":"windows","0,0,1:W":"windows","0,1,1:W":"windows","0,1,1:N":"windows","1,1,1:N":"windows"},"glass":{"0,0,1:S":{"role":"glass"},"1,0,1:S":{"role":"glass"},"0,0,1:W":{"role":"glass"},"0,1,1:W":{"role":"glass"},"0,1,1:N":{"role":"glass"},"1,1,1:N":{"role":"glass"}},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"metal"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}}},
+        {"kind":"tile","tile":"core.atrium","x":0,"y":0,"z":2,"rotation":0,"edges":{"0,0,0:S":"windows","1,0,0:S":"windows","0,0,0:W":"windows","0,1,0:W":"windows","0,1,0:N":"windows","1,1,0:N":"windows","0,0,1:S":"windows","1,0,1:S":"windows","0,0,1:W":"windows","0,1,1:W":"windows","0,1,1:N":"windows","1,1,1:N":"windows"},"glass":{"0,0,0:S":{"role":"glass"},"1,0,0:S":{"role":"glass"},"0,0,0:W":{"role":"glass"},"0,1,0:W":{"role":"glass"},"0,1,0:N":{"role":"glass"},"1,1,0:N":{"role":"glass"},"0,0,1:S":{"role":"glass"},"1,0,1:S":{"role":"glass"},"0,0,1:W":{"role":"glass"},"0,1,1:W":{"role":"glass"},"0,1,1:N":{"role":"glass"},"1,1,1:N":{"role":"glass"}},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"metal"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}}},
+        {"kind":"tile","tile":"core.room","x":2,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:E":"door","0,0,0:S":"windows","0,0,0:N":"open","0,0,0:W":"wide"},"glass":{"0,0,0:S":{"role":"glass"}},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"stone"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
+        {"kind":"tile","tile":"core.room","x":2,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:N":"door","0,0,0:E":"windows","0,0,0:S":"open","0,0,0:W":"wide"},"glass":{"0,0,0:E":{"role":"glass"}},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"stone"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
+        {"kind":"tile","tile":"core.stairwell","x":2,"y":1,"z":1,"rotation":0,"edges":{"0,0,0:N":"wall","0,0,0:E":"wall","0,0,1:N":"wall","0,0,1:E":"wall"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"stone"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}}},
+        {"kind":"tile","tile":"core.room","x":2,"y":0,"z":1,"rotation":0,"edges":{"0,0,0:E":"windows","0,0,0:S":"windows","0,0,0:N":"wall","0,0,0:W":"door"},"glass":{"0,0,0:E":{"role":"glass"},"0,0,0:S":{"role":"glass"}},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"stone"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
+        {"kind":"tile","tile":"core.room","x":2,"y":0,"z":2,"rotation":0,"edges":{"0,0,0:E":"windows","0,0,0:S":"windows","0,0,0:N":"wall","0,0,0:W":"door"},"glass":{"0,0,0:E":{"role":"glass"},"0,0,0:S":{"role":"glass"}},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"stone"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
+        {"kind":"tile","tile":"core.room","x":2,"y":0,"z":3,"rotation":0,"edges":{"0,0,0:E":"windows","0,0,0:S":"windows","0,0,0:N":"door","0,0,0:W":"door"},"glass":{"0,0,0:E":{"role":"glass"},"0,0,0:S":{"role":"glass"}},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"stone"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
+        {"kind":"tile","tile":"core.room","x":2,"y":1,"z":3,"rotation":0,"edges":{"0,0,0:E":"windows","0,0,0:N":"windows","0,0,0:S":"door","0,0,0:W":"door"},"glass":{"0,0,0:E":{"role":"glass"},"0,0,0:N":{"role":"glass"}},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"stone"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
+        {"kind":"door","name":"South door","position":[0,0,-4],"yaw":0,"style":{"role":"door"},"auto":true},
+        {"kind":"door","name":"West door","position":[-4,0,8],"yaw":1.570796,"style":{"role":"door"},"auto":true},
+        {"kind":"door","name":"East door","position":[20,0,0],"yaw":1.570796,"style":{"role":"door"},"auto":true},
+        {"kind":"door","name":"North door","position":[16,0,12],"yaw":0,"style":{"role":"door"},"auto":true},
+        {"kind":"light","position":[4,3.3,4],"fixture":"ceiling","color":"#fff1d6","intensity":1,"range":10},
+        {"kind":"light","position":[4,7.3,4],"fixture":"ceiling","color":"#fff1d6","intensity":1,"range":10},
+        {"kind":"light","position":[4,11.3,4],"fixture":"ceiling","color":"#fff1d6","intensity":1,"range":10},
+        {"kind":"light","position":[4,15.3,4],"fixture":"ceiling","color":"#fff1d6","intensity":1,"range":10},
+        {"kind":"light","position":[16,3.3,4],"fixture":"ceiling","color":"#fff1d6","intensity":0.8,"range":9},
+        {"kind":"light","position":[16,15.3,8],"fixture":"ceiling","color":"#fff1d6","intensity":0.8,"range":9},
+        {"kind":"prop","model":"prop.bench","position":[4,0,7],"yaw":0,"scale":1},
+        {"kind":"block","name":"Atrium roof","position":[4,15.6,4],"size":[15.5,0.4,15.5],"material":{"role":"roof"}}
+      ],
+      "notes": {"design":"Each Atrium climbs one level on its own stair (ground to first, second to third); the Stairwell in the east column joins the lower atrium's balcony (level 1) to the upper atrium's floor (level 2), so every floor is reached. Offices on levels 1-3 open onto the balconies. It can't be mirrored (the stairs): turn it."}
+    }
+  ]
+}

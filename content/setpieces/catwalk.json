@@ -1,0 +1,91 @@
+{
+  "$comment": "Catwalk bridge family (part 5): open stairs and a railed catwalk on legs; the two-cell piece is the Catwalk Gantry (military.gantry) as a set piece. Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "catwalk",
+  "pieces": [
+    {
+      "id": "setpiece.catwalk_bridge_2",
+      "displayName": "Catwalk Bridge (Up)",
+      "category": "Bridges",
+      "blurb": "Open steel stairs up to a railed catwalk 4 m up on legs, meeting the level above at its north end (1 × 2 cells; the Catwalk Gantry's footprint, levels and ways in).",
+      "packs": ["military", "orbital", "neon", "snow", "harbor", "suburban"],
+      "footprint": { "cells": [[0,0],[0,1]], "levels": [0,1] },
+      "mirror": "none",
+      "ports": [
+        {"side":"S","cell":[0,0],"level":0,"kind":"opening"},
+        {"side":"N","cell":[0,1],"level":1,"kind":"opening"}
+      ],
+      "parts": [
+        {"kind":"tile","tile":"core.stairs_open","x":0,"y":0,"z":0,"rotation":3,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"metal"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.yard","x":0,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:N":"open","0,0,0:E":"open","0,0,0:S":"open","0,0,0:W":"open"},"surfaces":{"floor":{"role":"paving"}}},
+        {"kind":"tile","tile":"core.bridge","x":0,"y":1,"z":1,"rotation":0,"surfaces":{"floor":{"role":"metal"},"solids":{"role":"metal"},"trim":{"role":"trim"}}},
+        {"kind":"block","name":"Leg","position":[-1.3,0,6],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[1.3,0,6],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Cross-beam","position":[0,3.2,6],"size":[2.35,0.3,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[-1.3,0,10],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[1.3,0,10],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Cross-beam","position":[0,3.2,10],"size":[2.35,0.3,0.25],"material":{"role":"metal"}}
+      ],
+      "notes": {"design":"Open Stairs turned to climb north, Bridge decks (3 m, railed, nothing underneath) on level 1 over open ground, and steel legs and cross-beams of blocks under each deck. The two-cell piece is the Catwalk Gantry (military.gantry) as a set piece."}
+    },
+    {
+      "id": "setpiece.catwalk_bridge_3",
+      "displayName": "Catwalk Bridge (3 cells)",
+      "category": "Bridges",
+      "blurb": "A railed catwalk 4 m up on legs with open steel stairs down at both ends, 3 cells long: walk under it or over it.",
+      "packs": ["military", "orbital", "neon", "snow", "harbor", "suburban"],
+      "footprint": { "cells": [[0,0],[0,1],[0,2]], "levels": [0,1] },
+      "mirror": "none",
+      "ports": [
+        {"side":"S","cell":[0,0],"level":0,"kind":"opening"},
+        {"side":"N","cell":[0,2],"level":0,"kind":"opening"}
+      ],
+      "parts": [
+        {"kind":"tile","tile":"core.stairs_open","x":0,"y":0,"z":0,"rotation":3,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"metal"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.yard","x":0,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:N":"open","0,0,0:E":"open","0,0,0:S":"open","0,0,0:W":"open"},"surfaces":{"floor":{"role":"paving"}}},
+        {"kind":"tile","tile":"core.bridge","x":0,"y":1,"z":1,"rotation":0,"surfaces":{"floor":{"role":"metal"},"solids":{"role":"metal"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.stairs_open","x":0,"y":2,"z":0,"rotation":1,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"metal"},"trim":{"role":"trim"}}},
+        {"kind":"block","name":"Leg","position":[-1.3,0,6],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[1.3,0,6],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Cross-beam","position":[0,3.2,6],"size":[2.35,0.3,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[-1.3,0,10],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[1.3,0,10],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Cross-beam","position":[0,3.2,10],"size":[2.35,0.3,0.25],"material":{"role":"metal"}}
+      ],
+      "notes": {"design":"Open Stairs turned to climb north, Bridge decks (3 m, railed, nothing underneath) on level 1 over open ground, and steel legs and cross-beams of blocks under each deck. The two-cell piece is the Catwalk Gantry (military.gantry) as a set piece."}
+    },
+    {
+      "id": "setpiece.catwalk_bridge_4",
+      "displayName": "Catwalk Bridge (4 cells)",
+      "category": "Bridges",
+      "blurb": "A railed catwalk 4 m up on legs with open steel stairs down at both ends, 4 cells long: walk under it or over it.",
+      "packs": ["military", "orbital", "neon", "snow", "harbor", "suburban"],
+      "footprint": { "cells": [[0,0],[0,1],[0,2],[0,3]], "levels": [0,1] },
+      "mirror": "none",
+      "ports": [
+        {"side":"S","cell":[0,0],"level":0,"kind":"opening"},
+        {"side":"N","cell":[0,3],"level":0,"kind":"opening"}
+      ],
+      "parts": [
+        {"kind":"tile","tile":"core.stairs_open","x":0,"y":0,"z":0,"rotation":3,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"metal"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.yard","x":0,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:N":"open","0,0,0:E":"open","0,0,0:S":"open","0,0,0:W":"open"},"surfaces":{"floor":{"role":"paving"}}},
+        {"kind":"tile","tile":"core.bridge","x":0,"y":1,"z":1,"rotation":0,"surfaces":{"floor":{"role":"metal"},"solids":{"role":"metal"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.yard","x":0,"y":2,"z":0,"rotation":0,"edges":{"0,0,0:N":"open","0,0,0:E":"open","0,0,0:S":"open","0,0,0:W":"open"},"surfaces":{"floor":{"role":"paving"}}},
+        {"kind":"tile","tile":"core.bridge","x":0,"y":2,"z":1,"rotation":0,"surfaces":{"floor":{"role":"metal"},"solids":{"role":"metal"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.stairs_open","x":0,"y":3,"z":0,"rotation":1,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"metal"},"trim":{"role":"trim"}}},
+        {"kind":"block","name":"Leg","position":[-1.3,0,6],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[1.3,0,6],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Cross-beam","position":[0,3.2,6],"size":[2.35,0.3,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[-1.3,0,10],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[1.3,0,10],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Cross-beam","position":[0,3.2,10],"size":[2.35,0.3,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[-1.3,0,14],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[1.3,0,14],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Cross-beam","position":[0,3.2,14],"size":[2.35,0.3,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[-1.3,0,18],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Leg","position":[1.3,0,18],"size":[0.25,3.5,0.25],"material":{"role":"metal"}},
+        {"kind":"block","name":"Cross-beam","position":[0,3.2,18],"size":[2.35,0.3,0.25],"material":{"role":"metal"}}
+      ],
+      "notes": {"design":"Open Stairs turned to climb north, Bridge decks (3 m, railed, nothing underneath) on level 1 over open ground, and steel legs and cross-beams of blocks under each deck. The two-cell piece is the Catwalk Gantry (military.gantry) as a set piece."}
+    }
+  ]
+}

@@ -86,6 +86,9 @@
   "core.hatch_corner",
   "core.fort_ring",
   "core.fort_ring_gate",
+  "core.arena_pit",
+  "core.arena_tiers",
+  "core.arena_tiers_corner",
   "military.barracks",
   "military.guard_tower",
   "military.pillbox",
@@ -30613,6 +30616,479 @@
      ],
      "yaw": -6.246595570242308,
      "kind": "trim"
+    }
+   ]
+  },
+  {
+   "id": "core.arena_pit",
+   "category": "Open",
+   "displayName": "Arena Pit",
+   "blurb": "Open floor sunk 2 m: the middle of a sunken arena (Arena Tiers round it). Its floor carves the terrain",
+   "cells": [
+    [
+     0,
+     0,
+     -1
+    ],
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -2.3,
+      -4
+     ],
+     "max": [
+      4,
+      -2,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "id": "core.arena_tiers",
+   "category": "Open",
+   "displayName": "Arena Tiers",
+   "blurb": "Ground along the north edge, then three tiers 0.5 m apart down to an arena floor 2 m down, with a stair down the middle: the side of a sunken arena",
+   "cells": [
+    [
+     0,
+     0,
+     -1
+    ],
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -2,
+      2
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ]
+    },
+    {
+     "min": [
+      -4,
+      -2,
+      1
+     ],
+     "max": [
+      -1,
+      -0.5,
+      2
+     ]
+    },
+    {
+     "min": [
+      1,
+      -2,
+      1
+     ],
+     "max": [
+      4,
+      -0.5,
+      2
+     ]
+    },
+    {
+     "min": [
+      -4,
+      -2,
+      0
+     ],
+     "max": [
+      -1,
+      -1,
+      1
+     ]
+    },
+    {
+     "min": [
+      1,
+      -2,
+      0
+     ],
+     "max": [
+      4,
+      -1,
+      1
+     ]
+    },
+    {
+     "min": [
+      -4,
+      -2,
+      -1
+     ],
+     "max": [
+      -1,
+      -1.5,
+      0
+     ]
+    },
+    {
+     "min": [
+      1,
+      -2,
+      -1
+     ],
+     "max": [
+      4,
+      -1.5,
+      0
+     ]
+    },
+    {
+     "min": [
+      -1,
+      -2.3,
+      -1
+     ],
+     "max": [
+      1,
+      -2,
+      2
+     ]
+    },
+    {
+     "min": [
+      -4,
+      -2.3,
+      -4
+     ],
+     "max": [
+      4,
+      -2,
+      -1
+     ]
+    },
+    {
+     "min": [
+      -3.7,
+      -2.6,
+      -3.7
+     ],
+     "max": [
+      3.7,
+      -2.3,
+      3.7
+     ]
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -1,
+      -2,
+      -2
+     ],
+     "max": [
+      1,
+      -1.75,
+      -1.5
+     ]
+    },
+    {
+     "min": [
+      -1,
+      -2,
+      -1.5
+     ],
+     "max": [
+      1,
+      -1.5,
+      -1
+     ]
+    },
+    {
+     "min": [
+      -1,
+      -2,
+      -1
+     ],
+     "max": [
+      1,
+      -1.25,
+      -0.5
+     ]
+    },
+    {
+     "min": [
+      -1,
+      -2,
+      -0.5
+     ],
+     "max": [
+      1,
+      -1,
+      0
+     ]
+    },
+    {
+     "min": [
+      -1,
+      -2,
+      0
+     ],
+     "max": [
+      1,
+      -0.75,
+      0.5
+     ]
+    },
+    {
+     "min": [
+      -1,
+      -2,
+      0.5
+     ],
+     "max": [
+      1,
+      -0.5,
+      1
+     ]
+    },
+    {
+     "min": [
+      -1,
+      -2,
+      1
+     ],
+     "max": [
+      1,
+      -0.25,
+      1.5
+     ]
+    },
+    {
+     "min": [
+      -1,
+      -2,
+      1.5
+     ],
+     "max": [
+      1,
+      0,
+      2
+     ]
+    }
+   ]
+  },
+  {
+   "id": "core.arena_tiers_corner",
+   "category": "Open",
+   "displayName": "Arena Tiers (Corner)",
+   "blurb": "The corner of a sunken arena: ground along the north and east edges, three tiers turning the corner down to the arena floor 2 m down",
+   "cells": [
+    [
+     0,
+     0,
+     -1
+    ],
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -2,
+      2
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ]
+    },
+    {
+     "min": [
+      2,
+      -2,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      2
+     ]
+    },
+    {
+     "min": [
+      -4,
+      -2,
+      1
+     ],
+     "max": [
+      2,
+      -0.5,
+      2
+     ]
+    },
+    {
+     "min": [
+      1,
+      -2,
+      -4
+     ],
+     "max": [
+      2,
+      -0.5,
+      1
+     ]
+    },
+    {
+     "min": [
+      -4,
+      -2,
+      0
+     ],
+     "max": [
+      1,
+      -1,
+      1
+     ]
+    },
+    {
+     "min": [
+      0,
+      -2,
+      -4
+     ],
+     "max": [
+      1,
+      -1,
+      0
+     ]
+    },
+    {
+     "min": [
+      -4,
+      -2,
+      -1
+     ],
+     "max": [
+      0,
+      -1.5,
+      0
+     ]
+    },
+    {
+     "min": [
+      -1,
+      -2,
+      -4
+     ],
+     "max": [
+      0,
+      -1.5,
+      -1
+     ]
+    },
+    {
+     "min": [
+      -4,
+      -2.3,
+      -4
+     ],
+     "max": [
+      -1,
+      -2,
+      -1
+     ]
+    },
+    {
+     "min": [
+      -3.7,
+      -2.6,
+      -3.7
+     ],
+     "max": [
+      3.7,
+      -2.3,
+      3.7
+     ]
     }
    ]
   }

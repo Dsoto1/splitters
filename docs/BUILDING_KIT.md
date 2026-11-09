@@ -136,7 +136,9 @@ stand of the arena, a trench run (docs/SET_PIECES_PLAN.md). In play it is ordina
 lights; in MapMaker it stays one thing you place, select, turn and theme until you explode it.
 
 - **The tab** (Build → Set pieces): every shipped piece, grouped by family (Carriageways, Skybridges, Casemates,
-  Trench runs, Cliff stairs, Stair towers, Arena stands, Hypogeum, Insulae, Landing craft), pictured from the palette
+  Trench runs, Cliff stairs, Stair towers, Arena stands, Hypogeum, Insulae, Landing craft, Forts, and part 5's Power
+  core halls, Reactor rooms, Server vaults, Loading docks, Atrium towers, Catwalk bridges, Overlooks, Ramp junctions,
+  Courtyard gates, Bunker clusters, Sunken arenas, Plazas and Sea walls), pictured from the palette
   atlas (`thumbs/setpieces.*.webp`), then **My set pieces** (your own, and the map's own that came with it). Search
   finds pieces by name; the **Style Pack** picker narrows the tab to the pieces made for that pack's look.
 - **Placing:** pick a piece, then click the map. A see-through **ghost of the whole piece** follows the pointer in its
@@ -177,6 +179,15 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   uploaded.
 - **The owner** also sees **Export for content/setpieces/**: the piece as a family file (its id `setpiece.<name>`) to
   add to `content/setpieces/` and ship, the way official maps are files (docs/CONTENT_PIPELINE.md, "Set pieces").
+- **Retired tiles and Replace all** (set pieces part 5): an old big tile a set piece replaces leaves the Tiles tab
+  (`content/setpieces/aliases.json`; so far the **Catwalk Gantry**, replaced by **Catwalk Bridge (Up)**). A map that
+  places one still opens with it; its inspector says what replaced it and offers **Replace all N with …**: every
+  placement of it becomes the set piece at the same cell, level and turn, selected, one undo step. Export then names
+  the piece. In play the old tile already plays as the piece (the map loads it so), so nothing changes when you do.
+- **Part 5's pieces** (docs/SET_PIECES_PLAN.md, "As built: part 5"): the **Sunken Arena** sinks 2 m into the ground
+  (its floors carve the terrain, like the trenches: flatten bumpy ground first); the **Sea Wall** pieces are free blocks
+  only, so put them on level ground (a beach's flat top) and line the bays up east to west, the sea to their south;
+  stairs, ramps and the atrium's stairwell climb inside each piece, so turn it (most can't be mirrored).
 
 ## Room options (format v16)
 
