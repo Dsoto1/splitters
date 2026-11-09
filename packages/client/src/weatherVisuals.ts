@@ -210,6 +210,8 @@ export class WeatherVisuals {
   private addedFog = 0;
   /** The haze colour before thick fog greyed it (put back by clear). */
   private fogColorBefore: Color3 | null = null;
+  /** The haze as this left it: clear takes its part back only if nothing set the haze afresh since (the backdrop). */
+  private fogSet: { density: number; color: Color3 } | null = null;
   private shelterAt = 0;
   private covered = false;
   private shelterLevel = 0;
@@ -251,8 +253,11 @@ export class WeatherVisuals {
       if (this.scene.fogMode !== 2) this.scene.fogMode = 2;
       this.scene.fogDensity += this.addedFog;
       // Thick fog greys the haze towards the fog's own colour.
-      if (weather.fog > 0) this.fogColorBefore = this.scene.fogColor.clone();
-      if (weather.fog > 0) this.scene.fogColor = Color3.Lerp(this.scene.fogColor, this.tints.fog, Math.min(0.6, weather.fog * 0.6));
+      if (weather.fog > 0) {
+        this.fogColorBefore = this.scene.fogColor.clone();
+        this.scene.fogColor = Color3.Lerp(this.scene.fogColor, this.tints.fog, Math.min(0.6, weather.fog * 0.6));
+      }
+      this.fogSet = { density: this.scene.fogDensity, color: this.scene.fogColor.clone() };
     }
     const n = weatherParticles(weather, this.quality);
     if (n > 0) {
@@ -346,10 +351,12 @@ export class WeatherVisuals {
     this.bankMat?.dispose();
     this.fall = this.banks = null;
     this.fallMat = this.bankMat = null;
-    if (this.addedFog) this.scene.fogDensity = Math.max(0, this.scene.fogDensity - this.addedFog);
+    const ours = !!this.fogSet && Math.abs(this.scene.fogDensity - this.fogSet.density) < 1e-9 && this.scene.fogColor.equals(this.fogSet.color);
+    if (ours && this.addedFog) this.scene.fogDensity = Math.max(0, this.scene.fogDensity - this.addedFog);
+    if (ours && this.fogColorBefore) this.scene.fogColor = this.fogColorBefore;
     this.addedFog = 0;
-    if (this.fogColorBefore) this.scene.fogColor = this.fogColorBefore;
     this.fogColorBefore = null;
+    this.fogSet = null;
     this.weather = CLEAR_WEATHER;
     this.shelterLevel = 0;
     this.covered = false;
