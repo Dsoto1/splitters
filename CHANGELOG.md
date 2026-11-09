@@ -8,6 +8,25 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Our own trees, bushes and hedges everywhere; no more Kenney foliage** (Environment Phase 2, owner-approved
+2026-11-08: "I don't want to see those"):
+- **Nine new generated species**, grounded and natural rather than toy-like: Field Maple (summer, autumn), Umbrella
+  Acacia (green, dry), Spruce (summer, snow), Coconut Palm and Leaning Palm (green, dry), Saguaro (green, dry), Laurel
+  Bush (green, dry), Privet Hedge and Yew Hedge. Each has levels of detail and a far stand-in, sways in the wind, and
+  plays like the piece it replaces: trunks, palms and cacti stop people and rounds, hedges are solid walls of cover,
+  bushes hide you as before.
+- **31 maps moved over** in MapMaker with Replace all: 1,466 Kenney trees, bushes, hedges and cacti (Norman Shores 267,
+  Primeval Park 209, St Johns 136, Eagle Spires 126, Backwoods 92 and 26 more). Fernwood Moon: one pine moved off a
+  spawn its trunk now reached.
+- **The forest border and the scenery** past every map are our trees too (they were Quaternius models and low-poly
+  cones): undergrowth, a wall of pines, spruces, oaks and maples (snowy pines on snow, palms, acacias and saguaros on
+  sand), and the far forest round the map.
+- **MapMaker:** Nature → Trees offers our oak, maple, acacia, pines, spruce, palms and saguaro; Plants & Flowers the
+  laurel and the hedges. Every Kenney tree, bush, hedge, cactus and plant is retired from the palette (maps that place
+  them still load them), and Replace all suggests each one's species. The scatter brushes plant our species.
+- **Drawn faster:** in matches, our species are drawn in batches with levels of detail by default (`?env=0` turns that
+  off).
+
 **Team kills show as team kills, and reward nothing** (owner's bug report, 2026-11-08: "Teamkills should not count
 towards a kill streak (should end one) or show anything rewarding. It should actually show in the upper right that it
 was a TK."):
