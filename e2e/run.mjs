@@ -1105,7 +1105,10 @@ async function editoruxFlow(browser) {
  * and fog banks each make one undo step and show in the view; then TEST starts the match with the map's weather.
  */
 async function editorSkyWeatherChecks(browser) {
-  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) });
+  // Medium graphics: Low (the flows' default, phones) draws no rain or snow, only the fog.
+  await context.addInitScript(() => localStorage.setItem('tiletrigger.graphics', 'medium'));
+  const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
@@ -1132,10 +1135,12 @@ async function editorSkyWeatherChecks(browser) {
   check(preview.doc === null && preview.undo === before.undo && preview.y > before.y && preview.color !== before.color, `the time slider previews live without an edit (sun ${JSON.stringify(before)} → ${JSON.stringify(preview)}; label ${await page.textContent('#ed-tod-label')})`);
   // Let go: one undo step sets it.
   await page.evaluate(() => document.getElementById('ed-tod').dispatchEvent(new Event('change')));
+  await frames(page, 2);
   const set = await sun();
   check(set.doc === 18.5 && /Time of day/.test(set.undo ?? ''), `letting go sets the time (one undo step: ${JSON.stringify(set)})`);
   // A preset: Noon, the sun high in the south.
   await page.click('.ed-tod-preset[data-hours="12"]');
+  await frames(page, 2);
   const noon = await sun();
   check(noon.doc === 12 && noon.y < -0.85 && Math.abs(noon.x) < 0.01, `the Noon preset puts the sun high in the south (${JSON.stringify(noon)})`);
   await page.click('.ed-tod-preset[data-hours="22"]');
@@ -7217,7 +7222,8 @@ async function flashingFlow(browser) {
       },
     },
     // Weather (map format v34; weatherVisuals.ts): a downpour and a blizzard with a gale at night, out in the open (the
-    // brightest contrast: pale drops and flakes against the dark). No lightning: nothing in them may flash.
+    // brightest contrast: pale drops and flakes against the dark), drawn as High graphics draws them (the most drops;
+    // the flow plays on Low, which draws none). No lightning: nothing in them may flash.
     {
       name: 'rain',
       label: 'heavy rain in a gale at night, out in the open',
@@ -7225,7 +7231,7 @@ async function flashingFlow(browser) {
       me: [-10, 0, 0],
       look: aim([-10, 0, 0], [0, 1.4, 6]),
       bots: [],
-      before: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'rain', amount: 1, wind: 0.7, fog: 0.3 })),
+      before: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'rain', amount: 1, wind: 0.7, fog: 0.3 }, 'high')),
       after: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'none', amount: 0, wind: 0, fog: 0 })),
     },
     {
@@ -7235,7 +7241,7 @@ async function flashingFlow(browser) {
       me: [-10, 0, 0],
       look: aim([-10, 0, 0], [0, 1.4, 6]),
       bots: [],
-      before: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'snow', amount: 1, wind: 0.85, fog: 0.45 })),
+      before: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'snow', amount: 1, wind: 0.85, fog: 0.45 }, 'high')),
       after: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'none', amount: 0, wind: 0, fog: 0 })),
     },
     {

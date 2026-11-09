@@ -237,7 +237,7 @@ export class WeatherVisuals {
    * Show a weather under a sky (its colours light the rain, snow and fog), `groundY` the low ground the fog banks lie
    * on. Call after the backdrop is built (it adds to the backdrop's haze; calling again replaces what it added).
    */
-  set(weather: MapWeather, sky: SkyDefinition | null, groundY: number): void {
+  set(weather: MapWeather, sky: SkyDefinition | null, groundY: number, quality: GraphicsQuality = this.quality): void {
     this.clear();
     this.weather = weather;
     const light = sky ? Math.min(1.15, sky.light.hemi * 0.75 + sky.light.sun * 0.35) : 1;
@@ -259,13 +259,13 @@ export class WeatherVisuals {
       }
       this.fogSet = { density: this.scene.fogDensity, color: this.scene.fogColor.clone() };
     }
-    const n = weatherParticles(weather, this.quality);
+    const n = weatherParticles(weather, quality);
     if (n > 0) {
       this.fall = quads(this.scene, 'weather_fall', n, weather.fall === 'snow' ? 0x5eed5 : 0x7a11);
       this.fallMat = material(this.scene, 'weather_fallMat', 'ttWeather', ['viewProjection', 'camPos', 'camRight', 'camUp', 'fall', 'box', 'size', 'time', 'snow', 'tint']);
       this.fall.material = this.fallMat;
     }
-    const banks = weather.fog > 0.05 ? Math.round(FOG_BANK_SPRITES[this.quality] * Math.min(1, 0.4 + weather.fog)) : 0;
+    const banks = weather.fog > 0.05 ? Math.round(FOG_BANK_SPRITES[quality] * Math.min(1, 0.4 + weather.fog)) : 0;
     if (banks > 0) {
       this.banks = quads(this.scene, 'weather_fogBanks', banks, 0xf09);
       this.bankMat = material(this.scene, 'weather_fogBankMat', 'ttFogBank', ['viewProjection', 'camPos', 'camRight', 'drift', 'time', 'baseY', 'boxSize', 'tint']);

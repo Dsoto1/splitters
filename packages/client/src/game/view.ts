@@ -140,7 +140,7 @@ import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts'
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
-import { loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode } from './graphicsSettings.ts';
+import { loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
@@ -3929,9 +3929,12 @@ export class GameView {
     this.scene.render();
   }
 
-  /** The match's weather (map/weather.ts matchWeather: the host's choice, else the map's), fixed while it plays. */
-  setWeather(w: MapWeather): void {
-    this.weather.set(w, this.weatherSky, this.weatherGround);
+  /**
+   * The match's weather (map/weather.ts matchWeather: the host's choice, else the map's), fixed while it plays.
+   * `quality`: draw it as another graphics setting would (the flicker check draws High's on its Low page).
+   */
+  setWeather(w: MapWeather, quality?: GraphicsQuality): void {
+    this.weather.set(w, this.weatherSky, this.weatherGround, quality);
   }
 
   dispose(): void {
