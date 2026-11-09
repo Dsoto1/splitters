@@ -8,6 +8,13 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Set pieces, part 6: swapping the old big pieces** (docs/SET_PIECES_PLAN.md, "As built: part 6"):
+- **Replace all with a set piece…** in every tile's inspector in MapMaker: every placement of a tile becomes a set piece
+  where it stands, one undo step.
+- **Town Wall Gatehouse**, a new set piece: Market Town's gate is now one (the walks through its guard room, its roof up
+  a ladder).
+- Shingle Point's card picture is taken from a few metres further back, so the cliff-top buildings show.
+
 **Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall** (docs/SET_PIECES_PLAN.md, "As built: part 5"):
 - **Twelve new set pieces** in MapMaker's Set pieces tab, each in its own group: Power Core Hall, Catwalk Bridge (three
   lengths), Twin-Stair Overlook, Atrium Tower, Loading Dock, Sunken Arena, Reactor Room, Bunker Cluster, Courtyard

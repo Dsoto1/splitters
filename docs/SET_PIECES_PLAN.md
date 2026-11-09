@@ -517,6 +517,30 @@ Not a format change: no field is added.
 - Free blocks only, on the standard grid, so bays line up; flatten the beach's top under them first. The Iron Coast
   session places them (main hands them over).
 
+## As built: part 6 (swapping the old big pieces on the maps; 2026-11-09, in progress)
+The owner (2026-11-08): "fix em all": every old big piece that has a set-piece version is swapped on every map that uses
+one, through MapMaker. Iron Compound stays as it is (its Catwalk Gantry plays as the bridge already).
+- **MapMaker:** every tile's inspector has **Replace all with a set piece…**: pick any piece; every placement of the
+  tile becomes it at the same cell, level and turn, one undo step (`replaceTilesWithSetPieceCommand`; a retired tile
+  offers its replacement first). The old tiles stay in the palette.
+- **New piece: Town Wall Gatehouse** (`setpiece.courtyard_gate_wall`, Courtyard gate family): the Town Gate as a set
+  piece in its place (3 × 1 cells, levels 0-2, medieval): Town Wall tiles either side, a vaulted passage 5 m wide
+  under segmental arches (the Town Gate's 4 m), the guard room over it open by arches onto both wall-walks, a roof behind
+  a parapet up a ladder through a hatch in its north-east corner (as the Town Gate's). The plain Courtyard Gate would
+  have cut the west walk (its stair tower fills level 1 there).
+- **Market Town:** its Town Gate is the gatehouse (Replace all in MapMaker); the map's old roof ladder went (the piece
+  has its own) and its portcullis moved 1.5 m onto the south arch. The exported map validates clean, no coplanar
+  overlaps; the walks, the passage, the guard room and the roof all reach each other both ways (30 of 30 routes).
+  Bot report (CTF, seeds 1-2, 240 s), before → after: stuck 121 → 127 a match, failed searches 0.01 → 0.00 %, two routes
+  or more 75 → 75 % of team trips, busiest route 60 → 54 %, captures 2 → 1 (two matches: noise).
+- **Prepared, waiting for the owner** (each validates once replaced, no coplanar overlaps): Iron Maw (2 Warehouses →
+  Loading Dock, 2 Bunkers → Bunker Cluster), Shingle Point (1 Warehouse, 4 Bunkers), Neon Spire, Riot Junction and
+  Underdrain (City Crossroads → Crossroads Plaza). The Bunker Cluster is a 5-cell cross for a 2 × 1 Bunker, the Loading
+  Dock one storey for a two-storey Warehouse, the plaza 3 × 3 for a 4 × 4 crossroads: Riot Junction would go over its
+  prop-model budget, Underdrain would leave two spawns without a floor. Blackout, Crossroads, Coldwater Gulch, Pharaoh's
+  Reach, Qasr Medina and Sunken Kingdom wait for the other session's claim; Whiteout Station's rebuild handles its hangar.
+  The six maps with the Bunker theme (`core.bunker`) place no Bunker tile: nothing to swap.
+
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks
    and validation.

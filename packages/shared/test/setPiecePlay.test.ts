@@ -61,6 +61,7 @@ const OPEN_SIDED = [
   'setpiece.cliff_stair_gate',
   'setpiece.cliff_stair_grand',
   'setpiece.command_bunker',
+  'setpiece.courtyard_gate_wall',
   'setpiece.crossroads_plaza',
   'setpiece.landing_craft_beached',
   'setpiece.loading_dock',

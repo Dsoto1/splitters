@@ -108,6 +108,11 @@ const WALKS: Record<string, { chains: [number, number, number][][]; climbs?: { f
   'setpiece.courtyard_gate': {
     chains: [[[8, 0, -7], [8, 0, 0], [8, 0, 7]], [[8, 0, 0], [16, 0, 0]], [[8, 0, 0], [8, 4, 0], [16, 4, 0]]],
   },
+  // Part 6: the gate tower in a town wall (Market Town). Along the wall-walk through the guard room both ways, through the
+  // passage, and up the ladder through the roof hatch.
+  'setpiece.courtyard_gate_wall': {
+    chains: [[[0, 4, -1.5], [8, 4, 0], [16, 4, -1.5]], [[8, 0, -7], [8, 0, 0], [8, 0, 7]], [[8, 4, 0], [9.7, 4, 1.9], [6, 8, -1]]],
+  },
   'setpiece.server_vault': { chains: [[[0, 0, -7], [0, 0, -1], [0, 0, 7], [8, 0, 7], [8, 0, -1]], [[8, 0, 7], [15, 0, 8]]] },
   'setpiece.crossroads_plaza': { chains: [[[8, 0, -7], [8, 0, 8], [8, 0, 23]], [[-7, 0, 8], [8, 0, 8], [23, 0, 8]], [[8, 0, 8], [1, 0.15, 1], [15, 0.15, 15]]] },
   'setpiece.ramp_junction': {
@@ -120,7 +125,7 @@ const WALKS: Record<string, { chains: [number, number, number][][]; climbs?: { f
 describe('the brainstorm list: every way through, every climb, in every turn', () => {
   it('lists every new piece', () => {
     for (const id of Object.keys(WALKS)) expect(library.pieces.has(id), id).toBe(true);
-    expect(Object.keys(WALKS)).toHaveLength(14);
+    expect(Object.keys(WALKS)).toHaveLength(15);
   });
   for (const [id, { chains, climbs }] of Object.entries(WALKS)) {
     it(`${id}: bots path along each chain; players climb`, { timeout: 120_000 }, () => {

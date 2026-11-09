@@ -519,6 +519,15 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
 
+### Set pieces, part 6: swapping the old big pieces (`wip/mapmaker-setpieces6`, agent, 2026-11-09; MapMaker lane; in progress)
+- **Done:** Replace all with a set piece… in every tile's inspector; the Town Wall Gatehouse (`setpiece.courtyard_gate_wall`)
+  and Market Town's gate swapped to it in MapMaker; Shingle Point's card camera backed up (card picture recaptured);
+  the coverage map's Tall Mushroom replaced by our Bracken Fern (a Kenney log stack keeps the Nature Kit pack covered).
+- **Waiting for the owner (Q1-3):** Iron Maw, Shingle Point, Neon Spire, Riot Junction and Underdrain's swaps are prepared,
+  not applied (docs/SET_PIECES_PLAN.md, "As built: part 6").
+- **Pitfall:** MapMaker with `?test=1` makes ids from a fixed sequence, so placing into a map that was itself built
+  under `?test=1` (the coverage map) can collide ("ID … already exists"): drive real edits without `test=1`.
+
 ### Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall (`wip/mapmaker-setpieces`, agent, 2026-11-08; MapMaker lane)
 - **Built** (docs/SET_PIECES_PLAN.md, "As built: part 5"): twelve pieces (the catwalk bridge in three lengths) in their
   own families: Power Core Hall, Catwalk Bridge, Twin-Stair Overlook, Atrium Tower, Loading Dock, Sunken Arena (new kit
