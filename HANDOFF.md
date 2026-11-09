@@ -14,6 +14,33 @@ arsenal, weaponsets and hostgame, as on other branches that hour, and passed on 
 released v0.9.0 from that build (tag and release with its assets). Fireteams part 1 and MapMaker's measure tool and
 turning by mouse went in with it.
 
+**Gunplay pass 3: the network check (G3) and bots' weapon ranges (G4)** (`wip/gunplay-3`, agent, 2026-11-09;
+owner-approved audit candidates 7 and 8). Details and tables: docs/GUNPLAY_AUDIT.md, "G3" and "G4".
+- **G3, `pnpm net-report`:** a real host (server.ts) and 8 players over the real wire path and the browser's netcode,
+  with latency, jitter and loss on the links (`server/src/tools/netLab.ts`). It runs in about 5 minutes and is
+  manual. CI runs a 6 s smoke (`server/test/netLab.test.ts`).
+  - **Lag compensation is accurate:** where the host rewound a body against where the screen drew it, p95 under
+    11 cm.
+  - **Registration:** at 50 / 100 ms, 94 / 88 % of screen hits were confirmed. The rest are mostly targets someone
+    else had already killed.
+- **Fixed:** the host's input queue (`MAX_QUEUED_INPUTS` 16 → 32, match.ts) dropped the burst a resent packet
+  releases. That caused snap-backs (up to 1.4 m) and rounds never fired at 150 ms+ with loss.
+- **For the owner (not changed):**
+  - (1) The rewind window `MAX_REWIND_TICKS` is 18 ticks (300 ms). At 150 ms ping 21-30 % of screen hits fall
+    outside it, and at 250 ms most do. With 30 ticks, registration goes 67 → 86 % (150/30/3) and 38 → 72 % (250 ms).
+    It is a fairness call between shooter and victim.
+  - (2) Extrapolated frames send the newest snapshot's tick as the view tick: a possible small client change, not
+    proven yet.
+  - (3) Inputs go up as plain JSON (8 KB/s a player).
+- **G4:** bots' `weaponScore` uses each gun's measured band and `preferredRange` its measured edge
+  (`shared/src/bots/weaponBands.ts`). The data comes from `pnpm gun-report --json=docs/gunplay-audit.json --bands`;
+  rerun it after any weapon change. bot-report now has a weapon-use line.
+  - **Before → after, 28 matches:** kills a minute 32.7 → 32.4; stuck 1.04 → 1.03 a bot-minute; idle out of a fight
+    4.5 → 4.3 %; weapon use spread 0.568 → 0.570. Hit rates rose for 10 of 13 guns (the Precision Rifle 8 → 15 %,
+    the Battle Rifle 6 → 17 %).
+  - `bot-report --check` passes.
+  - `botDesirability` is still hand-set.
+
 **Small fixes of 2026-11-08 (`wip/small-fixes`, agent, 2026-11-09; owner-approved list).**
 - **Fernwood Moon's rope-lift waits (bots).** Cause: the north deck's only walkable way down was the north rope lift
   (17 s round trip; bots waited 10-23 s at the top). Its 0.7 m hop down onto the ramp at (0, 14, 87) was a parkour drop
