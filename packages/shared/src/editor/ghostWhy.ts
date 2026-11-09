@@ -51,34 +51,62 @@ export type GhostEntityKind = 'spawn' | 'pickup' | 'prop' | 'mount' | 'npc' | 'o
 export interface GhostGround {
   boxes: readonly WorldBox[];
   terrain: TerrainData | null;
+  /** Bodies of water, lava, acid and swamp (`water` entities): a boat floats, a prop bobs, a pickup sits in a pool. */
+  liquids?: readonly { position: readonly [number, number, number]; size: readonly [number, number, number] }[];
 }
 
 /** How far a spawn's feet may be from the ground or a floor and still stand on it (as validateMap's spawn check). */
 const TERRAIN_REACH = 1.5;
 const FLOOR_REACH = 1;
 
-/** Whether something stands under point (x, y, z): the ground within reach, or the top of a floor, block or wall. */
+/** Whether something stands under point (x, y, z): the ground within reach, the top of a floor, block or wall, or a liquid it is in or on. */
 export function standsOnSomething(ground: GhostGround, x: number, y: number, z: number): boolean {
   const h = ground.terrain ? terrainHeightAt(ground.terrain, x, z) : null;
   if (h !== null && Math.abs(h - y) < TERRAIN_REACH) return true;
-  return supportUnder(ground.boxes, x, z, y, '') >= y - FLOOR_REACH;
+  if (supportUnder(ground.boxes, x, z, y, '') >= y - FLOOR_REACH) return true;
+  return (ground.liquids ?? []).some((w) => Math.abs(x - w.position[0]) <= w.size[0] / 2 && Math.abs(z - w.position[2]) <= w.size[2] / 2 && y >= w.position[1] - FLOOR_REACH && y <= w.position[1] + w.size[1] + FLOOR_REACH);
 }
 
 /**
- * The note for an entity's ghost at `at`, worst first:
- * - spawns, pickups, vehicles, NPCs and props with nothing under them: "No floor under it" (validateMap warns about
- *   spawns off a floor and floating props; the others drop or stand in the air). Hung props (chandeliers) are left out;
- * - outside the map's boundary (when it has one; validateMap warns, and a spawn there is an error);
- * - in the scenery zone (no boundary set: the terrain's edge): the note.
- * Objects (doors, zones, lights, logic pieces) only get the zone notes: many are meant to hang or float.
+ * Props outside the playable boundary are refused too: off (the owner's call). Props there are scenery: the scenery
+ * zone is meant to be built in (BUILDING_KIT.md, "Where you can build"), so they keep the scenery note.
+ */
+export const PROPS_REFUSED_OUTSIDE = false;
+
+/** What each kind is told outside the boundary. Spawns, pickups, vehicles and NPCs are refused there (owner, 2026-11-08). */
+const OUTSIDE_TEXT: Partial<Record<GhostEntityKind, string>> = {
+  spawn: 'a spawn must be inside it',
+  pickup: 'pickups go inside it',
+  mount: 'vehicles go inside it',
+  npc: 'NPCs go inside it',
+  ...(PROPS_REFUSED_OUTSIDE ? { prop: 'props go inside it' } : {}),
+};
+
+/**
+ * The note for an entity's ghost at `at`, worst first. Refusals (`bad`: the ghost is red and the click places nothing;
+ * owner, 2026-11-08):
+ * - spawns, pickups, vehicles and NPCs outside the playable boundary (the map's Boundary, or the terrain's edge when it
+ *   has none) or past the build limit;
+ * - spawns, pickups, vehicles, NPCs and props with nothing under them, "No floor under it": nothing within reach (the
+ *   ground within 1.5 m; a floor, block, wall or prop top within 1 m; a liquid). Hung props (chandeliers) are left out;
+ * - props past the build limit.
+ * Notes: a prop outside the boundary is in the scenery zone (amber with a Boundary set, blue at the terrain's edge).
+ * Objects (doors, zones, lights, logic pieces) only get the zone notes, never a refusal: many are meant to hang or float.
+ * Only placing a new thing is refused; moving, pasting or editing what is on the map isn't (the validator warns as before).
  */
 export function entityGhostNote(doc: Pick<MapDocument, 'bounds' | 'terrain' | 'classicStructure'>, kind: GhostEntityKind, at: readonly [number, number, number], ground: GhostGround, model = ''): GhostNote | null {
   const [x, y, z] = at;
   const zone = buildZone(doc, x, z);
-  if (kind === 'spawn' && zone !== 'play' && doc.bounds) return { tone: 'warn', text: 'Outside the map boundary: a spawn must be inside it' };
+  const outside = OUTSIDE_TEXT[kind];
+  if (outside && zone !== 'play') return { tone: 'bad', text: `Outside the ${doc.bounds ? 'map boundary' : 'playable area'}: ${outside}` };
   const needsFloor = kind !== 'object' && !(kind === 'prop' && HANGING_PROPS.has(model));
-  if (needsFloor && !standsOnSomething(ground, x, y, z)) return { tone: 'warn', text: 'No floor under it' };
-  if (zone === 'beyond') return { tone: 'warn', text: 'Past the build limit: outside the build area' };
+  if (needsFloor && !standsOnSomething(ground, x, y, z)) return { tone: 'bad', text: 'No floor under it' };
+  if (zone === 'beyond') return { tone: kind === 'object' ? 'warn' : 'bad', text: 'Past the build limit: outside the build area' };
   if (zone === 'scenery') return doc.bounds ? { tone: 'warn', text: 'Outside the map boundary (scenery zone)' } : { tone: 'note', text: SCENERY_NOTE };
   return null;
+}
+
+/** Whether a placing tool's click is refused here (its ghost is red): a `bad` note. */
+export function ghostRefuses(note: GhostNote | null | undefined): boolean {
+  return note?.tone === 'bad';
 }

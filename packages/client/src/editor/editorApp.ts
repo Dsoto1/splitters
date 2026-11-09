@@ -20,6 +20,7 @@ import {
   tileGhostCheck,
   checkNote,
   entityGhostNote,
+  ghostRefuses,
   zoneNote as zoneGhostNote,
   type GhostNote,
   type GhostEntityKind,
@@ -821,7 +822,7 @@ export class EditorApp {
       pointer: () => this.pointerAt,
     });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
-    this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor') });
+    this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor'), world: () => ({ boxes: this.surfaceBoxes(), ground: this.shownGround }) });
     this.notes = new NoteTool({
       doc: () => this.doc,
       run: (label, cmd) => this.run(label, cmd),
@@ -876,13 +877,13 @@ export class EditorApp {
     // The live budget bar: counters kept from each edit (budgetCounters.ts), drawn when the document changes.
     this.budgets = new BudgetTracker(this.history.doc, this.setPieceLib);
     this.history.onChange = (c) => (c.reset ? this.budgets.reset(c.reset) : this.budgets.apply(c.command, c.doc));
-    this.budgetBar = new BudgetBar($('editor'), (id, row) => {
+    this.budgetBar = new BudgetBar($('ed-bottom'), (id, row) => {
       const ids = budgetCulprits(this.doc, id);
       if (!ids.length) return this.toast(`Nothing to select for ${row.label.toLowerCase()}${this.doc.setPieces?.length ? ' (set pieces count as their parts: select the set pieces themselves)' : ''}`, true);
       this.setTool({ kind: 'select' });
       this.setSelection({ tiles: [], entities: ids });
       this.toast(`Selected ${ids.length} counted as ${row.label.toLowerCase()} (${row.what})`);
-    });
+    }, $('ed-target'));
     this.logic = new LogicPanel({
       doc: () => this.doc,
       commit: (label, after) => this.run(label, { kind: 'setLogic', before: this.doc.logic, after }),
@@ -1466,6 +1467,8 @@ export class EditorApp {
   }
 
   private placeAtHover(): void {
+    // Spawns, pickups, props, vehicles and NPCs over nothing or outside the boundary: the ghost is red and says why, and the click places nothing (ghostWhy.ts).
+    if (ghostRefuses(this.entityGhost()?.note)) return;
     if (this.tool.kind === 'setpiece' && this.hoverCell) {
       const [x, y, z] = this.hoverCell;
       this.placeSetPiece(this.tool.piece, x, y, z);
@@ -2280,9 +2283,9 @@ export class EditorApp {
         // Spawns, pickups, props, vehicles, NPCs and objects: shown only when there is something to say.
         const g = this.entityGhost()!;
         title = g.title;
-        tone = g.note.tone === 'warn' ? 'warn' : 'place';
-        marks.set(lines.push(`${g.note.tone === 'warn' ? '⚠' : 'ℹ'} ${g.note.text}`) - 1, g.note.tone === 'warn' ? 'warn' : 'note');
-        lines.push('Click to place');
+        tone = g.note.tone === 'note' ? 'place' : g.note.tone;
+        marks.set(lines.push(`${g.note.tone === 'bad' ? '✗' : g.note.tone === 'warn' ? '⚠' : 'ℹ'} ${g.note.text}`) - 1, g.note.tone);
+        lines.push(g.note.tone === 'bad' ? "Can't be placed here" : 'Click to place');
       } else if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
         const hit = this.pick();
         if (hit) {
@@ -2328,9 +2331,11 @@ export class EditorApp {
       : t.kind === 'spawn' ? { kind: 'spawn', model: 'spawn', at: this.placeSpot(), yaw: this.spawnYaw }
       : t.kind === 'pickup' ? { kind: 'pickup', model: t.item, at: this.placeSpot(), yaw: 0 }
       : null;
-    this.view.setPropGhost(ghost?.model ?? null, ghost?.at ?? null, ghost?.yaw ?? 0, ghost?.kind ?? 'prop', ghost?.scale !== undefined ? { scale: ghost.scale, ...(ghost.variant !== undefined ? { variant: ghost.variant } : {}) } : undefined);
+    // Red where the click is refused (over nothing, outside the boundary: ghostWhy.ts).
+    const refused = !this.looking && ghostRefuses(this.entityGhost()?.note);
+    this.view.setPropGhost(ghost?.model ?? null, ghost?.at ?? null, ghost?.yaw ?? 0, ghost?.kind ?? 'prop', ghost?.scale !== undefined ? { scale: ghost.scale, ...(ghost.variant !== undefined ? { variant: ghost.variant } : {}) } : undefined, refused);
     const objects = this.looking ? null : this.objectGhost();
-    this.view.setEntityGhost(this.doc, objects?.key ?? null, objects?.entities ?? []);
+    this.view.setEntityGhost(this.doc, objects?.key ?? null, objects?.entities ?? [], refused);
     this.updatePieceGhost();
     if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
       // Select: the rotate ring round the selection lights under the pointer (and, held, turns it).
@@ -2422,6 +2427,9 @@ export class EditorApp {
     } else if (this.tool.kind === 'setpiece' && this.pieceHover) {
       const g = this.pieceHover;
       $('ed-target').textContent = `${g.def.displayName}: ${g.ok ? (g.blocked ? `fits; ${g.blocked} port${g.blocked === 1 ? '' : 's'} face${g.blocked === 1 ? 's' : ''} a wall` : 'fits here') : `can't go here: ${g.reason}`}`;
+    } else if (refused) {
+      const g = this.entityGhost()!;
+      $('ed-target').textContent = `${g.title} can't be placed here: ${g.note.text.charAt(0).toLowerCase()}${g.note.text.slice(1)}`;
     } else $('ed-target').textContent = this.zoneNote();
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'setpiece' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
@@ -2496,12 +2504,14 @@ export class EditorApp {
     else if (t.kind === 'prop') [kind, at, title, model] = ['prop', this.propSpot(t.model), getProp(t.model)?.displayName ?? 'Prop', t.model];
     else if (t.kind === 'mount') [kind, at, title] = ['mount', this.placeSpot(), MOUNT_DEFS[t.model].displayName];
     else if (t.kind === 'npc') [kind, at, title] = ['npc', this.placeSpot(), NPC_PALETTE.find((x) => x.key === t.key)?.label ?? 'NPC'];
-    else if (t.kind === 'scenario') [kind, at, title] = ['object', this.scenarioSpot(t.key)?.p ?? null, SCENARIO_PALETTE.find((x) => x.key === t.key)?.label ?? 'Object'];
+    else if (t.kind === 'scenario') [kind, at, title] = [t.key.startsWith('spawn:') ? 'spawn' : 'object', this.scenarioSpot(t.key)?.p ?? null, SCENARIO_PALETTE.find((x) => x.key === t.key)?.label ?? 'Object'];
     else return null;
     if (!at) return null;
-    const key = `${t.kind}:${title}:${at.join(',')}:${this.history.revision}`;
+    const key = `${t.kind}:${title}:${at.join(',')}:${this.history.revision}:${this.level}:${this.showAll}`;
     if (this.entityGhostAt?.key !== key) {
-      const note = entityGhostNote(this.doc, kind, at, { boxes: this.mapBoxes(), terrain: this.shownGround }, model);
+      // What it would stand on: the map as drawn with its blocks and solid props (surfaceBoxes), the ground as shown, liquids.
+      const liquids = this.viewDoc.entities.filter((e) => e.kind === 'water');
+      const note = entityGhostNote(this.doc, kind, at, { boxes: this.surfaceBoxes(), terrain: this.shownGround, liquids }, model);
       this.entityGhostAt = { key, value: note && { title, note } };
     }
     return this.entityGhostAt.value;

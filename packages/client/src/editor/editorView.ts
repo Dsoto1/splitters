@@ -602,7 +602,7 @@ export class EditorView {
   private entityGhost: { key: string; nodes: TransformNode[] } | null = null;
 
   /** The see-through preview of what an object tool would put down: these entities where they'd go (null hides it). */
-  setEntityGhost(doc: MapDocument, key: string | null, entities: readonly MapEntity[]): void {
+  setEntityGhost(doc: MapDocument, key: string | null, entities: readonly MapEntity[], refused = false): void {
     if (!key) {
       for (const n of this.entityGhost?.nodes ?? []) n.setEnabled(false);
       return;
@@ -623,6 +623,7 @@ export class EditorView {
       node.setEnabled(true);
       if (e.kind === 'spawn') node.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
       else this.placeEntityNode(node, e, doc);
+      setGhostRefused(node, refused);
     });
   }
 
@@ -796,7 +797,7 @@ export class EditorView {
 
   /** A see-through preview of a prop where it would be placed (null hides it). */
   /** The see-through preview of what a placing tool would put down (props, vehicles, spawns, pickups). */
-  setPropGhost(model: string | null, at: [number, number, number] | null, yaw: number, kind: 'prop' | 'mount' | 'spawn' | 'pickup' = 'prop', look: { scale: number; variant?: number } = { scale: 1 }): void {
+  setPropGhost(model: string | null, at: [number, number, number] | null, yaw: number, kind: 'prop' | 'mount' | 'spawn' | 'pickup' = 'prop', look: { scale: number; variant?: number } = { scale: 1 }, refused = false): void {
     if (!model || !at) {
       this.propGhost?.node.setEnabled(false);
       return;
@@ -831,6 +832,7 @@ export class EditorView {
     node.position.set(at[0], (y ?? at[1]) + lift, at[2]);
     node.rotation.y = yaw;
     if (kind === 'prop') node.scaling.setAll(look.scale);
+    setGhostRefused(node, refused);
   }
 
   setGhost(doc: MapDocument, tile: string | null, cell: [number, number, number] | null, rotation: Rotation, ok: boolean): void {
@@ -1119,6 +1121,16 @@ function sameHeights(a: TerrainData, b: TerrainData): boolean {
   return true;
 }
 
+/** Placement previews refused where they are (ghostWhy.ts): seeThrough tints them red. */
+const refusedGhosts = new WeakSet<TransformNode>();
+const REFUSED_RED = Color3.FromHexString('#ff5a4f');
+
+/** Mark a placement preview as refused (red) or not; seeThrough applies it on the next frame. */
+function setGhostRefused(node: TransformNode, refused: boolean): void {
+  if (refused) refusedGhosts.add(node);
+  else refusedGhosts.delete(node);
+}
+
 /** See-through copies of materials that are forced opaque (glTF models), which ignore a mesh's visibility; by source. */
 const ghostMaterials = new WeakMap<Material, Material>();
 
@@ -1139,12 +1151,19 @@ function ghostMaterial(mat: Material): Material {
  */
 function seeThrough(node: TransformNode): void {
   const fade = () => {
+    const refused = refusedGhosts.has(node);
     for (const m of [node, ...node.getChildMeshes()]) {
       if (!('visibility' in m)) continue;
       const mesh = m as Mesh;
       mesh.visibility = 0.55;
       mesh.isPickable = false;
       if (mesh.material && mesh.getClassName() === 'Mesh') mesh.material = ghostMaterial(mesh.material);
+      // Refused here (ghostWhy.ts): tinted red over its own look, as a refused tile's ghost is red.
+      if (mesh.renderOverlay !== refused) {
+        mesh.renderOverlay = refused;
+        mesh.overlayColor = REFUSED_RED;
+        mesh.overlayAlpha = 0.6;
+      }
     }
   };
   fade();
