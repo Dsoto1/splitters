@@ -65,6 +65,16 @@ Coast job):
   load and play it as the bridge; its inspector in MapMaker offers **Replace all** (one undo step).
 - **Sea Wall** and **Sea Wall (Breached)** for MAP 21 (Iron Coast): a bay of concrete sea wall with a wave lip and a
   fire step, and the same bay blown open with a rubble ramp through the gap.
+**MapMaker follow-ups** (the owner's answers, 2026-11-08):
+- **The measure tool's jump hint looks at the ground along the line**, not only at its two ends: a slope you can walk
+  up reads walkable, a ledge reads a step (with its height), and a pit you couldn't climb out of reads a gap (with its
+  width, jumpable or too far). A ditch you can climb out of is a drop and a step.
+- **Nothing is placed over nothing:** spawns, pickups, props, vehicles and NPCs with no floor, ground or water under
+  them are refused; the ghost goes red and says why, and the click does nothing. Spawns, pickups, vehicles and NPCs
+  outside the playable boundary are refused the same way. Props outside it are scenery, as before.
+- **The budget bar sits in the bottom status bar**, compact: its colour, its word and the budget it names; the name
+  still selects what it counts and the arrow still lists every budget.
+
 **Our own trees, bushes and hedges everywhere; no more Kenney foliage** (Environment Phase 2, owner-approved
 2026-11-08: "I don't want to see those"):
 - **Nine new generated species**, grounded and natural rather than toy-like: Field Maple (summer, autumn), Umbrella

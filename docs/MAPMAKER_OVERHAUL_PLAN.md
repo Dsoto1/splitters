@@ -43,6 +43,17 @@ Already done from the owner's earlier ask: **the real buildable area.**
      amber ⚠, blue ℹ, each with its words); the status line has the whole reason. Worked out once per cell / spot and
      document version. Entities are warned, not refused (owner's call, HANDOFF). Tests `shared/test/ghostWhy.test.ts`;
      e2e in `editorux` (`editorPhase1aChecks`).
+   - **As built, the owner's follow-up (2026-11-09, `wip/mapmaker-followups`; owner 5b: "refuse"):** spawns, pickups,
+     props, vehicles and NPCs over nothing, and spawns, pickups, vehicles and NPCs outside the playable boundary or
+     past the build limit, are refused: `entityGhostNote` gives `bad`, the ghost is tinted red (`EditorView`
+     `setPropGhost`/`setEntityGhost`, an overlay over its own look), the card says ✗ and "Can't be placed here", the
+     status line the reason, and `placeAtHover` places nothing (`ghostRefuses`). What it stands on is the map as drawn
+     with blocks and solid props (`surfaceBoxes`, so a pickup on a crate is fine) and liquids (a boat on a pool).
+     Props outside the boundary keep the scenery-zone note (`PROPS_REFUSED_OUTSIDE = false`, the owner's call);
+     objects (doors, zones, lights, logic) are never refused. Moving, pasting and editing aren't refused. Checked
+     against every map in `maps/` and `maps/templates/`: no entity there needs placing over nothing (wall shelves,
+     torches and the boats were placed on a floor or the ground and raised or moved after; placing then moving still
+     works). Tests `ghostWhy.test.ts`; e2e `editorPhase1aChecks` (a spawn and a prop over nothing: red, no place).
 2. **A live budget bar.**
    - It covers entities, destructibles, vehicles, lights, props and draw estimate, the environment budget and the map's
      size (RESOURCE_BUDGETS, MAP_BUDGETS.md).
@@ -59,6 +70,10 @@ Already done from the owner's earlier ask: **the real buildable area.**
      naming the worst budget; its name selects what it counts (`budgetCulprits`); the arrow lists every row. Test
      `shared/test/budgetCounters.test.ts` (counters = full count after commands, a batch, a stroke, every undo and
      redo; over a budget exactly when the validator warns).
+   - **As built, the owner's follow-up (2026-11-09, `wip/mapmaker-followups`; owner 8b):** the bar is a compact item
+     in the bottom status bar (between the counts and the status line): the colour, the word and the budget it names,
+     the name still selecting what it counts and the arrow still listing every row (above the bar). The status line
+     gives way (ellipsis) on a narrow window. e2e: `editorPhase1aChecks` checks it sits in the bar.
 3. **A measure tool.** Click two points to get the distance, the height difference and the slope. It snaps to cells
    and surfaces.
    - **As built** (`wip/mapmaker-p1b`): the Measure tool, U and the tool bar (`editor/measureTool.ts`; the maths in
@@ -69,6 +84,17 @@ Already done from the owner's earlier ask: **the real buildable area.**
      could make it, from `PLAYER` (`sim/constants.ts`, as `sim/movement.ts` moves): the step (walk ≤ 0.3 m, jump ≤
      1.22 m, "too high") and the gap (a sprinting jump's reach to that height). Labels are DOM over the view; nothing
      is stored. e2e: `editorMeasureChecks` in `editorux`.
+   - **As built, the owner's follow-up (2026-11-09, `wip/mapmaker-followups`; owner 4b):** the jump hint samples the
+     ground along the line. `sampleProfile` (shared `editor/measure.ts`) reads what is under the stretch every 25 cm
+     (`restUnder` on the map as drawn and the ground as shown, nothing higher than a jump above the higher end, so roofs
+     and bridges overhead aren't the floor); `profileVerdict` judges it against `PLAYER`: neighbouring rises steeper than
+     50° and over a step add up to one step (the steepest is the verdict's step); a fall that comes back near its height
+     is a gap only when you couldn't climb out of it (deeper than a jump, or nothing under it), its width on the long
+     side to within a sample; a ditch you can climb out of is a drop and a step. The labels and the status line give the
+     step's height and the gap's width. `MeasureTool` keeps each stretch's verdict until the map changes (sampling once
+     per stretch, not per frame). Tests in `mapmakerTools.test.ts` (a ramp walkable, a stair walkable, a ledge a step,
+     a pit a gap, jumpable and too far, a deep pit, a ditch); e2e `measureRampCheck` (a 30° ramp of ground in the real
+     editor: walkable, its ends 4.6 m apart).
 4. **Props snap to surfaces, with randomise.**
    - A prop drops onto whatever is under the cursor: a tabletop, a roof, the ground.
    - Optionally, each placement gets a random turn, size and variant within a range.

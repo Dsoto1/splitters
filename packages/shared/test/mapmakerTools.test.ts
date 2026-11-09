@@ -114,6 +114,64 @@ describe('MapMaker measure tool (overhaul Phase 1 item 3)', () => {
     expect([p.x, p.z]).toEqual([40.5, 0]);
     expect(p.y).toBeCloseTo(terrainHeightAt(t, 40.5, 0)!);
   });
+
+  describe('the jump hint samples the ground along the line (owner, 2026-11-08)', () => {
+    const slab = (id: string, x0: number, x1: number, top: number, bottom = top - 0.5): WorldBox => ({ id, sourceId: id, kind: 'floor', min: [x0, bottom, -4], max: [x1, top, 4] }) as unknown as WorldBox;
+    const on = (boxes: WorldBox[], ground: ReturnType<typeof newTerrain> | null = null) => ({ boxes, ground });
+    const at = (x: number, y: number) => ({ x, y, z: 0 });
+
+    it('a ramp you walk up reads walkable (the two ends alone read too high)', () => {
+      // A 30° ramp of ground (under the 50° a player walks up), 10 m long: 5.8 m up.
+      const t = newTerrain(40, 1);
+      const rise = Math.tan(Math.PI / 6);
+      t.heights = t.heights.map((_, i) => Math.round(Math.max(0, (i % t.cols) - 15) * rise * 100));
+      const a = at(-5, terrainHeightAt(t, -5, 0)!);
+      const b = at(5, terrainHeightAt(t, 5, 0)!);
+      expect(b.y - a.y).toBeGreaterThan(5);
+      expect(measureSegment(a, b).verdict.step).toBe('too high');
+      const s = measureSegment(a, b, on([], t));
+      expect(s.verdict).toMatchObject({ step: 'walk', gap: null, sampled: { step: 0, gap: null } });
+      expect(describeSegment(s)).toMatch(/step walkable · no gap$/);
+      // A stair (0.25 m risers on 0.3 m treads) is walkable too.
+      const stair = Array.from({ length: 12 }, (_, k) => slab(`st${k}`, k * 0.3, 10, (k + 1) * 0.25, -1));
+      expect(measureSegment(at(-1, 0), at(4.5, 3), on([slab('f', -5, 0, 0), ...stair])).verdict.step).toBe('walk');
+    });
+
+    it('a ledge reads a step, by its height', () => {
+      const floor = slab('floor', -10, 10, 0);
+      const ledge = slab('ledge', 2, 10, 1, -1);
+      const s = measureSegment(at(-4, 0), at(6, 1), on([floor, ledge]));
+      expect(s.verdict).toMatchObject({ step: 'jumpable', gap: null, sampled: { step: 1, gap: null } });
+      expect(describeSegment(s)).toMatch(/step 1\.00 m jumpable · no gap$/);
+      // A wall's top higher than a jump: too high, even with both ends level (on the far side of it).
+      const wall = slab('wall', 0, 0.5, 1.2 + PLAYER_JUMP.height, -1);
+      const over = measureSegment(at(-4, 0), at(4, 1.2), on([floor, wall]));
+      expect(over.verdict.step).toBe('too high');
+      // Down off the ledge: a drop, no step.
+      expect(measureSegment(at(6, 1), at(-4, 0), on([floor, ledge])).verdict).toMatchObject({ step: 'drop', gap: null });
+    });
+
+    it('a pit reads a gap: jumpable within a sprinting jump, too far past it', () => {
+      const near = slab('near', -10, 0, 0);
+      const far = (w: number) => slab('far', w, w + 10, 0);
+      const level = jumpReach(0)!;
+      const narrow = measureSegment(at(-4, 0), at(7, 0), on([near, far(3)]));
+      expect(narrow.verdict).toMatchObject({ step: 'walk', gap: 'jumpable', sampled: { step: 0, gap: 3 } });
+      expect(narrow.verdict.reach).toBeCloseTo(level);
+      expect(describeSegment(narrow)).toMatch(/step walkable · gap 3\.00 m jumpable \(5\.86 m at most\)$/);
+      const wide = measureSegment(at(-4, 0), at(12, 0), on([near, far(8)]));
+      expect(wide.verdict).toMatchObject({ gap: 'too far', sampled: { gap: 8 } });
+      // A pit with a floor too deep to climb out of is a gap too; a shallow ditch is a drop and a step, not a gap.
+      const deep = measureSegment(at(-4, 0), at(7, 0), on([near, far(3), slab('bottom', -1, 4, -4)]));
+      expect(deep.verdict).toMatchObject({ gap: 'jumpable', sampled: { gap: 3 } });
+      const ditch = measureSegment(at(-4, 0), at(14, 0), on([near, far(8), slab('bottom', -1, 9, -1)]));
+      expect(ditch.verdict).toMatchObject({ step: 'jumpable', gap: null, sampled: { step: 1, gap: null } });
+      // Higher on the far side: a jump carries you less far.
+      const up = measureSegment(at(-4, 0), at(8, 1), on([near, slab('far', 4, 14, 1)]));
+      expect(up.verdict).toMatchObject({ step: 'jumpable', gap: 'jumpable', sampled: { step: 1, gap: 4 } });
+      expect(up.verdict.reach).toBeCloseTo(jumpReach(1)!);
+    });
+  });
 });
 
 describe('MapMaker props snap to surfaces (overhaul Phase 1 item 4)', () => {

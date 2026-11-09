@@ -678,11 +678,11 @@ async function editoruxFlow(browser) {
   await page.click('#ed-tb-rotate');
   await page.click('#ed-tb-rotate');
   await clickAt(8, 0, 0);
-  await clickTool(page, '[data-tool="prop:prop.barrel"]');
-  await clickAt(16, 0, 0);
-  await clickTool(page, '[data-tool="tile:core.corridor"]');
   await clickAt(16, 0, 0);
   check((await page.getAttribute('#ed-tb-place', 'class')).includes('active') && (await page.textContent('#ed-tb-place')).includes('Corridor'), 'Place is lit and names the piece');
+  // A barrel on the second corridor's floor. Placed by command: the prop tool lands a prop on the corridor's roof
+  // under the pointer, and before the corridor is there, over nothing, it is refused (ghostWhy.ts).
+  await page.evaluate(() => window.__editor.history.execute('Place Barrel', { kind: 'addEntities', entities: [{ id: 'prop_e2e_barrel', kind: 'prop', position: [16, 0, 0], model: 'prop.barrel', yaw: 0, scale: 1, solid: true, tint: null }] }));
   await clickTool(page, '[data-tool="pickup:core.health_small"]');
   await clickAt(-2, 0, -2);
   await clickTool(page, '[data-tool="npc:squad"]');
@@ -757,7 +757,10 @@ async function editoruxFlow(browser) {
 
   // A placed prop keeps its look, deselected, once the preview moves on to another model (the preview
   // used to take the model's shared materials and textures down with it, leaving placed copies white).
+  // On a Platform's floor (this map has no ground: over nothing a prop is refused).
   await page.evaluate(() => window.__editor.view.focus({ x: -14, y: 0, z: 10 }));
+  await clickTool(page, '[data-tool="tile:core.platform"]');
+  await clickAt(-16, 0, 8);
   await clickTool(page, '[data-tool="prop:prop.ww_barrel_a"]');
   await clickAt(-14, 0, 10);
   const placedBarrel = (await doc()).entities.find((e) => e.kind === 'prop' && e.model === 'prop.ww_barrel_a');
@@ -785,6 +788,7 @@ async function editoruxFlow(browser) {
     return sum.map((v) => Math.round(v / 25));
   })();
   check(placedBarrel && (await page.evaluate(() => window.__editor.selection.entities.length)) === 0 && Math.max(...barrelPx) < 190, `a placed textured prop draws in its colours, not white, deselected after the preview changed model (rgb ${barrelPx.join(',')})`);
+  await page.keyboard.press('Control+KeyZ');
   await page.keyboard.press('Control+KeyZ');
   await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
 
@@ -1237,7 +1241,7 @@ async function editorMeasureChecks(browser) {
   const [a, b] = m1.points;
   const dist = a && b ? Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) : 0;
   check(a && b && a.x === -2 && a.y === 0 && a.z === 2.5 && b.x === 0 && b.y === 0.8 && b.z === 1, `measure points snap to the grid on the floor and to the table top's middle (${JSON.stringify(m1.points)})`);
-  check(m1.labels.length === 1 && m1.labels[0].startsWith(`${dist.toFixed(2)} m`) && /up 80 cm/.test(m1.labels[0]) && /jumpable/.test(m1.labels[0]) && /step jumpable/.test(m1.status), `two points show the distance, the height difference, the slope and whether it's jumpable (${m1.labels.join(' | ')})`);
+  check(m1.labels.length === 1 && m1.labels[0].startsWith(`${dist.toFixed(2)} m`) && /up 80 cm/.test(m1.labels[0]) && /jumpable/.test(m1.labels[0]) && /step 80 cm jumpable/.test(m1.status), `two points show the distance, the height difference, the slope and whether it's jumpable (${m1.labels.join(' | ')})`);
   await clickAt(2, 0, 2.5);
   const m2 = await page.evaluate(() => ({ n: window.__editor.measure.points.length, labels: [...document.querySelectorAll('.ed-measure-label:not(.live)')].map((l) => l.textContent), total: window.__editor.measure.measurement.total }));
   check(m2.n === 3 && m2.labels.length === 3 && m2.labels.at(-1) === `Total ${m2.total.toFixed(2)} m`, `a third click chains the path and shows its total (${m2.labels.join(' | ')})`);
@@ -1299,8 +1303,54 @@ async function editorMeasureChecks(browser) {
   await page.mouse.move(700, 790);
   await frames(page, 10);
   await shot('randomise');
+  await page.click('#ed-prop-random');
+  await measureRampCheck(page, { focus, clickAt, frames: (n) => frames(page, n), shot });
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+}
+
+/**
+ * The jump hint samples the ground along the line (owner, 2026-11-08): a 30° ramp of ground climbs 4.6 m over 8 m, which
+ * its two ends alone call too high, but walking it there is no step: the measure tool says walkable.
+ */
+async function measureRampCheck(page, { focus, clickAt, frames, shot }) {
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const before = ed.doc.terrain;
+    const after = { ...before, heights: before.heights.slice() };
+    for (let r = 0; r < after.rows; r++) {
+      const z = after.origin[1] + r * after.spacing;
+      if (z < -40 || z > -20) continue;
+      for (let c = 0; c < after.cols; c++) {
+        const x = after.origin[0] + c * after.spacing;
+        if (x >= 28) after.heights[r * after.cols + c] = Math.round(Math.min(Math.max(x - 28, 0), 12) * Math.tan(Math.PI / 6) * 100);
+      }
+    }
+    ed.history.execute('Ramp', { kind: 'setTerrain', before, after });
+  });
+  const ground = (x, z) =>
+    page.evaluate(([x, z]) => {
+      const t = window.__editor.doc.terrain;
+      const y = (c, r) => t.baseY + (t.heights[r * t.cols + c] ?? 0) / 100;
+      const fx = (x - t.origin[0]) / t.spacing;
+      const fz = (z - t.origin[1]) / t.spacing;
+      const c = Math.floor(fx);
+      const r = Math.floor(fz);
+      const u = fx - c;
+      const v = fz - r;
+      return v >= u ? y(c, r) + (y(c + 1, r + 1) - y(c, r + 1)) * u + (y(c, r + 1) - y(c, r)) * v : y(c, r) + (y(c + 1, r) - y(c, r)) * u + (y(c + 1, r + 1) - y(c + 1, r)) * v;
+    }, [x, z]);
+  await focus(34, 3, -30);
+  await page.keyboard.press('KeyU');
+  await clickAt(30, await ground(30, -30), -30);
+  await clickAt(38, await ground(38, -30), -30);
+  const m = await page.evaluate(() => ({ points: window.__editor.measure.points.map((p) => p.at), label: document.querySelector('.ed-measure-label:not(.live)')?.textContent ?? '', status: document.getElementById('ed-target').textContent }));
+  const rise = m.points.length === 2 ? m.points[1].y - m.points[0].y : 0;
+  check(rise > 4 && /walkable/.test(m.label) && /step walkable · no gap/.test(m.status), `a 30° ramp of ground reads walkable, sampled along the line, though its ends are ${rise.toFixed(2)} m apart in height (${m.label}; ${m.status})`);
+  await page.mouse.move(700, 790);
+  await frames(5);
+  await shot('measure-ramp');
+  await page.keyboard.press('Escape');
 }
 
 /**
@@ -1338,6 +1388,15 @@ async function editorTurnChecks(browser) {
     await frames(page, 3);
     return page.evaluate(() => window.__editor.selection.entities[0]);
   };
+  // On Platforms (the blank map has no ground there: over nothing they'd be refused).
+  await clickTool(page, '[data-tool="tile:core.platform"]');
+  for (const z of [0, 8]) {
+    const p = await at(16, 0, z);
+    await page.mouse.move(p.x, p.y);
+    await frames(page, 3);
+    await page.mouse.click(p.x, p.y);
+    await frames(page, 3);
+  }
   const barrel = await place('[data-tool="prop:prop.barrel"]', 12, 0);
   const spawn = await place('[data-tool="spawn"]', 12, 8);
   // A point on the ring of the selected thing at `centre`, facing `a` (radians; 0 is +Z, a quarter turn +X).
@@ -1611,7 +1670,8 @@ async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
     return c.ok ? '' : c.short;
   });
   check(limit === 'Past the build limit (16 levels up or down)', `the ghost names the build limit (${limit})`);
-  // A spawn over nothing (up on Level 1, the ground 4 m below): a warning, not a refusal.
+  // A spawn over nothing (up on Level 1, the ground 4 m below): refused (owner, 2026-11-08). The ghost goes red with
+  // its reason, and the click places nothing.
   await page.evaluate(() => {
     window.__editor.setTool({ kind: 'spawn' });
     window.__editor.setLevel(1);
@@ -1620,20 +1680,74 @@ async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
   const off = await at(32, 4, -16);
   await page.mouse.move(off.x, off.y);
   await settle();
-  const spawnWhy = await page.evaluate(() => ({ text: document.getElementById('ed-tip').textContent, shown: !document.getElementById('ed-tip').hidden, onTerrain: window.__editor.hoverOnTerrain }));
-  check(!spawnWhy.onTerrain && spawnWhy.shown && spawnWhy.text.includes('No floor under it'), `a spawn over nothing says "No floor under it" (${JSON.stringify(spawnWhy)})`);
+  // A ghost's meshes (a prop's model loads in after its node is made) and whether they're all tinted red.
+  const ghostState = async (name, red = false) => {
+    const read = (name) => {
+      const n = window.__editor.view.scene.getNodeByName(name);
+      const meshes = n ? [n, ...n.getChildMeshes()].filter((m) => 'renderOverlay' in m && m.getTotalVertices?.() > 0) : [];
+      return { shown: !!n?.isEnabled(), meshes: meshes.length, red: meshes.length > 0 && meshes.every((m) => m.renderOverlay) };
+    };
+    await page.waitForFunction((name) => {
+      const n = window.__editor.view.scene.getNodeByName(name);
+      return !!n && n.getChildMeshes().concat([n]).some((m) => m.getTotalVertices?.() > 0);
+    }, name, { timeout: T(15000) }).catch(() => {});
+    // The tint follows on the next frame drawn (EditorView seeThrough).
+    await page.waitForFunction(([name, red]) => {
+      const n = window.__editor.view.scene.getNodeByName(name);
+      const meshes = n ? [n, ...n.getChildMeshes()].filter((m) => 'renderOverlay' in m && m.getTotalVertices?.() > 0) : [];
+      return meshes.length > 0 && meshes.every((m) => m.renderOverlay === red);
+    }, [name, red], { timeout: T(5000) }).catch(() => {});
+    await frames(page, 3);
+    return page.evaluate(read, name);
+  };
+  const spawnWhy = await page.evaluate(() => ({ cls: document.getElementById('ed-tip').className, text: document.getElementById('ed-tip').textContent, shown: !document.getElementById('ed-tip').hidden, onTerrain: window.__editor.hoverOnTerrain, status: document.getElementById('ed-target').textContent }));
+  const spawnGhost = await ghostState('spawn_ghost', true);
+  check(!spawnWhy.onTerrain && spawnWhy.shown && /tone-bad/.test(spawnWhy.cls) && spawnWhy.text.includes('✗ No floor under it') && spawnWhy.text.includes("Can't be placed here") && /^Spawn point can't be placed here: no floor under it/.test(spawnWhy.status) && spawnGhost.shown && spawnGhost.red, `a spawn over nothing is refused: a red ghost, "No floor under it" beside the pointer and on the status line (${JSON.stringify(spawnWhy)}; ghost ${JSON.stringify(spawnGhost)})`);
   await shot('spawn-why');
+  const spawnsBefore = (await doc()).entities.filter((e) => e.kind === 'spawn').length;
+  const revBefore = await page.evaluate(() => window.__editor.history.revision);
+  await page.mouse.click(off.x, off.y);
+  await settle();
+  const spawnsAfter = (await doc()).entities.filter((e) => e.kind === 'spawn').length;
+  check(spawnsAfter === spawnsBefore && (await page.evaluate(() => window.__editor.history.revision)) === revBefore, `the click over nothing places no spawn (${spawnsBefore} → ${spawnsAfter})`);
+  // A prop over nothing the same way; over the ground on Ground its ghost is its own colour again.
   await page.evaluate(() => {
-    window.__editor.setTool({ kind: 'select' });
-    window.__editor.setLevel(0);
+    window.__editor.setTool({ kind: 'prop', model: 'prop.barrel' });
+    window.__editor.setLevel(1);
   });
+  await settle();
+  // Nearer the middle of the view (the spawn's spot can be under the right-hand panel).
+  const offProp = await at(6, 4, -20);
+  await page.mouse.move(off.x, off.y);
+  await settle();
+  await page.mouse.move(offProp.x, offProp.y);
+  await settle();
+  const propGhost = await ghostState('propGhost', true);
+  const propWhy = await page.evaluate((p) => ({ under: document.elementFromPoint(p.x, p.y)?.id, level: window.__editor.level, tip: document.getElementById('ed-tip').textContent, status: document.getElementById('ed-target').textContent }), offProp);
+  const propsBefore = (await doc()).entities.filter((e) => e.kind === 'prop').length;
+  await page.mouse.click(offProp.x, offProp.y);
+  await settle();
+  const propsAfter = (await doc()).entities.filter((e) => e.kind === 'prop').length;
+  check(propGhost.shown && propGhost.red && propsAfter === propsBefore, `a prop over nothing: a red ghost and no placement (${JSON.stringify(propGhost)}; ${JSON.stringify(propWhy)}; props ${propsBefore} → ${propsAfter})`);
+  await shot('prop-refused');
+  await page.evaluate(() => window.__editor.setLevel(0));
+  await settle();
+  const onFloor = await at(0, 0, -16);
+  await page.mouse.move(onFloor.x, onFloor.y);
+  await settle();
+  const okGhost = await ghostState('propGhost');
+  check(okGhost.shown && !okGhost.red, `over a floor the ghost is its own colour again (${JSON.stringify(okGhost)})`);
+  await page.evaluate(() => window.__editor.setTool({ kind: 'select' }));
 
   // The live budget bar: Props goes up by one with a prop and back with undo.
   const bar = () =>
     page.evaluate(() => {
       const el = document.getElementById('ed-budget');
       const row = (id) => document.querySelector(`#ed-budget-rows [data-budget="${id}"]`)?.closest('.ed-budget-row');
-      return { level: el?.dataset.level, sum: el?.querySelector('.ed-budget-sum')?.textContent ?? '', props: row('props')?.querySelector('.ed-budget-amt')?.textContent ?? '', lights: row('lights')?.querySelector('.ed-budget-amt')?.textContent ?? '', lightsWord: row('lights')?.querySelector('.ed-budget-word')?.textContent ?? '' };
+      const r = el?.getBoundingClientRect();
+      const bottom = document.getElementById('ed-bottom').getBoundingClientRect();
+      const inBar = el?.parentElement?.id === 'ed-bottom' && !!r && r.top >= bottom.top - 0.5 && r.bottom <= bottom.bottom + 0.5 && r.height <= 28;
+      return { inBar, level: el?.dataset.level, sum: el?.querySelector('.ed-budget-sum')?.textContent ?? '', props: row('props')?.querySelector('.ed-budget-amt')?.textContent ?? '', lights: row('lights')?.querySelector('.ed-budget-amt')?.textContent ?? '', lightsWord: row('lights')?.querySelector('.ed-budget-word')?.textContent ?? '' };
     });
   const b0 = await bar();
   await clickTool(page, '[data-tool="prop:prop.barrel"]');
@@ -1646,6 +1760,7 @@ async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
   const b2 = await bar();
   const n = (t) => Number(t.split('/')[0].replace(/[^0-9]/g, ''));
   check(n(b1.props) === n(b0.props) + 1 && b2.props === b0.props && /Budget OK/i.test(b0.sum), `the budget bar counts a placed prop and its undo (${b0.props} → ${b1.props} → ${b2.props}; ${b0.sum})`);
+  check(b0.inBar, 'the budget bar sits in the bottom status bar, compact (owner, 2026-11-08)');
   // Near a budget: 220 of 256 lights goes amber, names Lights, and clicking the name selects them.
   await page.evaluate(() => {
     const ed = window.__editor;

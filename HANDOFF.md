@@ -869,6 +869,19 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
   "walled" with nothing built beyond; e2e `editorSetPiecePart5Checks` in editorux.
 - **Pitfall:** core.room_tall, core.atrium and orbital.reactor_hall have no roof of their own; a piece that tops out
   with them needs a roof block (the three here have one).
+### MapMaker follow-ups: the sampled jump hint, refused ghosts, the budget bar in the status bar (`wip/mapmaker-followups`, agent, 2026-11-09; the owner's answers 4b, 5b, 8b)
+- **Built:** the measure tool's jump hint samples the ground along the line (`sampleProfile`, `profileVerdict` in
+  shared `editor/measure.ts`; `MeasureTool` caches each stretch's verdict per map version); spawns, pickups, props,
+  vehicles and NPCs over nothing, and the gameplay ones outside the boundary, are refused (shared `editor/ghostWhy.ts`
+  `bad` notes, `ghostRefuses`; the ghost tinted red in `editorView.ts`; `placeAtHover` returns); the budget bar is a
+  compact item in `#ed-bottom` (`budgetBar.ts`, `editor.css`). As built: docs/MAPMAKER_OVERHAUL_PLAN.md under Phase 1
+  items 1-3. No map field, no format bump, no map changed.
+- **Owner's calls, built the conservative way:** props outside the boundary keep the scenery note
+  (`PROPS_REFUSED_OUTSIDE = false` in ghostWhy.ts); only placing is refused (moving, pasting, the inspector's height
+  aren't).
+- **Pitfall:** the ghost's "something under it" is `surfaceBoxes()` (tiles shown, blocks, solid props) plus `water`
+  entities, not `mapBoxes()` (tiles only) as before.
+
 ### MapMaker overhaul: Play from here, the plan view, the card shot (`wip/mapmaker-p3a`, agent, 2026-11-08; Phase 3 items 1, 2 and 8)
 - **Built:** Play from here (Shift+F5, ▶ Here), the plan view (K, Plan; Export PNG), the card-shot camera (Map
   properties → Card shot: Set card shot…, eye level, Preview, Clear). As built: docs/MAPMAKER_OVERHAUL_PLAN.md under
