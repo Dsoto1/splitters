@@ -165,3 +165,17 @@ dock; `core.health_large` (32, 0, 2) pump house; `core.health_small` (−32, 0, 
   nothing lost.
 - Card shot: `packages/client/public/maps/shots/whiteout_station.jpg` from the map's card camera (eye level in the
   yard's south-west corner looking north-east), capture-map-shots.
+
+## Follow-ups (2026-11-09)
+- Modes: Deathmatch, Team Deathmatch (Elimination), **King of the Hill** on hills "Yard" (4, 0, 0) r 6, "Radar ridge"
+  (48, 3.85, 40) r 5, "Ice cave" (52, 0, −28) r 5.
+- Vehicles: three `snow_sled` mounts on the south road, (0, 0, −34), (6, 0, −34) facing south, (−28, 0, −34) facing east
+  (the two snowmobile props they replace are gone).
+- Tide spawns moved 8 m toward the yard (DECISIONS, "Follow-ups").
+- **QA (load 15-20, 4 cores):** validate-map OK (0 issues); nav audit 0 traps; stylePacksSnow.test.ts passes (hills,
+  sleds, modes, navigation). bot-report, 16 bots, 180 s, TDM seeds 1-4: embers 29 · tide 33, 34 · 34, 33 · 37, 37 · 39
+  (before the move, seeds 1-2: 41 · 32, 44 · 29); sleds wedged 0 times in every run, ridden in all, stalled (stopped
+  aboard) 2-23 times a match, mostly against the garage's north side ((4, 0, −12), (12, 0, −20)): bots try to drive
+  through the hangar to the yard. King of the Hill seeds 1-2: embers 70 · tide 37, 91 · 0 (the cave hill is on
+  Embers' side). Deathmatch seed 1: 181 kills, no idle spells of 10 s+. Bench (16 bots, TDM, 60 s): CPU 3.5 ms a tick
+  (p95 9.6) of 16.7. A person driving a sled: not tested here (no GPU).

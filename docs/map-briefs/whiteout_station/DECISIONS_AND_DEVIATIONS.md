@@ -98,3 +98,16 @@ heading is the old build (2026-10-31), kept for the record.
 - The fuel tanks are three Fuel Depot tiles and two tank props by the pump house, fewer than the reference's tank farm.
 - No snowmobile garage doors that roll: the hangar's doorway is open (the old map's Roll-up Door and its button are
   gone).
+
+## Follow-ups (owner's answers, 2026-11-09; `wip/mapmaker-whiteout`)
+- **King of the Hill** (owner: hills in the yard, on the ridge and in the cave): three Hill pieces, "Yard" (4, 0, 0)
+  radius 6 between the tunnel huts, "Radar ridge" (48, 3.85, 40) radius 5 on the flat ridge top north-east of the
+  dome, "Ice cave" (52, 0, −28) radius 5 in the cave's room. King of the Hill is offered from the hills (Match Setup's
+  playable modes); Deathmatch and Team Deathmatch stay the listed modes.
+- **Snow sleds** (owner: 2-4 drivable on the south road): the two parked snowmobile props on the garage apron are now
+  drivable `snow_sled` mounts at (0, 0, −34) and (6, 0, −34), and a third at the road's west end (−28, 0, −34). Any team
+  may take them.
+- **Tide's spawns a cell (8 m) nearer the yard:** (−50, 36) → (−42, 36), (−40, 38) → (−32, 38), (−30, 38) → (−30, 30),
+  (−20, 34) → (−14, 28), (−12, 38) → (−12, 30), (−52, 24) → (−46, 18), (−52, 14) → (−44, 14), (−36, 31) → (−28, 31);
+  where the straight step met a building, the diagonal one (checked clear of solids first; validate-map 0 issues).
+- Kept as built: the ridge, the cave, the fuel tanks.
