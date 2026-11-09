@@ -513,7 +513,6 @@ mode playing.
 | Flag return (CTF, Fort Wars) | Match rules | `rules flagreturn 45` | `RULES.flagreturn` | next match |
 | Hill moves (King of the Hill) | Match rules | `rules hill 90` | `RULES.hill` | next match |
 | Fort Wars build phase, combat phase, cycles, build points | Match rules | `rules fortbuild 3`, `fortcombat 8`, `fortcycles 2`, `fortbudget 600` | `RULES.fort*` | next match |
-| Race laps, vehicle, combat | Match rules | `rules laps 5`, `racevehicle buggy`, `racecombat off` | `RULES.laps`, `racevehicle`, `racecombat` | next match |
 | Restart match, End match | Server card | `restart`, `end` | | live |
 | Kick, ban (pause menu → Players) | People playing | `kick`, `ban`, `unban` | `bans.json` | live |
 | Listed in the game browser / code only | Game browser → Who can join | `visibility listed\|code` | `VISIBILITY` | live |

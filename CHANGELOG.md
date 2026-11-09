@@ -8,6 +8,16 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Race mode removed** (owner, 2026-11-08: "steer away from racing and focus on battles and maps"):
+- **No more Race** in Match Setup, Quick Play, the next-map vote, rotations, playlists, the host panel or the server
+  rules (`laps`, `racevehicle`, `racecombat` are gone). The race HUD (lap, place, running order, countdown), the race
+  scoring and the start grid are gone too.
+- **Tracks stay, as map spice:** a map's track still carries its NPC cars in every mode. On Apex Ring twelve karts lap
+  the Grand Prix circuit while the teams fight; they run anyone over and can be shot up or taken over, as before.
+  Roads still grip better on a track map.
+- **Old maps** that list Race load and simply don't offer it; MapMaker's checks say to drop it from the modes. The map
+  format is unchanged.
+
 **Gunplay pass 2** (docs/GUNPLAY_AUDIT.md, "Pass 2"; the audit's candidates 1-6, owner-approved):
 - **Every gun owns its range.** The SMG wins up close (0.40 s to a kill to 15 m, the Assault Rifle 0.50; hip fire at
   25 m 0.77 s, was 3.4); the Assault Rifle owns 20-50 m and loses damage from 25 m; the Precision Rifle kills a body in two shots in under a second at every range (was 1.25-1.38 s) and owns

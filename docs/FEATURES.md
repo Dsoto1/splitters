@@ -71,7 +71,7 @@ MapMaker's pickup palette lists every item, so **anything below can be placed in
 
 | Throwable | Players get it from |
 |---|---|
-| Frag | 1 to start (2 in Zombies, none in Discs/Race); 159 pickups; Rocketeer |
+| Frag | 1 to start (2 in Zombies, none in Discs); 159 pickups; Rocketeer |
 | Mine | 20 pickups; Breacher |
 | Dynamite | 8 pickups |
 | Incendiary | 7 pickups |
@@ -123,7 +123,6 @@ A map offers its listed modes, plus these automatically:
 - Elimination wherever Team Deathmatch is;
 - Bomb with bombsites;
 - Hostage with hostages and a rescue zone;
-- Race with a race-track path;
 - Zombies on every map.
 
 | Mode | Rules | Live maps |
@@ -139,7 +138,7 @@ A map offers its listed modes, plus these automatically:
 | Co-op | players vs the map's NPCs | 3 (blackout (retired), mercy_ward, primeval_park) |
 | Zombies | endless waves | all 77 |
 | Disc Arena | knock players into the void, 10 knock-offs | 3 (erosion, grid_rings, sushi_belt_sumo) |
-| Race | checkpoints and laps in vehicles | 4 (apex_ring, neon_spire, serene_city, undergate_transit) |
+| (Race, removed 2026-11-08) | tracks stay: NPC traffic laps them in every mode | 5 with a track (apex_ring, neon_spire, sandsweep, serene_city, undergate_transit) |
 
 Match setting **Weapons**: Normal / Spears only / Discs only (any mode).
 
@@ -174,7 +173,7 @@ Portals appear only on pantry_raid and sandfall_colosseum.
 ### Bots
 - Easy, normal and hard.
 - Mixed, arena and tactical styles, with per-character personalities.
-- They drive vehicles and race.
+- They drive vehicles.
 - They take over for players who are away.
 
 ### Characters
@@ -185,7 +184,7 @@ Portals appear only on pantry_raid and sandfall_colosseum.
 ### MapMaker
 - Every item, NPC and prop.
 - Style packs: military, frontier, imperial, orbital, gothic, jungle, neon, suburban, egypt.
-- Paths: one tool for roads, the race track and AI routes (loops, one-way, direction arrows); squads patrol routes, driving bots follow them.
+- Paths: one tool for roads, the track (NPC traffic) and AI routes (loops, one-way, direction arrows); squads patrol routes, driving bots follow them.
 - Logic panel.
 - Owner-only Publish.
 

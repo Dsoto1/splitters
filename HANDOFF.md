@@ -14,6 +14,31 @@ arsenal, weaponsets and hostgame, as on other branches that hour, and passed on 
 released v0.9.0 from that build (tag and release with its assets). Fireteams part 1 and MapMaker's measure tool and
 turning by mouse went in with it.
 
+**Race mode removed (`wip/race-removal`, 2026-11-09; owner, 2026-11-08: "steer away from racing and focus on battles
+and maps").** Game side only; the MapMaker wording is asked of its lane ("In flight", below).
+- **Gone:** `core.race` from `GameMode`/`GAME_MODES`/`MODE_LABELS`/`DEFAULT_RULES` (so from Match Setup, Quick Play,
+  rotations, playlists, the next-map vote, host commands, the launcher); `sim/race.ts` (RaceDirector, race bots and
+  their combat shots, start grids `raceGridEntities`); `MatchRules.raceLaps/raceVehicle/raceCombat`, the server rules
+  `laps`/`racevehicle`/`racecombat`; the `race` event and `md.rc` (`RaceSnapshot`); Match Setup's race family (racers,
+  Laps, Vehicle, Combat, the grid cap: `PlayerCap.by` is only `device`, `FitTopic` has no `grid`); `game/raceHud.ts`
+  and the scoreboard's race order; the race icon. A clean race no longer switches off hurting or sentries.
+- **Kept:** tracks as map data (`uses: ['race']`, `MapPath.race`, `TrackGeometry`, checkpoints; no format change), road
+  grip (`sim/road.ts` `roadHandling`), the ambient NPC cars in every mode (`TrackDriver`, pit lane, run-overs credited
+  to nobody, shootable, take the wheel) and `withTrackVehicles(map)` (now ambient cars only).
+- **Old maps:** a map that still lists `core.race` loads; `isGameMode` drops it, so it isn't offered (alone it falls
+  back to Deathmatch); `validateTrack` warns `race.removed`. The other track warnings say "traffic", not "races".
+- **Maps:** no map file changed. Only apex_ring and sandsweep list Race, both claimed by Environment Phase 2 (asked
+  above). Apex Ring already offered DM/TDM/CTF/KOTH: in TDM its 12 karts lap while the teams fight (bot-report TDM
+  120 s: 24 kills, cars never stalled; the e2e `traffic` flow). neon_spire (MapMaker lane), serene_city and
+  undergate_transit don't list Race; their NPC speeders keep lapping.
+- **Tests:** `shared/test/trackTraffic.test.ts` (was race.test.ts): Race offered nowhere, maps that list it load,
+  NPC cars lap in Deathmatch and in Team Deathmatch (each over a lap in 40 s), run a walker over. e2e `race` is now
+  `traffic` (MapMaker's Paths tool on a track, then Apex Ring in TDM: no race, you on foot, 12 cars belonging to
+  nobody, each drives ~70-190 m in 12 s); flowMap: `apex_ring` → traffic (sandsweep no longer opened by a flow).
+- **Question for the owner:** Sandsweep Circuit was built as a race (a podrace loop round a mesa, 8 spawns, no
+  cover, no NPC cars). It still offers Deathmatch. Keep it as a Deathmatch map, give it NPC speeders and cover in
+  MapMaker, or tick its Test map box?
+
 **Team kills (`wip/tk`, 2026-11-08; the owner's bug report).** "Teamkills should not count towards a kill streak
 (should end one) or show anything rewarding. It should actually show in the upper right that it was a TK."
 - **Where:** every kill goes through `Match.kill` (bullets, splash, grenades, roadkill, turrets, burns, barrels, a
@@ -154,7 +179,12 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
 - Claimed: `maps/<id>.json` for apex_ring, atomic_court, backwoods, blackout, canyon, capitol_mall, citadel, coldwater_gulch, crossroads, dead_reel, dockside_depot, dune_harbor, dustwater, eagle_spires, fernwood_moon, fort_meadow, gallows_yard, hollowmere_manor, iron_coast, jungle_steps, norman_shores, pharaohs_reach, primeval_park, qasr_medina, rail_stockyard, sandgate, sandsweep, serene_city, st_johns, sunken_kingdom, sunstone_crag (their Kenney trees, bushes, hedges and cacti → our species, MapMaker's Replace all driven in the real editor), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
 - Claimed: `maps/<id>.json` for reactor, serpent_gorge, sky_islands (released by the trap spots: their Kenney bushes, palms and trees → our species, Replace all in MapMaker), Environment Phase 2 (`wip/env-p2`), 2026-11-09.
-- Claimed: `maps/undergate_transit.json` (drop Race from its modes in MapMaker), the race mode's game-side code (`shared/src/sim/race.ts`, `matchSetup.ts`/`rules.ts`/`serverRules.ts` mode lists, `client/src/game/raceHud.ts`, the `race` e2e flow and its flowMap entries), race removal (`wip/race-removal`), 2026-11-09. apex_ring, sandsweep and serene_city (Environment Phase 2's claim) and neon_spire (the MapMaker lane's) are not edited here: asked below.
+- **Asked of Environment Phase 2 (`wip/env-p2`) by race removal, 2026-11-09** (it holds apex_ring, sandsweep and
+  serene_city): while each map is open in MapMaker, drop **Race** from its modes in Map properties (apex_ring lists it
+  fifth: pick Race as the main mode, then Deathmatch again, which drops it; sandsweep's main mode is Race: pick
+  Deathmatch). serene_city doesn't list it (nothing to do). Until then they load and leave Race out (`race.removed`
+  warning). Sandsweep as a battle map is weak (bot-report, TDM, 120 s: 165 kills, 82/min, pistols only, 8 spawns, no
+  cover, no NPC cars); the owner's call whether to tick its **Test map** box (question in race removal's entry).
 - Claimed: the new content ids `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`, `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew`; the leaves and bark atlases (`tools/content/env/**`, `content/environment/**`); the border forest and backdrop scenery's trees (`client/src/borderVisuals.ts`, `backdrop.ts`), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
 - Asked of the MapMaker lane (data only, inside its editor claim): Environment Phase 2 adds its species to and retires the Kenney trees, bushes, hedges and cacti from the Nature tables of `client/src/editor/paletteCatalog.ts` (`RETIRED_PROPS`, `GROUND_COVER_SPECIES`, `REPLACEMENTS`) and the scatter brushes' sets in `shared/src/editor/scatter.ts` (`SCATTER_SETS`: Kenney trees, bushes and cacti → our species), no other editor file; merged with origin/main before landing, 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
@@ -197,6 +227,29 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - "fix em all": swap every old big piece that has a set-piece version (town and city gate, pylon, warehouse,
       hangar, bunker, city crossroads) on every map that uses one, in MapMaker. Each map is claimed first; the other
       session's maps get asked first.
+- **Asked of the MapMaker lane by race removal (`wip/race-removal`, 2026-11-09; the game side has landed, see "Race
+  mode removed" in Start here): reword MapMaker's race wording to "track / NPC traffic"** (editor code, so not edited
+  there). Race is no longer a mode (`core.race` is gone from `GAME_MODES`; maps that list it load and leave it out, the
+  validator warns `race.removed`); the track stays as map data (`uses: ['race']`, `MapPath.race`, no format change),
+  and only its `ambient`, `ambientVehicle` and `pit` settings do anything now. The strings and places:
+  - `client/src/editor/pathTool.ts`: `KIND_LABELS.race` "Race track" (l. 52); the kind help (l. 61) "Race track" /
+    "Race mode races it: checkpoints along it in point order, laps on a loop, one run on an open path. One race track
+    per map"; the path summary "Race track" (l. 68); the undo labels "Lay race track" (l. 311), "Use path as the race
+    track" / "Path no longer a race track" (l. 605); the toast "This path is the race track now (one per map)"
+    (l. 609); the hint "...the race track, and routes for the AI..." (l. 492); "Reverse direction"'s tip "the race
+    direction" (l. 619); `racePane` (l. 648 on): the heading "Race track (the green point is the start line)" / "Race
+    track (not raced: another path is the race track)" (l. 663) and its **Laps, Grid, Vehicle, Combat** inputs
+    (`#ed-path-laps` and the rest; nothing reads them now: hide them, keep NPC cars, their vehicle and the pit lane;
+    the e2e `traffic` flow still sets `#ed-path-laps`, so tell us if it goes and we'll drop that check).
+  - `client/src/editor/editorApp.ts`: the palette group "Race Track" (`vehicles:track`, l. 3094) and its card
+    "Race Track" / "Race track (Shift+G): a path used as the race track: ... set laps and the start grid in the Paths
+    pane" (l. 3096); the Paths card's tip "...the race track and AI routes" (l. 3083); Map properties' **Mode** list
+    still offers `['core.race', 'Race']` (l. 4826) with its help `'core.race': 'Race: draw the track...'` (l. 4842):
+    drop both, and have Map properties drop `core.race` from `supportedModes` (today it can only be dropped by picking
+    Race as the main mode and then another; Apex Ring lists it fifth); comments at l. 723, 2811, 3056-3057, 4733.
+  - `shared/src/editor/keymap.ts`: `raceTrack` "Paths, on the race track" (Shift+G, l. 122).
+  - `client/index.html` l. 228 (the Vehicles tab's title "...parked vehicles and race tracks"; MapMaker UI, so left
+    to this lane too).
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
