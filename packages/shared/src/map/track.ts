@@ -362,21 +362,6 @@ export function trackGeometry(map: { paths?: readonly MapPath[] | undefined }): 
   return p ? pathGeometry(p) : null;
 }
 
-/** Prefix of the start-grid vehicles a race adds to the map (see raceGridEntities). */
-export const RACE_GRID_PREFIX = 'race_grid_';
-
-/**
- * Race mode: the vehicles on the start grid, as mount entities appended after
- * the map's own (the match and every client add the same ones, so mount
- * indices agree). `vehicle` overrides the track's own choice (Arcade).
- */
-export function raceGridEntities(map: MapDocument, vehicle?: string): MountEntity[] {
-  const g = trackGeometry(map);
-  if (!g) return [];
-  const model = (vehicle ?? g.track.vehicle) as MountEntity['model'];
-  return g.grid().map((p, i) => ({ id: `${RACE_GRID_PREFIX}${String(i).padStart(2, '0')}`, kind: 'mount', model, position: [p.x, p.y, p.z], yaw: p.yaw, faction: null, respawnSeconds: null }));
-}
-
 /** Prefix of the ambient cars a track adds to the map (see ambientCarEntities). */
 export const AMBIENT_CAR_PREFIX = 'ambient_car_';
 
@@ -404,16 +389,15 @@ export function ambientCarEntities(map: MapDocument): { entity: MountEntity; pit
 }
 
 /**
- * The map as a match plays it: the start-grid vehicles in a race, then the
- * track's ambient cars (any mode), after the map's own entities. The match
- * builds its mounts in the same order, so mount indices agree.
+ * The map as a match plays it: the track's ambient cars (any mode) after the
+ * map's own entities. The match builds its mounts in the same order, so mount
+ * indices agree.
  */
-export function withTrackVehicles(map: MapDocument, rules: { mode: string; raceVehicle?: string }): MapDocument {
-  if (!racePath(map) || map.entities.some((e) => e.id.startsWith(RACE_GRID_PREFIX) || e.id.startsWith(AMBIENT_CAR_PREFIX))) return map;
-  const grid = rules.mode === 'core.race' ? raceGridEntities(map, rules.raceVehicle) : [];
+export function withTrackVehicles(map: MapDocument): MapDocument {
+  if (!racePath(map) || map.entities.some((e) => e.id.startsWith(AMBIENT_CAR_PREFIX))) return map;
   const ambient = ambientCarEntities(map).map((c) => c.entity);
-  if (!grid.length && !ambient.length) return map;
-  return { ...map, entities: [...map.entities, ...(grid as MapEntity[]), ...(ambient as MapEntity[])] };
+  if (!ambient.length) return map;
+  return { ...map, entities: [...map.entities, ...(ambient as MapEntity[])] };
 }
 
 /** Road height at a point for drawing: on the ground where there is terrain at about the road's height, else the centre line's. */
@@ -457,8 +441,8 @@ export function trackPointAt(terrain: TerrainData | null, x: number, y: number, 
 /**
  * Creator-facing checks on the track (navigation reachability is checked in
  * nav/, which needs Recast): enough control points, inside the boundary and
- * on the terrain, long enough to race, a grid for the players, and Race mode
- * listed only with a track. Also the paths' own checks: one race track, and
+ * on the terrain, long enough for traffic, and a word for maps that still list
+ * the old Race mode. Also the paths' own checks: one track, and
  * routes NPC squads walk exist.
  */
 export function validateTrack(map: MapDocument): ValidationIssue[] {
@@ -470,13 +454,12 @@ export function validateTrack(map: MapDocument): ValidationIssue[] {
     ids.add(p.id);
   }
   const races = paths.filter((p) => pathUses(p, 'race'));
-  if (races.length > 1) issues.push({ severity: 'warning', code: 'track.many', message: `${races.length} paths are race tracks: races use the first one` });
+  if (races.length > 1) issues.push({ severity: 'warning', code: 'track.many', message: `${races.length} paths are tracks: NPC traffic uses the first one` });
+  // Race mode was removed (owner, 2026-11-08): a map that still lists it loads and plays its other modes; tracks stay, for NPC traffic.
+  if (map.metadata.supportedModes.includes('core.race')) issues.push({ severity: 'warning', code: 'race.removed', message: 'Race is no longer a mode: Match Setup leaves it out (the track still carries NPC traffic). Drop it from the modes in Map properties' });
   const t = raceTrack(map);
-  if (!t) {
-    if (map.metadata.supportedModes.includes('core.race')) issues.push({ severity: 'error', code: 'race.no_track', message: 'Race is listed but the map has no track: draw a path with the Paths tool (G) and tick Race track' });
-    return issues;
-  }
-  if (t.width < 5) issues.push({ severity: 'error', code: 'track.width', message: `the race track is ${t.width} m wide: races need 5 m or more` });
+  if (!t) return issues;
+  if (t.width < 5) issues.push({ severity: 'error', code: 'track.width', message: `the track is ${t.width} m wide: traffic needs 5 m or more` });
   if (t.loop && t.points.length < 3) issues.push({ severity: 'error', code: 'track.points', message: 'a circuit needs at least 3 road points' });
   if (map.bounds) {
     const { min, max } = map.bounds;
@@ -490,12 +473,6 @@ export function validateTrack(map: MapDocument): ValidationIssue[] {
     const off = g.samples.filter((p) => terrainHeightAt(map.terrain!, p.x, p.z) === null).length;
     if (off) issues.push({ severity: 'warning', code: 'track.off_terrain', message: `${Math.round((off * g.length) / g.samples.length)} m of road runs off the terrain` });
   }
-  if (g.length < 80) issues.push({ severity: 'warning', code: 'track.short', message: `the road is only ${Math.round(g.length)} m long: races need 80 m or more` });
-  // Only races put everyone on the grid; a track that just carries ambient traffic can have any player count.
-  if (map.metadata.supportedModes.includes('core.race') && t.grid < map.metadata.recommendedPlayers.max) {
-    issues.push({ severity: 'warning', code: 'track.grid', message: `the start grid has ${t.grid} places for up to ${map.metadata.recommendedPlayers.max} players` });
-  }
-  // A grid longer than the road behind the start line would wrap round into the last corner.
-  if (g.loop && GRID_FRONT + Math.ceil(t.grid / 2) * GRID_ROW > g.length * 0.4) issues.push({ severity: 'warning', code: 'track.grid_long', message: 'the start grid is longer than the road can hold: fewer places or a longer track' });
+  if (g.length < 80) issues.push({ severity: 'warning', code: 'track.short', message: `the road is only ${Math.round(g.length)} m long: traffic needs 80 m or more` });
   return issues;
 }
