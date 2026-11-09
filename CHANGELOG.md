@@ -16,6 +16,17 @@ made only on a commit that passed CI on a check branch.
 - The tutorial shows no Deathmatch score bar (You / Leader).
 - capture-map-shots can write pictures outside the build (SHOT_OUT, SHOT_SUFFIX, SHOT_QUALITY, SHOT_TEST,
   SHOT_RENDERED).
+**Race mode removed** (owner, 2026-11-08: "steer away from racing and focus on battles and maps"):
+- **No more Race** in Match Setup, Quick Play, the next-map vote, rotations, playlists, the host panel or the server
+  rules (`laps`, `racevehicle`, `racecombat` are gone). The race HUD (lap, place, running order, countdown), the race
+  scoring and the start grid are gone too.
+- **Tracks stay, as map spice:** a map's track still carries its NPC cars in every mode. On Apex Ring twelve karts lap
+  the Grand Prix circuit while the teams fight; they run anyone over and can be shot up or taken over, as before.
+  Roads still grip better on a track map.
+- **Old maps** that list Race load and simply don't offer it; MapMaker's checks say to drop it from the modes. The map
+  format is unchanged.
+- **Apex Ring** and **Sandsweep Circuit** no longer list Race (MapMaker, Map properties): Apex Ring plays Deathmatch,
+  Team Deathmatch, CTF and King of the Hill with its karts lapping; Sandsweep plays Deathmatch.
 **MapMaker: a finer terrain grid, Change grid, and the coast border** (map format v32; the editor half of the Iron
 Coast job):
 - **A finer grid:** a terrain can be up to 321 vertices a side (was 161), so a 380 m map can be 1.25 m apart. New

@@ -75,7 +75,7 @@ export * from './sim/portals.ts';
 export * from './sim/zipline.ts';
 export * from './sim/npc.ts';
 export * from './sim/zombies.ts';
-export * from './sim/race.ts';
+export * from './sim/road.ts';
 export * from './sim/trackDriver.ts';
 export * from './sim/creatures.ts';
 export * from './content/looks.ts';

@@ -93,7 +93,7 @@ describe('fits the map', () => {
     expect(opts.find((o) => o.mode === 'core.tdm')!.ok).toBe(true);
     expect(opts.find((o) => o.mode === 'core.ctf')).toMatchObject({ ok: false, reason: expect.stringMatching(/flag base/) });
     expect(opts.find((o) => o.mode === 'core.bomb')!.reason).toMatch(/bomb sites/);
-    expect(opts.find((o) => o.mode === 'core.race')!.reason).toMatch(/track/);
+    expect(opts.some((o) => (o.mode as string) === 'core.race')).toBe(false);
   });
 
   it('warns (without blocking) about shared spawns, crowding and big matches', () => {

@@ -24,6 +24,7 @@ import {
   DEFAULT_LOOK,
   DEFAULT_RULES,
   GAME_MODES,
+  raceTrack,
   MODE_LABELS,
   isTeamMode,
   LOOK_BIOS,
@@ -80,7 +81,6 @@ import {
   mapInspiration,
   REGIONS,
   regionLabel,
-  raceTrack,
   usernameProblem,
   type Region,
   STAT_SPECS,
@@ -297,7 +297,6 @@ const MODE_LINES: Record<GameMode, string> = {
   'core.coop': "Your squad against the map's mission.",
   'core.zombies': 'Hold out against endless zombie waves.',
   'core.discs': 'Knock rivals into the void with discs.',
-  'core.race': 'Checkpoints and laps, in vehicles.',
 };
 /** One line on each mode, for its (i). */
 const MODE_TIPS: Partial<Record<GameMode, string>> = {
@@ -314,7 +313,6 @@ const MODE_TIPS: Partial<Record<GameMode, string>> = {
   'core.coop': 'Work through the mission with bot squadmates against the map\'s enemies.',
   'core.zombies': 'Hold out with your bot squad against endless waves of zombies. Each wave is bigger; the fallen come back when it is beaten.',
   'core.discs': 'Ricochet-style: everyone starts with three bouncing discs and picks them up again where they land, like ammo (any disc will do). A hit knocks you about without hurting; knock someone into the void to score. Power discs (fast, triple, splitting, freeze) lie about the arena.',
-  'core.race': 'Everyone starts on the grid in a vehicle: drive the checkpoints in order, lap after lap. First over the line wins. Combat races turn the guns and sideline sentries on.',
 };
 
 const FAMILY_LABEL = { ranger: 'Ranger', peasant: 'Peasant', athlete: 'Sportswear' } as const;
@@ -1148,11 +1146,10 @@ export class FrontEnd {
     const family = setupFamily(s.mode);
     const team = family === 'teams';
     const coop = family === 'squad';
-    const race = s.mode === 'core.race';
     const forts = s.mode === 'core.forts';
     const breakthrough = s.mode === 'core.breakthrough';
     const dev = this.device();
-    // What this setup plays here: at most what this device runs (a race: its grid).
+    // What this setup plays here: at most what this device runs.
     const cap = playerCap(s.mode, map, dev.max);
     const players = setupPlayers(s, map, cap.max);
     const sizes = team ? setupTeams(s, map, cap.max) : [];
@@ -1179,7 +1176,7 @@ export class FrontEnd {
     const about = [map.metadata.description, map.metadata.author && !['Tile Trigger', 'ChronoSplit'].includes(map.metadata.author) ? `Map by ${map.metadata.author}` : '', `Made for ${rec.min}–${rec.max} players; ${spawnCount} spawn points.`].filter(Boolean).join('\n\n');
     // Breakthrough: up to each sector's time, for each round.
     const btLength = breakthrough ? Math.max(1, breakthroughSectors(map).length) * lim.minutes * (s.btSwap ? 2 : 1) : 0;
-    const length = coop ? (s.mode === 'core.zombies' ? 'Until the last wave' : 'Mission') : forts ? `~${Math.round((s.fortCycles ?? 1) * ((s.fortBuild ?? 2.5) + (s.fortCombat ?? 5)))} min` : race ? `${s.raceLaps ?? raceTrack(map)?.laps ?? 3} laps` : breakthrough ? `up to ${btLength} min` : lim.minutes ? `~${lim.minutes} min` : 'No time limit';
+    const length = coop ? (s.mode === 'core.zombies' ? 'Until the last wave' : 'Mission') : forts ? `~${Math.round((s.fortCycles ?? 1) * ((s.fortBuild ?? 2.5) + (s.fortCombat ?? 5)))} min` : breakthrough ? `up to ${btLength} min` : lim.minutes ? `~${lim.minutes} min` : 'No time limit';
     const toggleFit = () => {
       this.fitOpen = !this.fitOpen;
       this.refreshSetup();
@@ -1197,7 +1194,7 @@ export class FrontEnd {
       el('span', { class: 'fact-players', title: `Made for ${rec.min}–${rec.max} players. Bots fill every place you don't.` }, setupSummary(s, map, 1, cap.max)),
       el('span', { class: 'fact-time', title: coop ? 'Ends through the mission' : 'How long it runs' }, length),
       // The mode's player caps on this map (MapMaker's, else from its size and spawn points).
-      ...(coop || race ? [] : [((c) => el('span', { class: 'fact-caps', id: 'setup-caps', title: `${MODE_LABELS[s.mode]} on this map: ${c.recommended} players recommended, ${c.max} at most${c.auto ? ' (worked out from its size and spawn points)' : " (set in the map's properties)"}.` }, capsLine(c)))(mapPlayerCaps(map, s.mode))]),
+      ...(coop ? [] : [((c) => el('span', { class: 'fact-caps', id: 'setup-caps', title: `${MODE_LABELS[s.mode]} on this map: ${c.recommended} players recommended, ${c.max} at most${c.auto ? ' (worked out from its size and spawn points)' : " (set in the map's properties)"}.` }, capsLine(c)))(mapPlayerCaps(map, s.mode))]),
       ...(factSet && factSet.id !== 'standard' ? [el('span', { class: 'fact-weapons', id: 'setup-weapons-fact', title: `${factSet.blurb} (${s.weaponSet === undefined ? "the map's default" : 'your choice'}; Advanced rules → Weapons)` }, `${factSet.name} weapons`)] : []),
     );
     const featured = !current.group && FEATURED_MAPS.includes(current.key);
@@ -1284,8 +1281,8 @@ export class FrontEnd {
         field('Second round', 'A second round with the sides swapped: the team that took more sectors wins, then the one that took its last with more time left.', choice([['off', 'One round'], ['on', 'Swap sides']], s.btSwap ? 'on' : 'off', (v) => this.change((x) => (x.btSwap = v === 'on' || undefined)), 'arcade-bt-swap')),
       );
     } else {
-      if (!race) win.push(field(scoreRow.label, "The match ends when someone reaches this. It follows the match's size (players and bots) until you change it.", stepper({ value: lim.scoreLimit, min: scoreRow.min, max: scoreRow.max, step: scoreBy, id: 'arcade-score', label: scoreRow.label.toLowerCase(), onChange: (v) => this.change((x) => ((x.scoreLimit = v), (x.scoreAuto = false))) }), { custom: !lim.auto.score }));
-      if (!forts) win.push(field('Time limit', "When time runs out the highest score (or the race leader) wins. ∞: no limit. It follows the match's size until you change it.", stepper({ value: lim.minutes, min: 0, max: 60, id: 'arcade-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => this.change((x) => ((x.minutes = v), (x.timeAuto = false))) }), { custom: !lim.auto.time }));
+      win.push(field(scoreRow.label, "The match ends when someone reaches this. It follows the match's size (players and bots) until you change it.", stepper({ value: lim.scoreLimit, min: scoreRow.min, max: scoreRow.max, step: scoreBy, id: 'arcade-score', label: scoreRow.label.toLowerCase(), onChange: (v) => this.change((x) => ((x.scoreLimit = v), (x.scoreAuto = false))) }), { custom: !lim.auto.score }));
+      if (!forts) win.push(field('Time limit', "When time runs out the highest score wins. ∞: no limit. It follows the match's size until you change it.", stepper({ value: lim.minutes, min: 0, max: 60, id: 'arcade-minutes', fmt: (v) => (v ? `${v} min` : '∞'), onChange: (v) => this.change((x) => ((x.minutes = v), (x.timeAuto = false))) }), { custom: !lim.auto.time }));
     }
     // The mode's own key setting(s), with what wins; the rest of its settings are in Advanced rules.
     const flagReturn = () => stepper({ value: s.flagReturn ?? 30, min: 5, max: 120, step: 5, id: 'arcade-flag-return', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.flagReturn = v === 30 ? undefined : v)) });
@@ -1298,20 +1295,19 @@ export class FrontEnd {
         field('Squad size', 'Players in each fireteam, its leader included: you and your bots, and every bot-led squad filling the teams.', choice([['4', '4'], ['5', '5'], ['6', '6']], String(s.squadSize ?? DEFAULT_FIRETEAM_SIZE), (v) => this.change((x) => (x.squadSize = Number(v) === DEFAULT_FIRETEAM_SIZE ? undefined : Number(v))), 'arcade-squad-size')),
       );
     }
-    if (race) win.push(field('Laps', 'Laps of the circuit (a point-to-point track is always one run).', stepper({ value: s.raceLaps ?? raceTrack(map)?.laps ?? 3, min: 1, max: 10, id: 'arcade-laps', onChange: (v) => this.change((x) => (x.raceLaps = v)) })));
     if (forts) {
       win.push(
         field('Build phase', 'Minutes to build before the barrier drops.', stepper({ value: s.fortBuild ?? 2.5, min: 1, max: 6, step: 0.5, id: 'arcade-fort-build', fmt: (v) => `${v} min`, onChange: (v) => this.change((x) => (x.fortBuild = v)) })),
         field('Combat phase', 'Minutes of Capture the Flag after each build phase.', stepper({ value: s.fortCombat ?? 5, min: 2, max: 20, id: 'arcade-fort-combat', fmt: (v) => `${v} min`, onChange: (v) => this.change((x) => (x.fortCombat = v)) })),
       );
     }
-    const limitsLine = coop ? [] : this.limitsLine(s.mode, lim, { score: !race, time: !forts }, team && sizes.length <= 4 ? sizes.join('v') : `${players} ${race ? 'racers' : 'players'}`);
+    const limitsLine = coop ? [] : this.limitsLine(s.mode, lim, { score: true, time: !forts }, team && sizes.length <= 4 ? sizes.join('v') : `${players} players`);
     const essentials = el('section', { class: 'setup-essentials', id: 'setup-essentials' }, modeChips, modeLine, ...unavailable, ...variants, el('div', { class: 'field-grid', id: 'setup-win' }, ...win), ...limitsLine);
 
     // ---- presets: sizes worked out for this map and device (any change makes it Custom), then the party bundles
     const presets = sizePresets(s.mode, map, { teams: team ? sizes.length : undefined, deviceMax: dev.max, device: dev.name, pickPlayers });
     const onPreset = matchingPreset(s, map, presets, cap.max);
-    const unit = race ? 'racers' : coop ? 'in the squad' : 'players';
+    const unit = coop ? 'in the squad' : 'players';
     const sizeRow = sizeChips(presets, onPreset, team ? sizes.join('v') : `${players} ${unit}`, (p) => this.applyLayout(presetPatch(p)), 'setup-sizes');
     const party = el('div', { class: 'party-chips', id: 'setup-party', role: 'group' }, ...PARTY_PRESETS.map((p) => {
       const offWhy = partyUnavailable(p, map, current.modes);
@@ -1395,7 +1391,7 @@ export class FrontEnd {
         onChange: (v) => (v > cap.max - 1 ? this.change((x) => (x.bots = cap.max - 1), capMessage(cap, { device: dev.name })) : this.change((x) => (x.bots = v))),
       });
       playerRows.push(
-        settingRow(coop ? 'Squadmates' : race ? 'Bot racers' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', botStep),
+        settingRow(coop ? 'Squadmates' : 'Bots', coop ? 'Bot squadmates fighting alongside you.' : 'Bots to fill the match. You play too.', botStep),
         el('p', { class: 'setup-hint', id: 'arcade-bots-line', textContent: `${peopleAndBots(1, bots, word)}${coop ? ' on your side' : ''}. Hosting online, friends who join take bots' places.` }),
         ...(this.stopped ? [el('p', { class: 'cap-note', id: 'arcade-bots-stopped', role: 'status', textContent: this.stopped })] : []),
       );
@@ -1435,9 +1431,9 @@ export class FrontEnd {
       { id: 'set', label: 'Weapon set', tip: setTip, changed: s.weaponSet !== undefined && !fixedWeapons, value: `${playSet.name} weapons`, control: weaponSetSelect(s.weaponSet, mapSet, (v) => this.change((x) => (x.weaponSet = v)), 'arcade-weapons', !!fixedWeapons), disabled: fixedWeapons },
       { id: 'weapons', label: 'Weapons & pickups', tip: 'Normal: the map\'s weapons, ammo and grenades lie about. Spears only: everyone holds one throwing spear (one hit kills; go and fetch it back). Discs only: everyone throws bouncing arena discs that knock players about without hurting (Disc Arena rules). No weapon, ammo or grenade pickups either way.', changed: !!s.spears || !!s.discs, value: s.discs ? 'Discs only' : 'Spears only', control: choice([['normal', 'Normal'], ['spears', 'Spears only'], ['discs', 'Discs only']], s.spears ? 'spears' : s.discs ? 'discs' : 'normal', (v) => this.change((x) => ((x.spears = v === 'spears' || undefined), (x.discs = v === 'discs' || undefined)))) },
       { id: 'mix', label: 'Mix up weapon pickups', tip: "Every weapon pickup the map's maker didn't mark \"keep fixed\" holds a random weapon of the same kind as the one placed there (a pistol stays a pistol, a rifle a rifle), and a new one each time it comes back.", changed: !!s.mixPickups && !restricted && !playSet.weapons, value: 'Mixed-up pickups', control: choice([['off', 'Off'], ['on', 'On']], s.mixPickups ? 'on' : 'off', (v) => this.change((x) => (x.mixPickups = v === 'on' || undefined)), 'arcade-mix'), disabled: restricted ? `${restricted}: no weapon pickups.` : playSet.weapons ? `${playSet.name} weapons: every weapon pickup already holds one of the set's, a new one each time it comes back.` : null },
-      { id: 'drops', label: 'Drop weapon on death', tip: "A fallen player's or bot's primary (the gun in hand, else their best one; never the starting pistol or knife) lies at the body for 30 s with the ammo it had left. Walk over it to take it, or its ammo if you have one. The rest of what they carried is recycled.", changed: s.dropWeapons === false && !restricted && s.mode !== 'core.race' && s.mode !== 'core.discs', value: 'No weapon drops', control: choice([['on', 'On'], ['off', 'Off']], s.dropWeapons === false ? 'off' : 'on', (v) => this.change((x) => (x.dropWeapons = v === 'off' ? false : undefined)), 'arcade-drops'), disabled: restricted ? `${restricted}: no weapon drops.` : s.mode === 'core.race' || s.mode === 'core.discs' ? `Nothing drops in ${MODE_LABEL[s.mode]}.` : null },
+      { id: 'drops', label: 'Drop weapon on death', tip: "A fallen player's or bot's primary (the gun in hand, else their best one; never the starting pistol or knife) lies at the body for 30 s with the ammo it had left. Walk over it to take it, or its ammo if you have one. The rest of what they carried is recycled.", changed: s.dropWeapons === false && !restricted && s.mode !== 'core.discs', value: 'No weapon drops', control: choice([['on', 'On'], ['off', 'Off']], s.dropWeapons === false ? 'off' : 'on', (v) => this.change((x) => (x.dropWeapons = v === 'off' ? false : undefined)), 'arcade-drops'), disabled: restricted ? `${restricted}: no weapon drops.` : s.mode === 'core.discs' ? `Nothing drops in ${MODE_LABEL[s.mode]}.` : null },
       { id: 'classes', label: 'Classes', tip: 'Everyone picks one of nine classes (L or , in play; it opens when you join and when you are down): Runner, Rocketeer, Torch, Breacher, Bulwark, Mechanic (G: sentry that heals and restocks), Medic (medi-beam, G: overcharge), Marksman and Shade (G: cloak, backstabs). Limits cap how many on a team play the same class.', changed: !!s.classes && !restricted, value: `Classes${s.classLimit ? ` (max ${s.classLimit})` : ''}`, control: choice([['off', 'Off'], ['on', 'On'], ['1', 'Max 1'], ['2', 'Max 2']], !s.classes ? 'off' : s.classLimit ? String(s.classLimit) : 'on', (v) => this.change((x) => ((x.classes = v !== 'off' || undefined), (x.classLimit = v === '1' || v === '2' ? Number(v) : undefined)))), disabled: restricted ? `Classes don't mix with ${restricted.toLowerCase()}.` : null },
-      { id: 'vehicles', label: 'Vehicle damage', tip: "Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can't be destroyed (except by falling off the map). Turrets and sentries always take full damage.", changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: choice([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => this.change((x) => (x.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off')))), disabled: map.entities.some((e) => e.kind === 'mount') || race ? null : 'This map has no vehicles.' },
+      { id: 'vehicles', label: 'Vehicle damage', tip: "Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can't be destroyed (except by falling off the map). Turrets and sentries always take full damage.", changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: choice([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => this.change((x) => (x.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off')))), disabled: map.entities.some((e) => e.kind === 'mount') || (raceTrack(map)?.ambient ?? 0) > 0 ? null : 'This map has no vehicles.' },
     ];
     const botRules: typeof extras = [
       { id: 'cast', label: 'Bot characters', tip: "Which characters random bots play, and so their names: a soldier is \"Sgt. Dunmore\", a monkey \"Coco Bean\" (the first bot in a character is named after it: Scamp). Map default: what the map's maker chose (most maps: all). Your own bots (Edit bots…) keep their names and looks.", changed: s.botCast !== undefined, value: `${botCastLabel(s.botCast)} bots`, control: botCastSelect(s.botCast, map.botCast, (v) => this.change((x) => (x.botCast = v)), 'arcade-cast') },
@@ -1461,12 +1457,6 @@ export class FrontEnd {
         settingRow('Cycles', 'Build-then-fight rounds before the match ends. Pieces stand until they are broken; each build phase you can rebuild with the points they cost.', stepper({ value: s.fortCycles ?? 1, min: 1, max: 5, id: 'arcade-fort-cycles', onChange: (v) => this.change((x) => (x.fortCycles = v)) })),
         settingRow('Build points', "Each team's budget: a block costs 2, a wall 4, a metal wall 8.", stepper({ value: s.fortBudget ?? 420, min: 100, max: 800, step: 20, id: 'arcade-fort-budget', onChange: (v) => this.change((x) => (x.fortBudget = v)) })),
         settingRow('Flag return', FLAG_TIP, flagReturn()),
-      );
-    }
-    if (race) {
-      modeRows.push(
-        settingRow('Vehicle', "What everyone races in. Map: the track's own choice.", choice([['map', 'Map'], ['kart', 'Go-Kart'], ['speeder', 'Speeder'], ['buggy', 'Buggy']], s.raceVehicle ?? 'map', (v) => this.change((x) => (x.raceVehicle = v === 'map' ? undefined : (v as ArcadeSetup['raceVehicle']))))),
-        settingRow('Combat', 'Combat race: weapons and vehicle guns are live and the sentries by the track shoot. Clean: nobody can hurt anybody.', choice([['map', 'Map'], ['off', 'Clean'], ['on', 'Combat']], s.raceCombat === undefined ? 'map' : s.raceCombat ? 'on' : 'off', (v) => this.change((x) => (x.raceCombat = v === 'map' ? undefined : v === 'on')))),
       );
     }
     // Time limit can't apply here (Fort Wars, co-op): said where it would be.
@@ -1494,7 +1484,7 @@ export class FrontEnd {
       ...fitBlock,
       essentials,
       presetSec,
-      sec('setup-teams', team ? 'Players & teams' : coop ? 'Squad' : race ? 'Racers' : 'Players', playersSummary, ...playerRows),
+      sec('setup-teams', team ? 'Players & teams' : coop ? 'Squad' : 'Players', playersSummary, ...playerRows),
       sec('setup-bots', 'Bots', botsSummary, settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => this.change((x) => (x.skill = v as ArcadeSetup['skill'])), 'arcade-skill')), ...botRules.map(rowOf), this.botSetRow(map, sizes, players), ...perTeam),
       sec('setup-advanced', 'Advanced rules', advSummary, ...advanced),
     );
@@ -1724,7 +1714,7 @@ export class FrontEnd {
     const m = this.currentMap();
     if (!m.map) return void m.load().then(() => this.currentMap() === m && this.start(o), () => this.setStatus(`${m.metadata.name} failed to load`));
     this.saveSetup();
-    // What fits here: this device's limit (a setup saved on a bigger computer plays smaller on a phone), a race's grid.
+    // What fits here: this device's limit (a setup saved on a bigger computer plays smaller on a phone).
     const { rules, fill } = rulesFromSetup(this.setup, m.map, playerCap(this.setup.mode, m.map, deviceMaxPlayers()).max);
     const playlist = this.setup.mode === 'core.coop' && !!this.setup.playlist && PLAYLISTS.some((p) => p.id === this.setup.playlist);
     // A co-op playlist starts on its own first map; the chain carries on from there (played, offline).

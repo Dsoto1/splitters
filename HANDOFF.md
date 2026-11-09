@@ -51,6 +51,32 @@ turning by mouse went in with it.
   SHOT_SIZE dropped (the frame is MapMaker's card frame now). `/home/user/wt-mapreview` removed. Branches kept.
 - **Not done: Iron Maw's player count** (`maps/iron_maw.json` is in the MapMaker lane's set pieces part 6 claim). Asked
   of the MapMaker lane below.
+**Race mode removed (`wip/race-removal`, 2026-11-09; owner, 2026-11-08: "steer away from racing and focus on battles
+and maps").** Game side only; the MapMaker wording is asked of its lane ("In flight", below).
+- **Gone:** `core.race` from `GameMode`/`GAME_MODES`/`MODE_LABELS`/`DEFAULT_RULES` (so from Match Setup, Quick Play,
+  rotations, playlists, the next-map vote, host commands, the launcher); `sim/race.ts` (RaceDirector, race bots and
+  their combat shots, start grids `raceGridEntities`); `MatchRules.raceLaps/raceVehicle/raceCombat`, the server rules
+  `laps`/`racevehicle`/`racecombat`; the `race` event and `md.rc` (`RaceSnapshot`); Match Setup's race family (racers,
+  Laps, Vehicle, Combat, the grid cap: `PlayerCap.by` is only `device`, `FitTopic` has no `grid`); `game/raceHud.ts`
+  and the scoreboard's race order; the race icon. A clean race no longer switches off hurting or sentries.
+- **Kept:** tracks as map data (`uses: ['race']`, `MapPath.race`, `TrackGeometry`, checkpoints; no format change), road
+  grip (`sim/road.ts` `roadHandling`), the ambient NPC cars in every mode (`TrackDriver`, pit lane, run-overs credited
+  to nobody, shootable, take the wheel) and `withTrackVehicles(map)` (now ambient cars only).
+- **Old maps:** a map that still lists `core.race` loads; `isGameMode` drops it, so it isn't offered (alone it falls
+  back to Deathmatch); `validateTrack` warns `race.removed`. The other track warnings say "traffic", not "races".
+- **Maps:** only apex_ring and sandsweep listed Race (released by Environment Phase 2, claimed, then edited in the
+  real MapMaker: Import, Map properties' Mode, Export; format 30 → 31 on export, nothing else changed). Apex Ring:
+  Race picked as the main mode and then Deathmatch, which drops it: now DM/TDM/CTF/KOTH; in TDM its 12 karts lap
+  (each ~1.1 laps of the 1.37 km circuit in 90 s, no wrecks) while the teams fight (bot-report TDM 120 s: 24 kills,
+  vehicles never stalled or wedged). Sandsweep: main mode Deathmatch (its only other mode). neon_spire, serene_city
+  and undergate_transit never listed Race; their NPC speeders keep lapping (2-3 cars, ~4 laps in 90 s, no wrecks).
+- **Tests:** `shared/test/trackTraffic.test.ts` (was race.test.ts): Race offered nowhere, maps that list it load,
+  NPC cars lap in Deathmatch and in Team Deathmatch (each over a lap in 40 s), run a walker over. e2e `race` is now
+  `traffic` (MapMaker's Paths tool on a track, then Apex Ring in TDM: no race, you on foot, 12 cars belonging to
+  nobody, each drives ~70-190 m in 12 s); flowMap: `apex_ring` → traffic (sandsweep no longer opened by a flow).
+- **Question for the owner:** Sandsweep Circuit was built as a race (a podrace loop round a mesa, 8 spawns, no
+  cover, no NPC cars; bot-report TDM 120 s: 165 kills, 82 a minute, pistols only). It now offers Deathmatch only. Keep it as a Deathmatch map, give it NPC speeders and cover in
+  MapMaker, or tick its Test map box?
 
 **Team kills (`wip/tk`, 2026-11-08; the owner's bug report).** "Teamkills should not count towards a kill streak
 (should end one) or show anything rewarding. It should actually show in the upper right that it was a TK."
@@ -194,7 +220,6 @@ The workflow is unchanged (CLAUDE.md):
   Suggested: Players 16-64 (as Iron Coast, 96 spawns, says), in MapMaker's Map properties; small fixes, 2026-11-09.
 - **For the session owning team kills and friendly fire:** the e2e `teams` flow's friendly-fire and team-kill checks contradict themselves between attempts on check/mapmaker-setpieces (run 42549709174, job 128943570176). Attempt 1: friendly fire off still hurt a teammate (70.5), and a team kill wasn't marked TK (killer 5 was a bot). Attempt 2: friendly fire on hurt 0, and TK was marked fine. It looks like stray shots from bots or other teammates in the test match, not set pieces. The failed job was re-run once.
 - Claimed: `maps/test_coverage.json` (the Town Wall Gatehouse, through MapMaker; set pieces part 6, `wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-09.
-- Claimed: `maps/apex_ring.json` and `maps/sandsweep.json` (drop Race from their modes in MapMaker's Map properties; released by Environment Phase 2), race removal (`wip/race-removal`), 2026-11-09.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
@@ -295,6 +320,29 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - "fix em all": swap every old big piece that has a set-piece version (town and city gate, pylon, warehouse,
       hangar, bunker, city crossroads) on every map that uses one, in MapMaker. Each map is claimed first; the other
       session's maps get asked first.
+- **Asked of the MapMaker lane by race removal (`wip/race-removal`, 2026-11-09; the game side has landed, see "Race
+  mode removed" in Start here): reword MapMaker's race wording to "track / NPC traffic"** (editor code, so not edited
+  there). Race is no longer a mode (`core.race` is gone from `GAME_MODES`; maps that list it load and leave it out, the
+  validator warns `race.removed`); the track stays as map data (`uses: ['race']`, `MapPath.race`, no format change),
+  and only its `ambient`, `ambientVehicle` and `pit` settings do anything now. The strings and places:
+  - `client/src/editor/pathTool.ts`: `KIND_LABELS.race` "Race track" (l. 52); the kind help (l. 61) "Race track" /
+    "Race mode races it: checkpoints along it in point order, laps on a loop, one run on an open path. One race track
+    per map"; the path summary "Race track" (l. 68); the undo labels "Lay race track" (l. 311), "Use path as the race
+    track" / "Path no longer a race track" (l. 605); the toast "This path is the race track now (one per map)"
+    (l. 609); the hint "...the race track, and routes for the AI..." (l. 492); "Reverse direction"'s tip "the race
+    direction" (l. 619); `racePane` (l. 648 on): the heading "Race track (the green point is the start line)" / "Race
+    track (not raced: another path is the race track)" (l. 663) and its **Laps, Grid, Vehicle, Combat** inputs
+    (`#ed-path-laps` and the rest; nothing reads them now: hide them, keep NPC cars, their vehicle and the pit lane;
+    the e2e `traffic` flow still sets `#ed-path-laps`, so tell us if it goes and we'll drop that check).
+  - `client/src/editor/editorApp.ts`: the palette group "Race Track" (`vehicles:track`, l. 3094) and its card
+    "Race Track" / "Race track (Shift+G): a path used as the race track: ... set laps and the start grid in the Paths
+    pane" (l. 3096); the Paths card's tip "...the race track and AI routes" (l. 3083); Map properties' **Mode** list
+    still offers `['core.race', 'Race']` (l. 4826) with its help `'core.race': 'Race: draw the track...'` (l. 4842):
+    drop both, and have Map properties drop `core.race` from `supportedModes` (today it can only be dropped by picking
+    Race as the main mode and then another, as race removal did for Apex Ring); comments at l. 723, 2811, 3056-3057, 4733.
+  - `shared/src/editor/keymap.ts`: `raceTrack` "Paths, on the race track" (Shift+G, l. 122).
+  - `client/index.html` l. 228 (the Vehicles tab's title "...parked vehicles and race tracks"; MapMaker UI, so left
+    to this lane too).
 - **Landing cadence (owner, 2026-11-09: "less landings, since I won't be testing until Tuesday afternoon"):** the
   MapMaker lane stops landing each branch on its own. Green branches wait. They land together as one train
   (`tools/ci/train.mjs`) on Tuesday 2026-11-10 morning (UTC), ready for the owner's Tuesday-afternoon testing; a

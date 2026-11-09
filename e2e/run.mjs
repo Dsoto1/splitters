@@ -33,7 +33,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'race', 'flashing', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', 'flashing', ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -5930,8 +5930,11 @@ async function arcTurretChecks(browser) {
   await page.context().close();
 }
 
-/** Race mode on Sandsweep Circuit, and drawing a track with MapMaker's Road tool. */
-async function raceFlow(browser) {
+/**
+ * Tracks as map spice: drawing a track with MapMaker's Paths tool, and Team Deathmatch on Apex Ring with its NPC cars
+ * lapping as traffic (Race mode was removed, owner 2026-11-08).
+ */
+async function trafficFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
@@ -5987,40 +5990,31 @@ async function raceFlow(browser) {
   check(t?.points.length === 2, `right-click deletes a road point (${t?.points.length})`);
   await page.keyboard.press('Escape');
 
-  // A race on Sandsweep Circuit: on the grid in a speeder, the countdown, then away.
-  await page.goto(`${CLIENT}/?offline=sandsweep&gamemode=core.race`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match?.race && window.__match.phase === 'playing' && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+  // Team Deathmatch on Apex Ring: its track's NPC cars lap as traffic while the teams fight (Race mode is gone).
+  await page.goto(`${CLIENT}/?offline=apex_ring&gamemode=core.tdm&test=1`);
+  // Polled on a timer: a loading page may draw no frames for a while.
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && ['countdown', 'playing'].includes(window.__match?.phase), null, { timeout: T(120000), polling: 250 });
+  // Headless frame rates are slow: run the clock through the start countdown.
+  await page.evaluate(() => {
+    for (let i = 0; i < 60 * 10 && window.__match.phase !== 'playing'; i++) window.__match.step();
+  });
   const start = await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    return { seat: me.mount?.seat, grid: me.mount ? m.mounts[me.mount.index].index >= m.map.entities.length : false, racers: m.combatants().length, seated: m.combatants().filter((c) => c.mount?.seat === 0).length, placed: m.combatants().filter((c) => m.race.status(c.slot)).length };
+    const cars = m.mounts.filter((v) => v.ambient);
+    return { mode: m.rules.mode, race: 'race' in m, onFoot: !me.mount, cars: cars.length, pos: cars.map((v) => ({ x: v.pos.x, z: v.pos.z })), factions: cars.filter((v) => v.faction !== null).length };
   });
-  check(start.seat === 0 && start.grid, `you start at the wheel of a grid vehicle (seat ${start.seat})`);
-  // A combat race may already have wrecked someone (they are back in a moment): nearly everyone is at the wheel.
-  check(start.placed === start.racers && start.seated >= start.racers - 2, `every racer has a vehicle (${start.seated}/${start.racers} at the wheel)`);
+  check(start.mode === 'core.tdm' && !start.race, `Team Deathmatch, no race (${start.mode})`);
+  check(start.onFoot, 'you start on foot, not on a grid');
+  check(start.cars >= 4 && start.factions === 0, `the track's NPC cars are out, belonging to nobody (${start.cars})`);
   const road = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => /^road_/.test(m.name)).length);
   check(road > 5, `the road, curbs and arches are drawn (${road} meshes)`);
-  // Headless frame rates are slow: run the clock past the countdown.
-  await page.evaluate(() => {
-    for (let i = 0; i < 60 * 4 && window.__match.race.state === 0; i++) window.__match.step();
-  });
-  check(await page.evaluate(() => window.__match.race.state === 1), 'the countdown ends and the race is on');
-  await page.waitForFunction(() => /Lap 1\/3/.test(document.body.textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
-  check(await page.evaluate(() => /Lap 1\/3/.test(document.body.textContent ?? '')), 'the HUD shows the lap');
-  const rows = await page.evaluate(() => document.getElementById('race-order')?.children.length ?? 0);
-  check(rows === start.racers, `the running order lists every racer (${rows})`);
-  await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
-  await page.waitForFunction(() => (window.__match.race.status(window.__cs.slot)?.passed ?? 0) >= 1, null, { timeout: T(20000) }).catch(() => {});
-  const me = await page.evaluate(() => window.__match.race.status(window.__cs.slot));
-  check(me?.lap === 1 && me.passed >= 1, `you drive over the start line onto lap 1 (passed ${me?.passed})`);
-  await page.waitForFunction(() => !!document.querySelector('.mode-marker[data-id="race_next"]'), null, { timeout: T(5000) }).catch(() => {});
-  check(await page.evaluate(() => !!document.querySelector('.mode-marker[data-id="race_next"]')), 'a marker points to the next checkpoint');
-  // The bots race too.
+  // Headless frame rates are slow: run the clock 12 s.
   await page.evaluate(() => {
     for (let i = 0; i < 60 * 12; i++) window.__match.step();
   });
-  const bots = await page.evaluate(() => window.__match.combatants().filter((c) => c.bot).map((c) => window.__match.race.status(c.slot)?.passed ?? 0));
-  check(bots.length > 0 && bots.every((n) => n >= 2), `the bots drive the checkpoints (${bots.join(', ')})`);
+  const moved = await page.evaluate((before) => window.__match.mounts.filter((v) => v.ambient).map((v, i) => Math.round(Math.hypot(v.pos.x - before[i].x, v.pos.z - before[i].z))), start.pos);
+  check(moved.filter((d) => d > 40).length >= moved.length - 1, `the NPC cars drive the track (moved ${moved.join(', ')} m)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -9049,7 +9043,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

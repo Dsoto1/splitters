@@ -150,7 +150,7 @@ describe('weapon drops', () => {
     expect(match.drops.at(-1)!.mag).toBe(10 + MAX_DROPS + 4);
   });
 
-  it('rule off, spears or discs only, Disc Arena and races: nothing drops', () => {
+  it('rule off, spears or discs only, Disc Arena: nothing drops', () => {
     for (const r of [{ ...rules, dropWeapons: false }, { ...rules, weapons: 'spears' as const }]) {
       const { match, killer, victim } = setup(r);
       arm(victim, 'core.rifle', 30, 30);
@@ -158,7 +158,6 @@ describe('weapon drops', () => {
       expect(match.drops).toHaveLength(0);
     }
     expect(dropsInPlay({ ...rules, mode: 'core.discs' })).toBe(false);
-    expect(dropsInPlay({ ...rules, mode: 'core.race' })).toBe(false);
     expect(dropsInPlay({ ...rules, mode: 'core.tdm' })).toBe(true);
     expect(dropsInPlay(rules)).toBe(true);
   });

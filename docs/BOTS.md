@@ -922,8 +922,8 @@ for points on the ground ahead, and captures halved on the dev sample.)
   shares, when to split, staging distances, timings, bounds, prices, interceptors), which the mode hands over in its
   brief, and the mode's own roles (Capture the Flag's defenders by team size, escorts, response and threat ranges, the
   defenders' watch radius, the carrier's; Breakthrough's below). King of the Hill, Bomb, Hostage, Elimination, Team
-  Deathmatch, co-op and zombies never split; Capture the Flag and Forts split on long trips; a mode without one (Race
-and the other vehicle modes: no attack brief) plays by the default. King of the Hill
+  Deathmatch, co-op and zombies never split; Capture the Flag and Forts split on long trips; a mode without one (no attack
+brief) plays by the default. King of the Hill
   straight: split over the ways, the hill was held 33 % of the time on the dev sample against 49 % going straight;
   gathering out of the hill's sight to retake it together, the side doing it held the hill 37 s to the other side's
   170 in the same matches.
@@ -1152,7 +1152,7 @@ owner's anchors (2026-11-06): Team Deathmatch 4v4 about 40 points in 10 minutes,
   Team Deathmatch.
 - **King of the Hill:** 12 hill seconds a minute of the time: 120 in 10 minutes as before, 180 in 15, 240 in 20 (the
   leading team holds the hill 5–21 s a minute on the shipped maps: Diamond Park 5–8, St. John's 9–21).
-- Rounds modes (Elimination, Bomb, Hostage Rescue), co-op, Zombies, Fort Wars, Disc Arena and races keep their own.
+- Rounds modes (Elimination, Bomb, Hostage Rescue), co-op, Zombies, Fort Wars and Disc Arena keep their own.
 
 **Measuring.** `pnpm bot-report` prints each match's team scores and its top bot's kills (the `scores:` line, with
 the leading team's points a minute; `teams` and `top` in `--json` rows). It plays with no score limit or time, so a

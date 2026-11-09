@@ -451,7 +451,7 @@ A browser-hosted match with friends in no longer has to end with its host
   vehicles and turrets (back at their spots; riders are put on foot where
   they were), pickups (all available), doors / buttons / destructibles /
   scenario logic and timers, NPCs and encounters, flags and bombs (back at
-  base), Zombies waves (from wave 1), race progress, classes, kill streaks
+  base), Zombies waves (from wave 1), classes, kill streaks
   and UAVs, the dead (they respawn a second later). Bots get fresh brains.
 
 `standby`, `successor`, `checkpoint` and the `standby` client message are

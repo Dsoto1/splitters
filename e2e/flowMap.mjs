@@ -22,7 +22,7 @@ export const COVERAGE_MAP = 'test_coverage';
 /** Every flow in e2e/run.mjs (run.mjs refuses to start if they differ). */
 export const FLOWS = [
   'editor', 'editorux', 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
-  'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'race', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
+  'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
   'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer', 'fireteams',
 ];
 
@@ -50,7 +50,7 @@ const MAP_USERS = {
   fort_meadow: ['forts'],
   twin_spires: ['classes'],
   grid_rings: ['classes'],
-  sandsweep: ['race'],
+  apex_ring: ['traffic'],
   atomic_court: ['hostcontrols'],
   void_yard: ['hostcontrols'],
   [COVERAGE_MAP]: ['coverage'],
@@ -141,7 +141,7 @@ const RULES = [
   // Phones and tablets (on-screen controls, touch detection) and the weapon wheel.
   // (Fireteams' order wheel is the weapon wheel's ring, and has an Orders button on a phone.)
   [/^packages\/client\/src\/(touchDevice|game\/(touchControls|weaponWheel))\.ts$/, ['mobile', 'offline', 'fireteams'], ['client']],
-  [/^packages\/client\/src\/editor\//, ['editor', 'editorux', 'scenery', 'canyon', 'race', 'weaponsets', 'visual'], ['client']],
+  [/^packages\/client\/src\/editor\//, ['editor', 'editorux', 'scenery', 'canyon', 'traffic', 'weaponsets', 'visual'], ['client']],
   [/^packages\/client\/src\/designer\//, ['designer', ...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/tools\/characterViewer/, [...CHARACTER_FLOWS], ['client']],
   // Your own body and arms in first person, and where hands are drawn on guns (the grip checks).
@@ -158,11 +158,11 @@ const RULES = [
   [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode|party|mapVoteHud)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost'], ['client']],
   [/^packages\/client\/src\/game\/hostLeft\.ts$/, ['hostgame', 'handoff'], ['client']],
   [/^packages\/client\/src\/game\/spectatorCam\.ts$/, ['offline', 'teams', 'hostgame'], ['client']],
-  [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera|riderPlacement|ownBody)\.ts$/, ['vehicles', 'race'], ['client']],
-  [/^packages\/client\/src\/(game\/raceHud\.ts|roadMeshes\.ts)$/, ['race'], ['client']],
+  [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera|riderPlacement|ownBody)\.ts$/, ['vehicles', 'traffic'], ['client']],
+  [/^packages\/client\/src\/roadMeshes\.ts$/, ['traffic'], ['client']],
   [/^packages\/client\/src\/game\/fortsClient\.ts$/, ['forts'], ['client']],
   [/^packages\/client\/src\/game\/rouletteHud\.ts$/, ['roulette', 'flashing'], ['client']],
-  [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'breakthrough', 'zombies', 'teams', 'race', 'classes', 'flashing'], ['client']],
+  [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'breakthrough', 'zombies', 'teams', 'classes', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party'], ['client']],
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],

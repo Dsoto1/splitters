@@ -12,7 +12,6 @@ import {
   pathGeometry,
   racePath,
   racePathFromTrack,
-  raceGridEntities,
   raceTrack,
   trackGeometry,
   validateMap,
@@ -77,7 +76,7 @@ describe('one path primitive: migration (v22 -> v23)', () => {
   const before = JSON.parse(readFileSync(new URL('./fixtures/race-tracks-before-paths.json', import.meta.url), 'utf8')) as Record<string, unknown>;
   it('finds the shipped race maps (with the old field, or saved again from it)', () => expect(tracked.length + Object.keys(before).length).toBeGreaterThanOrEqual(2));
   for (const [id, track] of Object.entries(before)) {
-    it(`${id}: saved again in MapMaker, its path races exactly as its old track did`, () => {
+    it(`${id}: saved again in MapMaker, its path runs exactly as its old track did`, () => {
       expect(raw(id).track).toBeUndefined();
       const old = new TrackGeometry(Track.parse(track));
       const map = loaded(raw(id));
@@ -87,13 +86,12 @@ describe('one path primitive: migration (v22 -> v23)', () => {
       expect(after.gates).toEqual(old.gates);
       expect(after.length).toBe(old.length);
       expect(after.grid()).toEqual(old.grid());
-      expect(raceGridEntities(map).map((e) => [e.position, e.yaw])).toEqual(old.grid().map((p) => [[p.x, p.y, p.z], p.yaw]));
       expect(ambientCarEntities(map)).toHaveLength(old.track.ambient);
       expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
     });
   }
   for (const id of tracked) {
-    it(`${id}: races exactly as before`, () => {
+    it(`${id}: its track exactly as before`, () => {
       const file = raw(id);
       const before = new TrackGeometry(Track.parse(file.track));
       const map = loaded(file);
@@ -103,7 +101,6 @@ describe('one path primitive: migration (v22 -> v23)', () => {
       expect(after.gates).toEqual(before.gates);
       expect(after.length).toBe(before.length);
       expect(after.grid()).toEqual(before.grid());
-      expect(raceGridEntities(map).map((e) => [e.position, e.yaw])).toEqual(before.grid().map((p) => [[p.x, p.y, p.z], p.yaw]));
       const cars = ambientCarEntities(map);
       expect(cars).toHaveLength(before.track.ambient);
       if (before.track.pit) expect(cars[0]!.pit).toEqual(before.track.pit);
@@ -114,7 +111,7 @@ describe('one path primitive: migration (v22 -> v23)', () => {
       expect(map.terrain?.heights ?? null).toEqual(plain.terrain?.heights ?? null);
       const ground = (m: MapDocument) => buildMapGeometry(m).filter((b) => b.sourceId === 'ground');
       expect(ground(map)).toEqual(ground(plain));
-      expect(withTrackVehicles(map, { mode: 'core.race' }).entities.length).toBe(map.entities.length + before.grid().length + before.track.ambient);
+      expect(withTrackVehicles(map).entities.length).toBe(map.entities.length + before.track.ambient);
       expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
     });
   }

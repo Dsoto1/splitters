@@ -432,7 +432,7 @@ carrying exactly that ammo (and second-trigger rounds). Everything else is
 discarded. A pickup (same radius as map pickups) gives the weapon whole to
 someone without it (coming up like a map pickup's), or tops up the reserve of
 someone with it (`takeDropAmmo`), the rest staying on the ground. Never in
-Disc Arena, races or spears/discs only (`dropsInPlay`). The snapshot's `dw`
+Disc Arena or spears/discs only (`dropsInPlay`). The snapshot's `dw`
 lists the drops lying ([id, item, x, y, z, yaw]; repeated fields, sent when
 they change); clients draw the pickup's weapon on its side on a small ring.
 Bots see drops as weapon pickups.

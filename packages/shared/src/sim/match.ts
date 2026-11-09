@@ -87,10 +87,10 @@ import { IMPROMPTU_MIN_PLAYERS, SPAWN_DEATHS_KEPT, SpawnSides, leaderSpotSafe, s
 import { applyPortals, portalCarry, portalSegment } from './portals.ts';
 import { Encounters } from './encounters.ts';
 import { ZombieSurvival } from './zombies.ts';
-import { RaceDirector, raceShot, roadHandling, type RaceVehicleView } from './race.ts';
-import { TrackDriver } from './trackDriver.ts';
+import { roadHandling } from './road.ts';
+import { TrackDriver, type DrivenVehicle } from './trackDriver.ts';
 import { vehicleGuides, type Guide } from '../bots/guides.ts';
-import { ambientCarEntities, raceGridEntities, trackGeometry, type TrackGeometry } from '../map/track.ts';
+import { ambientCarEntities, trackGeometry, type TrackGeometry } from '../map/track.ts';
 import { chargeIntoMelee } from './creatures.ts';
 import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
 import { BOT_NAMES, botNameFor } from '../content/botNames.ts';
@@ -140,8 +140,6 @@ const ROUTE_FIT = 0.95;
 const RAM_DAMAGE = 8;
 /** Bots see hostile sentries as targets with these IDs (+ mount index); never a real actor ID. */
 const SENTRY_VIEW_BASE = 1_000_000;
-/** Racing bots hold their fire this long after the start. */
-const RACE_HOLD_FIRE_TICKS = TICK_RATE * 10;
 
 export interface WeaponState {
   def: WeaponDefinition;
@@ -218,7 +216,7 @@ interface MountRt {
   moveOwed?: boolean;
   /** Parked and settled since this tick (driveVehicle skips the physics until something moves it). */
   restSince?: number;
-  /** Ambient traffic (a race track's cars): driven by a TrackDriver with nobody in the seat, so never idle-braked. */
+  /** Ambient traffic (a track's NPC cars): driven by a TrackDriver with nobody in the seat, so never idle-braked. */
   ambient?: boolean;
   /** Raycast suspension (wheeled light vehicles, sim/suspension.ts): its tuning and the sprung body. */
   suspSetup?: SuspensionSetup;
@@ -695,14 +693,10 @@ export class Match {
   }
   /** Objective rules (Capture the Flag, King of the Hill, Elimination); null in other modes. */
   readonly mode: ModeLogic | null;
-  /** The race in Race mode (null in every other mode); see race.ts. */
-  readonly race: RaceDirector | null;
-  /** The map's race track, if it has one (vehicles grip better on the road in any mode). */
+  /** The map's track (its path used as a track, `race`), if it has one: vehicles grip better on the road, and ambient NPC cars lap it. */
   private readonly road: TrackGeometry | null;
   /** Routes and roads bots driving vehicles follow (bots/guides.ts). */
   private readonly guides: readonly Guide[];
-  /** Racing Player Bots' drivers (by slot). */
-  private readonly raceBots = new Map<number, TrackDriver>();
   /** Ambient cars: NPC-driven vehicles lapping the track in any mode (mount index, driver, ticks stuck). */
   private readonly ambient: { mount: number; driver: TrackDriver; stuck: number }[] = [];
   /** Recent gunfire and explosions, for bots' hearing. */
@@ -762,22 +756,11 @@ export class Match {
       const def = getMountDef(e.model);
       if (def) this.addMount(index, def, { x: e.position[0], y: e.position[1], z: e.position[2] }, e.yaw, e.faction, e.respawnSeconds, !!e.onWater && !!def.vehicle);
     });
-    // Race: the start-grid vehicles, after the map's own mounts (clients add the same ones: withRaceGrid).
     this.road = trackGeometry(map);
     this.guides = vehicleGuides(map.paths);
-    const gridMounts: number[] = [];
-    if (rules.mode === 'core.race') {
-      raceGridEntities(map, rules.raceVehicle).forEach((e, i) => {
-        const def = getMountDef(e.model);
-        if (!def) return;
-        gridMounts.push(this.mounts.length);
-        // They never come back on their own: the race puts them where they're needed.
-        this.addMount(map.entities.length + i, def, { x: e.position[0], y: e.position[1], z: e.position[2] }, e.yaw, null, 1e6);
-      });
-    }
     // Ambient cars (any mode): out on the track at first; wrecked ones come back in the pit lane.
     if (this.road) {
-      const base = map.entities.length + gridMounts.length;
+      const base = map.entities.length;
       for (const [i, car] of ambientCarEntities(map).entries()) {
         const def = getMountDef(car.entity.model);
         if (!def) continue;
@@ -908,7 +891,6 @@ export class Match {
       : null;
     this.zombies = rules.mode === 'core.zombies' ? this.zombieDirector() : null;
     this.classes = classesInPlay(rules) ? this.classDirector() : null;
-    this.race = rules.mode === 'core.race' && this.road ? this.raceDirector(this.road, gridMounts) : null;
     this.roulette = rouletteOn(rules) ? this.rouletteDirector() : null;
   }
 
@@ -959,77 +941,15 @@ export class Match {
     return own;
   }
 
-  /** Race: the director and its link to the match (vehicles, racers, the end of the race). */
-  private raceDirector(track: TrackGeometry, gridMounts: number[]): RaceDirector {
-    const match = this;
-    return new RaceDirector(
-      {
-        get tick() {
-          return match.tick;
-        },
-        gridMounts,
-        racers: () => this.combatants().map((c) => ({ slot: c.slot, alive: c.alive, pos: c.move.pos, mount: c.mount?.index ?? null, driving: this.seatOf(c)?.role === 'driver' })),
-        vehicle: (i) => {
-          const m = this.mounts[i];
-          return m ? this.raceVehicle(m) : null;
-        },
-        placeRacer: (slot, i, pos, yaw) => this.placeRacer(slot, i, pos, yaw),
-        park: (i) => {
-          const m = this.mounts[i];
-          if (!m) return;
-          for (const slot of m.seats) if (slot !== null) this.leaveMount(this.actor(slot)!, true);
-          m.alive = false;
-          m.respawnAt = Infinity;
-          this.physics.setBoxEnabled(m.body, false);
-        },
-        emit: (ev) => this.pendingEvents.push(ev),
-        endRace: (winner) => this.endRound(winner),
-      },
-      track,
-      this.rules.raceLaps ?? track.track.laps,
-      this.rules.raceCombat ?? track.track.combat,
-      !this.opts.startGate,
-    );
-  }
-
-  private raceVehicle(m: MountRt): RaceVehicleView {
-    return { alive: m.alive, pos: m.pos, yaw: m.yaw, speed: m.speed, maxSpeed: m.def.vehicle?.maxSpeed ?? 0 };
-  }
-
-  /** Race: a fresh vehicle at `pos` (on the ground under it), facing `yaw`, with the racer at the wheel. */
-  private placeRacer(slot: number, index: number, pos: Vec3, yaw: number): void {
-    const c = this.slots[slot];
-    const m = this.mounts[index];
-    if (!c?.alive || !m) return;
-    if (c.mount && c.mount.index !== index) this.leaveMount(c, false);
-    for (const other of m.seats) if (other !== null && other !== slot) this.leaveMount(this.actor(other)!, true);
-    const from = { x: pos.x, y: pos.y + 4, z: pos.z };
-    const hit = this.physics.raycastHit(from, { x: 0, y: -1, z: 0 }, 12);
-    const y = hit && !this.mountBodies.has(hit.handle) ? from.y - hit.dist : pos.y;
-    m.home = { pos: { x: pos.x, y: y + 0.05, z: pos.z }, yaw };
-    this.respawnMount(m);
-    m.respawnAt = Infinity;
-    m.drive = { forward: 0, right: 0 };
-    for (const g of m.guns) if (g) g.overheated = false;
-    this.physics.commit();
-    const seat = m.def.seats.findIndex((s) => s.role === 'driver');
-    if (seat < 0) return;
-    if (m.seats[seat] !== slot) {
-      m.seats[seat] = slot;
-      c.mount = { index, seat };
-      this.pendingEvents.push({ e: 'mount', s: slot, m: m.index, seat });
-    }
-    c.move = this.seatMove(m, seat);
-    c.yaw = yaw;
-    c.pitch = 0;
-    c.bot?.onSpawn(yaw);
-    this.raceBots.delete(slot);
+  /** A vehicle as a track driver sees it. */
+  private trackVehicle(m: MountRt): DrivenVehicle {
+    return { pos: m.pos, yaw: m.yaw, speed: m.speed, maxSpeed: m.def.vehicle?.maxSpeed ?? 0 };
   }
 
   /** Other vehicles out and about near `m` (for a track driver's overtaking). */
-  private vehiclesNear(m: MountRt): RaceVehicleView[] {
-    const out: RaceVehicleView[] = [];
-    for (const o of this.mounts) if (o !== m && o.alive && o.def.vehicle && Math.abs(o.pos.x - m.pos.x) < 40 && Math.abs(o.pos.z - m.pos.z) < 40) out.push(this.raceVehicle(o));
+  private vehiclesNear(m: MountRt): DrivenVehicle[] {
+    const out: DrivenVehicle[] = [];
+    for (const o of this.mounts) if (o !== m && o.alive && o.def.vehicle && Math.abs(o.pos.x - m.pos.x) < 40 && Math.abs(o.pos.z - m.pos.z) < 40) out.push(this.trackVehicle(o));
     return out;
   }
 
@@ -1044,7 +964,7 @@ export class Match {
       if (!m.alive) continue;
       const driverSeat = m.def.seats.findIndex((s) => s.role === 'driver');
       if (driverSeat >= 0 && m.seats[driverSeat] !== null) continue;
-      const d = a.driver.drive(track, this.raceVehicle(m), this.tick, this.vehiclesNear(m));
+      const d = a.driver.drive(track, this.trackVehicle(m), this.tick, this.vehiclesNear(m));
       m.drive = { forward: d.forward, right: d.right, brake: d.brake };
       const near = track.nearest(m.pos.x, m.pos.z, 100);
       a.stuck = Math.abs(m.speed) < 1 || !near || near.dist > track.width / 2 + 40 ? a.stuck + 1 : 0;
@@ -1054,53 +974,6 @@ export class Match {
         this.respawnMount(m);
       }
     }
-  }
-
-  /** Race: on the grid nobody moves; nobody gets out; in a clean race nobody shoots. */
-  private raceInputs(race: RaceDirector): void {
-    for (const c of this.combatants()) {
-      for (const q of c.queue) {
-        if (race.holding) {
-          q.forward = 0;
-          q.right = 0;
-          q.buttons = 0;
-        }
-        q.buttons &= ~BUTTON_USE;
-        if (!race.combat) q.buttons &= ~(BUTTON_FIRE | BUTTON_ALT | BUTTON_THROW);
-      }
-    }
-  }
-
-  /** Race: a Player Bot drives the track (raceSteer) and, in a combat race, fires its forward gun at rivals ahead. */
-  private raceBotInput(c: Combatant, race: RaceDirector): PlayerInput {
-    const input: PlayerInput = { seq: c.lastSeq + 1, forward: 0, right: 0, yaw: c.yaw, pitch: 0, buttons: 0 };
-    const m = c.mount ? this.mounts[c.mount.index] : undefined;
-    const seat = this.seatOf(c);
-    if (!c.alive || !m?.def.vehicle || seat?.role !== 'driver') return input;
-    let driver = this.raceBots.get(c.slot);
-    // Each bot keeps to its own lane and pushes a little more or less in the bends.
-    if (!driver) this.raceBots.set(c.slot, (driver = new TrackDriver((((c.slot * 7) % 5) - 2) * 0.25, 0.85 + ((c.slot * 37) % 16) / 100)));
-    const view = this.raceVehicle(m);
-    input.yaw = m.yaw;
-    // Finished: ease off and roll to a stop.
-    if (race.status(c.slot)?.finish !== null && race.status(c.slot)) return input;
-    const d = driver.drive(race.track, view, this.tick, this.vehiclesNear(m));
-    input.forward = d.forward;
-    input.right = d.right;
-    if (d.brake) input.buttons |= BUTTON_JUMP;
-    // Combat race: bursts at rivals ahead (well under a second, then a breather), never a constant stream,
-    // and not in the opening seconds, while the field is still bunched up off the grid.
-    if (race.combat && seat.weapon && race.elapsed > RACE_HOLD_FIRE_TICKS && (this.tick + c.slot * 13) % 100 < 40) {
-      const gun = getWeapon(seat.weapon);
-      const rivals = this.combatants().filter((o) => o !== c && o.alive).map((o) => o.move.pos);
-      const shot = raceShot(view, seat.arc ?? Math.PI, Math.min(gun.range, 30), rivals, (a, b) => this.physics.lineOfSight(a, b));
-      if (shot) {
-        input.yaw = shot.yaw;
-        input.pitch = shot.pitch;
-        input.buttons |= shot.buttons;
-      }
-    }
-    return input;
   }
 
   /** Classes: what the class rules may see and do in the match. */
@@ -1309,8 +1182,6 @@ export class Match {
   /** Should `a` attack (and be able to hurt) `b`? */
   hostile(a: Combatant, b: Combatant): boolean {
     if (a === b) return false;
-    // A clean race: nobody fights.
-    if (this.race && !this.race.combat) return false;
     // Fast paths: deathmatch players fight everyone; same faction never fights.
     if (a.faction === null && b.faction === null) return true;
     if (a.faction === b.faction) return false;
@@ -1332,7 +1203,6 @@ export class Match {
   canHurt(a: Combatant, b: Combatant): boolean {
     if (a === b) return false;
     if (this.hostile(a, b)) return true;
-    if (this.race && !this.race.combat) return false;
     return (this.rules.friendlyFire ?? 'off') !== 'off' && !a.npc && !b.npc;
   }
 
@@ -1475,7 +1345,7 @@ export class Match {
   startHere(c: Combatant, at: { pos: Vec3; yaw: number; pitch: number }): void {
     c.startAt = { pos: { ...at.pos }, yaw: at.yaw, pitch: at.pitch };
     if (!c.alive) return;
-    // Out of a race car or the drop plane the spawn may have put them in: on foot, where asked.
+    // Out of a vehicle or the drop plane the spawn may have put them in: on foot, where asked.
     this.leaveMount(c, false);
     c.move = { pos: { ...at.pos }, velY: 0, grounded: false };
     c.yaw = at.yaw;
@@ -1577,7 +1447,6 @@ export class Match {
     const out = bots[0]!;
     const from = out.name;
     this.botThought.delete(out.slot);
-    this.raceBots.delete(out.slot);
     this.remove(out.slot);
     const c = this.addHuman(name, look, want !== undefined && out.faction === want ? want : out.faction);
     if (c) {
@@ -1957,7 +1826,6 @@ export class Match {
     // A new connection counts its inputs from 1 again; the same one carries on: either is newer than nothing.
     c.lastSeq = 0;
     this.botThought.delete(slot);
-    this.raceBots.delete(slot);
     this.nav.places();
     this.refreshRoles();
     this.resetIdle(slot);
@@ -2018,7 +1886,6 @@ export class Match {
         t = now;
       };
       this.runBots();
-      if (this.race) this.raceInputs(this.race);
       if (prof) lap('bots');
       // Movers first, so everyone moves against (and rides) this tick's platforms.
       this.scenario.moveMovers();
@@ -2043,7 +1910,6 @@ export class Match {
       if (this.phase === 'playing' && this.roulette) this.phys.gravity = this.roulette.step();
       if (this.phase === 'playing') this.zombies?.step();
       if (this.phase === 'playing') this.classes?.step();
-      if (this.phase === 'playing') this.race?.step();
       this.spawnDue();
       for (const c of this.npcs.values()) if (!c.alive && this.tick >= c.npc!.removeAt) this.removeNpc(c.slot);
       if (this.tick >= this.phaseEndTick) this.endRound();
@@ -2222,10 +2088,6 @@ export class Match {
     for (let k = 0; k < n; k++) {
       const c = actors[(k + from) % n]!;
       if (!c.bot) continue;
-      if (this.race && !c.npc) {
-        c.queue.push(this.raceBotInput(c, this.race));
-        continue;
-      }
       // (A bot on a parkour link thinks every tick until it lands: its jump is timed to the tick.)
       const due = every === 1 || (this.tick + c.slot) % every === 0 || deferredBefore.has(c.slot) || c.bot.parkouring;
       // Big matches: a bot with nobody to fight thinks on its own ticks and keeps its last move in between.
@@ -4802,7 +4664,7 @@ export class Match {
           m.moveOwed = false;
         }
       }
-      if (m.def.sentry && this.race?.combat !== false) this.runSentry(m);
+      if (m.def.sentry) this.runSentry(m);
       if (m.alive && m.def.vehicle) this.vehicleHazards(m);
       if (!m.alive) return;
       // Riders move with it; shooting their own guns from a moving one spreads like shooting on the run.
@@ -5966,8 +5828,6 @@ export class Match {
     if (rl && c.kind === 'bot') rl.botChoose(c, this.botBodyStyle(c));
     // Play from here: on foot where you asked (no grid, no plane).
     if (at) return;
-    // Race: straight into your vehicle, on the grid or at your last checkpoint.
-    this.race?.onSpawn(c.slot);
     // Air drop maps start you (or always spawn you) in the transport plane.
     if (this.mounts.some((m) => m.route && m.airdrop && m.airdrop !== 'off')) this.boardPlane(c);
   }
@@ -6296,7 +6156,6 @@ export class Match {
       for (const c of this.combatants()) c.spawnedAt = this.tick;
       this.mode?.reset();
       this.zombies?.reset();
-      this.race?.reset(false);
       this.phaseEndTick = this.rules.timeLimitSeconds > 0 ? this.tick + Math.max(1, timeLeft) * TICK_RATE : Infinity;
     } else if (phase === 'intermission') {
       this.phase = 'intermission';
@@ -6336,7 +6195,6 @@ export class Match {
     this.phaseEndTick = this.roundEndTick();
     this.mode?.reset();
     this.zombies?.reset();
-    this.race?.reset(false);
     this.roulette?.calm();
     this.pendingEvents.push({ e: 'round_start' });
   }
@@ -6379,7 +6237,6 @@ export class Match {
     this.classes?.reset();
     this.roulette?.reset();
     this.awards.reset();
-    this.race?.reset(!this.opts.startGate);
     for (const c of this.combatants()) this.spawnOrQueue(c);
     if (this.opts.startGate) {
       // Every round opens with the countdown (round_start comes when it ends).
@@ -6645,7 +6502,7 @@ export class Match {
       np: this.npcSnapshots(),
       ...(this.rules.leaders && this.teams ? { ld: this.teams.map((t) => this.leaderOf.get(t.id) ?? -1) } : {}),
       ...(this.roulette?.snapshot() ? { rl: this.roulette.snapshot()! } : {}),
-      ...(this.mode ? { md: this.mode.snapshot() } : this.zombies ? { md: { ts: [this.zombies.wave], zb: this.zombies.snapshot() } } : this.race ? { md: { ts: [], rc: this.race.snapshot() } } : {}),
+      ...(this.mode ? { md: this.mode.snapshot() } : this.zombies ? { md: { ts: [this.zombies.wave], zb: this.zombies.snapshot() } } : {}),
     };
   }
 
