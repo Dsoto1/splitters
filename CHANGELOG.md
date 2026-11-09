@@ -20,6 +20,13 @@ made only on a commit that passed CI on a check branch.
 - Outpost Siege: a smaller dais in the uplink room and the north room's low cover set back from the walls; bots get
   round to the armour and the north rooms.
 - Iron Compound: the gantry MG turret sits in the gantry's end corner, out of the walkway.
+**Friends stay with the party after a vote**: a friend in your hosted game follows you to the next map (the vote's
+winner, the rotation, Change map) until your match there lets them in, instead of giving up after one early try while
+your browser was still loading it.
+
+**Flaky e2e checks fixed at the cause** (tests only): mobile (bots knocking the player into the air before the jump
+tap), physicsfx (bodies dropped and blasts set off by cover, a race with bots respawning, range bots in front of the glass), characters3 (a weapon key pressed while only the view
+lagged) and weaponsets (a respawn picking up last life's dropped gun).
 **Team kills show as team kills, and reward nothing** (owner's bug report, 2026-11-08: "Teamkills should not count
 towards a kill streak (should end one) or show anything rewarding. It should actually show in the upper right that it
 was a TK."):
@@ -71,6 +78,12 @@ through its dugout steps, about 10 s a match.
 - **`?` lists every key** MapMaker binds, grouped (also the tool bar's **Keys** button); Esc or `?` closes it. The
   keys, the fly camera and the list all come from one table, so it can't go stale. `/` still searches the palette.
 
+- **You in the driver's seat** (owner's bug report, 2026-11-08). In a vehicle's chase view your own character now
+  sits in your seat (driver, gunner or passenger, in every vehicle with seats, the planes' chase view included),
+  posed and turned like every other rider; the seat no longer looks empty. The cockpit and seat views look out from
+  your own eyes and still leave your body out, as first person on foot does.
+
+
 ## 0.9.0 (2026-11-08)
 
 **MapMaker: measure, props on surfaces, Randomise** (MapMaker overhaul Phase 1, items 3 and 4):
@@ -120,7 +133,6 @@ through its dugout steps, about 10 s a match.
 - **Engines.** A vehicle anyone rides runs its engine, pitched up with speed (lower for the Tank, higher for
   hovercraft and flyers): yours as you ride, and the two nearest others from where they are. A placeholder until the
   sound pass's recorded engine loops.
-
 **Play on with friends: vote on the next map, parties** (owner, 2026-11-08):
 - **Vote on the next map.** When a match ends, the scoreboard (and its awards) shares the screen with two or three of
   our maps that fit the players and the mode, the rotation's next first. Press 1-3, click or tap; change your mind

@@ -65,7 +65,32 @@ move in lock step with the vehicle, their bodies drift back ... hearing their fo
   you at 18 m/s on the page's frame clock (60 fps game time): before the fix 2.62 m off the seat and 2 footsteps,
   after 0.000 m over 90 frames, no footsteps, the engine playing.
 - **Seen, not changed:** in the chase view your own driver's body isn't drawn (session draws your character only on
-  foot); the passengers are.
+  foot); the passengers are. **Fixed next (`wip/driver-body`, below).**
+
+**Your own body in the chase view (`wip/driver-body`, 2026-11-08; owner-approved bug fix).** "In the third-person chase
+view of a vehicle ... the driver's seat looks empty."
+- **Cause:** `Session` drew your character (`updateAvatars(..., localSlot = -1)`) only on foot in third person (`mine`
+  needed `!this.seat`); seated, your slot was always the hidden first-person self.
+- **Fix:** `game/ownBody.ts` `ownBodyDrawn`: on foot as before (third person, not `tpClose`); in a seat only when the
+  vehicle camera's view is `chase` (ground drivers who pressed H, every plane seat); cockpit and `seat` views (gunners,
+  passengers, turrets: your own eyes) stay hidden; dead never. Seated, your pose is the one `RiderPlacement` already put
+  on your seat of the vehicle as drawn (`seatedRiders`/`seatPoint`, b1842c9), so it sits, holds and eases in and out
+  exactly as remote riders do; only its yaw/pitch come from your input (no 100 ms lag turning). The viewmodel is
+  also hidden in `chase`. One avatar per slot, so no doubled body: getting out hands back to the on-foot rule, dying
+  hides it at once (`local.alive`) and the dead pose disposes it as on foot; the kill cam and spectating watch others.
+- **Tests:** unit `client/test/ownBody.test.ts`; e2e `passengerChecks` (`vehicles` flow): over the same 90+ frames at
+  18 m/s, your body drawn, sitting, 0.00 m off the driver's seat point; H to the cockpit hides it, H back draws it,
+  out on foot (first person) hidden. Before the fix: drawn 0 of 98 frames; after, 99 of 99 sitting (locally, the
+  flow passes with the tank part skipped: this box was at load 20-30). `CharacterAnimator.settleSeat`: your body,
+  hidden in the cockpit, appears already sitting when H goes to the chase view (it eased up from standing over a few
+  frames). Screenshots (scratchpad, may not survive): `driver-body/{before,after}/vehicles-passenger-speed.png`,
+  `chase-before-after-zoom.png`, `after/close-chase*.png`, `after/vehicles-driver-cockpit.png`.
+- **Status:** `check/driver-body` @ edb8a24 (run 42501601388): every flow green (vehicles included) except `party`
+  ("the party goes on to the voted map together" / "The match has not started"), which fails the same way on
+  check/coord, check/release-090 and check/flaky-e2e this afternoon: not from this change. **Not landed**: land it once
+  party is fixed on main (merge origin/main, re-run check/driver-body, fast-forward main).
+- **Pitfall:** `/home/user/wt-pickups` (the node_modules other worktrees symlinked to) was deleted on 2026-11-08 during
+  the disk-full cleanup; this worktree's links now point into `/home/user/splitters/node_modules`.
 
 **Main** = 63731808 plus this note, green. Today's landings are on main, in order:
 - Breakthrough;
@@ -110,9 +135,14 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
 - Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
+- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, bunker_cross, concrete_annex, iron_tide, ironhold_prison, pump_tower, silo_complex, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
+- Note for both sessions: the e2e `party` flow fails intermittently on check branches (the party never reaches the voted map; runs 42519820533, 42530655386, and p3a's first run). It passes on re-run. Its owner may want to look.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/skyward.json`, `maps/sky_islands.json`, `maps/grand_marquee.json`, `maps/obsidian_orb.json`, `maps/reactor.json`, `maps/serpent_gorge.json`, `maps/erosion.json`, `maps/m4_outpost.json`, `maps/iron_compound.json`, trap-spot fixes (this session, `wip/trap-spots`), 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
+- Claimed: `maps/<id>.json` for apex_ring, atomic_court, backwoods, blackout, canyon, capitol_mall, citadel, coldwater_gulch, crossroads, dead_reel, dockside_depot, dune_harbor, dustwater, eagle_spires, fernwood_moon, fort_meadow, gallows_yard, hollowmere_manor, iron_coast, jungle_steps, norman_shores, pharaohs_reach, primeval_park, qasr_medina, rail_stockyard, sandgate, sandsweep, serene_city, st_johns, sunken_kingdom, sunstone_crag (their Kenney trees, bushes, hedges and cacti → our species, MapMaker's Replace all driven in the real editor), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
+- Claimed: the new content ids `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`, `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew`; the leaves and bark atlases (`tools/content/env/**`, `content/environment/**`); the border forest and backdrop scenery's trees (`client/src/borderVisuals.ts`, `backdrop.ts`), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
+- Asked of the MapMaker lane (data only, inside its editor claim): Environment Phase 2 adds its species to and retires the Kenney trees, bushes, hedges and cacti from the Nature tables of `client/src/editor/paletteCatalog.ts` (`RETIRED_PROPS`, `GROUND_COVER_SPECIES`, `REPLACEMENTS`) and the scatter brushes' sets in `shared/src/editor/scatter.ts` (`SCATTER_SETS`: Kenney trees, bushes and cacti → our species), no other editor file; merged with origin/main before landing, 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
   Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
   1.25 m cells on a 380 m map) and a Terrain → Change grid tool that resamples heights, paint and plants; (2) a "coast"
@@ -134,6 +164,25 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - bot hints in MapMaker (Phase 4 item 3, and Bot AI Phase D's MapMaker part; the format goes in docs/BOTS.md);
   - Environment Phase 3's MapMaker tools (PROCEDURAL_ENVIRONMENT §11), after the other session's Environment Phase 2
     lands. Please note it here when it does.
+- **The owner's answers (2026-11-08)** to the MapMaker questions so far:
+  - **Keep as built:**
+    - the measure tool on U;
+    - Randomise variants for plant species only;
+    - Randomise resets each session;
+    - the draw estimate stays as is for now;
+    - `?` opens the key list;
+    - the plan view's cut stays;
+    - the plan export shows the five kinds only;
+    - Iron Compound keeps the gantry id, which loads as the bridge.
+  - **To build:**
+    - the jump hint samples the ground along the line;
+    - spawns, pickups, props, vehicles and NPCs over nothing or outside the boundary are refused (a red ghost, no
+      place);
+    - the budget bar moves into the bottom status bar;
+    - Shingle Point's card stays the cliff-top view, backed up so the cliff-top buildings' crest shows;
+    - "fix em all": swap every old big piece that has a set-piece version (town and city gate, pylon, warehouse,
+      hangar, bunker, city crossroads) on every map that uses one, in MapMaker. Each map is claimed first; the other
+      session's maps get asked first.
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
@@ -472,6 +521,45 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   table (`keymap.ts`) when both are on main. Esc now also cancels a ring drag and clears a measurement (in that order,
   before the old Esc).
 - **Not stored:** no map field, no format bump. Randomise's settings live for the session only.
+
+### Flaky e2e checks, root-caused (`wip/flaky-e2e`, agent, 2026-11-08; test-only, e2e/run.mjs)
+- **mobile**, "a tap on the pad middle jumps": the training range's deathmatch bots shot the god-mode player about
+  (knockback from swarm rockets and rounds, no damage): the tap could land mid-air (a jump is taken on the ground only).
+  The flow plays the range alone (`&bots=1`) and taps once grounded.
+- **physicsfx**: the "blast throws a bot" check blasted beside wherever a bot stood (behind cover: not thrown), and the
+  mass ring went 10 m along a view that depended on bot positions (a body thrown into a rock). Now the bots are held
+  from the start (they drove vehicles onto the spot and shot you about), and the first ragdoll, the throw and the mass
+  ring all go off on one fixed open spot found on a 4 m grid over the map (level ground, nothing within 5 m in the
+  sim's level or the effects world, no vehicle), with you placed 10 m off facing it, once the view has you there. The
+  first bot is killed with no attacker (it could be your teammate: no friendly fire, nothing died). The far-death check
+  waits for a bot back alive and drawn (it threw "reading 'move'" when none had respawned yet).
+- **physicsfx glass** (range): played alone (`&bots=1`; bots respawned in front of the panels and took the rounds, CI:
+  bulletproof panel at full health); each shot holds the trigger until the round goes (a fixed hold could pass with no
+  frame seeing it); the panel's break and shards are noted as they happen (broken glass is back after the map's 4 s,
+  sooner than a loaded page looked again).
+- **weaponsets** Match setup: Advanced rules is opened by its `aria-expanded` state until its Weapons fold shows (a
+  click while the setup redrew left it shut, locally).
+- **characters3** far bodies (`core.hyena` drawn 1.5-1.8 of 2.12 m, four times on CI, never another look): **not
+  fixed, a content lead.** The message now gives the full-detail mesh's height in the same pose: 2.09-2.12 m, so Hyena
+  Warrior's low-detail level (`meshy_hyena_lod`) is drawn 15-30% shorter than its full body in the same pose (its bind
+  pose heights match, 1.98 m both). 43% of its low-detail vertices match no full-body vertex within 2 mm (Alien: 0%,
+  Alien Biker 21%), so the far copy may not be cut from the body it ships with; `ONLY=meshy_hyena node
+  tools/content/relod-built.mjs` remakes it from the body in the file (tried as a trial: one skin, the same 2,750
+  triangles), to be checked in the characters3 flow with a hyena among the measured bots. The check is as it was
+  (75% of the standing height: fails at 1.5 m, passes at 1.8). Measuring every vertex instead of one in three made no
+  difference in bind pose.
+- **characters3**, scope check: `__give` already puts the marksman in hand; pressing 3 while only the view lagged cycled
+  on to the rifle in the same slot. It waits for the held gun and presses only while it isn't the marksman.
+- **party** (a real bug): a friend sent `travel` (the vote's winner, the rotation, Change map) rejoined the host's code
+  once, 1.2 s later; the host's browser was still loading the next map (40+ s on a loaded runner), the try failed and
+  the friend went back to the menu while the party played on (CI: "s2": {}, both attempts, on every check run that ran
+  it). Rejoining after a travel now keeps trying for up to 2 minutes whatever each try says (a refusal still ends it):
+  `packages/client/src/game/rejoinPolicy.ts`, `test/rejoinPolicy.test.ts`. The flow's message now traces the travel
+  (what the host told its friends, the friend's notices, the host's map and phase as it goes).
+- **weaponsets**, Chaos lives: the gun you die with drops at your body (rules.dropWeapons); idle at your spawn, the next
+  life could spawn on the same point and pick last life's oddball up (four weapons). The test respawn clears the
+  lying drops. For the owner: a redeploy (K) can land you on your own dropped oddball in Chaos; the spawn choice's
+  fresh-death penalty makes it rare, not impossible.
 
 ### Ammo Boxes by the tank routes (`wip/ammo-boxes`, agent, 2026-11-08; owner-approved follow-up to Tanks 2 item 2)
 
