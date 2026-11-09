@@ -33,13 +33,15 @@ owner-approved audit candidates 7 and 8). Details and tables: docs/GUNPLAY_AUDIT
     proven yet.
   - (3) Inputs go up as plain JSON (8 KB/s a player).
 - **G4:** bots' weapon choice now uses measured data (`shared/src/bots/weaponBands.ts`):
-  - `weaponScore` uses each gun's measured band, plus its TTK at the distance against the benchmark median;
+  - `weaponScore` uses each gun's measured band, plus its TTK at the distance (and its draw, if not in hand) against
+    the benchmark median;
   - `preferredRange` uses where the gun beats that median.
   - The data comes from `pnpm gun-report --json=docs/gunplay-audit.json --bands`; rerun it after any weapon change.
     bot-report now has a weapon-use line.
-  - **Before → after, 28 matches:** kills a minute 32.7 → 32.0; stuck 1.04 → 1.00 a bot-minute; idle out of a fight
-    4.5 → 4.1 %; weapon use spread 0.568 → 0.555 (the dominated Machine Pistol is no longer fired). Hit rates rose
-    for 9 of 13 guns (the shotguns +18-34 points, the Railgun 18 → 39 %, the Battle Rifle 6 → 21 %).
+  - **Before → after, 28 matches:** kills a minute 32.7 → 32.0; stuck 1.04 → 1.03 a bot-minute; idle out of a fight
+    4.5 → 4.4 %; weapon use spread 0.568 → 0.588. Hit rates rose for 11 of 15 guns (the shotguns +16-33 points, the
+    Railgun 18 → 39 %); the dominated Machine Pistol is no longer fired.
+  - `forts.test.ts` (Fort Wars CTF) now runs seed 3: 6 of seeds 1-12 reach the flag, against 7 before.
   - `bot-report --check` passes.
   - `botDesirability` is still hand-set.
 
