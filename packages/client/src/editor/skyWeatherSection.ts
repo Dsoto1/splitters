@@ -80,13 +80,16 @@ export function skyWeatherSection(host: SkyWeatherHost): HTMLElement {
   });
   time.addEventListener('change', () => host.run(`Time of day ${formatTime(Number(time.value))}`, setTimeOfDayCommand(host.current(), Number(time.value))));
   on.addEventListener('change', () => host.run(on.checked ? 'Set a time of day' : 'Clear time of day', setTimeOfDayCommand(host.current(), on.checked ? Number(time.value) : null)));
-  wrap.append(line('Time of day', on, time, shown));
+  const slide = document.createElement('div');
+  slide.className = 'ed-tod-row';
+  slide.append(time);
+  wrap.append(line('Time of day', on, shown), slide);
   const presets = document.createElement('div');
   presets.className = 'ed-tod-presets';
   for (const [label, h] of TIME_PRESETS) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'ed-tod-preset';
+    b.className = `ed-tod-preset${hours === h ? ' on' : ''}`;
     b.dataset.hours = String(h);
     b.textContent = label;
     b.title = formatTime(h);

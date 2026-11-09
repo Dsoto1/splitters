@@ -7226,10 +7226,10 @@ async function flashingFlow(browser) {
     // the flow plays on Low, which draws none). No lightning: nothing in them may flash.
     {
       name: 'rain',
-      label: 'heavy rain in a gale at night, out in the open',
+      label: 'heavy rain in a gale at night, out in the open, looking up into it',
       weapon: 'core.arc_caster',
       me: [-10, 0, 0],
-      look: aim([-10, 0, 0], [0, 1.4, 6]),
+      look: aim([-10, 0, 0], [0, 5, 6]),
       bots: [],
       before: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'rain', amount: 1, wind: 0.7, fog: 0.3 }, 'high')),
       after: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'none', amount: 0, wind: 0, fog: 0 })),

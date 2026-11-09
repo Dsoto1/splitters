@@ -322,11 +322,11 @@ export class WeatherVisuals {
       mat.setVector3('fall', snow ? new Vector3(wx * 0.6, -1.4, wz * 0.6) : new Vector3(wx, -11, wz));
       const box = snow ? SNOW_BOX : RAIN_BOX;
       mat.setVector2('box', new Vector2(box[0], box[1]));
-      mat.setVector2('size', snow ? new Vector2(0.035 + a * 0.02, 0) : new Vector2(0.008 + a * 0.004, 0.35 + a * 0.25));
+      mat.setVector2('size', snow ? new Vector2(0.035 + a * 0.02, 0) : new Vector2(0.011 + a * 0.007, 0.35 + a * 0.25));
       mat.setFloat('time', t);
       mat.setFloat('snow', snow ? 1 : 0);
       const tint = this.tints.fall.scale(calm && snow ? 0.85 : 1);
-      const alpha = (snow ? 0.55 + a * 0.3 : 0.18 + a * 0.17) * open * (calm ? 0.85 : 1);
+      const alpha = (snow ? 0.55 + a * 0.3 : 0.24 + a * 0.24) * open * (calm ? 0.85 : 1);
       mat.setColor4('tint', new Color4(tint.r, tint.g, tint.b, alpha));
       this.fall.isVisible = open > 0.01;
     }
