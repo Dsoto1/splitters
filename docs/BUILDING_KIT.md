@@ -1220,6 +1220,47 @@ template automatically.
   zones and water turn in quarter turns. The inspector's **Face** buttons (0°, 90°, 180°, 270°) set a facing in one
   click; 0° faces north (+Z), 90° east (+X).
 
+## Testing, the plan and the card shot (MapMaker)
+
+- **Play from here (Shift+F5, ▶ Here).** Fly to where you want to stand and look the way you want to face: the test
+  match starts you on the floor, roof or ground below the camera (the nearest spot with room to stand, up to 4 m
+  round). It says why when it can't (nothing below, no room, too steep, outside the boundary). In the plan view it
+  starts you on the level shown, under the middle of the view. Esc (twice in a browser with the mouse captured) or
+  the pause menu's Back to MapMaker brings you back where you were, undo and all.
+- **The plan view (K, Plan).** The level being edited from straight above, cut 0.6 of a level above its floor, so
+  roofs and the levels above are out of the way. Tiles are outlined in white (the level below dashed); icons show the
+  spawns (team colours, pointing the way they face), flags, hills (with their zones), objectives (bomb sites,
+  Breakthrough objectives, hostages and rescue zones, with their letters) and pickups. PgUp / PgDn change the level;
+  select, move and place as in 3D; the wheel zooms about the pointer, a right or middle drag (or WASD) pans, Home
+  fits the map, F centres the selection. **Export PNG** downloads the plan with a scale bar, a north arrow and a key.
+- **The card shot (Map properties → Card shot).** Set card shot… shows the menu card's frame (16:9) with the card
+  picture's own lens; Eye level (on by default) keeps the camera 1.7 m over what's under it as you fly. Enter saves
+  the camera in the map (`metadata.cardCamera`), Esc cancels; Preview shows the saved shot in the frame; Clear goes
+  back to the automatic camera. The card picture (`maps/shots/<id>.jpg`, 640×360) is rendered from it by
+  `tools/content/capture-map-shots.mjs`; MapMaker stores no picture for it (Set thumbnail is the maker's own picture).
+
+## Groups, copy and paste, templates, mirror and notes (MapMaker)
+
+- **Groups (Ctrl+G).** Select things (box-select, Shift+click) and group them: a click on any of them then picks the
+  lot (Alt-click picks one), so it moves, turns, flips (M), duplicates (a group again) and deletes as one. Name it in
+  the inspector; Ctrl+Shift+G (or Ungroup) takes the group away and leaves the things. Groups stay in their map: to
+  reuse a build in other maps, save it as a set piece.
+- **Copy and paste (Ctrl+C, Ctrl+V).** The copy is kept in this browser; paste puts it where the pointer is (its
+  middle cell on the cell under the pointer) on the level you are editing, with new ids, in this map or another. The
+  map it goes into must have the same grid and theme; MapMaker says why when it doesn't, or when it wouldn't fit there.
+- **Templates (New map → start from a layout).** Arena, Symmetric CTF, Assault (Breakthrough, two sectors and a final
+  hold) or Open terrain. The new map is your own; the layouts live in `maps/templates/` and never show in map lists.
+- **Mirror… (Shift+M).** For team maps: build one side, mirror it. Pick the selection or half the map, the line
+  (east ↔ west, north ↔ south) or a point (a half turn) and where it is (it snaps to a cell's middle or edge). Keep
+  the original adds a mirrored copy, whose team things swap to the other team (spawns, flag bases, team zones, doors,
+  buttons, team vehicles); untick it to flip the selection itself. Half the map copies one half onto the other, which
+  must be empty; things on the line stay. The dialog says what it will do before you press Mirror. Tiles that have no
+  mirror image among their turns (most model buildings) can only go through a point. Terrain and paths are left as
+  they are.
+- **Note pins (J).** Notes for the map's makers ("too long a sightline from B"): click the map to pin one, click a pin
+  to read or edit it (Ctrl+Enter saves), drag it to move it. Map properties → Notes lists them. They are saved in the
+  map and never shown in play.
+
 ## Backdrops and plants
 
 Skies, distant scenery, ground past the border, terrain plants and the scatter brush are covered in [SCENERY.md](SCENERY.md).

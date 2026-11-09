@@ -1360,6 +1360,14 @@ export class CharacterAnimator {
     root.rotation.z = L.side;
   }
 
+  /**
+   * Straight into (or out of) the seated pose, no easing: a body that was hidden while its rider sat down (your own,
+   * shown as the view goes from the cockpit to the chase camera) appears already sitting.
+   */
+  settleSeat(seated: boolean): void {
+    this.sit = seated ? 1 : 0;
+  }
+
   /** Current forward tip of the body (0 standing, PRONE_TILT lying down). */
   private prone = 0;
   private lying = false;

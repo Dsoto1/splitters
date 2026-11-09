@@ -76,6 +76,8 @@ import {
   type OBox,
   DEFAULT_BLOOD,
   EffectsWorld,
+  debrisBurst,
+  vehicleDebris,
   mapTerrainMesh,
   environmentShapes,
   type MapEntity,
@@ -1367,7 +1369,8 @@ export class GameView {
       });
       this.debrisBodies = this.debrisBodies.filter((d) => {
         const age = (now - d.born) / 1000;
-        if (age > DEBRIS_LIFE) {
+        // The safety net: a chunk that got under the world anyway (it fell through it, or off its edge) goes.
+        if (age > DEBRIS_LIFE || this.physics!.belowWorld(d.body.translation().y)) {
           if (!d.shared) d.mesh.material?.dispose();
           d.mesh.dispose();
           this.physics!.remove(d.body);
@@ -2049,7 +2052,11 @@ export class GameView {
         if (this.fpBody?.a === a) this.dropFpBody();
         a.hiddenSelf = false;
         a.root.setEnabled(!a.culled);
-        if (a.anim instanceof CharacterAnimator) a.anim.setDormant(!!a.culled);
+        if (a.anim instanceof CharacterAnimator) {
+          a.anim.setDormant(!!a.culled);
+          // Your rider's body (hidden in the cockpit, shown in the chase view) appears in its pose, not standing up.
+          a.anim.settleSeat(sitting.has(p.slot));
+        }
       }
       // A creature plays its own death and is left lying where it fell (no ragdoll).
       if (a.wasAlive && !p.alive && a.anim instanceof CreatureAnimator) {
@@ -3051,8 +3058,7 @@ export class GameView {
       },
     });
     this.impacts.sparkBurst(at, 40, 9);
-    this.debris(at, '#26221f', Math.max(1, radius * 0.4), 16, 1.8);
-    this.debris(at, '#6b2a12', Math.max(0.8, radius * 0.3), 6, 2.2);
+    vehicleDebris(radius).forEach((b, i) => this.debris(at, i ? '#6b2a12' : '#26221f', b.size, b.count, b.speed));
     for (let i = 0; i < 10; i++) {
       const p = { x: at.x + (Math.random() - 0.5) * radius, y: at.y + Math.random() * radius * 0.6, z: at.z + (Math.random() - 0.5) * radius };
       this.impacts.puff(p, i % 3 ? '#1b1917' : '#3a3633', radius * (0.5 + Math.random() * 0.4), 2.2 + Math.random() * 1.5, 1.6 + Math.random());
@@ -3075,20 +3081,22 @@ export class GameView {
 
   /** Chunks flying out of a broken crate, barrel or wall: real little bodies that bounce and settle (falls back to a canned arc without physics). */
   debris(at: Vec3, color: string, size: number, count = 10, speed = 1): void {
-    for (let k = 0; k < count; k++) {
-      const s = size * (0.15 + Math.random() * 0.2);
+    for (const c of debrisBurst(at, size, count, speed)) {
+      const s = c.size;
       const chunk = CreateBox('debris', { size: s }, this.scene);
       chunk.material = solid(this.scene, 'debrisMat', color);
       chunk.isPickable = false;
-      const v = new Vector3((Math.random() - 0.5) * 6 * speed, (2 + Math.random() * 4) * speed, (Math.random() - 0.5) * 6 * speed);
-      const spin = new Vector3(Math.random() * 8, Math.random() * 8, Math.random() * 8);
-      const start = new Vector3(at.x + (Math.random() - 0.5) * size, at.y + (Math.random() - 0.5) * size, at.z + (Math.random() - 0.5) * size);
+      const v = new Vector3(c.vel.x, c.vel.y, c.vel.z);
+      const spin = new Vector3(c.spin.x, c.spin.y, c.spin.z);
       if (this.physics) {
-        const body = this.physics.addBody({ kind: 'box', half: { x: s / 2, y: s / 2, z: s / 2 } }, start, { x: 0, y: 0, z: 0, w: 1 }, 'debris', { vel: v, spin, density: 0.6 });
-        chunk.position.copyFrom(start);
+        // Out of the ground first: a chunk started under the terrain's surface falls out of the world.
+        const p = this.physics.clearOfGround(at, c.start, s / 2);
+        const body = this.physics.addBody({ kind: 'box', half: { x: s / 2, y: s / 2, z: s / 2 } }, p, { x: 0, y: 0, z: 0, w: 1 }, 'debris', { vel: v, spin, density: 0.6 });
+        chunk.position.set(p.x, p.y, p.z);
         this.debrisBodies.push({ mesh: chunk, body, born: performance.now() });
         continue;
       }
+      const start = new Vector3(c.start.x, c.start.y, c.start.z);
       // Each effect disposes its own material when it ends.
       this.effects.push({
       mesh: chunk,

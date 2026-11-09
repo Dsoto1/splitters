@@ -39,10 +39,14 @@ export function canonicalJson(value: unknown): string {
   return `{${keys.map((k) => `${JSON.stringify(k)}:${canonicalJson(o[k])}`).join(',')}}`;
 }
 
-/** The map's content as hashed: everything but its picture, picture camera, last-saved time and release block. */
+/**
+ * The map's content as hashed: everything but its picture, picture camera, card camera, last-saved time and release
+ * block, and MapMaker's own groups and note pins (v31: editing aids, not what is played).
+ */
 export function canonicalMapJson(map: MapDocument): string {
-  const { thumbnail: _t, thumbnailCamera: _c, release: _r, updatedAt: _u, ...metadata } = map.metadata;
-  return canonicalJson({ ...map, metadata });
+  const { thumbnail: _t, thumbnailCamera: _c, cardCamera: _k, release: _r, updatedAt: _u, ...metadata } = map.metadata;
+  const { groups: _g, editorNotes: _n, ...rest } = map;
+  return canonicalJson({ ...rest, metadata });
 }
 
 /** "sha256:<hex>" of the map's canonical JSON. */

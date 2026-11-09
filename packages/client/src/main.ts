@@ -36,6 +36,7 @@ import { bootStep, finishBoot, preloadImage } from './boot.ts';
 import { SHIPPED_PORTRAITS } from './frontend/portraitIndex.ts';
 import { shippedPicture } from './frontend/mapThumbs.ts';
 import { joinParty, myParty, rememberJoin } from './game/party.ts';
+import { FOLLOW_TRAVEL_MS, RECONNECT_FOR_MS, afterLinkEnds } from './game/rejoinPolicy.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
@@ -409,7 +410,7 @@ class App {
 
   private startTestWith(m: MatchCode, req: TestRequest, t0: number): void {
     this.editor!.hide();
-    this.startSession(m, new m.LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty, ...(TEST ? { test: TEST } : {}) }), {
+    this.startSession(m, new m.LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty, ...(req.startAt ? { startAt: req.startAt } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Back to MapMaker',
       exitOnF5: true,
       onReady: () => {
@@ -643,8 +644,8 @@ class App {
         onExit: (reason, travel, how, end) => {
           window.clearTimeout(deadline);
           if (!ready && o.onFail) return o.onFail(reason, how);
-          // The host changed map: rejoin the same code in a moment (their next match lets us in).
-          if (reason === 'travel' && travel) return void window.setTimeout(again, 1200);
+          // The host changed map: rejoin the same code in a moment, until their next match lets us in.
+          if (reason === 'travel' && travel) return void this.followTravel(again);
           // A player's browser hosted it and it's gone (it left, or the link dropped): the host-left screen.
           const peer = transport as { hostGone?: 'left' | 'dropped' | null; dedicated?: boolean; takeHandoff?: () => Handoff };
           // What the host told us about who takes over (and, if it's us, our standby code and its checkpoint).
@@ -746,8 +747,8 @@ class App {
       exitOnF5: false,
       onReady: () => this.reconnected(),
       onExit: (reason, travel, how) => {
-        // The server moved on to the next map of a chain: join it again in a moment.
-        if (reason === 'travel' && travel) return void window.setTimeout(again, 1200);
+        // The server moved on to the next map of a chain: join it again in a moment, until it lets us in.
+        if (reason === 'travel' && travel) return void this.followTravel(again);
         this.afterOnline(reason, how, again);
       },
     }));
@@ -759,27 +760,37 @@ class App {
    * to this browser, so we try again until then: at once when the network
    * comes back or the page is shown again, else every few seconds.
    */
-  private rejoin?: { until: number; tries: number; again: () => void; reason: string; timer?: number; tried?: number };
+  private rejoin?: { until: number; tries: number; again: () => void; reason: string; timer?: number; tried?: number; following?: boolean };
+
+  /**
+   * The host or server moved on to the next map: join it again in a moment, and keep trying until its next match lets
+   * us in (a slow machine takes a while to load it; one try that came too early used to leave the friend on the menu
+   * while the party played on without them).
+   */
+  private followTravel(again: () => void): void {
+    this.stopRejoin();
+    this.rejoin = { until: Date.now() + FOLLOW_TRAVEL_MS, tries: 0, again, reason: 'the host changed map', following: true };
+    window.setTimeout(again, 1200);
+  }
 
   /** An online match ended: try to get back in after a lost connection; otherwise the menu says why. */
   private afterOnline(reason: string | undefined, how: 'lost' | 'rejected' | undefined, again: () => void): void {
     const r = this.rejoin;
-    // A refusal, or leaving on purpose, ends it; a lost link (or a failed try while reconnecting) tries again.
-    // The game is gone (the host closed it): nothing to get back into.
-    const gone = !!reason && /^no game open with code/.test(reason);
-    if (how === 'rejected' || !reason || gone || (how !== 'lost' && !r)) {
+    // A refusal, or leaving on purpose, ends it; a lost link (or a failed try while reconnecting or following the host
+    // to its next map) tries again. The game is gone (the host closed it): nothing to get back into (rejoinPolicy.ts).
+    if (afterLinkEnds({ reason, how, rejoining: !!r, following: !!r?.following }) === 'menu') {
       this.stopRejoin();
       return void this.showMenu(reason ? `Disconnected: ${reason}` : '');
     }
     const now = Date.now();
-    const state = r ?? (this.rejoin = { until: now + RECONNECT_FOR_MS, tries: 0, again, reason });
+    const state = r ?? (this.rejoin = { until: now + RECONNECT_FOR_MS, tries: 0, again, reason: reason! });
     if (now > state.until) {
       this.stopRejoin();
       return void this.showMenu(`Disconnected: ${state.reason} (couldn't get back in)`);
     }
     state.tries++;
     void this.showMenu('');
-    reconnectBanner(`Connection lost: reconnecting… (try ${state.tries})`, () => {
+    reconnectBanner(state.following ? `Following the host to the next map… (try ${state.tries})` : `Connection lost: reconnecting… (try ${state.tries})`, () => {
       this.stopRejoin();
       this.front?.setStatus('');
     });
@@ -860,9 +871,6 @@ class App {
 const RECONNECT_HOST_MS = 60_000;
 /** A try with a deadline whose link opened (the host is there, still starting its match) may wait this long to be let in. */
 const LINKED_WAIT_MS = 60_000;
-
-/** How long a lost connection is tried again (the server keeps the place a minute). */
-const RECONNECT_FOR_MS = 60_000;
 
 /** The "Reconnecting…" strip over the menu, with Cancel; null hides it. */
 function reconnectBanner(text: string | null, cancel?: () => void): void {

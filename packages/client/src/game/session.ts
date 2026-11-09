@@ -142,6 +142,7 @@ import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
 import { RiderPlacement } from './riderPlacement.ts';
+import { ownBodyDrawn } from './ownBody.ts';
 import { LocalTransport } from './localTransport.ts';
 import { SYS, netProbe, perfProbe } from './perfProbe.ts';
 import { PerfOverlay, loadPerfOverlay, savePerfOverlay } from './perfOverlay.ts';
@@ -301,6 +302,8 @@ export class GameSession {
   private readonly abort = new AbortController();
   private slot = -1;
   private local: LocalPlayer | null = null;
+  /** This player has had a life in this match (the first one may start looking up or down: Play from here). */
+  private livedBefore = false;
   /** Spawns, portals, jump pads and ziplines read off movement, for their effects (gameplayFxWatch.ts). */
   private fxWatch: GameplayFxWatch | null = null;
   private map: MapDocument | null = null;
@@ -494,6 +497,8 @@ export class GameSession {
   private streakMoment(ev: Extract<GameEvent, { e: 'kill' }>, poses: () => ReturnType<Interpolator['sample']>): void {
     this.lifeKills.delete(ev.victim);
     if (ev.killer === null || ev.killer === undefined || ev.killer === ev.victim) return;
+    // A team kill ends the killer's streak (no burst, no "in a row").
+    if (ev.tk) return void this.lifeKills.delete(ev.killer);
     const n = (this.lifeKills.get(ev.killer) ?? 0) + 1;
     this.lifeKills.set(ev.killer, n);
     if (!(n === 3 || n === 5 || n === 7 || (n >= 10 && n % 5 === 0)) || document.hidden) return;
@@ -1849,7 +1854,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder }), mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick() };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder }), mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -1946,7 +1951,10 @@ export class GameSession {
           if (!me.alive && this.local.alive && this.classesOn) this.input.classMenu = true;
           if (me.alive && !this.local.alive) {
             this.input.yaw = me.yaw;
-            this.input.pitch = 0;
+            // The first life looks where the server put it (MapMaker's Play from here: up or down as the camera
+            // looked; otherwise level); every later one level.
+            this.input.pitch = this.livedBefore ? 0 : me.pitch;
+            this.livedBefore = true;
             this.wantWeapon = 0;
           }
           this.local.reconcile(me, msg.ack, msg.me, msg.tick);
@@ -2120,9 +2128,10 @@ export class GameSession {
             const at = this.view.chestOf(ev.s);
             if (at) this.view.playGameplayFx(`pickup.${getItem(ev.item)?.effect.kind ?? 'item'}`, at);
           } else if (ev.e === 'kill') {
-            this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot, !!ev.hs);
+            this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot, !!ev.hs, !!ev.tk);
             if (ev.victim === this.slot && ev.killer !== null && ev.killer !== this.slot && this.local && msg.phase === 'playing') this.startKillCam(ev.killer, ev.weapon);
-            if (ev.killer === this.slot && ev.victim !== this.slot) {
+            // A team kill confirms nothing: no kill marker, no multi-kill.
+            if (ev.killer === this.slot && ev.victim !== this.slot && !ev.tk) {
               // Kill confirmation (GUNPLAY_SPEC §22): a sharper marker that escalates with kills in a row.
               const t = performance.now();
               this.killTimes = [...this.killTimes.filter((k) => t - k < MULTI_KILL_MS), t];
@@ -2131,7 +2140,7 @@ export class GameSession {
             const at = this.view.chestOf(ev.victim);
             if (at) this.view.blood.kill(at);
             if (at && ev.hs) this.view.blood.hit({ x: at.x, y: at.y + 0.55, z: at.z }, { x: 0, y: 0.6, z: 0 }, 2.2);
-            if (ev.hs && ev.killer === this.slot) this.hud.headshot();
+            if (ev.hs && !ev.tk && ev.killer === this.slot) this.hud.headshot();
           } else if (ev.e === 'round_end') {
             if (ev.outcome === 'victory') this.chainOn(ev.next);
             // Nowhere else to go: this browser's rotation moves on after the scoreboard.
@@ -3069,7 +3078,7 @@ export class GameSession {
         }
       }
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride), ads: this.adsAmount, speed: this.drawnSpeed });
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
       this.hud.setScope(zoomed);
       this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount);
       this.updateScopeSway(dt, zoomed);
@@ -3160,7 +3169,13 @@ export class GameSession {
     // full-body first person (under the camera).
     const mine = local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
     if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0) });
-    const self = this.thirdPerson && !this.tpClose ? mine : undefined;
+    // Drawn as others see you: on foot in third person, and in a seat in the chase view (ownBody.ts).
+    const bodyDrawn = ownBodyDrawn({ alive: !!local?.alive, seated: !!this.seat, rideView: this.rideView, thirdPerson: this.thirdPerson, tpClose: this.tpClose });
+    const self = bodyDrawn ? mine : undefined;
+    // In a seat: the pose riderPlacement put on your seat of the vehicle as drawn (seated and holding as every rider
+    // is), turned where you look now rather than where the server last had you.
+    const rider = bodyDrawn && this.seat ? poses.find((p) => p.slot === this.slot && p.alive) : undefined;
+    if (rider) Object.assign(rider, { yaw: this.input.yaw, pitch: this.input.pitch });
     if (self && local) {
       // The gun points where your rounds go: at what the crosshair is on (the host aims them from the same camera),
       // not along the view, beside it: aiming down the sights magnified that miss.
@@ -3177,7 +3192,7 @@ export class GameSession {
     const tAvatars = perfProbe.on ? performance.now() : 0;
     this.view.updateAvatars(
       hostages.length ? [...poses, ...hostages] : poses,
-      self ? -1 : this.slot,
+      self || rider ? -1 : this.slot,
       (id) => {
         if (id >= HOSTAGE_SLOT_BASE) return { npc: { color: '#cfc4a8', scale: 1, female: id % 2 === 1 } };
         const npc = this.npcLook(id);

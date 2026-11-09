@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 30,
   "metadata": {
     "id": "step_temple",
     "name": "Step Temple",
@@ -24,6 +24,15 @@
       "contentHash": "sha256:52a3157d2daea6ed899914b6af4e7f87e60242d0ede13fd7b80399d4952cccbf",
       "schemaVersion": 27,
       "releasedAt": "2026-11-07T01:44:46.609Z"
+    },
+    "cardCamera": {
+      "position": [
+        -16,
+        6.5,
+        -16
+      ],
+      "yaw": 0.7854,
+      "pitch": -0.02
     }
   },
   "classicStructure": {

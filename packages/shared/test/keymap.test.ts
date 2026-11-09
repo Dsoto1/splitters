@@ -60,12 +60,32 @@ function before(code: string, shift: boolean, mod: boolean): KeyAction | null {
 const press = (code: string, shift: boolean, mod: boolean, meta = false) => matchEditorKey({ code, key: keyOf(code, shift), shiftKey: shift, ctrlKey: mod && !meta, metaKey: mod && meta });
 
 describe('MapMaker key table and the ? overlay (Phase 1, item 5)', () => {
-  it('every key keeps what it did before the table (Shift+/ now opens the key list)', () => {
+  it('every key keeps what it did before the table (Shift+/ now opens the key list; Shift+F5 and K are new)', () => {
     for (const code of CODES)
       for (const shift of [false, true])
         for (const mod of [false, true]) {
           const now = press(code, shift, mod)?.action ?? null;
-          const want = code === 'Slash' && shift && !mod ? 'keys' : before(code, shift, mod);
+          // Added since (Phase 3 part A): Shift+F5 plays from here, K is the plan view.
+          const added =
+            code === 'F5' && shift
+              ? 'playFromHere'
+              : code === 'KeyK' && !mod
+                ? 'planView'
+                : // Phase 3 part B: Ctrl+G group, Ctrl+Shift+G ungroup, Ctrl+C / Ctrl+V copy and paste, Shift+M Mirror…, J note pins.
+                  code === 'KeyG' && mod
+                  ? shift
+                    ? 'ungroup'
+                    : 'group'
+                  : code === 'KeyC' && mod
+                    ? 'copy'
+                    : code === 'KeyV' && mod
+                      ? 'paste'
+                      : code === 'KeyM' && shift && !mod
+                        ? 'mirrorDialog'
+                        : code === 'KeyJ' && !mod
+                          ? 'notes'
+                          : null;
+          const want = added ?? (code === 'Slash' && shift && !mod ? 'keys' : before(code, shift, mod));
           expect(now, `${mod ? 'Ctrl+' : ''}${shift ? 'Shift+' : ''}${code}`).toBe(want);
           // ⌘ on a Mac is Ctrl.
           if (mod) expect(press(code, shift, true, true)?.action ?? null).toBe(want);

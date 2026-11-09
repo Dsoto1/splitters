@@ -375,9 +375,9 @@ describe('Breakthrough', () => {
   });
 
   it("format v29: a v28 map (the weapon set's) migrates unchanged, and a map with sectors saves and loads", () => {
-    expect(MAP_FORMAT_VERSION).toBe(29);
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(29);
     const v28 = { ...JSON.parse(readFileSync(new URL('./fixtures/iron_compound_v26.json', import.meta.url), 'utf8')), formatVersion: 28, weaponSet: 'military' };
-    const { doc, fromVersion } = migrateMapDocument(structuredClone(v28));
+    const { doc, fromVersion } = migrateMapDocument(structuredClone(v28), undefined, 29);
     expect(fromVersion).toBe(28);
     expect(doc).toEqual({ ...v28, formatVersion: 29 });
     const back = loadMap(serializeMap(range()));

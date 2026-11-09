@@ -112,24 +112,84 @@ Already done from the owner's earlier ask: **the real buildable area.**
 1. **Play from here.**
    - Start a local test match with you standing at the camera spot.
    - Esc returns to MapMaker at the same view, with undo history intact.
+   - **As built** (`wip/mapmaker-p3a`): Shift+F5 and ▶ Here beside PLAY TEST (`EditorApp.playFromHere`). The spot is
+     shared `editor/playFromHere.ts` (`playFromHereSpot`): the floor, roof, block top or ground straight under the
+     camera (`restUnder` over the map's boxes, blocks and solid props, and `shownGround`), else the nearest such spot
+     in rings of 0.5 m out to 4 m, with room for a standing player (no box between a step and 1.8 m up, the player's
+     radius round) and ground no steeper than PLAYER.maxSlopeDegrees; refused with a reason (nothing below, no room,
+     too steep, outside the boundary). The match: TestRequest/LocalMatchOptions `startAt`, `Match.startHere` (the
+     player put there at once, out of any race car or drop plane, and any life before play begins starts there too;
+     `beginPlay` clears it, so later lives use the spawn points); the client's first life takes the server's pitch
+     (session.ts). The editor is only hidden while you play, so the view, selection and history are as they were.
+     Unit tests `mapmakerWorkflow.test.ts`; e2e `editorWorkflowChecks` in `editorux`.
 2. **A top-down plan view:** an overhead orthographic camera, level by level.
    - It shows tile outlines and icons for spawns, objectives and pickups.
    - It exports a PNG of the plan.
+   - **As built** (`wip/mapmaker-p3a`): K and the top bar's Plan (`editor/planView.ts`, `PlanView`; the maths in shared
+     `editor/planView.ts`: `planFrame`, `planToScreen` / `screenToPlan`, `planZoom` about the pointer, `planPan`,
+     `planTiles`, `planMarkers`, unit-tested). The editor camera turns orthographic, straight down, north up, over
+     the level the selector picks (Show all off while it's on); `scene.clipPlane` cuts at 0.6 of a level above the
+     floor (the terrain's materials are exempt, so hills stay whole). Tile outlines and icons are a 2D canvas over the
+     view (redrawn only when the frame, level, selection or document changes). Picking and dragging are the editor's
+     own (the pointer's ray points straight down). Export PNG: the next frame without the editing aids, the icons
+     over it, a key strip, downloaded as `<map>-<level>-plan.png`. Nothing is stored.
 3. **Groups.**
    - Group a selection, then move, turn, mirror or duplicate it as one, and ungroup it.
    - Groups belong to one map. Set pieces are the shareable kind, and groups reuse their selection code.
+   - **As built** (`wip/mapmaker-p3b`): `MapDocument.groups` (v31: id, optional name, 2+ member ids of the map's own
+     tiles, entities and set-piece placements; one group a thing). `editor/groups.ts`: `groupCommand`,
+     `ungroupCommand`, `renameGroupCommand` (setGroups, one undo step each); `withGroups` widens a selection to whole
+     groups: MapMaker's `setSelection` runs every selection through it, as a set piece or moving build is picked whole,
+     and Alt-click (`single`) picks one. So moving, turning, flipping (M: `flipCommand`, east ↔ west over its middle),
+     duplicating (`withCopiedGroups`: the copies are a group) and deleting need no group code of their own.
+     `withGroupsTidied` drops members an edit removes, in the same undo step (MapMaker's `run`). Shift-click on a
+     selected group's member takes the group out. validateMap warns on a member that isn't in the map or is in two
+     groups. Inspector: `editor/groupPanel.ts`.
 4. **Copy and paste between maps:** a MapMaker clipboard in local storage. Pasted items get new IDs and are placed
    relative to the cursor.
+   - **As built:** `editor/clipboard.ts`: `copySelection` (the things, the map's own set-piece definitions they use,
+     whole groups, the source's grid and theme, an anchor: the middle of its cells on its lowest level),
+     `parseClipboard`, `pasteCommand` (new ids through `editor/copyItems.ts` `freshCopies`, which keeps movers' blocks
+     and portal pairs linked; the anchor on the cell under the pointer, on the level edited; one undo step).
+     `pasteRefusal`: another cell size or level height is refused; another theme too while `PASTE_ACROSS_THEMES` is off
+     (an owner's call: HANDOFF, Phase 3 part B). Client: `editor/clipboardStore.ts` (localStorage `tiletrigger.editor.clipboard`).
 5. **Templates.** Start a new map from an official starter layout: arena, symmetric CTF, assault, open terrain.
+   - **As built:** `maps/templates/<id>.json` (arena, ctf, assault, open_terrain), built in MapMaker (its tools in the
+     plan view; CTF's east half made with Mirror…) and exported. They sit outside `maps/*.json`, so the map index, the
+     menu, playlists and the content tools never see them. `editor/templates.ts` (`MAP_TEMPLATES`,
+     `startFromTemplate`: a new id, name and dates); New map → Start from (`editor/templatePicker.ts`, each template its
+     own chunk). `mapTemplates.test.ts`: each validates with no errors or warnings and every spawn and pickup reachable.
 6. **Mirror for team maps.**
    - Mirror a selection or half the map across a line or a point.
    - Team things swap sides: spawns, flags, bases.
+   - **As built:** `editor/mirror.ts`. `mirrorCommand` (a mirrored copy, or the selection flipped in place),
+     `mirrorHalfCommand` (`mapHalf`: what lies wholly on one side; things on the line stay; refused while the other
+     half has anything on it), `flipCommand`. Lines east ↔ west or north ↔ south, or a point (a half turn), snapped to
+     a cell's middle or edge. Tiles: `tileMirrorTwin` finds the turn of a tile that is its mirror image (cells, ports,
+     default walls, solid and floor boxes; a corridor with cover on one side is itself turned half round, a corner a
+     quarter), and walls, glass and upper floors are carried over; a tile with none is refused across a line. Set
+     pieces flip `mirror`. Things: positions, facings, offsets (movers, planes, ziplines) and a block's roll. In a copy,
+     the map's first two teams swap (spawns, flags, team zones, doors, buttons, ziplines, team vehicles); Breakthrough
+     spawn groups keep their side. Terrain and paths aren't mirrored (an owner's call: HANDOFF, Phase 3 part B). One undo step.
+     Dialog: `editor/mirrorDialog.ts` (Shift+M). A unit test checks every mirrored tile's geometry is the mirror image.
 7. **Note pins:** notes left on the map for its makers.
    - They show in MapMaker, never in play.
    - They are stored in the map as editor notes (a format bump).
+   - **As built:** `MapDocument.editorNotes` (v31, with groups; a chained no-op migration from v30): id, position,
+     text (1-500). `editor/notes.ts`: add, edit, move, delete (setNotes, one undo step each), `listNotes`. Neither
+     notes nor groups are in the content hash (`canonicalMapJson`) or read by play. Client `editor/noteTool.ts`: pins
+     drawn over the view (HTML, projected each frame), a click opens a pin's editor, the Note tool (J) pins a new note
+     where you click and drags pins; Map properties → Notes lists them (go to, delete).
 8. **The card-shot camera.**
    - Set the menu card shot from the current view, eye level by default.
    - Preview it in the card's frame.
+   - **As built** (`wip/mapmaker-p3a`): Map properties → Card shot (`editor/cardShot.ts`; shared `editor/cardShot.ts`):
+     Set card shot… (eye level on: `eyeLevel`, 1.7 m over `restUnder`, kept as you fly), Preview, Clear. The frame is
+     16:9, centred on the camera's axis, and the camera's FOV over it is the card picture's (`cardViewFov`: 0.9 rad
+     across the frame's height, as capture-map-shots.mjs renders 960×540). Saved as `metadata.cardCamera` (position,
+     yaw, pitch; format v30, a no-op migration; left out of the content hash like the thumbnail camera) by
+     `setCardCameraCommand`, one undo step. `capture-map-shots.mjs` takes the card camera first, then
+     `thumbnailCamera`, then its automatic choice.
 9. **Turning by mouse** (owner, 2026-11-07: "add to the mapmaker overhaul, it makes most sense").
    - **Today:** you turn things only by R / Shift+R, the right-click menu's Rotate and Rotate a little, the
      toolbar's rotate button, and the inspector's "Facing °" field. The gizmo's arrows only show the axes and can't
