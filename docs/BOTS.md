@@ -1221,7 +1221,8 @@ Which gun a bot holds (`weaponScore`) and how far it fights with it (`preferredR
 hand-set `botRange`. They come from each gun's time to kill as bots fire it, measured in the shared sim by
 `pnpm gun-report` (`shared/src/bots/weaponBands.ts`, data in `weaponBands.generated.ts`).
 - **Band** (`botBand`, for `weaponScore`): where the gun kills within 1.6 times its quickest kill (or 0.5 s more, at
-  most 2.5 s).
+  most 2.5 s). `weaponScore` also weighs the gun's TTK at the distance against the benchmark guns' median there
+  (`ttkEdge`), so a shotgun beats a Precision Rifle at arm's length though both are in band.
 - **Edge** (`botEdge`, for `preferredRange`): the band from where the gun beats the benchmark guns' median. A
   Precision Rifle bot keeps past 27.5 m; an SMG bot fights from the muzzle.
 

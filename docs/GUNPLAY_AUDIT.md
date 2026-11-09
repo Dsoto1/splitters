@@ -212,15 +212,19 @@ Now the ranges come from the time to kill measured in the shared sim.
 - It is the run of distances around the gun's quickest kill where it still kills within the slack: at most 1.6 times
   as long, or 0.5 s longer, whichever is more; never over 2.5 s; anything under 0.8 s counts.
 - A launcher whose blast hurts its shooter starts outside that blast.
-- `weaponScore` (which gun to hold) uses it.
+- `weaponScore` (which gun to hold) gives a gun in its band the bonus the hand-set range used to.
 - Guns with no curve keep `botRange`: melee, tools, the Flare Gun, the Oil Slicker and the Singularity Cannon.
 
-**Edge: where a gun beats what others carry** (`botEdge`).
-- It is the band from the first two-in-a-row distances where the gun kills at least as fast as the benchmark seven's
-  median there.
-- `preferredRange` (how far to fight) uses it.
-- A flat-curve long gun can kill at the muzzle, but everyday guns beat it there. Without the edge, Precision Rifle
-  bots walked into close fights: the first try gave Team Deathmatch 31.4 → 28.9 kills a minute.
+**Edge at the distance** (`ttkEdge`, also in `weaponScore`).
+- This is the gun's TTK at the actual distance against the benchmark seven's median there: +1 to -1, weighted 0.4.
+- **Why it is needed:** a band only says a gun can kill there, and a Precision Rifle (0.83 s from the muzzle) and a
+  shotgun (one shell) are both in band at 2 m. Without it, a sniper-minded bot kept its rifle at arm's length
+  (`weapons.test.ts`, "pick weapons by range").
+
+**Preferred distance** (`botEdge`, for `preferredRange`, how far to fight).
+- It is the band from the first two-in-a-row distances where the gun kills at least as fast as the benchmark median.
+- **Why:** a flat-curve long gun can kill at the muzzle, but everyday guns beat it there. With the band alone,
+  Precision Rifle bots walked into close fights: the first try gave Team Deathmatch 31.4 → 28.9 kills a minute.
 
 Bands, hand-set → measured:
 
@@ -247,14 +251,14 @@ Bands, hand-set → measured:
 
 | Measure | Before | After |
 |---|---|---|
-| Kills a minute (all) | 32.7 | 32.4 |
-| Kills a minute: TDM / DM / CTF | 31.4 / 35.3 / 33.0 | 30.1 / 35.1 / 36.0 |
-| Engagement (mean hit distance) | 17.0 m | 16.8 m |
-| Weapon use spread (bots' rounds by weapon, 0..1) | 0.568 | 0.570 |
-| Stuck a bot-minute | 1.04 | 1.03 |
-| Idle out of a fight | 4.5 % | 4.3 % |
+| Kills a minute (all) | 32.7 | 32.0 |
+| Kills a minute: TDM / DM / CTF | 31.4 / 35.3 / 33.0 | 30.0 / 34.7 / 34.8 |
+| Engagement (mean hit distance) | 17.0 m | 17.4 m |
+| Weapon use spread (bots' rounds by weapon, 0..1) | 0.568 | 0.555 |
+| Stuck a bot-minute | 1.04 | 1.00 |
+| Idle out of a fight | 4.5 % | 4.1 % |
 | Frozen | 0.4 % | 0.3 % |
-| 10 s+ idle spells a match | 0.6 | 0.2 |
+| 10 s+ idle spells a match | 0.6 | 0.6 |
 | Failed searches, no-route idle | 0, 0.01 % | 0, 0 % |
 
 `pnpm bot-report --check` (bot-limits.json): every limit held, before and after.
@@ -263,29 +267,34 @@ Hit rate and mean hit distance by gun, before → after (bots' rounds):
 
 | Gun | Rounds | Hit % | Hit distance (m) |
 |---|---|---|---|
-| Assault Rifle | 21942 → 21944 | 12 → 12 | 12.5 → 11.5 |
-| Pistol | 17172 → 17092 | 11 → 10 | 8.3 → 8.3 |
-| SMG | 4893 → 4545 | 22 → 21 | 7.9 → 8.3 |
-| Burst Rifle | 2088 → 1851 | 16 → 18 | 12.7 → 11.1 |
-| Marksman Rifle | 1228 → 1298 | 8 → 12 | 17.4 → 12.3 |
-| Laser Rifle | 1213 → 955 | 33 → 38 | 11.7 → 8.5 |
-| Shotgun | 319 → 292 | 55 → 71 | 10.4 → 8.6 |
-| Precision Rifle | 205 → 278 | 8 → 15 | 20.2 → 12.3 |
-| Auto Shotgun | 189 → 147 | 42 → 55 | 13.1 → 8.6 |
-| Railgun | 125 → 138 | 18 → 40 | 37.4 → 28.7 |
-| Battle Rifle | 284 → 106 | 6 → 17 | 16.5 → 11.6 |
-| Sawed-Off | 67 → 91 | 45 → 67 | 4.9 → 8.2 |
-| Pulse Pistol | 284 → 67 | 39 → 54 | 9.1 → 8.1 |
+| Assault Rifle | 21942 → 23544 | 12 → 12 | 12.5 → 12.0 |
+| Pistol | 17172 → 16204 | 11 → 10 | 8.3 → 8.3 |
+| SMG | 4893 → 3411 | 22 → 20 | 7.9 → 8.5 |
+| Burst Rifle | 2088 → 1957 | 16 → 18 | 12.7 → 10.9 |
+| Marksman Rifle | 1228 → 1179 | 8 → 13 | 17.4 → 12.6 |
+| Shotgun | 319 → 355 | 55 → 73 | 10.4 → 8.5 |
+| Laser Rifle | 1213 → 309 | 33 → 38 | 11.7 → 9.5 |
+| Precision Rifle | 205 → 247 | 8 → 11 | 20.2 → 14.4 |
+| Railgun | 125 → 180 | 18 → 39 | 37.4 → 19.3 |
+| Auto Shotgun | 189 → 153 | 42 → 61 | 13.1 → 8.8 |
+| Sawed-Off | 67 → 102 | 45 → 79 | 4.9 → 7.3 |
+| Battle Rifle | 284 → 85 | 6 → 21 | 16.5 → 12.4 |
+| Pulse Pistol | 284 → 107 | 39 → 29 | 9.1 → 17.1 |
+| Machine Pistol | 36 → 0 | 61 → – | 4.1 → – |
 
 **Reading it.**
-- Bots now fire most guns where those guns land: hit rates rose for 10 of the 13 guns above (the Rifle held level, the Pistol and SMG lost a point; the Precision Rifle and
-  Battle Rifle doubled, the shotguns +13-22 points).
-- Kills and movement are unchanged within a seeded match's noise:
-  - Team Deathmatch lost about 1 kill a minute, mostly on Shingle Point (19.0 → 16.2) and Fernwood Moon
-    (40.1 → 36.3); Riot Junction gained;
-  - CTF gained 3.
-- The spread of weapon use barely moved. Which guns bots carry is still set by pickups and `botDesirability`
-  (hand-set). The band changes when they switch and where they stand.
+- **Hit rates:** bots now fire most guns where those guns land. Hit rates rose for 9 of the 13 guns fired both
+  times:
+  - the shotguns gained 18-34 points;
+  - the Railgun 18 → 39 %, the Battle Rifle 6 → 21 %;
+  - the Rifle held level; the Pistol, SMG and Pulse Pistol lost 1-10 points.
+- **Kills and movement** are unchanged within a seeded match's noise:
+  - kills 32.7 → 32.0 a minute;
+  - CTF +1.8; TDM -1.4, mostly Riot Junction (38.2 → 34.9) and Fernwood Moon (40.1 → 37.8);
+  - stuck and idle a little lower.
+- **Weapon use** narrowed a little (0.568 → 0.555): bots stopped firing the Machine Pistol, which the measurements
+  find dominated by the SMG (outlier above). Which guns bots carry is still set by pickups and `botDesirability`
+  (hand-set). The bands and the edge change when they switch and where they stand.
 
 **To refresh:** after a weapon change, run `pnpm gun-report --json=docs/gunplay-audit.json --bands` (about 5
 minutes). The run rewrites the audit JSON and the bands' data; then run `pnpm bot-report --check`.

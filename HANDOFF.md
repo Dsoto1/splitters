@@ -32,12 +32,14 @@ owner-approved audit candidates 7 and 8). Details and tables: docs/GUNPLAY_AUDIT
   - (2) Extrapolated frames send the newest snapshot's tick as the view tick: a possible small client change, not
     proven yet.
   - (3) Inputs go up as plain JSON (8 KB/s a player).
-- **G4:** bots' `weaponScore` uses each gun's measured band and `preferredRange` its measured edge
-  (`shared/src/bots/weaponBands.ts`). The data comes from `pnpm gun-report --json=docs/gunplay-audit.json --bands`;
-  rerun it after any weapon change. bot-report now has a weapon-use line.
-  - **Before → after, 28 matches:** kills a minute 32.7 → 32.4; stuck 1.04 → 1.03 a bot-minute; idle out of a fight
-    4.5 → 4.3 %; weapon use spread 0.568 → 0.570. Hit rates rose for 10 of 13 guns (the Precision Rifle 8 → 15 %,
-    the Battle Rifle 6 → 17 %).
+- **G4:** bots' weapon choice now uses measured data (`shared/src/bots/weaponBands.ts`):
+  - `weaponScore` uses each gun's measured band, plus its TTK at the distance against the benchmark median;
+  - `preferredRange` uses where the gun beats that median.
+  - The data comes from `pnpm gun-report --json=docs/gunplay-audit.json --bands`; rerun it after any weapon change.
+    bot-report now has a weapon-use line.
+  - **Before → after, 28 matches:** kills a minute 32.7 → 32.0; stuck 1.04 → 1.00 a bot-minute; idle out of a fight
+    4.5 → 4.1 %; weapon use spread 0.568 → 0.555 (the dominated Machine Pistol is no longer fired). Hit rates rose
+    for 9 of 13 guns (the shotguns +18-34 points, the Railgun 18 → 39 %, the Battle Rifle 6 → 21 %).
   - `bot-report --check` passes.
   - `botDesirability` is still hand-set.
 

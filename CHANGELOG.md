@@ -14,8 +14,8 @@ made only on a commit that passed CI on a check branch.
   saw leave were never fired. The host now holds 32 inputs. At 150 ms and 5 % loss, snap-backs fell from 2.7 to 0.3
   a minute; at 250 ms, inputs dropped fell from 717 to 7 in 25 s.
 - **Bots pick and fight each gun where it is good, as measured.** Each gun's effective range now comes from its time
-  to kill measured in the game's own simulation (`pnpm gun-report`), not a hand-set guess. A Precision Rifle keeps
-  to the range where it beats everyday guns.
+  to kill measured in the game's own simulation (`pnpm gun-report`), not a hand-set guess. Bots draw the gun that
+  kills fastest at the distance, and a Precision Rifle keeps to the range where it beats everyday guns.
 - **`pnpm net-report`** (for developers): a real host with 8 players over links with latency, jitter and packet loss.
   It measures hit registration, lag-compensation error, time to the hit marker, rubber-banding and bandwidth
   (docs/GUNPLAY_AUDIT.md, "G3").
