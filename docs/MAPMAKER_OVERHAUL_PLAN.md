@@ -217,10 +217,36 @@ Already done from the owner's earlier ask: **the real buildable area.**
    - A headless bot match on the map, run in a worker for a few minutes.
    - Heatmaps afterwards: where bots went, got stuck, died, and where their routes failed.
    - It builds on Bot AI Phase A (the scorecard and the navigation audit, docs/BOT_AI_PLAN.md).
+   - **As built** (`wip/mapmaker-p4`, 2026-11-09; no format change, nothing stored in the map): the top bar's **Bot
+     test** opens the Test panel (`client/editor/mapTestPanel.ts`): mode (the map's playable modes), bots a team or
+     in all (up to 32), 30 s to 5 min; a progress bar and Cancel (`Worker.terminate`). The run is
+     `shared/editor/mapTest.ts` `BotTestRun`: the same Match `pnpm bot-report` plays (bots added as the server adds
+     them, no limits), stepped 15 ticks at a time in a worker of its own (`mapTestWorker.ts` / `mapTestWorkerCore.ts`,
+     split as the match worker is for Safari). Stuck recoveries and failed searches come through `bots/botTrace.ts`
+     `BotTrace`, which bot-report now reads its own stuck spots and failed searches through, so both count the same.
+     Heatmaps (`shared/editor/heatmap.ts`): sparse cells (2 m, up to 8 m on big maps) split into 2.5 m height bands so
+     storeys stay apart, drawn by `mapTestOverlay.ts` as one mesh a layer of squares on the floors (went: blue to red;
+     stuck magenta, died red, failed orange), each on its own box, in 3D and from above in the plan view. Summary
+     (`editor/botTestSummary.ts`): kills (a minute), stuck recoveries, failed searches of all, the objective's first
+     moments (flag, hill, bomb, hostage, sector, round), King of the Hill hill time. **Cost:** the editor's thread only
+     posts the map and draws the result; the panel times MapMaker's frames during a run and shows the longest with the
+     result. On this 4-core box at load 10-13: 75-100 ms of the worker's time a match second with 6-8 bots (a 5-minute
+     run about 25-30 s), a navmesh build first (70 ms on Phase 0 Arena, 1.5 s on Diamond Park). e2e
+     `editorux` → `editorMapTestChecks`; unit `shared/test/mapTest.test.ts`.
 2. **Sightlines and spawn exposure.**
    - For each spawn: how much can see it, and from how far.
    - Long sightlines drawn on the map.
    - Warnings for exposed spawns.
+   - **As built** (`wip/mapmaker-p4`): an on-demand check (the panel's **Check spawns**), in the same kind of worker:
+     too slow for every validation (Diamond Park 2.9 s: its navmesh, 400 places × 54 spawns of rays), and MapMaker
+     already builds the navmesh on its own thread for the navigation audit. `shared/editor/spawnExposure.ts`: the
+     places are the navmesh's main-area places (`NavWorld.mainPlaces`, plus points 3.5 m round each so small arenas
+     have enough: `densePlaces`), at most 400; a place sees a spawn when `PhysicsWorld.lineOfSight` (the ray bots spot
+     and aim along) runs clear from a 1.5 m eye to the spawned player's 1.2 m chest, 4-120 m away. Per spawn: the
+     share of places that see it, nearest / median / furthest, its three longest lines. Long sightlines: pairs of
+     places 50 m+ apart that see each other, longest first, 24 at most, one per view (ends within 12 m). Exposed
+     (`EXPOSED_SHARE`, 0.5: the owner's call) spawns become `spawn.exposed` warnings in the validator's list while the
+     map is the one checked. Labels by every spawn (`.ed-exposure-label`, the share and the furthest distance).
 3. **Bot hints:** chokepoints, sniper and camp spots, staging spots, jump links. These are Bot AI Phase D's hints,
    placed here.
 
