@@ -217,8 +217,11 @@ Now the ranges come from the time to kill measured in the shared sim.
 
 **Edge at the distance** (`ttkEdge`, also in `weaponScore`).
 - This is the gun's TTK at the actual distance against the benchmark seven's median there: +1 to -1, weighted 0.4.
-- A gun not in hand adds its measured draw (gun-report's `drawMs`), so a bot switches only when the new gun still
-  wins after drawing it: it keeps a loaded SMG at 6 m rather than draw a shotgun (`botWeapons.test.ts`).
+- In a close fight (under 15 m), a gun not in hand adds its measured draw (gun-report's `drawMs`). A bot then switches
+  only when the new gun still wins after drawing it: it keeps a loaded SMG at 6 m rather than draw a shotgun
+  (`botWeapons.test.ts`).
+- Further off there is time to draw: counting the draw at every range cost Sunken Kingdom's CTF bots their captures
+  (1 of seeds 1-4).
 - **Why it is needed:** a band only says a gun can kill there, and a Precision Rifle (0.83 s from the muzzle) and a
   shotgun (one shell) are both in band at 2 m. Without it, a sniper-minded bot kept its rifle at arm's length
   (`weapons.test.ts`, "pick weapons by range").
@@ -253,57 +256,56 @@ Bands, hand-set → measured:
 
 | Measure | Before | After |
 |---|---|---|
-| Kills a minute (all) | 32.7 | 32.0 |
-| Kills a minute: TDM / DM / CTF | 31.4 / 35.3 / 33.0 | 30.1 / 36.0 / 31.5 |
-| Engagement (mean hit distance) | 17.0 m | 16.8 m |
-| Weapon use spread (bots' rounds by weapon, 0..1) | 0.568 | 0.588 |
-| Stuck a bot-minute | 1.04 | 1.03 |
-| Idle out of a fight | 4.5 % | 4.4 % |
+| Kills a minute (all) | 32.7 | 32.8 |
+| Kills a minute: TDM / DM / CTF | 31.4 / 35.3 / 33.0 | 30.6 / 36.3 / 34.8 |
+| Engagement (mean hit distance) | 17.0 m | 17.3 m |
+| Weapon use spread (bots' rounds by weapon, 0..1) | 0.568 | 0.574 |
+| Stuck a bot-minute | 1.04 | 1.14 |
+| Idle out of a fight | 4.5 % | 4.2 % |
 | Frozen | 0.4 % | 0.3 % |
 | 10 s+ idle spells a match | 0.6 | 0.4 |
 | Failed searches, no-route idle | 0, 0.01 % | 0, 0 % |
 
-`pnpm bot-report --check` (bot-limits.json): every limit held, before and after. The think time read 1.96 → 2.90 ms a
-bot here: four reports ran at once on four cores, and the run before the last change read 2.01.
+`pnpm bot-report --check` (bot-limits.json): every limit held, before and after (its stuck limit is 2.5 a
+bot-minute).
 
 Hit rate and mean hit distance by gun, before → after (bots' rounds):
 
 | Gun | Rounds | Hit % | Hit distance (m) |
 |---|---|---|---|
-| Assault Rifle | 21942 → 22891 | 12 → 12 | 12.5 → 11.5 |
-| Pistol | 17172 → 17453 | 11 → 9 | 8.3 → 8.3 |
-| SMG | 4893 → 3607 | 22 → 21 | 7.9 → 8.6 |
-| Spin Gun | 2850 → 2405 | 4 → 8 | 13.0 → 11.6 |
-| Burst Rifle | 2088 → 2138 | 16 → 20 | 12.7 → 11.2 |
-| Laser Rifle | 1213 → 1811 | 33 → 37 | 11.7 → 7.7 |
-| Marksman Rifle | 1228 → 1113 | 8 → 13 | 17.4 → 13.0 |
-| Pulse Pistol | 284 → 1085 | 39 → 34 | 9.1 → 11.6 |
-| Shotgun | 319 → 263 | 55 → 71 | 10.4 → 8.4 |
-| Precision Rifle | 205 → 235 | 8 → 11 | 20.2 → 14.2 |
-| Auto Shotgun | 189 → 168 | 42 → 60 | 13.1 → 8.9 |
-| Railgun | 125 → 143 | 18 → 39 | 37.4 → 21.8 |
-| Sawed-Off | 67 → 107 | 45 → 78 | 4.9 → 7.8 |
-| Battle Rifle | 284 → 101 | 6 → 12 | 16.5 → 11.4 |
-| Arc Caster | 8 → 69 | 25 → 41 | 15.4 → 8.4 |
-| Machine Pistol | 36 → 0 | 61 → – | 4.1 → – |
+| Assault Rifle | 21942 → 22833 | 12 → 12 | 12.5 → 11.5 |
+| Pistol | 17172 → 17317 | 11 → 9 | 8.3 → 8.2 |
+| SMG | 4893 → 4024 | 22 → 24 | 7.9 → 8.1 |
+| Spin Gun | 2850 → 2872 | 4 → 6 | 13.0 → 13.0 |
+| Burst Rifle | 2088 → 2147 | 16 → 22 | 12.7 → 10.6 |
+| Laser Rifle | 1213 → 1225 | 33 → 36 | 11.7 → 8.0 |
+| Marksman Rifle | 1228 → 1200 | 8 → 10 | 17.4 → 14.3 |
+| Precision Rifle | 205 → 293 | 8 → 10 | 20.2 → 13.1 |
+| Shotgun | 319 → 260 | 55 → 74 | 10.4 → 7.3 |
+| Pulse Pistol | 284 → 202 | 39 → 52 | 9.1 → 6.7 |
+| Railgun | 125 → 200 | 18 → 35 | 37.4 → 18.8 |
+| Battle Rifle | 284 → 140 | 6 → 11 | 16.5 → 8.5 |
+| Sawed-Off | 67 → 129 | 45 → 81 | 4.9 → 7.5 |
+| Auto Shotgun | 189 → 123 | 42 → 64 | 13.1 → 11.7 |
+| Machine Pistol | 36 → 7 | 61 → 29 | 4.1 → 6.2 |
 
 **Reading it.**
-- **Hit rates:** bots now fire most guns where those guns land. Hit rates rose for 11 of the 15 guns fired both
-  times:
-  - the shotguns gained 16-33 points;
-  - the Railgun 18 → 39 %, the Spin Gun 4 → 8 %, the Battle Rifle 6 → 12 %;
-  - the Rifle held level; the Pistol, SMG and Pulse Pistol lost 1-5 points.
-- **Kills and movement** are unchanged within a seeded match's noise:
-  - kills 32.7 → 32.0 a minute;
-  - Deathmatch +0.7; TDM -1.3 (Fernwood Moon 40.1 → 37.9, Riot Junction 38.2 → 36.0); CTF -1.5, mostly Eagle Spires;
-  - stuck and idle the same or lower.
-- **Weapon use** widened (0.568 → 0.588):
-  - the Pulse Pistol, Laser Rifle and Arc Caster are used where they win;
-  - bots no longer fire the Machine Pistol, which the measurements find dominated by the SMG (outlier above).
-  - Which guns bots carry is still set by pickups and `botDesirability` (hand-set); the measurements change when
-    they switch and where they stand.
-- **A seeded test moved:** `forts.test.ts`'s Fort Wars CTF test now runs seed 3. Over seeds 1-12, 6 reach the flag
-  (7 before); its comment has the survey.
+- **Hit rates:** bots now fire most guns where those guns land. Of the 14 guns fired more than a few dozen times,
+  hit rates rose for 12:
+  - the shotguns gained 19-36 points;
+  - the Railgun 18 → 35 %, the Pulse Pistol 39 → 52 %;
+  - the Rifle held level; the Pistol lost 2 points.
+- **Kills:** unchanged within a seeded match's noise, 32.7 → 32.8 a minute: Deathmatch +1.0, CTF +1.8, TDM -0.8.
+- **Movement:** idle and frozen time are a little lower. Stuck rose 1.04 → 1.14 a bot-minute (TDM 1.05 → 1.24);
+  that is within the scorecard's limit, but watch it in the nightly.
+- **Weapon use** widened slightly (0.568 → 0.574). Bots rarely fire the Machine Pistol now (36 → 7 rounds), which
+  the measurements find dominated by the SMG (outlier above). Which guns bots carry is still set by pickups and
+  `botDesirability` (hand-set); the measurements change when they switch and where they stand.
+- **Seeded tests moved:**
+  - `forts.test.ts`'s Fort Wars CTF test now runs seed 3. Over seeds 1-12, 6 reach the flag (7 before).
+  - `botCtf.test.ts`, Sunken Kingdom: seeds 1, 3 and 4 capture within five minutes, seed 2 doesn't (all four did
+    before). The test runs seed 3.
+  - Each test's comment has its survey.
 
 **To refresh:** after a weapon change, run `pnpm gun-report --json=docs/gunplay-audit.json --bands` (about 5
 minutes). The run rewrites the audit JSON and the bands' data; then run `pnpm bot-report --check`.
