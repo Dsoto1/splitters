@@ -345,6 +345,7 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` LODs, `content/meshy.lock.json`, the e2e `characters3` flow's far-copy checks; `wip/far-copies`), far-copies agent, 2026-11-09.
 
+- Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 
 **Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
