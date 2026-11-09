@@ -676,6 +676,12 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 #ed-inspector .ed-group-row small { flex-basis: 100%; color: var(--muted); font-size: 11px; }
 /* Mirror… (mirrorDialog.ts). */
 .ed-mirror { max-width: 560px; }
+.ed-grid { max-width: 520px; }
+.ed-grid-plan { border-collapse: collapse; margin: 4px 0 8px; width: 100%; font-variant-numeric: tabular-nums; }
+.ed-grid-plan th, .ed-grid-plan td { text-align: left; padding: 3px 8px 3px 0; }
+.ed-grid-plan th { color: var(--muted); font-weight: normal; }
+.ed-grid #ed-grid-why { min-height: 2.8em; }
+.ed-grid #ed-grid-why.err { color: var(--error); }
 .ed-mirror fieldset { border: 1px solid rgba(142, 162, 192, 0.28); border-radius: 6px; margin: 0 0 12px; padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 6px; }
 .ed-mirror legend { color: var(--muted); padding: 0 4px; }
 .ed-mirror .ed-mirror-at { flex-wrap: wrap; }

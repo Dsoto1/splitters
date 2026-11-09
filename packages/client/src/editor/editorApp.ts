@@ -363,6 +363,7 @@ import { cardShotSection, type CardShotHost } from './cardShot.ts';
 import { NoteTool } from './noteTool.ts';
 import { groupSection, type GroupHost } from './groupPanel.ts';
 import { openMirrorDialog } from './mirrorDialog.ts';
+import { openChangeGridDialog } from './changeGridDialog.ts';
 import { readClipboard, writeClipboard } from './clipboardStore.ts';
 import { templatePicker } from './templatePicker.ts';
 import { libraryThumb } from './libraryThumbs.ts';
@@ -3386,7 +3387,8 @@ export class EditorApp {
     el.append(
       row(
         'Border',
-        select('ed-bd-border', borderOptions, b.border ?? 'none', (v) => {
+        // Coast is for the sides a shoreline runs out through: offered per side.
+        select('ed-bd-border', borderOptions.filter(([st]) => st !== 'coast' || b.border === 'coast'), b.border ?? 'none', (v) => {
           const { border: _border, borderSides: _sides, ...rest } = b;
           set('Change border', v === 'none' ? rest : { ...rest, border: v as BorderStyle });
         }),
@@ -3861,6 +3863,18 @@ export class EditorApp {
       // Undoable, one step: the main ground becomes the new one; cells painted another material keep it.
       this.setTerrain(`Main ground: ${TERRAIN_MATERIAL_LABELS[TERRAIN_MATERIALS[to]!]}`, { ...t, materials: t.materials.map((m) => (m === from ? to : m)) });
     });
+    $('ed-tr-grid').addEventListener('click', () =>
+      openChangeGridDialog({
+        doc: () => this.doc,
+        shownFor: (t) => this.groundShownFor(t),
+        apply: (label, cmd, moved) => {
+          if (!this.run(label, cmd)) return;
+          this.setTerrainBrush(this.terrainBrush);
+          this.toast(`${label}${moved ? `; ${moved} things on the ground moved with it` : ''} · Ctrl+Z undoes it`);
+        },
+        root: $('editor'),
+      }),
+    );
     $('ed-tr-smooth-all').addEventListener('click', () => this.smoothAllTerrain(Number($<HTMLSelectElement>('ed-tr-smooth-all-amount').value), $<HTMLInputElement>('ed-tr-smooth-hold').checked));
     $('ed-tr-cliffs').addEventListener('click', () => {
       if (this.doc.terrain) this.setTerrain('Paint cliffs as stone', paintSlopes(this.doc.terrain, 35, 'stone'));

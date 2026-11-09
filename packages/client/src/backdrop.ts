@@ -11,7 +11,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { CORE_THEMES, PROP_FENCES, SKIES, borderStyleAt, boxBounds, pathsExtent, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
+import { CORE_THEMES, PROP_FENCES, SKIES, borderStyleAt, boxBounds, coastHeightAt, coastSides, pathsExtent, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { createPropNode } from './game/propVisuals.ts';
 import type { MapStyler } from './mapMeshes.ts';
@@ -151,6 +151,8 @@ export class BackdropVisuals {
     // A shoreline border: the land past it drops under the border's sea.
     const shore = per.map(([x, z]) => borderStyleAt(doc, x, z) === 'water');
     const sea = Math.min(...edgeHeights.filter((_, i) => shore[i])) - 1.1;
+    // A coast side draws its own land past the line (borderCoast.ts): the ground here keeps under it.
+    const coasts = coastSides(doc, area.floor);
     per.forEach(([x, z], i) => {
       const dx = x - area.centre[0];
       const dz = z - area.centre[1];
@@ -163,6 +165,8 @@ export class BackdropVisuals {
         // Water sits flat; land leaves the map's edge and settles to the plain.
         let y = water ? Math.min(area.floor, plain) - 0.4 : edgeHeights[i]! * (1 - k) + plain * k + swell + this.rise(px, pz, d) - (d === 0 ? 0.02 : 0);
         if (shore[i] && d > 0) y = Math.min(y, sea - 1.5);
+        const coast = coasts.length && d > 0 ? coastHeightAt(coasts, px, pz) : null;
+        if (coast !== null) y = Math.min(y, coast - 0.6);
         positions.push(px, y, pz);
         uvs.push(px / scale, pz / scale);
       }

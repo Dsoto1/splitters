@@ -1,5 +1,6 @@
 import { borderEdges, borderGround, borderNoise, borderSeed, borderStyles, type BorderEdge, type BorderSide } from './border.ts';
 import type { MapDocument } from './schema.ts';
+import { resolveBackdrop } from './backdrop.ts';
 
 /**
  * The "coast" border side (map format v32): for a side a shoreline runs out through (Iron Coast's east and west
@@ -44,6 +45,8 @@ export interface CoastSide {
   profile: Float64Array;
   sums: Float64Array;
   seed: number;
+  /** The backdrop past the map is sea: the whole far end of the land dips under it (else only along the shore). */
+  seaBeyond: boolean;
 }
 
 /** The sea level a shoreline side has (as BorderVisuals' water draws it): the map's water at its middle, else under its lowest ground. */
@@ -64,12 +67,13 @@ function ownSea(map: Pick<MapDocument, 'entities'>, reaches: (w: { position: [nu
 const RING: readonly BorderSide[] = ['north', 'west', 'south', 'east'];
 
 /** The coast sides of a map and their layout (none without a coast side or a boundary). */
-export function coastSides(map: Pick<MapDocument, 'bounds' | 'terrain' | 'backdrop' | 'entities' | 'metadata'>, floorY: number): CoastSide[] {
+export function coastSides(map: Pick<MapDocument, 'bounds' | 'terrain' | 'backdrop' | 'entities' | 'metadata' | 'classicStructure'>, floorY: number): CoastSide[] {
   const edges = borderEdges(map);
   const coasts = edges.filter((e) => e.style === 'coast');
   if (!coasts.length) return [];
   const styles = borderStyles(map);
   const seed = borderSeed(`${map.metadata.id}:coast`);
+  const seaBeyond = resolveBackdrop(map).ground === 'water';
   const out: CoastSide[] = [];
   for (const e of coasts) {
     const i = RING.indexOf(e.side);
@@ -129,7 +133,7 @@ export function coastSides(map: Pick<MapDocument, 'bounds' | 'terrain' | 'backdr
       profile[k] = ground(Math.max(0, Math.min(e.length, u0 + k)));
       sums[k + 1] = sums[k]! + profile[k]!;
     }
-    out.push({ edge: e, sea, shore, inland, u0, u1, seaward, profile, sums, seed: seed + i * 7919 });
+    out.push({ edge: e, sea, shore, inland, u0, u1, seaward, profile, sums, seed: seed + i * 7919, seaBeyond });
   }
   return out;
 }
@@ -189,8 +193,9 @@ export function coastHeight(c: CoastSide, u: number, v: number): number {
   const grow = Math.min(1, Math.max(0, (vv - 6) / 22));
   const dune = vnoise(c.seed, u + vv * 0.35, 23, 1) * 0.7 + vnoise(c.seed, u - vv * 0.5, 9, 2) * 0.3;
   y += 2.6 * dune * low * dry * grow * (1 - 0.6 * shore);
-  // The far end dips under the sea (the backdrop's sea or ground takes over).
-  const end = Math.min(1, Math.max(0, (vv - (COAST_DEPTH - 30)) / 30));
+  // The far end dips under the sea: all along it when the backdrop past the map is sea, else only off the shore
+  // (inland, the backdrop's ground carries on, kept just under it).
+  const end = Math.min(1, Math.max(0, (vv - (COAST_DEPTH - 30)) / 30)) * (c.seaBeyond ? 1 : shore);
   if (end > 0) y = y * (1 - end) + Math.min(y, c.sea - 1.5) * end;
   return y;
 }

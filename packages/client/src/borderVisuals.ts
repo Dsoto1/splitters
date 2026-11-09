@@ -18,6 +18,7 @@ import {
   borderNoise,
   borderSeed,
   borderStyles,
+  coastSides,
   getProp,
   resolveBackdrop,
   type BorderEdge,
@@ -31,6 +32,7 @@ import type { MapStyler } from './mapMeshes.ts';
 import { windows } from './backdrop.ts';
 import { loadGraphicsQuality } from './game/graphicsSettings.ts';
 import { reduceFlashing } from './game/reduceFlashing.ts';
+import { buildCoast } from './borderCoast.ts';
 
 type V3 = [number, number, number];
 
@@ -97,6 +99,7 @@ export class BorderVisuals {
     if (of('forest').length) waits.push(this.forest(of('forest'), ctx, build));
     if (of('fence').length) this.fence(of('fence'), ctx);
     if (of('water').length) this.water(of('water'), ctx);
+    if (of('coast').length) waits.push(this.coast(ctx, build));
     const walled = edges.filter((e) => PROP_FENCES[e.style]);
     if (walled.length) waits.push(this.propFence(walled, ctx, build));
     this.ready = Promise.all(waits).then(() => this.count());
@@ -452,6 +455,17 @@ export class BorderVisuals {
     );
     if (build !== this.build) return made.flat().forEach((m) => m.dispose());
     for (const m of made.flat()) this.add(m);
+  }
+
+  // ---------------------------------------------------------------- coast
+
+  /** The coast sides (borderCoast.ts): the shore carried on past the line, headlands and dunes, the forest only inland. */
+  private async coast(ctx: Ctx, build: number): Promise<void> {
+    const made = buildCoast(this.scene, this.styler, coastSides(ctx.doc, ctx.floorY), ctx);
+    for (const m of made.meshes) this.add(m);
+    this.materials.push(...made.materials);
+    const ends = new Map(made.forest.map((f) => [f.edge, f.ends] as const));
+    if (ends.size) await this.forest([...ends.keys()], { ...ctx, ground: made.ground, neighbours: (e) => ends.get(e) ?? ctx.neighbours(e) }, build);
   }
 
   // ---------------------------------------------------------------- water

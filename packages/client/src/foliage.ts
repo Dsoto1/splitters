@@ -363,6 +363,9 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, 
     for (const b of water) if (x >= b.min.x && x <= b.max.x && z >= b.min.z && z <= b.max.z && y >= b.min.y - 0.5 && y < b.max.y) d = Math.max(d, b.max.y - y);
     return d;
   };
+  // Amounts are per cell: a grid finer than 2 m (map format v32, Change grid) grows in proportion to its cells' area,
+  // as many plants to the square metre as a 2 m grid (coarser grids grow as they always have).
+  const share = t.spacing < 2 ? (t.spacing / 2) ** 2 : 1;
   for (let i = 0; i < t.materials.length; i++) {
     const level = cellFoliage(t, i);
     const c = i % w;
@@ -381,7 +384,7 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, 
     for (const [kind, amount] of Object.entries(wet ?? recipe(material, level)) as [Kind, number][]) {
       // The generated grass clump is a few blades, not a patch: more of them, the same ground covered.
       const grassy = kind === 'grass' || kind === 'tall';
-      const amt = grassy ? amount * ENV_GRASS_DENSITY : amount;
+      const amt = (grassy ? amount * ENV_GRASS_DENSITY : amount) * share;
       let n = Math.floor(amt) + (rand() < amt % 1 ? 1 : 0);
       while (n-- > 0) {
         const x = t.origin[0] + (c + rand()) * t.spacing;
