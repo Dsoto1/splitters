@@ -168,6 +168,7 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
+- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
 - **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
@@ -201,6 +202,55 @@ The workflow is unchanged (CLAUDE.md):
   docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md and the owner's screenshots described in this file's Iron Coast
   part 2 entry.
 
+**MapMaker: the Iron Coast job's editor half (`wip/mapmaker-terrain`, map format v32, MapMaker lane, 2026-11-09).**
+For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.json`).
+- **Format v32** (no-op migration after v31): a terrain up to **321** vertices a side (`MAX_TERRAIN_VERTS`; was 161) and
+  the border style **`coast`**. New terrains and height-grid imports still get at most 161 a side
+  (`DEFAULT_TERRAIN_VERTS`); finer is Change grid's choice. `serializeMap` writes the terrain's `heights`, `materials`
+  and `foliage` a grid row to a line (Iron Coast: 696 KB → 440 KB as it is, 1.1 MB at 1.25 m; one value to a line a
+  1.25 m Iron Coast would have been 2.9 MB, over the 2 MB budget). Older files load unchanged; they take the new layout
+  when next exported.
+- **Terrain → Change grid…** (`shared/editor/changeGrid.ts`: `planGrid`, `resampleTerrain`, `changeGridCommand`; the
+  dialog `client/editor/changeGridDialog.ts`): 1-4 m, one `setTerrain` (plus the things standing on the ground moved
+  with it) = one undo step. Heights at shared vertices exact; **Smooth** = Catmull-Rom held inside each old cell's
+  corners, going over to the old triangles where any of the 3 × 3 old cells round it is steeper than 30-45° (cliffs
+  keep their sharp foot and lip); **Exact** = the old triangles. Paint/plants: finer = the old cell it lies in,
+  coarser = the commonest. The dialog previews grid, vertices, triangles and file size against the 2 MB budget.
+  **For the reshape:** Change grid to 1.25 m first (305 × 257; the cliff is then exactly as it was), then sculpt the
+  cliff over 4-8 cells. Brushes work in metres, but Smooth's per-stroke reach is 3 × 3 vertices, so at 1.25 m it
+  smooths half as wide per pass.
+- **Coast border** (`shared/map/borderCoast.ts` layout, `client/borderCoast.ts` drawing, three lines in
+  `borderVisuals.ts` and two in `backdrop.ts`): per side in Sky → Border → Per side (not in the all-sides select).
+  The ground at the line carried out 120 m: the shore (from a seaward end, a Shoreline & sea side or ground under the
+  sea, while within 1.5 m of the sea) at its own height with the sea over it; higher ground eased to a third of its
+  height over the beach (headlands) and rounded along the line further out, dunes behind the shore, rock where steep;
+  inland (35 m+ past the shore) the ground keeps its height and BorderVisuals' own forest stands on it (canopy from 35 m, trees from about 65 m). The sea level is the neighbouring water
+  side's (the same rule its beach uses) or the map's water touching the line. No collision, no nav. On Iron Coast:
+  set east and west to Coast (south stays Shoreline & sea, north Forest wall).
+- **Performance** (this 4-core box at load 13-16, so ±30%). Server/shared, Iron Coast 2.5 m (153 × 129) → 1.25 m
+  (305 × 257): load 320 → 410 ms, physics world 465 → 560 ms, navmesh 9.8 → 10.3 s (Recast's voxels, not the
+  triangles, set its cost), drop links unchanged; a 400 m square at 321 × 321: navmesh 17.9 → 18.7 s, physics 313 →
+  720 ms. Client (NullEngine, CPU side): terrain mesh 78 k → 311 k vertices (2.8 → 11.3 MB of buffers), built in 65 →
+  99 ms; plants 39.9 k → 62.1 k (see the question below), placed in 182 → 295 ms; minimap 22 → 30 ms. Frame time
+  couldn't be measured here: SwiftShader (CPU rendering) at deviceScaleFactor 2 took 3.4 s a frame at 2.5 m and 9.8 s
+  at 1.25 m, which is the CPU doing vertex work a GPU does in parallel; check on the M1. **Phones:** on Low graphics
+  (phones start there) a terrain finer than 2 m is drawn at every other vertex (`MapStyler.terrainDrawStep`, 311 k →
+  78 k vertices, the same as 2.5 m); collision and the navmesh keep every vertex.
+- **Tests:** unit `shared/test/terrainGrid.test.ts` (cap, file rows, resampling exact at shared points, cliffs kept,
+  paint and plants, the command and undo, v31 → v32), `shared/test/borderCoast.test.ts`, `client/test/terrainDraw.test.ts`;
+  e2e `editorux` → `editorTerrainGridChecks` (Change grid on a 96 m terrain and undo; coast chosen per side and drawn).
+
+**For the other session: Iron Coast's editor half has landed (MapMaker lane, 2026-11-09).**
+- **What's on main:**
+  - map format v32;
+  - terrains up to 321 vertices a side;
+  - Terrain → Change grid… (next to the terrain size);
+  - a `coast` border side (Sky → Border → Per side).
+- **To reshape Iron Coast:** Change grid to 1.25 m first (with Smooth, the cliff stays exactly as it was), then
+  sculpt. Set east and west to Coast.
+- **File size:** at 1.25 m Iron Coast is about 1.1 MB of its 2 MB budget, because terrain is now written one row
+  per line.
+- **Phones:** Low graphics draws fine terrain at half resolution; collision and nav keep every vertex.
 - Claimed: map format v33 (bot hints in MapMaker, `wip/mapmaker-bothints`), MapMaker lane, 2026-11-09.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
@@ -381,7 +431,7 @@ Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key lis
      aren't offered from the suite there (their paths migrate on load); a race rotation still votes.
    - ~~Open: the launcher/site /host have no vote toggle; the successor of a handoff doesn't carry parties or an open
      vote; free-for-all parties only get the scoreboard mark.~~ Done in item 6 below.
-6. **Parties and the vote, part 2** (`wip/party-2`, agent, 2026-11-09; owner-approved follow-ups of 2026-11-08).
+6. **Parties and the vote, part 2** (`wip/party-2`, agent, 2026-11-09; owner-approved follow-ups of 2026-11-08; green on `check/party-2`, runs 42559855115 (full suite) and 42563092863; LANDED: main 24db6d0).
    - **/host and the launcher:** the site's /host page (`client/src/hostPage.ts` `rulesSection`) has **Vote on the
      next map** and every Match setup rule (the shared `SERVER_RULES`, the launcher's Match rules list: main rules,
      the rest under More rules, each tagged now / at the restart / next match, with what waits). Stopped: sent with

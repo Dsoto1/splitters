@@ -324,7 +324,24 @@ export function glassIssues(map: MapDocument, catalog: TileCatalog = coreCatalog
 
 /** Serialise with stable key order and trailing newline so map files diff cleanly. */
 export function serializeMap(map: MapDocument): string {
-  return `${JSON.stringify(map, null, 2)}\n`;
+  const t = map.terrain;
+  if (!t) return `${JSON.stringify(map, null, 2)}\n`;
+  // The terrain's grids are written a grid row to a line (a 321 × 321 terrain is 100,000 heights: one to a line, as
+  // the rest of the file is laid out, its heights alone were over a megabyte). JSON all the same.
+  const mark = (k: string) => `\u0001terrain:${k}`;
+  let text = JSON.stringify({ ...map, terrain: { ...t, heights: mark('heights'), materials: mark('materials'), foliage: mark('foliage') } }, null, 2);
+  const rows = (values: readonly number[], perRow: number): string => {
+    if (!values.length) return '[]';
+    const lines: string[] = [];
+    for (let i = 0; i < values.length; i += perRow) lines.push(`      ${values.slice(i, i + perRow).join(', ')}`);
+    return `[\n${lines.join(',\n')}\n    ]`;
+  };
+  for (const [k, values, perRow] of [['heights', t.heights, t.cols], ['materials', t.materials, t.cols - 1], ['foliage', t.foliage, t.cols - 1]] as const) {
+    const key = `${JSON.stringify(k)}: ${JSON.stringify(mark(k))}`;
+    const at = text.indexOf(key);
+    if (at >= 0) text = `${text.slice(0, at)}${JSON.stringify(k)}: ${rows(values, Math.max(1, perRow))}${text.slice(at + key.length)}`;
+  }
+  return `${text}\n`;
 }
 
 /** Whether (x, z) is over a block's (turned) footprint. */

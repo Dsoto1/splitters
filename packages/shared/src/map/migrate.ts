@@ -75,6 +75,9 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v30 -> v31: optional `groups` (MapMaker's groups) and `editorNotes` (note pins for the map's makers). Absent =
   // none, as before: v30 data is valid as is.
   [30, (doc) => ({ ...doc })],
+  // v31 -> v32: a terrain up to 321 vertices a side (was 161; MapMaker's Change grid) and the border style `coast`.
+  // Additive: v31 data is valid as is.
+  [31, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */

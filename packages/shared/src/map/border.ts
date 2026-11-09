@@ -14,6 +14,10 @@ import { terrainHeightAt } from './terrain.ts';
  * - fence: a park-style electric fence that hums, zaps and throws you back
  * - forest: a dense wall of trees with undergrowth in front
  * - water: a beach running down into open sea
+ * - coast (map format v32; for the sides a shoreline runs out through): the
+ *   ground at the line carried on outwards, so sand and shallow water go on
+ *   along the shore, cliffs taper to low headlands and dunes, and forest grows
+ *   only inland (borderCoast.ts). Scenery only, like water: no collision.
  * - brick_wall, picket_fence, wooden_fence, drystone_wall, concrete_wall: a
  *   wall or fence of loafbrr's Fences props (CC0) along the line
  *
@@ -21,7 +25,7 @@ import { terrainHeightAt } from './terrain.ts';
  * collision (barrier boxes, so they are never drawn by the tile styler) and
  * the fence's shock lines; the client draws the rest from the same layout.
  */
-export const BORDER_STYLES = ['none', 'cliffs', 'skyline', 'fence', 'forest', 'water', 'brick_wall', 'picket_fence', 'wooden_fence', 'drystone_wall', 'concrete_wall'] as const;
+export const BORDER_STYLES = ['none', 'cliffs', 'skyline', 'fence', 'forest', 'water', 'brick_wall', 'picket_fence', 'wooden_fence', 'drystone_wall', 'concrete_wall', 'coast'] as const;
 export type BorderStyle = (typeof BORDER_STYLES)[number];
 
 export const BORDER_LABELS: Record<BorderStyle, string> = {
@@ -36,6 +40,7 @@ export const BORDER_LABELS: Record<BorderStyle, string> = {
   wooden_fence: 'Wooden fence',
   drystone_wall: 'Drystone wall',
   concrete_wall: 'Concrete panel wall',
+  coast: 'Coast (the shore carries on)',
 };
 
 /**
@@ -182,6 +187,7 @@ const SOLID_HEIGHT: Record<Exclude<BorderStyle, 'none'>, number> = {
   forest: 12,
   fence: ELECTRIC_FENCE.height,
   water: 0,
+  coast: 0,
   ...(Object.fromEntries(Object.entries(PROP_FENCES).map(([k, v]) => [k, v.height])) as Record<'brick_wall' | 'picket_fence' | 'wooden_fence' | 'drystone_wall' | 'concrete_wall', number>),
 };
 /** Collision is laid in pieces this long along an edge, each as high as its highest ground. */
