@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 32,
+  "formatVersion": 33,
   "metadata": {
     "id": "whiteout_station",
     "name": "Whiteout Station",
@@ -17,14 +17,6 @@
       "core.deathmatch",
       "core.tdm"
     ],
-    "release": {
-      "mapId": "m_ldufdn43f3lmrdmn",
-      "versionId": "v_untpprqqkkwzngqx",
-      "revision": 17,
-      "contentHash": "sha256:ea8807ea18d4903a326cf0e889d013311def3e3535a6c26f701ba1df4428f785",
-      "schemaVersion": 32,
-      "releasedAt": "2026-11-09T09:11:54.091Z"
-    },
     "cardCamera": {
       "position": [
         -6,
@@ -33,6 +25,14 @@
       ],
       "yaw": 0.62,
       "pitch": 0.03
+    },
+    "release": {
+      "mapId": "m_ldufdn43f3lmrdmn",
+      "versionId": "v_yo3raqi7ce6mg67m",
+      "revision": 18,
+      "contentHash": "sha256:07672650da0bb0422c46ed412bb8c86ee870299e9f685766777c6d74a1273bae",
+      "schemaVersion": 33,
+      "releasedAt": "2026-11-09T21:31:58.705Z"
     }
   },
   "classicStructure": {
@@ -378,7 +378,7 @@
     {
       "id": "spawn_xxtrr7qxvk",
       "position": [
-        -50,
+        -42,
         0,
         36
       ],
@@ -389,7 +389,7 @@
     {
       "id": "spawn_7yjz86nuv6",
       "position": [
-        -40,
+        -32,
         0,
         38
       ],
@@ -402,7 +402,7 @@
       "position": [
         -30,
         0,
-        38
+        30
       ],
       "kind": "spawn",
       "yaw": 3.14,
@@ -411,9 +411,9 @@
     {
       "id": "spawn_0xb0iif1d2",
       "position": [
-        -20,
+        -14,
         0,
-        34
+        28
       ],
       "kind": "spawn",
       "yaw": 3.14,
@@ -424,7 +424,7 @@
       "position": [
         -12,
         0,
-        38
+        30
       ],
       "kind": "spawn",
       "yaw": 2.352,
@@ -433,9 +433,9 @@
     {
       "id": "spawn_kifmmn1ekt",
       "position": [
-        -52,
+        -46,
         0.13,
-        24
+        18
       ],
       "kind": "spawn",
       "yaw": 1.564,
@@ -444,7 +444,7 @@
     {
       "id": "spawn_w9goywu72y",
       "position": [
-        -52,
+        -44,
         0,
         14
       ],
@@ -455,7 +455,7 @@
     {
       "id": "spawn_uoypxpb926",
       "position": [
-        -36,
+        -28,
         0,
         31
       ],
@@ -881,34 +881,6 @@
       "kind": "prop",
       "model": "prop.so_heater",
       "yaw": 0.005,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_hhvd9tinj4",
-      "position": [
-        0,
-        -0.18,
-        -33
-      ],
-      "kind": "prop",
-      "model": "prop.so_snowmobile",
-      "yaw": 0.267,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_wpo0pvuksc",
-      "position": [
-        6,
-        -0.18,
-        -33
-      ],
-      "kind": "prop",
-      "model": "prop.so_snowmobile",
-      "yaw": -0.252,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -1444,6 +1416,78 @@
       "scale": 0.9,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "hill_pn1o708npb",
+      "kind": "hill",
+      "position": [
+        4,
+        0,
+        0
+      ],
+      "radius": 6,
+      "name": "Yard"
+    },
+    {
+      "id": "hill_2bpvop5y1x",
+      "kind": "hill",
+      "position": [
+        48,
+        3.85,
+        40
+      ],
+      "radius": 5,
+      "name": "Radar ridge"
+    },
+    {
+      "id": "hill_x7pfwhiij4",
+      "kind": "hill",
+      "position": [
+        52,
+        0,
+        -28
+      ],
+      "radius": 5,
+      "name": "Ice cave"
+    },
+    {
+      "id": "mount_d3euuvk3ik",
+      "kind": "mount",
+      "position": [
+        0,
+        0,
+        -34
+      ],
+      "model": "snow_sled",
+      "yaw": 3.142,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_1hkgs5zc79",
+      "kind": "mount",
+      "position": [
+        6,
+        0,
+        -34
+      ],
+      "model": "snow_sled",
+      "yaw": 3.142,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_44bb7mzhxj",
+      "kind": "mount",
+      "position": [
+        -28,
+        0,
+        -34
+      ],
+      "model": "snow_sled",
+      "yaw": 1.571,
+      "faction": null,
+      "respawnSeconds": null
     }
   ],
   "factions": [],
