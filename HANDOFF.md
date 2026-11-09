@@ -205,6 +205,18 @@ For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.
   paint and plants, the command and undo, v31 → v32), `shared/test/borderCoast.test.ts`, `client/test/terrainDraw.test.ts`;
   e2e `editorux` → `editorTerrainGridChecks` (Change grid on a 96 m terrain and undo; coast chosen per side and drawn).
 
+**For the other session: Iron Coast's editor half has landed (MapMaker lane, 2026-11-09).**
+- **What's on main:**
+  - map format v32;
+  - terrains up to 321 vertices a side;
+  - Terrain → Change grid… (next to the terrain size);
+  - a `coast` border side (Sky → Border → Per side).
+- **To reshape Iron Coast:** Change grid to 1.25 m first (with Smooth, the cliff stays exactly as it was), then
+  sculpt. Set east and west to Coast.
+- **File size:** at 1.25 m Iron Coast is about 1.1 MB of its 2 MB budget, because terrain is now written one row
+  per line.
+- **Phones:** Low graphics draws fine terrain at half resolution; collision and nav keep every vertex.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
