@@ -14,8 +14,6 @@ made only on a commit that passed CI on a check branch.
 - The armour pickup's sparkle, armour breaking, heavy hits and kill-streak bursts read across a room: seen from
   further than 3 m they keep the size they have 3 m off (an armour pickup 7 m off was a speck).
 - The tutorial shows no Deathmatch score bar (You / Leader).
-- Far-off characters are drawn in the same pose as up close: 74 characters' low-detail copies moved onto their body's
-  skeleton (Hyena Warrior was drawn 15-30% short at a distance, Honest Abe 15%).
 - capture-map-shots can write pictures outside the build (SHOT_OUT, SHOT_SUFFIX, SHOT_QUALITY, SHOT_TEST,
   SHOT_RENDERED).
 **MapMaker: a finer terrain grid, Change grid, and the coast border** (map format v32; the editor half of the Iron

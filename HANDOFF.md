@@ -32,13 +32,18 @@ turning by mouse went in with it.
   clock, now 2.3× as big. Nearer than 3 m nothing changes. The `flashing` flow's fight moment adds an armour pickup 3 m
   off and one at your own chest.
 - **Tutorial:** no score bar (`Hud.showScorebar`); `newplayer` checks it hidden, and shown again in Quick Play.
-- **Far characters' pose (the characters3 flake).** The import added each Meshy character's far copy and then quantized
-  each mesh on its own: the far copy got a skin of its own, the game a second skeleton for it, posed apart from the
-  body's. 74 of 116 Meshy characters were so; their far copies are remade on the body's skin (`relod-built.mjs`), and
-  `prepare-meshy-characters.mjs` quantizes in one volume (`quantizationVolume: 'scene'`). `tools/content/lod-audit.mjs`
-  (new) checks every far copy against its body (own skin, unmatched vertices, 6 poses): 161 far copies, 0 off. The
-  characters3 far-bodies check then deals eight known looks (Hyena Warrior first) and holds each far copy to 90% of its
-  body's height in the same pose, on the same skeleton (before, locally: Honest Abe 1.75 of 2.06 m at 27 m).
+- **Far characters' pose (the characters3 flake): found, not landed (`wip/far-copies`).** The import added each Meshy
+  character's far copy and then quantized each mesh on its own: the far copy got a skin of its own, the game a second
+  skeleton for it, posed apart from the body's. 74 of 116 Meshy characters were so (locally Honest Abe's far copy was
+  drawn 1.75 of 2.06 m at 27 m). On `wip/far-copies` (from this branch at 70fb51b): the 74 far copies remade on the
+  body's skin (`relod-built.mjs`), `prepare-meshy-characters.mjs` quantizing in one volume (`quantizationVolume:
+  'scene'`), `tools/content/lod-audit.mjs` (every far copy against its body: own skin, unmatched vertices, 6 poses;
+  161 far copies, 0 off) and a characters3 check dealing eight known looks. On CI that check passed (every far copy
+  within 1 cm of its body's height), but characters3 still failed on: Hyena Warrior's whole body (far copy and full
+  detail alike) 1.5 of 2.12 m on the first frame after waking (the wake pose, not the far copy: runs 42563794663,
+  42567649540); bots' hands 13-15 cm off their guns at 160 m (3 of 8; the probe pools every mesh, full and far);
+  the new check measuring nothing on the flow's second attempt. Reverted here so the rest lands; next: the wake
+  frame, the hand probe at a distance, then land `wip/far-copies`.
 - **Old branches:** `wip/roster-cleanup` (helmets on four looks): dropped, main has model gear with fitted helmets
   (headFit.ts) and those four looks are retired. `wip/host-handoff-uncommitted`: dropped, every change in it is on main
   (pageHeardAt, `linked`, LINKED_WAIT_MS, the 120 s hold, HANDOFF_JOIN_SECONDS 10). `wip/map-review`:
