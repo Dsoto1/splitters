@@ -31,6 +31,7 @@ import {
   type Stance,
   type Vec3,
 } from '@tiletrigger/shared';
+import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { Unzipper } from '@tiletrigger/shared/peerZip';
 import { MAX_REWIND_TICKS, type Combatant, type Match } from '@tiletrigger/shared/match';
 import { Interpolator, type RemotePose } from '../../../client/src/game/interpolation.ts';
@@ -95,6 +96,8 @@ export interface ShotRecord {
   /** The tick the screen drew remote players at (fractional), and the tick the input carried (viewTick). */
   drawTick: number;
   viewTick: number;
+  /** Ticks the screen drew past the newest snapshot (extrapolating, a snapshot late); viewTick stops at the newest. */
+  ahead: number;
   /** The body this round met on the shooter's screen (null: a miss there), at which flight tick, and that body's drawn feet. */
   screenHit: number | null;
   screenK: number;
@@ -110,6 +113,8 @@ interface HostShot {
   viewTick: number;
   hit: (number | null)[];
   from: Vec3;
+  /** The round's direction as the host fired it (its own spread rolled), from its first end point. */
+  dir: Vec3;
   flying: boolean;
 }
 
@@ -137,30 +142,38 @@ export interface NetLabResult {
   missOther: number;
   /** Host hits on shots that missed on the screen (the shooter sees a hit marker for a miss). */
   phantomHits: number;
-  /** Rounds the shooter's client fired that the host never fired, and inputs the host dropped from a backlog. */
+  /** Rounds the shooter's client fired that the host never fired: the host had the shooter dead by then (a trade), or not. */
+  unfiredDead: number;
   unfired: number;
+  /** Inputs the host dropped from a backlog (more than its queue holds arrived at once). */
   droppedInputs: number;
   /** Where the host rewound the target to, against where the screen drew it (cm, horizontal; screen hits only). */
   lagCompCm: { p50: number; p95: number; max: number };
+  /** The same for shots fired while the screen drew past the newest snapshot (extrapolating), and how many those were. */
+  lagCompAheadCm: { p95: number; shots: number };
   /** Shots whose view tick was further back than the host rewinds (MAX_REWIND_TICKS). */
   clampedShots: number;
   /** Trigger to hit marker (ms; confirmed hits): input sent until the snapshot with the host's verdict arrived. */
   confirmMs: { p50: number; p95: number };
-  /** Predicted-position corrections (rubber-banding): a minute per player, and their size (cm). */
+  /** Predicted-position corrections (rubber-banding) not explained by being hit: a minute per player, and their size (cm). */
   correctionsPerMin: number;
   correctionCm: { p50: number; p95: number; max: number };
+  /** Corrections within half a second of being hit (stopping power's shove): a minute per player, p95 size (cm). */
+  hitCorrectionsPerMin: number;
+  hitCorrectionCm: number;
   /** Kills the host scored a minute (all players). */
   killsPerMin: number;
   /** Bytes a second per player (KB/s): host to player (compressed) and player to host. */
   downKBps: number;
   upKBps: number;
-  /** Snapshots that arrived merged with others (a backlog after a stall) and the longest gap between snapshots (ms). */
-  mergedSnapshots: number;
-  snapshotGapMs: { p95: number; max: number };
+  /** Gaps between snapshot arrivals (ms; they are sent every 33 ms): p95 and the longest. */
+    snapshotGapMs: { p95: number; max: number };
   /** Packets lost (and resent) each way. */
   lostPackets: number;
   /** The host's tick time (ms, mean) and ticks it ran late. */
   hostTickMs: number;
+  /** The lab's own event-loop stalls (ms, p99 and max): everything runs in one process, so a stall here delays every link. */
+  labStallMs: { p99: number; max: number };
 }
 
 const PACKET_BYTES = 1150;
@@ -311,6 +324,7 @@ interface Frame {
 
 interface PendingShot {
   rec: ShotRecord;
+  /** Where the round left from and its direction: the host's (filled in once its verdict is known). */
   eye: Vec3;
   dir: Vec3;
   /** The bodies as drawn the moment it was fired. */
@@ -328,6 +342,10 @@ class LabClient {
   private readonly frames: Frame[] = [];
   readonly shots: PendingShot[] = [];
   readonly corrections: number[] = [];
+  /** Corrections within half a second of being hit: stopping power shoves the body on the host (spec §23), which no client predicts. */
+  readonly hitCorrections: number[] = [];
+  private hurtAt = -Infinity;
+  private lastHp = 0;
   readonly rtts: number[] = [];
   readonly arrivals: { tick: number; at: number }[] = [];
   readonly gaps: number[] = [];
@@ -400,9 +418,11 @@ class LabClient {
     while (this.frames.length > TICK_RATE * 4) this.frames.shift();
     const me = msg.players.find((p) => p.s === this.slot);
     if (me) {
+      if (me.hp < this.lastHp) this.hurtAt = now;
+      this.lastHp = me.hp;
       const before = this.local.corrections;
       this.local.reconcile(me, msg.ack, msg.me, msg.tick);
-      if (this.local.corrections > before && this.measuring) this.corrections.push(this.local.lastCorrection);
+      if (this.local.corrections > before && this.measuring) (now - this.hurtAt < 500 ? this.hitCorrections : this.corrections).push(this.local.lastCorrection);
     }
   }
 
@@ -421,9 +441,11 @@ class LabClient {
     const t = b.tick > a.tick ? (tick - a.tick) / (b.tick - a.tick) : 0;
     const out: DrawnBody[] = [];
     for (const [slot, pb] of b.bodies) {
+      // As the Interpolator draws them: no blend into a respawn (or anything that jumped more than 6 m).
       const pa = a.bodies.get(slot);
-      if (!pa) continue;
-      out.push({ slot, x: pa.x + (pb.x - pa.x) * t, y: pa.y + (pb.y - pa.y) * t, z: pa.z + (pb.z - pa.z) * t, yaw: pb.yaw, stance: pb.stance });
+      const blend = pa && Math.hypot(pb.x - pa.x, pb.y - pa.y, pb.z - pa.z) <= 6 ? t : 1;
+      const from = pa && blend < 1 ? pa : pb;
+      out.push({ slot, x: from.x + (pb.x - from.x) * blend, y: from.y + (pb.y - from.y) * blend, z: from.z + (pb.z - from.z) * blend, yaw: pb.yaw, stance: pb.stance });
     }
     return out;
   }
@@ -554,17 +576,13 @@ class LabClient {
       const { input, shot } = local.tick({ forward, right, buttons }, yaw, pitch, this.weapon, viewTick);
       outbox.push(input);
       if (buttons & BUTTON_FIRE) fired = true;
-      if (shot && shot.ends.length && !shot.alt) {
-        const end = shot.ends[0]!;
-        const from = local.eye;
-        const dx = end.x - from.x, dy = end.y - from.y, dz = end.z - from.z;
-        const len = Math.hypot(dx, dy, dz) || 1;
+      if (shot && !shot.alt) {
         const drawn = poses.filter((p) => p.alive).map((p) => ({ slot: p.slot, x: p.x, y: p.y, z: p.z, yaw: p.yaw, stance: (p.stance ?? 0) as Stance }));
         if (this.measuring) {
           this.shots.push({
-            rec: { slot: this.slot, seq: input.seq, sentAt: now, drawTick, viewTick, screenHit: null, screenK: 0, screenAt: null, host: null, confirmMs: null },
-            eye: { ...from },
-            dir: { x: dx / len, y: dy / len, z: dz / len },
+            rec: { slot: this.slot, seq: input.seq, sentAt: now, drawTick, viewTick, ahead: Math.max(0, drawTick - this.interp.renderTick(now)), screenHit: null, screenK: 0, screenAt: null, host: null, confirmMs: null },
+            eye: { ...local.eye },
+            dir: { x: 0, y: 0, z: 1 },
             drawn,
           });
         }
@@ -588,8 +606,9 @@ const bodyAt = (bodies: readonly DrawnBody[], slot: number): Vec3 | null => {
 
 /** The match's private parts the lab watches (the same objects the host runs on). */
 interface MatchInside {
-  pendingEvents: { e: string; s?: number; hit?: (number | null)[]; from?: [number, number, number]; fl?: number[] }[];
+  pendingEvents: { e: string; s?: number; hit?: (number | null)[]; from?: [number, number, number]; to?: [number, number, number][]; fl?: number[] }[];
   fire(shooter: Combatant, def: unknown, viewTick: number): void;
+  applyInputs(c: Combatant): void;
 }
 
 /** Run one condition: a host, N players over lossy links, `seconds` measured. */
@@ -637,7 +656,19 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
     if (shooter.kind !== 'human') return;
     const ev = inside.pendingEvents.slice(before).find((e) => e.e === 'shot' && e.s === shooter.slot && e.hit);
     if (!ev) return;
-    hostShots.set(`${shooter.slot}:${shooter.lastSeq}`, { tick: match.tick, viewTick, hit: ev.hit!, from: { x: ev.from![0], y: ev.from![1], z: ev.from![2] }, flying: !!ev.fl?.length });
+    const from = { x: ev.from![0], y: ev.from![1], z: ev.from![2] };
+    const to = ev.to?.[0];
+    if (!to) return;
+    const dx = to[0] - from.x, dy = to[1] - from.y, dz = to[2] - from.z;
+    const len = Math.hypot(dx, dy, dz) || 1;
+    hostShots.set(`${shooter.slot}:${shooter.lastSeq}`, { tick: match.tick, viewTick, hit: ev.hit!, from, dir: { x: dx / len, y: dy / len, z: dz / len }, flying: !!ev.fl?.length });
+  };
+  // Each input the host applied: whether the player was alive then (a round predicted by a player the host already had dead).
+  const applied = new Map<string, boolean>();
+  const apply = inside.applyInputs.bind(match);
+  inside.applyInputs = (c) => {
+    if (c.kind === 'human' && measuring) for (const i of c.queue.slice(0, 2)) if (i.buttons & BUTTON_FIRE) applied.set(`${c.slot}:${i.seq}`, c.alive);
+    apply(c);
   };
   const queue = match.queueInputs.bind(match);
   match.queueInputs = (slot, inputs) => {
@@ -679,9 +710,12 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
   const tick0 = { ms: tickMs, n: ticks };
   measuring = true;
   for (const c of clients) c.measuring = true;
+  const loop = monitorEventLoopDelay({ resolution: 5 });
+  loop.enable();
   await sleep(seconds * 1000);
   for (const c of clients) c.measuring = false;
   measuring = false;
+  loop.disable();
   const bytes = links.map((l, i) => l.bytes - b0[i]!);
   const lost = links.reduce((s, l, i) => s + l.lost - l0[i]!, 0);
   // Let the last shots' verdicts and frames arrive.
@@ -690,12 +724,19 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
 
   const shots: ShotRecord[] = [];
   const lagCm: number[] = [];
+  const lagAheadCm: number[] = [];
   let clamped = 0;
   for (const c of clients) {
     for (const s of c.shots) {
-      c.judgeOnScreen(s, def);
       const h = hostShots.get(`${s.rec.slot}:${s.rec.seq}`) ?? null;
       s.rec.host = h;
+      // The round as the host fired it (its spread, from its eye), judged against the bodies the shooter saw: the
+      // two verdicts then differ only by where each had the bodies.
+      if (h) {
+        s.eye = h.from;
+        s.dir = h.dir;
+        c.judgeOnScreen(s, def);
+      }
       if (h) {
         const got = c.arrivals.find((a) => a.tick >= h.tick);
         s.rec.confirmMs = got ? got.at - s.rec.sentAt : null;
@@ -704,7 +745,7 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
           // Where the host had that body for this round: its rewound tick, plus the ticks of flight.
           const rewound = Math.max(h.tick - MAX_REWIND_TICKS, Math.min(h.tick, h.viewTick)) + s.rec.screenK;
           const p = poses.get(rewound)?.get(s.rec.screenHit);
-          if (p) lagCm.push(Math.hypot(p.x - s.rec.screenAt.x, p.z - s.rec.screenAt.z) * 100);
+          if (p && h.tick - h.viewTick <= MAX_REWIND_TICKS) (s.rec.ahead > 0.5 ? lagAheadCm : lagCm).push(Math.hypot(p.x - s.rec.screenAt.x, p.z - s.rec.screenAt.z) * 100);
         }
       }
       shots.push(s.rec);
@@ -721,6 +762,7 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
   const missClamped = missed.filter((s) => !deadOnHost(s) && s.host!.tick - s.host!.viewTick > MAX_REWIND_TICKS).length;
   const phantom = shots.filter((s) => s.screenHit === null && s.host && s.host.hit.some((x) => x !== null)).length;
   const corrections = clients.flatMap((c) => c.corrections);
+  const hitCorrections = clients.flatMap((c) => c.hitCorrections);
   const confirmTimes = confirmed.map((s) => s.confirmMs).filter((x): x is number => x !== null);
   const rtts = clients.flatMap((c) => c.rtts);
   const gaps = clients.flatMap((c) => c.gaps);
@@ -737,19 +779,23 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
     missClamped,
     missOther: missed.length - missDead - missClamped,
     phantomHits: phantom,
-    unfired: shots.filter((s) => !s.host).length,
+    unfiredDead: shots.filter((s) => !s.host && applied.get(`${s.slot}:${s.seq}`) === false).length,
+    unfired: shots.filter((s) => !s.host && applied.get(`${s.slot}:${s.seq}`) !== false).length,
     droppedInputs,
     lagCompCm: { p50: Math.round(pct(lagCm, 0.5)), p95: Math.round(pct(lagCm, 0.95)), max: Math.round(pct(lagCm, 1)) },
+    lagCompAheadCm: { p95: Math.round(pct(lagAheadCm, 0.95)), shots: lagAheadCm.length },
     clampedShots: clamped,
     confirmMs: { p50: Math.round(pct(confirmTimes, 0.5)), p95: Math.round(pct(confirmTimes, 0.95)) },
     correctionsPerMin: Math.round((corrections.length / n / seconds) * 60 * 10) / 10,
     correctionCm: { p50: Math.round(pct(corrections, 0.5) * 100), p95: Math.round(pct(corrections, 0.95) * 100), max: Math.round(pct(corrections, 1) * 100) },
+    hitCorrectionsPerMin: Math.round((hitCorrections.length / n / seconds) * 60 * 10) / 10,
+    hitCorrectionCm: Math.round(pct(hitCorrections, 0.95) * 100),
     killsPerMin: Math.round((kills / seconds) * 60),
     downKBps: Math.round((bytes.filter((_, i) => i % 2 === 1).reduce((s, b) => s + b, 0) / n / seconds / 1024) * 10) / 10,
     upKBps: Math.round((bytes.filter((_, i) => i % 2 === 0).reduce((s, b) => s + b, 0) / n / seconds / 1024) * 10) / 10,
-    mergedSnapshots: 0,
     snapshotGapMs: { p95: Math.round(pct(gaps, 0.95)), max: Math.round(pct(gaps, 1)) },
     lostPackets: lost,
+    labStallMs: { p99: Math.round(loop.percentile(99) / 1e6), max: Math.round(loop.max / 1e6) },
     hostTickMs: Math.round(((tickMs - tick0.ms) / Math.max(1, ticks - tick0.n)) * 100) / 100,
   };
   for (const c of clients) c.close();

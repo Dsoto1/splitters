@@ -40,12 +40,12 @@ for (const [i, condition] of conditions.entries()) {
 
 const pctOf = (a: number, b: number) => (b ? `${((a / b) * 100).toFixed(1)} %` : '–');
 console.log(`Net check: ${clients} players, ${seconds} s a condition, ${weapon}\n`);
-console.log('| Round trip / jitter / loss | Ping p50 / p95 | Screen hits | Confirmed | Missed: dead / clamped / other | Phantom hits | Lag-comp error p50 / p95 / max | Hit marker p50 / p95 | Corrections /min, p95 / max | Down / up KB/s | Snapshot gap p95 / max | Unfired, dropped inputs | Kills /min |');
-console.log('|---|---|---|---|---|---|---|---|---|---|---|---|---|');
+console.log('| Round trip / jitter / loss | Ping p50 / p95 | Screen hits | Confirmed | Missed: dead / clamped / other | Phantom hits | Lag-comp error p50 / p95 / max (extrapolating: p95, shots) | Hit marker p50 / p95 | Corrections /min, p95 / max | Hit shoves /min, p95 | Down / up KB/s | Snapshot gap p95 / max | Unfired: shooter dead / other; dropped inputs | Kills /min | Lab stall p99 / max |');
+console.log('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
 for (const r of results) {
   const c = r.condition;
   console.log(
-    `| ${c.rttMs} ms / ${c.jitterMs} ms / ${c.loss * 100} % | ${r.rtt.p50} / ${r.rtt.p95} ms | ${r.screenHits} of ${r.shots} | ${r.confirmed} (${pctOf(r.confirmed, r.screenHits)}) | ${r.missDead} / ${r.missClamped} / ${r.missOther} | ${r.phantomHits} | ${r.lagCompCm.p50} / ${r.lagCompCm.p95} / ${r.lagCompCm.max} cm | ${r.confirmMs.p50} / ${r.confirmMs.p95} ms | ${r.correctionsPerMin}, ${r.correctionCm.p95} / ${r.correctionCm.max} cm | ${r.downKBps} / ${r.upKBps} | ${r.snapshotGapMs.p95} / ${r.snapshotGapMs.max} ms | ${r.unfired}, ${r.droppedInputs} | ${r.killsPerMin} |`,
+    `| ${c.rttMs} ms / ${c.jitterMs} ms / ${c.loss * 100} % | ${r.rtt.p50} / ${r.rtt.p95} ms | ${r.screenHits} of ${r.shots} | ${r.confirmed} (${pctOf(r.confirmed, r.screenHits)}) | ${r.missDead} / ${r.missClamped} / ${r.missOther} | ${r.phantomHits} | ${r.lagCompCm.p50} / ${r.lagCompCm.p95} / ${r.lagCompCm.max} cm (${r.lagCompAheadCm.p95} cm, ${r.lagCompAheadCm.shots}) | ${r.confirmMs.p50} / ${r.confirmMs.p95} ms | ${r.correctionsPerMin}, ${r.correctionCm.p95} / ${r.correctionCm.max} cm | ${r.hitCorrectionsPerMin}, ${r.hitCorrectionCm} cm | ${r.downKBps} / ${r.upKBps} | ${r.snapshotGapMs.p95} / ${r.snapshotGapMs.max} ms | ${r.unfiredDead} / ${r.unfired}; ${r.droppedInputs} | ${r.killsPerMin} | ${r.labStallMs.p99} / ${r.labStallMs.max} ms |`,
   );
 }
 const json = args.get('json');
