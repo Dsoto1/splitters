@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 29,
   "metadata": {
     "id": "erosion",
     "name": "Erosion",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_nclrtgwlthwc4jdd",
-      "versionId": "v_y3myo2ot6w2cnqhf",
-      "revision": 1,
-      "contentHash": "sha256:c652459fac3816bea35fd038cbf8cd495a179a5de2beb3bf2cb87e20a216df7b",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:18:20.437Z"
+      "versionId": "v_ahsdrtibvlryfe63",
+      "revision": 2,
+      "contentHash": "sha256:b8758df5b383372f6ce3ab43d0c7ff6501678b776fc0dcde02538feff9856549",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T20:55:35.918Z"
     }
   },
   "classicStructure": {
@@ -4247,13 +4247,13 @@
       "position": [
         -25.5,
         -16,
-        -25.5
+        -24
       ],
       "kind": "block",
       "size": [
         3,
         18,
-        3
+        6
       ],
       "yaw": 0,
       "material": "core.pbr_jungle_rock",
@@ -4281,13 +4281,13 @@
       "position": [
         -25.5,
         -16,
-        25.5
+        24
       ],
       "kind": "block",
       "size": [
         3,
         18,
-        3
+        6
       ],
       "yaw": 0,
       "material": "core.pbr_jungle_rock",
@@ -4315,13 +4315,13 @@
       "position": [
         25.5,
         -16,
-        -25.5
+        -24
       ],
       "kind": "block",
       "size": [
         3,
         18,
-        3
+        6
       ],
       "yaw": 0,
       "material": "core.pbr_jungle_rock",
@@ -4349,13 +4349,13 @@
       "position": [
         25.5,
         -16,
-        25.5
+        24
       ],
       "kind": "block",
       "size": [
         3,
         18,
-        3
+        6
       ],
       "yaw": 0,
       "material": "core.pbr_jungle_rock",
@@ -8833,6 +8833,6 @@
   "physics": null,
   "blood": null,
   "teamSetup": null,
-  "dependencies": [],
-  "weaponSet": "chaos"
+  "weaponSet": "chaos",
+  "dependencies": []
 }

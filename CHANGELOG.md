@@ -23,6 +23,18 @@ made only on a commit that passed CI on a check branch.
 - **New weapon: the Battle Rifle** (slot 3): heavy, accurate, 300 rounds a minute, 20 to a magazine; four rounds kill
   to 40 m, two to the head anywhere, and it climbs hard held down. In the Military set, as a pickup, and on the
   Training Range's front rack.
+**Maps: no more spots you can't get out of** (owner's "Fix all", 2026-11-08; all in MapMaker):
+- Skyward: the two spawn points on the one-way gun towers are on the central deck now.
+- Sky Islands: a jump pad on the sky platform drops you back onto the west arm.
+- Grand Marquee: a gap at the back of each side panel on the marquee top; drop down to the street.
+- Obsidian Orb: the reactor shaft is bottomless again (the core isn't solid, its floor is gone): a fall is a fall, not
+  a pit. The glowing trims along the shaft walls are gone, so nothing lands on a ledge.
+- Reactor: railings beside the roof's stair head and along the stairs' open side; no more drop into the outer yard.
+- Serpent Gorge: climbing vines up from the gorge floor beside the river.
+- Erosion: the corner pad pillars meet the lower deck along an edge, so bots walk onto them too.
+- Outpost Siege: a smaller dais in the uplink room and the north room's low cover set back from the walls; bots get
+  round to the armour and the north rooms.
+- Iron Compound: the gantry MG turret sits in the gantry's end corner, out of the walkway.
 **Friends stay with the party after a vote**: a friend in your hosted game follows you to the next map (the vote's
 winner, the rotation, Change map) until your match there lets them in, instead of giving up after one early try while
 your browser was still loading it.
