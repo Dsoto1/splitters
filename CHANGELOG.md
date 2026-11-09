@@ -8,18 +8,41 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
-**Fireteams, part 2** (owner-approved 2026-11-08):
-- **Bot squads play the objective first.** A bot-led squad goes for the flag, the hill or the bomb site together, on
-  one route and push of the team's plan, rather than trailing its leader; when its leader falls, the next best member
-  leads on, and whoever carries the flag leads the squad home. Kills are back to the variant-off levels in Team
-  Deathmatch and the hill is held as long; CTF captures are partly back (docs/FIRETEAMS_PLAN.md, "Part 2").
-- **Your squad forms up round you:** single file through corridors and doorways, a wedge, spread out on open ground;
-  Hold here, Go there and Defend the objective put them on a ring round the place.
-- **Spread out / Stay tight** on the order wheel (its seventh entry).
-- **Bounding:** in a fight on the move, half the squad covers (firing where the enemy ducked) while the other half
-  moves up cover to cover.
-- **The squad HUD:** your squadmates' portraits with their health and the squad's order, your squad on the minimap
-  (and where you sent it), and your squad's orange marker over their heads. On a phone it sits beside your health.
+**MapMaker fixes** (the owner's answers, 2026-11-09, and bugs found building The Spillway):
+- **Paste into a map of another theme:** the pieces take the new map's theme and keep their own paint; the toast says
+  so.
+- **Mirror half the map** brings its bot hints, and team hints (a staging spot, a camp) swap sides like spawns. A new
+  **Terrain and paths too** box mirrors the terrain (heights, ground paint and plant cover) and copies the paths on
+  that half.
+- **Plants on a fine terrain grid** (finer than 2 m, Terrain → Change grid) grow as many to the square metre as a
+  2.5 m grid.
+- **The Scatter Brush sets are retired** (Pine forest, Leafy woods and the rest): the Environment brush and its
+  presets replace them, and N now takes up the Environment brush. Plants already placed stay as they are.
+- **The bot test runs up to 64 bots.**
+- **The inspector keeps the first edit after a placement** (it was lost when the inspector redrew a frame later), and
+  a field you are typing in survives any redraw.
+- **Stairs from the ground:** the ground at the foot of a flight (or any step) comes up to just under its first step,
+  worked out as the map loads and in MapMaker (the map file keeps its own ground), so bots and players climb it as a
+  step, not a 0.4 m lip. Bot test (Sunken Kingdom, Glacier Line and Fogbound, TDM, 2 seeds of 120 s): stuck recoveries
+  42 → 25 a match (Glacier Line 75 → 27).
+- **Cut ground to floors** (the selection menu): lowers the ground under the selected floors however deep, one undo
+  step, for a tunnel's cut or a sunken yard. The automatic lowering still stops 3 m above a floor (deeper, it would
+  open Sandfall's hypogeum rooms and the tops of flights cut into terraces on shipped maps; docs/BUILDING_KIT.md).
+- **The top bar** fits Export, Import and Publish again at 1400 px.
+
+**Time of day and weather** (MapMaker overhaul Phase 5; map format v34):
+- **Time of day:** Map properties → Time of day sets the hour (a slider, or Dawn, Morning, Noon, Afternoon, Dusk,
+  Night). The sun crosses the sky (east at dawn, high in the south at noon, west at dusk; the moon by night), and its
+  light, the haze and the sky picture blend between the sky presets: night, dusk, sunrise, the map's own sky by day,
+  sunset. The slider previews live; the time is fixed for the match. Maps without a time look exactly as before.
+- **Weather:** rain or snow (how hard), wind and fog banks, with rain and wind sounds (our own synthesiser). Fog is
+  its one effect on play: everyone sees less far. Under a roof the rain fades out and is heard on it. Low graphics
+  (phones) draw no rain or snow, only the fog. No lightning, nothing that flashes; the flicker check has heavy rain
+  and a blizzard at night among its moments.
+- **The host may play another weather** (Match setup's Advanced rules, the pause menu's Host tab: Clear, Rain, Heavy
+  rain, Snow, Blizzard, Fog); from the Host tab it plays from the next match.
+- MapMaker: the boulder and cliff face species show their pictures in the palette, not text cards.
+
 **MapMaker follow-ups** (the owner's answers, 2026-11-08):
 - **The measure tool's jump hint looks at the ground along the line**, not only at its two ends: a slope you can walk
   up reads walkable, a ledge reads a step (with its height), and a pit you couldn't climb out of reads a gap (with its
@@ -36,18 +59,6 @@ radius, facing and jump arcs in the 3D view and the plan view, edited in the ins
 a hint outside the boundary or off the navmesh, a jump a player couldn't make and duplicates. "What bots know" shows
 the bots' own computed spots (vantage spots, parkour links), read-only. Bots don't use the hints yet (the data is
 documented in docs/BOTS.md, "Bot hints (map data)").
-**Time of day and weather** (MapMaker overhaul Phase 5; map format v34):
-- **Time of day:** Map properties → Time of day sets the hour (a slider, or Dawn, Morning, Noon, Afternoon, Dusk,
-  Night). The sun crosses the sky (east at dawn, high in the south at noon, west at dusk; the moon by night), and its
-  light, the haze and the sky picture blend between the sky presets: night, dusk, sunrise, the map's own sky by day,
-  sunset. The slider previews live; the time is fixed for the match. Maps without a time look exactly as before.
-- **Weather:** rain or snow (how hard), wind and fog banks, with rain and wind sounds (our own synthesiser). Fog is
-  its one effect on play: everyone sees less far. Under a roof the rain fades out and is heard on it. Low graphics
-  (phones) draw no rain or snow, only the fog. No lightning, nothing that flashes; the flicker check has heavy rain
-  and a blizzard at night among its moments.
-- **The host may play another weather** (Match setup's Advanced rules, the pause menu's Host tab: Clear, Rain, Heavy
-  rain, Snow, Blizzard, Fog); from the Host tab it plays from the next match.
-- MapMaker: the boulder and cliff face species show their pictures in the palette, not text cards.
 
 **MapMaker: a bot test run and spawn exposure** (MapMaker overhaul Phase 4, items 1 and 2):
 - **Bot test** in the top bar opens the Test panel. **Run bots** plays a bot match on the map you're editing in the
@@ -79,6 +90,18 @@ documented in docs/BOTS.md, "Bot hints (map data)").
   blocks** draws what stops movement, shots and sight.
 - The brush stops at the map's environment budget, and painted plants export and import exactly as placed.
 
+**Fireteams, part 2** (owner-approved 2026-11-08):
+- **Bot squads play the objective first.** A bot-led squad goes for the flag, the hill or the bomb site together, on
+  one route and push of the team's plan, rather than trailing its leader; when its leader falls, the next best member
+  leads on, and whoever carries the flag leads the squad home. Kills are back to the variant-off levels in Team
+  Deathmatch and the hill is held as long; CTF captures are partly back (docs/FIRETEAMS_PLAN.md, "Part 2").
+- **Your squad forms up round you:** single file through corridors and doorways, a wedge, spread out on open ground;
+  Hold here, Go there and Defend the objective put them on a ring round the place.
+- **Spread out / Stay tight** on the order wheel (its seventh entry).
+- **Bounding:** in a fight on the move, half the squad covers (firing where the enemy ducked) while the other half
+  moves up cover to cover.
+- **The squad HUD:** your squadmates' portraits with their health and the squad's order, your squad on the minimap
+  (and where you sent it), and your squad's orange marker over their heads. On a phone it sits beside your health.
 **Set pieces, part 6: swapping the old big pieces** (docs/SET_PIECES_PLAN.md, "As built: part 6"):
 - **Replace all with a set piece…** in every tile's inspector in MapMaker: every placement of a tile becomes a set piece
   where it stands, one undo step.
@@ -139,13 +162,6 @@ definition out of the map too; it stays in your library, and one undo brings bot
   format is unchanged.
 - **Apex Ring** and **Sandsweep Circuit** no longer list Race (MapMaker, Map properties): Apex Ring plays Deathmatch,
   Team Deathmatch, CTF and King of the Hill with its karts lapping; Sandsweep plays Deathmatch.
-**MapMaker: bot hints** (map format v33; MapMaker overhaul Phase 4 item 3, Bot AI Phase D item 5): mark chokepoints,
-sniper, camp and staging spots and jump links for bots (the Bot hints tool, Y; the Entities tab). Pins with their
-radius, facing and jump arcs in the 3D view and the plan view, edited in the inspector, one undo step each; warnings for
-a hint outside the boundary or off the navmesh, a jump a player couldn't make and duplicates. "What bots know" shows
-the bots' own computed spots (vantage spots, parkour links), read-only. Bots don't use the hints yet (the data is
-documented in docs/BOTS.md, "Bot hints (map data)").
-
 **MapMaker: a finer terrain grid, Change grid, and the coast border** (map format v32; the editor half of the Iron
 Coast job):
 - **A finer grid:** a terrain can be up to 321 vertices a side (was 161), so a 380 m map can be 1.25 m apart. New

@@ -235,6 +235,28 @@ The workflow is unchanged (CLAUDE.md):
   docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md and the owner's screenshots described in this file's Iron Coast
   part 2 entry.
 
+**MapMaker fixes 2 (`wip/mapmaker-fixes2`, CI on `check/mapmaker-fixes2`; MapMaker lane, 2026-11-09; no format
+change, no map edited; waits for the train).** The owner's answers of 2026-11-09 and The Spillway's bugs
+(docs/MAPMAKER_OVERHAUL_PLAN.md, "MapMaker fixes 2" and the As built notes under Phase 3 items 4 and 6):
+- **Built:** paste across themes (`PASTE_ACROSS_THEMES` on, `pasteNote`); Mirror half the map brings bot hints (team
+  hints swap) and, with **Terrain and paths too**, the terrain and paths (`mirrorTerrainHalf`, `mirrorPathCopy`);
+  plants on fine grids as dense as 2.5 m (`plantShare`); the Scatter Brush sets retired from the palette (N = the
+  Environment brush; `scatterProps` kept for tests); bot test up to 64; the inspector keeps the field being typed
+  through a rebuild (`client/editor/inspectorKeep.ts`; the cause of "the first edit after a placement is lost");
+  stair feet in the worked-out ground (`settle.ts` `stepFootVertices`/`stepFeet`; bot-report stuck 42 → 25 a match on
+  sunken_kingdom, glacier_line, fogbound); **Cut ground to floors** (selection menu, `shared/editor/groundCut.ts`)
+  instead of lowering deeper than 3 m in general (measured: it would carve six shipped maps; BUILDING_KIT "Ground and
+  floors"); the top bar's new fit-3 tightens before Export, Import and Publish go (now fit-4), so they stay at 1400 px.
+- **e2e:** `editorux` split into `editorux`, `editorpieces`, `editortools`, `editorenv` (`EDITOR_UX_FLOWS` in
+  e2e/flowMap.mjs; e2e/timings.json seeds them in the shares their parts took of 1,337 s on run 42671626152;
+  select.test's packing bound allows 5 % over the goal). New checks: `editorInspectorKeepChecks` and the 1400 px top
+  bar (`editorux`), paste into a Factory map and the half mirror with hints, terrain and a path (`editortools` →
+  `editorPartBChecks`), the Environment brush where the Scatter Brush was (`editorux`, `scenery`). Phase 5's
+  `editorSkyWeatherChecks` run in `editorenv` (flowMap routes `weatherVisuals`/`weatherAudio` there).
+- **Pitfalls:** `terrainUnderFloors` now also raises ground (only at step feet, at most 0.6 m, to 2 cm under the
+  step); it must stay idempotent (terrainFloors.test checks every shipped map). The local client build needs
+  `NODE_OPTIONS=--max-old-space-size=6144` on this box (it ran out of heap at 2 GB).
+
 **MapMaker: track / NPC traffic wording, and Environment Phase 3's tools (`wip/mapmaker-env3`, green on `check/mapmaker-env3` at 63989680, run 42599981528; waits for the train; MapMaker lane,
 2026-11-09; no format change).**
 - **Race wording (item 1; also on `wip/mapmaker-race-wording` at 14d2ab06, green on `check/mapmaker-env3`, run
@@ -346,7 +368,7 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` LODs, `content/meshy.lock.json`, the e2e `characters3` flow's far-copy checks; `wip/far-copies`), far-copies agent, 2026-11-09.
 
 - Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
-- Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
+
 **MapMaker: time of day and weather (`wip/mapmaker-p5`, map format v34, MapMaker lane, 2026-11-09).** Overhaul Phase 5
 (docs/MAPMAKER_OVERHAUL_PLAN.md "As built"), chained after v33 (bot hints). Lands in a train.
 - **Data:** `timeOfDay` (hours) and `weather` (`fall`, `amount`, `wind`, `fog`); absent on every map so far, which

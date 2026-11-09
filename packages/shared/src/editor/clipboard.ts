@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { coreCatalog, type TileCatalog } from '../map/catalog.ts';
+import { coreThemes } from '../map/materials.ts';
 import { MapEntity, MapGroup, SetPieceDefinition, SetPiecePlacement, TilePlacement, type MapDocument } from '../map/schema.ts';
 import { piecesFor, setPieceFootprint, type SetPieceLibrary } from '../map/setPieces.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
@@ -17,12 +18,13 @@ import { addSetPieceDefCommand } from './setPieceEdit.ts';
  * groups stay groups.
  *
  * Another map's grid or theme: a paste into a map with a different cell size or level height is refused (the pieces
- * wouldn't line up). One into a map of another theme is refused too while PASTE_ACROSS_THEMES is off (the owner's
- * call): with it on, the pieces would simply take this map's theme, their own paint kept.
+ * wouldn't line up). One into a map of another theme goes in (owner, 2026-11-09; PASTE_ACROSS_THEMES): the pieces
+ * take this map's theme wherever they wore their old map's (its walls, floors and roofs, a set piece's roles), and
+ * keep their own paint (a surface painted by hand, a set piece's own role pack); `pasteNote` says so.
  */
 export const CLIPBOARD_FORMAT = 'tiletrigger.mapmaker.clipboard';
-/** The owner's call: may a copy go into a map of another theme (its pieces then wear this map's theme)? Off: refused. */
-export const PASTE_ACROSS_THEMES = false;
+/** The owner's call (2026-11-09: allowed): may a copy go into a map of another theme (its pieces then wear this map's theme, their own paint kept)? Off: refused. */
+export const PASTE_ACROSS_THEMES = true;
 
 export const MapClipboard = z.object({
   format: z.literal(CLIPBOARD_FORMAT),
@@ -99,6 +101,14 @@ export function pasteRefusal(doc: MapDocument, clip: MapClipboard): string | nul
   }
   return null;
 }
+
+/** What a paste into this map should be told beyond its count (another theme: what the pieces wear now), or null. */
+export function pasteNote(doc: MapDocument, clip: MapClipboard): string | null {
+  const theme = doc.classicStructure.theme;
+  if (clip.from.theme === theme) return null;
+  return `from a ${themeName(clip.from.theme)} map: the pieces wear this map's ${themeName(theme)} theme, their own paint kept`;
+}
+const themeName = (id: string) => coreThemes.get(id)?.displayName ?? id;
 
 /**
  * Paste: the clipboard's things with new ids, their anchor on `cell` and `level` (things move with their tiles, by

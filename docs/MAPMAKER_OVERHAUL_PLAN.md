@@ -26,7 +26,7 @@ Already done from the owner's earlier ask: **the real buildable area.**
   - No command writes the lowered ground into the document: groups, paste and templates move floors like any edit.
 - **Performance.** MapMaker stays smooth on the owner's M1. Anything that shows in play (time of day, weather) goes
   through the perf budgets and the phone tiers.
-- **Tests.** Each phase adds e2e checks to the `editorux` flow and regenerates the `mapmaker.png` baseline when the
+- **Tests.** Each phase adds e2e checks to the `editorux` flows (`editorux`, `editorpieces`, `editortools`, `editorenv` since 2026-11-09) and regenerates the `mapmaker.png` baseline when the
   look changes (`pnpm e2e:baselines`).
 
 ## Phase 1: feedback while building (quick wins)
@@ -179,6 +179,10 @@ Already done from the owner's earlier ask: **the real buildable area.**
      and portal pairs linked; the anchor on the cell under the pointer, on the level edited; one undo step).
      `pasteRefusal`: another cell size or level height is refused; another theme too while `PASTE_ACROSS_THEMES` is off
      (an owner's call: HANDOFF, Phase 3 part B). Client: `editor/clipboardStore.ts` (localStorage `tiletrigger.editor.clipboard`).
+   - **As built, the owner's answer (2026-11-09, `wip/mapmaker-fixes2`):** `PASTE_ACROSS_THEMES` is on: a copy goes
+     into a map of another theme, its pieces wearing that theme wherever they wore their old map's, their own paint
+     kept (a surface painted by hand, a set piece's own role pack); `pasteNote` puts it in the toast. Unit test in
+     `mapmakerEditing.test.ts`; e2e `editortools` → `editorPartBChecks` (pasted into a Factory map).
 5. **Templates.** Start a new map from an official starter layout: arena, symmetric CTF, assault, open terrain.
    - **As built:** `maps/templates/<id>.json` (arena, ctf, assault, open_terrain), built in MapMaker (its tools in the
      plan view; CTF's east half made with Mirror…) and exported. They sit outside `maps/*.json`, so the map index, the
@@ -198,6 +202,14 @@ Already done from the owner's earlier ask: **the real buildable area.**
      the map's first two teams swap (spawns, flags, team zones, doors, buttons, ziplines, team vehicles); Breakthrough
      spawn groups keep their side. Terrain and paths aren't mirrored (an owner's call: HANDOFF, Phase 3 part B). One undo step.
      Dialog: `editor/mirrorDialog.ts` (Shift+M). A unit test checks every mirrored tile's geometry is the mirror image.
+   - **As built, the owner's answers (2026-11-09, `wip/mapmaker-fixes2`):** half the map brings its bot hints
+     (`mirrorBotHint`: spot, facing, a jump's landing), team hints swapping sides with spawns; a hint on the far half
+     counts as something there. The dialog's **Terrain and paths too** (half the map only; `mirrorHalfCommand`'s
+     `ground`): `mirrorTerrainHalf` gives every vertex strictly on the far side the height at its mirrored point (on
+     the triangles the terrain draws) and every cell there the paint and plant cover of the cell its mirrored middle
+     lies in; paths wholly on the near half are copied (`mirrorPathCopy`: new ids; the track stays the map's one, so
+     a copy is a road or route), and a path on the far half then counts as something there. One undo step. Unit tests
+     in `mapmakerEditing.test.ts`; e2e `editortools` → `editorPartBChecks`.
 7. **Note pins:** notes left on the map for its makers.
    - They show in MapMaker, never in play.
    - They are stored in the map as editor notes (a format bump).
@@ -245,7 +257,7 @@ Already done from the owner's earlier ask: **the real buildable area.**
    - It builds on Bot AI Phase A (the scorecard and the navigation audit, docs/BOT_AI_PLAN.md).
    - **As built** (`wip/mapmaker-p4`, 2026-11-09; no format change, nothing stored in the map): the top bar's **Bot
      test** opens the Test panel (`client/editor/mapTestPanel.ts`): mode (the map's playable modes), bots a team or
-     in all (up to 32), 30 s to 5 min; a progress bar and Cancel (`Worker.terminate`). The run is
+     in all (up to 32; 64 since `wip/mapmaker-fixes2`, owner 2026-11-09), 30 s to 5 min; a progress bar and Cancel (`Worker.terminate`). The run is
      `shared/editor/mapTest.ts` `BotTestRun`: the same Match `pnpm bot-report` plays (bots added as the server adds
      them, no limits), stepped 15 ticks at a time in a worker of its own (`mapTestWorker.ts` / `mapTestWorkerCore.ts`,
      split as the match worker is for Safari). Stuck recoveries and failed searches come through `bots/botTrace.ts`
@@ -258,7 +270,7 @@ Already done from the owner's earlier ask: **the real buildable area.**
      posts the map and draws the result; the panel times MapMaker's frames during a run and shows the longest with the
      result. On this 4-core box at load 10-13: 75-100 ms of the worker's time a match second with 6-8 bots (a 5-minute
      run about 25-30 s), a navmesh build first (70 ms on Phase 0 Arena, 1.5 s on Diamond Park). e2e
-     `editorux` → `editorMapTestChecks`; unit `shared/test/mapTest.test.ts`.
+     `editorenv` → `editorMapTestChecks`; unit `shared/test/mapTest.test.ts`.
 2. **Sightlines and spawn exposure.**
    - For each spawn: how much can see it, and from how far.
    - Long sightlines drawn on the map.
@@ -315,7 +327,7 @@ Already done from the owner's earlier ask: **the real buildable area.**
     `setTimeOfDay` and `setWeather`, `shared/editor/skyWeather.ts`): the sliders preview live (`EditorView.previewSky`)
     and make one undo step when let go;
   - **tests:** unit `shared/test/timeOfDayWeather.test.ts` (the sun maths, v33 → v34, the settings, the host
-    override), `client/test/weatherAudio.test.ts`; e2e `editorux` → `editorSkyWeatherChecks` (the controls, the live
+    override), `client/test/weatherAudio.test.ts`; e2e `editorenv` → `editorSkyWeatherChecks` (the controls, the live
     preview, TEST starts with the map's weather), `flashing` → the `rain` and `snow` moments.
 
 ## Phase 6: a guided first-time tour
@@ -329,7 +341,9 @@ last, once the interface has settled.
   - **Terrain → Change grid…** (`shared/editor/changeGrid.ts`, `client/editor/changeGridDialog.ts`): one command, one
     undo step, a preview of vertices, triangles and the file against its budget;
   - the **coast** border side (`shared/map/borderCoast.ts`, `client/borderCoast.ts`), per side in Sky → Border;
-  - e2e `editorux` → `editorTerrainGridChecks`; unit `terrainGrid.test.ts`, `borderCoast.test.ts`.
+  - e2e `editortools` → `editorTerrainGridChecks`; unit `terrainGrid.test.ts`, `borderCoast.test.ts`.
+  - **As built, the owner's answer (2026-11-09, `wip/mapmaker-fixes2`):** plants on a grid finer than 2 m grow as many
+    to the square metre as a 2.5 m grid (`terrain.ts` `plantShare`, `FINE_GRID_PLANTS_AS`; was 2 m).
 
 ### Environment Phase 3's MapMaker tools (lane item, owner 2026-11-08)
 - **As built (2026-11-09, `wip/mapmaker-env3`, no format change):** the Nature tab's Environment group (Trees, Plants,
@@ -338,9 +352,32 @@ last, once the interface has settled.
   variants, four presets, slope / altitude / material filters, keep-clear of spawns, routes and objectives with a
   confirmation to turn it off or to place a blocker there by hand), Show what blocks, the environment budget in the
   pane and as the brush's stop. Logic `shared/editor/envBrush.ts`, UI `client/editor/envTools.ts`; unit
-  `envBrush.test.ts`, e2e `editorux` → `editorEnvironmentChecks`. Docs: SCENERY.md "Environment group and brush".
+  `envBrush.test.ts`, e2e `editorenv` → `editorEnvironmentChecks`. Docs: SCENERY.md "Environment group and brush".
+- **As built, the owner's answer (2026-11-09, `wip/mapmaker-fixes2`):** the old Scatter Brush sets are retired from
+  the palette (its group, the `scatter` tool and its slider); N takes up the Environment brush (`envBrush` in
+  `EDITOR_KEYS`). No shipped map or test needed them: maps store the plants as props; the shared
+  `scatterProps` stays for unit tests that want a patch of plants. e2e: the rock and forest checks in `editorux` and
+  `scenery` paint with the Environment brush.
 - **Race wording (same branch):** the race layer reads track / NPC traffic; Map properties drops Race
   (`shared/editor/mapModes.ts`).
+
+## MapMaker fixes 2 (2026-11-09, `wip/mapmaker-fixes2`): bugs found building The Spillway, tests, the top bar
+- **The inspector dropped the first edit after a placement.** Cause: a placement selects the new thing (the
+  inspector is built) and changes the map (built again on the next frame, `EditorApp.refresh`); a value typed into
+  the first build's field before that frame went with the field (fields commit on `change`). Fix:
+  `client/editor/inspectorKeep.ts` `rebuildKeepingEdit`: every rebuild puts the field being typed in back (the same
+  field by place and kind gets the focus, the typed value and the caret, when it still shows the value the typing
+  started from). e2e `editorux` → `editorInspectorKeepChecks` (fails without the fix: the focus and value are gone).
+- **Stair feet.** `settle.ts` `terrainUnderFloors` (worked out, never stored) also brings ground a little under a
+  step (a solid no taller than `PLAYER.maxStepHeight`) up to 2 cm under its base within one grid spacing; a floor's
+  edge there stays 2 cm (not 5) under its top. Idempotent (a second pass changes nothing), checked on every shipped
+  map. bot-report (sunken_kingdom, glacier_line, fogbound; TDM, seeds 1-2, 120 s): stuck 42 → 25 a match.
+- **Lowering deeper than 3 m: not in general** (measured: it would carve six shipped maps, up to 27 m; BUILDING_KIT
+  "Ground and floors"). Instead **Cut ground to floors** (selection menu; `shared/editor/groundCut.ts`): the map's own
+  ground lowered under the selected floors, any depth, one undo step. Unit tests in `terrainFloors.test.ts`.
+- **`editorux` split** into `editorux`, `editorpieces`, `editortools` and `editorenv` (e2e/flowMap.mjs
+  `EDITOR_UX_FLOWS`), every check kept in its order.
+- **The top bar** fits Export, Import and Publish at 1400 px again (editor.css).
 
 ## Order
 - **After set pieces part 2.** Both touch the palette, the ghost and selection, and set pieces give groups their

@@ -544,12 +544,17 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-top.fit-2 .ed-pick > span { display: none; }
 #ed-top.fit-2 #ed-theme { max-width: 104px; }
 #ed-top.fit-2 #ed-bots, #ed-top.fit-2 #ed-skill { max-width: 76px; }
-#ed-top.fit-3 .ed-file button:nth-child(n + 4) { display: none; }
+/* fit-3 tightens before anything goes (MapMaker fixes 2: with Bot test in the bar, Export, Import and Publish went at
+   1400 px; tightened, they stay): narrower name, snap, theme and skill, icon buttons and gaps drawn closer. */
+#ed-top.fit-3 { gap: 3px; }
 #ed-top.fit-3 #ed-name { width: 96px; }
 #ed-top.fit-3 #ed-snap { max-width: 84px; }
-#ed-top.fit-4 #ed-skill { display: none; }
-#ed-top.fit-4 #ed-grid, #ed-top.fit-4 #ed-grid-full, #ed-top.fit-4 #ed-overlaps, #ed-top.fit-4 #ed-plan, #ed-top.fit-4 #ed-maptest { padding: 5px; }
-#ed-top.fit-4 #ed-theme { max-width: 84px; }
+#ed-top.fit-3 #ed-theme { max-width: 84px; }
+#ed-top.fit-3 #ed-skill { max-width: 64px; }
+#ed-top.fit-3 .ed-file { gap: 2px; }
+#ed-top.fit-3 .ed-file button, #ed-top.fit-3 #ed-grid, #ed-top.fit-3 #ed-grid-full, #ed-top.fit-3 #ed-overlaps, #ed-top.fit-3 #ed-plan, #ed-top.fit-3 #ed-maptest { padding: 5px; }
+#ed-top.fit-4 .ed-file button:nth-child(n + 4) { display: none; }
+#ed-top.fit-5 #ed-skill { display: none; }
 #ed-tr-edit .ed-tr-swap { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0; }
 #ed-tr-edit .ed-tr-swap label { flex: 1; margin: 0; }
 #ed-tr-edit .ed-tr-swap button { flex: none; margin: 0; }

@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_TERRAIN_VERTS,
+  FINE_GRID_PLANTS_AS,
+  plantShare,
   EditHistory,
   GRID_SPACINGS,
   MAP_FORMAT_VERSION,
@@ -237,5 +239,14 @@ describe('format v32', () => {
     expect(fromVersion).toBe(31);
     expect(doc).toEqual({ ...v31, formatVersion: MAP_FORMAT_VERSION });
     expect(loadMap(structuredClone(v31)).ok).toBe(true);
+  });
+});
+
+describe('plants on fine grids (owner, 2026-11-09)', () => {
+  it('grow as many to the square metre as a 2.5 m grid; 2 m and coarser grids as before', () => {
+    const perSquareMetre = (s: number) => plantShare(s) / (s * s);
+    expect(FINE_GRID_PLANTS_AS).toBe(2.5);
+    for (const s of [1, 1.25, 1.5, 1.75]) expect(perSquareMetre(s)).toBeCloseTo(1 / (2.5 * 2.5), 9);
+    for (const s of [2, 2.5, 3, 4]) expect(plantShare(s)).toBe(1);
   });
 });
