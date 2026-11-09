@@ -1098,7 +1098,7 @@ async function editoruxFlow(browser) {
 
 /**
  * Map format v32's MapMaker half (the Iron Coast job): Terrain → Change grid (a preview of the vertices and the budget,
- * one undo step) on a small terrain, and the coast border side chosen per side and drawn.
+ * one undo step) on a 160 m terrain, and the coast border side chosen per side and drawn.
  */
 async function editorTerrainGridChecks(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
@@ -1108,12 +1108,12 @@ async function editorTerrainGridChecks(browser) {
   await page.goto(`${CLIENT}/?mode=editor&test=1`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   page.once('dialog', (d) => d.accept());
-  await newMap(page, 96);
+  await newMap(page, 160);
   // A cliff 8 m high across the north of the terrain (sculpted in one step), the beach south of it.
   const start = await page.evaluate(() => {
     const ed = window.__editor;
     const t = ed.doc.terrain;
-    const heights = t.heights.map((h, i) => (t.origin[1] + Math.floor(i / t.cols) * t.spacing > 10 + 0.3 * (t.origin[0] + (i % t.cols) * t.spacing) ? 800 : h));
+    const heights = t.heights.map((h, i) => (t.origin[1] + Math.floor(i / t.cols) * t.spacing > -50 + 0.3 * (t.origin[0] + (i % t.cols) * t.spacing) ? 800 : h));
     ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights } });
     return { spacing: t.spacing, cols: t.cols, rows: t.rows };
   });
@@ -1123,10 +1123,10 @@ async function editorTerrainGridChecks(browser) {
   await page.waitForSelector('#ed-grid-dialog', { timeout: T(5000) });
   await page.selectOption('#ed-grid-spacing', '1');
   const preview = await page.evaluate(() => ({ after: document.getElementById('ed-grid-after').textContent, verts: document.getElementById('ed-grid-verts').textContent, size: document.getElementById('ed-grid-size').textContent, go: !document.getElementById('ed-grid-go').disabled }));
-  check(preview.after === '1 m · 97 × 97' && /^9,409 \(×/.test(preview.verts) && /of 2 MB$/.test(preview.size) && preview.go, `Change grid previews the new grid, its vertices and the file against its budget (${JSON.stringify(preview)}; was ${start.cols} × ${start.rows} at ${start.spacing} m)`);
-  await page.selectOption('#ed-grid-spacing', '1.25');
+  check(preview.after === '1 m · 161 × 161' && /^25,921 \(×/.test(preview.verts) && /of 2 MB$/.test(preview.size) && preview.go, `Change grid previews the new grid, its vertices and the file against its budget (${JSON.stringify(preview)}; was ${start.cols} × ${start.rows} at ${start.spacing} m)`);
+  await page.selectOption('#ed-grid-spacing', '1.5');
   const odd = await page.evaluate(() => document.getElementById('ed-grid-why').textContent);
-  check(/whole number of 1\.25 m cells/.test(odd), `a spacing that doesn't divide the terrain says it changes its size (${odd})`);
+  check(/whole number of 1\.5 m cells/.test(odd), `a spacing that doesn't divide the terrain says it changes its size (${odd})`);
   await page.selectOption('#ed-grid-spacing', '1');
   await shot('change-grid');
   const before = await page.evaluate(() => window.__editor.doc.terrain);
@@ -1139,8 +1139,8 @@ async function editorTerrainGridChecks(browser) {
   });
   let same = true;
   for (let r = 0; r < before.rows; r++) for (let c = 0; c < before.cols; c++) if (after.heights[r * 2 * after.cols + c * 2] !== before.heights[r * before.cols + c]) same = false;
-  check(after.spacing === 1 && after.cols === 97 && after.rows === 97 && after.cells === 96 * 96 && same, `Change grid resamples the terrain to 1 m, heights where the grids meet unchanged (${after.cols} × ${after.rows}, ${after.label})`);
-  check(after.drawn >= 96 * 96 * 4 * 0.9 && after.undo === 'Change grid to 1 m', `the finer terrain is drawn, one undo step (${after.drawn} vertices, "${after.undo}")`);
+  check(after.spacing === 1 && after.cols === 161 && after.rows === 161 && after.cells === 160 * 160 && same, `Change grid resamples the terrain to 1 m, heights where the grids meet unchanged (${after.cols} × ${after.rows}, ${after.label})`);
+  check(after.drawn >= 160 * 160 * 4 * 0.9 && after.undo === 'Change grid to 1 m', `the finer terrain is drawn, one undo step (${after.drawn} vertices, "${after.undo}")`);
   await page.keyboard.press('Control+KeyZ');
   const undone = await page.evaluate(() => window.__editor.doc.terrain);
   check(JSON.stringify(undone) === JSON.stringify(before), 'one undo puts the 2 m terrain back exactly');
