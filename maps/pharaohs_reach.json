@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 30,
+  "formatVersion": 32,
   "metadata": {
     "id": "pharaohs_reach",
     "name": "Pharaoh's Reach",
@@ -18,7 +18,15 @@
       "core.tdm",
       "core.koth",
       "core.ctf"
-    ]
+    ],
+    "release": {
+      "mapId": "m_kmgxzkmybosebj5y",
+      "versionId": "v_wlm6tvwtlflv53uv",
+      "revision": 1,
+      "contentHash": "sha256:f27b61b36ef61842100d3591ddb924cc7e39abbfa67f1fc5e9e0a0b4cf28257e",
+      "schemaVersion": 32,
+      "releasedAt": "2026-11-09T07:20:32.077Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -560,14 +568,6 @@
         "y": 4,
         "z": 0,
         "rotation": 0
-      },
-      {
-        "id": "tile_069",
-        "tile": "egypt.pylon",
-        "x": 5,
-        "y": 1,
-        "z": 0,
-        "rotation": 2
       },
       {
         "id": "tile_070",
@@ -4208,5 +4208,16 @@
       8
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "setPieces": [
+    {
+      "id": "tile_069",
+      "piece": "setpiece.temple_pylon",
+      "x": 5,
+      "y": 1,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false
+    }
+  ]
 }
