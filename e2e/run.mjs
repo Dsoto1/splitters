@@ -7410,6 +7410,8 @@ async function wholeBodies(page, frames, upright = []) {
       const checked = new Set();
       const seen = new Set();
       const failed = new Map();
+      // Each upright character's lowest drawn height over the frames, and its full detail's in that pose.
+      const heights = new Map();
       await new Promise((resolve) => {
         let n = 0;
         const o3 = sc.onAfterRenderObservable.add(() => {
@@ -7423,6 +7425,7 @@ async function wholeBodies(page, frames, upright = []) {
             const dist = Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z);
             if (!lods.length || dist < Math.max(...lods.map((l) => l.distanceOrScreenCoverage)) + 1) continue;
             checked.add(slot);
+            heights.set(slot, heights.get(slot) ?? { look: JSON.parse(a.specKey).look, dist: Math.round(dist), drawn: Infinity, full: 0 });
             let lo = Infinity;
             let hi = -Infinity;
             let bad = 0;
@@ -7448,6 +7451,8 @@ async function wholeBodies(page, frames, upright = []) {
             const height = hi > lo ? hi - lo : 0;
             const want = fullHeight * (spec.size ?? 1);
             const full = hi0 > lo0 ? hi0 - lo0 : 0;
+            const hrow = heights.get(slot);
+            if (hrow && upright.includes(slot) && height < hrow.drawn) Object.assign(hrow, { drawn: +height.toFixed(2), full: +full.toFixed(2) });
             // (`full`: the full-detail mesh in the same pose, for the message: Hyena Warrior's low-detail level is drawn
             // 1.5-1.8 m against its full detail's 2.1 m in the same pose, on CI; see HANDOFF.)
             if ((off.length || bad || (upright.includes(slot) && height < want * 0.75)) && !failed.has(slot)) {
@@ -7463,7 +7468,7 @@ async function wholeBodies(page, frames, upright = []) {
       proto.render = render0;
       sc.onBeforeDrawPhaseObservable.remove(o1);
       sc.onAfterDrawPhaseObservable.remove(o2);
-      return { checked: checked.size, seen: seen.size, failed: [...failed.values()] };
+      return { checked: checked.size, seen: seen.size, failed: [...failed.values()], heights: [...heights.values()].filter((h) => h.drawn < Infinity) };
     },
     [frames, 1.8, upright],
   );
@@ -7579,6 +7584,33 @@ async function farBodies(browser) {
   // (For a failure: where you are now against where the crowd was set out from, and whether you are alive.)
   if (r.failed.length) broken.push(`you ${await sim(page, (m, me, from) => `${Math.hypot(me.move.pos.x - from.x, me.move.pos.z - from.z).toFixed(1)} m from the setup, ${me.alive ? 'alive' : 'dead'}, ${me.deaths} deaths`, setup.from)}`);
   check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
+  // Then known looks on the same runners (not the deck's draw): Hyena Warrior's far copy was drawn 15-30% short on CI
+  // (HANDOFF, "Flaky e2e checks"), then large, small and animal bodies. Each far copy stands as tall as its full body
+  // in the same pose (the lowest of the frames), and is skinned on the full body's skeleton (one pose for both).
+  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.tortoise', 'core.abe', 'core.panda', 'core.knight', 'core.croakley'];
+  await sim(page, (m, _me, [slots, looks]) => slots.forEach((s, i) => {
+    const c = m.combatants().find((x) => x.slot === s);
+    if (c && looks[i] && c.look !== looks[i]) m.swapLook(c, looks[i]);
+  }), [setup.slots, looks]);
+  const dealt = () => page.evaluate(([slots, looks]) => slots.filter((s, i) => {
+    const a = window.__cs.view.avatars.get(s);
+    return !looks[i] || (!!a?.anim?.ch && JSON.parse(a.specKey).look === looks[i] && a.anim.current === 'run');
+  }).length, [setup.slots, looks]);
+  await until(async () => (await dealt()) >= setup.slots.length, T(120000));
+  // (A few tries: on a slow runner the dealt looks can still be loading, or out of view, the first time.)
+  let r2 = await wholeBodies(page, 12, setup.slots);
+  for (let i = 0; i < 3 && !r2.heights.some((h) => h.look === 'core.hyena'); i++) {
+    await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), setup.yaw);
+    await until(async () => (await dealt()) >= setup.slots.length, T(30000));
+    r2 = await wholeBodies(page, 12, setup.slots);
+  }
+  const shared = await page.evaluate((slots) => slots.flatMap((s) => {
+    const ch = window.__cs.view.avatars.get(s)?.anim?.ch;
+    return (ch?.meshes ?? []).flatMap((m) => (m.getLODLevels?.() ?? []).filter((l) => l.mesh && l.mesh.skeleton !== m.skeleton).map(() => JSON.parse(window.__cs.view.avatars.get(s).specKey).look));
+  }), setup.slots);
+  const drawnHeights = r2.heights.map((h) => `${h.look} ${h.dist} m ${h.drawn}/${h.full} m`).join(', ');
+  const short = r2.heights.filter((h) => h.full > 0 && h.drawn < h.full * 0.9);
+  check(r2.heights.some((h) => h.look === 'core.hyena') && short.length === 0 && r2.failed.length === 0 && shared.length === 0, `far copies stand as tall as their full bodies in the same pose, on the same skeleton, Hyena Warrior's among them (drawn far / full detail, lowest of the frames: ${drawnHeights || 'none measured'}; short: ${short.map((h) => h.look).join(', ') || 'none'}; on a skeleton of their own: ${[...new Set(shared)].join(', ') || 'none'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
