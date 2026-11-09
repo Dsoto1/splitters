@@ -104,12 +104,34 @@ ended (12 s vote, 3 s winner, the map's load and the start countdown). Nobody is
 (`?join=CODE&party=TAG`: the host's in the Host tab, and anyone's who joined by code in the Match tab), so whoever
 follows one is in your party. `hello` carries the tag; a host keeps it on the player (`Combatant.party`, the roster's
 `py`), and **in team modes a joining member takes a bot's place on the team most of their party is on**
-(`Match.takeOverBot`, `partyTeam`), while it has a bot to give way; else the usual balance. Free-for-all: nothing
-changes but the scoreboard's **PARTY** mark. Travelling (the vote, the rotation, Change map) everyone rejoins the next
-match with the same tag, so the party lands on one side again. Bots fill and leave as people join and leave, as
+(`Match.takeOverBot`, `partyTeam`), while it has a bot to give way; else the usual balance. Travelling (the vote,
+the rotation, Change map) everyone rejoins the next match with the same tag, so the party lands on one side again. Bots fill and leave as people join and leave, as
 before; **a join beyond the map's player cap for the mode is refused** ("match full: <map> takes N players"), a
 player coming back to a kept place excepted. Online → Join a friend's game takes a code or a pasted invite link, and
 offers **Rejoin your last friend's game** for six hours.
+
+**Free-for-all parties** (Deathmatch, Roulette and every mode without teams; `game/ffaParty.ts`, `sim/spawns.ts`):
+party members stay each other's opponents (**no damage or scoring change**: they can hurt each other, and a kill of
+one counts like any other), but they see each other as friends:
+- **Friendly names:** your party's people wear the friendly colour (Options' ally marker colour; the default cyan
+  `#3ad1ff` when it is "team") in the kill feed, quick messages and the scoreboard (with its **PARTY** mark), and
+  get the ally marker (a diamond) over their heads. Strangers keep their own colours and no marker.
+- **Spawning near each other:** a member's spawn choice doesn't count the party as the danger it avoids (enemy
+  distance and sight lines are the strangers'), and **safety is decided first**: among the checked points about as
+  safe as the safest (within `partyMargin`, no enemy much nearer than the safest's nearest, none seen by more
+  enemies), each living member out of a fight (not hurt in the last 4 s) within `partyRange` adds `partyBonus`, up
+  to `partyMax`; one of the best few is picked at random as usual. The numbers are `content/match-play.json`
+  `spawnChoice` (`partyRange` 30 m, `partyBonus` 10, `partyMax` 3, `partyMargin` 14). With an enemy beside the party,
+  or a sight line on its spawns, the member spawns elsewhere. Tests: `shared/test/partySpawn.test.ts`.
+
+**Host handoff** (a browser host leaves; docs/MULTIPLAYER_PROTOCOL.md §13-14): parties and an open vote carry over to
+the successor. The checkpoint keeps each person's party tag (`py`) and side, and the vote as it stands: the ballot,
+everyone's votes (by their place in the checkpoint, so they follow people to their new slots), the seconds left, or
+the winner once it has closed (the old host's tie-break stands: the successor doesn't tally it again). The successor
+holds the scoreboard, shows the same cards and counts, takes votes on (friends who reconnect see it at once and may
+change theirs), and travels to the winner as the old host would have; a vote's votes reach the successor within a
+second (each change refreshes its checkpoint). Not carried: spectators' votes (spectators aren't in a checkpoint) and
+the old host's rotation and vote setting (the successor's own apply from the next match on).
 
 ## Capture the Flag
 

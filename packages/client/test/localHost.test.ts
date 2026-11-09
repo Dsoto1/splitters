@@ -281,6 +281,106 @@ describe('host controls in a browser match (offline, Host game)', () => {
     await until(() => again.got.some((m) => m.t === 'snapshot' && m.score.some((s) => s.s === welcome.slot && s.k === 4)));
   }, 60_000);
 
+  it('host handoff carries parties (tags, sides) and an open vote (ballot, votes, clock) over to the successor', async () => {
+    type M = { combatants(): { slot: number; name: string; faction: string | null; party?: string; away?: object }[]; endMatch(): boolean; phase: string; intermissionEnds: number | null; tick: number };
+    const t = new LocalTransport(yard(), { name: 'Host', botFill: 4, difficulty: 'normal', rules: { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2] }, party: 'PARTY01', selfKey: 'pk:p_hostkey123' });
+    open.push(t);
+    const got: ServerMessage[] = [];
+    t.start((m) => got.push(m), () => undefined);
+    await until(() => got.some((m) => m.t === 'host'));
+    const ann = friend();
+    const bo = friend();
+    t.accept(ann.link);
+    ann.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Ann', pk: 'p_annkey1234', party: 'PARTY01' });
+    t.accept(bo.link);
+    bo.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Bo', pk: 'p_bokey12345' });
+    const match = (globalThis as { __match?: M }).__match!;
+    const hostSide = match.combatants().find((c) => c.name === 'Host')!.faction;
+    expect(match.combatants().find((c) => c.name === 'Ann')!.faction).toBe(hostSide);
+    await until(() => [ann, bo].some((f) => f.got.some((m) => m.t === 'standby')));
+    const [heir, other] = ann.got.some((m) => m.t === 'standby') ? [ann, bo] : [bo, ann];
+    heir.say({ t: 'standby', code: 'ABC234' });
+    // The match ends; the vote opens; the host and Ann vote for B, Bo for A.
+    t.sendReady();
+    for (const f of [ann, bo]) f.say({ t: 'ready' });
+    await until(() => match.phase === 'playing');
+    match.endMatch();
+    await until(() => match.phase === 'intermission');
+    t.openVote([{ map: 'a', name: 'A', mode: 'core.tdm' }, { map: 'b', name: 'B', mode: 'core.tdm' }]);
+    await until(() => heir.got.some((m) => m.t === 'vote'));
+    t.sendVote(1);
+    ann.say({ t: 'vote', i: 1 });
+    bo.say({ t: 'vote', i: 0 });
+    await until(() => got.some((m) => m.t === 'vote' && m.v?.n[0] === 1 && m.v.n[1] === 2));
+    // The successor's checkpoint follows the votes within a second (not every 3 s).
+    const latest = () => heir.got.filter((m): m is Extract<ServerMessage, { t: 'checkpoint' }> => m.t === 'checkpoint').at(-1)?.cp;
+    await until(() => (latest()?.vote?.votes.length ?? 0) === 3, 5000);
+    const cp = latest()!;
+    expect(cp.vote!.o.map((o) => o.map)).toEqual(['a', 'b']);
+    expect(cp.vote!.left).toBeGreaterThan(0);
+    const byName = (n: string) => cp.players.findIndex((p) => p.name === n);
+    expect(cp.vote!.votes.sort()).toEqual([[byName('Host'), 1], [byName('Ann'), 1], [byName('Bo'), 0]].sort());
+    expect(cp.players.find((p) => p.name === 'Host')!.py).toBe('PARTY01');
+    expect(cp.players.find((p) => p.name === 'Ann')!.py).toBe('PARTY01');
+    expect(cp.players.find((p) => p.name === 'Bo')!.py).toBeUndefined();
+    // The host goes; the heir carries on from the checkpoint (its own party tag is its browser's: here Ann's or none).
+    t.close();
+    const mine = cp.players.find((p) => p.succ === 1)!;
+    const next = new LocalTransport(yard(), { name: mine.name, botFill: cp.fill, difficulty: 'normal', restore: cp, ...(mine.py ? { party: mine.py } : {}) });
+    open.push(next);
+    const got2: ServerMessage[] = [];
+    next.start((m) => got2.push(m), () => undefined);
+    await until(() => got2.some((m) => m.t === 'welcome'));
+    const m2 = (globalThis as { __match?: M }).__match!;
+    expect(m2).not.toBe(match);
+    // Parties and sides as they were (the old host's place is kept for it, party and all).
+    const c2 = (n: string) => m2.combatants().find((c) => c.name === n || (c.away as { name?: string } | undefined)?.name === n)!;
+    expect(c2('Host').party).toBe('PARTY01');
+    expect(c2('Ann').party).toBe('PARTY01');
+    expect(c2('Bo').party).toBeUndefined();
+    expect(c2('Ann').faction).toBe(c2('Host').faction);
+    // The vote goes on here: same ballot, same counts, still open, and the scoreboard held for it.
+    const v2 = got2.find((m): m is Extract<ServerMessage, { t: 'vote' }> => m.t === 'vote')!;
+    expect(v2.v).toMatchObject({ o: [{ map: 'a' }, { map: 'b' }], n: [1, 2] });
+    expect(v2.v!.w).toBeUndefined();
+    expect(m2.phase).toBe('intermission');
+    // The friend who reconnects gets the vote as it stands and may change their vote on their new place.
+    const again = friend();
+    next.accept(again.link);
+    again.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: other === ann ? 'Ann' : 'Bo', pk: other === ann ? 'p_annkey1234' : 'p_bokey12345' });
+    await until(() => again.got.some((m) => m.t === 'vote'));
+    expect(again.got.find((m) => m.t === 'vote')).toMatchObject({ v: { n: [1, 2] } });
+    again.say({ t: 'vote', i: other === ann ? 0 : 1 });
+    await until(() => got2.some((m) => m.t === 'vote' && m.v?.n[0] === (other === ann ? 2 : 0)));
+  }, 60_000);
+
+  it('host handoff: a vote that had closed carries its winner over (the old host broke the tie)', async () => {
+    const t = new LocalTransport(yard(), { name: 'Host', botFill: 4, difficulty: 'normal', rules: { ...DEFAULT_RULES['core.tdm'], teamSizes: [2, 2] } });
+    open.push(t);
+    const got: ServerMessage[] = [];
+    t.start((m) => got.push(m), () => undefined);
+    await until(() => got.some((m) => m.t === 'host'));
+    const ann = friend();
+    t.accept(ann.link);
+    ann.say({ t: 'hello', protocol: PROTOCOL_VERSION, name: 'Ann', pk: 'p_annkey1234' });
+    await until(() => ann.got.some((m) => m.t === 'standby'));
+    ann.say({ t: 'standby', code: 'ABC234' });
+    await until(() => ann.got.some((m) => m.t === 'checkpoint'));
+    const cp = ann.got.filter((m): m is Extract<ServerMessage, { t: 'checkpoint' }> => m.t === 'checkpoint').at(-1)!.cp;
+    // A checkpoint taken just after the vote closed: a 1-1 tie the old host's own vote (B) decided.
+    const host = cp.players.findIndex((p) => p.name === 'Host');
+    const mine = cp.players.findIndex((p) => p.succ === 1);
+    const closed = { ...cp, phase: 'intermission' as const, timeLeft: 6, vote: { o: [{ map: 'a', name: 'A', mode: 'core.tdm' as const }, { map: 'b', name: 'B', mode: 'core.tdm' as const }], votes: [[host, 1], [mine, 0]] as [number, number][], left: 0, w: 1, by: 'host' as const } };
+    t.close();
+    const next = new LocalTransport(yard(), { name: 'Ann', botFill: cp.fill, difficulty: 'normal', restore: closed });
+    open.push(next);
+    const got2: ServerMessage[] = [];
+    next.start((m) => got2.push(m), () => undefined);
+    await until(() => got2.some((m) => m.t === 'vote'));
+    // Not tallied again (the successor's own vote, A, would win the tie here): B, as decided.
+    expect(got2.find((m) => m.t === 'vote')).toMatchObject({ v: { w: 1, by: 'host', n: [1, 1], left: 0 } });
+  }, 60_000);
+
   it('host handoff: the listing stays the host\'s; only its goodbye gives the successor its ID and secret', async () => {
     const { t } = await host(4);
     t.setListing({ name: 'Friday', id: 'abc123', secret: 'deadbeef' });

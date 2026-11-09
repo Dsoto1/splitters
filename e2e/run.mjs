@@ -7996,6 +7996,53 @@ async function dedicatedhostFlow(browser) {
 
 }
 
+/** /host's next-map vote and Match rules before Start (owner, 10-31: every Match setup / Host tab setting there). */
+async function hostpageRulesChecks(page, controlPort, token) {
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/hostpage-${name}.png`, fullPage: true }).catch(() => {}) : Promise.resolve());
+  const form = await page.evaluate(() => ({
+    vote: !!document.getElementById('hp-vote'),
+    on: document.getElementById('hp-vote')?.checked,
+    mode: document.getElementById('hp-rules-mode')?.textContent,
+    rules: document.querySelectorAll('#hp-rules .hp-rule').length,
+    main: ['score', 'time', 'respawn', 'ff', 'set', 'teams'].every((k) => !!document.querySelector(`#hp-rules-main #hp-rule-${k}`)),
+    more: ['gravity', 'classes', 'leaders', 'fireteams', 'lethality'].every((k) => !!document.querySelector(`#hp-rules-more #hp-rule-${k}`)),
+    tags: document.querySelectorAll('#hp-rules .hp-tag').length,
+  }));
+  check(form.vote && form.on && /Team Deathmatch/.test(form.mode ?? '') && form.rules >= 20 && form.main && form.more && form.tags === form.rules, `/host has the next-map vote (on) and every Match setup rule for the mode, each tagged with when it applies (${JSON.stringify(form)})`);
+  await page.evaluate(() => (document.querySelector('#hp-rules-more')?.closest('details')?.setAttribute('open', '')));
+  await shot('rules-stopped');
+  // Set before Start, they go with it: score 7 (Team Deathmatch only), friendly fire half, low gravity, no vote.
+  await page.uncheck('#hp-vote');
+  await page.fill('#hp-rule-score', '7');
+  await page.press('#hp-rule-score', 'Tab');
+  await page.selectOption('#hp-rule-ff', 'half');
+  await page.selectOption('#hp-rule-gravity', 'low');
+  await page.locator('#hp-name').focus();
+}
+
+/** Running: a rule and the vote changed on /host reach the match at once, and the Host Service keeps them. */
+async function hostpageLiveChecks(page, controlPort, token) {
+  const status = () => fetch(`http://127.0.0.1:${controlPort}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/hostpage-${name}.png`, fullPage: true }).catch(() => {}) : Promise.resolve());
+  const started = await until(async () => { const s = await status(); return s.state === 'running' && !!s.host?.rules; }, T(30000));
+  const s0 = await status();
+  check(started && s0.config?.mapVote === false && s0.host?.rotation?.vote === false && s0.config?.rules?.modes?.tdm?.score === 7 && s0.config.rules.ff === 'half' && s0.config.rules.gravity === 'low' && s0.host.rules.now.scoreLimit === 7, `Start took the rules and the vote from /host (${JSON.stringify({ vote: s0.config?.mapVote, live: s0.host?.rotation?.vote, rules: s0.config?.rules, score: s0.host?.rules?.now?.scoreLimit })})`);
+  // Live: the vote back on, and a live rule (mix up weapon pickups) and a restart one (time limit).
+  await page.check('#hp-vote');
+  const voted = await until(async () => (await status()).host?.rotation?.vote === true, T(15000));
+  await page.selectOption('#hp-rule-mix', 'on');
+  await page.locator('#hp-name').focus();
+  const mixed = await until(async () => { const s = await status(); return s.host?.rules?.now?.mixPickups === true && s.config?.rules?.mix === true; }, T(15000));
+  await page.fill('#hp-rule-time', '9');
+  await page.press('#hp-rule-time', 'Tab');
+  await page.locator('#hp-name').focus();
+  const timed = await until(async () => (await status()).config?.rules?.modes?.tdm?.time === 9, T(15000));
+  const waits = await page.waitForFunction(() => /waits for the restart/.test(document.querySelector('#hp-rule-time')?.closest('.hp-rule')?.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(voted && mixed && timed && waits, `running, /host changes the match at once: the vote ${voted}, a live rule ${mixed}, a restart rule kept and shown waiting ${timed}/${waits} (${await page.evaluate(() => document.getElementById('hp-message')?.textContent)})`);
+  await page.evaluate(() => (document.querySelector('#hp-rules-more')?.closest('details')?.setAttribute('open', '')));
+  await shot('rules-running');
+}
+
 /** The /host page: download offered only when no Host Service runs; with one, pair, Start, see it listed, Stop. */
 async function hostpageFlow(browser) {
   const HUB_PORT = +(process.env.E2E_HOSTPAGE_HUB_PORT ?? 9080);
@@ -8021,10 +8068,13 @@ async function hostpageFlow(browser) {
   if (paired) {
     await page.fill('#hp-name', 'E2E From Host Page');
     await page.selectOption('#hp-map', 'sandgate');
+    await page.selectOption('#hp-mode', 'core.tdm');
     await page.fill('#hp-fill', '8');
+    await hostpageRulesChecks(page, CONTROL_PORT, token);
     await page.click('#hp-start');
     const running = await page.waitForFunction(() => /Running/.test(document.getElementById('hp-run-state')?.textContent ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
     check(running, `Start starts the server (${await page.evaluate(() => document.getElementById('hp-status')?.textContent)})`);
+    if (running) await hostpageLiveChecks(page, CONTROL_PORT, token);
     const listed = await hubUntil(async () => ((await hubGames(HUB_PORT)) ?? []).some((g) => g.name === 'E2E From Host Page' && g.hostType === 'dedicated'), T(30000));
     check(listed, 'the server it started is in the game browser');
     await page.click('#hp-stop');
@@ -8055,6 +8105,13 @@ async function hostpageFlow(browser) {
       return launcher.waitForFunction(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /visibility listed/.test(l.textContent)), null, { timeout: 2000 }).then(() => true, () => false);
     }, T(10000));
     check(ran, 'a right-bar toggle runs its console command (visibility listed)');
+    // The Rotation card's Vote on the next map: on (the setting), and unticked it runs rotation vote off in the match.
+    const statusV = () => fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
+    const voteBox = await launcher.evaluate(() => document.getElementById('rot-vote')?.checked ?? null);
+    await launcher.uncheck('#rot-vote');
+    const voteOff = await until(async () => (await statusV()).host?.rotation?.vote === false, T(15000));
+    check(voteBox === true && voteOff, `the launcher's Vote on the next map box runs rotation vote off (box ${voteBox}, match ${voteOff})`);
+    await launcher.check('#rot-vote');
     // Match rules: the score and time limit steppers run rules commands, wait for the restart, and Restart now plays them.
     const status = () => fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
     await launcher.waitForFunction(() => !!document.querySelector('#rules-main .rule[data-k="score"] .stepper') && !!document.querySelector('#rules-main .rule[data-k="time"] .stepper'), null, { timeout: T(20000) }).catch(() => {});

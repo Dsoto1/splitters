@@ -390,8 +390,16 @@ the download is offered only on the /host page.
    changes nothing.
 4. Optional: click the **Also on the site** link the window shows. It opens
    /host already paired with this computer, where you choose the map, mode,
-   players and bots (96 = 48 v 48), name, visibility and admin token, press
+   players and bots (96 = 48 v 48), name, visibility and admin token, whether
+   everyone **votes on the next map** between matches, and every **Match
+   rule** of Play → Match setup and the pause menu (score, time and respawn for
+   the mode; friendly fire, weapon set, teams, gravity, classes and the rest,
+   under More rules: the same list as the launcher's Match rules card), press
    Start / Stop / Restart, and see players (kick, ban), uptime and errors.
+   Stopped, the rules and the vote go with Start; running, a change goes to
+   the match at once and applies now, at the restart or at the next match, as
+   its tag says (a Host Service older than the page takes them with the next
+   Start). Per-map rules stay with the launcher and the console.
    Closing that page changes nothing. **Closing the server window stops the
    server**; next time you open it, it starts again with the last settings
    (or stays stopped if you stopped it).
@@ -456,7 +464,10 @@ its match starts). For the last two,
 **Restart match** (launcher: **Restart now with them**, console `restart`)
 plays them now: with Match setup rules waiting it starts a fresh match on the
 same map (everyone comes along, as on a map change). The launcher tags each
-rule (live / restart / next match) and lists what is waiting.
+rule (live / restart / next match) and lists what is waiting. The site's
+/host page has the same rules (tagged the same way, with what waits) and the
+next-map vote; per-map rules, the rotation and the bot set stay with the
+launcher and the console.
 
 The rules live in `RULES` (`shared/src/sim/serverRules.ts`), kept for every
 match the server plays (each restart, map change and the rotation's next
@@ -480,7 +491,7 @@ mode playing.
 | Mode (Match setup; pause menu → Change map) | Map & mode card | `mode <mode>` | `MODE` | live (the match travels) |
 | Map (Change map…) | Map & mode card | `map <map>` | `MAP` | live (travels) |
 | Map rotation, shuffle, skip (pause menu) | Rotation card | `rotation …`, `skip` | `ROTATION`, `ROTATION_SHUFFLE` | live |
-| Vote on the next map (pause menu → Rotation) | config `mapVote` | (none) | `MAP_VOTE` | live, kept for the next start |
+| Vote on the next map (pause menu → Rotation) | Rotation → Vote on the next map (and the site's /host) | `rotation vote on\|off` | `MAP_VOTE` | live, kept for the next start |
 | Players / squad (FFA, co-op) | Players + bots | `bots <n>` | `BOT_FILL` | live |
 | Team sizes, uneven teams (team editor) | Team size | `teams <n>`, `teams 10 8` | `BOT_FILL` | live |
 | Number of teams (2–8) | Match rules → Teams | `rules teams 4` | `RULES.teams` | next match |
@@ -565,8 +576,13 @@ everything saved for the next start. `rules <rule> default` (or the launcher's
   `https://trigger.toshiroplay.com` or a localhost page (`HOST_ALLOWED_ORIGINS`
   adds others), Host must be the loopback name (no DNS rebinding), and every
   command needs the pairing key (`Bearer`). Closed command set: status,
-  start (suite map by ID, checked numbers and match rules; never a path, URL or the hub),
-  stop, restart, kick, ban, unban, quit.
+  start (suite map by ID, checked numbers, match rules and the next-map vote; never a path, URL or the hub),
+  stop, restart, kick, ban, unban, quit, and two live settings of a running
+  match: `POST /api/rules` (`{ key, value, map? }`: one known rule, its value
+  checked by the same parser as RULES; `null` puts it back to the default) and
+  `POST /api/vote` (`{ on }`). Each runs as the console's own command
+  (`rules …`, `rotation vote on|off`, `liveArgs`), never as text; stopped, they
+  answer 400 ("these go with Start").
 - **Launcher** (`launcher.ts`): the same server serves the launcher page at
   `/` (no secrets in it: the key comes in the link's `#fragment`; a strict
   Content-Security-Policy with a per-response script nonce, no framing). Its

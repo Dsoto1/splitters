@@ -36,6 +36,7 @@ export * from './sim/liquids.ts';
 export * from './sim/effectsPhysics.ts';
 export * from './sim/weapons.ts';
 export * from './sim/hitbox.ts';
+export * from './sim/lookHitbox.ts';
 export * from './sim/characterStats.ts';
 export * from './sim/randomLooks.ts';
 export * from './sim/roulette.ts';

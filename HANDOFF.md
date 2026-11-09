@@ -194,6 +194,8 @@ The workflow is unchanged (CLAUDE.md):
 
 - Claimed: map format v33 (bot hints in MapMaker, `wip/mapmaker-bothints`), MapMaker lane, 2026-11-09.
 
+**Landing now (MapMaker lane, 2026-11-09 ~04:50–05:30 UTC):** `check/mapmaker-terrain` at 03e2401c, which the other session is waiting on for Iron Coast. If you can, please hold *code* pushes to main until this line is gone; docs are fine. It has had to re-merge main twice.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
@@ -393,8 +395,44 @@ Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key lis
      ending mid-measure travelled to a fresh worker and broke perf:mass). A long e2e flow that should see the vote asks.
    - The dedicated server's ballot reads suite maps raw (JSON only; a full load of all 92 took ~8 s): race tracks
      aren't offered from the suite there (their paths migrate on load); a race rotation still votes.
-   - Open: the launcher/site /host have no vote toggle (config/env and in-game only); the successor of a handoff doesn't
-     carry parties or an open vote; free-for-all parties only get the scoreboard mark.
+   - ~~Open: the launcher/site /host have no vote toggle; the successor of a handoff doesn't carry parties or an open
+     vote; free-for-all parties only get the scoreboard mark.~~ Done in item 6 below.
+6. **Parties and the vote, part 2** (`wip/party-2`, agent, 2026-11-09; owner-approved follow-ups of 2026-11-08; green on `check/party-2`, runs 42559855115 (full suite) and 42563092863; LANDED: main 24db6d0).
+   - **/host and the launcher:** the site's /host page (`client/src/hostPage.ts` `rulesSection`) has **Vote on the
+     next map** and every Match setup rule (the shared `SERVER_RULES`, the launcher's Match rules list: main rules,
+     the rest under More rules, each tagged now / at the restart / next match, with what waits). Stopped: sent with
+     Start (`mapVote`, `rules`; per-mode score/time/respawn via `setServerRule`). Running: each change goes live
+     through two new closed control endpoints, `POST /api/rules` `{ key, value|null, map? }` and `POST /api/vote`
+     `{ on }` (`control.ts` `liveArgs`: a known rule and a value `parseRuleValue` accepts, run as the console's own
+     `rules …` / `rotation vote on|off`). Older Host Services answer 404: the page says the change goes with the next
+     Start. Console: `rotation vote on|off` (and `rotation` shows the vote). Launcher: Rotation card → **Vote on the
+     next map** (draft `mapVote` while stopped). Per-map rules, the rotation and the bot set stay launcher/console only.
+   - **Handoff carry-over:** `CheckpointPlayer.py` (party tag, people only) and `MatchCheckpoint.vote`
+     (`CheckpointVote`: ballot, `[player index, option]` votes, seconds left, `w`/`by` once closed). `matchHost.ts`
+     `voteCheckpoint` / `resumeVote`, `MapVote.resumed` (a closed vote keeps the old host's result: not re-tallied),
+     `BotFiller.restore(..., placed)` (checkpoint index → new combatant), `restoreCombatant` sets `party`; `main.ts`
+     `takeOver` moves an open vote's clock on by the checkpoint's age. Each vote change zeroes `checkpointAt`, so the
+     successor's checkpoint follows within a second. Not carried: spectators' votes; the old host's rotation and vote
+     setting.
+   - **Free-for-all parties:** `game/ffaParty.ts` `ffaPartyMate` (both people, no teams, same `py`, not you):
+     `Hud.nameColor` (kill feed, messages, takeover lines, scoreboard) wears `hud.partyColor` (Options' ally marker
+     colour, default `#3ad1ff`) and the overhead marker callback returns it (the ally diamond). Spawns:
+     `Match.spawn` leaves the party out of `enemies` (no longer a danger the spawn avoids) and passes the calm ones as
+     `SpawnChoice.party`; `pickSpawn` decides safety first (checked points within `partyMargin` of the safest, no
+     enemy nearer than 0.7× the safest's, not seen more), then ranks by `partyBonus` (`content/match-play.json`:
+     partyRange 30, partyBonus 10, partyMax 3, partyMargin 14). `hostile`/`canHurt` unchanged: no damage change.
+   - **Menu bundle:** 746.1 → 714.2 kB gzip (2645.6 → 2512.9 kB raw); budget back to 800 / 2800 kB (`sim/lookHitbox.ts`;
+     see "Menu bundle (2026-10-31)" below).
+   - **Tests:** shared `handoff.test.ts` (py/vote round trip and bounds; restore keeps parties and sides),
+     `mapVote.test.ts` (`MapVote.resumed`), `partySpawn.test.ts` (bonus, near the party, never over safety: an enemy
+     beside the party, a sight line, a much nearer enemy; in a match 30 respawns, damage unchanged); client
+     `localHost.test.ts` (two handoff carry-over cases: open vote with three votes and parties; a closed tie keeps the
+     old host's winner), `ffaParty.test.ts`; host `units.test.ts` (`rotation vote`, `liveArgs`). E2E `hostpage`:
+     the vote and rules on /host before Start (score 7, FF half, low gravity, vote off reach the match), then live
+     (vote on, Mix up pickups now, time limit waiting for the restart), and the launcher's vote box. Screenshots:
+     session scratchpad `party2/` (may not survive).
+   - **Owner deploy:** the site (`/host` page) ships with the usual site update; the Host Service downloads are built by
+     CI from main (players re-download for the vote box and live /host changes). No hub change, nothing on AWS.
 
 **Queued, in the owner's order:**
 1. **Tanks** (owner, 2026-11-07). Bots drive and fire tanks sensibly, and bail out when nearly dead.
@@ -6773,8 +6811,13 @@ The menu's first JS grows ~6–12 kB gzipped per style pack (Harbor 798, Snow 80
 tiles (catalog.ts imports packTiles*.ts statically), materials and the whole props table (props.generated.ts via
 getProp in geometry/match/validate) come in through the shared map and sim code the menu loads. The budget in
 tools/ci/bundle-budget.mjs was raised to 840 kB gzipped / 3000 kB raw for Snow, Desert City and Jungle Ruins.
-**To do:** load pack tiles and the props table on demand (a registry the editor and the match fill before they need
-it; the menu draws neither), then bring the budget back to ~800 kB.
+~~**To do:** load pack tiles and the props table on demand, then bring the budget back to ~800 kB.~~ **Done
+(2026-11-09, `wip/party-2`):** the "~840 kB" here was stale (content scalability step 1 took it to 649 kB; it was
+746.1 kB gzip / 2645.6 kB raw on main b65f068). Moving the measured hit-shape table out of the menu (`sim/lookHitbox.ts`:
+`hitbox.ts`, reached through the weapons, also held the lookups the match uses) took it to **714.2 kB gzip / 2512.9 kB
+raw**; the budget is **800 / 2800** again (docs/LOADING.md, "The hit-shape table"). Still in the menu chunk and worth a
+look next: `weapons.generated.ts` (~14 kB gzip), `characterAnimator.ts` (~25), `game/input.ts` (~8), vehicleCamera,
+handProbe, combatReadouts.
 
 ### Work split between the owner's two accounts (2026-10-31 ~06:40 UTC)
 The owner is splitting the style packs across two accounts. Each pack goes on its own `wip/<pack>-pack` branch built

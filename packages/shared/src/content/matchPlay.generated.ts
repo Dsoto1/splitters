@@ -5,7 +5,7 @@
 export const MATCH_PLAY = {
   spawnProtection: { 'core.deathmatch': 3, 'core.tdm': 3, 'core.roulette': 2 },
   botFireBefore: 1,
-  spawnChoice: { enemyRange: 30, farRange: 50, farWeight: 0.3, sightRange: 50, sightCandidates: 8, sightEnemies: 4, seenPenalty: 35, deathRadius: 12, deathSeconds: 10, deathPenalty: 18, mateRange: 25, mateBonus: 6, mateMax: 3, sideWeight: 0.2, safeFew: 3, margin: 8, sideMax: 8 },
+  spawnChoice: { enemyRange: 30, farRange: 50, farWeight: 0.3, sightRange: 50, sightCandidates: 8, sightEnemies: 4, seenPenalty: 35, deathRadius: 12, deathSeconds: 10, deathPenalty: 18, mateRange: 25, mateBonus: 6, mateMax: 3, sideWeight: 0.2, safeFew: 3, margin: 8, sideMax: 8, partyRange: 30, partyBonus: 10, partyMax: 3, partyMargin: 14 },
   heavyHit: 45,
   awards: { accuracyMinShots: 25, streakMin: 3, nemesisMin: 3, revengeMin: 1 },
   callouts: { nemesis: 3 },

@@ -1,5 +1,6 @@
 import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
 import { slotColor } from './view.ts';
+import { PARTY_COLOR, ffaPartyMate } from './ffaParty.ts';
 import { applyCrosshair, applyHitmarker } from './crosshair.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';
 import { Minimap } from './minimap.ts';
@@ -231,6 +232,21 @@ export class Hud {
       grid.append(b);
     });
     el.replaceChildren(Object.assign(document.createElement('b'), { textContent: 'Choose your class' }), grid, Object.assign(document.createElement('small'), { textContent: 'Number keys or click · L or , opens and closes this · a new class starts at your next spawn (straight away if you have only just spawned)' }));
+  }
+
+  /** Your own slot (the session sets it at the welcome): free-for-all parties' names (ffaParty.ts). */
+  self = -1;
+  /** The friendly colour your party's names wear in a free-for-all. */
+  partyColor = PARTY_COLOR;
+
+  /** A player's name colour: their team's, else (free-for-all) the friendly colour for your party, else their slot's. */
+  nameColor(slot: number, self = this.self): string {
+    return this.team(slot)?.color ?? (ffaPartyMate(this.roster, self, slot) ? this.partyColor : slotColor(slot));
+  }
+
+  /** Free-for-all: whether `slot` is in your party (friendly name and marker). */
+  partyMate(slot: number, self = this.self): boolean {
+    return ffaPartyMate(this.roster, self, slot);
   }
 
   setRoster(players: RosterEntry[]): void {
@@ -686,7 +702,7 @@ export class Hud {
 
   kill(killer: number | null, victim: number, weapon: string, localSlot: number, headshot = false, teamKill = false): void {
     const line = document.createElement('div');
-    const color = (slot: number | null) => (slot === null ? '#ccc' : (this.team(slot)?.color ?? slotColor(slot)));
+    const color = (slot: number | null) => (slot === null ? '#ccc' : this.nameColor(slot, localSlot));
     const name = (slot: number | null) => `<span style="color:${color(slot)}">${escapeHtml(this.name(slot))}</span>`;
     line.innerHTML = killer === null ? `${name(victim)} ${HAZARD_DEATHS[weapon] ?? 'blew themselves up'}` : `${name(killer)} <small>${escapeHtml(weaponLabel(weapon))}</small> ${name(victim)}`;
     // Weapon icon between the names (reference board), rendered from the weapon's model.
@@ -711,7 +727,7 @@ export class Hud {
   /** A slot changed hands mid-match: "Ana joined, replacing Mildred" (a player joined), or "Mildred took over for Ana" (they left). */
   takeover(slot: number, to: string, from: string, bot: boolean): void {
     const line = document.createElement('div');
-    const color = this.team(slot)?.color ?? slotColor(slot);
+    const color = this.nameColor(slot);
     line.className = 'say takeover';
     line.innerHTML = `<span style="color:${color}">${escapeHtml(to)}</span> ${bot ? 'took over for' : 'joined, replacing'} <span style="color:${color}">${escapeHtml(from)}</span>`;
     this.feed.prepend(line);
@@ -733,7 +749,7 @@ export class Hud {
   say(slot: number, text: string): void {
     if (!text) return;
     const line = document.createElement('div');
-    const color = this.team(slot)?.color ?? slotColor(slot);
+    const color = this.nameColor(slot);
     line.className = 'say';
     line.innerHTML = `<span style="color:${color}">${escapeHtml(this.name(slot))}:</span> ${escapeHtml(text)}`;
     this.feed.prepend(line);
@@ -965,7 +981,7 @@ export class Hud {
         bot: !!p?.bot,
         ...(p && !p.bot ? (p.acct ? { who: 'acct' as const } : people > 1 ? { who: 'guest' as const } : {}) : {}),
         ...(inParty && p && !p.bot && p.py === myParty ? { party: true } : {}),
-        color: this.team(s.s)?.color ?? slotColor(s.s),
+        color: this.nameColor(s.s, localSlot),
         cls: cls === undefined ? '' : (CLASS_DEFS[CLASS_IDS[cls] ?? 'rocketeer']?.name ?? ''),
         k: s.k,
         d: s.d,
