@@ -1242,6 +1242,28 @@ template automatically.
   back to the automatic camera. The card picture (`maps/shots/<id>.jpg`, 640×360) is rendered from it by
   `tools/content/capture-map-shots.mjs`; MapMaker stores no picture for it (Set thumbnail is the maker's own picture).
 
+## Groups, copy and paste, templates, mirror and notes (MapMaker)
+
+- **Groups (Ctrl+G).** Select things (box-select, Shift+click) and group them: a click on any of them then picks the
+  lot (Alt-click picks one), so it moves, turns, flips (M), duplicates (a group again) and deletes as one. Name it in
+  the inspector; Ctrl+Shift+G (or Ungroup) takes the group away and leaves the things. Groups stay in their map: to
+  reuse a build in other maps, save it as a set piece.
+- **Copy and paste (Ctrl+C, Ctrl+V).** The copy is kept in this browser; paste puts it where the pointer is (its
+  middle cell on the cell under the pointer) on the level you are editing, with new ids, in this map or another. The
+  map it goes into must have the same grid and theme; MapMaker says why when it doesn't, or when it wouldn't fit there.
+- **Templates (New map → start from a layout).** Arena, Symmetric CTF, Assault (Breakthrough, two sectors and a final
+  hold) or Open terrain. The new map is your own; the layouts live in `maps/templates/` and never show in map lists.
+- **Mirror… (Shift+M).** For team maps: build one side, mirror it. Pick the selection or half the map, the line
+  (east ↔ west, north ↔ south) or a point (a half turn) and where it is (it snaps to a cell's middle or edge). Keep
+  the original adds a mirrored copy, whose team things swap to the other team (spawns, flag bases, team zones, doors,
+  buttons, team vehicles); untick it to flip the selection itself. Half the map copies one half onto the other, which
+  must be empty; things on the line stay. The dialog says what it will do before you press Mirror. Tiles that have no
+  mirror image among their turns (most model buildings) can only go through a point. Terrain and paths are left as
+  they are.
+- **Note pins (J).** Notes for the map's makers ("too long a sightline from B"): click the map to pin one, click a pin
+  to read or edit it (Ctrl+Enter saves), drag it to move it. Map properties → Notes lists them. They are saved in the
+  map and never shown in play.
+
 ## Backdrops and plants
 
 Skies, distant scenery, ground past the border, terrain plants and the scatter brush are covered in [SCENERY.md](SCENERY.md).

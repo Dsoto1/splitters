@@ -256,6 +256,19 @@ import {
   isRetiredMap,
   moverGroupOf,
   withMoverGroups,
+  withGroups,
+  withGroupsTidied,
+  withCopiedGroups,
+  groupCommand,
+  ungroupCommand,
+  groupOf,
+  groupName,
+  selectionGroup,
+  flipCommand,
+  selectionMiddle,
+  copySelection,
+  pasteCommand,
+  clipboardCount,
   addSetPieceDefCommand,
   replaceTilesWithSetPieceCommand,
   builtInSetPieces,
@@ -349,6 +362,11 @@ import { envRendererOn } from '../environment/envFlag.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { PlanView } from './planView.ts';
 import { cardShotSection, type CardShotHost } from './cardShot.ts';
+import { NoteTool } from './noteTool.ts';
+import { groupSection, type GroupHost } from './groupPanel.ts';
+import { openMirrorDialog } from './mirrorDialog.ts';
+import { readClipboard, writeClipboard } from './clipboardStore.ts';
+import { templatePicker } from './templatePicker.ts';
 import { libraryThumb } from './libraryThumbs.ts';
 import { isOwner, openPublishDialog } from './ownerPublish.ts';
 import { DEFAULT_HEIGHT_GRID_SMOOTHING, HEIGHT_GRID_SMOOTHING, MAX_HEIGHT_GRID_BYTES, parseAsciiGrid, terrainFromHeightGrid } from './heightGrid.ts';
@@ -417,7 +435,7 @@ function starterMap(size: number | null, ground: TerrainMaterial): MapDocument {
   return size ? { ...doc, terrain: { ...newTerrain(size, 2, [0, 0], ground), baseY: -0.15 } } : doc;
 }
 
-type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'path' } | { kind: 'route' } | { kind: 'measure' };
+type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'path' } | { kind: 'route' } | { kind: 'measure' } | { kind: 'note' };
 
 /** What the pointer can pick: a tile, an entity, or a set piece (any of its parts picks the whole placement). */
 type Hit = { kind: 'tile' | 'entity' | 'setpiece'; id: string };
@@ -713,6 +731,8 @@ export class EditorApp {
   private readonly budgetBar: BudgetBar;
   /** The measure tool (U): its points and labels, editor-only. */
   private readonly measure: MeasureTool;
+  /** Note pins (J; noteTool.ts): notes for the map's makers, drawn over the view. */
+  private readonly notes: NoteTool;
   /** The prop tool's placing options: Randomise. */
   private readonly propOpts: PropPlaceOptions;
   /** What props and the measure tool land on, per document version and view. */
@@ -804,6 +824,21 @@ export class EditorApp {
     });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
     this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor') });
+    this.notes = new NoteTool({
+      doc: () => this.doc,
+      run: (label, cmd) => this.run(label, cmd),
+      toast: (t, bad) => this.toast(t, bad),
+      project: (p) => this.view.projectInView(p),
+      pointAt: (x, y) => {
+        this.updatePointer(x, y);
+        return this.hoverPoint;
+      },
+      focus: (p) => (this.plan.on ? this.plan.centre(p.x, p.z) : this.view.focus(p)),
+      tool: () => this.tool.kind === 'note',
+      pickTool: () => this.setTool({ kind: 'note' }),
+      shown: (y) => this.showAll || y < (this.level + 1) * this.doc.classicStructure.levelHeight - 0.01,
+      overlay: $('editor'),
+    });
     this.ring = new RotateRing(
       {
         center: () => (this.selCount() ? this.selectionCenter() : null),
@@ -1072,6 +1107,7 @@ export class EditorApp {
     if (this.stroke) this.strokeStep(dt);
     this.refresh(false);
     this.measure.frame();
+    this.notes.frame();
     this.plan.update();
     this.view.render();
   }
@@ -1165,7 +1201,8 @@ export class EditorApp {
     try {
       // The document keeps its own ground: MapMaker draws it kept under the floors (EditorView.setMap), as loading
       // plays it, so a floor an edit moves or deletes gives the ground under it back.
-      this.history.execute(label, cmd);
+      // Groups stay tidy: members an edit removes leave their group in the same undo step (groups.ts).
+      this.history.execute(label, withGroupsTidied(this.doc, cmd));
       return true;
     } catch (e) {
       this.toast(`Can't ${label.toLowerCase()}: ${(e as Error).message}`, true);
@@ -1247,6 +1284,7 @@ export class EditorApp {
       scatter: ['Place', 'Click or drag plants patches · right-click (Shift+drag) clears that kind of plant · [ ] brush size'],
       path: ['Paths', 'Click adds a point after the selected one (two clicks start a path) · click the first point with the last selected to join the ends · right-click or Del removes one · drag a point to move it · Shift+click a path inserts one · click another path to edit it'],
       route: ['Route', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click a stretch inserts one · Esc when done'],
+      note: ['Note pins', 'Click the map to pin a note for its makers (shown in MapMaker only, never in play) · click a pin to edit or delete it · drag a pin to move it · Map properties lists every note'],
       measure: ['Measure', "Click two points: distance, height and slope · a third click chains a path with its total · snaps to the grid, surfaces and objects' tops (Ctrl or Alt: no snap) · right-click takes a point back · Esc clears"],
     };
     // A zipline's ends go where you click (the Route tool's hands, two points only).
@@ -1286,8 +1324,9 @@ export class EditorApp {
     }
   }
 
-  private setSelection(sel: Selection): void {
-    this.selection = sel;
+  /** Select: anything in a group brings its whole group (groups.ts), unless `single` (Alt-click: just that one). */
+  private setSelection(sel: Selection, single = false): void {
+    this.selection = single ? sel : withGroups(this.doc, sel);
     this.updateSelectionVisuals();
     this.renderInspector();
     this.syncToolbar();
@@ -1535,7 +1574,12 @@ export class EditorApp {
       return;
     }
     const ids = this.selPieces();
-    if (!ids.length) return this.toast('M mirrors a set piece: select one, or pick one in the Set pieces tab', true);
+    // A group or any other selection: flipped east ↔ west over its own middle, as one (Shift+M: Mirror… for more).
+    if (this.selCount() && ids.length !== this.selCount()) {
+      const r = flipCommand(this.doc, this.selection, 'eastWest', coreCatalog, this.placeLib);
+      return void this.run('Flip east ↔ west', 'error' in r ? r : r.command);
+    }
+    if (!ids.length) return this.toast('M mirrors a set piece or flips the selection: select something, or pick a piece in the Set pieces tab (Shift+M: Mirror…)', true);
     let doc = this.doc;
     const commands: EditCommand[] = [];
     for (const id of ids) {
@@ -1631,6 +1675,7 @@ export class EditorApp {
       case 'terrain':
         return this.toast('Terrain: Shift-drag does the opposite (lower, or raise)');
       case 'erase':
+      case 'note':
         return;
     }
     const hit = this.pick();
@@ -1692,8 +1737,14 @@ export class EditorApp {
     };
     item('Rotate', 'R', () => this.rotate());
     item('Rotate a little', 'Shift+R', () => this.rotate(true));
-    if (pieces.length) item('Mirror', 'M', () => this.mirror());
+    item(pieces.length && pieces.length === this.selCount() ? 'Mirror' : 'Flip east ↔ west', 'M', () => this.mirror());
+    item('Mirror…', 'Shift+M', () => this.mirrorDialog(), true);
     item('Duplicate', 'Ctrl+D', () => this.duplicate());
+    item('Copy', 'Ctrl+C', () => this.copy());
+    item('Paste here', 'Ctrl+V', () => this.paste(), !!readClipboard());
+    const grouped = selectionGroup(this.doc, this.selection);
+    item('Group', 'Ctrl+G', () => this.group(), this.selCount() > 1 && !grouped);
+    item(grouped ? `Ungroup “${groupName(grouped)}”` : 'Ungroup', 'Ctrl+Shift+G', () => this.ungroup(), this.selCount() > 0 && [...this.selection.tiles, ...this.selection.entities, ...pieces].some((id) => groupOf(this.doc, id)));
     item('Focus', 'F', () => this.focusSelection());
     item('Delete', 'Del', () => this.deleteSelection());
     if (pieces.length === 1 && this.selCount() === 1) item('Explode to tiles', '', () => this.explode(pieces[0]!));
@@ -1932,8 +1983,80 @@ export class EditorApp {
   private duplicate(): void {
     const r = duplicateCommand(this.doc, this.selection);
     if ('error' in r) return this.toast(`Can't duplicate: ${r.error}`, true);
-    if (this.run('Duplicate', r.command)) this.setSelection(r.selection);
+    // Copies of a whole group are a group of their own (groups.ts).
+    const g = withCopiedGroups(this.doc, this.selection, r);
+    if (this.run('Duplicate', g.command)) this.setSelection(g.selection);
   }
+
+  /** Ctrl+G: group the selection (groups.ts): one undo step. */
+  private group(): void {
+    const r = groupCommand(this.doc, this.selection);
+    if ('error' in r) return this.toast(`Can't group: ${r.error}`, true);
+    if (this.run('Group', r.command)) {
+      this.renderInspector();
+      this.toast(`Grouped ${r.group.members.length} things · a click on any picks them all (Alt-click: one) · Ctrl+Shift+G ungroups`);
+    }
+  }
+
+  /** Ctrl+Shift+G: the selected groups go; their things stay selected. */
+  private ungroup(): void {
+    const r = ungroupCommand(this.doc, this.selection);
+    if ('error' in r) return this.toast(`Can't ungroup: ${r.error}`, true);
+    if (this.run('Ungroup', r.command)) {
+      this.renderInspector();
+      this.toast(`Ungrouped ${r.count === 1 ? 'the group' : `${r.count} groups`} · Ctrl+Z to undo`);
+    }
+  }
+
+  /** Ctrl+C: the selection to MapMaker's clipboard in this browser (clipboard.ts), for this map or another. */
+  private copy(): void {
+    const c = copySelection(this.doc, this.selection, coreCatalog, this.placeLib);
+    if ('error' in c) return this.toast(`Can't copy: ${c.error}`, true);
+    if (!writeClipboard(c)) return this.toast("Can't copy: this browser's storage is full or blocked", true);
+    this.toast(`Copied ${clipboardCount(c)} thing${clipboardCount(c) === 1 ? '' : 's'} · Ctrl+V pastes at the pointer, here or in another map`);
+  }
+
+  /** Ctrl+V: the clipboard pasted with new ids, its anchor on the cell under the pointer, on the level being edited. */
+  private paste(): void {
+    const c = readClipboard();
+    if (!c) return this.toast('Nothing to paste: select something and copy it (Ctrl+C) first', true);
+    const cell = this.hoverCell ?? [0, 0];
+    const r = pasteCommand(this.doc, c, [cell[0], cell[1]], this.level, coreCatalog, this.placeLib);
+    if ('error' in r) return this.toast(`Can't paste: ${r.error}`, true);
+    if (this.run('Paste', r.command)) {
+      this.setTool({ kind: 'select' });
+      this.setSelection(r.selection);
+      this.toast(`Pasted ${clipboardCount(c)} thing${clipboardCount(c) === 1 ? '' : 's'} from ${c.from.mapName} · Ctrl+Z to undo`);
+    }
+  }
+
+  /** Shift+M: Mirror… (mirrorDialog.ts), the selection or half the map. */
+  private mirrorDialog(): void {
+    const { bounds, terrain } = this.doc;
+    openMirrorDialog({
+      doc: () => this.doc,
+      selection: () => this.selection,
+      middle: () =>
+        bounds ? [(bounds.min[0] + bounds.max[0]) / 2, (bounds.min[1] + bounds.max[1]) / 2] : terrain ? [terrain.origin[0] + ((terrain.cols - 1) * terrain.spacing) / 2, terrain.origin[1] + ((terrain.rows - 1) * terrain.spacing) / 2] : [0, 0],
+      selectionMiddle: () => selectionMiddle(this.doc, this.selection, coreCatalog, this.placeLib),
+      apply: (label, r) => {
+        if (!this.run(label, r.command)) return;
+        this.setTool({ kind: 'select' });
+        this.setSelection(r.selection);
+        this.toast(`${label}${r.swapped ? `: ${r.swapped} team thing${r.swapped === 1 ? '' : 's'} swapped sides` : ''} · Ctrl+Z to undo`);
+      },
+      root: $('editor'),
+    });
+  }
+
+  /** What the inspector's group row (groupPanel.ts) needs. */
+  private readonly groupHost: GroupHost = {
+    doc: () => this.doc,
+    selection: () => this.selection,
+    run: (label, cmd) => this.run(label, cmd),
+    group: () => this.group(),
+    ungroup: () => this.ungroup(),
+  };
 
   /**
    * One placement rule for spawns, pickups, vehicles and NPCs: on the terrain where the pointer
@@ -2554,6 +2677,7 @@ export class EditorApp {
         if (this.measure.hover) this.measure.click(this.measure.hover);
         return this.updateHover();
       }
+      if (this.tool.kind === 'note') return this.notes.place(this.hoverPoint);
       if (this.tool.kind !== 'select') return this.placeAtHover();
       // The rotate ring round the selection: a drag turns it.
       if (this.ring.begin({ x: e.clientX, y: e.clientY })) {
@@ -2572,12 +2696,21 @@ export class EditorApp {
       const ids = (hit.kind === 'entity' && !e.altKey && moverGroupOf(this.doc, hit.id)) || [hit.id];
       const now = this.selection[key] ?? [];
       const already = ids.every((id) => now.includes(id));
+      // A group is picked whole too (Alt-click: one of it); Shift+click on a selected group's member takes the group out.
+      const inGroup = !e.altKey && groupOf(this.doc, hit.id);
       if (e.shiftKey) {
+        if (already && inGroup) {
+          const out = new Set(inGroup.members);
+          const keep = (list: readonly string[]) => list.filter((id) => !out.has(id));
+          const pieces = keep(this.selPieces());
+          this.setSelection({ tiles: keep(this.selection.tiles), entities: keep(this.selection.entities), ...(pieces.length ? { setPieces: pieces } : {}) }, true);
+          return;
+        }
         const next = { ...this.selection, [key]: already ? now.filter((id) => !ids.includes(id)) : [...new Set([...now, ...ids])] };
-        this.setSelection(next);
+        this.setSelection(next, e.altKey);
         return;
       }
-      if (!already) this.setSelection(hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : hit.kind === 'setpiece' ? { tiles: [], entities: [], setPieces: [hit.id] } : { tiles: [], entities: ids });
+      if (!already) this.setSelection(hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : hit.kind === 'setpiece' ? { tiles: [], entities: [], setPieces: [hit.id] } : { tiles: [], entities: ids }, e.altKey);
       if (this.hoverPoint && this.hoverCell) {
         this.drag = { startCell: [this.hoverCell[0], this.hoverCell[1]], startPoint: { ...this.hoverPoint }, pointerX: e.clientX, pointerY: e.clientY, moved: false, cellOffset: [0, 0], freeOffset: [0, 0] };
       }
@@ -2666,6 +2799,13 @@ export class EditorApp {
     rotate: () => this.rotate(false),
     rotateFine: () => this.rotate(true),
     mirror: () => this.mirror(),
+    // MapMaker overhaul Phase 3 part B: Mirror…, groups, copy and paste, note pins.
+    mirrorDialog: () => this.mirrorDialog(),
+    group: () => this.group(),
+    ungroup: () => this.ungroup(),
+    copy: () => this.copy(),
+    paste: () => this.paste(),
+    notes: () => this.setTool({ kind: 'note' }),
     focus: () => this.focusSelection(),
     resetView: () => this.resetView(),
     logic: () => this.logic.toggle(),
@@ -4667,6 +4807,8 @@ export class EditorApp {
       el.append(thumbnailSection(this.thumbHost));
       // The menu card shot's camera (MapMaker overhaul Phase 3 item 8).
       el.append(cardShotSection(this.cardHost));
+      // Note pins (MapMaker overhaul Phase 3 item 7): every note, to go to or delete.
+      el.append(this.notes.section());
       const name = document.createElement('input');
       name.type = 'text';
       name.id = 'ed-prop-name';
@@ -4892,6 +5034,8 @@ export class EditorApp {
     } else {
       el.append(h2(`${this.selCount()} selected`));
       el.append(text(`${tiles.length} tiles, ${entities.length} entities${pieces.length ? `, ${pieces.length} set piece${pieces.length === 1 ? '' : 's'}` : ''}`));
+      // Groups (MapMaker overhaul Phase 3 item 3): its name and Ungroup, or Group.
+      el.append(groupSection(this.groupHost));
       // Box-selected pieces can become a set piece of their own.
       const save = button('Save as set piece…', () => this.saveSelectionDialog());
       save.id = 'ed-insp-save-piece';
@@ -4911,7 +5055,9 @@ export class EditorApp {
       }
       buttons.append(m);
     }
-    buttons.append(button('Duplicate', () => this.duplicate()), button('Delete', () => this.deleteSelection()), button('Focus (F)', () => this.focusSelection()));
+    const mirrorMore = button('Mirror… (Shift+M)', () => this.mirrorDialog());
+    mirrorMore.id = 'ed-insp-mirror-dialog';
+    buttons.append(button('Duplicate', () => this.duplicate()), mirrorMore, button('Delete', () => this.deleteSelection()), button('Focus (F)', () => this.focusSelection()));
     el.append(buttons);
     if (doc.terrain && entities.some((id) => doc.entities.find((x) => x.id === id)?.kind === 'prop')) {
       const settle = button('Settle on ground', () => this.settleProps(entities));
@@ -6041,9 +6187,18 @@ export class EditorApp {
     const ground = $<HTMLSelectElement>('ed-new-ground');
     if (!ground.options.length) for (const m of TERRAIN_MATERIALS) ground.append(new Option(TERRAIN_MATERIAL_LABELS[m], m, m === 'grass', m === 'grass'));
     pick(STARTER_TERRAIN);
+    // Start from a template (MapMaker overhaul Phase 3 item 5; templatePicker.ts), or open ground in a size.
+    const template = templatePicker(dialog, sizes);
     $('ed-new-create').onclick = () => {
       dialog.close();
       this.keepDraft();
+      const from = template.chosen();
+      if (from)
+        return void template.load(from).then((doc) => {
+          if (!doc) return this.toast(`Couldn't load the ${from} template`, true);
+          this.replaceDocument(doc);
+          this.toast(`New map from the ${template.label(from)} template: make it your own`);
+        });
       this.replaceDocument(starterMap(size || null, ground.value as TerrainMaterial));
     };
     $('ed-new-cancel').onclick = () => dialog.close();

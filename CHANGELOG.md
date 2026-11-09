@@ -17,6 +17,22 @@ made only on a commit that passed CI on a check branch.
   load and play it as the bridge; its inspector in MapMaker offers **Replace all** (one undo step).
 - **Sea Wall** and **Sea Wall (Breached)** for MAP 21 (Iron Coast): a bay of concrete sea wall with a wave lip and a
   fire step, and the same bay blown open with a rubble ramp through the gap.
+**MapMaker: groups, copy and paste, templates, mirror, note pins** (MapMaker overhaul Phase 3, items 3-7):
+- **Groups** (Ctrl+G, or the inspector's Group): keep things together. A click on any of a group picks it all (Alt-click
+  just that one), so it moves, turns, mirrors (M flips it east ↔ west over its middle), duplicates and deletes as
+  one; a duplicate is a group of its own. Name it in the inspector; Ctrl+Shift+G ungroups. Groups belong to their map.
+- **Copy and paste between maps** (Ctrl+C, Ctrl+V; the right-click menu): the copy is kept in this browser and pasted
+  with new ids where the pointer is, on the level being edited, in this map or another one (its groups and its own
+  set pieces come too). A map on another grid or in another theme refuses it, saying why.
+- **Templates:** New map → start from a layout: Arena, Symmetric CTF, Assault (Breakthrough) or Open terrain. Each
+  becomes a map of your own; the layouts never show in map lists.
+- **Mirror…** (Shift+M, the inspector, the right-click menu): the selection or half the map, across an east–west or
+  north–south line or through a point, as one undo step. In a mirrored copy, team things swap sides: spawns, flag
+  bases, team-only zones, doors and buttons, team vehicles. Tiles mirror as their own mirror image (a corridor's cover
+  goes to the other side, stairs climb the other way); a tile that has none is refused across a line, saying which.
+- **Note pins** (J, or Map properties → Pin a note): notes for the map's makers pinned on the map. Click to pin one, click a
+  pin to edit or delete it, drag it to move it; Map properties lists them all. They show in MapMaker only, never in
+  play. Groups and notes are stored in the map (format v31; older maps load as they were).
 **Maps: no more spots you can't get out of** (owner's "Fix all", 2026-11-08; all in MapMaker):
 - Skyward: the two spawn points on the one-way gun towers are on the central deck now.
 - Sky Islands: a jump pad on the sky platform drops you back onto the west arm.

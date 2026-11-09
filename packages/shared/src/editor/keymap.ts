@@ -18,6 +18,12 @@ export type KeyAction =
   | 'rotate'
   | 'rotateFine'
   | 'mirror'
+  | 'mirrorDialog'
+  | 'group'
+  | 'ungroup'
+  | 'copy'
+  | 'paste'
+  | 'notes'
   | 'focus'
   | 'resetView'
   | 'logic'
@@ -98,6 +104,10 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   { action: 'redo', group: 'Edit', keys: 'Ctrl+Y', what: 'Redo', codes: ['KeyY'], mod: true },
   { action: 'save', group: 'Map and panels', keys: 'Ctrl+S', what: 'Save the map (in this browser)', codes: ['KeyS'], mod: true },
   { action: 'duplicate', group: 'Selection', keys: 'Ctrl+D', what: 'Duplicate the selection', codes: ['KeyD'], mod: true },
+  { action: 'ungroup', group: 'Selection', keys: 'Ctrl+Shift+G', what: 'Ungroup: the selected groups go (their things stay)', codes: ['KeyG'], mod: true, shift: true },
+  { action: 'group', group: 'Selection', keys: 'Ctrl+G', what: 'Group the selection: picked, moved, turned and mirrored as one (Alt-click: one of it)', codes: ['KeyG'], mod: true, shift: false },
+  { action: 'copy', group: 'Edit', keys: 'Ctrl+C', what: 'Copy the selection (to paste into this map or another)', codes: ['KeyC'], mod: true },
+  { action: 'paste', group: 'Edit', keys: 'Ctrl+V', what: 'Paste at the pointer, on the level being edited', codes: ['KeyV'], mod: true },
   { action: 'toggleSidePanel', group: 'Map and panels', keys: 'Shift+\\', what: 'Hide or show the side panel', codes: ['Backslash'], shift: true },
   { action: 'togglePalette', group: 'Map and panels', keys: '\\', what: 'Hide or show the palette', codes: ['Backslash'], shift: false },
   tool('select', 'V', 'KeyV', 'Select: pick, move and edit things'),
@@ -105,6 +115,7 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   tool('place', 'P', 'KeyP', 'Place: the last piece picked from the palette'),
   tool('erase', 'X', 'KeyX', 'Erase: click anything to delete it'),
   tool('measure', 'U', 'KeyU', 'Measure: distance, height difference and slope between points'),
+  tool('notes', 'J', 'KeyJ', 'Note pins: click to pin a note for the map\'s makers, click a pin to edit it, drag to move it'),
   tool('paint', 'B', 'KeyB', 'Paint surfaces'),
   tool('walls', 'O', 'KeyO', 'Walls & openings (again: the next style)'),
   tool('terrain', 'T', 'KeyT', 'Terrain (again: the next brush)'),
@@ -114,7 +125,8 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   tool('logic', 'L', 'KeyL', 'Open or close the logic panel'),
   { action: 'rotateFine', group: 'Selection', keys: 'Shift+R', what: 'Turn the selection or the piece being placed a finer step', codes: ['KeyR'], shift: true },
   { action: 'rotate', group: 'Selection', keys: 'R', what: 'Turn the selection or the piece being placed', codes: ['KeyR'], shift: false },
-  { action: 'mirror', group: 'Selection', keys: 'M', what: 'Mirror the set piece (selected, or being placed)', codes: ['KeyM'] },
+  { action: 'mirrorDialog', group: 'Selection', keys: 'Shift+M', what: 'Mirror…: the selection or half the map across a line or a point (team things swap sides)', codes: ['KeyM'], shift: true },
+  { action: 'mirror', group: 'Selection', keys: 'M', what: 'Mirror the set piece being placed, or flip the selection east ↔ west in place', codes: ['KeyM'], shift: false },
   { action: 'delete', group: 'Selection', keys: 'Del', what: 'Delete the selection (or a path point)', codes: ['Delete', 'Backspace'] },
   { action: 'nudgeNorth', group: 'Selection', keys: '↑', what: 'Move the selection north', codes: ['ArrowUp'] },
   { action: 'nudgeSouth', group: 'Selection', keys: '↓', what: 'Move the selection south', codes: ['ArrowDown'] },
