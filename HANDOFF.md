@@ -203,6 +203,11 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - "fix em all": swap every old big piece that has a set-piece version (town and city gate, pylon, warehouse,
       hangar, bunker, city crossroads) on every map that uses one, in MapMaker. Each map is claimed first; the other
       session's maps get asked first.
+- **Landing cadence (owner, 2026-11-09: "less landings, since I won't be testing until Tuesday afternoon"):** the
+  MapMaker lane stops landing each branch on its own. Green branches wait. They land together as one train
+  (`tools/ci/train.mjs`) on Tuesday 2026-11-10 morning (UTC), ready for the owner's Tuesday-afternoon testing; a
+  second train only if something urgent comes up. Until then, MapMaker branches merge `origin/main` only when they
+  need something from it.
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
