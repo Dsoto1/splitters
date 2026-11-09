@@ -6,10 +6,10 @@
   "family": "ffa",
   "maps": [
     { "map": "atomic_court", "mode": "core.deathmatch" },
-    { "map": "bottling", "mode": "core.deathmatch" },
+    { "map": "pump_tower", "mode": "core.deathmatch" },
     { "map": "jade_sanctum", "mode": "core.deathmatch" },
     { "map": "void_yard", "mode": "core.deathmatch" },
     { "map": "gallows_yard", "mode": "core.deathmatch" },
-    { "map": "overhang", "mode": "core.deathmatch" }
+    { "map": "razor_edge", "mode": "core.deathmatch" }
   ]
 }

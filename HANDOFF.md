@@ -347,6 +347,7 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
+- Claimed: `maps/fogbound.json`, `maps/bottling.json`, `maps/dune_harbor.json`, `maps/no_mans_field.json`, `maps/overhang.json`, `maps/starhaven.json` (retired: removed with every reference), `maps/iron_tide.json`, `maps/ironhold_prison.json`, `maps/jungle_steps.json` (renamed in MapMaker) and `maps/iron_maw.json` (Players 16-64 in MapMaker); `wip/maps-retire`, maps retire/rename session, 2026-11-09.
 
 **Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
 for the owner's review, not landed).**

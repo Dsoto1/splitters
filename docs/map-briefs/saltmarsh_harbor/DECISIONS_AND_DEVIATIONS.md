@@ -17,7 +17,7 @@
   new mount model; candidate for later, see HANDOFF).
 - **Tide warehouse roof** has no stair: an Outside Stair against the east boundary lost its outer flight on the
   navmesh. Players reach that roof from nowhere; the other two warehouse roofs have stairs.
-- **Distinct from** Dockside Depot (one warehouse lot), Dune Harbor (desert spaceport street), Iron Tide (a ship)
+- **Distinct from** Dockside Depot (one warehouse lot), Iron Tide (a ship)
   and Norman Shores (lake houses): an open basin crossed by pier, boardwalk and breakwater, fights over water.
 - **Stand-in**: `hb_fishing_boat` is a simple in-house model under a stable id (Meshy/community candidate).
 - Materials are procedural (CC0 texture hosts are blocked by the build container's proxy).

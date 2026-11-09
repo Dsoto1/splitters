@@ -1,6 +1,6 @@
 // Hovercraft stuck under structures (owner, 2026-11-07): a Hauler wedged under Iron Tide's platforms at (-16, 5, -20)
 // (the top of the stairs up to the deck, under the roof's lintel), and the Hauler, Speeder and Hover Bike wedged
-// under structures on Iron Tide and Dune Harbor. A vehicle moves on a probe capsule whose radius follows its hull's
+// under structures on Iron Tide and a desert map since retired. A vehicle moves on a probe capsule whose radius follows its hull's
 // width, so its dome stands well over the hull (Hauler 3.4 m against a 2 m hull; Speeder 2.8 against 1.3; Hover Bike
 // 2.4 against 1.0): under a deck, beam or roof the hull fits under, the dome caught and the craft could go neither in
 // nor out. With something over the hull, the vehicle now moves on a low probe of the same bottom cut off at the
@@ -166,25 +166,28 @@ describe('Iron Tide: the Hauler under the platforms (the owner\'s spot, -16, 5, 
   });
 });
 
-describe('Dune Harbor: a doorway with a low lintel', () => {
-  // The arcade south of the middle (x -24): a 0.9 m sill and a lintel at 2.5 m (1.6 m clear over the sill), a roof at
-  // 3.5 m behind it. A Speeder's hull (1.3 m) fits under the lintel; its probe (2.8 m) didn't, so it wedged there.
-  const map = () => mapFile('dune_harbor');
+describe('a doorway with a sill and a low lintel', () => {
+  // As the arcade on a since-retired desert map had it: a 0.9 m sill, a lintel at 2.5 m (1.6 m clear over the sill)
+  // and a roof at 3.5 m behind it. A Speeder's hull (1.3 m) fits under the lintel; its probe (2.8 m) didn't, so it
+  // wedged there.
+  const block = (id: string, x: number, bottom: number, z: number, w: number, h: number, d: number): MapEntity => ({ id, kind: 'block', position: [x, bottom, z], size: [w, h, d], yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
+  const doorway = (model: Craft) =>
+    yard(model, [block('sill', 20, 0, 24, 8, 0.9, 1), block('jamb_l', 13, 0, 24, 6, 3.5, 1), block('jamb_r', 27, 0, 24, 6, 3.5, 1), block('lintel', 20, 2.5, 24, 8, 1, 1), block('roof', 20, 3.5, 32, 40, 0.5, 15)]);
   it('a Speeder drives through under the lintel', () => {
-    const match = new Match(map(), { ...rulesForMode(map(), 'core.tdm'), scoreLimit: 0, respawnDelayTicks: 100_000 }, 1);
-    const { m, send } = seat(match, 'speeder', [-24, 0, -24], 0);
-    const run = drive(match, m, send, { forward: 1 }, 5, () => m.pos.z > 0);
+    const match = new Match(doorway('speeder'), rules, 1);
+    const { m, send } = seat(match, 'speeder', [20, 0, 6], 0);
+    const run = drive(match, m, send, { forward: 1 }, 5, () => m.pos.z > 30);
     expect(run.ticks).toBeGreaterThan(0);
     expect(run.clear).toBe(true);
     expect(m.wedged).toBeUndefined();
   });
 
   it("a Hauler (its 2 m hull doesn't fit) stops at the doorway, outside the lintel, and backs out", () => {
-    const match = new Match(map(), { ...rulesForMode(map(), 'core.tdm'), scoreLimit: 0, respawnDelayTicks: 100_000 }, 1);
-    const { m, send } = seat(match, 'hauler', [-24, 0.5, -28], 0);
+    const match = new Match(doorway('hauler'), rules, 1);
+    const { m, send } = seat(match, 'hauler', [20, 0, 6], 0);
     const inn = drive(match, m, send, { forward: 1 }, 5, () => false);
     expect(inn.clear).toBe(true);
-    expect(m.pos.z).toBeLessThan(-12);
+    expect(m.pos.z).toBeLessThan(24);
     const at = { ...m.pos };
     const out = drive(match, m, send, { forward: -1 }, 5, () => Math.hypot(m.pos.x - at.x, m.pos.z - at.z) > 5);
     expect(out.ticks).toBeGreaterThan(0);

@@ -191,7 +191,7 @@ The other modes:
 | Team Deathmatch, 16 | 39.67 → 0.00 % | 1.22 → 0.45 % | 6.1 → 4.9 % | 1.53 → 1.24 | - |
 
 Idle out of a fight counts holding a station: Forts' and some hills' guards, who teammates no longer shove about. Bomb
-and Hostage's sample plays Dune Harbor, which lists neither: a dropship landing beside its sunken room leaves its
+and Hostage's sample played Dune Harbor (deleted since, 2026-11-09), which lists neither: a dropship landing beside its sunken room leaves its
 riders under the street floor (below). Team Deathmatch's no-route idle is Norman Shores': bots in the shallows, off the
 navmesh, with no way onto it level or below.
 
@@ -229,8 +229,6 @@ against 1.34–2.57.)
 **Left, found on the way:**
 - Iron Compound's gantry MG turret (`mount_148`) stands in the 1.6 m walkway with 0.8 m beside it, and bots coming
   back along the walkway walk into it: a mount's body isn't on the navmesh (Phase C, moving obstacles).
-- A dropship landing beside Dune Harbor's sunken room leaves its riders under the street floor, where nothing gets
-  them out (vehicles).
 - Norman Shores: bots in the shallows are off the navmesh, with no way onto it level or below (wading up a beach).
 - Hills held 32.4 → 28.9 % and Bomb plants 0.5 → 0.3 a match on the samples, and a few CTF maps still without a
   capture: the playbooks are Phase B's. So are six defenders keeping watch in Shingle Point's HQ (bomb site B).

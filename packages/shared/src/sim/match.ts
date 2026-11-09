@@ -6457,7 +6457,7 @@ export class Match {
   /** A clear spot on walkable ground a step from `mate` (behind or beside them), facing their way; null: none. */
   private besideMate(mate: Combatant): { pos: Vec3; yaw: number } | null {
     // Only beside a teammate on walkable ground (the navmesh), and onto it: one stuck where nobody walks drew every
-    // squadmate spawning after it in with it (Dune Harbor: a rider thrown under a street's floor, four bots a round).
+    // squadmate spawning after it in with it (a rider thrown under a street's floor: four bots a round).
     const walkable = (p: Vec3): boolean => {
       const q = this.nav.closestPoint({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0.6, y: 1.2, z: 0.6 });
       return !!q && Math.abs(q.y - p.y) < 1;

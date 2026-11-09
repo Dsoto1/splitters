@@ -445,12 +445,10 @@ Per map (two matches each; seed noise is large at two matches):
 | cinder_foundry | 0.0 → **0.0** | 0.0 → 7.0 | 15.9 → 4.7 | 84 → 108 | 21.7 → 26.5 |
 | coldwater_gulch | 0.0 → **0.0** | 0.0 → 1.0 | 31.2 → 8.7 | 242 → 154 | 13.1 → 22.0 |
 | diamond_park | 0.5 → **1.5** | 2.5 → 19.5 | 32.9 → 3.1 | 219 → 278 | 15.1 → 52.4 |
-| dune_harbor | 0.0 → **0.0** | 0.0 → 1.0 | 23.0 → 7.4 | 458 → 302 | 28.6 → 41.2 |
 | dustwater | 0.0 → **3.5** | 0.0 → 14.5 | 11.1 → 3.0 | 127 → 110 | 16.4 → 31.9 |
 | eagle_spires | 0.5 → **0.0** | 2.5 → 5.5 | 18.6 → 10.8 | 144 → 172 | 20.8 → 18.9 |
 | fernwood_moon | 0.0 → **1.0** | 0.0 → 2.0 | 28.2 → 6.9 | 900 → 352 | 31.4 → 50.7 |
 | flatpack_depot | 1.0 → **4.5** | 1.5 → 12.5 | 10.5 → 1.7 | 138 → 173 | 20.5 → 34.7 |
-| fogbound | 0.0 → **0.5** | 2.0 → 7.5 | 16.8 → 4.8 | 175 → 217 | 15.7 → 24.2 |
 | fort_meadow | 0.0 → **0.0** | 0.0 → 0.5 | 3.9 → 0.8 | 6 → 10 | 35.2 → 38.1 |
 | glacier_line | 0.5 → **1.5** | 1.5 → 11.5 | 11.3 → 1.4 | 129 → 181 | 29.9 → 46.6 |
 | grand_marquee | 0.0 → **4.5** | 2.0 → 25.5 | 3.1 → 2.7 | 100 → 254 | 20.7 → 28.1 |
@@ -461,7 +459,6 @@ Per map (two matches each; seed noise is large at two matches):
 | maple_court | 0.0 → **2.0** | 0.0 → 14.0 | 13.9 → 3.6 | 118 → 182 | 18.5 → 27.0 |
 | market_town | 0.0 → **2.5** | 0.0 → 14.5 | 8.6 → 2.7 | 99 → 168 | 38.2 → 52.8 |
 | neon_galleria | 0.0 → **1.5** | 0.0 → 12.5 | 11.3 → 1.8 | 103 → 144 | 16.2 → 30.3 |
-| no_mans_field | 0.0 → **1.0** | 0.0 → 3.5 | 10.4 → 7.2 | 230 → 288 | 19.2 → 29.5 |
 | norman_shores | 0.0 → **0.0** | 0.0 → 3.0 | 24.2 → 10.3 | 96 → 114 | 16.2 → 19.3 |
 | obsidian_orb | 1.0 → **5.0** | 3.5 → 10.5 | 17.1 → 12.2 | 524 → 238 | 32.6 → 59.2 |
 | pantry_raid | 0.0 → **0.0** | 0.0 → 0.0 | 5.8 → 2.2 | 52 → 71 | 22.8 → 32.6 |
@@ -476,7 +473,6 @@ Per map (two matches each; seed noise is large at two matches):
 | serene_city | 0.5 → **4.0** | 1.5 → 43.0 | 7.2 → 4.7 | 260 → 236 | 36.3 → 59.0 |
 | serpent_gorge | 0.0 → **2.5** | 1.0 → 10.0 | 6.5 → 4.3 | 258 → 396 | 20.8 → 33.2 |
 | st_johns | 0.0 → **0.5** | 0.0 → 2.5 | 23.9 → 7.6 | 52 → 77 | 22.2 → 31.0 |
-| starhaven | 0.5 → **3.0** | 2.5 → 9.0 | 19.8 → 12.7 | 552 → 546 | 19.2 → 26.5 |
 | sunken_kingdom | 0.0 → **2.0** | 0.5 → 15.5 | 17.3 → 1.4 | 190 → 188 | 33.6 → 46.7 |
 | sunstone_crag | 0.0 → **0.5** | 0.5 → 5.0 | 24.6 → 6.0 | 356 → 186 | 28.9 → 35.4 |
 | twin_spires | 0.0 → **0.0** | 0.0 → 0.0 | 11.9 → 3.8 | 62 → 103 | 23.6 → 33.4 |
@@ -484,7 +480,7 @@ Per map (two matches each; seed noise is large at two matches):
 | vinefall_sanctum | 1.5 → **2.5** | 6.5 → 12.5 | 9.2 → 6.7 | 186 → 407 | 22.4 → 31.3 |
 | whiteout_station | 0.0 → **0.5** | 0.0 → 7.5 | 13.6 → 2.7 | 238 → 387 | 32.3 → 49.4 |
 
-Still without a capture: Capitol Mall (249 m between the flags), Coldwater Gulch, Dune Harbor, Eagle Spires, Fort
+Still without a capture: Capitol Mall (249 m between the flags), Coldwater Gulch, Eagle Spires, Fort
 Meadow (a midfield brawl), Saltmarsh Harbor, Twin Spires, Cinder Foundry, Iron Tide, Norman Shores, Pantry Raid,
 Primeval Park, Underdrain. Most have flag takes now and lose the carrier on the way home; Capitol Mall, Twin Spires,
 Pantry Raid, Primeval Park and Underdrain have none: the attackers die on the way (group pushes are
@@ -639,7 +635,7 @@ Generation bugs it found, fixed in code:
 Fixed: Bunker Cross's yard and Rail Stockyard's slots (the audit's falls, above); St John's court (a 0.4 m curb at its
 ramp's foot), Undergate Transit's four track beds and Sunken Kingdom's sunken patch (1.4 m down: bots hop out, the
 legs tucked up) and three of M4 Outpost's five pickups (onto the uplink dais) by the bots' hops (below); Dune Harbor's
-aisle between two consoles, whose end was 1.3 m from the ramp (MapMaker: the consoles 1.2 m shorter). Listed for the
+(since deleted) aisle between two consoles, whose end was 1.3 m from the ramp (MapMaker: the consoles 1.2 m shorter). Listed for the
 owner in `nav/auditKnown.ts`, each with why: Skyward's four pad perches and the two spawn points on its towers and Sky
 Islands' sky platform (one-way by design: "ride the pads up... fall off and you are gone"); Grand Marquee's marquee
 top (the street pad throws you up, nothing gets you down); Obsidian Orb's reactor shaft (its core's box rose to 3.8 m
@@ -718,14 +714,14 @@ A failed search used to back the bot off 0.2 s, doubling to 4 s, standing still 
   s: five bots round one dropped spear for half a minute; idle out of a fight 13.3 → 5.1 %, frozen 9.2 → 1.7 %, idle
   spells of 10 s and more 15.0 → 0.5 a match. Pharaoh's Reach: 6.3 → 1.3 %, 5.1 → 0.1 %, 5.0 → 0.
 - **Spawning beside a teammate only on walkable ground** (`Match.squadSpawnSpot`, the navmesh within a step of both
-  the teammate and the spot): a rider a vehicle left under one of Dune Harbor's street floors drew the squadmates
+  the teammate and the spot): a rider a vehicle left under one of Dune Harbor's (since deleted) street floors drew the squadmates
   spawning after it in with it, four a round.
 
 Left for Phase C (found on the way): a mount's body isn't on the navmesh. Iron Compound's gantry MG turret
 (`mount_148`) stands in the 1.6 m walkway with 0.8 m beside it, and bots coming back along the walkway walk into it
 (most of Iron Compound's stuck recoveries, there before this round too); a bot's sidestep gets it round, but the
-mode's goal sends it back along the same line. And a dropship landing beside Dune Harbor's sunken room leaves its
-riders under the street floor, where nothing gets them out (the Bomb and Hostage samples, modes the map doesn't list).
+mode's goal sends it back along the same line. (A dropship landing beside Dune Harbor's sunken room left its riders
+under the street floor; the map was deleted on 2026-11-09.)
 
 ## Smoke (November 2026)
 The Smoke Grenade (docs/ARSENAL.md) hides whoever is behind a cloud. Bots see it as the match does: their sight lines
@@ -931,9 +927,9 @@ for points on the ground ahead, and captures halved on the dev sample.)
   ways every second), flankers (45 % of the rest, the next corridor) and a recon pair (two from six attackers, one from
   four; explorers and lone wolves first; the third corridor, or the flankers'). Only on a long trip
   (`Playbook.groupsFromLength`, `splits`): its shortest way 180 m or more, with two corridors at most 1.35 times as long
-  plus 20 m. In Capture the Flag that is Fernwood Moon (186 m between the flags) and the 14 longer maps with a second way
-  near the shortest (Dune Harbor, Riot Junction, Sunken Kingdom, Primeval Park, Iron Tide, Coldwater Gulch, Sunstone
-  Crag, Capitol Mall, Glacier Line, Eagle Spires, St John's, Iron Maw, Fogbound, Norman Shores). On a shorter trip, or
+  plus 20 m. In Capture the Flag that is Fernwood Moon (186 m between the flags) and the 12 longer maps (14 then) with a second way
+  near the shortest (Riot Junction, Sunken Kingdom, Primeval Park, Iron Tide, Coldwater Gulch, Sunstone
+  Crag, Capitol Mall, Glacier Line, Eagle Spires, St John's, Iron Maw, Norman Shores). On a shorter trip, or
   with only far longer ways round, each bot takes its own lane as before, the loose bots' prices spreading them: split
   over the ways on every map, Capture the Flag lost a third of its captures on the dev sample (BOT_AI_PLAN.md, "Phase B
   part 1, measured"); from 110 m, Diamond Park's attack went in two groups and its five-minute capture test went

@@ -131,7 +131,7 @@ sounds (needs new CC0 sounds and a grip pose).
   | Creature Lab | 27×36 → 40×48 | 4 | — | Co-op | ✅ Deck, specimen bay and containment hall; one wave each |
   | M4 Outpost | 43×24 → 43×40 | 4 | — | Co-op | ✅ Flank routes with patrols, deeper siege rooms; gate and evac logic unchanged |
   | Citadel | 36×35 → ~50×50 | 10 → 16 | — | DM | ✅ Outer bailey of courtyards behind a curtain wall; the keep's corners are its gates |
-  | Ridge Camp, Felicity Yard, Lantern Quarter, Silo Complex, Step Temple, Bottling, Skyward, Sky Islands | 44–91 per side | 8–13 | **none** | DM, TDM | Add team bases at opposite ends (the rotating spawns cover them until then) |
+  | Ridge Camp, Felicity Yard, Lantern Quarter, Silo Complex, Step Temple, Skyward, Sky Islands | 44–91 per side | 8–13 | **none** | DM, TDM | Add team bases at opposite ends (the rotating spawns cover them until then) |
   | Gallows Yard, Twin Spires, Reactor, Dockside, Bunker Cross, Jungle Steps, Rail Stockyard, Sandgate | 60–90 per side | 10–28 | yes | TDM (+CTF/KOTH on some) | OK; check spawn counts against 16 players |
   | Backwoods, Canyon, Frost Basin, St. John's | 150–290 per side | 16–40 | yes | TDM (+ more) | Large; good for 24+ players and vehicles |
 
