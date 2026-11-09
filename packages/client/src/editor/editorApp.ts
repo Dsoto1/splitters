@@ -383,6 +383,7 @@ import { BOT_SET_PRESETS } from '../playlists.ts';
 import { $, isTyping, button, h2, text, small, row, numberInput, escapeHtml } from './editorDom.ts';
 import { SHIPPED_IDS, itemIcon, CARD_HIDDEN_KINDS, STARTER_TERRAIN, NEW_MAP_SIZES, mainGround, fitTopBar, starterMap, PIECE_PART_KINDS, ROLE_LABELS, rolesUsed, SCENARIO_ICONS, PLACING, toolKey, TOOL_ICONS, npcIcon, pickRadius, FLY_SPEED, LOOK_SENSITIVITY, snap, dressable, dressTag, edgeIcon, addedEntities, type Tool, type Hit, type DragState } from './editorParts.ts';
 import { TerrainTools } from './terrainTools.ts';
+import { SetPieceTools } from './setPieceTools.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -407,22 +408,20 @@ export interface EditorHost {
  * templates are loaded on purpose from Open….
  */
 export class EditorApp {
+  /** Set pieces: placing them (the ghost, its ports, the look), the Set pieces palette and the player's own pieces, saving a selection as a piece, exploding one and the set piece inspector (setPieceTools.ts). */
+  readonly pieces: SetPieceTools;
   /** The Terrain tool: its brush, live sculpting strokes, whole-map smoothing, the trace image and the Terrain palette (terrainTools.ts). */
   readonly terrain: TerrainTools;
   readonly view: EditorView;
   readonly history: EditHistory;
-  private tool: Tool = { kind: 'select' };
-  private rotation: Rotation = 0;
+  tool: Tool = { kind: 'select' };
+  rotation: Rotation = 0;
   /** The shipped set pieces and role packs. MapMaker's document keeps placements; it draws them expanded (viewDoc). */
-  private readonly setPieceLib: SetPieceLibrary = builtInSetPieces();
-  /** The player's own set pieces (their library in this browser, storage.ts), by id; `myPiecesRev` counts changes. */
-  private myPieces = new Map<string, SetPieceDefinition>();
-  private myPiecesRev = 0;
+  readonly setPieceLib: SetPieceLibrary = builtInSetPieces();
   /** The set piece tool: mirrored (M), and the look it places in (a role pack id; '' the map theme's). */
-  private pieceMirror = false;
-  private pieceLook = '';
+  pieceMirror = false;
   /** What the set piece tool's ghost shows now: the placement it would make, whether it fits (and why not), its ports. */
-  private pieceHover: { def: SetPieceDefinition; placement: SetPiecePlacement; ok: boolean; reason: string; short: string; blocked: number } | null = null;
+  pieceHover: { def: SetPieceDefinition; placement: SetPiecePlacement; ok: boolean; reason: string; short: string; blocked: number } | null = null;
   /** Box select (Select tool, drag on empty ground): the rectangle on screen. */
   private marquee: { x0: number; y0: number; x1: number; y1: number; add: boolean; moved: boolean } | null = null;
   /** Facing for the next prop placed. */
@@ -431,7 +430,7 @@ export class EditorApp {
   /** The palette's prebuilt pictures (public/thumbs) and its behaviour (groups, search, favourites, keys). */
   readonly paletteAtlas = new PaletteAtlas();
   palette!: Palette;
-  private showPane: (pane: string) => void = () => {};
+  showPane: (pane: string) => void = () => {};
   /** Palette workspace: build, entities or environment. */
   private paletteWs = 'build';
   private spawnYaw = 0;
@@ -463,7 +462,7 @@ export class EditorApp {
   private readonly ring: RotateRing;
   /** The plan view (K): the level from straight above (MapMaker overhaul Phase 3 item 2). */
   readonly plan: PlanView;
-  private level = 0;
+  level = 0;
   private showAll = false;
   /** The last placing tool, so the toolbar's Place button can pick it up again. */
   private lastPlace: Tool | null = null;
@@ -484,13 +483,13 @@ export class EditorApp {
   private pointerAt: { x: number; y: number } | null = null;
   /** Pointer ray, for picking what is under the cursor. */
   private ray: { origin: Vec3; dir: Vec3 } | null = null;
-  private selection: Selection = emptySelection();
+  selection: Selection = emptySelection();
   private hoverPoint: Vec3 | null = null;
   /** The hover point is on the terrain (nearer than the level plane). */
   private hoverOnTerrain = false;
-  private hoverCell: [number, number, number] | null = null;
+  hoverCell: [number, number, number] | null = null;
   private drag: DragState | null = null;
-  private looking: { x: number; y: number; moved: boolean; travel: number; button: number } | null = null;
+  looking: { x: number; y: number; moved: boolean; travel: number; button: number } | null = null;
   private keys = new Set<string>();
   private issues: ValidationIssue[] = [];
   private navIssues: ValidationIssue[] = [];
@@ -521,6 +520,7 @@ export class EditorApp {
   private paintScope: PaintScope = 'surface';
 
   constructor(private readonly host: EditorHost) {
+    this.pieces = new SetPieceTools(this);
     this.terrain = new TerrainTools(this);
     this.view = new EditorView(host.engine);
     this.thumbs = new ModelThumbnails(host.engine);
@@ -683,7 +683,7 @@ export class EditorApp {
   // ---------------------------------------------------------------- set pieces: the document as drawn
 
   /** The document's set pieces expanded into their parts (pure, cached per document version: map/setPieces.ts). */
-  private get expansion(): SetPieceExpansion {
+  get expansion(): SetPieceExpansion {
     return expandSetPieces(this.doc, this.setPieceLib);
   }
 
@@ -695,7 +695,7 @@ export class EditorApp {
   /** The map's collision boxes as played (set pieces expanded), worked out once per document version. */
   private boxesFor: { doc: MapDocument; boxes: WorldBox[] } | null = null;
 
-  private mapBoxes(): WorldBox[] {
+  mapBoxes(): WorldBox[] {
     const doc = this.viewDoc;
     if (this.boxesFor?.doc !== doc) this.boxesFor = { doc, boxes: buildMapGeometry(doc) };
     return this.boxesFor.boxes;
@@ -716,82 +716,28 @@ export class EditorApp {
     return terrainUnderFloors(laid ? withPathsLaid(doc) : doc, this.mapBoxes())!;
   }
 
-  /** The pieces MapMaker can place: the shipped ones and the player's own (their library), with the role packs. */
-  private placeLibCache: { rev: number; lib: SetPieceLibrary } | null = null;
-
-  private get placeLib(): SetPieceLibrary {
-    if (!this.myPieces.size) return this.setPieceLib;
-    if (this.placeLibCache?.rev !== this.myPiecesRev) this.placeLibCache = { rev: this.myPiecesRev, lib: { pieces: new Map([...this.setPieceLib.pieces, ...this.myPieces]), packs: this.setPieceLib.packs } };
-    return this.placeLibCache.lib;
-  }
-
-  /** Replace all of a tile with a set piece (a retired tile's own replacement, or any), one undo step, and select them. */
-  private replaceTiles(tile: string, piece: string): void {
-    const r = replaceTilesWithSetPieceCommand(this.doc, tile, piece, coreCatalog, this.setPieceLib);
-    if (!this.run('Replace all', 'error' in r ? r : r.command) || 'error' in r) return;
-    this.setSelection({ tiles: [], entities: [], setPieces: r.placements.map((p) => p.id) });
-    this.toast(`Replaced ${r.placements.length} ${coreCatalog.get(tile)?.displayName ?? tile} with ${this.pieceDef(r.placements[0]!.piece)?.displayName ?? r.placements[0]!.piece}`);
+  get placeLib(): SetPieceLibrary {
+    if (!this.pieces.myPieces.size) return this.setPieceLib;
+    if (this.pieces.placeLibCache?.rev !== this.pieces.myPiecesRev) this.pieces.placeLibCache = { rev: this.pieces.myPiecesRev, lib: { pieces: new Map([...this.setPieceLib.pieces, ...this.pieces.myPieces]), packs: this.setPieceLib.packs } };
+    return this.pieces.placeLibCache.lib;
   }
 
   /** A set piece's definition: shipped, the map's own, or the player's. */
-  private pieceDef(id: string): SetPieceDefinition | undefined {
-    return piecesFor(this.doc, this.setPieceLib).get(id) ?? this.myPieces.get(id);
+  pieceDef(id: string): SetPieceDefinition | undefined {
+    return piecesFor(this.doc, this.setPieceLib).get(id) ?? this.pieces.myPieces.get(id);
   }
 
-  private placementOf(id: string): SetPiecePlacement | undefined {
+  placementOf(id: string): SetPiecePlacement | undefined {
     return this.doc.setPieces?.find((p) => p.id === id);
   }
 
-  /** A placement as MapMaker outlines it: its footprint, and its ports, each flagged when a wall stands in it. */
-  private pieceOutline(p: SetPiecePlacement): PieceOutline | null {
-    const def = this.pieceDef(p.piece);
-    if (!def) return null;
-    const ports = setPiecePortStates(p, def, this.mapBoxes()).map((s) => ({ x: s.x, y: s.y, z: s.z, side: s.side, kind: s.kind, closed: s.closed, blocked: !!s.blockedBy }));
-    return { cells: setPieceFootprint(p, def), ports };
-  }
-
-  /**
-   * A placement's own collision as it would be built where it stands (its sides resolved against the tiles round it:
-   * a port that meets one becomes a doorway), for the ghost's ports: the piece and its neighbours alone, not the map.
-   */
-  private ownBoxes(p: SetPiecePlacement, def: SetPieceDefinition): WorldBox[] {
-    const view = this.viewDoc;
-    const parts = setPieceParts(p, def, view.classicStructure.theme, this.setPieceLib);
-    const near = new Set<string>();
-    for (const [x, y, z] of setPieceFootprint(p, def)) for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]] as const) near.add(`${x + dx},${y + dy},${z}`);
-    const neighbours = view.classicStructure.tiles.filter((t) => (placementCells(t) ?? []).some(([x, y, z]) => near.has(`${x},${y},${z}`)));
-    const alone: MapDocument = { ...view, terrain: null, bounds: null, classicStructure: { ...view.classicStructure, tiles: [...parts.tiles, ...neighbours] }, entities: parts.entities.filter((e) => e.kind === 'block') };
-    const mine = new Set([...parts.tiles.map((t) => t.id), ...parts.entities.map((e) => e.id)]);
-    return buildMapGeometry(alone).filter((b) => mine.has(b.sourceId));
-  }
-
-  private selPieces(): string[] {
+  selPieces(): string[] {
     return this.selection.setPieces ?? [];
   }
 
   /** Everything selected: tiles, entities and set pieces. */
-  private selCount(): number {
+  selCount(): number {
     return this.selection.tiles.length + this.selection.entities.length + this.selPieces().length;
-  }
-
-  /** What blocks a port, in words (a tile's wall, a block, another set piece). */
-  private blockerName(sourceId: string): string {
-    const placement = this.expansion.partOf.get(sourceId);
-    if (placement) {
-      const p = this.placementOf(placement);
-      return `the ${(p && this.pieceDef(p.piece)?.displayName) ?? 'set piece'}`;
-    }
-    const tile = this.doc.classicStructure.tiles.find((t) => t.id === sourceId);
-    if (tile) return `the ${coreCatalog.get(tile.tile)?.displayName ?? 'tile'}'s wall`;
-    const e = this.doc.entities.find((x) => x.id === sourceId);
-    if (e?.kind === 'block') return `a block (${(e.material && coreMaterials.get(e.material)?.displayName) ?? 'theme'}${e.name ? `, ${e.name}` : ''})`;
-    return e ? entityLabel(this.doc, e) : 'something';
-  }
-
-  /** A port in words: "the door on the east side (Level 1)". */
-  private portName(s: { side: string; z: number; kind: string }): string {
-    const side = ({ N: 'north', E: 'east', S: 'south', W: 'west' } as Record<string, string>)[s.side];
-    return `the ${s.kind === 'door' ? 'door' : 'opening'} on the ${side} side (${levelName(s.z)})`;
   }
 
   /** Map properties' time of day and weather (skyWeatherSection.ts). */
@@ -846,7 +792,7 @@ export class EditorApp {
   }
 
   /** Signed in as an owner of the game (ownerPublish.ts): official maps open as they are, and Publish shows. */
-  private owner = false;
+  owner = false;
 
   hide(): void {
     this.active = false;
@@ -903,7 +849,7 @@ export class EditorApp {
         entities: this.selection.entities.filter((id) => this.doc.entities.some((e) => e.id === id)),
         ...(pieces.length ? { setPieces: pieces } : {}),
       };
-      this.renderMyPieces();
+      this.pieces.renderMyPieces();
       this.updateSelectionVisuals();
       this.syncToolbar();
       this.validate();
@@ -998,7 +944,7 @@ export class EditorApp {
       const def = this.pieceDef(tool.piece);
       if (this.pieceMirror && def && setPieceMirrorRefusal(def)) this.pieceMirror = false;
     }
-    this.renderPieceInfo();
+    this.pieces.renderPieceInfo();
     if (PLACING.has(tool.kind)) this.lastPlace = tool;
     if (tool.kind === 'edge') this.edgeStyle = tool.style;
     const pane: Partial<Record<Tool['kind'], string>> = { paint: 'paint', edge: 'advanced', terrain: 'terrain', envbrush: 'plants' };
@@ -1096,7 +1042,7 @@ export class EditorApp {
   }
 
   /** Select: anything in a group brings its whole group (groups.ts), unless `single` (Alt-click: just that one). */
-  private setSelection(sel: Selection, single = false, keepHint = false): void {
+  setSelection(sel: Selection, single = false, keepHint = false): void {
     if (!keepHint) this.hints.deselect();
     this.selection = single ? sel : withGroups(this.doc, sel);
     this.updateSelectionVisuals();
@@ -1150,7 +1096,7 @@ export class EditorApp {
     const after = applyCommand(this.doc, cmd);
     const pieces = this.selPieces().flatMap((id) => {
       const p = (after.setPieces ?? []).find((x) => x.id === id);
-      const o = p && this.pieceOutline(p);
+      const o = p && this.pieces.pieceOutline(p);
       return o ? [o] : [];
     });
     this.view.setOutlines(after, this.selection.tiles, undefined, false, pieces);
@@ -1162,7 +1108,7 @@ export class EditorApp {
   private selectedPieceOutlines(): PieceOutline[] {
     return this.selPieces().flatMap((id) => {
       const p = this.placementOf(id);
-      const o = p && this.pieceOutline(p);
+      const o = p && this.pieces.pieceOutline(p);
       return o ? [o] : [];
     });
   }
@@ -1252,7 +1198,7 @@ export class EditorApp {
     if (ghostRefuses(this.entityGhost()?.note)) return;
     if (this.tool.kind === 'setpiece' && this.hoverCell) {
       const [x, y, z] = this.hoverCell;
-      this.placeSetPiece(this.tool.piece, x, y, z);
+      this.pieces.placeSetPiece(this.tool.piece, x, y, z);
     } else if (this.tool.kind === 'tile' && this.hoverCell) {
       const [x, y, z] = this.hoverCell;
       const placed = placeTileCommand(this.doc, this.tool.tile, x, y, z, this.rotation);
@@ -1302,41 +1248,8 @@ export class EditorApp {
     }
   }
 
-  /** A set piece in a few words (hover card, inspector): its size and levels, its look, its turn and mirror, its ports. */
-  private pieceLines(def: SetPieceDefinition, p: Pick<SetPiecePlacement, 'rotation' | 'mirror' | 'pack'>): string[] {
-    const span = (i: 0 | 1) => Math.max(...def.footprint.cells.map((c) => c[i])) - Math.min(...def.footprint.cells.map((c) => c[i])) + 1;
-    const levels = def.footprint.levels[1] - def.footprint.levels[0] + 1;
-    const theme = this.doc.classicStructure.theme;
-    const pack = placementPack(p, theme, this.setPieceLib);
-    const look = pack ? `${pack.displayName}${p.pack ? '' : " (the map theme's)"}` : `${coreThemes.get(theme)?.displayName ?? theme} (theme)`;
-    return [`${span(0)} × ${span(1)} cells · ${levels} level${levels === 1 ? '' : 's'}`, `Look: ${look}`, `Turned ${p.rotation * 90}°${p.mirror ? ' · mirrored' : ''} · ${def.ports.length} port${def.ports.length === 1 ? '' : 's'}`];
-  }
-
-  /** The look a set piece is placed in: the tool's (a role pack), or none (the map theme's). */
-  private lookFor(): string {
-    return this.pieceLook && this.setPieceLib.packs.has(this.pieceLook) ? this.pieceLook : '';
-  }
-
-  /** Place a set piece as one, at anchor cell (x, y) on level z, turned (R), mirrored (M) and in the tool's look. */
-  private placeSetPiece(piece: string, x: number, y: number, z: number): void {
-    const def = this.pieceDef(piece);
-    if (!def) return this.toast(`Unknown set piece ${piece}`, true);
-    const look = this.lookFor();
-    const r = placeSetPieceCommand(this.doc, piece, x, y, z, this.rotation, { mirror: this.pieceMirror, ...(look ? { pack: look } : {}), library: this.placeLib });
-    if ('error' in r) return this.toast(`Can't place ${def.displayName}: ${r.error}`, true);
-    // A piece of the player's own goes into the map with it: the map carries its definition, so it plays anywhere.
-    const own = this.myPieces.get(piece);
-    const inMap = this.doc.setPieceDefs?.find((d) => d.id === piece);
-    const defCmd = own && JSON.stringify(inMap ?? null) !== JSON.stringify(own) ? addSetPieceDefCommand(this.doc, own) : null;
-    if (defCmd && 'error' in defCmd) return this.toast(defCmd.error, true);
-    if (this.run(`Place ${def.displayName}`, defCmd ? { kind: 'batch', commands: [defCmd, r.command] } : r.command)) {
-      this.setSelection({ tiles: [], entities: [], setPieces: [r.placement.id] });
-      if (inMap && defCmd) this.toast(`Placed ${def.displayName}; this map's copy of it now matches your library's`);
-    }
-  }
-
   /** M: mirror the set piece being placed, or the selected set pieces (one undo step). A piece that can't be says why. */
-  private mirror(): void {
+  mirror(): void {
     if (this.tool.kind === 'setpiece') {
       const def = this.pieceDef(this.tool.piece);
       if (!def) return;
@@ -1344,7 +1257,7 @@ export class EditorApp {
       if (why) return this.toast(why, true);
       this.pieceMirror = !this.pieceMirror;
       this.toast(`${def.displayName} ${this.pieceMirror ? 'mirrored (east and west swapped)' : 'not mirrored'}`);
-      this.renderPieceInfo();
+      this.pieces.renderPieceInfo();
       this.updateHover();
       return;
     }
@@ -1369,17 +1282,6 @@ export class EditorApp {
       doc = applyCommand(doc, cmd);
     }
     this.run(commands.length > 1 ? `Mirror ${commands.length} set pieces` : 'Mirror', { kind: 'batch', commands });
-  }
-
-  /** Explode to tiles: the placement becomes its parts, ordinary pieces to edit (one undo step), and they are selected. */
-  private explode(id: string): void {
-    const p = this.placementOf(id);
-    const name = (p && this.pieceDef(p.piece)?.displayName) ?? 'set piece';
-    const r = explodeSetPieceCommand(this.doc, id);
-    if ('error' in r) return this.toast(`Can't explode: ${r.error}`, true);
-    if (!this.run(`Explode ${name}`, r.command)) return;
-    this.setSelection(r.selection);
-    this.toast(`${name} exploded into ${r.selection.tiles.length + r.selection.entities.length} ordinary parts · Ctrl+Z puts it back`);
   }
 
   /** Where the Scenario tool puts an object, and its facing: on the level's floor, or in the doorway for doors and the like. */
@@ -1523,8 +1425,8 @@ export class EditorApp {
     item(grouped ? `Ungroup “${groupName(grouped)}”` : 'Ungroup', 'Ctrl+Shift+G', () => this.ungroup(), this.selCount() > 0 && [...this.selection.tiles, ...this.selection.entities, ...pieces].some((id) => groupOf(this.doc, id)));
     item('Focus', 'F', () => this.focusSelection());
     item('Delete', 'Del', () => this.deleteSelection());
-    if (pieces.length === 1 && this.selCount() === 1) item('Explode to tiles', '', () => this.explode(pieces[0]!));
-    item('Save as set piece…', '', () => this.saveSelectionDialog());
+    if (pieces.length === 1 && this.selCount() === 1) item('Explode to tiles', '', () => this.pieces.explode(pieces[0]!));
+    item('Save as set piece…', '', () => this.pieces.saveSelectionDialog());
     if (this.doc.terrain) item('Cut ground to floors', '', () => this.cutGround());
     item('Select none', 'Esc', () => this.setSelection(emptySelection()));
     $('editor').append(menu);
@@ -1710,14 +1612,14 @@ export class EditorApp {
   }
 
   /** R turns what you are placing, or the selection, by that kind's step (yawStep); Shift+R by the finer step. */
-  private rotate(fine = false): void {
+  rotate(fine = false): void {
     if (!this.selCount() && this.tool.kind !== 'tile' && this.tool.kind !== 'setpiece' && this.hints.turnSelected(fine)) return;
     const deg = (yaw: number) => `Facing ${Math.round((yaw * 180) / Math.PI)}°`;
     if (this.tool.kind === 'tile' || this.tool.kind === 'setpiece') {
       if (fine) this.toast(`${this.tool.kind === 'tile' ? 'Tiles' : 'Set pieces'} turn in quarter turns`);
       this.rotation = ((this.rotation + 1) % 4) as Rotation;
       this.toast(`${this.toolName(this.tool)} turned to ${this.rotation * 90}°`);
-      this.renderPieceInfo();
+      this.pieces.renderPieceInfo();
       this.updateHover();
     } else if (this.tool.kind === 'spawn') {
       this.spawnYaw = normalizeYaw(this.spawnYaw + yawStep('spawn', fine));
@@ -2056,7 +1958,7 @@ export class EditorApp {
         // The set piece about to be placed: what it is, how it's turned and themed, and whether it fits (and why not).
         title = g.def.displayName;
         tone = g.ok ? 'place' : 'bad';
-        lines.push(...this.pieceLines(g.def, g.placement), `${levelName(this.level)} · cell ${this.hoverCell[0]}, ${this.hoverCell[1]}`);
+        lines.push(...this.pieces.pieceLines(g.def, g.placement), `${levelName(this.level)} · cell ${this.hoverCell[0]}, ${this.hoverCell[1]}`);
         // The ghost says why (ghostWhy.ts): a few words here, the whole reason on the status line.
         if (!g.ok) marks.set(lines.push(`✗ ${g.short}`) - 1, 'bad');
         else if (g.blocked) marks.set(lines.push(`⚠ ${g.blocked} of its ports face${g.blocked === 1 ? 's' : ''} a wall (red): open the wall there, or place it elsewhere`) - 1, 'warn');
@@ -2089,7 +1991,7 @@ export class EditorApp {
           tone = this.tool.kind === 'erase' ? 'erase' : 'pick';
           const placement = hit.kind === 'setpiece' ? this.placementOf(hit.id) : undefined;
           const def = placement && this.pieceDef(placement.piece);
-          if (placement && def) lines.push('Set piece (selects as one)', ...this.pieceLines(def, placement));
+          if (placement && def) lines.push('Set piece (selects as one)', ...this.pieces.pieceLines(def, placement));
           else if (hit.kind === 'tile') {
             const t = this.doc.classicStructure.tiles.find((x) => x.id === hit.id);
             const def = t && coreCatalog.get(t.tile);
@@ -2132,7 +2034,7 @@ export class EditorApp {
     this.view.setPropGhost(ghost?.model ?? null, ghost?.at ?? null, ghost?.yaw ?? 0, ghost?.kind ?? 'prop', ghost?.scale !== undefined ? { scale: ghost.scale, ...(ghost.variant !== undefined ? { variant: ghost.variant } : {}) } : undefined, refused);
     const objects = this.looking ? null : this.objectGhost();
     this.view.setEntityGhost(this.doc, objects?.key ?? null, objects?.entities ?? [], refused);
-    this.updatePieceGhost();
+    this.pieces.updatePieceGhost();
     if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
       // Select: the rotate ring round the selection lights under the pointer (and, held, turns it).
       const onRing = this.tool.kind === 'select' && !this.drag && !this.looking && !this.marquee && (!!this.ring.drag || this.ring.hover(this.pointerAt));
@@ -2239,41 +2141,6 @@ export class EditorApp {
       this.view.setGhost(this.doc, null, null, 0, true);
     }
   }
-
-  /**
-   * The set piece tool's ghost: the whole piece at the hovered cell in its look, its footprint and ports outlined green
-   * where it fits and red where it doesn't (the hover card and status line say why: checkSetPiecePlacement), and any
-   * port a wall stands in red.
-   */
-  private updatePieceGhost(): void {
-    const t = this.tool;
-    const cell = this.hoverCell;
-    const def = t.kind === 'setpiece' ? this.pieceDef(t.piece) : undefined;
-    if (this.looking || !cell || !def || t.kind !== 'setpiece') {
-      this.pieceHover = null;
-      this.view.setPieceGhost(this.doc, null, () => ({ tiles: [], entities: [] }), null, true, null);
-      return;
-    }
-    const look = this.lookFor();
-    const placement: SetPiecePlacement = { id: 'ghost_piece', piece: t.piece, x: cell[0], y: cell[1], z: this.level, rotation: this.rotation, mirror: this.pieceMirror, ...(look ? { pack: look } : {}) };
-    const check = checkSetPiecePlacement(this.doc, [placement], [], coreCatalog, this.placeLib);
-    // Its ports against the map, and against its own walls as they'd be built here (worked out once per cell).
-    const at = `${t.piece}:${this.rotation}:${this.pieceMirror}:${cell.join(',')}:${this.history.revision}:${this.myPiecesRev}`;
-    if (this.ghostPorts?.at !== at) this.ghostPorts = { at, states: setPiecePortStates(placement, def, [...this.mapBoxes(), ...this.ownBoxes(placement, def)]) };
-    const ports = this.ghostPorts.states;
-    this.pieceHover = { def, placement, ok: check.ok, reason: check.ok ? '' : check.reason, short: check.ok ? '' : check.short, blocked: ports.filter((s) => s.blockedBy).length };
-    const theme = this.doc.classicStructure.theme;
-    // Built once per piece, turn, mirror and look (at the grid's origin) and moved with the pointer.
-    const key = `${t.piece}:${this.rotation}:${this.pieceMirror}:${look}:${theme}:${this.myPiecesRev}`;
-    const atOrigin = { ...placement, x: 0, y: 0, z: 0 };
-    this.view.setPieceGhost(this.doc, key, () => setPieceParts(atOrigin, def, theme, this.setPieceLib), [cell[0], cell[1], this.level], check.ok, {
-      cells: setPieceFootprint(placement, def),
-      ports: ports.map((s) => ({ x: s.x, y: s.y, z: s.z, side: s.side, kind: s.kind, closed: s.closed, blocked: !!s.blockedBy })),
-    });
-  }
-
-  /** The ghost's ports, and the cell, turn and document version they were worked out for. */
-  private ghostPorts: { at: string; states: ReturnType<typeof setPiecePortStates> } | null = null;
 
   /**
    * Whether the tile tool's ghost fits, and why not (ghostWhy.ts): worked out once per tile, cell, turn and document
@@ -2794,7 +2661,7 @@ export class EditorApp {
       // Retired tiles (a set piece replaced them) stay out of the palette: maps that place one still load.
       for (const def of coreCatalog.all().filter((d) => d.category === category && !isRetiredTile(d.id) && !isTileOptionTwin(d))) this.paletteButton(grid, def, tilePack(def.id));
     }
-    this.buildSetPiecePalette();
+    this.pieces.buildSetPiecePalette();
     const edges = this.palette.group($('ed-edges'), 'walls', 'Walls & Openings', { note: 'Pick a style, then click any side of a room or corridor to build it that way (O cycles styles, right-click resets).' });
     for (const style of EDGE_STYLES) {
       const b = document.createElement('button');
@@ -2956,7 +2823,7 @@ export class EditorApp {
   // ---------------------------------------------------------------- style packs
 
   /** The Style Pack the palette is narrowed to (null: every piece). */
-  private stylePack: StylePack | null = null;
+  stylePack: StylePack | null = null;
 
   /** The palette's Style Pack picker: each pack narrows tiles, props, gameplay pieces, vehicles and pickups to its own. */
   private buildPackPicker(): void {
@@ -2978,8 +2845,8 @@ export class EditorApp {
         this.palette.setTip(b, why ?? b.dataset.baseTip);
       }
       // Set pieces take the pack's look (its role pack), so their ghost re-themes; All pieces: the map theme's.
-      this.pieceLook = pack ? (stylePackRoles(pack.id, this.setPieceLib.packs) ?? '') : '';
-      this.renderPieceInfo();
+      this.pieces.pieceLook = pack ? (stylePackRoles(pack.id, this.setPieceLib.packs) ?? '') : '';
+      this.pieces.renderPieceInfo();
       this.updateHover();
       this.filterPalette();
     });
@@ -2994,7 +2861,7 @@ export class EditorApp {
   }
 
   /** Narrow the palette to the chosen Style Pack's pieces (search, favourites and recent follow it). */
-  private filterPalette(): void {
+  filterPalette(): void {
     const pack = this.stylePack;
     const suits = (tool: string) => {
       // Set pieces go with a pack when one of the looks they suit is the pack's (roles.json); the rest by stylePackHas.
@@ -3620,7 +3487,7 @@ export class EditorApp {
       if (!def) return null;
       const { doc, models } = this.setPieceThumbDoc(def);
       // The player's pieces change as they save over them: the picture is keyed by their content.
-      return this.thumbs.getMap(id.startsWith('local.') ? `${id}:${JSON.stringify(def).length}:${this.myPiecesRev}` : id, doc, models, size);
+      return this.thumbs.getMap(id.startsWith('local.') ? `${id}:${JSON.stringify(def).length}:${this.pieces.myPiecesRev}` : id, doc, models, size);
     }
     return null;
   }
@@ -3664,482 +3531,6 @@ export class EditorApp {
       pack: pack?.displayName,
       picture: true,
     });
-  }
-
-  // ---------------------------------------------------------------- set pieces: the palette tab and your library
-
-  /** "My set pieces": the grid, the palette keys of its cards, and what it was drawn for. */
-  private mineGrid?: HTMLElement;
-  private mineKeys: string[] = [];
-  private mineKey = '';
-
-  /**
-   * The Set pieces tab: a panel for the piece being placed (its look, turn and mirror; your own piece's Export and
-   * Delete), the shipped pieces by family (their pictures from the palette atlas), then your own (this browser's
-   * library) and the map's own, with Save selection as set piece and Import.
-   */
-  private buildSetPiecePalette(): void {
-    const pane = $('ed-setpieces');
-    const info = document.createElement('div');
-    info.id = 'ed-sp-info';
-    info.className = 'ed-sp-info';
-    pane.append(info);
-    const families = new Map<string, SetPieceDefinition[]>();
-    for (const def of this.setPieceLib.pieces.values()) families.set(def.family, [...(families.get(def.family) ?? []), def]);
-    const order = [...families].sort(([a], [b]) => setPieceFamilyOrder(a) - setPieceFamilyOrder(b) || (a < b ? -1 : a > b ? 1 : 0));
-    order.forEach(([family, defs], i) => {
-      const grid = this.palette.group(pane, `setpieces:${family}`, setPieceFamilyLabel(family), { open: i < 2 });
-      for (const def of defs) this.setPieceButton(grid, def);
-    });
-    this.mineGrid = this.palette.group(pane, 'setpieces:custom', setPieceFamilyLabel('custom'), {
-      note: 'Your own pieces, kept in this browser next to your maps. Make one: drag a box over tiles, blocks and props with Select (on empty ground), then Save as set piece…',
-    });
-    const actions = document.createElement('div');
-    actions.className = 'ed-row ed-sp-actions';
-    const save = button('Save selection as set piece…', () => this.saveSelectionDialog());
-    save.id = 'ed-sp-save';
-    save.title = 'Make a set piece of what is selected (tiles, blocks, props, doors, ladders and lights), for your library';
-    save.disabled = true;
-    const imp = button('Import…', () => $('ed-sp-import-file').click());
-    imp.id = 'ed-sp-import';
-    imp.title = 'Add set pieces from a file someone exported (a .setpiece.json file): checked before they go in';
-    actions.append(save, imp);
-    this.mineGrid.after(actions);
-    $<HTMLInputElement>('ed-sp-import-file').addEventListener('change', (e) => {
-      const input = e.target as HTMLInputElement;
-      const file = input.files?.[0];
-      input.value = '';
-      if (file) void this.importSetPieces(file);
-    });
-    this.loadMyPieces();
-    this.renderPieceInfo();
-  }
-
-  /** A set piece's card: its picture (the palette atlas; runtime for your own), its name, what it is on hover. */
-  private setPieceButton(grid: HTMLElement, def: SetPieceDefinition, where: 'shipped' | 'mine' | 'map' = 'shipped'): HTMLElement {
-    const b = document.createElement('button');
-    b.className = 'tile-btn sp-btn';
-    b.dataset.tool = `setpiece:${def.id}`;
-    const span = (i: 0 | 1) => Math.max(...def.footprint.cells.map((c) => c[i])) - Math.min(...def.footprint.cells.map((c) => c[i])) + 1;
-    const levels = def.footprint.levels[1] - def.footprint.levels[0] + 1;
-    const looks = def.packs.map((id) => this.setPieceLib.packs.get(id)?.displayName ?? id);
-    const whose = where === 'mine' ? '\nYours (this browser)' : where === 'map' ? "\nThis map's own (not in your library)" : '';
-    b.title = `${def.displayName}\n${def.blurb ?? ''}\n${span(0)} × ${span(1)} cells · ${levels} level${levels === 1 ? '' : 's'} · ${def.ports.length} ports${def.mirror === 'none' ? ' · turns, no mirror' : ''}${looks.length ? `\nLooks: ${looks.join(', ')}` : ''}${whose}`.replace(/\n+/g, '\n').trim();
-    b.append(document.createTextNode(def.displayName));
-    b.addEventListener('click', () => this.setTool({ kind: 'setpiece', piece: def.id }));
-    grid.append(b);
-    this.palette.register(b, {
-      key: b.dataset.tool,
-      name: def.displayName,
-      tags: `set piece setpiece ${def.family} ${def.category} ${def.blurb ?? ''} ${looks.join(' ')} ${where === 'shipped' ? '' : 'my own custom saved'}`,
-      picture: true,
-    });
-    return b;
-  }
-
-  /** Read the player's library (storage.ts) and redraw "My set pieces". */
-  private loadMyPieces(): void {
-    this.myPieces = new Map(listSetPieces().map((s) => [s.def.id, s.def]));
-    this.myPiecesRev++;
-    this.renderMyPieces(true);
-  }
-
-  /** "My set pieces": your library, then the map's own pieces that aren't in it (they came with the map). */
-  private renderMyPieces(force = false): void {
-    const grid = this.mineGrid;
-    if (!grid) return;
-    const inMap = (this.doc.setPieceDefs ?? []).filter((d) => !this.myPieces.has(d.id));
-    const key = `${this.myPiecesRev}|${inMap.map((d) => `${d.id}:${JSON.stringify(d).length}`).join(',')}`;
-    if (!force && key === this.mineKey) return;
-    this.mineKey = key;
-    for (const k of this.mineKeys) this.palette.unregister(k);
-    grid.replaceChildren();
-    this.mineKeys = [...this.myPieces.values()].map((def) => this.setPieceButton(grid, def, 'mine').dataset.key!);
-    for (const def of inMap) {
-      const b = this.setPieceButton(grid, def, 'map');
-      b.classList.add('in-map');
-      this.mineKeys.push(b.dataset.key!);
-    }
-    for (const b of grid.querySelectorAll<HTMLElement>('[data-tool]')) b.classList.toggle('active', this.tool.kind === 'setpiece' && b.dataset.tool === `setpiece:${this.tool.piece}`);
-    this.palette.refresh();
-    if (this.stylePack) this.filterPalette();
-  }
-
-  /** A look picker: the map theme's, the looks the piece suits, then every other look. */
-  private lookSelect(def: SetPieceDefinition, value: string, onChange: (v: string) => void): HTMLSelectElement {
-    const sel = document.createElement('select');
-    const theme = this.doc.classicStructure.theme;
-    const themed = placementPack({}, theme, this.setPieceLib);
-    sel.append(new Option(`Map theme's (${themed?.displayName ?? coreThemes.get(theme)?.displayName ?? theme})`, '', false, !value));
-    const suits = document.createElement('optgroup');
-    suits.label = 'Made for it';
-    const others = document.createElement('optgroup');
-    others.label = 'Other looks';
-    for (const pack of this.setPieceLib.packs.values()) (def.packs.includes(pack.id) ? suits : others).append(new Option(pack.displayName, pack.id, false, pack.id === value));
-    if (suits.children.length) sel.append(suits);
-    sel.append(others);
-    sel.title = "The look (role pack) that themes it: the stone, trim, floors, roofs, facade, doors and glass it's built in";
-    sel.addEventListener('change', () => onChange(sel.value));
-    return sel;
-  }
-
-  /** The panel over the Set pieces tab: the piece being placed, its look, turn and mirror; your own piece's actions. */
-  private renderPieceInfo(): void {
-    const el = document.getElementById('ed-sp-info');
-    if (!el) return;
-    el.replaceChildren();
-    const t = this.tool;
-    const def = t.kind === 'setpiece' ? this.pieceDef(t.piece) : undefined;
-    if (!def) {
-      el.append(small('Pick a set piece, then click the map: a ghost of the whole piece shows where it goes, green where it fits, red (and why) where not. R turns it, M mirrors it.'));
-      return;
-    }
-    const head = document.createElement('div');
-    head.className = 'ed-sp-head';
-    head.innerHTML = '<b></b><small></small>';
-    head.querySelector('b')!.textContent = def.displayName;
-    head.querySelector('small')!.textContent = `${setPieceFamilyLabel(def.family)} · ${def.category}`;
-    el.append(head);
-    const look = this.lookFor();
-    for (const l of this.pieceLines(def, { rotation: this.rotation, mirror: this.pieceMirror, ...(look ? { pack: look } : {}) })) el.append(small(l));
-    const lookSel = this.lookSelect(def, look, (v) => {
-      this.pieceLook = v;
-      this.renderPieceInfo();
-      this.updateHover();
-    });
-    lookSel.id = 'ed-sp-look';
-    el.append(row('Look', lookSel));
-    const turn = button(`Turn (R) · ${this.rotation * 90}°`, () => this.rotate());
-    turn.id = 'ed-sp-turn';
-    const mirror = button(this.pieceMirror ? 'Mirrored (M)' : 'Mirror (M)', () => this.mirror());
-    mirror.id = 'ed-sp-mirror';
-    const why = setPieceMirrorRefusal(def);
-    mirror.disabled = !!why;
-    mirror.classList.toggle('on', this.pieceMirror);
-    mirror.setAttribute('aria-pressed', String(this.pieceMirror));
-    mirror.title = why ?? 'Mirror it: east and west swapped, over the same cells (M)';
-    const bar = document.createElement('div');
-    bar.className = 'buttons';
-    bar.append(turn, mirror);
-    el.append(bar);
-    if (why) {
-      const note = small(why);
-      note.id = 'ed-sp-mirror-why';
-      el.append(note);
-    }
-    const mine = this.myPieces.has(def.id);
-    if (def.id.startsWith('local.')) {
-      const acts = document.createElement('div');
-      acts.className = 'buttons';
-      const exp = button('Export…', () => exportSetPiece(def));
-      exp.id = 'ed-sp-export';
-      exp.title = 'Download it as a .setpiece.json file (Import adds it in another browser)';
-      acts.append(exp);
-      if (mine) {
-        const del = button('Delete from my pieces', () => {
-          if (!confirm(`Delete "${def.displayName}" from your set pieces in this browser? Maps that place it keep their copy.`)) return;
-          deleteSetPiece(def.id);
-          this.loadMyPieces();
-          if (!this.pieceDef(def.id)) this.setTool({ kind: 'select' });
-          this.toast(`Deleted "${def.displayName}" from your set pieces`);
-        });
-        del.id = 'ed-sp-delete';
-        acts.append(del);
-      } else {
-        const keep = button('Save to my pieces', () => {
-          if (!saveSetPiece(def)) return this.toast('Could not save to browser storage: Export it to keep a copy', true);
-          this.loadMyPieces();
-          this.toast(`"${def.displayName}" is in your set pieces now`);
-        });
-        keep.id = 'ed-sp-keep';
-        acts.append(keep);
-      }
-      el.append(acts);
-      // The owner ships a piece the way official maps are files: a family file for content/setpieces/.
-      const official = document.createElement('div');
-      official.className = 'ed-row ed-owner-only';
-      official.hidden = !this.owner;
-      const family = document.createElement('input');
-      family.id = 'ed-sp-family';
-      family.value = def.family;
-      family.title = 'The family file it goes in: content/setpieces/<family>.json';
-      family.maxLength = 32;
-      const ship = button('Export for content/setpieces/', () => {
-        const f = family.value.trim().toLowerCase().replace(/[^a-z0-9_]+/g, '_') || 'custom';
-        exportSetPiece(def, { family: f });
-        this.toast(`Exported ${f}.json: put it (or its piece) in content/setpieces/, then run pnpm content:rebuild (docs/CONTENT_PIPELINE.md, "Set pieces")`);
-      });
-      ship.id = 'ed-sp-export-official';
-      official.append(family, ship);
-      el.append(official);
-    }
-  }
-
-  /** Add set pieces from a file (Import): each checked first; one naming tiles, props or materials the game hasn't got is refused. */
-  private async importSetPieces(file: File): Promise<void> {
-    const r = await importSetPieceFile(file);
-    const problems = [...r.problems];
-    let saved = 0;
-    for (const def of r.defs) {
-      const found = checkSetPieceDefinition(def, { packs: this.setPieceLib.packs });
-      const missing = found.filter((p) => / is not a /.test(p));
-      if (missing.length) {
-        problems.push(`${def.displayName}: ${missing[0]}`);
-        continue;
-      }
-      if (saveSetPiece(def)) saved++;
-      else problems.push(`${def.displayName}: browser storage refused it`);
-    }
-    this.loadMyPieces();
-    if (saved) this.toast(`Imported ${saved} set piece${saved === 1 ? '' : 's'} into My set pieces${problems.length ? ` (${problems.length} refused: ${problems[0]})` : ''}`);
-    else this.toast(`Import failed: ${problems[0] ?? 'no set pieces in the file'}`, true);
-  }
-
-  /** The cell a piece saved from a selection is anchored at: the selection's south-west corner, on its lowest level. */
-  private selectionAnchor(sel: Selection): [number, number, number] {
-    const { cellSize, levelHeight } = this.doc.classicStructure;
-    const cells: (readonly number[])[] = [];
-    for (const t of this.doc.classicStructure.tiles) if (sel.tiles.includes(t.id)) cells.push(...(placementCells(t) ?? []));
-    for (const id of sel.setPieces ?? []) cells.push(...(this.expansion.footprints.get(id) ?? []));
-    for (const e of this.doc.entities) if (sel.entities.includes(e.id)) cells.push([Math.round(e.position[0] / cellSize), Math.round(e.position[2] / cellSize), Math.floor((e.position[1] + 0.01) / levelHeight)]);
-    if (!cells.length) return [0, 0, this.level];
-    return [Math.min(...cells.map((c) => c[0]!)), Math.min(...cells.map((c) => c[1]!)), Math.min(...cells.map((c) => c[2]!))];
-  }
-
-  /** `local.<name>` free in your library and the map (a name taken already gets _2, _3…). */
-  private freeLocalId(id: string): string {
-    const taken = (x: string) => this.myPieces.has(x) || !!this.doc.setPieceDefs?.some((d) => d.id === x);
-    if (!taken(id)) return id;
-    const name = id.slice('local.'.length);
-    for (let i = 2; ; i++) {
-      const next = `local.${name.slice(0, 40 - String(i).length - 1)}_${i}`;
-      if (!taken(next)) return next;
-    }
-  }
-
-  /**
-   * Save selection as set piece: the selected tiles, blocks, props, doors, ladders and lights (set pieces as their
-   * parts) become a piece (setPieceFromSelection: footprint, ports, mirror, materials as roles where a look matches),
-   * named here, kept in your library (this browser) and placeable in any map.
-   */
-  private saveSelectionDialog(): void {
-    if (!this.selCount()) return this.toast('Select what the piece is made of first: drag a box over it with Select (on empty ground), Shift+click adds', true);
-    const leftOut = this.doc.entities.filter((e) => this.selection.entities.includes(e.id) && !PIECE_PART_KINDS.has(e.kind));
-    const sel: Selection = { tiles: this.selection.tiles, entities: this.selection.entities.filter((id) => !leftOut.some((e) => e.id === id)), ...(this.selPieces().length ? { setPieces: this.selPieces() } : {}) };
-    const anchor = this.selectionAnchor(sel);
-    const dialog = $<HTMLDialogElement>('ed-sp-save-dialog');
-    const name = $<HTMLInputElement>('ed-sp-save-name');
-    const summary = $('ed-sp-save-summary');
-    const problems = $('ed-sp-save-problems');
-    const ok = $<HTMLButtonElement>('ed-sp-save-ok');
-    if (!name.value.trim()) name.value = 'My set piece';
-    const make = () => setPieceFromSelection(this.doc, sel, anchor, { displayName: name.value.trim() || 'My set piece', library: this.placeLib });
-    const show = () => {
-      const r = make();
-      problems.replaceChildren();
-      if ('error' in r) {
-        summary.textContent = '';
-        const li = document.createElement('li');
-        li.className = 'error';
-        li.textContent = r.error;
-        problems.append(li);
-        ok.disabled = true;
-        return;
-      }
-      const d = r.definition;
-      const count = (k: string) => d.parts.filter((p) => p.kind === k).length;
-      const parts = (['tile', 'block', 'prop', 'door', 'ladder', 'light'] as const).map((k) => [k, count(k)] as const).filter(([, n]) => n).map(([k, n]) => `${n} ${k}${n === 1 ? '' : 's'}`);
-      const span = (i: 0 | 1) => Math.max(...d.footprint.cells.map((c) => c[i])) - Math.min(...d.footprint.cells.map((c) => c[i])) + 1;
-      const look = r.pack ? (this.setPieceLib.packs.get(r.pack)?.displayName ?? r.pack) : null;
-      summary.textContent = `${parts.join(', ')} · ${span(0)} × ${span(1)} cells, ${d.footprint.levels[1] - d.footprint.levels[0] + 1} level(s) · ${d.ports.length} ports · ${d.mirror === 'free' ? 'mirrors' : 'turns only'}${look ? ` · materials of the ${look} look become roles, so it re-themes` : ' · its materials stay as they are'}${leftOut.length ? ` · left out: ${[...new Set(leftOut.map((e) => e.kind))].join(', ')} (a set piece holds tiles, blocks, props, doors, ladders and lights)` : ''}`;
-      for (const p of r.problems.slice(0, 6)) {
-        const li = document.createElement('li');
-        li.className = 'warning';
-        li.textContent = p;
-        problems.append(li);
-      }
-      ok.disabled = false;
-    };
-    name.oninput = show;
-    show();
-    ok.onclick = () => {
-      const r = make();
-      if ('error' in r) return;
-      const def = { ...r.definition, id: this.freeLocalId(r.definition.id) };
-      if (!saveSetPiece(def)) return this.toast('Could not save to browser storage: free some space, or Export your maps', true);
-      dialog.close();
-      this.loadMyPieces();
-      this.showPane('setpieces');
-      const card = document.querySelector<HTMLElement>(`#ed-setpieces [data-tool="${CSS.escape(`setpiece:${def.id}`)}"]`);
-      if (card) this.palette.reveal(card);
-      this.toast(`Saved "${def.displayName}" to My set pieces: pick it there to place it in any map`);
-    };
-    $('ed-sp-save-cancel').onclick = () => dialog.close();
-    dialog.showModal();
-    name.select();
-  }
-
-  /** The inspector for one set piece: what it is, its look, mirror, place and turn, its ports, the overrides, Explode. */
-  private pieceInspector(el: HTMLElement, id: string): void {
-    const p = this.placementOf(id)!;
-    const def = this.pieceDef(p.piece);
-    el.append(h2(def?.displayName ?? p.piece));
-    if (!def) {
-      el.append(small(`This map places a set piece MapMaker doesn't know (${p.piece}): it can't be drawn or played. Delete it.`));
-      return;
-    }
-    if (def.blurb) el.append(small(def.blurb));
-    const update = (label: string, after: SetPiecePlacement) => this.run(label, updateSetPieceCommand(this.doc, p, after, coreCatalog, this.placeLib));
-    el.append(row('Piece', text(`${setPieceFamilyLabel(def.family)} · ${def.id.startsWith('local.') ? 'your own' : 'shipped'}`)));
-    const look = this.lookSelect(def, p.pack ?? '', (v) => {
-      const { pack: _old, ...rest } = p;
-      void _old;
-      update('Set piece look', v ? { ...rest, pack: v } : rest);
-    });
-    look.id = 'ed-sp-insp-look';
-    el.append(row('Look', look));
-    const mirror = document.createElement('input');
-    mirror.type = 'checkbox';
-    mirror.id = 'ed-sp-insp-mirror';
-    mirror.checked = p.mirror;
-    const why = setPieceMirrorRefusal(def);
-    mirror.disabled = !!why && !p.mirror;
-    mirror.title = why ?? 'East and west swapped, over the same cells (M)';
-    mirror.addEventListener('change', () => this.run('Mirror', mirrorSetPieceCommand(this.doc, p.id, coreCatalog, this.placeLib)));
-    el.append(row('Mirror', mirror));
-    if (why) el.append(small(why));
-    el.append(
-      row('X', numberInput(p.x, 1, (v) => update('Move set piece', { ...p, x: v }))),
-      row('Y', numberInput(p.y, 1, (v) => update('Move set piece', { ...p, y: v }))),
-      row('Level', numberInput(p.z, 1, (v) => update('Move set piece', { ...p, z: v }))),
-      row('Rotation', text(`${p.rotation * 90}° (R turns it)`)),
-      this.quickFacings({ tiles: [], entities: [], setPieces: [p.id] }, (p.rotation * Math.PI) / 2),
-    );
-    // Ports: where it meets what's round it; one a wall stands in is a warning (and red on its outline).
-    const states = setPiecePortStates(p, def, this.mapBoxes());
-    const portsHead = document.createElement('h3');
-    portsHead.textContent = `Ports (${states.length})`;
-    el.append(portsHead);
-    const list = document.createElement('ul');
-    list.className = 'ed-sp-ports';
-    for (const s of states) {
-      const li = document.createElement('li');
-      li.className = s.blockedBy ? 'warning' : s.closed ? 'closed' : 'ok';
-      const name = this.portName(s);
-      const Name = `${name[0]!.toUpperCase()}${name.slice(1)}`;
-      li.textContent = s.blockedBy
-        ? `⚠ ${Name} faces a wall: ${this.blockerName(s.blockedBy)}. Open it (Walls tool, or cut the block), or move the piece`
-        : s.closed
-          ? `${Name}: walled (nothing meets it; a room built against it with a doorway opens it)`
-          : `${Name}: clear`;
-      list.append(li);
-    }
-    if (states.length) el.append(list);
-    else el.append(small('No ports: it meets nothing round it.'));
-    // Overrides: a role's value for this piece only, and parts left out.
-    const roles = rolesUsed(def);
-    if (roles.length) {
-      const head = document.createElement('h3');
-      head.textContent = 'Materials';
-      el.append(head, small("Each comes from its look; pick another here for this piece only."));
-      for (const role of roles) el.append(row(ROLE_LABELS[role], this.roleSelect(p, def, role, update)));
-    }
-    const partsHead = document.createElement('h3');
-    partsHead.textContent = `Parts (${def.parts.length})`;
-    el.append(partsHead, small('Untick a part to leave it out of this piece only. Explode to tiles to edit the parts one by one.'));
-    const hidden = new Set(p.overrides?.hide ?? []);
-    const parts = document.createElement('div');
-    parts.className = 'ed-sp-parts';
-    def.parts.forEach((part, i) => {
-      const box = document.createElement('input');
-      box.type = 'checkbox';
-      box.checked = !hidden.has(i);
-      box.dataset.part = String(i);
-      box.addEventListener('change', () => {
-        const hide = new Set(p.overrides?.hide ?? []);
-        if (box.checked) hide.delete(i);
-        else hide.add(i);
-        const overrides = { ...(p.overrides ?? {}), hide: [...hide].sort((a, b) => a - b) };
-        if (!overrides.hide.length) delete (overrides as { hide?: number[] }).hide;
-        const { overrides: _old, ...rest } = p;
-        void _old;
-        update(box.checked ? 'Show set piece part' : 'Hide set piece part', Object.keys(overrides).length ? { ...rest, overrides } : rest);
-      });
-      const lab = document.createElement('label');
-      lab.append(box, document.createTextNode(this.partLabel(part)));
-      parts.append(lab);
-    });
-    el.append(parts);
-    const acts = document.createElement('div');
-    acts.className = 'buttons';
-    const explode = button('Explode to tiles', () => this.explode(p.id));
-    explode.id = 'ed-sp-explode';
-    explode.title = 'Turn it into its parts: ordinary tiles, blocks and props to edit one by one (one undo step puts the set piece back)';
-    const saveAs = button('Save as set piece…', () => this.saveSelectionDialog());
-    saveAs.title = 'Save a copy of it (with its look and overrides) in your set pieces';
-    acts.append(explode, saveAs);
-    el.append(acts);
-    el.append(small(`ID ${p.id} · ${def.id}`));
-  }
-
-  /** A role's value for one placement: the look's (the default), or one of the game's materials, facades, door styles or glass. */
-  private roleSelect(p: SetPiecePlacement, def: SetPieceDefinition, role: SetPieceRole, update: (label: string, after: SetPiecePlacement) => void): HTMLSelectElement {
-    const sel = document.createElement('select');
-    sel.dataset.role = role;
-    const pack = placementPack(p, this.doc.classicStructure.theme, this.setPieceLib);
-    const fromLook = pack?.roles[role] ?? def.roles?.[role];
-    const label = (v: unknown): string => {
-      if (v && typeof v === 'object' && 'material' in v) return coreMaterials.get((v as SurfaceStyle).material)?.displayName ?? (v as SurfaceStyle).material;
-      if (typeof v === 'string') return role === 'facade' ? (FACADE_LABELS[v as keyof typeof FACADE_LABELS] ?? v) : role === 'door' ? (DOOR_STYLE_LABELS[v as DoorStyle] ?? v) : role === 'glass' ? (v === 'none' ? 'No glass' : (GLASS_KIND_LABELS[v as GlassKind] ?? v)) : v;
-      return "the theme's";
-    };
-    const now = p.overrides?.roles?.[role];
-    sel.append(new Option(`From the look (${label(fromLook)})`, '', false, now === undefined));
-    const nowKey = now === undefined ? '' : typeof now === 'object' ? (now as SurfaceStyle).material : String(now);
-    if ((SET_PIECE_MATERIAL_ROLES as readonly string[]).includes(role)) {
-      let group: HTMLOptGroupElement | null = null;
-      for (const m of coreMaterials.all()) {
-        if (group?.label !== m.category) {
-          group = document.createElement('optgroup');
-          group.label = m.category;
-          sel.append(group);
-        }
-        group.append(new Option(m.displayName, m.id, false, m.id === nowKey));
-      }
-    } else {
-      const values: readonly string[] = role === 'facade' ? FACADES : role === 'door' ? DOOR_STYLES : [...GLASS_KINDS, 'none'];
-      for (const v of values) sel.append(new Option(label(v), v, false, v === nowKey));
-    }
-    sel.addEventListener('change', () => {
-      const roles: Record<string, unknown> = { ...(p.overrides?.roles ?? {}) };
-      if (!sel.value) delete roles[role];
-      else roles[role] = (SET_PIECE_MATERIAL_ROLES as readonly string[]).includes(role) ? { material: sel.value, tint: null } : sel.value;
-      const overrides: NonNullable<SetPiecePlacement['overrides']> = { ...(p.overrides ?? {}) };
-      if (Object.keys(roles).length) overrides.roles = roles as NonNullable<SetPiecePlacement['overrides']>['roles'];
-      else delete overrides.roles;
-      const { overrides: _old, ...rest } = p;
-      void _old;
-      update(`Set piece ${ROLE_LABELS[role].toLowerCase()}`, Object.keys(overrides).length ? { ...rest, overrides } : rest);
-    });
-    return sel;
-  }
-
-  /** One of a set piece's parts, in words (the inspector's parts list). */
-  private partLabel(part: SetPieceDefinition['parts'][number]): string {
-    switch (part.kind) {
-      case 'tile':
-        return `${coreCatalog.get(part.tile)?.displayName ?? part.tile} · ${levelName(part.z)}`;
-      case 'block':
-        return `Block ${part.size.map((v) => +v.toFixed(2)).join(' × ')} m`;
-      case 'prop':
-        return getProp(part.model)?.displayName ?? part.model;
-      case 'door':
-        return 'Door';
-      case 'ladder':
-        return 'Ladder';
-      default:
-        return 'Light';
-    }
   }
 
   private bindUi(): void {
@@ -4330,7 +3721,7 @@ export class EditorApp {
     const doc = this.doc;
     if (this.selCount() === 0) return this.renderMapProperties(el);
     if (pieces.length === 1 && tiles.length + entities.length === 0) {
-      this.pieceInspector(el, pieces[0]!);
+      this.pieces.pieceInspector(el, pieces[0]!);
     } else if (tiles.length === 1 && entities.length === 0 && !pieces.length) {
       this.tileInspector(el, doc.classicStructure.tiles.find((x) => x.id === tiles[0])!);
     } else if (entities.length === 1 && tiles.length === 0 && !pieces.length) {
@@ -4348,7 +3739,7 @@ export class EditorApp {
       // Groups (MapMaker overhaul Phase 3 item 3): its name and Ungroup, or Group.
       el.append(groupSection(this.groupHost));
       // Box-selected pieces can become a set piece of their own.
-      const save = button('Save as set piece…', () => this.saveSelectionDialog());
+      const save = button('Save as set piece…', () => this.pieces.saveSelectionDialog());
       save.id = 'ed-insp-save-piece';
       save.title = 'Make a set piece of the selected tiles, blocks, props, doors, ladders and lights, for your library (set pieces count as their parts)';
       el.append(save);
@@ -4544,7 +3935,7 @@ export class EditorApp {
   private tileInspector(el: HTMLElement, t: TilePlacement): void {
     const doc = this.doc;
       el.append(h2(coreCatalog.get(t.tile)?.displayName ?? t.tile));
-    el.append(replaceTilePanel(doc, t.tile, [...piecesFor(doc, this.setPieceLib).values()], (tile, piece) => this.replaceTiles(tile, piece)));
+    el.append(replaceTilePanel(doc, t.tile, [...piecesFor(doc, this.setPieceLib).values()], (tile, piece) => this.pieces.replaceTiles(tile, piece)));
     const type = document.createElement('select');
     for (const def of coreCatalog.all()) type.append(new Option(def.displayName, def.id, false, def.id === t.tile));
     type.addEventListener('change', () => this.run('Replace tile', updateTileCommand(doc, t, { ...t, tile: type.value })));
@@ -4678,7 +4069,7 @@ export class EditorApp {
 
   /** Inspector fields for one entity: position, facing and its kind's settings. */
   /** The inspector's quick facings for one thing: 0°, 90°, 180°, 270° in one click (one undo step each). */
-  private quickFacings(sel: Selection, facing: number): HTMLElement {
+  quickFacings(sel: Selection, facing: number): HTMLElement {
     return quickFacings(facing, (deg) => {
       this.run(`Face ${deg}°`, setFacingCommand(this.doc, sel, deg, coreCatalog, this.placeLib));
     });
@@ -5571,7 +4962,7 @@ export class EditorApp {
       if (!def) continue;
       for (const s of setPiecePortStates(p, def, this.mapBoxes())) {
         if (!s.blockedBy) continue;
-        out.push({ severity: 'warning', code: 'setpiece.port', message: `${def.displayName}: ${this.portName(s)} faces a wall (${this.blockerName(s.blockedBy)}): open it, or move the piece`, targetId: p.id });
+        out.push({ severity: 'warning', code: 'setpiece.port', message: `${def.displayName}: ${this.pieces.portName(s)} faces a wall (${this.pieces.blockerName(s.blockedBy)}): open it, or move the piece`, targetId: p.id });
       }
     }
     return out;
