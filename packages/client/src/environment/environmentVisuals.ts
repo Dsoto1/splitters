@@ -18,6 +18,7 @@ import { loadEnvModel, partMesh, type EnvModel } from './envModels.ts';
  * grown by foliage.ts from the terrain's painted plants, thinned there.
  */
 
+/** Side of the squares copies are batched by (m); the border's and backdrop's scatters use bigger ones (fewer batches). */
 const SECTOR = 64;
 /** A copy changes level only once it is this share past the boundary (no flicker at the edge). */
 const HYSTERESIS = 0.1;
@@ -62,13 +63,23 @@ export class EnvironmentVisuals {
   private lastY = Infinity;
   private forced: number | null = null;
   private tier: EnvTier;
+  private visible = true;
+  private readonly sector: number;
 
   constructor(
     private readonly scene: Scene,
     quality: string,
+    options: { sector?: number } = {},
   ) {
     this.tier = ENV_TIERS[quality] ?? ENV_TIERS.medium!;
     this.materials = new EnvMaterials(scene, this.tier);
+    this.sector = options.sector ?? SECTOR;
+  }
+
+  /** Show or hide every copy (the bench's border-off comparison). */
+  setVisible(on: boolean): void {
+    this.visible = on;
+    for (const g of this.groups) for (const b of g.batches.values()) for (const m of b.meshes) m.isVisible = on;
   }
 
   /** Whether a placement is drawn here (an env species), not as a prop node. */
@@ -86,7 +97,7 @@ export class EnvironmentVisuals {
       if (!species) continue;
       const file = envModelFile(e.model, e.variant)!;
       const matrix = placementMatrix(e, species, terrain);
-      const sector = `${Math.floor(e.position[0] / SECTOR)}:${Math.floor(e.position[2] / SECTOR)}`;
+      const sector = `${Math.floor(e.position[0] / this.sector)}:${Math.floor(e.position[2] / this.sector)}`;
       const key = `${file}|${sector}`;
       let g = bySector.get(key);
       if (!g) bySector.set(key, (g = { file, sector, copies: [], batches: new Map() }));
@@ -198,6 +209,7 @@ export class EnvironmentVisuals {
       mesh.freezeWorldMatrix();
       mesh.doNotSyncBoundingInfo = true;
       mesh.isPickable = false;
+      mesh.isVisible = this.visible;
       // Light levels and the stand-in cast no shadow (a far shadow is a smudge; near levels cast).
       if (far) mesh.metadata = { ...(mesh.metadata as object | null), castsNoShadow: true };
       return mesh;

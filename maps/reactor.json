@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 29,
+  "formatVersion": 30,
   "metadata": {
     "id": "reactor",
     "name": "Reactor",
@@ -16,15 +16,7 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ],
-    "release": {
-      "mapId": "m_y6vbltqy5oykqtvo",
-      "versionId": "v_otfzl6cf6rk26mio",
-      "revision": 2,
-      "contentHash": "sha256:8fd6fe7d0d6462f91b6e35cbe517fb77a1754103c9280055f09b582ccdd5122d",
-      "schemaVersion": 29,
-      "releasedAt": "2026-11-08T20:51:50.330Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1595,9 +1587,9 @@
         50.3
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.7371788453962654,
-      "scale": 1,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -1623,9 +1615,9 @@
         5.2
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.3449770042020828,
-      "scale": 1,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -1651,9 +1643,9 @@
         -2.6
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.46972212295048,
-      "scale": 1,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -1679,9 +1671,9 @@
         -2.8
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.9124679056648165,
-      "scale": 1,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -1729,18 +1721,18 @@
     },
     {
       "id": "block_zxv2bbdzhj",
-      "kind": "block",
       "position": [
         36.1,
         4,
         50.925
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.2,
         1,
         1.85
       ],
+      "yaw": 0,
       "material": null,
       "tint": null,
       "behaviour": "solid",
@@ -1751,18 +1743,18 @@
     },
     {
       "id": "block_wv250ytoy7",
-      "kind": "block",
       "position": [
         36.1,
         4,
         45
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         0.2,
         1,
         2
       ],
+      "yaw": 0,
       "material": null,
       "tint": null,
       "behaviour": "solid",
@@ -1773,18 +1765,18 @@
     },
     {
       "id": "block_lq811unvsb",
-      "kind": "block",
       "position": [
         32,
         2,
         50.1
       ],
-      "yaw": 0,
+      "kind": "block",
       "size": [
         9,
         1,
         0.2
       ],
+      "yaw": 0,
       "material": null,
       "tint": null,
       "behaviour": "solid",

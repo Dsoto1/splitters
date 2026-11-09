@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 30,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
@@ -19,15 +19,7 @@
       "core.ctf",
       "core.koth",
       "core.elim"
-    ],
-    "release": {
-      "mapId": "m_q6ux6zjoxe4ehs3o",
-      "versionId": "v_iw2onflu627kqfbw",
-      "revision": 3,
-      "contentHash": "sha256:11728bc7b7b35b57f908267ca9f2fd13d5bcf638253a3b7f37a760fed81d3e82",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:05:15.531Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -52529,13 +52521,13 @@
       "id": "prop_2598",
       "position": [
         -136.789,
-        -0.511,
+        -0.52,
         135.227
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": -0.55291,
-      "scale": 0.9,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -52825,9 +52817,9 @@
         120.453
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.97413,
-      "scale": 0.9,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -52971,9 +52963,9 @@
         122.809
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.4102,
-      "scale": 0.9,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -53141,13 +53133,13 @@
       "id": "prop_2729",
       "position": [
         -12.848,
-        0.501,
+        0.51,
         135.003
       ],
       "kind": "prop",
-      "model": "prop.tree_detailed",
+      "model": "env.broadleaf.oak",
       "yaw": 5.1,
-      "scale": 0.9,
+      "scale": 0.62,
       "solid": true,
       "tint": null
     },
@@ -53155,13 +53147,13 @@
       "id": "prop_2730",
       "position": [
         53.451,
-        0.951,
+        0.96,
         133.235
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 6.8,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53187,9 +53179,9 @@
         124.669
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 11.9,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53211,13 +53203,13 @@
       "id": "prop_2735",
       "position": [
         173.273,
-        2.218,
+        2.22,
         128.7
       ],
       "kind": "prop",
-      "model": "prop.tree_detailed",
+      "model": "env.broadleaf.oak",
       "yaw": 15.299999999999999,
-      "scale": 0.9,
+      "scale": 0.62,
       "solid": true,
       "tint": null
     },
@@ -53229,9 +53221,9 @@
         112.067
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 20.4,
-      "scale": 0.9,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -53243,9 +53235,9 @@
         106.186
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 22.099999999999998,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53271,9 +53263,9 @@
         134.654
       ],
       "kind": "prop",
-      "model": "prop.tree_detailed",
+      "model": "env.broadleaf.oak",
       "yaw": 25.5,
-      "scale": 0.9,
+      "scale": 0.62,
       "solid": true,
       "tint": null
     },
@@ -53281,13 +53273,13 @@
       "id": "prop_2742",
       "position": [
         -164.305,
-        -2.037,
+        -2.04,
         -82.278
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 27.2,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53309,13 +53301,13 @@
       "id": "prop_2744",
       "position": [
         -188.284,
-        -1.169,
+        -1.17,
         -45.502
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 30.599999999999998,
-      "scale": 0.9,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -53327,9 +53319,9 @@
         -33.027
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 32.3,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53355,9 +53347,9 @@
         10.563
       ],
       "kind": "prop",
-      "model": "prop.tree_detailed",
+      "model": "env.broadleaf.oak",
       "yaw": 35.699999999999996,
-      "scale": 0.9,
+      "scale": 0.62,
       "solid": true,
       "tint": null
     },
@@ -53369,9 +53361,9 @@
         36.241
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 37.4,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53393,13 +53385,13 @@
       "id": "prop_2750",
       "position": [
         -162.33,
-        -1.536,
+        -1.54,
         66.444
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 40.8,
-      "scale": 0.9,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -53411,9 +53403,9 @@
         99.025
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 42.5,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53439,9 +53431,9 @@
         4.247
       ],
       "kind": "prop",
-      "model": "prop.tree_detailed",
+      "model": "env.broadleaf.oak",
       "yaw": 45.93665,
-      "scale": 0.9,
+      "scale": 0.62,
       "solid": true,
       "tint": null
     },
@@ -53453,9 +53445,9 @@
         3.454
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 47.63665,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53481,9 +53473,9 @@
         1.934
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 51.03665,
-      "scale": 0.9,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -53491,13 +53483,13 @@
       "id": "prop_2757",
       "position": [
         94.511,
-        0.517,
+        0.51,
         -32.16
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 52.699999999999996,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53519,13 +53511,13 @@
       "id": "prop_2759",
       "position": [
         128.848,
-        1.239,
+        1.24,
         -36.395
       ],
       "kind": "prop",
-      "model": "prop.tree_detailed",
+      "model": "env.broadleaf.oak",
       "yaw": 56.1,
-      "scale": 0.9,
+      "scale": 0.62,
       "solid": true,
       "tint": null
     },
@@ -53533,13 +53525,13 @@
       "id": "prop_2760",
       "position": [
         148.427,
-        0.453,
+        0.46,
         -34.823
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 57.8,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53561,13 +53553,13 @@
       "id": "prop_2762",
       "position": [
         -25.533,
-        0.245,
+        0.25,
         36.824
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 61.199999999999996,
-      "scale": 0.9,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -53579,9 +53571,9 @@
         34.857
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 62.9,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53607,9 +53599,9 @@
         -29.151
       ],
       "kind": "prop",
-      "model": "prop.tree_detailed",
+      "model": "env.broadleaf.oak",
       "yaw": 66.3,
-      "scale": 0.9,
+      "scale": 0.62,
       "solid": true,
       "tint": null
     },
@@ -53617,13 +53609,13 @@
       "id": "prop_2766",
       "position": [
         23.387,
-        -0.201,
+        -0.2,
         -27.998
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 68,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -53645,13 +53637,13 @@
       "id": "prop_2768",
       "position": [
         99.779,
-        0.995,
+        1.01,
         58.358
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 71.39999999999999,
-      "scale": 0.9,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -53677,9 +53669,9 @@
         -60.938
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 76.5,
-      "scale": 0.9,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -53687,13 +53679,13 @@
       "id": "prop_2772",
       "position": [
         176.979,
-        -1.338,
+        -1.34,
         -34.913
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 78.2,
-      "scale": 1.02,
+      "scale": 0.6,
       "solid": true,
       "tint": null
     },
@@ -53701,13 +53693,13 @@
       "id": "prop_2773",
       "position": [
         196.963,
-        -4.23,
+        -4.22,
         -50.528
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 79.9,
-      "scale": 1.1400000000000001,
+      "scale": 0.9,
       "solid": true,
       "tint": null
     },
@@ -60606,9 +60598,9 @@
         37.578
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.07,
-      "scale": 1.11,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -60648,9 +60640,9 @@
         22.466
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.73,
-      "scale": 1.17,
+      "scale": 0.88,
       "solid": true,
       "tint": null
     },
@@ -60690,9 +60682,9 @@
         3.438
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.58,
-      "scale": 1.16,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -60728,13 +60720,13 @@
       "id": "prop_3296",
       "position": [
         -39.375,
-        1.09,
+        1.07,
         -36.428
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.23,
-      "scale": 0.91,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -60774,9 +60766,9 @@
         -35.378
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.42,
-      "scale": 1.07,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -60812,13 +60804,13 @@
       "id": "prop_3302",
       "position": [
         -4.7,
-        0.314,
+        0.32,
         -69.712
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.12189,
-      "scale": 0.99,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -60854,13 +60846,13 @@
       "id": "prop_3305",
       "position": [
         104.017,
-        0.22,
+        0.23,
         58.94
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.87,
-      "scale": 1.06,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -60924,13 +60916,13 @@
       "id": "prop_3311",
       "position": [
         187.304,
-        -2.823,
+        -2.83,
         -18.633
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.74,
-      "scale": 1.02,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -60970,9 +60962,9 @@
         58.158
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.67,
-      "scale": 0.93,
+      "scale": 0.73,
       "solid": true,
       "tint": null
     },
@@ -60994,13 +60986,13 @@
       "id": "prop_3316",
       "position": [
         -187.639,
-        -1.2,
+        -1.21,
         9.762
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.85745,
-      "scale": 1.18,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -61012,9 +61004,9 @@
         11.393
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.18745,
-      "scale": 1.17,
+      "scale": 0.92,
       "solid": true,
       "tint": null
     },
@@ -61054,9 +61046,9 @@
         -29.396
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.5,
-      "scale": 0.89,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -61092,13 +61084,13 @@
       "id": "prop_3323",
       "position": [
         164.319,
-        -1.04,
+        -1.05,
         -25.905
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.23,
-      "scale": 1.12,
+      "scale": 0.88,
       "solid": true,
       "tint": null
     },
@@ -61334,9 +61326,9 @@
         58.884
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.09,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -61376,9 +61368,9 @@
         95.562
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.38,
-      "scale": 1.16,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -61532,13 +61524,13 @@
       "id": "prop_street_002",
       "position": [
         -181.83,
-        -2.036,
+        -2.04,
         -84.21
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.298,
-      "scale": 0.96,
+      "scale": 0.77,
       "solid": true,
       "tint": null
     },
@@ -61550,9 +61542,9 @@
         -100.85
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.54,
-      "scale": 1.05,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -61564,9 +61556,9 @@
         -101.59
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.195,
-      "scale": 0.98,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -61574,13 +61566,13 @@
       "id": "prop_street_005",
       "position": [
         -133.72,
-        -1.728,
+        -1.73,
         -102.37
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.626,
-      "scale": 1.05,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -61602,13 +61594,13 @@
       "id": "prop_street_007",
       "position": [
         -101.33,
-        -1.597,
+        -1.6,
         -103.32
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 1.136,
-      "scale": 1.1,
+      "scale": 0.88,
       "solid": true,
       "tint": null
     },
@@ -61634,9 +61626,9 @@
         -89.76
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.925,
-      "scale": 1.18,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -61648,9 +61640,9 @@
         -105.99
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 3.3,
-      "scale": 1.17,
+      "scale": 0.94,
       "solid": true,
       "tint": null
     },
@@ -61658,13 +61650,13 @@
       "id": "prop_street_011",
       "position": [
         -2.99,
-        -0.188,
+        -0.18,
         -106.46
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.742,
-      "scale": 1.05,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -61672,13 +61664,13 @@
       "id": "prop_street_012",
       "position": [
         13.05,
-        -0.464,
+        -0.46,
         -106.53
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.65,
-      "scale": 1.19,
+      "scale": 0.94,
       "solid": true,
       "tint": null
     },
@@ -61686,13 +61678,13 @@
       "id": "prop_street_013",
       "position": [
         29.35,
-        -1.537,
+        -1.54,
         -107.6
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.137,
-      "scale": 1.04,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -61704,9 +61696,9 @@
         -108.42
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.278,
-      "scale": 1.19,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -61718,9 +61710,9 @@
         -108.69
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.594,
-      "scale": 1.03,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -61728,13 +61720,13 @@
       "id": "prop_street_016",
       "position": [
         94.35,
-        -6.101,
+        -6.1,
         -109.69
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.18,
-      "scale": 1.19,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -61774,9 +61766,9 @@
         -94.83
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.452,
-      "scale": 1.17,
+      "scale": 0.92,
       "solid": true,
       "tint": null
     },
@@ -61788,9 +61780,9 @@
         -93.9
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 4.438,
-      "scale": 1.2,
+      "scale": 0.96,
       "solid": true,
       "tint": null
     },
@@ -61798,13 +61790,13 @@
       "id": "prop_street_021",
       "position": [
         160.6,
-        -7.689,
+        -7.69,
         -110.15
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 6.017,
-      "scale": 0.99,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -61830,9 +61822,9 @@
         -94.78
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 0.026,
-      "scale": 1.05,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -61840,13 +61832,13 @@
       "id": "prop_street_024",
       "position": [
         182.99,
-        1.714,
+        1.72,
         91.06
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.398,
-      "scale": 1.19,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -61854,13 +61846,13 @@
       "id": "prop_street_025",
       "position": [
         182.9,
-        1.548,
+        1.55,
         74.64
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.339,
-      "scale": 1.17,
+      "scale": 0.94,
       "solid": true,
       "tint": null
     },
@@ -61868,13 +61860,13 @@
       "id": "prop_street_026",
       "position": [
         166.45,
-        1.569,
+        1.57,
         90.89
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.013,
-      "scale": 1.05,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -61882,13 +61874,13 @@
       "id": "prop_street_027",
       "position": [
         166.35,
-        1.694,
+        1.69,
         75.13
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.025,
-      "scale": 1.05,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -61910,13 +61902,13 @@
       "id": "prop_street_029",
       "position": [
         149.81,
-        1.737,
+        1.73,
         74.92
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.001,
-      "scale": 0.99,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -61924,13 +61916,13 @@
       "id": "prop_street_030",
       "position": [
         133.18,
-        1.785,
+        1.78,
         90.51
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 3.856,
-      "scale": 0.97,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -61938,13 +61930,13 @@
       "id": "prop_street_031",
       "position": [
         132.64,
-        1.731,
+        1.73,
         76.05
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.933,
-      "scale": 1.01,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -61952,13 +61944,13 @@
       "id": "prop_street_032",
       "position": [
         116.16,
-        1.463,
+        1.47,
         91.51
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.979,
-      "scale": 0.98,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -61970,9 +61962,9 @@
         76.26
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.018,
-      "scale": 1.03,
+      "scale": 0.81,
       "solid": true,
       "tint": null
     },
@@ -61980,13 +61972,13 @@
       "id": "prop_street_034",
       "position": [
         98.92,
-        0.9,
+        0.91,
         91.68
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.153,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -62012,9 +62004,9 @@
         93.61
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.763,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -62022,13 +62014,13 @@
       "id": "prop_street_037",
       "position": [
         65.67,
-        0.561,
+        0.57,
         77.7
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.374,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -62092,13 +62084,13 @@
       "id": "prop_street_042",
       "position": [
         16.37,
-        0.502,
+        0.51,
         95.54
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.964,
-      "scale": 1.07,
+      "scale": 0.86,
       "solid": true,
       "tint": null
     },
@@ -62106,13 +62098,13 @@
       "id": "prop_street_043",
       "position": [
         0.36,
-        0.319,
+        0.32,
         95.69
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.81,
-      "scale": 1.18,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -62120,13 +62112,13 @@
       "id": "prop_street_044",
       "position": [
         0.01,
-        0.326,
+        0.33,
         79.3
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 0.506,
-      "scale": 0.98,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -62134,13 +62126,13 @@
       "id": "prop_street_045",
       "position": [
         -15.7,
-        0.198,
+        0.2,
         95.83
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 1.284,
-      "scale": 1.11,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -62148,13 +62140,13 @@
       "id": "prop_street_046",
       "position": [
         -16.03,
-        0.259,
+        0.26,
         79.77
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.013,
-      "scale": 1.11,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -62162,13 +62154,13 @@
       "id": "prop_street_047",
       "position": [
         -31.73,
-        0.046,
+        0.04,
         96.65
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.244,
-      "scale": 0.98,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -62176,13 +62168,13 @@
       "id": "prop_street_048",
       "position": [
         -32.07,
-        0.11,
+        0.12,
         80.87
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.713,
-      "scale": 1.07,
+      "scale": 0.86,
       "solid": true,
       "tint": null
     },
@@ -62194,9 +62186,9 @@
         95.93
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.089,
-      "scale": 1.15,
+      "scale": 0.92,
       "solid": true,
       "tint": null
     },
@@ -62204,13 +62196,13 @@
       "id": "prop_street_050",
       "position": [
         -47.76,
-        -0.008,
+        -0.01,
         80.21
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.91,
-      "scale": 1.14,
+      "scale": 0.9,
       "solid": true,
       "tint": null
     },
@@ -62218,13 +62210,13 @@
       "id": "prop_street_051",
       "position": [
         -81.16,
-        -0.355,
+        -0.36,
         97.51
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.95,
-      "scale": 1.18,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -62250,9 +62242,9 @@
         97.27
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 0.98,
-      "scale": 1.09,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -62260,13 +62252,13 @@
       "id": "prop_street_054",
       "position": [
         -98.28,
-        -0.733,
+        -0.73,
         82.53
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.082,
-      "scale": 1.08,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -62278,9 +62270,9 @@
         98.48
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 6.198,
-      "scale": 1,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -62288,13 +62280,13 @@
       "id": "prop_street_056",
       "position": [
         -114.95,
-        -1.134,
+        -1.13,
         81.78
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 1.582,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -62302,13 +62294,13 @@
       "id": "prop_street_057",
       "position": [
         -131.57,
-        -1.232,
+        -1.23,
         82.74
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 3.42,
-      "scale": 1.16,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -62320,9 +62312,9 @@
         98.24
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.223,
-      "scale": 1.06,
+      "scale": 0.85,
       "solid": true,
       "tint": null
     },
@@ -62386,13 +62378,13 @@
       "id": "prop_street_063",
       "position": [
         -181.78,
-        -1.396,
+        -1.4,
         84.29
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 4.287,
-      "scale": 1.08,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -62404,9 +62396,9 @@
         -49.59
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.19,
-      "scale": 1.09,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -62418,9 +62410,9 @@
         -33.46
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.785,
-      "scale": 1.1,
+      "scale": 0.88,
       "solid": true,
       "tint": null
     },
@@ -62432,9 +62424,9 @@
         -17.32
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.193,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -62470,13 +62462,13 @@
       "id": "prop_street_069",
       "position": [
         -69.28,
-        0.711,
+        0.71,
         15.21
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.764,
-      "scale": 1.06,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -62502,9 +62494,9 @@
         31.58
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.636,
-      "scale": 0.99,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -62512,13 +62504,13 @@
       "id": "prop_street_072",
       "position": [
         -53.33,
-        0.381,
+        0.39,
         48.17
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.301,
-      "scale": 1.01,
+      "scale": 0.81,
       "solid": true,
       "tint": null
     },
@@ -62526,13 +62518,13 @@
       "id": "prop_street_073",
       "position": [
         -68.61,
-        0.156,
+        0.16,
         48.06
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.38,
-      "scale": 1.19,
+      "scale": 0.94,
       "solid": true,
       "tint": null
     },
@@ -62540,13 +62532,13 @@
       "id": "prop_street_074",
       "position": [
         -69.26,
-        -0.22,
+        -0.21,
         65.04
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.23,
-      "scale": 0.99,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -62568,13 +62560,13 @@
       "id": "prop_street_076",
       "position": [
         -69.18,
-        -0.348,
+        -0.35,
         81.99
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.537,
-      "scale": 0.95,
+      "scale": 0.76,
       "solid": true,
       "tint": null
     },
@@ -62586,9 +62578,9 @@
         98.36
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 4.418,
-      "scale": 1.05,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -62596,13 +62588,13 @@
       "id": "prop_street_078",
       "position": [
         -69.21,
-        -0.259,
+        -0.26,
         98.75
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 3.219,
-      "scale": 0.97,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -62624,13 +62616,13 @@
       "id": "prop_street_080",
       "position": [
         -68.44,
-        -0.021,
+        -0.02,
         114.99
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.692,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -62638,13 +62630,13 @@
       "id": "prop_street_081",
       "position": [
         -68.88,
-        0.036,
+        0.03,
         131.26
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.146,
-      "scale": 1.01,
+      "scale": 0.81,
       "solid": true,
       "tint": null
     },
@@ -62680,13 +62672,13 @@
       "id": "prop_street_084",
       "position": [
         -186.17,
-        -1.769,
+        -1.76,
         68.01
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.851,
-      "scale": 1.03,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -62698,9 +62690,9 @@
         -12.67
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 3.95,
-      "scale": 1.08,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -62712,9 +62704,9 @@
         -28.8
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 1.118,
-      "scale": 1.04,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -62736,13 +62728,13 @@
       "id": "prop_street_088",
       "position": [
         -189.11,
-        -1.994,
+        -1.99,
         -77.03
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.145,
-      "scale": 1.06,
+      "scale": 0.85,
       "solid": true,
       "tint": null
     },
@@ -62754,9 +62746,9 @@
         131.95
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 6.096,
-      "scale": 1.03,
+      "scale": 0.81,
       "solid": true,
       "tint": null
     },
@@ -62778,13 +62770,13 @@
       "id": "prop_street_091",
       "position": [
         94.51,
-        0.818,
+        0.82,
         114.96
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.878,
-      "scale": 1.2,
+      "scale": 0.96,
       "solid": true,
       "tint": null
     },
@@ -62806,13 +62798,13 @@
       "id": "prop_street_093",
       "position": [
         94.51,
-        0.897,
+        0.89,
         97.97
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.026,
-      "scale": 0.97,
+      "scale": 0.77,
       "solid": true,
       "tint": null
     },
@@ -62824,9 +62816,9 @@
         66.72
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 3.762,
-      "scale": 1.12,
+      "scale": 0.9,
       "solid": true,
       "tint": null
     },
@@ -62848,13 +62840,13 @@
       "id": "prop_street_096",
       "position": [
         74.76,
-        0.951,
+        0.96,
         50.52
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 6.111,
-      "scale": 1.09,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -62866,9 +62858,9 @@
         32.6
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 1.369,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -62880,9 +62872,9 @@
         32.41
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.982,
-      "scale": 1.08,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -62918,13 +62910,13 @@
       "id": "prop_street_101",
       "position": [
         72.67,
-        -0.235,
+        -0.23,
         -0.69
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 3.956,
-      "scale": 0.97,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -62988,13 +62980,13 @@
       "id": "prop_street_106",
       "position": [
         99.16,
-        -0.352,
+        -0.35,
         -6.33
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.266,
-      "scale": 0.98,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -63002,13 +62994,13 @@
       "id": "prop_street_107",
       "position": [
         132.75,
-        0.684,
+        0.68,
         -22.12
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.339,
-      "scale": 1.01,
+      "scale": 0.81,
       "solid": true,
       "tint": null
     },
@@ -63030,13 +63022,13 @@
       "id": "prop_street_109",
       "position": [
         167.42,
-        -1.188,
+        -1.18,
         -7.36
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.585,
-      "scale": 0.97,
+      "scale": 0.77,
       "solid": true,
       "tint": null
     },
@@ -63062,9 +63054,9 @@
         105.95
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.482,
-      "scale": 1.18,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -63072,13 +63064,13 @@
       "id": "prop_street_112",
       "position": [
         -135.1,
-        -0.694,
+        -0.69,
         106.41
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.876,
-      "scale": 1.11,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -63114,13 +63106,13 @@
       "id": "prop_street_115",
       "position": [
         168.57,
-        -7.788,
+        -7.79,
         -111.15
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 1.368,
-      "scale": 1.07,
+      "scale": 0.86,
       "solid": true,
       "tint": null
     },
@@ -63128,13 +63120,13 @@
       "id": "prop_street_116",
       "position": [
         151.89,
-        -7.572,
+        -7.57,
         -111.5
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.93,
-      "scale": 0.98,
+      "scale": 0.77,
       "solid": true,
       "tint": null
     },
@@ -63146,9 +63138,9 @@
         -108.19
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.11,
-      "scale": 1.06,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -63156,13 +63148,13 @@
       "id": "prop_street_118",
       "position": [
         92.19,
-        -7.362,
+        -7.36,
         -131.06
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 6.245,
-      "scale": 1.05,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -63184,13 +63176,13 @@
       "id": "prop_street_120",
       "position": [
         87.22,
-        -6.494,
+        -6.49,
         -119.4
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 5.986,
-      "scale": 0.98,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -63202,9 +63194,9 @@
         -113.19
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.476,
-      "scale": 0.99,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -63212,13 +63204,13 @@
       "id": "prop_street_122",
       "position": [
         108.23,
-        -7.925,
+        -7.93,
         -136.34
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.986,
-      "scale": 1.16,
+      "scale": 0.92,
       "solid": true,
       "tint": null
     },
@@ -63226,13 +63218,13 @@
       "id": "prop_street_123",
       "position": [
         98.16,
-        -7.367,
+        -7.37,
         -128.73
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 5.272,
-      "scale": 0.98,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -63244,9 +63236,9 @@
         -116.1
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 1.821,
-      "scale": 1.04,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -63254,13 +63246,13 @@
       "id": "prop_street_125",
       "position": [
         114.53,
-        -8.057,
+        -8.05,
         -133.74
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 5.814,
-      "scale": 1.14,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -63272,9 +63264,9 @@
         -132.63
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 1.795,
-      "scale": 1.18,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -63296,13 +63288,13 @@
       "id": "prop_street_128",
       "position": [
         139.83,
-        1.896,
+        1.9,
         145.24
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.102,
-      "scale": 1.11,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -66593,13 +66585,13 @@
       "id": "prop_dhn0keb53x",
       "position": [
         -100,
-        -0.58,
+        -0.57,
         4.5
       ],
       "kind": "prop",
-      "model": "prop.hedge",
+      "model": "env.hedge.privet",
       "yaw": 1.571,
-      "scale": 1,
+      "scale": 0.88,
       "solid": true,
       "tint": null
     },
@@ -66607,13 +66599,13 @@
       "id": "prop_3ssx3p0wtr",
       "position": [
         -82,
-        0.64,
+        0.65,
         -7.2
       ],
       "kind": "prop",
-      "model": "prop.hedge",
+      "model": "env.hedge.privet",
       "yaw": 1.344,
-      "scale": 1,
+      "scale": 0.88,
       "solid": true,
       "tint": null
     },
@@ -107894,6 +107886,7 @@
       12
     ]
   },
+  "weaponSet": "military",
   "dependencies": [],
   "setPieces": [
     {
@@ -107914,6 +107907,5 @@
       "rotation": 0,
       "mirror": false
     }
-  ],
-  "weaponSet": "military"
+  ]
 }

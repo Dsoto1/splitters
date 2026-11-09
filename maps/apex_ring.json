@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 30,
   "metadata": {
     "id": "apex_ring",
     "name": "Apex Ring",
@@ -44018,9 +44018,9 @@
         79.21
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.58,
-      "scale": 1.19,
+      "scale": 0.94,
       "solid": true,
       "tint": null
     },
@@ -44032,9 +44032,9 @@
         164.04
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.42,
-      "scale": 1.16,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -44046,9 +44046,9 @@
         64.99
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.24,
-      "scale": 0.99,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -44060,9 +44060,9 @@
         58.93
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.44,
-      "scale": 1.01,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -44074,9 +44074,9 @@
         51.59
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.96,
-      "scale": 1.1,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -44088,9 +44088,9 @@
         58.31
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.4,
-      "scale": 1.04,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -44102,9 +44102,9 @@
         -24.08
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.17,
-      "scale": 1.01,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -44116,9 +44116,9 @@
         141
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.39,
-      "scale": 1.01,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -44130,9 +44130,9 @@
         70.45
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.7,
-      "scale": 1.14,
+      "scale": 0.9,
       "solid": true,
       "tint": null
     },
@@ -44144,9 +44144,9 @@
         8.44
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.53,
-      "scale": 0.94,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -44158,9 +44158,9 @@
         96.45
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.16,
-      "scale": 1.09,
+      "scale": 0.86,
       "solid": true,
       "tint": null
     },
@@ -44172,9 +44172,9 @@
         48.65
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.77,
-      "scale": 0.92,
+      "scale": 0.73,
       "solid": true,
       "tint": null
     },
@@ -44186,9 +44186,9 @@
         47.05
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.44,
-      "scale": 1.16,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -44200,9 +44200,9 @@
         1.72
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.96,
-      "scale": 1.04,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -44214,9 +44214,9 @@
         49.14
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.47,
-      "scale": 1.01,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -44228,9 +44228,9 @@
         73.51
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 6.15,
-      "scale": 0.93,
+      "scale": 0.73,
       "solid": true,
       "tint": null
     },
@@ -98012,230 +98012,241 @@
     "style": "invisible",
     "height": 12
   },
-  "track": {
-    "points": [
-      [
-        0,
-        0,
-        -110
+  "paths": [
+    {
+      "id": "race_track",
+      "points": [
+        [
+          0,
+          0,
+          -110
+        ],
+        [
+          50,
+          0,
+          -110
+        ],
+        [
+          100,
+          0,
+          -110
+        ],
+        [
+          136,
+          0,
+          -100
+        ],
+        [
+          155,
+          0,
+          -74
+        ],
+        [
+          164,
+          0,
+          -36
+        ],
+        [
+          166,
+          0,
+          4
+        ],
+        [
+          160,
+          0,
+          44
+        ],
+        [
+          144,
+          0,
+          78
+        ],
+        [
+          118,
+          0,
+          104
+        ],
+        [
+          84,
+          0,
+          128
+        ],
+        [
+          50,
+          0,
+          140
+        ],
+        [
+          30,
+          0,
+          141
+        ],
+        [
+          16,
+          0,
+          139
+        ],
+        [
+          6,
+          0,
+          131
+        ],
+        [
+          -6,
+          0,
+          129
+        ],
+        [
+          -16,
+          0,
+          135
+        ],
+        [
+          -30,
+          0,
+          141
+        ],
+        [
+          -60,
+          0,
+          142
+        ],
+        [
+          -100,
+          0,
+          142
+        ],
+        [
+          -136,
+          0,
+          134
+        ],
+        [
+          -158,
+          0,
+          110
+        ],
+        [
+          -166,
+          0,
+          72
+        ],
+        [
+          -164,
+          0,
+          34
+        ],
+        [
+          -152,
+          0,
+          10
+        ],
+        [
+          -126,
+          0,
+          0
+        ],
+        [
+          -80,
+          0,
+          0
+        ],
+        [
+          -30,
+          0,
+          0
+        ],
+        [
+          12,
+          0,
+          0
+        ],
+        [
+          32,
+          0,
+          -6
+        ],
+        [
+          41,
+          0,
+          -19
+        ],
+        [
+          33,
+          0,
+          -32
+        ],
+        [
+          12,
+          0,
+          -38
+        ],
+        [
+          -40,
+          0,
+          -38
+        ],
+        [
+          -96,
+          0,
+          -38
+        ],
+        [
+          -128,
+          0,
+          -46
+        ],
+        [
+          -150,
+          0,
+          -66
+        ],
+        [
+          -152,
+          0,
+          -92
+        ],
+        [
+          -136,
+          0,
+          -107
+        ],
+        [
+          -100,
+          0,
+          -110
+        ],
+        [
+          -50,
+          0,
+          -110
+        ]
       ],
-      [
-        50,
-        0,
-        -110
+      "closed": true,
+      "uses": [
+        "road",
+        "race"
       ],
-      [
-        100,
-        0,
-        -110
-      ],
-      [
-        136,
-        0,
-        -100
-      ],
-      [
-        155,
-        0,
-        -74
-      ],
-      [
-        164,
-        0,
-        -36
-      ],
-      [
-        166,
-        0,
-        4
-      ],
-      [
-        160,
-        0,
-        44
-      ],
-      [
-        144,
-        0,
-        78
-      ],
-      [
-        118,
-        0,
-        104
-      ],
-      [
-        84,
-        0,
-        128
-      ],
-      [
-        50,
-        0,
-        140
-      ],
-      [
-        30,
-        0,
-        141
-      ],
-      [
-        16,
-        0,
-        139
-      ],
-      [
-        6,
-        0,
-        131
-      ],
-      [
-        -6,
-        0,
-        129
-      ],
-      [
-        -16,
-        0,
-        135
-      ],
-      [
-        -30,
-        0,
-        141
-      ],
-      [
-        -60,
-        0,
-        142
-      ],
-      [
-        -100,
-        0,
-        142
-      ],
-      [
-        -136,
-        0,
-        134
-      ],
-      [
-        -158,
-        0,
-        110
-      ],
-      [
-        -166,
-        0,
-        72
-      ],
-      [
-        -164,
-        0,
-        34
-      ],
-      [
-        -152,
-        0,
-        10
-      ],
-      [
-        -126,
-        0,
-        0
-      ],
-      [
-        -80,
-        0,
-        0
-      ],
-      [
-        -30,
-        0,
-        0
-      ],
-      [
-        12,
-        0,
-        0
-      ],
-      [
-        32,
-        0,
-        -6
-      ],
-      [
-        41,
-        0,
-        -19
-      ],
-      [
-        33,
-        0,
-        -32
-      ],
-      [
-        12,
-        0,
-        -38
-      ],
-      [
-        -40,
-        0,
-        -38
-      ],
-      [
-        -96,
-        0,
-        -38
-      ],
-      [
-        -128,
-        0,
-        -46
-      ],
-      [
-        -150,
-        0,
-        -66
-      ],
-      [
-        -152,
-        0,
-        -92
-      ],
-      [
-        -136,
-        0,
-        -107
-      ],
-      [
-        -100,
-        0,
-        -110
-      ],
-      [
-        -50,
-        0,
-        -110
-      ]
-    ],
-    "width": 14,
-    "loop": true,
-    "laps": 3,
-    "grid": 16,
-    "vehicle": "kart",
-    "combat": false,
-    "surface": "asphalt",
-    "curbs": true,
-    "ambient": 12,
-    "ambientVehicle": "kart",
-    "pit": [
-      100,
-      0.05,
-      -95
-    ]
-  },
+      "width": 14,
+      "style": "asphalt",
+      "lay": false,
+      "race": {
+        "laps": 3,
+        "grid": 16,
+        "vehicle": "kart",
+        "combat": false,
+        "curbs": true,
+        "ambient": 12,
+        "ambientVehicle": "kart",
+        "pit": [
+          100,
+          0.05,
+          -95
+        ]
+      },
+      "curve": "classic"
+    }
+  ],
   "backdrop": {
     "sky": "clear",
     "scenery": "city",

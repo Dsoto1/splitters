@@ -118,7 +118,7 @@
       "id": "hedge_large",
       "src": "hedge-large.glb",
       "name": "Tall Hedge",
-      "category": "Town & Market",
+      "category": "Plants & Flowers",
       "height": 2.2,
       "collide": "voxel"
     },
@@ -126,7 +126,7 @@
       "id": "hedge",
       "src": "hedge.glb",
       "name": "Hedge",
-      "category": "Town & Market",
+      "category": "Plants & Flowers",
       "height": 1.2,
       "collide": "voxel"
     },
@@ -134,7 +134,7 @@
       "id": "hedge_gate",
       "src": "hedge-gate.glb",
       "name": "Hedge Gate",
-      "category": "Town & Market",
+      "category": "Plants & Flowers",
       "height": 1.4,
       "collide": "voxel"
     },

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 30,
   "metadata": {
     "id": "gallows_yard",
     "name": "Gallows Yard",
@@ -16,15 +16,7 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ],
-    "release": {
-      "mapId": "m_rtc6tbk7czp3baxw",
-      "versionId": "v_eqqhz7efprqf7jn6",
-      "revision": 1,
-      "contentHash": "sha256:c041418d8e4d603d3d2c93826965ddd2d8808dd10a7a61cad9988a7bba9d90ad",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T22:54:43.750Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1612,13 +1604,13 @@
       "id": "prop_143",
       "position": [
         69.92,
-        -1.09,
+        -1.07,
         25.36
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 4.5,
-      "scale": 1.11,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -1812,9 +1804,9 @@
         -6.51
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 0.62,
-      "scale": 1.14,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -1826,9 +1818,9 @@
         18.28
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.19,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -1938,9 +1930,9 @@
         -7.12
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 3.79,
-      "scale": 0.86,
+      "scale": 0.69,
       "solid": true,
       "tint": null
     },
@@ -2120,9 +2112,9 @@
         39.04
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.99,
-      "scale": 0.99,
+      "scale": 0.74,
       "solid": false,
       "tint": null
     },
@@ -2130,13 +2122,13 @@
       "id": "prop_180",
       "position": [
         -6.64,
-        -0.87,
+        -0.84,
         21.03
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 6.01,
-      "scale": 1,
+      "scale": 0.75,
       "solid": false,
       "tint": null
     },
@@ -2330,9 +2322,9 @@
         -6.2
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 2.31,
-      "scale": 1.17,
+      "scale": 0.88,
       "solid": false,
       "tint": null
     },
@@ -2344,9 +2336,9 @@
         -6.18
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 4.09,
-      "scale": 1.07,
+      "scale": 0.8,
       "solid": false,
       "tint": null
     },
@@ -2428,9 +2420,9 @@
         34.72
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 2.49,
-      "scale": 1.07,
+      "scale": 0.8,
       "solid": false,
       "tint": null
     },

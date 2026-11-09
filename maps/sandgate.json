@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 30,
   "metadata": {
     "id": "sandgate",
     "name": "Sandgate",
@@ -16,15 +16,7 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ],
-    "release": {
-      "mapId": "m_7lyosx6ztb63qla6",
-      "versionId": "v_yc6zot5tw6hoj4dd",
-      "revision": 1,
-      "contentHash": "sha256:4741b8d62d989bcae28d9a55f2d7f2d89d154d8972ec7c422fedc8d40cf0671d",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T10:54:38.130Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1107,13 +1099,13 @@
       "id": "prop_108",
       "position": [
         68.07,
-        17.95,
+        18.02,
         139.47
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 4.73,
-      "scale": 1,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -1135,13 +1127,13 @@
       "id": "prop_110",
       "position": [
         -37.39,
-        10.14,
+        10.44,
         79.83
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 2.07,
-      "scale": 1.11,
+      "scale": 0.98,
       "solid": true,
       "tint": null
     },
@@ -1205,13 +1197,13 @@
       "id": "prop_115",
       "position": [
         105.47,
-        19.63,
+        19.69,
         118.47
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 4.33,
-      "scale": 1.2,
+      "scale": 1.06,
       "solid": true,
       "tint": null
     },
@@ -1219,13 +1211,13 @@
       "id": "prop_116",
       "position": [
         25.17,
-        18.94,
+        19.47,
         -74.18
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 3.95,
-      "scale": 1.07,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -1247,13 +1239,13 @@
       "id": "prop_118",
       "position": [
         51.64,
-        13.65,
+        13.78,
         127.08
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 4.95,
-      "scale": 1.07,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -1317,13 +1309,13 @@
       "id": "prop_123",
       "position": [
         93.78,
-        3.34,
+        3.43,
         21.14
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 2.56,
-      "scale": 0.93,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -1471,13 +1463,13 @@
       "id": "prop_134",
       "position": [
         85.32,
-        17.15,
+        17.39,
         151.22
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 4.15,
-      "scale": 1.14,
+      "scale": 1.01,
       "solid": true,
       "tint": null
     },
@@ -1555,13 +1547,13 @@
       "id": "prop_140",
       "position": [
         43.3,
-        11.94,
+        12.03,
         119.66
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 1.23,
-      "scale": 1.16,
+      "scale": 1.03,
       "solid": true,
       "tint": null
     },
@@ -1667,13 +1659,13 @@
       "id": "prop_148",
       "position": [
         -31.35,
-        10.11,
+        10.51,
         122.27
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 2.29,
-      "scale": 1.19,
+      "scale": 1.05,
       "solid": true,
       "tint": null
     },
@@ -1681,13 +1673,13 @@
       "id": "prop_149",
       "position": [
         63.99,
-        30.31,
+        30.5,
         -84.79
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 6.18,
-      "scale": 1.05,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -1709,13 +1701,13 @@
       "id": "prop_151",
       "position": [
         153.64,
-        25.01,
+        25.05,
         37.16
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 4.55,
-      "scale": 0.93,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -1779,13 +1771,13 @@
       "id": "prop_156",
       "position": [
         -58.96,
-        17.75,
+        17.96,
         123.16
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 1.13,
-      "scale": 1.13,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -1793,13 +1785,13 @@
       "id": "prop_157",
       "position": [
         -28.56,
-        6.03,
+        6.26,
         72.75
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 5.81,
-      "scale": 0.92,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -1989,13 +1981,13 @@
       "id": "prop_171",
       "position": [
         20.04,
-        6.04,
+        6.05,
         -24.25
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 6.01,
-      "scale": 1.29,
+      "scale": 0.97,
       "solid": false,
       "tint": null
     },
@@ -2045,13 +2037,13 @@
       "id": "prop_175",
       "position": [
         -14.26,
-        8.77,
+        8.78,
         -18.45
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 1.56,
-      "scale": 1.1,
+      "scale": 0.83,
       "solid": false,
       "tint": null
     },
@@ -2143,13 +2135,13 @@
       "id": "prop_182",
       "position": [
         138.55,
-        22.91,
+        22.92,
         -44.47
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 1.68,
-      "scale": 1.12,
+      "scale": 0.84,
       "solid": false,
       "tint": null
     },
@@ -2171,13 +2163,13 @@
       "id": "prop_184",
       "position": [
         97.59,
-        1.99,
+        2,
         67.15
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.71,
-      "scale": 1.24,
+      "scale": 0.93,
       "solid": false,
       "tint": null
     },
@@ -2213,13 +2205,13 @@
       "id": "prop_187",
       "position": [
         -78.75,
-        20.6,
+        20.62,
         -34.68
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.66,
-      "scale": 1.39,
+      "scale": 1.05,
       "solid": false,
       "tint": null
     },
@@ -2227,13 +2219,13 @@
       "id": "prop_188",
       "position": [
         93.75,
-        19.08,
+        19.09,
         -77.41
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.85,
-      "scale": 0.92,
+      "scale": 0.69,
       "solid": false,
       "tint": null
     },
@@ -2283,13 +2275,13 @@
       "id": "prop_192",
       "position": [
         121.99,
-        10.99,
+        11,
         30.73
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 4.64,
-      "scale": 1.05,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -2399,9 +2391,9 @@
         -44.9
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 1.07,
-      "scale": 1.02,
+      "scale": 0.77,
       "solid": false,
       "tint": null
     },
@@ -2563,13 +2555,13 @@
       "id": "prop_212",
       "position": [
         -45.94,
-        22.75,
+        22.76,
         -63.73
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 2.2,
-      "scale": 1.14,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -2787,13 +2779,13 @@
       "id": "prop_228",
       "position": [
         -57.76,
-        13.67,
+        13.69,
         98.76
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.56,
-      "scale": 1.37,
+      "scale": 1.03,
       "solid": false,
       "tint": null
     },
@@ -2861,9 +2853,9 @@
         99.82
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.6,
-      "scale": 1.38,
+      "scale": 1.04,
       "solid": false,
       "tint": null
     },
@@ -2917,9 +2909,9 @@
         69.16
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.21,
-      "scale": 1.37,
+      "scale": 1.03,
       "solid": false,
       "tint": null
     },
@@ -2941,13 +2933,13 @@
       "id": "prop_239",
       "position": [
         141.51,
-        22.54,
+        22.55,
         -38.48
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 2.37,
-      "scale": 1.24,
+      "scale": 0.93,
       "solid": false,
       "tint": null
     },
@@ -2955,13 +2947,13 @@
       "id": "prop_240",
       "position": [
         -35.99,
-        6.21,
+        6.22,
         97.22
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.55,
-      "scale": 0.93,
+      "scale": 0.7,
       "solid": false,
       "tint": null
     },
@@ -3029,9 +3021,9 @@
         112.54
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 1.69,
-      "scale": 1.05,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -3071,9 +3063,9 @@
         10.5
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.4,
-      "scale": 1.2,
+      "scale": 0.9,
       "solid": false,
       "tint": null
     },
@@ -3085,9 +3077,9 @@
         31.5
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 2.2,
-      "scale": 1.2,
+      "scale": 0.9,
       "solid": false,
       "tint": null
     },
@@ -3099,9 +3091,9 @@
         37.6
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 1.1,
-      "scale": 1.2,
+      "scale": 0.9,
       "solid": false,
       "tint": null
     },
@@ -3113,9 +3105,9 @@
         37.6
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.3,
-      "scale": 1.2,
+      "scale": 0.9,
       "solid": false,
       "tint": null
     },
@@ -54367,6 +54359,6 @@
   "physics": null,
   "blood": null,
   "teamSetup": null,
-  "dependencies": [],
-  "weaponSet": "military"
+  "weaponSet": "military",
+  "dependencies": []
 }

@@ -33,6 +33,7 @@ import { windows } from './backdrop.ts';
 import { loadGraphicsQuality } from './game/graphicsSettings.ts';
 import { reduceFlashing } from './game/reduceFlashing.ts';
 import { buildCoast } from './borderCoast.ts';
+import { EnvScatter, type EnvCopy } from './environment/envScatter.ts';
 
 type V3 = [number, number, number];
 
@@ -55,6 +56,8 @@ export class BorderVisuals {
   private key = '';
   private build = 0;
   private pulse: Observer<Scene> | null = null;
+  /** The forest's species (environment/envScatter.ts). */
+  private scatters: EnvScatter[] = [];
   /** Settles once the instanced models (trees, facades) of the latest build are in. */
   ready: Promise<void> = Promise.resolve();
   /** What the last build made: meshes (draw calls before materials split them) and instances. */
@@ -114,6 +117,8 @@ export class BorderVisuals {
     for (const n of this.nodes) n.dispose();
     for (const m of this.materials) m.dispose();
     for (const t of this.textures) t.dispose();
+    for (const sc of this.scatters) sc.dispose();
+    this.scatters = [];
     this.textures = [];
     this.meshes = [];
     this.nodes = [];
@@ -125,12 +130,14 @@ export class BorderVisuals {
   /** Show or hide the whole border (the fps comparison in the bench hides it). */
   setEnabled(on: boolean): void {
     for (const m of this.meshes) m.setEnabled(on);
+    for (const sc of this.scatters) sc.setVisible(on);
   }
 
   private count(): void {
+    const env = this.scatters.map((sc) => sc.stats()).filter((x) => !!x);
     this.stats = {
-      meshes: this.meshes.filter((m) => !m.isDisposed()).length,
-      instances: this.meshes.reduce((n, m) => n + (m.thinInstanceCount || 1), 0),
+      meshes: this.meshes.filter((m) => !m.isDisposed()).length + env.reduce((n, x) => n + x.batches, 0),
+      instances: this.meshes.reduce((n, m) => n + (m.thinInstanceCount || 1), 0) + env.reduce((n, x) => n + x.copies, 0),
       vertices: this.meshes.reduce((n, m) => n + m.getTotalVertices() * Math.max(1, m.thinInstanceCount || 1), 0),
     };
   }
@@ -310,24 +317,27 @@ export class BorderVisuals {
 
   /**
    * A dense wall of trees: undergrowth along the line, three or four rows of
-   * the nature kit's trees (instanced, one draw call per model part), then
-   * low-poly cones thinning out behind (the far rows) in front of a dark
-   * canopy band, so you never see daylight through it.
+   * our generated species (Environment Phase 2: they were Quaternius nature
+   * models), then more of them thinning out behind (the far rows) in front of
+   * a dark canopy band, so you never see daylight through it. The species
+   * draw through an EnvScatter: levels of detail and far stand-ins, batched by
+   * square, as the map's own trees are. Without a model library (a bare
+   * scene) the rows are low-poly cones as before.
    */
   private async forest(edges: BorderEdge[], ctx: Ctx, build: number): Promise<void> {
     let r = 0;
     const rand = () => borderNoise(ctx.seed, 9000 + r++);
     const kit = ctx.snowy ? FOREST_KITS.snow : ctx.sandy ? FOREST_KITS.sand : FOREST_KITS.green;
-    const near = new Map<string, Matrix[]>();
+    const copies: EnvCopy[] = [];
     const far: Matrix[] = [];
     const canopy = new Geo();
     const dark = Color3.FromHexString(ctx.snowy ? '#3a4a44' : ctx.sandy ? '#4f5a2e' : '#24361f');
     const darker = dark.scale(0.7);
-    const put = (model: string, x: number, y: number, z: number, s: number) => {
-      const list = near.get(model) ?? near.set(model, []).get(model)!;
-      list.push(Matrix.Compose(new Vector3(s, s * (0.9 + rand() * 0.25), s), Quaternion.RotationAxis(Vector3.Up(), rand() * Math.PI * 2), new Vector3(x, y, z)));
+    const species = !!this.models;
+    const put = (list: readonly (readonly [string, number])[], x: number, y: number, z: number, s: number) => {
+      const [model, size] = list[Math.floor(rand() * list.length)]!;
+      copies.push({ model, x, y, z, yaw: rand() * Math.PI * 2, scale: s * size });
     };
-    const models = !!this.models;
     for (const e of edges) {
       const [prev, next] = ctx.neighbours(e);
       const f = frame(e);
@@ -337,23 +347,25 @@ export class BorderVisuals {
       for (let u = u0; u < u1; u += 2.8 + rand() * 1.6) {
         const v = 0.7 + rand() * 1.8;
         const [x, z] = f.at(u, v);
-        if (models) put(kit.bushes[Math.floor(rand() * kit.bushes.length)]!, x, ctx.ground(x, z) - 0.05, z, 0.9 + rand() * 0.7);
+        if (species) put(kit.bushes, x, ctx.ground(x, z) - 0.05, z, 0.9 + rand() * 0.5);
       }
-      // The front row: the kit's trees (the only full models, ~2 k triangles each), every few metres, low-poly conifers between.
+      // The front row: trees every few metres.
       for (let u = u0 + rand() * 3; u < u1; u += 2.6 + rand() * 1.4) {
         const v = 2.6 + rand() * 2.2;
         const [x, z] = f.at(u, v);
         const y = ctx.ground(x, z) - 0.15;
-        const s = 1.1 + rand() * 0.6;
-        if (models && rand() < 0.55) put(kit.trees[Math.floor(rand() * kit.trees.length)]!, x, y, z, s);
-        else far.push(Matrix.Compose(new Vector3(s, s * (0.9 + rand() * 0.4), s), Quaternion.Identity(), new Vector3(x, y, z)));
+        const s = 0.95 + rand() * 0.45;
+        if (species) {
+          if (rand() < 0.7) put(kit.trees, x, y, z, s);
+        } else far.push(Matrix.Compose(new Vector3(s, s * (0.9 + rand() * 0.4), s), Quaternion.Identity(), new Vector3(x, y, z)));
       }
-      // Behind it, the far rows (its LOD): low-poly conifers at ~70 triangles, packed close, then bigger and sparser.
-      for (let v = 6.5; v < 72; v += v < 15 ? 3 : 5 + v * 0.06) {
-        for (let u = u0 - v * 0.5; u < u1 + v * 0.5; u += 3 + v * 0.04 + rand() * 2) {
+      // Behind it, the far rows: packed close, then bigger and sparser.
+      for (let v = 6.5; v < 72; v += v < 15 ? 3.5 : 6 + v * 0.07) {
+        for (let u = u0 - v * 0.5; u < u1 + v * 0.5; u += 3.6 + v * 0.05 + rand() * 2.4) {
           const [x, z] = f.at(u, v + rand() * 2.5);
-          const s = 1.3 + rand() * 0.9 + v / 70;
-          far.push(Matrix.Compose(new Vector3(s, s * (0.85 + rand() * 0.5), s), Quaternion.Identity(), new Vector3(x, ctx.ground(x, z) - 0.3, z)));
+          const s = 1 + rand() * 0.5 + v / 120;
+          if (species) put(kit.far, x, ctx.ground(x, z) - 0.3, z, s);
+          else far.push(Matrix.Compose(new Vector3(s * 1.3, s * (0.85 + rand() * 0.5), s * 1.3), Quaternion.Identity(), new Vector3(x, ctx.ground(x, z) - 0.3, z)));
         }
       }
       // Canopy band behind the near rows.
@@ -374,23 +386,21 @@ export class BorderVisuals {
     }
     const band = this.material('canopy', { color: '#ffffff', spec: 0 });
     this.add(canopy.mesh('border_canopy', this.scene, band));
-    const cone = coneMesh(this.scene, 'border_trees_far', ctx.snowy);
-    const coneMat = this.material('cones', { spec: 0 });
-    cone.material = coneMat;
-    const buf = new Float32Array(far.length * 16);
-    far.forEach((m, i) => m.copyToArray(buf, i * 16));
-    cone.thinInstanceSetBuffer('matrix', buf, 16, true);
-    cone.thinInstanceRefreshBoundingInfo(false);
-    this.add(cone);
-    if (!this.models) return;
-    const made = await Promise.all(
-      [...near].map(([model, mats]) => {
-        const def = getProp(`prop.${model}`);
-        return def ? thinModel(this.models!, def.file, `border_tree_${model}`, mats).catch(() => [] as Mesh[]) : Promise.resolve([] as Mesh[]);
-      }),
-    );
-    if (build !== this.build) return made.flat().forEach((m) => m.dispose());
-    for (const m of made.flat()) this.add(m);
+    if (far.length) {
+      const cone = coneMesh(this.scene, 'border_trees_far', ctx.snowy);
+      const coneMat = this.material('cones', { spec: 0 });
+      cone.material = coneMat;
+      const buf = new Float32Array(far.length * 16);
+      far.forEach((m, i) => m.copyToArray(buf, i * 16));
+      cone.thinInstanceSetBuffer('matrix', buf, 16, true);
+      cone.thinInstanceRefreshBoundingInfo(false);
+      this.add(cone);
+    }
+    if (!copies.length) return;
+    const scatter = new EnvScatter(this.scene, { sector: 160, prefix: 'border_tree' });
+    this.scatters.push(scatter);
+    await scatter.set(copies);
+    if (build !== this.build) scatter.dispose();
   }
 
   // ---------------------------------------------------------------- fence
@@ -894,11 +904,24 @@ interface Piece {
   sy: number;
 }
 
+/** The forest border's species by ground: [species (`#variant`), its size factor], picked at random (repeats weigh more). */
 const FOREST_KITS = {
-  green: { trees: ['nt_pine_tall', 'nt_common_tree', 'nt_pine_tall', 'nt_birch'], bushes: ['nt_bush_leafy', 'nt_fern_wide', 'nt_bush_leafy'] },
-  snow: { trees: ['nt_pine_snow_tall', 'nt_pine_snow_tall', 'nt_birch_snow', 'nt_common_tree_snow'], bushes: ['nt_bush_snow', 'nt_rock_snow'] },
-  sand: { trees: ['nt_palm_tall', 'nt_palm_curved', 'nt_palm_tall', 'nt_saguaro'], bushes: ['nt_cactus_round', 'nt_bush_leafy', 'nt_rock_flat'] },
-} as const satisfies Record<string, { trees: readonly string[]; bushes: readonly string[] }>;
+  green: {
+    trees: [['env.conifer.pine_tall', 1], ['env.broadleaf.oak', 0.9], ['env.conifer.spruce', 1.1], ['env.broadleaf.maple', 1], ['env.conifer.pine_tall', 1.1], ['env.broadleaf.oak#1', 0.85]],
+    bushes: [['env.shrub.laurel', 0.9], ['env.shrub.broadleaf', 1], ['env.fern.bracken', 1.6], ['env.shrub.laurel', 1.1]],
+    far: [['env.conifer.pine_tall', 1.1], ['env.conifer.spruce', 1.2], ['env.broadleaf.oak', 1], ['env.conifer.pine_tall', 1.2]],
+  },
+  snow: {
+    trees: [['env.conifer.pine_tall#1', 1], ['env.conifer.spruce#1', 1.1], ['env.conifer.spruce#1', 0.9]],
+    bushes: [['env.conifer.spruce#1', 0.25], ['env.rock.boulder_angular', 0.6], ['env.conifer.spruce#1', 0.35]],
+    far: [['env.conifer.pine_tall#1', 1.1], ['env.conifer.spruce#1', 1.2]],
+  },
+  sand: {
+    trees: [['env.palm.coconut', 1], ['env.palm.leaning', 1], ['env.broadleaf.acacia', 1], ['env.cactus.saguaro', 1.2], ['env.palm.coconut#1', 1.1]],
+    bushes: [['env.shrub.laurel#1', 0.8], ['env.rock.boulder_angular', 0.7], ['env.grass.clump#1', 2.2]],
+    far: [['env.palm.coconut', 1.1], ['env.broadleaf.acacia', 1.1], ['env.palm.coconut#1', 1.2]],
+  },
+} as const satisfies Record<string, Record<'trees' | 'bushes' | 'far', readonly (readonly [string, number])[]>>;
 
 /** Every mesh of a model, GPU-instanced at each of `matrices` (one draw call per mesh, however many copies). */
 /** Side of the squares (m) detailed instanced border models are split into (splitThin). */

@@ -106,7 +106,8 @@ if (!all) {
 if (pending) {
   step('build (pictures to render)');
   run('pnpm', ['build']);
-  const port = await freePort(4799);
+  // PREVIEW_PORT: where to start looking (agents with their own port range).
+  const port = await freePort(Number(process.env.PREVIEW_PORT) || 4799);
   step(`preview on port ${port}`);
   const preview = spawn('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', String(port), '--strictPort'], { cwd: ROOT, stdio: 'inherit', detached: true });
   const stop = () => {

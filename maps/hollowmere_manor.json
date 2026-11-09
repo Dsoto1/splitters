@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 30,
   "metadata": {
     "id": "hollowmere_manor",
     "name": "Hollowmere Manor",
@@ -17,15 +17,7 @@
       "core.deathmatch",
       "core.tdm",
       "core.koth"
-    ],
-    "release": {
-      "mapId": "m_ccrw2yobc2qzmf5z",
-      "versionId": "v_hgkkhhreek25oilv",
-      "revision": 3,
-      "contentHash": "sha256:631399e8a0f402f9c68023b4c0c1d6ffbdbb2ef4b8990dc9eb19fea1509af97d",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T22:58:16.387Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -8036,13 +8028,13 @@
       "id": "prop_460",
       "position": [
         -54,
-        -10.41,
+        -10.44,
         -39.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8050,13 +8042,13 @@
       "id": "prop_461",
       "position": [
         -51.5,
-        -10.55,
+        -10.57,
         -42
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8064,13 +8056,13 @@
       "id": "prop_462",
       "position": [
         -49,
-        -7.68,
+        -7.71,
         -34.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8078,13 +8070,13 @@
       "id": "prop_463",
       "position": [
         -54,
-        -8.59,
+        -8.62,
         -34.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8092,13 +8084,13 @@
       "id": "prop_464",
       "position": [
         -51.5,
-        -4.74,
+        -4.77,
         -27
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8106,13 +8098,13 @@
       "id": "prop_465",
       "position": [
         -54,
-        -6.51,
+        -6.54,
         -29.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8120,13 +8112,13 @@
       "id": "prop_466",
       "position": [
         -49,
-        -1.85,
+        -1.87,
         -19.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8134,13 +8126,13 @@
       "id": "prop_467",
       "position": [
         -54,
-        -2.99,
+        -3.01,
         -19.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8148,13 +8140,13 @@
       "id": "prop_468",
       "position": [
         -51.5,
-        -1.29,
+        -1.31,
         -12
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8162,13 +8154,13 @@
       "id": "prop_469",
       "position": [
         -54,
-        -2.04,
+        -2.06,
         -14.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8176,13 +8168,13 @@
       "id": "prop_470",
       "position": [
         -46.5,
-        -9.25,
+        -9.28,
         -42
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8190,13 +8182,13 @@
       "id": "prop_471",
       "position": [
         -46.5,
-        -5.89,
+        -5.92,
         -32
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8204,13 +8196,13 @@
       "id": "prop_472",
       "position": [
         -46.5,
-        -3.74,
+        -3.77,
         -27
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8218,13 +8210,13 @@
       "id": "prop_473",
       "position": [
         -44,
-        -2.51,
+        -2.54,
         -24.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8232,13 +8224,13 @@
       "id": "prop_474",
       "position": [
         -41.5,
-        -6.32,
+        -6.35,
         -37
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8246,13 +8238,13 @@
       "id": "prop_475",
       "position": [
         -41.5,
-        -7.68,
+        -7.7,
         -42
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8260,13 +8252,13 @@
       "id": "prop_476",
       "position": [
         -39,
-        -3.16,
+        -3.18,
         -29.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8274,13 +8266,13 @@
       "id": "prop_477",
       "position": [
         -41.5,
-        -2.7,
+        -2.73,
         -27
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8288,13 +8280,13 @@
       "id": "prop_478",
       "position": [
         -39,
-        -0.51,
+        -0.52,
         -19.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8302,13 +8294,13 @@
       "id": "prop_479",
       "position": [
         -41.5,
-        -0.31,
+        -0.32,
         -17
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8320,9 +8312,9 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8330,13 +8322,13 @@
       "id": "prop_481",
       "position": [
         -36.5,
-        -4.67,
+        -4.69,
         -37
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8344,13 +8336,13 @@
       "id": "prop_482",
       "position": [
         -36.5,
-        -6.13,
+        -6.15,
         -42
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8358,13 +8350,13 @@
       "id": "prop_483",
       "position": [
         -34,
-        -3.27,
+        -3.3,
         -34.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8372,13 +8364,13 @@
       "id": "prop_484",
       "position": [
         -34,
-        -2.05,
+        -2.07,
         -29.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8386,13 +8378,13 @@
       "id": "prop_485",
       "position": [
         -36.5,
-        -0.07,
+        -0.08,
         -17
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8404,9 +8396,9 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8414,13 +8406,13 @@
       "id": "prop_487",
       "position": [
         -29,
-        -4.02,
+        -4.05,
         -39.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8428,13 +8420,13 @@
       "id": "prop_488",
       "position": [
         -31.5,
-        -5.01,
+        -5.03,
         -42
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8442,13 +8434,13 @@
       "id": "prop_489",
       "position": [
         -31.5,
-        -2.1,
+        -2.12,
         -32
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8456,13 +8448,13 @@
       "id": "prop_490",
       "position": [
         -29,
-        -1.3,
+        -1.31,
         -29.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8470,13 +8462,13 @@
       "id": "prop_491",
       "position": [
         -29,
-        -0.57,
+        -0.58,
         -24.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8484,13 +8476,13 @@
       "id": "prop_492",
       "position": [
         -31.5,
-        -0.29,
+        -0.3,
         -22
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8502,9 +8494,9 @@
         -17
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8516,9 +8508,9 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8526,13 +8518,13 @@
       "id": "prop_495",
       "position": [
         -26.5,
-        -4.71,
+        -4.74,
         -42
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8540,13 +8532,13 @@
       "id": "prop_496",
       "position": [
         -24,
-        -2.02,
+        -2.03,
         -34.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8554,13 +8546,13 @@
       "id": "prop_497",
       "position": [
         -26.5,
-        -1.4,
+        -1.41,
         -32
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8572,9 +8564,9 @@
         -22
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8582,13 +8574,13 @@
       "id": "prop_499",
       "position": [
         -19,
-        -4.71,
+        -4.74,
         -39.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8596,13 +8588,13 @@
       "id": "prop_500",
       "position": [
         -21.5,
-        -5.24,
+        -5.27,
         -42
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8610,13 +8602,13 @@
       "id": "prop_501",
       "position": [
         -19,
-        -2.39,
+        -2.41,
         -34.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8624,13 +8616,13 @@
       "id": "prop_502",
       "position": [
         -21.5,
-        -0.46,
+        -0.47,
         -27
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8638,13 +8630,13 @@
       "id": "prop_503",
       "position": [
         -19,
-        -0.3,
+        -0.31,
         -24.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8652,13 +8644,13 @@
       "id": "prop_504",
       "position": [
         -19,
-        -0.04,
+        -0.05,
         -19.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8670,9 +8662,9 @@
         -17
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8684,9 +8676,9 @@
         -14.5
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 0,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -8698,9 +8690,9 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.hedge_large",
+      "model": "env.hedge.yew",
       "yaw": 1.5708,
-      "scale": 1.3,
+      "scale": 1.2,
       "solid": true,
       "tint": null
     },
@@ -10402,13 +10394,13 @@
       "id": "prop_629",
       "position": [
         58.8,
-        -2.15,
+        -2.12,
         4.75
       ],
       "kind": "prop",
-      "model": "prop.hedge",
+      "model": "env.hedge.privet",
       "yaw": 0.6477,
-      "scale": 1.1319494967116044,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -10472,13 +10464,13 @@
       "id": "prop_634",
       "position": [
         -53.74,
-        -8.23,
+        -8.17,
         73.36
       ],
       "kind": "prop",
-      "model": "prop.hedge",
+      "model": "env.hedge.privet",
       "yaw": 0.3569,
-      "scale": 1.110928182140924,
+      "scale": 0.98,
       "solid": true,
       "tint": null
     },
@@ -10584,13 +10576,13 @@
       "id": "prop_642",
       "position": [
         -58.45,
-        -4.64,
+        -4.62,
         52.46
       ],
       "kind": "prop",
-      "model": "prop.hedge",
+      "model": "env.hedge.privet",
       "yaw": 1.9728,
-      "scale": 1.1045729829231277,
+      "scale": 0.98,
       "solid": true,
       "tint": null
     },
@@ -10696,13 +10688,13 @@
       "id": "prop_650",
       "position": [
         47.07,
-        -7.55,
+        -7.52,
         74.41
       ],
       "kind": "prop",
-      "model": "prop.hedge",
+      "model": "env.hedge.privet",
       "yaw": 4.7827,
-      "scale": 0.9030296199256554,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -10752,13 +10744,13 @@
       "id": "prop_654",
       "position": [
         -46.37,
-        -2.41,
+        -2.39,
         57.27
       ],
       "kind": "prop",
-      "model": "prop.hedge",
+      "model": "env.hedge.privet",
       "yaw": 2.8705,
-      "scale": 1.0106058662058786,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
