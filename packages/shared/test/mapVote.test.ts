@@ -89,6 +89,22 @@ describe('map vote: one vote, ticked by its host', () => {
     expect(v.tick(200, 300)).toBe(true);
     expect(v.planned).toBe(100);
   });
+  it('carried over by a successor host (handoff): the same votes on new slots; a closed one keeps its winner untallied', () => {
+    const open = MapVote.resumed(options, 50, 3, [[3, 0], [9, 1], [4, 1], [5, 7]]);
+    expect(open.closed).toBe(false);
+    expect(open.ballots().sort()).toEqual([[3, 0], [4, 1], [9, 1]]);
+    expect(open.state(20)).toMatchObject({ n: [1, 2], left: Math.ceil(30 / TICK_RATE) });
+    expect(open.cast(9, 0)).toBe(true);
+    expect(open.tick(50)).toBe(true);
+    // 2-1 to A now; the successor (3) voted A.
+    expect(open.winner?.map).toBe('a');
+    // The old host broke a 1-1 tie for B: the successor (who voted A) doesn't decide it again.
+    const won = MapVote.resumed(options, 0, 3, [[3, 0], [4, 1]], { w: 1, by: 'host' });
+    expect(won.closed).toBe(true);
+    expect(won.winner?.map).toBe('b');
+    expect(won.state(0)).toMatchObject({ w: 1, by: 'host', n: [1, 1], left: 0 });
+    expect(won.cast(5, 0)).toBe(false);
+  });
   it('lasts the vote and the winner’s moment', () => {
     expect(MapVote.ticks()).toBe((VOTE_SECONDS + VOTE_RESULT_SECONDS) * TICK_RATE);
   });

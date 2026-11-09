@@ -74,6 +74,47 @@ describe('host handoff checkpoints', () => {
     expect(odd.listing).toEqual({ name: 'L' });
   });
 
+  it('parties and an open vote round-trip; bad tags, ballots and votes are dropped', () => {
+    const { cp, match, ann, host } = hostMatch();
+    ann.party = 'PARTY01';
+    host.party = 'PARTY01';
+    const players = match.checkpointPlayers(() => null, ann.slot);
+    expect(players.filter((p) => p.py === 'PARTY01').map((p) => p.name).sort()).toEqual(['Ann', 'Hosty']);
+    const vote = { o: [{ map: 'a', name: 'A', mode: 'core.tdm' as const }, { map: 'b', name: 'B', mode: 'core.ctf' as const }], votes: [[0, 1], [1, 0]] as [number, number][], left: 9 };
+    const back = parseCheckpoint(JSON.stringify({ ...cp, players, vote }))!;
+    expect(back.vote).toEqual(vote);
+    expect(back.players.filter((p) => p.py).length).toBe(2);
+    // A tag that isn't one, on a bot, or votes out of range / twice from one player: dropped; a ballot that isn't one: no vote.
+    const odd = parseCheckpoint({ ...cp, players: players.map((p, i) => (i === 0 ? { ...p, py: 'no spaces!' } : p.kind === 'bot' ? { ...p, py: 'PARTY01' } : p)), vote: { ...vote, votes: [[0, 1], [0, 0], [99, 0], [1, 7], [2, 'x']], left: 9999 } })!;
+    expect(odd.players[0]!.py).toBeUndefined();
+    expect(odd.players.filter((p) => p.kind === 'bot').every((p) => !p.py)).toBe(true);
+    expect(odd.vote).toEqual({ ...vote, votes: [[0, 1]], left: 120 });
+    expect(parseCheckpoint({ ...cp, vote: { ...vote, o: [vote.o[0]] } })!.vote).toBeUndefined();
+    expect(parseCheckpoint({ ...cp, vote: { ...vote, o: [vote.o[0], { map: 'b', name: 'B', mode: 'core.nope' }] } })!.vote).toBeUndefined();
+    // Closed: the winner (and how it was won) carries over, with no time left.
+    expect(parseCheckpoint({ ...cp, vote: { ...vote, w: 1, by: 'host' } })!.vote).toEqual({ ...vote, left: 0, w: 1, by: 'host' });
+  });
+
+  it('the successor restores each party (team modes: still on one side)', () => {
+    const { cp, match, ann, host } = hostMatch();
+    ann.party = 'PARTY01';
+    host.party = 'PARTY01';
+    const restored = { ...cp, players: match.checkpointPlayers(() => null, ann.slot) };
+    const next = new Match(yard(), restored.rules, 9);
+    const bots = new BotFiller(next);
+    const placed = new Map<number, ReturnType<typeof next.combatants>[number]>();
+    const me = bots.restore(restored, restored.fill, { name: 'Ann' }, placed)!;
+    expect(me.party).toBe('PARTY01');
+    expect(placed.size).toBe(restored.players.length);
+    const oldHost = placed.get(restored.players.findIndex((p) => p.name === 'Hosty'))!;
+    expect(oldHost.party).toBe('PARTY01');
+    // Each on the side the checkpoint had them (a party that joined together is on one: Match.takeOverBot).
+    expect(oldHost.faction).toBe(restored.players.find((p) => p.name === 'Hosty')!.team);
+    expect(me.faction).toBe(restored.players.find((p) => p.name === 'Ann')!.team);
+    // So a member who joins the successor later goes where most of the party is.
+    expect(next.partyTeam('PARTY01')).toBe(next.combatants().filter((c) => c.party === 'PARTY01')[0]!.faction);
+  });
+
   it('a friend can only answer a standby request with a join code', () => {
     expect(parseClientMessage(JSON.stringify({ t: 'standby', code: 'ABC234' }))).toEqual({ t: 'standby', code: 'ABC234' });
     expect(parseClientMessage(JSON.stringify({ t: 'standby', code: 'abc' }))).toBeNull();

@@ -2,7 +2,9 @@ import { sha256Hex } from '../map/identity.ts';
 import { HOST_BOT_SKILLS, type MatchPhase } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS } from '../sim/constants.ts';
 import { isGameMode, type MatchRules } from '../sim/rules.ts';
+import type { VoteOption, VoteWin } from '../sim/mapVote.ts';
 import { sanitizeName } from './clientMessages.ts';
+import { isPartyTag } from './party.ts';
 
 /**
  * Host handoff (browser hosts): while friends play in a match a browser
@@ -46,6 +48,8 @@ export interface CheckpointPlayer {
   succ?: 1;
   /** Signed in: their name is their verified username. */
   acct?: 1;
+  /** A person's party (net/party.ts), so it stays together with the successor (team modes: one side; free-for-all: friendly names, spawns near each other). */
+  py?: string;
   look: string;
   team: string | null;
   /** Kills, deaths, self-kills and objective plays. */
@@ -89,6 +93,23 @@ export interface MatchCheckpoint {
    * successor); a crashed host's listing is hidden once it misses a check-in and expires soon after.
    */
   listing?: { name: string };
+  /** Between matches: the next-map vote that is open (or just closed), so it carries on with the successor. */
+  vote?: CheckpointVote;
+}
+
+/**
+ * The next-map vote in a checkpoint (sim/mapVote.ts): the ballot, who voted for what (by their index in the
+ * checkpoint's `players`, so votes follow people to their new slots), the seconds left, and the winner once closed
+ * (the old host may have broken a tie with its own vote: the successor keeps that result).
+ */
+export interface CheckpointVote {
+  o: VoteOption[];
+  /** [index into `players`, option index]. */
+  votes: [number, number][];
+  /** Seconds until it closes (0: closed). */
+  left: number;
+  w?: number;
+  by?: VoteWin;
 }
 
 /** One try to get into a game: let in, or why not (`rejected`: the host refused us, so trying again won't help). */
@@ -155,6 +176,7 @@ function parsePlayer(v: unknown): CheckpointPlayer | null {
   if (kind === 'human' && typeof o.key === 'string' && KEY_RE.test(o.key)) p.key = o.key;
   if (o.succ === 1) p.succ = 1;
   if (o.acct === 1) p.acct = 1;
+  if (kind === 'human' && isPartyTag(o.py)) p.py = o.py;
   const x = int(o.x, 0, 100_000);
   const ob = int(o.o, 0, 100_000);
   if (x) p.x = x;
@@ -219,12 +241,47 @@ export function parseCheckpoint(raw: unknown): MatchCheckpoint | null {
     });
   }
   if (Array.isArray(o.banned)) cp.banned = o.banned.filter((k): k is string => typeof k === 'string' && KEY_RE.test(k)).slice(0, 256);
+  const vote = parseCheckpointVote(o.vote, cp.players.length);
+  if (vote) cp.vote = vote;
   const l = o.listing as Record<string, unknown> | undefined;
   if (typeof l === 'object' && l !== null && typeof l.name === 'string') {
     // (An older host may still send the listing's ID and secret: they're dropped.)
     cp.listing = { name: l.name.replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 40) };
   }
   return cp;
+}
+
+/** A checkpoint's vote, checked (`players`: how many players the checkpoint has), or null. */
+function parseCheckpointVote(v: unknown, players: number): CheckpointVote | null {
+  if (typeof v !== 'object' || v === null) return null;
+  const o = v as Record<string, unknown>;
+  if (!Array.isArray(o.o) || o.o.length < 2 || o.o.length > 4) return null;
+  const opts: VoteOption[] = [];
+  for (const x of o.o as unknown[]) {
+    const e = (typeof x === 'object' && x !== null ? x : {}) as Record<string, unknown>;
+    const map = id(e.map, 80);
+    if (!map || typeof e.name !== 'string' || typeof e.mode !== 'string' || !isGameMode(e.mode)) return null;
+    opts.push({ map, name: e.name.replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 80) || map, mode: e.mode });
+  }
+  const left = int(o.left, 0, 120);
+  if (left === null) return null;
+  const votes: [number, number][] = [];
+  const seen = new Set<number>();
+  for (const e of Array.isArray(o.votes) ? o.votes.slice(0, MAX_PLAYER_SLOTS) : []) {
+    const who = Array.isArray(e) ? e[0] : null;
+    const i = Array.isArray(e) ? e[1] : null;
+    if (Number.isInteger(who) && Number.isInteger(i) && (who as number) >= 0 && (who as number) < players && (i as number) >= 0 && (i as number) < opts.length && !seen.has(who as number)) {
+      seen.add(who as number);
+      votes.push([who as number, i as number]);
+    }
+  }
+  const out: CheckpointVote = { o: opts, votes, left };
+  if (Number.isInteger(o.w) && (o.w as number) >= 0 && (o.w as number) < opts.length) {
+    out.w = o.w as number;
+    out.left = 0;
+    if (o.by === 'votes' || o.by === 'host' || o.by === 'order' || o.by === 'none') out.by = o.by;
+  }
+  return out;
 }
 
 /** A join code the host named for its successor (the same shape as every join code). */

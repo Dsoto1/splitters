@@ -48,7 +48,8 @@ import {
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE, type Stance } from './constants.ts';
 import { CORE_WEAPONS } from '../content/weapons.generated.ts';
-import { lastHit, lookHitbox, npcHitbox, type LookHitbox } from './hitbox.ts';
+import { lastHit, type LookHitbox } from './hitbox.ts';
+import { lookHitbox, npcHitbox } from './lookHitbox.ts';
 import { classStats, matchStats, type CharacterStats } from './characterStats.ts';
 import { randomLook } from './randomLooks.ts';
 import { RouletteDirector } from './roulette.ts';
@@ -1584,6 +1585,13 @@ export class Match {
       this.pendingEvents.push({ e: 'takeover', s: c.slot, from, to: name });
     }
     return c;
+  }
+
+  /** Free-for-all: the living people (and kept places) of `c`'s party, besides `c` (none: an empty set). */
+  private partyNear(c: Combatant): Set<Combatant> {
+    const out = new Set<Combatant>();
+    for (const o of this.combatants()) if (o !== c && o.alive && o.party === c.party && (o.kind === 'human' || o.away)) out.add(o);
+    return out;
   }
 
   /** Team modes: the team most of `party`'s people are on now (ties: the first team), or undefined (none in the match, or no teams). */
@@ -5870,10 +5878,12 @@ export class Match {
     const relook = this.relookOnSpawn(c);
     const enemies: Vec3[] = [];
     const occupants: Vec3[] = [];
+    // Free-for-all parties (net/party.ts): the members aren't a danger the spawn avoids, and it leans their way.
+    const party = !this.teams && c.party ? this.partyNear(c) : null;
     for (const o of this.actors()) {
       if (!o.alive || o === c) continue;
       occupants.push(o.move.pos);
-      if (this.hostile(c, o)) enemies.push(o.move.pos);
+      if (this.hostile(c, o) && !party?.has(o)) enemies.push(o.move.pos);
     }
     // A mode may say where (Breakthrough: the side's spawn group for the sector in play).
     const forMode = this.mode?.spawnSpots?.(c) ?? null;
@@ -5890,7 +5900,8 @@ export class Match {
     const side = rotating && c.faction ? this.spawnSides.of(c.faction) : null;
     // Made-up spawn points on a side: the ones nearer the side's base are preferred (they are on its own third anyway).
     const home = own.length && own.some((sp) => sp.generated) && c.faction ? this.sideHome(c.faction) : null;
-    const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), home, side, deaths: this.recentDeaths, sees: (a, b) => this.sees(a, b), rng: this.rng });
+    const partyAt = party?.size ? [...party].filter((o) => (o.hurtAt ?? -Infinity) < calm).map((o) => o.move.pos) : [];
+    const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), ...(partyAt.length ? { party: partyAt } : {}), home, side, deaths: this.recentDeaths, sees: (a, b) => this.sees(a, b), rng: this.rng });
     const best = candidates[pick];
     // Team modes: usually beside a teammate who's out of the fight and out of enemy sight, else the safest spawn point.
     // Fireteams: a squadmate beside its leader when that's safe, else at the team's spawn.
@@ -6209,6 +6220,7 @@ export class Match {
         ...(key ? { key } : {}),
         ...(c.slot === successor ? { succ: 1 as const } : {}),
         ...(c.account ? { acct: 1 as const } : {}),
+        ...(person && c.party ? { py: c.party } : {}),
         look: c.look,
         team: c.faction,
         k: c.kills,
@@ -6239,6 +6251,8 @@ export class Match {
     c.selfKills = p.x ?? 0;
     c.objective = p.o ?? 0;
     c.account = p.acct === 1;
+    // Their party stays together with the new host (team modes: one side; free-for-all: friendly names, spawns).
+    if (p.py && p.kind === 'human') c.party = p.py;
     if (p.alive && p.p) {
       if (!c.alive) this.spawn(c);
       this.leaveMount(c, false);
@@ -7033,11 +7047,11 @@ export class BotFiller {
    * player, marked `succ`) as a player, and everyone else as an away player whose place a bot keeps, held
    * for their next connection by their hashed key (reclaim). Returns the successor's own player.
    */
-  restore(cp: MatchCheckpoint, fill: number, me: { name: string; look?: string }): Combatant | null {
+  restore(cp: MatchCheckpoint, fill: number, me: { name: string; look?: string }, placed?: Map<number, Combatant>): Combatant | null {
     let mine: Combatant | null = null;
-    // People first (their teams as they were), then the bots.
-    const order = [...cp.players].sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'human' ? -1 : 1));
-    for (const p of order) {
+    // People first (their teams as they were), then the bots. `placed`: each checkpoint player's index → their new place.
+    const order = cp.players.map((p, i) => ({ p, i })).sort((a, b) => (a.p.kind === b.p.kind ? 0 : a.p.kind === 'human' ? -1 : 1));
+    for (const { p, i } of order) {
       if (p.kind === 'bot') {
         const profile = CORE_BOT_PROFILES[this.counter % CORE_BOT_PROFILES.length]!;
         this.counter++;
@@ -7045,12 +7059,14 @@ export class BotFiller {
         if (!c) continue;
         c.look = validLookId(p.look);
         this.match.restoreCombatant(c, p);
+        placed?.set(i, c);
         continue;
       }
       const self = p.succ === 1 && !mine;
       const c = this.match.addHuman(self ? me.name : p.name, self ? (me.look ?? p.look) : p.look, p.team);
       if (!c) continue;
       this.match.restoreCombatant(c, p);
+      placed?.set(i, c);
       if (self) mine = c;
       // Their place waits for them (twice the usual hold: everyone is reconnecting at once, some on slow machines);
       // with no key, a bot takes it over for good.

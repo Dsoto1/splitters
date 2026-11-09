@@ -1,4 +1,4 @@
-import { MODE_LABELS, type GameMode } from '@tiletrigger/shared';
+import { MODE_LABELS, SERVER_RULES, modeKey, ruleText, serverRuleFor, setServerRule, type GameMode, type RuleSpec, type ServerRules } from '@tiletrigger/shared';
 
 /**
  * trigger.toshiroplay.com/host: how to host. Hosting from a match in the
@@ -35,8 +35,15 @@ interface HostPerf { tickMax: number; ai: number; split: Record<string, number>;
 type Status = {
   state: 'stopped' | 'starting' | 'running' | 'stopping' | 'restarting' | 'crashloop';
   version: string;
-  config: { map: string; mode?: GameMode; botFill: number; maxPlayers: number; name: string; visibility: 'listed' | 'code'; adminTokenSet: boolean; hub: string } | null;
-  host: { code: string; online: boolean; listed: boolean; listingError: string | null; relay: boolean; map: string; mode: string; players: number; bots: number; maxPlayers: number; uptimeS: number; tickMs: number; upKBps: number; perf?: HostPerf | null; community: boolean; people: { slot: number; name: string; account: boolean; ping: number | null; kills: number; deaths: number }[] } | null;
+  config: { map: string; mode?: GameMode; botFill: number; maxPlayers: number; name: string; visibility: 'listed' | 'code'; adminTokenSet: boolean; hub: string; mapVote?: boolean; rules?: ServerRules } | null;
+  host: {
+    code: string; online: boolean; listed: boolean; listingError: string | null; relay: boolean; map: string; mode: string; players: number; bots: number; maxPlayers: number; uptimeS: number; tickMs: number; upKBps: number; perf?: HostPerf | null; community: boolean;
+    people: { slot: number; name: string; account: boolean; ping: number | null; kills: number; deaths: number }[];
+    /** The map playing (its ID), the rotation (with the next-map vote: absent from older services) and, per rule, what waits. */
+    mapId?: string;
+    rotation?: { vote?: boolean };
+    ruleRows?: { key: string; now: unknown; set: unknown; pending: boolean }[];
+  } | null;
   lastError: { at: number; summary: string } | null;
   bans: { id: string; name: string; account: boolean; until: number; reason: string }[];
 };
@@ -150,6 +157,24 @@ export function openHostPage(maps: HostPageMap[]): void {
 
   const fmtUptime = (s: number) => (s < 3600 ? `${Math.round(s / 60)} min` : `${Math.floor(s / 3600)} h ${Math.round((s % 3600) / 60)} min`);
 
+  let lastStatus: Status | null = null;
+  /** A running server's setting, live (`/rules`, `/vote`); an older Host Service without them says so. */
+  const live = async (path: string, body: unknown): Promise<void> => {
+    message.textContent = '…';
+    try {
+      const r = await call(path, body);
+      message.textContent = r.status === 404 ? 'This Host Service takes this change with the next Start (update it to change a running match from here).' : String(r.data.text ?? r.data.error ?? '').split('\n')[0]!;
+    } catch {
+      message.textContent = "Couldn't reach the Host Service.";
+    }
+    void refresh();
+  };
+  const rules = rulesSection((key, value) => {
+    const s = lastStatus;
+    if (s?.state === 'running') return void live('/rules', { key, value: value === undefined ? null : value });
+    rules.draft = setServerRule(rules.draft, key, value, { mode: rules.modeOf() });
+    rules.render(s, true);
+  });
   let formBuilt = false;
   const form = el('form', { className: 'hp-form', id: 'hp-form' });
   const statusBox = el('div', { className: 'hp-status', id: 'hp-status' });
@@ -174,6 +199,19 @@ export function openHostPage(maps: HostPageMap[]): void {
     const vis = el('select', { id: 'hp-visibility' });
     vis.append(new Option('In the game browser (and by code)', 'listed', false, c?.visibility !== 'code'), new Option('Join code only', 'code', false, c?.visibility === 'code'));
     const admin = el('input', { id: 'hp-admin', type: 'password', autocomplete: 'new-password', placeholder: c?.adminTokenSet ? 'set (leave empty to keep)' : 'optional, 8+ characters' });
+    // Between matches (docs/GAME_MODES.md "Between matches"): the same setting as the pause menu's Rotation card and MAP_VOTE.
+    const vote = el('input', { id: 'hp-vote', type: 'checkbox', checked: c?.mapVote !== false });
+    rules.draft = JSON.parse(JSON.stringify(c?.rules ?? {})) as ServerRules;
+    rules.vote = vote;
+    rules.modeOf = () => (mode.value as GameMode) || maps.find((x) => x.id === map.value)?.modes[0] || 'core.tdm';
+    rules.mapOf = () => map.value;
+    map.addEventListener('change', () => rules.render(lastStatus, true));
+    mode.addEventListener('change', () => rules.render(lastStatus, true));
+    vote.addEventListener('change', () => {
+      if (lastStatus?.state !== 'running') return;
+      // Live: the match takes it at once (older services: with the next Start).
+      void live('/vote', { on: vote.checked });
+    });
     const start = el('button', { className: 'primary', id: 'hp-start', type: 'submit', textContent: 'Start' });
     const stop = el('button', { id: 'hp-stop', type: 'button', textContent: 'Stop' });
     const restart = el('button', { id: 'hp-restart', type: 'button', textContent: 'Restart' });
@@ -185,6 +223,8 @@ export function openHostPage(maps: HostPageMap[]): void {
       el('label', {}, 'People at most (your upload carries each: ~20 KB/s a player)', max),
       el('label', {}, 'Visibility', vis),
       el('label', {}, 'Admin token (in-game: Esc → Server admin)', admin),
+      el('label', { className: 'hp-check' }, vote, el('span', { textContent: 'Vote on the next map: between matches everyone picks from two or three of our maps that fit (off: the rotation goes on; an empty one replays)' })),
+      rules.box,
       el('div', { className: 'hc-actions' }, start, restart, stop),
       message,
     );
@@ -208,6 +248,8 @@ export function openHostPage(maps: HostPageMap[]): void {
         name: name.value.trim(),
         visibility: vis.value,
         ...(admin.value ? { adminToken: admin.value } : {}),
+        mapVote: vote.checked,
+        rules: rules.draft,
       });
     });
     stop.addEventListener('click', () => void act('/stop'));
@@ -215,6 +257,7 @@ export function openHostPage(maps: HostPageMap[]): void {
   };
 
   const render = (s: Status) => {
+    lastStatus = s;
     if (!formBuilt) {
       buildForm(s);
       service.replaceChildren(el('p', { id: 'hp-state', className: 'hp-connected', textContent: `Host Service ${s.version} on this computer` }), statusBox, peopleBox, form);
@@ -230,6 +273,7 @@ export function openHostPage(maps: HostPageMap[]): void {
           ...perfLines(h.perf),
         ]
       : [];
+    rules.render(s);
     statusBox.replaceChildren(el('b', { id: 'hp-run-state', textContent: state }), ...lines.map((l) => el('div', { textContent: l })), ...(s.lastError ? [el('div', { className: 'hp-error', id: 'hp-last-error', textContent: `Last error: ${s.lastError.summary}` })] : []));
     const people = h?.people ?? [];
     peopleBox.replaceChildren(
@@ -300,4 +344,85 @@ function perfLines(p: HostPerf | null | undefined): string[] {
     `Tick split: bots ${ms('bots')} (think ${ms('botThink')} · perceive ${ms('botPerceive')} · path ${ms('botPath')} · aim ${ms('botAim')}) · sim ${sim.toFixed(2)} · snapshots ${ms('snapshot')} ms · slowest tick ${p.tickMax.toFixed(1)} ms`,
     `Snapshot ${(p.snapshotBytes / 1024).toFixed(1)} KB a client (largest ${(p.snapshotBytesMax / 1024).toFixed(1)} KB) · over budget ${p.spikes} this second, ${p.spikesTotal} in all${p.late ? ` · ${p.late} late` : ''}${p.spikeLog && p.spikesTotal ? ` (logs/${p.spikeLog})` : ''}`,
   ];
+}
+
+/** The rules shown first; the rest go under "More rules" (as the launcher's Match rules card). */
+const MAIN_RULES = ['score', 'time', 'respawn', 'ff', 'set', 'mix', 'drops', 'teams', 'assign'];
+const WHEN: Record<RuleSpec['apply'], string> = { live: 'now', restart: 'at the restart', next: 'next match' };
+
+/**
+ * The Match rules on /host: every rule of Play → Match setup and the pause menu's Host tab (shared sim/serverRules.ts,
+ * the same list as the launcher's Match rules card and the Host Service's RULES), for the mode chosen (stopped) or
+ * playing (running). Stopped, they go with Start; running, each change goes to the match at once (`/rules`) and
+ * applies now, at the restart or at the next match, as its tag says. Score, time and respawn are kept per mode.
+ */
+function rulesSection(onSet: (key: string, value: unknown) => void) {
+  const main = el('div', { className: 'hp-rule-list', id: 'hp-rules-main' });
+  const more = el('div', { className: 'hp-rule-list', id: 'hp-rules-more' });
+  const title = el('small', { id: 'hp-rules-mode' });
+  const moreBox = el('details', { className: 'hp-rules-more' }, el('summary', { textContent: 'More rules' }), more);
+  const box = el('fieldset', { className: 'hp-rules', id: 'hp-rules' }, el('legend', {}, 'Match rules ', title), el('p', { className: 'hint', textContent: "Every Match setup rule, kept for every match this server plays (score, time and respawn for this mode). Default: the mode's own. Running, a change goes to the match at once and applies as its tag says." }), main, moreBox);
+  let shown = '';
+  const self = {
+    box,
+    draft: {} as ServerRules,
+    vote: null as HTMLInputElement | null,
+    modeOf: (): GameMode => 'core.tdm',
+    mapOf: (): string => '',
+    /** Draw the rules (again only when what they show changed, and never under the visitor's cursor). */
+    render(s: Status | null, force = false): void {
+      const running = s?.state === 'running' && !!s.host;
+      const mode = running && s.host!.mode ? (s.host!.mode as GameMode) : self.modeOf();
+      const mapId = running ? (s.host!.mapId ?? s.host!.map) : self.mapOf();
+      const set = running ? (s.config?.rules ?? {}) : self.draft;
+      // Running: what the service keeps is what a Start (a restart with the form's settings) sends back.
+      if (running) self.draft = JSON.parse(JSON.stringify(set)) as ServerRules;
+      const rows = new Map((running ? (s.host!.ruleRows ?? []) : []).map((r) => [r.key, r]));
+      if (self.vote && running && s.host!.rotation?.vote !== undefined && document.activeElement !== self.vote) self.vote.checked = s.host!.rotation.vote;
+      const key = JSON.stringify([running, mode, mapId, set, [...rows.values()].map((r) => [r.key, r.pending, r.now])]);
+      if ((!force && key === shown) || box.contains(document.activeElement)) return;
+      shown = key;
+      title.textContent = `· ${MODE_LABELS[mode] ?? mode}`;
+      const specs = SERVER_RULES.filter((r) => !r.modes || r.modes(mode));
+      main.replaceChildren(...specs.filter((r) => MAIN_RULES.includes(r.key)).map((r) => ruleRow(r, serverRuleFor(set, r.key, mapId, mode)?.value, rows.get(r.key), onSet)));
+      more.replaceChildren(...specs.filter((r) => !MAIN_RULES.includes(r.key)).map((r) => ruleRow(r, serverRuleFor(set, r.key, mapId, mode)?.value, rows.get(r.key), onSet)));
+      moreBox.hidden = !more.childElementCount;
+      box.dataset.mode = modeKey(mode);
+    },
+  };
+  return self;
+}
+
+/** One rule: its label (help on hover), a control (empty / Default: the mode's own) and when a change applies. */
+function ruleRow(spec: RuleSpec, value: unknown, row: { now: unknown; pending: boolean } | undefined, onSet: (key: string, value: unknown) => void): HTMLElement {
+  const t = spec.type;
+  const id = `hp-rule-${spec.key}`;
+  let control: HTMLInputElement | HTMLSelectElement;
+  const has = value !== undefined && value !== null;
+  if (t.kind === 'int') {
+    control = el('input', { id, type: 'number', min: String(t.min), max: String(t.max), step: String(t.step ?? 1), value: has ? String(value) : '', placeholder: row ? `default (${ruleText(spec, row.now)})` : 'default' });
+    control.addEventListener('change', () => {
+      const v = control.value.trim();
+      const n = Number(v);
+      if (v === '') return onSet(spec.key, undefined);
+      if (!Number.isFinite(n) || n < t.min || n > t.max) return void (control.style.outline = '2px solid #e74c3c');
+      onSet(spec.key, Math.round(n));
+    });
+  } else if (t.kind === 'list') {
+    control = el('input', { id, value: Array.isArray(value) ? value.join(', ') : has ? String(value) : '', placeholder: "default (the map's)", maxLength: 200 });
+    control.addEventListener('change', () => {
+      const items = control.value.split(',').map((x) => x.trim()).filter(Boolean);
+      if (t.pattern && items.some((x) => !t.pattern!.test(x))) return void (control.style.outline = '2px solid #e74c3c');
+      onSet(spec.key, items.length ? items : undefined);
+    });
+  } else {
+    const values: [string, string][] = t.kind === 'bool' ? [['on', t.on], ['off', t.off]] : t.values.map(([v, l]) => [v, l]);
+    const sel = el('select', { id });
+    const cur = t.kind === 'bool' ? (has ? (value ? 'on' : 'off') : '') : has ? String(value) : '';
+    sel.append(new Option(row ? `Default (${ruleText(spec, row.now)})` : 'Default', '', false, cur === ''), ...values.map(([v, l]) => new Option(l, v, false, v === cur)));
+    sel.addEventListener('change', () => onSet(spec.key, sel.value === '' ? undefined : t.kind === 'bool' ? sel.value === 'on' : sel.value));
+    control = sel;
+  }
+  const wait = row?.pending ? el('em', { className: 'hp-rule-wait', textContent: ` · waits for the ${spec.apply === 'restart' ? 'restart' : 'next match'}` }) : '';
+  return el('label', { className: 'hp-rule', title: spec.help }, el('span', {}, spec.label, el('i', { className: `hp-tag ${spec.apply}`, textContent: WHEN[spec.apply] }), wait), control);
 }

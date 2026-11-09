@@ -29,7 +29,7 @@ function modeIds(root) {
 export function build(root = ROOT) {
   const problems = [];
   const d = JSON.parse(readFileSync(join(root, FILE), 'utf8'));
-  const choice = obj({ enemyRange: num, farRange: num, farWeight: num, sightRange: num, sightCandidates: int, sightEnemies: int, seenPenalty: num, deathRadius: num, deathSeconds: num, deathPenalty: num, mateRange: num, mateBonus: num, mateMax: int, sideWeight: num, sideMax: num, safeFew: int, margin: num });
+  const choice = obj({ enemyRange: num, farRange: num, farWeight: num, sightRange: num, sightCandidates: int, sightEnemies: int, seenPenalty: num, deathRadius: num, deathSeconds: num, deathPenalty: num, mateRange: num, mateBonus: num, mateMax: int, sideWeight: num, sideMax: num, safeFew: int, margin: num, partyRange: num, partyBonus: num, partyMax: int, partyMargin: num });
   const top = obj({ $comment: str, spawnProtection: map(num), botFireBefore: num, spawnChoice: choice, heavyHit: num, awards: obj({ accuracyMinShots: int, streakMin: int, nemesisMin: int, revengeMin: int }), callouts: obj({ nemesis: int }) });
   problems.push(...check(d, top, FILE));
   if (problems.length) return { problems, out: null };
@@ -39,8 +39,8 @@ export function build(root = ROOT) {
     if (!(s >= 0 && s <= 5)) problems.push(`${FILE}: spawnProtection.${m} must be 0-5 seconds`);
   }
   const c = d.spawnChoice;
-  for (const k of ['enemyRange', 'sightRange', 'deathRadius', 'mateRange']) if (!(c[k] > 0 && c[k] <= 200)) problems.push(`${FILE}: spawnChoice.${k} must be over 0 and at most 200 m`);
-  for (const k of ['seenPenalty', 'deathPenalty', 'mateBonus', 'margin']) if (!(c[k] >= 0 && c[k] <= 200)) problems.push(`${FILE}: spawnChoice.${k} must be 0-200`);
+  for (const k of ['enemyRange', 'sightRange', 'deathRadius', 'mateRange', 'partyRange']) if (!(c[k] > 0 && c[k] <= 200)) problems.push(`${FILE}: spawnChoice.${k} must be over 0 and at most 200 m`);
+  for (const k of ['seenPenalty', 'deathPenalty', 'mateBonus', 'margin', 'partyBonus']) if (!(c[k] >= 0 && c[k] <= 200)) problems.push(`${FILE}: spawnChoice.${k} must be 0-200`);
   if (!(c.deathSeconds > 0 && c.deathSeconds <= 60)) problems.push(`${FILE}: spawnChoice.deathSeconds must be over 0 and at most 60`);
   if (!(c.farRange >= c.enemyRange && c.farRange <= 300) || !(c.farWeight >= 0 && c.farWeight <= 2)) problems.push(`${FILE}: spawnChoice.farRange must be from enemyRange to 300 m and farWeight 0-2`);
   if (!(c.sideWeight >= 0 && c.sideWeight <= 2)) problems.push(`${FILE}: spawnChoice.sideWeight must be 0-2`);
@@ -48,6 +48,9 @@ export function build(root = ROOT) {
   if (!(c.safeFew >= 1 && c.safeFew <= 8)) problems.push(`${FILE}: spawnChoice.safeFew must be 1-8`);
   if (!(c.sightCandidates >= 1 && c.sightCandidates <= 16) || !(c.sightEnemies >= 1 && c.sightEnemies <= 8)) problems.push(`${FILE}: spawnChoice.sightCandidates must be 1-16 and sightEnemies 1-8 (each pair is a ray)`);
   if (!(c.mateMax >= 0 && c.mateMax <= 8)) problems.push(`${FILE}: spawnChoice.mateMax must be 0-8`);
+  if (!(c.partyMax >= 0 && c.partyMax <= 8)) problems.push(`${FILE}: spawnChoice.partyMax must be 0-8`);
+  // The party bonus only picks among points about as safe as the best: a wide margin would let it trade safety away.
+  if (!(c.partyMargin >= 0 && c.partyMargin <= 30)) problems.push(`${FILE}: spawnChoice.partyMargin must be 0-30`);
   if (!(d.botFireBefore >= 0 && d.botFireBefore <= 5)) problems.push(`${FILE}: botFireBefore must be 0-5 seconds`);
   if (!(d.heavyHit >= 10 && d.heavyHit <= 200)) problems.push(`${FILE}: heavyHit must be 10-200 damage`);
   for (const [k, v] of Object.entries(d.awards)) if (!(v >= 1 && v <= 200)) problems.push(`${FILE}: awards.${k} must be 1-200`);

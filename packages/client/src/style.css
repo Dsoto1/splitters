@@ -1243,6 +1243,22 @@ html.touch #squad-order { left: calc(8px + env(safe-area-inset-left)); bottom: a
 .hp-error { color: #ff8a7a; }
 .hp-people .hc-row, .hc-person { display: flex; gap: 8px; align-items: center; margin: 4px 0; }
 .hp-people .hc-row span, .hc-person span { flex: 1; }
+/* /host: the next-map vote and the match rules (hostPage.ts rulesSection). */
+.hp-form .hp-check { display: flex; gap: 8px; align-items: flex-start; }
+.hp-form .hp-check input { margin-top: 3px; }
+.hp-rules { border: 1px solid rgba(255,255,255,0.14); border-radius: 6px; padding: 8px 12px 12px; margin: 4px 0; min-width: 0; }
+.hp-rules legend { padding: 0 6px; font-weight: 600; }
+.hp-rules legend small { font-weight: 400; opacity: 0.75; }
+.hp-rule-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 12px; }
+.hp-rule { display: grid; gap: 2px; min-width: 0; }
+.hp-rule input, .hp-rule select { width: 100%; box-sizing: border-box; }
+.hp-tag { font-style: normal; font-size: 11px; margin-left: 6px; padding: 0 5px; border-radius: 3px; background: rgba(255,255,255,0.1); opacity: 0.85; }
+.hp-tag.live { color: #6ee7a8; }
+.hp-tag.restart { color: #ffd479; }
+.hp-tag.next { color: #8ecbff; }
+.hp-rule-wait { font-size: 11px; color: #ffd479; }
+.hp-rules-more { margin-top: 10px; }
+.hp-rules-more summary { cursor: pointer; margin-bottom: 8px; }
 
 /* The Bots window (frontend/botManager.ts): the host's own bots, from match setup and the pause menu. */
 .bot-manager { position: fixed; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(4, 7, 14, 0.62); }
