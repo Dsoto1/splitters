@@ -717,7 +717,7 @@ export class BotBrain {
   private bound: 'move' | 'cover' | null = null;
   /**
    * Covering fire (Fireteams Part 2): a squad's covering half keeps firing at where its enemy went out of sight, from
-   * its cover, while the other half moves, until this tick; and the rounds fired so (measuring).
+   * its cover, while the other half moves, until this tick; and the ticks it fired so (measuring).
    */
   private coverFireUntil = -1;
   coverShots = 0;

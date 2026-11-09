@@ -84,8 +84,8 @@ switched on in Match Setup's variants row. There is also a party preset.
 - **Proof:** e2e for the order wheel and the HUD, then an owner playtest.
 
 ## Part 1: done (2026-11-08, `wip/fireteams`)
-Part 1 was the variant, fixed squads, the order wheel, respawn on the leader and the measures. Parts 2 (formations and
-bounding, the squad HUD) and 3 (squad scores, MVP, the party preset) are still to come. The rules as built are in
+Part 1 was the variant, fixed squads, the order wheel, respawn on the leader and the measures. Part 2 (objective first,
+formations and bounding, the squad HUD) is done (below); Part 3 (squad scores, MVP, the party preset) is still to come. The rules as built are in
 docs/BOTS.md, "Fireteams"; the code is `sim/fireteams.ts`.
 
 - **The variant:** "Fireteams" in Match setup's Variants row for Team Deathmatch, CTF, King of the Hill, Bomb, Hostage and
@@ -160,3 +160,72 @@ squads whose leaders keep moving, so a person standing still to give one sees th
   against 25-31). Fireteams costs about what main does. Clumped Norman Shores is over 2.5 ms on main too, at this load
   (the guard's 1.0-1.8 ms was measured on a quiet machine): re-measure both on a quiet one. Fireteams makes more route
   searches (members follow a moving leader: 60 → 104 a second on Norman Shores), within the same thinking time.
+
+## Part 2: done (2026-11-09, `wip/fireteams-2`; owner-approved 2026-11-08)
+The rules as built: docs/BOTS.md, "Fireteams Part 2". What changed:
+
+1. **Objective first (bot-led squads).** A bot-led squad plays one play of the team brain's: its members play the
+   mode's objective themselves with their **leader's job** (the same group, corridor and staging spot) and the mode's
+   **role for the whole squad** (CTF: a squad defends only when it fits in the defenders wanted, so with squads of 4-6
+   every squad attacks); one more than 25 m from its leader catches up first. A fallen bot leader is replaced by its
+   best member alive (the squad keeps its push; the fallen one rejoins as a member), and a member carrying the flag or
+   the bomb leads (the squad escorts it). A person's squad still follows the person.
+2. **Formations** round a person: single file in a corridor or doorway (along their trail), a wedge, an open wedge on
+   open ground, by the free width across their way; each spot kept off walls and on walkable ground. Place orders
+   (Hold here, Go there, Defend the objective) put the squad on a ring round the place. **Spread out / Stay tight** is
+   the wheel's seventh entry (one entry that toggles; it keeps the order).
+3. **Bounding**: while a squad is on the move its members take halves (the leader and every other member, then the
+   rest); in a fight at range one half covers while the other moves cover to cover (Phase B's advance), and the
+   covering half keeps firing at where its enemy went out of sight (covering fire).
+4. **The squad HUD**: your squadmates' cards (portrait, name, health; greyed "Down") under the order line ("Squad · Hold
+   here · Spread out"), your squadmates as ringed orange dots on the minimap with the order's place (H, G, D), and
+   the squad's orange marker over their heads. Desktop: above your vitals; phone: beside them, clear of the move stick.
+   Nothing in it blinks (Reduce flashing).
+5. **Owner's decision kept**: a person's squad on Hold here, Go there or Defend the objective stays at its post when
+   they respawn; on Follow me or Attack that it regroups on them.
+
+### Part 2, measured
+`pnpm bot-report <map> --mode=<mode> --seeds=1,2,3,4 --seconds=180`, bots only (every squad bot-led), the variant off,
+Part 1 (main before this branch, seeds 1-2) and Part 2 (`--fireteams=5`). Columns: the mean distance from each member to
+its leader, the share within 10 m, kills, captures / hill seconds. Per match.
+
+| Map (mode) | off | Part 1 | Part 2 |
+|---|---|---|---|
+| Riot Junction (TDM) | 59.7 m, 12 %, 118 kills | 22.8 m, 49 %, 106 | 30.1 m, 26 %, **136** |
+| Eagle Spires (TDM) | 47.5 m, 28 %, 66 | 36.0 m, 38 %, 54 | 33.9 m, 28 %, **76** |
+| Bunker Cross (CTF) | 34.2 m, 20 %, 78, 2.0 captures | 21.9 m, 36 %, 57, 1.5 | 29.8 m, 21 %, 56, **1.5** |
+| Diamond Park (CTF) | 34.6 m, 15 %, 142, 1.2 captures | 17.2 m, 48 %, 74, 0.0 | 21.1 m, 32 %, **152**, 0.25 |
+| Shingle Point (KotH) | 51.1 m, 14 %, 94, hill 102 s | 23.1 m, 52 %, 47, 107 s | 27.7 m, 26 %, 68, **hill 106 s** |
+
+- **Kills** are back to (or above) the variant off in Team Deathmatch and on Diamond Park; Bunker Cross and Shingle
+  Point stay about a quarter down. **The hill** is held as long as off. **Captures**: Bunker Cross 1.5 a match (off
+  2.0); Diamond Park 0.25 (off 1.25, Part 1 none). On Diamond Park the flags are taken twice as often as off (30
+  takes in 4 matches against 15) but with every squad attacking both flags are often out at once and a carrier can't
+  score until its own flag is home (17 returns, 27 drops). See the question below.
+- **Cohesion** is still better than off on every map: the distance to the leader 13-50 % less (Bunker Cross least),
+  the share within 10 m the same (Eagle Spires, Bunker Cross) to twice off's; looser than Part 1's follow-the-leader.
+- **Orders** (`--orders`, seeds 1-2; done / given, mean seconds): about Part 1's or better, e.g. Riot Junction Hold
+  here 12/16 2.9 s (Part 1 9/16), Go there 12/16 (8/15), Regroup 14/16 (11/16), Attack that 9/16 (5/14); Diamond Park
+  Attack that 11/12 1.9 s (6/11), Defend the objective 10/12 5.4 s.
+- **Covering fire**: 300-7,000 bot ticks a match of a covering half firing at where its enemy went (most on the CTF
+  maps). Formation shapes are measured only for a person's squad (bots-only matches have none): the unit tests and the
+  e2e `fireteams` flow cover them.
+- **Tried and measured worse** (Diamond Park CTF, 180 s, 2-4 seeds each; diag runs): members keeping formation spots
+  round a bot leader (kills 97-108, no captures), laid round where the leader's route goes next (the same), the leader
+  easing off for laggers (slower pushes), members taking the leader's own goal within 20-40 m of it (kills ~105), a
+  whole squad of 4 holding each base (no captures in 4 matches, kills 102-129), CTF defenders picked singly out of
+  squads (Bunker Cross 1.5 captures but cohesion 32-37 m, worse than off; Diamond Park none).
+- **Bot thinking** (`pnpm bench:96:clump`, 96 bots, CPU ms a tick scaled to CPU time, this container at load 4-7 on 4
+  cores; main, this branch with the variant off, main with `--fireteams=5`, this branch with it):
+
+  | Map | main | branch, off | main, Fireteams | branch, Fireteams |
+  |---|---|---|---|---|
+  | Norman Shores spread / clumped | 2.34 / 2.28 | 2.59 / 2.38 | 1.98 / 2.76 | 1.96 / 2.76 |
+  | Frost Basin spread / clumped | 2.32 / 2.02 | 2.05 / 1.96 | 2.32 / 2.47 | 2.63 / 2.77 |
+  | Riot Junction spread / clumped | 1.63 / 2.02 | 1.60 / 2.03 | 2.02 / 1.93 | 2.79 / 2.09 |
+
+  The variant off plays main's matches exactly (the same kills; bot-report's rows are identical). With Fireteams the
+  branch costs about what Part 1 did; spread Frost Basin and Riot Junction are higher (2.6-2.8 against 2.0-2.3), with
+  more fighting (Riot Junction 86 kills in the 30 s against 68). Clumped Norman Shores is over 2.5 ms with Part 1 too at
+  this load: re-measure on a quiet machine.
+

@@ -28,9 +28,10 @@ export interface SquadRow {
   /** By order kind: given, carried out, and the mean seconds to carry one out. */
   orders: Partial<Record<OrderKind, [given: number, done: number, seconds: number]>>;
   /**
-   * Formations (Part 2; the variant on): squad-seconds on Follow me in each shape (single file, wedge, open wedge), the
-   * members' mean distance to their spots (m), and covering-fire rounds (a squad's covering half firing at where its
-   * enemy went out of sight while the other half moved).
+   * Formations (Part 2; the variant on): squad-seconds on Follow me in each shape (single file, wedge, open wedge; a
+   * person's squads only: bot-led ones play their play), the members' mean distance to their spots (m), and covering
+   * fire: the bot ticks a squad's covering half spent firing at where its enemy went out of sight while the other half
+   * moved.
    */
   shapes?: { file: number; wedge: number; open: number };
   spot?: number;
@@ -192,7 +193,7 @@ export function squadText(r: SquadRow): string {
     return `${k} ${d}/${g}${d ? ` in ${s} s` : ''}`;
   });
   const sh = r.shapes;
-  const form = sh ? ` | formation: single file ${sh.file} s, wedge ${sh.wedge} s, open ${sh.open} s, ${r.spot} m from their spots, covering fire ${r.coverShots ?? 0} rounds` : '';
+  const form = sh ? ` | formation: single file ${sh.file} s, wedge ${sh.wedge} s, open ${sh.open} s, ${r.spot} m from their spots, covering fire ${r.coverShots ?? 0} bot ticks` : '';
   return `squads (${r.on ? 'Fireteams' : 'variant off: the same squads, measured'}, size ${r.size}, ${r.squads} squads): to the leader ${r.cohesion} m on average, within 10 m ${(r.within10 * 100).toFixed(0)}%, within 25 m ${(r.within25 * 100).toFixed(0)}% | members alive ${(r.survival * 100).toFixed(0)}%${ord.length ? ` | orders carried out: ${ord.join(', ')}` : ''}${form}`;
 }
 

@@ -768,6 +768,33 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
   - The MapMaker editor with `?test=1` makes the same entity ids every session: a pickup placed there collided with
     one the audit placed (`pickup_ekrqxstr16`); placing without `?test=1` worked. For the MapMaker lane.
 
+### Fireteams, part 2 (`wip/fireteams-2`, agent, 2026-11-09; owner-approved 2026-11-08; docs/FIRETEAMS_PLAN.md "Part 2", docs/BOTS.md "Fireteams Part 2")
+- **What players see:** bot squads go for the objective together; your own squad forms up round you (single file in
+  corridors, a wedge, spread on open ground; a ring round a Hold / Go / Defend place); **Spread out / Stay tight** as
+  the wheel's seventh entry; half the squad covering while the other half moves up; the **squad HUD** (squadmates'
+  portraits, health, "Down", the order line with the spacing; ringed orange squad dots and the order's place on the
+  minimap; orange markers over squadmates). Phone: the panel sits beside your health, clear of the move stick.
+- **Code:** `sim/fireteams.ts` (`layFormation`, `formationShape`, `formationOffset`, `squadHalf`, `spacing`, the
+  leader handover and carrier lead in `step`, `squadSnapshot`/`readSquad`), `match.ts` (`fireteamPlayGoal`,
+  `squadWorld.clear/ground`, `squadUnit` → `ModeLogic.botUnits`, leader alerts, the snapshot's `fs`), `ctfBots.ts`
+  (`ctfSquadRoles`), `director.ts` (`DirectorMember.unit`: a member takes its leader's job), `brain.ts` (`OrderGoal.half`
+  in `boundPhase`, covering fire), protocol `fs` (REPEATABLE), client `squadHud.ts`, `minimap.ts` (`ring` blips),
+  `session.ts` (the HUD, the wheel's spacing entry), `style.css` (`#squad-hud`; `#squad-order` moved inside it).
+- **Proof:** unit `shared/test/fireteams.test.ts` (+9: shapes and offsets, a person's squad in the open and in a
+  corridor, walls, rings, spacing toggle and snapshot, bot-led members play the play, halves, the leader handover and
+  the carrier, CTF roles by squad), `client/test/squadHud.test.ts`; e2e `fireteams` extended (7 wheel entries, the
+  HUD's cards, Spread out answered and shown); bot-report off / Part 1 / Part 2 and bench in FIRETEAMS_PLAN.md.
+- **Measured:** TDM kills above off (Riot Junction 136 / 118, Eagle Spires 76 / 66), the hill held as long (106 / 102 s),
+  cohesion better than off everywhere; CTF captures Bunker Cross 1.5 / 2.0, **Diamond Park 0.25 / 1.25** (both flags
+  out at once: every squad attacks). Kills on Bunker Cross and Shingle Point about a quarter under off.
+- **Screenshots** (this session's scratchpad, may not survive): `fireteams2/fireteams2-hud-desktop.png`,
+  `fireteams2-hold-desktop.png`, `fireteams2-wheel-desktop.png`, `fireteams2-hud-phone.png`, `fireteams2-hold-phone.png`.
+- **For the owner:**
+  1. CTF with Fireteams: keep every squad attacking (more kills and takes, few captures on Diamond Park), or have the
+     team's smallest squad hold the base when a team has 3+ squads (measured: no captures on Diamond Park either)?
+  2. Formations are for your own squad; bot squads play the objective in the team's plan instead (formations round
+     bot leaders cost about a third of the kills). Keep that split?
+
 ### Fireteams, part 1 (`wip/fireteams`, agent, 2026-11-08; owner said "Go"; green on `check/fireteams` at 4610a3b, run 42493762584; LANDED: main 4610a3b; docs/FIRETEAMS_PLAN.md "Part 1", docs/BOTS.md "Fireteams")
 - **What players see:** a **Fireteams** variant chip in Match setup for TDM, CTF, KotH, Bomb, Hostage and
   Breakthrough, with **Squad size 4 / 5 / 6** (5 standard) beside the score. In play, "You lead a fireteam of 5 ·

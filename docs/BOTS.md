@@ -975,7 +975,7 @@ squads by proximity with **fixed squads** made from the roster.
   leaving (or away) hands their squad to its best bot leader (`leadAbility`: loyalty, tactical sense, cowards last).
   Player caps don't change: squads only group the players there are (more people than squads of the size: every
   person still leads one, the bots spread among them).
-- **What members do** (`memberGoal`, through `Match.botGoal` ahead of every other goal but a carrier's): follow the
+- **What members do** (Part 1; Part 2 changed bot-led squads, below) (`memberGoal`, through `Match.botGoal` ahead of every other goal but a carrier's): follow the
   leader (the squad's `anchor`, the leader's position moved on every 3 m, so routes aren't asked afresh every think),
   or the squad's order. A person's order is `OrderGoal.order` (ORDER_WEIGHT 2.4 in the scored choice: above noises and
   chases, below cover and a gun; bots fight what they see); keeping with a bot leader is `OrderGoal.squad`
@@ -998,7 +998,7 @@ squads by proximity with **fixed squads** made from the roster.
 - **Ending orders** (`Fireteams.step`, 10 times a second): Attack that ends when the target is down (or after 45 s),
   Regroup when half the squad is within 8 m (or after 20 s): both turn back into Follow me. An order is **carried out**
   (`FireteamOrder.done`, measured) when half the squad's living members are within its radius (+2 m).
-- **The leader down**: the squad holds and fights where each member stood (a Hold here, Go there or Defend the
+- **The leader down** (a person's squad; a bot-led one is led on by a member since Part 2): the squad holds and fights where each member stood (a Hold here, Go there or Defend the
   objective stays in force). Back, they form up on them (Regroup), a place order staying.
 - **Respawn on the leader** (`Match.fireteamSpawn`): a squadmate respawns beside its leader when it's safe there
   (`spawns.ts leaderSpotSafe`: no enemy within 20 m, no fresh deaths, out of sight of the nearest enemies, by the spawn
@@ -1008,8 +1008,48 @@ squads by proximity with **fixed squads** made from the roster.
   once a second), the share of members alive, and orders carried out and in how long (`--orders`: every squad's leader
   gets an order every 30 s in turn). With the variant off, the same squads are worked out alongside and measured, for
   comparison. Numbers: docs/FIRETEAMS_PLAN.md, "Part 1".
-- **Hooks for Parts 2 and 3**: a squad's `id`, `members`, `order` and `anchor` (formations, bounding, the squad HUD,
-  scores and MVP read them); the 'squad' events carry the squad id.
+- **Hooks for Part 3**: a squad's `id`, `members`, `order` and `anchor` (scores and MVP read them); the 'squad' events
+  carry the squad id.
+
+### Fireteams Part 2: objective first, formations, bounding, the squad HUD (docs/FIRETEAMS_PLAN.md, "Part 2")
+- **Objective first (bot-led squads).** A bot-led squad on Follow me plays one play: its members play the mode's
+  objective themselves (`memberGoal` returns null for them), each with its **leader's team-brain job** (the same group,
+  corridor and staging spot: `DirectorMember.unit`, `BotDirector.update`), and the mode's **role for the whole squad**
+  (`ModeLogic.botUnits`; CTF `CtfBotPlan.squadRoles` / `ctfSquadRoles`: a squad defends only when it fits in the
+  defenders wanted, so with squads of 4-6 every squad attacks and a flag in trouble is answered by whoever is near). A
+  member more than `CATCH_UP` (25 m) from its leader catches up first (at a run). In Team Deathmatch the director's
+  fixed clusters keep giving them the squad's goal, route and regroups as before.
+  - **The leader falls:** a bot-led squad is led on by its best member alive (`Fireteams.step`, a handover that keeps
+    the squad's order); the fallen one comes back as a member (beside the new leader when that's safe). A person's
+    squad still holds for them (Part 1; a place order stays, Follow me / Attack that regroup on their return).
+  - **A carrier leads:** a bot-led squad's member carrying the objective (a flag, the bomb: `blocksVehicle`) takes the
+    lead, so the squad's catch-up and respawns go to it.
+  - Tried and measured worse (FIRETEAMS_PLAN.md, Part 2): members keeping formation spots round a bot leader (at its
+    pace, or round where its route goes next), the leader easing off for laggers, members playing the leader's own
+    goal only near it, a whole squad of 4 holding a CTF base, CTF defenders picked singly out of squads.
+- **Formations (a person's squad).** On Follow me and Regroup each member has a spot round its leader (`layFormation`,
+  `Squad.spots`), laid again each time the leader has moved `ANCHOR_MOVE` (3 m): the shape by the free width across
+  the leader's way (two sight lines at chest height, 12 m each side): under `FILE_WIDTH` (7 m) single file along the
+  leader's own trail (its last anchors), over `OPEN_WIDTH` (18 m) an open wedge, a wedge between. Each spot is kept 0.8 m
+  short of a wall between it and the leader and put on the walkable ground under it (`nav.closestPoint`, a step up or
+  down; none: the leader's spot). On Hold here, Go there and Defend the objective (any squad) the members stand on a
+  ring round the place (2.5, 3 and 5 m), not on one spot.
+- **Spread out / Stay tight** (`spacing`, the wheel's seventh entry, `PlayerInput.say` 116): one entry that toggles
+  the squad's spacing (`normal` → `spread` → `tight` → `spread`; its label says what it will do). Spread scales every
+  offset and ring 1.6 and opens a wedge; tight 0.6 and closes an open wedge; single file stays single file. It keeps
+  the squad's order. A bot answers "Spreading out!" / "Tightening up!".
+- **Bounding.** While a squad is on the move (its anchor moved in the last 3 s) every member has a half
+  (`squadHalf`: the leader 0, its members 1, 0, 1, ...; `OrderGoal.half`): in a fight at range on the way, the halves
+  take turns (4 s each) covering and moving cover to cover (`BotBrain.boundPhase`, Phase B's advance), by style as
+  before (Tactical from 12 m, Mixed from 18, Arena never). A person's squad on Follow me bounds too. **Covering fire:**
+  a member of the covering half whose enemy ducks out of sight keeps firing at where it went (`suppress`, only while
+  the rounds reach it, so from a peek) for 2.5 s (`coverShots`: bot ticks spent so, measured).
+- **Alerts:** a bot leader in a fight tells its members within 45 m not in one where its enemy is (once a second).
+- **The squad HUD** (`client/game/squadHud.ts`; the snapshot's `fs`, `squadSnapshot`): your squadmates' cards
+  (portrait, name, health; greyed "Down"), the order line ("Squad · Hold here · Spread out"), your squadmates as ringed
+  dots in the squad's orange on the minimap and the order's place (H, G, D), and the orange marker over their heads.
+- **Measured** (`squadMeasures.ts`): besides Part 1's, squad-seconds in each shape, the members' distance to their
+  spots, covering-fire rounds.
 
 ## Snipers (Bot AI Phase B)
 
