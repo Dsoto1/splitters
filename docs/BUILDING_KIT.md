@@ -125,6 +125,12 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
 - **Vaulted Tunnel, Bend, Junction, Crossing:** a 3.6 m passage between masonry under a barrel vault (2.2 m to 3.28 m),
   groin-vaulted where two cross, a drain down the middle. No walls of their own at their sides: what is built beside
   them builds its own.
+- **Side walls** (the tile inspector's Options, on any vaulted tunnel, one or several selected): the tunnel's masonry
+  rises to a kerb 0.25 m under the level above, and the ground on its closed sides stays up at that kerb instead of
+  banking down to the passage (where a tunnel runs under open ground, or out into a cut, you see masonry, not a slope
+  of earth). It is the tile "Vaulted Tunnel (Side Walls)" (and Bend, Junction, Crossing): the palette shows only the
+  plain ones, and the checkbox swaps between them in one undo step, keeping paint and walls. The ground over the
+  passage itself must still be within 3 m of its floor (Flatten it), as for the plain tunnel.
 - **Corner Hatch:** open floor with a quarter of a 3.2 m hatch at its north-east corner: four round a corner open a
   hatch on it (a 4 m board square on a cell corner).
 - **Sandbags** (material): our own procedural paint, bags 0.6 m by 0.3 m in stretcher bond.
