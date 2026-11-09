@@ -40,10 +40,67 @@ export function effectiveBand(ttk: readonly (number | null)[], distances: readon
   return [near, far];
 }
 
+/** The benchmark seven (GUNPLAY_DIRECTION.md): the guns a bot most often meets, the yardstick for a gun's edge. */
+export const BENCHMARK_GUNS = ['core.pistol', 'core.revolver', 'core.smg', 'core.rifle', 'core.shotgun', 'core.sniper', 'core.rockets'] as const;
+
+/** The middle of the benchmark guns' times at each distance (a gun that can't kill there counts as the slowest). */
+export function benchmarkMedian(curves: Readonly<Record<string, readonly (number | null)[]>>, n: number): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const ts = BENCHMARK_GUNS.map((id) => curves[id]?.[i] ?? Infinity).sort((a, b) => a - b);
+    out.push(ts[Math.floor(ts.length / 2)]!);
+  }
+  return out;
+}
+
+/**
+ * Where a gun has the edge: the longest run (two measured distances or more) inside its band where it kills at least
+ * as fast as the benchmark guns' median there (its ends halfway to the next distance, as the band's), or null.
+ * A flat curve (the Precision Rifle's) has a band that starts at the muzzle, but it only beats what others carry from
+ * mid range on: that is where a bot holding it wants the fight.
+ */
+export function edgeOf(ttk: readonly (number | null)[], distances: readonly number[], median: readonly number[], band: readonly [number, number]): [number, number] | null {
+  let best: [number, number] | null = null;
+  let i = 0;
+  const ok = (k: number) => {
+    const t = ttk[k];
+    return t !== null && t !== undefined && t <= median[k]! && distances[k]! >= band[0] && distances[k]! <= band[1];
+  };
+  while (i < ttk.length) {
+    if (!ok(i)) {
+      i++;
+      continue;
+    }
+    let j = i;
+    while (j + 1 < ttk.length && ok(j + 1)) j++;
+    // (One distance alone is too thin to be an edge: two in a row at least.)
+    if (j > i && (!best || j - i > best[1] - best[0])) best = [i, j];
+    i = j + 1;
+  }
+  if (!best) return null;
+  const [a, b] = best;
+  return [a === 0 ? 0 : (distances[a - 1]! + distances[a]!) / 2, b === ttk.length - 1 ? distances[b]! : (distances[b]! + distances[b + 1]!) / 2];
+}
+
 const bands = new Map<string, readonly [number, number]>();
+const edges = new Map<string, readonly [number, number]>();
+const median = benchmarkMedian(BOT_TTK, BOT_TTK_DISTANCES.length);
 for (const [id, ttk] of Object.entries(BOT_TTK)) {
   const band = effectiveBand(ttk, BOT_TTK_DISTANCES);
-  if (band) bands.set(id, band);
+  if (!band) continue;
+  bands.set(id, band);
+  const edge = edgeOf(ttk, BOT_TTK_DISTANCES, median, band);
+  if (edge) edges.set(id, edge);
+}
+
+/**
+ * The distances (m) a bot holding this gun tries to fight at: its band, starting where it gets the edge (a long gun
+ * stays out of the range where everyday guns out-kill it). The band itself when it has no edge, or no measurement.
+ */
+export function botEdge(def: WeaponDefinition): readonly [number, number] {
+  const band = botBand(def);
+  const e = edges.get(def.id);
+  return e && e[0] > band[0] && e[0] < band[1] - 2 ? [e[0], band[1]] : band;
 }
 
 /** The measured band for a weapon id, if it has one. */

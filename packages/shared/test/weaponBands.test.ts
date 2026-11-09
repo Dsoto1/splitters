@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CORE_WEAPONS, getWeapon } from '../src/index.ts';
 import { BOT_TTK, BOT_TTK_DISTANCES } from '../src/bots/weaponBands.generated.ts';
-import { botBand, effectiveBand, measuredBand } from '../src/bots/weaponBands.ts';
+import { botBand, botEdge, edgeOf, effectiveBand, measuredBand } from '../src/bots/weaponBands.ts';
 
 const D = [5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 75, 100, 125, 150];
 
@@ -40,6 +40,19 @@ describe("bots' weapon bands (G4: from gun-report's measured TTK)", () => {
     // A launcher is never fought inside its own blast.
     const rockets = getWeapon('core.rockets');
     expect(botBand(rockets)[0]).toBeGreaterThanOrEqual((rockets.projectile?.splashRadius ?? 0) + 1);
+  });
+
+  it("finds a gun's edge: where it out-kills the benchmark guns' median, two distances in a row at least", () => {
+    const median = [600, 600, 700, 800, 900, 1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000, 6000];
+    // Flat and slowish: it only wins from 25 m on.
+    const flat = [850, 850, 850, 850, 860, 860, 860, 860, 870, 880, 900, 920, 950, 970];
+    expect(edgeOf(flat, D, median, [0, 150])).toEqual([22.5, 150]);
+    // One winning distance alone is no edge.
+    expect(edgeOf([900, 900, 900, 900, 950, 950, 1300, 1600, 2100, 2600, 3100, 4100, 5100, 6100], D, median, [0, 150])).toBeNull();
+    // The Precision Rifle stays out of the range where everyday guns beat it; the SMG and the shotgun fight from the muzzle.
+    expect(botEdge(getWeapon('core.sniper'))[0]).toBeGreaterThanOrEqual(20);
+    expect(botEdge(getWeapon('core.smg'))[0]).toBe(0);
+    expect(botEdge(getWeapon('core.shotgun'))[0]).toBe(0);
   });
 
   it('keeps the hand-set range for weapons without a measurement (melee)', () => {
