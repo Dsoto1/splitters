@@ -27,6 +27,20 @@ Coast job):
 - **Coast border side** (Sky → Border → Per side): for a side a shoreline runs out through. Sand and shallow water
   carry on past the boundary along the shore, cliffs ease to low headlands and dunes, forest grows only inland.
   Scenery only: nothing to bump into.
+**Parties and the next-map vote, part 2** (owner-approved follow-ups, 2026-11-08):
+- **Host handoff keeps the party together:** when a browser host leaves and a friend takes over, everyone keeps their
+  party and side, and a vote on the next map that was open goes on with the new host (the same maps, votes and time
+  left; one that had just closed keeps its winner).
+- **Free-for-all parties:** friends who came together see each other's names in a friendly colour (kill feed,
+  messages, scoreboard) with the ally marker over their heads, and tend to spawn near each other (never at the cost of
+  a safe spawn). They can still shoot each other: damage and scoring are unchanged.
+- **The /host page** gets "Vote on the next map" and every Match setup rule (score, time, respawn, friendly fire,
+  weapon set, teams and the rest under More rules), each tagged with when it applies. Stopped, they go with Start;
+  running, a change reaches the match at once. The Host Service launcher's Rotation card gets the vote box too, and
+  the console `rotation vote on|off`.
+- **The menu's first download** is 32 kB smaller (746 → 714 kB gzip): the hit-shape table loads with the match, not
+  the menu. The budget goes back to 800 kB.
+
 **Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall** (docs/SET_PIECES_PLAN.md, "As built: part 5"):
 - **Twelve new set pieces** in MapMaker's Set pieces tab, each in its own group: Power Core Hall, Catwalk Bridge (three
   lengths), Twin-Stair Overlook, Atrium Tower, Loading Dock, Sunken Arena, Reactor Room, Bunker Cluster, Courtyard

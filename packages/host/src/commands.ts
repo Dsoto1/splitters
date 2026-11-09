@@ -34,7 +34,7 @@ export const COMMANDS: readonly CommandSpec[] = [
   { name: 'motd', args: '[<text>|clear]', help: 'the message each player gets when they join', match: false },
   { name: 'afk', args: '<seconds>', help: 'idle this long and a bot plays for a player until they\'re back (0: never), live', match: false },
   { name: 'idlekick', args: '<minutes>', help: 'idle this long (still connected) and a player is removed (0: never), live', match: false },
-  { name: 'rotation', args: '[add <map> [mode]|remove <n>|move <n> up|down|preset <name>|shuffle on|off|clear]', help: 'the map rotation: the maps played in turn after each match (empty: the match replays)', match: true },
+  { name: 'rotation', args: '[add <map> [mode]|remove <n>|move <n> up|down|preset <name>|shuffle on|off|vote on|off|clear]', help: 'the map rotation: the maps played in turn after each match (empty: the match replays); vote: everyone votes on the next map between matches', match: true },
   { name: 'skip', args: '', help: "go on to the rotation's next map now", match: true },
   { name: 'botset', args: '[preset <name>|add <name> [look] [skill] [team]|remove <n>|list <bot; bot…>|only|random|clear]', help: 'your own bots: names, looks, skills, teams, squads (a bot: "Name, look, skill, style, team, squad")', match: true },
   { name: 'restart', args: '', help: 'restart the match (same map)', match: true },
@@ -65,7 +65,7 @@ export function parseCommand(line: string): Parsed | null {
   return { ok: true, name, args: words.slice(1), rest: text.slice(text.match(/^\S+/)![0].length).trim() };
 }
 
-export const ROTATION_ACTIONS = ['add', 'remove', 'move', 'preset', 'shuffle', 'clear'] as const;
+export const ROTATION_ACTIONS = ['add', 'remove', 'move', 'preset', 'shuffle', 'clear', 'vote'] as const;
 export const BOTSET_ACTIONS = ['preset', 'add', 'remove', 'list', 'only', 'random', 'clear'] as const;
 /** What `rules` completes: the rule names, then (for a rule) its values. */
 export const RULE_WORDS = SERVER_RULES.map((r) => r.key);
@@ -90,7 +90,7 @@ export function complete(line: string, maps: readonly string[], presets: readonl
     if (parts.length === 2) return ROTATION_ACTIONS;
     if (parts[1] === 'add') return parts.length === 3 ? maps : parts.length === 4 ? modes : [];
     if (parts[1] === 'preset') return parts.length === 3 ? presets : [];
-    if (parts[1] === 'shuffle') return parts.length === 3 ? ['on', 'off'] : [];
+    if (parts[1] === 'shuffle' || parts[1] === 'vote') return parts.length === 3 ? ['on', 'off'] : [];
     if (parts[1] === 'move') return parts.length === 4 ? ['up', 'down'] : [];
     return [];
   };
@@ -330,9 +330,10 @@ export function runMatchCommand(name: string, args: string[], rest: string, t: M
 
 /** The rotation as console lines: each map in turn, what plays now and what's next. */
 export function rotationText(r: RotationState): string {
-  if (!r.entries.length) return 'The rotation is empty: each match replays its map. rotation add <map> [mode], or rotation preset <name>.';
+  const vote = r.vote === undefined ? '' : `\nVote on the next map: ${r.vote ? 'on (rotation vote off: plain rotation)' : 'off (rotation vote on)'}`;
+  if (!r.entries.length) return `The rotation is empty: each match replays its map${r.vote ? ' (or goes to the map everyone votes for)' : ''}. rotation add <map> [mode], or rotation preset <name>.${vote}`;
   const lines = r.entries.map((e, i) => `${String(i + 1).padStart(2)}. ${e.name} · ${MODE_LABELS[e.mode] ?? e.mode}${i === r.current ? '   (playing)' : ''}${i === r.next ? '   (next)' : ''}`);
-  return [`Map rotation${r.shuffle ? ' (shuffled)' : ''}:`, ...lines].join('\n');
+  return [`Map rotation${r.shuffle ? ' (shuffled)' : ''}:`, ...lines].join('\n') + vote;
 }
 
 /** `rotation …`: show it, or change it with the same command in-game admins send (the whole list). */
@@ -386,6 +387,12 @@ function rotationCommand(args: string[], t: MatchCommandTarget): string {
     case 'shuffle': {
       if (args[1] !== 'on' && args[1] !== 'off') return 'usage: rotation shuffle on|off';
       return after(t.command({ c: 'rotation', shuffle: args[1] === 'on' }, by));
+    }
+    case 'vote': {
+      // Between matches, everyone votes on the next map (MAP_VOTE; docs/GAME_MODES.md "Between matches"); off: plain rotation.
+      if (args[1] !== 'on' && args[1] !== 'off') return `usage: rotation vote on|off (now ${r.vote === false ? 'off' : 'on'})`;
+      const err = t.command({ c: 'rotation', vote: args[1] === 'on' }, by);
+      return err ? `refused: ${err}` : args[1] === 'on' ? 'between matches, everyone votes on the next map (two or three of our maps that fit)' : 'no vote between matches: the rotation goes on (an empty one replays)';
     }
     default:
       return `usage: ${helpText('rotation')}`;

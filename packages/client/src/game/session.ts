@@ -1777,6 +1777,8 @@ export class GameSession {
           return;
         }
         this.slot = msg.slot;
+        this.hud.self = msg.slot;
+        if (this.markers.ally !== 'team') this.hud.partyColor = this.markers.ally;
         this.rules = msg.rules;
         // Grenades wear the weapon set's looks (the Military frag, the Sci-fi smoke canister) before the map's pickups are drawn.
         this.view.setWeaponSetLook(weaponSetInPlay(msg.rules, loaded.map)?.id);
@@ -3227,6 +3229,8 @@ export class GameSession {
         const theirs = id < NPC_ID_BASE ? this.hud.team(id) : undefined;
         if (mine && theirs && mine.id === theirs.id) return this.markers.ally === 'team' ? mine.color : this.markers.ally;
         if (mine && theirs) return this.markers.enemy;
+        // Free-for-all: your party's people get the ally marker (ffaParty.ts).
+        if (!mine && id < NPC_ID_BASE && this.hud.partyMate(id)) return this.hud.partyColor;
         return null;
       },
       this.mounts?.riders(),
