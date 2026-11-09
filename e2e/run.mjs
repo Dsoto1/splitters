@@ -5854,7 +5854,8 @@ async function trafficFlow(browser) {
 
   // Team Deathmatch on Apex Ring: its track's NPC cars lap as traffic while the teams fight (Race mode is gone).
   await page.goto(`${CLIENT}/?offline=apex_ring&gamemode=core.tdm&test=1`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && ['countdown', 'playing'].includes(window.__match?.phase), null, { timeout: T(60000) });
+  // Polled on a timer: a loading page may draw no frames for a while.
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && ['countdown', 'playing'].includes(window.__match?.phase), null, { timeout: T(120000), polling: 250 });
   // Headless frame rates are slow: run the clock through the start countdown.
   await page.evaluate(() => {
     for (let i = 0; i < 60 * 10 && window.__match.phase !== 'playing'; i++) window.__match.step();
