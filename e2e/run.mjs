@@ -1093,6 +1093,81 @@ async function editoruxFlow(browser) {
   await editorTurnChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
+  await editorTerrainGridChecks(browser);
+}
+
+/**
+ * Map format v32's MapMaker half (the Iron Coast job): Terrain → Change grid (a preview of the vertices and the budget,
+ * one undo step) on a small terrain, and the coast border side chosen per side and drawn.
+ */
+async function editorTerrainGridChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // A cliff 8 m high across the north of the terrain (sculpted in one step), the beach south of it.
+  const start = await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    const heights = t.heights.map((h, i) => (t.origin[1] + Math.floor(i / t.cols) * t.spacing > 10 + 0.3 * (t.origin[0] + (i % t.cols) * t.spacing) ? 800 : h));
+    ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights } });
+    return { spacing: t.spacing, cols: t.cols, rows: t.rows };
+  });
+  await page.click('#ed-env-btn');
+  await page.click('#ed-pal-tabs [data-ws="environment"][data-pane="terrain"]');
+  await page.click('#ed-tr-grid');
+  await page.waitForSelector('#ed-grid-dialog', { timeout: T(5000) });
+  await page.selectOption('#ed-grid-spacing', '1');
+  const preview = await page.evaluate(() => ({ after: document.getElementById('ed-grid-after').textContent, verts: document.getElementById('ed-grid-verts').textContent, size: document.getElementById('ed-grid-size').textContent, go: !document.getElementById('ed-grid-go').disabled }));
+  check(preview.after === '1 m · 97 × 97' && /^9,409 \(×/.test(preview.verts) && /of 2 MB$/.test(preview.size) && preview.go, `Change grid previews the new grid, its vertices and the file against its budget (${JSON.stringify(preview)}; was ${start.cols} × ${start.rows} at ${start.spacing} m)`);
+  await page.selectOption('#ed-grid-spacing', '1.25');
+  const odd = await page.evaluate(() => document.getElementById('ed-grid-why').textContent);
+  check(/whole number of 1\.25 m cells/.test(odd), `a spacing that doesn't divide the terrain says it changes its size (${odd})`);
+  await page.selectOption('#ed-grid-spacing', '1');
+  await shot('change-grid');
+  const before = await page.evaluate(() => window.__editor.doc.terrain);
+  await page.click('#ed-grid-go');
+  await frames(page, 3);
+  const after = await page.evaluate(() => {
+    const t = window.__editor.doc.terrain;
+    const grass = window.__editor.view.scene.meshes.find((m) => m.name === 'edmap_terrain_grass' && !m.isDisposed());
+    return { spacing: t.spacing, cols: t.cols, rows: t.rows, heights: t.heights, cells: t.materials.length, label: document.getElementById('ed-tr-size').textContent, drawn: grass?.getTotalVertices() ?? 0, undo: window.__editor.history.undoLabel };
+  });
+  let same = true;
+  for (let r = 0; r < before.rows; r++) for (let c = 0; c < before.cols; c++) if (after.heights[r * 2 * after.cols + c * 2] !== before.heights[r * before.cols + c]) same = false;
+  check(after.spacing === 1 && after.cols === 97 && after.rows === 97 && after.cells === 96 * 96 && same, `Change grid resamples the terrain to 1 m, heights where the grids meet unchanged (${after.cols} × ${after.rows}, ${after.label})`);
+  check(after.drawn >= 96 * 96 * 4 * 0.9 && after.undo === 'Change grid to 1 m', `the finer terrain is drawn, one undo step (${after.drawn} vertices, "${after.undo}")`);
+  await page.keyboard.press('Control+KeyZ');
+  const undone = await page.evaluate(() => window.__editor.doc.terrain);
+  check(JSON.stringify(undone) === JSON.stringify(before), 'one undo puts the 2 m terrain back exactly');
+  // The coast border: a choice per side (Sky, Border, Per side); the sea south, the coast east carrying the beach on.
+  await page.click('#ed-pal-tabs [data-pane="sky"]');
+  const mainHasCoast = await page.evaluate(() => [...document.querySelectorAll('#ed-bd-border option')].some((o) => o.value === 'coast'));
+  await page.click('#ed-bd-border-sides summary');
+  await page.selectOption('#ed-bd-border-south', 'water');
+  await page.selectOption('#ed-bd-border-east', 'coast');
+  await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'border_coast' && !m.isDisposed()), null, { timeout: T(10000) }).catch(() => {});
+  const coast = await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    const x1 = t.origin[0] + (t.cols - 1) * t.spacing;
+    const land = ed.view.scene.meshes.find((m) => m.name === 'border_coast' && !m.isDisposed());
+    const sea = ed.view.scene.meshes.find((m) => m.name === 'border_coast_sea' && !m.isDisposed());
+    land?.refreshBoundingInfo();
+    const b = land?.getBoundingInfo().boundingBox;
+    return { sides: ed.doc.backdrop?.borderSides, verts: land?.getTotalVertices() ?? 0, minX: b?.minimumWorld.x, x1, sea: !!sea, canopy: ed.view.scene.meshes.some((m) => m.name === 'border_canopy' && !m.isDisposed()) };
+  });
+  check(!mainHasCoast && coast.sides?.east === 'coast' && coast.sides?.south === 'water', `the coast is a per-side border choice (${JSON.stringify(coast.sides)})`);
+  check(coast.verts > 500 && coast.minX >= coast.x1 - 1 && coast.sea && coast.canopy, `the coast is drawn past the east line: its land, the sea past the beach, forest inland (${JSON.stringify(coast)})`);
+  await page.evaluate(([x, z]) => window.__editor.view.focus({ x, y: 0, z }), [coast.x1 + 10, -20]);
+  await frames(page, 4);
+  await shot('coast-border');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -6010,7 +6085,7 @@ async function editorPartBChecks(browser) {
   };
   await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
   await frames(page, 3);
-  check((await doc()).formatVersion === 31, 'the map is format v31');
+  check((await doc()).formatVersion >= 31, 'the map is format v31 or later');
 
   // ---- Groups: two pickups and the starter room, grouped with Ctrl+G.
   await page.evaluate(() => window.__editor.run('Pickups', { kind: 'addEntities', entities: [{ id: 'pick_a', kind: 'pickup', position: [-12, 0, 2], item: 'core.health_small', respawnSeconds: null }, { id: 'pick_b', kind: 'pickup', position: [-12, 0, -4], item: 'core.health_small', respawnSeconds: null }] }));

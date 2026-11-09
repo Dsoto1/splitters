@@ -8,6 +8,19 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**MapMaker: a finer terrain grid, Change grid, and the coast border** (map format v32; the editor half of the Iron
+Coast job):
+- **A finer grid:** a terrain can be up to 321 vertices a side (was 161), so a 380 m map can be 1.25 m apart. New
+  terrains are made as before; finer is a choice. The map file writes the terrain a grid row to a line (a 1.25 m
+  Iron Coast is 1.1 MB, where one value a line it would have been over the 2 MB budget).
+- **Terrain → Change grid…:** resample the terrain finer or coarser (1-4 m), heights, ground paint and plants, one
+  undo step, with a preview of the vertices, triangles and file size against the budget first. Heights where the
+  grids meet are kept exactly; Smooth curves rolling ground between them and keeps cliffs sharp, Exact keeps the
+  surface as it is.
+- **Coast border side** (Sky → Border → Per side): for a side a shoreline runs out through. Sand and shallow water
+  carry on past the boundary along the shore, cliffs ease to low headlands and dunes, forest grows only inland.
+  Scenery only: nothing to bump into.
+
 **MapMaker: groups, copy and paste, templates, mirror, note pins** (MapMaker overhaul Phase 3, items 3-7):
 - **Groups** (Ctrl+G, or the inspector's Group): keep things together. A click on any of a group picks it all (Alt-click
   just that one), so it moves, turns, mirrors (M flips it east ↔ west over its middle), duplicates and deletes as

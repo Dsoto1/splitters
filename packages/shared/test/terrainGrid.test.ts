@@ -208,7 +208,7 @@ describe('Change grid: the command', () => {
     const z = -21.7;
     const y = terrainHeightAt(t, x, z)!;
     const barrel = { id: 'barrel_a', kind: 'prop', model: 'prop.barrel', position: [x, y, z], yaw: 0, scale: 1 } as MapEntity;
-    const high = { id: 'spawn_high', kind: 'spawn', position: [x, y + 5, z], yaw: 0, team: 0 } as MapEntity;
+    const high = { id: 'spawn_high', kind: 'spawn', position: [x, y + 5, z], yaw: 0, faction: null } as MapEntity;
     const start: MapDocument = { ...doc, entities: [...doc.entities, barrel, high] };
     const r = changeGridCommand(start, 1.25);
     if ('error' in r) throw new Error(r.error);
