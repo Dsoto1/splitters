@@ -41,6 +41,8 @@ export interface BotHintHost {
   pickTool(kind: BotHintKind): void;
   /** Whether a hint at this height is on a level being shown. */
   shown(y: number): boolean;
+  /** The part of the window the 3D view shows between the panels (client pixels): pins and lines stay inside it. */
+  viewRect(): { left: number; top: number; right: number; bottom: number };
   /** The way the camera looks (yaw): a new spot faces it. */
   lookYaw(): number;
   /** The teams a hint may be for (id, name). */
@@ -211,9 +213,15 @@ export class BotHintTool {
 
   // ---------------------------------------------------------------- per frame
 
+  /** The view's rect this frame (pins and lines are kept inside it, off the panels). */
+  private rect = { left: 0, top: 0, right: 0, bottom: 0 };
+
   frame(): void {
     const doc = this.host.doc();
     const hints = mapBotHints(doc);
+    // (Read only while there is something to draw: it asks the page for its layout.)
+    if (hints.length || this.pending || this.computedOn) this.rect = this.host.viewRect();
+    const inView = (s: { x: number; y: number } | null) => !!s && s.x >= this.rect.left && s.x <= this.rect.right && s.y >= this.rect.top && s.y <= this.rect.bottom;
     if (hints !== this.drawn) this.rebuild(hints);
     if (this.sel && !hints.some((h) => h.id === this.sel)) this.sel = null;
     // The pins: each hint's spot (a jump link's start and landing).
@@ -227,13 +235,13 @@ export class BotHintTool {
       const el = this.pins.get(key);
       if (!el) continue;
       const s = this.host.shown(p.y) ? this.host.project(p) : null;
-      el.hidden = !s;
+      el.hidden = !inView(s);
       if (s) el.style.transform = `translate(${Math.round(s.x)}px, ${Math.round(s.y)}px)`;
       el.classList.toggle('sel', key.split(':')[0] === this.sel);
     }
     if (this.pending) {
       const s = this.host.project(this.pending);
-      this.pendingPin.hidden = !s;
+      this.pendingPin.hidden = !inView(s);
       if (s) this.pendingPin.style.transform = `translate(${Math.round(s.x)}px, ${Math.round(s.y)}px)`;
     }
     this.drawLines(hints);
@@ -307,7 +315,8 @@ export class BotHintTool {
     }
     // The camera's state, read off three projected points (cheap; anything that moves the view moves them).
     const probe = [this.host.project({ x: 0, y: 0, z: 0 }), this.host.project({ x: 97, y: 13, z: 41 }), this.host.project({ x: -53, y: 3, z: 89 })];
-    const key = `${w}x${h}|${probe.map((p) => (p ? `${p.x.toFixed(1)},${p.y.toFixed(1)}` : '-')).join('|')}|${this.sel}|${this.drag?.at ? `${this.drag.at.x},${this.drag.at.z}` : ''}|${this.host.shown(1e4)}`;
+    const r = this.rect;
+    const key = `${w}x${h}|${r.left},${r.top},${r.right},${r.bottom}|${probe.map((p) => (p ? `${p.x.toFixed(1)},${p.y.toFixed(1)}` : '-')).join('|')}|${this.sel}|${this.drag?.at ? `${this.drag.at.x},${this.drag.at.z}` : ''}|${this.host.shown(1e4)}`;
     if (key === this.drawKey) return;
     this.drawKey = key;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -319,6 +328,10 @@ export class BotHintTool {
     if (!g) return;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.clearRect(0, 0, w, h);
+    g.save();
+    g.beginPath();
+    g.rect(r.left, r.top, Math.max(0, r.right - r.left), Math.max(0, r.bottom - r.top));
+    g.clip();
     g.lineCap = 'round';
     // The bots' own spots first (under the maker's).
     if (comp) {
@@ -357,6 +370,7 @@ export class BotHintTool {
       g.setLineDash([]);
       if (hint.yaw !== undefined) this.facing(g, at, hint.yaw, Math.max(2, hint.radius), color, width);
     }
+    g.restore();
   }
 
   /** A circle on the ground round `c` (projected). */

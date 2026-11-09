@@ -1119,16 +1119,22 @@ async function editorBotHintChecks(browser) {
     await page.mouse.move(p.x, p.y);
     await page.mouse.click(p.x, p.y);
   };
-  // A room to stand round, then the camera on it.
-  await clickTool(page, '[data-tool="tile:core.room"]');
-  await clickAt(0, 0, 0);
+  // A palette card, clicked as a person would (its own click: the Entities tab's thumbnails load and shift the cards).
+  const pickHint = (kind) => page.evaluate((k) => document.querySelector(`[data-tool="bothint:${k}"]`).click(), kind);
+  // The new map's spawn out on the open ground (bots' main area is the ground the spawns route to; the starting room
+  // has no door), then the camera on the middle.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const sp = ed.doc.entities.find((e) => e.kind === 'spawn');
+    ed.history.execute('Move spawn', { kind: 'updateEntities', before: [sp], after: [{ ...sp, position: [10, 0, 18] }] });
+  });
   await page.evaluate(() => window.__editor.view.focus({ x: 4, y: 0, z: 4 }));
   await frames(page, 3);
   // Y: the Bot hints tool (the last kind, a chokepoint first), its cards in the Entities tab.
   await page.keyboard.press('KeyY');
   const tool = await page.evaluate(() => ({ tool: window.__editor.tool, lit: document.querySelector('[data-tool="bothint:choke"]')?.classList.contains('active'), hint: document.getElementById('ed-toolhint').textContent }));
   check(tool.tool.kind === 'bothint' && tool.tool.hint === 'choke' && tool.lit && tool.hint.includes('Bot hints'), `Y picks up the Bot hints tool (${JSON.stringify(tool.tool)})`);
-  await clickTool(page, '[data-tool="bothint:sniper"]');
+  await pickHint('sniper');
   await clickAt(12, 0, 6);
   let h = await hints();
   const sniper = h[0];
@@ -1158,17 +1164,18 @@ async function editorBotHintChecks(browser) {
   h = await hints();
   check(h[0]?.kind === 'camp' && h[0].radius === 5, 'redo puts them back');
   // A jump link: two clicks, its start then its landing; one a player makes, one too far.
-  await clickTool(page, '[data-tool="bothint:jump"]');
-  await clickAt(14, 0, -2);
+  await pickHint('jump');
+  await clickAt(8, 0, -2);
+  await frames(page, 2);
   const pending = await page.evaluate(() => !document.querySelector('.ed-hint-pending').hidden);
-  await clickAt(18, 0, -2);
+  await clickAt(12, 0, -2);
   await frames(page, 2);
   h = await hints();
   const jump = h.find((x) => x.kind === 'jump');
   const verdict = await page.evaluate(() => document.getElementById('ed-hint-verdict')?.textContent ?? '');
   check(pending && jump && Math.abs(jump.to[0] - jump.position[0] - 4) < 0.5 && /can make it/.test(verdict), `a jump link from its start to its landing; the inspector says a player can make it (${verdict})`);
-  await clickAt(-14, 0, 14);
-  await clickAt(-2, 0, 14);
+  await clickAt(-4, 0, 10);
+  await clickAt(8, 0, 10);
   await frames(page, 2);
   const far = await page.evaluate(() => document.getElementById('ed-hint-verdict')?.textContent ?? '');
   await page.waitForFunction(() => /couldn't make it/.test(document.getElementById('ed-issues')?.textContent ?? ''), null, { timeout: T(10000) }).catch(() => {});
@@ -1202,7 +1209,7 @@ async function editorBotHintChecks(browser) {
   await page.keyboard.press('KeyK');
   await frames(page, 2);
   // What bots know: the bots' own spots, worked out on the navmesh, read-only; off again clears them.
-  await clickTool(page, '[data-tool="bothint:choke"]');
+  await pickHint('choke');
   await page.check('#ed-hints-computed');
   const known = await page.waitForFunction(() => window.__editor.hints.computed, null, { timeout: T(30000) }).then(() => true, () => false);
   const knownNote = await page.textContent('#ed-hints-computed-note');

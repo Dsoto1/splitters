@@ -861,6 +861,17 @@ export class EditorApp {
       pickTool: (hint) => this.setTool({ kind: 'bothint', hint }),
       shown: (y) => this.showAll || y < (this.level + 1) * this.doc.classicStructure.levelHeight - 0.01,
       lookYaw: () => this.view.yaw,
+      viewRect: () => {
+        // Between the palette, the top bar and the right panel (each counts only while it is shown).
+        const box = (id: string) => {
+          const r = document.getElementById(id)?.getBoundingClientRect();
+          return r && r.width > 0 && r.height > 0 ? r : null;
+        };
+        const pal = box('ed-palette');
+        const top = box('ed-top');
+        const right = box('ed-right');
+        return { left: pal?.right ?? 0, top: top?.bottom ?? 0, right: right?.left ?? innerWidth, bottom: innerHeight };
+      },
       teams: () => mapTeams(this.doc),
       picked: () => {
         if (this.hints.selected() && this.selCount()) this.setSelection(emptySelection(), true, true);
