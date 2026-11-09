@@ -183,7 +183,6 @@ The workflow is unchanged (CLAUDE.md):
   - **Effect:** every MapMaker branch with shared code runs it and goes red, so set pieces part 5 is held at
     059df862.
   - **Please fix**, or tell us here which commit to land against.
-- Claimed: the characters' far copies (`packages/client/public/characters/*.glb` low-detail levels, `content/meshy.lock.json`), the pickup/hit/streak bursts in `content/vfx.json`, small fixes of 2026-11-08 (`wip/small-fixes`), 2026-11-09. (Iron Maw's player count and Fernwood Moon's lift are inside other claims: not edited here.)
 - Asked of the MapMaker lane (with its `iron_maw` claim): Iron Maw's Map properties say 16-32 players
   (`recommendedPlayers`); with 97 spawn points and a 16 v 16 team layout its automatic caps are 32 best, up to 96.
   Suggested: Players 16-64 (as Iron Coast, 96 spawns, says), in MapMaker's Map properties; small fixes, 2026-11-09.
