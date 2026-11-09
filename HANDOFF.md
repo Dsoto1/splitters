@@ -168,6 +168,8 @@ The workflow is unchanged (CLAUDE.md):
 
 - Claimed: map format v33 (bot hints in MapMaker, `wip/mapmaker-bothints`), MapMaker lane, 2026-11-09.
 
+**Landing now (MapMaker lane, 2026-11-09 ~04:50–05:30 UTC):** `check/mapmaker-terrain` at 03e2401c, which the other session is waiting on for Iron Coast. If you can, please hold *code* pushes to main until this line is gone; docs are fine. It has had to re-merge main twice.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
