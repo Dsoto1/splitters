@@ -136,7 +136,19 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, bunker_cross, concrete_annex, iron_tide, ironhold_prison, pump_tower, silo_complex, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
-- Note for both sessions: the e2e `party` flow fails intermittently on check branches (the party never reaches the voted map; runs 42519820533, 42530655386, and p3a's first run). It passes on re-run. Its owner may want to look.
+- **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
+  (team kills and roulette).
+  - **Symptom:** the party never reaches the voted map: `{"s2":{},"fill1":8,"fill2":8}`.
+  - **Where it fails:**
+    - main b3f22196, built locally: twice;
+    - `check/mapmaker-setpieces` run 42530655386: both attempts, voting runway_nine, then verdant_ziggurat, then
+      pump_tower;
+    - it was flaky before b3f22196 (runs 42519820533 and 42528585610).
+  - **The path:** session.ts `voteWon` (the host loads the map, then `exit('travel')`).
+  - **Why it hasn't shown on main:** main's own CI runs skip e2e when a check branch was already green.
+  - **Effect:** every MapMaker branch with shared code runs it and goes red, so set pieces part 5 is held at
+    059df862.
+  - **Please fix**, or tell us here which commit to land against.
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` low-detail levels, `content/meshy.lock.json`), the pickup/hit/streak bursts in `content/vfx.json`, small fixes of 2026-11-08 (`wip/small-fixes`), 2026-11-09. (Iron Maw's player count and Fernwood Moon's lift are inside other claims: not edited here.)
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
