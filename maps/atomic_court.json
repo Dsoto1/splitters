@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 30,
   "metadata": {
     "id": "atomic_court",
     "name": "Atomic Court",
@@ -16,15 +16,7 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ],
-    "release": {
-      "mapId": "m_jf6ib5hkuurh2by5",
-      "versionId": "v_mzttzjbfvjun3z6q",
-      "revision": 1,
-      "contentHash": "sha256:8cf3631196df478df4ef6399b73ffd4657aea6fceba8ae4819d76cf6467f5eab",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T10:55:11.958Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1212,9 +1204,9 @@
         41
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -1226,9 +1218,9 @@
         23
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -1240,11 +1232,12 @@
         37
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.79,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_092",
@@ -1254,11 +1247,12 @@
         27
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.79,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_093",
@@ -1408,9 +1402,9 @@
         52
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -1422,9 +1416,9 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -1436,7 +1430,7 @@
         64
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1450,7 +1444,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2428,11 +2422,12 @@
         56.18
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.33,
-      "scale": 1.12,
+      "scale": 0.88,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_188",
@@ -2484,11 +2479,12 @@
         9.86
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.8,
-      "scale": 1,
+      "scale": 0.79,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_192",
@@ -2526,11 +2522,12 @@
         27.59
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 6.19,
-      "scale": 1.2,
+      "scale": 0.95,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_195",
@@ -2540,11 +2537,12 @@
         25.34
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.05,
-      "scale": 0.9,
+      "scale": 0.71,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_196",
@@ -2596,11 +2594,12 @@
         60.11
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.27,
-      "scale": 1.1,
+      "scale": 0.87,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_200",
@@ -2624,11 +2623,12 @@
         7.2
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.17,
-      "scale": 1.17,
+      "scale": 0.92,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_202",
@@ -31726,6 +31726,6 @@
       6
     ]
   },
-  "dependencies": [],
-  "weaponSet": "military"
+  "weaponSet": "military",
+  "dependencies": []
 }

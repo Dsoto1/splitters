@@ -14,6 +14,7 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { CORE_THEMES, PROP_FENCES, SKIES, borderStyleAt, boxBounds, pathsExtent, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { createPropNode } from './game/propVisuals.ts';
+import { EnvScatter, type EnvCopy } from './environment/envScatter.ts';
 import type { MapStyler } from './mapMeshes.ts';
 import { versioned } from './assetUrl.ts';
 
@@ -45,6 +46,8 @@ export class BackdropVisuals {
 
   /** Props dressing the belt past the border (dropped with the rest). */
   private nodes: TransformNode[] = [];
+  /** Our species dressing the belt and the far forest (dropped with the rest). */
+  private scatters: EnvScatter[] = [];
   /** How the ground past the border rises, and what stands on it. */
   private profile: BeltProfile = BELTS.none!;
 
@@ -84,6 +87,8 @@ export class BackdropVisuals {
   dispose(): void {
     for (const n of this.nodes) n.dispose();
     this.nodes = [];
+    for (const sc of this.scatters) sc.dispose();
+    this.scatters = [];
     for (const m of this.meshes) m.dispose();
     for (const m of this.materials) m.dispose();
     this.meshes = [];
@@ -243,6 +248,7 @@ export class BackdropVisuals {
     const pick = <T>(xs: readonly T[]) => pick3(rand, xs);
     let placed = 0;
     const budget = Math.round(900 * p.density);
+    const copies: EnvCopy[] = [];
     g.per.forEach(([x, z], i) => {
       // Cliffs, city blocks, forest and sea along the border stand where the belt would; fences and walls are low enough to see it over.
       const border = borderStyleAt(doc, x, z);
@@ -274,11 +280,24 @@ export class BackdropVisuals {
           if (!this.models || !p.props.length) continue;
           // Clusters mix in a neighbour or two from the same set.
           const m = c === 0 || rand() < 0.6 ? model : pick(p.props);
+          if (m.startsWith('env.')) {
+            copies.push({ model: m, x: px, y: y - 0.1, z: pz, yaw: rand() * Math.PI * 2, scale: (0.85 + rand() * 0.5) * Math.min(1.6, far) });
+            continue;
+          }
           const e: PropEntity = { id: `belt_${i}_${d0}_${c}`, kind: 'prop', model: `prop.${m}`, position: [px, y - 0.1, pz], yaw: rand() * Math.PI * 2, scale: (1 + rand() * 0.7) * far * (/^(rock|rocks|cliff)/.test(m) ? 1.5 : 1.2), solid: false, tint: null };
           this.nodes.push(createPropNode(this.scene, this.models, e, `backdrop_belt_${this.nodes.length}`, true, true, null));
         }
       }
     });
+    this.scatter(copies, false);
+  }
+
+  /** Our species as backdrop scenery (environment/envScatter.ts): the belt's with levels of detail, the far forest's as stand-ins only. */
+  private scatter(copies: EnvCopy[], farOnly: boolean): void {
+    if (!copies.length) return;
+    const sc = new EnvScatter(this.scene, { sector: farOnly ? 400 : 200, farOnly, prefix: farOnly ? 'backdrop_far' : 'backdrop_belt' });
+    this.scatters.push(sc);
+    void sc.set(copies);
   }
 
   /** A low city block past the border: a box in façade materials, its long side to the map. */
@@ -384,8 +403,23 @@ export class BackdropVisuals {
     this.addMesh('backdrop_ridge', positions, indices, colors);
   }
 
-  /** Dark pines on rolling ground round the map: one cone mesh, thousands of instances. */
+  /**
+   * Trees on rolling ground round the map: our pines, spruces and oaks as their far stand-ins (in play), or one cone
+   * mesh of thousands of instances (MapMaker, no model library).
+   */
   private trees(area: PlayArea, inner: number, outer: number, base: number, rand: () => number): void {
+    if (this.models) {
+      const kinds = [PINE, SPRUCE, PINE, OAK, SPRUCE, MAPLE];
+      const copies: EnvCopy[] = [];
+      for (let i = 0; i < 1800; i++) {
+        const a = rand() * Math.PI * 2;
+        const r = inner + Math.sqrt(rand()) * (outer - inner);
+        const s = 1 + rand() * 0.6 + (r - inner) / 260;
+        copies.push({ model: kinds[Math.floor(rand() * kinds.length)]!, x: area.centre[0] + Math.sin(a) * r, y: base + 1.5, z: area.centre[1] + Math.cos(a) * r, yaw: rand() * Math.PI * 2, scale: s });
+      }
+      this.scatter(copies, true);
+      return;
+    }
     const cone: number[] = [];
     const colors: number[] = [];
     const idx: number[] = [];
@@ -676,26 +710,37 @@ interface BeltProfile {
   density: number;
 }
 
-const NATURE = ['oak', 'oak_dark', 'tree_round', 'tree_detailed', 'tree_fat', 'pine_tall', 'oak', 'tree_round', 'bush_large', 'bush', 'rock_large', 'log_big'] as const;
+/**
+ * What dresses the belt: prop ids without their `prop.` (rocks, logs, ruins, city clutter) and, for the plants, our
+ * species by full id (`env.…`, `#variant`; Environment Phase 2: they were Kenney trees, bushes, cacti and palms),
+ * drawn through an EnvScatter with their levels of detail and far stand-ins.
+ */
+const OAK = 'env.broadleaf.oak';
+const MAPLE = 'env.broadleaf.maple';
+const PINE = 'env.conifer.pine_tall';
+const SPRUCE = 'env.conifer.spruce';
+const LAUREL = 'env.shrub.laurel';
+const SAGUARO = 'env.cactus.saguaro';
+const NATURE = [OAK, OAK, MAPLE, MAPLE, MAPLE, PINE, OAK, MAPLE, LAUREL, 'env.shrub.broadleaf', 'rock_large', 'log_big'] as const;
 const BELTS: Record<string, BeltProfile> = {
-  none: { berm: 2, hills: 4, props: ['rock_large', 'rock_medium', 'bush_large', 'tree_round'], buildings: false, density: 0.6 },
+  none: { berm: 2, hills: 4, props: ['rock_large', 'rock_medium', LAUREL, MAPLE], buildings: false, density: 0.6 },
   hills: { berm: 3.5, hills: 9, props: NATURE, buildings: false, density: 0.8 },
-  forest: { berm: 4, hills: 11, props: ['pine_tall', 'pine_tall_b', 'pine_round', 'pine_tall', 'oak_dark', 'tree_detailed', 'tree_cone', 'pine_tall_b', 'oak', 'bush_large', 'rock_large', 'log_big'], buildings: false, density: 1.3 },
-  mountains: { berm: 6, hills: 16, props: ['pine_tall', 'pine_round', 'pine_small', 'rock_large', 'rocks_tall', 'rock_spire_tall', 'cliff', 'rock_flat'], buildings: false, density: 0.85 },
-  peaks: { berm: 7, hills: 18, props: ['pine_tall_b', 'pine_small', 'rock_large', 'rocks_tall', 'cliff', 'cliff_corner'], buildings: false, density: 0.7 },
-  mesas: { berm: 5, hills: 10, props: ['rock_large', 'rocks_tall', 'rock_spire_tall', 'rock_flat', 'cactus_tall', 'cactus', 'debris'], buildings: false, density: 0.6 },
-  dunes: { berm: 6, hills: 9, props: ['rock_flat', 'rock_large', 'cactus', 'palm_bent', 'debris'], buildings: false, density: 0.35 },
+  forest: { berm: 4, hills: 11, props: [PINE, SPRUCE, SPRUCE, PINE, OAK, MAPLE, SPRUCE, PINE, OAK, LAUREL, 'rock_large', 'log_big'], buildings: false, density: 1.3 },
+  mountains: { berm: 6, hills: 16, props: [PINE, SPRUCE, SPRUCE, 'rock_large', 'rocks_tall', 'rock_spire_tall', 'cliff', 'rock_flat'], buildings: false, density: 0.85 },
+  peaks: { berm: 7, hills: 18, props: [SPRUCE, PINE, 'rock_large', 'rocks_tall', 'cliff', 'cliff_corner'], buildings: false, density: 0.7 },
+  mesas: { berm: 5, hills: 10, props: ['rock_large', 'rocks_tall', 'rock_spire_tall', 'rock_flat', SAGUARO, `${SAGUARO}#1`, 'debris'], buildings: false, density: 0.6 },
+  dunes: { berm: 6, hills: 9, props: ['rock_flat', 'rock_large', SAGUARO, 'env.palm.leaning', 'debris'], buildings: false, density: 0.35 },
   city: { berm: 0.6, hills: 0, props: ['barrier', 'barrier_high', 'container', 'lightpost', 'trashcan', 'skip'], buildings: true, density: 0.9 },
-  ocean: { berm: 0.5, hills: 0, props: ['palm_tall', 'palm_short', 'rock_large', 'rock_flat'], buildings: false, density: 0.4 },
+  ocean: { berm: 0.5, hills: 0, props: ['env.palm.coconut', 'env.palm.leaning', 'rock_large', 'rock_flat'], buildings: false, density: 0.4 },
 };
 /** Themes whose surroundings are their own, whatever the scenery past them. */
 const THEME_BELTS: Record<string, Partial<BeltProfile>> = {
   'core.factory': { props: ['container', 'container_wide', 'container_tall', 'barrier_high', 'tank_car', 'factory_box_long', 'skip', 'cone'], buildings: true },
-  'core.castle': { props: ['pine_tall', 'oak', 'pine_tall_b', 'tree_round', 'rock_large', 'stone_wall_damaged', 'bush_large', 'oak_dark'] },
-  'core.ruins': { props: ['stone_wall_damaged', 'pillar', 'rocks_tall', 'oak_dark', 'tree_detailed', 'hanging_moss', 'bush_large'] },
-  'core.manor': { props: ['iron_fence', 'iron_fence_damaged', 'pine_crooked', 'gravestone_round', 'oak_dark', 'hedge_large'] },
-  'core.saloon': { props: ['cactus_tall', 'cactus', 'rock_large', 'cart', 'town_fence', 'rocks_tall'] },
-  'core.arctic': { props: ['pine_tall_b', 'pine_small', 'rock_large', 'rocks_tall'] },
+  'core.castle': { props: [PINE, OAK, SPRUCE, MAPLE, 'rock_large', 'stone_wall_damaged', LAUREL, OAK] },
+  'core.ruins': { props: ['stone_wall_damaged', 'pillar', 'rocks_tall', OAK, MAPLE, LAUREL] },
+  'core.manor': { props: ['iron_fence', 'iron_fence_damaged', PINE, 'gravestone_round', OAK, 'env.hedge.yew'] },
+  'core.saloon': { props: [SAGUARO, `${SAGUARO}#1`, 'rock_large', 'cart', 'town_fence', 'rocks_tall'] },
+  'core.arctic': { props: [`${PINE}#1`, `${SPRUCE}#1`, 'rock_large', 'rocks_tall'] },
 };
 
 function beltProfile(backdrop: Backdrop, theme: string): BeltProfile {

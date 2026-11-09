@@ -6362,8 +6362,8 @@ const VISUAL_SCENES = [
 /**
  * The procedural environment, Phase 1 (docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): the environment lab draws every
  * species and variant on WebGL2 with no shader or material errors, its level of detail, wireframe, collider, wind and
- * tier toggles work; and the showcase map (maps/env_showcase.json, retired: never offered) plays with the new renderer
- * (?env=1: chunked thin instances, the grass as generated clumps) and without it (each species a prop node).
+ * tier toggles work; and the showcase map (maps/env_showcase.json, retired: never offered) plays with the environment
+ * renderer (the default since Environment Phase 2: chunked thin instances) and without it (?env=0: each species a prop node).
  */
 async function environmentFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
@@ -6397,7 +6397,7 @@ async function environmentFlow(browser) {
   check(errors.length === 0, `no shader, material or page errors in the lab (${errors.join('; ')})`);
   // The showcase map in play, with the new renderer, then without it.
   for (const env of [true, false]) {
-    await page.goto(`${CLIENT}/?offline=env_showcase&test=1&god=1&bots=1&name=Tester${env ? '&env=1' : ''}`);
+    await page.goto(`${CLIENT}/?offline=env_showcase&test=1&god=1&bots=1&name=Tester${env ? '' : '&env=0'}`);
     const playing = await page.waitForFunction(() => window.__cs?.phase?.() === 'playing', null, { timeout: T(180000) }).then(() => true, () => false);
     const drawn = playing
       ? await page.waitForFunction((env) => {
@@ -6407,7 +6407,7 @@ async function environmentFlow(browser) {
           return env ? (s && s.copies > 2000 && s.drawnBatches > 0 ? { copies: s.copies, batches: s.drawnBatches, nodes } : null) : !v.environment && nodes > 2000 ? { nodes } : null;
         }, env, { timeout: T(120000) }).then((h) => h.jsonValue(), () => null)
       : null;
-    check(!!drawn, `the showcase map plays ${env ? 'with the environment renderer (?env=1)' : 'with its species as props (no flag)'} (${JSON.stringify(drawn)})`);
+    check(!!drawn, `the showcase map plays ${env ? 'with the environment renderer (by default)' : 'with its species as props (?env=0)'} (${JSON.stringify(drawn)})`);
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();

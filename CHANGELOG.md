@@ -17,6 +17,25 @@ made only on a commit that passed CI on a check branch.
   load and play it as the bridge; its inspector in MapMaker offers **Replace all** (one undo step).
 - **Sea Wall** and **Sea Wall (Breached)** for MAP 21 (Iron Coast): a bay of concrete sea wall with a wave lip and a
   fire step, and the same bay blown open with a rubble ramp through the gap.
+**Our own trees, bushes and hedges everywhere; no more Kenney foliage** (Environment Phase 2, owner-approved
+2026-11-08: "I don't want to see those"):
+- **Nine new generated species**, grounded and natural rather than toy-like: Field Maple (summer, autumn), Umbrella
+  Acacia (green, dry), Spruce (summer, snow), Coconut Palm and Leaning Palm (green, dry), Saguaro (green, dry), Laurel
+  Bush (green, dry), Privet Hedge and Yew Hedge. Each has levels of detail and a far stand-in, sways in the wind, and
+  plays like the piece it replaces: trunks, palms and cacti stop people and rounds, hedges are solid walls of cover,
+  bushes hide you as before.
+- **34 maps moved over** in MapMaker with Replace all: 1,482 Kenney trees, bushes, hedges and cacti (Norman Shores 267,
+  Primeval Park 209, St Johns 136, Eagle Spires 126, Backwoods 92 and 29 more). Fernwood Moon: one pine moved off a
+  spawn its trunk now reached.
+- **The forest border and the scenery** past every map are our trees too (they were Quaternius models and low-poly
+  cones): undergrowth, a wall of pines, spruces, oaks and maples (snowy pines on snow, palms, acacias and saguaros on
+  sand), and the far forest round the map.
+- **MapMaker:** Nature → Trees offers our oak, maple, acacia, pines, spruce, palms and saguaro; Plants & Flowers the
+  laurel and the hedges. Every Kenney tree, bush, hedge, cactus and plant is retired from the palette (maps that place
+  them still load them), and Replace all suggests each one's species. The scatter brushes plant our species.
+- **Drawn faster:** in matches, our species are drawn in batches with levels of detail by default (`?env=0` turns that
+  off).
+
 **Gunplay pass 2** (docs/GUNPLAY_AUDIT.md, "Pass 2"; the audit's candidates 1-6, owner-approved):
 - **Every gun owns its range.** The SMG wins up close (0.40 s to a kill to 15 m, the Assault Rifle 0.50; hip fire at
   25 m 0.77 s, was 3.4); the Assault Rifle owns 20-50 m and loses damage from 25 m; the Precision Rifle kills a body in two shots in under a second at every range (was 1.25-1.38 s) and owns

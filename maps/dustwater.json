@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 30,
   "metadata": {
     "id": "dustwater",
     "name": "Dustwater",
@@ -1841,9 +1841,9 @@
         32
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": -10,
-      "scale": 1.2,
+      "scale": 1.06,
       "solid": true,
       "tint": null
     },
@@ -1865,13 +1865,13 @@
       "id": "prop_118",
       "position": [
         80,
-        0.34,
+        0.61,
         20
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 10,
-      "scale": 1.1,
+      "scale": 0.98,
       "solid": true,
       "tint": null
     },
@@ -1883,9 +1883,9 @@
         56
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": -8,
-      "scale": 1,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -1897,9 +1897,9 @@
         64
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 10,
-      "scale": 1.3,
+      "scale": 1.15,
       "solid": true,
       "tint": null
     },
@@ -1911,9 +1911,9 @@
         -36.8
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": -2,
-      "scale": 1,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -1925,9 +1925,9 @@
         -35.2
       ],
       "kind": "prop",
-      "model": "prop.cactus_tall",
+      "model": "env.cactus.saguaro",
       "yaw": 6,
-      "scale": 0.9,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },

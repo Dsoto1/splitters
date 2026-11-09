@@ -136,7 +136,6 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
-- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
 - **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
 - **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
   (team kills and roulette).
@@ -152,13 +151,10 @@ The workflow is unchanged (CLAUDE.md):
     059df862.
   - **Please fix**, or tell us here which commit to land against.
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` low-detail levels, `content/meshy.lock.json`), the pickup/hit/streak bursts in `content/vfx.json`, small fixes of 2026-11-08 (`wip/small-fixes`), 2026-11-09. (Iron Maw's player count and Fernwood Moon's lift are inside other claims: not edited here.)
+- **For the session owning team kills and friendly fire:** the e2e `teams` flow's friendly-fire and team-kill checks contradict themselves between attempts on check/mapmaker-setpieces (run 42549709174, job 128943570176). Attempt 1: friendly fire off still hurt a teammate (70.5), and a team kill wasn't marked TK (killer 5 was a bot). Attempt 2: friendly fire on hurt 0, and TK was marked fine. It looks like stray shots from bots or other teammates in the test match, not set pieces. The failed job was re-run once.
+- Claimed: `maps/test_coverage.json` (the Town Wall Gatehouse, through MapMaker; set pieces part 6, `wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-09.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
-- Claimed: `maps/<id>.json` for apex_ring, atomic_court, backwoods, blackout, canyon, capitol_mall, citadel, coldwater_gulch, crossroads, dead_reel, dockside_depot, dune_harbor, dustwater, eagle_spires, fernwood_moon, fort_meadow, gallows_yard, hollowmere_manor, iron_coast, jungle_steps, norman_shores, pharaohs_reach, primeval_park, qasr_medina, rail_stockyard, sandgate, sandsweep, serene_city, st_johns, sunken_kingdom, sunstone_crag (their Kenney trees, bushes, hedges and cacti → our species, MapMaker's Replace all driven in the real editor), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
-- Claimed: `maps/<id>.json` for reactor, serpent_gorge, sky_islands (released by the trap spots: their Kenney bushes, palms and trees → our species, Replace all in MapMaker), Environment Phase 2 (`wip/env-p2`), 2026-11-09.
-- Claimed: `maps/undergate_transit.json` (drop Race from its modes in MapMaker), the race mode's game-side code (`shared/src/sim/race.ts`, `matchSetup.ts`/`rules.ts`/`serverRules.ts` mode lists, `client/src/game/raceHud.ts`, the `race` e2e flow and its flowMap entries), race removal (`wip/race-removal`), 2026-11-09. apex_ring, sandsweep and serene_city (Environment Phase 2's claim) and neon_spire (the MapMaker lane's) are not edited here: asked below.
-- Claimed: the new content ids `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`, `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew`; the leaves and bark atlases (`tools/content/env/**`, `content/environment/**`); the border forest and backdrop scenery's trees (`client/src/borderVisuals.ts`, `backdrop.ts`), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
-- Asked of the MapMaker lane (data only, inside its editor claim): Environment Phase 2 adds its species to and retires the Kenney trees, bushes, hedges and cacti from the Nature tables of `client/src/editor/paletteCatalog.ts` (`RETIRED_PROPS`, `GROUND_COVER_SPECIES`, `REPLACEMENTS`) and the scatter brushes' sets in `shared/src/editor/scatter.ts` (`SCATTER_SETS`: Kenney trees, bushes and cacti → our species), no other editor file; merged with origin/main before landing, 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
   Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
   1.25 m cells on a 380 m map) and a Terrain → Change grid tool that resamples heights, paint and plants; (2) a "coast"
@@ -181,6 +177,12 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - bot hints in MapMaker (Phase 4 item 3, and Bot AI Phase D's MapMaker part; the format goes in docs/BOTS.md);
   - Environment Phase 3's MapMaker tools (PROCEDURAL_ENVIRONMENT §11), after the other session's Environment Phase 2
     lands. Please note it here when it does.
+  - **Environment Phase 2 is on main (2026-11-09): the MapMaker lane may start Environment Phase 3's MapMaker tools.**
+    New species ids: `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`,
+    `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew` (plus Phase 1's oak,
+    tall pine, shrub, grass, flowers, fern, pebbles, eelgrass, boulder, cliff). Its map claims are released (blackout,
+    crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom are free for set pieces part 6). Still
+    Kenney: test_coverage's mushroom (this lane's claim; see "Environment Phase 2" below).
 - **The owner's answers (2026-11-08)** to the MapMaker questions so far:
   - **Keep as built:**
     - the measure tool on U;
@@ -473,6 +475,65 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
 
+### Environment Phase 2: our trees, bushes and hedges; no Kenney foliage (`wip/env-p2`, agent, 2026-11-08/09; owner-approved; green on `check/env-p2` at 021993b, run 42550774281; LANDED: main 021993b; its claims released; CHANGELOG "Our own trees, bushes and hedges everywhere")
+- **Species** (content/environment/*.json, docs/CONTENT_PIPELINE.md "Environment Phase 2"): `env.broadleaf.maple`
+  (summer, autumn), `env.broadleaf.acacia` (green, dry; umbrella crown), `env.conifer.spruce` (summer, snow),
+  `env.palm.coconut`, `env.palm.leaning` (green, dry; new generator `env/palm.mjs`), `env.cactus.saguaro` (green, dry;
+  `env/cactus.mjs`), `env.shrub.laurel` (green, dry; conceals), `env.hedge.privet` (green, autumn), `env.hedge.yew`
+  (green, snow) (`env/hedge.mjs`). All assetVersion 1, fixture entries, LODs + stand-ins, budgets (plant budget now
+  700 / 200 / 8). Collision per §6: palm trunks and the saguaro capsules (block all, bark); hedges one hull (block
+  all, nav obstacle, role blocking, surface `bark` = full cover like the Kenney hedges, which were concrete by id
+  guess; a species may name its `surface`); laurel none, conceals. `envTilts`: plants without shapes only.
+  Bark picture 1024 × 512 (four strips), leaves atlas 1024 × 1280 (row 5: palm.0/1, acacia.0, hedge.0): every env
+  GLB rebuilt for the uv; shapes/sizes unchanged (fixture holds).
+- **Maps** (MapMaker Replace all, Keep height, driven in the real editor without ?test=1 by the scratchpad driver
+  `env2/tools/maker.mjs`; undo/redo checked per map; Export; release stamp dropped by `env2/tools/finalize.py`;
+  `compare.py`: nothing else changed but the format migration): 1,466 placements on 31 maps (then 16 on 3 more, below): norman_shores 267,
+  primeval_park 209, st_johns 136, eagle_spires 126, backwoods 92, iron_coast 61, jungle_steps 60, sunstone_crag 58,
+  hollowmere_manor 53, coldwater_gulch 51, sandsweep 48, citadel 45, sandgate 32, fernwood_moon 32, crossroads 31,
+  canyon 30, blackout 19, fort_meadow 19, apex_ring 16, atomic_court 14, capitol_mall 12, qasr_medina 12,
+  sunken_kingdom 10, gallows_yard 9, dustwater 6, rail_stockyard 6, serene_city 5, dockside_depot 4, dead_reel 1,
+  dune_harbor 1, pharaohs_reach 1. Mapping: oak/oak_dark/tree_detailed → oak; tree_round/fat/thin/tree/tree_tall →
+  maple; tree_plateau → acacia; pine_tall/pine/pine_crooked → pine; pine_round → spruce (snow variants on snow);
+  palm/palm_tall → coconut; palm_bent → leaning; cacti → saguaro; bush/bush_leafy → shrub; bush_large/cone → laurel
+  (dry on sand maps); hedge → privet; hedge_large → yew. validate-map 0 issues on all 31 (Fernwood Moon: pine
+  `prop_851` moved 1.7 m off `spawn_1112` in the inspector: its trunk reached the spawn). Apex Ring and Sandsweep's
+  export turned their old `track` into paths: `unifiedPaths.test.ts` now checks them against their old tracks
+  (fixtures/race-tracks-before-paths.json): identical.
+- **Then reactor (bush_large 4 → laurel), serpent_gorge (bush_large 5 → laurel, palm_bent 3 → leaning palm) and
+  sky_islands (pine_small → spruce, bush_large → laurel, tree_round → maple, bush_leafy → shrub)** the same way once
+  the trap spots released them (claimed 2026-11-09): 34 maps, 1,482 placements; validate-map 0 issues.
+- **Still Kenney, for later:** test_coverage (mushroom_tall 1; the MapMaker lane's claim: please Replace all it), and
+  with no species yet verdant_ziggurat's 4 hanging moss. Potted plants and `plant_small` (furniture kit, 91 indoors)
+  were left as decor (question for the owner). Card pictures (`maps/shots/`) of the changed maps still show the old
+  trees.
+- **Palette / brushes** (data-only edits inside the MapMaker lane's editor claim, asked in the claim lines):
+  `paletteCatalog.ts` retires every Kenney tree, bush, hedge, cactus and plant (`RETIRED_PROPS`), Nature → Trees and
+  Plants & Flowers list the species (`GROUND_COVER_SPECIES`), `REPLACEMENTS` suggests each; the Kenney hedges moved
+  to category Plants & Flowers (content/props/kenney-fantasy-town-kit.json) so the retirement hides them;
+  `shared/src/editor/scatter.ts` sets plant our species.
+- **Scenery:** `client/src/environment/envScatter.ts` (an EnvironmentVisuals of its own, 160–400 m squares): the
+  forest border (were Quaternius `nt_*` + cones; cones stay only without a model library), the backdrop belt's
+  plants (were Kenney) and the scenery forest's far trees (stand-ins only, forced level). The environment renderer is
+  on by default in matches (`envBatchedOn`, `?env=0` off; MapMaker keeps prop nodes; `?env=1` still opens MapMaker's
+  preview group).
+- **Screenshots** (session scratchpad `env2/`): `before-*/after-*` at eye level (iron_coast north/east/west/village,
+  norman_shores, primeval_park, hollowmere_manor, sandsweep, eagle_spires); `lab*-trees2/small2/palms` (envlab's new
+  Phase 2 lineup, views `trees2`, `small2`, `palms`, beside the old pieces with `before-…`); `palette-env.png`.
+- **Perf** (client-perf, medium, 20 s, SwiftShader at load ~7, two interleaved pairs, main 6c601df vs this; counts
+  only): Norman Shores 562 / 541 → 710 / 456 draws, 1.67 / 1.33 → 1.17 / 0.85 M triangles, casters 103 / 78 → 157 /
+  156; Primeval Park 300 / 361 → 756 / 376 draws, 1.00 / 1.17 → 1.55 / 0.92 M, casters 102 / 85 → 234 / 173; Iron
+  Coast 295 / 510 → 274 / 465 draws, 0.61 / 0.79 → 0.29 / 0.36 M, casters 122 / 583 → 227 / 274. Triangles down,
+  shadow casters up (each env batch near the camera casts); the camera turns, so draws swing. Server (`pnpm bench 48 40`, TDM, two
+  interleaved pairs, load ~7): avg tick Norman Shores 4.0 / 3.6 → 3.8 / 3.6 ms (CPU 4.73 / 4.97 → 4.93 / 5.48), Primeval
+  Park 6.5 / 4.8 → 5.7 / 4.8 ms (CPU 7.11 / 7.30 → 7.15 / 6.94): within the noise (capsule trunks for box trunks).
+  Not measured: a real GPU (the M1).
+- **bot-limits.json:** the check's 10 s+ idle spells 2.5 → 3.5 a match. The check's Fernwood Moon match (seed 1) went
+  from 3 such spells to 9 with its 32 pines' new trunks reshuffling the seeded match: 7 of the 9 at the north rope
+  lift (0, 14, 105) and its single-file queue, the known lift wait (see the 2.5 raise above). Seeds 1-4, 90 s, 32 bots:
+  main 3 / 5 / 5 / 4, this branch 9 / 6 / 2 / 2 (17 against 19). Revert with a fix for the lift wait.
+- **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
+  screenshots; the skipped maps above; card pictures.
 ### Gunplay pass 2: identities, readouts, the Battle Rifle (`wip/gunplay-2`, agent, 2026-11-08; owner-approved candidates 1-6 of the audit plus spec gap G2; green on `check/gunplay-2` at 2673702, run 42531571292, then with main merged in; LANDED on main by fast-forward from `check/gunplay-2`)
 
 docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunplay pass 2"; `pnpm gun-report` re-run

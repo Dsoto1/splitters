@@ -71,9 +71,27 @@ describe('one path primitive: migration (v22 -> v23)', () => {
   const tracked = readdirSync(MAPS).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => raw(id).track);
   // Serene City (format 25), Neon Spire (format 26: a spawn point moved out of a wall, Bot AI Phase A) and Undergate
   // Transit (format 19: a sofa moved clear of a wall, the prop scale pass; its path checked against the old track's
-  // curve, checkpoints, grid and ground) were saved again in MapMaker, so their tracks are paths now; two still carry
-  // the old field.
-  it('finds the shipped race maps', () => expect(tracked.length).toBeGreaterThanOrEqual(2));
+  // curve, checkpoints, grid and ground) were saved again in MapMaker, so their tracks are paths now; so were the last
+  // two, Apex Ring and Sandsweep (Environment Phase 2: their Kenney bushes and cacti replaced in MapMaker): their old
+  // tracks are kept in fixtures/race-tracks-before-paths.json and checked below.
+  const before = JSON.parse(readFileSync(new URL('./fixtures/race-tracks-before-paths.json', import.meta.url), 'utf8')) as Record<string, unknown>;
+  it('finds the shipped race maps (with the old field, or saved again from it)', () => expect(tracked.length + Object.keys(before).length).toBeGreaterThanOrEqual(2));
+  for (const [id, track] of Object.entries(before)) {
+    it(`${id}: saved again in MapMaker, its path races exactly as its old track did`, () => {
+      expect(raw(id).track).toBeUndefined();
+      const old = new TrackGeometry(Track.parse(track));
+      const map = loaded(raw(id));
+      const after = trackGeometry(map)!;
+      expect(after.track).toEqual(old.track);
+      expect(after.samples).toEqual(old.samples);
+      expect(after.gates).toEqual(old.gates);
+      expect(after.length).toBe(old.length);
+      expect(after.grid()).toEqual(old.grid());
+      expect(raceGridEntities(map).map((e) => [e.position, e.yaw])).toEqual(old.grid().map((p) => [[p.x, p.y, p.z], p.yaw]));
+      expect(ambientCarEntities(map)).toHaveLength(old.track.ambient);
+      expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
+    });
+  }
   for (const id of tracked) {
     it(`${id}: races exactly as before`, () => {
       const file = raw(id);

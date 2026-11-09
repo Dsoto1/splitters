@@ -23,6 +23,28 @@
         { "index": 0, "name": "summer", "look": { "bark": "#5a4a3c", "leaves": ["#4d6b2e", "#587534", "#45612a"], "jitter": 0.12 } },
         { "index": 1, "name": "autumn", "look": { "bark": "#5a4a3c", "leaves": ["#a5582a", "#b87a30", "#8e4424"], "jitter": 0.14 } }
       ]
+    },
+    {
+      "id": "env.shrub.laurel",
+      "displayName": "Laurel Bush",
+      "category": "plant",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Environment Phase 2): a large, dense evergreen bush (1.7 m); the large and leafy bushes' replacement. Conceals like the shrub." },
+      "nominalHeight": 1.7,
+      "nav": "none",
+      "role": "cover",
+      "conceals": true,
+      "placement": { "maxSlopeDegrees": 40, "minSpacing": 2, "scale": [0.7, 1.4] },
+      "generator": { "kind": "shrub", "seed": 14, "height": 1.7, "width": 2.1, "stems": [5, 7], "cardSize": 0.66, "stemReach": 0.72 },
+      "lods": [
+        { "distance": 0, "stems": true, "cards": 118, "cardScale": 1 },
+        { "distance": 25, "stems": false, "cards": 54, "cardScale": 1.55 }
+      ],
+      "impostor": { "distance": 60, "size": 128 },
+      "variants": [
+        { "index": 0, "name": "green", "look": { "bark": "#4e4236", "leaves": ["#46682f", "#517536", "#3e5d2b"], "jitter": 0.12 } },
+        { "index": 1, "name": "dry", "look": { "bark": "#5a4c3e", "leaves": ["#6e7040", "#7c7a46", "#62653a"], "jitter": 0.14 } }
+      ]
     }
   ]
 }
