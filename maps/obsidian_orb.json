@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 29,
   "metadata": {
     "id": "obsidian_orb",
     "name": "Obsidian Orb",
@@ -19,7 +19,15 @@
       "core.koth",
       "core.tdm",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_oyvr2rvdsjvrhwut",
+      "versionId": "v_pzrworzdz5siv345",
+      "revision": 2,
+      "contentHash": "sha256:3bfcdfb54427a0621eaa42e271a5b3a7d9038b6bbf78a791cd5e7eb9020c23af",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T21:50:40.880Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -2361,116 +2369,6 @@
       "health": 120
     },
     {
-      "id": "block_082",
-      "position": [
-        0,
-        -6,
-        -11.8
-      ],
-      "kind": "block",
-      "size": [
-        40,
-        0.4,
-        0.4
-      ],
-      "yaw": 0,
-      "material": "core.glow_trim",
-      "tint": "#ff7a3a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_083",
-      "position": [
-        0,
-        -6,
-        11.8
-      ],
-      "kind": "block",
-      "size": [
-        40,
-        0.4,
-        0.4
-      ],
-      "yaw": 0,
-      "material": "core.glow_trim",
-      "tint": "#ff7a3a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_084",
-      "position": [
-        0,
-        -16,
-        -11.8
-      ],
-      "kind": "block",
-      "size": [
-        40,
-        0.4,
-        0.4
-      ],
-      "yaw": 0,
-      "material": "core.glow_trim",
-      "tint": "#ff7a3a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_085",
-      "position": [
-        0,
-        -16,
-        11.8
-      ],
-      "kind": "block",
-      "size": [
-        40,
-        0.4,
-        0.4
-      ],
-      "yaw": 0,
-      "material": "core.glow_trim",
-      "tint": "#ff7a3a",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_086",
-      "position": [
-        0,
-        -36,
-        0
-      ],
-      "kind": "block",
-      "size": [
-        12,
-        1,
-        12
-      ],
-      "yaw": 0,
-      "material": "core.pbr_tread_plate",
-      "tint": "#5a5f66",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
       "id": "prop_087",
       "position": [
         0,
@@ -2481,7 +2379,7 @@
       "model": "prop.os_reactor_core",
       "yaw": 0,
       "scale": 4,
-      "solid": true,
+      "solid": false,
       "tint": null
     },
     {
@@ -8099,7 +7997,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "space",
     "scenery": "none",

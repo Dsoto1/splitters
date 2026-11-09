@@ -2378,7 +2378,10 @@ async function mobileFlow(browser) {
   check(await page.isVisible('.opt-sub:has-text("Touch")'), 'Options → Controls lists the touch controls on a phone');
   await page.screenshot({ path: `${ARTIFACTS}/mobile-options.png` });
 
-  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1`);
+  // You alone on the range (&bots=1: one player in all). Its deathmatch bots shot the god-mode you about (their swarm
+  // rockets' and rounds' knockback): the "walk" could be a blast's push, and the jump's tap could land while a hit
+  // had you in the air (CI: grounded false, velY -1.0 / -2.5 at the tap), so the tap did nothing.
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 1 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   check(await page.evaluate(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden), 'the match opens paused; the controls wait for Resume');
   await page.tap('#resume');
@@ -2404,7 +2407,9 @@ async function mobileFlow(browser) {
   before = await state();
   check(await holdUntil(fire.x, fire.y, 3, (m) => window.__cs.local.inventory.get(window.__cs.local.held)?.[0] < m, 8000, before.mag), `holding Fire shoots (magazine ${before.mag} went down)`);
   // Jump: a tap on the pad's middle. Tap or hold is read from the events' own times (a slow software-rendered
-  // page handles the lift late), so the tap says when it happened: 80 ms apart.
+  // page handles the lift late), so the tap says when it happened: 80 ms apart. A jump is taken only on the ground:
+  // tap once you stand on it (the walk above can still be carrying you).
+  await page.waitForFunction(() => window.__cs.local.state.grounded && Math.abs(window.__cs.local.state.velY) < 0.01, null, { timeout: T(10000) }).catch(() => {});
   before = await state();
   // (Noted for the message if it doesn't jump: the pad's pointer events as the page saw them, and the body.)
   await page.evaluate(() => {
@@ -2803,6 +2808,9 @@ async function physicsfxFlow(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
+  // The bots stand where they spawn, firing nothing: left to play, they drove vehicles onto the open ground the bodies
+  // are thrown on, and shot you off your mark (the checks below place them where they need them).
+  await holdBots(page);
   await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model') && n.rotationQuaternion && Math.abs(n.rotationQuaternion.x) + Math.abs(n.rotationQuaternion.z) > 0.01), null, { timeout: T(15000) }).catch(() => {});
   // Rocks, logs and plants lean with the slope; trees stay upright; nothing floats.
   const props = await page.evaluate(() => {
@@ -2811,23 +2819,107 @@ async function physicsfxFlow(browser) {
     return { roots: roots.length, leaning };
   });
   check(props.leaning > 0, `natural props lean with the canyon's slopes (${props.leaning} of ${props.roots})`);
-  // Line up a bot in front of you on open ground and kill it: it falls as a ragdoll and bleeds.
-  await page.evaluate(() => {
+  /**
+   * Open ground for the ragdoll checks, the same place on every run (bodies dropped or thrown by cover, or into a rock,
+   * flew or stopped wherever they happened to be: CI, a blast that threw nothing, a body that moved 0.44 m out; locally,
+   * a killed bot's body flung 10 m up). You are put 10 m off it, facing it.
+   */
+  const standByOpenGround = async () => {
+    // The blasts below go off on open ground, the same place on every run, with you 10 m off: nothing of the level
+    // within 5 m of it at body height (a bot standing by a rock or a wall was shielded from the throw, or its body thrown
+    // into the rock: CI, "up no", "outward 0.44"; which depended on where the bot, or you, happened to be). The map is
+    // searched on a fixed 4 m grid out from its middle (the level is static: the same spot every time), and you are put
+    // where you see it.
+    const open = await page.evaluate(() => {
+      const m = window.__match;
+      const v = window.__cs.view;
+      const me = m.slots[window.__cs.slot];
+      const groundAt = (x, z) => {
+        const hit = v.raycastLevel({ x, y: 60, z }, { x: 0, y: -1, z: 0 }, 120);
+        return hit ? 60 - hit.dist : null;
+      };
+      const clearAround = (x, y, z) => {
+        // Level ground round it: within 0.6 m 3 m out every way.
+        for (let a = 0; a < 8; a++) {
+          const g = groundAt(x + Math.cos((a / 8) * Math.PI * 2) * 3, z + Math.sin((a / 8) * Math.PI * 2) * 3);
+          if (g === null || Math.abs(g - y) > 0.6) return false;
+        }
+        // Nothing standing within 5 m at body height: the sim's level (the throw) and the effects world (the bodies).
+        if (!m.physics.boxClear({ x, y: y + 1.9, z }, { x: 5, y: 1, z: 5 }, undefined, true)) return false;
+        for (let a = 0; v.physics && a < 16; a++) {
+          const d = { x: Math.cos((a / 16) * Math.PI * 2), y: 0, z: Math.sin((a / 16) * Math.PI * 2) };
+          for (const h of [1, 1.6]) if (v.physics.raycast({ x, y: y + h, z }, d, 5)) return false;
+        }
+        return true;
+      };
+      const cells = [];
+      for (let x = -80; x <= 80; x += 4) for (let z = -80; z <= 80; z += 4) cells.push({ x, z });
+      cells.sort((p, q) => Math.hypot(p.x, p.z) - Math.hypot(q.x, q.z) || p.x - q.x || p.z - q.z);
+      let checked = 0;
+      for (const c of cells) {
+        const y = groundAt(c.x, c.z);
+        if (y === null || !clearAround(c.x, y, c.z)) continue;
+        // (No vehicle or turret standing there either.)
+        if (m.mounts.some((v) => Math.hypot(v.pos.x - c.x, v.pos.z - c.z) < 10)) continue;
+        checked++;
+        // You 10 m off (the first of eight ways with ground near its height, room to stand and a clear sight of it).
+        for (let k = 0; k < 8; k++) {
+          const yaw = k * (Math.PI / 4);
+          const px = c.x - Math.sin(yaw) * 10;
+          const pz = c.z - Math.cos(yaw) * 10;
+          const py = groundAt(px, pz);
+          if (py === null || Math.abs(py - y) > 1) continue;
+          if (!m.physics.boxClear({ x: px, y: py + 1, z: pz }, { x: 0.6, y: 0.8, z: 0.6 }, undefined, true)) continue;
+          if (!m.physics.lineOfSight({ x: px, y: py + 1.6, z: pz }, { x: c.x, y: y + 1, z: c.z })) continue;
+          const me0 = { x: px, y: py + 0.05, z: pz };
+          me.move = { ...me.move, pos: me0, vx: 0, vz: 0, velY: 0, grounded: false };
+          return { at: { x: c.x, y, z: c.z }, me: me0, yaw, checked };
+        }
+      }
+      return { at: null, checked };
+    });
+    check(!!open.at, `open ground for the ragdolls, with you 10 m off (${JSON.stringify(open)})`);
+    // You land there.
+    if (open.at) await page.waitForFunction((p) => { const me = window.__match.slots[window.__cs.slot]; return me.move.grounded && Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z) < 1; }, open.me, { timeout: T(5000) }).catch(() => {});
+    // And the view has you there (a slow page draws the move frames later: what is in view is judged from its camera).
+    if (open.at) await page.waitForFunction((p) => { const c = window.__cs.view.camera.globalPosition; return Math.hypot(c.x - p.x, c.z - p.z) < 1.5; }, open.me, { timeout: T(15000) }).catch(() => {});
+    // Face it (the mass blast is the bodies in view), turned round if the yaw went the wrong way.
+    if (open.at) {
+      await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), open.yaw);
+      await frames(page, 3);
+      await page.evaluate((at) => {
+        const cam = window.__cs.view.camera;
+        const f = cam.getForwardRay(1).direction;
+        const p = cam.globalPosition;
+        if (f.x * (at.x - p.x) + f.z * (at.z - p.z) < 0) window.__cs.input.yaw += Math.PI;
+      }, open.at);
+      await frames(page, 3);
+    }
+    return open;
+  };
+  const open0 = await standByOpenGround();
+  // Line up a bot on that open ground in front of you and kill it: it falls as a ragdoll and bleeds.
+  await page.evaluate((open) => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    const bot = m.slots.find((c) => c && c !== me && c.alive);
+    // (Not one seated in a vehicle or on a turret: moved, it stayed seated, and a tank's crew can't be hurt from outside.)
+    const bot = m.slots.find((c) => c && c !== me && c.alive && !c.mount);
     for (const c of m.slots) if (c && c !== me && c !== bot) c.alive = false;
     const f = window.__cs.view.camera.getForwardRay(1).direction;
     const len = Math.hypot(f.x, f.z) || 1;
-    bot.move = { ...bot.move, pos: { x: me.move.pos.x + (f.x / len) * 4, y: me.move.pos.y + 0.5, z: me.move.pos.z + (f.z / len) * 4 }, velY: 0, grounded: false };
+    // 4 m in front of you, towards the open ground.
+    const d = open ? { x: open.x - me.move.pos.x, z: open.z - me.move.pos.z } : { x: f.x, z: f.z };
+    const dl = Math.hypot(d.x, d.z) || len;
+    bot.move = { ...bot.move, pos: { x: me.move.pos.x + (d.x / dl) * 4, y: me.move.pos.y + 0.5, z: me.move.pos.z + (d.z / dl) * 4 }, vx: 0, vz: 0, velY: 0, grounded: false };
     window.__botSlot = bot.slot;
     window.__autoInput = { buttons: 0 };
-  });
+  }, open0.at);
   // The bot lands where it was put and its avatar stands there.
   await page.waitForFunction(() => {
     const bot = window.__match.slots[window.__botSlot];
-    return bot?.move.grounded && !!window.__cs.view.avatars.get(bot.slot)?.anim?.ch.joints.get('Head');
-  }, null, { timeout: T(5000) }).catch(() => {});
+    const a = window.__cs.view.avatars.get(bot?.slot);
+    return bot?.move.grounded && !!a?.anim?.ch.joints.get('Head') && Math.hypot(a.root.position.x - bot.move.pos.x, a.root.position.z - bot.move.pos.z) < 0.5;
+  }, null, { timeout: T(15000) }).catch(() => {});
   await frames(page, 5);
   const standing = await page.evaluate(() => {
     const m = window.__match;
@@ -2835,7 +2927,9 @@ async function physicsfxFlow(browser) {
     const bot = m.slots[window.__botSlot];
     const standing = window.__cs.view.avatars.get(bot.slot)?.anim?.ch.joints.get('Head')?.getAbsolutePosition().y ?? null;
     window.__cs.view.pushPlayer(bot.slot, { x: (bot.move.pos.x - me.move.pos.x) * 1.2, y: 2, z: (bot.move.pos.z - me.move.pos.z) * 1.2 });
-    m.damage(bot, 500, me, 'core.pistol');
+    // No attacker: the bot may be on your team (no friendly fire; Team Deathmatch on the canyon: the first other slot
+    // was a teammate on some runs, and nothing died).
+    m.damage(bot, 500, null, 'core.pistol');
     return standing;
   });
   await page.addStyleTag({ content: '#pause { display: none !important; }' });
@@ -2869,8 +2963,12 @@ async function physicsfxFlow(browser) {
   // The sampling above stops once the body is down: give the blood time to land.
   // Splats are thin instances of one disc (bloodVisuals.ts): count them.
   await page.waitForFunction(() => window.__cs.view.blood.splatCount > 0, null, { timeout: T(2500) }).catch(() => {});
-  const dead = await page.evaluate(() => ({ splats: window.__cs.view.blood.splatCount }));
-  check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : 'no ragdoll'}, head ${track.map((y) => y.toFixed(2)).join(' → ')})`);
+  const dead = await page.evaluate(() => {
+    const v = window.__cs.view;
+    const c = v.corpses.findLast((x) => x.slot === window.__botSlot);
+    return { splats: v.blood.splatCount, why: { physics: !!v.physics, corpse: !!c, model: !!c?.a.anim?.ch, fall: !!c?.a.fall, death: v.lastDeath ?? null } };
+  });
+  check(ragdolled && fell() > 0.5, `the killed bot drops as a ragdoll (${ragdolled ? 'ragdoll' : `no ragdoll: ${JSON.stringify(dead.why)}`}, head ${track.slice(0, 12).map((y) => y.toFixed(2)).join(' → ')}${track.length > 12 ? ` … ${track.at(-1).toFixed(2)}` : ''})`);
   check(dead.splats > 0, `blood splats where it fell (${dead.splats})`);
   // A body that has come to rest (its capsules back in the pool) is a ragdoll again when a round hits it,
   // rather than staying a stiff pose that rounds pass through (owner, 3 Nov).
@@ -2960,40 +3058,64 @@ async function physicsfxFlow(browser) {
   }, killedAt);
   await page.evaluate(() => (window.__match.slots[window.__airSlot].respawnTick = window.__match.tick));
   check(!!behind && followed && !!laid && laid.tier === 'posed' && laid.ground !== null && Math.abs(laid.y - laid.ground) < 0.3 && laid.y < killedAt - 0.5, `a death out of view isn't simulated: the body is laid on the ground (${JSON.stringify({ followed, killedAt, laid })})`);
-  // A blast throws a bot near it up and out (the game's own throw, sim/impact.ts).
-  const thrown = await page.evaluate(() => {
+  // The blasts go off on the open ground found above, with you back 10 m off it, facing it.
+  const open = await standByOpenGround();
+  // A blast throws a bot near it up and out (the game's own throw, sim/impact.ts): a bot stood there, its inputs
+  // held (it walked off before), the blast a metre to its side at waist height.
+  const thrown = await page.evaluate((at0) => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    const bot = m.slots.find((c) => c && c !== me && c.alive && c.move.grounded && !c.mount);
+    const bot = at0 && m.slots.find((c) => c && c !== me && c.alive && !c.mount);
     // (Not one seated in a vehicle: a blast doesn't throw a seated rider.)
     if (!bot) return null;
-    // Right beside it, where it stands (open ground: it got there), at waist height.
-    const at = { x: bot.move.pos.x - 1, y: bot.move.pos.y + 0.6, z: bot.move.pos.z };
+    if (bot.bot && !bot.queue.massHeld && !bot.queue.held) {
+      bot.queue.push = (...inputs) => Array.prototype.push.apply(bot.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+      bot.queue.massHeld = true;
+    }
+    bot.move = { ...bot.move, pos: { x: at0.x, y: at0.y + 0.05, z: at0.z }, vx: 0, vz: 0, velY: 0, grounded: false };
     bot.health = 1000;
     window.__blastSlot = bot.slot;
+    window.__blastBot = bot;
+    window.__blastTick = m.tick;
+    return { slot: bot.slot };
+  }, open.at);
+  // Standing there: landed, a few ticks on.
+  if (thrown) await page.waitForFunction(() => { const b = window.__blastBot; return b.alive && b.move.grounded && window.__match.tick > window.__blastTick + 5; }, null, { timeout: T(5000) }).catch(() => {});
+  const blast = !thrown ? null : await page.evaluate(() => {
+    const m = window.__match;
+    const bot = window.__blastBot;
+    const at = { x: bot.move.pos.x - 1, y: bot.move.pos.y + 0.6, z: bot.move.pos.z };
     window.__blastFrom = { y: bot.move.pos.y, x: bot.move.pos.x, z: bot.move.pos.z };
     window.__blastTop = bot.move.pos.y;
     m.splash(at, 5, 0, 0, null, 'core.rockets', 1, 11);
     return { velY: bot.move.velY, push: Math.hypot(bot.move.vx ?? 0, bot.move.vz ?? 0), mount: !!bot.mount, los: m.physics.lineOfSight(at, { x: bot.move.pos.x, y: bot.move.pos.y + 1.2, z: bot.move.pos.z }) };
   });
-  const rose = await page.waitForFunction(() => {
+  const rose = !!blast && await page.waitForFunction(() => {
     const b = window.__match.slots[window.__blastSlot];
     window.__blastTop = Math.max(window.__blastTop, b.move.pos.y);
     return window.__blastTop - window.__blastFrom.y > 1;
   }, null, { timeout: T(5000), polling: 16 }).then(() => true, () => false);
-  const out = await page.evaluate(() => { const b = window.__match.slots[window.__blastSlot]; return Math.hypot(b.move.pos.x - window.__blastFrom.x, b.move.pos.z - window.__blastFrom.z); });
+  const out = !blast ? 0 : await page.evaluate(() => {
+    const b = window.__blastBot;
+    if (b.queue.massHeld) {
+      delete b.queue.push;
+      delete b.queue.massHeld;
+    }
+    return Math.hypot(b.move.pos.x - window.__blastFrom.x, b.move.pos.z - window.__blastFrom.z);
+  });
   // (Where it lands depends on the bot: it steers in the air, and a wall can stop it.)
-  check(!!thrown && thrown.velY > 6 && thrown.push > 4 && rose, `a blast throws a bot up and out (${JSON.stringify(thrown)}, up ${rose ? '> 1 m' : 'no'}, out ${out.toFixed(1)} m)`);
+  check(!!blast && blast.velY > 6 && blast.push > 4 && rose, `a blast throws a bot up and out (${JSON.stringify(blast)}, up ${rose ? '> 1 m' : 'no'}, out ${out.toFixed(1)} m)`);
   // A mass casualty: one blast kills everyone around a point in front of you, and nothing stalls: every body
   // goes down a ragdoll or laid down, within the budget of awake ragdoll bodies. Every body reacts to it as before
   // the performance work spread their starts over frames and settled them sooner: each one in view is thrown out and
   // up by it (screenshots before and after: physicsfx-blast-before.png, physicsfx-blast-after.png).
-  const ring = await page.evaluate(() => {
+  // On the open ground found above, in view.
+  const ring = await page.evaluate((open) => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
     const f = window.__cs.view.camera.getForwardRay(1).direction;
     const len = Math.hypot(f.x, f.z) || 1;
-    const at = { x: me.move.pos.x + (f.x / len) * 10, y: me.move.pos.y, z: me.move.pos.z + (f.z / len) * 10 };
+    const at = open ?? { x: me.move.pos.x + (f.x / len) * 10, y: me.move.pos.y, z: me.move.pos.z + (f.z / len) * 10 };
     // Only bots the view has drawn alive (one that respawned since the last drawn frame has no body to drop yet).
     const victims = m.combatants().filter((c) => c !== me && c.alive && !c.mount && window.__cs.view.avatars.get(c.slot)?.wasAlive);
     const spots = victims.map((c, i) => {
@@ -3011,14 +3133,15 @@ async function physicsfxFlow(browser) {
     clearInterval(window.__massHold);
     window.__massHold = setInterval(() => victims.forEach((c, i) => {
       if (!c.alive) return;
-      c.move = { ...c.move, pos: { ...spots[i] }, velY: 0, grounded: true };
+      // (No speed carried: the bot thrown above still had its throw's, which the blast's push then had to overcome.)
+      c.move = { ...c.move, pos: { ...spots[i] }, vx: 0, vz: 0, velY: 0, grounded: true };
       c.health = Math.max(c.health, 100);
     }), 5);
     window.__massSpots = spots;
     window.__massVictims = victims;
     window.__massAt = at;
     return { at, slots: victims.map((c) => c.slot), spots };
-  });
+  }, open.at);
   await page
     .waitForFunction(({ slots, spots }) => slots.every((s, i) => { const a = window.__cs.view.avatars.get(s); return !!a && Math.hypot(a.root.position.x - spots[i].x, a.root.position.z - spots[i].z) < 0.3; }), ring, { timeout: T(15000) })
     .catch(() => {});
@@ -3112,6 +3235,13 @@ async function physicsfxFlow(browser) {
   // round 4); killed there, its body must be drawn as its ragdoll lies, not as its last living poses (the smoothing
   // stayed on after the view stopped stepping it, and the dead stood mid-stride where they died, in the air if they
   // died there). Each corpse's drawn skin is checked against its bones (the skin matrix each bone's pose makes).
+  // A bot back on its feet and drawn: the blast's dead were all just let go, and on a slow page none may have
+  // respawned yet, or been drawn alive again (CI: no bot found, then "reading 'move'" of none).
+  await page.waitForFunction(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    return m.combatants().some((c) => c !== me && c.alive && !c.mount && window.__cs.view.avatars.get(c.slot)?.anim?.ch);
+  }, null, { timeout: T(20000) }).catch(() => {});
   const farSlot = await page.evaluate(() => {
     const m = window.__match;
     const v = window.__cs.view;
@@ -3124,7 +3254,7 @@ async function physicsfxFlow(browser) {
     const z = me.move.pos.z + (f.z / len) * 22;
     const hit = v.raycastLevel({ x, y: me.move.pos.y + 30, z }, { x: 0, y: -1, z: 0 }, 80);
     const spot = { x, y: hit ? me.move.pos.y + 30 - hit.dist + 0.05 : me.move.pos.y, z };
-    if (bot.bot && !bot.queue.massHeld) {
+    if (bot.bot && !bot.queue.massHeld && !bot.queue.held) {
       bot.queue.push = (...inputs) => Array.prototype.push.apply(bot.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
       bot.queue.massHeld = true;
     }
@@ -3143,7 +3273,7 @@ async function physicsfxFlow(browser) {
     const at = window.__farBot.move.pos;
     return !!a?.anim?.smoothing && Math.hypot(a.root.position.x - at.x, a.root.position.z - at.z) < 0.3;
   }, farSlot, { timeout: T(15000) }).then(() => true, () => false));
-  const farBody = await page.evaluate(async ({ s, frames }) => {
+  const farBody = farSlot === null ? { errors: [], smoothing: [], tier: null, frames: 0 } : await page.evaluate(async ({ s, frames }) => {
     const m = window.__match;
     const v = window.__cs.view;
     clearInterval(window.__farHold);
@@ -3257,7 +3387,9 @@ async function glassChecks(browser) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1`);
+  // You alone on the range (&bots=1): its deathmatch bots respawned in front of the panels and took the rounds meant
+  // for them (CI: the bulletproof panel at full health after a dozen shots), and shot you about.
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
   const drawn = await page.evaluate(() => {
     const g = window.__cs.view.scenario.glass.counts;
@@ -3287,14 +3419,20 @@ async function glassChecks(browser) {
       window.__cs.input.pitch = -0.02;
     }, z);
     await page.waitForTimeout(T(600)); // wait-ok: the view turns to the panel
+    // Each shot: the trigger held until the round has gone (the magazine drops: a press only fires on a frame that sees
+    // it, and a loaded page can take longer than any fixed hold between frames; CI and locally, a pistol never fired),
+    // then let go for frames that see it let go (a semi-automatic fires once a press).
     for (let k = 0; k < n; k++) {
       if (await page.evaluate(done)) break;
+      const before = await page.evaluate(() => { const me = window.__match.slots[window.__cs.slot]; return me.weapons.get(me.current)?.mag ?? 0; });
       await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
-      await page.waitForTimeout(T(200)); // wait-ok: holds the trigger for a shot
+      const went = await page.waitForFunction((b) => { const me = window.__match.slots[window.__cs.slot]; return (me.weapons.get(me.current)?.mag ?? 0) < b; }, before, { timeout: T(5000) }).then(() => true, () => false);
       await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-      await page.waitForTimeout(T(250)); // wait-ok: between shots
+      await frames(page, 2);
+      fired += went ? 1 : 0;
     }
   };
+  let fired = 0;
   const z = (i) => -8 - i * 2.6;
   // Shots go with the frames (a held trigger fires on the next one), so on a slow renderer keep firing
   // until two rounds have landed, as a fixed few might not.
@@ -3313,9 +3451,30 @@ async function glassChecks(browser) {
     return { health: s ? s[1] : null, cracks: window.__cs.view.scenario.glass.counts.cracks };
   });
   check(proof.health !== null && proof.health > 0 && proof.health < 100 && proof.cracks > 0, `bulletproof glass stops the rounds, cracks where they strike and holds (${JSON.stringify(proof)})`);
-  await fireAt(z(0), 5, () => window.__match.scenario.destructibleAlive('panel_0') === false);
-  await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name === 'glassShard'), null, { timeout: T(5000) }).catch(() => {});
-  const broke = await page.evaluate(() => ({ alive: window.__match.scenario.destructibleAlive('panel_0'), shards: window.__cs.view.scene.meshes.filter((m) => m.name === 'glassShard').length }));
+  // Broken glass comes back after the map's glass time (4 s here): on a slow page that can pass between a shot and the
+  // next look (it broke, and was whole again by the check). So the break and its shards are noted as they happen.
+  await page.evaluate(() => {
+    window.__panelBroke = false;
+    window.__shardsSeen = 0;
+    clearInterval(window.__panelWatch);
+    window.__panelWatch = setInterval(() => {
+      if (window.__match.scenario.destructibleAlive('panel_0') === false) window.__panelBroke = true;
+      window.__shardsSeen = Math.max(window.__shardsSeen, window.__cs.view.scene.meshes.filter((x) => x.name === 'glassShard').length);
+    }, 10);
+  });
+  fired = 0;
+  await fireAt(z(0), 8, () => window.__panelBroke);
+  await page.waitForFunction(() => window.__shardsSeen > 0, null, { timeout: T(5000) }).catch(() => {});
+  const broke = await page.evaluate(() => {
+    const m = window.__match;
+    const me = m.slots[window.__cs.slot];
+    const i = m.map.entities.findIndex((e) => e.id === 'panel_0');
+    const st = m.scenario.fullState().es.find(([k]) => k === i);
+    const w = me.weapons.get(me.current);
+    clearInterval(window.__panelWatch);
+    return { alive: !window.__panelBroke, shards: window.__shardsSeen, health: st ? st[1] : null, gun: w?.def.id, mag: w?.mag, at: { x: +me.move.pos.x.toFixed(1), z: +me.move.pos.z.toFixed(1) } };
+  });
+  broke.fired = fired;
   check(broke.alive === false && broke.shards > 0, `the glass panel shatters into shards (${JSON.stringify(broke)})`);
   await page.evaluate(() => {
     clearInterval(window.__pin);
@@ -3885,8 +4044,13 @@ async function weaponsetsFlow(browser) {
     await p.waitForFunction(() => window.__front, null, { timeout: T(30000) });
     await p.evaluate(() => document.getElementById('nav-play').click());
     await p.waitForSelector('#setup-advanced-head', { timeout: T(30000) });
-    await p.click('#setup-advanced-head');
-    await p.waitForSelector('#setup-arsenal', { timeout: T(5000) });
+    // Advanced rules open (the head is a toggle, and the setup redraws as it settles: a click while it redrew, or on a
+    // section already open, left it shut): opened only while it says it is shut, until its Weapons fold is there.
+    await p.waitForFunction(() => {
+      const head = document.getElementById('setup-advanced-head');
+      if (head && head.getAttribute('aria-expanded') !== 'true') head.click();
+      return !!document.getElementById('setup-arsenal');
+    }, null, { timeout: T(10000), polling: 500 });
     await p.evaluate(() => {
       const d = document.getElementById('setup-arsenal');
       if (!d.open) d.querySelector('summary').click();
@@ -3905,11 +4069,17 @@ async function weaponsetsFlow(browser) {
   const started = (p) => p.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   /** What you carry now, and the random gun this life rolls (Chaos, Mixed bag). */
   const myKit = (p) => sim(p, (m, me, a, mod) => ({ set: m.weaponSet?.id, life: me.spawns, weapons: [...me.weapons.values()].map((w) => w.def.id), held: me.weapons.get(me.current)?.def.id, grenade: me.throwable?.kind, rolled: mod.randomGunFor(m.weaponSet, m.seed, me.slot, me.spawns) }));
-  /** Die and come straight back: the new life's loadout. */
+  /**
+   * Die and come straight back: the new life's loadout. The gun you die with drops at your body (rules.dropWeapons):
+   * standing idle at your spawn, the next life could spawn on that same point and pick last life's oddball straight up
+   * (four weapons; CI, once), or a bot's beside it. The lying drops are cleared as you die: what's checked is what a
+   * life spawns with.
+   */
   const respawn = async (p) => {
     const life = await sim(p, (m, me) => me.spawns ?? 0);
     await sim(p, (m, me) => {
       m.kill(me, null, 'core.respawn');
+      m.drops.length = 0;
       me.respawnTick = m.tick;
     });
     await simWait(p, (m, me, n) => me.alive && (me.spawns ?? 0) > n, life, T(15000));
@@ -3990,7 +4160,7 @@ async function weaponsetsFlow(browser) {
   const lives = [await myKit(page2)];
   for (let i = 0; i < 5; i++) lives.push(await respawn(page2));
   const mains = await sim(page2, (m, _me, _a, mod) => mod.setMainGuns(m.weaponSet).map((w) => w.id));
-  check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && l.grenade === 'sheep'), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and a sheep (${lives.map((l) => `life ${l.life}: ${l.held}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}`).join(', ')})`);
+  check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && l.grenade === 'sheep'), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and a sheep (${lives.map((l) => `life ${l.life}: ${l.held}${mains.includes(l.held) ? '' : ' (not a main gun)'}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}${l.weapons.length === 3 && l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.grenade === 'sheep' ? '' : ` [${l.weapons.join(' ')}; ${l.grenade}]`}`).join(', ')}${lives[0].set === 'chaos' ? '' : `; set ${lives[0].set}`})`);
   check(new Set(lives.map((l) => l.held)).size >= 3, `the spawn gun changes from life to life (${lives.map((l) => l.held?.replace('core.', '')).join(', ')})`);
   if (shots) {
     // Your own oddball in the picture, with the pause menu (headless pages open it) out of the way: the page draws the
@@ -5358,7 +5528,7 @@ async function passengerChecks(browser) {
       if ('speed' in m) m.speed = m.def.vehicle.maxSpeed;
       window.__autoInput = { forward: 1, buttons: 0 };
       window.__frameClock.freeze();
-      window.__ride = { frames: 0, fast: 0, drawn: 0, worst: 0, worstY: 0, speed: 0, seated: true };
+      window.__ride = { frames: 0, fast: 0, drawn: 0, worst: 0, worstY: 0, speed: 0, seated: true, me: { drawn: 0, sat: 0, worst: 0, worstY: 0 } };
     }, ride);
     // Frame by frame, while the buggy's drawn speed is over 10 m/s: how far the bot's drawn body is from its seat
     // point on the buggy's model as drawn that frame (the node's world matrix times the seat's offset).
@@ -5384,6 +5554,18 @@ async function passengerChecks(browser) {
           out.worst = Math.max(out.worst, Math.hypot(p.x - at.x, p.z - at.z));
           out.worstY = Math.max(out.worstY, Math.abs(p.y - at.y));
           out.speed = Math.max(out.speed, speed);
+          // Your own body (owner, 2026-11-08: the driver's seat looked empty in the chase view): drawn, sitting, on
+          // the driver's seat point the same way.
+          const own = cs.view.avatars.get(cs.slot);
+          if (own?.root.isEnabled() && !own.hiddenSelf && own.anim) out.me.drawn++;
+          if ((own?.anim?.sit ?? 0) > 0.95) out.me.sat++;
+          if (own) {
+            const [dx, dy, dz] = m.def.seats[0].offset;
+            const seat = { x: dx * w[0] + dy * w[4] + dz * w[8] + w[12], y: dx * w[1] + dy * w[5] + dz * w[9] + w[13], z: dx * w[2] + dy * w[6] + dz * w[10] + w[14] };
+            const q = own.root.position;
+            out.me.worst = Math.max(out.me.worst, Math.hypot(q.x - seat.x, q.z - seat.z));
+            out.me.worstY = Math.max(out.me.worstY, Math.abs(q.y - seat.y));
+          }
         }
         return out;
       }, [ride, n]);
@@ -5408,6 +5590,47 @@ async function passengerChecks(browser) {
       return { steps: window.__played.filter((s) => s.id === 'footstep' && near(s.at)).length, engine: window.__played.filter((s) => s.id === 'vehicle.engine' && !s.at).length };
     }, ride);
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    const me = sample.me;
+    check(me.drawn === sample.fast && me.sat === sample.fast && me.worst < 0.05 && me.worstY < 0.05, `in the chase view your own body is drawn sitting on the driver's seat every frame (${JSON.stringify({ fast: sample.fast, ...me, worst: +me.worst.toFixed(3), worstY: +me.worstY.toFixed(3) })})`);
+    // The cockpit (first person from your own eyes): your body isn't drawn, as on foot in first person. Then out of
+    // the buggy, on foot in first person: still not drawn.
+    const ownShown = () => {
+      const a = window.__cs.view.avatars.get(window.__cs.slot);
+      return !!a && a.root.isEnabled() && !a.hiddenSelf;
+    };
+    // Frames on the page's clock until the view is `want` (null: on foot, out of every seat), at most `max`.
+    const untilFrames = (want, max) =>
+      page.evaluate(([want, max]) => {
+        const cs = window.__cs;
+        const ok = () => cs.rideView() === want && (want !== null || !cs.mounts.seatedRiders().has(cs.slot));
+        for (let i = 0; i < max && !ok(); i++) window.__frameClock.step(1000 / 60);
+        window.__frameClock.step(1000 / 60);
+        return ok();
+      }, [want, max]);
+    await page.keyboard.press('KeyH');
+    const cockpit = await untilFrames('cockpit', 60);
+    const inCockpit = await page.evaluate(ownShown);
+    if (process.env.E2E_SHOTS) {
+      const png = await page.evaluate(() => {
+        window.__frameClock.step(1000 / 60);
+        const canvas = window.__cs.view.scene.getEngine().getRenderingCanvas();
+        const out = document.createElement('canvas');
+        [out.width, out.height] = [canvas.width, canvas.height];
+        out.getContext('2d').drawImage(canvas, 0, 0);
+        return out.toDataURL('image/png').split(',')[1];
+      });
+      writeFileSync(`${process.env.E2E_SHOTS}/vehicles-driver-cockpit.png`, Buffer.from(png, 'base64'));
+    }
+    await page.keyboard.press('KeyH');
+    const chaseAgain = await untilFrames('chase', 60);
+    const backInChase = await page.evaluate(ownShown);
+    await page.evaluate(() => {
+      const m = window.__match;
+      m.leaveMount(m.slots[window.__cs.slot], true);
+    });
+    const out = await untilFrames(null, 120);
+    const onFoot = await page.evaluate(ownShown);
+    check(cockpit && !inCockpit && chaseAgain && backInChase && out && !onFoot && !(await page.evaluate(() => window.__cs.thirdPerson())), `your body is hidden in the cockpit view, drawn again in the chase view, and hidden on foot in first person after getting out (${JSON.stringify({ cockpit, inCockpit, chaseAgain, backInChase, out, onFoot })})`);
     check(sample.seated && sample.fast >= 60 && sample.drawn === sample.fast && sample.worst < 0.05 && sample.worstY < 0.05, `at speed the passenger is drawn on its seat every frame (${JSON.stringify({ ...sample, worst: +sample.worst.toFixed(3), worstY: +sample.worstY.toFixed(3), speed: +sample.speed.toFixed(1) })})`);
     check(heard.steps === 0 && heard.engine > 0, `riding plays no footsteps and the engine runs (${JSON.stringify(heard)})`);
   }
@@ -6822,6 +7045,9 @@ async function wholeBodies(page, frames, upright = []) {
             let lo = Infinity;
             let hi = -Infinity;
             let bad = 0;
+            // The full-detail mesh in the same pose (the same skeleton): the height the drawn level should have.
+            let lo0 = Infinity;
+            let hi0 = -Infinity;
             const off = [];
             for (const m of parts) {
               const level = m.getLOD(cam);
@@ -6833,12 +7059,18 @@ async function wholeBodies(page, frames, upright = []) {
               lo = Math.min(lo, b.lo);
               hi = Math.max(hi, b.hi);
               bad += b.bad;
+              const f = level === m ? b : skinned(m);
+              lo0 = Math.min(lo0, f.lo);
+              hi0 = Math.max(hi0, f.hi);
             }
             const spec = JSON.parse(a.specKey);
             const height = hi > lo ? hi - lo : 0;
             const want = fullHeight * (spec.size ?? 1);
+            const full = hi0 > lo0 ? hi0 - lo0 : 0;
+            // (`full`: the full-detail mesh in the same pose, for the message: Hyena Warrior's low-detail level is drawn
+            // 1.5-1.8 m against its full detail's 2.1 m in the same pose, on CI; see HANDOFF.)
             if ((off.length || bad || (upright.includes(slot) && height < want * 0.75)) && !failed.has(slot)) {
-              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), nonNumbers: bad, off });
+              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off });
             }
           }
           if (++n >= frames) {
@@ -6907,7 +7139,7 @@ async function farBodies(browser) {
           c.health = Math.max(c.health, 100);
         }
       }, 5);
-      return { yaw, slots: bots.map((c) => c.slot) };
+      return { yaw, slots: bots.map((c) => c.slot), from: { x: p.x, y: p.y, z: p.z } };
     }
     return null;
   });
@@ -6962,7 +7194,9 @@ async function farBodies(browser) {
   await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(60000) }).catch(() => {});
   const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
   const r = await wholeBodies(page, 12, setup.slots);
-  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  // (For a failure: where you are now against where the crowd was set out from, and whether you are alive.)
+  if (r.failed.length) broken.push(`you ${await sim(page, (m, me, from) => `${Math.hypot(me.move.pos.x - from.x, me.move.pos.z - from.z).toFixed(1)} m from the setup, ${me.alive ? 'alive' : 'dead'}, ${me.deaths} deaths`, setup.from)}`);
   check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -7027,10 +7261,28 @@ async function gripsInPlay(browser) {
   // can land while you are already looking through the scope, or in third person): the gun is back in your hands when
   // the scope comes down (owner, 2026-11-07: Count Bonesworth's gun vanished after a sniper on a St. John's roof; the
   // copy took "off" from the view's root, switched off while scoped).
+  // The give puts the marksman in your hands itself (matchHost.give sets it current). The view draws it a frame or
+  // more later: pressing 3 while only the view lagged cycled on to the rifle (the same slot), and on a 1-2 fps CI page
+  // the presses kept landing between the switch and its frame, ending on the rifle. So wait for the held gun, and
+  // press 3 only while it isn't the marksman, each time until that press has taken.
+  // (What you held, as it changed from here to the scope coming down: for the message if the gun is the wrong one.)
+  await page.evaluate(() => {
+    window.__heldTrace = [];
+    let last = '';
+    const t0 = performance.now();
+    window.__heldIv = setInterval(() => {
+      const asked = [...new Set((window.__cs.local.pending ?? []).map((i) => i.weapon).filter(Boolean))].join('+');
+      const now = `${window.__cs.local.weapon?.id?.replace('core.', '')}/${window.__cs.view.viewWeapon?.replace('core.', '')}${window.__cs.local.alive ? '' : ' dead'}${asked ? ` asked ${asked}` : ''}${window.__cs.input.wheelOpen ? ' wheel' : ''} held#${window.__cs.local.held}`;
+      if (now !== last) window.__heldTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
+    }, 50);
+  });
   await page.evaluate(() => window.__give('core.marksman'));
-  for (let i = 0; i < 8 && (await page.evaluate(() => window.__cs.view.viewWeapon)) !== 'core.marksman'; i++) {
+  await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.marksman', null, { timeout: T(10000) }).catch(() => {});
+  for (let i = 0; i < 4; i++) {
+    const held = await page.evaluate(() => window.__cs.local.weapon?.id);
+    if (held === 'core.marksman') break;
     await page.keyboard.press('Digit3');
-    await sleep(600);
+    await page.waitForFunction((was) => window.__cs.local.weapon?.id !== was, held, { timeout: T(10000) }).catch(() => {});
   }
   await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.marksman' && window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0, null, { timeout: T(20000) }).catch(() => {});
   await page.evaluate(() => (window.__autoInput = { zoom: true }));
@@ -7060,7 +7312,8 @@ async function gripsInPlay(browser) {
     return { weapon: v.viewWeapon, on: !!vm && vm.isEnabled(), drawn: !!vm && vm.getChildMeshes().some((m) => drawn.has(m)) };
   });
   const scopeHand = await own();
-  check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)})`);
+  const heldTrace = await page.evaluate(() => (clearInterval(window.__heldIv), window.__heldTrace.join(', ')));
+  check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)}${back.weapon === 'core.marksman' ? '' : `; held/drawn: ${heldTrace}`})`);
   const body = await page.evaluate(() => window.__cs.view.gripReport().local?.mode);
   check(body === 'body', `the match draws your whole body in first person (${body})`);
   // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots
@@ -8050,6 +8303,9 @@ async function partyFlow(browser) {
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;
   const host = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
+  // (The host's warnings, for the message if the party doesn't arrive together.)
+  const hostLog = [];
+  host.on('console', (msg) => (msg.type() === 'warning' || msg.type() === 'error') && hostLog.length < 20 && hostLog.push(msg.text().slice(0, 200)));
   await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
   await host.goto(`${CLIENT}/?offline=void_yard&gamemode=core.tdm${hub}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   await host.waitForFunction(playing, null, { timeout: T(90000) });
@@ -8091,11 +8347,36 @@ async function partyFlow(browser) {
     await host.keyboard.press(`Digit${pickO + 1}`);
     const counted = await host.waitForFunction((i) => window.__cs.vote().votes[i] === 2, pickO, { timeout: T(15000) }).then(() => true, () => false);
     check(counted, `both votes are counted (${JSON.stringify(await host.evaluate(() => window.__cs.vote()))})`);
+    // (Where the host's page is as it goes, for the message if the party doesn't arrive together.)
+    await host.evaluate(() => {
+      window.__mapTrace = [];
+      let last = '';
+      const t0 = performance.now();
+      setInterval(() => {
+        const now = `${window.__cs?.map ?? '-'} ${window.__cs?.phase?.() ?? '-'} vote ${JSON.stringify(window.__cs?.vote?.() ? { w: window.__cs.vote().winner, open: window.__cs.vote().open } : null)}`;
+        if (now !== last) window.__mapTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
+      }, 100);
+    });
+    // (What the host tells its friends as it travels, and what the friend's page shows: for the message.)
+    await host.evaluate(() => {
+      window.__travelLog = [];
+      const t = window.__cs.transport;
+      const orig = t.travelGuests?.bind(t);
+      if (orig) t.travelGuests = (name) => { window.__travelLog.push(`travelGuests(${name}) links ${JSON.stringify([...(t.links?.values() ?? [])].map((r) => ({ slot: r.slot, open: r.link?.open ?? null })))}`); return orig(name); };
+    });
+    await friend.evaluate(() => {
+      window.__shown = [];
+      const h = window.__cs.hud;
+      const orig = h.showMessage.bind(h);
+      h.showMessage = (text, ...a) => { window.__shown.push(String(text).slice(0, 80)); return orig(text, ...a); };
+    });
     await sim(host, (m) => (m.phaseEndTick = m.tick + 60 * 6));
     const together = await simWait(host, (m, _me, id) => m.map.metadata.id === id && m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), maps[pickO], T(150000));
     const s2 = together ? await sides() : {};
     const fill2 = await sim(host, (m) => m.combatants().length);
-    check(together && s2.Friend?.team === s2.Hosty?.team && fill2 === fill1, `the party goes on to the voted map together, on one side, bots filling the rest (${JSON.stringify({ s2, fill1, fill2 })})`);
+    // (Where each side is, for the message if they didn't get there together.)
+    const whereNow = together ? null : { told: await host.evaluate(() => window.__travelLog).catch(() => null), shown: await friend.evaluate(() => window.__shown).catch(() => null), trace: await host.evaluate(() => window.__mapTrace).catch(() => null), log: hostLog, host: await sim(host, (m) => ({ map: m.map.metadata.id, phase: m.phase, humans: m.combatants().filter((c) => c.kind === 'human').map((c) => c.name) })).catch((e) => String(e)), friend: await friend.evaluate(() => ({ map: window.__cs?.map ?? null, phase: window.__cs?.phase?.() ?? null, local: !!window.__cs?.local, menu: !!window.__front && !window.__cs, reconnect: document.getElementById('reconnect')?.textContent ?? null, status: [...document.querySelectorAll('.status, .front-status, #front-status')].map((e) => e.textContent).filter(Boolean).join(' | ').slice(0, 200) })).catch((e) => String(e)) };
+    check(together && s2.Friend?.team === s2.Hosty?.team && fill2 === fill1, `the party goes on to the voted map together, on one side, bots filling the rest (${JSON.stringify({ s2, fill1, fill2, ...(whereNow ? { whereNow } : {}) })})`);
     const friendThere = await friend.waitForFunction((id) => window.__cs?.map === id && window.__cs.local, maps[pickO], { timeout: T(90000) }).then(() => true, () => false);
     check(friendThere, "the friend's own page is on the new map too");
   }
