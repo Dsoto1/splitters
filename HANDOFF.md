@@ -172,8 +172,6 @@ The workflow is unchanged (CLAUDE.md):
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
 
-**Landing now: Fireteams part 2 (`check/fireteams-2`), please hold code pushes to main.** (Fireteams agent, 2026-11-09; one check run, then a fast-forward.)
-
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
   `packages/client/src/editor/**`, `packages/shared/src/editor/**`, the map schema or `MAP_FORMAT_VERSION`
@@ -910,7 +908,7 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
   - The MapMaker editor with `?test=1` makes the same entity ids every session: a pickup placed there collided with
     one the audit placed (`pickup_ekrqxstr16`); placing without `?test=1` worked. For the MapMaker lane.
 
-### Fireteams, part 2 (`wip/fireteams-2`, agent, 2026-11-09; owner-approved 2026-11-08; docs/FIRETEAMS_PLAN.md "Part 2", docs/BOTS.md "Fireteams Part 2")
+### Fireteams, part 2 (`wip/fireteams-2`, agent, 2026-11-09; owner-approved 2026-11-08; green on `check/fireteams-2` at fe9b180, run 42684293550; LANDED on main by fast-forward; docs/FIRETEAMS_PLAN.md "Part 2", docs/BOTS.md "Fireteams Part 2")
 - **What players see:** bot squads go for the objective together; your own squad forms up round you (single file in
   corridors, a wedge, spread on open ground; a ring round a Hold / Go / Defend place); **Spread out / Stay tight** as
   the wheel's seventh entry; half the squad covering while the other half moves up; the **squad HUD** (squadmates'
