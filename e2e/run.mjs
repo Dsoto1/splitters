@@ -7728,8 +7728,9 @@ async function gripsInPlay(browser) {
   await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.marksman' && window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0, null, { timeout: T(20000) }).catch(() => {});
   await page.evaluate(() => (window.__autoInput = { zoom: true }));
   const scopedIn = await page.waitForFunction(() => window.__cs.view.camera.fov < 0.8, null, { timeout: T(20000) }).then(() => true, () => false);
+  // (Up to a minute: on a loaded machine the sharper copy took over 20 s to load, locally.)
   const swapped = await page.evaluate(
-    () =>
+    (wait) =>
       new Promise((done) => {
         const v = window.__cs.view;
         const def = window.__cs.local.weapon;
@@ -7738,9 +7739,10 @@ async function gripsInPlay(browser) {
         if (!kept || !def.view.held) return done(false);
         v.sharpenViewmodel(def, kept, def.view.held.medium);
         const t0 = performance.now();
-        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > 20000 ? done(false) : setTimeout(poll, 50));
+        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > wait ? done(false) : setTimeout(poll, 50));
         poll();
       }),
+    T(60000),
   );
   await page.evaluate(() => (window.__autoInput = { zoom: false }));
   await page.waitForFunction(() => window.__cs.view.camera.fov > 1.2, null, { timeout: T(20000) }).catch(() => {});
