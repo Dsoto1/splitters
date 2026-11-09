@@ -141,6 +141,24 @@ Coast job):
 - **Drawn faster:** in matches, our species are drawn in batches with levels of detail by default (`?env=0` turns that
   off).
 
+**Sandfall Colosseum, rebuilt** (the owner's Flavius Rule board, built in MapMaker; docs/map-briefs/sandfall_colosseum/):
+- **The arena** is the board at 4 m a square: 52 m of sand (7 × 7 cells) with its twelve pillars, five medallions
+  (King of the Hill's hills), four hatches down to the hypogeum and the beast pit's spikes and fire jets in the middle.
+- **The stands** rise seven storeys on all four sides (28 bays of podium, two upper tiers with vomitoria, the
+  arcaded facade and the attic walk at 28 m); the **emperor's box** is back at the centre of the north side, facing
+  the main entrance; **gates 1-4** at the corners; a stair tower in each corner court climbs to the top.
+- **The hypogeum** runs round under the podium: hatch halls, beast cages north, south and east, the gladiators'
+  cells west, and stairs up into the corner courts and out to the village on all four sides.
+- **The Roman village** round it: sixteen insulae and the main square (triumphal arch, forum, temple, colonnades)
+  leading north to the arena; a volcano smokes far off behind the emperor's box.
+- Team Deathmatch, Capture the Flag (gates 3/4 against gates 1/2) and King of the Hill; 12 v 12; the Medieval set.
+
+**Backdrop: Hills and a volcano** (Map properties → Environment → Sky → Scenery): dry hills round the map and a lone
+volcano far to the north, a steady ember glow in its crater and a still plume of smoke. Nothing in it moves or
+flickers, so it is the same with Reduce flashing on.
+
+**MapMaker:** exploding or deleting the last placement of a map's own set piece (one saved from a selection) takes its
+definition out of the map too; it stays in your library, and one undo brings both back.
 **Gunplay pass 2** (docs/GUNPLAY_AUDIT.md, "Pass 2"; the audit's candidates 1-6, owner-approved):
 - **Every gun owns its range.** The SMG wins up close (0.40 s to a kill to 15 m, the Assault Rifle 0.50; hip fire at
   25 m 0.77 s, was 3.4); the Assault Rifle owns 20-50 m and loses damage from 25 m; the Precision Rifle kills a body in two shots in under a second at every range (was 1.25-1.38 s) and owns

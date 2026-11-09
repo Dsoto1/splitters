@@ -826,6 +826,25 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   main 3 / 5 / 5 / 4, this branch 9 / 6 / 2 / 2 (17 against 19). Revert with a fix for the lift wait.
 - **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
   screenshots; the skipped maps above; card pictures.
+### Sandfall Colosseum rebuilt in MapMaker (`wip/mapmaker-sandfall`, agent, 2026-11-08/09; the owner's brief docs/map-briefs/sandfall_colosseum/BRIEF.md; CI on `check/mapmaker-sandfall`)
+- **What:** the map rebuilt from the Flavius Rule board (manifest and decisions in docs/map-briefs/sandfall_colosseum/):
+  the 52 m sand with the board's pillars, medallions (KotH), hatches and beast pit; seven-storey stands of the Arena
+  stands set pieces on four sides; gates 1-4; the emperor's box back at north centre; corner courts with stair towers;
+  the hypogeum (ring, hatch halls, cages, gladiators' cells, eight stairs out); sixteen insulae and the main square;
+  TDM / CTF / KotH, 12 v 12, Medieval. Built only through MapMaker (a scratch Playwright driver, as for Iron Coast).
+- **MapMaker / shared code:** backdrop scenery **Hills and a volcano** (`SCENERY_IDS` + client `backdrop.ts`
+  `volcano`, still: nothing for Reduce flashing to calm; `client/test/backdropVolcano.test.ts`); exploding or deleting
+  the last placement of a map's own set piece drops its `setPieceDefs` entry (`operations.ts` `unusedDefsCommand`,
+  `setPieceEdit.test.ts`). No format bump. `stylePacksAncient.test.ts`'s Sandfall test follows the rebuild.
+- **Proof:** validate-map 0 issues; nav audit 0 traps, 0 errors; z-fight audit passes; bot-report and bench numbers in
+  DECISIONS ("Budgets") and the manifest.
+- **Driver tricks (new):** Save selection as set piece takes the least cell *and level* of the selection, entities
+  included (a light a level below lifts the tiles a level in the piece); a piece's frame is at most 33 cells a side
+  (split a big selection); its footprint claims every level from its lowest to its highest for every cell (keep a
+  piece on one level if it must pass under other things). Terrain over a tunnel must be pulled under its floor
+  everywhere along it (flatten to within 3 m), or the slope between pulled and unpulled ground closes the tunnel.
+  Open Stairs climb east as placed. Duplicate (Ctrl+D) + R + arrow keys moves 90 placements at once.
+- **Left / owner's calls:** see the report (lift cages and the portal back? the aqueduct? lights budget full).
 ### Gunplay pass 2: identities, readouts, the Battle Rifle (`wip/gunplay-2`, agent, 2026-11-08; owner-approved candidates 1-6 of the audit plus spec gap G2; green on `check/gunplay-2` at 2673702, run 42531571292, then with main merged in; LANDED on main by fast-forward from `check/gunplay-2`)
 
 docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunplay pass 2"; `pnpm gun-report` re-run
