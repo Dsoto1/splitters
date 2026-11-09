@@ -5,7 +5,7 @@
     "id": "whiteout_station",
     "name": "Whiteout Station",
     "author": "Tile Trigger",
-    "description": "An arctic research outpost on the shore of a frozen lake (Style Pack 12: Snow Outpost). The Embers hold the vehicle hangar and barracks on the south shore; the Tide hold the radar dome, the comms mast and their barracks on the north shore. Cross the lake between pressure ridges (mind the thin ice over the holes), take the frozen ridge in the west up its snow drifts (the sniper waits up there), or push up the east side past the bunkers, along the pipe catwalk and the snow road where the snowmobiles run. Climb onto hut and barracks roofs by their outside stairs; roll the hangar door down from the button inside.",
+    "description": "An arctic research station packed into a snowbound hollow: a two-storey main lab and its data wing, a lab wing round a glowing core, the comms annex under its mast, the snow vehicle garage, the fuel tanks and the radar shelter up on its ridge, an ice cave in the rocks. Fight room to room, cross the yard between huts and crates, or take the tunnel under it; climb the ridge for the long look over the station.",
     "createdAt": "2026-10-31T00:00:00.000Z",
     "updatedAt": "2026-10-31T00:00:00.000Z",
     "parentId": null,
@@ -19,11 +19,20 @@
     ],
     "release": {
       "mapId": "m_ldufdn43f3lmrdmn",
-      "versionId": "v_xidvpoktmpsi62g3",
-      "revision": 16,
-      "contentHash": "sha256:dc43955e70b9d2c26d5cf8642fee37705ae25d40cedc90965c8778f58fe07cf9",
+      "versionId": "v_untpprqqkkwzngqx",
+      "revision": 17,
+      "contentHash": "sha256:ea8807ea18d4903a326cf0e889d013311def3e3535a6c26f701ba1df4428f785",
       "schemaVersion": 32,
-      "releasedAt": "2026-11-09T08:48:13.069Z"
+      "releasedAt": "2026-11-09T09:11:54.091Z"
+    },
+    "cardCamera": {
+      "position": [
+        -6,
+        1.7,
+        -13
+      ],
+      "yaw": 0.62,
+      "pitch": 0.03
     }
   },
   "classicStructure": {
@@ -805,6 +814,636 @@
       "kind": "spawn",
       "yaw": 0.785,
       "faction": null
+    },
+    {
+      "id": "prop_kv6g5itgtx",
+      "position": [
+        4,
+        0,
+        -6
+      ],
+      "kind": "prop",
+      "model": "prop.so_tarp_crates",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_f5nvjzsw7u",
+      "position": [
+        12,
+        0,
+        5
+      ],
+      "kind": "prop",
+      "model": "prop.so_tarp_crates",
+      "yaw": 1.572,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_otcxpyjxf1",
+      "position": [
+        -6,
+        0,
+        6
+      ],
+      "kind": "prop",
+      "model": "prop.so_drums",
+      "yaw": 0.005,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_a3wl5l7z19",
+      "position": [
+        18,
+        0,
+        -10
+      ],
+      "kind": "prop",
+      "model": "prop.so_drums",
+      "yaw": 0.005,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_iiow2wq1dt",
+      "position": [
+        6,
+        0,
+        9
+      ],
+      "kind": "prop",
+      "model": "prop.so_heater",
+      "yaw": 0.005,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_hhvd9tinj4",
+      "position": [
+        0,
+        -0.18,
+        -33
+      ],
+      "kind": "prop",
+      "model": "prop.so_snowmobile",
+      "yaw": 0.267,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wpo0pvuksc",
+      "position": [
+        6,
+        -0.18,
+        -33
+      ],
+      "kind": "prop",
+      "model": "prop.so_snowmobile",
+      "yaw": -0.252,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_lkz8e2edll",
+      "position": [
+        -7,
+        -0.18,
+        -33
+      ],
+      "kind": "prop",
+      "model": "prop.so_supply_sled",
+      "yaw": 1.582,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_o47ei2rfqv",
+      "position": [
+        -20,
+        -0.18,
+        -30
+      ],
+      "kind": "prop",
+      "model": "prop.so_lamp_post",
+      "yaw": 0.015,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_80bdv3486h",
+      "position": [
+        14,
+        -0.18,
+        -30
+      ],
+      "kind": "prop",
+      "model": "prop.so_lamp_post",
+      "yaw": 0.015,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ori15n5fre",
+      "position": [
+        26,
+        -0.18,
+        -34
+      ],
+      "kind": "prop",
+      "model": "prop.jersey_barrier",
+      "yaw": 1.587,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_yoyi9ud8zo",
+      "position": [
+        -32,
+        -0.04,
+        -40
+      ],
+      "kind": "prop",
+      "model": "prop.so_snow_fence",
+      "yaw": 0.02,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_4fiftfdpoq",
+      "position": [
+        -44,
+        -0.18,
+        -34
+      ],
+      "kind": "prop",
+      "model": "prop.so_drums",
+      "yaw": 0.02,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_cpccs3soi1",
+      "position": [
+        -24,
+        -0.18,
+        -24
+      ],
+      "kind": "prop",
+      "model": "prop.so_generator",
+      "yaw": 1.592,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_4qcfvdw40z",
+      "position": [
+        54,
+        -0.18,
+        -4
+      ],
+      "kind": "prop",
+      "model": "prop.storage_tank",
+      "yaw": 0.025,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_3cq70e5zpi",
+      "position": [
+        52,
+        -0.18,
+        8
+      ],
+      "kind": "prop",
+      "model": "prop.fuel_tank",
+      "yaw": 1.597,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ii0v6ovcdm",
+      "position": [
+        40,
+        -0.18,
+        16
+      ],
+      "kind": "prop",
+      "model": "prop.so_pipe_run",
+      "yaw": 1.597,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_dltlwe2phm",
+      "position": [
+        44,
+        -0.18,
+        -16
+      ],
+      "kind": "prop",
+      "model": "prop.fuel_drum",
+      "yaw": 0.03,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_yqmdvmqgdg",
+      "position": [
+        54,
+        4,
+        44
+      ],
+      "kind": "prop",
+      "model": "prop.so_satellite_dish",
+      "yaw": -2.323,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_79jyoa9v9x",
+      "position": [
+        38,
+        4,
+        25
+      ],
+      "kind": "prop",
+      "model": "prop.sandbag_nest",
+      "yaw": -2.323,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2owgouuu9f",
+      "position": [
+        34,
+        4,
+        38
+      ],
+      "kind": "prop",
+      "model": "prop.so_lamp_post",
+      "yaw": 0.035,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_el40np9cfr",
+      "position": [
+        -54,
+        -0.18,
+        32
+      ],
+      "kind": "prop",
+      "model": "prop.so_antenna_mast",
+      "yaw": 0.035,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_gdoyltd75o",
+      "position": [
+        -26,
+        -0.18,
+        31
+      ],
+      "kind": "prop",
+      "model": "prop.so_ski_rack",
+      "yaw": 0.035,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0w7h1gy4ah",
+      "position": [
+        -4,
+        -0.18,
+        34
+      ],
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "yaw": 0.035,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_dcsplnoorh",
+      "position": [
+        8,
+        -0.18,
+        41
+      ],
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "yaw": 0.035,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_6x9149bm2p",
+      "position": [
+        14,
+        -0.18,
+        32
+      ],
+      "kind": "prop",
+      "model": "prop.jersey_barrier",
+      "yaw": 1.607,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_yhmfs1yp53",
+      "position": [
+        -56,
+        -0.18,
+        18
+      ],
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "yaw": 0.04,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_dfnaiy2z7r",
+      "position": [
+        56,
+        -0.18,
+        -16
+      ],
+      "kind": "prop",
+      "model": "prop.so_snow_pile",
+      "yaw": 0.04,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wx6lhwc7uk",
+      "position": [
+        -48,
+        -0.18,
+        -36
+      ],
+      "kind": "prop",
+      "model": "prop.so_chainlink_fence",
+      "yaw": 1.612,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_tbr5bnnc0l",
+      "position": [
+        -55,
+        -0.18,
+        46.48
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": -2.45,
+      "scale": 0.96,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_lnjhav3uvw",
+      "position": [
+        -51.91,
+        -0.18,
+        41.08
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": 1.29,
+      "scale": 0.93,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_c4bosugqle",
+      "position": [
+        -49.76,
+        -0.18,
+        46.02
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": -0.78,
+      "scale": 0.96,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wvbfmpv6ol",
+      "position": [
+        -21.84,
+        -0.03,
+        49.16
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": 1.37,
+      "scale": 1.22,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_d8arana2z5",
+      "position": [
+        -27.27,
+        -0.18,
+        43.99
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": -1.03,
+      "scale": 0.94,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2ukh3wzld5",
+      "position": [
+        15.92,
+        0,
+        46.11
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": -2.05,
+      "scale": 1.04,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_i8g3o81do4",
+      "position": [
+        23.35,
+        0.07,
+        46.23
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": 0.64,
+      "scale": 1.17,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_8jg806g6oo",
+      "position": [
+        -51.33,
+        -0.18,
+        -39.89
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": 0.8,
+      "scale": 0.99,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_9wg5izjbqy",
+      "position": [
+        -25.54,
+        0.29,
+        -44.6
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": 1.91,
+      "scale": 0.83,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_rkuriaktyl",
+      "position": [
+        -27.47,
+        -0.08,
+        -38.42
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": 1.02,
+      "scale": 1.25,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_x3ob5x1uc4",
+      "position": [
+        55.21,
+        -0.18,
+        -35.85
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": 0.87,
+      "scale": 1.05,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_rngcryktf1",
+      "position": [
+        50.47,
+        5.19,
+        -42.82
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": -2.24,
+      "scale": 1.13,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0t8fcnay3t",
+      "position": [
+        55.51,
+        4.4,
+        -43.66
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": -0.99,
+      "scale": 1.04,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_shq8rlru60",
+      "position": [
+        58.39,
+        0.07,
+        14.4
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": -1.24,
+      "scale": 0.87,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_rpbw9j1dw0",
+      "position": [
+        50.28,
+        -0.18,
+        12.82
+      ],
+      "kind": "prop",
+      "model": "env.conifer.pine_tall",
+      "yaw": 2.16,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mz8spn7jt6",
+      "position": [
+        52.65,
+        -0.18,
+        18.28
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": 0.5,
+      "scale": 0.9,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
