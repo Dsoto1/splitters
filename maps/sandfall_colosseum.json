@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_vzcbbatmgyg6i6pp",
-      "revision": 25,
-      "contentHash": "sha256:9a56f1f28a01d098e05d3caf6cf45d33af366dc406c3451134af360bba2ff4f1",
-      "schemaVersion": 32,
-      "releasedAt": "2026-11-09T19:29:08.517Z"
+      "versionId": "v_czaic5sro5456mlp",
+      "revision": 26,
+      "contentHash": "sha256:3343c06d7a617b136b1b9b254f214fcf60fe0d22b842ce20e050828df2386fb0",
+      "schemaVersion": 33,
+      "releasedAt": "2026-11-09T19:58:10.669Z"
     }
   },
   "classicStructure": {
@@ -13301,7 +13301,7 @@
         10.9
       ],
       "kind": "ladder",
-      "yaw": 3.141592653589793,
+      "yaw": 0,
       "height": 4,
       "width": 0.9
     },
@@ -13327,7 +13327,7 @@
         12
       ],
       "kind": "ladder",
-      "yaw": 1.5707963267948966,
+      "yaw": -1.571,
       "height": 4,
       "width": 0.9
     },
@@ -13353,7 +13353,7 @@
         -12
       ],
       "kind": "ladder",
-      "yaw": -1.5707963267948966,
+      "yaw": 1.571,
       "height": 4,
       "width": 0.9
     },
@@ -13379,7 +13379,7 @@
         -10.9
       ],
       "kind": "ladder",
-      "yaw": 0,
+      "yaw": 3.142,
       "height": 4,
       "width": 0.9
     },
