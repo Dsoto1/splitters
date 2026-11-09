@@ -2703,6 +2703,8 @@ export class GameSession {
 
   private setUpCoach(): void {
     const tutorial = !!this.opts.tutorial;
+    // No "You / Leader" score in the tutorial (owner, 2026-11-08): there are no bots and no score to play for.
+    if (tutorial) this.hud.showScorebar(false);
     if (tutorial) this.tutorial = new Tutorial();
     if (this.opts.tips !== false && !tutorial) this.tips = new TipBook();
     if (!this.tutorial && !this.tips) return;
