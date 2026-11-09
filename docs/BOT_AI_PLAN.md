@@ -176,7 +176,7 @@ depend on the machine (a shared one, its load 2 to 13 on 4 cores).
 Captures move by ten or so between runs of nearly the same code (149 and 151 at the two commits before the last two
 fixes): two matches a map is a small sample. The failed searches left are Obsidian Orb's, bots fallen onto a 0.4 m
 ledge in its reactor shaft that nothing gets off (for the owner). Worse on a few maps: Iron Compound (its gantry
-turret, below) and Iron Tide (in one of its two matches, bots stuck for minutes at a crumbling wall, `block_341`, by
+turret, below) and Midnight Keel (in one of its two matches, bots stuck for minutes at a crumbling wall, `block_341`, by
 its west jump pad). The fixes for Serene City's console and Sandfall Colosseum's dropped spear are in the numbers.
 
 The other modes:
@@ -312,9 +312,9 @@ against 1.34–2.57.)
 ### Phase B part 1, measured (scored choices, team brain, route variety)
 Before: main with Phase B's measuring (route use and route choice in `bot-report`; the bots unchanged). After:
 `wip/bots-b`, part 1. The dev sample: Capture the Flag on 12 maps (Bunker Cross, Diamond Park, Serene City, Twin
-Spires, Capitol Mall, Grand Marquee, Maple Court, Pantry Raid, Iron Tide, Saltmarsh Harbor, Sunken Kingdom, Fernwood
+Spires, Capitol Mall, Grand Marquee, Maple Court, Pantry Raid, Midnight Keel, Saltmarsh Harbor, Sunken Kingdom, Fernwood
 Moon; seeds 1 and 2), King of the Hill on Shingle Point, Diamond Park and Bunker Cross, Bomb on Serene City and
-Ironhold Prison, Hostage on Serene City, Elimination on Diamond Park, Team Deathmatch on Fernwood Moon and Riot
+Cormorant Isle, Hostage on Serene City, Elimination on Diamond Park, Team Deathmatch on Fernwood Moon and Riot
 Junction; 180 s each, 33 matches, on the maps before main's prop scale pass. Each part was measured on its own
 first: the branch carried switches for them while measuring (with every switch off it replayed main's matches
 exactly); they are gone.
@@ -397,7 +397,7 @@ main's prop scale pass and ground fix):
 
 25 of the 44 CTF maps had a capture in their two matches; of the 19 without, 11 are maps of 180 m or more between the
 flags (three minutes is short for a run there). Hostage's idle out of a fight is its guards keeping watch at their
-station (they chased gunfire away from the hostages before): on Iron Tide, station-keeping went from 14 and 8 % of
+station (they chased gunfire away from the hostages before): on Midnight Keel, station-keeping went from 14 and 8 % of
 the bots' time in its two matches to 21 and 17 %. Its limit (bot-limits.json) went from 12 to 16 % for it; the
 rescues came with it.
 
@@ -415,7 +415,7 @@ Twin Spires, Sunstone Crag, Diamond Park, St John's and Capitol Mall, maps with 
 seeds 1 and 2: 12 matches); every bot Tactical (`--style=tactical`: CTF on Bunker Cross, Serene City, Grand Marquee
 and Sunken Kingdom, Team Deathmatch on Fernwood Moon and Riot Junction, King of the Hill on Shingle Point: 7) and every
 bot Arena (CTF on Bunker Cross and Serene City, Team Deathmatch on Riot Junction: 3); the long CTF maps (Fernwood Moon,
-Sunken Kingdom, Iron Tide, Capitol Mall, Glacier Line, Riot Junction, Primeval Park, Eagle Spires; seed 1: 8);
+Sunken Kingdom, Midnight Keel, Capitol Mall, Glacier Line, Riot Junction, Primeval Park, Eagle Spires; seed 1: 8);
 Elimination on Diamond Park, St John's, Capitol Mall and Glasswork Office (seeds 1 and 2: 8). 180 s each.
 
 | Dev sample, 33 matches | Before | After |

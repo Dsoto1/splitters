@@ -1,5 +1,5 @@
-// Left over from the hovercraft fix (HANDOFF, "Hovercraft under structures"): on Iron Tide a bot bailed out of a Hauler
-// at 12.7 m/s, the empty craft glided ~35 m on (an empty hovercraft only eased off at accel × 0.35) into the 3 m door
+// Left over from the hovercraft fix (HANDOFF, "Hovercraft under structures"): on Midnight Keel a bot bailed out of a
+// Hauler at 12.7 m/s, the empty craft glided ~35 m on (an empty hovercraft only eased off at accel × 0.35) into the 3 m door
 // at (0, 0, 28) and plugged it for 100 s, and foot bots' stuck recoveries went from 3.09 to 5.41 a bot-minute. Three
 // fixes: an empty vehicle brakes to a stop (`vehicle.idleBrake`); a bot getting out slows under BAIL_SPEED first
 // (unless it burns or is about to blow); bot drivers keep off routes their hull doesn't fit (vehicleRouteFits, at the
@@ -76,7 +76,7 @@ describe('an empty vehicle brakes to a stop (vehicle.idleBrake)', () => {
       expect(internals(match).enterMount(driver)).toBe(true);
       let seq = 0;
       const send = (i: Partial<PlayerInput>) => match.queueInputs(driver.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0, ...i }]);
-      // Flat out (or 12.7 m/s, the Iron Tide bail-out, whichever is less), straight ahead.
+      // Flat out (or 12.7 m/s, the Midnight Keel bail-out, whichever is less), straight ahead.
       const want = Math.min(12.7, m.def.vehicle!.maxSpeed * 0.95);
       for (let t = 0; t < TICK_RATE * 6 && m.speed < want; t++) {
         send({ forward: 1 });
@@ -151,7 +151,7 @@ describe('a bot getting out slows down first', () => {
     expect(outSpeed).toBeGreaterThan(8);
   });
 
-  it("on Iron Tide's sea: it stays aboard a while rather than jump into the water", () => {
+  it("on Midnight Keel's sea: it stays aboard a while rather than jump into the water", () => {
     const map = mapFile('iron_tide');
     const match = new Match(map, { ...rulesForMode(map, 'core.tdm'), scoreLimit: 0, respawnDelayTicks: 100_000 }, 4);
     const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.normal)!;
@@ -190,7 +190,7 @@ describe('bot drivers keep to routes their hull fits (vehicleRouteFits)', () => 
     expect(internals(flyer).mountViews([])[0]!.routeHalfWidth).toBeUndefined();
   });
 
-  it("Iron Tide's 3 m door at (0, 0, 28): no route through it for a Hauler (3.04 m probe); a Hover Bike's fits", () => {
+  it("Midnight Keel's 3 m door at (0, 0, 28): no route through it for a Hauler (3.04 m probe); a Hover Bike's fits", () => {
     const match = new Match(ironTide, tdm, 1);
     match.step();
     const path = internals(match).nav.findPath({ x: 0, y: 0, z: 10 }, { x: 0, y: 0, z: 45 })!;
@@ -204,9 +204,9 @@ describe('bot drivers keep to routes their hull fits (vehicleRouteFits)', () => 
     expect(vehicleRouteFits(match.physics, { half: MOUNT_DEFS.hauler.half }, path)).toBe(true);
   });
 
-  it("Iron Tide's centre stairs (a beam at 3 m over their foot): a tank's or jeep's level hull doesn't fit up them", () => {
+  it("Midnight Keel's centre stairs (a beam at 3 m over their foot): a tank's or jeep's level hull doesn't fit up them", () => {
     // Driven up them, the tank and the gun jeep stop on the first step (their hull's rear meets the beam at x -4.5..-4,
-    // 3-4 m up) and were left there, plugging the stairs: Iron Tide's worst foot-bot stuck spot, (-4, 1, 16).
+    // 3-4 m up) and were left there, plugging the stairs: Midnight Keel's worst foot-bot stuck spot, (-4, 1, 16).
     const match = new Match(ironTide, tdm, 1);
     match.step();
     const path = internals(match).nav.findPath({ x: 1, y: 0, z: 16 }, { x: -11, y: 4, z: 16 })!;

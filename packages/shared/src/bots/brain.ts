@@ -3371,7 +3371,7 @@ export class BotBrain {
   /**
    * Wanting out of `m` on or over water (a hovercraft on the harbour, a flyer over the sea): it
    * stays aboard (a while: EXIT_GROUND_WAIT), as out there it only swims and gets stuck at the quay. Before, bots
-   * jumped out of a sinking dropship over Iron Tide's moat and were stuck in it by the wall.
+   * jumped out of a sinking dropship over Midnight Keel's moat and were stuck in it by the wall.
    */
   private overWater(view: BotWorldView, m: MountView, tick: number): boolean {
     if (!m.overWater) return false;

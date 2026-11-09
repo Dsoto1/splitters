@@ -12,7 +12,7 @@ how they behave (whether a portal can be switched by logic, say), it says so.
 
 None of these repeat a map already in `maps/` (Dustwater's station train,
 Neon Spire's glass elevator, Hollowmere's trap manor, Primeval Park, Runway
-Nine, Iron Tide, Ironhold Prison and the rest were checked). Where an idea is
+Nine, Midnight Keel, Cormorant Isle and the rest were checked). Where an idea is
 close to one of them, it says what makes it different.
 
 **How to read an entry.** *Kit* lists the features that make the signature

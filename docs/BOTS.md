@@ -481,7 +481,7 @@ Per map (two matches each; seed noise is large at two matches):
 | whiteout_station | 0.0 → **0.5** | 0.0 → 7.5 | 13.6 → 2.7 | 238 → 387 | 32.3 → 49.4 |
 
 Still without a capture: Capitol Mall (249 m between the flags), Coldwater Gulch, Eagle Spires, Fort
-Meadow (a midfield brawl), Saltmarsh Harbor, Twin Spires, Cinder Foundry, Iron Tide, Norman Shores, Pantry Raid,
+Meadow (a midfield brawl), Saltmarsh Harbor, Twin Spires, Cinder Foundry, Midnight Keel, Norman Shores, Pantry Raid,
 Primeval Park, Underdrain. Most have flag takes now and lose the carrier on the way home; Capitol Mall, Twin Spires,
 Pantry Raid, Primeval Park and Underdrain have none: the attackers die on the way (group pushes are
 BOT_AI_PLAN.md Phase B). Eagle Spires still strands bots on ledges of its mesas' cliffs and scaffolds (no route
@@ -928,7 +928,7 @@ for points on the ground ahead, and captures halved on the dev sample.)
   four; explorers and lone wolves first; the third corridor, or the flankers'). Only on a long trip
   (`Playbook.groupsFromLength`, `splits`): its shortest way 180 m or more, with two corridors at most 1.35 times as long
   plus 20 m. In Capture the Flag that is Fernwood Moon (186 m between the flags) and the 12 longer maps (14 then) with a second way
-  near the shortest (Riot Junction, Sunken Kingdom, Primeval Park, Iron Tide, Coldwater Gulch, Sunstone
+  near the shortest (Riot Junction, Sunken Kingdom, Primeval Park, Midnight Keel, Coldwater Gulch, Sunstone
   Crag, Capitol Mall, Glacier Line, Eagle Spires, St John's, Iron Maw, Norman Shores). On a shorter trip, or
   with only far longer ways round, each bot takes its own lane as before, the loose bots' prices spreading them: split
   over the ways on every map, Capture the Flag lost a third of its captures on the dev sample (BOT_AI_PLAN.md, "Phase B

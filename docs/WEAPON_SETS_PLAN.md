@@ -84,7 +84,7 @@ A set is data in `content/weapon-sets.json`. It decides:
   → Advanced rules → Weapons, pickups & vehicles → Weapon set ("Map default (…)" or any set), the Host tab (at once),
   a server's `set` rule.
 - **Official maps** (the owner's OK of the proposed table, 2026-11-07; set in MapMaker's Map properties; retired maps
-  left alone; Fogbound, No Man's Field, Starhaven and Dune Harbor since deleted, 2026-11-09): **Military** Sandgate, Atomic Court, Shingle Point, Bunker Cross, Iron Tide,
+  left alone; Fogbound, No Man's Field, Starhaven and Dune Harbor since deleted, 2026-11-09): **Military** Sandgate, Atomic Court, Shingle Point, Bunker Cross, Midnight Keel,
   Rockfall Canyon, Crossroads, Riot Junction, Runway Nine, Capitol Mall, St. John's, Dockside Depot, Glasswork Office,
   Whiteout Station (and Iron Coast once Breakthrough builds it); **Sci-fi** Halcyon Station, Twin Spires,
   Void Yard, Neon Spire, Express Lobby, Undergate Transit, Serene City, Fernwood Moon, Coldwater Gulch,

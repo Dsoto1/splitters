@@ -1,10 +1,10 @@
-// Hovercraft stuck under structures (owner, 2026-11-07): a Hauler wedged under Iron Tide's platforms at (-16, 5, -20)
-// (the top of the stairs up to the deck, under the roof's lintel), and the Hauler, Speeder and Hover Bike wedged
-// under structures on Iron Tide and a desert map since retired. A vehicle moves on a probe capsule whose radius follows its hull's
-// width, so its dome stands well over the hull (Hauler 3.4 m against a 2 m hull; Speeder 2.8 against 1.3; Hover Bike
-// 2.4 against 1.0): under a deck, beam or roof the hull fits under, the dome caught and the craft could go neither in
-// nor out. With something over the hull, the vehicle now moves on a low probe of the same bottom cut off at the
-// hull's top (Match.moveVehicleProbe); over open ground nothing changes.
+// Hovercraft stuck under structures (owner, 2026-11-07): a Hauler wedged under Midnight Keel's platforms at
+// (-16, 5, -20) (the top of the stairs up to the deck, under the roof's lintel), and the Hauler, Speeder and Hover Bike
+// wedged under structures on Midnight Keel and a desert map since retired. A vehicle moves on a probe capsule whose
+// radius follows its hull's width, so its dome stands well over the hull (Hauler 3.4 m against a 2 m hull; Speeder 2.8
+// against 1.3; Hover Bike 2.4 against 1.0): under a deck, beam or roof the hull fits under, the dome caught and the
+// craft could go neither in nor out. With something over the hull, the vehicle now moves on a low probe of the same
+// bottom cut off at the hull's top (Match.moveVehicleProbe); over open ground nothing changes.
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, initPhysics, loadMap, rulesForMode, type MapDocument, type MapEntity, type PlayerInput } from '../src/index.ts';
@@ -122,7 +122,7 @@ describe('hovercraft over open ground (unchanged by the low-ceiling fix)', () =>
   }
 });
 
-describe('Iron Tide: the Hauler under the platforms (the owner\'s spot, -16, 5, -20)', () => {
+describe('Midnight Keel: the Hauler under the platforms (the owner\'s spot, -16, 5, -20)', () => {
   // The deck (top 4.1 m) runs along x -18..-14; at z -20 it meets the stairs through a door 3 m wide (jambs at x -17.5
   // and -14.5, y 4-8, its lintel and the roof at 7-8 m). The Hauler's probe (3 m across) can't pass the door: pinched
   // between the jambs the controller refused every move, and the 5 cm each move starts up stayed, so the Hauler rose

@@ -8,6 +8,13 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Map line-up** (owner, 2026-11-09):
+- **Six maps retired:** Fogbound, Bottling Plant, Dune Harbor, No Man's Field, Overhang and Starhaven are gone from
+  the game (menus, Quick Play, the map vote, rotations). In the rotations Pump Tower and Razor Edge take their places
+  in Deathmatch Classics, Midnight Keel and Runway Nine in Objective Mix (Bomb), Market Town in Flag Run.
+- **Three maps renamed:** Iron Tide is now **Midnight Keel**, Ironhold Prison **Cormorant Isle** and Jungle Steps
+  **Cradle of Idols** (same maps, same places).
+- **Iron Maw** is for 16-64 players (was 16-32).
 **Fireteams, part 2** (owner-approved 2026-11-08):
 - **Bot squads play the objective first.** A bot-led squad goes for the flag, the hill or the bomb site together, on
   one route and push of the team's plan, rather than trailing its leader; when its leader falls, the next best member

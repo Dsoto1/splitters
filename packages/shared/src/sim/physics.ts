@@ -345,7 +345,7 @@ export class PhysicsWorld {
    * Each move starts `lift` (5 cm) up and asks to come down by as much. Pinched between two contacts it can slide
    * along neither (a doorway or gap narrower than the probe: its jambs; a beam and the floor), the controller moves it
    * nowhere at all, not even down, and the lift stayed: the vehicle rose 5 cm a tick, up the door into its lintel
-   * and the roof over it, and stuck there (a Hauler at the top of Iron Tide's stairs, in the 3 m door under the
+   * and the roof over it, and stuck there (a Hauler at the top of Midnight Keel's stairs, in the 3 m door under the
    * deck's roof). A move the controller refuses now keeps the vehicle where it was, resting (it still falls when it
    * can: the drop is tried on its own), so it can be driven back out the way it came; and a move that creeps up
    * into something over the probe (the controller lets it, climbing a sill under a lintel) keeps its height.
