@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 29,
+  "formatVersion": 31,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_b3zcsi722wm7g7jx",
-      "revision": 7,
-      "contentHash": "sha256:f2521f14279ea16394a1fbcb13927bf3ff718e9c524d4edf72890f422f49caae",
-      "schemaVersion": 29,
-      "releasedAt": "2026-11-08T20:05:33.841Z"
+      "versionId": "v_urs4zfmaeg45cjkj",
+      "revision": 9,
+      "contentHash": "sha256:a49d0632a8e3876f528c152278c2c339bbc773e86985eb6b02e659110c07c5ec",
+      "schemaVersion": 31,
+      "releasedAt": "2026-11-09T03:10:34.491Z"
     },
     "testOnly": true
   },
@@ -4171,9 +4171,9 @@
         112
       ],
       "kind": "prop",
-      "model": "prop.mushroom_tall",
+      "model": "env.fern.bracken",
       "yaw": 0,
-      "scale": 1,
+      "scale": 1.08,
       "solid": true,
       "tint": null
     },
@@ -4829,6 +4829,20 @@
       "faction": null,
       "sector": 1,
       "side": "defend"
+    },
+    {
+      "id": "prop_2ee3q5cgbj",
+      "position": [
+        44,
+        0,
+        -352
+      ],
+      "kind": "prop",
+      "model": "prop.log_stack",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -57121,6 +57135,15 @@
       "id": "setpiece_fhzubd5s2b",
       "piece": "setpiece.sea_wall_breach",
       "x": -8,
+      "y": -44,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_dn9zo394c0",
+      "piece": "setpiece.courtyard_gate_wall",
+      "x": 2,
       "y": -44,
       "z": 0,
       "rotation": 0,

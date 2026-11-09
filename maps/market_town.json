@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 31,
   "metadata": {
     "id": "market_town",
     "name": "Market Town",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_d3ml2watxrhzzmt6",
-      "versionId": "v_hyizmfmm3pobfl3l",
-      "revision": 3,
-      "contentHash": "sha256:6d819dbe1cc0ea52f4698ee75f7482dc608bbaf4d329982c58b4199369051fd2",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:15:33.279Z"
+      "versionId": "v_72xupfphfumylqko",
+      "revision": 4,
+      "contentHash": "sha256:034ed3da0fb91bfca29126f46b83b490095b0ad7458a8872c3116663190516fd",
+      "schemaVersion": 31,
+      "releasedAt": "2026-11-09T02:56:40.550Z"
     }
   },
   "classicStructure": {
@@ -53,14 +53,6 @@
         "id": "tile_hgh0adrfls",
         "tile": "medieval.town_wall",
         "x": -2,
-        "y": -6,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_p6qcpylmxv",
-        "tile": "medieval.town_gate",
-        "x": -1,
         "y": -6,
         "z": 0,
         "rotation": 0
@@ -2073,7 +2065,7 @@
       "position": [
         0,
         0,
-        -50.5
+        -52
       ],
       "kind": "door",
       "yaw": 0,
@@ -2081,18 +2073,6 @@
       "startOpen": true,
       "locked": false,
       "auto": false
-    },
-    {
-      "id": "ladder_gate",
-      "position": [
-        1.85,
-        4,
-        -45.6
-      ],
-      "kind": "ladder",
-      "yaw": 1.5707963267948966,
-      "height": 4,
-      "width": 0.9
     },
     {
       "id": "block_9g8hhmbb36",
@@ -3280,6 +3260,17 @@
       12
     ]
   },
+  "weaponSet": "medieval",
   "dependencies": [],
-  "weaponSet": "medieval"
+  "setPieces": [
+    {
+      "id": "tile_p6qcpylmxv",
+      "piece": "setpiece.courtyard_gate_wall",
+      "x": -1,
+      "y": -6,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    }
+  ]
 }
