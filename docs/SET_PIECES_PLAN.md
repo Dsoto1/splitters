@@ -433,6 +433,90 @@ coverage map (`maps/test_coverage.json`, whose test requires every shipped set p
 headroom and rays clear there), so the gate tests check a standing player's room every 0.2 m instead and walk one
 real way in. Worth a look if a player ever reports a stuck spot on a big flat floor.
 
+## As built: part 5 (the brainstorm list, retiring old pieces, MAP 21's sea wall; 2026-11-08)
+All data on the standard grid (`content/setpieces/<family>.json`), built from kit tiles, blocks, props, doors and
+lights; MapMaker's Set pieces tab places them (each family a group). No map format change.
+
+### The twelve pieces (14 placements: the catwalk bridge comes in three lengths)
+| Piece | Family (file) | Footprint | Mirror | What it is |
+|---|---|---|---|---|
+| Power Core Hall (`power_core_hall`) | `powercore.json` | 3 × 3, levels 0-1 | free | Nine Tall Rooms open to each other: a hall 24 m square and 8 m high on eight columns round a glowing core (blocks round the ninth column: plinth, drum, Glow Trim ribs, cap; two terminals). A gallery 4.5 m deep all round at 4 m (blocks, railed), two block flights up to it through gaps in the rail; doors in the middle of each side on the ground and onto the gallery east and west. |
+| Catwalk Bridge (Up) / (3 cells) / (4 cells) (`catwalk_bridge_2/_3/_4`) | `catwalk.json` | 1 × 2-4, levels 0-1 | none | Open Stairs climbing north to Bridge decks (3 m, railed) on level 1 over open ground, steel legs and cross-beams under each deck; the longer ones have stairs down at the far end. The 2-cell one is the Catwalk Gantry's footprint, levels and ways in. |
+| Twin-Stair Overlook (`twin_stair_overlook`) | `overlook.json` | 3 × 1, levels 0-1 | none (symmetric) | A platform 4 m up between two open stairs: a half wall north to fight over (sandbags behind it), a railing south, an arched passage under it. |
+| Atrium Tower (`atrium_tower`) | `atrium.json` | 3 × 2, levels 0-3 | none | Two Atriums stacked (balconies all round, a stair in each), a lobby, offices up the east side, and a Stairwell joining the lower atrium's balcony (level 1) to the upper atrium's floor (level 2): every floor reached. |
+| Loading Dock (`loading_dock`) | `loadingdock.json` | 3 × 2, level 0 | free | Three Terraces make the apron and a 1 m dock edge with three sets of steps; an open-fronted shed of three Rooms with a block floor 1 m up, so the dock runs straight in; a truck on the apron, cargo on the dock. |
+| Sunken Arena (`sunken_arena`) | `sunkenarena.json` | 3 × 3, levels -1-0 | none (symmetric) | A pit 14 m square 2 m down, three 0.5 m tiers on every side and a stair of 0.25 m steps down the middle of each; low walls, pillars and crates on its floor. New kit tiles (any map): **Arena Pit**, **Arena Tiers**, **Arena Tiers (Corner)**, every box a floor, so on terrain they carve their own hollow (as the sunken trenches do). |
+| Reactor Room (`reactor_room`) | `reactor.json` | 3 × 2, levels 0-1 | none | The Reactor Hall tile with the Reactor Core prop, an airlock (a Corridor with a blast door outside and a sliding door in), a pump room, and over them a control room looking down on the hall through armoured glass, its door onto the hall's catwalk. |
+| Bunker Cluster (`bunker_cluster`) | `bunkercluster.json` | a cross of 5 cells, level 0 | free | Three roofed bunkers with slits on three sides (the look's facade) and a door each onto a sandbagged yard; a Courtyard (Low Wall) as the way in. |
+| Courtyard Gate (`courtyard_gate`) | `courtyardgate.json` | 3 × 1, levels 0-1 | none | A gatehouse: the carriageway's vaulted passage under a segmental arch at each end, a stair tower (Stairwell) west and a guard room east with doors off the passage, the gate room over the arch, a door out east onto a wall-walk on level 1. |
+| Server Vault (`server_vault`) | `servervault.json` | 2 × 2, level 0 | free | A lobby with a vault door, a guard post behind armoured glass, a server floor of two open rooms with four rack banks, a fire exit. |
+| Crossroads Plaza (`crossroads_plaza`) | `plaza.json` | 3 × 3, levels 0-1 (the lamps) | none | An Intersection and four Streets, a paved square a kerb up on each corner with planter walls along the streets (waist-high cover, a gap at the corner), a bench and a lamp. |
+| Ramp Junction (`ramp_junction`) | `rampjunction.json` | 3 × 2, levels 0-2 | none | Two Long Ramps winding up round a railed junction deck on level 1 to a head on level 2; under the deck an arched passage, under the upper ramp a corridor out west. |
+
+**Ports and the tests.** The walled ones (power core hall, atrium tower, reactor room, courtyard gate, server vault)
+go through `setPiecePlay.test.ts`'s every-port test (shots and walks through each door and arch, every turn and
+mirror); the rest have open sides and `setPieces5.test.ts` walks them: for every piece, in every turn (and mirror
+where it may be mirrored), bots path along chains of points through every way in, **up both ends of every climb**
+(the hall's gallery stairs, the catwalk and overlook stairs, the atrium's floors and stairwell, the reactor hall's
+catwalk and the control room, the gate's stair tower, both ramps, the arena's stairs) and into each room; players
+walk up the stairs and ramps. The every-port test now judges whether a piece is walled by its own walls with nothing
+built beyond (an open tile's side is no wall at all), not with rooms built against it.
+
+### Budgets (one piece as expanded, in its first look)
+| Piece | Look | Tiles | Blocks | Props | Lights | Doors | Ladders | Collision boxes | Trim boxes |
+|---|---|---|---|---|---|---|---|---|---|
+| Power Core Hall (`power_core_hall`) | orbital | 9 | 49 | 2 | 6 | 6 | 0 | 171 | 152 |
+| Catwalk Bridge (Up) (`catwalk_bridge_2`) | military | 3 | 6 | 0 | 0 | 0 | 0 | 28 | 2 |
+| Catwalk Bridge (3 cells) (`catwalk_bridge_3`) | military | 4 | 6 | 0 | 0 | 0 | 0 | 46 | 4 |
+| Catwalk Bridge (4 cells) (`catwalk_bridge_4`) | military | 6 | 12 | 0 | 0 | 0 | 0 | 56 | 4 |
+| Twin-Stair Overlook (`twin_stair_overlook`) | military | 4 | 0 | 2 | 1 | 0 | 0 | 48 | 15 |
+| Atrium Tower (`atrium_tower`) | neon | 9 | 0 | 1 | 6 | 4 | 0 | 357 | 436 |
+| Loading Dock (`loading_dock`) | military | 6 | 5 | 7 | 3 | 0 | 0 | 44 | 19 |
+| Sunken Arena (`sunken_arena`) | imperial | 9 | 6 | 2 | 0 | 0 | 0 | 111 | 0 |
+| Reactor Room (`reactor_room`) | orbital | 5 | 0 | 7 | 5 | 5 | 0 | 151 | 123 |
+| Bunker Cluster (`bunker_cluster`) | military | 5 | 0 | 8 | 3 | 3 | 0 | 78 | 216 |
+| Courtyard Gate (`courtyard_gate`) | medieval | 5 | 4 | 0 | 4 | 3 | 0 | 134 | 301 |
+| Server Vault (`server_vault`) | neon | 4 | 0 | 7 | 4 | 4 | 0 | 46 | 68 |
+| Crossroads Plaza (`crossroads_plaza`) | suburban | 9 | 12 | 8 | 0 | 0 | 0 | 42 | 34 |
+| Ramp Junction (`ramp_junction`) | military | 8 | 0 | 0 | 2 | 0 | 0 | 95 | 126 |
+| Sea Wall (`sea_wall`) | military | 0 | 13 | 1 | 0 | 0 | 0 | 15 | 0 |
+| Sea Wall (Breached) (`sea_wall_breach`) | military | 0 | 23 | 0 | 0 | 0 | 0 | 23 | 0 |
+
+All well inside MAP_BUDGETS; the z-fight audit over every piece in every turn, mirror and four looks stays at 0.
+
+### Retiring the old big pieces
+`content/setpieces/aliases.json` lists a retired tile and the piece that replaces it; the piece must cover exactly the
+tile's cells and levels unturned (checked by `tools/content/setpieces.mjs`). A retired tile:
+- leaves MapMaker's Tiles tab, but stays in the catalog: every map that places it still loads;
+- **plays as its piece** (`map/setPieceAliases.ts` `withTileAliases`, in loadMap as played: the placement becomes the
+  piece at the same cell, level and turn, its id the tile's own where it fits in 48 characters), so a saved or
+  shipped map upgrades on load; serialized, that map names the piece;
+- in MapMaker stays as made (forEditing); its inspector offers **Replace all N with …**
+  (`replaceTilesWithSetPieceCommand`, one undo step; Export then writes the piece).
+Not a format change: no field is added.
+
+| Old piece | Replacement | Maps that place it | Done |
+|---|---|---|---|
+| Catwalk Gantry (`military.gantry`, 1 × 2 × 2) | Catwalk Bridge (Up) | iron_compound (1) | **Retired** and aliased: the same cells, levels and ways in (stairs from the south up to a railed deck 4 m up on legs, meeting the level above at its north end, open ground under it). Its stair is 4 m wide (the gantry's 2.4 m) and its deck 3 m (2.4 m); Iron Compound plays it from load. Its file still names the gantry: owner question 1. |
+| Town Gate (`medieval.town_gate`, 3 × 1 × 3), City Gate (`desert.city_gate`, 3 × 1 × 2), Temple Pylon (`egypt.pylon`, 3 × 1 × 3) | Courtyard Gate (3 × 1 × 2) | market_town, qasr_medina, pharaohs_reach, sunken_kingdom | **Parked** (owner question 2): the old gates carry wall-walks, wall stairs and towers a level higher; the Courtyard Gate is a gatehouse with rooms. A swap changes their routes and height. |
+| Warehouse (`core.warehouse`), Vehicle Hangar (`snow.hangar`) | Loading Dock | blackout, crossroads, iron_maw, shingle_point; whiteout_station | **Parked**: two-storey buildings, not an open dock shed. |
+| Bunker (`core.bunker`, 2 × 1) | Bunker Cluster | 12 maps | **Parked**: a single bunker is a basic kit piece, the cluster is five cells. |
+| City Crossroads (`city.crossroads`, 4 × 4) | Crossroads Plaza (3 × 3) | neon_spire, riot_junction, underdrain | **Parked**: a different size. |
+| Reactor Hall (`orbital.reactor_hall`), Atrium (`core.atrium`) | — | | Kept: the Reactor Room and Atrium Tower are built *from* them. |
+
+### MAP 21: the sea wall and its breach (`seawall.json`; for Iron Coast, not placed there)
+- **Sea Wall** (`setpiece.sea_wall`, 1 cell, level 0, mirrors freely; packs military, harbor, snow): an 8 m bay, the sea
+  to the local south: a footing, a concrete wall 3.4 m high and 1.6 m thick, a stepped wave lip on the sea face, a
+  fire step 2 m up and 2 m deep behind it (eyes at 3.6 m clear the top by about 0.3 m: shots go out to sea over it),
+  a stair up to it from the land side at the east end, sandbags. From the beach a player walks into it (up onto the
+  footing at most) and chest-high shots stop on it. Bays line up east to west (ports east and west).
+- **Sea Wall (Breached)** (`setpiece.sea_wall_breach`): the same bay blown open: the wall, lip and fire step kept
+  either side of a gap 4.4 m wide, a rubble mound through the gap in 0.25 m steps (players and bots walk straight
+  through from the beach to the land side, no jump), torn reinforcing at the broken ends and a fallen slab; the east
+  stub keeps its stair. Ports on all four sides.
+- Free blocks only, on the standard grid, so bays line up; flatten the beach's top under them first. The Iron Coast
+  session places them (main hands them over).
+
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks
    and validation.
