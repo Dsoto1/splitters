@@ -8,6 +8,23 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**MapMaker follow-ups** (the owner's answers, 2026-11-08):
+- **The measure tool's jump hint looks at the ground along the line**, not only at its two ends: a slope you can walk
+  up reads walkable, a ledge reads a step (with its height), and a pit you couldn't climb out of reads a gap (with its
+  width, jumpable or too far). A ditch you can climb out of is a drop and a step.
+- **Nothing is placed over nothing:** spawns, pickups, props, vehicles and NPCs with no floor, ground or water under
+  them are refused; the ghost goes red and says why, and the click does nothing. Spawns, pickups, vehicles and NPCs
+  outside the playable boundary are refused the same way. Props outside it are scenery, as before.
+- **The budget bar sits in the bottom status bar**, compact: its colour, its word and the budget it names; the name
+  still selects what it counts and the arrow still lists every budget.
+
+**MapMaker: bot hints** (map format v33; MapMaker overhaul Phase 4 item 3, Bot AI Phase D item 5): mark chokepoints,
+sniper, camp and staging spots and jump links for bots (the Bot hints tool, Y; the Entities tab). Pins with their
+radius, facing and jump arcs in the 3D view and the plan view, edited in the inspector, one undo step each; warnings for
+a hint outside the boundary or off the navmesh, a jump a player couldn't make and duplicates. "What bots know" shows
+the bots' own computed spots (vantage spots, parkour links), read-only. Bots don't use the hints yet (the data is
+documented in docs/BOTS.md, "Bot hints (map data)").
+
 **MapMaker: a bot test run and spawn exposure** (MapMaker overhaul Phase 4, items 1 and 2):
 - **Bot test** in the top bar opens the Test panel. **Run bots** plays a bot match on the map you're editing in the
   background (pick the mode, bots a team or in all, and 30 seconds to 5 minutes), with progress and Cancel; you can
@@ -20,53 +37,7 @@ made only on a commit that passed CI on a check branch.
   problems (until the map changes).
 - Nothing is saved in the map.
 
-**Tests**:
-- The e2e `teams` flow's friendly fire and team kill checks no longer fail at random: every bot holds fire while your
-  rounds are tested, the teammate's spawn shield is cleared, and its damage is counted by who dealt it.
-**Whiteout Station rebuilt (MAP 03 Frostbite Station, made in MapMaker)**:
-- A compact arctic research station in a snowbound hollow, for 8-16 players: an offset central yard with a tunnel
-  under it, the two-storey main lab and its server vault, a two-storey lab wing round a glowing core, the comms
-  annex under its mast, the snow vehicle garage, the fuel tanks, the radar shelter up on its ridge (the long look over
-  the station) and an ice cave in the rocks; three outdoor flanks and a sunken service trench.
-- Deathmatch and Team Deathmatch (Elimination with it); the old map's flags and hills are gone. Military weapons.
-**Small fixes (owner, 2026-11-08)**:
-- Bots no longer queue 10-20 s for Fernwood Moon's north rope lift: they hop down off the north deck onto its ramp
-  when the lift is away (the navmesh had lost that 0.7 m hop).
-- The armour pickup's sparkle, armour breaking, heavy hits and kill-streak bursts read across a room: seen from
-  further than 3 m they keep the size they have 3 m off (an armour pickup 7 m off was a speck).
-- The tutorial shows no Deathmatch score bar (You / Leader).
-- capture-map-shots can write pictures outside the build (SHOT_OUT, SHOT_SUFFIX, SHOT_QUALITY, SHOT_TEST,
-  SHOT_RENDERED).
-**Set pieces, part 6: swapping the old big pieces** (docs/SET_PIECES_PLAN.md, "As built: part 6"):
-- **Replace all with a set piece…** in every tile's inspector in MapMaker: every placement of a tile becomes a set piece
-  where it stands, one undo step.
-- **Town Wall Gatehouse**, a new set piece: Market Town's gate is now one (the walks through its guard room, its roof up
-  a ladder).
-- **Bunker**, a new set piece the size of the Bunker tile: Iron Maw and Shingle Point's bunkers are now Bunkers, their
-  warehouses Loading Docks; Neon Spire, Riot Junction and Underdrain's 4 × 4 crossroads are the Crossroads Plaza.
-- **City Wall Gatehouse** and **Temple Pylon**, new set pieces: Qasr Medina's gate is now the gatehouse, Pharaoh's
-  Reach and Sunken Kingdom's pylons the Temple Pylon set piece; Blackout and Crossroads' warehouses are Loading Docks,
-  their bunkers Bunkers.
-- Shingle Point's card picture is taken from a few metres further back, so the cliff-top buildings show.
-**Race mode removed** (owner, 2026-11-08: "steer away from racing and focus on battles and maps"):
-- **No more Race** in Match Setup, Quick Play, the next-map vote, rotations, playlists, the host panel or the server
-  rules (`laps`, `racevehicle`, `racecombat` are gone). The race HUD (lap, place, running order, countdown), the race
-  scoring and the start grid are gone too.
-- **Tracks stay, as map spice:** a map's track still carries its NPC cars in every mode. On Apex Ring twelve karts lap
-  the Grand Prix circuit while the teams fight; they run anyone over and can be shot up or taken over, as before.
-  Roads still grip better on a track map.
-- **Old maps** that list Race load and simply don't offer it; MapMaker's checks say to drop it from the modes. The map
-  format is unchanged.
-- **Apex Ring** and **Sandsweep Circuit** no longer list Race (MapMaker, Map properties): Apex Ring plays Deathmatch,
-  Team Deathmatch, CTF and King of the Hill with its karts lapping; Sandsweep plays Deathmatch.
-**MapMaker: bot hints** (map format v33; MapMaker overhaul Phase 4 item 3, Bot AI Phase D item 5): mark chokepoints,
-sniper, camp and staging spots and jump links for bots (the Bot hints tool, Y; the Entities tab). Pins with their
-radius, facing and jump arcs in the 3D view and the plan view, edited in the inspector, one undo step each; warnings for
-a hint outside the boundary or off the navmesh, a jump a player couldn't make and duplicates. "What bots know" shows
-the bots' own computed spots (vantage spots, parkour links), read-only. Bots don't use the hints yet (the data is
-documented in docs/BOTS.md, "Bot hints (map data)").
-
-- **MapMaker says track / NPC traffic:** the Race Track card, the Paths pane, the key list (Shift+G) and the Vehicles
+**MapMaker says track / NPC traffic:** the Race Track card, the Paths pane, the key list (Shift+G) and the Vehicles
   tab call it the track (NPC traffic). The track's pane keeps its NPC cars, their vehicle, the curbs, where the cars
   start and the pit lane, and no longer shows Laps, Start grid, Vehicle or Combat (nothing reads them now). Map
   properties no longer offers Race as a mode, and a map that still lists it gets a **Drop Race** button (undo brings
@@ -83,6 +54,67 @@ documented in docs/BOTS.md, "Bot hints (map data)").
   objectives, vehicles and pickups unless you say otherwise; placing one there by hand asks first. **Show what
   blocks** draws what stops movement, shots and sight.
 - The brush stops at the map's environment budget, and painted plants export and import exactly as placed.
+
+**Set pieces, part 6: swapping the old big pieces** (docs/SET_PIECES_PLAN.md, "As built: part 6"):
+- **Replace all with a set piece…** in every tile's inspector in MapMaker: every placement of a tile becomes a set piece
+  where it stands, one undo step.
+- **Town Wall Gatehouse**, a new set piece: Market Town's gate is now one (the walks through its guard room, its roof up
+  a ladder).
+- **Bunker**, a new set piece the size of the Bunker tile: Iron Maw and Shingle Point's bunkers are now Bunkers, their
+  warehouses Loading Docks; Neon Spire, Riot Junction and Underdrain's 4 × 4 crossroads are the Crossroads Plaza.
+- **City Wall Gatehouse** and **Temple Pylon**, new set pieces: Qasr Medina's gate is now the gatehouse, Pharaoh's
+  Reach and Sunken Kingdom's pylons the Temple Pylon set piece; Blackout and Crossroads' warehouses are Loading Docks,
+  their bunkers Bunkers.
+- Shingle Point's card picture is taken from a few metres further back, so the cliff-top buildings show.
+
+**Sandfall Colosseum, rebuilt** (the owner's Flavius Rule board, built in MapMaker; docs/map-briefs/sandfall_colosseum/):
+- **The arena** is the board at 4 m a square: 52 m of sand (7 × 7 cells) with its twelve pillars, five medallions
+  (King of the Hill's hills), four hatches down to the hypogeum and the beast pit's spikes and fire jets in the middle.
+- **The stands** rise seven storeys on all four sides (28 bays of podium, two upper tiers with vomitoria, the
+  arcaded facade and the attic walk at 28 m); the **emperor's box** is back at the centre of the north side, facing
+  the main entrance; **gates 1-4** at the corners; a stair tower in each corner court climbs to the top.
+- **The hypogeum** runs round under the podium: hatch halls, beast cages north, south and east, the gladiators'
+  cells west, and stairs up into the corner courts and out to the village on all four sides.
+- **The Roman village** round it: sixteen insulae and the main square (triumphal arch, forum, temple, colonnades)
+  leading north to the arena; a volcano smokes far off behind the emperor's box.
+- Team Deathmatch, Capture the Flag (gates 3/4 against gates 1/2) and King of the Hill; 12 v 12; the Medieval set.
+
+**Backdrop: Hills and a volcano** (Map properties → Environment → Sky → Scenery): dry hills round the map and a lone
+volcano far to the north, a steady ember glow in its crater and a still plume of smoke. Nothing in it moves or
+flickers, so it is the same with Reduce flashing on.
+
+**MapMaker:** exploding or deleting the last placement of a map's own set piece (one saved from a selection) takes its
+definition out of the map too; it stays in your library, and one undo brings both back.
+
+**Whiteout Station rebuilt (MAP 03 Frostbite Station, made in MapMaker)**:
+- A compact arctic research station in a snowbound hollow, for 8-16 players: an offset central yard with a tunnel
+  under it, the two-storey main lab and its server vault, a two-storey lab wing round a glowing core, the comms
+  annex under its mast, the snow vehicle garage, the fuel tanks, the radar shelter up on its ridge (the long look over
+  the station) and an ice cave in the rocks; three outdoor flanks and a sunken service trench.
+- Deathmatch and Team Deathmatch (Elimination with it); the old map's flags and hills are gone. Military weapons.
+
+**Tests**:
+- The e2e `teams` flow's friendly fire and team kill checks no longer fail at random: every bot holds fire while your
+  rounds are tested, the teammate's spawn shield is cleared, and its damage is counted by who dealt it.
+**Small fixes (owner, 2026-11-08)**:
+- Bots no longer queue 10-20 s for Fernwood Moon's north rope lift: they hop down off the north deck onto its ramp
+  when the lift is away (the navmesh had lost that 0.7 m hop).
+- The armour pickup's sparkle, armour breaking, heavy hits and kill-streak bursts read across a room: seen from
+  further than 3 m they keep the size they have 3 m off (an armour pickup 7 m off was a speck).
+- The tutorial shows no Deathmatch score bar (You / Leader).
+- capture-map-shots can write pictures outside the build (SHOT_OUT, SHOT_SUFFIX, SHOT_QUALITY, SHOT_TEST,
+  SHOT_RENDERED).
+**Race mode removed** (owner, 2026-11-08: "steer away from racing and focus on battles and maps"):
+- **No more Race** in Match Setup, Quick Play, the next-map vote, rotations, playlists, the host panel or the server
+  rules (`laps`, `racevehicle`, `racecombat` are gone). The race HUD (lap, place, running order, countdown), the race
+  scoring and the start grid are gone too.
+- **Tracks stay, as map spice:** a map's track still carries its NPC cars in every mode. On Apex Ring twelve karts lap
+  the Grand Prix circuit while the teams fight; they run anyone over and can be shot up or taken over, as before.
+  Roads still grip better on a track map.
+- **Old maps** that list Race load and simply don't offer it; MapMaker's checks say to drop it from the modes. The map
+  format is unchanged.
+- **Apex Ring** and **Sandsweep Circuit** no longer list Race (MapMaker, Map properties): Apex Ring plays Deathmatch,
+  Team Deathmatch, CTF and King of the Hill with its karts lapping; Sandsweep plays Deathmatch.
 **MapMaker: a finer terrain grid, Change grid, and the coast border** (map format v32; the editor half of the Iron
 Coast job):
 - **A finer grid:** a terrain can be up to 321 vertices a side (was 161), so a 380 m map can be 1.25 m apart. New
@@ -118,16 +150,6 @@ Coast job):
   load and play it as the bridge; its inspector in MapMaker offers **Replace all** (one undo step).
 - **Sea Wall** and **Sea Wall (Breached)** for MAP 21 (Iron Coast): a bay of concrete sea wall with a wave lip and a
   fire step, and the same bay blown open with a rubble ramp through the gap.
-**MapMaker follow-ups** (the owner's answers, 2026-11-08):
-- **The measure tool's jump hint looks at the ground along the line**, not only at its two ends: a slope you can walk
-  up reads walkable, a ledge reads a step (with its height), and a pit you couldn't climb out of reads a gap (with its
-  width, jumpable or too far). A ditch you can climb out of is a drop and a step.
-- **Nothing is placed over nothing:** spawns, pickups, props, vehicles and NPCs with no floor, ground or water under
-  them are refused; the ghost goes red and says why, and the click does nothing. Spawns, pickups, vehicles and NPCs
-  outside the playable boundary are refused the same way. Props outside it are scenery, as before.
-- **The budget bar sits in the bottom status bar**, compact: its colour, its word and the budget it names; the name
-  still selects what it counts and the arrow still lists every budget.
-
 **Our own trees, bushes and hedges everywhere; no more Kenney foliage** (Environment Phase 2, owner-approved
 2026-11-08: "I don't want to see those"):
 - **Nine new generated species**, grounded and natural rather than toy-like: Field Maple (summer, autumn), Umbrella
@@ -147,24 +169,6 @@ Coast job):
 - **Drawn faster:** in matches, our species are drawn in batches with levels of detail by default (`?env=0` turns that
   off).
 
-**Sandfall Colosseum, rebuilt** (the owner's Flavius Rule board, built in MapMaker; docs/map-briefs/sandfall_colosseum/):
-- **The arena** is the board at 4 m a square: 52 m of sand (7 × 7 cells) with its twelve pillars, five medallions
-  (King of the Hill's hills), four hatches down to the hypogeum and the beast pit's spikes and fire jets in the middle.
-- **The stands** rise seven storeys on all four sides (28 bays of podium, two upper tiers with vomitoria, the
-  arcaded facade and the attic walk at 28 m); the **emperor's box** is back at the centre of the north side, facing
-  the main entrance; **gates 1-4** at the corners; a stair tower in each corner court climbs to the top.
-- **The hypogeum** runs round under the podium: hatch halls, beast cages north, south and east, the gladiators'
-  cells west, and stairs up into the corner courts and out to the village on all four sides.
-- **The Roman village** round it: sixteen insulae and the main square (triumphal arch, forum, temple, colonnades)
-  leading north to the arena; a volcano smokes far off behind the emperor's box.
-- Team Deathmatch, Capture the Flag (gates 3/4 against gates 1/2) and King of the Hill; 12 v 12; the Medieval set.
-
-**Backdrop: Hills and a volcano** (Map properties → Environment → Sky → Scenery): dry hills round the map and a lone
-volcano far to the north, a steady ember glow in its crater and a still plume of smoke. Nothing in it moves or
-flickers, so it is the same with Reduce flashing on.
-
-**MapMaker:** exploding or deleting the last placement of a map's own set piece (one saved from a selection) takes its
-definition out of the map too; it stays in your library, and one undo brings both back.
 **Gunplay pass 2** (docs/GUNPLAY_AUDIT.md, "Pass 2"; the audit's candidates 1-6, owner-approved):
 - **Every gun owns its range.** The SMG wins up close (0.40 s to a kill to 15 m, the Assault Rifle 0.50; hip fire at
   25 m 0.77 s, was 3.4); the Assault Rifle owns 20-50 m and loses damage from 25 m; the Precision Rifle kills a body in two shots in under a second at every range (was 1.25-1.38 s) and owns

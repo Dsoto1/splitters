@@ -241,7 +241,6 @@ The workflow is unchanged (CLAUDE.md):
   docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md and the owner's screenshots described in this file's Iron Coast
   part 2 entry.
 
-- Claimed: map format v33 (bot hints in MapMaker, `wip/mapmaker-bothints`), MapMaker lane, 2026-11-09.
 **MapMaker: track / NPC traffic wording, and Environment Phase 3's tools (`wip/mapmaker-env3`, green on `check/mapmaker-env3` at 63989680, run 42599981528; waits for the train; MapMaker lane,
 2026-11-09; no format change).**
 - **Race wording (item 1; also on `wip/mapmaker-race-wording` at 14d2ab06, green on `check/mapmaker-env3`, run
@@ -350,12 +349,12 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
-- Claimed: MapMaker's bot test run and spawn exposure (Phase 4 items 1 and 2; new modules under `client/src/editor/` and `shared/src/editor/`, a few wiring lines in editorApp.ts, `shared/src/bots/botTrace.ts` shared with bot-report; no format bump; `wip/mapmaker-p4`), MapMaker lane, 2026-11-09.
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` LODs, `content/meshy.lock.json`, the e2e `characters3` flow's far-copy checks; `wip/far-copies`), far-copies agent, 2026-11-09.
 
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 
 **Landing now: MapMaker train (check/train-<timestamp>), please hold code pushes to main.** (MapMaker lane, 2026-11-09; followups, bothints, p4, env3, setpieces6, sandfall, whiteout.)
+
 **Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
 for the owner's review, not landed).**
 - Made in the real MapMaker only (a scratch Playwright driver: Import, plan-view drag-box Delete, Create terrain and
@@ -840,6 +839,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   main 3 / 5 / 5 / 4, this branch 9 / 6 / 2 / 2 (17 against 19). Revert with a fix for the lift wait.
 - **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
   screenshots; the skipped maps above; card pictures.
+
 ### Sandfall Colosseum rebuilt in MapMaker (`wip/mapmaker-sandfall`, agent, 2026-11-08/09; the owner's brief docs/map-briefs/sandfall_colosseum/BRIEF.md; CI on `check/mapmaker-sandfall`)
 - **What:** the map rebuilt from the Flavius Rule board (manifest and decisions in docs/map-briefs/sandfall_colosseum/):
   the 52 m sand with the board's pillars, medallions (KotH), hatches and beast pit; seven-storey stands of the Arena
@@ -976,6 +976,7 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
   "walled" with nothing built beyond; e2e `editorSetPiecePart5Checks` in editorux.
 - **Pitfall:** core.room_tall, core.atrium and orbital.reactor_hall have no roof of their own; a piece that tops out
   with them needs a roof block (the three here have one).
+
 ### MapMaker follow-ups: the sampled jump hint, refused ghosts, the budget bar in the status bar (`wip/mapmaker-followups`, agent, 2026-11-09; the owner's answers 4b, 5b, 8b)
 - **Built:** the measure tool's jump hint samples the ground along the line (`sampleProfile`, `profileVerdict` in
   shared `editor/measure.ts`; `MeasureTool` caches each stretch's verdict per map version); spawns, pickups, props,
