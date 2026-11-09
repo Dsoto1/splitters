@@ -12,8 +12,8 @@ describe('map index', () => {
     expect(entries.length).toBeGreaterThan(20);
     expect(entries.some((e) => e.key === 'frost_basin')).toBe(true);
     expect(entries.some((e) => e.key === 'test_coverage')).toBe(false);
-    // The Breakthrough Range was a test map; it is an ordinary one now (owner, 2026-11-07: he couldn't find it to try).
-    const range = entries.find((e) => e.key === 'test_breakthrough');
-    expect(range?.modes?.[0]).toBe('core.breakthrough');
+    // The Breakthrough Range is a test map (owner, 2026-11-08: hidden from every list; tests reach it by ?testmap=).
+    expect(entries.some((e) => e.key === 'test_breakthrough')).toBe(false);
+    expect(entries.find((e) => e.key === 'iron_coast')?.modes).toContain('core.breakthrough');
   });
 });

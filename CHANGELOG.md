@@ -24,6 +24,29 @@ made only on a commit that passed CI on a check branch.
 - **Note pins** (J, Notes on the tool bar): notes for the map's makers pinned on the map. Click to pin one, click a
   pin to edit or delete it, drag it to move it; Map properties lists them all. They show in MapMaker only, never in
   play. Groups and notes are stored in the map (format v31; older maps load as they were).
+**Friends stay with the party after a vote**: a friend in your hosted game follows you to the next map (the vote's
+winner, the rotation, Change map) until your match there lets them in, instead of giving up after one early try while
+your browser was still loading it.
+
+**Flaky e2e checks fixed at the cause** (tests only): mobile (bots knocking the player into the air before the jump
+tap), physicsfx (bodies dropped and blasts set off by cover, a race with bots respawning, range bots in front of the glass), characters3 (a weapon key pressed while only the view
+lagged) and weaponsets (a respawn picking up last life's dropped gun).
+**Team kills show as team kills, and reward nothing** (owner's bug report, 2026-11-08: "Teamkills should not count
+towards a kill streak (should end one) or show anything rewarding. It should actually show in the upper right that it
+was a TK."):
+- **The kill feed marks it.** With friendly fire on, downing a teammate shows in the kill feed (upper right) with a
+  **TK** tag and a warning-yellow edge, for everyone who sees the feed.
+- **Nothing rewarding.** No kill or points for you or your side, no kill marker or kill-confirm sound, no multi-kill
+  call, no headshot mark, no "kills in a row" or streak burst, no streak reward (UAV and the rest), no revenge or
+  nemesis callout, nothing toward the end-of-match awards (Longest Streak, Nemesis, Most Revenge), no Roulette credit
+  (bonuses, rerolls, kills toward a streak pick) and no mode credit. It still counts as your teammate's death.
+- **It ends your streak.** A team kill sets your kill streak back to nothing (and Roulette's kills toward a streak pick).
+- **Every way it can happen:** rounds, rocket and other blasts, grenades, running a teammate over, turrets, burns and
+  a barrel you set off; by players and bots; in every team mode. Running a teammate over now needs friendly fire on and
+  then hurts like any other friendly fire (it never did before). Your own deaths are unchanged.
+
+**Breakthrough Range is a test map again** (owner, 2026-11-08): hidden from every list (Play, Match setup, Quick
+Play, rotations, the host's picker, the vote). Breakthrough is played on Iron Coast.
 
 **MapMaker: Play from here, the plan view, the card shot** (MapMaker overhaul Phase 3, items 1, 2 and 8):
 - **Play from here** (Shift+F5, or ▶ Here beside PLAY TEST): a test match with you standing on the floor or ground

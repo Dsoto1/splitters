@@ -691,7 +691,7 @@ export class Hud {
   /** Shown while you are dead ("Respawning…", or "Next round" in Elimination). */
   waitLabel = 'Respawning…';
 
-  kill(killer: number | null, victim: number, weapon: string, localSlot: number, headshot = false): void {
+  kill(killer: number | null, victim: number, weapon: string, localSlot: number, headshot = false, teamKill = false): void {
     const line = document.createElement('div');
     const color = (slot: number | null) => (slot === null ? '#ccc' : (this.team(slot)?.color ?? slotColor(slot)));
     const name = (slot: number | null) => `<span style="color:${color(slot)}">${escapeHtml(this.name(slot))}</span>`;
@@ -704,7 +704,12 @@ export class Hud {
       label.replaceWith(icon);
     }
     if (killer === localSlot || victim === localSlot) line.style.outline = '1px solid rgba(255,255,255,0.5)';
-    if (headshot && killer !== null) line.insertAdjacentHTML('beforeend', ' <b class="hs" title="Headshot">✛</b>');
+    if (headshot && killer !== null && !teamKill) line.insertAdjacentHTML('beforeend', ' <b class="hs" title="Headshot">✛</b>');
+    // A team kill (friendly fire): a TK tag and the warning style, for everyone who sees the feed.
+    if (teamKill && killer !== null) {
+      line.classList.add('tk');
+      line.insertAdjacentHTML('afterbegin', '<b class="tk-tag" title="Team kill">TK</b> ');
+    }
     this.feed.prepend(line);
     while (this.feed.children.length > 5) this.feed.lastChild?.remove();
     window.setTimeout(() => line.remove(), 5000);
