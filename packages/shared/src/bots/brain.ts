@@ -4433,7 +4433,8 @@ export function weaponScore(w: InventoryView, c: WeaponChoiceContext): number {
   let score = def.botDesirability + (dist >= lo && dist <= hi ? 0.6 : -Math.min(dist < lo ? lo - dist : dist - hi, 20) * 0.03);
   // And how it kills at this distance against what others carry (measured): a shotgun over a Precision Rifle at arm's
   // length, though both can kill there.
-  score += EDGE_WEIGHT * ttkEdge(def.id, dist, !!c.held);
+  // A switch in a close fight (as below, under 15 m) pays the gun's draw first; further off there is time to draw.
+  score += EDGE_WEIGHT * ttkEdge(def.id, dist, !!c.held || dist >= 15);
   if (def.projectile && dist < def.projectile.splashRadius + 1) score -= 1.5 * (profile.selfPreservation / 100);
   if (profile.tags.includes('EXPLOSIVES_FAN') && def.projectile) score += 0.4;
   if (def.kind === 'melee') score += (profile.meleePreference / 100) * 0.5;

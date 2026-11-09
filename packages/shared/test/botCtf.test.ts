@@ -116,6 +116,7 @@ describe('CTF bots run the flag', () => {
 
   it('Sunken Kingdom: a capture over the 155 m between the flags within five minutes', () => {
     // (Seeds 1-4: the first capture at 323, 104, 98 and 97 s, after 18, 7, 2 and 2 flag takes.)
+    // (Bots' weapon choice from the measured TTK, gunplay G4, 2026-11-09: seeds 1, 3 and 4 capture within five minutes, 2 doesn't.)
     const match = ctfMatch('sunken_kingdom', 3);
     let captures = 0;
     const ctf = match.mode as CtfMode;
