@@ -21,6 +21,8 @@ import {
   coastSides,
   getProp,
   resolveBackdrop,
+  mapTimeOfDay,
+  sunAt,
   type BorderEdge,
   type BorderSide,
   type BorderStyle,
@@ -74,7 +76,10 @@ export class BorderVisuals {
     const edges = borderEdges(doc);
     const floorY = edges.length ? borderFloor(doc, boxes) : 0;
     const backdrop = resolveBackdrop(doc);
-    const key = JSON.stringify([edges, floorY, backdrop.sky, backdrop.ground, doc.classicStructure.theme, doc.metadata.id, doc.terrain ? doc.terrain.heights.length + doc.terrain.heights[0]! : 0]);
+    // At a time of day, the sky it looks like then (night at 22:00 under a day sky: lit windows).
+    const hours = mapTimeOfDay(doc, backdrop.sky);
+    const skyNow = hours === null ? backdrop.sky : sunAt(hours, backdrop.sky).sky.id;
+    const key = JSON.stringify([edges, floorY, skyNow, backdrop.ground, doc.classicStructure.theme, doc.metadata.id, doc.terrain ? doc.terrain.heights.length + doc.terrain.heights[0]! : 0]);
     if (key === this.key) return;
     this.dispose();
     this.key = key;
@@ -86,7 +91,7 @@ export class BorderVisuals {
       floorY,
       seed: borderSeed(doc.metadata.id),
       ground: (x, z) => borderGround(doc, x, z, floorY),
-      night: ['night', 'dusk', 'space'].includes(backdrop.sky),
+      night: ['night', 'dusk', 'space'].includes(skyNow),
       snowy: backdrop.ground === 'snow' || backdrop.sky === 'snowy' || doc.classicStructure.theme === 'core.arctic',
       sandy: backdrop.ground === 'sand',
       redRock: backdrop.ground === 'sand' || ['core.desert', 'core.saloon', 'core.tomb', 'core.canyon'].includes(doc.classicStructure.theme),
