@@ -111,3 +111,12 @@ heading is the old build (2026-10-31), kept for the record.
   (−20, 34) → (−14, 28), (−12, 38) → (−12, 30), (−52, 24) → (−46, 18), (−52, 14) → (−44, 14), (−36, 31) → (−28, 31);
   where the straight step met a building, the diagonal one (checked clear of solids first; validate-map 0 issues).
 - Kept as built: the ridge, the cave, the fuel tanks.
+- **Second pass (coordinator, 2026-11-09):** King of the Hill leaned to Embers (seeds 1-2: 70 · 37, 91 · 0; the cave
+  hill is on their side), so the yard hill moved to the yard's Tide corner (−8, 0, 8) and the ridge hill to the ridge's
+  west end (34, 3.85, 46), nearer Tide; the cave hill stays in the cave. Over seeds 1-8: embers 378 · tide 375. The
+  apron sleds stalled against the garage's north side (bots drove them into the hangar towards the yard): all three
+  sleds now stand at the road's west end ((−28, −34), (−40, −34), (−44, −40), facing north), where the way to the yard
+  is the west flank, not the hangar. Bots ride them less (a few rides in 16 matches), never wedge, and no longer stall
+  in the hangar. What drew them in: the route bots drive is the foot route checked for the hull's width (bots/vehicles.ts
+  `routeFits`); through the hangar it passes the width check yet the sled stops at the north side's doorway. That is in
+  the bot code (the other session's), so it is described here, not changed.

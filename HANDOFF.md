@@ -351,9 +351,9 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 **Whiteout Station follow-ups (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; the owner's answers; CI on
 `check/mapmaker-whiteout`):** King of the Hill on three hills (yard, radar ridge, ice cave); three drivable snow sleds
 on the south road (the apron's two snowmobile props became real sleds, a third at the west end); Tide's eight spawns
-8 m nearer the yard (TDM over seeds 1-4 now even: 133 · 143 kills summed, was 85 · 61 over two seeds). Bots ride the
-sleds and never wedge; they stall against the garage's north side trying to drive through the hangar. KotH leans to
-Embers (the cave hill is on their side): the owner's call. Docs: map-briefs/whiteout_station DECISIONS and manifest.
+8 m nearer the yard (TDM over seeds 1-4 now even: 133 · 143 kills summed, was 85 · 61 over two seeds). Second pass: the yard and
+ridge hills moved toward Tide (KotH seeds 1-8: 378 · 375) and the sleds to the road's west end (no more hangar
+stalls; the hangar routing is described in DECISIONS for the bot code's owner). Docs: map-briefs/whiteout_station DECISIONS and manifest.
 
 **Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
 for the owner's review, not landed).**

@@ -28,11 +28,11 @@
     },
     "release": {
       "mapId": "m_ldufdn43f3lmrdmn",
-      "versionId": "v_yo3raqi7ce6mg67m",
-      "revision": 18,
-      "contentHash": "sha256:07672650da0bb0422c46ed412bb8c86ee870299e9f685766777c6d74a1273bae",
+      "versionId": "v_wssb6j2h35hptlrl",
+      "revision": 19,
+      "contentHash": "sha256:ce67f0f54fce66b946f97a2fe0828ca89b0085c4887f85413eaa0858201c7f5a",
       "schemaVersion": 33,
-      "releasedAt": "2026-11-09T21:31:58.705Z"
+      "releasedAt": "2026-11-09T22:10:52.255Z"
     }
   },
   "classicStructure": {
@@ -1419,73 +1419,73 @@
     },
     {
       "id": "hill_pn1o708npb",
-      "kind": "hill",
       "position": [
-        4,
+        -8,
         0,
-        0
+        8
       ],
-      "radius": 6,
-      "name": "Yard"
+      "name": "Yard",
+      "kind": "hill",
+      "radius": 6
     },
     {
       "id": "hill_2bpvop5y1x",
-      "kind": "hill",
       "position": [
-        48,
+        34,
         3.85,
-        40
+        46
       ],
-      "radius": 5,
-      "name": "Radar ridge"
+      "name": "Radar ridge",
+      "kind": "hill",
+      "radius": 5
     },
     {
       "id": "hill_x7pfwhiij4",
-      "kind": "hill",
       "position": [
         52,
         0,
         -28
       ],
-      "radius": 5,
-      "name": "Ice cave"
+      "name": "Ice cave",
+      "kind": "hill",
+      "radius": 5
     },
     {
       "id": "mount_d3euuvk3ik",
-      "kind": "mount",
       "position": [
-        0,
+        -40,
         0,
         -34
       ],
+      "kind": "mount",
       "model": "snow_sled",
-      "yaw": 3.142,
+      "yaw": 0,
       "faction": null,
       "respawnSeconds": null
     },
     {
       "id": "mount_1hkgs5zc79",
-      "kind": "mount",
       "position": [
-        6,
+        -44,
         0,
-        -34
+        -40
       ],
+      "kind": "mount",
       "model": "snow_sled",
-      "yaw": 3.142,
+      "yaw": 0,
       "faction": null,
       "respawnSeconds": null
     },
     {
       "id": "mount_44bb7mzhxj",
-      "kind": "mount",
       "position": [
         -28,
         0,
         -34
       ],
+      "kind": "mount",
       "model": "snow_sled",
-      "yaw": 1.571,
+      "yaw": 0,
       "faction": null,
       "respawnSeconds": null
     }

@@ -179,3 +179,8 @@ dock; `core.health_large` (32, 0, 2) pump house; `core.health_small` (−32, 0, 
   through the hangar to the yard. King of the Hill seeds 1-2: embers 70 · tide 37, 91 · 0 (the cave hill is on
   Embers' side). Deathmatch seed 1: 181 kills, no idle spells of 10 s+. Bench (16 bots, TDM, 60 s): CPU 3.5 ms a tick
   (p95 9.6) of 16.7. A person driving a sled: not tested here (no GPU).
+- **Second pass:** hills "Yard" (−8, 0, 8), "Radar ridge" (34, 3.85, 46), "Ice cave" unchanged; sleds at (−28, 0, −34),
+  (−40, 0, −34), (−44, 0, −40) facing north. bot-report, 16 bots, 180 s: King of the Hill seeds 1-8 embers 44 · tide 60,
+  44 · 37, 58 · 45, 66 · 16, 44 · 41, 21 · 43, 50 · 65, 51 · 68 (378 · 375); TDM seeds 1-8 45 · 45, 40 · 24, 36 · 33,
+  52 · 33, 40 · 35, 38 · 38, 43 · 40, 36 · 33 (330 · 281); sleds wedged 0, stalled in 2 of 16 matches (west flank,
+  east flank), never in the hangar. validate-map OK.
