@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { MODEL_FACADES, PhysicsWorld, SCENARIO_PALETTE, THEME_BACKDROPS, blockBoxes, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreThemes, getItem, getProp, getStylePack, initPhysics, liftLinks, loadMap, mapTerrainMesh, navLinks, newScenarioEntities, propBoxes, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
-import { NavWorld, initNavigation, mapNavigation, validateMapNavigation, validateNavigation } from '../src/match.ts';
+import { MODEL_FACADES, SCENARIO_PALETTE, THEME_BACKDROPS, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreThemes, getItem, getProp, getStylePack, initPhysics, loadMap, newScenarioEntities, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
+import { NavWorld, initNavigation, mapNavigation, validateMapNavigation } from '../src/match.ts';
 import { makeMap, propManifest } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));

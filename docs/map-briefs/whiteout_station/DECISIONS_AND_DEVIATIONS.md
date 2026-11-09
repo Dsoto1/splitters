@@ -62,3 +62,39 @@ heading is the old build (2026-10-31), kept for the record.
 - **Service trench** (south-west): sunken Trench set pieces from the lab wing's south door to the hangar's west door.
 - **Three outdoor flanks**: the west flank (x −6), the south road (y −4) and the east flank (x 6); the north lane
   (y 4) behind the lab joins the annex to the ridge. Snowbanks raised round the outside of the boundary.
+
+## Choices (the conservative option where it was the owner's call; questions in the report)
+- **Scale**: standard arena for 8-16 (the brief), a 120 × 98 m boundary: smaller than the old map's 104 × 136 m.
+  Teams 8 v 8.
+- **Modes**: Deathmatch (main) and Team Deathmatch, Elimination with it. Capture the Flag and King of the Hill (the
+  old map's) are dropped: the brief recommends DM, TDM and Elimination and says not to invent objectives.
+- **Spawns** (the brief leaves them open): Tide in the north-west (the annex and the north lane), Embers in the
+  south-east (the south road and the cave's side), eight shared ones round the edge for Deathmatch, one of them on the
+  ridge. Diagonal, so each side has a mid-length walk to the yard and the ridge sits between them.
+- **Pickups**: shotgun and SMG inside the labs (short range), the assault rifle in the yard, the marksman rifle in the
+  comms annex, the sniper on the ridge by the dish, the rockets in the tunnel, the LMG on the hangar's mezzanine,
+  grenades by the trench, armour in the ice cave and the west flank, health in the annex, the garage, the vault and
+  the pump house's side. Military weapon set.
+- **No vehicles**: the brief says exact vehicle placements are not specified. The garage has two parked snowmobile
+  props on its apron, not the drivable `snow_sled` mounts.
+- **The tunnel's ends are huts in the yard** (Stairs tiles standing up out of the yard), not inside the buildings:
+  the set pieces' walls have no doors there, and the huts break the yard's sightlines.
+- **The ice cave is a roofed room under four Frozen Cliff tiles**, not a hollow in the terrain: terrain is a height
+  grid, so ground over a doorway closes it. The ground is raised against its south and east walls into the bank.
+- **The radar ridge is terrain** (flattened to 3.85 m so level-1 tiles sit on it), climbed by two Snow Drifts and a
+  Metal Stair; its faces are steep rock (Paint steep slopes as stone).
+- **The hangar's mezzanine has no door north** (its model), so no balconies over the yard from it; the lab wing's
+  gallery doors open onto railed platforms with open stairs down instead.
+- **Foliage**: our Pine forest scatter (env pines and spruces) in a few stands inside the boundary's corners. No Kenney
+  plants. Nothing outside the boundary (validate-map warns about anything there).
+- **Snowbanks** outside the boundary, raised and roughened with the brushes; the backdrop's border is none (the old
+  map's concrete wall would stand in front of them).
+- **Lights**: only the set pieces' own (no blinking, no new bright effects: Reduce flashing is untouched).
+
+## Deviations from the brief and the reference
+- The reference's lab is a big two-storey block with a dome on its roof; here the Reactor Room (two storeys, a
+  control room over the airlock) and the Server Vault stand in for it, and the domed building is the radar shelter.
+- The comms annex is at ground level, not up on a rocky outcrop with stairs.
+- The fuel tanks are three Fuel Depot tiles and two tank props by the pump house, fewer than the reference's tank farm.
+- No snowmobile garage doors that roll: the hangar's doorway is open (the old map's Roll-up Door and its button are
+  gone).

@@ -8,6 +8,12 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Whiteout Station rebuilt (MAP 03 Frostbite Station, made in MapMaker)**:
+- A compact arctic research station in a snowbound hollow, for 8-16 players: an offset central yard with a tunnel
+  under it, the two-storey main lab and its server vault, a two-storey lab wing round a glowing core, the comms
+  annex under its mast, the snow vehicle garage, the fuel tanks, the radar shelter up on its ridge (the long look over
+  the station) and an ice cave in the rocks; three outdoor flanks and a sunken service trench.
+- Deathmatch and Team Deathmatch (Elimination with it); the old map's flags and hills are gone. Military weapons.
 **Small fixes (owner, 2026-11-08)**:
 - Bots no longer queue 10-20 s for Fernwood Moon's north rope lift: they hop down off the north deck onto its ramp
   when the lift is away (the navmesh had lost that 0.7 m hop).
