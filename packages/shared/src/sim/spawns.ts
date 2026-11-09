@@ -67,6 +67,11 @@ export interface SpawnChoice {
    * points nearer your own side's than an enemy side's win, so the sides don't swap ends (no spawn flips).
    */
   side?: { own: Vec3 | null; enemy: readonly Vec3[] } | null;
+  /**
+   * Free-for-all parties (net/party.ts): where your party's living members out of a fight are. They aren't in
+   * `enemies` (a spawn doesn't avoid them); among the points about as safe as the best, the ones near them win.
+   */
+  party?: readonly Vec3[];
   /** Deaths lately (where and when): a spawn point beside a fresh body is a worse one. */
   deaths?: readonly SpawnDeath[];
   /** Line of sight between two eye points (a few rays, for the best-looking candidates only). */
@@ -220,8 +225,24 @@ export function pickSpawn(c: SpawnChoice): number {
   // when the best isn't.
   const top = scored[0]!;
   const safeAt = Math.min(W.enemyRange, nearestEnemy(c.candidates[top.i]!, c)) * 0.7;
-  const few = scored.slice(0, Math.min(W.safeFew, checked)).filter((s) => s.s >= top.s - W.margin && Math.min(W.enemyRange, nearestEnemy(c.candidates[s.i]!, c)) >= safeAt && s.seen <= top.seen);
+  const safe = (s: { i: number; s: number; seen: number }, margin: number) => s.s >= top.s - margin && Math.min(W.enemyRange, nearestEnemy(c.candidates[s.i]!, c)) >= safeAt && s.seen <= top.seen;
+  if (c.party?.length) {
+    // Free-for-all parties: safety first (the checked points about as safe as the best), then near the party.
+    const ranked = scored.slice(0, checked).filter((s) => safe(s, W.partyMargin)).map((s) => ({ ...s, s: s.s + partyBonus(c.candidates[s.i]!, c.party!) }));
+    ranked.sort((a, b) => b.s - a.s || a.i - b.i);
+    const best = ranked[0]!;
+    const few = ranked.slice(0, W.safeFew).filter((s) => s.s >= best.s - W.margin);
+    return few[Math.min(few.length - 1, Math.floor(c.rng() * few.length))]!.i;
+  }
+  const few = scored.slice(0, Math.min(W.safeFew, checked)).filter((s) => safe(s, W.margin));
   return few[Math.min(few.length - 1, Math.floor(c.rng() * few.length))]!.i;
+}
+
+/** Free-for-all parties: `partyBonus` for each member within `partyRange` of a spawn point, up to `partyMax`. */
+export function partyBonus(sp: SpawnSpot, party: readonly Vec3[]): number {
+  let near = 0;
+  for (const m of party) if (horizontalDistance(m, sp.pos) + Math.abs(m.y - sp.pos.y) < W.partyRange && ++near >= W.partyMax) break;
+  return near * W.partyBonus;
 }
 
 /**

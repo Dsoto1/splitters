@@ -439,6 +439,8 @@ class App {
     if (old) dropListing(old.id, old.secret);
     this.chain = null;
     const restore: MatchCheckpoint = { ...cp, timeLeft: cp.timeLeft > 0 ? Math.max(1, Math.round(cp.timeLeft - age)) : 0 };
+    // An open vote's clock moved on too (a closed one keeps its winner).
+    if (cp.vote && cp.vote.w === undefined) restore.vote = { ...cp.vote, left: Math.max(0, Math.round(cp.vote.left - age)) };
     this.playLocal(end.map, cp.rules, cp.fill, cp.skill, undefined, { peer: standby, ...(cp.listing ? { listing: cp.listing.name } : {}) }, false, { restore, greeting: 'The host left: you host the match now' });
   }
 

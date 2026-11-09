@@ -11,7 +11,7 @@ import { LobbyAdvertiser } from '../src/advertiser.ts';
 import { BanList } from '../src/bans.ts';
 import { COMMANDS, complete, findMap, findPlayer, parseCommand, parseDuration, runMatchCommand, type MatchCommandTarget } from '../src/commands.ts';
 import { ConfigError, DEFAULT_HUB, loadConfig, parseConfig } from '../src/config.ts';
-import { originAllowed, ownPage, startConfig } from '../src/control.ts';
+import { liveArgs, originAllowed, ownPage, startConfig } from '../src/control.ts';
 import { appWindowArgs, browserCandidates, findAppBrowser } from '../src/appWindow.ts';
 import { LogBuffer, launcherCsp, launcherPage, mapCatalog } from '../src/launcher.ts';
 import { DEFAULT_MAPS_DIR, suiteIds } from '../src/host.ts';
@@ -142,7 +142,7 @@ describe('server console commands', () => {
         sent.push(cmd);
         if (cmd.c === 'rotation') {
           const entries = cmd.entries ?? state.entries;
-          state = { entries: entries.map((e) => ({ map: e.map, mode: e.mode, name: MAPS[e.map]!.name })), shuffle: cmd.shuffle ?? state.shuffle, next: entries.length ? 0 : null, current: null };
+          state = { entries: entries.map((e) => ({ map: e.map, mode: e.mode, name: MAPS[e.map]!.name })), shuffle: cmd.shuffle ?? state.shuffle, next: entries.length ? 0 : null, current: null, vote: cmd.vote ?? state.vote ?? true };
         }
         return null;
       },
@@ -174,6 +174,29 @@ describe('server console commands', () => {
     expect(complete('rotation a', [])).toEqual([['add'], 'a']);
     expect(complete('rotation add sa', ['sandgate'])).toEqual([['sandgate'], 'sa']);
     expect(complete('rotation preset f', [], ['flags'])).toEqual([['flags'], 'f']);
+    // The next-map vote (MAP_VOTE): on and off with the command in-game admins send; the list says which.
+    expect(runMatchCommand('rotation', ['vote', 'off'], '', t)).toMatch(/no vote between matches/);
+    expect(sent.at(-1)).toEqual({ c: 'rotation', vote: false });
+    expect(runMatchCommand('rotation', [], '', t)).toMatch(/Vote on the next map: off/);
+    expect(runMatchCommand('rotation', ['vote', 'on'], '', t)).toMatch(/everyone votes/);
+    expect(runMatchCommand('rotation', ['vote'], '', t)).toMatch(/usage: rotation vote on\|off \(now on\)/);
+    expect(complete('rotation v', [])).toEqual([['vote'], 'v']);
+    expect(complete('rotation vote o', [])).toEqual([['on', 'off'], 'o']);
+  });
+
+  it("the site's /host page changes a running match's rules and vote as console commands: known rules, checked values only", () => {
+    expect(liveArgs('/api/vote', { on: false })).toEqual(['rotation', 'vote', 'off']);
+    expect(liveArgs('/api/rules', { key: 'score', value: 60 })).toEqual(['rules', 'score', '60']);
+    expect(liveArgs('/api/rules', { key: 'ff', value: 'half' })).toEqual(['rules', 'ff', 'half']);
+    expect(liveArgs('/api/rules', { key: 'fall', value: true })).toEqual(['rules', 'fall', 'on']);
+    expect(liveArgs('/api/rules', { key: 'time', value: null })).toEqual(['rules', 'time', 'default']);
+    expect(liveArgs('/api/rules', { key: 'gravity', value: 'low', map: true })).toEqual(['rules', 'map', 'gravity', 'low']);
+    expect(liveArgs('/api/rules', { key: 'teamnames', value: ['Red Fox', 'Blues'] })).toEqual(['rules', 'teamnames', 'Red', 'Fox,', 'Blues']);
+    expect(() => liveArgs('/api/vote', { on: 'yes' })).toThrow(ConfigError);
+    expect(() => liveArgs('/api/rules', { key: 'nope', value: 1 })).toThrow(ConfigError);
+    expect(() => liveArgs('/api/rules', { key: 'score', value: 99999 })).toThrow(ConfigError);
+    expect(() => liveArgs('/api/rules', { key: 'ff', value: 'half; quit' })).toThrow(ConfigError);
+    expect(() => liveArgs('/api/rules', { key: 'teamcolors', value: ['red'] })).toThrow(ConfigError);
   });
 
   it('edits the bot set with the command in-game admins send (the whole set)', () => {
