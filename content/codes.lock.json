@@ -48,7 +48,8 @@
     "core.blast_rockets": 45,
     "core.medi_beam": 46,
     "core.revolver": 47,
-    "core.battle_axe": 48
+    "core.battle_axe": 48,
+    "core.battle_rifle": 49
   },
   "throwables": {
     "frag": 0,

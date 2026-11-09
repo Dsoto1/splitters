@@ -777,6 +777,16 @@ export class Scenario {
     return true;
   }
 
+  /**
+   * Whether a round striking this body hurts a target the shooter can read damage numbers off: a breakable block (the
+   * Training Range's boards), a crate or a barrel; not glass, nor anything only explosives break.
+   */
+  shootableTarget(handle: number): boolean {
+    const i = this.bodies.entityAt(handle);
+    const d = i === undefined ? undefined : this.destructibles.get(i);
+    return !!d && d.alive && !d.b.explosiveOnly && d.b.shootable !== false && !d.b.glass;
+  }
+
   /** Explosion damage to destructibles in range. */
   splash(at: Vec3, radius: number, damage: number, edge: number, owner: number | null, physics: PhysicsWorld): void {
     for (const d of this.destructibles.values()) {

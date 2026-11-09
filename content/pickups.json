@@ -32,6 +32,7 @@
     { "id": "core.weapon_flare_gun", "effect": { "kind": "weapon", "weapon": "core.flare_gun" }, "respawnSeconds": 20 },
     { "id": "core.weapon_machine_pistol", "effect": { "kind": "weapon", "weapon": "core.machine_pistol" }, "respawnSeconds": 15 },
     { "id": "core.weapon_burst_rifle", "effect": { "kind": "weapon", "weapon": "core.burst_rifle" }, "respawnSeconds": 15 },
+    { "id": "core.weapon_battle_rifle", "effect": { "kind": "weapon", "weapon": "core.battle_rifle" }, "respawnSeconds": 20 },
     { "id": "core.weapon_laser_rifle", "effect": { "kind": "weapon", "weapon": "core.laser_rifle" }, "respawnSeconds": 25 },
     { "id": "core.weapon_marksman", "effect": { "kind": "weapon", "weapon": "core.marksman" }, "respawnSeconds": 20 },
     { "id": "core.weapon_sawed_off", "effect": { "kind": "weapon", "weapon": "core.sawed_off" }, "respawnSeconds": 15 },

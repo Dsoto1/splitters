@@ -4091,7 +4091,7 @@ async function weaponsetsFlow(browser) {
   await openWeapons(page);
   const offered = await setupState(page);
   check(offered.options.join() === 'map,standard,military,scifi,medieval,chaos,mixed' && offered.first === 'Map default (Military)' && offered.value === 'map' && offered.fact === 'Military weapons' && offered.saved === null, `Match setup → Weapons offers every set and the map's default, named, which the setup's facts show (${JSON.stringify(offered)})`);
-  const MILITARY = ['core.rifle', 'core.burst_rifle', 'core.smg', 'core.machine_pistol', 'core.lmg', 'core.shotgun', 'core.auto_shotgun', 'core.sawed_off', 'core.sniper', 'core.marksman', 'core.launcher', 'core.rockets', 'core.pistol', 'core.revolver', 'core.hand_cannon'];
+  const MILITARY = ['core.rifle', 'core.burst_rifle', 'core.battle_rifle', 'core.smg', 'core.machine_pistol', 'core.lmg', 'core.shotgun', 'core.auto_shotgun', 'core.sawed_off', 'core.sniper', 'core.marksman', 'core.launcher', 'core.rockets', 'core.pistol', 'core.revolver', 'core.hand_cannon'];
   const SCIFI = ['core.plasma', 'core.laser_rifle', 'core.railgun', 'core.pulse_pistol', 'core.arc_caster', 'core.disc_launcher', 'core.swarm', 'core.guided'];
   await page.click('#arcade-start');
   await started(page);
@@ -4661,6 +4661,81 @@ async function fortsFlow(browser) {
   await page.context().close();
 }
 
+/**
+ * Gunplay pass 2 (docs/GUNPLAY_AUDIT.md): damage numbers (Options → HUD, off by default) float the hit's damage over
+ * the bot and show nothing when off; auto-reload (on by default) starts an emptied pistol's reload without R; a
+ * quick melee press breaks a reload. `target` is a held bot (holdBots) in front of you.
+ */
+async function gunplayReadoutChecks(page, target, { face, aimAt }) {
+  const stand = (dist) => sim(page, (m, me, a) => {
+    const bot = m.actor(a.slot);
+    bot.move = { ...bot.move, pos: { x: me.move.pos.x + Math.sin(me.yaw) * a.dist, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * a.dist }, velY: 0, grounded: true };
+    bot.health = 100;
+    bot.armor = 0;
+    bot.speedMul = 0;
+    return { at: bot.move.pos, tick: m.tick };
+  }, { slot: target.slot, dist }).then(({ at, tick }) => seenAt(page, target.slot, at, T(15000), tick + 1));
+  await page.evaluate(() => {
+    window.__autoInput = { buttons: 0 };
+    window.__give('core.pistol');
+  });
+  await meWait(page, (m, me) => me.weapons.get(me.current)?.def.id === 'core.pistol' && me.raiseTicks === 0 && me.fireCooldown === 0, null, 3);
+  await face(4);
+  await stand(4);
+  await aimAt(target.slot);
+  const shown = () => page.evaluate(() => window.__cs.damageNumbers.shown());
+  // On: one shot, one number over the bot (the pistol's 24 at 4 m), on screen.
+  await page.evaluate(() => localStorage.setItem('tiletrigger.damageNumbers', '1'));
+  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
+  const hit = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
+  // Shown, and placed over the bot by a frame (hidden until then).
+  await page.waitForFunction(() => [...document.querySelectorAll('#damage-numbers .dmg-num')].some((e) => e.style.visibility !== 'hidden'), null, { timeout: T(5000) }).catch(() => {});
+  const nums = await shown();
+  const placed = await page.evaluate(() => {
+    const el = document.querySelector('#damage-numbers .dmg-num');
+    const r = el?.getBoundingClientRect();
+    return r ? { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), hidden: el.style.visibility === 'hidden', onScreen: r.x > 0 && r.y > 0 && r.x < innerWidth && r.y < innerHeight } : null;
+  });
+  // (Character stats can soften a bot's hits: the number is what its health lost.)
+  const lost = await sim(page, (m, _me, t) => String(Math.round(100 - m.actor(t.slot).health)), target);
+  check(hit && nums.includes(lost) && !!placed && !placed.hidden && placed.onScreen && placed.w > 0, `damage numbers (on): the pistol's hit floats its damage over the bot (shown ${JSON.stringify(nums)}, health lost ${lost}, ${JSON.stringify(placed)})`);
+  // Off (the default): the next hit shows nothing once the last number has gone.
+  await page.evaluate(() => localStorage.setItem('tiletrigger.damageNumbers', '0'));
+  await page.waitForFunction(() => window.__cs.damageNumbers.shown().length === 0, null, { timeout: T(5000) }).catch(() => {});
+  await stand(4);
+  await meWait(page, (m, me) => me.fireCooldown === 0, null, 2);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
+  const hit2 = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
+  await meWait(page, () => false, null, 0.3);
+  const none = await shown();
+  check(hit2 && none.length === 0, `damage numbers (off): a hit shows none (${JSON.stringify(none)})`);
+  await page.evaluate(() => localStorage.removeItem('tiletrigger.damageNumbers'));
+  // Auto-reload (on by default): the last round out, the reload starts without R.
+  await sim(page, (m, me) => {
+    const w = me.weapons.get(me.current);
+    w.mag = 1;
+    w.reserve = 24;
+  });
+  await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[0] === 1, null, { timeout: T(5000) }).catch(() => {});
+  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
+  const started = await meWait(page, (m, me) => me.reloadTicks > 0, null, 2);
+  const full = started && await meWait(page, (m, me) => me.weapons.get(me.current).mag === me.weapons.get(me.current).def.magazine, null, 3);
+  check(started && full, `auto-reload: the pistol emptied, its reload starts by itself and fills the magazine (started ${started}, full ${full})`);
+  // A quick melee press breaks a reload: R with rounds left, then Y (auto-reload off here: past "magazine out" it
+  // would start the reload again once Y is let go).
+  await page.evaluate(() => localStorage.setItem('tiletrigger.autoReload', '0'));
+  await sim(page, (m, me) => (me.weapons.get(me.current).mag = 4));
+  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 4 }));
+  const reloading = await meWait(page, (m, me) => me.reloadTicks > 0, null, 2);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2048 }));
+  const broke = reloading && await meWait(page, (m, me) => me.reloadTicks === 0 && me.weapons.get(me.current).mag < me.weapons.get(me.current).def.magazine, null, 1);
+  check(reloading && broke, `a quick melee press breaks a reload where it is (reloading ${reloading}, broken ${broke})`);
+  await page.evaluate(() => {
+    window.__autoInput = { buttons: 0 };
+    localStorage.removeItem('tiletrigger.autoReload');
+  });
+}
+
 async function arsenalFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
@@ -4811,6 +4886,7 @@ async function arsenalFlow(browser) {
     if (b) b.speedMul = 1;
   }, target);
   check(!!target && punched && swung > 0, `quick melee with a gun in hand punches the bot in front (${JSON.stringify(target)}, hit ${punched}, first-person punches: ${swung})`);
+  if (target) await gunplayReadoutChecks(page, target, { face, aimAt });
   // The Battle Axe: the trigger swings it at the bot in front; the second trigger (right mouse) fires the
   // blunderbuss in its stock at the bot a few steps out (pellets, smoke, the HUD counting its loads); R loads it again.
   if (target) {

@@ -6,7 +6,7 @@
   "kind": "hitscan",
   "slot": 7,
   "family": "smg",
-  "damage": 11,
+  "damage": 15,
   "spread": 0.006,
   "fireIntervalTicks": 4,
   "range": 200,

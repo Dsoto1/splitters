@@ -1,6 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
+  BUTTON_AUTO_RELOAD,
   BUTTON_FIRE,
+  BUTTON_MELEE,
   BUTTON_RELOAD,
   BUTTON_SPRINT,
   DEFAULT_DEATHMATCH_RULES,
@@ -198,6 +200,62 @@ describe('reload interrupts (in a match)', () => {
     expect(s.a.reloadTicks).toBeGreaterThan(0);
     s.step({ buttons: BUTTON_SPRINT, forward: 1 });
     expect(s.a.reloadTicks).toBe(0);
+  });
+
+  it('a quick melee breaks a reload where it is, struck or not, and the magazine keeps the stage it reached', () => {
+    const { run, held, a, def, step } = setup('core.rifle', 0);
+    const r = gunplayOf(def).reload;
+    if (r.type !== 'magazine') throw new Error('magazine');
+    run(1, { buttons: BUTTON_RELOAD });
+    run(Math.round(r.empty * r.in) + 1);
+    expect(held().mag).toBe(def.magazine);
+    const ev = step({ buttons: BUTTON_MELEE });
+    expect(ev.some((e) => e.e === 'melee' && e.s === a.slot)).toBe(true);
+    expect(a.reloadTicks).toBe(0);
+    expect(held().mag).toBe(def.magazine);
+    expect(held().unchambered).toBe(true);
+    // A second press while the punch is still cooling down strikes nothing, and still breaks a reload.
+    run(1);
+    run(1, { buttons: BUTTON_RELOAD });
+    expect(a.reloadTicks).toBeGreaterThan(0);
+    expect(a.meleeCooldown).toBeGreaterThan(0);
+    const again = step({ buttons: BUTTON_MELEE });
+    expect(again.some((e) => e.e === 'melee')).toBe(false);
+    expect(a.reloadTicks).toBe(0);
+  });
+});
+
+describe('auto-reload (the option, on by default)', () => {
+  it('an emptied magazine starts reloading by itself once the gun is ready; without the option it waits for the trigger', () => {
+    for (const auto of [true, false]) {
+      const { run, held, a, def } = setup('core.pistol', 1);
+      const extra = auto ? BUTTON_AUTO_RELOAD : 0;
+      expect(shots(run(1, { buttons: BUTTON_FIRE | extra }))).toBe(1);
+      expect(held().mag).toBe(0);
+      // Between rounds (the slide coming back) nothing starts yet.
+      expect(a.reloadTicks).toBe(0);
+      run(def.fireIntervalTicks + 1, { buttons: extra });
+      if (auto) {
+        expect(a.reloadTicks).toBeGreaterThan(0);
+        run(a.reloadTicks + 1, { buttons: extra });
+        expect(held().mag).toBe(def.magazine);
+      } else expect(a.reloadTicks).toBe(0);
+    }
+  });
+
+  it('never starts while sprinting forward, nor with a round left or an empty reserve; then picks up after', () => {
+    const s = setup('core.smg', 0);
+    s.run(5, { buttons: BUTTON_AUTO_RELOAD | BUTTON_SPRINT, forward: 1 });
+    expect(s.a.reloadTicks).toBe(0);
+    s.run(1, { buttons: BUTTON_AUTO_RELOAD });
+    expect(s.a.reloadTicks).toBeGreaterThan(0);
+    const t = setup('core.smg', 3);
+    t.run(5, { buttons: BUTTON_AUTO_RELOAD });
+    expect(t.a.reloadTicks).toBe(0);
+    const u = setup('core.smg', 0);
+    u.held().reserve = 0;
+    u.run(5, { buttons: BUTTON_AUTO_RELOAD });
+    expect(u.a.reloadTicks).toBe(0);
   });
 });
 

@@ -14,7 +14,7 @@
   "reserveMax": 240,
   "pickupAmmo": 120,
   "reloadTicks": 210,
-  "raiseTicks": 48,
+  "raiseTicks": 30,
   "botDesirability": 0.72,
   "botRange": [3, 40],
   "windupTicks": 28,

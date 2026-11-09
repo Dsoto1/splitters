@@ -367,6 +367,20 @@
   },
   {
    "item": {
+    "id": "core.weapon_battle_rifle",
+    "displayName": "Battle Rifle",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.battle_rifle"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "rifle",
+   "found": true
+  },
+  {
+   "item": {
     "id": "core.weapon_laser_rifle",
     "displayName": "Laser Rifle",
     "effect": {
@@ -1072,6 +1086,7 @@
    "core.weapon_rifle",
    "core.weapon_plasma",
    "core.weapon_burst_rifle",
+   "core.weapon_battle_rifle",
    "core.weapon_laser_rifle"
   ],
   "shotgun": [
