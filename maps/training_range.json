@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_pdfp7ts5t32gemes",
-      "versionId": "v_idtyo5s6ifmsfosb",
-      "revision": 2,
-      "contentHash": "sha256:d203942a1003b51672e92505fc2bcd7005199ae22c588acaa1d87da533979e4d",
+      "versionId": "v_7c3g724eldna5fje",
+      "revision": 3,
+      "contentHash": "sha256:7be89d74d79a11ce084ba235bee5da9e90e3326a187e9aacce1ec24d1eb3eab3",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-08T10:02:07.902Z"
+      "releasedAt": "2026-11-08T21:35:27.455Z"
     }
   },
   "classicStructure": {
@@ -6914,12 +6914,12 @@
     },
     {
       "id": "mount_aycukf1xxi",
-      "kind": "mount",
       "position": [
         -26,
         0,
         30
       ],
+      "kind": "mount",
       "model": "buggy",
       "yaw": 1.571,
       "faction": null,
@@ -6927,23 +6927,23 @@
     },
     {
       "id": "pickup_nzho7wyyec",
-      "kind": "pickup",
       "position": [
         -20,
         0,
         27
       ],
+      "kind": "pickup",
       "item": "core.grenades",
       "respawnSeconds": null
     },
     {
       "id": "mount_p72c4xd8t3",
-      "kind": "mount",
       "position": [
         206,
         0,
         -32
       ],
+      "kind": "mount",
       "model": "buggy",
       "yaw": -1.571,
       "faction": null,
@@ -6951,14 +6951,25 @@
     },
     {
       "id": "pickup_0ccofxyqjq",
-      "kind": "pickup",
       "position": [
         194,
         0,
         -24
       ],
+      "kind": "pickup",
       "item": "core.grenades",
       "respawnSeconds": null
+    },
+    {
+      "id": "pickup_2i5kihro74",
+      "kind": "pickup",
+      "position": [
+        -2,
+        0,
+        20
+      ],
+      "item": "core.weapon_battle_rifle",
+      "respawnSeconds": 5
     }
   ],
   "factions": [

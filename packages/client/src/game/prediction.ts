@@ -2,6 +2,7 @@ import {
   CLASS_DEFS,
   CLASS_IDS,
   BUTTON_ALT,
+  BUTTON_AUTO_RELOAD,
   BUTTON_THIRD_PERSON,
   BUTTON_FIRE,
   BUTTON_MELEE,
@@ -21,6 +22,7 @@ import {
   recoilIdle,
   recoilShot,
   roundsReady,
+  autoReloadDue,
   shotCone,
   stepAds,
   stepReload,
@@ -177,6 +179,10 @@ export class LocalPlayer {
   private readonly collider;
   private pending: PlayerInput[] = [];
   private seq = 0;
+  /** The last input's sequence number: the game's own clock (one a tick), for readouts timed in game time. */
+  get inputSeq(): number {
+    return this.seq;
+  }
   private fireCooldown = 0;
   corrections = 0;
   lastCorrection = 0;
@@ -382,6 +388,14 @@ export class LocalPlayer {
       if (swing || shoot) this.cancelReload();
     }
     const { shot, fired } = this.trigger(def, ammo, input, fireDown, ready);
+    if (!this.seatGun && this.statusSpeed !== 0 && !fired) {
+      // As the server: a quick-melee press with a gun in hand breaks a reload (spec §16), struck or not.
+      if (pressed & BUTTON_MELEE && !this.mounted && def.kind !== 'melee' && this.reload) this.cancelReload();
+      // Auto-reload (the option): an empty magazine starts reloading by itself once the gun is ready.
+      const armed = !this.unarmed && !(this.state.zip !== undefined && !oneHanded(def));
+      const timers = { reloadTicks: this.reloadTicks, fireCooldown: this.fireCooldown, raiseTicks: this.raiseTicks, burstLeft: this.burstLeft };
+      if (armed && input.buttons & BUTTON_AUTO_RELOAD && autoReloadDue(def, this.box(this.held, ammo), timers, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReload();
+    }
     if (!fired) recoilIdle(this.gun, gp.kick, gp.accuracy, def.fireIntervalTicks);
     return shot;
   }
