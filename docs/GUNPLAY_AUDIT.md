@@ -198,7 +198,8 @@ Same tool and settings, 25 s, before → after:
 
 `wip/gunplay-3`. Bots used to choose and place their guns by hand-set `botRange` values. Some of those were well
 off: the Machine Pistol was set to 0-14 m though it needs 16 rounds at 10 m, and the guided launchers to 10-60 m.
-Now the ranges come from the time to kill measured in the shared sim.
+Now **which gun a bot holds** comes from the time to kill measured in the shared sim. **How far it stands** still
+comes from `botRange`: the measured distances were tried and cost CTF its captures (below, and for the owner).
 
 **How the data is made.**
 - `pnpm gun-report` also sweeps each gun's body TTK from 5 to 150 m as bots fire it (`botSweep` in
@@ -206,7 +207,7 @@ Now the ranges come from the time to kill measured in the shared sim.
   - Bots fire from the hip, except that a scoped gun is aimed past 7 m (as `brain.ts` zooms).
   - Each value is the median over the trials, with the real spread.
 - `--bands` writes the curves to `shared/src/bots/weaponBands.generated.ts`.
-- `shared/src/bots/weaponBands.ts` works out two things from those curves; nothing is copied by hand.
+- `shared/src/bots/weaponBands.ts` works out the band and the edge from those curves; nothing is copied by hand.
 
 **Band: where a gun kills in good time** (`botBand`).
 - It is the run of distances around the gun's quickest kill where it still kills within the slack: at most 1.6 times
@@ -226,14 +227,24 @@ Now the ranges come from the time to kill measured in the shared sim.
   shotgun (one shell) are both in band at 2 m. Without it, a sniper-minded bot kept its rifle at arm's length
   (`weapons.test.ts`, "pick weapons by range").
 
-**Preferred distance** (`botEdge`, for `preferredRange`, how far to fight).
-- It is the band from the first two-in-a-row distances where the gun kills at least as fast as the benchmark median.
-- **Why:** a flat-curve long gun can kill at the muzzle, but everyday guns beat it there. With the band alone,
-  Precision Rifle bots walked into close fights: the first try gave Team Deathmatch 31.4 → 28.9 kills a minute.
+**Preferred distance: measured, tried, not used** (`botEdge`; `preferredRange` keeps `botRange`).
+- **The measured version:** the band from the first two-in-a-row distances where the gun kills at least as fast as
+  the benchmark median. A Precision Rifle bot would keep past 27.5 m; a Pistol bot would stand at 8.5-26 m (hand-set:
+  3-17.5).
+- **What it did:** it kept CTF attackers standing off. On Diamond Park's five-minute capture test (on main after the
+  MapMaker train), seeds 1-6 captured:
+  - 6 of 6 with the hand-set distances;
+  - 2 of 6 with the measured ones;
+  - 4 of 6 with the measured near end and the hand-set far end;
+  - 5 of 6 with measured weapon choice alone (this pass).
+- **Before that:** with the band alone, Precision Rifle bots walked into close fights (TDM 31.4 → 28.9 kills a
+  minute), which is why the edge exists.
+- **For the owner:** how far to stand also decides how hard bots push an objective. Two options: keep it hand-set, or
+  use the measured near end for long guns only, in modes without a flag to carry.
 
 Bands, hand-set → measured:
 
-| Gun | Hand-set range | Band | Fights from |
+| Gun | Hand-set range | Band | Measured edge from (not used) |
 |---|---|---|---|
 | Pistol | 2-25 | 0-45 | 7.5 m |
 | Assault Rifle | 4-35 | 0-87.5 | 0 m |
@@ -248,7 +259,9 @@ Bands, hand-set → measured:
 | Guided Rocket | 10-60 | 6-17.5 | 6 m |
 | Laser Rifle | 3-40 | 0-87.5 | 27.5 m |
 
-**Measured with `pnpm bot-report`, before → after.** 28 matches of 150 s each, seeds 1 and 2:
+**Measured with `pnpm bot-report`, before → after**, both on main after the MapMaker train (4fb799e and later; the
+before runs with the measurement table emptied, which is the old behaviour exactly). 28 matches of 150 s each, seeds 1
+and 2:
 - Team Deathmatch on fernwood_moon, riot_junction, halcyon_station and shingle_point, in the Standard and Military
   sets;
 - Deathmatch on concrete_annex and pump_tower, in the Standard and Sci-fi sets;
@@ -256,56 +269,53 @@ Bands, hand-set → measured:
 
 | Measure | Before | After |
 |---|---|---|
-| Kills a minute (all) | 32.7 | 32.8 |
-| Kills a minute: TDM / DM / CTF | 31.4 / 35.3 / 33.0 | 30.6 / 36.3 / 34.8 |
-| Engagement (mean hit distance) | 17.0 m | 17.3 m |
-| Weapon use spread (bots' rounds by weapon, 0..1) | 0.568 | 0.574 |
-| Stuck a bot-minute | 1.04 | 1.14 |
-| Idle out of a fight | 4.5 % | 4.2 % |
-| Frozen | 0.4 % | 0.3 % |
-| 10 s+ idle spells a match | 0.6 | 0.4 |
-| Failed searches, no-route idle | 0, 0.01 % | 0, 0 % |
+| Kills a minute (all) | 32.3 | 32.1 |
+| Kills a minute: TDM / DM / CTF | 30.7 / 35.3 / 33.0 | 29.8 / 35.6 / 34.2 |
+| CTF captures (in 4 matches) / flag takes a match | 2 / 3.0 | 1 / 5.5 |
+| Engagement (mean hit distance) | 17.3 m | 16.9 m |
+| Weapon use spread (bots' rounds by weapon, 0..1) | 0.592 | 0.576 |
+| Stuck a bot-minute | 0.99 | 0.93 |
+| Idle out of a fight | 4.4 % | 4.4 % |
+| Frozen | 0.4 % | 0.5 % |
+| 10 s+ idle spells a match | 0.3 | 0.5 |
+| Failed route searches | 0.00 % | 2.56 % (one match, below) |
 
-`pnpm bot-report --check` (bot-limits.json): every limit held, before and after (its stuck limit is 2.5 a
-bot-minute).
+`pnpm bot-report --check` (bot-limits.json): every limit held, before and after.
+
+**The failed searches** are one match: Riot Junction, seed 1, Military set. A bot spends 105 s at (196, -4, 42), 4 m
+under the street beside a buggy's spawn (198, 0, 46), with no route out. With the old weapon choice that match never
+went there. It looks like a vehicle or nav hole on the rebuilt Riot Junction (set pieces part 6), not a weapon
+matter; listed for the owner. Repro: `pnpm bot-report riot_junction --mode=core.tdm --seeds=1 --set=military --spells`.
 
 Hit rate and mean hit distance by gun, before → after (bots' rounds):
 
 | Gun | Rounds | Hit % | Hit distance (m) |
 |---|---|---|---|
-| Assault Rifle | 21942 → 22833 | 12 → 12 | 12.5 → 11.5 |
-| Pistol | 17172 → 17317 | 11 → 9 | 8.3 → 8.2 |
-| SMG | 4893 → 4024 | 22 → 24 | 7.9 → 8.1 |
-| Spin Gun | 2850 → 2872 | 4 → 6 | 13.0 → 13.0 |
-| Burst Rifle | 2088 → 2147 | 16 → 22 | 12.7 → 10.6 |
-| Laser Rifle | 1213 → 1225 | 33 → 36 | 11.7 → 8.0 |
-| Marksman Rifle | 1228 → 1200 | 8 → 10 | 17.4 → 14.3 |
-| Precision Rifle | 205 → 293 | 8 → 10 | 20.2 → 13.1 |
-| Shotgun | 319 → 260 | 55 → 74 | 10.4 → 7.3 |
-| Pulse Pistol | 284 → 202 | 39 → 52 | 9.1 → 6.7 |
-| Railgun | 125 → 200 | 18 → 35 | 37.4 → 18.8 |
-| Battle Rifle | 284 → 140 | 6 → 11 | 16.5 → 8.5 |
-| Sawed-Off | 67 → 129 | 45 → 81 | 4.9 → 7.5 |
-| Auto Shotgun | 189 → 123 | 42 → 64 | 13.1 → 11.7 |
-| Machine Pistol | 36 → 7 | 61 → 29 | 4.1 → 6.2 |
+| Assault Rifle | 22073 → 23676 | 11 → 12 | 12.6 → 11.9 |
+| Pistol | 17090 → 16329 | 11 → 10 | 8.2 → 8.4 |
+| SMG | 4859 → 4564 | 22 → 23 | 8.0 → 8.0 |
+| Spin Gun | 3342 → 3150 | 4 → 5 | 12.9 → 11.2 |
+| Burst Rifle | 2261 → 2152 | 16 → 19 | 12.7 → 11.1 |
+| Marksman Rifle | 1405 → 1192 | 6 → 12 | 17.1 → 12.8 |
+| Laser Rifle | 1213 → 1103 | 33 → 32 | 11.7 → 9.1 |
+| Pulse Pistol | 284 → 262 | 39 → 45 | 9.1 → 6.0 |
+| Shotgun | 337 → 222 | 50 → 81 | 10.5 → 6.8 |
+| Precision Rifle | 206 → 198 | 8 → 21 | 19.9 → 15.8 |
+| Railgun | 125 → 193 | 18 → 33 | 37.4 → 19.0 |
+| Sawed-Off | 73 → 130 | 38 → 75 | 5.0 → 7.0 |
+| Auto Shotgun | 170 → 108 | 38 → 59 | 9.9 → 10.9 |
+| Battle Rifle | 372 → 108 | 5 → 19 | 14.1 → 13.4 |
 
 **Reading it.**
-- **Hit rates:** bots now fire most guns where those guns land. Of the 14 guns fired more than a few dozen times,
-  hit rates rose for 12:
-  - the shotguns gained 19-36 points;
-  - the Railgun 18 → 35 %, the Pulse Pistol 39 → 52 %;
-  - the Rifle held level; the Pistol lost 2 points.
-- **Kills:** unchanged within a seeded match's noise, 32.7 → 32.8 a minute: Deathmatch +1.0, CTF +1.8, TDM -0.8.
-- **Movement:** idle and frozen time are a little lower. Stuck rose 1.04 → 1.14 a bot-minute (TDM 1.05 → 1.24);
-  that is within the scorecard's limit, but watch it in the nightly.
-- **Weapon use** widened slightly (0.568 → 0.574). Bots rarely fire the Machine Pistol now (36 → 7 rounds), which
-  the measurements find dominated by the SMG (outlier above). Which guns bots carry is still set by pickups and
-  `botDesirability` (hand-set); the measurements change when they switch and where they stand.
-- **Seeded tests moved:**
-  - `forts.test.ts`'s Fort Wars CTF test now runs seed 3. Over seeds 1-12, 6 reach the flag (7 before).
-  - `botCtf.test.ts`, Sunken Kingdom: seeds 1, 3 and 4 capture within five minutes, seed 2 doesn't (all four did
-    before). The test runs seed 3.
-  - Each test's comment has its survey.
+- **Hit rates:** bots now hold the gun that lands. Hit rates rose for 12 of these 14 guns:
+  - the shotguns gained 21-37 points;
+  - the Precision Rifle 8 → 21 %, the Battle Rifle 5 → 19 %, the Railgun 18 → 33 %;
+  - the Pistol and Laser Rifle lost a point.
+- **Kills and movement:** unchanged within a seeded match's noise.
+- **Weapon use** narrowed a little (0.592 → 0.576): bots draw fewer of the guns that lose at the distance at hand
+  (the Battle Rifle 372 → 108 rounds, the Hand Cannon 49 → 13).
+- **What still decides which guns bots carry:** pickups and `botDesirability` (hand-set).
+- **Seeded tests:** `botCtf.test.ts`, `forts.test.ts` and the rest pass unchanged on main's seeds.
 
 **To refresh:** after a weapon change, run `pnpm gun-report --json=docs/gunplay-audit.json --bands` (about 5
 minutes). The run rewrites the audit JSON and the bands' data; then run `pnpm bot-report --check`.

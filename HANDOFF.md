@@ -32,18 +32,21 @@ owner-approved audit candidates 7 and 8). Details and tables: docs/GUNPLAY_AUDIT
   - (2) Extrapolated frames send the newest snapshot's tick as the view tick: a possible small client change, not
     proven yet.
   - (3) Inputs go up as plain JSON (8 KB/s a player).
-- **G4:** bots' weapon choice now uses measured data (`shared/src/bots/weaponBands.ts`):
-  - `weaponScore` uses each gun's measured band, plus its TTK at the distance (and, under 15 m, its draw if not in
-    hand) against the benchmark median;
-  - `preferredRange` uses where the gun beats that median.
+- **G4:** which gun a bot holds (`weaponScore`) now comes from the measurements (`shared/src/bots/weaponBands.ts`):
+  each gun's measured band, plus its TTK at the distance (and, under 15 m, its draw if not in hand) against the
+  benchmark median.
   - The data comes from `pnpm gun-report --json=docs/gunplay-audit.json --bands`; rerun it after any weapon change.
     bot-report now has a weapon-use line.
-  - **Before → after, 28 matches:** kills a minute 32.7 → 32.8; idle out of a fight 4.5 → 4.2 %; weapon use
-    spread 0.568 → 0.574. Stuck rose 1.04 → 1.14 a bot-minute (the limit is 2.5): watch it in the nightly. Hit rates
-    rose for 12 of 14 guns (the shotguns +19-36 points, the Railgun 18 → 35 %).
-  - **Seeded tests:** `forts.test.ts` (Fort Wars CTF) now runs seed 3 (6 of seeds 1-12 reach the flag, 7 before).
-    `botCtf.test.ts` Sunken Kingdom captures on seeds 1, 3 and 4, not 2 (all four before).
-  - `bot-report --check` passes.
+  - **How far bots stand (`preferredRange`) stays hand-set (`botRange`).** The measured distances cost Diamond Park's
+    CTF captures (seeds 1-6: 2 of 6 against 6 of 6). For the owner: keep it hand-set, or use the measured near end for
+    long guns outside flag modes. Details: docs/GUNPLAY_AUDIT.md, "G4".
+  - **Before → after, 28 matches on main after the MapMaker train:** kills a minute 32.3 → 32.1; stuck 0.99 → 0.93
+    a bot-minute; idle out of a fight 4.4 → 4.4 %. Hit rates rose for 12 of 14 guns (the shotguns +21-37 points, the
+    Precision Rifle 8 → 21 %). `bot-report --check` passes.
+  - **Found, not fixed:** on the rebuilt Riot Junction a bot can end up 4 m under the street by a buggy's spawn,
+    at (196, -4, 42), with no route out for 105 s. Repro:
+    `pnpm bot-report riot_junction --mode=core.tdm --seeds=1 --set=military --spells`. For the owner or the vehicles
+    and nav lane.
   - `botDesirability` is still hand-set.
 
 **Small fixes of 2026-11-08 (`wip/small-fixes`, agent, 2026-11-09; owner-approved list).**
