@@ -224,7 +224,7 @@ describe('bot hints on a real navmesh (sim/mapNav.ts)', () => {
     expect(hints.map((i) => [i.code, i.targetId, i.severity])).toEqual([['bothint.offNav', off.hint.id, 'warning']]);
     expect(r.computed).toBeDefined();
     expect(Array.isArray(r.computed!.vantage) && Array.isArray(r.computed!.parkour)).toBe(true);
-    console.log('COMPUTED', r.computed!.vantage.length, r.computed!.parkour.length);
+    expect(r.computed!.vantage.length).toBeGreaterThan(0);
     expect(validateMapNavigation(doc, false).computed).toBeUndefined();
   });
 });
