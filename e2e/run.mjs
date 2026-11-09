@@ -1574,7 +1574,9 @@ async function editorEnvironmentChecks(browser) {
   // (Compared key by key: the order of an object's keys is not part of the map.)
   const canon = () => page.evaluate(() => JSON.stringify(window.__editor.doc.entities.filter((e) => e.kind === 'prop').map((e) => Object.fromEntries(Object.entries(e).sort(([a], [b]) => (a < b ? -1 : 1))))));
   const before = await canon();
-  const [download] = await Promise.all([page.waitForEvent('download'), page.click('#ed-export')]);
+  // Export's own click, in the page: when the top bar is crowded its compact layout (fit-3) hides the File group's
+  // later buttons, Export among them, and Playwright's click would wait for it to show.
+  const [download] = await Promise.all([page.waitForEvent('download'), page.evaluate(() => document.getElementById('ed-export').click())]);
   const text = readFileSync(await download.path(), 'utf8');
   await page.setInputFiles('#ed-import-file', { name: 'env.cmap.json', mimeType: 'application/json', buffer: Buffer.from(text) });
   await page.waitForFunction((n) => window.__editor.doc.entities.length === n && window.__editor.history.revision > 0, JSON.parse(before).length, { timeout: T(10000) }).catch(() => {});
