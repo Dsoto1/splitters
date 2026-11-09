@@ -232,7 +232,7 @@ The workflow is unchanged (CLAUDE.md):
   docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md and the owner's screenshots described in this file's Iron Coast
   part 2 entry.
 
-**MapMaker: track / NPC traffic wording, and Environment Phase 3's tools (`wip/mapmaker-env3`, MapMaker lane,
+**MapMaker: track / NPC traffic wording, and Environment Phase 3's tools (`wip/mapmaker-env3`, green on `check/mapmaker-env3` at 63989680, run 42599981528; waits for the train; MapMaker lane,
 2026-11-09; no format change).**
 - **Race wording (item 1; also on `wip/mapmaker-race-wording` at 14d2ab06, green on `check/mapmaker-env3`, run
   42578435360):** pathTool / editorApp / keymap / index.html say track (NPC traffic). The track pane hides Laps,
