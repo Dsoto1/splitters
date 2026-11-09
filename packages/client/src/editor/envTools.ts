@@ -116,6 +116,19 @@ export class EnvTools {
 
   /** The brush's settings, under the Environment group's cards. */
   renderPane(el: HTMLElement = this.pane!): void {
+    // Clearing the pane blurs a focused input, whose change event would render it again from inside replaceChildren.
+    if (this.rendering) return;
+    this.rendering = true;
+    try {
+      this.buildPane(el);
+    } finally {
+      this.rendering = false;
+    }
+  }
+
+  private rendering = false;
+
+  private buildPane(el: HTMLElement): void {
     this.pane = el;
     el.replaceChildren();
     const b = this.brush;
