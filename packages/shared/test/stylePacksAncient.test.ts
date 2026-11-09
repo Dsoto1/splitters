@@ -204,6 +204,30 @@ describe('Ancient pack demo maps', () => {
     expect(map.backdrop?.scenery).toBe('volcano');
   });
 
+  it("Sandfall Colosseum's follow-ups (owner, 2026-11-09): fewer collision boxes, the portcullis gates on winches, Deathmatch, side-walled tunnels", () => {
+    const map = load('sandfall_colosseum');
+    // The stands' inner arcades and the east and west facades went (solid fill in their place): about 31,700 before.
+    expect(buildMapGeometry(map).length).toBeLessThan(23_000);
+    expect(map.entities.filter((e) => e.kind === 'block' && e.name?.startsWith('Stand fill'))).toHaveLength(10);
+    expect([...map.metadata.supportedModes].sort()).toEqual(['core.ctf', 'core.deathmatch', 'core.koth', 'core.tdm']);
+    // A portcullis in each Gladiator Gate's opening, a winch in the passage and a chain on the sand, each toggling it.
+    // (The hypogeum's beast pens have portcullis doors of their own, opened by nothing.)
+    const gates = map.entities.filter((e): e is Extract<MapEntity, { kind: 'door' }> => e.kind === 'door' && e.style === 'portcullis' && /^Gate [1-4]$/.test(e.name ?? ''));
+    expect(gates.map((g) => `${g.position[0]},${g.position[2]}`).sort()).toEqual(['-24,-29', '-24,29', '24,-29', '24,29']);
+    for (const gate of gates) {
+      const rules = map.logic.rules.filter((r) => r.when.event === 'button_pressed' && r.do.some((a) => a.type === 'door_toggle' && a.target === gate.id));
+      expect(rules, gate.name).toHaveLength(2);
+      for (const r of rules) {
+        const button = map.entities.find((e) => e.id === r.when.target)!;
+        expect(button.kind).toBe('button');
+        expect(Math.hypot(button.position[0] - gate.position[0], button.position[2] - gate.position[2])).toBeLessThan(4);
+        expect(r.do.map((a) => a.type)).toEqual(['door_toggle', 'sound']);
+      }
+      expect(gate.startOpen && !gate.auto && !gate.locked).toBe(true);
+    }
+    expect(map.classicStructure.tiles.some((t) => t.tile.endsWith('_walled') && t.tile.startsWith('core.tunnel_vault'))).toBe(true);
+  });
+
   it("Pharaoh's Reach has its temple, pyramid, tomb with traps and the curse, the river and its boats, and the tomb portal", () => {
     const map = load('pharaohs_reach');
     expect(map.classicStructure.theme).toBe('core.egypt');

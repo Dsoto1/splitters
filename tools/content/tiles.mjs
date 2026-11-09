@@ -119,6 +119,8 @@ function schemas(root, materials) {
     id: str, displayName: str, category: en(categories), 'blurb?': str, 'cells?': arr(tup(3, int), 1), 'footprint?': arr(int, 2),
     floors: arr(int), ports: arr(port), 'open?': bool, 'edgeDefault?': str, 'edgeDefaults?': map(str), 'configurable?': bool,
     'model?': obj({ file: str, 'lift?': num }), 'solids?': arr(part), 'extraFloors?': arr(part), 'notes?': notes,
+    // MapMaker's tile options that are tiles of their own (map/catalog.ts TILE_OPTIONS): this tile is `tile` with `option` on.
+    'optionOf?': obj({ tile: str, option: en(['sideWalls']) }),
   });
   return { edge, tile, sides, builders: Object.keys(builders) };
 }
@@ -346,6 +348,24 @@ export function build(content, root = ROOT) {
     }
     const { notes: tn, $comment: _c, ...spec } = t;
     tiles.push({ spec, notes: tn });
+  }
+
+  // Tile options: the plain tile is in this kit, isn't an option itself, has the same cells and ports, and one tile per option.
+  const byId = new Map(tileList.map((t) => [t?.id, t]));
+  const optionPairs = new Set();
+  for (const t of tileList) {
+    if (!t?.optionOf) continue;
+    const where = `${CORE}: ${t.id} optionOf`;
+    const base = byId.get(t.optionOf.tile);
+    if (!base) problems.push(`${where}: ${t.optionOf.tile} isn't a tile in ${CORE}`);
+    else {
+      if (base.optionOf) problems.push(`${where}: ${base.id} is itself an option of another tile`);
+      if (JSON.stringify(base.cells ?? base.footprint) !== JSON.stringify(t.cells ?? t.footprint)) problems.push(`${where}: its cells differ from ${base.id}'s`);
+      if (JSON.stringify(base.ports) !== JSON.stringify(t.ports)) problems.push(`${where}: its ports differ from ${base.id}'s`);
+    }
+    const pair = `${t.optionOf.tile} ${t.optionOf.option}`;
+    if (optionPairs.has(pair)) problems.push(`${where}: ${t.optionOf.tile} already has a ${t.optionOf.option} tile`);
+    optionPairs.add(pair);
   }
 
   // Maps and Style Packs name tiles and edge styles by id: one they use can't be renamed or removed.

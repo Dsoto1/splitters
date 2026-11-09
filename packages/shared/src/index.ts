@@ -107,6 +107,7 @@ export * from './editor/keymap.ts';
 export * from './editor/stylePacks.ts';
 export * from './editor/scatter.ts';
 export * from './editor/npcs.ts';
+export * from './editor/tileVariants.ts';
 export * from './editor/raycast.ts';
 export * from './editor/surfaceSnap.ts';
 export * from './editor/measure.ts';

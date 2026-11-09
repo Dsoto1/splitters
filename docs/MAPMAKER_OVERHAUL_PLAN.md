@@ -379,6 +379,18 @@ last, once the interface has settled.
   `EDITOR_UX_FLOWS`), every check kept in its order.
 - **The top bar** fits Export, Import and Publish at 1400 px again (editor.css).
 
+### Map follow-ups: tile options (Sandfall, owner 2026-11-09)
+- **As built (2026-11-09, `wip/mapmaker-sandfall`, no format change):** a tile option is a tile of its own
+  (`content/tiles/core.json` `optionOf: { tile, option }`, `TileDefinition.optionOf`, checked by tools/content/tiles.mjs:
+  same cells and ports as the plain tile, one tile per option). The first: **Side walls** on the four Vaulted Tunnels
+  (`core.tunnel_vault*_walled`): the masonry capped by a kerb 0.25 m under the level above, the passage's floor inset
+  0.3 m from the closed sides and a buried floor inside each wall, so `terrainUnderFloors` keeps the ground on the
+  closed sides at the kerb instead of pulling it down to the passage. The palette lists only the plain tile; the tile
+  inspector's **Options** checkbox swaps them for one tile or several (`shared/editor/tileVariants.ts`
+  `setTileOptionCommand`, one undo step; UI `client/editor/tileOptionPanel.ts`). Unit `tileVariants.test.ts` (swap,
+  undo, several, the ground kept at the kerb, no earth in any walled tunnel's passage in any turn); e2e `editorux` →
+  `editorTileOptionChecks`.
+
 ## Order
 - **After set pieces part 2.** Both touch the palette, the ghost and selection, and set pieces give groups their
   machinery.
