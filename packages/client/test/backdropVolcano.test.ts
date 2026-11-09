@@ -35,7 +35,7 @@ describe('the volcano scenery (Map properties → Scenery: Hills and a volcano)'
     const names = scene.meshes.map((m) => m.name);
     for (const n of ['backdrop_ridge', 'backdrop_volcano', 'backdrop_volcano_glow', 'backdrop_volcano_smoke']) expect(names, n).toContain(n);
     const cone = scene.getMeshByName('backdrop_volcano')!;
-    cone.refreshBoundingInfo();
+    cone.refreshBoundingInfo({});
     const box = cone.getBoundingInfo().boundingBox;
     // Beyond the hills to the north (+z), and a mountain's height.
     expect(box.minimumWorld.z).toBeGreaterThan(200);
