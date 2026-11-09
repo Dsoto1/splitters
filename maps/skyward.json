@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 15,
+  "formatVersion": 29,
   "metadata": {
     "id": "skyward",
     "name": "Skyward Yard",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.deathmatch",
       "core.tdm"
-    ]
+    ],
+    "release": {
+      "mapId": "m_z2qxhdlix5uawhum",
+      "versionId": "v_y34flgupg56jvsc6",
+      "revision": 1,
+      "contentHash": "sha256:4ff90aadd9b21e9b92d5f091a133e08dd02425f8c293df5c69155a5b1dcc6897",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T20:28:17.400Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -365,23 +373,23 @@
     {
       "id": "spawn_035",
       "position": [
-        -40,
-        4,
-        0
+        -6,
+        0,
+        -10
       ],
       "kind": "spawn",
-      "yaw": 1.5707963267948966,
+      "yaw": 0,
       "faction": null
     },
     {
       "id": "spawn_036",
       "position": [
-        40,
-        4,
-        0
+        6,
+        0,
+        10
       ],
       "kind": "spawn",
-      "yaw": -1.5707963267948966,
+      "yaw": 3.142,
       "faction": null
     },
     {

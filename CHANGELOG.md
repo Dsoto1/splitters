@@ -17,6 +17,41 @@ made only on a commit that passed CI on a check branch.
   load and play it as the bridge; its inspector in MapMaker offers **Replace all** (one undo step).
 - **Sea Wall** and **Sea Wall (Breached)** for MAP 21 (Iron Coast): a bay of concrete sea wall with a wave lip and a
   fire step, and the same bay blown open with a rubble ramp through the gap.
+**MapMaker: groups, copy and paste, templates, mirror, note pins** (MapMaker overhaul Phase 3, items 3-7):
+- **Groups** (Ctrl+G, or the inspector's Group): keep things together. A click on any of a group picks it all (Alt-click
+  just that one), so it moves, turns, mirrors (M flips it east ↔ west over its middle), duplicates and deletes as
+  one; a duplicate is a group of its own. Name it in the inspector; Ctrl+Shift+G ungroups. Groups belong to their map.
+- **Copy and paste between maps** (Ctrl+C, Ctrl+V; the right-click menu): the copy is kept in this browser and pasted
+  with new ids where the pointer is, on the level being edited, in this map or another one (its groups and its own
+  set pieces come too). A map on another grid or in another theme refuses it, saying why.
+- **Templates:** New map → start from a layout: Arena, Symmetric CTF, Assault (Breakthrough) or Open terrain. Each
+  becomes a map of your own; the layouts never show in map lists.
+- **Mirror…** (Shift+M, the inspector, the right-click menu): the selection or half the map, across an east–west or
+  north–south line or through a point, as one undo step. In a mirrored copy, team things swap sides: spawns, flag
+  bases, team-only zones, doors and buttons, team vehicles. Tiles mirror as their own mirror image (a corridor's cover
+  goes to the other side, stairs climb the other way); a tile that has none is refused across a line, saying which.
+- **Note pins** (J, or Map properties → Pin a note): notes for the map's makers pinned on the map. Click to pin one, click a
+  pin to edit or delete it, drag it to move it; Map properties lists them all. They show in MapMaker only, never in
+  play. Groups and notes are stored in the map (format v31; older maps load as they were).
+**Maps: no more spots you can't get out of** (owner's "Fix all", 2026-11-08; all in MapMaker):
+- Skyward: the two spawn points on the one-way gun towers are on the central deck now.
+- Sky Islands: a jump pad on the sky platform drops you back onto the west arm.
+- Grand Marquee: a gap at the back of each side panel on the marquee top; drop down to the street.
+- Obsidian Orb: the reactor shaft is bottomless again (the core isn't solid, its floor is gone): a fall is a fall, not
+  a pit. The glowing trims along the shaft walls are gone, so nothing lands on a ledge.
+- Reactor: railings beside the roof's stair head and along the stairs' open side; no more drop into the outer yard.
+- Serpent Gorge: climbing vines up from the gorge floor beside the river.
+- Erosion: the corner pad pillars meet the lower deck along an edge, so bots walk onto them too.
+- Outpost Siege: a smaller dais in the uplink room and the north room's low cover set back from the walls; bots get
+  round to the armour and the north rooms.
+- Iron Compound: the gantry MG turret sits in the gantry's end corner, out of the walkway.
+**Friends stay with the party after a vote**: a friend in your hosted game follows you to the next map (the vote's
+winner, the rotation, Change map) until your match there lets them in, instead of giving up after one early try while
+your browser was still loading it.
+
+**Flaky e2e checks fixed at the cause** (tests only): mobile (bots knocking the player into the air before the jump
+tap), physicsfx (bodies dropped and blasts set off by cover, a race with bots respawning, range bots in front of the glass), characters3 (a weapon key pressed while only the view
+lagged) and weaponsets (a respawn picking up last life's dropped gun).
 **Team kills show as team kills, and reward nothing** (owner's bug report, 2026-11-08: "Teamkills should not count
 towards a kill streak (should end one) or show anything rewarding. It should actually show in the upper right that it
 was a TK."):
@@ -68,6 +103,12 @@ through its dugout steps, about 10 s a match.
 - **`?` lists every key** MapMaker binds, grouped (also the tool bar's **Keys** button); Esc or `?` closes it. The
   keys, the fly camera and the list all come from one table, so it can't go stale. `/` still searches the palette.
 
+- **You in the driver's seat** (owner's bug report, 2026-11-08). In a vehicle's chase view your own character now
+  sits in your seat (driver, gunner or passenger, in every vehicle with seats, the planes' chase view included),
+  posed and turned like every other rider; the seat no longer looks empty. The cockpit and seat views look out from
+  your own eyes and still leave your body out, as first person on foot does.
+
+
 ## 0.9.0 (2026-11-08)
 
 **MapMaker: measure, props on surfaces, Randomise** (MapMaker overhaul Phase 1, items 3 and 4):
@@ -117,7 +158,6 @@ through its dugout steps, about 10 s a match.
 - **Engines.** A vehicle anyone rides runs its engine, pitched up with speed (lower for the Tank, higher for
   hovercraft and flyers): yours as you ride, and the two nearest others from where they are. A placeholder until the
   sound pass's recorded engine loops.
-
 **Play on with friends: vote on the next map, parties** (owner, 2026-11-08):
 - **Vote on the next map.** When a match ends, the scoreboard (and its awards) shares the screen with two or three of
   our maps that fit the players and the mode, the rotation's next first. Press 1-3, click or tap; change your mind

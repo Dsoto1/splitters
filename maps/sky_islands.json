@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 29,
   "metadata": {
     "id": "sky_islands",
     "name": "Sky Islands",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.deathmatch",
       "core.tdm"
-    ]
+    ],
+    "release": {
+      "mapId": "m_pvwesydexamkfls4",
+      "versionId": "v_3lbepfjflr335scv",
+      "revision": 1,
+      "contentHash": "sha256:4e183129052a4a64d18b20f490bfbe5f167ba38acda6be2d052f5cd28541cfde",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T20:30:31.495Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1914,6 +1922,18 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "pad_uk0eh8m93m",
+      "kind": "pad",
+      "position": [
+        -2,
+        12.5,
+        0
+      ],
+      "yaw": -1.571,
+      "power": 4,
+      "push": 5
     }
   ],
   "factions": [],

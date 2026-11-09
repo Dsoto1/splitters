@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 29,
   "metadata": {
     "id": "iron_compound",
     "name": "Iron Compound",
@@ -18,7 +18,15 @@
       "core.deathmatch",
       "core.koth",
       "core.ctf"
-    ]
+    ],
+    "release": {
+      "mapId": "m_j5cjrurgoxoyqwtv",
+      "versionId": "v_qofydgutz2p5efx5",
+      "revision": 1,
+      "contentHash": "sha256:8364e0244de9a5a970fc1b3347f5ffb14fb06737c268a7def4c03497da26f43b",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T21:08:14.898Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1347,9 +1355,9 @@
     {
       "id": "mount_148",
       "position": [
-        9.4,
+        10.8,
         3,
-        10.2
+        9.4
       ],
       "kind": "mount",
       "model": "turret_mg",
@@ -2327,9 +2335,9 @@
     {
       "id": "pickup_224",
       "position": [
-        11,
+        10.8,
         3,
-        9.2
+        10.9
       ],
       "kind": "pickup",
       "item": "core.weapon_sniper",

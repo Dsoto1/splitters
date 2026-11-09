@@ -65,7 +65,32 @@ move in lock step with the vehicle, their bodies drift back ... hearing their fo
   you at 18 m/s on the page's frame clock (60 fps game time): before the fix 2.62 m off the seat and 2 footsteps,
   after 0.000 m over 90 frames, no footsteps, the engine playing.
 - **Seen, not changed:** in the chase view your own driver's body isn't drawn (session draws your character only on
-  foot); the passengers are.
+  foot); the passengers are. **Fixed next (`wip/driver-body`, below).**
+
+**Your own body in the chase view (`wip/driver-body`, 2026-11-08; owner-approved bug fix).** "In the third-person chase
+view of a vehicle ... the driver's seat looks empty."
+- **Cause:** `Session` drew your character (`updateAvatars(..., localSlot = -1)`) only on foot in third person (`mine`
+  needed `!this.seat`); seated, your slot was always the hidden first-person self.
+- **Fix:** `game/ownBody.ts` `ownBodyDrawn`: on foot as before (third person, not `tpClose`); in a seat only when the
+  vehicle camera's view is `chase` (ground drivers who pressed H, every plane seat); cockpit and `seat` views (gunners,
+  passengers, turrets: your own eyes) stay hidden; dead never. Seated, your pose is the one `RiderPlacement` already put
+  on your seat of the vehicle as drawn (`seatedRiders`/`seatPoint`, b1842c9), so it sits, holds and eases in and out
+  exactly as remote riders do; only its yaw/pitch come from your input (no 100 ms lag turning). The viewmodel is
+  also hidden in `chase`. One avatar per slot, so no doubled body: getting out hands back to the on-foot rule, dying
+  hides it at once (`local.alive`) and the dead pose disposes it as on foot; the kill cam and spectating watch others.
+- **Tests:** unit `client/test/ownBody.test.ts`; e2e `passengerChecks` (`vehicles` flow): over the same 90+ frames at
+  18 m/s, your body drawn, sitting, 0.00 m off the driver's seat point; H to the cockpit hides it, H back draws it,
+  out on foot (first person) hidden. Before the fix: drawn 0 of 98 frames; after, 99 of 99 sitting (locally, the
+  flow passes with the tank part skipped: this box was at load 20-30). `CharacterAnimator.settleSeat`: your body,
+  hidden in the cockpit, appears already sitting when H goes to the chase view (it eased up from standing over a few
+  frames). Screenshots (scratchpad, may not survive): `driver-body/{before,after}/vehicles-passenger-speed.png`,
+  `chase-before-after-zoom.png`, `after/close-chase*.png`, `after/vehicles-driver-cockpit.png`.
+- **Status:** `check/driver-body` @ edb8a24 (run 42501601388): every flow green (vehicles included) except `party`
+  ("the party goes on to the voted map together" / "The match has not started"), which fails the same way on
+  check/coord, check/release-090 and check/flaky-e2e this afternoon: not from this change. **Not landed**: land it once
+  party is fixed on main (merge origin/main, re-run check/driver-body, fast-forward main).
+- **Pitfall:** `/home/user/wt-pickups` (the node_modules other worktrees symlinked to) was deleted on 2026-11-08 during
+  the disk-full cleanup; this worktree's links now point into `/home/user/splitters/node_modules`.
 
 **Main** = 63731808 plus this note, green. Today's landings are on main, in order:
 - Breakthrough;
@@ -109,7 +134,30 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
 - Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
+- Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
+- Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
+- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
+- **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
+- **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
+  (team kills and roulette).
+  - **Symptom:** the party never reaches the voted map: `{"s2":{},"fill1":8,"fill2":8}`.
+  - **Where it fails:**
+    - main b3f22196, built locally: twice;
+    - `check/mapmaker-setpieces` run 42530655386: both attempts, voting runway_nine, then verdant_ziggurat, then
+      pump_tower;
+    - it was flaky before b3f22196 (runs 42519820533 and 42528585610).
+  - **The path:** session.ts `voteWon` (the host loads the map, then `exit('travel')`).
+  - **Why it hasn't shown on main:** main's own CI runs skip e2e when a check branch was already green.
+  - **Effect:** every MapMaker branch with shared code runs it and goes red, so set pieces part 5 is held at
+    059df862.
+  - **Please fix**, or tell us here which commit to land against.
+- Claimed: the characters' far copies (`packages/client/public/characters/*.glb` low-detail levels, `content/meshy.lock.json`), the pickup/hit/streak bursts in `content/vfx.json`, small fixes of 2026-11-08 (`wip/small-fixes`), 2026-11-09. (Iron Maw's player count and Fernwood Moon's lift are inside other claims: not edited here.)
+- Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
+- Claimed: `maps/<id>.json` for apex_ring, atomic_court, backwoods, blackout, canyon, capitol_mall, citadel, coldwater_gulch, crossroads, dead_reel, dockside_depot, dune_harbor, dustwater, eagle_spires, fernwood_moon, fort_meadow, gallows_yard, hollowmere_manor, iron_coast, jungle_steps, norman_shores, pharaohs_reach, primeval_park, qasr_medina, rail_stockyard, sandgate, sandsweep, serene_city, st_johns, sunken_kingdom, sunstone_crag (their Kenney trees, bushes, hedges and cacti → our species, MapMaker's Replace all driven in the real editor), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
+- Claimed: `maps/<id>.json` for reactor, serpent_gorge, sky_islands (released by the trap spots: their Kenney bushes, palms and trees → our species, Replace all in MapMaker), Environment Phase 2 (`wip/env-p2`), 2026-11-09.
+- Claimed: the new content ids `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`, `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew`; the leaves and bark atlases (`tools/content/env/**`, `content/environment/**`); the border forest and backdrop scenery's trees (`client/src/borderVisuals.ts`, `backdrop.ts`), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
+- Asked of the MapMaker lane (data only, inside its editor claim): Environment Phase 2 adds its species to and retires the Kenney trees, bushes, hedges and cacti from the Nature tables of `client/src/editor/paletteCatalog.ts` (`RETIRED_PROPS`, `GROUND_COVER_SPECIES`, `REPLACEMENTS`) and the scatter brushes' sets in `shared/src/editor/scatter.ts` (`SCATTER_SETS`: Kenney trees, bushes and cacti → our species), no other editor file; merged with origin/main before landing, 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
   Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
   1.25 m cells on a 380 m map) and a Terrain → Change grid tool that resamples heights, paint and plants; (2) a "coast"
@@ -132,6 +180,25 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - bot hints in MapMaker (Phase 4 item 3, and Bot AI Phase D's MapMaker part; the format goes in docs/BOTS.md);
   - Environment Phase 3's MapMaker tools (PROCEDURAL_ENVIRONMENT §11), after the other session's Environment Phase 2
     lands. Please note it here when it does.
+- **The owner's answers (2026-11-08)** to the MapMaker questions so far:
+  - **Keep as built:**
+    - the measure tool on U;
+    - Randomise variants for plant species only;
+    - Randomise resets each session;
+    - the draw estimate stays as is for now;
+    - `?` opens the key list;
+    - the plan view's cut stays;
+    - the plan export shows the five kinds only;
+    - Iron Compound keeps the gantry id, which loads as the bridge.
+  - **To build:**
+    - the jump hint samples the ground along the line;
+    - spawns, pickups, props, vehicles and NPCs over nothing or outside the boundary are refused (a red ghost, no
+      place);
+    - the budget bar moves into the bottom status bar;
+    - Shingle Point's card stays the cliff-top view, backed up so the cliff-top buildings' crest shows;
+    - "fix em all": swap every old big piece that has a set-piece version (town and city gate, pylon, warehouse,
+      hangar, bunker, city crossroads) on every map that uses one, in MapMaker. Each map is claimed first; the other
+      session's maps get asked first.
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
@@ -145,6 +212,17 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   MAP 02 The Spillway and MAP 04 Verdant Protocol (docs/map-briefs/). Build with MapMaker only, using our generated
   foliage (no Kenney trees, bushes, flowers or grass anywhere; owner 2026-11-08). The full pass over every map comes
   after all of this, one map at a time, judging whether each map needs it.
+
+**MapMaker Phase 3, part B** (`wip/mapmaker-p3b`, other account; docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under
+Phase 3 items 3-7): groups (Ctrl+G), copy and paste between maps (Ctrl+C / Ctrl+V, localStorage), templates
+(`maps/templates/*.json`, New map → start from), Mirror… (Shift+M), note pins (J). Map format v31 (`groups`,
+`editorNotes`), chained after v30.
+- **Owner's calls, built the conservative way:** (1) paste into another theme is refused (`PASTE_ACROSS_THEMES`);
+  (2) half-map mirror refuses while the other half has anything; (3) terrain and paths aren't mirrored; (4) Breakthrough
+  spawn groups keep their side in a mirror; (5) a tile with no mirror image among its turns is refused across a line.
+- **Pitfalls:** `setSelection` widens every selection to whole groups (pass `single` for one member); MapMaker's `run`
+  tidies groups after every edit (`withGroupsTidied`). Templates live in `maps/templates/` on purpose: anything
+  reading `maps/*.json` must stay non-recursive. Rebuild a template with MapMaker (its tools), never by hand.
 
 **MapMaker Phase 1, part A** (`wip/mapmaker-p1a`, other account; docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under
 Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key list.
@@ -484,6 +562,45 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   table (`keymap.ts`) when both are on main. Esc now also cancels a ring drag and clears a measurement (in that order,
   before the old Esc).
 - **Not stored:** no map field, no format bump. Randomise's settings live for the session only.
+
+### Flaky e2e checks, root-caused (`wip/flaky-e2e`, agent, 2026-11-08; test-only, e2e/run.mjs)
+- **mobile**, "a tap on the pad middle jumps": the training range's deathmatch bots shot the god-mode player about
+  (knockback from swarm rockets and rounds, no damage): the tap could land mid-air (a jump is taken on the ground only).
+  The flow plays the range alone (`&bots=1`) and taps once grounded.
+- **physicsfx**: the "blast throws a bot" check blasted beside wherever a bot stood (behind cover: not thrown), and the
+  mass ring went 10 m along a view that depended on bot positions (a body thrown into a rock). Now the bots are held
+  from the start (they drove vehicles onto the spot and shot you about), and the first ragdoll, the throw and the mass
+  ring all go off on one fixed open spot found on a 4 m grid over the map (level ground, nothing within 5 m in the
+  sim's level or the effects world, no vehicle), with you placed 10 m off facing it, once the view has you there. The
+  first bot is killed with no attacker (it could be your teammate: no friendly fire, nothing died). The far-death check
+  waits for a bot back alive and drawn (it threw "reading 'move'" when none had respawned yet).
+- **physicsfx glass** (range): played alone (`&bots=1`; bots respawned in front of the panels and took the rounds, CI:
+  bulletproof panel at full health); each shot holds the trigger until the round goes (a fixed hold could pass with no
+  frame seeing it); the panel's break and shards are noted as they happen (broken glass is back after the map's 4 s,
+  sooner than a loaded page looked again).
+- **weaponsets** Match setup: Advanced rules is opened by its `aria-expanded` state until its Weapons fold shows (a
+  click while the setup redrew left it shut, locally).
+- **characters3** far bodies (`core.hyena` drawn 1.5-1.8 of 2.12 m, four times on CI, never another look): **not
+  fixed, a content lead.** The message now gives the full-detail mesh's height in the same pose: 2.09-2.12 m, so Hyena
+  Warrior's low-detail level (`meshy_hyena_lod`) is drawn 15-30% shorter than its full body in the same pose (its bind
+  pose heights match, 1.98 m both). 43% of its low-detail vertices match no full-body vertex within 2 mm (Alien: 0%,
+  Alien Biker 21%), so the far copy may not be cut from the body it ships with; `ONLY=meshy_hyena node
+  tools/content/relod-built.mjs` remakes it from the body in the file (tried as a trial: one skin, the same 2,750
+  triangles), to be checked in the characters3 flow with a hyena among the measured bots. The check is as it was
+  (75% of the standing height: fails at 1.5 m, passes at 1.8). Measuring every vertex instead of one in three made no
+  difference in bind pose.
+- **characters3**, scope check: `__give` already puts the marksman in hand; pressing 3 while only the view lagged cycled
+  on to the rifle in the same slot. It waits for the held gun and presses only while it isn't the marksman.
+- **party** (a real bug): a friend sent `travel` (the vote's winner, the rotation, Change map) rejoined the host's code
+  once, 1.2 s later; the host's browser was still loading the next map (40+ s on a loaded runner), the try failed and
+  the friend went back to the menu while the party played on (CI: "s2": {}, both attempts, on every check run that ran
+  it). Rejoining after a travel now keeps trying for up to 2 minutes whatever each try says (a refusal still ends it):
+  `packages/client/src/game/rejoinPolicy.ts`, `test/rejoinPolicy.test.ts`. The flow's message now traces the travel
+  (what the host told its friends, the friend's notices, the host's map and phase as it goes).
+- **weaponsets**, Chaos lives: the gun you die with drops at your body (rules.dropWeapons); idle at your spawn, the next
+  life could spawn on the same point and pick last life's oddball up (four weapons). The test respawn clears the
+  lying drops. For the owner: a redeploy (K) can land you on your own dropped oddball in Chaos; the spawn choice's
+  fresh-death penalty makes it rare, not impossible.
 
 ### Ammo Boxes by the tank routes (`wip/ammo-boxes`, agent, 2026-11-08; owner-approved follow-up to Tanks 2 item 2)
 
@@ -1619,26 +1736,55 @@ Phase B's playbook); Norman Shores' bots in the shallows (off the navmesh, no wa
 crumbling wall by its west jump pad (`block_341`: bots stuck at it for minutes in one match); hills held (32 → 29 %) and
 Bomb plants (0.5 → 0.3 a match) a little down on the samples, and ten CTF maps still without a capture: Phase B.
 
-**For the owner** (each would be a MapMaker fix; players get stuck in all but the first two too):
-1. Skyward: the four pad perches are one-way by design ("fall off and you are gone"), but two spawn points
-   (`spawn_035`, `spawn_036`) are on the towers: whoever spawns there can't leave. A pad back down, or move them?
-2. Sky Islands: the sky platform (double damage), pad up, no way back (as designed?).
-3. Grand Marquee: the marquee top over the street; the street pad throws you up and nothing gets you down (1.6 m
-   sign panels, the terrace 2.9 m up). A gap in a side panel or a ladder?
-4. Obsidian Orb: the reactor core (`prop_087`, scale 4) fills the "bottomless" shaft up to 3.8 m under the bridges:
-   a fall off a retracting bridge lands on it and stays there. Core not solid, or lower it? And a 0.4 m ledge
-   (`block_082`) runs along the shaft's north wall at -5.6 m: falls land on it and nothing gets off it (913 of the
-   CTF suite's 915 failed searches, 1.4 % of the map's, are bots on that ledge asking for a way off).
-5. Reactor: off the roof's south-west corner at (37, 4, 50) you drop 4.3 m into the yard outside the walls and can't
-   get back in. A railing on that corner?
-6. Serpent Gorge: the gorge floor along the river (falls through the gallery's openings, banks too steep to climb)
-   and slivers by the crypt's walls. Steps or a ladder out?
-7. Erosion: the corner pads that throw you back up from the lower deck stand on 3 m pillars meeting the deck only at
-   a corner (players step across, bots can't). Pillars that share an edge with the deck?
-8. M4 Outpost: the uplink room's dais leaves 1.5-2 m gaps the navmesh (0.8 m from walls) can't pass; bots hop onto
-   the dais but not round it to the armour behind it or the north corridor. Wider gaps?
-9. Iron Compound: the MG turret on the gantry by the stairs (`mount_148`) leaves 0.8 m of walkway beside it; bots
-   coming back along the gantry walk into it. Move it off the walkway's middle?
+**For the owner** (each would be a MapMaker fix; players get stuck in all but the first two too). **All nine fixed**
+(owner 2026-11-08, "Fix all"; `wip/trap-spots`, in MapMaker, see "Trap spots fixed" below):
+1. Skyward: the four pad perches are one-way by design; spawn points `spawn_035`, `spawn_036` were on the towers.
+   **Fixed:** both moved to the central deck ((-6, 0, -10) and (6, 0, 10), one each side as before). The perches stay one-way.
+2. Sky Islands: the sky platform (double damage), pad up, no way back. **Fixed:** a return jump pad on the platform
+   (`pad_uk0eh8m93m`, (-2, 12.5, 0), west, 4 up / 5 forward) lands on the west arm; still a perch over the drop.
+3. Grand Marquee: the marquee top, nothing gets you down. **Fixed:** each side panel (`block_394`, `block_395`) is 3 m
+   long now (was 6), leaving a 3 m gap at the back to drop to the street.
+4. Obsidian Orb: the reactor core and the shaft's floor caught falls. **Fixed:** the core (`prop_087`) is not solid and
+   the shaft's floor block (`block_086`) is gone, so the kill height (lowest floor 14 m) is under the shaft: a fall is
+   a fall. The four glowing trims along the shaft walls (`block_082`-`085`, the 0.4 m ledges) are gone (sunk to a 5 cm
+   lip first, bots still caught on it).
+5. Reactor: off the roof's south-west corner into the yard. **Fixed:** railings (Sky Blocks, the theme's material) on
+   the roof's west edge either side of the stair head, and a sloped one (roll 27°) along the stairs' open south side
+   (falls off its top went past the stair cell into the yard). The yard is now an island nobody reaches.
+6. Serpent Gorge: the gorge floor and the slivers by the crypt. **Fixed:** two Climbing Vines (4.5 m) from the gorge
+   floor up the outer walls of the two half-buried rooms at (12, -8.4, 56.5) and (44, -8.4, 56.5) onto their roofs; the
+   slivers were reached from the strip north of the temple yards (0.4 m below them, a trough to -4.4 m beside the
+   crypt): `tile_100`, `tile_101`, `tile_103` have a railing on that edge now.
+7. Erosion: corner pad pillars met the deck at a corner. **Fixed:** the four pillars (`block_064`-`070`) are 6 m deep
+   (was 3) toward the middle, sharing a 3 m edge with the lower deck.
+8. M4 Outpost: the uplink dais gaps. **Fixed:** the uplink room is a plain Room with a smaller dais of Sky Blocks
+   (2.5 × 2 m, 0.75 m, two 0.25 m steps its full width, Circuit like the theme's solids; 2.25-2.5 m gaps), the damage power-up on it;
+   the north room (`t_north`) is a Room with the Low cover layout (kept 2 m off the walls: its old block pinched the
+   doorway to the north rooms). Both unreachable pickups reachable.
+9. Iron Compound: the gantry MG turret (`mount_148`). **Fixed:** moved to the gantry's dead-end south-east corner
+   (10.8, 3, 9.4), its gunner on the deck behind it; the sniper rifle (`pickup_224`) to the north-east corner.
+### Trap spots fixed (`wip/trap-spots`, 2026-11-08; owner: "Fix all")
+The nine spots above, in MapMaker only (Playwright driving the built editor: Import, select, inspector fields, palette
+Sky Block / Jump Pad / Climbing Vines, tile Type and Walls, Delete, Export; scratch driver, not committed). Each map
+validate-map 0 issues; `pnpm nav-audit` on the nine: 13 traps before, the 4 Skyward perches after (one-way by design,
+still known); the emptied entries left `nav/auditKnown.ts`. No card shot shows a fixed spot (only Erosion and Grand
+Marquee have one), so none retaken.
+
+**Bots** (`pnpm bot-report <map> --seeds=1,2,3 --seconds=240`, each map in one mode, main's file against the branch's;
+summed over the three matches):
+| map (mode) | stuck recoveries | no-route searches | failed searches (navFails) | notes |
+|---|---|---|---|---|
+| Skyward (TDM) | 7 → 7 | 0 → 0 | 0 → 0 | the moved spawns cut nobody off (nav audit) |
+| Sky Islands (TDM) | 113 → 143 | 1338 → 1386 | 1413 → 1458 | fails all on the west lava island, as before |
+| Grand Marquee (CTF) | 394 → 376 | 0 → 0 | 0 → 0 | |
+| Obsidian Orb (CTF) | 250 → 524 | 0 → 0 | 2992 → 134 | idle stuck(goal) 11-15 % → under 1 %; kills 194 → 796 (bots off a bridge no longer stranded in the shaft); captures 28 → 5 |
+| Reactor (TDM) | 583 → 784 | 0 → 0 | 0 → 0 | all at one older spot, (56, 0, 20): bots after the grenades (`pickup_091`) a floor down |
+| Serpent Gorge (CTF) | 482 → 486 | 0 → 0 | 2 → 2 | |
+| Erosion (DM) | 5 → 7 | 2 → 5 | 2 → 5 | |
+| M4 Outpost (co-op) | 285 → 260 | 17093 → 1753 | 18437 → 4164 | what's left: bots on the dais just off its navmesh strip, the south room before the gate opens |
+| Iron Compound (CTF) | 442 → 383 | 0 → 0 | 129 → 96 | stuck spots by the turret 193 → 21 |
+- **Seen, not changed:** Reactor's grenades hot spot above; Obsidian Orb's hangar (0, 0, -24) stays its busiest stuck
+  spot (more bots alive to get stuck there); Sky Islands' west island fails.
 <!-- /bots-a -->
 
 <!-- ground-fix -->

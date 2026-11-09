@@ -104,6 +104,30 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
  * footprints against the map's tiles and each other, and the map's own set-piece definitions.
  */
 export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): ValidationIssue[] {
+  const issues = validatePieces(map, catalog, library);
+  if (map.groups?.length) issues.push(...groupIssues(map));
+  return issues;
+}
+
+/**
+ * MapMaker's groups (v31) name the map's own things, each thing in one group at most: anything else is a warning
+ * (MapMaker keeps them tidy; play ignores groups).
+ */
+function groupIssues(map: MapDocument): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const have = new Set([...map.classicStructure.tiles.map((t) => t.id), ...map.entities.map((e) => e.id), ...(map.setPieces ?? []).map((p) => p.id)]);
+  const seen = new Map<string, string>();
+  for (const g of map.groups ?? []) {
+    for (const m of g.members) {
+      if (!have.has(m)) issues.push({ severity: 'warning', code: 'group.member', message: `group ${g.id} lists ${m}, which isn't in the map`, targetId: g.id });
+      else if (seen.has(m) && seen.get(m) !== g.id) issues.push({ severity: 'warning', code: 'group.member', message: `${m} is in two groups (${seen.get(m)} and ${g.id})`, targetId: m });
+      seen.set(m, g.id);
+    }
+  }
+  return issues;
+}
+
+function validatePieces(map: MapDocument, catalog: TileCatalog, library: SetPieceLibrary): ValidationIssue[] {
   if (map.setPieces === undefined && map.setPieceDefs === undefined) return validateExpanded(map, map, catalog);
   const ex = expandSetPieces(map, library, catalog);
   const issues: ValidationIssue[] = [];
