@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 32,
+  "formatVersion": 33,
   "metadata": {
     "id": "sandfall_colosseum",
     "name": "Sandfall Colosseum",
@@ -21138,413 +21138,413 @@
     },
     {
       "id": "block_pn1o708npb",
-      "kind": "block",
       "position": [
         0,
         0,
         52
       ],
-      "yaw": 0,
+      "name": "Stand fill: N under the low tiers",
+      "kind": "block",
       "size": [
         40,
         8,
         16
       ],
+      "yaw": 0,
       "material": "core.pbr_limestone",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
-      "health": 120,
-      "name": "Stand fill: N under the low tiers"
+      "health": 120
     },
     {
       "id": "block_2bpvop5y1x",
-      "kind": "block",
       "position": [
         0,
         0,
         68
       ],
-      "yaw": 0,
+      "name": "Stand fill: N under the high tiers",
+      "kind": "block",
       "size": [
         40,
         16,
         16
       ],
+      "yaw": 0,
       "material": "core.pbr_limestone",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
-      "health": 120,
-      "name": "Stand fill: N under the high tiers"
+      "health": 120
     },
     {
       "id": "block_x7pfwhiij4",
-      "kind": "block",
       "position": [
         0,
         0,
         -52
       ],
-      "yaw": 0,
+      "name": "Stand fill: S under the low tiers",
+      "kind": "block",
       "size": [
         40,
         8,
         16
       ],
+      "yaw": 0,
       "material": "core.pbr_limestone",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
-      "health": 120,
-      "name": "Stand fill: S under the low tiers"
+      "health": 120
     },
     {
       "id": "block_1hkgs5zc79",
-      "kind": "block",
       "position": [
         0,
         0,
         -68
       ],
-      "yaw": 0,
+      "name": "Stand fill: S under the high tiers",
+      "kind": "block",
       "size": [
         40,
         16,
         16
       ],
+      "yaw": 0,
       "material": "core.pbr_limestone",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
-      "health": 120,
-      "name": "Stand fill: S under the high tiers"
+      "health": 120
     },
     {
       "id": "block_6zbj6nu2co",
-      "kind": "block",
       "position": [
         52,
         0,
         0
       ],
-      "yaw": 0,
+      "name": "Stand fill: E under the low tiers",
+      "kind": "block",
       "size": [
         16,
         8,
         56
       ],
+      "yaw": 0,
       "material": "core.pbr_limestone",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
-      "health": 120,
-      "name": "Stand fill: E under the low tiers"
+      "health": 120
     },
     {
       "id": "block_78zbgrb7rz",
-      "kind": "block",
       "position": [
         68,
         0,
         0
       ],
-      "yaw": 0,
+      "name": "Stand fill: E under the high tiers",
+      "kind": "block",
       "size": [
         16,
         16,
         56
       ],
+      "yaw": 0,
       "material": "core.pbr_limestone",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
-      "health": 120,
-      "name": "Stand fill: E under the high tiers"
+      "health": 120
     },
     {
       "id": "block_teqdkh6dug",
-      "kind": "block",
       "position": [
         80,
         0,
         0
       ],
-      "yaw": 0,
+      "name": "Stand fill: E outer wall",
+      "kind": "block",
       "size": [
         8,
         24,
         56
       ],
+      "yaw": 0,
       "material": "core.pbr_limestone",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
-      "health": 120,
-      "name": "Stand fill: E outer wall"
+      "health": 120
     },
     {
       "id": "block_btis0ml6y5",
-      "kind": "block",
       "position": [
         -52,
         0,
         0
       ],
-      "yaw": 0,
+      "name": "Stand fill: W under the low tiers",
+      "kind": "block",
       "size": [
         16,
         8,
         56
       ],
+      "yaw": 0,
       "material": "core.pbr_limestone",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
-      "health": 120,
-      "name": "Stand fill: W under the low tiers"
+      "health": 120
     },
     {
       "id": "block_s295s9augs",
-      "kind": "block",
       "position": [
         -68,
         0,
         0
       ],
-      "yaw": 0,
+      "name": "Stand fill: W under the high tiers",
+      "kind": "block",
       "size": [
         16,
         16,
         56
       ],
+      "yaw": 0,
       "material": "core.pbr_limestone",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
-      "health": 120,
-      "name": "Stand fill: W under the high tiers"
+      "health": 120
     },
     {
       "id": "block_c5d5r3196x",
-      "kind": "block",
       "position": [
         -80,
         0,
         0
       ],
-      "yaw": 0,
+      "name": "Stand fill: W outer wall",
+      "kind": "block",
       "size": [
         8,
         24,
         56
       ],
+      "yaw": 0,
       "material": "core.pbr_limestone",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
-      "health": 120,
-      "name": "Stand fill: W outer wall"
+      "health": 120
     },
     {
       "id": "door_tedtw6qchd",
-      "kind": "door",
       "position": [
         24,
         0,
         -29
       ],
+      "name": "Gate 1",
+      "kind": "door",
       "yaw": 0,
+      "style": "portcullis",
       "startOpen": true,
       "locked": false,
-      "auto": false,
-      "style": "portcullis",
-      "name": "Gate 1"
+      "auto": false
     },
     {
       "id": "button_aesi98f74a",
-      "kind": "button",
       "position": [
         22.9,
         0,
         -31.5
       ],
+      "name": "Gate 1 winch",
+      "kind": "button",
       "yaw": 1.571,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
-      "startEnabled": true,
-      "name": "Gate 1 winch"
+      "startEnabled": true
     },
     {
       "id": "button_tdbkixisa7",
-      "kind": "button",
       "position": [
         21.4,
         0,
         -27.6
       ],
+      "name": "Gate 1 chain",
+      "kind": "button",
       "yaw": 0,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
-      "startEnabled": true,
-      "name": "Gate 1 chain"
+      "startEnabled": true
     },
     {
       "id": "door_6g7izdtngz",
-      "kind": "door",
       "position": [
         -24,
         0,
         -29
       ],
+      "name": "Gate 2",
+      "kind": "door",
       "yaw": 0,
+      "style": "portcullis",
       "startOpen": true,
       "locked": false,
-      "auto": false,
-      "style": "portcullis",
-      "name": "Gate 2"
+      "auto": false
     },
     {
       "id": "button_0wvzby1ezn",
-      "kind": "button",
       "position": [
         -22.9,
         0,
         -31.5
       ],
+      "name": "Gate 2 winch",
+      "kind": "button",
       "yaw": -1.571,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
-      "startEnabled": true,
-      "name": "Gate 2 winch"
+      "startEnabled": true
     },
     {
       "id": "button_z2c6dw50xs",
-      "kind": "button",
       "position": [
         -21.4,
         0,
         -27.6
       ],
+      "name": "Gate 2 chain",
+      "kind": "button",
       "yaw": 0,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
-      "startEnabled": true,
-      "name": "Gate 2 chain"
+      "startEnabled": true
     },
     {
       "id": "door_tl8joym4q8",
-      "kind": "door",
       "position": [
         -24,
         0,
         29
       ],
+      "name": "Gate 3",
+      "kind": "door",
       "yaw": 0,
+      "style": "portcullis",
       "startOpen": true,
       "locked": false,
-      "auto": false,
-      "style": "portcullis",
-      "name": "Gate 3"
+      "auto": false
     },
     {
       "id": "button_5muruxmphb",
-      "kind": "button",
       "position": [
         -22.9,
         0,
         31.5
       ],
+      "name": "Gate 3 winch",
+      "kind": "button",
       "yaw": -1.571,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
-      "startEnabled": true,
-      "name": "Gate 3 winch"
+      "startEnabled": true
     },
     {
       "id": "button_iq7slrxa5o",
-      "kind": "button",
       "position": [
         -21.4,
         0,
         27.6
       ],
+      "name": "Gate 3 chain",
+      "kind": "button",
       "yaw": 3.142,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
-      "startEnabled": true,
-      "name": "Gate 3 chain"
+      "startEnabled": true
     },
     {
       "id": "door_hfbwg4io6i",
-      "kind": "door",
       "position": [
         24,
         0,
         29
       ],
+      "name": "Gate 4",
+      "kind": "door",
       "yaw": 0,
+      "style": "portcullis",
       "startOpen": true,
       "locked": false,
-      "auto": false,
-      "style": "portcullis",
-      "name": "Gate 4"
+      "auto": false
     },
     {
       "id": "button_ae2gd16e0e",
-      "kind": "button",
       "position": [
         22.9,
         0,
         31.5
       ],
+      "name": "Gate 4 winch",
+      "kind": "button",
       "yaw": 1.571,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
-      "startEnabled": true,
-      "name": "Gate 4 winch"
+      "startEnabled": true
     },
     {
       "id": "button_nmt2tpnmfu",
-      "kind": "button",
       "position": [
         21.4,
         0,
         27.6
       ],
+      "name": "Gate 4 chain",
+      "kind": "button",
       "yaw": 3.142,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
-      "startEnabled": true,
-      "name": "Gate 4 chain"
+      "startEnabled": true
     }
   ],
   "factions": [],
