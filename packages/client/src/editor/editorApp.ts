@@ -382,6 +382,7 @@ import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
 import { $, isTyping, button, h2, text, small, row, numberInput, escapeHtml } from './editorDom.ts';
 import { SHIPPED_IDS, itemIcon, CARD_HIDDEN_KINDS, STARTER_TERRAIN, NEW_MAP_SIZES, mainGround, fitTopBar, starterMap, PIECE_PART_KINDS, ROLE_LABELS, rolesUsed, SCENARIO_ICONS, PLACING, toolKey, TOOL_ICONS, npcIcon, pickRadius, FLY_SPEED, LOOK_SENSITIVITY, snap, dressable, dressTag, edgeIcon, addedEntities, type Tool, type Hit, type DragState } from './editorParts.ts';
+import { TerrainTools } from './terrainTools.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -406,6 +407,8 @@ export interface EditorHost {
  * templates are loaded on purpose from Open….
  */
 export class EditorApp {
+  /** The Terrain tool: its brush, live sculpting strokes, whole-map smoothing, the trace image and the Terrain palette (terrainTools.ts). */
+  readonly terrain: TerrainTools;
   readonly view: EditorView;
   readonly history: EditHistory;
   private tool: Tool = { kind: 'select' };
@@ -446,7 +449,7 @@ export class EditorApp {
   /** The top bar's Bot test (overhaul Phase 4): a bot test run's heatmaps and spawn exposure, in a worker. */
   readonly mapTest: MapTestPanel;
   /** Environment Phase 3: the Environment group, its brush and the collision preview (envTools.ts). */
-  private readonly env: EnvTools;
+  readonly env: EnvTools;
   /** Note pins (J; noteTool.ts): notes for the map's makers, drawn over the view. */
   private readonly notes: NoteTool;
   /** Bot hints (Y; botHintTool.ts, MapMaker overhaul Phase 4 item 3): drawn over the view, edited in the inspector. */
@@ -516,20 +519,9 @@ export class EditorApp {
   private hoverEdge: EdgeTarget | null = null;
   private paintStyle: SurfaceStyle = { material: 'core.red_brick', tint: null };
   private paintScope: PaintScope = 'surface';
-  private terrainBrush: TerrainBrush = 'raise';
-  private terrainMaterial: TerrainMaterial = 'dirt';
-  private foliageLevel = 3;
-  private brushRadius = 8;
-  private brushStrength = 0.5;
-  /** Ground point under the pointer for the terrain tool. */
-  private terrainHover: Vec3 | null = null;
-  /**
-   * Live sculpt: the document's ground before the stroke and as it is now (committed as one undo step on release),
-   * and that ground kept under the floors (what the view shows and the pointer meets while the brush is dragged).
-   */
-  private stroke: { before: TerrainData; now: TerrainData; shown: TerrainData; target: number; seed: number } | null = null;
 
   constructor(private readonly host: EditorHost) {
+    this.terrain = new TerrainTools(this);
     this.view = new EditorView(host.engine);
     this.thumbs = new ModelThumbnails(host.engine);
     this.paths = new PathTool({
@@ -554,8 +546,8 @@ export class EditorApp {
       floorY: () => this.level * this.doc.classicStructure.levelHeight,
       scene: () => this.view.scene,
       budgets: () => this.budgets.counts,
-      radius: () => this.brushRadius,
-      setRadius: (r) => this.setBrushRadius(r),
+      radius: () => this.terrain.brushRadius,
+      setRadius: (r) => this.terrain.setBrushRadius(r),
       toast: (t, bad) => this.toast(t, bad),
       useBrush: () => this.setTool({ kind: 'envbrush' }),
       group: (c, id, title, opts) => this.palette.group(c, id, title, opts),
@@ -715,11 +707,11 @@ export class EditorApp {
    * brush stroke's while one is dragged.
    */
   private get shownGround(): TerrainData | null {
-    return this.stroke?.shown ?? this.view.ground;
+    return this.terrain.stroke?.shown ?? this.view.ground;
   }
 
   /** `terrain` as it would be shown: kept under the map's floors, with the paths laid in first unless `laid` is false (a brush's live preview). */
-  private groundShownFor(terrain: TerrainData, laid = true): TerrainData {
+  groundShownFor(terrain: TerrainData, laid = true): TerrainData {
     const doc = { ...this.viewDoc, terrain };
     return terrainUnderFloors(laid ? withPathsLaid(doc) : doc, this.mapBoxes())!;
   }
@@ -850,7 +842,7 @@ export class EditorApp {
     this.owner = owner;
     $('ed-publish').hidden = !owner;
     for (const el of document.querySelectorAll<HTMLElement>('.ed-owner-only')) el.hidden = !owner;
-    if (!owner) this.setTrace(null);
+    if (!owner) this.terrain.setTrace(null);
   }
 
   /** Signed in as an owner of the game (ownerPublish.ts): official maps open as they are, and Publish shows. */
@@ -879,7 +871,7 @@ export class EditorApp {
       if (this.plan.on) (f || r) && this.plan.move(r * speed, f * speed);
       else if (f || r || u) this.view.fly(f * speed, r * speed, u * speed);
     }
-    if (this.stroke) this.strokeStep(dt);
+    if (this.terrain.stroke) this.terrain.strokeStep(dt);
     this.refresh(false);
     this.measure.frame();
     this.mapTest.frame();
@@ -920,7 +912,7 @@ export class EditorApp {
       this.updateTopBar();
       this.updateHover();
       this.logic.render();
-      this.syncTerrainUi();
+      this.terrain.syncTerrainUi();
       this.paths.refresh();
       this.routes.refresh();
       this.paths.renderPane($('ed-paths'));
@@ -972,7 +964,7 @@ export class EditorApp {
 
   // ---------------------------------------------------------------- editing
 
-  private run(label: string, cmd: EditCommand | { error: string }): boolean {
+  run(label: string, cmd: EditCommand | { error: string }): boolean {
     if ('error' in cmd) {
       this.toast(`Can't ${label.toLowerCase()}: ${cmd.error}`, true);
       return false;
@@ -999,7 +991,7 @@ export class EditorApp {
     this.toast(label ? `Redo: ${label}` : 'Nothing to redo');
   }
 
-  private setTool(tool: Tool): void {
+  setTool(tool: Tool): void {
     this.tool = tool;
     if (tool.kind === 'setpiece') {
       // A piece that can't be mirrored is placed unmirrored (M says why).
@@ -1021,7 +1013,7 @@ export class EditorApp {
     if (at) this.showPane(at);
     if (tool.kind === 'prop') this.propOpts.mount(card?.closest('.ed-pane') ?? null);
     if (tool.kind !== 'terrain') {
-      this.terrainHover = null;
+      this.terrain.terrainHover = null;
       this.view.setBrushRing(null, 0, 0, 0);
     }
     if (tool.kind !== 'paint' && tool.kind !== 'edge') this.hoverFace = null;
@@ -1037,7 +1029,7 @@ export class EditorApp {
           (tool.kind === 'edge' && t === `edge:${tool.style}`) ||
           (tool.kind === 'prop' && t === `prop:${tool.model}`) ||
           (tool.kind === 'mount' && t === `mount:${tool.model}`) ||
-          (tool.kind === 'terrain' && t === `terrain:${this.terrainBrush}`) ||
+          (tool.kind === 'terrain' && t === `terrain:${this.terrain.terrainBrush}`) ||
           (tool.kind === 'npc' && t === `npc:${tool.key}`) ||
           (tool.kind === 'bothint' && t === `bothint:${tool.hint}`) ||
           (t === 'place' && PLACING.has(tool.kind)) ||
@@ -1554,7 +1546,7 @@ export class EditorApp {
     if (!b) return;
     if (tool.kind === 'paint' && this.paintGround && !this.hoverFace) {
       const p = this.paintGround;
-      if (b.at && Math.hypot(p.x - b.at.x, p.z - b.at.z) < this.brushRadius * 0.5) return;
+      if (b.at && Math.hypot(p.x - b.at.x, p.z - b.at.z) < this.terrain.brushRadius * 0.5) return;
       b.at = { x: p.x, z: p.z };
       b.key = null;
       if (!b.invert) this.paintGroundAtHover();
@@ -1612,7 +1604,7 @@ export class EditorApp {
    * the Terrain tab's ground for every pack ground, so painting Packed Snow laid dirt or grass.
    */
   private get groundPaint(): TerrainMaterial {
-    return terrainMaterialFor(this.paintStyle.material) ?? this.terrainMaterial;
+    return terrainMaterialFor(this.paintStyle.material) ?? this.terrain.terrainMaterial;
   }
 
   /** Paint the terrain under the pointer (a brush of the Terrain tab's radius). */
@@ -1621,7 +1613,7 @@ export class EditorApp {
     const p = this.paintGround;
     if (!t || !p) return;
     const m = this.groundPaint;
-    const after = applyBrush(t, { brush: 'paint', x: p.x, z: p.z, radius: this.brushRadius, strength: 1, material: m });
+    const after = applyBrush(t, { brush: 'paint', x: p.x, z: p.z, radius: this.terrain.brushRadius, strength: 1, material: m });
     if (after.materials.every((v, i) => v === t.materials[i])) return;
     this.run(`Paint ${TERRAIN_MATERIAL_LABELS[m].toLowerCase()} ground`, { kind: 'setTerrain', before: t, after });
   }
@@ -1990,14 +1982,14 @@ export class EditorApp {
     // The ground as shown (kept under the floors), not the document's own: under a floor that stands on a hill, the
     // ground as made is inside the floor, out of sight.
     const t = this.shownGround;
-    this.terrainHover = null;
+    this.terrain.terrainHover = null;
     this.hoverOnTerrain = false;
     let ground: { at: Vec3; distance: number } | null = null;
     if (t) {
       const ray = this.view.pointerRay(clientX, clientY);
       const hit = ray ? terrainRaycast(t, ray.origin, ray.dir) : null;
       if (hit && ray) ground = { at: hit, distance: Math.hypot(hit.x - ray.origin.x, hit.y - ray.origin.y, hit.z - ray.origin.z) };
-      if (hit && this.tool.kind === 'terrain') this.terrainHover = hit;
+      if (hit && this.tool.kind === 'terrain') this.terrain.terrainHover = hit;
       // Spawns, pickups and props stand on the ground where it is nearer than the level plane.
       // (Tiles and set pieces go on the grid: the level being edited, not the ground.)
       if (hit && ray && this.tool.kind !== 'tile' && this.tool.kind !== 'setpiece' && this.tool.kind !== 'terrain') {
@@ -2036,7 +2028,7 @@ export class EditorApp {
     this.updateHover();
   }
 
-  private updateHover(): void {
+  updateHover(): void {
     this.updateHoverTarget();
     this.updateHoverCard();
   }
@@ -2173,7 +2165,7 @@ export class EditorApp {
     if (this.tool.kind === 'envbrush') {
       const p = this.hoverPoint;
       const env = this.tool.kind === 'envbrush';
-      this.view.setBrushRing(p ? this.shownGround : null, p?.x ?? 0, p?.z ?? 0, this.brushRadius, env && this.env.mode === 'erase' ? '#ff7a4d' : '#6fdc6a');
+      this.view.setBrushRing(p ? this.shownGround : null, p?.x ?? 0, p?.z ?? 0, this.terrain.brushRadius, env && this.env.mode === 'erase' ? '#ff7a4d' : '#6fdc6a');
       $('ed-target').textContent = !p ? '' : this.env.hoverLabel();
       this.view.setFaceHighlight(null, null);
       this.view.setHoverCell(this.doc, null);
@@ -2181,11 +2173,11 @@ export class EditorApp {
       return;
     }
     if (this.tool.kind === 'terrain') {
-      const h = this.terrainHover;
+      const h = this.terrain.terrainHover;
       const t = this.shownGround;
       const colors: Record<TerrainBrush, string> = { raise: '#ffd34d', lower: '#ff7a4d', smooth: '#7fd8ff', flatten: '#c7a6ff', roughen: '#b8e07a', paint: '#ffffff', foliage: '#6fdc6a' };
-      this.view.setBrushRing(h ? t : null, h?.x ?? 0, h?.z ?? 0, this.brushRadius, colors[this.terrainBrush]);
-      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial]}` : this.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.foliageLevel]}` : this.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.brushRadius} m` : '';
+      this.view.setBrushRing(h ? t : null, h?.x ?? 0, h?.z ?? 0, this.terrain.brushRadius, colors[this.terrain.terrainBrush]);
+      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.terrain.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrain.terrainMaterial]}` : this.terrain.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.terrain.foliageLevel]}` : this.terrain.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.terrain.brushRadius} m` : '';
       this.view.setFaceHighlight(null, null);
       this.view.setHoverCell(this.doc, null);
       this.view.setGhost(this.doc, null, null, 0, true);
@@ -2220,11 +2212,11 @@ export class EditorApp {
       const target = this.paintTarget();
       const g = this.paintGround;
       // On the ground: the ring it paints, as the Terrain tab's Paint brush shows it.
-      this.view.setBrushRing(g ? this.shownGround : null, g?.x ?? 0, g?.z ?? 0, this.brushRadius, '#ffb03b');
+      this.view.setBrushRing(g ? this.shownGround : null, g?.x ?? 0, g?.z ?? 0, this.terrain.brushRadius, '#ffb03b');
       $('ed-target').textContent = target
         ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.doc, target.tile, target.slot).material.displayName}`
         : g
-          ? `Ground · paint ${TERRAIN_MATERIAL_LABELS[this.groundPaint]}${TERRAIN_SURFACES[this.groundPaint] === this.paintStyle.material || !terrainMaterialFor(this.paintStyle.material) ? '' : ` (${coreMaterials.get(this.paintStyle.material)?.displayName ?? 'swatch'})`} · radius ${this.brushRadius} m`
+          ? `Ground · paint ${TERRAIN_MATERIAL_LABELS[this.groundPaint]}${TERRAIN_SURFACES[this.groundPaint] === this.paintStyle.material || !terrainMaterialFor(this.paintStyle.material) ? '' : ` (${coreMaterials.get(this.paintStyle.material)?.displayName ?? 'swatch'})`} · radius ${this.terrain.brushRadius} m`
           : '';
     } else if (this.tool.kind === 'path') {
       const over = this.paths.hovering;
@@ -2468,7 +2460,7 @@ export class EditorApp {
       }
       if (e.button !== 0) return;
       if (this.tool.kind === 'paint' && e.altKey) return this.pickStyleAtHover();
-      if (this.tool.kind === 'terrain') return this.startStroke(e.shiftKey);
+      if (this.tool.kind === 'terrain') return this.terrain.startStroke(e.shiftKey);
       // Paint, Walls, Scatter and Erase paint as you drag (one undo step); Shift does the opposite.
       if (this.tool.kind === 'paint' || this.tool.kind === 'edge' || this.tool.kind === 'envbrush' || this.tool.kind === 'erase') {
         this.history.beginStroke();
@@ -2543,7 +2535,7 @@ export class EditorApp {
           this.env.strokeEnd();
         }
         if (this.marquee) this.endMarquee();
-        this.endStroke();
+        this.terrain.endStroke();
         this.endDrag();
         this.paths.pointerUp();
         this.routes.pointerUp();
@@ -2620,8 +2612,8 @@ export class EditorApp {
     logic: () => this.logic.toggle(),
     paint: () => this.setTool({ kind: 'paint' }),
     terrain: () => {
-      const i = this.tool.kind === 'terrain' ? (TERRAIN_BRUSHES.indexOf(this.terrainBrush) + 1) % TERRAIN_BRUSHES.length : TERRAIN_BRUSHES.indexOf(this.terrainBrush);
-      this.setTerrainBrush(TERRAIN_BRUSHES[i]!);
+      const i = this.tool.kind === 'terrain' ? (TERRAIN_BRUSHES.indexOf(this.terrain.terrainBrush) + 1) % TERRAIN_BRUSHES.length : TERRAIN_BRUSHES.indexOf(this.terrain.terrainBrush);
+      this.terrain.setTerrainBrush(TERRAIN_BRUSHES[i]!);
     },
     walls: () => this.wallsTool(this.tool.kind === 'edge'),
     erase: () => this.setTool({ kind: 'erase' }),
@@ -2666,10 +2658,10 @@ export class EditorApp {
     liftSelection: () => this.nudge(0, 0, 1),
     lowerSelection: () => this.nudge(0, 0, -1),
     brushBigger: () => {
-      if (this.tool.kind === 'terrain' || this.tool.kind === 'envbrush') this.setBrushRadius(this.brushRadius + 2);
+      if (this.tool.kind === 'terrain' || this.tool.kind === 'envbrush') this.terrain.setBrushRadius(this.terrain.brushRadius + 2);
     },
     brushSmaller: () => {
-      if (this.tool.kind === 'terrain' || this.tool.kind === 'envbrush') this.setBrushRadius(this.brushRadius - 2);
+      if (this.tool.kind === 'terrain' || this.tool.kind === 'envbrush') this.terrain.setBrushRadius(this.terrain.brushRadius - 2);
     },
     nudgeNorth: () => this.nudge(0, 1, 0),
     nudgeSouth: () => this.nudge(0, -1, 0),
@@ -2731,7 +2723,7 @@ export class EditorApp {
     add('ed-tb-erase', 'erase', 'Erase', 'X', 'Erase: click anything to delete it', () => this.setTool({ kind: 'erase' }), 'erase');
     add('ed-tb-paint', 'paint', 'Paint', 'B', 'Paint surfaces', () => this.setTool({ kind: 'paint' }), 'paint');
     add('ed-tb-walls', 'edge', 'Walls', 'O', 'Walls & openings: doors, windows, arches on any side', () => this.wallsTool(false), 'edge');
-    add('ed-tb-terrain', 'terrain', 'Terrain', 'T', 'Sculpt and paint the terrain', () => this.setTerrainBrush(this.terrainBrush), 'terrain');
+    add('ed-tb-terrain', 'terrain', 'Terrain', 'T', 'Sculpt and paint the terrain', () => this.terrain.setTerrainBrush(this.terrain.terrainBrush), 'terrain');
     add('ed-tb-measure', 'measure', 'Measure', 'U', 'Measure: distance, height difference and slope between points', () => this.setTool({ kind: 'measure' }), 'measure');
     const sep = document.createElement('span');
     sep.className = 'tb-sep';
@@ -2877,7 +2869,7 @@ export class EditorApp {
 
     this.buildPropPalette();
     this.buildMountPalette();
-    this.buildTerrainPalette();
+    this.terrain.buildTerrainPalette();
     // Paths: one tool for roads, streets, trails and walkways, the track (NPC traffic) and AI routes, in the Terrain
     // pane (roads lie on the ground and shape it). The track and route cards open it on that kind of path.
     const pathGroup = this.palette.group($('ed-terrain-paths'), 'terrain:paths', 'Paths, Roads & Routes');
@@ -3350,145 +3342,12 @@ export class EditorApp {
     } else el.append(small('Fence the map in: pick a style and the boundary fits round everything you have built.'));
   }
 
-  // ---------------------------------------------------------------- terrain
-
-  private setTerrainBrush(brush: TerrainBrush): void {
-    this.terrainBrush = brush;
-    this.setTool({ kind: 'terrain' });
-    for (const b of document.querySelectorAll<HTMLElement>('[data-ground]')) b.classList.toggle('active', brush === 'paint' && b.dataset.ground === this.terrainMaterial);
-    for (const b of document.querySelectorAll<HTMLElement>('[data-foliage]')) b.classList.toggle('active', brush === 'foliage' && Number(b.dataset.foliage) === this.foliageLevel);
-  }
-
-  private setBrushRadius(r: number): void {
-    this.brushRadius = Math.max(2, Math.min(40, r));
-    for (const id of ['ed-tr-radius']) {
-      $<HTMLInputElement>(id).value = String(this.brushRadius);
-      $(`${id}-v`).textContent = `${this.brushRadius} m`;
-    }
-    this.env.syncRadius(this.brushRadius);
-    this.updateHover();
-  }
-
-  private startStroke(invert: boolean): void {
-    const t = this.doc.terrain;
-    if (!t || !this.terrainHover) return;
-    if (invert && (this.terrainBrush === 'raise' || this.terrainBrush === 'lower')) this.terrainBrush = this.terrainBrush === 'raise' ? 'lower' : 'raise';
-    // The brush works on the document's own ground; Flatten levels it to the height under the pointer as shown.
-    // Flatten to the height typed in the Terrain tab, else to the height where the stroke starts.
-    const typed = $<HTMLInputElement>('ed-tr-flatten-y').value.trim();
-    const target = typed !== '' && Number.isFinite(Number(typed)) ? Number(typed) : this.terrainHover.y;
-    this.stroke = { before: t, now: t, shown: this.view.ground ?? t, target, seed: (Math.random() * 1e9) | 0 };
-    this.strokeStep(1 / 30);
-  }
-
-  /** Apply the brush for one frame; heights change at a steady rate however fast the pointer moves. */
-  private strokeStep(dt: number): void {
-    const s = this.stroke!;
-    const h = this.terrainHover;
-    if (!h) return;
-    const rate = this.brushStrength;
-    const strength = this.terrainBrush === 'raise' || this.terrainBrush === 'lower' ? rate * 6 * dt : this.terrainBrush === 'roughen' ? rate * 1.5 * dt : Math.min(1, rate * 8 * dt);
-    s.now = applyBrush(s.now, { brush: this.terrainBrush, x: h.x, z: h.z, radius: this.brushRadius, strength, target: s.target, material: this.terrainMaterial, level: this.foliageLevel, seed: s.seed });
-    // Shown kept under the floors as it is sculpted (the paths are laid in again on release).
-    s.shown = this.groundShownFor(s.now, false);
-    this.view.previewTerrain({ ...this.viewDoc, terrain: s.shown });
-    if (this.terrainBrush !== 'paint' && this.terrainBrush !== 'foliage') {
-      const y = terrainHeightAt(s.shown, h.x, h.z);
-      if (y !== null) this.terrainHover = { ...h, y };
-    }
-    this.updateHover();
-  }
-
-  private endStroke(): void {
-    const s = this.stroke;
-    if (!s) return;
-    this.stroke = null;
-    const label = this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial]}` : this.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.foliageLevel]}` : `Terrain ${this.terrainBrush}`;
-    if (s.now !== s.before) this.run(label, { kind: 'setTerrain', before: s.before, after: s.now });
-  }
-
-  private setTerrain(label: string, after: TerrainData | null): void {
-    this.run(label, { kind: 'setTerrain', before: this.doc.terrain, after });
-    this.setTerrainBrush(this.terrainBrush);
-  }
-
-  /**
-   * Terrain → Smooth all: the whole ground smoothed in one undo step (a Gaussian of `sigma` metres: bumps and
-   * pits go, slopes and hills keep their shape). With `keepUnderBlocks`, the ground under every block that
-   * stands on it (bottom within 0.5 m of the ground, or below it) and 1.5 m round stays as it is, so halls on
-   * levelled pads, walls and kerbs neither float nor sink; the smoothed ground meets it without a step.
-   * Spawns, pickups, flags, hills, vehicles and props standing on the ground (within 30 cm over it or 1.5 m
-   * into it) move up or down with it, in the same undo step.
-   */
-  private smoothAllTerrain(sigma: number, keepUnderBlocks: boolean): void {
-    const t = this.doc.terrain;
-    if (!t || !(sigma > 0)) return;
-    let hold: Uint8Array | undefined;
-    if (keepUnderBlocks) {
-      const feet: [number, number][][] = [];
-      for (const e of this.doc.entities) {
-        if (e.kind !== 'block') continue;
-        const ground = terrainHeightAt(t, e.position[0], e.position[2]);
-        if (ground === null || e.position[1] > ground + 0.5) continue;
-        feet.push(boxFootprint(blockBox(e)));
-      }
-      hold = terrainHoldMask(t, feet, 1.5);
-    }
-    const after = smoothTerrain(t, sigma, hold);
-    let moved = 0;
-    for (let i = 0; i < t.heights.length; i++) if (after.heights[i] !== t.heights[i]) moved++;
-    if (!moved) return this.toast('The ground is already smooth');
-    const carried = new Set<MapEntity['kind']>(['spawn', 'pickup', 'prop', 'mount', 'flag', 'hill']);
-    const before: MapEntity[] = [];
-    const moves: MapEntity[] = [];
-    // Props are bedded on the document's own ground (and drawn and played re-bedded on the ground as shown); the
-    // rest stand on the ground as shown, kept under the floors, so they move as that does.
-    const shownBefore = this.view.ground ?? t;
-    const shownAfter = this.groundShownFor(after);
-    for (const e of this.doc.entities) {
-      if (!carried.has(e.kind)) continue;
-      const was = terrainHeightAt(e.kind === 'prop' ? t : shownBefore, e.position[0], e.position[2]);
-      const now = terrainHeightAt(e.kind === 'prop' ? after : shownAfter, e.position[0], e.position[2]);
-      if (was === null || now === null || Math.abs(now - was) < 0.005) continue;
-      const above = e.position[1] - was;
-      if (above > 0.3 || above < -1.5) continue;
-      before.push(e);
-      moves.push({ ...e, position: [e.position[0], Math.round((e.position[1] + now - was) * 1000) / 1000, e.position[2]] } as MapEntity);
-    }
-    const terrainCmd: EditCommand = { kind: 'setTerrain', before: t, after };
-    this.run('Smooth all terrain', moves.length ? { kind: 'batch', commands: [terrainCmd, { kind: 'updateEntities', before, after: moves }] } : terrainCmd);
-    this.setTerrainBrush(this.terrainBrush);
-    this.toast(`Smoothed the terrain${hold ? ' (ground under blocks kept)' : ''}${moves.length ? `; ${moves.length} things on the ground moved with it` : ''} · Ctrl+Z undoes it`);
-  }
-
-  private syncTerrainUi(): void {
-    const t = this.doc.terrain;
-    $('ed-tr-create').hidden = !!t;
-    $('ed-tr-edit').hidden = !t;
-    if (t) {
-      $<HTMLInputElement>('ed-tr-boundary').checked = t.boundary;
-      $('ed-tr-size').textContent = `${((t.cols - 1) * t.spacing).toFixed(0)} × ${((t.rows - 1) * t.spacing).toFixed(0)} m · ${t.spacing} m grid`;
-      $<HTMLSelectElement>('ed-tr-base').value = TERRAIN_MATERIALS[mainGround(t)] ?? 'grass';
-    }
-  }
-
-  /** The trace image laid over the ground (owner, editor-only, never saved). */
-  private trace: TraceImage | null = null;
-
-  private setTrace(t: TraceImage | null): void {
-    if (this.trace && this.trace.url !== t?.url) URL.revokeObjectURL(this.trace.url);
-    this.trace = t;
-    this.view.setTrace(t);
-    const box = document.getElementById('ed-trace-place');
-    if (box) box.hidden = !t;
-  }
-
   /**
    * Terrain → Real places (owner only, like Publish: players never bring files into a map). Heights from a
    * height grid file (an ESRI ASCII grid in map metres: heightGrid.ts) become the terrain in one undo step; a
    * trace image (a plan or survey drawing of the place) lies over the ground to build on, and is never saved.
    */
-  private buildRealPlaceTools(): void {
+  buildRealPlaceTools(): void {
     const pane = document.querySelector<HTMLElement>('.ed-pane[data-pane="terrain"]');
     if (!pane) return;
     const box = document.createElement('div');
@@ -3546,7 +3405,7 @@ export class EditorApp {
       if ('error' in grid) return this.toast(`Height grid: ${grid.error}`, true);
       const typed = datum.i.value.trim() === '' ? null : Number(datum.i.value);
       const r = terrainFromHeightGrid(grid, { current: this.doc.terrain, datum: typed !== null && Number.isFinite(typed) ? typed : null, smoothing: Number(smoothing.value) });
-      this.setTerrain(`Heights from ${f.name}`, r.terrain);
+      this.terrain.setTerrain(`Heights from ${f.name}`, r.terrain);
       if (typed === null) datum.i.value = String(Math.round(r.datum * 100) / 100);
       const t = r.terrain;
       this.toast(`Heights from ${f.name}: ${((t.cols - 1) * t.spacing).toFixed(0)} × ${((t.rows - 1) * t.spacing).toFixed(0)} m, ${t.spacing} m grid${r.resampled ? ' (averaged to fit)' : ''}${Number(smoothing.value) ? `, smoothed over ${smoothing.value} m` : ''}; y 0 is ${r.datum.toFixed(2)} m`);
@@ -3578,11 +3437,11 @@ export class EditorApp {
     opLabel.className = 'stack';
     opLabel.append('Opacity', opacity);
     const clear = button('ed-trace-clear', 'Remove trace image', 'Take the picture away (it was never part of the map)');
-    clear.addEventListener('click', () => this.setTrace(null));
+    clear.addEventListener('click', () => this.terrain.setTrace(null));
     const apply = () => {
-      if (!this.trace) return;
+      if (!this.terrain.trace) return;
       const v = (i: HTMLInputElement, d: number) => (i.value.trim() !== '' && Number.isFinite(Number(i.value)) ? Number(i.value) : d);
-      this.setTrace({ ...this.trace, x0: v(west.i, this.trace.x0), x1: v(east.i, this.trace.x1), z0: v(south.i, this.trace.z0), z1: v(north.i, this.trace.z1), opacity: Number(opacity.value) / 100 });
+      this.terrain.setTrace({ ...this.terrain.trace, x0: v(west.i, this.terrain.trace.x0), x1: v(east.i, this.terrain.trace.x1), z0: v(south.i, this.terrain.trace.z0), z1: v(north.i, this.terrain.trace.z1), opacity: Number(opacity.value) / 100 });
     };
     for (const i of [west.i, east.i, south.i, north.i, opacity]) i.addEventListener('input', apply);
     traceFile.addEventListener('change', () => {
@@ -3593,9 +3452,9 @@ export class EditorApp {
       // At first it covers the terrain (or 100 m round the centre); type the real edges in to place it.
       const t = this.doc.terrain;
       const rect = t ? { x0: t.origin[0], z0: t.origin[1], x1: t.origin[0] + (t.cols - 1) * t.spacing, z1: t.origin[1] + (t.rows - 1) * t.spacing } : { x0: -50, z0: -50, x1: 50, z1: 50 };
-      const keep = this.trace;
-      this.setTrace({ url: URL.createObjectURL(f), ...(keep ? { x0: keep.x0, z0: keep.z0, x1: keep.x1, z1: keep.z1 } : rect), opacity: Number(opacity.value) / 100 });
-      const r = this.trace!;
+      const keep = this.terrain.trace;
+      this.terrain.setTrace({ url: URL.createObjectURL(f), ...(keep ? { x0: keep.x0, z0: keep.z0, x1: keep.x1, z1: keep.z1 } : rect), opacity: Number(opacity.value) / 100 });
+      const r = this.terrain.trace!;
       west.i.value = String(r.x0);
       east.i.value = String(r.x1);
       south.i.value = String(r.z0);
@@ -3605,114 +3464,6 @@ export class EditorApp {
     place.append(west.l, east.l, south.l, north.l, opLabel, clear);
     box.append(head, note, datum.l, smoothLabel, heights, heightsFile, traceHead, trace, place);
     pane.append(box);
-  }
-
-  private buildTerrainPalette(): void {
-    this.buildRealPlaceTools();
-    const icons: Record<TerrainBrush, string> = {
-      raise: '<path d="M6 46 Q28 6 50 46Z" fill="#8fbf5a"/><path d="M28 12v-6m-5 5l5-5 5 5" stroke="#ffd34d" stroke-width="3" fill="none"/>',
-      lower: '<path d="M6 20 Q28 56 50 20V50H6Z" fill="#8a6a3f"/><path d="M28 8v10m-5-5l5 5 5-5" stroke="#ff7a4d" stroke-width="3" fill="none"/>',
-      smooth: '<path d="M6 40 Q18 30 28 34 T50 32V50H6Z" fill="#8fbf5a"/><path d="M8 18 Q18 12 28 18 T48 18" stroke="#7fd8ff" stroke-width="3" fill="none"/>',
-      flatten: '<path d="M6 36 L18 30 L38 30 L50 38V50H6Z" fill="#8fbf5a"/><path d="M12 22h32" stroke="#c7a6ff" stroke-width="3"/>',
-      roughen: '<path d="M6 40 L12 32 L17 38 L23 26 L29 36 L35 28 L41 37 L50 30V50H6Z" fill="#7d8a5a"/>',
-      paint: '<rect x="8" y="30" width="40" height="18" fill="#c9a36b"/><path d="M34 8l10 10-14 14-10-10z" fill="#dfe6ee"/><path d="M20 22l10 10-6 4-8-8z" fill="#8fbf5a"/>',
-      foliage: '<rect x="6" y="40" width="44" height="10" fill="#8a6a3f"/><path d="M12 42 Q14 26 18 18 Q18 30 20 42Z M22 42 Q26 22 30 12 Q30 28 31 42Z M33 42 Q37 28 44 22 Q40 32 40 42Z" fill="#6fbf4a"/><circle cx="18" cy="16" r="3" fill="#ff6a8a"/>',
-    };
-    const brushes = $('ed-tr-brushes');
-    for (const brush of TERRAIN_BRUSHES) {
-      const b = document.createElement('button');
-      b.className = 'tile-btn';
-      b.dataset.tool = `terrain:${brush}`;
-      const label = `${brush[0]!.toUpperCase()}${brush.slice(1)}`;
-      b.innerHTML = `<svg viewBox="0 0 56 56">${icons[brush]}</svg>${label}`;
-      b.addEventListener('click', () => this.setTerrainBrush(brush));
-      brushes.append(b);
-      this.palette.register(b, { key: b.dataset.tool, name: `${label} terrain`, tags: 'terrain ground sculpt brush' });
-    }
-    const grounds = $('ed-tr-materials');
-    for (const m of TERRAIN_MATERIALS) {
-      const def = coreMaterials.get(TERRAIN_SURFACES[m]);
-      const b = document.createElement('button');
-      b.className = 'mat-btn';
-      b.dataset.ground = m;
-      b.title = `Paint the ground with ${TERRAIN_MATERIAL_LABELS[m]}`;
-      b.innerHTML = `${def ? `<img alt="" src="${materialThumbnail(def)}">` : ''}<span class="lbl">${TERRAIN_MATERIAL_LABELS[m]}</span>`;
-      b.addEventListener('click', () => {
-        this.terrainMaterial = m;
-        this.setTerrainBrush('paint');
-      });
-      grounds.append(b);
-      this.palette.register(b, { key: `ground:${m}`, name: `${TERRAIN_MATERIAL_LABELS[m]} ground`, tags: 'ground terrain paint material' });
-    }
-    const levels = $('ed-tr-foliage');
-    FOLIAGE_LEVELS.forEach((label, level) => {
-      const b = document.createElement('button');
-      b.dataset.foliage = String(level);
-      b.textContent = label;
-      b.title = ['No plants', 'A few tufts of grass', 'Grass and the odd flower', 'Thick grass, flowers and shrubs', 'Long grass, flowers and bushes'][level]!;
-      b.addEventListener('click', () => {
-        this.foliageLevel = level;
-        this.setTerrainBrush('foliage');
-      });
-      levels.append(b);
-    });
-    $('ed-tr-foliage-auto').addEventListener('click', () => {
-      if (this.doc.terrain?.foliage.length) this.setTerrain('Plants follow the ground', { ...this.doc.terrain, foliage: [] });
-    });
-    $('ed-tr-new').addEventListener('click', () => {
-      const size = Number($<HTMLSelectElement>('ed-tr-new-size').value);
-      const ground = $<HTMLSelectElement>('ed-tr-new-ground').value as TerrainMaterial;
-      // Width and depth, when typed, make an oblong terrain (32-400 m each way); the grid widens past 320 m.
-      const side = (id: string) => {
-        const v = Number($<HTMLInputElement>(id).value);
-        return $<HTMLInputElement>(id).value.trim() !== '' && Number.isFinite(v) ? Math.max(32, Math.min(400, v)) : size;
-      };
-      const width = side('ed-tr-new-w');
-      const depth = side('ed-tr-new-d');
-      // Just under ground-floor tiles, so the two never fight for the same pixels.
-      this.setTerrain('Create terrain', { ...newTerrain(width, terrainSpacingFor(width, depth), [0, 0], ground, depth), baseY: -0.15 });
-    });
-    for (const m of TERRAIN_MATERIALS) $<HTMLSelectElement>('ed-tr-new-ground').append(new Option(TERRAIN_MATERIAL_LABELS[m], m, m === 'grass', m === 'grass'));
-    $('ed-tr-remove').addEventListener('click', () => {
-      // Undoable like every edit (Ctrl+Z), so no question first.
-      this.setTerrain('Remove terrain', null);
-      this.toast('Terrain removed · Ctrl+Z brings it back');
-    });
-    for (const m of TERRAIN_MATERIALS) $<HTMLSelectElement>('ed-tr-base').append(new Option(TERRAIN_MATERIAL_LABELS[m], m));
-    $('ed-tr-base-set').addEventListener('click', () => {
-      const t = this.doc.terrain;
-      if (!t) return;
-      const to = TERRAIN_MATERIALS.indexOf($<HTMLSelectElement>('ed-tr-base').value as TerrainMaterial);
-      const from = mainGround(t);
-      if (to < 0 || to === from) return;
-      // Undoable, one step: the main ground becomes the new one; cells painted another material keep it.
-      this.setTerrain(`Main ground: ${TERRAIN_MATERIAL_LABELS[TERRAIN_MATERIALS[to]!]}`, { ...t, materials: t.materials.map((m) => (m === from ? to : m)) });
-    });
-    $('ed-tr-grid').addEventListener('click', () =>
-      openChangeGridDialog({
-        doc: () => this.doc,
-        shownFor: (t) => this.groundShownFor(t),
-        apply: (label, cmd, moved) => {
-          if (!this.run(label, cmd)) return;
-          this.setTerrainBrush(this.terrainBrush);
-          this.toast(`${label}${moved ? `; ${moved} things on the ground moved with it` : ''} · Ctrl+Z undoes it`);
-        },
-        root: $('editor'),
-      }),
-    );
-    $('ed-tr-smooth-all').addEventListener('click', () => this.smoothAllTerrain(Number($<HTMLSelectElement>('ed-tr-smooth-all-amount').value), $<HTMLInputElement>('ed-tr-smooth-hold').checked));
-    $('ed-tr-cliffs').addEventListener('click', () => {
-      if (this.doc.terrain) this.setTerrain('Paint cliffs as stone', paintSlopes(this.doc.terrain, 35, 'stone'));
-    });
-    $<HTMLInputElement>('ed-tr-boundary').addEventListener('change', (e) => {
-      if (this.doc.terrain) this.setTerrain('Terrain boundary', { ...this.doc.terrain, boundary: (e.target as HTMLInputElement).checked });
-    });
-    $<HTMLInputElement>('ed-tr-radius').addEventListener('input', (e) => this.setBrushRadius(Number((e.target as HTMLInputElement).value)));
-    $<HTMLInputElement>('ed-tr-strength').addEventListener('input', (e) => {
-      this.brushStrength = Number((e.target as HTMLInputElement).value) / 100;
-      $('ed-tr-strength-v').textContent = `${Math.round(this.brushStrength * 100)}%`;
-    });
-    this.syncTerrainUi();
   }
 
   /** Vehicles and turrets in the Entities tab (pictures from the atlas), then parked vehicles (props). */
@@ -3778,7 +3529,6 @@ export class EditorApp {
     // Every species has a palette picture (pictureKeys lists them all, boulders and cliff faces included).
     this.env.buildPalette($('ed-nature'), ENV_SPECIES.map((s) => s.id));
   }
-
 
   private buildPaintPalette(): void {
     const mats = $('ed-materials');
