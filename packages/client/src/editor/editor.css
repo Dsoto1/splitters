@@ -712,7 +712,8 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-maptest .ed-dialog-field > span { width: 84px; flex: none; }
 .ed-maptest .ed-dialog-field[hidden] { display: none; }
 .ed-maptest .ed-dialog-field input, .ed-maptest .ed-dialog-field select { flex: 1; min-width: 0; }
-.ed-mt-progress { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; font-size: 12px; }
+.ed-mt-progress { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 8px 0 0; font-size: 12px; }
+.ed-mt-progress > span { flex: 1 0 100%; color: var(--muted); }
 .ed-mt-progress[hidden] { display: none; }
 .ed-mt-progress progress { flex: 1; min-width: 60px; }
 .ed-mt-summary { margin: 8px 0 6px; padding-left: 18px; font-size: 12px; line-height: 1.45; }

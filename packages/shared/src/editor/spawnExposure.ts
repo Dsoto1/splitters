@@ -20,7 +20,7 @@ export const EXPOSURE_NEAR = 4;
 /** Places looked from, at most (a spread-out subset of the navmesh's places). */
 export const EXPOSURE_SAMPLES = 400;
 /** A spawn seen from this share of the map's places or more is warned about (the owner's call: see HANDOFF). */
-export const EXPOSED_SHARE = 0.3;
+export const EXPOSED_SHARE = 0.5;
 /** A sightline this long or longer is drawn (m). */
 export const LONG_SIGHTLINE = 50;
 

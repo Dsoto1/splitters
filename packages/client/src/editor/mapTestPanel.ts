@@ -64,7 +64,7 @@ export class MapTestPanel {
         <label class="ed-dialog-field" id="ed-mt-bots-row"><span>Bots</span><input id="ed-mt-bots" type="number" min="2" max="32" step="1" value="8" /></label>
         <label class="ed-dialog-field"><span>Length</span><select id="ed-mt-length"></select></label>
         <div class="ed-dialog-actions"><button id="ed-mt-run" type="button" class="primary">Run bots</button></div>
-        <div id="ed-mt-progress" class="ed-mt-progress" hidden><progress id="ed-mt-bar" max="1" value="0"></progress><span id="ed-mt-status"></span><button id="ed-mt-cancel" type="button">Cancel</button></div>
+        <div id="ed-mt-progress" class="ed-mt-progress" hidden><progress id="ed-mt-bar" max="1" value="0"></progress><button id="ed-mt-cancel" type="button">Cancel</button><span id="ed-mt-status"></span></div>
         <div id="ed-mt-results" hidden>
           <ul id="ed-mt-summary" class="ed-mt-summary"></ul>
           <div id="ed-mt-layers" class="ed-mt-layers"></div>
