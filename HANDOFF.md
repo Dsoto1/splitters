@@ -219,6 +219,15 @@ The workflow is unchanged (CLAUDE.md):
   (`recommendedPlayers`); with 97 spawn points and a 16 v 16 team layout its automatic caps are 32 best, up to 96.
   Suggested: Players 16-64 (as Iron Coast, 96 spawns, says), in MapMaker's Map properties; small fixes, 2026-11-09.
 - **For the session owning team kills and friendly fire:** the e2e `teams` flow's friendly-fire and team-kill checks contradict themselves between attempts on check/mapmaker-setpieces (run 42549709174, job 128943570176). Attempt 1: friendly fire off still hurt a teammate (70.5), and a team kill wasn't marked TK (killer 5 was a bot). Attempt 2: friendly fire on hurt 0, and TK was marked fine. It looks like stray shots from bots or other teammates in the test match, not set pieces. The failed job was re-run once.
+- **Answer from the session owning team kills (2026-11-09):** a test race, not a game bug and not set pieces. Under load
+  the "a third of a second" wait after your shots ran 500-2,400 ticks while the enemy bots kept fighting (only the
+  teammate was held). Eight local repeats of the old setup, damage logged by attacker: enemy rounds hit the placed
+  teammate in all four with friendly fire off (it lost 51 and 95, or died and respawned) and in two of four with it on,
+  killing it so that it stood there respawned at full health ("hurt 0"); on the 1-HP teammate an enemy can land the
+  kill before your round (killer 5, not a TK, correctly unmarked). Fixed in e2e `friendlyFireChecks` (`wip/teams-flaky`,
+  landed on main with this answer): every bot holds fire and the air is clear before the shots, the teammate's spawn
+  shield is cleared, and its damage is logged by attacker (`hurt` = your rounds; friendly fire off also needs nothing
+  lost). Merge origin/main and the teams flow should hold.
 - Claimed: `maps/test_coverage.json` (the Town Wall Gatehouse, through MapMaker; set pieces part 6, `wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-09.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
@@ -300,6 +309,11 @@ landed).**
   (cut a deep tunnel's slot with Flatten); a stair's foot on new terrain needs the ground flattened to the floor's
   height (the 0.15 m offset plus the first step is a lip bots can't climb); hold Flatten on each spot (it levels at a
   rate a frame) and overlap neighbouring areas; the inspector can drop the first edit after a placement.
+- Claimed: the characters' far copies (`packages/client/public/characters/*.glb` LODs, `content/meshy.lock.json`, the e2e `characters3` flow's far-copy checks; `wip/far-copies`), far-copies agent, 2026-11-09.
+
+- Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
+
+**Landing now: MapMaker train (check/train-<timestamp>), please hold code pushes to main.** (MapMaker lane, 2026-11-09; followups, bothints, p4, env3, setpieces6, sandfall, whiteout.)
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
@@ -361,6 +375,42 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - `shared/src/editor/keymap.ts`: `raceTrack` "Paths, on the race track" (Shift+G, l. 122).
   - `client/index.html` l. 228 (the Vehicles tab's title "...parked vehicles and race tracks"; MapMaker UI, so left
     to this lane too).
+- **The owner's answers, 2026-11-09 ("ur recs": the lane's recommendations, adopted):**
+  - **Phase 3 B:**
+    - paste across themes is allowed: pieces take the new map's theme and keep their paint;
+    - Mirror of half the map refuses while the far half isn't empty;
+    - terrain and paths mirror as a checkbox;
+    - Breakthrough spawn groups keep their side;
+    - tiles with no mirror image are refused, and named;
+    - the note tool stays on J and in Map properties.
+  - **Sandfall:**
+    - keep 4 m a square, open corner courts, 12 v 12;
+    - bring back the portcullis gates (not the lifts or the portal);
+    - offer Deathmatch again;
+    - add a side-wall option to the tunnel tiles in MapMaker;
+    - trim the collision boxes well down (drop arcades on the far sides or the attic walk); aim near the shipped
+      maps.
+  - **Terrain:** plants on fine grids as dense as at 2.5 m; Real-place imports stay at 161 a side; phones draw half
+    resolution on Low only.
+  - **Follow-ups:** props outside the boundary stay scenery; moving and pasting aren't refused; the status line gives
+    way first.
+  - **Bot hints:** chokepoints and staging are marked by hand for now; Mirror swaps teamed hints like spawns; jump
+    checks stay on the movement numbers; hints stay in the content hash.
+  - **Whiteout Station:**
+    - add King of the Hill (hills in the yard, on the ridge and in the cave);
+    - add 2–4 drivable snow sleds on the south road;
+    - move Tide's spawns a cell nearer the yard;
+    - keep the ridge, the cave and the tanks as built.
+  - **Environment tools:** every plant stays stored one by one; a blocking tree asks only on spawns, routes and
+    objectives; retire the old Scatter Brush sets; add the missing palette pictures.
+  - **Phase 4:**
+    - a spawn is exposed at 50 %;
+    - exposure counts every walkable place;
+    - the spawn check runs on demand;
+    - the bot test allows up to 64 bots;
+    - heatmaps stay in memory.
+  - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
+    until it's gone (docs are fine).
 - **Landing cadence (owner, 2026-11-09: "less landings, since I won't be testing until Tuesday afternoon"):** the
   MapMaker lane stops landing each branch on its own. Green branches wait. They land together as one train
   (`tools/ci/train.mjs`) on Tuesday 2026-11-10 morning (UTC), ready for the owner's Tuesday-afternoon testing; a
