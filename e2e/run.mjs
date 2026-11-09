@@ -8376,15 +8376,14 @@ async function gripsInPlay(browser) {
       if (now !== last) window.__heldTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
     }, 50);
   });
-  await page.evaluate(() => window.__give('core.marksman'));
-  await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.marksman', null, { timeout: T(10000) }).catch(() => {});
-  for (let i = 0; i < 4; i++) {
-    const held = await page.evaluate(() => window.__cs.local.weapon?.id);
-    if (held === 'core.marksman') break;
-    await page.keyboard.press('Digit3');
-    await page.waitForFunction((was) => window.__cs.local.weapon?.id !== was, held, { timeout: T(10000) }).catch(() => {});
+  // On CI the rifle sometimes came back in your hands a few seconds after the give (twice in one run, 2026-11-09:
+  // marksman at 0.1 s, rifle at 0.7 s with no key pressed), and pressing 3 then only asked for the rifle again
+  // ("asked 3", run 42679874806). So the give is repeated until the marksman is held, drawn and raised.
+  const marksmanUp = () => window.__cs.local.weapon?.id === 'core.marksman' && window.__cs.view.viewWeapon === 'core.marksman' && !!window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0;
+  for (let i = 0; i < 6 && !(await page.evaluate(marksmanUp)); i++) {
+    if ((await page.evaluate(() => window.__cs.local.weapon?.id)) !== 'core.marksman') await page.evaluate(() => window.__give('core.marksman'));
+    await page.waitForFunction(marksmanUp, null, { timeout: T(10000) }).catch(() => {});
   }
-  await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.marksman' && window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0, null, { timeout: T(20000) }).catch(() => {});
   await page.evaluate(() => (window.__autoInput = { zoom: true }));
   const scopedIn = await page.waitForFunction(() => window.__cs.view.camera.fov < 0.8, null, { timeout: T(20000) }).then(() => true, () => false);
   // (Up to a minute: on a loaded machine the sharper copy took over 20 s to load, locally.)
