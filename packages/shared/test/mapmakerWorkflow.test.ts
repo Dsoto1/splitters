@@ -257,9 +257,9 @@ describe('The card-shot camera (MapMaker overhaul Phase 3 item 8)', () => {
   });
 
   it('format v30: a v29 map migrates unchanged; a map with a card camera saves and loads; a bad one is refused', () => {
-    expect(MAP_FORMAT_VERSION).toBe(30);
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(30);
     const v29 = { ...JSON.parse(readFileSync(new URL('./fixtures/iron_compound_v26.json', import.meta.url), 'utf8')), formatVersion: 29 };
-    const { doc, fromVersion } = migrateMapDocument(structuredClone(v29));
+    const { doc, fromVersion } = migrateMapDocument(structuredClone(v29), undefined, 30);
     expect(fromVersion).toBe(29);
     expect(doc).toEqual({ ...v29, formatVersion: 30 });
     expect(loadMap(structuredClone(v29)).ok).toBe(true);

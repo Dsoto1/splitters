@@ -133,10 +133,22 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: `maps/sandfall_colosseum.json` (rebuild), MapMaker lane, 2026-11-08.
 - Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
-- Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
-- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, bunker_cross, concrete_annex, iron_tide, ironhold_prison, pump_tower, silo_complex, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
-- Note for both sessions: the e2e `party` flow fails intermittently on check branches (the party never reaches the voted map; runs 42519820533, 42530655386, and p3a's first run). It passes on re-run. Its owner may want to look.
+- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
+- **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
+- **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
+  (team kills and roulette).
+  - **Symptom:** the party never reaches the voted map: `{"s2":{},"fill1":8,"fill2":8}`.
+  - **Where it fails:**
+    - main b3f22196, built locally: twice;
+    - `check/mapmaker-setpieces` run 42530655386: both attempts, voting runway_nine, then verdant_ziggurat, then
+      pump_tower;
+    - it was flaky before b3f22196 (runs 42519820533 and 42528585610).
+  - **The path:** session.ts `voteWon` (the host loads the map, then `exit('travel')`).
+  - **Why it hasn't shown on main:** main's own CI runs skip e2e when a check branch was already green.
+  - **Effect:** every MapMaker branch with shared code runs it and goes red, so set pieces part 5 is held at
+    059df862.
+  - **Please fix**, or tell us here which commit to land against.
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` low-detail levels, `content/meshy.lock.json`), the pickup/hit/streak bursts in `content/vfx.json`, small fixes of 2026-11-08 (`wip/small-fixes`), 2026-11-09. (Iron Maw's player count and Fernwood Moon's lift are inside other claims: not edited here.)
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
@@ -203,6 +215,17 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   MAP 02 The Spillway and MAP 04 Verdant Protocol (docs/map-briefs/). Build with MapMaker only, using our generated
   foliage (no Kenney trees, bushes, flowers or grass anywhere; owner 2026-11-08). The full pass over every map comes
   after all of this, one map at a time, judging whether each map needs it.
+
+**MapMaker Phase 3, part B** (`wip/mapmaker-p3b`, other account; docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under
+Phase 3 items 3-7): groups (Ctrl+G), copy and paste between maps (Ctrl+C / Ctrl+V, localStorage), templates
+(`maps/templates/*.json`, New map → start from), Mirror… (Shift+M), note pins (J). Map format v31 (`groups`,
+`editorNotes`), chained after v30.
+- **Owner's calls, built the conservative way:** (1) paste into another theme is refused (`PASTE_ACROSS_THEMES`);
+  (2) half-map mirror refuses while the other half has anything; (3) terrain and paths aren't mirrored; (4) Breakthrough
+  spawn groups keep their side in a mirror; (5) a tile with no mirror image among its turns is refused across a line.
+- **Pitfalls:** `setSelection` widens every selection to whole groups (pass `single` for one member); MapMaker's `run`
+  tidies groups after every edit (`withGroupsTidied`). Templates live in `maps/templates/` on purpose: anything
+  reading `maps/*.json` must stay non-recursive. Rebuild a template with MapMaker (its tools), never by hand.
 
 **MapMaker Phase 1, part A** (`wip/mapmaker-p1a`, other account; docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under
 Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key list.

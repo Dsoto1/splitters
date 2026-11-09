@@ -1,5 +1,5 @@
 import type { ScenarioLogic } from '../map/logic.ts';
-import type { BloodSettings, Faction, GlassSettings, MapBotSet, MapPath, MapPhysics, MapBounds, MapDocument, MapEntity, SetPieceDefinition, SetPiecePlacement, TeamSetup, TilePlacement } from '../map/schema.ts';
+import type { BloodSettings, EditorNote, Faction, GlassSettings, MapBotSet, MapPath, MapPhysics, MapBounds, MapDocument, MapEntity, MapGroup, SetPieceDefinition, SetPiecePlacement, TeamSetup, TilePlacement } from '../map/schema.ts';
 import type { TerrainData } from '../map/terrain.ts';
 import type { Backdrop } from '../map/backdrop.ts';
 
@@ -42,6 +42,10 @@ export type EditCommand =
   | { kind: 'updateSetPieces'; before: SetPiecePlacement[]; after: SetPiecePlacement[] }
   /** The map's own set-piece definitions, replaced as a list (null: none, and no `setPieceDefs` key). */
   | { kind: 'setSetPieceDefs'; before: SetPieceDefinition[] | null; after: SetPieceDefinition[] | null }
+  /** MapMaker's groups (v31), replaced as a list (null or empty: none, and no `groups` key). */
+  | { kind: 'setGroups'; before: MapGroup[] | null; after: MapGroup[] | null }
+  /** Note pins (v31), replaced as a list: one added, edited, moved or deleted = one undo step (null or empty: none, and no `editorNotes` key). */
+  | { kind: 'setNotes'; before: EditorNote[] | null; after: EditorNote[] | null }
   | { kind: 'batch'; commands: EditCommand[] };
 
 export class CommandError extends Error {}
@@ -137,6 +141,14 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       const { setPieceDefs: _old, ...rest } = doc;
       return cmd.after?.length ? { ...rest, setPieceDefs: cmd.after } : rest;
     }
+    case 'setGroups': {
+      const { groups: _old, ...rest } = doc;
+      return cmd.after?.length ? { ...rest, groups: cmd.after } : rest;
+    }
+    case 'setNotes': {
+      const { editorNotes: _old, ...rest } = doc;
+      return cmd.after?.length ? { ...rest, editorNotes: cmd.after } : rest;
+    }
     case 'batch':
       return cmd.commands.reduce(applyCommand, doc);
   }
@@ -200,6 +212,10 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'updateSetPieces', before: cmd.after, after: cmd.before };
     case 'setSetPieceDefs':
       return { kind: 'setSetPieceDefs', before: cmd.after, after: cmd.before };
+    case 'setGroups':
+      return { kind: 'setGroups', before: cmd.after, after: cmd.before };
+    case 'setNotes':
+      return { kind: 'setNotes', before: cmd.after, after: cmd.before };
     case 'batch':
       return { kind: 'batch', commands: cmd.commands.map(invertCommand).reverse() };
   }
@@ -238,6 +254,8 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'setWeaponSet':
     case 'setPaths':
     case 'setSetPieceDefs':
+    case 'setGroups':
+    case 'setNotes':
       return JSON.stringify(cmd.before) === JSON.stringify(cmd.after);
     case 'batch':
       return cmd.commands.every(isEmptyCommand);

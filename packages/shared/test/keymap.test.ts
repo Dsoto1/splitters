@@ -66,7 +66,25 @@ describe('MapMaker key table and the ? overlay (Phase 1, item 5)', () => {
         for (const mod of [false, true]) {
           const now = press(code, shift, mod)?.action ?? null;
           // Added since (Phase 3 part A): Shift+F5 plays from here, K is the plan view.
-          const added = code === 'F5' && shift ? 'playFromHere' : code === 'KeyK' && !mod ? 'planView' : null;
+          const added =
+            code === 'F5' && shift
+              ? 'playFromHere'
+              : code === 'KeyK' && !mod
+                ? 'planView'
+                : // Phase 3 part B: Ctrl+G group, Ctrl+Shift+G ungroup, Ctrl+C / Ctrl+V copy and paste, Shift+M Mirror…, J note pins.
+                  code === 'KeyG' && mod
+                  ? shift
+                    ? 'ungroup'
+                    : 'group'
+                  : code === 'KeyC' && mod
+                    ? 'copy'
+                    : code === 'KeyV' && mod
+                      ? 'paste'
+                      : code === 'KeyM' && shift && !mod
+                        ? 'mirrorDialog'
+                        : code === 'KeyJ' && !mod
+                          ? 'notes'
+                          : null;
           const want = added ?? (code === 'Slash' && shift && !mod ? 'keys' : before(code, shift, mod));
           expect(now, `${mod ? 'Ctrl+' : ''}${shift ? 'Shift+' : ''}${code}`).toBe(want);
           // ⌘ on a Mac is Ctrl.
