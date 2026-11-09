@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_nubainmyfn7mbupb",
-      "revision": 20,
-      "contentHash": "sha256:87ed1297eb1c508c3dd821d229885533ea511e500cbe23622123e3a943bd3691",
+      "versionId": "v_bjdbtz7io725bfhy",
+      "revision": 21,
+      "contentHash": "sha256:467dbe4aef2dde06492eb3543727b034329ec698f8b08afc8f4917173dbbd500",
       "schemaVersion": 29,
-      "releasedAt": "2026-11-09T00:13:19.093Z"
+      "releasedAt": "2026-11-09T00:34:16.638Z"
     }
   },
   "classicStructure": {
@@ -20910,6 +20910,230 @@
       ],
       "item": "core.weapon_spear",
       "respawnSeconds": null
+    },
+    {
+      "id": "prop_7e0gnh621z",
+      "kind": "prop",
+      "position": [
+        16,
+        2,
+        29.5
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ffo0x4cuaz",
+      "kind": "prop",
+      "position": [
+        -16,
+        2,
+        29.5
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": -3.139,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ddu4yitgjw",
+      "kind": "prop",
+      "position": [
+        -8,
+        2,
+        29.5
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": -3.139,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_8ld22qwzm0",
+      "kind": "prop",
+      "position": [
+        8,
+        2,
+        29.5
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": -3.139,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ji3noijjid",
+      "kind": "prop",
+      "position": [
+        -16,
+        2,
+        -29.5
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": 0.005,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_99xlc38anl",
+      "kind": "prop",
+      "position": [
+        -8,
+        2,
+        -29.5
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": 0.005,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5dieomqz3n",
+      "kind": "prop",
+      "position": [
+        8,
+        2,
+        -29.5
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": 0.005,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_02ota10vnn",
+      "kind": "prop",
+      "position": [
+        16,
+        2,
+        -29.5
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": 0.005,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_p1rtrec7ks",
+      "kind": "prop",
+      "position": [
+        29.5,
+        2,
+        -16
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": -1.562,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_shh44yoa3d",
+      "kind": "prop",
+      "position": [
+        29.5,
+        2,
+        -8
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": -1.562,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_hjgbyacg4l",
+      "kind": "prop",
+      "position": [
+        29.5,
+        2,
+        8
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": -1.562,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_k7ugut9nb2",
+      "kind": "prop",
+      "position": [
+        29.5,
+        2,
+        16
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": -1.562,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_2ag0me10gg",
+      "kind": "prop",
+      "position": [
+        -29.5,
+        2,
+        -16
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": 1.582,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_mu2dmueykq",
+      "kind": "prop",
+      "position": [
+        -29.5,
+        2,
+        -8
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": 1.582,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_ugqxqew4gv",
+      "kind": "prop",
+      "position": [
+        -29.5,
+        2,
+        8
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": 1.582,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_tceb27nut4",
+      "kind": "prop",
+      "position": [
+        -29.5,
+        2,
+        16
+      ],
+      "model": "prop.im_vexillum",
+      "yaw": 1.582,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
