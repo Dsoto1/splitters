@@ -375,6 +375,13 @@ function readRows(files: string): MatchRow[] {
   return [...new Map(files.split('+').flatMap((p) => JSON.parse(readFileSync(here(p), 'utf8')) as MatchRow[]).map((m) => [`${m.map}|${m.mode}|${m.seed}|${m.set ?? ''}`, m] as const)).values()];
 }
 
+/**
+ * Idle spells held still on purpose, left out of the scorecard's spell measures (10 s+ spells, the longest): a camper's
+ * or sniper's post at a vantage spot (Bot AI Phase B; 18-50 s each). They are still listed (--spells) and counted in
+ * the per-map line, and idle out of a fight still counts their time.
+ */
+const ON_PURPOSE = new Set<string>(['post']);
+
 /** Reasons a bot may stand still in a fight (not "idle" in the owner's sense). */
 const FIGHTING = new Set<string>(['fight', 'cover', 'retreat', 'chaseHold', 'throw', 'dodge']);
 
@@ -1099,8 +1106,9 @@ export function measure(ms: readonly MatchRow[]) {
     searches: searches / n,
     noRoute: sum(bots, (r) => r.pathFailures) / n,
     failedSearches: searches ? sum(bots, (r) => r.pathFailures) / searches : undefined,
-    spells10: bots.reduce((a, r) => a + r.spells.filter((s) => s.seconds >= 10).length, 0) / n,
-    longest: Math.max(0, ...bots.flatMap((r) => r.spells.map((s) => s.seconds))),
+    // (Not a camper's or sniper's hold at its vantage spot: still on purpose, 18-50 s by design, BotBrain.considerPost.)
+    spells10: bots.reduce((a, r) => a + r.spells.filter((s) => s.seconds >= 10 && !ON_PURPOSE.has(s.reason)).length, 0) / n,
+    longest: Math.max(0, ...bots.flatMap((r) => r.spells.filter((s) => !ON_PURPOSE.has(s.reason)).map((s) => s.seconds))),
     killsMin: sum(ms, (m) => m.kills) / minutes,
     coverage: ms.every((m) => m.coverage !== undefined) ? sum(ms, (m) => m.coverage!) / n : undefined,
     spawnDeaths: deaths ? sum(ms, (m) => m.spawnDeaths ?? 0) / deaths : undefined,
@@ -1217,8 +1225,8 @@ const METRICS: Record<string, { better: 'low' | 'high'; of: (m: Measures) => num
   idleCalm: { better: 'low', of: (m) => m.calm, label: 'idle out of a fight', pct: true },
   frozen: { better: 'low', of: (m) => m.frozen, label: 'frozen', pct: true },
   stuckPerBotMin: { better: 'low', of: (m) => m.stuckPerBotMin, label: 'stuck recoveries a bot-minute' },
-  spells10: { better: 'low', of: (m) => m.spells10, label: 'idle spells of 10 s+ a match' },
-  longestIdle: { better: 'low', of: (m) => m.longest, label: 'longest idle spell (s)' },
+  spells10: { better: 'low', of: (m) => m.spells10, label: 'idle spells of 10 s+ a match (not posts held)' },
+  longestIdle: { better: 'low', of: (m) => m.longest, label: 'longest idle spell, not a post held (s)' },
   towardGoal: { better: 'high', of: (m) => (m.goalTime > 0 ? m.toward : undefined), label: 'going to the goal', pct: true },
   coverage: { better: 'high', of: (m) => m.coverage, label: 'coverage a minute', pct: true },
   spawnDeaths: { better: 'low', of: (m) => m.spawnDeaths, label: 'spawn deaths', pct: true },

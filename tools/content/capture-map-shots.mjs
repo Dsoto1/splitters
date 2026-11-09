@@ -20,6 +20,9 @@
 //   pnpm --filter @tiletrigger/client exec vite preview --port 4799
 //   node tools/content/capture-map-shots.mjs http://localhost:4799 [map ids…]
 // SHOT_JOBS=2 captures maps in parallel; SHOT_MISSING=1 only maps without a picture; SHOT_CANDIDATES=<dir> also saves every rendered candidate there.
+// For pictures elsewhere (a review page; the shipped ones left alone): SHOT_OUT=<dir> (files <id><SHOT_SUFFIX>.jpg),
+// SHOT_QUALITY=80, SHOT_TEST=1 (the deterministic ?test=1 match), SHOT_RENDERED=1 (render only the best ray-scored
+// view: faster on a busy machine). The frame stays the card's (16:9, MapMaker's card frame).
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,7 +30,10 @@ import { chromium } from 'playwright';
 import sharp from 'sharp';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const OUT = join(ROOT, 'packages/client/public/maps/shots');
+const OUT = process.env.SHOT_OUT ? resolve(process.env.SHOT_OUT) : join(ROOT, 'packages/client/public/maps/shots');
+const SUFFIX = process.env.SHOT_SUFFIX ?? '';
+const QUALITY = Number(process.env.SHOT_QUALITY) || 74;
+const QUERY = process.env.SHOT_TEST === '1' ? '&test=1' : '';
 const base = process.argv[2] ?? 'http://localhost:4799';
 const only = process.argv.slice(3);
 const CANDS = process.env.SHOT_CANDIDATES;
@@ -40,13 +46,13 @@ const ids = readdirSync(join(ROOT, 'maps'))
   // Test maps (metadata.testOnly) have no map card.
   .filter((id) => JSON.parse(readFileSync(join(ROOT, 'maps', `${id}.json`), 'utf8')).metadata?.testOnly !== true)
   // SHOT_MISSING=1: only maps without a picture yet (resuming an interrupted run).
-  .filter((id) => !process.env.SHOT_MISSING || !existsSync(join(OUT, `${id}.jpg`)));
+  .filter((id) => !process.env.SHOT_MISSING || !existsSync(join(OUT, `${id}${SUFFIX}.jpg`)));
 mkdirSync(OUT, { recursive: true });
 if (CANDS) mkdirSync(CANDS, { recursive: true });
 /** Vertical field of view of the picture (radians). */
 const FOV = 0.9;
 /** How many of the best ray-scored views are rendered and judged on the image. */
-const RENDERED = 3;
+const RENDERED = Math.max(1, Number(process.env.SHOT_RENDERED) || 3);
 
 /**
  * Runs in the page: score candidate views through the match's physics world
@@ -319,7 +325,7 @@ async function captureOne(id) {
   const page = await ctx.newPage();
   const t0 = Date.now();
   try {
-    await page.goto(`${base}/?offline=${id}`, { timeout: 600000 });
+    await page.goto(`${base}/?offline=${id}${QUERY}`, { timeout: 600000 });
     await page.waitForFunction(() => window.__match && window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: 600000 });
     await page.addStyleTag({ content: '#hud, #pause, #crosshair, #countdown, #loading-screen, #toast, .toast { display: none !important; }' });
     // Bots out of the way; the camera is ours from here.
@@ -365,6 +371,7 @@ async function captureOne(id) {
       views = r.views;
       info = `${r.indoor ? 'indoor' : 'outdoor'}, ${r.candidates} eye points`;
     }
+    const tLoaded = Date.now();
     let best = null;
     for (const [i, v] of views.entries()) {
       await page.evaluate(({ eye, yaw, pitch, fov }) => {
@@ -393,13 +400,13 @@ async function captureOne(id) {
       if (!best || total > best.total) best = { total, png, v, i, line };
       console.log(`${id}${line}`);
     }
-    const file = join(OUT, `${id}.jpg`);
-    await sharp(best.png).resize(640, 360).jpeg({ quality: 74, mozjpeg: true }).toFile(file);
+    const file = join(OUT, `${id}${SUFFIX}.jpg`);
+    await sharp(best.png).resize(640, 360).jpeg({ quality: QUALITY, mozjpeg: true }).toFile(file);
     const kb = statSync(file).size / 1024;
     const v = best.v;
     const cam = camera(v);
     results.push({ id, pick: best.i, cam });
-    console.log(`${id}: ok #${best.i} ${kb.toFixed(0)} KB (${info}; ${((Date.now() - t0) / 1000).toFixed(0)} s) camera ${JSON.stringify(cam)}`);
+    console.log(`${id}: ok #${best.i} ${kb.toFixed(0)} KB (${info}; ${((Date.now() - t0) / 1000).toFixed(0)} s, ${((tLoaded - t0) / 1000).toFixed(0)} s to load) camera ${JSON.stringify(cam)}`);
   } catch (e) {
     console.log(`${id}: FAILED ${String(e).slice(0, 200)}`);
   }

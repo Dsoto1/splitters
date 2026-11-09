@@ -14,6 +14,43 @@ arsenal, weaponsets and hostgame, as on other branches that hour, and passed on 
 released v0.9.0 from that build (tag and release with its assets). Fireteams part 1 and MapMaker's measure tool and
 turning by mouse went in with it.
 
+**Small fixes of 2026-11-08 (`wip/small-fixes`, agent, 2026-11-09; owner-approved list).**
+- **Fernwood Moon's rope-lift waits (bots).** Cause: the north deck's only walkable way down was the north rope lift
+  (17 s round trip; bots waited 10-23 s at the top). Its 0.7 m hop down onto the ramp at (0, 14, 87) was a parkour drop
+  candidate that lost `MAX_DROPS` (50): Fernwood has 275 drop candidates with no walk round, nearly all off roofs and
+  tops only parkour reaches, and the ties went by place (west first). `nav/parkour.ts` now breaks ties of equal saving by
+  ground the spawns walk to (with the map's links) first (ranking that ahead of the saving itself lost Sunken Kingdom's
+  CTF capture in botCtf.test: check run 42557324249). fernwood_moon TDM 90 s, seeds 1-4: lift idle spells of 3 s+ 13 → 2,
+  of 10 s+ 2 → 0; again after Environment Phase 2 landed (its pines): lift spells of 10 s+ 4 → 0 (the longest lift wait
+  6 s), every 10 s+ spell left in seeds 1-4 a post (1, 0, 1, 2). No map edit (the map was Environment Phase 2's claim).
+  The check's other 10 s+ spells were all posts (campers and snipers holding a vantage spot, 18-50 s by design): the
+  spell measures leave posts out (`ON_PURPOSE` in bot-report.ts, docs/BOTS.md) and `checkLimits.all` is back to
+  `spells10` 1.5 and `longestIdle` 45 (Environment Phase 2 had raised them to 3.5 and 50): `pnpm bot-report --check`
+  holds every limit (after merging it: Fernwood Moon 1 spell of 10 s+, a post).
+- **Bursts at a distance.** Pickups, armour breaking, heavy hits and streak bursts keep the size on screen they have
+  3 m off (`fxMap.ts farFxSize`, `View.farSize`, up to 4×): an armour pickup 7 m off was a few pixels on the page's frame
+  clock, now 2.3× as big. Nearer than 3 m nothing changes. The `flashing` flow's fight moment adds an armour pickup 3 m
+  off and one at your own chest.
+- **Tutorial:** no score bar (`Hud.showScorebar`); `newplayer` checks it hidden, and shown again in Quick Play.
+- **Far characters' pose (the characters3 flake): found, not landed (`wip/far-copies`).** The import added each Meshy
+  character's far copy and then quantized each mesh on its own: the far copy got a skin of its own, the game a second
+  skeleton for it, posed apart from the body's. 74 of 116 Meshy characters were so (locally Honest Abe's far copy was
+  drawn 1.75 of 2.06 m at 27 m). On `wip/far-copies` (from this branch at 70fb51b): the 74 far copies remade on the
+  body's skin (`relod-built.mjs`), `prepare-meshy-characters.mjs` quantizing in one volume (`quantizationVolume:
+  'scene'`), `tools/content/lod-audit.mjs` (every far copy against its body: own skin, unmatched vertices, 6 poses;
+  161 far copies, 0 off) and a characters3 check dealing eight known looks. On CI that check passed (every far copy
+  within 1 cm of its body's height), but characters3 still failed on: Hyena Warrior's whole body (far copy and full
+  detail alike) 1.5 of 2.12 m on the first frame after waking (the wake pose, not the far copy: runs 42563794663,
+  42567649540); bots' hands 13-15 cm off their guns at 160 m (3 of 8; the probe pools every mesh, full and far);
+  the new check measuring nothing on the flow's second attempt. Reverted here so the rest lands; next: the wake
+  frame, the hand probe at a distance, then land `wip/far-copies`.
+- **Old branches:** `wip/roster-cleanup` (helmets on four looks): dropped, main has model gear with fitted helmets
+  (headFit.ts) and those four looks are retired. `wip/host-handoff-uncommitted`: dropped, every change in it is on main
+  (pageHeardAt, `linked`, LINKED_WAIT_MS, the 120 s hold, HANDOFF_JOIN_SECONDS 10). `wip/map-review`:
+  capture-map-shots' SHOT_OUT, SHOT_SUFFIX, SHOT_QUALITY, SHOT_TEST, SHOT_RENDERED and the load time brought over;
+  SHOT_SIZE dropped (the frame is MapMaker's card frame now). `/home/user/wt-mapreview` removed. Branches kept.
+- **Not done: Iron Maw's player count** (`maps/iron_maw.json` is in the MapMaker lane's set pieces part 6 claim). Asked
+  of the MapMaker lane below.
 **Race mode removed (`wip/race-removal`, 2026-11-09; owner, 2026-11-08: "steer away from racing and focus on battles
 and maps").** Game side only; the MapMaker wording is asked of its lane ("In flight", below).
 - **Gone:** `core.race` from `GameMode`/`GAME_MODES`/`MODE_LABELS`/`DEFAULT_RULES` (so from Match Setup, Quick Play,
@@ -178,7 +215,9 @@ The workflow is unchanged (CLAUDE.md):
   - **Effect:** every MapMaker branch with shared code runs it and goes red, so set pieces part 5 is held at
     059df862.
   - **Please fix**, or tell us here which commit to land against.
-- Claimed: the characters' far copies (`packages/client/public/characters/*.glb` low-detail levels, `content/meshy.lock.json`), the pickup/hit/streak bursts in `content/vfx.json`, small fixes of 2026-11-08 (`wip/small-fixes`), 2026-11-09. (Iron Maw's player count and Fernwood Moon's lift are inside other claims: not edited here.)
+- Asked of the MapMaker lane (with its `iron_maw` claim): Iron Maw's Map properties say 16-32 players
+  (`recommendedPlayers`); with 97 spawn points and a 16 v 16 team layout its automatic caps are 32 best, up to 96.
+  Suggested: Players 16-64 (as Iron Coast, 96 spawns, says), in MapMaker's Map properties; small fixes, 2026-11-09.
 - **For the session owning team kills and friendly fire:** the e2e `teams` flow's friendly-fire and team-kill checks contradict themselves between attempts on check/mapmaker-setpieces (run 42549709174, job 128943570176). Attempt 1: friendly fire off still hurt a teammate (70.5), and a team kill wasn't marked TK (killer 5 was a bot). Attempt 2: friendly fire on hurt 0, and TK was marked fine. It looks like stray shots from bots or other teammates in the test match, not set pieces. The failed job was re-run once.
 - Claimed: `maps/test_coverage.json` (the Town Wall Gatehouse, through MapMaker; set pieces part 6, `wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-09.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.

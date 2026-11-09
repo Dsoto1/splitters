@@ -125,6 +125,7 @@ export class Hud {
     this.sbLeft.innerHTML = '';
     this.sbRight.innerHTML = '';
     this.lastTeamScore = '';
+    this.showScorebar(true);
     this.portrait.removeAttribute('src');
     this.target.hidden = true;
     this.teams = null;
@@ -355,6 +356,11 @@ export class Hud {
 
   setPortrait(src: string): void {
     this.portrait.src = src;
+  }
+
+  /** The scorebar at the top (score boxes, timer, mode): hidden in the tutorial, where there is no score to play for. */
+  showScorebar(on: boolean): void {
+    $('scorebar').style.display = on ? '' : 'none';
   }
 
   /**
