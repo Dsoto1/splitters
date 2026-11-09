@@ -15,6 +15,9 @@ made only on a commit that passed CI on a check branch.
   a ladder).
 - **Bunker**, a new set piece the size of the Bunker tile: Iron Maw and Shingle Point's bunkers are now Bunkers, their
   warehouses Loading Docks; Neon Spire, Riot Junction and Underdrain's 4 × 4 crossroads are the Crossroads Plaza.
+- **City Wall Gatehouse** and **Temple Pylon**, new set pieces: Qasr Medina's gate is now the gatehouse, Pharaoh's
+  Reach and Sunken Kingdom's pylons the Temple Pylon set piece; Blackout and Crossroads' warehouses are Loading Docks,
+  their bunkers Bunkers.
 - Shingle Point's card picture is taken from a few metres further back, so the cliff-top buildings show.
 **Race mode removed** (owner, 2026-11-08: "steer away from racing and focus on battles and maps"):
 - **No more Race** in Match Setup, Quick Play, the next-map vote, rotations, playlists, the host panel or the server

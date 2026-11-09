@@ -770,8 +770,11 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
 - **Also done (owner's answers):** the Bunker set piece (`setpiece.bunker`, the Bunker tile's size); Iron Maw and Shingle
   Point (Warehouses → Loading Dock, Bunkers → Bunker), Neon Spire, Riot Junction and Underdrain (City Crossroads → Crossroads
   Plaza, the ring filled with Platforms) swapped in MapMaker; checks and bot reports in docs/SET_PIECES_PLAN.md, "As built: part 6".
-- **Left:** Blackout, Crossroads, Coldwater Gulch, Pharaoh's Reach, Qasr Medina and Sunken Kingdom (the other session's
-  claim); Whiteout Station (its rebuild).
+- **Also done (Environment Phase 2 maps):** the City Wall Gatehouse (`setpiece.city_gate_wall`) and Temple Pylon
+  (`setpiece.temple_pylon`) set pieces; Blackout and Crossroads (Loading Dock, Bunker), Pharaoh's Reach and Sunken
+  Kingdom (Temple Pylon), Qasr Medina (City Wall Gatehouse) swapped in MapMaker; both pieces on the coverage map.
+- **Left:** Coldwater Gulch needs none (Bunker theme only); Whiteout Station (its rebuild). Bunker Cross, Concrete
+  Annex, Iron Tide, Ironhold Prison, Pump Tower and Silo Complex still place old big pieces (not claimed here).
 - **Pitfall:** MapMaker with `?test=1` makes ids from a fixed sequence, so placing into a map that was itself built
   under `?test=1` (the coverage map) can collide ("ID … already exists"): drive real edits without `test=1`.
 

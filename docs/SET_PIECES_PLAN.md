@@ -555,9 +555,37 @@ one, through MapMaker. Iron Compound stays as it is (its Catwalk Gantry plays as
     Underdrain 60 → 57; failed searches 0.00 % everywhere; two routes or more 100 % of team trips everywhere. Riot Junction
     over seeds 3-6: captures 2 → 4, stuck 197 → 362 a match, almost all of it at its old hot spot (cells 19, 14, a
     block off the plaza: 155 → 695, most in one seed), the plaza's own cells a handful either way.
-- **Not swapped:** Blackout, Crossroads, Coldwater Gulch, Pharaoh's Reach, Qasr Medina and Sunken Kingdom wait for the other
-  session's claim; Whiteout Station's rebuild handles its hangar; Iron Compound stays as it is (owner). The six maps with
-  the Bunker theme (`core.bunker`) place no Bunker tile.
+- **New piece: City Wall Gatehouse** (`setpiece.city_gate_wall`, Courtyard gate family, desert): the Town Wall
+  Gatehouse with City Wall tiles either side, for the City Gate (`desert.city_gate`).
+- **New piece: Temple Pylon** (`setpiece.temple_pylon`, Courtyard gate family, desert and imperial): the Temple Pylon
+  tile (`egypt.pylon`) in its place, the same cells and levels (3 × 1, levels 0-2): three Platforms for its floor and the
+  tile's own towers, gate lintel, stairs, gilding and reliefs as 54 blocks in their own materials (a relief 2 cm proud is
+  5 cm here: a block is at least 5 cm deep). Through the 3.2 m gate; up either back stair to the terrace 4 m up and over
+  the gate. Explode it to edit the masonry.
+- **The Environment Phase 2 maps** (released to this session 2026-11-09, after origin/main was merged), in MapMaker:
+  - **Blackout:** Warehouse → Loading Dock (the generator, the Set the charges button and the pickup from the warehouse's
+    upper floor onto the dock floor, 1 m up; its six lights to 3.3 m; the dock's own lights left out, the map's stand in
+    the same places), Bunker → Bunker (its encounter point off the centre pillar, 2.5 m east and 1 m south).
+  - **Crossroads:** Warehouse → Loading Dock with the dock's own crates, barrels and lights left out (the map's shelves,
+    containers and boxes on the dock floor, the two hostages and the pickup from the mezzanine onto it, the mezzanine's
+    barrels and crates too; one snack shelf that had no room left deleted; a cargo crate 1.6 m west, clear of the
+    truck), Bunker → Bunker.
+  - **Pharaoh's Reach, Sunken Kingdom:** Temple Pylon → Temple Pylon set piece (1 and 2); the pickups on the terraces
+    stay where they were.
+  - **Qasr Medina:** City Gate → City Wall Gatehouse; the portcullis onto the south arch (it stood across the passage,
+    along it); the yard south of the gate and the rope bridge north of it give the passage's sides to the gatehouse's
+    arches (No wall), as Market Town.
+  - Every one validates with no issue and no coplanar overlap, and every route from the first spawn to every spawn,
+    pickup, hill, flag, hostage, bomb site and button and back is as before (Blackout 36 of 36, Crossroads 96 of 96,
+    Pharaoh's Reach 92 of 92, Qasr Medina 132 of 132, Sunken Kingdom 224 of 224).
+  - **Bot reports** (seeds 1-2, 240 s; Blackout and Crossroads TDM, the others CTF), before → after: stuck a match
+    Blackout 34 → 35, Crossroads 39 → 43, Pharaoh's Reach 103 → 108, Qasr Medina 101 → 92, Sunken Kingdom 121 → 121
+    (no bot goes near its pylons); failed searches 0.00 % everywhere (Qasr Medina 0.03 → 0.02 %); two routes or more
+    100 % of team trips everywhere; captures Pharaoh's Reach 1 → 1, Qasr Medina 2 → 1 (two matches: noise).
+- **Not swapped:** Coldwater Gulch places no Bunker tile (Bunker theme only); Whiteout Station's rebuild handles its
+  hangar; Iron Compound stays as it is (owner). The six maps with the Bunker theme (`core.bunker`) place no Bunker
+  tile. Bunker Cross, Concrete Annex, Iron Tide, Ironhold Prison, Pump Tower and Silo Complex still place old big pieces
+  and weren't in this part's claim.
 
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks
