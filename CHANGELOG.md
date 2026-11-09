@@ -8,6 +8,28 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**MapMaker fixes** (the owner's answers, 2026-11-09, and bugs found building The Spillway):
+- **Paste into a map of another theme:** the pieces take the new map's theme and keep their own paint; the toast says
+  so.
+- **Mirror half the map** brings its bot hints, and team hints (a staging spot, a camp) swap sides like spawns. A new
+  **Terrain and paths too** box mirrors the terrain (heights, ground paint and plant cover) and copies the paths on
+  that half.
+- **Plants on a fine terrain grid** (finer than 2 m, Terrain → Change grid) grow as many to the square metre as a
+  2.5 m grid.
+- **The Scatter Brush sets are retired** (Pine forest, Leafy woods and the rest): the Environment brush and its
+  presets replace them, and N now takes up the Environment brush. Plants already placed stay as they are.
+- **The bot test runs up to 64 bots.**
+- **The inspector keeps the first edit after a placement** (it was lost when the inspector redrew a frame later), and
+  a field you are typing in survives any redraw.
+- **Stairs from the ground:** the ground at the foot of a flight (or any step) comes up to just under its first step,
+  worked out as the map loads and in MapMaker (the map file keeps its own ground), so bots and players climb it as a
+  step, not a 0.4 m lip. Bot test (Sunken Kingdom, Glacier Line and Fogbound, TDM, 2 seeds of 120 s): stuck recoveries
+  42 → 25 a match (Glacier Line 75 → 27).
+- **Cut ground to floors** (the selection menu): lowers the ground under the selected floors however deep, one undo
+  step, for a tunnel's cut or a sunken yard. The automatic lowering still stops 3 m above a floor (deeper, it would
+  open Sandfall's hypogeum rooms and the tops of flights cut into terraces on shipped maps; docs/BUILDING_KIT.md).
+- **The top bar** fits Export, Import and Publish again at 1400 px.
+
 **MapMaker follow-ups** (the owner's answers, 2026-11-08):
 - **The measure tool's jump hint looks at the ground along the line**, not only at its two ends: a slope you can walk
   up reads walkable, a ledge reads a step (with its height), and a pit you couldn't climb out of reads a gap (with its

@@ -187,12 +187,8 @@ import {
   BLOCK_BEHAVIOURS,
   LIQUIDS,
   LIQUID_SPECS,
-  SCATTER_SETS,
   ENV_SPECIES,
   getEnvSpecies,
-  SCATTER_SET_IDS,
-  scatterProps,
-  type ScatterSetId,
   BACKDROP_GROUNDS,
   SCENERY_IDS,
   SCENERY_LABELS,
@@ -373,6 +369,7 @@ import { cardShotSection, type CardShotHost } from './cardShot.ts';
 import { NoteTool } from './noteTool.ts';
 import { BotHintTool } from './botHintTool.ts';
 import { groupSection, type GroupHost } from './groupPanel.ts';
+import { rebuildKeepingEdit } from './inspectorKeep.ts';
 import { openMirrorDialog } from './mirrorDialog.ts';
 import { openChangeGridDialog } from './changeGridDialog.ts';
 import { readClipboard, writeClipboard } from './clipboardStore.ts';
@@ -445,7 +442,7 @@ function starterMap(size: number | null, ground: TerrainMaterial): MapDocument {
   return size ? { ...doc, terrain: { ...newTerrain(size, 2, [0, 0], ground), baseY: -0.15 } } : doc;
 }
 
-type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'scatter'; set: ScatterSetId } | { kind: 'path' } | { kind: 'route' } | { kind: 'measure' } | { kind: 'note' } | { kind: 'bothint'; hint: BotHintKind } | { kind: 'envbrush' };
+type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'path' } | { kind: 'route' } | { kind: 'measure' } | { kind: 'note' } | { kind: 'bothint'; hint: BotHintKind } | { kind: 'envbrush' };
 
 /** What the pointer can pick: a tile, an entity, or a set piece (any of its parts picks the whole placement). */
 type Hit = { kind: 'tile' | 'entity' | 'setpiece'; id: string };
@@ -577,7 +574,7 @@ const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
 };
 
 /** Tools that put something new into the map (the toolbar's Place button lights up for them). */
-const PLACING: ReadonlySet<Tool['kind']> = new Set(['tile', 'setpiece', 'spawn', 'pickup', 'scenario', 'prop', 'mount', 'scatter', 'npc']);
+const PLACING: ReadonlySet<Tool['kind']> = new Set(['tile', 'setpiece', 'spawn', 'pickup', 'scenario', 'prop', 'mount', 'npc']);
 
 /** A tool's palette key, as its card's `data-tool` (`tile:core.room`, `prop:prop.barrel`, `spawn`…). */
 function toolKey(tool: Tool): string {
@@ -596,8 +593,6 @@ function toolKey(tool: Tool): string {
       return `prop:${tool.model}`;
     case 'mount':
       return `mount:${tool.model}`;
-    case 'scatter':
-      return `scatter:${tool.set}`;
     case 'npc':
       return `npc:${tool.key}`;
     case 'bothint':
@@ -722,8 +717,6 @@ export class EditorApp {
   private marquee: { x0: number; y0: number; x1: number; y1: number; add: boolean; moved: boolean } | null = null;
   /** Facing for the next prop placed. */
   private propYaw = 0;
-  /** The scatter set N picks up again. */
-  private lastScatter: ScatterSetId = 'forest';
   private readonly thumbs: ModelThumbnails;
   /** The palette's prebuilt pictures (public/thumbs) and its behaviour (groups, search, favourites, keys). */
   readonly paletteAtlas = new PaletteAtlas();
@@ -1305,7 +1298,6 @@ export class EditorApp {
     }
     this.renderPieceInfo();
     if (PLACING.has(tool.kind)) this.lastPlace = tool;
-    if (tool.kind === 'scatter') this.lastScatter = tool.set;
     if (tool.kind === 'edge') this.edgeStyle = tool.style;
     const pane: Partial<Record<Tool['kind'], string>> = { paint: 'paint', edge: 'advanced', terrain: 'terrain', envbrush: 'plants' };
     this.paths.setActive(tool.kind === 'path');
@@ -1335,7 +1327,6 @@ export class EditorApp {
           (tool.kind === 'edge' && t === `edge:${tool.style}`) ||
           (tool.kind === 'prop' && t === `prop:${tool.model}`) ||
           (tool.kind === 'mount' && t === `mount:${tool.model}`) ||
-          (tool.kind === 'scatter' && t === `scatter:${tool.set}`) ||
           (tool.kind === 'terrain' && t === `terrain:${this.terrainBrush}`) ||
           (tool.kind === 'npc' && t === `npc:${tool.key}`) ||
           (tool.kind === 'bothint' && t === `bothint:${tool.hint}`) ||
@@ -1360,7 +1351,6 @@ export class EditorApp {
       prop: ['Place', 'Click places the prop on what is under the pointer: a tabletop, a roof, the ground (Ctrl: no snap) · right-click removes a prop · R turns it 15° (Shift+R 5°) · Randomise in the Props tab'],
       mount: ['Place', 'Click places it · right-click removes a vehicle · R turns it 15° (Shift+R 5°) · players get in and out with E'],
       terrain: ['Terrain', 'Hold to sculpt or paint · Shift: the opposite (lower / raise) · [ ] brush size · T cycles brushes'],
-      scatter: ['Place', 'Click or drag plants patches · right-click (Shift+drag) clears that kind of plant · [ ] brush size'],
       envbrush: ['Environment brush', 'Click or drag paints the mix (one stroke, one undo step) · right-click or Shift+drag erases · [ ] brush size · settings in the Nature tab'],
       path: ['Paths', 'Click adds a point after the selected one (two clicks start a path) · click the first point with the last selected to join the ends · right-click or Del removes one · drag a point to move it · Shift+click a path inserts one · click another path to edit it'],
       route: ['Route', 'Click adds a point after the selected one · right-click or Del removes one · drag a point to move it · Shift+click a stretch inserts one · Esc when done'],
@@ -1375,7 +1365,7 @@ export class EditorApp {
     const hintEl = $('ed-toolhint');
     hintEl.className = `tool-${tool.kind === 'erase' ? 'erase' : PLACING.has(tool.kind) ? 'place' : 'other'}`;
     hintEl.innerHTML = `<b>${escapeHtml(name + what)}</b> ${escapeHtml(hint)}`;
-    $('ed-hint').textContent = 'Right-drag look · WASD/QE fly · wheel zoom · V select · P place · X erase · B paint · O walls · T terrain · N scatter · G paths · U measure · Esc: Select tool · ? every key';
+    $('ed-hint').textContent = 'Right-drag look · WASD/QE fly · wheel zoom · V select · P place · X erase · B paint · O walls · T terrain · N plants · G paths · U measure · Esc: Select tool · ? every key';
     this.updateHover();
   }
 
@@ -1396,8 +1386,6 @@ export class EditorApp {
         return getProp(tool.model)?.displayName ?? 'Prop';
       case 'mount':
         return MOUNT_DEFS[tool.model].displayName;
-      case 'scatter':
-        return SCATTER_SETS[tool.set].label;
       case 'npc':
         return NPC_PALETTE.find((x) => x.key === tool.key)?.label ?? 'NPC';
       default:
@@ -1748,8 +1736,6 @@ export class EditorApp {
         return this.paintAtHover(true);
       case 'edge':
         return this.edgeAtHover('auto');
-      case 'scatter':
-        return this.scatterAtHover(tool.set, true);
       case 'envbrush':
         return this.hoverPoint ? this.env.dab(this.hoverPoint.x, this.hoverPoint.z, true) : undefined;
       case 'path':
@@ -1878,12 +1864,6 @@ export class EditorApp {
       return this.edgeAtHover(b.invert ? 'auto' : tool.style);
     }
     if (tool.kind === 'envbrush') return this.env.drag(this.hoverPoint, b.invert || b.alt, first);
-    if (tool.kind === 'scatter') {
-      const p = this.hoverPoint;
-      if (!p || (b.at && Math.hypot(p.x - b.at.x, p.z - b.at.z) < this.brushRadius * 0.8)) return;
-      b.at = { x: p.x, z: p.z };
-      return this.scatterAtHover(tool.set, b.invert || b.alt, !first);
-    }
     if (tool.kind === 'erase') {
       const hit = this.pick();
       if (!hit && !first) return;
@@ -2480,11 +2460,11 @@ export class EditorApp {
       this.view.setGhost(this.doc, null, null, 0, true);
       return;
     }
-    if (this.tool.kind === 'scatter' || this.tool.kind === 'envbrush') {
+    if (this.tool.kind === 'envbrush') {
       const p = this.hoverPoint;
       const env = this.tool.kind === 'envbrush';
       this.view.setBrushRing(p ? this.shownGround : null, p?.x ?? 0, p?.z ?? 0, this.brushRadius, env && this.env.mode === 'erase' ? '#ff7a4d' : '#6fdc6a');
-      $('ed-target').textContent = !p ? '' : this.tool.kind === 'envbrush' ? this.env.hoverLabel() : `${SCATTER_SETS[this.tool.set].label} · radius ${this.brushRadius} m`;
+      $('ed-target').textContent = !p ? '' : this.env.hoverLabel();
       this.view.setFaceHighlight(null, null);
       this.view.setHoverCell(this.doc, null);
       this.view.setGhost(this.doc, null, null, 0, true);
@@ -2780,7 +2760,7 @@ export class EditorApp {
       if (this.tool.kind === 'paint' && e.altKey) return this.pickStyleAtHover();
       if (this.tool.kind === 'terrain') return this.startStroke(e.shiftKey);
       // Paint, Walls, Scatter and Erase paint as you drag (one undo step); Shift does the opposite.
-      if (this.tool.kind === 'paint' || this.tool.kind === 'edge' || this.tool.kind === 'scatter' || this.tool.kind === 'envbrush' || this.tool.kind === 'erase') {
+      if (this.tool.kind === 'paint' || this.tool.kind === 'edge' || this.tool.kind === 'envbrush' || this.tool.kind === 'erase') {
         this.history.beginStroke();
         this.brush = { invert: e.shiftKey, alt: e.altKey, key: null, at: null };
         this.brushAtHover(true);
@@ -2937,13 +2917,13 @@ export class EditorApp {
     erase: () => this.setTool({ kind: 'erase' }),
     // U: the measure tool (MapMaker overhaul Phase 1 item 3).
     measure: () => this.setTool({ kind: 'measure' }),
-    // G: Paths (Shift+G: Paths on the track, NPC traffic), N: Scatter (the last set you used).
+    // G: Paths (Shift+G: Paths on the track, NPC traffic), N: the Environment brush (the Scatter Brush sets it replaced are retired).
     paths: () => this.setTool({ kind: 'path' }),
     raceTrack: () => {
       this.paths.preset('race');
       this.setTool({ kind: 'path' });
     },
-    scatter: () => this.setTool({ kind: 'scatter', set: this.lastScatter }),
+    envBrush: () => this.setTool({ kind: 'envbrush' }),
     place: () => this.placeTool(),
     pickStyle: () => {
       if (this.tool.kind === 'paint') this.pickStyleAtHover();
@@ -2976,10 +2956,10 @@ export class EditorApp {
     liftSelection: () => this.nudge(0, 0, 1),
     lowerSelection: () => this.nudge(0, 0, -1),
     brushBigger: () => {
-      if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter' || this.tool.kind === 'envbrush') this.setBrushRadius(this.brushRadius + 2);
+      if (this.tool.kind === 'terrain' || this.tool.kind === 'envbrush') this.setBrushRadius(this.brushRadius + 2);
     },
     brushSmaller: () => {
-      if (this.tool.kind === 'terrain' || this.tool.kind === 'scatter' || this.tool.kind === 'envbrush') this.setBrushRadius(this.brushRadius - 2);
+      if (this.tool.kind === 'terrain' || this.tool.kind === 'envbrush') this.setBrushRadius(this.brushRadius - 2);
     },
     nudgeNorth: () => this.nudge(0, 1, 0),
     nudgeSouth: () => this.nudge(0, -1, 0),
@@ -3185,7 +3165,6 @@ export class EditorApp {
       this.palette.register(b, { key: b.dataset.tool, name: item.displayName, tags: `${item.id} pickup item ${item.effect.kind}` });
     }
 
-    this.buildScatterPalette();
     this.buildPropPalette();
     this.buildMountPalette();
     this.buildTerrainPalette();
@@ -3672,7 +3651,7 @@ export class EditorApp {
 
   private setBrushRadius(r: number): void {
     this.brushRadius = Math.max(2, Math.min(40, r));
-    for (const id of ['ed-tr-radius', 'ed-sc-radius']) {
+    for (const id of ['ed-tr-radius']) {
       $<HTMLInputElement>(id).value = String(this.brushRadius);
       $(`${id}-v`).textContent = `${this.brushRadius} m`;
     }
@@ -4045,60 +4024,6 @@ export class EditorApp {
     }
     const parked = this.palette.group($('ed-mounts'), 'vehicles:parked', 'Parked Vehicles (scenery)', { open: false });
     for (const def of CORE_PROPS.filter((d) => propGroup(d) === 'vehicles')) this.propButton(parked, def, 'parked car vehicle wreck');
-  }
-
-  /** Plant a patch of the set round the pointer, or (clear) remove that set's props there. One undo step either way. */
-  private scatterAtHover(set: ScatterSetId, clear: boolean, quiet = false): void {
-    const p = this.hoverPoint;
-    if (!p) return;
-    const r = this.brushRadius;
-    const label = SCATTER_SETS[set].label;
-    if (clear) {
-      const models = new Set<string>(SCATTER_SETS[set].models.map(([m]) => m.split('#')[0]!));
-      const gone = this.doc.entities.filter((e) => e.kind === 'prop' && models.has(e.model) && Math.hypot(e.position[0] - p.x, e.position[2] - p.z) <= r);
-      if (gone.length) this.run(`Clear ${label}`, { kind: 'removeEntities', entities: gone });
-      return;
-    }
-    const plants = scatterProps(this.doc, set, p.x, p.z, r, this.level * this.doc.classicStructure.levelHeight, (Math.random() * 2 ** 31) | 0);
-    if (!plants.length) return quiet ? undefined : this.toast('No room here: the patch is already full', true);
-    this.run(`Scatter ${label}`, { kind: 'addEntities', entities: plants.map((e) => ({ ...e, id: newId('prop') })) });
-  }
-
-  private buildScatterPalette(): void {
-    const box = this.palette.group($('ed-nature'), 'nature:scatter', 'Scatter Brush', { note: 'Click to plant a patch · Alt-click clears that kind of plant · [ ] resize' });
-    const icons: Record<ScatterSetId, string> = {
-      forest: '<path d="M14 46 L22 14 L30 46Z M28 46 L36 8 L44 46Z" fill="#3f6b3a"/>',
-      woods: '<circle cx="20" cy="22" r="11" fill="#5f9a46"/><circle cx="37" cy="26" r="10" fill="#4f8a3c"/><rect x="18" y="30" width="4" height="16" fill="#7a5232"/><rect x="35" y="32" width="4" height="14" fill="#7a5232"/>',
-      autumn: '<circle cx="20" cy="22" r="11" fill="#d98a2f"/><circle cx="37" cy="26" r="10" fill="#c9562c"/><rect x="18" y="30" width="4" height="16" fill="#7a5232"/><rect x="35" y="32" width="4" height="14" fill="#7a5232"/>',
-      mixed: '<path d="M10 46 L19 10 L28 46Z" fill="#2f5a34"/><rect x="36" y="22" width="3" height="24" fill="#e8e4da"/><circle cx="37" cy="20" r="9" fill="#9cc15a"/>',
-      undergrowth: '<path d="M14 46 Q8 34 6 28 M14 46 Q14 30 18 22 M14 46 Q20 34 26 30" stroke="#4f8a3c" stroke-width="3" fill="none"/><circle cx="38" cy="38" r="10" fill="#5c7a44"/>',
-      water: '<rect x="4" y="34" width="48" height="14" fill="#5b8fb0"/><path d="M20 48 Q18 30 14 12 M26 48 Q28 28 32 10 M32 48 Q36 32 42 20" stroke="#7fb84a" stroke-width="3" fill="none"/>',
-      jungle: '<path d="M28 46 Q27 26 30 14" stroke="#7a5232" stroke-width="3" fill="none"/><path d="M30 14 Q16 10 10 22 M30 14 Q44 8 48 22 M30 14 Q24 2 14 6 M30 14 Q38 2 46 8" stroke="#3f8a3c" stroke-width="4" fill="none"/>',
-      bushes: '<circle cx="18" cy="36" r="9" fill="#5f9a46"/><circle cx="32" cy="32" r="12" fill="#4f8a3c"/><circle cx="44" cy="38" r="7" fill="#6aa84f"/>',
-      meadow: '<path d="M10 46 Q12 32 14 26 M20 46 Q22 30 26 22 M34 46 Q34 34 38 26 M44 46 Q46 34 48 30" stroke="#6fbf4a" stroke-width="3" fill="none"/><circle cx="14" cy="24" r="4" fill="#ff6a8a"/><circle cx="26" cy="20" r="4" fill="#ffd34d"/><circle cx="38" cy="24" r="4" fill="#b98aff"/>',
-      desert: '<path d="M26 46V14a4 4 0 0 1 8 0V46Z M26 30h-6V20a3 3 0 0 1 6 0 M34 26h6V16a3 3 0 0 0-6 0" fill="#5e8f4a"/><rect x="6" y="44" width="44" height="4" fill="#d9b77a"/>',
-      rocks: '<path d="M8 46 L14 32 L26 28 L32 36 L30 46Z" fill="#8a8d92"/><path d="M30 46 L36 30 L46 32 L50 46Z" fill="#6c7076"/>',
-      envForest: '<path d="M10 46 L18 16 L26 46Z" fill="#355b34"/><circle cx="38" cy="22" r="11" fill="#55803c"/><path d="M36 30 L37 46 L39 46 L40 30Z" fill="#6a4a30"/><text x="28" y="54" font-size="9" fill="#cde" text-anchor="middle">NEW</text>',
-      envShrubs: '<circle cx="20" cy="34" r="10" fill="#4d6b2e"/><circle cx="36" cy="32" r="12" fill="#a5582a"/><text x="28" y="54" font-size="9" fill="#cde" text-anchor="middle">NEW</text>',
-      envRocks: '<path d="M8 44 L16 26 L30 22 L36 32 L32 44Z" fill="#86827a"/><path d="M16 26 L30 22 L26 30Z" fill="#4e6a2c"/><text x="28" y="54" font-size="9" fill="#cde" text-anchor="middle">NEW</text>',
-    };
-    box.id = 'ed-scatter';
-    for (const id of SCATTER_SET_IDS) {
-      // The procedural environment's preview sets, with ?env=1 only.
-      if ((SCATTER_SETS[id] as { preview?: true }).preview && !envRendererOn()) continue;
-      const b = document.createElement('button');
-      b.className = 'tile-btn';
-      b.dataset.tool = `scatter:${id}`;
-      b.innerHTML = `<svg viewBox="0 0 56 56">${icons[id]}</svg>${SCATTER_SETS[id].label}`;
-      b.addEventListener('click', () => this.setTool({ kind: 'scatter', set: id }));
-      box.append(b);
-      this.palette.register(b, { key: b.dataset.tool, name: SCATTER_SETS[id].label, tags: 'scatter plants trees vegetation brush patch' });
-    }
-    const radius = document.createElement('label');
-    radius.className = 'stack';
-    radius.innerHTML = 'Brush size <span id="ed-sc-radius-v">8 m</span><input id="ed-sc-radius" type="range" min="2" max="40" step="1" value="8" />';
-    box.after(radius);
-    $<HTMLInputElement>('ed-sc-radius').addEventListener('input', (e) => this.setBrushRadius(Number((e.target as HTMLInputElement).value)));
   }
 
   /** A prop card; its picture comes from the atlas as it scrolls into view. */
@@ -4927,7 +4852,12 @@ export class EditorApp {
     el.append(head, box);
   }
 
+  /** The inspector rebuilt, the field being typed in kept as it was (inspectorKeep.ts: a placement's rebuild dropped the first edit). */
   private renderInspector(): void {
+    rebuildKeepingEdit($('ed-inspector'), () => this.buildInspector());
+  }
+
+  private buildInspector(): void {
     this.renderSkyPane();
     const el = $('ed-inspector');
     el.replaceChildren();

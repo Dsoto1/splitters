@@ -163,6 +163,20 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   sunk trench carves its slot), the same as the map does when it loads; moving or deleting it gives the ground back
   (MapMaker keeps the ground you sculpted and works out the ground under floors from it, after every edit). MapMaker's **Overlaps** warning leaves a
   piece's own parts out: it points only at your blocks flush with a piece in another look.
+- **Ground and floors (MapMaker fixes 2, 2026-11-09).** The worked-out ground (settle.ts `terrainUnderFloors`, never
+  stored) does two things:
+  - **Under a floor** it lowers the ground within 3 m of the floor's top (`FLOOR_REACH`). Deeper ground is kept: a hill
+    a floor is buried in stays. That is on purpose: shipped maps hold floors the hill is meant to cover deeper than
+    3 m (Sandfall's hypogeum rooms; the top of every flight cut into a terrace on Sunken Kingdom, Iron Coast and
+    Whiteout Station, where the ground the flight arrives on is 4 m over its floor; Eagle Spires' stepped blocks), and
+    a height grid can't tell those from a tunnel's cut. Measured: lowering deeper in general would have changed those
+    six maps, opening pits up to 27 m deep. For a tunnel's cut or a sunken yard, select its floors and use **Cut
+    ground to floors** (the selection menu): it lowers the map's own ground under them, however deep, one undo step
+    (then roof the cut with a free block if it is a tunnel).
+  - **At a step's foot** (a flight's first step, a kerb: a solid no taller than a player steps up) it brings ground a
+    little under the step (up to 0.6 m) up to 2 cm under the step's base. New terrain sits 0.15 m under a level and a
+    flight's first step is 0.25 m up: before, that 0.4 m lip stopped bots and players at every flight rising from the
+    ground, and its foot had to be flattened by hand. No need now.
 - **Explode to tiles** (inspector button, or the right-click menu): the placement becomes its parts, ordinary tiles,
   blocks, props, doors and lights you can edit one by one (they keep their ids, `sp_<placement>_<n>`, and are
   selected); one undo puts the set piece back.
@@ -1335,7 +1349,7 @@ tab → **Bot hints** (or **Y**, the last kind you used).
 
 ## Backdrops and plants
 
-Skies, distant scenery, ground past the border, terrain plants, the scatter brush and the Nature tab's Environment group and brush (our trees, plants, rocks and cliffs: placing, painting, presets, filters, keep-clear and the collision preview) are covered in [SCENERY.md](SCENERY.md).
+Skies, distant scenery, ground past the border, terrain plants and the Nature tab's Environment group and brush (our trees, plants, rocks and cliffs: placing, painting, presets, filters, keep-clear and the collision preview) are covered in [SCENERY.md](SCENERY.md).
 
 Free blocks (sky platforms, crumbling floors, trapdoors, pitched ramps and roofs, movers), liquids (and their colours) and the jetpack are in [SET_PIECES.md](SET_PIECES.md); size limits in [MAP_BUDGETS.md](MAP_BUDGETS.md).
 

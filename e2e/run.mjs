@@ -957,13 +957,16 @@ async function editoruxFlow(browser) {
   await page.keyboard.press('Escape');
   await page.keyboard.press('PageDown');
 
-  // Terrain: scattered plants and rocks are bedded into the ground, a little below level 0; Erase must still reach them.
+  // Terrain: plants and rocks the Environment brush paints are bedded into the ground, a little below level 0; Erase must
+  // still reach them. (The Scatter Brush sets are retired, owner 2026-11-09: none left in the palette.)
   await page.click('#ed-env-btn');
   check((await page.getAttribute('#ed-env-btn', 'class')).includes('on') && (await page.isVisible('#ed-pal-tabs [data-ws="environment"][data-pane="paint"]')), 'the Environment workspace shows its own sub-tabs');
   await page.click('#ed-pal-tabs [data-ws="environment"][data-pane="terrain"]');
   await page.click('#ed-tr-new');
   await page.evaluate(() => window.__editor.view.focus({ x: 30, y: 0, z: 30 }));
-  await clickTool(page, '[data-tool="scatter:rocks"]');
+  check(!(await page.$('[data-tool^="scatter:"]')), 'the old Scatter Brush sets are gone from the palette');
+  await clickTool(page, '[data-tool="envbrush"]');
+  await page.selectOption('#ed-env-preset', 'alpine');
   await clickAt(30, 0, 30);
   d = await doc();
   const rocks = d.entities.filter((e) => e.kind === 'prop');
@@ -1083,6 +1086,7 @@ async function editoruxFlow(browser) {
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).entities.length === before, 'a stroke undoes in one step');
   await editorPhase1aChecks(page, { doc, at, clickAt, settle, shot });
+  await editorInspectorKeepChecks(page, { doc, clickAt, settle });
   // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.evaluate(() => document.querySelector('#ed-modes [data-ws="build"]').click());
@@ -1092,15 +1096,80 @@ async function editoruxFlow(browser) {
   await shot('1280');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+}
+
+/**
+ * The inspector keeps the first edit after a placement (MapMaker fixes 2, item 7; editor/inspectorKeep.ts). A placement
+ * builds the inspector for the new thing and the map change rebuilds it a frame later: a value typed in before that
+ * frame went with the old field. Here the placement is made as the Place tool makes it (run, then select), a value is
+ * typed into X at once, and three frames pass before Enter: the field still has it and commits it.
+ */
+async function editorInspectorKeepChecks(page, { doc, clickAt, settle }) {
+  await page.keyboard.press('Escape');
+  const r = await page.evaluate(async () => {
+    const ed = window.__editor;
+    const id = 'spawn_keep';
+    const raf = () => new Promise((res) => requestAnimationFrame(() => res()));
+    ed.run('Place spawn', { kind: 'addEntities', entities: [{ id, kind: 'spawn', position: [4, 0, 4], yaw: 0 }] });
+    ed.setSelection({ tiles: [], entities: [id] });
+    const field = (label) => [...document.querySelectorAll('#ed-inspector .row')].find((row) => row.firstChild?.textContent === label)?.querySelector('input');
+    const x = field('X');
+    if (!x) return { error: 'no X field' };
+    x.focus();
+    x.value = '9';
+    x.dispatchEvent(new Event('input', { bubbles: true }));
+    await raf();
+    await raf();
+    await raf();
+    const now = document.activeElement;
+    const kept = { tag: now?.tagName ?? null, value: now?.value ?? null, rebuilt: now !== x };
+    now?.dispatchEvent(new Event('change', { bubbles: true }));
+    await raf();
+    await raf();
+    return { kept, x: ed.doc.entities.find((e) => e.id === id)?.position[0] };
+  });
+  check(!r.error && r.kept.tag === 'INPUT' && r.kept.value === '9' && r.x === 9, `the inspector keeps the first edit after a placement through the rebuild a frame later (${JSON.stringify(r)})`);
+  // The same with the mouse and keyboard: the Spawn tool places one, X is typed at once and Enter commits it.
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
+  await settle();
+  await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
+  await clickAt(10, 0, 4);
+  const placed = (await doc()).entities.filter((e) => e.kind === 'spawn').at(-1);
+  await page.fill('#ed-inspector .row:has(> span:text-is("Z")) input', '-7');
+  await page.keyboard.press('Enter');
+  await settle();
+  const moved = (await doc()).entities.find((e) => e.id === placed?.id);
+  check(moved?.position[2] === -7, `typed into the inspector straight after placing with the mouse, the edit lands (z ${moved?.position[2]})`);
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('Escape');
+}
+
+/**
+ * MapMaker's checks were one flow (`editorux`, 1,337 s on CI run 42671626152: too long for a retry in the 45-minute
+ * job); split by area into four of about 5-6.5 minutes each (MapMaker fixes 2, item 10), every check kept, in the
+ * same order. `editorux`: the palette, tools, placing, levels, the inspector, the status bar and the top bar (one
+ * page). `editorpieces`: set pieces, the ground under floors, measuring. `editortools`: turning, the workflow (Play
+ * from here, the plan view, the card shot), Phase 3 part B (groups, paste, mirror, notes), the terrain grid and bot
+ * hints. `editorenv`: the bot test and the environment tools.
+ */
+async function editorpiecesFlow(browser) {
   await editorSetPieceChecks(browser);
   await editorSetPiecePart5Checks(browser);
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
+}
+
+async function editortoolsFlow(browser) {
   await editorTurnChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
   await editorBotHintChecks(browser);
+}
+
+async function editorenvFlow(browser) {
   await editorMapTestChecks(browser);
   await editorEnvironmentChecks(browser);
 }
@@ -3375,7 +3444,7 @@ async function sceneryFlow(browser) {
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const space = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.startsWith('backdrop_')).map((m) => m.name));
   check(space.includes('backdrop_sky') && !space.includes('backdrop_ground'), `Skyward floats in a starfield with no ground (${space.join(', ')})`);
-  // MapMaker: pick a backdrop, paint plants, scatter a forest.
+  // MapMaker: pick a backdrop, paint plants, brush a wood (the Environment brush).
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
@@ -3418,16 +3487,20 @@ async function sceneryFlow(browser) {
   await page.mouse.up();
   const lush = await page.evaluate(() => window.__editor.doc.terrain.foliage.filter((v) => v === 4).length);
   check(lush > 5, `the plants brush paints overgrown cells (${lush})`);
-  await clickTool(page, '[data-tool="scatter:forest"]');
+  // N takes up the Environment brush (the Scatter Brush it replaced is retired).
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('KeyN');
+  check(await page.evaluate(() => window.__editor.tool?.kind === 'envbrush'), 'N takes up the Environment brush');
+  await page.selectOption('#ed-env-preset', 'temperate');
   p = await at(20, 20);
   await page.mouse.move(p.x, p.y);
   await page.mouse.click(p.x, p.y);
   const trees = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop').length);
-  check(trees >= 3, `the scatter brush plants a patch of forest (${trees} trees)`);
+  check(trees >= 3, `the Environment brush plants a patch of woods (${trees} plants)`);
   await page.keyboard.press('Control+z');
   const undone = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop').length);
   check(undone === 0, 'one undo takes the whole patch back');
-  // Props stay on sloping ground: raise a hill, scatter rocks on its side, nothing floats.
+  // Props stay on sloping ground: raise a hill, brush rocks and plants on its side, nothing floats.
   await clickTool(page, '[data-tool="terrain:raise"]');
   p = await at(20, 20);
   await page.mouse.move(p.x, p.y);
@@ -3435,7 +3508,8 @@ async function sceneryFlow(browser) {
   // Hold until the hill stands at least 1.5 m tall (headless frame rates vary), at most 8 s.
   await page.waitForFunction(() => Math.max(...window.__editor.doc.terrain.heights) > 150 || window.__editor.stroke?.now && Math.max(...window.__editor.stroke.now.heights) > 150, null, { timeout: T(8000) }).catch(() => {});
   await page.mouse.up();
-  await clickTool(page, '[data-tool="scatter:rocks"]');
+  await clickTool(page, '[data-tool="envbrush"]');
+  await page.selectOption('#ed-env-preset', 'alpine');
   // Bring the hillside to the middle of the view, clear of the tool bar over its top edge.
   await page.evaluate(() => window.__editor.view.focus({ x: 18, y: 0, z: 18 }));
   p = await at(18, 18);
@@ -3453,7 +3527,7 @@ async function sceneryFlow(browser) {
     };
     return { n: props.length, worst: Math.max(...props.map((e) => e.position[1] - h(e.position[0], e.position[2]))) };
   });
-  check(rocks.n > 0 && rocks.worst < 0.02, `scattered rocks sit on the hillside (${rocks.n}, worst gap ${rocks.worst.toFixed(2)} m)`);
+  check(rocks.n > 0 && rocks.worst < 0.02, `brushed rocks and plants sit on the hillside (${rocks.n}, worst gap ${rocks.worst.toFixed(2)} m)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -6960,11 +7034,17 @@ async function editorPartBChecks(browser) {
   await page.keyboard.press('Control+KeyZ');
   await frames(page, 2);
   check((await doc()).classicStructure.tiles.length === 1, 'one undo takes the paste back');
-  await page.evaluate(() => window.__editor.run('Theme', { kind: 'setTheme', before: window.__editor.doc.classicStructure.theme, after: 'core.industrial' }));
+  // Into a map of another theme (owner, 2026-11-09: allowed): the pieces wear its theme, their own paint kept.
+  await page.evaluate(() => window.__editor.run('Theme', { kind: 'setTheme', before: window.__editor.doc.classicStructure.theme, after: 'core.factory' }));
   await page.keyboard.press('Control+KeyV');
-  await frames(page, 1);
-  check(/Can't paste: copied from .*another theme/.test(await toast()), `into a map of another theme it is refused, saying why (${await toast()})`);
+  await frames(page, 2);
+  const themed = await doc();
+  check(themed.classicStructure.theme === 'core.factory' && themed.classicStructure.tiles.length === 2 && /Pasted 3 things .*the pieces wear this map's .* theme, their own paint kept/.test(await toast()), `into a map of another theme it pastes, and says the pieces wear its theme (${await toast()})`);
+  await shot('paste-theme');
   await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await doc()).classicStructure.theme !== 'core.factory' && (await doc()).classicStructure.tiles.length === 1, 'two undos take the paste and the theme back');
 
   // ---- Mirror…: a red spawn and flag on the west, mirrored east (Shift+M): the copy is blue's.
   await page.evaluate(() => window.__editor.run('Team things', { kind: 'addEntities', entities: [{ id: 'sp_red', kind: 'spawn', position: [-28, 0, 4], yaw: 1.571, faction: 'embers' }, { id: 'flag_red', kind: 'flag', position: [-32, 0, 0], yaw: 0, team: 'embers' }] }));
@@ -7055,6 +7135,50 @@ async function editorPartBChecks(browser) {
   await frames(page, 4);
   await shot('template-ctf');
   check(!/error/i.test(issues), `the template validates clean (${issues.slice(0, 120)})`);
+
+  // ---- Mirror half the map with its bot hints and, ticked, its terrain and paths (owner, 2026-11-09).
+  await newMap(page, 96);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = structuredClone(ed.doc.terrain);
+    // A mound on the west half (x -20, z 6) and stone paint round it.
+    for (let r = 0; r < t.rows; r++) for (let c = 0; c < t.cols; c++) {
+      const x = t.origin[0] + c * t.spacing;
+      const z = t.origin[1] + r * t.spacing;
+      const d = Math.hypot(x + 20, z - 6);
+      if (d < 10) t.heights[r * t.cols + c] = Math.round(400 * (1 - d / 10));
+    }
+    ed.run('Mound', { kind: 'setTerrain', before: ed.doc.terrain, after: t });
+    ed.run('Hint', { kind: 'setBotHints', before: ed.doc.botHints ?? null, after: [{ id: 'hint_stage', kind: 'staging', position: [-24, 0, -10], radius: 6, team: 'embers' }] });
+    ed.run('Road', { kind: 'setPaths', before: ed.doc.paths ?? null, after: [{ id: 'road_w', points: [[-30, 0, -20], [-12, 0, 20]], closed: false, uses: ['road'], width: 3, style: 'dirt', lay: true }] });
+    ed.setSelection({ tiles: [], entities: [] });
+  });
+  await page.keyboard.press('Shift+KeyM');
+  await page.waitForSelector('#ed-mirror-dialog[open]', { timeout: T(5000) });
+  await page.selectOption('#ed-mirror-across', 'eastWest');
+  await page.fill('#ed-mirror-x', '0');
+  await page.dispatchEvent('#ed-mirror-x', 'input');
+  await page.selectOption('#ed-mirror-half', 'west');
+  const plainWhy = await page.textContent('#ed-mirror-why');
+  await page.check('#ed-mirror-ground');
+  const groundWhy = await page.textContent('#ed-mirror-why');
+  check(/1 bot hint/.test(plainWhy) && !/terrain/.test(plainWhy) && /1 bot hint, 1 path, the terrain/.test(groundWhy), `half the map brings its bot hint; ticked, its terrain and path too (${plainWhy} | ${groundWhy})`);
+  await shot('mirror-ground-dialog');
+  await page.click('#ed-mirror-go');
+  await frames(page, 3);
+  const mirrored = await page.evaluate(() => {
+    const doc = window.__editor.doc;
+    const t = doc.terrain;
+    const h = (x, z) => t.heights[Math.round((z - t.origin[1]) / t.spacing) * t.cols + Math.round((x - t.origin[0]) / t.spacing)];
+    return { west: h(-20, 6), east: h(20, 6), hint: doc.botHints?.find((x) => x.id !== 'hint_stage'), road: doc.paths?.find((x) => x.id !== 'road_w')?.points };
+  });
+  check(mirrored.west === 400 && mirrored.east === 400 && mirrored.hint?.team === 'tide' && mirrored.hint.position[0] === 24 && JSON.stringify(mirrored.road) === '[[30,0,-20],[12,0,20]]', `the east half is the west's mirror image: the mound, the staging spot (now the other team's) and the road (${JSON.stringify(mirrored)})`);
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await frames(page, 4);
+  await shot('mirror-ground');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check(await page.evaluate(() => !window.__editor.doc.botHints?.some((x) => x.team === 'tide') && window.__editor.doc.paths?.length === 1), 'one undo takes the whole mirror back');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   livePages.delete(page);
   await page.context().close();
@@ -9702,7 +9826,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

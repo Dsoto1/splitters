@@ -36,7 +36,7 @@ export type KeyAction =
   | 'escape'
   | 'paths'
   | 'raceTrack'
-  | 'scatter'
+  | 'envBrush'
   | 'place'
   | 'pickStyle'
   | 'select'
@@ -123,7 +123,7 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   tool('terrain', 'T', 'KeyT', 'Terrain (again: the next brush)'),
   { action: 'raceTrack', group: 'Tools', keys: 'Shift+G', what: 'Paths, on the track (NPC traffic)', codes: ['KeyG'], shift: true },
   tool('paths', 'G', 'KeyG', 'Paths: roads, walks and tracks'),
-  tool('scatter', 'N', 'KeyN', 'Scatter: the last set of plants or rocks'),
+  tool('envBrush', 'N', 'KeyN', "Environment brush: paint our trees, plants and rocks (the Nature tab's mix)"),
   tool('logic', 'L', 'KeyL', 'Open or close the logic panel'),
   { action: 'rotateFine', group: 'Selection', keys: 'Shift+R', what: 'Turn the selection or the piece being placed a finer step', codes: ['KeyR'], shift: true },
   { action: 'rotate', group: 'Selection', keys: 'R', what: 'Turn the selection or the piece being placed', codes: ['KeyR'], shift: false },
@@ -142,8 +142,8 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   { action: 'showAll', group: 'Levels', keys: 'H', what: 'Show the levels above too', codes: ['KeyH'] },
   { action: 'focus', group: 'View and camera', keys: 'F', what: 'Frame the selection', codes: ['KeyF'] },
   { action: 'resetView', group: 'View and camera', keys: 'Home', what: "Back to the level's overview", codes: ['Home'] },
-  { action: 'brushBigger', group: 'Brushes', keys: ']', what: 'Bigger brush (Terrain, Scatter)', codes: ['BracketRight'] },
-  { action: 'brushSmaller', group: 'Brushes', keys: '[', what: 'Smaller brush (Terrain, Scatter)', codes: ['BracketLeft'] },
+  { action: 'brushBigger', group: 'Brushes', keys: ']', what: 'Bigger brush (Terrain, Environment brush)', codes: ['BracketRight'] },
+  { action: 'brushSmaller', group: 'Brushes', keys: '[', what: 'Smaller brush (Terrain, Environment brush)', codes: ['BracketLeft'] },
   { action: 'pickStyle', group: 'Brushes', keys: 'I', what: 'Paint: pick up the look under the pointer', codes: ['KeyI'] },
   { action: 'keys', group: 'Map and panels', keys: '?', what: 'This list of keys', codes: ['Slash'], chars: ['?'], shift: true },
   { action: 'search', group: 'Map and panels', keys: '/', what: 'Search the palette', codes: ['Slash'] },

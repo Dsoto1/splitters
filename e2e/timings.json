@@ -1,10 +1,13 @@
 {
-  "source": "CI run 41898017163 (check/ci-speed, 4 Nov 2026): every flow but coverage from its E2E_TIMINGS (hostpage: its failed run); map parts at 60 s a map (run 41851112171). CI refreshes it: each run merges its timings into the e2e-timings artifact (tools/ci/timings.mjs), and the next plan starts from the newest.",
+  "source": "CI run 41898017163 (check/ci-speed, 4 Nov 2026): every flow but coverage from its E2E_TIMINGS (hostpage: its failed run); map parts at 60 s a map (run 41851112171); editorux split in four (2026-11-09) in the shares its parts took of it on run 42671626152 (394, 325, 340 and 290 of 1,337 s). CI refreshes it: each run merges its timings into the e2e-timings artifact (tools/ci/timings.mjs), and the next plan starts from the newest.",
   "startup": 40,
   "perMap": 60,
   "flows": {
     "editor": 285,
-    "editorux": 185,
+    "editorux": 55,
+    "editorpieces": 45,
+    "editortools": 47,
+    "editorenv": 40,
     "offline": 113,
     "mobile": 96,
     "vault": 18,
