@@ -428,7 +428,7 @@ export class EditorView {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
     if (!on) return;
-    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.ring, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes, this.scene.getMeshByName('measureLines') ?? undefined];
+    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.ring, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes, this.scene.getMeshByName('measureLines') ?? undefined, ...this.scene.meshes.filter((m) => m.name.startsWith('edMapTest'))];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
     for (const n of aids) {
       if (!n || !n.isEnabled(false)) continue;

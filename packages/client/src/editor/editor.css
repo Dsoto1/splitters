@@ -352,9 +352,9 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 }
 
 /* Top bar icon buttons (file actions, grid). */
-#ed-top .ed-file button, #ed-grid, #ed-grid-full, #ed-overlaps, #ed-plan { display: flex; align-items: center; gap: 5px; }
-#ed-top .ed-file svg, #ed-grid svg, #ed-grid-full svg, #ed-overlaps svg, #ed-plan svg { width: 16px; height: 16px; flex: none; }
-#ed-grid.on, #ed-grid-full.on, #ed-overlaps.on, #ed-plan.on { color: var(--cyan); border-color: rgba(0, 209, 255, 0.5); }
+#ed-top .ed-file button, #ed-grid, #ed-grid-full, #ed-overlaps, #ed-plan, #ed-maptest { display: flex; align-items: center; gap: 5px; }
+#ed-top .ed-file svg, #ed-grid svg, #ed-grid-full svg, #ed-overlaps svg, #ed-plan svg, #ed-maptest svg { width: 16px; height: 16px; flex: none; }
+#ed-grid.on, #ed-grid-full.on, #ed-overlaps.on, #ed-plan.on, #ed-maptest.on { color: var(--cyan); border-color: rgba(0, 209, 255, 0.5); }
 #ed-snap { padding: 4px 5px; font-size: 12px; }
 @media (max-width: 1400px) {
   #ed-top .ed-file button { padding: 5px 6px; }
@@ -538,7 +538,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-top.fit-3 #ed-name { width: 96px; }
 #ed-top.fit-3 #ed-snap { max-width: 84px; }
 #ed-top.fit-4 #ed-skill { display: none; }
-#ed-top.fit-4 #ed-grid, #ed-top.fit-4 #ed-grid-full, #ed-top.fit-4 #ed-overlaps, #ed-top.fit-4 #ed-plan { padding: 5px; }
+#ed-top.fit-4 #ed-grid, #ed-top.fit-4 #ed-grid-full, #ed-top.fit-4 #ed-overlaps, #ed-top.fit-4 #ed-plan, #ed-top.fit-4 #ed-maptest { padding: 5px; }
 #ed-top.fit-4 #ed-theme { max-width: 84px; }
 #ed-tr-edit .ed-tr-swap { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0; }
 #ed-tr-edit .ed-tr-swap label { flex: 1; margin: 0; }
@@ -691,3 +691,46 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-mirror #ed-mirror-why.err { color: var(--error); }
 /* New map → Start from (templatePicker.ts). */
 .ed-new-sizes.off, label.off { opacity: 0.45; }
+
+/* MapMaker overhaul Phase 4 (mapTestPanel.ts): the Test panel, the bot test run's progress and summary, the spawn
+   exposure labels (mapTestOverlay.ts). Editor-only. */
+#ed-maptest.busy svg { animation: ed-mt-pulse 1.6s ease-in-out infinite; }
+@keyframes ed-mt-pulse { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { #ed-maptest.busy svg { animation: none; } }
+#editor > .ed-maptest {
+  position: absolute; top: 56px; right: 12px; z-index: 6; width: 320px; max-height: calc(100% - 80px); overflow: auto; padding: 10px 12px;
+  background: var(--surface-2); color: var(--fg); border: 1px solid rgba(142, 162, 192, 0.28); border-top: 3px solid var(--cyan); border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+.ed-maptest[hidden] { display: none; }
+.ed-mt-head { display: flex; align-items: center; justify-content: space-between; }
+.ed-mt-head h2 { margin: 0; font-size: 15px; }
+.ed-mt-head button { padding: 2px 8px; }
+.ed-maptest section { border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 8px; padding-top: 6px; }
+.ed-maptest h3 { margin: 2px 0 4px; font-size: 13px; color: var(--cyan); }
+.ed-maptest .ed-dialog-field { margin: 0 0 6px; font-size: 12px; }
+.ed-maptest .ed-dialog-field > span { width: 84px; flex: none; }
+.ed-maptest .ed-dialog-field[hidden] { display: none; }
+.ed-maptest .ed-dialog-field input, .ed-maptest .ed-dialog-field select { flex: 1; min-width: 0; }
+.ed-mt-progress { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; font-size: 12px; }
+.ed-mt-progress[hidden] { display: none; }
+.ed-mt-progress progress { flex: 1; min-width: 60px; }
+.ed-mt-summary { margin: 8px 0 6px; padding-left: 18px; font-size: 12px; line-height: 1.45; }
+.ed-mt-layers { display: grid; gap: 3px; font-size: 12px; }
+.ed-mt-check { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-right: auto; }
+.ed-mt-check i { width: 12px; height: 12px; border-radius: 2px; flex: none; }
+.ed-mt-layer-went i { background: linear-gradient(90deg, #1a33e6, #1ad9f2, #ffe626, #ff2619); }
+.ed-mt-layer-stuck i { background: #ff40f2; }
+.ed-mt-layer-died i { background: #ff1f14; }
+.ed-mt-layer-failed i { background: #ff990d; }
+.ed-mt-spawns { margin: 4px 0 0; padding-left: 20px; font-size: 12px; line-height: 1.45; color: var(--muted); }
+.ed-mt-spawns li.exposed { color: #ff8a80; font-weight: 700; }
+#editor > .ed-exposure-label {
+  position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; white-space: nowrap; padding: 2px 6px; text-align: center;
+  background: rgba(11, 15, 26, 0.88); border: 1px solid rgba(255, 153, 51, 0.55); border-radius: 4px; font-size: 10px; color: var(--muted);
+}
+#editor > .ed-exposure-label b { display: block; color: #ffb36b; font: 700 13px var(--font-display); }
+#editor > .ed-exposure-label.exposed { border-color: #ff5a4d; }
+#editor > .ed-exposure-label.exposed b { color: #ff6b5e; }
+#editor > .ed-exposure-label.exposed b::before { content: '! '; }
+.ed-exposure-label[hidden] { display: none; }
