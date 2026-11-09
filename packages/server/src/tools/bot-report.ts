@@ -189,6 +189,8 @@ export interface MatchRow {
   /** The end-of-match awards as they stood at the end (sim/awards.ts): kind -> "who value". */
   awards?: Record<string, string>;
   pace?: { betweenFights: number; firstFight: number; fights: number; engagement: number; hits: number; killSpread: number; killTop10: number };
+  /** Bots' rounds by weapon (botMeasures.ts Behaviour.weaponUse): [rounds, hits on enemies, mean hit distance m]. */
+  weaponUse?: Record<string, [number, number, number]>;
   /** King of the Hill: seconds the hill was held by one team alone, contested, empty. */
   hill?: { held: number; contested: number; empty: number };
   /** Rounds (Elimination, Bomb, Hostage): how long each finished one lasted (s). */
@@ -848,6 +850,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
   out.spawnDeaths = behaviour.spawnDeaths;
   out.deaths = behaviour.deaths;
   out.pace = behaviour.pace();
+  out.weaponUse = behaviour.weaponUse();
   // The end-of-match awards as they stand (sim/awards.ts; these matches have no end of their own).
   const awardPlayers = match.combatants().filter((c) => c.kind !== 'npc');
   out.awards = Object.fromEntries([...match.awards.awards(awardPlayers.map((c) => c.slot)), ...(match.roulette ? match.roulette.awards(awardPlayers) : [])].map((a) => [a[0], `${match.actor(a[1])?.name ?? a[1]} ${a[2]}${a[0] === 'nemesis' && typeof a[3] === 'number' ? ` of ${match.actor(a[3])?.name ?? a[3]}` : a[0] === 'accurate' ? `% of ${a[3]}` : ''}`]));
@@ -1030,6 +1033,7 @@ function printMatch(m: MatchRow): void {
   const fightT = sum(m.bots, (r) => r.fight ?? 0);
   const snipers = m.bots.filter((r) => r.job === 'sniper');
   if (m.weaponKills) console.log(`weapons (${getWeaponSet(m.set).name}): ${killsText(new Map(Object.entries(m.weaponKills)))}`);
+  if (m.weaponUse && Object.keys(m.weaponUse).length) console.log(`weapon use (bots' rounds, hits, mean hit distance; spread ${useSpread([m]).toFixed(3)}): ${Object.entries(m.weaponUse).sort((a, b) => b[1][0] - a[1][0]).map(([w, [n, h, d]]) => `${w.replace('core.', '')} ${n}/${h} ${d.toFixed(1)} m`).join(', ')}`);
   const made = [0, 1, 2].map((k) => sum(m.bots, (r) => r.parkour?.[k] ?? 0));
   if (m.parkourLinks) console.log(`parkour: links ${m.parkourLinks[0]} drops, ${m.parkourLinks[1]} gap jumps, ${m.parkourLinks[2]} jumps up | made ${made[0]} drops, ${made[1]} gap jumps, ${made[2]} jumps up (missed ${sum(m.bots, (r) => r.parkourMissed ?? 0)}, given up ${sum(m.bots, (r) => r.parkourGaveUp ?? 0)}) | routes along a group's corridor ${sum(m.bots, (r) => r.along ?? 0)} | searches put off a tick ${m.searchesPutOff ?? 0} | ticks keeping right of a teammate ${m.keptRight ?? 0}`);
   console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)} (only parkour reaches ${sum(snipers, (r) => r.parkourPosts ?? 0)}), rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, moved on after shots ${sum(snipers, (r) => r.moves ?? 0)}, shots held ${sum(snipers, (r) => r.held ?? 0)} s, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
@@ -1195,6 +1199,28 @@ export function wayMeasures(ms: readonly MatchRow[]): { ways2?: number; waysBusi
     }
   }
   return multi ? { ways2: two / multi, waysBusiest: busy / multi } : {};
+}
+
+/** Bots' rounds by weapon over a set of matches: [rounds, hits, summed hit distance]. */
+function weaponUseOf(ms: readonly MatchRow[]): Map<string, [number, number, number]> {
+  const out = new Map<string, [number, number, number]>();
+  for (const m of ms) {
+    for (const [w, [n, h, d]] of Object.entries(m.weaponUse ?? {})) {
+      const t = out.get(w) ?? [0, 0, 0];
+      out.set(w, [t[0] + n, t[1] + h, t[2] + h * d]);
+    }
+  }
+  return out;
+}
+
+/** How evenly bots' rounds spread over the weapons they fired: entropy over the most it could be, 0..1 (one gun only: 0). */
+function useSpread(ms: readonly MatchRow[]): number {
+  const counts = [...weaponUseOf(ms).values()].map((v) => v[0]).filter((n) => n > 0);
+  const total = counts.reduce((a, b) => a + b, 0);
+  if (counts.length < 2) return 0;
+  let h = 0;
+  for (const v of counts) h -= (v / total) * Math.log(v / total);
+  return h / Math.log(counts.length);
 }
 
 /** The pace of play over a set of matches: gaps and hits weighted by their counts, kill spread by match. */
@@ -1423,6 +1449,21 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
     const pa = measure(before);
     const pb = measure(after);
     console.log(`all: spawn deaths ${f(pa.spawnDeaths, 1, 100)} → ${f(pb.spawnDeaths, 1, 100)} %; between fights ${f(pa.betweenFights)} → ${f(pb.betweenFights)} s (from a spawn ${f(pa.firstFight)} → ${f(pb.firstFight)} s); engagement ${f(pa.engagement)} → ${f(pb.engagement)} m; kills spread ${f(pa.killSpread, 3)} → ${f(pb.killSpread, 3)}; kills ${f(pa.killsMin)} → ${f(pb.killsMin)} a minute`);
+    // Weapon use: how evenly bots' rounds spread over their guns, and each gun's rounds, hit rate and hit distance.
+    const ua = weaponUseOf(before);
+    const ub = weaponUseOf(after);
+    if (ua.size || ub.size) {
+      console.log(`weapon use spread ${useSpread(before).toFixed(3)} → ${useSpread(after).toFixed(3)} (bots' rounds by weapon, 0..1)`);
+      console.log('\n| Weapon | rounds | hit % | mean hit distance (m) |');
+      console.log('|---|---|---|---|');
+      for (const w of [...new Set([...ua.keys(), ...ub.keys()])].sort((x, y) => (ub.get(y)?.[0] ?? 0) - (ub.get(x)?.[0] ?? 0))) {
+        const a = ua.get(w) ?? [0, 0, 0];
+        const b = ub.get(w) ?? [0, 0, 0];
+        const hp = (v: [number, number, number]) => (v[0] ? ((v[1] / v[0]) * 100).toFixed(0) : '-');
+        const hd = (v: [number, number, number]) => (v[1] ? (v[2] / v[1]).toFixed(1) : '-');
+        console.log(`| ${w} | ${a[0]} → ${b[0]} | ${hp(a)} → ${hp(b)} | ${hd(a)} → ${hd(b)} |`);
+      }
+    }
   }
   const tot = (rs: readonly MatchRow[], k: (m: MatchRow) => number) => rs.reduce((x, m) => x + k(m), 0);
   console.log(`\nall maps: captures ${tot(before, (m) => m.captures)} → ${tot(after, (m) => m.captures)} in ${before.length} → ${after.length} matches; matches with a capture ${before.filter((m) => m.captures > 0).length} → ${after.filter((m) => m.captures > 0).length}`);

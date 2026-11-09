@@ -1,4 +1,6 @@
 import { writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { initPhysics } from '@tiletrigger/shared';
 import { initNavigation } from '@tiletrigger/shared/match';
 import { runNetLab, type NetCondition, type NetLabResult } from './netLab.ts';
@@ -49,7 +51,8 @@ for (const r of results) {
   );
 }
 const json = args.get('json');
-if (json) writeFileSync(json, JSON.stringify({ generated: new Date().toISOString(), clients, seconds, weapon, results }, null, 2) + '\n');
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
+if (json) writeFileSync(resolve(root, json), JSON.stringify({ generated: new Date().toISOString(), clients, seconds, weapon, results }, null, 2) + '\n');
 if (smoke) {
   // The smoke check: players connected, rounds were fired and judged, and the host agreed with the screen.
   const r = results[0]!;

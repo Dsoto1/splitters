@@ -1,4 +1,5 @@
 import type { LookHitbox } from '../sim/hitbox.ts';
+import { botBand } from './weaponBands.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import { TALL_SIZE, type NavWorld } from '../nav/index.ts';
 import type { Corridor } from '../nav/corridors.ts';
@@ -1280,7 +1281,7 @@ export class BotBrain {
     const def = this.heldDef(view);
     const base = 4 + (this.profile.rangePreference / 100) * 22;
     if (!def) return base;
-    const [lo, hi] = def.botRange;
+    const [lo, hi] = botBand(def);
     return clamp(base, lo + 1, Math.max(lo + 2, Math.min(hi - 2, hi * 0.7)));
   }
 
@@ -2143,7 +2144,7 @@ export class BotBrain {
     // A sniper on its spot takes only a calculated shot (bots/sniper.ts goodShot): it keeps the target in its scope and
     // waits rather than give the spot away on a poor one.
     const sniping = !!target && !!sol && wantFire && this.sniping(view, def);
-    if (sniping && !goodShot({ dist: sol!.dist, reach: def!.botRange[1], lateral: this.aim.speedAcross(ctx.eye, target!.pos), facing: facingOf(target!, me.pos), settled: this.aim.settledOn(sol!), tracked: this.aim.trackedTicks(tick) / TICK_RATE })) {
+    if (sniping && !goodShot({ dist: sol!.dist, reach: botBand(def!)[1], lateral: this.aim.speedAcross(ctx.eye, target!.pos), facing: facingOf(target!, me.pos), settled: this.aim.settledOn(sol!), tracked: this.aim.trackedTicks(tick) / TICK_RATE })) {
       wantFire = false;
       if (tick % TICK_RATE === 0) this.heldShots++;
       this.aim.trigger(ctx, { yaw: this.yaw + 9, pitch: 0, dist: 1, halfAngle: 0 }, this.yaw, this.pitch, false);
@@ -3556,7 +3557,7 @@ export class BotBrain {
     const live = this.live;
     live.length = 0;
     const held = this.post?.kind === 'sniper' ? this.heldDef(view) : undefined;
-    const sight = held && this.sniping(view, held) ? Math.max(SIGHT_RANGE, Math.min(SCOPE_SIGHT, held.botRange[1])) : SIGHT_RANGE;
+    const sight = held && this.sniping(view, held) ? Math.max(SIGHT_RANGE, Math.min(SCOPE_SIGHT, botBand(held)[1])) : SIGHT_RANGE;
     let armedVsTanks: boolean | undefined;
     // Not whoever shares its vehicle (in a free-for-all a crewmate is nobody's ally): a tank's driver turned to face
     // its own gunner and stood there.
@@ -4420,7 +4421,8 @@ export function weaponScore(w: InventoryView, c: WeaponChoiceContext): number {
   const rounds = w.mag + w.reserve;
   if (def.magazine > 0 && rounds <= 0) return -Infinity;
   const { dist, target, profile } = c;
-  const [lo, reach] = def.botRange;
+  // Its band: where the gun was measured to kill in good time (weaponBands.ts), not a hand-set guess.
+  const [lo, reach] = botBand(def);
   // A melee weapon with a loaded barrel (the Battle Axe) also fights a few steps beyond its reach.
   const barrel = def.kind === 'melee' && def.alt?.kind === 'hitscan' && (w.alt ?? 0) >= def.alt.cost ? def.alt : null;
   const hi = barrel ? Math.max(reach, barrelReach(barrel)) : reach;
