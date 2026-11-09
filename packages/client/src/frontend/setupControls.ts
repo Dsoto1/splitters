@@ -1,4 +1,4 @@
-import { BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, getWeaponSet, isWeaponSetId, peopleAndBots, setTeamSize, weaponSetList, type FitItem, type FitTopic, type GameMode, type MatchLimits, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
+import { WEATHER_CHOICES, WEATHER_PRESETS, isWeatherChoice, BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, getWeaponSet, isWeaponSetId, peopleAndBots, setTeamSize, weaponSetList, type FitItem, type FitTopic, type GameMode, type MatchLimits, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
 
 /**
  * Match setup controls shared by Play → match setup and the host's pause
@@ -487,6 +487,19 @@ export function botCastSelect(value: readonly string[] | undefined, mapCast: rea
     const v = sel.value;
     onChange(v === 'map' ? undefined : v === 'all' ? [] : v.split('+'));
   });
+  return sel;
+}
+
+/**
+ * Weather (map/weather.ts): the map's own or one of the host's choices. `value`: undefined the map's own; `mapLabel`:
+ * the map's weather in a few words (shown in the "Map" option).
+ */
+export function weatherSelect(value: string | undefined, mapLabel: string, onChange: (v: string | undefined) => void, id?: string): HTMLSelectElement {
+  const sel = el('select', { ...(id ? { id } : {}) });
+  sel.append(el('option', { value: 'map', textContent: `Map (${mapLabel})` }));
+  for (const w of WEATHER_CHOICES) sel.append(el('option', { value: w, textContent: WEATHER_PRESETS[w].label }));
+  sel.value = isWeatherChoice(value) ? value : 'map';
+  sel.addEventListener('change', () => onChange(sel.value === 'map' ? undefined : sel.value));
   return sel;
 }
 

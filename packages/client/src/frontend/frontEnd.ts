@@ -13,6 +13,10 @@ import {
   setThrowables,
   THROWABLE_DEFS,
   weaponSetList,
+  WEATHER_PRESETS,
+  isWeatherChoice,
+  mapWeather,
+  weatherLabel,
   type BotProfile,
   type BotSet,
   NPC_LOOKS,
@@ -104,7 +108,7 @@ import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { mapThumbs, thumbPair, type MapThumbs } from './mapThumbs.ts';
 import type { MapMeta } from '../mapIndex.ts';
-import { botCastSelect, choice, field, fitChip, fitList, fold as foldEl, inert, infoTip, limitsText, section, segmented, settingRow, sizeChips, stepper, teamEditor, weaponSetSelect, type ChoiceOption } from './setupControls.ts';
+import { botCastSelect, choice, field, fitChip, fitList, fold as foldEl, inert, infoTip, limitsText, section, segmented, settingRow, sizeChips, stepper, weatherSelect, teamEditor, weaponSetSelect, type ChoiceOption } from './setupControls.ts';
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
@@ -1415,6 +1419,8 @@ export class FrontEnd {
       { id: 'sizes', label: 'Character sizes', tip: 'Matter: small characters are smaller, quicker targets with less health that fit through gaps others must crouch for; large ones are bigger, slower and tougher. All equal: everyone plays at standard size.', changed: s.sizes === false, value: 'Equal sizes', control: choice([['on', 'Matter'], ['off', 'All equal']], s.sizes === false ? 'off' : 'on', (v) => this.change((x) => (x.sizes = v === 'on'))) },
       { id: 'stats', label: 'Character stats', tip: "On: each character plays with its own health, speed, size, damage, stamina, jump, melee and armor (Character Select shows them); one without its own plays its size. Off: nobody's own stats count.", changed: s.stats === false, value: 'No character stats', control: choice([['on', 'On'], ['off', 'Off']], s.stats === false ? 'off' : 'on', (v) => this.change((x) => (x.stats = v === 'on' ? undefined : false))) },
       { id: 'randomchars', label: 'Random characters', tip: 'Everyone, you and the bots, plays a random character each life (any on the roster).', changed: !!s.randomChars, value: 'Random characters', control: choice([['off', 'Off'], ['on', 'On']], s.randomChars ? 'on' : 'off', (v) => this.change((x) => (x.randomChars = v === 'on' || undefined))) },
+      // Weather (map/weather.ts; MapMaker overhaul Phase 5): the map's own, or the host's pick.
+      { id: 'weather', label: 'Weather', tip: `Rain, snow, wind and fog, for everyone (fog: everyone sees less far). Map: what the map's maker chose (this map: ${weatherLabel(mapWeather(map))}).`, changed: s.weather !== undefined, value: isWeatherChoice(s.weather) ? WEATHER_PRESETS[s.weather].label : 'Map weather', control: weatherSelect(s.weather, weatherLabel(mapWeather(map)), (v) => this.change((x) => (x.weather = v)), 'arcade-weather') },
       { id: 'gravity', label: 'Gravity', tip: 'Map: whatever the map was built with (normal unless its maker changed it).', changed: s.gravity !== undefined, value: `${s.gravity === 0.4 ? 'Low' : s.gravity === 1.6 ? 'Heavy' : 'Normal'} gravity`, control: choice([['map', 'Map'], ['0.4', 'Low'], ['1', 'Normal'], ['1.6', 'Heavy']], s.gravity === undefined ? 'map' : String(s.gravity), (v) => this.change((x) => (x.gravity = v === 'map' ? undefined : Number(v)))) },
       { id: 'fall', label: 'Fall damage', tip: "Drops past about 5 m hurt; about 16 m kills. Map: the map's own setting.", changed: s.fallDamage !== undefined, value: `Fall damage ${s.fallDamage ? 'on' : 'off'}`, control: choice([['map', 'Map'], ['on', 'On'], ['off', 'Off']], s.fallDamage === undefined ? 'map' : s.fallDamage ? 'on' : 'off', (v) => this.change((x) => (x.fallDamage = v === 'map' ? undefined : v === 'on'))) },
       { id: 'lethality', label: 'Lethality', tip: 'How quickly fights end, for every weapon alike. Arcade: everyone soaks about 40% more (longer fights, tracking matters). Standard: the official balance. Tactical: everyone soaks about 30% less (very lethal).', changed: !!s.lethality, value: `${s.lethality === 'arcade' ? 'Arcade' : 'Tactical'} lethality`, control: choice([['arcade', 'Arcade'], ['standard', 'Standard'], ['tactical', 'Tactical']], s.lethality ?? 'standard', (v) => this.change((x) => (x.lethality = v === 'standard' ? undefined : (v as 'arcade' | 'tactical')))) },
@@ -1445,7 +1451,7 @@ export class FrontEnd {
     const changed = [...live(extras), ...live(arsenal), ...live(botRules)].sort((a, b) => (RULE_RANK[a.id] ?? 50) - (RULE_RANK[b.id] ?? 50));
     const reset = el('button', { type: 'button', class: 'link rule-reset', id: 'setup-reset', textContent: 'Reset', title: 'Back to the standard rules (every variant off)' });
     reset.addEventListener('click', () => this.change((x) => {
-      for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'weaponSet', 'classes', 'classLimit', 'botStyle', 'botCast', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
+      for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'weaponSet', 'weather', 'classes', 'classLimit', 'botStyle', 'botCast', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
     }));
     const count = (xs: typeof extras) => {
       const n = live(xs).length;

@@ -91,6 +91,7 @@ import {
   setThrowables,
   setWeaponsInPlay,
   weaponSetInPlay,
+  matchWeather,
   heldModel,
   throwableModel,
   getMountDef,
@@ -179,6 +180,7 @@ import { markerSetting } from './crosshair.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
+import { WeatherAudio } from './weatherAudio.ts';
 import { impactSoundId, impactStyle } from './fxMap.ts';
 import { ScenarioState } from './scenarioState.ts';
 import { VISUAL_EVENTS } from './snapshotMerge.ts';
@@ -303,6 +305,9 @@ export class GameSession {
   private touch: TouchControls | null = null;
   private readonly interp = new Interpolator();
   private readonly sfx: SessionAudio;
+  /** The weather's rain and wind (weatherAudio.ts), and the weather last shown. */
+  private readonly weatherSound: WeatherAudio;
+  private weatherKey = '';
   private readonly abort = new AbortController();
   private slot = -1;
   private local: LocalPlayer | null = null;
@@ -636,6 +641,7 @@ export class GameSession {
     this.view.showHitboxes = loadHitboxOverlay();
     this.input = new InputState(opts.canvas);
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
+    this.weatherSound = new WeatherAudio(opts.audio);
     // The performance overlay: ?stats, F3 or Options; remembered.
     this.showStats = opts.showStats || loadPerfOverlay();
     this.input.onToggle.set('F3', () => this.setShowStats(!this.showStats));
@@ -1782,6 +1788,8 @@ export class GameSession {
         this.rules = msg.rules;
         // Grenades wear the weapon set's looks (the Military frag, the Sci-fi smoke canister) before the map's pickups are drawn.
         this.view.setWeaponSetLook(weaponSetInPlay(msg.rules, loaded.map)?.id);
+        // The match's weather (the host's choice, else the map's), fixed while it plays.
+        this.applyWeather(msg.rules, loaded.map);
         this.canSpectate = msg.spectate === 1;
         this.drawSpectateButton();
         this.freeBounds = freeCamBounds(loaded.map);
@@ -2272,6 +2280,8 @@ export class GameSession {
             this.view.setWeaponSetLook(weaponSetInPlay(msg.rules, this.map)?.id);
             this.loadSetGuns();
           }
+          // A new match with another weather (the host's Host tab: it waits for the next match).
+          if (this.map) this.applyWeather(msg.rules, this.map);
         }
         break;
       case 'pong':
@@ -2386,6 +2396,15 @@ export class GameSession {
   }
 
   /** The weapon set's guns (a host switched sets mid-match), loaded in the background. */
+  /** The match's weather (the host's choice, else the map's), drawn and heard; set again only when it changed. */
+  private applyWeather(rules: MatchRules, map: MapDocument): void {
+    const w = matchWeather(rules, map);
+    const key = JSON.stringify(w);
+    if (key === this.weatherKey) return;
+    this.weatherKey = key;
+    this.view.setWeather(w);
+  }
+
   private loadSetGuns(): void {
     const map = this.map;
     const rules = this.rules;
@@ -3168,6 +3187,7 @@ export class GameSession {
       this.hud.setVehicleBars(bars);
       // Engines run while anyone rides: yours unpositioned, the nearest others' from where they are.
       if (!document.hidden) this.sfx.engines(this.mounts.mounts.values(), manned?.alive ? manned.index : null, cam);
+      if (!document.hidden) this.weatherSound.update(this.view.weather.current, this.view.weather.stats.shelter, performance.now());
       if (!local) this.view.updateMounts(this.mounts.mounts.values(), this.mannedTurret());
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));

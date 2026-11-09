@@ -4,6 +4,7 @@ import { CEILINGS, CORNERS, EDGE_STYLES, FACADES, FLOOR_INSERTS, ROOM_LAYOUTS } 
 import { MAX_TERRAIN_VERTS, TERRAIN_MATERIALS } from './terrain.ts';
 import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
 import { BORDER_STYLES } from './border.ts';
+import { PRECIPITATION } from './weather.ts';
 import { ScenarioLogic } from './logic.ts';
 
 // The plain constants (format, factions, NPC roles, squad orders): mapKeys.ts, which the menu reads without the schemas.
@@ -21,7 +22,7 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * a pickup's `random` category and `keepFixed`, v25 the `zipline` entity, v27 set pieces, v28 the weapon set, v29 Breakthrough's
  * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`, v30 the menu card shot's camera,
  * `metadata.cardCamera`, v31 MapMaker's groups and note pins, `groups` and `editorNotes`, v32 a terrain up to 321 vertices a side and the border
- * style `coast`, v33 bot hints, `botHints`).
+ * style `coast`, v33 bot hints, `botHints`, v34 the time of day and weather, `timeOfDay` and `weather`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -979,6 +980,14 @@ export const BackdropSchema = z.object({
     .optional(),
 });
 
+/** Weather (v34; map/weather.ts). */
+export const WeatherSchema = z.object({
+  fall: z.enum(PRECIPITATION),
+  amount: z.number().min(0).max(1),
+  wind: z.number().min(0).max(1),
+  fog: z.number().min(0).max(1),
+});
+
 /** Blood on hits and kills: its colour (green for aliens, oil for robots…) and how much. */
 export const BLOOD_AMOUNTS = ['off', 'light', 'heavy'] as const;
 export const BloodSettings = z.object({
@@ -1282,6 +1291,13 @@ export const MapDocument = z.object({
   editorNotes: z.array(EditorNote).max(256).optional(),
   /** Bot hints (v33): chokepoints, sniper, camp and staging spots and jump links the maker marks for bots. Absent: none. */
   botHints: z.array(BotHint).max(256).optional(),
+  /**
+   * The time of day (v34; map/timeOfDay.ts), hours 0-24: the sun's place and light, and the sky blended between the
+   * presets (night, dusk, sunrise, the map's own day sky, sunset). Fixed for the match. Absent: the sky's own look.
+   */
+  timeOfDay: z.number().min(0).max(24).optional(),
+  /** Weather (v34; map/weather.ts): rain or snow, wind, fog banks. The host may play another. Absent: clear. */
+  weather: WeatherSchema.optional(),
 });
 
 export type MapDocument = z.infer<typeof MapDocument>;

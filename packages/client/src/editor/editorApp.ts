@@ -363,6 +363,7 @@ import { envRendererOn } from '../environment/envFlag.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { PlanView } from './planView.ts';
 import { cardShotSection, type CardShotHost } from './cardShot.ts';
+import { skyWeatherSection, type SkyWeatherHost } from './skyWeatherSection.ts';
 import { NoteTool } from './noteTool.ts';
 import { BotHintTool } from './botHintTool.ts';
 import { groupSection, type GroupHost } from './groupPanel.ts';
@@ -1070,6 +1071,9 @@ export class EditorApp {
     const side = ({ N: 'north', E: 'east', S: 'south', W: 'west' } as Record<string, string>)[s.side];
     return `the ${s.kind === 'door' ? 'door' : 'opening'} on the ${side} side (${levelName(s.z)})`;
   }
+
+  /** Map properties' time of day and weather (skyWeatherSection.ts). */
+  private readonly skyWeatherHost: SkyWeatherHost = { current: () => this.doc, run: (label, cmd) => this.run(label, cmd), preview: (h, w) => this.view.previewSky(this.doc, h, w) };
 
   /** What the card shot (cardShot.ts) needs from the editor. */
   private readonly cardHost: CardShotHost = {
@@ -4889,6 +4893,8 @@ export class EditorApp {
       el.append(thumbnailSection(this.thumbHost));
       // The menu card shot's camera (MapMaker overhaul Phase 3 item 8).
       el.append(cardShotSection(this.cardHost));
+      // Time of day and weather (MapMaker overhaul Phase 5).
+      el.append(skyWeatherSection(this.skyWeatherHost));
       // Note pins (MapMaker overhaul Phase 3 item 7): every note, to go to or delete.
       el.append(this.notes.section());
       const name = document.createElement('input');

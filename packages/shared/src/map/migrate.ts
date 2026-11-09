@@ -81,6 +81,9 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v32 -> v33: optional `botHints` (bot hints placed in MapMaker: chokepoints, sniper, camp and staging spots, jump
   // links). Absent = none, as before: v32 data is valid as is.
   [32, (doc) => ({ ...doc })],
+  // v33 -> v34: optional `timeOfDay` (hours: the sun, its light and the sky blended between the presets) and `weather`
+  // (rain or snow, wind, fog banks). Absent = the sky's own look and no weather, as before: v33 data is valid as is.
+  [33, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */
