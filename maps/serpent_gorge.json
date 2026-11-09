@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 29,
   "metadata": {
     "id": "serpent_gorge",
     "name": "Serpent Gorge",
@@ -18,7 +18,15 @@
       "core.tdm",
       "core.koth",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_vheet2oqm3ur4l6v",
+      "versionId": "v_ybe44yjjxwh3htrb",
+      "revision": 3,
+      "contentHash": "sha256:eeadd2148742f9ce57e0a408ae1fab67143adb1a5f8359bfdaebc7f11ac4e690",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T21:33:54.507Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -2233,7 +2241,7 @@
           }
         },
         "edges": {
-          "0,0,0:N": "open",
+          "0,0,0:N": "railing",
           "0,0,0:W": "open"
         }
       },
@@ -2255,7 +2263,7 @@
           }
         },
         "edges": {
-          "0,0,0:W": "open"
+          "0,0,0:W": "railing"
         }
       },
       {
@@ -2298,7 +2306,7 @@
           }
         },
         "edges": {
-          "0,0,0:N": "open",
+          "0,0,0:N": "railing",
           "0,0,0:E": "open"
         }
       },
@@ -7443,6 +7451,32 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "ladder_edih7d0jlj",
+      "position": [
+        12,
+        -8.4,
+        56.5
+      ],
+      "kind": "ladder",
+      "yaw": 1.571,
+      "height": 4.5,
+      "width": 1.2,
+      "style": "vines"
+    },
+    {
+      "id": "ladder_09wf4h3n8x",
+      "position": [
+        44,
+        -8.4,
+        56.5
+      ],
+      "kind": "ladder",
+      "yaw": -1.571,
+      "height": 4.5,
+      "width": 1.2,
+      "style": "vines"
     }
   ],
   "factions": [],

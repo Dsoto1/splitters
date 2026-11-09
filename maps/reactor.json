@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 29,
   "metadata": {
     "id": "reactor",
     "name": "Reactor",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_y6vbltqy5oykqtvo",
+      "versionId": "v_otfzl6cf6rk26mio",
+      "revision": 2,
+      "contentHash": "sha256:8fd6fe7d0d6462f91b6e35cbe517fb77a1754103c9280055f09b582ccdd5122d",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T20:51:50.330Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1718,6 +1726,73 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "block_zxv2bbdzhj",
+      "kind": "block",
+      "position": [
+        36.1,
+        4,
+        50.925
+      ],
+      "yaw": 0,
+      "size": [
+        0.2,
+        1,
+        1.85
+      ],
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_wv250ytoy7",
+      "kind": "block",
+      "position": [
+        36.1,
+        4,
+        45
+      ],
+      "yaw": 0,
+      "size": [
+        0.2,
+        1,
+        2
+      ],
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_lq811unvsb",
+      "kind": "block",
+      "position": [
+        32,
+        2,
+        50.1
+      ],
+      "yaw": 0,
+      "size": [
+        9,
+        1,
+        0.2
+      ],
+      "material": null,
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "roll": 0.47123889803846897
     }
   ],
   "factions": [],

@@ -2052,7 +2052,11 @@ export class GameView {
         if (this.fpBody?.a === a) this.dropFpBody();
         a.hiddenSelf = false;
         a.root.setEnabled(!a.culled);
-        if (a.anim instanceof CharacterAnimator) a.anim.setDormant(!!a.culled);
+        if (a.anim instanceof CharacterAnimator) {
+          a.anim.setDormant(!!a.culled);
+          // Your rider's body (hidden in the cockpit, shown in the chase view) appears in its pose, not standing up.
+          a.anim.settleSeat(sitting.has(p.slot));
+        }
       }
       // A creature plays its own death and is left lying where it fell (no ragdoll).
       if (a.wasAlive && !p.alive && a.anim instanceof CreatureAnimator) {

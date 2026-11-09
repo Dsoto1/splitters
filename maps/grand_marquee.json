@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 29,
   "metadata": {
     "id": "grand_marquee",
     "name": "Grand Marquee",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_e6dqdikseiiwt3s5",
-      "versionId": "v_ai4t3s7ldxv5p5gy",
-      "revision": 2,
-      "contentHash": "sha256:f04da7dd1b62f0a4ab81dea5aa1ece068e454c122029bb3b7cc3ec6f995df7d5",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:20:11.945Z"
+      "versionId": "v_lgr7ag3l3em377vu",
+      "revision": 3,
+      "contentHash": "sha256:cf6963d9f30cb95380df55252ab11b6944a097d37bafe86c3d478a086dd535cf",
+      "schemaVersion": 29,
+      "releasedAt": "2026-11-08T20:33:48.223Z"
     }
   },
   "classicStructure": {
@@ -9728,13 +9728,13 @@
       "position": [
         -14.05,
         5.1,
-        -7.2
+        -8.7
       ],
       "kind": "block",
       "size": [
         0.3,
         1.6,
-        6
+        3
       ],
       "yaw": 0,
       "material": "core.light_strip",
@@ -9750,13 +9750,13 @@
       "position": [
         14.05,
         5.1,
-        -7.2
+        -8.7
       ],
       "kind": "block",
       "size": [
         0.3,
         1.6,
-        6
+        3
       ],
       "yaw": 0,
       "material": "core.light_strip",
@@ -17241,6 +17241,6 @@
       8
     ]
   },
-  "dependencies": [],
-  "weaponSet": "mixed"
+  "weaponSet": "mixed",
+  "dependencies": []
 }
