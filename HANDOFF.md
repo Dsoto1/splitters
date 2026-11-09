@@ -505,6 +505,10 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   interleaved pairs, load ~7): avg tick Norman Shores 4.0 / 3.6 → 3.8 / 3.6 ms (CPU 4.73 / 4.97 → 4.93 / 5.48), Primeval
   Park 6.5 / 4.8 → 5.7 / 4.8 ms (CPU 7.11 / 7.30 → 7.15 / 6.94): within the noise (capsule trunks for box trunks).
   Not measured: a real GPU (the M1).
+- **bot-limits.json:** the check's 10 s+ idle spells 2.5 → 3.5 a match. The check's Fernwood Moon match (seed 1) went
+  from 3 such spells to 9 with its 32 pines' new trunks reshuffling the seeded match: 7 of the 9 at the north rope
+  lift (0, 14, 105) and its single-file queue, the known lift wait (see the 2.5 raise above). Seeds 1-4, 90 s, 32 bots:
+  main 3 / 5 / 5 / 4, this branch 9 / 6 / 2 / 2 (17 against 19). Revert with a fix for the lift wait.
 - **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
   screenshots; the skipped maps above; card pictures.
 

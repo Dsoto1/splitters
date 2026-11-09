@@ -78,6 +78,12 @@ const LINEUP2: [string, number, string, number, number, number][] = [
   ['env.shrub.laurel', 1, 'prop.bush', -2.2, -86, 0],
   ['env.hedge.privet', 0, 'prop.hedge', 1.2, -86, 1.3],
   ['env.hedge.yew', 0, 'prop.hedge_large', 5.2, -85, 1.3],
+  // The other variants, behind and to the sides (every variant is drawn: the environment e2e flow checks it).
+  ['env.broadleaf.acacia', 1, 'prop.tree_plateau', 22, -64, 0],
+  ['env.palm.coconut', 1, 'prop.palm', -18, -80, 0],
+  ['env.palm.leaning', 1, 'prop.palm_bent', 12, -80, 0],
+  ['env.hedge.privet', 1, 'prop.hedge', 1.2, -91, 1.3],
+  ['env.hedge.yew', 1, 'prop.hedge_large', 5.2, -91, 1.3],
 ];
 
 const EYE = 1.7;
