@@ -10,6 +10,7 @@ import { fbm3 } from './noise.mjs';
 import { Mesh, add, cross, len, mul, norm, perp, sub } from './mesh.mjs';
 import { card, chains, spread, tubes } from './branches.mjs';
 import { toLinear } from './tree.mjs';
+import { BARK_STRIPS } from './textures.mjs';
 
 export function shrubSkeleton(seed, g) {
   const r = rng(seed);
@@ -22,7 +23,7 @@ export function shrubSkeleton(seed, g) {
     let d = norm([Math.cos(az) * tilt, 1, Math.sin(az) * tilt]);
     let p = [Math.cos(az) * 0.05, 0, Math.sin(az) * 0.05];
     let parent = 0;
-    const L = g.height * r.range(0.7, 1.0);
+    const L = g.height * r.range(0.7, 1.0) * (g.stemReach ?? 1);
     const segs = 4;
     for (let k = 0; k < segs; k++) {
       d = norm(add(d, [r.jitter(0.15), -0.02, r.jitter(0.15)]));
@@ -53,7 +54,7 @@ export function shrubMesh(seed, sk, g, lod, look, atlas) {
   const leaf = new Mesh();
   const col = toLinear(look.bark);
   if (lod.stems) {
-    tubes(bark, sk.nodes, chains(sk.nodes), { minRadius: 0.009, sides: () => 3, step: 1, uv: { u0: 0, u1: 0.5 }, colour: () => col.map((v) => v * 0.8), wind: (p) => [Math.min(1, p[1] / g.height) ** 1.5 * 0.6, 0] });
+    tubes(bark, sk.nodes, chains(sk.nodes), { minRadius: 0.009, sides: () => 3, step: 1, uv: BARK_STRIPS.oak, colour: () => col.map((v) => v * 0.8), wind: (p) => [Math.min(1, p[1] / g.height) ** 1.5 * 0.6, 0] });
   }
   // Card centres: points in a squashed noisy ellipsoid, nearest a shoot (so cards sit on the plant, not in air).
   const edge = fbm3(seed + 5, 2);

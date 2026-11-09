@@ -1,0 +1,50 @@
+{
+  "$comment": "Clipped hedges (tools/content/env/hedge.mjs): a block along z (as the Kenney hedges lie). Solid: a hull that stops everything, nav obstacle; surface bark (a clipped hedge's woody core stops rounds, as the Kenney hedges did). See broadleaf.json for the fields.",
+  "family": "hedge",
+  "species": [
+    {
+      "category": "plant",
+      "assetVersion": 1,
+      "nav": "obstacle",
+      "role": "blocking",
+      "surface": "bark",
+      "impostor": { "distance": 90, "size": 128 },
+      "id": "env.hedge.privet",
+      "displayName": "Privet Hedge",
+      "notes": { "1": "First version (Environment Phase 2): a low clipped hedge 4.8 m long, 1.2 m high; the Kenney hedge's replacement." },
+      "nominalHeight": 1.2,
+      "placement": { "maxSlopeDegrees": 15, "minSpacing": 0, "scale": [0.8, 1.25] },
+      "generator": { "kind": "hedge", "seed": 18, "length": 4.8, "height": 1.2, "width": 0.8, "round": 0.16, "cardSize": 0.36 },
+      "lods": [
+        { "distance": 0, "cards": 330, "cardScale": 1 },
+        { "distance": 25, "cards": 90, "cardScale": 1.8 }
+      ],
+      "variants": [
+        { "index": 0, "name": "green", "look": { "leaves": ["#4f7434", "#5a7f3a", "#476a30"], "jitter": 0.1 } },
+        { "index": 1, "name": "autumn", "look": { "leaves": ["#6a6a2e", "#7a6a30", "#5a5a2a"], "jitter": 0.12 } }
+      ]
+    },
+    {
+      "category": "plant",
+      "assetVersion": 1,
+      "nav": "obstacle",
+      "role": "blocking",
+      "surface": "bark",
+      "impostor": { "distance": 90, "size": 128 },
+      "id": "env.hedge.yew",
+      "displayName": "Yew Hedge",
+      "notes": { "1": "First version (Environment Phase 2): a tall, dark clipped hedge 3.6 m long, 2.2 m high; the Kenney tall hedge's replacement (garden mazes, walls)." },
+      "nominalHeight": 2.2,
+      "placement": { "maxSlopeDegrees": 15, "minSpacing": 0, "scale": [0.8, 1.25] },
+      "generator": { "kind": "hedge", "seed": 19, "length": 3.6, "height": 2.2, "width": 1.2, "round": 0.22, "cardSize": 0.44 },
+      "lods": [
+        { "distance": 0, "cards": 330, "cardScale": 1 },
+        { "distance": 25, "cards": 90, "cardScale": 1.9 }
+      ],
+      "variants": [
+        { "index": 0, "name": "green", "look": { "leaves": ["#3f6031", "#486a36", "#38562d"], "jitter": 0.1 } },
+        { "index": 1, "name": "snow", "look": { "leaves": ["#c8d0d0", "#3f6031", "#b8c2c4"], "jitter": 0.08 } }
+      ]
+    }
+  ]
+}

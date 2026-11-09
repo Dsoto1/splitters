@@ -665,6 +665,31 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
   follows), "Keep scale" keeps the number; a prop bedded into the terrain is bedded again under its new footprint;
   one undo step. A retired piece suggests its replacement (`REPLACEMENTS`). The nine maps that placed Kenney grass,
   ferns, flowers, low plants or stones by hand were updated with it (HANDOFF, Environment Phase 1c).
+- **Environment Phase 2 (2026-11-08): trees, bushes and hedges** (the owner's rule: no Kenney foliage anywhere).
+  Nine species, generated the same way:
+  - `env.broadleaf.maple` (Field Maple: a rounder, denser crown on a taller bole; summer, autumn) and
+    `env.broadleaf.acacia` (Umbrella Acacia: the oak generator's lobes drawn flat and wide across the top,
+    `generator.umbrella`, longer scaffold limbs `limbStep`, its own `acacia.0` leaf card; green, dry);
+  - `env.conifer.spruce` (a dense narrow spire, branches to the ground; summer, snow): conifer settings only;
+  - `env.palm.coconut` and `env.palm.leaning` (`tools/content/env/palm.mjs`: a ringed trunk leaning from a bulb and
+    curving back up, 14–18 pinnate fronds as folded, bent strips of the `palm.0` / `palm.1` cards, dead fronds and
+    nuts on the nearest level; collision three trunk capsules; green, dry);
+  - `env.cactus.saguaro` (`env/cactus.mjs`: a 12-ribbed column and 2–3 elbowed arms, the star-shaped rings' normals
+    from their shape, the areoles on the bark picture's cactus strip at the rib crests; collision the column and each
+    arm's two stretches as capsules; green, dry);
+  - `env.shrub.laurel` (a large dense evergreen bush, 1.7 m, conceals; green, dry);
+  - `env.hedge.privet` (4.8 × 1.2 × 0.8 m) and `env.hedge.yew` (3.6 × 2.2 × 1.2 m) (`env/hedge.mjs`: a clipped block
+    along z with rolled top edges, a core of leaf and the `hedge.0` cards set just proud of it; collision one hull that
+    stops everything, nav obstacle, role blocking, surface `bark` like the trunks (a species may name its `surface`),
+    and, colliding, they stand upright: `envTilts` is plants without shapes).
+  The bark picture is 1024 × 512 now (four strips: `BARK_STRIPS` oak, pine, palm, cactus) and the leaves atlas
+  1024 × 1280 (a fifth row: `palm.0`, `palm.1`, `acacia.0`, `hedge.0`); every GLB was rebuilt for the new uv, shapes
+  and sizes unchanged. The plant budget is 700 / 200 / 8 triangles (hedges are long). `conceal.test.ts` proves the
+  laurel and shrub hide players as the Kenney bushes did (by height; the leafy bush's cylinder is 5 cm narrower).
+- **Scenery outside the map** uses our species too (`client/src/environment/envScatter.ts`, an EnvironmentVisuals of
+  its own with bigger squares): the forest border's undergrowth, front and far rows, the backdrop belt's plants and the
+  scenery forest's far trees (stand-ins only). In matches the environment renderer is on by default (`?env=0` draws
+  species as prop nodes); MapMaker draws them as prop nodes.
 - **Rock:** boulders are a convex hull cut by 8–12 fracture planes (the collision hull), then, on the visual surface
   only and only inward of the hull: bedding grooves, corner chips (never at the six corners that set the bounds) and a
   little edge wear; vertex colour from strata, curvature (cavities dark, worn edges pale), patchy moss and hue patches.

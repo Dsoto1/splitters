@@ -971,3 +971,16 @@ Order agreed: Phase 1 starts after the shared "surface types" job (per-material 
   sets with per-species weights and filters, collision and nav preview, confirmation for blocking placements.
 - Phase 4: `migrate.ts` v26, the `prop.missing` placeholder, foliage `KINDS`, scatter, style packs, backdrop and
   border kits switched, official maps re-exported, old GLBs and pack entries removed after the gate.
+
+## 13. Environment Phase 2: as built (2026-11-08)
+
+The owner's go (2026-11-08) and rule: no Kenney foliage anywhere. Nine species (CONTENT_PIPELINE.md, "Environment
+species", Phase 2 bullet): `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`,
+`env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew`, with the §6
+collision policy (palm trunks and the saguaro as capsules that stop everything, hedges one hull wall of `bark`
+cover, the laurel concealing with no collider). The §8 mapping for the Kenney trees, bushes, hedges and cacti is
+`REPLACEMENTS` in `client/src/editor/paletteCatalog.ts`; 31 official maps were moved with MapMaker's Replace all
+(Keep height), the rest are in HANDOFF (claimed by other jobs at the time). The forest border, the backdrop belt and
+the scenery forest draw our species through `client/src/environment/envScatter.ts`, and the environment renderer is on
+by default in matches (`?env=0` off). Still on Kenney pieces: potted plants (furniture), Verdant Ziggurat's hanging
+moss, the coverage map's mushroom, and the maps listed in HANDOFF.

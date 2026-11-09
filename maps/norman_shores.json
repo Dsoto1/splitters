@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 21,
+  "formatVersion": 30,
   "metadata": {
     "id": "norman_shores",
     "name": "Norman Shores",
@@ -10863,13 +10863,13 @@
       "id": "prop_370",
       "position": [
         -1,
-        1.35,
+        1.36,
         -32
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.4,
-      "scale": 1.3,
+      "scale": 1.04,
       "solid": true,
       "tint": null
     },
@@ -10891,11 +10891,11 @@
       "id": "prop_372",
       "position": [
         4,
-        0.41,
+        0.39,
         -21
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 0,
       "scale": 1.1,
       "solid": true,
@@ -13657,9 +13657,9 @@
         -130.95
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 4.32,
-      "scale": 0.93,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -13681,13 +13681,13 @@
       "id": "prop_594",
       "position": [
         -150.77,
-        4.37,
+        4.38,
         -118.31
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.76,
-      "scale": 1.28,
+      "scale": 1.01,
       "solid": true,
       "tint": null
     },
@@ -13695,13 +13695,13 @@
       "id": "prop_595",
       "position": [
         -142.01,
-        2.78,
+        2.79,
         -122.9
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.6,
-      "scale": 0.9,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -13741,9 +13741,9 @@
         -107.39
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 5.7,
-      "scale": 1.28,
+      "scale": 1.03,
       "solid": true,
       "tint": null
     },
@@ -13755,9 +13755,9 @@
         -112.23
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.44,
-      "scale": 1.08,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -13769,9 +13769,9 @@
         -107.7
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 1.72,
-      "scale": 1.13,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -13807,11 +13807,11 @@
       "id": "prop_603",
       "position": [
         -90.37,
-        0.05,
+        -0.02,
         -111.87
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.54,
       "scale": 1.29,
       "solid": true,
@@ -13863,11 +13863,11 @@
       "id": "prop_607",
       "position": [
         108.87,
-        1.95,
+        1.94,
         -108.94
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.98,
       "scale": 1.2,
       "solid": true,
@@ -13895,9 +13895,9 @@
         -100.01
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.75,
-      "scale": 1.24,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -13919,11 +13919,11 @@
       "id": "prop_611",
       "position": [
         -109.65,
-        4.08,
+        4.07,
         -98.22
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.71,
       "scale": 1.14,
       "solid": true,
@@ -13933,13 +13933,13 @@
       "id": "prop_612",
       "position": [
         -97.66,
-        3.47,
+        3.48,
         -100.74
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 1.79,
-      "scale": 1.07,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -13965,9 +13965,9 @@
         -100.36
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.23,
-      "scale": 1.22,
+      "scale": 0.96,
       "solid": true,
       "tint": null
     },
@@ -13993,9 +13993,9 @@
         -101.49
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 6.01,
-      "scale": 1.38,
+      "scale": 1.11,
       "solid": true,
       "tint": null
     },
@@ -14003,13 +14003,13 @@
       "id": "prop_617",
       "position": [
         50.71,
-        0.14,
+        0.15,
         -97.23
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.87,
-      "scale": 1.1,
+      "scale": 0.65,
       "solid": true,
       "tint": null
     },
@@ -14017,13 +14017,13 @@
       "id": "prop_618",
       "position": [
         61.42,
-        -0.89,
+        -0.88,
         -101.09
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.3,
-      "scale": 1.32,
+      "scale": 1.06,
       "solid": true,
       "tint": null
     },
@@ -14035,9 +14035,9 @@
         -102.57
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.18,
-      "scale": 1.26,
+      "scale": 1.01,
       "solid": true,
       "tint": null
     },
@@ -14049,9 +14049,9 @@
         -101.28
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 4.17,
-      "scale": 1.33,
+      "scale": 1.07,
       "solid": true,
       "tint": null
     },
@@ -14073,13 +14073,13 @@
       "id": "prop_622",
       "position": [
         100.16,
-        3.69,
+        3.72,
         -100.69
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.34,
-      "scale": 0.99,
+      "scale": 0.59,
       "solid": true,
       "tint": null
     },
@@ -14087,13 +14087,13 @@
       "id": "prop_623",
       "position": [
         107.42,
-        4.35,
+        4.36,
         -99.59
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.09,
-      "scale": 1.04,
+      "scale": 0.62,
       "solid": true,
       "tint": null
     },
@@ -14119,9 +14119,9 @@
         -89.32
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.21,
-      "scale": 1.15,
+      "scale": 0.92,
       "solid": true,
       "tint": null
     },
@@ -14133,9 +14133,9 @@
         -89.8
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 4.81,
-      "scale": 1.35,
+      "scale": 1.08,
       "solid": true,
       "tint": null
     },
@@ -14143,13 +14143,13 @@
       "id": "prop_627",
       "position": [
         -101.89,
-        5.71,
+        5.72,
         -90.43
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.96,
-      "scale": 1.33,
+      "scale": 1.07,
       "solid": true,
       "tint": null
     },
@@ -14157,13 +14157,13 @@
       "id": "prop_628",
       "position": [
         -49.19,
-        0.7,
+        0.71,
         -89.15
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.53,
-      "scale": 0.99,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -14171,13 +14171,13 @@
       "id": "prop_629",
       "position": [
         41.81,
-        -0.48,
+        -0.39,
         -88.13
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 6.21,
-      "scale": 1.38,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -14189,7 +14189,7 @@
         -89.49
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.19,
       "scale": 1.11,
       "solid": true,
@@ -14203,9 +14203,9 @@
         -87.25
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 1.64,
-      "scale": 0.97,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -14213,13 +14213,13 @@
       "id": "prop_632",
       "position": [
         138.81,
-        7.19,
+        7.18,
         -89.35
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.38,
-      "scale": 1.34,
+      "scale": 1.35,
       "solid": true,
       "tint": null
     },
@@ -14227,13 +14227,13 @@
       "id": "prop_633",
       "position": [
         149.94,
-        7.42,
+        7.43,
         -89.26
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.12,
-      "scale": 0.98,
+      "scale": 0.58,
       "solid": true,
       "tint": null
     },
@@ -14255,11 +14255,11 @@
       "id": "prop_635",
       "position": [
         -140.35,
-        7.69,
+        7.68,
         -78.43
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.78,
       "scale": 1,
       "solid": true,
@@ -14283,11 +14283,11 @@
       "id": "prop_637",
       "position": [
         -120.42,
-        7.84,
+        7.83,
         -80.95
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.73,
       "scale": 1.26,
       "solid": true,
@@ -14329,9 +14329,9 @@
         -77.8
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.95,
-      "scale": 0.92,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -14339,11 +14339,11 @@
       "id": "prop_641",
       "position": [
         138.74,
-        7.27,
+        7.26,
         -79.54
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.16,
       "scale": 1.19,
       "solid": true,
@@ -14357,9 +14357,9 @@
         -77.63
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 1.83,
-      "scale": 1.01,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -14367,13 +14367,13 @@
       "id": "prop_643",
       "position": [
         -148.95,
-        9.31,
+        9.32,
         -70.87
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.5,
-      "scale": 1.09,
+      "scale": 0.65,
       "solid": true,
       "tint": null
     },
@@ -14385,9 +14385,9 @@
         -72.05
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 3.93,
-      "scale": 1,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -14409,11 +14409,11 @@
       "id": "prop_646",
       "position": [
         51.04,
-        2.88,
+        2.87,
         -70.85
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.34,
       "scale": 0.96,
       "solid": true,
@@ -14437,13 +14437,13 @@
       "id": "prop_648",
       "position": [
         139.07,
-        8.77,
+        8.78,
         -68.14
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.19,
-      "scale": 1.15,
+      "scale": 0.68,
       "solid": true,
       "tint": null
     },
@@ -14451,11 +14451,11 @@
       "id": "prop_649",
       "position": [
         151.64,
-        9.04,
+        9.03,
         -70.82
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 5.84,
       "scale": 0.98,
       "solid": true,
@@ -14465,13 +14465,13 @@
       "id": "prop_650",
       "position": [
         -151.18,
-        9.63,
+        9.64,
         -58.68
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 0.67,
-      "scale": 1.08,
+      "scale": 0.85,
       "solid": true,
       "tint": null
     },
@@ -14479,11 +14479,11 @@
       "id": "prop_651",
       "position": [
         -141.88,
-        8.67,
+        8.66,
         -61.26
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.91,
       "scale": 1.1,
       "solid": true,
@@ -14493,13 +14493,13 @@
       "id": "prop_652",
       "position": [
         -130.99,
-        9.87,
+        9.88,
         -57.48
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 1.6,
-      "scale": 0.99,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -14525,9 +14525,9 @@
         -59.13
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.02,
-      "scale": 0.93,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -14535,13 +14535,13 @@
       "id": "prop_655",
       "position": [
         -51.28,
-        1.12,
+        1.13,
         -60.44
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 4.96,
-      "scale": 0.94,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -14553,9 +14553,9 @@
         -61.07
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 3.14,
-      "scale": 1.09,
+      "scale": 0.86,
       "solid": true,
       "tint": null
     },
@@ -14563,13 +14563,13 @@
       "id": "prop_657",
       "position": [
         50.98,
-        1.93,
+        1.94,
         -62.24
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.15,
-      "scale": 1.31,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -14581,7 +14581,7 @@
         -61.42
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.89,
       "scale": 1.22,
       "solid": true,
@@ -14591,13 +14591,13 @@
       "id": "prop_659",
       "position": [
         129.73,
-        10.26,
+        10.28,
         -58.6
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 5.43,
-      "scale": 1.22,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -14609,9 +14609,9 @@
         -62.47
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 5.38,
-      "scale": 1.04,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -14623,7 +14623,7 @@
         -62.61
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.06,
       "scale": 0.97,
       "solid": true,
@@ -14647,13 +14647,13 @@
       "id": "prop_663",
       "position": [
         -138.48,
-        11.23,
+        11.24,
         -47.61
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.83,
-      "scale": 0.95,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -14665,9 +14665,9 @@
         -52.74
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.94,
-      "scale": 1.24,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -14679,9 +14679,9 @@
         -51.57
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.98,
-      "scale": 0.93,
+      "scale": 0.73,
       "solid": true,
       "tint": null
     },
@@ -14689,11 +14689,11 @@
       "id": "prop_666",
       "position": [
         -107.16,
-        8.16,
+        8.15,
         -52.1
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.49,
       "scale": 1.11,
       "solid": true,
@@ -14703,13 +14703,13 @@
       "id": "prop_667",
       "position": [
         -102.16,
-        7.94,
+        7.96,
         -52.02
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 5.6,
-      "scale": 1.15,
+      "scale": 0.68,
       "solid": true,
       "tint": null
     },
@@ -14721,9 +14721,9 @@
         -49.96
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.43,
-      "scale": 1.19,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -14735,9 +14735,9 @@
         -50.94
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.15,
-      "scale": 1.37,
+      "scale": 1.1,
       "solid": true,
       "tint": null
     },
@@ -14745,13 +14745,13 @@
       "id": "prop_670",
       "position": [
         51.26,
-        2.54,
+        2.56,
         -51.27
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.79,
-      "scale": 1.13,
+      "scale": 0.67,
       "solid": true,
       "tint": null
     },
@@ -14759,13 +14759,13 @@
       "id": "prop_671",
       "position": [
         58.75,
-        4.14,
+        4.16,
         -49.17
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.16,
-      "scale": 1.2,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -14801,11 +14801,11 @@
       "id": "prop_674",
       "position": [
         129.49,
-        10.29,
+        10.28,
         -49.4
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.37,
       "scale": 1.19,
       "solid": true,
@@ -14819,9 +14819,9 @@
         -49.46
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 4.16,
-      "scale": 1.26,
+      "scale": 0.99,
       "solid": true,
       "tint": null
     },
@@ -14829,13 +14829,13 @@
       "id": "prop_676",
       "position": [
         148.37,
-        10.8,
+        10.81,
         -51.73
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 4.31,
-      "scale": 0.92,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -14843,13 +14843,13 @@
       "id": "prop_677",
       "position": [
         -150.6,
-        11.24,
+        11.26,
         -41.65
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.61,
-      "scale": 1.35,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -14861,9 +14861,9 @@
         -40.34
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.31,
-      "scale": 0.92,
+      "scale": 0.73,
       "solid": true,
       "tint": null
     },
@@ -14889,9 +14889,9 @@
         -40.34
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.39,
-      "scale": 0.95,
+      "scale": 0.76,
       "solid": true,
       "tint": null
     },
@@ -14903,9 +14903,9 @@
         -39.83
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.21,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -14913,13 +14913,13 @@
       "id": "prop_682",
       "position": [
         -77.26,
-        2.86,
+        2.87,
         -40.6
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.85,
-      "scale": 1.16,
+      "scale": 0.92,
       "solid": true,
       "tint": null
     },
@@ -14927,11 +14927,11 @@
       "id": "prop_683",
       "position": [
         -67.88,
-        -0.43,
+        -0.5,
         -39.59
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.26,
       "scale": 1.31,
       "solid": true,
@@ -14941,11 +14941,11 @@
       "id": "prop_684",
       "position": [
         47.66,
-        1.35,
+        1.34,
         -39.18
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 0,
       "scale": 1.06,
       "solid": true,
@@ -14959,9 +14959,9 @@
         -41.33
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 1.48,
-      "scale": 0.94,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -14973,9 +14973,9 @@
         -38.24
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 4.91,
-      "scale": 1.29,
+      "scale": 1.04,
       "solid": true,
       "tint": null
     },
@@ -15001,9 +15001,9 @@
         -41.06
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.77,
-      "scale": 0.95,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -15015,9 +15015,9 @@
         -41.71
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 4.2,
-      "scale": 1.17,
+      "scale": 0.92,
       "solid": true,
       "tint": null
     },
@@ -15057,9 +15057,9 @@
         -32.34
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 5.29,
-      "scale": 1.16,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -15081,11 +15081,11 @@
       "id": "prop_694",
       "position": [
         -119.17,
-        8.12,
+        8.1,
         -30.45
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 5.1,
       "scale": 1.3,
       "solid": true,
@@ -15099,9 +15099,9 @@
         -30.75
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.79,
-      "scale": 1.07,
+      "scale": 0.86,
       "solid": true,
       "tint": null
     },
@@ -15113,9 +15113,9 @@
         -30.86
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 5.49,
-      "scale": 1.39,
+      "scale": 1.12,
       "solid": true,
       "tint": null
     },
@@ -15137,11 +15137,11 @@
       "id": "prop_698",
       "position": [
         -68.71,
-        0.53,
+        0.52,
         -32.65
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 0,
       "scale": 0.96,
       "solid": true,
@@ -15155,9 +15155,9 @@
         -27.88
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.2,
-      "scale": 1.06,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -15165,13 +15165,13 @@
       "id": "prop_700",
       "position": [
         88.44,
-        8.54,
+        8.53,
         -32.93
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.19,
-      "scale": 1.38,
+      "scale": 1.39,
       "solid": true,
       "tint": null
     },
@@ -15207,13 +15207,13 @@
       "id": "prop_703",
       "position": [
         129.98,
-        11.07,
+        11.08,
         -29.64
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 4.5,
-      "scale": 1.02,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -15253,9 +15253,9 @@
         -21.2
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.21,
-      "scale": 0.98,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -15267,9 +15267,9 @@
         -20.08
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 1.64,
-      "scale": 0.96,
+      "scale": 0.77,
       "solid": true,
       "tint": null
     },
@@ -15277,13 +15277,13 @@
       "id": "prop_708",
       "position": [
         -121.78,
-        8.25,
+        8.24,
         -21.66
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.81,
-      "scale": 1.38,
+      "scale": 1.39,
       "solid": true,
       "tint": null
     },
@@ -15295,9 +15295,9 @@
         -19.65
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.03,
-      "scale": 1.31,
+      "scale": 1.05,
       "solid": true,
       "tint": null
     },
@@ -15305,13 +15305,13 @@
       "id": "prop_710",
       "position": [
         -2.25,
-        0.06,
+        0.07,
         -22.71
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.21,
-      "scale": 1.23,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -15319,11 +15319,11 @@
       "id": "prop_711",
       "position": [
         101.82,
-        9.34,
+        9.33,
         -22.47
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.71,
       "scale": 1.26,
       "solid": true,
@@ -15351,9 +15351,9 @@
         -19.51
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.32,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -15389,13 +15389,13 @@
       "id": "prop_716",
       "position": [
         -149.41,
-        11.29,
+        11.3,
         -7.3
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.87,
-      "scale": 1.02,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -15417,13 +15417,13 @@
       "id": "prop_718",
       "position": [
         102.35,
-        7.63,
+        7.64,
         -9.25
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 6.23,
-      "scale": 1.19,
+      "scale": 0.94,
       "solid": true,
       "tint": null
     },
@@ -15435,9 +15435,9 @@
         -10.94
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.29,
-      "scale": 0.97,
+      "scale": 0.77,
       "solid": true,
       "tint": null
     },
@@ -15449,9 +15449,9 @@
         -10.41
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.84,
-      "scale": 1.13,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -15459,13 +15459,13 @@
       "id": "prop_721",
       "position": [
         -149.48,
-        11.22,
+        11.23,
         0.6
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.46,
-      "scale": 1.24,
+      "scale": 0.98,
       "solid": true,
       "tint": null
     },
@@ -15505,9 +15505,9 @@
         1.06
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 4.25,
-      "scale": 1.25,
+      "scale": 0.99,
       "solid": true,
       "tint": null
     },
@@ -15519,9 +15519,9 @@
         12.08
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.25,
-      "scale": 1.03,
+      "scale": 0.81,
       "solid": true,
       "tint": null
     },
@@ -15533,9 +15533,9 @@
         10.71
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 6.25,
-      "scale": 1.01,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -15557,13 +15557,13 @@
       "id": "prop_728",
       "position": [
         120.95,
-        9.46,
+        9.44,
         8.14
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.01,
-      "scale": 1.35,
+      "scale": 1.36,
       "solid": true,
       "tint": null
     },
@@ -15575,9 +15575,9 @@
         18.78
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 0.91,
-      "scale": 0.92,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -15599,11 +15599,11 @@
       "id": "prop_731",
       "position": [
         -129.04,
-        9.96,
+        9.95,
         22.85
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 5.29,
       "scale": 1.17,
       "solid": true,
@@ -15617,9 +15617,9 @@
         17.76
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 4.96,
-      "scale": 1.25,
+      "scale": 0.98,
       "solid": true,
       "tint": null
     },
@@ -15655,13 +15655,13 @@
       "id": "prop_735",
       "position": [
         -79.3,
-        5.51,
+        5.52,
         20.05
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.95,
-      "scale": 0.98,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -15683,11 +15683,11 @@
       "id": "prop_737",
       "position": [
         -49.11,
-        0.26,
+        0.25,
         18.04
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 6.23,
       "scale": 1.02,
       "solid": true,
@@ -15697,11 +15697,11 @@
       "id": "prop_738",
       "position": [
         57.64,
-        0.58,
+        0.57,
         20.17
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.6,
       "scale": 1.04,
       "solid": true,
@@ -15757,9 +15757,9 @@
         28.2
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 3.51,
-      "scale": 0.99,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -15771,9 +15771,9 @@
         30.25
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 5.86,
-      "scale": 1.34,
+      "scale": 1.08,
       "solid": true,
       "tint": null
     },
@@ -15795,13 +15795,13 @@
       "id": "prop_745",
       "position": [
         -89.45,
-        9.14,
+        9.15,
         27.72
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.93,
-      "scale": 1.13,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -15813,9 +15813,9 @@
         31.42
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 5.41,
-      "scale": 0.99,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -15823,11 +15823,11 @@
       "id": "prop_747",
       "position": [
         -69.77,
-        5.09,
+        5.07,
         31.06
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.08,
       "scale": 1.03,
       "solid": true,
@@ -15841,9 +15841,9 @@
         32.08
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.52,
-      "scale": 1.09,
+      "scale": 0.86,
       "solid": true,
       "tint": null
     },
@@ -15851,13 +15851,13 @@
       "id": "prop_749",
       "position": [
         -50.22,
-        0.68,
+        0.69,
         29.92
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 4.46,
-      "scale": 1.07,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -15869,9 +15869,9 @@
         27.83
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 1.85,
-      "scale": 0.98,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -15879,13 +15879,13 @@
       "id": "prop_751",
       "position": [
         138.75,
-        11.61,
+        11.63,
         28.3
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.26,
-      "scale": 1.08,
+      "scale": 0.64,
       "solid": true,
       "tint": null
     },
@@ -15897,9 +15897,9 @@
         31.4
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 1.64,
-      "scale": 0.94,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -15907,13 +15907,13 @@
       "id": "prop_753",
       "position": [
         -150.27,
-        12.08,
+        12.09,
         39.58
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.83,
-      "scale": 1.34,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -15925,9 +15925,9 @@
         38.28
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.91,
-      "scale": 1.21,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -15935,13 +15935,13 @@
       "id": "prop_755",
       "position": [
         -132.72,
-        11.49,
+        11.5,
         42.83
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.06,
-      "scale": 1.1,
+      "scale": 0.65,
       "solid": true,
       "tint": null
     },
@@ -15991,13 +15991,13 @@
       "id": "prop_759",
       "position": [
         137.78,
-        11.73,
+        11.74,
         40.48
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.17,
-      "scale": 1.25,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -16005,13 +16005,13 @@
       "id": "prop_760",
       "position": [
         147.21,
-        11.63,
+        11.64,
         38.12
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.36,
-      "scale": 0.92,
+      "scale": 0.55,
       "solid": true,
       "tint": null
     },
@@ -16023,7 +16023,7 @@
         50.54
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.13,
       "scale": 1.14,
       "solid": true,
@@ -16047,13 +16047,13 @@
       "id": "prop_763",
       "position": [
         -129.29,
-        10.44,
+        10.45,
         51.62
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.28,
-      "scale": 1.28,
+      "scale": 0.76,
       "solid": true,
       "tint": null
     },
@@ -16061,13 +16061,13 @@
       "id": "prop_764",
       "position": [
         130.91,
-        9.29,
+        9.31,
         51.32
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 6.07,
-      "scale": 1.07,
+      "scale": 0.63,
       "solid": true,
       "tint": null
     },
@@ -16075,13 +16075,13 @@
       "id": "prop_765",
       "position": [
         139.93,
-        10.76,
+        10.77,
         48.43
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 2.95,
-      "scale": 1.04,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -16089,11 +16089,11 @@
       "id": "prop_766",
       "position": [
         150.36,
-        12.1,
+        12.09,
         49.56
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.52,
       "scale": 1.15,
       "solid": true,
@@ -16107,9 +16107,9 @@
         62.38
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 5.37,
-      "scale": 1.22,
+      "scale": 0.96,
       "solid": true,
       "tint": null
     },
@@ -16117,13 +16117,13 @@
       "id": "prop_768",
       "position": [
         -140.66,
-        10.01,
+        10.02,
         62.81
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.9,
-      "scale": 0.98,
+      "scale": 0.58,
       "solid": true,
       "tint": null
     },
@@ -16131,13 +16131,13 @@
       "id": "prop_769",
       "position": [
         -128.7,
-        10.61,
+        10.62,
         58.04
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 5.09,
-      "scale": 0.92,
+      "scale": 0.55,
       "solid": true,
       "tint": null
     },
@@ -16173,11 +16173,11 @@
       "id": "prop_772",
       "position": [
         -41.23,
-        0.28,
+        0.27,
         60.58
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.23,
       "scale": 0.94,
       "solid": true,
@@ -16187,13 +16187,13 @@
       "id": "prop_773",
       "position": [
         49.01,
-        0.21,
+        0.24,
         57.9
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.02,
-      "scale": 1.16,
+      "scale": 0.69,
       "solid": true,
       "tint": null
     },
@@ -16201,13 +16201,13 @@
       "id": "prop_774",
       "position": [
         57.15,
-        2.04,
+        2.05,
         59.64
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 0.76,
-      "scale": 0.92,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -16257,13 +16257,13 @@
       "id": "prop_778",
       "position": [
         -122.99,
-        11.32,
+        11.3,
         67.78
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.42,
-      "scale": 1.39,
+      "scale": 1.4,
       "solid": true,
       "tint": null
     },
@@ -16285,13 +16285,13 @@
       "id": "prop_780",
       "position": [
         -41.03,
-        0.66,
+        0.68,
         71.06
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.82,
-      "scale": 1.11,
+      "scale": 0.66,
       "solid": true,
       "tint": null
     },
@@ -16327,13 +16327,13 @@
       "id": "prop_783",
       "position": [
         141.38,
-        11.19,
+        11.2,
         70.43
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.68,
-      "scale": 1.31,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -16345,9 +16345,9 @@
         72.9
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 5.86,
-      "scale": 1.21,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -16373,9 +16373,9 @@
         81.43
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.63,
-      "scale": 0.94,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -16397,13 +16397,13 @@
       "id": "prop_788",
       "position": [
         -122.54,
-        10.62,
+        10.63,
         78.37
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 0.76,
-      "scale": 1.28,
+      "scale": 1.01,
       "solid": true,
       "tint": null
     },
@@ -16429,9 +16429,9 @@
         80.17
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.58,
-      "scale": 1.27,
+      "scale": 1.02,
       "solid": true,
       "tint": null
     },
@@ -16439,13 +16439,13 @@
       "id": "prop_791",
       "position": [
         121.11,
-        8.92,
+        8.93,
         77.29
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 4.31,
-      "scale": 1.12,
+      "scale": 0.9,
       "solid": true,
       "tint": null
     },
@@ -16457,9 +16457,9 @@
         78.47
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 0.12,
-      "scale": 1.19,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -16485,9 +16485,9 @@
         87.15
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.73,
-      "scale": 1.24,
+      "scale": 0.98,
       "solid": true,
       "tint": null
     },
@@ -16499,9 +16499,9 @@
         90.61
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 1.85,
-      "scale": 0.92,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -16513,7 +16513,7 @@
         87.55
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.63,
       "scale": 1,
       "solid": true,
@@ -16537,13 +16537,13 @@
       "id": "prop_798",
       "position": [
         -91.75,
-        8.53,
+        8.54,
         91.98
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 1.38,
-      "scale": 1.1,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -16555,9 +16555,9 @@
         89.28
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 0.17,
-      "scale": 1.31,
+      "scale": 1.05,
       "solid": true,
       "tint": null
     },
@@ -16565,13 +16565,13 @@
       "id": "prop_800",
       "position": [
         38.25,
-        1.53,
+        1.54,
         92.24
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 1.03,
-      "scale": 0.94,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -16597,9 +16597,9 @@
         92.22
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 4.52,
-      "scale": 0.92,
+      "scale": 0.73,
       "solid": true,
       "tint": null
     },
@@ -16611,9 +16611,9 @@
         90.44
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.35,
-      "scale": 1.05,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -16625,9 +16625,9 @@
         100.03
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 0.87,
-      "scale": 1.04,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -16639,9 +16639,9 @@
         102.2
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 6.25,
-      "scale": 1.06,
+      "scale": 0.85,
       "solid": true,
       "tint": null
     },
@@ -16653,9 +16653,9 @@
         97.23
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.96,
-      "scale": 1.09,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -16677,13 +16677,13 @@
       "id": "prop_808",
       "position": [
         -112.32,
-        8.98,
+        8.99,
         102.67
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 2.08,
-      "scale": 1.36,
+      "scale": 1.07,
       "solid": true,
       "tint": null
     },
@@ -16691,11 +16691,11 @@
       "id": "prop_809",
       "position": [
         -98.75,
-        9.8,
+        9.79,
         97.68
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 5.73,
       "scale": 0.92,
       "solid": true,
@@ -16709,9 +16709,9 @@
         102.47
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 0.54,
-      "scale": 1.19,
+      "scale": 0.94,
       "solid": true,
       "tint": null
     },
@@ -16719,13 +16719,13 @@
       "id": "prop_811",
       "position": [
         -39.73,
-        3.97,
+        3.98,
         98.91
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.57,
-      "scale": 0.98,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -16779,9 +16779,9 @@
         102.15
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 6.19,
-      "scale": 0.97,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -16789,13 +16789,13 @@
       "id": "prop_816",
       "position": [
         110.45,
-        9.81,
+        9.83,
         99.25
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.27,
-      "scale": 1.13,
+      "scale": 0.67,
       "solid": true,
       "tint": null
     },
@@ -16803,13 +16803,13 @@
       "id": "prop_817",
       "position": [
         118.83,
-        9.21,
+        9.22,
         101.19
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.46,
-      "scale": 1.1,
+      "scale": 0.65,
       "solid": true,
       "tint": null
     },
@@ -16817,11 +16817,11 @@
       "id": "prop_818",
       "position": [
         127.13,
-        10.01,
+        9.99,
         99.42
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.26,
       "scale": 1.25,
       "solid": true,
@@ -16849,9 +16849,9 @@
         108.55
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.76,
-      "scale": 1.35,
+      "scale": 1.08,
       "solid": true,
       "tint": null
     },
@@ -16859,13 +16859,13 @@
       "id": "prop_821",
       "position": [
         -109.06,
-        10.72,
+        10.74,
         111.33
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.66,
-      "scale": 1.17,
+      "scale": 0.69,
       "solid": true,
       "tint": null
     },
@@ -16887,13 +16887,13 @@
       "id": "prop_823",
       "position": [
         -80.5,
-        9.02,
+        9.05,
         110.12
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.24,
-      "scale": 1.17,
+      "scale": 0.69,
       "solid": true,
       "tint": null
     },
@@ -16901,13 +16901,13 @@
       "id": "prop_824",
       "position": [
         -72.41,
-        9.06,
+        9.07,
         111.47
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 6.2,
-      "scale": 1.08,
+      "scale": 0.87,
       "solid": true,
       "tint": null
     },
@@ -16919,9 +16919,9 @@
         109.96
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.25,
-      "scale": 0.99,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -16947,9 +16947,9 @@
         110.23
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.11,
-      "scale": 1.37,
+      "scale": 1.08,
       "solid": true,
       "tint": null
     },
@@ -16961,9 +16961,9 @@
         112
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.82,
-      "scale": 1.37,
+      "scale": 1.08,
       "solid": true,
       "tint": null
     },
@@ -16975,9 +16975,9 @@
         112.34
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.33,
-      "scale": 1.13,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -16999,13 +16999,13 @@
       "id": "prop_831",
       "position": [
         62,
-        5.23,
+        5.24,
         108.51
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.32,
-      "scale": 1.32,
+      "scale": 1.06,
       "solid": true,
       "tint": null
     },
@@ -17013,11 +17013,11 @@
       "id": "prop_832",
       "position": [
         70.63,
-        5.99,
+        5.95,
         108.46
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.44,
       "scale": 1.19,
       "solid": true,
@@ -17055,13 +17055,13 @@
       "id": "prop_835",
       "position": [
         120.5,
-        10.63,
+        10.65,
         110.12
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.62,
-      "scale": 1,
+      "scale": 0.59,
       "solid": true,
       "tint": null
     },
@@ -17087,9 +17087,9 @@
         107.21
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.18,
-      "scale": 1.23,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -17101,9 +17101,9 @@
         122.57
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 5.93,
-      "scale": 0.97,
+      "scale": 0.78,
       "solid": true,
       "tint": null
     },
@@ -17111,13 +17111,13 @@
       "id": "prop_839",
       "position": [
         -118.29,
-        11.55,
+        11.56,
         118.04
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 4.37,
-      "scale": 1.35,
+      "scale": 1.07,
       "solid": true,
       "tint": null
     },
@@ -17129,9 +17129,9 @@
         120.18
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 3.25,
-      "scale": 1.07,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -17209,13 +17209,13 @@
       "id": "prop_846",
       "position": [
         -18.08,
-        0.46,
+        0.47,
         118.76
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 0.27,
-      "scale": 1.37,
+      "scale": 1.1,
       "solid": true,
       "tint": null
     },
@@ -17279,13 +17279,13 @@
       "id": "prop_851",
       "position": [
         77.85,
-        8.14,
+        8.15,
         119.51
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.95,
-      "scale": 1.25,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -17293,11 +17293,11 @@
       "id": "prop_852",
       "position": [
         89.34,
-        9.64,
+        9.63,
         120.28
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.77,
       "scale": 1.15,
       "solid": true,
@@ -17307,13 +17307,13 @@
       "id": "prop_853",
       "position": [
         108.58,
-        10.81,
+        10.82,
         121.89
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 0.73,
-      "scale": 0.9,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -17335,13 +17335,13 @@
       "id": "prop_855",
       "position": [
         127.42,
-        11.96,
+        11.97,
         118.85
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 3.81,
-      "scale": 1.18,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -17367,9 +17367,9 @@
         130.74
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.27,
-      "scale": 1.34,
+      "scale": 1.08,
       "solid": true,
       "tint": null
     },
@@ -17381,9 +17381,9 @@
         129.86
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 5.87,
-      "scale": 0.95,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -17391,13 +17391,13 @@
       "id": "prop_859",
       "position": [
         -122.9,
-        13.69,
+        13.68,
         132.2
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.77,
-      "scale": 1.37,
+      "scale": 1.38,
       "solid": true,
       "tint": null
     },
@@ -17405,13 +17405,13 @@
       "id": "prop_860",
       "position": [
         -112.93,
-        12.43,
+        12.45,
         128.29
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.54,
-      "scale": 1.11,
+      "scale": 0.66,
       "solid": true,
       "tint": null
     },
@@ -17423,9 +17423,9 @@
         131.38
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 0.58,
-      "scale": 1.16,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -17447,13 +17447,13 @@
       "id": "prop_863",
       "position": [
         -67.49,
-        8.03,
+        8.02,
         127.13
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.47,
-      "scale": 1.35,
+      "scale": 1.36,
       "solid": true,
       "tint": null
     },
@@ -17507,9 +17507,9 @@
         132.95
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.99,
-      "scale": 1.18,
+      "scale": 0.95,
       "solid": true,
       "tint": null
     },
@@ -17517,13 +17517,13 @@
       "id": "prop_868",
       "position": [
         -10.6,
-        1.43,
+        1.45,
         132.64
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 5.37,
-      "scale": 1.34,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -17531,13 +17531,13 @@
       "id": "prop_869",
       "position": [
         1.09,
-        0.4,
+        0.41,
         129.77
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 3.93,
-      "scale": 0.98,
+      "scale": 0.77,
       "solid": true,
       "tint": null
     },
@@ -17545,13 +17545,13 @@
       "id": "prop_870",
       "position": [
         12.72,
-        0.99,
+        1.02,
         129.85
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.44,
-      "scale": 1.03,
+      "scale": 0.61,
       "solid": true,
       "tint": null
     },
@@ -17563,9 +17563,9 @@
         131.34
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.39,
-      "scale": 1.32,
+      "scale": 1.04,
       "solid": true,
       "tint": null
     },
@@ -17587,13 +17587,13 @@
       "id": "prop_873",
       "position": [
         42.94,
-        6.67,
+        6.69,
         132.99
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.39,
-      "scale": 1.38,
+      "scale": 0.82,
       "solid": true,
       "tint": null
     },
@@ -17605,9 +17605,9 @@
         132.58
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.11,
-      "scale": 1.11,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -17657,13 +17657,13 @@
       "id": "prop_878",
       "position": [
         112.27,
-        12.65,
+        12.67,
         131.87
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 5,
-      "scale": 1.25,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -17675,9 +17675,9 @@
         127.95
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.87,
-      "scale": 1.05,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -17689,9 +17689,9 @@
         131.39
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 1.81,
-      "scale": 1.16,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -17703,9 +17703,9 @@
         131.26
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 6,
-      "scale": 1.34,
+      "scale": 1.06,
       "solid": true,
       "tint": null
     },
@@ -17713,13 +17713,13 @@
       "id": "prop_882",
       "position": [
         -138.81,
-        13.11,
+        13.14,
         141.59
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 5.57,
-      "scale": 1.26,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -17727,13 +17727,13 @@
       "id": "prop_883",
       "position": [
         -127.27,
-        12.89,
+        12.9,
         140.46
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 0.47,
-      "scale": 1.01,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -17741,13 +17741,13 @@
       "id": "prop_884",
       "position": [
         -119.3,
-        13.14,
+        13.13,
         137.09
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.76,
-      "scale": 1.37,
+      "scale": 1.38,
       "solid": true,
       "tint": null
     },
@@ -17773,9 +17773,9 @@
         139.69
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.8,
-      "scale": 1.25,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -17787,9 +17787,9 @@
         141.46
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 6.12,
-      "scale": 1.03,
+      "scale": 0.81,
       "solid": true,
       "tint": null
     },
@@ -17815,9 +17815,9 @@
         143
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.83,
-      "scale": 1.21,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -17853,13 +17853,13 @@
       "id": "prop_892",
       "position": [
         -30.11,
-        4.78,
+        4.79,
         137.7
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 1.43,
-      "scale": 0.92,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -17867,11 +17867,11 @@
       "id": "prop_893",
       "position": [
         -17.88,
-        3.6,
+        3.58,
         142.76
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.26,
       "scale": 1.09,
       "solid": true,
@@ -17895,13 +17895,13 @@
       "id": "prop_895",
       "position": [
         -1.09,
-        4.35,
+        4.36,
         140.75
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.19,
-      "scale": 1.38,
+      "scale": 1.09,
       "solid": true,
       "tint": null
     },
@@ -17913,9 +17913,9 @@
         138.54
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.86,
-      "scale": 1.28,
+      "scale": 1.03,
       "solid": true,
       "tint": null
     },
@@ -17941,9 +17941,9 @@
         139.96
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 5.44,
-      "scale": 1.18,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -17951,13 +17951,13 @@
       "id": "prop_899",
       "position": [
         50.62,
-        7.38,
+        7.39,
         138.24
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.62,
-      "scale": 1.28,
+      "scale": 0.76,
       "solid": true,
       "tint": null
     },
@@ -17969,9 +17969,9 @@
         141.71
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 3.9,
-      "scale": 1.38,
+      "scale": 1.09,
       "solid": true,
       "tint": null
     },
@@ -17983,9 +17983,9 @@
         141.26
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 3.87,
-      "scale": 1.04,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -17997,9 +17997,9 @@
         141.77
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 4.12,
-      "scale": 1.3,
+      "scale": 1.04,
       "solid": true,
       "tint": null
     },
@@ -18025,9 +18025,9 @@
         141.26
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 5.95,
-      "scale": 1.16,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -18053,9 +18053,9 @@
         140.82
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 4.32,
-      "scale": 1.27,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -18077,13 +18077,13 @@
       "id": "prop_908",
       "position": [
         148.5,
-        12.6,
+        12.62,
         141.44
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 5.48,
-      "scale": 1.4,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -18091,13 +18091,13 @@
       "id": "prop_909",
       "position": [
         -142.89,
-        14.61,
+        14.6,
         148.1
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.69,
-      "scale": 1.39,
+      "scale": 1.4,
       "solid": true,
       "tint": null
     },
@@ -18105,13 +18105,13 @@
       "id": "prop_910",
       "position": [
         -128.26,
-        13.06,
+        13.07,
         150.18
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.04,
-      "scale": 1.37,
+      "scale": 0.81,
       "solid": true,
       "tint": null
     },
@@ -18119,13 +18119,13 @@
       "id": "prop_911",
       "position": [
         -119.59,
-        12.42,
+        12.43,
         149.19
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 5.86,
-      "scale": 1.06,
+      "scale": 0.85,
       "solid": true,
       "tint": null
     },
@@ -18137,9 +18137,9 @@
         151.55
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 1.39,
-      "scale": 1.33,
+      "scale": 1.07,
       "solid": true,
       "tint": null
     },
@@ -18179,9 +18179,9 @@
         147.29
       ],
       "kind": "prop",
-      "model": "prop.tree_round",
+      "model": "env.broadleaf.maple",
       "yaw": 1.6,
-      "scale": 0.95,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -18189,13 +18189,13 @@
       "id": "prop_916",
       "position": [
         -27.23,
-        6.53,
+        6.55,
         151.54
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 1.96,
-      "scale": 1.09,
+      "scale": 0.65,
       "solid": true,
       "tint": null
     },
@@ -18221,9 +18221,9 @@
         148.87
       ],
       "kind": "prop",
-      "model": "prop.oak",
+      "model": "env.broadleaf.oak",
       "yaw": 2.53,
-      "scale": 1.32,
+      "scale": 1.06,
       "solid": true,
       "tint": null
     },
@@ -18245,13 +18245,13 @@
       "id": "prop_920",
       "position": [
         30.41,
-        6.58,
+        6.59,
         150.18
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.32,
-      "scale": 1.18,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -18277,9 +18277,9 @@
         147.41
       ],
       "kind": "prop",
-      "model": "prop.oak_dark",
+      "model": "env.broadleaf.oak",
       "yaw": 2.92,
-      "scale": 1.37,
+      "scale": 1.1,
       "solid": true,
       "tint": null
     },
@@ -18291,9 +18291,9 @@
         149.49
       ],
       "kind": "prop",
-      "model": "prop.pine_round",
+      "model": "env.conifer.spruce",
       "yaw": 0.24,
-      "scale": 0.97,
+      "scale": 0.76,
       "solid": true,
       "tint": null
     },
@@ -18301,11 +18301,11 @@
       "id": "prop_924",
       "position": [
         127,
-        13.03,
+        13.02,
         147.85
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.44,
       "scale": 0.92,
       "solid": true,
@@ -18319,7 +18319,7 @@
         147.83
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.72,
       "scale": 1.07,
       "solid": true,
@@ -18329,11 +18329,11 @@
       "id": "prop_926",
       "position": [
         151.93,
-        15.12,
+        15.11,
         151.92
       ],
       "kind": "prop",
-      "model": "prop.pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.44,
       "scale": 1.24,
       "solid": true,
@@ -18375,9 +18375,9 @@
         122.5
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.2,
-      "scale": 1.17,
+      "scale": 0.92,
       "solid": false,
       "tint": null
     },
@@ -18389,9 +18389,9 @@
         -111.24
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.34,
-      "scale": 1.09,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -18413,13 +18413,13 @@
       "id": "prop_932",
       "position": [
         -51.79,
-        8.13,
+        8.12,
         137.11
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.68,
-      "scale": 1.32,
+      "scale": 1.04,
       "solid": false,
       "tint": null
     },
@@ -18455,13 +18455,13 @@
       "id": "prop_935",
       "position": [
         -100.6,
-        7.46,
+        7.42,
         -63.13
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.3,
-      "scale": 1.26,
+      "scale": 0.99,
       "solid": false,
       "tint": null
     },
@@ -18483,13 +18483,13 @@
       "id": "prop_937",
       "position": [
         28.8,
-        0.38,
+        0.41,
         98.96
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.05,
-      "scale": 1.29,
+      "scale": 1.02,
       "solid": false,
       "tint": null
     },
@@ -18497,13 +18497,13 @@
       "id": "prop_938",
       "position": [
         -45.35,
-        7.49,
+        7.48,
         121.1
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.9,
-      "scale": 1.4,
+      "scale": 1.1,
       "solid": false,
       "tint": null
     },
@@ -18511,13 +18511,13 @@
       "id": "prop_939",
       "position": [
         -91.55,
-        6.73,
+        6.68,
         89.57
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.08,
-      "scale": 1.26,
+      "scale": 0.99,
       "solid": false,
       "tint": null
     },
@@ -18623,13 +18623,13 @@
       "id": "prop_947",
       "position": [
         -107.32,
-        7.13,
+        7.15,
         -47.6
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.84,
-      "scale": 1.28,
+      "scale": 1.01,
       "solid": false,
       "tint": null
     },
@@ -18637,13 +18637,13 @@
       "id": "prop_948",
       "position": [
         144.93,
-        2.23,
+        2.21,
         -122.26
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.9,
-      "scale": 1.39,
+      "scale": 1.1,
       "solid": false,
       "tint": null
     },
@@ -18651,13 +18651,13 @@
       "id": "prop_949",
       "position": [
         -82.5,
-        4.4,
+        4.39,
         -37.06
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.46,
-      "scale": 1.09,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -18777,13 +18777,13 @@
       "id": "prop_958",
       "position": [
         -77.4,
-        -0.71,
+        -0.91,
         -105.64
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.11,
-      "scale": 1.39,
+      "scale": 1.1,
       "solid": false,
       "tint": null
     },
@@ -18791,13 +18791,13 @@
       "id": "prop_959",
       "position": [
         43.44,
-        0.52,
+        0.5,
         -68.44
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.11,
-      "scale": 1.11,
+      "scale": 0.87,
       "solid": false,
       "tint": null
     },
@@ -18847,13 +18847,13 @@
       "id": "prop_963",
       "position": [
         70.01,
-        4.85,
+        4.78,
         57.4
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.74,
-      "scale": 1.12,
+      "scale": 0.88,
       "solid": false,
       "tint": null
     },
@@ -18889,13 +18889,13 @@
       "id": "prop_966",
       "position": [
         42.21,
-        6.82,
+        6.83,
         140.67
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.73,
-      "scale": 1.06,
+      "scale": 0.84,
       "solid": false,
       "tint": null
     },
@@ -18903,13 +18903,13 @@
       "id": "prop_967",
       "position": [
         55.52,
-        6.59,
+        6.58,
         114.31
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.24,
-      "scale": 1.1,
+      "scale": 0.87,
       "solid": false,
       "tint": null
     },
@@ -18945,13 +18945,13 @@
       "id": "prop_970",
       "position": [
         -0.8,
-        2.63,
+        2.58,
         137.92
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.85,
-      "scale": 1.12,
+      "scale": 0.88,
       "solid": false,
       "tint": null
     },
@@ -18991,9 +18991,9 @@
         -24.93
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.92,
-      "scale": 1.27,
+      "scale": 1,
       "solid": false,
       "tint": null
     },
@@ -19001,13 +19001,13 @@
       "id": "prop_974",
       "position": [
         -9.15,
-        -1.07,
+        -1.03,
         126.52
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.07,
-      "scale": 1.22,
+      "scale": 0.96,
       "solid": false,
       "tint": null
     },
@@ -19029,13 +19029,13 @@
       "id": "prop_976",
       "position": [
         -55.05,
-        1.51,
+        1.49,
         33.22
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.42,
-      "scale": 1.25,
+      "scale": 0.99,
       "solid": false,
       "tint": null
     },
@@ -19047,9 +19047,9 @@
         149.15
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.71,
-      "scale": 1.18,
+      "scale": 0.93,
       "solid": false,
       "tint": null
     },
@@ -19099,13 +19099,13 @@
       "id": "prop_981",
       "position": [
         -104.87,
-        0.16,
+        0.17,
         -116.19
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.82,
-      "scale": 1.08,
+      "scale": 0.85,
       "solid": false,
       "tint": null
     },
@@ -19183,13 +19183,13 @@
       "id": "prop_987",
       "position": [
         123.72,
-        8.31,
+        8.3,
         27.65
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.39,
-      "scale": 1.19,
+      "scale": 0.94,
       "solid": false,
       "tint": null
     },
@@ -19267,13 +19267,13 @@
       "id": "prop_993",
       "position": [
         -115.97,
-        7.97,
+        7.98,
         31.17
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.39,
-      "scale": 1.31,
+      "scale": 1.03,
       "solid": false,
       "tint": null
     },
@@ -19281,13 +19281,13 @@
       "id": "prop_994",
       "position": [
         -124.95,
-        7.81,
+        7.82,
         -47.95
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.97,
-      "scale": 1.08,
+      "scale": 0.85,
       "solid": false,
       "tint": null
     },
@@ -19309,13 +19309,13 @@
       "id": "prop_996",
       "position": [
         -128.09,
-        7.74,
+        7.76,
         -90.76
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.41,
-      "scale": 1.22,
+      "scale": 0.96,
       "solid": false,
       "tint": null
     },
@@ -19323,13 +19323,13 @@
       "id": "prop_997",
       "position": [
         -130.59,
-        5.12,
+        5.13,
         -105.05
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.71,
-      "scale": 1.09,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -19337,13 +19337,13 @@
       "id": "prop_998",
       "position": [
         -13.63,
-        3.59,
+        3.56,
         142.96
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.96,
-      "scale": 1.25,
+      "scale": 0.99,
       "solid": false,
       "tint": null
     },
@@ -19393,13 +19393,13 @@
       "id": "prop_1002",
       "position": [
         -50.09,
-        0.61,
+        0.6,
         -91.34
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.26,
-      "scale": 1.17,
+      "scale": 0.92,
       "solid": false,
       "tint": null
     },
@@ -19425,9 +19425,9 @@
         -37.47
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.88,
-      "scale": 1.11,
+      "scale": 0.87,
       "solid": false,
       "tint": null
     },
@@ -19463,13 +19463,13 @@
       "id": "prop_1007",
       "position": [
         -1.7,
-        0.49,
+        0.45,
         -40.56
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.66,
-      "scale": 1.4,
+      "scale": 1.1,
       "solid": false,
       "tint": null
     },
@@ -19505,13 +19505,13 @@
       "id": "prop_1010",
       "position": [
         -41.58,
-        2.66,
+        2.65,
         93.38
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.68,
-      "scale": 1.34,
+      "scale": 1.06,
       "solid": false,
       "tint": null
     },
@@ -19533,13 +19533,13 @@
       "id": "prop_1012",
       "position": [
         -29.25,
-        -1.71,
+        -1.72,
         85.76
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.34,
-      "scale": 1.37,
+      "scale": 1.08,
       "solid": false,
       "tint": null
     },
@@ -19547,13 +19547,13 @@
       "id": "prop_1013",
       "position": [
         50.45,
-        7.86,
+        7.87,
         145.87
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.86,
-      "scale": 1.25,
+      "scale": 0.99,
       "solid": false,
       "tint": null
     },
@@ -19579,9 +19579,9 @@
         -47.41
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.29,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },
@@ -19603,13 +19603,13 @@
       "id": "prop_1017",
       "position": [
         44.01,
-        4.09,
+        4.12,
         100.84
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.42,
-      "scale": 1.4,
+      "scale": 1.1,
       "solid": false,
       "tint": null
     },
@@ -19617,13 +19617,13 @@
       "id": "prop_1018",
       "position": [
         38.26,
-        0.55,
+        0.51,
         89.25
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.67,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },
@@ -19757,13 +19757,13 @@
       "id": "prop_1028",
       "position": [
         -17.81,
-        0.66,
+        0.65,
         124.09
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.04,
-      "scale": 1.1,
+      "scale": 0.87,
       "solid": false,
       "tint": null
     },
@@ -19799,13 +19799,13 @@
       "id": "prop_1031",
       "position": [
         -39.15,
-        7.72,
+        7.71,
         147.48
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.97,
-      "scale": 1.25,
+      "scale": 0.99,
       "solid": false,
       "tint": null
     },
@@ -19967,13 +19967,13 @@
       "id": "prop_1043",
       "position": [
         -49.88,
-        -0.19,
+        0.02,
         -94.91
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.1,
-      "scale": 1.19,
+      "scale": 0.94,
       "solid": false,
       "tint": null
     },
@@ -19985,9 +19985,9 @@
         111.47
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.36,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },
@@ -20009,13 +20009,13 @@
       "id": "prop_1046",
       "position": [
         26.94,
-        -1.77,
+        -1.6,
         95.61
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.83,
-      "scale": 1.28,
+      "scale": 1.01,
       "solid": false,
       "tint": null
     },
@@ -104583,7 +104583,6 @@
     "style": "invisible",
     "height": 40
   },
-  "track": null,
   "backdrop": {
     "sky": "sunset",
     "scenery": "forest",

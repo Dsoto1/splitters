@@ -111,6 +111,29 @@ generator (explodes). Panes and boards snap to doorways and windows. 84 props
 are breakable too, and powder kegs, machines, valves and fire baskets explode.
 Explosions chain into other destructibles in range.
 
+## Gunplay pass 2 (2026-11-08): identities, readouts, the Battle Rifle
+
+The owner-approved candidates 1-6 of docs/GUNPLAY_AUDIT.md (its "Pass 2" section has every number, before and after):
+- **SMG vs Assault Rifle:** SMG 15 damage (falloff from 15 m): 0.40 s to 15 m. The rifle family falls off 25-70 m to
+  60 %: it owns 20-50 m; the Precision Rifle is quickest from 100 m.
+- **Shotguns:** pump 10 × 12 in 55 mrad, family falloff 8-28 m: one shell kills to 9 m. Sawed-Off 14 × 10 in 85 mrad
+  (both barrels to 9 m), Auto Shotgun 8 × 8 in 65 mrad (three shells at 10 m).
+- **Long guns:** Precision Rifle 90 damage, 50-tick bolt (two body shots in 0.83-0.97 s); Marksman 34 at 200 rpm
+  (three to 60 m); the Pulse Pistol's beam falls off 15-45 m to 45 %.
+- **Reloads:** a quick-melee press breaks a reload (host and prediction); auto-reload (Options → Controls, on by
+  default, `BUTTON_AUTO_RELOAD`); Spin Gun draw 0.93 s (was 1.23).
+- **Readouts** (Options → HUD, both off by default): damage numbers over what you hit (bodies, and on boards, crates
+  and barrels what the round would do to a body) and a spray-pattern panel (`game/combatReadouts.ts`).
+- **The Battle Rifle** (`core.battle_rifle`, code 49, slot 3, rifle ammo, the `battle_rifle` family's first weapon;
+  spec gap G2): model the Meshy Community Frontier Rifle (built 2026-10-29, CC0 per the owner, provenance already
+  recorded; unused since 2026-11-06). Pickup `core.weapon_battle_rifle` (20 s); in the Military set and on the Training
+  Range's front rack (x -2, z 20, placed in MapMaker). Sound `fire.heavy`. Holds read off a 5 cm grid and checked on
+  the grip sheet. The 3DModelsCC0 pack has no FAL, M14, G3 or SCAR (its 19 models are listed in IMPORT_LIST.md), and
+  the Drive's newest Meshy downloads (2026-11-08) are vehicles: TNR, Cyber Fang and an unnamed one rendered as bikes
+  and a buggy, and Sky Cruiser, Dust Runner and Recon Trike by name (not downloaded).
+- **Lever action: not made.** The Frontier Rifle is a scoped modern rifle, not a lever gun, and no lever-action model
+  is in the repo or the Drive.
+
 ## Weapons intake of 2026-11-06: new models, sharper textures, smoke
 
 The owner: "Added a bunch of new weapons, all Meshy community"; the 3DModelsCC0 kit "has good ones too, not sure we
@@ -244,7 +267,7 @@ its own grip, handguard and stock:
 | Rotary Gatling Gun | Spin Gun (`core.lmg`) | Meshy community plasma spin gun |
 | Military sniper rifle | Sniper Rifle (`core.sniper`) | Styloo AWP |
 | Neon Flux | Burst Rifle until 2026-11-06, replaced by the M4A1 (still built) | Quaternius rifle |
-| Frontier Rifle | Marksman Rifle until 2026-11-06, replaced by the scoped rifle (still built) | Quaternius rifle |
+| Frontier Rifle | Marksman Rifle until 2026-11-06, replaced by the scoped rifle; the Battle Rifle (`core.battle_rifle`) since 2026-11-08 | Quaternius rifle |
 | Futuristic Blaster | Plasma Rifle | Quaternius sci-fi rifle |
 | Ornate energy handgun | Pulse Pistol until 2026-11-06, replaced by the Plasma Defender (still built) | Quaternius sci-fi pistol |
 | Freeze Gun | Freeze Ray | Quaternius sci-fi gun |
@@ -284,6 +307,7 @@ recipes.
 | 3 | Burst Rifle | Three-round bursts per trigger pull |
 | 3 | Laser Rifle | Continuous beam, no ammo: overheats, then locks until cool |
 | 3 | Marksman Rifle | Semi-auto, 0.7 zoom |
+| 3 | Battle Rifle | Heavy automatic (300 rpm, 25 damage, 20 rounds): a true first shot, two head hits kill, climbs hard held down (2026-11-08) |
 | 4 | Sawed-Off | Two barrels, 14 pellets, knockback |
 | 4 | Auto Shotgun | Automatic, big recoil |
 | 4 | Flak Cannon | Seven shards that ricochet twice |

@@ -24,6 +24,40 @@ made only on a commit that passed CI on a check branch.
   load and play it as the bridge; its inspector in MapMaker offers **Replace all** (one undo step).
 - **Sea Wall** and **Sea Wall (Breached)** for MAP 21 (Iron Coast): a bay of concrete sea wall with a wave lip and a
   fire step, and the same bay blown open with a rubble ramp through the gap.
+**Our own trees, bushes and hedges everywhere; no more Kenney foliage** (Environment Phase 2, owner-approved
+2026-11-08: "I don't want to see those"):
+- **Nine new generated species**, grounded and natural rather than toy-like: Field Maple (summer, autumn), Umbrella
+  Acacia (green, dry), Spruce (summer, snow), Coconut Palm and Leaning Palm (green, dry), Saguaro (green, dry), Laurel
+  Bush (green, dry), Privet Hedge and Yew Hedge. Each has levels of detail and a far stand-in, sways in the wind, and
+  plays like the piece it replaces: trunks, palms and cacti stop people and rounds, hedges are solid walls of cover,
+  bushes hide you as before.
+- **34 maps moved over** in MapMaker with Replace all: 1,482 Kenney trees, bushes, hedges and cacti (Norman Shores 267,
+  Primeval Park 209, St Johns 136, Eagle Spires 126, Backwoods 92 and 29 more). Fernwood Moon: one pine moved off a
+  spawn its trunk now reached.
+- **The forest border and the scenery** past every map are our trees too (they were Quaternius models and low-poly
+  cones): undergrowth, a wall of pines, spruces, oaks and maples (snowy pines on snow, palms, acacias and saguaros on
+  sand), and the far forest round the map.
+- **MapMaker:** Nature → Trees offers our oak, maple, acacia, pines, spruce, palms and saguaro; Plants & Flowers the
+  laurel and the hedges. Every Kenney tree, bush, hedge, cactus and plant is retired from the palette (maps that place
+  them still load them), and Replace all suggests each one's species. The scatter brushes plant our species.
+- **Drawn faster:** in matches, our species are drawn in batches with levels of detail by default (`?env=0` turns that
+  off).
+
+**Gunplay pass 2** (docs/GUNPLAY_AUDIT.md, "Pass 2"; the audit's candidates 1-6, owner-approved):
+- **Every gun owns its range.** The SMG wins up close (0.40 s to a kill to 15 m, the Assault Rifle 0.50; hip fire at
+  25 m 0.77 s, was 3.4); the Assault Rifle owns 20-50 m and loses damage from 25 m; the Precision Rifle kills a body in two shots in under a second at every range (was 1.25-1.38 s) and owns
+  100 m and beyond; the Marksman is the mid-range one (three rounds to 60 m, 200 rpm); the Pulse Pistol's beam now
+  fades past 15 m.
+- **Shotguns kill across a room:** the pump gun's shell kills to 9 m (was 5), the Sawed-Off's two barrels to 9 m, the
+  Auto Shotgun in three shells at 10 m (was eight).
+- **Reloads:** auto-reload (Options → Controls, on by default): an empty magazine reloads by itself; a quick melee
+  breaks a reload on your screen too (it already did in the match); the Spin Gun comes up 0.3 s quicker.
+- **New HUD options** (Options → HUD, off by default): **damage numbers** over what you hit (gold for the head, cyan
+  through armour, on the Training Range's boards what that round would do to a body) and a **spray pattern** panel
+  that plots your last burst and how long your aim took to settle.
+- **New weapon: the Battle Rifle** (slot 3): heavy, accurate, 300 rounds a minute, 20 to a magazine; four rounds kill
+  to 40 m, two to the head anywhere, and it climbs hard held down. In the Military set, as a pickup, and on the
+  Training Range's front rack.
 **MapMaker: groups, copy and paste, templates, mirror, note pins** (MapMaker overhaul Phase 3, items 3-7):
 - **Groups** (Ctrl+G, or the inspector's Group): keep things together. A click on any of a group picks it all (Alt-click
   just that one), so it moves, turns, mirrors (M flips it east ↔ west over its middle), duplicates and deletes as

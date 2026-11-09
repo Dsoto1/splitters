@@ -39,6 +39,7 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   { id: 'core.weapon_flare_gun', displayName: 'Flare Gun', effect: { kind: 'weapon', weapon: 'core.flare_gun' }, respawnSeconds: 20, botValue: 0.7166666666666667 },
   { id: 'core.weapon_machine_pistol', displayName: 'Machine Pistol', effect: { kind: 'weapon', weapon: 'core.machine_pistol' }, respawnSeconds: 15, botValue: 0.675 },
   { id: 'core.weapon_burst_rifle', displayName: 'Burst Rifle', effect: { kind: 'weapon', weapon: 'core.burst_rifle' }, respawnSeconds: 15, botValue: 0.675 },
+  { id: 'core.weapon_battle_rifle', displayName: 'Battle Rifle', effect: { kind: 'weapon', weapon: 'core.battle_rifle' }, respawnSeconds: 20, botValue: 0.7166666666666667 },
   { id: 'core.weapon_laser_rifle', displayName: 'Laser Rifle', effect: { kind: 'weapon', weapon: 'core.laser_rifle' }, respawnSeconds: 25, botValue: 0.7583333333333334 },
   { id: 'core.weapon_marksman', displayName: 'Marksman Rifle', effect: { kind: 'weapon', weapon: 'core.marksman' }, respawnSeconds: 20, botValue: 0.7166666666666667 },
   { id: 'core.weapon_sawed_off', displayName: 'Sawed-Off', effect: { kind: 'weapon', weapon: 'core.sawed_off' }, respawnSeconds: 15, botValue: 0.675 },

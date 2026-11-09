@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 30,
   "metadata": {
     "id": "canyon",
     "name": "Rockfall Canyon",
@@ -16,15 +16,7 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ],
-    "release": {
-      "mapId": "m_vgvzazy4hzj3smmk",
-      "versionId": "v_4ei5jaw5jq357x3e",
-      "revision": 1,
-      "contentHash": "sha256:7ae4c0520f3a30afa20f34c9f68c046c186a55c7b55a4b244201ce4c643b838c",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T10:59:18.532Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -726,13 +718,13 @@
       "id": "prop_057",
       "position": [
         -10,
-        3.44,
+        3.47,
         24
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.652,
-      "scale": 1.2,
+      "scale": 0.66,
       "solid": true,
       "tint": null
     },
@@ -740,13 +732,13 @@
       "id": "prop_058",
       "position": [
         -2,
-        3.61,
+        3.64,
         12
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.152,
-      "scale": 1.2,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -754,13 +746,13 @@
       "id": "prop_059",
       "position": [
         10,
-        2,
+        2.04,
         -26
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.775,
-      "scale": 1.2,
+      "scale": 0.66,
       "solid": true,
       "tint": null
     },
@@ -768,13 +760,13 @@
       "id": "prop_060",
       "position": [
         5,
-        2.74,
+        2.77,
         -14
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.645,
-      "scale": 1.2,
+      "scale": 0.66,
       "solid": true,
       "tint": null
     },
@@ -782,13 +774,13 @@
       "id": "prop_061",
       "position": [
         -37,
-        7.46,
+        7.62,
         18
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.349,
-      "scale": 1.2,
+      "scale": 0.66,
       "solid": true,
       "tint": null
     },
@@ -796,13 +788,13 @@
       "id": "prop_062",
       "position": [
         -35,
-        1.98,
+        2.05,
         -12
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.42,
-      "scale": 1.2,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -810,13 +802,13 @@
       "id": "prop_063",
       "position": [
         -36,
-        7.5,
+        7.6,
         32
       ],
       "kind": "prop",
-      "model": "prop.pine",
+      "model": "env.conifer.pine_tall",
       "yaw": 4.53,
-      "scale": 1.2,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -824,13 +816,13 @@
       "id": "prop_064",
       "position": [
         30,
-        1.71,
+        1.75,
         36
       ],
       "kind": "prop",
-      "model": "prop.pine_crooked",
+      "model": "env.conifer.pine_tall",
       "yaw": 0.257,
-      "scale": 1.2,
+      "scale": 0.66,
       "solid": true,
       "tint": null
     },
@@ -1952,9 +1944,9 @@
         -41.64
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.688,
-      "scale": 1.05,
+      "scale": 0.83,
       "solid": false,
       "tint": null
     },
@@ -1980,9 +1972,9 @@
         -43.24
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.272,
-      "scale": 1.25,
+      "scale": 0.94,
       "solid": false,
       "tint": null
     },
@@ -1994,9 +1986,9 @@
         41.64
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.309,
-      "scale": 1.05,
+      "scale": 0.83,
       "solid": false,
       "tint": null
     },
@@ -2022,9 +2014,9 @@
         40.04
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.823,
-      "scale": 1.25,
+      "scale": 0.94,
       "solid": false,
       "tint": null
     },
@@ -2050,9 +2042,9 @@
         -46.09
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 4.889,
-      "scale": 1.15,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -2092,9 +2084,9 @@
         47.76
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 4.28,
-      "scale": 1.15,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -2116,13 +2108,13 @@
       "id": "prop_168",
       "position": [
         -10.06,
-        0.66,
+        0.67,
         41.76
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.467,
-      "scale": 1.05,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -2148,9 +2140,9 @@
         40.16
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.175,
-      "scale": 1.25,
+      "scale": 0.99,
       "solid": false,
       "tint": null
     },
@@ -2162,9 +2154,9 @@
         -41.76
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 4.375,
-      "scale": 1.05,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -2190,9 +2182,9 @@
         -43.36
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.104,
-      "scale": 1.25,
+      "scale": 0.99,
       "solid": false,
       "tint": null
     },
@@ -2218,9 +2210,9 @@
         -30.44
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.681,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },
@@ -2260,9 +2252,9 @@
         32.11
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 5.771,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },
@@ -2284,13 +2276,13 @@
       "id": "prop_180",
       "position": [
         -7.71,
-        3.78,
+        3.79,
         14.56
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.969,
-      "scale": 1.05,
+      "scale": 0.83,
       "solid": false,
       "tint": null
     },
@@ -2312,13 +2304,13 @@
       "id": "prop_182",
       "position": [
         -7.75,
-        3.41,
+        3.42,
         12.96
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 4.084,
-      "scale": 1.25,
+      "scale": 0.94,
       "solid": false,
       "tint": null
     },
@@ -2326,13 +2318,13 @@
       "id": "prop_183",
       "position": [
         7.71,
-        2.91,
+        2.92,
         -14.56
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.926,
-      "scale": 1.05,
+      "scale": 0.83,
       "solid": false,
       "tint": null
     },
@@ -2358,9 +2350,9 @@
         -16.15
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 1.424,
-      "scale": 1.25,
+      "scale": 0.94,
       "solid": false,
       "tint": null
     },
@@ -2386,9 +2378,9 @@
         -40.87
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.914,
-      "scale": 1.15,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -2428,9 +2420,9 @@
         42.54
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.14,
-      "scale": 1.15,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -2452,13 +2444,13 @@
       "id": "prop_192",
       "position": [
         6.76,
-        0.58,
+        0.59,
         30.21
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.291,
-      "scale": 1.05,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -2480,13 +2472,13 @@
       "id": "prop_194",
       "position": [
         6.72,
-        0.72,
+        0.73,
         28.61
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.464,
-      "scale": 1.25,
+      "scale": 0.99,
       "solid": false,
       "tint": null
     },
@@ -2498,9 +2490,9 @@
         -30.21
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 4.201,
-      "scale": 1.05,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -2526,9 +2518,9 @@
         -31.81
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.388,
-      "scale": 1.25,
+      "scale": 0.99,
       "solid": false,
       "tint": null
     },
@@ -31706,6 +31698,6 @@
   "physics": null,
   "blood": null,
   "teamSetup": null,
-  "dependencies": [],
-  "weaponSet": "military"
+  "weaponSet": "military",
+  "dependencies": []
 }

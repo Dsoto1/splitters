@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 30,
   "metadata": {
     "id": "sunken_kingdom",
     "name": "Sunken Kingdom",
@@ -2388,9 +2388,9 @@
         28
       ],
       "kind": "prop",
-      "model": "prop.palm_tall",
+      "model": "env.palm.coconut",
       "yaw": 2.1957956491196455,
-      "scale": 0.8681351647246629,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -2444,9 +2444,9 @@
         -38
       ],
       "kind": "prop",
-      "model": "prop.palm_tall",
+      "model": "env.palm.coconut",
       "yaw": -2.8185239330293856,
-      "scale": 0.8963245616643689,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -2500,9 +2500,9 @@
         40
       ],
       "kind": "prop",
-      "model": "prop.palm_tall",
+      "model": "env.palm.coconut",
       "yaw": -0.983069686261239,
-      "scale": 1.0602131422027015,
+      "scale": 0.88,
       "solid": true,
       "tint": null
     },
@@ -2556,9 +2556,9 @@
         62
       ],
       "kind": "prop",
-      "model": "prop.palm_tall",
+      "model": "env.palm.coconut",
       "yaw": -1.7434302130034791,
-      "scale": 0.9056297950213775,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -2612,9 +2612,9 @@
         -34
       ],
       "kind": "prop",
-      "model": "prop.palm_tall",
+      "model": "env.palm.coconut",
       "yaw": 0.8928539465164183,
-      "scale": 0.9946855321759358,
+      "scale": 0.83,
       "solid": true,
       "tint": null
     },
@@ -2668,9 +2668,9 @@
         -60
       ],
       "kind": "prop",
-      "model": "prop.palm_tall",
+      "model": "env.palm.coconut",
       "yaw": 2.8040945546621443,
-      "scale": 0.8800949277356267,
+      "scale": 0.73,
       "solid": true,
       "tint": null
     },
@@ -2724,9 +2724,9 @@
         -72
       ],
       "kind": "prop",
-      "model": "prop.palm_tall",
+      "model": "env.palm.coconut",
       "yaw": -0.620574385734093,
-      "scale": 1.1200984489871189,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -2780,9 +2780,9 @@
         -48
       ],
       "kind": "prop",
-      "model": "prop.palm_tall",
+      "model": "env.palm.coconut",
       "yaw": -2.023382347550727,
-      "scale": 1.0059091945993714,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -2836,9 +2836,9 @@
         36
       ],
       "kind": "prop",
-      "model": "prop.palm_tall",
+      "model": "env.palm.coconut",
       "yaw": 0.5254300310926788,
-      "scale": 0.9572940580546856,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -2892,9 +2892,9 @@
         80
       ],
       "kind": "prop",
-      "model": "prop.palm_tall",
+      "model": "env.palm.coconut",
       "yaw": 2.684630168570945,
-      "scale": 0.915910493384581,
+      "scale": 0.76,
       "solid": true,
       "tint": null
     },

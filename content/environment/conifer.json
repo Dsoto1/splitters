@@ -29,14 +29,121 @@
         "minShapeRadius": 0.2
       },
       "lods": [
-        { "distance": 0, "trunkSides": 8, "branchSides": 3, "branchMin": 0.02, "barkBudget": 850, "sprays": 3.6, "minSprays": 3, "sprayScale": 1, "bend": 0.3, "leader": 5 },
-        { "distance": 30, "trunkSides": 6, "branchSides": 3, "branchMin": 0.03, "barkBudget": 240, "step": 2, "sprays": 1.6, "minSprays": 1, "sprayScale": 1.45, "bend": 0, "leader": 3 },
-        { "distance": 70, "trunkSides": 4, "branchSides": 3, "branchMin": 0.1, "barkBudget": 60, "step": 4, "sprays": 0.4, "minSprays": 0, "sprayScale": 2.2, "bend": 0, "leader": 2 }
+        {
+          "distance": 0,
+          "trunkSides": 8,
+          "branchSides": 3,
+          "branchMin": 0.02,
+          "barkBudget": 850,
+          "sprays": 3.6,
+          "minSprays": 3,
+          "sprayScale": 1,
+          "bend": 0.3,
+          "leader": 5
+        },
+        {
+          "distance": 30,
+          "trunkSides": 6,
+          "branchSides": 3,
+          "branchMin": 0.03,
+          "barkBudget": 240,
+          "step": 2,
+          "sprays": 1.6,
+          "minSprays": 1,
+          "sprayScale": 1.45,
+          "bend": 0,
+          "leader": 3
+        },
+        {
+          "distance": 70,
+          "trunkSides": 4,
+          "branchSides": 3,
+          "branchMin": 0.1,
+          "barkBudget": 60,
+          "step": 4,
+          "sprays": 0.4,
+          "minSprays": 0,
+          "sprayScale": 2.2,
+          "bend": 0,
+          "leader": 2
+        }
       ],
       "impostor": { "distance": 140, "size": 256 },
       "variants": [
         { "index": 0, "name": "summer", "look": { "bark": "#6a5446", "leaves": ["#3a5230", "#405a34", "#34492b"], "jitter": 0.1 } },
         { "index": 1, "name": "snow", "look": { "bark": "#5e4c40", "leaves": ["#33482c", "#3a5030", "#2f4228"], "jitter": 0.1, "snow": 0.75 } }
+      ]
+    },
+    {
+      "id": "env.conifer.spruce",
+      "displayName": "Spruce",
+      "category": "tree",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Environment Phase 2): a dense, narrow spire with drooping branches down to the ground; the round and small pines' replacement." },
+      "nominalHeight": 9,
+      "nav": "obstacle",
+      "role": "cover",
+      "placement": { "maxSlopeDegrees": 35, "minSpacing": 2.5, "scale": [0.8, 1.25] },
+      "generator": {
+        "kind": "conifer",
+        "seed": 13,
+        "height": 9,
+        "lean": [0, 2],
+        "trunkRadius": 0.22,
+        "firstWhorl": 0.35,
+        "deadBelow": 0.3,
+        "whorl": [5, 7],
+        "whorlStep": [0.32, 0.45],
+        "missing": 0.06,
+        "maxBranch": 2.1,
+        "elevation": [-28, 12],
+        "droop": 0.95,
+        "minShapeRadius": 0.18
+      },
+      "lods": [
+        {
+          "distance": 0,
+          "trunkSides": 7,
+          "branchSides": 3,
+          "branchMin": 0.02,
+          "barkBudget": 700,
+          "sprays": 3.0,
+          "minSprays": 2,
+          "sprayScale": 1,
+          "bend": 0.3,
+          "leader": 5
+        },
+        {
+          "distance": 30,
+          "trunkSides": 5,
+          "branchSides": 3,
+          "branchMin": 0.03,
+          "barkBudget": 200,
+          "step": 2,
+          "sprays": 1.2,
+          "minSprays": 1,
+          "sprayScale": 1.5,
+          "bend": 0,
+          "leader": 3
+        },
+        {
+          "distance": 70,
+          "trunkSides": 4,
+          "branchSides": 3,
+          "branchMin": 0.1,
+          "barkBudget": 50,
+          "step": 4,
+          "sprays": 0.35,
+          "minSprays": 0,
+          "sprayScale": 2.3,
+          "bend": 0,
+          "leader": 2
+        }
+      ],
+      "impostor": { "distance": 140, "size": 256 },
+      "variants": [
+        { "index": 0, "name": "summer", "look": { "bark": "#5a4a40", "leaves": ["#2f4a2c", "#36522f", "#2a4227"], "jitter": 0.1 } },
+        { "index": 1, "name": "snow", "look": { "bark": "#54463c", "leaves": ["#2c4429", "#334c2d", "#283e25"], "jitter": 0.1, "snow": 0.8 } }
       ]
     }
   ]

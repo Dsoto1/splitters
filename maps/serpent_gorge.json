@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 29,
+  "formatVersion": 30,
   "metadata": {
     "id": "serpent_gorge",
     "name": "Serpent Gorge",
@@ -18,15 +18,7 @@
       "core.tdm",
       "core.koth",
       "core.deathmatch"
-    ],
-    "release": {
-      "mapId": "m_vheet2oqm3ur4l6v",
-      "versionId": "v_ybe44yjjxwh3htrb",
-      "revision": 3,
-      "contentHash": "sha256:eeadd2148742f9ce57e0a408ae1fab67143adb1a5f8359bfdaebc7f11ac4e690",
-      "schemaVersion": 29,
-      "releasedAt": "2026-11-08T21:33:54.507Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -6214,9 +6206,9 @@
         33.5
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.7,
-      "scale": 1.2,
+      "scale": 0.95,
       "solid": false,
       "tint": null
     },
@@ -6284,9 +6276,9 @@
         54
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.919999999999999,
-      "scale": 1.2,
+      "scale": 0.95,
       "solid": false,
       "tint": null
     },
@@ -6354,9 +6346,9 @@
         54
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 6.139999999999999,
-      "scale": 1.2,
+      "scale": 0.95,
       "solid": false,
       "tint": null
     },
@@ -6424,9 +6416,9 @@
         80
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.0799999999999983,
-      "scale": 1.2,
+      "scale": 0.95,
       "solid": false,
       "tint": null
     },
@@ -6494,9 +6486,9 @@
         20
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.2999999999999945,
-      "scale": 1.2,
+      "scale": 0.95,
       "solid": false,
       "tint": null
     },
@@ -6564,9 +6556,9 @@
         30
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 2.879999999999999,
-      "scale": 1,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -6606,9 +6598,9 @@
         60
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 0.399999999999995,
-      "scale": 1,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -6648,9 +6640,9 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 0.879999999999999,
-      "scale": 1,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
