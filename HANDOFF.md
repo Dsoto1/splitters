@@ -168,8 +168,9 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - **Environment Phase 2 is on main (2026-11-09): the MapMaker lane may start Environment Phase 3's MapMaker tools.**
     New species ids: `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`,
     `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew` (plus Phase 1's oak,
-    tall pine, shrub, grass, flowers, fern, pebbles, eelgrass, boulder, cliff). Still Kenney, left for when their claims
-    are released: reactor, serpent_gorge, sky_islands, test_coverage (see "Environment Phase 2" below).
+    tall pine, shrub, grass, flowers, fern, pebbles, eelgrass, boulder, cliff). Its map claims are released (blackout,
+    crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom are free for set pieces part 6). Still
+    Kenney: test_coverage's mushroom (this lane's claim; see "Environment Phase 2" below).
 - **The owner's answers (2026-11-08)** to the MapMaker questions so far:
   - **Keep as built:**
     - the measure tool on U;
@@ -464,7 +465,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   GLB rebuilt for the uv; shapes/sizes unchanged (fixture holds).
 - **Maps** (MapMaker Replace all, Keep height, driven in the real editor without ?test=1 by the scratchpad driver
   `env2/tools/maker.mjs`; undo/redo checked per map; Export; release stamp dropped by `env2/tools/finalize.py`;
-  `compare.py`: nothing else changed but the format migration): 1,466 placements on 31 maps: norman_shores 267,
+  `compare.py`: nothing else changed but the format migration): 1,466 placements on 31 maps (then 16 on 3 more, below): norman_shores 267,
   primeval_park 209, st_johns 136, eagle_spires 126, backwoods 92, iron_coast 61, jungle_steps 60, sunstone_crag 58,
   hollowmere_manor 53, coldwater_gulch 51, sandsweep 48, citadel 45, sandgate 32, fernwood_moon 32, crossroads 31,
   canyon 30, blackout 19, fort_meadow 19, apex_ring 16, atomic_court 14, capitol_mall 12, qasr_medina 12,
@@ -476,11 +477,13 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   `prop_851` moved 1.7 m off `spawn_1112` in the inspector: its trunk reached the spawn). Apex Ring and Sandsweep's
   export turned their old `track` into paths: `unifiedPaths.test.ts` now checks them against their old tracks
   (fixtures/race-tracks-before-paths.json): identical.
-- **Skipped (claimed elsewhere), still Kenney: please run the same Replace all when their claims are released:**
-  reactor (bush_large 4), serpent_gorge (bush_large 5, palm_bent 3), sky_islands (pine_small, bush_large, tree_round,
-  bush_leafy 1 each) (trap spots), test_coverage (mushroom_tall 1; MapMaker lane), and with no species yet:
-  verdant_ziggurat's 4 hanging moss. Potted plants and `plant_small` (furniture kit, 91 indoors) were left as decor
-  (question for the owner). Card pictures (`maps/shots/`) of the changed maps still show the old trees.
+- **Then reactor (bush_large 4 → laurel), serpent_gorge (bush_large 5 → laurel, palm_bent 3 → leaning palm) and
+  sky_islands (pine_small → spruce, bush_large → laurel, tree_round → maple, bush_leafy → shrub)** the same way once
+  the trap spots released them (claimed 2026-11-09): 34 maps, 1,482 placements; validate-map 0 issues.
+- **Still Kenney, for later:** test_coverage (mushroom_tall 1; the MapMaker lane's claim: please Replace all it), and
+  with no species yet verdant_ziggurat's 4 hanging moss. Potted plants and `plant_small` (furniture kit, 91 indoors)
+  were left as decor (question for the owner). Card pictures (`maps/shots/`) of the changed maps still show the old
+  trees.
 - **Palette / brushes** (data-only edits inside the MapMaker lane's editor claim, asked in the claim lines):
   `paletteCatalog.ts` retires every Kenney tree, bush, hedge, cactus and plant (`RETIRED_PROPS`), Nature → Trees and
   Plants & Flowers list the species (`GROUND_COVER_SPECIES`), `REPLACEMENTS` suggests each; the Kenney hedges moved

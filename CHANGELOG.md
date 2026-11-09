@@ -15,8 +15,8 @@ made only on a commit that passed CI on a check branch.
   Bush (green, dry), Privet Hedge and Yew Hedge. Each has levels of detail and a far stand-in, sways in the wind, and
   plays like the piece it replaces: trunks, palms and cacti stop people and rounds, hedges are solid walls of cover,
   bushes hide you as before.
-- **31 maps moved over** in MapMaker with Replace all: 1,466 Kenney trees, bushes, hedges and cacti (Norman Shores 267,
-  Primeval Park 209, St Johns 136, Eagle Spires 126, Backwoods 92 and 26 more). Fernwood Moon: one pine moved off a
+- **34 maps moved over** in MapMaker with Replace all: 1,482 Kenney trees, bushes, hedges and cacti (Norman Shores 267,
+  Primeval Park 209, St Johns 136, Eagle Spires 126, Backwoods 92 and 29 more). Fernwood Moon: one pine moved off a
   spawn its trunk now reached.
 - **The forest border and the scenery** past every map are our trees too (they were Quaternius models and low-poly
   cones): undergrowth, a wall of pines, spruces, oaks and maples (snowy pines on snow, palms, acacias and saguaros on
