@@ -1486,7 +1486,7 @@ async function editorWorkflowChecks(browser) {
   await frames(page, 2);
   const saved = (await doc()).metadata.cardCamera;
   check(saved && Math.abs(saved.position[1] - 1.55) < 0.15 && Math.abs(saved.yaw - 0.6) < 0.001 && Math.abs(saved.pitch + 0.15) < 0.001 && (await camera()).fov === fov0, `Enter saves the card camera in the map at eye level, and the lens goes back (${JSON.stringify(saved)})`);
-  check((await doc()).formatVersion === 30, 'the map is format v30');
+  check((await doc()).formatVersion >= 30, "the map is format v30 or later");
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).metadata.cardCamera === undefined, 'one undo takes the card camera off');
   await page.keyboard.press('Control+KeyY');

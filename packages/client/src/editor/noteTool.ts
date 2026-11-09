@@ -19,6 +19,8 @@ export interface NoteHost {
   focus(p: Vec3): void;
   /** Whether the Note tool is in hand. */
   tool(): boolean;
+  /** Pick the Note tool up. */
+  pickTool(): void;
   /** Whether a pin at this height is on a level being shown. */
   shown(y: number): boolean;
   /** Where the pins and the editor go (over the view). */
@@ -197,10 +199,17 @@ export class NoteTool {
     const head = document.createElement('h3');
     head.textContent = `Notes (${notes.length})`;
     wrap.append(head);
+    const pin = document.createElement('button');
+    pin.type = 'button';
+    pin.id = 'ed-notes-pin';
+    pin.textContent = 'Pin a note (J)';
+    pin.title = "The Note tool: click the map to pin a note for its makers (never shown in play)";
+    pin.addEventListener('click', () => this.host.pickTool());
+    wrap.append(pin);
     if (!notes.length) {
       const p = document.createElement('p');
       p.className = 'ed-note';
-      p.textContent = 'No notes yet. Note pins (J): click the map to pin a note for its makers; they never show in play.';
+      p.textContent = 'No notes yet: notes for the map\'s makers, pinned on the map; they never show in play.';
       wrap.append(p);
       return wrap;
     }

@@ -21,7 +21,7 @@ made only on a commit that passed CI on a check branch.
   north–south line or through a point, as one undo step. In a mirrored copy, team things swap sides: spawns, flag
   bases, team-only zones, doors and buttons, team vehicles. Tiles mirror as their own mirror image (a corridor's cover
   goes to the other side, stairs climb the other way); a tile that has none is refused across a line, saying which.
-- **Note pins** (J, Notes on the tool bar): notes for the map's makers pinned on the map. Click to pin one, click a
+- **Note pins** (J, or Map properties → Pin a note): notes for the map's makers pinned on the map. Click to pin one, click a
   pin to edit or delete it, drag it to move it; Map properties lists them all. They show in MapMaker only, never in
   play. Groups and notes are stored in the map (format v31; older maps load as they were).
 **Friends stay with the party after a vote**: a friend in your hosted game follows you to the next map (the vote's

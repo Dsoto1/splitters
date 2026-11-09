@@ -595,7 +595,6 @@ function toolKey(tool: Tool): string {
 
 /** Toolbar icons (24×24, drawn in the button's text colour). */
 const TOOL_ICONS: Record<string, string> = {
-  note: '<path d="M12 2.5a6 6 0 0 0-6 6c0 4.4 6 12.5 6 12.5s6-8.1 6-12.5a6 6 0 0 0-6-6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="8.5" r="2" fill="currentColor"/>',
   select: '<path d="M6 3l13 7-5.6 1.6L16.5 19l-2.6 1.2-3.1-7.3L6 17z" fill="currentColor"/>',
   place: '<rect x="3.5" y="3.5" width="17" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5v9M7.5 12h9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
   erase: '<path d="M14.5 4.2l5.3 5.3a1.5 1.5 0 0 1 0 2.1L12 19.4H7.6l-3.4-3.4a1.5 1.5 0 0 1 0-2.1l8.2-8.2a1.5 1.5 0 0 1 2.1 0z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.8 9.8l5.4 5.4" stroke="currentColor" stroke-width="2"/><path d="M12 19.4h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
@@ -834,6 +833,7 @@ export class EditorApp {
       },
       focus: (p) => (this.plan.on ? this.plan.centre(p.x, p.z) : this.view.focus(p)),
       tool: () => this.tool.kind === 'note',
+      pickTool: () => this.setTool({ kind: 'note' }),
       shown: (y) => this.showAll || y < (this.level + 1) * this.doc.classicStructure.levelHeight - 0.01,
       overlay: $('editor'),
     });
@@ -2911,7 +2911,6 @@ export class EditorApp {
     add('ed-tb-walls', 'edge', 'Walls', 'O', 'Walls & openings: doors, windows, arches on any side', () => this.wallsTool(false), 'edge');
     add('ed-tb-terrain', 'terrain', 'Terrain', 'T', 'Sculpt and paint the terrain', () => this.setTerrainBrush(this.terrainBrush), 'terrain');
     add('ed-tb-measure', 'measure', 'Measure', 'U', 'Measure: distance, height difference and slope between points', () => this.setTool({ kind: 'measure' }), 'measure');
-    add('ed-tb-note', 'note', 'Notes', 'J', "Note pins: notes for the map's makers, never shown in play", () => this.setTool({ kind: 'note' }), 'note');
     const sep = document.createElement('span');
     sep.className = 'tb-sep';
     bar.append(sep);
