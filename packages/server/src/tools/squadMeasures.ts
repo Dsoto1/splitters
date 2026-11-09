@@ -27,6 +27,15 @@ export interface SquadRow {
   survival: number;
   /** By order kind: given, carried out, and the mean seconds to carry one out. */
   orders: Partial<Record<OrderKind, [given: number, done: number, seconds: number]>>;
+  /**
+   * Formations (Part 2; the variant on): squad-seconds on Follow me in each shape (single file, wedge, open wedge; a
+   * person's squads only: bot-led ones play their play), the members' mean distance to their spots (m), and covering
+   * fire: the bot ticks a squad's covering half spent firing at where its enemy went out of sight while the other half
+   * moved.
+   */
+  shapes?: { file: number; wedge: number; open: number };
+  spot?: number;
+  coverShots?: number;
 }
 
 /** Scripted orders (--orders): one every this many seconds per squad, staggered by squad. */
@@ -44,6 +53,9 @@ export class SquadMeter {
   private memberSeconds = 0;
   private aliveSeconds = 0;
   private readonly seen = new Set<number>();
+  private readonly shapes = { file: 0, wedge: 0, open: 0 };
+  private spotSum = 0;
+  private spotN = 0;
 
   constructor(
     private readonly match: Match,
@@ -113,6 +125,15 @@ export class SquadMeter {
     for (const s of ft.squads) {
       this.seen.add(s.id);
       const lead = s.leader === null ? null : m.slots[s.leader];
+      if (this.match.fireteams && lead?.alive && s.order.kind === 'follow' && s.spots.size) {
+        this.shapes[s.shape]++;
+        for (const [slot, at] of s.spots) {
+          const c = m.slots[slot];
+          if (!c?.alive) continue;
+          this.spotSum += horizontalDistance(c.move.pos, at);
+          this.spotN++;
+        }
+      }
       for (const slot of s.members) {
         const c = m.slots[slot];
         if (!c) continue;
@@ -154,6 +175,13 @@ export class SquadMeter {
       within25: pct(this.near25, this.samples),
       survival: pct(this.aliveSeconds, this.memberSeconds),
       orders,
+      ...(this.on
+        ? {
+            shapes: { ...this.shapes },
+            spot: this.spotN ? Math.round((this.spotSum / this.spotN) * 10) / 10 : 0,
+            coverShots: this.match.combatants().reduce((a, c) => a + (c.bot?.coverShots ?? 0), 0),
+          }
+        : {}),
     };
   }
 }
@@ -164,7 +192,9 @@ export function squadText(r: SquadRow): string {
     const [g, d, s] = r.orders[k]!;
     return `${k} ${d}/${g}${d ? ` in ${s} s` : ''}`;
   });
-  return `squads (${r.on ? 'Fireteams' : 'variant off: the same squads, measured'}, size ${r.size}, ${r.squads} squads): to the leader ${r.cohesion} m on average, within 10 m ${(r.within10 * 100).toFixed(0)}%, within 25 m ${(r.within25 * 100).toFixed(0)}% | members alive ${(r.survival * 100).toFixed(0)}%${ord.length ? ` | orders carried out: ${ord.join(', ')}` : ''}`;
+  const sh = r.shapes;
+  const form = sh ? ` | formation: single file ${sh.file} s, wedge ${sh.wedge} s, open ${sh.open} s, ${r.spot} m from their spots, covering fire ${r.coverShots ?? 0} bot ticks` : '';
+  return `squads (${r.on ? 'Fireteams' : 'variant off: the same squads, measured'}, size ${r.size}, ${r.squads} squads): to the leader ${r.cohesion} m on average, within 10 m ${(r.within10 * 100).toFixed(0)}%, within 25 m ${(r.within25 * 100).toFixed(0)}% | members alive ${(r.survival * 100).toFixed(0)}%${ord.length ? ` | orders carried out: ${ord.join(', ')}` : ''}${form}`;
 }
 
 /** Several matches' squad rows together (a summary row). */

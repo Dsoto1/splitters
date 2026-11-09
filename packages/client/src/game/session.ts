@@ -12,7 +12,11 @@ import {
   ORDER_LABELS,
   REFUSALS,
   REFUSAL_TEXT,
+  SPACING_ACKS,
+  SQUAD_SPACINGS,
+  nextSpacing,
   orderSay,
+  spacingLabel,
   type OrderKind,
   withTrackVehicles,
   CHUTE,
@@ -162,6 +166,7 @@ import { CoverState } from './coverState.ts';
 import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
 import type { MinimapBlip } from './minimap.ts';
+import { SQUAD_COLOR, SquadHud } from './squadHud.ts';
 import { RouletteHud } from './rouletteHud.ts';
 import { AwardsHud } from './awardsHud.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
@@ -296,6 +301,8 @@ export class GameSession {
   private readonly wheel = new WeaponWheel(document.getElementById('hud')!);
   /** Fireteams: the order wheel (hold B, hold a controller's d-pad up, or the Orders button on a phone). */
   private readonly orderWheel = new WeaponWheel(document.getElementById('hud')!, 'order-wheel');
+  /** Fireteams' squad HUD: your squad's portraits, health and order; its minimap markers and colour (Part 2). */
+  private readonly squadHud = new SquadHud(document.getElementById('hud')!, (look) => this.opts.portraitOf?.(look) ?? Promise.reject(new Error('no portraits')));
   /** Fireteams: you lead a squad now (its id), and its current order (the HUD's line); null: you lead none. */
   private squadLed: number | null = null;
   private squadOrder: OrderKind | null = null;
@@ -1860,7 +1867,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder, hud: this.squadHud.current }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -1905,6 +1912,7 @@ export class GameSession {
         }
         if (msg.ld) this.view.setLeaders(new Set(msg.ld.filter((s) => s >= 0)));
         this.hud.setLeaders(msg.ld);
+        if (msg.fs || this.squadHud.current) this.squadSnapshot(msg.fs, msg.players);
         this.hud.setLife(msg.players);
         this.zones = msg.zn ?? [];
         this.mounts?.apply(msg.mt, msg.tick);
@@ -2654,7 +2662,11 @@ export class GameSession {
     if (input.wheelOpen && input.wheelKind === 'order' && !input.ordersOn) input.closeWheel(false);
     if (input.wheelOpen && input.wheelKind === 'order') {
       const noObjective = this.rules?.mode === 'core.tdm';
-      this.orderWheel.show(ORDER_KINDS.map((k, i) => ({ code: i + 1, name: ORDER_LABELS[k], ammo: ORDER_HINTS[k], empty: k === 'defend' && noObjective, held: k === this.squadOrder, weaponId: '' })));
+      // (Spread out / Stay tight: one entry, named for what it does now; Part 2.)
+      const spacing = this.squadHud.current?.spacing ?? 'normal';
+      const spaceName = (k: OrderKind) => (k === 'spacing' ? spacingLabel(spacing) : ORDER_LABELS[k]);
+      const spaceHint = (k: OrderKind) => (k === 'spacing' ? (nextSpacing(spacing) === 'spread' ? 'Further apart' : 'Closer together') : ORDER_HINTS[k]);
+      this.orderWheel.show(ORDER_KINDS.map((k, i) => ({ code: i + 1, name: spaceName(k), ammo: spaceHint(k), empty: k === 'defend' && noObjective, held: k === this.squadOrder, weaponId: '' })));
       this.orderWheel.aim(input.wheelAim.x, input.wheelAim.y);
     }
     const closed = input.takeOrderClose();
@@ -2677,16 +2689,30 @@ export class GameSession {
         if (first) this.hud.showMessage(`You lead a fireteam of ${ev.n ?? 0} · hold B for orders`, 4);
       } else if (ev.from === this.slot) this.squadLed = this.squadOrder = null;
     } else if (ev.a === 'order' && kind) {
-      if (ev.s === this.slot) {
+      // (Spread out / Stay tight keeps the squad's order: only its spacing changes.)
+      if (ev.s === this.slot && kind !== 'spacing') {
         this.squadLed = ev.sq ?? this.squadLed;
         this.squadOrder = kind;
       }
       // (The match's own orders, as a squad forms up or an order ends, aren't called out.)
-      if (!ev.auto && ev.s !== this.slot) this.hud.say(ev.s, `${ORDER_LABELS[kind]}!`);
-    } else if (ev.a === 'ack' && kind) this.hud.say(ev.s, ORDER_ACKS[kind]);
+      const said = kind === 'spacing' ? spacingLabel(SQUAD_SPACINGS[ev.n ?? 0] === 'spread' ? 'normal' : 'spread') : ORDER_LABELS[kind];
+      if (!ev.auto && ev.s !== this.slot) this.hud.say(ev.s, `${said}!`);
+    } else if (ev.a === 'ack' && kind) this.hud.say(ev.s, kind === 'spacing' ? SPACING_ACKS[SQUAD_SPACINGS[ev.n ?? 0] ?? 'spread'] : ORDER_ACKS[kind]);
     else if (ev.a === 'deny' && ev.s === this.slot) this.hud.showMessage(REFUSAL_TEXT[REFUSALS[ev.n ?? 0] ?? 'notLeader'], 2.5);
-    this.hud.setSquadOrder(this.squadLed !== null && this.squadOrder ? ORDER_LABELS[this.squadOrder] : null);
   }
+
+  /**
+   * Fireteams' squad HUD (Part 2), once a snapshot: your squad from the snapshot's squads (`fs`), its order and spacing,
+   * and each squadmate's portrait and health.
+   */
+  private squadSnapshot(fs: readonly (readonly number[])[] | undefined, players: readonly PlayerSnapshot[]): void {
+    for (const p of players) this.alive.set(p.s, p.alive === 1);
+    const mine = this.squadHud.read(fs, this.slot);
+    if (mine && mine.leader === this.slot && mine.order !== 'spacing') this.squadOrder = mine.order;
+    this.squadHud.update(this.slot, (slot) => ({ slot, name: this.hud.name(slot), look: this.looks.get(slot), hp: this.hp.get(slot) ?? 1, alive: this.alive.get(slot) ?? true }));
+  }
+  /** Who is alive, by slot, as the last snapshot had them (the squad HUD's cards). */
+  private readonly alive = new Map<number, boolean>();
 
   private requestWeapon(slot: number): void {
     const current = this.wantWeapon || this.local?.held || 0;
@@ -3226,6 +3252,8 @@ export class GameSession {
         // Allies get a calm marker (your choice in Options), enemies a red one so they read as the bad guys.
         const mine = this.hud.team(this.slot);
         const theirs = id < NPC_ID_BASE ? this.hud.team(id) : undefined;
+        // Fireteams: your squadmates in your squad's colour (Part 2).
+        if (this.squadHud.isMate(id, this.slot)) return SQUAD_COLOR;
         if (mine && theirs && mine.id === theirs.id) return this.markers.ally === 'team' ? mine.color : this.markers.ally;
         if (mine && theirs) return this.markers.enemy;
         // Free-for-all: your party's people get the ally marker (ffaParty.ts).
@@ -3248,9 +3276,15 @@ export class GameSession {
       // Teammates on the minimap (co-op: every player is one).
       const mine = this.hud.team(this.slot);
       const coop = this.allied;
-      const blips: MinimapBlip[] = poses
-        .filter((p) => p.slot !== this.slot && p.slot < NPC_ID_BASE && p.alive && (coop || (mine && this.hud.team(p.slot)?.id === mine.id)))
-        .map((p) => ({ x: p.x, z: p.z, color: coop ? '#2ecc71' : mine!.color }));
+      const shown = poses.filter((p) => p.slot !== this.slot && p.slot < NPC_ID_BASE && p.alive && (coop || (mine && this.hud.team(p.slot)?.id === mine.id)));
+      const visible = shown.map((p) => p.slot);
+      const blips: MinimapBlip[] = shown.map((p) => ({ x: p.x, z: p.z, color: coop ? '#2ecc71' : mine!.color }));
+      // Fireteams: your squadmates in the squad's colour (ringed), and its order's place (Part 2).
+      if (this.squadHud.current) {
+        const mates = new Map(poses.map((p) => [p.slot, p] as const));
+        for (let i = blips.length - 1; i >= 0; i--) if (this.squadHud.isMate(visible[i]!, this.slot)) blips.splice(i, 1);
+        blips.push(...this.squadHud.blips(this.slot, (slot) => mates.get(slot) ?? null));
+      }
       // The mode's objectives (Breakthrough's in play), pinned to the rim when out of range.
       blips.push(...(this.modeHud?.minimapBlips() ?? []));
       // Pings show on the minimap too.
@@ -3328,4 +3362,4 @@ function phoneHost(): boolean {
 }
 
 /** The order wheel's second line for each order: what it goes by. */
-const ORDER_HINTS: Readonly<Record<OrderKind, string>> = { follow: 'On you', hold: 'Where you stand', go: 'Where you aim or ping', attack: 'The enemy you aim at or ping', defend: "The mode's objective", regroup: 'To you, now' };
+const ORDER_HINTS: Readonly<Record<OrderKind, string>> = { follow: 'On you', hold: 'Where you stand', go: 'Where you aim or ping', attack: 'The enemy you aim at or ping', defend: "The mode's objective", regroup: 'To you, now', spacing: 'Further apart' };
