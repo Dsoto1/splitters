@@ -53,6 +53,7 @@ import {
   BUTTON_RELOAD,
   BUTTON_STEER_LOOK,
   BUTTON_THIRD_PERSON,
+  BUTTON_AUTO_RELOAD,
   PhysicsWorld,
   SPEED_BOOST,
   TICK_DT,
@@ -140,6 +141,7 @@ import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape,
 import { testMode } from '../testMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
+import { DamageNumbers, SprayReadout, autoReloadOn } from './combatReadouts.ts';
 import { MountState } from './mountState.ts';
 import { RiderPlacement } from './riderPlacement.ts';
 import { ownBodyDrawn } from './ownBody.ts';
@@ -287,6 +289,9 @@ const $ = (id: string) => document.getElementById(id)!;
 export class GameSession {
   readonly view: GameView;
   private readonly hud = new Hud();
+  /** Damage numbers and the spray pattern (combatReadouts.ts; HUD options, off by default). */
+  private readonly damageNumbers = new DamageNumbers(document.getElementById('damage-numbers')!);
+  private readonly spray = new SprayReadout(document.getElementById('spray-readout')!);
   private readonly input: InputState;
   /** The weapon wheel (hold Q, hold a controller's Y, or the Weapons button on a phone). */
   private readonly wheel = new WeaponWheel(document.getElementById('hud')!);
@@ -1858,7 +1863,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder }), mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder }), mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -1962,6 +1967,7 @@ export class GameSession {
             this.wantWeapon = 0;
           }
           this.local.reconcile(me, msg.ack, msg.me, msg.tick);
+          this.damageNumbers.take(msg.me?.dd, performance.now());
           // A switch the server has made is done: stop asking for it, or every input would take back the server's
           // own switches (a better gun picked up, a thrown spear caught, `__give`).
           if (this.wantWeapon && me.w === this.wantWeapon) this.wantWeapon = 0;
@@ -2920,6 +2926,8 @@ export class GameSession {
         }
         // Third person on foot: the host sends your rounds from the eye toward what the crosshair is on.
         if (this.thirdPerson && !this.seat && local.alive) sample.buttons |= BUTTON_THIRD_PERSON;
+        // Auto-reload (Options → Controls, on by default): the host starts an empty magazine's reload by itself.
+        if (local.alive && autoReloadOn()) sample.buttons |= BUTTON_AUTO_RELOAD;
         moving ||= sample.forward !== 0 || sample.right !== 0;
         this.coachMoving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
@@ -2952,6 +2960,13 @@ export class GameSession {
           this.coachShots++;
           if (this.input.zooming) this.coachAimed++;
           this.sfx.localShot(shot.def, shot.alt);
+          // The spray pattern (an option): single-round hitscan guns, round by round.
+          if (!shot.alt && shot.def.kind === 'hitscan' && shot.def.pellets === 1 && shot.ends[0]) {
+            const e = local.eye;
+            const d = { x: shot.ends[0].x - e.x, y: shot.ends[0].y - e.y, z: shot.ends[0].z - e.z };
+            const len = Math.hypot(d.x, d.y, d.z);
+            if (len > 0.01) this.spray.shot(shot.def.id, { x: d.x / len, y: d.y / len, z: d.z / len }, (cmd.seq * 1000) / TICK_RATE);
+          }
           this.view.kick(shot.def, shot.alt);
           const muzzle = this.view.localMuzzle();
           const strength = Math.min(2.5, Math.max(0.6, ((shot.alt ? shot.def.alt?.damage : undefined) ?? shot.def.damage) / 25));
@@ -3255,6 +3270,9 @@ export class GameSession {
       // Jammed by an enemy Counter-UAV: no blips at all.
       this.hud.minimap.update(local.eye.x, local.eye.z, this.input.yaw, this.jam > 0 ? [] : blips);
       this.updatePings(local, poses, now);
+      this.damageNumbers.update((p) => this.view.project(p), now);
+      // On the game's clock (inputs), so a slow frame rate doesn't split a burst or stretch the settle time.
+      this.spray.update(local.gun, (local.inputSeq * 1000) / TICK_RATE);
     }
 
     this.frames++;

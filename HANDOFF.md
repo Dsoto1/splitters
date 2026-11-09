@@ -164,17 +164,32 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: `maps/sandfall_colosseum.json` (rebuild), MapMaker lane, 2026-11-08.
 - Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
 - Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
-- Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
-- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, bunker_cross, concrete_annex, iron_tide, ironhold_prison, pump_tower, silo_complex, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
-- Note for both sessions: the e2e `party` flow fails intermittently on check branches (the party never reaches the voted map; runs 42519820533, 42530655386, and p3a's first run). It passes on re-run. Its owner may want to look.
+- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
+- **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
+- **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
+  (team kills and roulette).
+  - **Symptom:** the party never reaches the voted map: `{"s2":{},"fill1":8,"fill2":8}`.
+  - **Where it fails:**
+    - main b3f22196, built locally: twice;
+    - `check/mapmaker-setpieces` run 42530655386: both attempts, voting runway_nine, then verdant_ziggurat, then
+      pump_tower;
+    - it was flaky before b3f22196 (runs 42519820533 and 42528585610).
+  - **The path:** session.ts `voteWon` (the host loads the map, then `exit('travel')`).
+  - **Why it hasn't shown on main:** main's own CI runs skip e2e when a check branch was already green.
+  - **Effect:** every MapMaker branch with shared code runs it and goes red, so set pieces part 5 is held at
+    059df862.
+  - **Please fix**, or tell us here which commit to land against.
 - Claimed: the characters' far copies (`packages/client/public/characters/*.glb` low-detail levels, `content/meshy.lock.json`), the pickup/hit/streak bursts in `content/vfx.json`, small fixes of 2026-11-08 (`wip/small-fixes`), 2026-11-09. (Iron Maw's player count and Fernwood Moon's lift are inside other claims: not edited here.)
 - Asked of the MapMaker lane (with its `iron_maw` claim): Iron Maw's Map properties say 16-32 players
   (`recommendedPlayers`); with 97 spawn points and a 16 v 16 team layout its automatic caps are 32 best, up to 96.
   Suggested: Players 16-64 (as Iron Coast, 96 spawns, says), in MapMaker's Map properties; small fixes, 2026-11-09.
+- **For the session owning team kills and friendly fire:** the e2e `teams` flow's friendly-fire and team-kill checks contradict themselves between attempts on check/mapmaker-setpieces (run 42549709174, job 128943570176). Attempt 1: friendly fire off still hurt a teammate (70.5), and a team kill wasn't marked TK (killer 5 was a bot). Attempt 2: friendly fire on hurt 0, and TK was marked fine. It looks like stray shots from bots or other teammates in the test match, not set pieces. The failed job was re-run once.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
 - Claimed: `maps/<id>.json` for apex_ring, atomic_court, backwoods, blackout, canyon, capitol_mall, citadel, coldwater_gulch, crossroads, dead_reel, dockside_depot, dune_harbor, dustwater, eagle_spires, fernwood_moon, fort_meadow, gallows_yard, hollowmere_manor, iron_coast, jungle_steps, norman_shores, pharaohs_reach, primeval_park, qasr_medina, rail_stockyard, sandgate, sandsweep, serene_city, st_johns, sunken_kingdom, sunstone_crag (their Kenney trees, bushes, hedges and cacti → our species, MapMaker's Replace all driven in the real editor), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
+- Claimed: `maps/<id>.json` for reactor, serpent_gorge, sky_islands (released by the trap spots: their Kenney bushes, palms and trees → our species, Replace all in MapMaker), Environment Phase 2 (`wip/env-p2`), 2026-11-09.
+- Claimed: `maps/undergate_transit.json` (drop Race from its modes in MapMaker), the race mode's game-side code (`shared/src/sim/race.ts`, `matchSetup.ts`/`rules.ts`/`serverRules.ts` mode lists, `client/src/game/raceHud.ts`, the `race` e2e flow and its flowMap entries), race removal (`wip/race-removal`), 2026-11-09. apex_ring, sandsweep and serene_city (Environment Phase 2's claim) and neon_spire (the MapMaker lane's) are not edited here: asked below.
 - Claimed: the new content ids `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`, `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew`; the leaves and bark atlases (`tools/content/env/**`, `content/environment/**`); the border forest and backdrop scenery's trees (`client/src/borderVisuals.ts`, `backdrop.ts`), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
 - Asked of the MapMaker lane (data only, inside its editor claim): Environment Phase 2 adds its species to and retires the Kenney trees, bushes, hedges and cacti from the Nature tables of `client/src/editor/paletteCatalog.ts` (`RETIRED_PROPS`, `GROUND_COVER_SPECIES`, `REPLACEMENTS`) and the scatter brushes' sets in `shared/src/editor/scatter.ts` (`SCATTER_SETS`: Kenney trees, bushes and cacti → our species), no other editor file; merged with origin/main before landing, 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
@@ -230,6 +245,17 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   MAP 02 The Spillway and MAP 04 Verdant Protocol (docs/map-briefs/). Build with MapMaker only, using our generated
   foliage (no Kenney trees, bushes, flowers or grass anywhere; owner 2026-11-08). The full pass over every map comes
   after all of this, one map at a time, judging whether each map needs it.
+
+**MapMaker Phase 3, part B** (`wip/mapmaker-p3b`, other account; docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under
+Phase 3 items 3-7): groups (Ctrl+G), copy and paste between maps (Ctrl+C / Ctrl+V, localStorage), templates
+(`maps/templates/*.json`, New map → start from), Mirror… (Shift+M), note pins (J). Map format v31 (`groups`,
+`editorNotes`), chained after v30.
+- **Owner's calls, built the conservative way:** (1) paste into another theme is refused (`PASTE_ACROSS_THEMES`);
+  (2) half-map mirror refuses while the other half has anything; (3) terrain and paths aren't mirrored; (4) Breakthrough
+  spawn groups keep their side in a mirror; (5) a tile with no mirror image among its turns is refused across a line.
+- **Pitfalls:** `setSelection` widens every selection to whole groups (pass `single` for one member); MapMaker's `run`
+  tidies groups after every edit (`withGroupsTidied`). Templates live in `maps/templates/` on purpose: anything
+  reading `maps/*.json` must stay non-recursive. Rebuild a template with MapMaker (its tools), never by hand.
 
 **MapMaker Phase 1, part A** (`wip/mapmaker-p1a`, other account; docs/MAPMAKER_OVERHAUL_PLAN.md "As built" under
 Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key list.
@@ -478,6 +504,43 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - f5cc70b Capitol Mall domes, roofs; Capitol Dome / Copper Dome / Pediment / Pyramidion props; room Roof surface.
 - Earlier the same day: content scalability steps 2–6, perf toolset, flaky e2e fixes, Runway Nine airliner, map
   reworks batches 2–3, character fixes rounds 2–3 (see the entries below and CHANGELOG).
+
+### Gunplay pass 2: identities, readouts, the Battle Rifle (`wip/gunplay-2`, agent, 2026-11-08; owner-approved candidates 1-6 of the audit plus spec gap G2; green on `check/gunplay-2` at 2673702, run 42531571292, then with main merged in; LANDED on main by fast-forward from `check/gunplay-2`)
+
+docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunplay pass 2"; `pnpm gun-report` re-run
+(docs/gunplay-audit.json, docs/gunplay-ttk.svg).
+- **Data (1, 2, 4):** SMG 15 damage (falloff from 15 m); rifle family falloff 25-70 m to 60 % (a wider rifle hip cone
+  was tried and dropped: it stalled the CTF bot tests, Sunken Kingdom with no capture); shotguns (pump 10 × 12 in 55 mrad, Sawed-Off 14 × 10 in 85, Auto 8 × 8 in 65; family falloff 8-28 m);
+  Precision Rifle 90 damage, 50-tick bolt; Marksman 34 at 18 ticks; Pulse Pistol falloff 15-45 m to 45 %; Spin Gun
+  raise 30 ticks. Fastest body kill of the seven: SMG to 15 m, rifle 20-50, revolver 60-75, Precision from 100 m.
+  `benchmarks.test.ts` "each gun owns its range" pins it.
+- **Sim (5):** `BUTTON_AUTO_RELOAD` (16384; masked off by older hosts) + `autoReloadDue` (gunplay.ts), read by Match and
+  prediction alike; a quick-melee press breaks a reload struck or not (Match; prediction now mirrors it: it didn't
+  before, so the HUD showed a reload the host had stopped). Tests: `reload.test.ts`, `prediction.test.ts` (reloads
+  predicted exactly with auto-reload and a punch).
+- **Client (3, 6):** `game/combatReadouts.ts`: options (auto-reload on, damage numbers off, spray pattern off;
+  localStorage `tiletrigger.autoReload` / `.damageNumbers` / `.sprayReadout`), `DamageNumbers`, `SprayReadout`.
+  Damage dealt reaches only the shooter: `PrivateState.dd` ([tick, amount, flags, x, y, z]; Match `noteDealt`, humans
+  only, a few snapshots kept, a shell's pellets summed; boards, crates and barrels via `Scenario.shootableTarget`,
+  falloff included). Tests: `damageNumbers.test.ts`, `combatReadouts.test.ts`; e2e `gunplayReadoutChecks` in the
+  `arsenal` flow (numbers on/off, auto-reload, melee break).
+- **The Battle Rifle** (`core.battle_rifle`, code 49): Frontier Rifle model (Meshy Community, built and unused),
+  pickup `core.weapon_battle_rifle`, Military set, Training Range front rack (x -2, z 20; MapMaker import → palette →
+  inspector → export, validate-map 0 issues). Holds from a gridded side view; grip sheet looked at (Ranger).
+- **Not done / for the owner:**
+  - **Lever action (G2):** the Frontier Rifle is not a lever gun and no lever model exists in the repo or the Drive.
+    Proposal: the owner generates a lever-action rifle on Meshy (owned) or drops a CC0 one in the Drive; the
+    weapon (new `lever` family per spec §13: strong damage, a fire/rechamber rhythm, round-by-round loading like the
+    revolver) is then a small data job.
+  - **Battle Rifle model:** the brief wanted an FAL/M14/G3/SCAR from the 3DModelsCC0 pack; the pack has none (its 19
+    models are listed in IMPORT_LIST.md) and the Drive's 2026-11-08 Meshy drop is vehicles. The Frontier Rifle (a
+    scoped near-future rifle) stands in; swap `view.model` if the owner wants a realistic one.
+  - **Recoil readout as a board on the map:** done as a HUD panel (Options → HUD → Spray pattern) because a board that
+    draws the pattern is a new MapMaker piece, i.e. editor code under the MapMaker lane's claim.
+  - **The Machine Pistol** is still dominated by the SMG (audit weak item 5; not in this brief). Candidates 7 (8-client
+    latency/loss harness) and 8 (bot weapon choice from measured TTK) are next on the audit's list.
+  - The MapMaker editor with `?test=1` makes the same entity ids every session: a pickup placed there collided with
+    one the audit placed (`pickup_ekrqxstr16`); placing without `?test=1` worked. For the MapMaker lane.
 
 ### Fireteams, part 1 (`wip/fireteams`, agent, 2026-11-08; owner said "Go"; green on `check/fireteams` at 4610a3b, run 42493762584; LANDED: main 4610a3b; docs/FIRETEAMS_PLAN.md "Part 1", docs/BOTS.md "Fireteams")
 - **What players see:** a **Fireteams** variant chip in Match setup for TDM, CTF, KotH, Bomb, Hostage and

@@ -18,6 +18,37 @@ made only on a commit that passed CI on a check branch.
   skeleton (Hyena Warrior was drawn 15-30% short at a distance, Honest Abe 15%).
 - capture-map-shots can write pictures outside the build (SHOT_OUT, SHOT_SUFFIX, SHOT_QUALITY, SHOT_TEST,
   SHOT_RENDERED).
+**Gunplay pass 2** (docs/GUNPLAY_AUDIT.md, "Pass 2"; the audit's candidates 1-6, owner-approved):
+- **Every gun owns its range.** The SMG wins up close (0.40 s to a kill to 15 m, the Assault Rifle 0.50; hip fire at
+  25 m 0.77 s, was 3.4); the Assault Rifle owns 20-50 m and loses damage from 25 m; the Precision Rifle kills a body in two shots in under a second at every range (was 1.25-1.38 s) and owns
+  100 m and beyond; the Marksman is the mid-range one (three rounds to 60 m, 200 rpm); the Pulse Pistol's beam now
+  fades past 15 m.
+- **Shotguns kill across a room:** the pump gun's shell kills to 9 m (was 5), the Sawed-Off's two barrels to 9 m, the
+  Auto Shotgun in three shells at 10 m (was eight).
+- **Reloads:** auto-reload (Options → Controls, on by default): an empty magazine reloads by itself; a quick melee
+  breaks a reload on your screen too (it already did in the match); the Spin Gun comes up 0.3 s quicker.
+- **New HUD options** (Options → HUD, off by default): **damage numbers** over what you hit (gold for the head, cyan
+  through armour, on the Training Range's boards what that round would do to a body) and a **spray pattern** panel
+  that plots your last burst and how long your aim took to settle.
+- **New weapon: the Battle Rifle** (slot 3): heavy, accurate, 300 rounds a minute, 20 to a magazine; four rounds kill
+  to 40 m, two to the head anywhere, and it climbs hard held down. In the Military set, as a pickup, and on the
+  Training Range's front rack.
+**MapMaker: groups, copy and paste, templates, mirror, note pins** (MapMaker overhaul Phase 3, items 3-7):
+- **Groups** (Ctrl+G, or the inspector's Group): keep things together. A click on any of a group picks it all (Alt-click
+  just that one), so it moves, turns, mirrors (M flips it east ↔ west over its middle), duplicates and deletes as
+  one; a duplicate is a group of its own. Name it in the inspector; Ctrl+Shift+G ungroups. Groups belong to their map.
+- **Copy and paste between maps** (Ctrl+C, Ctrl+V; the right-click menu): the copy is kept in this browser and pasted
+  with new ids where the pointer is, on the level being edited, in this map or another one (its groups and its own
+  set pieces come too). A map on another grid or in another theme refuses it, saying why.
+- **Templates:** New map → start from a layout: Arena, Symmetric CTF, Assault (Breakthrough) or Open terrain. Each
+  becomes a map of your own; the layouts never show in map lists.
+- **Mirror…** (Shift+M, the inspector, the right-click menu): the selection or half the map, across an east–west or
+  north–south line or through a point, as one undo step. In a mirrored copy, team things swap sides: spawns, flag
+  bases, team-only zones, doors and buttons, team vehicles. Tiles mirror as their own mirror image (a corridor's cover
+  goes to the other side, stairs climb the other way); a tile that has none is refused across a line, saying which.
+- **Note pins** (J, or Map properties → Pin a note): notes for the map's makers pinned on the map. Click to pin one, click a
+  pin to edit or delete it, drag it to move it; Map properties lists them all. They show in MapMaker only, never in
+  play. Groups and notes are stored in the map (format v31; older maps load as they were).
 **Maps: no more spots you can't get out of** (owner's "Fix all", 2026-11-08; all in MapMaker):
 - Skyward: the two spawn points on the one-way gun towers are on the central deck now.
 - Sky Islands: a jump pad on the sky platform drops you back onto the west arm.

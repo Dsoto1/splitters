@@ -72,6 +72,9 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v29 -> v30: optional `metadata.cardCamera` (the menu card shot's camera, MapMaker's Card shot). Absent = the
   // automatic camera choice, as before: v29 data is valid as is.
   [29, (doc) => ({ ...doc })],
+  // v30 -> v31: optional `groups` (MapMaker's groups) and `editorNotes` (note pins for the map's makers). Absent =
+  // none, as before: v30 data is valid as is.
+  [30, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */

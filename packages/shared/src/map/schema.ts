@@ -20,7 +20,7 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * and the camera it was taken from, `metadata.thumbnailCamera`, v23 one path primitive, v24 random weapon pickups:
  * a pickup's `random` category and `keepFixed`, v25 the `zipline` entity, v27 set pieces, v28 the weapon set, v29 Breakthrough's
  * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`, v30 the menu card shot's camera,
- * `metadata.cardCamera`).
+ * `metadata.cardCamera`, v31 MapMaker's groups and note pins, `groups` and `editorNotes`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -1169,6 +1169,30 @@ export const SetPiecePlacement = z.object({
 });
 export type SetPiecePlacement = z.infer<typeof SetPiecePlacement>;
 
+/**
+ * A group (v31; MapMaker → Group, Ctrl+G; editor/groups.ts): things selected, moved, turned, mirrored and duplicated
+ * as one. Its members are ids of the map's own tiles, entities and set-piece placements; each is in one group at most.
+ * MapMaker only: play ignores groups.
+ */
+export const MapGroup = z.object({
+  id: StableId,
+  /** What MapMaker calls it ("West base"); absent: "Group". */
+  name: z.string().min(1).max(40).optional(),
+  members: z.array(StableId).min(2).max(2048),
+});
+export type MapGroup = z.infer<typeof MapGroup>;
+
+/**
+ * A note pin (v31; MapMaker's Note tool, J; editor/notes.ts): a note for the map's makers ("the sniper line from B is
+ * too long"), pinned at a point (world metres). Shown in MapMaker only, never in play.
+ */
+export const EditorNote = z.object({
+  id: StableId,
+  position: Vec3Tuple,
+  text: z.string().min(1).max(500),
+});
+export type EditorNote = z.infer<typeof EditorNote>;
+
 export const MapDocument = z.object({
   format: z.literal(MAP_FORMAT),
   formatVersion: z.literal(MAP_FORMAT_VERSION),
@@ -1220,6 +1244,10 @@ export const MapDocument = z.object({
   setPieces: z.array(SetPiecePlacement).max(1024).optional(),
   /** Set pieces this map defines itself (v27, `local.*`: saved from a selection in MapMaker), so it plays anywhere. Absent: none. */
   setPieceDefs: z.array(SetPieceDefinition).max(64).optional(),
+  /** MapMaker's groups (v31): things kept together while editing. Absent: none. Play ignores them. */
+  groups: z.array(MapGroup).max(256).optional(),
+  /** Notes for the map's makers, pinned on the map (v31): shown in MapMaker, never in play. Absent: none. */
+  editorNotes: z.array(EditorNote).max(256).optional(),
 });
 
 export type MapDocument = z.infer<typeof MapDocument>;

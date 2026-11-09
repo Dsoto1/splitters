@@ -497,6 +497,23 @@ export function stepReload(def: WeaponDefinition, w: AmmoBox, run: ReloadRun): R
 /** Rounds that can be fired right now (an unchambered magazine can't). */
 export const roundsReady = (w: AmmoBox): number => (w.unchambered ? 0 : w.mag);
 
+/**
+ * Auto-reload (movement.ts BUTTON_AUTO_RELOAD): an empty magazine with rounds in reserve, the gun up and between
+ * rounds, nothing else under way, and not `busy`: sprinting forward or holding quick melee (both break a reload,
+ * so they must not start it again; it starts once they stop, from the stage reached). The host (Match) and client
+ * prediction both ask this, so the reload starts on the same input.
+ */
+export function autoReloadDue(
+  def: WeaponDefinition,
+  box: AmmoBox,
+  t: { reloadTicks: number; fireCooldown: number; raiseTicks: number; burstLeft: number },
+  busy: boolean,
+): boolean {
+  if (def.magazine <= 0 || def.kind === 'melee' || def.heat || box.reserve <= 0 || roundsReady(box) > 0) return false;
+  if (t.reloadTicks > 0 || t.fireCooldown > 0 || t.raiseTicks > 0 || t.burstLeft > 0) return false;
+  return !busy;
+}
+
 // ---------------------------------------------------------------- ballistic flight
 
 export interface BulletState {

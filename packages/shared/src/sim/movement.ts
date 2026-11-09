@@ -40,7 +40,13 @@ export const BUTTON_STEER_LOOK = 4096;
  * view from the eye. Older hosts mask it off (rounds go along the view, as before).
  */
 export const BUTTON_THIRD_PERSON = 8192;
-const ALL_BUTTONS = BUTTON_THIRD_PERSON | BUTTON_STEER_LOOK | BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
+/**
+ * Auto-reload (held every input while the player's option is on, the default): an empty magazine starts its reload
+ * by itself once the gun is ready, without a trigger pull (gunplay.ts autoReloadDue; prediction mirrors the
+ * host). Not while sprinting forward or holding quick melee, so both still break a reload. Older hosts mask it off (reloads wait for the trigger, as before).
+ */
+export const BUTTON_AUTO_RELOAD = 16384;
+const ALL_BUTTONS = BUTTON_AUTO_RELOAD | BUTTON_THIRD_PERSON | BUTTON_STEER_LOOK | BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
 
 /** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
 export interface PlayerInput {
