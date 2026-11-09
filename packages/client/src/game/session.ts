@@ -505,7 +505,10 @@ export class GameSession {
     // Over them for everyone else; yours shows on the HUD (the burst would be round your own head).
     if (ev.killer === this.slot && !this.thirdPerson) return void this.hud.showMessage(`${n} kills in a row!`, 1.5);
     const p = ev.killer === this.slot && this.local ? this.local.state.pos : poses().find((x) => x.slot === ev.killer);
-    if (p) this.view.playGameplayFx('streak', this.view.towardCamera({ x: p.x, y: p.y + 2.1, z: p.z }, 0.3), { calmable: true });
+    if (p) {
+      const at = this.view.towardCamera({ x: p.x, y: p.y + 2.1, z: p.z }, 0.3);
+      this.view.playGameplayFx('streak', at, { calmable: true, size: this.view.farSize(at) });
+    }
   }
 
   /** A hit worth showing (the `hurt` event): armour breaking, a heavy hit (and, if it was you, the screen's edge). */
@@ -516,7 +519,8 @@ export class GameSession {
     // Not on yourself in first person (it would be round the camera).
     if (me && !this.thirdPerson) return;
     // On the body's near side, toward the camera: from its middle the burst would be hidden inside the body.
-    this.view.playGameplayFx(ev.a === 'armor' ? 'armor.break' : 'hit.big', this.view.towardCamera(at, 0.5), { calmable: true });
+    const near = this.view.towardCamera(at, 0.5);
+    this.view.playGameplayFx(ev.a === 'armor' ? 'armor.break' : 'hit.big', near, { calmable: true, size: this.view.farSize(near) });
   }
 
   /** Spawn protection on you: a line under the crosshair until it drops (firing ends it). */
@@ -2126,7 +2130,8 @@ export class GameSession {
             if (ev.s === this.slot && getItem(ev.item)?.effect.kind === 'armor') this.tips?.trigger('armor', performance.now() / 1000);
             // A sparkle where it was taken (content/vfx.json map.gameplay, by the item's kind).
             const at = this.view.chestOf(ev.s);
-            if (at) this.view.playGameplayFx(`pickup.${getItem(ev.item)?.effect.kind ?? 'item'}`, at);
+            // Grown with distance (owner, 2026-11-08: an armour pickup 7 m off was a speck): as big on screen as at 3 m (View.farSize).
+            if (at) this.view.playGameplayFx(`pickup.${getItem(ev.item)?.effect.kind ?? 'item'}`, at, { size: this.view.farSize(at) });
           } else if (ev.e === 'kill') {
             this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot, !!ev.hs, !!ev.tk);
             if (ev.victim === this.slot && ev.killer !== null && ev.killer !== this.slot && this.local && msg.phase === 'playing') this.startKillCam(ev.killer, ev.weapon);

@@ -6550,7 +6550,7 @@ async function flashingFlow(browser) {
     },
     {
       name: 'fight',
-      label: "a fight's moments 3 m in front of you (armour breaking, two heavy hits with your screen's edge, a kill streak's burst, a spawn shield's shimmer)",
+      label: "a fight's moments 3 m in front of you (armour breaking, two heavy hits with your screen's edge, a kill streak's burst, a spawn shield's shimmer, armour picked up there and by you)",
       weapon: 'core.arc_caster',
       me: [0, 0, 8],
       look: aim([0, 0, 8], [0, 1, 11]),
@@ -6564,6 +6564,9 @@ async function flashingFlow(browser) {
         12: () => page.evaluate(() => (window.__cs.view.playGameplayFx('hit.big', window.__cs.view.towardCamera({ x: 0, y: 1.1, z: 11 }, 0.5), { calmable: true }), window.__cs.hud.heavyHit(90))),
         24: () => page.evaluate(() => window.__cs.view.playGameplayFx('streak', { x: 0, y: 2.1, z: 11 }, { calmable: true })),
         36: () => page.evaluate(() => (window.__cs.view.playGameplayFx('hit.big', window.__cs.view.towardCamera({ x: 0.3, y: 1, z: 11 }, 0.5), { calmable: true }), window.__cs.hud.heavyHit(70))),
+        // Armour picked up: the bot's (sized for the distance, as session plays it), then your own at your chest.
+        30: () => page.evaluate(() => window.__cs.view.playGameplayFx('pickup.armor', { x: 0, y: 1.2, z: 11 }, { size: window.__cs.view.farSize({ x: 0, y: 1.2, z: 11 }) })),
+        44: () => page.evaluate(() => window.__cs.view.playGameplayFx('pickup.armor', { x: 0, y: 1.2, z: 8 }, { size: window.__cs.view.farSize({ x: 0, y: 1.2, z: 8 }) })),
       },
     },
     {
