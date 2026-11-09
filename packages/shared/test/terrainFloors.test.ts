@@ -5,6 +5,7 @@ import {
   applyCommand,
   builtInSetPieces,
   buildMapGeometry,
+  cutGroundToFloorsCommand,
   deleteCommand,
   deleteSetPieceCommand,
   expandSetPieces,
@@ -283,5 +284,57 @@ describe('terrain under floors', () => {
     expect(loaded.ok && loaded.map.terrain!.heights).toEqual(view.heights);
     if (loaded.ok) expect(loaded.map.entities.filter((e) => e.kind === 'prop').map((e) => e.position[1])).toEqual(asPlayed.entities.filter((e) => e.kind === 'prop').map((e) => e.position[1]));
     expect(terrainHeightAt(view, 0, 0)).not.toBeNull();
+  });
+});
+
+/** Stairs (`tile`, turned `rotation`) on new terrain: flat, 0.15 m under level 0, as MapMaker makes it. */
+function stairsOnNewGround(tile = 'core.stairs_open', rotation: 0 | 1 | 2 | 3 = 0): MapDocument {
+  const doc = newMapDocument('Stairs');
+  return { ...doc, terrain: { ...newTerrain(48), baseY: -0.15 }, classicStructure: { ...doc.classicStructure, tiles: [{ id: 'flight', tile, x: 0, y: 0, z: 0, rotation }] } };
+}
+
+describe('stair feet (MapMaker fixes 2, item 8)', () => {
+  it('ground at the foot of a flight comes up to just under its base, so the first step is a step, not a 0.4 m lip', () => {
+    for (const [tile, rotation, foot] of [['core.stairs_open', 0, [-4.3, 0]], ['core.stairs', 0, [-4.3, 1]], ['core.stairs_grand', 0, [2, -4.3]], ['core.stairs_open', 2, [4.3, 0]], ['core.stairs_open', 1, [0, 4.3]]] as const) {
+      const doc = stairsOnNewGround(tile, rotation);
+      const made = terrainHeightAt(doc.terrain!, foot[0], foot[1])!;
+      const ground = played(doc).terrain!;
+      const at = terrainHeightAt(ground, foot[0], foot[1])!;
+      expect(made, tile).toBeCloseTo(-0.15, 5);
+      // The first step is 0.25 m up: from the ground at its foot, within a step (PLAYER.maxStepHeight, 0.3 m).
+      expect(0.25 - at, `${tile} turned ${rotation}: ${at}`).toBeLessThan(0.28);
+      expect(at).toBeLessThan(0);
+      // Worked out, never stored, and done once: a second pass changes nothing; far away the ground is as made.
+      expect(terrainUnderFloors({ ...doc, terrain: ground })).toBe(ground);
+      expect(terrainHeightAt(ground, 20, 20)).toBeCloseTo(-0.15, 5);
+      expect(doc.terrain!.heights.every((h) => h === 0)).toBe(true);
+    }
+  });
+
+  it('leaves ground well under a step alone (a drop, a ditch), and gives it back when the flight goes', () => {
+    const deep = stairsOnNewGround();
+    deep.terrain!.heights.fill(-100);
+    expect(terrainHeightAt(played(deep).terrain!, -4.3, 0)).toBeCloseTo(-1.15, 5);
+    const doc = stairsOnNewGround();
+    const gone = run(doc, deleteCommand(doc, { tiles: ['flight'], entities: [] }));
+    expect(played(gone).terrain!.heights).toEqual(doc.terrain!.heights);
+  });
+});
+
+describe('Cut ground to floors (MapMaker fixes 2, item 9)', () => {
+  it('lowers the ground as made over the selection\'s floors however deep, in one undo step', () => {
+    const buried = roomOn(FLOOR_REACH + 2);
+    // The ground as played keeps a hill over a floor buried deeper than FLOOR_REACH.
+    expect(terrainUnderFloors(buried)).toBe(buried.terrain);
+    const r = cutGroundToFloorsCommand(buried, { tiles: ['tile_a'], entities: [] });
+    if ('error' in r) throw new Error(r.error);
+    expect(r.deepest).toBeGreaterThan(FLOOR_REACH);
+    const cut = applyCommand(buried, r.command);
+    expect(worstUnderFloors(cut, cut.terrain!).over).toBeLessThan(-0.04);
+    // Outside the room the hill is as it was.
+    expect(terrainHeightAt(cut.terrain!, 10, 10)).toBeCloseTo(FLOOR_REACH + 2, 5);
+    expect(applyCommand(cut, invertCommand(r.command)).terrain).toEqual(buried.terrain);
+    expect(cutGroundToFloorsCommand(cut, { tiles: ['tile_a'], entities: [] })).toEqual({ error: expect.stringMatching(/already under/) });
+    expect(cutGroundToFloorsCommand(buried, { tiles: [], entities: [] })).toEqual({ error: 'nothing selected' });
   });
 });

@@ -119,6 +119,7 @@ export * from './editor/botHints.ts';
 export * from './editor/copyItems.ts';
 export * from './editor/mirror.ts';
 export * from './editor/clipboard.ts';
+export * from './editor/groundCut.ts';
 export * from './editor/templates.ts';
 export * from './editor/changeGrid.ts';
 export * from './editor/heatmap.ts';

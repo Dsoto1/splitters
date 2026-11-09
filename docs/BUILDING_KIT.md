@@ -1004,7 +1004,7 @@ small and exact.
   old cell each new one lies in; coarser: the commonest under it). Spawns,
   pickups, props, vehicles, flags and hills on the ground move with it. Cells
   finer than 2 m grow plants in proportion to their area (as many to the
-  square metre as a 2 m grid). In the file the terrain's grids are written a
+  square metre as a 2.5 m grid: owner, 2026-11-09). In the file the terrain's grids are written a
   grid row to a line, so a 321 × 321 terrain is about 1 MB.
 - **MapMaker, Terrain → Real places (owner only, like Publish).** For a map of
   a real place. **Heights from a height grid file** reads an ESRI ASCII grid

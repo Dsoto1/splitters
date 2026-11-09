@@ -272,6 +272,8 @@ import {
   selectionMiddle,
   copySelection,
   pasteCommand,
+  pasteNote,
+  cutGroundToFloorsCommand,
   clipboardCount,
   addSetPieceDefCommand,
   replaceTilesWithSetPieceCommand,
@@ -1835,6 +1837,7 @@ export class EditorApp {
     item('Delete', 'Del', () => this.deleteSelection());
     if (pieces.length === 1 && this.selCount() === 1) item('Explode to tiles', '', () => this.explode(pieces[0]!));
     item('Save as set piece…', '', () => this.saveSelectionDialog());
+    if (this.doc.terrain) item('Cut ground to floors', '', () => this.cutGround());
     item('Select none', 'Esc', () => this.setSelection(emptySelection()));
     $('editor').append(menu);
     const r = menu.getBoundingClientRect();
@@ -2114,8 +2117,16 @@ export class EditorApp {
     if (this.run('Paste', r.command)) {
       this.setTool({ kind: 'select' });
       this.setSelection(r.selection);
-      this.toast(`Pasted ${clipboardCount(c)} thing${clipboardCount(c) === 1 ? '' : 's'} from ${c.from.mapName} · Ctrl+Z to undo`);
+      const note = pasteNote(this.doc, c);
+      this.toast(`Pasted ${clipboardCount(c)} thing${clipboardCount(c) === 1 ? '' : 's'} from ${c.from.mapName}${note ? `, ${note}` : ''} · Ctrl+Z to undo`);
     }
+  }
+
+  /** The selection menu's Cut ground to floors (groundCut.ts): the ground as made lowered under the selection's floors, however deep. */
+  private cutGround(): void {
+    const r = cutGroundToFloorsCommand(this.doc, this.selection, coreCatalog, this.placeLib);
+    if ('error' in r) return this.toast(`Can't cut the ground: ${r.error}`, true);
+    if (this.run('Cut ground to floors', r.command)) this.toast(`The ground cut down to the floors: ${r.vertices} point${r.vertices === 1 ? '' : 's'}, up to ${r.deepest} m · Ctrl+Z to undo`);
   }
 
   /** Shift+M: Mirror… (mirrorDialog.ts), the selection or half the map. */

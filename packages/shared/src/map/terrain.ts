@@ -66,6 +66,17 @@ export interface TerrainData {
 /** Plant cover levels painted with MapMaker's foliage brush. Drawn only: plants never block movement or shots. */
 export const FOLIAGE_LEVELS = ['Bare', 'Sparse', 'Grassy', 'Lush', 'Overgrown'] as const;
 
+/**
+ * The share of a cell's plant cover a terrain grows (the foliage brush's amounts are per cell). A grid finer than the
+ * default 2 m (map format v32, Terrain → Change grid) grows in proportion to its cells' area, as many plants to the
+ * square metre as a 2.5 m grid (owner, 2026-11-09: a fine grid is usually a 2.5 m map made finer, and keeps its look);
+ * grids of 2 m and coarser grow as they always have.
+ */
+export const FINE_GRID_PLANTS_AS = 2.5;
+export function plantShare(spacing: number): number {
+  return spacing < 2 ? (spacing / FINE_GRID_PLANTS_AS) ** 2 : 1;
+}
+
 /** Cover a cell gets when the map hasn't painted any. */
 const MATERIAL_FOLIAGE: Record<TerrainMaterial, number> = { grass: 2, moss: 1, dirt: 0, mud: 0, sand: 0, gravel: 0, stone: 0, snow: 0 };
 
