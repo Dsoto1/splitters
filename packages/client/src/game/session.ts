@@ -142,6 +142,7 @@ import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { MountState } from './mountState.ts';
 import { RiderPlacement } from './riderPlacement.ts';
+import { ownBodyDrawn } from './ownBody.ts';
 import { LocalTransport } from './localTransport.ts';
 import { SYS, netProbe, perfProbe } from './perfProbe.ts';
 import { PerfOverlay, loadPerfOverlay, savePerfOverlay } from './perfOverlay.ts';
@@ -3077,7 +3078,7 @@ export class GameSession {
         }
       }
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride), ads: this.adsAmount, speed: this.drawnSpeed });
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
       this.hud.setScope(zoomed);
       this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount);
       this.updateScopeSway(dt, zoomed);
@@ -3168,7 +3169,13 @@ export class GameSession {
     // full-body first person (under the camera).
     const mine = local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
     if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0) });
-    const self = this.thirdPerson && !this.tpClose ? mine : undefined;
+    // Drawn as others see you: on foot in third person, and in a seat in the chase view (ownBody.ts).
+    const bodyDrawn = ownBodyDrawn({ alive: !!local?.alive, seated: !!this.seat, rideView: this.rideView, thirdPerson: this.thirdPerson, tpClose: this.tpClose });
+    const self = bodyDrawn ? mine : undefined;
+    // In a seat: the pose riderPlacement put on your seat of the vehicle as drawn (seated and holding as every rider
+    // is), turned where you look now rather than where the server last had you.
+    const rider = bodyDrawn && this.seat ? poses.find((p) => p.slot === this.slot && p.alive) : undefined;
+    if (rider) Object.assign(rider, { yaw: this.input.yaw, pitch: this.input.pitch });
     if (self && local) {
       // The gun points where your rounds go: at what the crosshair is on (the host aims them from the same camera),
       // not along the view, beside it: aiming down the sights magnified that miss.
@@ -3185,7 +3192,7 @@ export class GameSession {
     const tAvatars = perfProbe.on ? performance.now() : 0;
     this.view.updateAvatars(
       hostages.length ? [...poses, ...hostages] : poses,
-      self ? -1 : this.slot,
+      self || rider ? -1 : this.slot,
       (id) => {
         if (id >= HOSTAGE_SLOT_BASE) return { npc: { color: '#cfc4a8', scale: 1, female: id % 2 === 1 } };
         const npc = this.npcLook(id);

@@ -5469,7 +5469,7 @@ async function passengerChecks(browser) {
       if ('speed' in m) m.speed = m.def.vehicle.maxSpeed;
       window.__autoInput = { forward: 1, buttons: 0 };
       window.__frameClock.freeze();
-      window.__ride = { frames: 0, fast: 0, drawn: 0, worst: 0, worstY: 0, speed: 0, seated: true };
+      window.__ride = { frames: 0, fast: 0, drawn: 0, worst: 0, worstY: 0, speed: 0, seated: true, me: { drawn: 0, sat: 0, worst: 0, worstY: 0 } };
     }, ride);
     // Frame by frame, while the buggy's drawn speed is over 10 m/s: how far the bot's drawn body is from its seat
     // point on the buggy's model as drawn that frame (the node's world matrix times the seat's offset).
@@ -5495,6 +5495,18 @@ async function passengerChecks(browser) {
           out.worst = Math.max(out.worst, Math.hypot(p.x - at.x, p.z - at.z));
           out.worstY = Math.max(out.worstY, Math.abs(p.y - at.y));
           out.speed = Math.max(out.speed, speed);
+          // Your own body (owner, 2026-11-08: the driver's seat looked empty in the chase view): drawn, sitting, on
+          // the driver's seat point the same way.
+          const own = cs.view.avatars.get(cs.slot);
+          if (own?.root.isEnabled() && !own.hiddenSelf && own.anim) out.me.drawn++;
+          if ((own?.anim?.sit ?? 0) > 0.95) out.me.sat++;
+          if (own) {
+            const [dx, dy, dz] = m.def.seats[0].offset;
+            const seat = { x: dx * w[0] + dy * w[4] + dz * w[8] + w[12], y: dx * w[1] + dy * w[5] + dz * w[9] + w[13], z: dx * w[2] + dy * w[6] + dz * w[10] + w[14] };
+            const q = own.root.position;
+            out.me.worst = Math.max(out.me.worst, Math.hypot(q.x - seat.x, q.z - seat.z));
+            out.me.worstY = Math.max(out.me.worstY, Math.abs(q.y - seat.y));
+          }
         }
         return out;
       }, [ride, n]);
@@ -5519,6 +5531,47 @@ async function passengerChecks(browser) {
       return { steps: window.__played.filter((s) => s.id === 'footstep' && near(s.at)).length, engine: window.__played.filter((s) => s.id === 'vehicle.engine' && !s.at).length };
     }, ride);
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+    const me = sample.me;
+    check(me.drawn === sample.fast && me.sat === sample.fast && me.worst < 0.05 && me.worstY < 0.05, `in the chase view your own body is drawn sitting on the driver's seat every frame (${JSON.stringify({ fast: sample.fast, ...me, worst: +me.worst.toFixed(3), worstY: +me.worstY.toFixed(3) })})`);
+    // The cockpit (first person from your own eyes): your body isn't drawn, as on foot in first person. Then out of
+    // the buggy, on foot in first person: still not drawn.
+    const ownShown = () => {
+      const a = window.__cs.view.avatars.get(window.__cs.slot);
+      return !!a && a.root.isEnabled() && !a.hiddenSelf;
+    };
+    // Frames on the page's clock until the view is `want` (null: on foot, out of every seat), at most `max`.
+    const untilFrames = (want, max) =>
+      page.evaluate(([want, max]) => {
+        const cs = window.__cs;
+        const ok = () => cs.rideView() === want && (want !== null || !cs.mounts.seatedRiders().has(cs.slot));
+        for (let i = 0; i < max && !ok(); i++) window.__frameClock.step(1000 / 60);
+        window.__frameClock.step(1000 / 60);
+        return ok();
+      }, [want, max]);
+    await page.keyboard.press('KeyH');
+    const cockpit = await untilFrames('cockpit', 60);
+    const inCockpit = await page.evaluate(ownShown);
+    if (process.env.E2E_SHOTS) {
+      const png = await page.evaluate(() => {
+        window.__frameClock.step(1000 / 60);
+        const canvas = window.__cs.view.scene.getEngine().getRenderingCanvas();
+        const out = document.createElement('canvas');
+        [out.width, out.height] = [canvas.width, canvas.height];
+        out.getContext('2d').drawImage(canvas, 0, 0);
+        return out.toDataURL('image/png').split(',')[1];
+      });
+      writeFileSync(`${process.env.E2E_SHOTS}/vehicles-driver-cockpit.png`, Buffer.from(png, 'base64'));
+    }
+    await page.keyboard.press('KeyH');
+    const chaseAgain = await untilFrames('chase', 60);
+    const backInChase = await page.evaluate(ownShown);
+    await page.evaluate(() => {
+      const m = window.__match;
+      m.leaveMount(m.slots[window.__cs.slot], true);
+    });
+    const out = await untilFrames(null, 120);
+    const onFoot = await page.evaluate(ownShown);
+    check(cockpit && !inCockpit && chaseAgain && backInChase && out && !onFoot && !(await page.evaluate(() => window.__cs.thirdPerson())), `your body is hidden in the cockpit view, drawn again in the chase view, and hidden on foot in first person after getting out (${JSON.stringify({ cockpit, inCockpit, chaseAgain, backInChase, out, onFoot })})`);
     check(sample.seated && sample.fast >= 60 && sample.drawn === sample.fast && sample.worst < 0.05 && sample.worstY < 0.05, `at speed the passenger is drawn on its seat every frame (${JSON.stringify({ ...sample, worst: +sample.worst.toFixed(3), worstY: +sample.worstY.toFixed(3), speed: +sample.speed.toFixed(1) })})`);
     check(heard.steps === 0 && heard.engine > 0, `riding plays no footsteps and the engine runs (${JSON.stringify(heard)})`);
   }
