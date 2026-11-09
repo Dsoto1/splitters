@@ -619,12 +619,15 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
 
-### Set pieces, part 6: swapping the old big pieces (`wip/mapmaker-setpieces6`, agent, 2026-11-09; MapMaker lane; in progress)
+### Set pieces, part 6: swapping the old big pieces (`wip/mapmaker-setpieces6`, agent, 2026-11-09; MapMaker lane)
 - **Done:** Replace all with a set piece… in every tile's inspector; the Town Wall Gatehouse (`setpiece.courtyard_gate_wall`)
   and Market Town's gate swapped to it in MapMaker; Shingle Point's card camera backed up (card picture recaptured);
   the coverage map's Tall Mushroom replaced by our Bracken Fern (a Kenney log stack keeps the Nature Kit pack covered).
-- **Waiting for the owner (Q1-3):** Iron Maw, Shingle Point, Neon Spire, Riot Junction and Underdrain's swaps are prepared,
-  not applied (docs/SET_PIECES_PLAN.md, "As built: part 6").
+- **Also done (owner's answers):** the Bunker set piece (`setpiece.bunker`, the Bunker tile's size); Iron Maw and Shingle
+  Point (Warehouses → Loading Dock, Bunkers → Bunker), Neon Spire, Riot Junction and Underdrain (City Crossroads → Crossroads
+  Plaza, the ring filled with Platforms) swapped in MapMaker; checks and bot reports in docs/SET_PIECES_PLAN.md, "As built: part 6".
+- **Left:** Blackout, Crossroads, Coldwater Gulch, Pharaoh's Reach, Qasr Medina and Sunken Kingdom (the other session's
+  claim); Whiteout Station (its rebuild).
 - **Pitfall:** MapMaker with `?test=1` makes ids from a fixed sequence, so placing into a map that was itself built
   under `?test=1` (the coverage map) can collide ("ID … already exists"): drive real edits without `test=1`.
 

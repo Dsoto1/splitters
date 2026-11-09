@@ -13,6 +13,8 @@ made only on a commit that passed CI on a check branch.
   where it stands, one undo step.
 - **Town Wall Gatehouse**, a new set piece: Market Town's gate is now one (the walks through its guard room, its roof up
   a ladder).
+- **Bunker**, a new set piece the size of the Bunker tile: Iron Maw and Shingle Point's bunkers are now Bunkers, their
+  warehouses Loading Docks; Neon Spire, Riot Junction and Underdrain's 4 × 4 crossroads are the Crossroads Plaza.
 - Shingle Point's card picture is taken from a few metres further back, so the cliff-top buildings show.
 
 **Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall** (docs/SET_PIECES_PLAN.md, "As built: part 5"):

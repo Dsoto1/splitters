@@ -517,7 +517,7 @@ Not a format change: no field is added.
 - Free blocks only, on the standard grid, so bays line up; flatten the beach's top under them first. The Iron Coast
   session places them (main hands them over).
 
-## As built: part 6 (swapping the old big pieces on the maps; 2026-11-09, in progress)
+## As built: part 6 (swapping the old big pieces on the maps; 2026-11-09)
 The owner (2026-11-08): "fix em all": every old big piece that has a set-piece version is swapped on every map that uses
 one, through MapMaker. Iron Compound stays as it is (its Catwalk Gantry plays as the bridge already).
 - **MapMaker:** every tile's inspector has **Replace all with a set piece…**: pick any piece; every placement of the
@@ -533,13 +533,31 @@ one, through MapMaker. Iron Compound stays as it is (its Catwalk Gantry plays as
   overlaps; the walks, the passage, the guard room and the roof all reach each other both ways (30 of 30 routes).
   Bot report (CTF, seeds 1-2, 240 s), before → after: stuck 121 → 127 a match, failed searches 0.01 → 0.00 %, two routes
   or more 75 → 75 % of team trips, busiest route 60 → 54 %, captures 2 → 1 (two matches: noise).
-- **Prepared, waiting for the owner** (each validates once replaced, no coplanar overlaps): Iron Maw (2 Warehouses →
-  Loading Dock, 2 Bunkers → Bunker Cluster), Shingle Point (1 Warehouse, 4 Bunkers), Neon Spire, Riot Junction and
-  Underdrain (City Crossroads → Crossroads Plaza). The Bunker Cluster is a 5-cell cross for a 2 × 1 Bunker, the Loading
-  Dock one storey for a two-storey Warehouse, the plaza 3 × 3 for a 4 × 4 crossroads: Riot Junction would go over its
-  prop-model budget, Underdrain would leave two spawns without a floor. Blackout, Crossroads, Coldwater Gulch, Pharaoh's
-  Reach, Qasr Medina and Sunken Kingdom wait for the other session's claim; Whiteout Station's rebuild handles its hangar.
-  The six maps with the Bunker theme (`core.bunker`) place no Bunker tile: nothing to swap.
+- **New piece: Bunker** (`setpiece.bunker`, Bunker cluster family; owner: "a 2 × 1 single-bunker set piece that matches
+  the old Bunker tile"): two Rooms open to each other, the Bunker tile's doorways (west, east, south), slits elsewhere,
+  roofed in the look's facade, its centre pillar and sandbag cover as blocks.
+- **The swaps** (owner's answers of 2026-11-09: Bunker → Bunker, Warehouse → Loading Dock, City Crossroads → Crossroads
+  Plaza with the gap filled), all in MapMaker (Replace all, then MapMaker's own commands for the follow-ups):
+  - **Iron Maw:** 2 Warehouses → Loading Dock (the four pickups that stood on the warehouse mezzanine and its floor now
+    stand on the dock floor, 1 m up), 2 Bunkers → Bunker.
+  - **Shingle Point:** 1 Warehouse → Loading Dock (its six lights, 7.1 m up under the warehouse roof, moved to 3.3 m
+    under the dock's), 4 Bunkers → Bunker.
+  - **Neon Spire, Riot Junction, Underdrain:** City Crossroads (4 × 4) → Crossroads Plaza (3 × 3); the one-cell ring it
+    leaves (seven cells) is filled with Platforms (open ground, no walls, as the crossroads was). Riot Junction leaves
+    out the plaza's benches and lamps (the inspector's part ticks), so it stays under its prop-model budget; its pickup on
+    the plaza's corner moved up onto the kerb (0.15 m). Underdrain's two spawns stand on the fill.
+  - Every changed map validates with no issue (beyond "changed since it was exported" in MapMaker before the export) and
+    no coplanar overlap, and every route from the first spawn to every spawn, pickup, hill and flag and back is as before
+    (Iron Maw 320 of 320, Shingle Point 148 of 148, Riot Junction 218 of 218, Underdrain 178 of 178; Neon Spire 110 of 136
+    before and after: its first hill is on a roof).
+  - **Bot reports** (seeds 1-2, 240 s; Iron Maw, Riot Junction and Underdrain CTF, Shingle Point and Neon Spire TDM),
+    before → after: stuck a match Iron Maw 55 → 62, Shingle Point 93 → 101, Neon Spire 41 → 35, Riot Junction 254 → 199,
+    Underdrain 60 → 57; failed searches 0.00 % everywhere; two routes or more 100 % of team trips everywhere. Riot Junction
+    over seeds 3-6: captures 2 → 4, stuck 197 → 362 a match, almost all of it at its old hot spot (cells 19, 14, a
+    block off the plaza: 155 → 695, most in one seed), the plaza's own cells a handful either way.
+- **Not swapped:** Blackout, Crossroads, Coldwater Gulch, Pharaoh's Reach, Qasr Medina and Sunken Kingdom wait for the other
+  session's claim; Whiteout Station's rebuild handles its hangar; Iron Compound stays as it is (owner). The six maps with
+  the Bunker theme (`core.bunker`) place no Bunker tile.
 
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks
