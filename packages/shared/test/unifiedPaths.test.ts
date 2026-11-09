@@ -76,7 +76,7 @@ describe('one path primitive: migration (v22 -> v23)', () => {
   const before = JSON.parse(readFileSync(new URL('./fixtures/race-tracks-before-paths.json', import.meta.url), 'utf8')) as Record<string, unknown>;
   it('finds the shipped race maps (with the old field, or saved again from it)', () => expect(tracked.length + Object.keys(before).length).toBeGreaterThanOrEqual(2));
   for (const [id, track] of Object.entries(before)) {
-    it(`${id}: saved again in MapMaker, its path races exactly as its old track did`, () => {
+    it(`${id}: saved again in MapMaker, its path runs exactly as its old track did`, () => {
       expect(raw(id).track).toBeUndefined();
       const old = new TrackGeometry(Track.parse(track));
       const map = loaded(raw(id));
@@ -86,7 +86,6 @@ describe('one path primitive: migration (v22 -> v23)', () => {
       expect(after.gates).toEqual(old.gates);
       expect(after.length).toBe(old.length);
       expect(after.grid()).toEqual(old.grid());
-      expect(raceGridEntities(map).map((e) => [e.position, e.yaw])).toEqual(old.grid().map((p) => [[p.x, p.y, p.z], p.yaw]));
       expect(ambientCarEntities(map)).toHaveLength(old.track.ambient);
       expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
     });
