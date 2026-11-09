@@ -73,3 +73,41 @@ under it (3.6 × 1.6 × 3.6 m). Four Ice Blocks on the lake. Three lights (radar
 ## Screenshot viewpoints
 `screenshots/`: play-overview (−70, 60, −100), play-lake, play-ridge, play-hangar, play-catwalk, play-tide-base,
 mapmaker-overview, mapmaker-pack-palette. Map card: `packages/client/public/maps/shots/whiteout_station.jpg` (automatic).
+
+# Rebuild 2026-11 (MAP 03 Frostbite Station; branch `wip/mapmaker-whiteout`)
+
+Everything above is the old build (2026-10-31). This part is the rebuild, made in MapMaker (DECISIONS_AND_DEVIATIONS.md,
+"Rebuild 2026-11").
+
+| | |
+|---|---|
+| Map | `maps/whiteout_station.json` (id `whiteout_station`, "Whiteout Station": id and name kept) |
+| Source | `docs/map-briefs/MAP_03_Frostbite_Station.md` and `frostbite_station_reference.jpg` (approved; MapMaker lane, 2026-11-08) |
+| Status | Greybox (2026-11-09): footprint, terrain, structures, routes, spawns, pickups; validate-map 0 issues |
+| Players | 8-16 (`recommendedPlayers`), `teamSetup` 8 v 8 |
+| Modes | Deathmatch (main), Team Deathmatch (Elimination with it); no flags or hills (the brief names no objectives) |
+| Weapon set | Military |
+
+## World
+- Terrain 176 × 160 m of snow, vertices 2 m apart (89 × 81), x −88..88, z −80..80, ground at −0.15 m. Standard grid:
+  8 m cells, cell (x, y) centred on world (8x, 8y), 4 m levels. North = +z.
+- Boundary: invisible walls x −60..60, z −46..52 (120 × 98 m); snowbanks raised 6-10 m in a ring just outside it
+  (rough, steep faces painted stone); backdrop snowy sky, peaks, snow ground, no border.
+- Under the central yard the ground is dipped to −1.5 m (x −10..18, z −10..10) so the yard's tiles and the tunnel's
+  floors pull it under them. The radar ridge: the ground flattened to 3.85 m over x ≥ 30, z ≥ 22 (to the bank), its
+  edges steep (stone), the tops of its three ways up brought to 3.85 m.
+
+## Structures (cells, rotation in quarter turns clockwise; set pieces by their anchor)
+| What | Where | Pieces |
+|---|---|---|
+| Tunnel (level −1) | y 0, x −1..2 | Stairs (−1, 0) r2 (up west), Corridor (0, 0) r1, (1, 0) r1, Stairs (2, 0) r0 (up east); Doorways at the huts' tops |
+| Central yard | x −1..2, y −1..1 (less the huts) | Courtyard, Courtyard (Crates), Courtyard (Low Wall) |
+| Main lab | x −1..3, y 2..3 | Reactor Room anchor (−1, 2) r0; Server Vault anchor (3, 3) r2 |
+| Lab wing | x −5..−3, y −1..1 | Power Core Hall anchor (−5, −1) r0; Platform (Railing) on level 1 at (−2, 0) and (−6, 0), Open Stairs (−2, 1) r1 and (−6, −1) r3 |
+| Comms annex | x −5..−3, y 2..3 | Corridor (−4, 2), Barracks (−5, 3), Comms Tower (−3, 3) |
+| Garage | x 0..4, y −3..−2 | Vehicle Hangar (0, −3); Loading Dock anchor (2, −3) |
+| Fuel tanks, pump house | x 4..5, y −1..1 | Barracks (4, 1) r1; Fuel Depot (5, −1), (5, 0), (5, 1) |
+| Radar shelter | ridge, level 1 | Radar Dome (5, 4); Snow Drift (4, 2) r0, (3, 5) r1; Metal Stair (6, 2) |
+| Ice cave | x 6..7, y −4..−3 | Large Room (roof, rubble, glacier-ice walls, lake-ice floor; wide doorways west and north); Frozen Cliff on level 1 over all four cells; the ground raised against its south and east walls |
+| Service trench | y −2, x −3..−1 | Trench End (Sandbags) r2, Trench (Sandbags), Trench End (Sandbags) r0 |
+| South-west | | Fuel Depot (−5, −3), Prefab Hut (−4, −3), Ice Hole (−2, −1) |

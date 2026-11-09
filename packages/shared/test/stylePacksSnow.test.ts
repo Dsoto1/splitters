@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { MODEL_FACADES, PhysicsWorld, SCENARIO_PALETTE, THEME_BACKDROPS, blockBoxes, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreThemes, getItem, getProp, getStylePack, initPhysics, liftLinks, loadMap, mapTerrainMesh, navLinks, newScenarioEntities, propBoxes, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
-import { NavWorld, initNavigation, validateNavigation } from '../src/match.ts';
+import { NavWorld, initNavigation, mapNavigation, validateMapNavigation, validateNavigation } from '../src/match.ts';
 import { makeMap, propManifest } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -129,27 +129,49 @@ describe('Snow pack navigation', () => {
   }
 });
 
-describe('Whiteout Station (the pack\'s demo map)', () => {
-  it('validates with no issues, navigation included, and has the outpost\'s landmarks', { timeout: 180_000 }, () => {
+describe('Whiteout Station (the pack\'s demo map, rebuilt from MAP 03 Frostbite Station)', () => {
+  it('validates with no issues, navigation included, and has the brief\'s landmarks, tunnel and modes', { timeout: 180_000 }, () => {
+    const raw = JSON.parse(read('maps/whiteout_station.json')) as MapDocument;
     const r = loadMap(read('maps/whiteout_station.json'));
     if (!r.ok) throw new Error(JSON.stringify(r.issues));
     expect(r.issues).toEqual([]);
     const map = r.map;
+    expect(map.metadata.id).toBe('whiteout_station');
     expect(map.classicStructure.theme).toBe('core.snow_outpost');
-    const tiles = new Set(map.classicStructure.tiles.map((x) => x.tile));
-    for (const id of ['snow.hut', 'snow.barracks', 'snow.comms_hut', 'snow.hangar', 'snow.bunker', 'snow.watchtower', 'snow.radar_dome', 'snow.fuel_depot', 'snow.catwalk', 'snow.metal_stair', 'snow.ice_wall', 'snow.ice_cliff', 'snow.drift_ramp', 'snow.frozen_lake', 'snow.ice_ridge', 'snow.ice_hole', 'snow.road']) expect(tiles.has(id), id).toBe(true);
+    expect(map.terrain).toBeTruthy();
+    // The six landmarks (docs/map-briefs/MAP_03_Frostbite_Station.md): the main lab (Reactor Room, Server Vault), the
+    // communications annex (Comms Tower), the snow vehicle garage (Vehicle Hangar), the fuel tanks, the radar shelter
+    // (the Radar Dome on the ridge, level 1) and the ice cave (a roofed room under Frozen Cliffs); the two-storey lab wing.
+    const pieces = new Set((raw.setPieces ?? []).map((p) => p.piece));
+    for (const id of ['setpiece.reactor_room', 'setpiece.server_vault', 'setpiece.power_core_hall', 'setpiece.loading_dock']) expect(pieces.has(id), id).toBe(true);
+    const tiles = raw.classicStructure.tiles;
+    const has = (tile: string, f: (x: Tile) => boolean = () => true) => tiles.some((x) => x.tile === tile && f(x));
+    for (const id of ['snow.comms_hut', 'snow.hangar', 'snow.fuel_depot', 'snow.drift_ramp', 'snow.metal_stair']) expect(has(id), id).toBe(true);
+    expect(has('snow.radar_dome', (x) => x.z === 1)).toBe(true);
+    expect(has('core.room_large', (x) => x.options?.ceiling === 'roof') && has('snow.ice_cliff', (x) => x.z === 1)).toBe(true);
+    // One tunnel under the central yard: stairs and corridors on level -1, Courtyard tiles over the corridors.
+    const under = tiles.filter((x) => x.z === -1);
+    expect(under.filter((x) => x.tile === 'core.stairs')).toHaveLength(2);
+    const corridors = under.filter((x) => x.tile === 'core.corridor');
+    expect(corridors.length).toBeGreaterThanOrEqual(2);
+    for (const c of corridors) expect(tiles.some((x) => x.z === 0 && x.x === c.x && x.y === c.y && x.tile.startsWith('core.yard')), `${c.x},${c.y}`).toBe(true);
+    // Modes as the brief recommends (Elimination comes with Team Deathmatch); no objectives invented.
+    expect(map.metadata.supportedModes).toEqual(['core.deathmatch', 'core.tdm']);
+    expect(map.entities.filter((e) => e.kind === 'flag' || e.kind === 'hill')).toEqual([]);
     const spawns = map.entities.filter((e) => e.kind === 'spawn');
-    for (const team of ['embers', 'tide']) expect(spawns.filter((e) => e.faction === team).length, team).toBeGreaterThanOrEqual(12);
-    expect(map.entities.filter((e) => e.kind === 'flag')).toHaveLength(2);
-    expect(map.entities.filter((e) => e.kind === 'hill').length).toBeGreaterThanOrEqual(3);
+    for (const team of ['embers', 'tide']) expect(spawns.filter((e) => e.faction === team).length, team).toBeGreaterThanOrEqual(8);
+    expect(spawns.length).toBeGreaterThanOrEqual(16);
     for (const e of map.entities) if (e.kind === 'pickup') expect(getItem(e.item), e.item).toBeDefined();
-    // The hangar's roll-up door is wired to its button.
-    expect(map.logic.rules.some((r) => r.when.target === 'hangar_button' && r.do.some((a) => a.type === 'mover_go' && a.target === 'hangar_door'))).toBe(true);
-    const geometry = buildMapGeometry(map);
-    const physics = new PhysicsWorld(geometry, mapTerrainMesh(map));
-    const nav = NavWorld.build([...geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), [...navLinks(map.entities, physics), ...liftLinks(map)]);
-    physics.free();
-    expect(validateNavigation(map, nav)).toEqual([]);
-    nav.destroy();
+    // Navigation as validate-map and the match build it (an official map: its findings are errors).
+    expect(validateMapNavigation(map, true).issues).toEqual([]);
+    // The tunnel and the radar ridge route both ways to the yard.
+    const built = mapNavigation(map);
+    const yard = { x: 8, y: 0, z: -4 };
+    for (const p of [{ x: 4, y: -4, z: 0 }, { x: 40, y: 4, z: 32 }]) {
+      expect(built.nav.reachable(yard, p), JSON.stringify(p)).toBe(true);
+      expect(built.nav.reachable(p, yard), JSON.stringify(p)).toBe(true);
+    }
+    built.physics.free();
+    built.nav.destroy();
   });
 });
