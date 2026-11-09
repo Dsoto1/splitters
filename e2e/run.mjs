@@ -1309,6 +1309,15 @@ async function editorTurnChecks(browser) {
     await frames(page, 3);
     return page.evaluate(() => window.__editor.selection.entities[0]);
   };
+  // On Platforms (the blank map has no ground there: over nothing they'd be refused).
+  await clickTool(page, '[data-tool="tile:core.platform"]');
+  for (const z of [0, 8]) {
+    const p = await at(16, 0, z);
+    await page.mouse.move(p.x, p.y);
+    await frames(page, 3);
+    await page.mouse.click(p.x, p.y);
+    await frames(page, 3);
+  }
   const barrel = await place('[data-tool="prop:prop.barrel"]', 12, 0);
   const spawn = await place('[data-tool="spawn"]', 12, 8);
   // A point on the ring of the selected thing at `centre`, facing `a` (radians; 0 is +Z, a quarter turn +X).
@@ -1623,14 +1632,19 @@ async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
   const spawnsAfter = (await doc()).entities.filter((e) => e.kind === 'spawn').length;
   check(spawnsAfter === spawnsBefore && (await page.evaluate(() => window.__editor.history.revision)) === revBefore, `the click over nothing places no spawn (${spawnsBefore} → ${spawnsAfter})`);
   // A prop over nothing the same way; over the ground on Ground its ghost is its own colour again.
-  await clickTool(page, '[data-tool="prop:prop.barrel"]');
-  await page.evaluate(() => window.__editor.setLevel(1));
+  await page.evaluate(() => {
+    window.__editor.setTool({ kind: 'prop', model: 'prop.barrel' });
+    window.__editor.setLevel(1);
+  });
   await settle();
-  const offProp = await at(32, 4, -18);
+  // Nearer the middle of the view (the spawn's spot can be under the right-hand panel).
+  const offProp = await at(6, 4, -20);
+  await page.mouse.move(off.x, off.y);
+  await settle();
   await page.mouse.move(offProp.x, offProp.y);
   await settle();
   const propGhost = await ghostState('propGhost', true);
-  const propWhy = await page.evaluate(() => ({ level: window.__editor.level, tip: document.getElementById('ed-tip').textContent, status: document.getElementById('ed-target').textContent }));
+  const propWhy = await page.evaluate((p) => ({ under: document.elementFromPoint(p.x, p.y)?.id, level: window.__editor.level, tip: document.getElementById('ed-tip').textContent, status: document.getElementById('ed-target').textContent }), offProp);
   const propsBefore = (await doc()).entities.filter((e) => e.kind === 'prop').length;
   await page.mouse.click(offProp.x, offProp.y);
   await settle();
