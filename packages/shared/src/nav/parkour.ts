@@ -365,11 +365,11 @@ function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts
   for (const c of cands) parkourStats.cands[c.kind] = (parkourStats.cands[c.kind] ?? 0) + 1;
   const t1 = performance.now();
   parkourStats.findMs = t1 - t0;
-  // Ground the spawns walk to (with the build's other links: lifts, ladders) first: ledges players stand on, before roofs
-  // and tops only parkour gets onto. Fernwood Moon has hundreds of those; with no walk round they tied, filled MAX_DROPS
-  // by place (west first), and the north deck lost its 0.7 m hop down onto its ramp: the rope lift (a 17 s round trip)
-  // was its only way down, and bots waited 10-23 s for it. Then the best savings (no walk round at all first), then by
-  // place: deterministic.
+  // The best savings first (no walk round at all first); among equals, ground the spawns walk to (with the build's
+  // other links: lifts, ladders) before roofs and tops only parkour gets onto; then by place: deterministic. Fernwood
+  // Moon has hundreds of moves with no walk round; tied, they filled MAX_DROPS by place (west first), and the north
+  // deck lost its 0.7 m hop down onto its ramp: the rope lift (a 17 s round trip) was its only way down, and bots
+  // waited 10-23 s for it.
   const walked = new Uint8Array(n);
   const seeds = spawns.flatMap((p) => {
     const hit = nav.nearestPoly(p, { x: 1, y: 1, z: 1 });
@@ -384,7 +384,7 @@ function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts
       dist[p] = Infinity;
     }
   }
-  cands.sort((a, b) => walked[b.from]! - walked[a.from]! || b.saving - a.saving || a.start.x - b.start.x || a.start.z - b.start.z || a.start.y - b.start.y);
+  cands.sort((a, b) => (a.saving === b.saving ? 0 : b.saving - a.saving) || walked[b.from]! - walked[a.from]! || a.start.x - b.start.x || a.start.z - b.start.z || a.start.y - b.start.y);
   const out: ParkourLink[] = [];
   const ends: [number, number][] = [];
   const kinds: Record<ParkourKind, number> = { drop: 0, gap: 0, up: 0 };

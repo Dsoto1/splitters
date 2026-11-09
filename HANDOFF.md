@@ -18,14 +18,15 @@ turning by mouse went in with it.
 - **Fernwood Moon's rope-lift waits (bots).** Cause: the north deck's only walkable way down was the north rope lift
   (17 s round trip; bots waited 10-23 s at the top). Its 0.7 m hop down onto the ramp at (0, 14, 87) was a parkour drop
   candidate that lost `MAX_DROPS` (50): Fernwood has 275 drop candidates with no walk round, nearly all off roofs and
-  tops only parkour reaches, and the ties went by place (west first). `nav/parkour.ts` now ranks candidates off ground
-  the spawns walk to (with the map's links) first. fernwood_moon TDM 90 s, seeds 1-4: lift idle spells of 3 s+ 13 → 2,
-  of 10 s+ 2 → 0; again after Environment Phase 2 landed (its pines): lift spells of 10 s+ 4 → 0, every 10 s+ spell
-  left in seeds 1-4 a post (2, 1, 2, 2). No map edit (the map was Environment Phase 2's claim).
+  tops only parkour reaches, and the ties went by place (west first). `nav/parkour.ts` now breaks ties of equal saving by
+  ground the spawns walk to (with the map's links) first (ranking that ahead of the saving itself lost Sunken Kingdom's
+  CTF capture in botCtf.test: check run 42557324249). fernwood_moon TDM 90 s, seeds 1-4: lift idle spells of 3 s+ 13 → 2,
+  of 10 s+ 2 → 0; again after Environment Phase 2 landed (its pines): lift spells of 10 s+ 4 → 0 (the longest lift wait
+  6 s), every 10 s+ spell left in seeds 1-4 a post (1, 0, 1, 2). No map edit (the map was Environment Phase 2's claim).
   The check's other 10 s+ spells were all posts (campers and snipers holding a vantage spot, 18-50 s by design): the
   spell measures leave posts out (`ON_PURPOSE` in bot-report.ts, docs/BOTS.md) and `checkLimits.all` is back to
   `spells10` 1.5 and `longestIdle` 45 (Environment Phase 2 had raised them to 3.5 and 50): `pnpm bot-report --check`
-  holds every limit (after merging it: Fernwood Moon 2 spells of 10 s+, both posts).
+  holds every limit (after merging it: Fernwood Moon 1 spell of 10 s+, a post).
 - **Bursts at a distance.** Pickups, armour breaking, heavy hits and streak bursts keep the size on screen they have
   3 m off (`fxMap.ts farFxSize`, `View.farSize`, up to 4×): an armour pickup 7 m off was a few pixels on the page's frame
   clock, now 2.3× as big. Nearer than 3 m nothing changes. The `flashing` flow's fight moment adds an armour pickup 3 m
