@@ -32,18 +32,30 @@ turning by mouse went in with it.
   clock, now 2.3× as big. Nearer than 3 m nothing changes. The `flashing` flow's fight moment adds an armour pickup 3 m
   off and one at your own chest.
 - **Tutorial:** no score bar (`Hud.showScorebar`); `newplayer` checks it hidden, and shown again in Quick Play.
-- **Far characters' pose (the characters3 flake): found, not landed (`wip/far-copies`).** The import added each Meshy
+- **Far characters' pose (the characters3 flake): landed from `wip/far-copies`.** The import added each Meshy
   character's far copy and then quantized each mesh on its own: the far copy got a skin of its own, the game a second
-  skeleton for it, posed apart from the body's. 74 of 116 Meshy characters were so (locally Honest Abe's far copy was
-  drawn 1.75 of 2.06 m at 27 m). On `wip/far-copies` (from this branch at 70fb51b): the 74 far copies remade on the
-  body's skin (`relod-built.mjs`), `prepare-meshy-characters.mjs` quantizing in one volume (`quantizationVolume:
-  'scene'`), `tools/content/lod-audit.mjs` (every far copy against its body: own skin, unmatched vertices, 6 poses;
-  161 far copies, 0 off) and a characters3 check dealing eight known looks. On CI that check passed (every far copy
-  within 1 cm of its body's height), but characters3 still failed on: Hyena Warrior's whole body (far copy and full
-  detail alike) 1.5 of 2.12 m on the first frame after waking (the wake pose, not the far copy: runs 42563794663,
-  42567649540); bots' hands 13-15 cm off their guns at 160 m (3 of 8; the probe pools every mesh, full and far);
-  the new check measuring nothing on the flow's second attempt. Reverted here so the rest lands; next: the wake
-  frame, the hand probe at a distance, then land `wip/far-copies`.
+  skeleton for it, posed apart from the body's. 74 of 116 Meshy characters were so (before: Hyena Warrior's far copy
+  drawn 1.5-1.8 m against its body's 2.12 m on CI; Honest Abe's 1.75 of 2.06 m at 27 m locally). The 74 far copies are
+  remade on the body's skin (`relod-built.mjs`), `prepare-meshy-characters.mjs` quantizes body and far copy in one
+  volume (`quantizationVolume: 'scene'`), and `tools/content/lod-audit.mjs` checks every far copy against its body
+  (own skin, unmatched vertices, 6 poses): 161 far copies, 0 off. After, drawn far / full detail in the same pose:
+  Hyena Warrior 1.91/1.92 m at 17 m, Honest Abe 1.91/1.91 m at 30 m, every dealt look within 1 cm. characters3's
+  three reds before landing:
+  - **Bots' hands 13-15 cm off their guns at 160 m:** not the far copies (the probe already measured the level drawn,
+    and the far copy's hands match the body's within 0.5 cm) but the smoothed animation LOD. A first long-gun grip
+    measures the torso's skin (`TorsoSurface.measure`, `skeleton.prepare(true)`) part way through the after-clip work;
+    the skin wrapper recorded that half-done pose as the evaluation's and drew it until the next evaluation (seconds at
+    5 Hz on a 1-2 fps page): the drawn wrist 10-25 cm off the joint the gun follows. Now only the frame's own skinning
+    (`prepare()`) records (characterAnimator.ts; unit test in `smoothedDeath.test.ts`). It showed with the far copies on
+    the body's skeleton because the far copy's own skeleton was never read part way. Free bots in a canyon match
+    (12 bots, turning round): before, every far bot measured off its gun had its drawn wrist 10-28 cm from the joint;
+    after, 2 of 1,657 samples (the rest still off are near bots mid-action, as on main).
+  - **Hyena Warrior 1.5 of 2.12 m on frame 0:** a pose, not a far copy (the full detail was as short in it). Not seen
+    locally (wake, fight then wake, and new bodies at 25-40 m: lowest 1.79 m); on CI it was one frame of a runner. The
+    whole-body check now judges standing height over the frames (short on at least 2 and over a third of them), and
+    still fails at once on vertices that aren't numbers or a level not drawn.
+  - **The known-looks check measuring nothing on the second attempt:** on CI the flow passes Deathmatch's 10 minutes;
+    the round's end left nobody to measure. farBodies now turns the round's clock and score limit off.
 - **Old branches:** `wip/roster-cleanup` (helmets on four looks): dropped, main has model gear with fitted helmets
   (headFit.ts) and those four looks are retired. `wip/host-handoff-uncommitted`: dropped, every change in it is on main
   (pageHeardAt, `linked`, LINKED_WAIT_MS, the 120 s hold, HANDOFF_JOIN_SECONDS 10). `wip/map-review`:

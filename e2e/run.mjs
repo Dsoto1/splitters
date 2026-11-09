@@ -7412,6 +7412,11 @@ async function wholeBodies(page, frames, upright = []) {
       const failed = new Map();
       // Each upright character's lowest drawn height over the frames, and its full detail's in that pose.
       const heights = new Map();
+      // Standing short (under 3/4 of its height) is judged on the settled pose, over the frames, not on one frame: a
+      // runner can show one frame's crouch (on CI, Hyena Warrior 1.5 of 2.12 m on the first frame measured, its full
+      // detail as short in that pose, then standing; runs 42563794663, 42567649540), while a body drawn as feet only
+      // (what this checks) is short on every frame.
+      const stood = new Map();
       await new Promise((resolve) => {
         let n = 0;
         const o3 = sc.onAfterRenderObservable.add(() => {
@@ -7455,8 +7460,15 @@ async function wholeBodies(page, frames, upright = []) {
             if (hrow && upright.includes(slot) && height < hrow.drawn) Object.assign(hrow, { drawn: +height.toFixed(2), full: +full.toFixed(2) });
             // (`full`: the full-detail mesh in the same pose, for the message: Hyena Warrior's low-detail level is drawn
             // 1.5-1.8 m against its full detail's 2.1 m in the same pose, on CI; see HANDOFF.)
-            if ((off.length || bad || (upright.includes(slot) && height < want * 0.75)) && !failed.has(slot)) {
-              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off });
+            const row = { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off };
+            if ((off.length || bad) && !failed.has(slot)) failed.set(slot, row);
+            if (upright.includes(slot)) {
+              const st = stood.get(slot) ?? stood.set(slot, { frames: 0, short: 0, first: null }).get(slot);
+              st.frames++;
+              if (height < want * 0.75) {
+                st.short++;
+                st.first ??= row;
+              }
             }
           }
           if (++n >= frames) {
@@ -7468,6 +7480,7 @@ async function wholeBodies(page, frames, upright = []) {
       proto.render = render0;
       sc.onBeforeDrawPhaseObservable.remove(o1);
       sc.onAfterDrawPhaseObservable.remove(o2);
+      for (const [slot, st] of stood) if (!failed.has(slot) && st.short >= 2 && st.short * 3 > st.frames) failed.set(slot, { ...st.first, shortFrames: `${st.short} of ${st.frames}` });
       return { checked: checked.size, seen: seen.size, failed: [...failed.values()], heights: [...heights.values()].filter((h) => h.drawn < Infinity) };
     },
     [frames, 1.8, upright],
@@ -7586,7 +7599,7 @@ async function farBodies(browser) {
   await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(60000) }).catch(() => {});
   const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
   const r = await wholeBodies(page, 12, setup.slots);
-  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}${f.shortFrames ? ` (short on ${f.shortFrames} frames)` : ''}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
   // (For a failure: where you are now against where the crowd was set out from, and whether you are alive.)
   if (r.failed.length) broken.push(`you ${await sim(page, (m, me, from) => `${Math.hypot(me.move.pos.x - from.x, me.move.pos.z - from.z).toFixed(1)} m from the setup, ${me.alive ? 'alive' : 'dead'}, ${me.deaths} deaths`, setup.from)}`);
   check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
@@ -7803,7 +7816,8 @@ async function gripsInPlay(browser) {
     held.push({ w, ok: !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) } });
   }
   check(held.every((h) => h.ok), `an Imp player holds the gun forward at the chest with a hand on its grip (${JSON.stringify(held)})`);
-  await imp.screenshot({ path: `${ARTIFACTS}/grips-imp-third.png` });
+  // (An artifact for a look: a slow page's screenshot timing out isn't a failed check.)
+  await imp.screenshot({ path: `${ARTIFACTS}/grips-imp-third.png` }).catch(() => {});
   await imp.context().close();
 }
 

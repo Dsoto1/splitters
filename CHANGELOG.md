@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Far characters** (`wip/far-copies`):
+- Far-off characters are drawn in the same pose as up close: 74 characters' low-detail copies moved onto their body's
+  skeleton (Hyena Warrior was drawn 15-30% short at a distance, Honest Abe 15%).
+- Far characters' hands stay on their guns: a far character's first animation step drew its hands 10-25 cm off the
+  gun until the next one.
 **Small fixes (owner, 2026-11-08)**:
 - Bots no longer queue 10-20 s for Fernwood Moon's north rope lift: they hop down off the north deck onto its ramp
   when the lift is away (the navmesh had lost that 0.7 m hop).
