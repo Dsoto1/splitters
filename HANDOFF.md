@@ -303,6 +303,7 @@ and 2; waits for Tuesday's train).** docs/MAPMAKER_OVERHAUL_PLAN.md "As built" u
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
 - Claimed: MapMaker's bot test run and spawn exposure (Phase 4 items 1 and 2; new modules under `client/src/editor/` and `shared/src/editor/`, a few wiring lines in editorApp.ts, `shared/src/bots/botTrace.ts` shared with bot-report; no format bump; `wip/mapmaker-p4`), MapMaker lane, 2026-11-09.
+- Claimed: the characters' far copies (`packages/client/public/characters/*.glb` LODs, `content/meshy.lock.json`, the e2e `characters3` flow's far-copy checks; `wip/far-copies`), far-copies agent, 2026-11-09.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
