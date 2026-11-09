@@ -205,6 +205,33 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'light', position: [8, 3, 16], fixture: 'bulb', color: '#ffd9a0', intensity: 0.9, range: 8 },
     ],
   },
+  // design: Set pieces part 6 (owner: swap the Bunker tile for a set piece of its own size): two Rooms open to each other, the Bunker's doorways (west, east, south) and slits elsewhere, roofed, in the look's facade; its centre pillar and its cover as blocks where the tile has them.
+  {
+    id: 'setpiece.bunker',
+    displayName: 'Bunker',
+    family: 'bunkercluster',
+    category: 'Fortifications',
+    blurb: 'Two cells of thick concrete with firing slits, a centre pillar and sandbag cover inside the doors (west, east and south): the Bunker tile as a set piece, in the look of the map.',
+    packs: ['military', 'snow', 'harbor', 'desert', 'jungle'],
+    footprint: { cells: [[0, 0], [1, 0]], levels: [0, 0] },
+    mirror: 'free',
+    ports: [
+      { side: 'W', cell: [0, 0], level: 0, kind: 'door' },
+      { side: 'E', cell: [1, 0], level: 0, kind: 'door' },
+      { side: 'S', cell: [0, 0], level: 0, kind: 'door' },
+    ],
+    parts: [
+      { kind: 'tile', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0, edges: { '0,0,0:W': 'door', '0,0,0:S': 'door', '0,0,0:N': 'slit', '0,0,0:E': 'open' }, surfaces: { floor: { role: 'floor' }, walls: { role: 'stone' }, solids: { role: 'stone' }, underside: { role: 'stone' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { ceiling: 'roof', facade: { role: 'facade' } } },
+      { kind: 'tile', tile: 'core.room', x: 1, y: 0, z: 0, rotation: 0, edges: { '0,0,0:E': 'door', '0,0,0:S': 'slit', '0,0,0:N': 'slit', '0,0,0:W': 'open' }, surfaces: { floor: { role: 'floor' }, walls: { role: 'stone' }, solids: { role: 'stone' }, underside: { role: 'stone' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { ceiling: 'roof', facade: { role: 'facade' } } },
+      { kind: 'block', name: 'Centre pillar', position: [4, 0, 0], size: [1.2, 4, 1.2], material: { role: 'stone' } },
+      { kind: 'block', name: 'Cover', position: [-1.3, 0, -1.5], size: [0.6, 1.1, 1.8], material: 'core.sandbags' },
+      { kind: 'block', name: 'Cover', position: [-1.6, 0, -1.1], size: [2, 1.1, 0.6], material: 'core.sandbags' },
+      { kind: 'block', name: 'Cover', position: [9.3, 0, 1.5], size: [0.6, 1.1, 1.8], material: 'core.sandbags' },
+      { kind: 'block', name: 'Cover', position: [7.75, 0, 3.1], size: [3.5, 0.9, 1], material: { role: 'stone' } },
+      { kind: 'light', position: [0, 3, 0], fixture: 'bulb', color: '#ffd9a0', intensity: 0.9, range: 8 },
+      { kind: 'light', position: [8, 3, 0], fixture: 'bulb', color: '#ffd9a0', intensity: 0.9, range: 8 },
+    ],
+  },
   {
     id: 'setpiece.carriageway_1',
     displayName: 'Carriageway',
