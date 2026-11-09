@@ -66,7 +66,7 @@ export function hedgeMesh(seed, sk, g, lod, look, atlas) {
     const ix = hx - 0.07;
     const iz = hz - 0.07;
     const top = H - 0.06;
-    const dark = greens[0].map((c) => c * 0.55);
+    const dark = greens[0].map((c) => c * 0.65);
     const face = (a, b, c, d, n) => {
       const ids = [a, b, c, d].map((p, k) => leaf.vertex(p, n, [cu[k === 1 || k === 2 ? 1 : 0], cv[k >= 2 ? 1 : 0]], p[1] > H * 0.8 ? dark.map((x) => x * 1.25) : dark, [0, 0]));
       leaf.quad(ids[0], ids[1], ids[2], ids[3]);
@@ -105,7 +105,7 @@ export function hedgeMesh(seed, sk, g, lod, look, atlas) {
       const up = norm(cross(face0, perp(face0)));
       const base = greens[r.int(0, greens.length - 1)];
       // Low and shaded faces darker; the clipped top in the sun lighter.
-      const lightness = (0.62 + 0.38 * Math.min(1, c[1] / H)) * (at.n[1] > 0.5 ? 1.12 : 1) * (0.9 + 0.2 * bump) * (1 + r.jitter(look.jitter));
+      const lightness = (0.74 + 0.3 * Math.min(1, c[1] / H)) * (at.n[1] > 0.5 ? 1.12 : 1) * (0.9 + 0.2 * bump) * (1 + r.jitter(look.jitter));
       const size = g.cardSize * lod.cardScale * r.range(0.85, 1.15);
       card(leaf, { c, up, face: face0, size, card: info, colour: base.map((x) => x * lightness), lit: norm(add(at.n, [0, 0.35, 0])), wind: () => [0.05, 0.25] });
     }

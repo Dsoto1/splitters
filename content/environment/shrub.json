@@ -42,7 +42,7 @@
       ],
       "impostor": { "distance": 60, "size": 128 },
       "variants": [
-        { "index": 0, "name": "green", "look": { "bark": "#4e4236", "leaves": ["#3b5a2a", "#45652e", "#344f26"], "jitter": 0.12 } },
+        { "index": 0, "name": "green", "look": { "bark": "#4e4236", "leaves": ["#46682f", "#517536", "#3e5d2b"], "jitter": 0.12 } },
         { "index": 1, "name": "dry", "look": { "bark": "#5a4c3e", "leaves": ["#6e7040", "#7c7a46", "#62653a"], "jitter": 0.14 } }
       ]
     }

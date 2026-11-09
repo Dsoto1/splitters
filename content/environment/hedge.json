@@ -20,7 +20,7 @@
         { "distance": 25, "cards": 90, "cardScale": 1.8 }
       ],
       "variants": [
-        { "index": 0, "name": "green", "look": { "leaves": ["#3f5e2a", "#476a2e", "#38542a"], "jitter": 0.1 } },
+        { "index": 0, "name": "green", "look": { "leaves": ["#4f7434", "#5a7f3a", "#476a30"], "jitter": 0.1 } },
         { "index": 1, "name": "autumn", "look": { "leaves": ["#6a6a2e", "#7a6a30", "#5a5a2a"], "jitter": 0.12 } }
       ]
     },
@@ -42,8 +42,8 @@
         { "distance": 25, "cards": 90, "cardScale": 1.9 }
       ],
       "variants": [
-        { "index": 0, "name": "green", "look": { "leaves": ["#2c4426", "#334c2a", "#283e23"], "jitter": 0.1 } },
-        { "index": 1, "name": "snow", "look": { "leaves": ["#c8d0d0", "#2e4628", "#b8c2c4"], "jitter": 0.08 } }
+        { "index": 0, "name": "green", "look": { "leaves": ["#3f6031", "#486a36", "#38562d"], "jitter": 0.1 } },
+        { "index": 1, "name": "snow", "look": { "leaves": ["#c8d0d0", "#3f6031", "#b8c2c4"], "jitter": 0.08 } }
       ]
     }
   ]
