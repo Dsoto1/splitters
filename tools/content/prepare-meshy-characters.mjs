@@ -1135,11 +1135,8 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   }
   const fullTris = triangles(doc);
   if (lod) addLowDetail(doc, c.lod, (l) => console.log(`  ${out} ${l}`));
-  // Smaller vertices (KHR_mesh_quantization, read natively by the game's loader). One volume for the body and its
-  // far copy: quantized each on its own, the far copy got a skin of its own (the dequantizing in its bind matrices),
-  // the game a second skeleton for it, posed apart from the body's: far characters were drawn in another pose than
-  // their full body (Hyena Warrior 1.5-1.8 of 2.1 m on CI; 2026-11-09, tools/content/lod-audit.mjs).
-  await doc.transform(quantize({ quantizePosition: 14, quantizeNormal: 10, quantizeTexcoord: 12, quantizeWeight: 8, quantizationVolume: 'scene' }));
+  // Smaller vertices (KHR_mesh_quantization, read natively by the game's loader).
+  await doc.transform(quantize({ quantizePosition: 14, quantizeNormal: 10, quantizeTexcoord: 12, quantizeWeight: 8 }));
   for (const a of root.listAccessors()) if (a.listParents().every((p) => p.propertyType === 'Root')) a.dispose();
   root.getAsset().generator = 'tiletrigger prepare-meshy-characters';
   const glb = await io.writeBinary(doc);
