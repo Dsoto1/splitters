@@ -8,6 +8,18 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Iron Coast, part 3: natural cliffs and banks, the beach goes on** (owner, 2026-11-08/09; all in MapMaker)
+- **Finer ground**: the terrain is on a 1.25 m grid (Terrain → Change grid, Smooth), so slopes are drawn smoothly.
+- **The cliff** leans back over 6-10 m of rock with a rounded lip and scree at its foot along the stretches clear of
+  the stairs, casemates and cave; it is still too steep to climb, so the seven ways up are still the only ones.
+- **No more sheer drops inland**: the bank behind the crest (12 m to 16 m, beside the trenches and bunkers), the bank
+  by the east bunker, the west plateau's banks, the knoll's west side and the grand stair's plaza walls are grassy
+  slopes you can walk.
+- **The coast carries on**: east and west, the sand and shallows run on past the edge of the map with low headlands
+  and dunes, the woods only inland; the playable area is the same.
+- **Balance**: the beach's two zones take 45 s to capture (were 20): in bot matches the beach now falls in 84-109 s
+  (was 52-69 s at 16 v 16 and 56-83 s at 24 v 24).
+
 **Tests**:
 - The e2e `teams` flow's friendly fire and team kill checks no longer fail at random: every bot holds fire while your
   rounds are tested, the teammate's spawn shield is cleared, and its damage is counted by who dealt it.

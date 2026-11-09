@@ -290,6 +290,30 @@ For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.
 - **File size:** at 1.25 m Iron Coast is about 1.1 MB of its 2 MB budget, because terrain is now written one row
   per line.
 - **Phones:** Low graphics draws fine terrain at half resolution; collision and nav keep every vertex.
+
+**Iron Coast part 3 (`wip/iron-coast-3`, Iron Coast session, 2026-11-09; all in MapMaker).** Details: docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md, "Part 3".
+- **Done:** Change grid 1.25 m (Smooth); the cliff leaned back over 5-10 cells with a rounded lip and 43 scree mounds
+  where clear of pieces; every inland drop that gated nothing made a grassy slope (the crest's back bank beside the
+  trenches and bunkers, the east bunker's bank, the west plateau, the B3 knoll's west side, the plaza walls); east and
+  west borders Coast; A1/A2 Capture time 45 s; card picture recaptured. 1.02 MB; validate-map 0 issues; no Kenney
+  foliage; Sea Wall pieces not placed (the brief: no continuous sea wall).
+- **Walkability check:** part 2's vertex flood is misleading on a 1.25 m grid (it walks across steep triangles); part
+  3 floods triangles at 50° (PLAYER.maxSlopeDegrees, Recast's angle) and 55°: same bins as before at both, so no new
+  way up. Nav audit: 0 traps before and after.
+- **Bots** (Breakthrough, seeds 1-3, 1200 s). A / B / C fell at (s):
+  | | 16 v 16 | 24 v 24 |
+  |---|---|---|
+  | main (before) | A 52/69/69, B 155/143/211, C –/351/–; 1 of 3 broke through | A 56/83/59, B 209/226/161, C –; 0 of 3 |
+  | zones 60 s (tried) | A 122/147/125, B 234/237/231; 0 of 3 | – |
+  | final (zones 45 s) | A 94/109/84, B 248/259/248, C 311/–/320; 2 of 3 | A 103/88/109, B 226/151/261, C 263/212/308; 3 of 3 |
+  The beach holds 84-109 s now. The attack breaks through more (the walkable banks behind the crest): owner's call
+  whether B/C want more defence.
+- **Perf** (`pnpm bench 48 60`, Breakthrough, back to back at load ~11): avg tick 2.67 → 2.96 ms, p95 5.4 → 6.5 ms,
+  process CPU 3.67 → 3.83 ms a tick (budget 16.67).
+- **For the MapMaker lane:** the coast border's forest canopy band floated over Iron Coast's eased headlands (its 40 m
+  run past a free end of an inland stretch was held at the end's height). One line in `client/borderVisuals.ts`
+  (`under` samples the coast ground at the band's own u) lays it on the ground; a thin lip of the band can still show
+  over the east headland from the beach. Yours to refine.
 - Claimed: map format v33 (bot hints in MapMaker, `wip/mapmaker-bothints`), MapMaker lane, 2026-11-09.
 
 - Claimed: `maps/whiteout_station.json` (the rebuild from MAP 03 Frostbite Station, in MapMaker; `wip/mapmaker-whiteout`), MapMaker lane, 2026-11-09.
