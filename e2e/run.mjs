@@ -33,7 +33,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'race', 'flashing', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', 'flashing', ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -1088,11 +1088,90 @@ async function editoruxFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await editorSetPieceChecks(browser);
+  await editorSetPiecePart5Checks(browser);
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
   await editorTurnChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
+  await editorTerrainGridChecks(browser);
+}
+
+/**
+ * Map format v32's MapMaker half (the Iron Coast job): Terrain → Change grid (a preview of the vertices and the budget,
+ * one undo step) on a 160 m terrain, and the coast border side chosen per side and drawn.
+ */
+async function editorTerrainGridChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 160);
+  // A cliff 8 m high across the north of the terrain (sculpted in one step), the beach south of it.
+  const start = await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    const heights = t.heights.map((h, i) => (t.origin[1] + Math.floor(i / t.cols) * t.spacing > -50 + 0.3 * (t.origin[0] + (i % t.cols) * t.spacing) ? 800 : h));
+    ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights } });
+    return { spacing: t.spacing, cols: t.cols, rows: t.rows };
+  });
+  await page.click('#ed-env-btn');
+  await page.click('#ed-pal-tabs [data-ws="environment"][data-pane="terrain"]');
+  await page.click('#ed-tr-grid');
+  await page.waitForSelector('#ed-grid-dialog', { timeout: T(5000) });
+  await page.selectOption('#ed-grid-spacing', '1');
+  const preview = await page.evaluate(() => ({ after: document.getElementById('ed-grid-after').textContent, verts: document.getElementById('ed-grid-verts').textContent, size: document.getElementById('ed-grid-size').textContent, go: !document.getElementById('ed-grid-go').disabled }));
+  check(preview.after === '1 m · 161 × 161' && /^25,921 \(×/.test(preview.verts) && /of 2 MB$/.test(preview.size) && preview.go, `Change grid previews the new grid, its vertices and the file against its budget (${JSON.stringify(preview)}; was ${start.cols} × ${start.rows} at ${start.spacing} m)`);
+  await page.selectOption('#ed-grid-spacing', '1.5');
+  const odd = await page.evaluate(() => document.getElementById('ed-grid-why').textContent);
+  check(/whole number of 1\.5 m cells/.test(odd), `a spacing that doesn't divide the terrain says it changes its size (${odd})`);
+  await page.selectOption('#ed-grid-spacing', '1');
+  await shot('change-grid');
+  const before = await page.evaluate(() => window.__editor.doc.terrain);
+  await page.click('#ed-grid-go');
+  await frames(page, 3);
+  const after = await page.evaluate(() => {
+    const t = window.__editor.doc.terrain;
+    const grass = window.__editor.view.scene.meshes.find((m) => m.name === 'edmap_terrain_grass' && !m.isDisposed());
+    return { spacing: t.spacing, cols: t.cols, rows: t.rows, heights: t.heights, cells: t.materials.length, label: document.getElementById('ed-tr-size').textContent, drawn: grass?.getTotalVertices() ?? 0, undo: window.__editor.history.undoLabel };
+  });
+  let same = true;
+  for (let r = 0; r < before.rows; r++) for (let c = 0; c < before.cols; c++) if (after.heights[r * 2 * after.cols + c * 2] !== before.heights[r * before.cols + c]) same = false;
+  check(after.spacing === 1 && after.cols === 161 && after.rows === 161 && after.cells === 160 * 160 && same, `Change grid resamples the terrain to 1 m, heights where the grids meet unchanged (${after.cols} × ${after.rows}, ${after.label})`);
+  check(after.drawn >= 160 * 160 * 4 * 0.9 && after.undo === 'Change grid to 1 m', `the finer terrain is drawn, one undo step (${after.drawn} vertices, "${after.undo}")`);
+  await page.keyboard.press('Control+KeyZ');
+  const undone = await page.evaluate(() => window.__editor.doc.terrain);
+  check(JSON.stringify(undone) === JSON.stringify(before), 'one undo puts the 2 m terrain back exactly');
+  // The coast border: a choice per side (Sky, Border, Per side); the sea south, the coast east carrying the beach on.
+  await page.click('#ed-pal-tabs [data-pane="sky"]');
+  const mainHasCoast = await page.evaluate(() => [...document.querySelectorAll('#ed-bd-border option')].some((o) => o.value === 'coast'));
+  await page.click('#ed-bd-border-sides summary');
+  await page.selectOption('#ed-bd-border-south', 'water');
+  // (The panel is drawn again from the new backdrop before the next side is set.)
+  await page.waitForFunction(() => window.__editor.doc.backdrop?.borderSides?.south === 'water', null, { timeout: T(5000) }).catch(() => {});
+  await frames(page, 3);
+  await page.selectOption('#ed-bd-border-east', 'coast');
+  await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'border_coast' && !m.isDisposed()), null, { timeout: T(10000) }).catch(() => {});
+  const coast = await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    const x1 = t.origin[0] + (t.cols - 1) * t.spacing;
+    const land = ed.view.scene.meshes.find((m) => m.name === 'border_coast' && !m.isDisposed());
+    const sea = ed.view.scene.meshes.find((m) => m.name === 'border_coast_sea' && !m.isDisposed());
+    land?.refreshBoundingInfo();
+    const b = land?.getBoundingInfo().boundingBox;
+    return { sides: ed.doc.backdrop?.borderSides, verts: land?.getTotalVertices() ?? 0, minX: b?.minimumWorld.x, x1, sea: !!sea, canopy: ed.view.scene.meshes.some((m) => m.name === 'border_canopy' && !m.isDisposed()) };
+  });
+  check(!mainHasCoast && coast.sides?.east === 'coast' && coast.sides?.south === 'water', `the coast is a per-side border choice (${JSON.stringify(coast.sides)})`);
+  check(coast.verts > 500 && coast.minX >= coast.x1 - 1 && coast.sea && coast.canopy, `the coast is drawn past the east line: its land, the sea past the beach, forest inland (${JSON.stringify(coast)})`);
+  await page.evaluate(([x, z]) => window.__editor.view.focus({ x, y: 0, z }), [coast.x1 + 10, -20]);
+  await frames(page, 4);
+  await shot('coast-border');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -1819,6 +1898,65 @@ async function editorSetPieceChecks(browser) {
   check(ports.warn.length === 1 && /west side \(Ground\) faces a wall: the Room's wall/.test(ports.warn[0]) && !!ports.issue && ports.red === 1, `a door facing a wall is warned about, and red on the outline (${JSON.stringify(ports)})`);
   await shot('ports');
   check(errors.length === 0, `no page errors with set pieces (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * Set pieces part 5 (docs/SET_PIECES_PLAN.md, "As built: part 5") in MapMaker: the brainstorm list's families in the
+ * Set pieces tab, one placed from it, and a retired tile (the Catwalk Gantry): out of the palette, its inspector's
+ * Replace all swaps it for the Catwalk Bridge (Up) in one undo step. Screenshots go to E2E_SHOTS when set.
+ */
+async function editorSetPiecePart5Checks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/setpieces5-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await newMap(page);
+  await page.evaluate(() => window.__editor.view.focus({ x: 16, y: 0, z: 16 }));
+  await frames(page, 3);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+
+  // The tab has the new families, and a click places one of their pieces as one placement.
+  await page.click('#ed-pal-tabs [data-pane="setpieces"]');
+  const groups = await page.evaluate(() => [...document.querySelectorAll('#ed-setpieces .ed-group .ttl')].map((t) => t.textContent));
+  const want = ['Power core halls', 'Catwalk bridges', 'Overlooks', 'Atrium towers', 'Loading docks', 'Sunken arenas', 'Reactor rooms', 'Bunker clusters', 'Courtyard gates', 'Server vaults', 'Plazas', 'Ramp junctions', 'Sea walls'];
+  check(want.every((g) => groups.includes(g)), `the Set pieces tab has the brainstorm list's families and the sea wall (${groups.join(', ')})`);
+  await clickTool(page, '#ed-setpieces [data-tool="setpiece:setpiece.twin_stair_overlook"]');
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 16, y: 0, z: 16 }));
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 3);
+  await page.mouse.click(p.x, p.y);
+  await frames(page, 3);
+  const placed = (await doc()).setPieces ?? [];
+  check(placed.length === 1 && placed[0].piece === 'setpiece.twin_stair_overlook' && placed[0].x === 2 && placed[0].y === 2, `a click places the Twin-Stair Overlook as one placement (${JSON.stringify(placed)})`);
+  await shot('overlook');
+
+  // A retired tile: not in the palette; a map that has one opens with it, and its inspector replaces all of them.
+  const inPalette = await page.evaluate(() => document.querySelectorAll('[data-tool="tile:military.gantry"]').length);
+  check(inPalette === 0, `the retired Catwalk Gantry is out of the palette (${inPalette})`);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Old gantries', { kind: 'addTiles', tiles: [{ id: 'gantry_e2e_a', tile: 'military.gantry', x: -3, y: 3, z: 0, rotation: 0 }, { id: 'gantry_e2e_b', tile: 'military.gantry', x: -6, y: 3, z: 0, rotation: 1 }] });
+    ed.setSelection({ tiles: ['gantry_e2e_a'], entities: [], setPieces: [] });
+  });
+  await page.waitForSelector('#ed-retired-replace', { timeout: T(5000) }).catch(() => {});
+  const label = await page.textContent('#ed-retired-replace').catch(() => '');
+  check(/Replace all 2 with Catwalk Bridge \(Up\)/.test(label ?? ''), `a retired tile's inspector offers Replace all with its set piece (${label})`);
+  await shot('retired');
+  await page.click('#ed-retired-replace').catch(() => {});
+  await frames(page, 3);
+  const after = await doc();
+  const bridges = (after.setPieces ?? []).filter((x) => x.piece === 'setpiece.catwalk_bridge_2').map((x) => [x.id, x.x, x.y, x.rotation]);
+  check(!after.classicStructure.tiles.some((t) => t.tile === 'military.gantry') && JSON.stringify(bridges) === JSON.stringify([['gantry_e2e_a', -3, 3, 0], ['gantry_e2e_b', -6, 3, 1]]), `Replace all swaps every gantry for the Catwalk Bridge (Up) where it stood (${JSON.stringify(bridges)})`);
+  check(JSON.stringify(await page.evaluate(() => window.__editor.selection.setPieces)) === '["gantry_e2e_a","gantry_e2e_b"]', 'the new pieces are selected');
+  await shot('replaced');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  const undone = await doc();
+  check(undone.classicStructure.tiles.filter((t) => t.tile === 'military.gantry').length === 2 && !(undone.setPieces ?? []).some((x) => x.piece === 'setpiece.catwalk_bridge_2'), 'one undo puts the gantries back');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
 
@@ -3516,20 +3654,34 @@ async function friendlyFireChecks(browser) {
     await page.click('#nav-play');
     await page.click('#arcade-start');
     await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+    // Only your rounds fly: every bot holds fire (enemies had shot the teammate placed in front of you, hurting them
+    // with friendly fire off and killing them before your round did, or killed them so that they stood there
+    // spawn-shielded), and what was already in the air has landed, and you are alive.
+    await holdBots(page);
+    await simWait(page, (m, me) => me.alive && !m.bullets.some((b) => b.owner !== me.slot) && !m.projectiles.some((p) => p.owner !== me.slot), null, T(30000));
     // A teammate held 4 m in front of you, three rounds of your gun fired straight at their chest.
     const shot = await sim(page, (m, me) => {
       const mate = m.combatants().find((c) => c !== me && c.alive && c.faction === me.faction && !c.mount);
       if (!mate) return { rule: m.rules.friendlyFire ?? 'off', mate: false, tick: m.tick };
       const at = { x: me.move.pos.x + Math.sin(me.yaw) * 4, y: me.move.pos.y, z: me.move.pos.z + Math.cos(me.yaw) * 4 };
-      if (mate.bot && !mate.queue.ffHeld) {
-        mate.queue.push = (...inputs) => Array.prototype.push.apply(mate.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
-        mate.queue.ffHeld = true;
-      }
       mate.move = { ...mate.move, pos: at, velY: 0, vx: 0, vz: 0, grounded: true };
       mate.health = mate.maxHealth;
       mate.armor = 0;
       mate.invulnerable = false;
+      mate.shieldUntil = 0;
       globalThis.__ffMate = mate;
+      // Who took how much health off the teammate: your rounds, and anything else (that should be nothing).
+      const hits = (globalThis.__ffHits = []);
+      if (!m.__ffLogged) {
+        const damage = m.damage;
+        m.damage = function (victim, amount, attacker, ...rest) {
+          const before = victim.alive ? victim.health : 0;
+          const r = damage.call(this, victim, amount, attacker, ...rest);
+          if (victim === globalThis.__ffMate) globalThis.__ffHits.push({ by: attacker ? attacker.slot : -1, n: before - (victim.alive ? victim.health : 0) });
+          return r;
+        };
+        m.__ffLogged = true;
+      }
       const eye = { x: me.move.pos.x, y: me.move.pos.y + 1.6, z: me.move.pos.z };
       const chest = { x: at.x, y: at.y + 1.2, z: at.z };
       const clear = m.physics.lineOfSight(eye, chest);
@@ -3540,20 +3692,17 @@ async function friendlyFireChecks(browser) {
     });
     // Ballistic rounds fly a tick or two: a third of a second of match time is plenty.
     await simWait(page, (m, me, t) => m.tick > t + 20, shot.tick, T(10000));
-    const after = await sim(page, () => {
+    const after = await sim(page, (m, me) => {
       const mate = globalThis.__ffMate;
       if (!mate) return null;
-      const r = { hurt: mate.maxHealth - (mate.alive ? mate.health : 0) };
-      if (mate.queue?.ffHeld) {
-        delete mate.queue.push;
-        delete mate.queue.ffHeld;
-      }
-      return r;
+      const hits = globalThis.__ffHits ?? [];
+      const sum = (list) => list.reduce((n, h) => n + h.n, 0);
+      return { hurt: sum(hits.filter((h) => h.by === me.slot)), others: sum(hits.filter((h) => h.by !== me.slot)), lost: mate.maxHealth - (mate.alive ? mate.health : 0) };
     });
     // A team kill (friendly fire on): the feed marks it TK, and nothing rewards it: no kill, the streak ends, no
     // streak burst or "in a row", no kill marker. Primed one kill short of the first burst and streak reward.
     if (ff === 'on') out.tk = await teamKillCheck(page);
-    out[ff] = { ...shot, hurt: after?.hurt ?? null, errors: errors.join('; ') };
+    out[ff] = { ...shot, hurt: after?.hurt ?? null, others: after?.others ?? null, lost: after?.lost ?? null, errors: errors.join('; ') };
     await page.context().close();
   }
   const tk = out.tk;
@@ -3561,7 +3710,7 @@ async function friendlyFireChecks(browser) {
   check(tk?.dead && tk.kills === tk.kills0 && tk.streak === 0 && !tk.bursts && !tk.inARow && !tk.marker && tk.lifeKills === 0, `a team kill rewards nothing: no kill, the streak ends, no streak burst, no kill marker (${JSON.stringify(tk)})`);
   check(out.on.rule === 'on' && out.off.rule === 'off', `Match setup's friendly fire reaches the match (on: ${out.on.rule}, off: ${out.off.rule})`);
   check(out.on.mate && out.on.clear && out.on.hurt > 0, `friendly fire on: your rounds hurt a teammate in front of you (${JSON.stringify(out.on)})`);
-  check(out.off.mate && out.off.clear && out.off.hurt === 0, `friendly fire off: your rounds pass through a teammate unhurt (${JSON.stringify(out.off)})`);
+  check(out.off.mate && out.off.clear && out.off.hurt === 0 && out.off.lost === 0, `friendly fire off: your rounds pass through a teammate unhurt (${JSON.stringify(out.off)})`);
   check(!out.on.errors && !out.off.errors, `no page errors in the friendly fire matches (${out.on.errors}${out.off.errors})`);
 }
 
@@ -5792,8 +5941,11 @@ async function arcTurretChecks(browser) {
   await page.context().close();
 }
 
-/** Race mode on Sandsweep Circuit, and drawing a track with MapMaker's Road tool. */
-async function raceFlow(browser) {
+/**
+ * Tracks as map spice: drawing a track with MapMaker's Paths tool, and Team Deathmatch on Apex Ring with its NPC cars
+ * lapping as traffic (Race mode was removed, owner 2026-11-08).
+ */
+async function trafficFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
@@ -5849,40 +6001,31 @@ async function raceFlow(browser) {
   check(t?.points.length === 2, `right-click deletes a road point (${t?.points.length})`);
   await page.keyboard.press('Escape');
 
-  // A race on Sandsweep Circuit: on the grid in a speeder, the countdown, then away.
-  await page.goto(`${CLIENT}/?offline=sandsweep&gamemode=core.race`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match?.race && window.__match.phase === 'playing' && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+  // Team Deathmatch on Apex Ring: its track's NPC cars lap as traffic while the teams fight (Race mode is gone).
+  await page.goto(`${CLIENT}/?offline=apex_ring&gamemode=core.tdm&test=1`);
+  // Polled on a timer: a loading page may draw no frames for a while.
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && ['countdown', 'playing'].includes(window.__match?.phase), null, { timeout: T(120000), polling: 250 });
+  // Headless frame rates are slow: run the clock through the start countdown.
+  await page.evaluate(() => {
+    for (let i = 0; i < 60 * 10 && window.__match.phase !== 'playing'; i++) window.__match.step();
+  });
   const start = await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    return { seat: me.mount?.seat, grid: me.mount ? m.mounts[me.mount.index].index >= m.map.entities.length : false, racers: m.combatants().length, seated: m.combatants().filter((c) => c.mount?.seat === 0).length, placed: m.combatants().filter((c) => m.race.status(c.slot)).length };
+    const cars = m.mounts.filter((v) => v.ambient);
+    return { mode: m.rules.mode, race: 'race' in m, onFoot: !me.mount, cars: cars.length, pos: cars.map((v) => ({ x: v.pos.x, z: v.pos.z })), factions: cars.filter((v) => v.faction !== null).length };
   });
-  check(start.seat === 0 && start.grid, `you start at the wheel of a grid vehicle (seat ${start.seat})`);
-  // A combat race may already have wrecked someone (they are back in a moment): nearly everyone is at the wheel.
-  check(start.placed === start.racers && start.seated >= start.racers - 2, `every racer has a vehicle (${start.seated}/${start.racers} at the wheel)`);
+  check(start.mode === 'core.tdm' && !start.race, `Team Deathmatch, no race (${start.mode})`);
+  check(start.onFoot, 'you start on foot, not on a grid');
+  check(start.cars >= 4 && start.factions === 0, `the track's NPC cars are out, belonging to nobody (${start.cars})`);
   const road = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => /^road_/.test(m.name)).length);
   check(road > 5, `the road, curbs and arches are drawn (${road} meshes)`);
-  // Headless frame rates are slow: run the clock past the countdown.
-  await page.evaluate(() => {
-    for (let i = 0; i < 60 * 4 && window.__match.race.state === 0; i++) window.__match.step();
-  });
-  check(await page.evaluate(() => window.__match.race.state === 1), 'the countdown ends and the race is on');
-  await page.waitForFunction(() => /Lap 1\/3/.test(document.body.textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
-  check(await page.evaluate(() => /Lap 1\/3/.test(document.body.textContent ?? '')), 'the HUD shows the lap');
-  const rows = await page.evaluate(() => document.getElementById('race-order')?.children.length ?? 0);
-  check(rows === start.racers, `the running order lists every racer (${rows})`);
-  await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
-  await page.waitForFunction(() => (window.__match.race.status(window.__cs.slot)?.passed ?? 0) >= 1, null, { timeout: T(20000) }).catch(() => {});
-  const me = await page.evaluate(() => window.__match.race.status(window.__cs.slot));
-  check(me?.lap === 1 && me.passed >= 1, `you drive over the start line onto lap 1 (passed ${me?.passed})`);
-  await page.waitForFunction(() => !!document.querySelector('.mode-marker[data-id="race_next"]'), null, { timeout: T(5000) }).catch(() => {});
-  check(await page.evaluate(() => !!document.querySelector('.mode-marker[data-id="race_next"]')), 'a marker points to the next checkpoint');
-  // The bots race too.
+  // Headless frame rates are slow: run the clock 12 s.
   await page.evaluate(() => {
     for (let i = 0; i < 60 * 12; i++) window.__match.step();
   });
-  const bots = await page.evaluate(() => window.__match.combatants().filter((c) => c.bot).map((c) => window.__match.race.status(c.slot)?.passed ?? 0));
-  check(bots.length > 0 && bots.every((n) => n >= 2), `the bots drive the checkpoints (${bots.join(', ')})`);
+  const moved = await page.evaluate((before) => window.__match.mounts.filter((v) => v.ambient).map((v, i) => Math.round(Math.hypot(v.pos.x - before[i].x, v.pos.z - before[i].z))), start.pos);
+  check(moved.filter((d) => d > 40).length >= moved.length - 1, `the NPC cars drive the track (moved ${moved.join(', ')} m)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -6086,7 +6229,7 @@ async function editorPartBChecks(browser) {
   };
   await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
   await frames(page, 3);
-  check((await doc()).formatVersion === 31, 'the map is format v31');
+  check((await doc()).formatVersion >= 31, 'the map is format v31 or later');
 
   // ---- Groups: two pickups and the starter room, grouped with Ctrl+G.
   await page.evaluate(() => window.__editor.run('Pickups', { kind: 'addEntities', entities: [{ id: 'pick_a', kind: 'pickup', position: [-12, 0, 2], item: 'core.health_small', respawnSeconds: null }, { id: 'pick_b', kind: 'pickup', position: [-12, 0, -4], item: 'core.health_small', respawnSeconds: null }] }));
@@ -6302,8 +6445,8 @@ const VISUAL_SCENES = [
 /**
  * The procedural environment, Phase 1 (docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): the environment lab draws every
  * species and variant on WebGL2 with no shader or material errors, its level of detail, wireframe, collider, wind and
- * tier toggles work; and the showcase map (maps/env_showcase.json, retired: never offered) plays with the new renderer
- * (?env=1: chunked thin instances, the grass as generated clumps) and without it (each species a prop node).
+ * tier toggles work; and the showcase map (maps/env_showcase.json, retired: never offered) plays with the environment
+ * renderer (the default since Environment Phase 2: chunked thin instances) and without it (?env=0: each species a prop node).
  */
 async function environmentFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
@@ -6337,7 +6480,7 @@ async function environmentFlow(browser) {
   check(errors.length === 0, `no shader, material or page errors in the lab (${errors.join('; ')})`);
   // The showcase map in play, with the new renderer, then without it.
   for (const env of [true, false]) {
-    await page.goto(`${CLIENT}/?offline=env_showcase&test=1&god=1&bots=1&name=Tester${env ? '&env=1' : ''}`);
+    await page.goto(`${CLIENT}/?offline=env_showcase&test=1&god=1&bots=1&name=Tester${env ? '' : '&env=0'}`);
     const playing = await page.waitForFunction(() => window.__cs?.phase?.() === 'playing', null, { timeout: T(180000) }).then(() => true, () => false);
     const drawn = playing
       ? await page.waitForFunction((env) => {
@@ -6347,7 +6490,7 @@ async function environmentFlow(browser) {
           return env ? (s && s.copies > 2000 && s.drawnBatches > 0 ? { copies: s.copies, batches: s.drawnBatches, nodes } : null) : !v.environment && nodes > 2000 ? { nodes } : null;
         }, env, { timeout: T(120000) }).then((h) => h.jsonValue(), () => null)
       : null;
-    check(!!drawn, `the showcase map plays ${env ? 'with the environment renderer (?env=1)' : 'with its species as props (no flag)'} (${JSON.stringify(drawn)})`);
+    check(!!drawn, `the showcase map plays ${env ? 'with the environment renderer (by default)' : 'with its species as props (?env=0)'} (${JSON.stringify(drawn)})`);
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -6456,6 +6599,9 @@ async function newplayerFlow(browser) {
   await page.click('#first-run-start');
   const started = await page.waitForFunction(() => window.__tutorial && window.__cs?.phase?.() === 'playing' && window.__cs.local?.alive, null, { timeout: T(120000) }).then(() => true, () => false);
   const card = started ? await page.evaluate(() => ({ step: window.__tutorial.state().step, count: document.querySelector('#tutorial .tut-count')?.textContent, text: document.querySelector('#tutorial .tut-text')?.innerHTML ?? '', skip: !!document.querySelector('#tutorial-skip'), pauseSkip: !!document.querySelector('#pause-skip-tutorial'), map: window.__cs.map })) : null;
+  // No "You / Leader" score bar in the tutorial (owner, 2026-11-08); Quick Play's Deathmatch below shows it again.
+  const tutScorebar = started ? await page.evaluate(() => { const el = document.getElementById('scorebar'); return { shown: !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0, boxes: document.getElementById('sb-left')?.textContent ?? '' }; }) : null;
+  check(!!tutScorebar && !tutScorebar.shown, `the tutorial shows no Deathmatch score bar (You / Leader) (${JSON.stringify(tutScorebar)})`);
   check(!!card && card.step === 'look' && card.count === '1 / 10' && /<kbd>Mouse<\/kbd>/.test(card.text) && card.skip && card.pauseSkip && card.map === 'training_range', `Start tutorial opens the Training Range with the first step's card, Skip on it and in the pause menu (${JSON.stringify(card)})`);
   // Move: walking forward 5 m finishes it (and nothing else does: standing still keeps it).
   await page.evaluate(() => window.__tutorial.goTo(1));
@@ -6486,6 +6632,9 @@ async function newplayerFlow(browser) {
   await page.click('#qp-dm');
   const playing = await page.waitForFunction(() => window.__cs?.phase?.() === 'playing' && window.__quickPlay, null, { timeout: T(120000) }).then(() => true, () => false);
   const qp = playing ? await page.evaluate(() => ({ ...window.__quickPlay, mode: window.__cs.rules().mode, map: window.__cs.map, saved: JSON.parse(localStorage.getItem('tiletrigger.quickPlay')) })) : null;
+  const qpScorebar = playing ? await page.waitForFunction(() => { const el = document.getElementById('scorebar'); return !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0 && /You/.test(document.getElementById('sb-left').textContent); }, null, { timeout: T(30000) }).then(() => true, () => false) : false;
+  const qpBar = await page.evaluate(() => { const el = document.getElementById('scorebar'); return el ? { display: getComputedStyle(el).display, width: el.getBoundingClientRect().width, left: document.getElementById('sb-left').textContent } : null; });
+  check(qpScorebar, `after the tutorial, a Deathmatch shows its score bar again (You / Leader) (${JSON.stringify(qpBar)})`);
   check(choice.join() === 'core.tdm,core.deathmatch' && !!qp && qp.mode === 'core.deathmatch' && ['citadel', 'crossroads', 'bunker_cross', 'halcyon_station'].includes(qp.map) && qp.fill >= 8 && qp.setup.skill === 'normal' && qp.saved?.mode === 'core.deathmatch', `Quick Play → Deathmatch starts a match against normal bots on one of its maps (${JSON.stringify(qp && { map: qp.map, mode: qp.mode, fill: qp.fill, saved: qp.saved })})`);
   await page.goto(`${CLIENT}/?test=1&name=Tester`);
   await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
@@ -6845,7 +6994,7 @@ async function flashingFlow(browser) {
     },
     {
       name: 'fight',
-      label: "a fight's moments 3 m in front of you (armour breaking, two heavy hits with your screen's edge, a kill streak's burst, a spawn shield's shimmer)",
+      label: "a fight's moments 3 m in front of you (armour breaking, two heavy hits with your screen's edge, a kill streak's burst, a spawn shield's shimmer, armour picked up there and by you)",
       weapon: 'core.arc_caster',
       me: [0, 0, 8],
       look: aim([0, 0, 8], [0, 1, 11]),
@@ -6859,6 +7008,9 @@ async function flashingFlow(browser) {
         12: () => page.evaluate(() => (window.__cs.view.playGameplayFx('hit.big', window.__cs.view.towardCamera({ x: 0, y: 1.1, z: 11 }, 0.5), { calmable: true }), window.__cs.hud.heavyHit(90))),
         24: () => page.evaluate(() => window.__cs.view.playGameplayFx('streak', { x: 0, y: 2.1, z: 11 }, { calmable: true })),
         36: () => page.evaluate(() => (window.__cs.view.playGameplayFx('hit.big', window.__cs.view.towardCamera({ x: 0.3, y: 1, z: 11 }, 0.5), { calmable: true }), window.__cs.hud.heavyHit(70))),
+        // Armour picked up: the bot's (sized for the distance, as session plays it), then your own at your chest.
+        30: () => page.evaluate(() => window.__cs.view.playGameplayFx('pickup.armor', { x: 0, y: 1.2, z: 11 }, { size: window.__cs.view.farSize({ x: 0, y: 1.2, z: 11 }) })),
+        44: () => page.evaluate(() => window.__cs.view.playGameplayFx('pickup.armor', { x: 0, y: 1.2, z: 8 }, { size: window.__cs.view.farSize({ x: 0, y: 1.2, z: 8 }) })),
       },
     },
     {
@@ -7942,6 +8094,53 @@ async function dedicatedhostFlow(browser) {
 
 }
 
+/** /host's next-map vote and Match rules before Start (owner, 10-31: every Match setup / Host tab setting there). */
+async function hostpageRulesChecks(page, controlPort, token) {
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/hostpage-${name}.png`, fullPage: true }).catch(() => {}) : Promise.resolve());
+  const form = await page.evaluate(() => ({
+    vote: !!document.getElementById('hp-vote'),
+    on: document.getElementById('hp-vote')?.checked,
+    mode: document.getElementById('hp-rules-mode')?.textContent,
+    rules: document.querySelectorAll('#hp-rules .hp-rule').length,
+    main: ['score', 'time', 'respawn', 'ff', 'set', 'teams'].every((k) => !!document.querySelector(`#hp-rules-main #hp-rule-${k}`)),
+    more: ['gravity', 'classes', 'leaders', 'fireteams', 'lethality'].every((k) => !!document.querySelector(`#hp-rules-more #hp-rule-${k}`)),
+    tags: document.querySelectorAll('#hp-rules .hp-tag').length,
+  }));
+  check(form.vote && form.on && /Team Deathmatch/.test(form.mode ?? '') && form.rules >= 20 && form.main && form.more && form.tags === form.rules, `/host has the next-map vote (on) and every Match setup rule for the mode, each tagged with when it applies (${JSON.stringify(form)})`);
+  await page.evaluate(() => (document.querySelector('#hp-rules-more')?.closest('details')?.setAttribute('open', '')));
+  await shot('rules-stopped');
+  // Set before Start, they go with it: score 7 (Team Deathmatch only), friendly fire half, low gravity, no vote.
+  await page.uncheck('#hp-vote');
+  await page.fill('#hp-rule-score', '7');
+  await page.press('#hp-rule-score', 'Tab');
+  await page.selectOption('#hp-rule-ff', 'half');
+  await page.selectOption('#hp-rule-gravity', 'low');
+  await page.locator('#hp-name').focus();
+}
+
+/** Running: a rule and the vote changed on /host reach the match at once, and the Host Service keeps them. */
+async function hostpageLiveChecks(page, controlPort, token) {
+  const status = () => fetch(`http://127.0.0.1:${controlPort}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/hostpage-${name}.png`, fullPage: true }).catch(() => {}) : Promise.resolve());
+  const started = await until(async () => { const s = await status(); return s.state === 'running' && !!s.host?.rules; }, T(30000));
+  const s0 = await status();
+  check(started && s0.config?.mapVote === false && s0.host?.rotation?.vote === false && s0.config?.rules?.modes?.tdm?.score === 7 && s0.config.rules.ff === 'half' && s0.config.rules.gravity === 'low' && s0.host.rules.now.scoreLimit === 7, `Start took the rules and the vote from /host (${JSON.stringify({ vote: s0.config?.mapVote, live: s0.host?.rotation?.vote, rules: s0.config?.rules, score: s0.host?.rules?.now?.scoreLimit })})`);
+  // Live: the vote back on, and a live rule (mix up weapon pickups) and a restart one (time limit).
+  await page.check('#hp-vote');
+  const voted = await until(async () => (await status()).host?.rotation?.vote === true, T(15000));
+  await page.selectOption('#hp-rule-mix', 'on');
+  await page.locator('#hp-name').focus();
+  const mixed = await until(async () => { const s = await status(); return s.host?.rules?.now?.mixPickups === true && s.config?.rules?.mix === true; }, T(15000));
+  await page.fill('#hp-rule-time', '9');
+  await page.press('#hp-rule-time', 'Tab');
+  await page.locator('#hp-name').focus();
+  const timed = await until(async () => (await status()).config?.rules?.modes?.tdm?.time === 9, T(15000));
+  const waits = await page.waitForFunction(() => /waits for the restart/.test(document.querySelector('#hp-rule-time')?.closest('.hp-rule')?.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(voted && mixed && timed && waits, `running, /host changes the match at once: the vote ${voted}, a live rule ${mixed}, a restart rule kept and shown waiting ${timed}/${waits} (${await page.evaluate(() => document.getElementById('hp-message')?.textContent)})`);
+  await page.evaluate(() => (document.querySelector('#hp-rules-more')?.closest('details')?.setAttribute('open', '')));
+  await shot('rules-running');
+}
+
 /** The /host page: download offered only when no Host Service runs; with one, pair, Start, see it listed, Stop. */
 async function hostpageFlow(browser) {
   const HUB_PORT = +(process.env.E2E_HOSTPAGE_HUB_PORT ?? 9080);
@@ -7967,10 +8166,13 @@ async function hostpageFlow(browser) {
   if (paired) {
     await page.fill('#hp-name', 'E2E From Host Page');
     await page.selectOption('#hp-map', 'sandgate');
+    await page.selectOption('#hp-mode', 'core.tdm');
     await page.fill('#hp-fill', '8');
+    await hostpageRulesChecks(page, CONTROL_PORT, token);
     await page.click('#hp-start');
     const running = await page.waitForFunction(() => /Running/.test(document.getElementById('hp-run-state')?.textContent ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
     check(running, `Start starts the server (${await page.evaluate(() => document.getElementById('hp-status')?.textContent)})`);
+    if (running) await hostpageLiveChecks(page, CONTROL_PORT, token);
     const listed = await hubUntil(async () => ((await hubGames(HUB_PORT)) ?? []).some((g) => g.name === 'E2E From Host Page' && g.hostType === 'dedicated'), T(30000));
     check(listed, 'the server it started is in the game browser');
     await page.click('#hp-stop');
@@ -8001,6 +8203,13 @@ async function hostpageFlow(browser) {
       return launcher.waitForFunction(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /visibility listed/.test(l.textContent)), null, { timeout: 2000 }).then(() => true, () => false);
     }, T(10000));
     check(ran, 'a right-bar toggle runs its console command (visibility listed)');
+    // The Rotation card's Vote on the next map: on (the setting), and unticked it runs rotation vote off in the match.
+    const statusV = () => fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
+    const voteBox = await launcher.evaluate(() => document.getElementById('rot-vote')?.checked ?? null);
+    await launcher.uncheck('#rot-vote');
+    const voteOff = await until(async () => (await statusV()).host?.rotation?.vote === false, T(15000));
+    check(voteBox === true && voteOff, `the launcher's Vote on the next map box runs rotation vote off (box ${voteBox}, match ${voteOff})`);
+    await launcher.check('#rot-vote');
     // Match rules: the score and time limit steppers run rules commands, wait for the restart, and Restart now plays them.
     const status = () => fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
     await launcher.waitForFunction(() => !!document.querySelector('#rules-main .rule[data-k="score"] .stepper') && !!document.querySelector('#rules-main .rule[data-k="time"] .stepper'), null, { timeout: T(20000) }).catch(() => {});
@@ -8845,7 +9054,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

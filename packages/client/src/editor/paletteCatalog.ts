@@ -60,6 +60,9 @@ export const NATURE_PROP_CATEGORIES: readonly string[] = ['Trees', 'Rocks & Wood
  * 2026-11-05: "lose Kenney grass"; then pebbles, eelgrass, and the fern and small bush once ours conceal the same way:
  * shared/test/conceal.test.ts). The plants brush grows the species now, and MapMaker's "Replace all" (the prop
  * inspector) swaps placed pieces. Their palette pictures stay in the atlas.
+ * Environment Phase 2 (owner, 2026-11-08: no Kenney foliage anywhere, "I don't want to see those"): every other Kenney
+ * tree, bush, hedge, cactus and plant too (nature, survival, graveyard, pirate and fantasy-town kits); the official maps
+ * moved to our species with Replace all.
  */
 export const RETIRED_PROPS: ReadonlySet<string> = new Set([
   'prop.grass_patch',
@@ -74,10 +77,17 @@ export const RETIRED_PROPS: ReadonlySet<string> = new Set([
   'prop.bush_small',
   'prop.stones',
   'prop.mn_eelgrass',
+  // Environment Phase 2: Kenney trees,
+  ...['oak', 'oak_autumn', 'oak_dark', 'tree_round', 'tree_round_autumn', 'tree_round_dark', 'tree_fat', 'tree_detailed', 'tree_thin', 'tree_small', 'tree_blocks', 'tree_plateau', 'tree_cone', 'tree', 'tree_autumn', 'tree_tall'].map((id) => `prop.${id}`),
+  // pines and palms,
+  ...['pine_tall', 'pine_tall_b', 'pine_round', 'pine_small', 'pine_ground', 'pine', 'pine_crooked', 'palm', 'palm_bent', 'palm_short', 'palm_tall'].map((id) => `prop.${id}`),
+  // bushes, hedges, cacti and other plants.
+  ...['bush', 'bush_large', 'bush_leafy', 'bush_cone', 'hedge', 'hedge_large', 'hedge_gate', 'cactus', 'cactus_tall', 'corn', 'wheat', 'lily', 'mushrooms', 'mushroom_tall', 'hanging_moss'].map((id) => `prop.${id}`),
 ]);
 /** The generated species offered in Nature's prop categories in their place (pictured from their first variant, in the `environment` atlas), by category. */
 export const GROUND_COVER_SPECIES: Readonly<Record<string, readonly string[]>> = {
-  'Plants & Flowers': ['env.grass.clump', 'env.flower.meadow', 'env.fern.bracken', 'env.shrub.broadleaf', 'env.water.eelgrass'],
+  Trees: ['env.broadleaf.oak', 'env.broadleaf.maple', 'env.broadleaf.acacia', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.palm.coconut', 'env.palm.leaning', 'env.cactus.saguaro'],
+  'Plants & Flowers': ['env.grass.clump', 'env.flower.meadow', 'env.fern.bracken', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.hedge.privet', 'env.hedge.yew', 'env.water.eelgrass'],
   'Rocks & Wood': ['env.rock.pebbles'],
 };
 /**
@@ -97,6 +107,42 @@ export const REPLACEMENTS: Readonly<Record<string, string>> = {
   'prop.bush_small': 'env.shrub.broadleaf',
   'prop.stones': 'env.rock.pebbles',
   'prop.mn_eelgrass': 'env.water.eelgrass',
+  // Environment Phase 2.
+  'prop.oak': 'env.broadleaf.oak',
+  'prop.oak_dark': 'env.broadleaf.oak',
+  'prop.oak_autumn': 'env.broadleaf.oak#1',
+  'prop.tree_detailed': 'env.broadleaf.oak',
+  'prop.tree_round': 'env.broadleaf.maple',
+  'prop.tree_round_dark': 'env.broadleaf.maple',
+  'prop.tree_round_autumn': 'env.broadleaf.maple#1',
+  'prop.tree_fat': 'env.broadleaf.maple',
+  'prop.tree_thin': 'env.broadleaf.maple',
+  'prop.tree_small': 'env.broadleaf.maple',
+  'prop.tree_blocks': 'env.broadleaf.maple',
+  'prop.tree': 'env.broadleaf.maple',
+  'prop.tree_autumn': 'env.broadleaf.maple#1',
+  'prop.tree_tall': 'env.broadleaf.maple',
+  'prop.tree_plateau': 'env.broadleaf.acacia',
+  'prop.pine_tall': 'env.conifer.pine_tall',
+  'prop.pine_tall_b': 'env.conifer.pine_tall',
+  'prop.pine': 'env.conifer.pine_tall',
+  'prop.pine_crooked': 'env.conifer.pine_tall',
+  'prop.pine_round': 'env.conifer.spruce',
+  'prop.pine_small': 'env.conifer.spruce',
+  'prop.pine_ground': 'env.conifer.spruce',
+  'prop.tree_cone': 'env.conifer.spruce',
+  'prop.palm': 'env.palm.coconut',
+  'prop.palm_tall': 'env.palm.coconut',
+  'prop.palm_short': 'env.palm.coconut',
+  'prop.palm_bent': 'env.palm.leaning',
+  'prop.cactus': 'env.cactus.saguaro',
+  'prop.cactus_tall': 'env.cactus.saguaro',
+  'prop.bush': 'env.shrub.broadleaf',
+  'prop.bush_large': 'env.shrub.laurel',
+  'prop.bush_leafy': 'env.shrub.broadleaf',
+  'prop.bush_cone': 'env.shrub.laurel',
+  'prop.hedge': 'env.hedge.privet',
+  'prop.hedge_large': 'env.hedge.yew',
 };
 /** Every species GROUND_COVER_SPECIES offers. */
 export const GROUND_COVER_IDS: readonly string[] = Object.values(GROUND_COVER_SPECIES).flat();
@@ -153,6 +199,20 @@ export const SET_PIECE_FAMILIES: readonly (readonly [family: string, label: stri
   ['hypogeum', 'Hypogeum'],
   ['insula', 'Insulae'],
   ['landing', 'Landing craft'],
+  ['fort', 'Forts'],
+  ['powercore', 'Power core halls'],
+  ['reactor', 'Reactor rooms'],
+  ['servervault', 'Server vaults'],
+  ['loadingdock', 'Loading docks'],
+  ['atrium', 'Atrium towers'],
+  ['catwalk', 'Catwalk bridges'],
+  ['overlook', 'Overlooks'],
+  ['rampjunction', 'Ramp junctions'],
+  ['courtyardgate', 'Courtyard gates'],
+  ['bunkercluster', 'Bunker clusters'],
+  ['sunkenarena', 'Sunken arenas'],
+  ['plaza', 'Plazas'],
+  ['seawall', 'Sea walls'],
 ];
 
 /** A family's label in the Set pieces tab. */

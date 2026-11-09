@@ -74,7 +74,7 @@ export const castFromRuleValue = (v: string | undefined): string[] | undefined =
 export const SERVER_RULES: readonly RuleSpec[] = [
   {
     key: 'score', label: 'Score limit', help: 'The score that wins (0: none). Per mode: kills in Deathmatch and Team Deathmatch, captures in CTF, rounds in Elimination…', type: { kind: 'int', min: 0, max: SCORE_LIMIT_MAX, zero: 'none' }, apply: 'restart', perMode: true,
-    modes: (m) => notCoop(m) && m !== 'core.race', read: (r) => r.scoreLimit, write: (r, v) => (r.scoreLimit = v as number),
+    modes: (m) => notCoop(m), read: (r) => r.scoreLimit, write: (r, v) => (r.scoreLimit = v as number),
   },
   {
     key: 'time', label: 'Time limit', help: 'Minutes until the match ends (0: no limit). Per mode.', type: { kind: 'int', min: 0, max: 120, unit: 'min', zero: '∞' }, apply: 'restart', perMode: true,
@@ -94,7 +94,7 @@ export const SERVER_RULES: readonly RuleSpec[] = [
   },
   {
     key: 'drops', label: 'Drop weapon on death', help: "A fallen player's or bot's primary lies at the body for 30 s with the ammo it had left (off clears the ones lying about).", type: onOff, apply: 'live',
-    modes: (m) => m !== 'core.race' && m !== 'core.discs', read: (r) => r.dropWeapons !== false, write: (r, v) => (v ? delete r.dropWeapons : (r.dropWeapons = false)),
+    modes: (m) => m !== 'core.discs', read: (r) => r.dropWeapons !== false, write: (r, v) => (v ? delete r.dropWeapons : (r.dropWeapons = false)),
   },
   {
     key: 'set', label: 'Weapon set', help: "What everyone spawns with and what weapon and grenade pickups hold: map (the map's own default; most maps: standard), standard (knife, pistol, the map's pickups as placed), military, scifi, medieval, chaos or mixed (a random gun each life).", type: choice(['map', 'Map default'], ...WEAPON_SET_IDS.map((id): [string, string] => [id, WEAPON_SET_DEFS[id].name])), apply: 'live',
@@ -213,18 +213,6 @@ export const SERVER_RULES: readonly RuleSpec[] = [
   {
     key: 'fortbudget', label: 'Build points', help: "Each team's budget: a block costs 2, a wall 4, a metal wall 8 (Fort Wars).", type: { kind: 'int', min: 100, max: 800, step: 20 }, apply: 'next',
     modes: (m) => m === 'core.forts', read: (r) => r.fortBudget ?? 420, write: (r, v) => (r.fortBudget = v as number),
-  },
-  {
-    key: 'laps', label: 'Laps', help: 'Laps of the circuit (Race; a point-to-point track is one run).', type: { kind: 'int', min: 1, max: 10 }, apply: 'next',
-    modes: (m) => m === 'core.race', read: (r) => r.raceLaps ?? 3, write: (r, v) => (r.raceLaps = v as number),
-  },
-  {
-    key: 'racevehicle', label: 'Race vehicle', help: "What everyone races in (default: the track's own).", type: choice(['kart', 'Go-Kart'], ['speeder', 'Speeder'], ['buggy', 'Buggy']), apply: 'next',
-    modes: (m) => m === 'core.race', read: (r) => r.raceVehicle ?? '', write: (r, v) => (r.raceVehicle = v as 'kart' | 'speeder' | 'buggy'),
-  },
-  {
-    key: 'racecombat', label: 'Race combat', help: "Combat: weapons and vehicle guns are live. Clean: nobody can hurt anybody (default: the track's own).", type: { kind: 'bool', on: 'Combat', off: 'Clean' }, apply: 'next',
-    modes: (m) => m === 'core.race', read: (r) => r.raceCombat ?? '', write: (r, v) => (r.raceCombat = !!v),
   },
 ];
 
@@ -394,7 +382,7 @@ export function applyServerRules(rules: MatchRules, sr: ServerRules, map: MapDoc
 const FIELDS: Record<string, (keyof MatchRules)[]> = {
   assign: ['teamAssign'], teamnames: ['teamNames'], teamcolors: ['teamColors'], leaders: ['leaders'], fireteams: ['fireteams'], squadspawn: ['squadSpawn'], streaks: ['killstreaks'], sizes: ['bodySizes'], stats: ['characterStats'], randomchars: ['randomCharacters'], gravity: ['gravity'], fall: ['fallDamage'],
   lethality: ['lethality'], ballistics: ['ballistics'], emotes: ['emotes'], weapons: ['weapons'], classes: ['classes', 'classLimit'], vehicles: ['vehicleDamage'], flagreturn: ['flagReturnSeconds'], hill: ['hillSeconds'],
-  fortbuild: ['fortBuildSeconds'], fortcombat: ['fortCombatSeconds'], fortcycles: ['fortCycles'], fortbudget: ['fortBudget'], laps: ['raceLaps'], racevehicle: ['raceVehicle'], racecombat: ['raceCombat'],
+  fortbuild: ['fortBuildSeconds'], fortcombat: ['fortCombatSeconds'], fortcycles: ['fortCycles'], fortbudget: ['fortBudget'],
 };
 
 function restoreFrom(out: MatchRules, base: MatchRules, spec: RuleSpec): void {

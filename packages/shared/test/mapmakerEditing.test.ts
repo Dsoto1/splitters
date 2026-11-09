@@ -84,11 +84,11 @@ function roundTrip(doc: MapDocument, cmd: EditCommand): MapDocument {
 
 describe('format v31: groups and note pins', () => {
   it('a v30 map migrates unchanged; groups and notes save and load; they are left out of the content hash', () => {
-    expect(MAP_FORMAT_VERSION).toBe(31);
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(31);
     const v30 = { ...JSON.parse(readFileSync(new URL('./fixtures/iron_compound_v26.json', import.meta.url), 'utf8')), formatVersion: 30 };
     const { doc, fromVersion } = migrateMapDocument(structuredClone(v30));
     expect(fromVersion).toBe(30);
-    expect(doc).toEqual({ ...v30, formatVersion: 31 });
+    expect(doc).toEqual({ ...v30, formatVersion: MAP_FORMAT_VERSION });
     expect(loadMap(structuredClone(v30)).ok).toBe(true);
     const map: MapDocument = { ...scene(), groups: [{ id: 'group_1', name: 'West rooms', members: ['room_a', 'room_b'] }], editorNotes: [{ id: 'note_1', position: [1, 2, 3], text: 'Door here?' }] };
     const back = loadMap(serializeMap(map));

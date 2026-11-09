@@ -60,6 +60,32 @@ const LINEUP: [string, number, string, number, number][] = [
   ['env.water.eelgrass', 1, 'prop.mn_eelgrass', 5.0, -6.5],
 ];
 
+/**
+ * Environment Phase 2's species, in their own lineup behind the camera of the first (so the first's views and the visual
+ * baseline don't change): trees at the back, palms and cacti in the middle, bushes and hedges in front.
+ */
+const LINEUP2: [string, number, string, number, number, number][] = [
+  ['env.broadleaf.maple', 0, 'prop.tree_round', -15, -70, 0],
+  ['env.broadleaf.maple', 1, 'prop.tree_round_autumn', -8, -70, 0],
+  ['env.broadleaf.acacia', 0, 'prop.tree_plateau', 0, -68, 0],
+  ['env.conifer.spruce', 0, 'prop.pine_round', 8, -70, 0],
+  ['env.conifer.spruce', 1, 'prop.pine', 14, -70, 0],
+  ['env.palm.coconut', 0, 'prop.palm_tall', -11, -78, 0],
+  ['env.palm.leaning', 0, 'prop.palm_bent', -5, -78, 0],
+  ['env.cactus.saguaro', 0, 'prop.cactus_tall', 3, -79, 0],
+  ['env.cactus.saguaro', 1, 'prop.cactus', 6, -79, 0],
+  ['env.shrub.laurel', 0, 'prop.bush_large', -5, -86, 0],
+  ['env.shrub.laurel', 1, 'prop.bush', -2.2, -86, 0],
+  ['env.hedge.privet', 0, 'prop.hedge', 1.2, -86, 1.3],
+  ['env.hedge.yew', 0, 'prop.hedge_large', 5.2, -85, 1.3],
+  // The other variants, behind and to the sides (every variant is drawn: the environment e2e flow checks it).
+  ['env.broadleaf.acacia', 1, 'prop.tree_plateau', 22, -64, 0],
+  ['env.palm.coconut', 1, 'prop.palm', -18, -80, 0],
+  ['env.palm.leaning', 1, 'prop.palm_bent', 12, -80, 0],
+  ['env.hedge.privet', 1, 'prop.hedge', 1.2, -91, 1.3],
+  ['env.hedge.yew', 1, 'prop.hedge_large', 5.2, -91, 1.3],
+];
+
 const EYE = 1.7;
 
 interface LabState {
@@ -149,6 +175,10 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
     entities.push(ent(`lineup_${i}`, model, [x, 0, z], variant));
     oldEntities.push(ent(`old_${i}`, old, [x + BEFORE_X, 0, z]));
   }
+  for (const [i, [model, variant, old, x, z, yaw]] of LINEUP2.entries()) {
+    entities.push(ent(`lineup2_${i}`, model, [x, 0, z], variant, yaw));
+    oldEntities.push(ent(`old2_${i}`, old, [x + BEFORE_X, 0, z], undefined, yaw));
+  }
   // A cliff wall of four panels side by side (the seams), the old cliff pieces in the "before" set.
   for (let k = 0; k < 4; k++) {
     entities.push(ent(`wall_${k}`, 'env.cliff.face', [-12 + k * 8, 0, 30], k % 2));
@@ -210,6 +240,9 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
     rocks: [[3.2, EYE, -8.6], [3.1, 0.6, -4]],
     ground: [[3, EYE, -10], [3, 0.1, -6.6]],
     cliffs: [[2, EYE, 15], [4, 4, 30]],
+    trees2: [[0, EYE, -96], [0, 4.2, -72]],
+    small2: [[0, EYE, -94], [0, 0.9, -84]],
+    palms: [[-3, EYE, -90], [-2, 3.8, -78]],
   };
   const VIEWS: Record<string, [Vector3, Vector3]> = {};
   for (const [k, [p, t]] of Object.entries(base)) {

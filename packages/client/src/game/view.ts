@@ -26,7 +26,7 @@ import { BackdropVisuals } from '../backdrop.ts';
 import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
 import { EnvironmentVisuals } from '../environment/environmentVisuals.ts';
-import { envRendererOn } from '../environment/envFlag.ts';
+import { envBatchedOn } from '../environment/envFlag.ts';
 import type { ClientMount } from './mountState.ts';
 import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, setAura } from './arsenalVisuals.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
@@ -113,7 +113,7 @@ import { SteadyArcs } from './steadyArcs.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
 import { PropFlames } from './propFlames.ts';
-import { ACCENT_RANGE, arcFx, explosionFor, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
+import { ACCENT_RANGE, arcFx, explosionFor, farFxSize, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
 import { buildPathMeshes } from '../pathMeshes.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
@@ -404,7 +404,7 @@ export class GameView {
   private zoneVisuals!: ZoneVisuals;
   private readonly viewRoot: TransformNode;
   private readonly foliage: FoliageVisuals;
-  /** The environment renderer (?env=1, environment/environmentVisuals.ts): made with the first map that has species. */
+  /** The environment renderer (environment/environmentVisuals.ts; off with ?env=0): made with the first map that has species. */
   environment: EnvironmentVisuals | null = null;
   private viewmodel?: TransformNode;
   private viewWeapon?: string;
@@ -563,6 +563,8 @@ export class GameView {
   buildMap(doc: MapDocument, boxes: readonly WorldBox[]): void {
     this.ziplines = mapZiplines(doc.entities);
     const styler = new MapStyler(this.scene);
+    // A terrain finer than 2 m is drawn at half its resolution on Low graphics (phones); it collides at full.
+    styler.terrainDrawStep = loadGraphicsQuality() === 'low' ? 2 : 1;
     styler.build(doc, boxes);
     // The level's per-style meshes merged across styles over array textures (levelMerge.ts; WebGL2): the loading gate
     // (prewarm) waits for it, so its shader is built before play.
@@ -604,8 +606,8 @@ export class GameView {
     for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
     const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
-    // Environment species (`env.*`) with the new renderer (?env=1): chunked thin instances, not a node each.
-    const env = envRendererOn() ? doc.entities.filter((e): e is PropEntity => e.kind === 'prop' && !carried.has(e.id) && EnvironmentVisuals.draws(e)) : [];
+    // Environment species (`env.*`) with the environment renderer (on unless ?env=0): chunked thin instances, not a node each.
+    const env = envBatchedOn() ? doc.entities.filter((e): e is PropEntity => e.kind === 'prop' && !carried.has(e.id) && EnvironmentVisuals.draws(e)) : [];
     if (env.length) {
       this.environment ??= new EnvironmentVisuals(this.scene, loadGraphicsQuality());
       void this.environment.setPlacements(env, doc.terrain);
@@ -1224,6 +1226,15 @@ export class GameView {
     if (d < by * 2) return at;
     const k = by / d;
     return { x: at.x + (cam.x - at.x) * k, y: at.y + (cam.y - at.y) * k, z: at.z + (cam.z - at.z) * k };
+  }
+
+  /**
+   * A size for a burst at `at` that keeps it as big on screen as it is 3 m off (fxMap.ts farFxSize: 1 nearer, at most 4): a pickup's sparkle or a streak's burst seen across a room reads, and one beside you is no bigger.
+   */
+  farSize(at: Vec3): number {
+    const cam = this.scene.activeCamera?.globalPosition;
+    if (!cam) return 1;
+    return farFxSize(Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z));
   }
 
   /** A moment of play's effect (content/vfx.json map.gameplay: `pickup.health`, `spawn`, `portal`, `pad`, `trap.shock`, `zipline` …). */

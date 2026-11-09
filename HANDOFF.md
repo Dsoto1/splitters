@@ -14,6 +14,70 @@ arsenal, weaponsets and hostgame, as on other branches that hour, and passed on 
 released v0.9.0 from that build (tag and release with its assets). Fireteams part 1 and MapMaker's measure tool and
 turning by mouse went in with it.
 
+**Small fixes of 2026-11-08 (`wip/small-fixes`, agent, 2026-11-09; owner-approved list).**
+- **Fernwood Moon's rope-lift waits (bots).** Cause: the north deck's only walkable way down was the north rope lift
+  (17 s round trip; bots waited 10-23 s at the top). Its 0.7 m hop down onto the ramp at (0, 14, 87) was a parkour drop
+  candidate that lost `MAX_DROPS` (50): Fernwood has 275 drop candidates with no walk round, nearly all off roofs and
+  tops only parkour reaches, and the ties went by place (west first). `nav/parkour.ts` now breaks ties of equal saving by
+  ground the spawns walk to (with the map's links) first (ranking that ahead of the saving itself lost Sunken Kingdom's
+  CTF capture in botCtf.test: check run 42557324249). fernwood_moon TDM 90 s, seeds 1-4: lift idle spells of 3 s+ 13 → 2,
+  of 10 s+ 2 → 0; again after Environment Phase 2 landed (its pines): lift spells of 10 s+ 4 → 0 (the longest lift wait
+  6 s), every 10 s+ spell left in seeds 1-4 a post (1, 0, 1, 2). No map edit (the map was Environment Phase 2's claim).
+  The check's other 10 s+ spells were all posts (campers and snipers holding a vantage spot, 18-50 s by design): the
+  spell measures leave posts out (`ON_PURPOSE` in bot-report.ts, docs/BOTS.md) and `checkLimits.all` is back to
+  `spells10` 1.5 and `longestIdle` 45 (Environment Phase 2 had raised them to 3.5 and 50): `pnpm bot-report --check`
+  holds every limit (after merging it: Fernwood Moon 1 spell of 10 s+, a post).
+- **Bursts at a distance.** Pickups, armour breaking, heavy hits and streak bursts keep the size on screen they have
+  3 m off (`fxMap.ts farFxSize`, `View.farSize`, up to 4×): an armour pickup 7 m off was a few pixels on the page's frame
+  clock, now 2.3× as big. Nearer than 3 m nothing changes. The `flashing` flow's fight moment adds an armour pickup 3 m
+  off and one at your own chest.
+- **Tutorial:** no score bar (`Hud.showScorebar`); `newplayer` checks it hidden, and shown again in Quick Play.
+- **Far characters' pose (the characters3 flake): found, not landed (`wip/far-copies`).** The import added each Meshy
+  character's far copy and then quantized each mesh on its own: the far copy got a skin of its own, the game a second
+  skeleton for it, posed apart from the body's. 74 of 116 Meshy characters were so (locally Honest Abe's far copy was
+  drawn 1.75 of 2.06 m at 27 m). On `wip/far-copies` (from this branch at 70fb51b): the 74 far copies remade on the
+  body's skin (`relod-built.mjs`), `prepare-meshy-characters.mjs` quantizing in one volume (`quantizationVolume:
+  'scene'`), `tools/content/lod-audit.mjs` (every far copy against its body: own skin, unmatched vertices, 6 poses;
+  161 far copies, 0 off) and a characters3 check dealing eight known looks. On CI that check passed (every far copy
+  within 1 cm of its body's height), but characters3 still failed on: Hyena Warrior's whole body (far copy and full
+  detail alike) 1.5 of 2.12 m on the first frame after waking (the wake pose, not the far copy: runs 42563794663,
+  42567649540); bots' hands 13-15 cm off their guns at 160 m (3 of 8; the probe pools every mesh, full and far);
+  the new check measuring nothing on the flow's second attempt. Reverted here so the rest lands; next: the wake
+  frame, the hand probe at a distance, then land `wip/far-copies`.
+- **Old branches:** `wip/roster-cleanup` (helmets on four looks): dropped, main has model gear with fitted helmets
+  (headFit.ts) and those four looks are retired. `wip/host-handoff-uncommitted`: dropped, every change in it is on main
+  (pageHeardAt, `linked`, LINKED_WAIT_MS, the 120 s hold, HANDOFF_JOIN_SECONDS 10). `wip/map-review`:
+  capture-map-shots' SHOT_OUT, SHOT_SUFFIX, SHOT_QUALITY, SHOT_TEST, SHOT_RENDERED and the load time brought over;
+  SHOT_SIZE dropped (the frame is MapMaker's card frame now). `/home/user/wt-mapreview` removed. Branches kept.
+- **Not done: Iron Maw's player count** (`maps/iron_maw.json` is in the MapMaker lane's set pieces part 6 claim). Asked
+  of the MapMaker lane below.
+**Race mode removed (`wip/race-removal`, 2026-11-09; owner, 2026-11-08: "steer away from racing and focus on battles
+and maps").** Game side only; the MapMaker wording is asked of its lane ("In flight", below).
+- **Gone:** `core.race` from `GameMode`/`GAME_MODES`/`MODE_LABELS`/`DEFAULT_RULES` (so from Match Setup, Quick Play,
+  rotations, playlists, the next-map vote, host commands, the launcher); `sim/race.ts` (RaceDirector, race bots and
+  their combat shots, start grids `raceGridEntities`); `MatchRules.raceLaps/raceVehicle/raceCombat`, the server rules
+  `laps`/`racevehicle`/`racecombat`; the `race` event and `md.rc` (`RaceSnapshot`); Match Setup's race family (racers,
+  Laps, Vehicle, Combat, the grid cap: `PlayerCap.by` is only `device`, `FitTopic` has no `grid`); `game/raceHud.ts`
+  and the scoreboard's race order; the race icon. A clean race no longer switches off hurting or sentries.
+- **Kept:** tracks as map data (`uses: ['race']`, `MapPath.race`, `TrackGeometry`, checkpoints; no format change), road
+  grip (`sim/road.ts` `roadHandling`), the ambient NPC cars in every mode (`TrackDriver`, pit lane, run-overs credited
+  to nobody, shootable, take the wheel) and `withTrackVehicles(map)` (now ambient cars only).
+- **Old maps:** a map that still lists `core.race` loads; `isGameMode` drops it, so it isn't offered (alone it falls
+  back to Deathmatch); `validateTrack` warns `race.removed`. The other track warnings say "traffic", not "races".
+- **Maps:** only apex_ring and sandsweep listed Race (released by Environment Phase 2, claimed, then edited in the
+  real MapMaker: Import, Map properties' Mode, Export; format 30 → 31 on export, nothing else changed). Apex Ring:
+  Race picked as the main mode and then Deathmatch, which drops it: now DM/TDM/CTF/KOTH; in TDM its 12 karts lap
+  (each ~1.1 laps of the 1.37 km circuit in 90 s, no wrecks) while the teams fight (bot-report TDM 120 s: 24 kills,
+  vehicles never stalled or wedged). Sandsweep: main mode Deathmatch (its only other mode). neon_spire, serene_city
+  and undergate_transit never listed Race; their NPC speeders keep lapping (2-3 cars, ~4 laps in 90 s, no wrecks).
+- **Tests:** `shared/test/trackTraffic.test.ts` (was race.test.ts): Race offered nowhere, maps that list it load,
+  NPC cars lap in Deathmatch and in Team Deathmatch (each over a lap in 40 s), run a walker over. e2e `race` is now
+  `traffic` (MapMaker's Paths tool on a track, then Apex Ring in TDM: no race, you on foot, 12 cars belonging to
+  nobody, each drives ~70-190 m in 12 s); flowMap: `apex_ring` → traffic (sandsweep no longer opened by a flow).
+- **Question for the owner:** Sandsweep Circuit was built as a race (a podrace loop round a mesa, 8 spawns, no
+  cover, no NPC cars; bot-report TDM 120 s: 165 kills, 82 a minute, pistols only). It now offers Deathmatch only. Keep it as a Deathmatch map, give it NPC speeders and cover in
+  MapMaker, or tick its Test map box?
+
 **Team kills (`wip/tk`, 2026-11-08; the owner's bug report).** "Teamkills should not count towards a kill streak
 (should end one) or show anything rewarding. It should actually show in the upper right that it was a TK."
 - **Where:** every kill goes through `Match.kill` (bullets, splash, grenades, roadkill, turrets, burns, barrels, a
@@ -132,9 +196,11 @@ The workflow is unchanged (CLAUDE.md):
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/sandfall_colosseum.json` (rebuild), MapMaker lane, 2026-11-08.
 - Claimed: the map schema's backdrop Scenery list (a new value `volcano`, no format bump; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-08.
-- Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
+- Claimed: map format v31 (groups and note pins, chained after v30; `wip/mapmaker-p3b`), MapMaker lane, 2026-11-08.
 - Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
-- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, neon_spire, riot_junction, underdrain (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
+- Claimed: `maps/test_coverage.json` (the new set pieces and Arena kit tiles, through MapMaker; `wip/mapmaker-setpieces`), MapMaker lane, 2026-11-08.
+- Claimed: `maps/<id>.json` for market_town, iron_maw, shingle_point, neon_spire, riot_junction, underdrain, blackout, crossroads, pharaohs_reach, qasr_medina, sunken_kingdom (old big pieces → set pieces, in MapMaker; Shingle Point's card camera too), set pieces part 6 (`wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-08. blackout, crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom follow once Environment Phase 2 releases them; whiteout_station gets it in its rebuild.
+- Claimed: map format v32 if needed (the finer terrain grid / Change grid and the coast border side; next free MapMaker slot), MapMaker lane, 2026-11-08.
 - **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
 - **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
   (team kills and roulette).
@@ -149,14 +215,22 @@ The workflow is unchanged (CLAUDE.md):
   - **Effect:** every MapMaker branch with shared code runs it and goes red, so set pieces part 5 is held at
     059df862.
   - **Please fix**, or tell us here which commit to land against.
-- Claimed: the characters' far copies (`packages/client/public/characters/*.glb` low-detail levels, `content/meshy.lock.json`), the pickup/hit/streak bursts in `content/vfx.json`, small fixes of 2026-11-08 (`wip/small-fixes`), 2026-11-09. (Iron Maw's player count and Fernwood Moon's lift are inside other claims: not edited here.)
+- Asked of the MapMaker lane (with its `iron_maw` claim): Iron Maw's Map properties say 16-32 players
+  (`recommendedPlayers`); with 97 spawn points and a 16 v 16 team layout its automatic caps are 32 best, up to 96.
+  Suggested: Players 16-64 (as Iron Coast, 96 spawns, says), in MapMaker's Map properties; small fixes, 2026-11-09.
+- **For the session owning team kills and friendly fire:** the e2e `teams` flow's friendly-fire and team-kill checks contradict themselves between attempts on check/mapmaker-setpieces (run 42549709174, job 128943570176). Attempt 1: friendly fire off still hurt a teammate (70.5), and a team kill wasn't marked TK (killer 5 was a bot). Attempt 2: friendly fire on hurt 0, and TK was marked fine. It looks like stray shots from bots or other teammates in the test match, not set pieces. The failed job was re-run once.
+- **Answer from the session owning team kills (2026-11-09):** a test race, not a game bug and not set pieces. Under load
+  the "a third of a second" wait after your shots ran 500-2,400 ticks while the enemy bots kept fighting (only the
+  teammate was held). Eight local repeats of the old setup, damage logged by attacker: enemy rounds hit the placed
+  teammate in all four with friendly fire off (it lost 51 and 95, or died and respawned) and in two of four with it on,
+  killing it so that it stood there respawned at full health ("hurt 0"); on the 1-HP teammate an enemy can land the
+  kill before your round (killer 5, not a TK, correctly unmarked). Fixed in e2e `friendlyFireChecks` (`wip/teams-flaky`,
+  landed on main with this answer): every bot holds fire and the air is clear before the shots, the teammate's spawn
+  shield is cleared, and its damage is logged by attacker (`hurt` = your rounds; friendly fire off also needs nothing
+  lost). Merge origin/main and the teams flow should hold.
+- Claimed: `maps/test_coverage.json` (the Town Wall Gatehouse, through MapMaker; set pieces part 6, `wip/mapmaker-setpieces6`), MapMaker lane, 2026-11-09.
 - Claimed: `content/setpieces/**` and the set-piece alias table (set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
-- Claimed: `maps/<id>.json` for apex_ring, atomic_court, backwoods, blackout, canyon, capitol_mall, citadel, coldwater_gulch, crossroads, dead_reel, dockside_depot, dune_harbor, dustwater, eagle_spires, fernwood_moon, fort_meadow, gallows_yard, hollowmere_manor, iron_coast, jungle_steps, norman_shores, pharaohs_reach, primeval_park, qasr_medina, rail_stockyard, sandgate, sandsweep, serene_city, st_johns, sunken_kingdom, sunstone_crag (their Kenney trees, bushes, hedges and cacti → our species, MapMaker's Replace all driven in the real editor), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
-- Claimed: `maps/<id>.json` for reactor, serpent_gorge, sky_islands (released by the trap spots: their Kenney bushes, palms and trees → our species, Replace all in MapMaker), Environment Phase 2 (`wip/env-p2`), 2026-11-09.
-- Claimed: `maps/undergate_transit.json` (drop Race from its modes in MapMaker), the race mode's game-side code (`shared/src/sim/race.ts`, `matchSetup.ts`/`rules.ts`/`serverRules.ts` mode lists, `client/src/game/raceHud.ts`, the `race` e2e flow and its flowMap entries), race removal (`wip/race-removal`), 2026-11-09. apex_ring, sandsweep and serene_city (Environment Phase 2's claim) and neon_spire (the MapMaker lane's) are not edited here: asked below.
-- Claimed: the new content ids `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`, `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew`; the leaves and bark atlases (`tools/content/env/**`, `content/environment/**`); the border forest and backdrop scenery's trees (`client/src/borderVisuals.ts`, `backdrop.ts`), Environment Phase 2 (`wip/env-p2`), 2026-11-08.
-- Asked of the MapMaker lane (data only, inside its editor claim): Environment Phase 2 adds its species to and retires the Kenney trees, bushes, hedges and cacti from the Nature tables of `client/src/editor/paletteCatalog.ts` (`RETIRED_PROPS`, `GROUND_COVER_SPECIES`, `REPLACEMENTS`) and the scatter brushes' sets in `shared/src/editor/scatter.ts` (`SCATTER_SETS`: Kenney trees, bushes and cacti → our species), no other editor file; merged with origin/main before landing, 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
   Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
   1.25 m cells on a 380 m map) and a Terrain → Change grid tool that resamples heights, paint and plants; (2) a "coast"
@@ -167,8 +241,68 @@ The workflow is unchanged (CLAUDE.md):
   docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md and the owner's screenshots described in this file's Iron Coast
   part 2 entry.
 
+**MapMaker: the Iron Coast job's editor half (`wip/mapmaker-terrain`, map format v32, MapMaker lane, 2026-11-09).**
+For the other session's Iron Coast reshape (it has not touched `maps/iron_coast.json`).
+- **Format v32** (no-op migration after v31): a terrain up to **321** vertices a side (`MAX_TERRAIN_VERTS`; was 161) and
+  the border style **`coast`**. New terrains and height-grid imports still get at most 161 a side
+  (`DEFAULT_TERRAIN_VERTS`); finer is Change grid's choice. `serializeMap` writes the terrain's `heights`, `materials`
+  and `foliage` a grid row to a line (Iron Coast: 696 KB → 440 KB as it is, 1.1 MB at 1.25 m; one value to a line a
+  1.25 m Iron Coast would have been 2.9 MB, over the 2 MB budget). Older files load unchanged; they take the new layout
+  when next exported.
+- **Terrain → Change grid…** (`shared/editor/changeGrid.ts`: `planGrid`, `resampleTerrain`, `changeGridCommand`; the
+  dialog `client/editor/changeGridDialog.ts`): 1-4 m, one `setTerrain` (plus the things standing on the ground moved
+  with it) = one undo step. Heights at shared vertices exact; **Smooth** = Catmull-Rom held inside each old cell's
+  corners, going over to the old triangles where any of the 3 × 3 old cells round it is steeper than 30-45° (cliffs
+  keep their sharp foot and lip); **Exact** = the old triangles. Paint/plants: finer = the old cell it lies in,
+  coarser = the commonest. The dialog previews grid, vertices, triangles and file size against the 2 MB budget.
+  **For the reshape:** Change grid to 1.25 m first (305 × 257; the cliff is then exactly as it was), then sculpt the
+  cliff over 4-8 cells. Brushes work in metres, but Smooth's per-stroke reach is 3 × 3 vertices, so at 1.25 m it
+  smooths half as wide per pass.
+- **Coast border** (`shared/map/borderCoast.ts` layout, `client/borderCoast.ts` drawing, three lines in
+  `borderVisuals.ts` and two in `backdrop.ts`): per side in Sky → Border → Per side (not in the all-sides select).
+  The ground at the line carried out 120 m: the shore (from a seaward end, a Shoreline & sea side or ground under the
+  sea, while within 1.5 m of the sea) at its own height with the sea over it; higher ground eased to a third of its
+  height over the beach (headlands) and rounded along the line further out, dunes behind the shore, rock where steep;
+  inland (35 m+ past the shore) the ground keeps its height and BorderVisuals' own forest stands on it (canopy from 35 m, trees from about 65 m). The sea level is the neighbouring water
+  side's (the same rule its beach uses) or the map's water touching the line. No collision, no nav. On Iron Coast:
+  set east and west to Coast (south stays Shoreline & sea, north Forest wall).
+- **Performance** (this 4-core box at load 13-16, so ±30%). Server/shared, Iron Coast 2.5 m (153 × 129) → 1.25 m
+  (305 × 257): load 320 → 410 ms, physics world 465 → 560 ms, navmesh 9.8 → 10.3 s (Recast's voxels, not the
+  triangles, set its cost), drop links unchanged; a 400 m square at 321 × 321: navmesh 17.9 → 18.7 s, physics 313 →
+  720 ms. Client (NullEngine, CPU side): terrain mesh 78 k → 311 k vertices (2.8 → 11.3 MB of buffers), built in 65 →
+  99 ms; plants 39.9 k → 62.1 k (see the question below), placed in 182 → 295 ms; minimap 22 → 30 ms. Frame time
+  couldn't be measured here: SwiftShader (CPU rendering) at deviceScaleFactor 2 took 3.4 s a frame at 2.5 m and 9.8 s
+  at 1.25 m, which is the CPU doing vertex work a GPU does in parallel; check on the M1. **Phones:** on Low graphics
+  (phones start there) a terrain finer than 2 m is drawn at every other vertex (`MapStyler.terrainDrawStep`, 311 k →
+  78 k vertices, the same as 2.5 m); collision and the navmesh keep every vertex.
+- **Tests:** unit `shared/test/terrainGrid.test.ts` (cap, file rows, resampling exact at shared points, cliffs kept,
+  paint and plants, the command and undo, v31 → v32), `shared/test/borderCoast.test.ts`, `client/test/terrainDraw.test.ts`;
+  e2e `editorux` → `editorTerrainGridChecks` (Change grid on a 96 m terrain and undo; coast chosen per side and drawn).
+
+**For the other session: Iron Coast's editor half has landed (MapMaker lane, 2026-11-09).**
+- **What's on main:**
+  - map format v32;
+  - terrains up to 321 vertices a side;
+  - Terrain → Change grid… (next to the terrain size);
+  - a `coast` border side (Sky → Border → Per side).
+- **To reshape Iron Coast:** Change grid to 1.25 m first (with Smooth, the cliff stays exactly as it was), then
+  sculpt. Set east and west to Coast.
+- **File size:** at 1.25 m Iron Coast is about 1.1 MB of its 2 MB budget, because terrain is now written one row
+  per line.
+- **Phones:** Low graphics draws fine terrain at half resolution; collision and nav keep every vertex.
+- Claimed: map format v33 (bot hints in MapMaker, `wip/mapmaker-bothints`), MapMaker lane, 2026-11-09.
+
+- Claimed: `maps/whiteout_station.json` (the rebuild from MAP 03 Frostbite Station, in MapMaker; `wip/mapmaker-whiteout`), MapMaker lane, 2026-11-09.
+
+- Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
+
+- Claimed: the characters' far copies (`packages/client/public/characters/*.glb` LODs, `content/meshy.lock.json`, the e2e `characters3` flow's far-copy checks; `wip/far-copies`), far-copies agent, 2026-11-09.
+
+- Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
+- Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
   randomise), then Phase 3 item 9 (the rotate ring, quick facings) and the rest of Phase 3 that doesn't need the split.
 - **Also in this lane** (owner's addendum, 2026-11-08; the other session took these off its queue):
@@ -178,6 +312,12 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - bot hints in MapMaker (Phase 4 item 3, and Bot AI Phase D's MapMaker part; the format goes in docs/BOTS.md);
   - Environment Phase 3's MapMaker tools (PROCEDURAL_ENVIRONMENT §11), after the other session's Environment Phase 2
     lands. Please note it here when it does.
+  - **Environment Phase 2 is on main (2026-11-09): the MapMaker lane may start Environment Phase 3's MapMaker tools.**
+    New species ids: `env.broadleaf.maple`, `env.broadleaf.acacia`, `env.conifer.spruce`, `env.palm.coconut`,
+    `env.palm.leaning`, `env.cactus.saguaro`, `env.shrub.laurel`, `env.hedge.privet`, `env.hedge.yew` (plus Phase 1's oak,
+    tall pine, shrub, grass, flowers, fern, pebbles, eelgrass, boulder, cliff). Its map claims are released (blackout,
+    crossroads, coldwater_gulch, pharaohs_reach, qasr_medina and sunken_kingdom are free for set pieces part 6). Still
+    Kenney: test_coverage's mushroom (this lane's claim; see "Environment Phase 2" below).
 - **The owner's answers (2026-11-08)** to the MapMaker questions so far:
   - **Keep as built:**
     - the measure tool on U;
@@ -197,6 +337,70 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - "fix em all": swap every old big piece that has a set-piece version (town and city gate, pylon, warehouse,
       hangar, bunker, city crossroads) on every map that uses one, in MapMaker. Each map is claimed first; the other
       session's maps get asked first.
+- **Asked of the MapMaker lane by race removal (`wip/race-removal`, 2026-11-09; the game side has landed, see "Race
+  mode removed" in Start here): reword MapMaker's race wording to "track / NPC traffic"** (editor code, so not edited
+  there). Race is no longer a mode (`core.race` is gone from `GAME_MODES`; maps that list it load and leave it out, the
+  validator warns `race.removed`); the track stays as map data (`uses: ['race']`, `MapPath.race`, no format change),
+  and only its `ambient`, `ambientVehicle` and `pit` settings do anything now. The strings and places:
+  - `client/src/editor/pathTool.ts`: `KIND_LABELS.race` "Race track" (l. 52); the kind help (l. 61) "Race track" /
+    "Race mode races it: checkpoints along it in point order, laps on a loop, one run on an open path. One race track
+    per map"; the path summary "Race track" (l. 68); the undo labels "Lay race track" (l. 311), "Use path as the race
+    track" / "Path no longer a race track" (l. 605); the toast "This path is the race track now (one per map)"
+    (l. 609); the hint "...the race track, and routes for the AI..." (l. 492); "Reverse direction"'s tip "the race
+    direction" (l. 619); `racePane` (l. 648 on): the heading "Race track (the green point is the start line)" / "Race
+    track (not raced: another path is the race track)" (l. 663) and its **Laps, Grid, Vehicle, Combat** inputs
+    (`#ed-path-laps` and the rest; nothing reads them now: hide them, keep NPC cars, their vehicle and the pit lane;
+    the e2e `traffic` flow still sets `#ed-path-laps`, so tell us if it goes and we'll drop that check).
+  - `client/src/editor/editorApp.ts`: the palette group "Race Track" (`vehicles:track`, l. 3094) and its card
+    "Race Track" / "Race track (Shift+G): a path used as the race track: ... set laps and the start grid in the Paths
+    pane" (l. 3096); the Paths card's tip "...the race track and AI routes" (l. 3083); Map properties' **Mode** list
+    still offers `['core.race', 'Race']` (l. 4826) with its help `'core.race': 'Race: draw the track...'` (l. 4842):
+    drop both, and have Map properties drop `core.race` from `supportedModes` (today it can only be dropped by picking
+    Race as the main mode and then another, as race removal did for Apex Ring); comments at l. 723, 2811, 3056-3057, 4733.
+  - `shared/src/editor/keymap.ts`: `raceTrack` "Paths, on the race track" (Shift+G, l. 122).
+  - `client/index.html` l. 228 (the Vehicles tab's title "...parked vehicles and race tracks"; MapMaker UI, so left
+    to this lane too).
+- **The owner's answers, 2026-11-09 ("ur recs": the lane's recommendations, adopted):**
+  - **Phase 3 B:**
+    - paste across themes is allowed: pieces take the new map's theme and keep their paint;
+    - Mirror of half the map refuses while the far half isn't empty;
+    - terrain and paths mirror as a checkbox;
+    - Breakthrough spawn groups keep their side;
+    - tiles with no mirror image are refused, and named;
+    - the note tool stays on J and in Map properties.
+  - **Sandfall:**
+    - keep 4 m a square, open corner courts, 12 v 12;
+    - bring back the portcullis gates (not the lifts or the portal);
+    - offer Deathmatch again;
+    - add a side-wall option to the tunnel tiles in MapMaker;
+    - trim the collision boxes well down (drop arcades on the far sides or the attic walk); aim near the shipped
+      maps.
+  - **Terrain:** plants on fine grids as dense as at 2.5 m; Real-place imports stay at 161 a side; phones draw half
+    resolution on Low only.
+  - **Follow-ups:** props outside the boundary stay scenery; moving and pasting aren't refused; the status line gives
+    way first.
+  - **Bot hints:** chokepoints and staging are marked by hand for now; Mirror swaps teamed hints like spawns; jump
+    checks stay on the movement numbers; hints stay in the content hash.
+  - **Whiteout Station:**
+    - add King of the Hill (hills in the yard, on the ridge and in the cave);
+    - add 2–4 drivable snow sleds on the south road;
+    - move Tide's spawns a cell nearer the yard;
+    - keep the ridge, the cave and the tanks as built.
+  - **Environment tools:** every plant stays stored one by one; a blocking tree asks only on spawns, routes and
+    objectives; retire the old Scatter Brush sets; add the missing palette pictures.
+  - **Phase 4:**
+    - a spawn is exposed at 50 %;
+    - exposure counts every walkable place;
+    - the spawn check runs on demand;
+    - the bot test allows up to 64 bots;
+    - heatmaps stay in memory.
+  - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
+    until it's gone (docs are fine).
+- **Landing cadence (owner, 2026-11-09: "less landings, since I won't be testing until Tuesday afternoon"):** the
+  MapMaker lane stops landing each branch on its own. Green branches wait. They land together as one train
+  (`tools/ci/train.mjs`) on Tuesday 2026-11-10 morning (UTC), ready for the owner's Tuesday-afternoon testing; a
+  second train only if something urgent comes up. Until then, MapMaker branches merge `origin/main` only when they
+  need something from it.
 - **The split of `editorApp.ts`** (Phase 2) waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
@@ -331,8 +535,44 @@ Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key lis
      ending mid-measure travelled to a fresh worker and broke perf:mass). A long e2e flow that should see the vote asks.
    - The dedicated server's ballot reads suite maps raw (JSON only; a full load of all 92 took ~8 s): race tracks
      aren't offered from the suite there (their paths migrate on load); a race rotation still votes.
-   - Open: the launcher/site /host have no vote toggle (config/env and in-game only); the successor of a handoff doesn't
-     carry parties or an open vote; free-for-all parties only get the scoreboard mark.
+   - ~~Open: the launcher/site /host have no vote toggle; the successor of a handoff doesn't carry parties or an open
+     vote; free-for-all parties only get the scoreboard mark.~~ Done in item 6 below.
+6. **Parties and the vote, part 2** (`wip/party-2`, agent, 2026-11-09; owner-approved follow-ups of 2026-11-08; green on `check/party-2`, runs 42559855115 (full suite) and 42563092863; LANDED: main 24db6d0).
+   - **/host and the launcher:** the site's /host page (`client/src/hostPage.ts` `rulesSection`) has **Vote on the
+     next map** and every Match setup rule (the shared `SERVER_RULES`, the launcher's Match rules list: main rules,
+     the rest under More rules, each tagged now / at the restart / next match, with what waits). Stopped: sent with
+     Start (`mapVote`, `rules`; per-mode score/time/respawn via `setServerRule`). Running: each change goes live
+     through two new closed control endpoints, `POST /api/rules` `{ key, value|null, map? }` and `POST /api/vote`
+     `{ on }` (`control.ts` `liveArgs`: a known rule and a value `parseRuleValue` accepts, run as the console's own
+     `rules …` / `rotation vote on|off`). Older Host Services answer 404: the page says the change goes with the next
+     Start. Console: `rotation vote on|off` (and `rotation` shows the vote). Launcher: Rotation card → **Vote on the
+     next map** (draft `mapVote` while stopped). Per-map rules, the rotation and the bot set stay launcher/console only.
+   - **Handoff carry-over:** `CheckpointPlayer.py` (party tag, people only) and `MatchCheckpoint.vote`
+     (`CheckpointVote`: ballot, `[player index, option]` votes, seconds left, `w`/`by` once closed). `matchHost.ts`
+     `voteCheckpoint` / `resumeVote`, `MapVote.resumed` (a closed vote keeps the old host's result: not re-tallied),
+     `BotFiller.restore(..., placed)` (checkpoint index → new combatant), `restoreCombatant` sets `party`; `main.ts`
+     `takeOver` moves an open vote's clock on by the checkpoint's age. Each vote change zeroes `checkpointAt`, so the
+     successor's checkpoint follows within a second. Not carried: spectators' votes; the old host's rotation and vote
+     setting.
+   - **Free-for-all parties:** `game/ffaParty.ts` `ffaPartyMate` (both people, no teams, same `py`, not you):
+     `Hud.nameColor` (kill feed, messages, takeover lines, scoreboard) wears `hud.partyColor` (Options' ally marker
+     colour, default `#3ad1ff`) and the overhead marker callback returns it (the ally diamond). Spawns:
+     `Match.spawn` leaves the party out of `enemies` (no longer a danger the spawn avoids) and passes the calm ones as
+     `SpawnChoice.party`; `pickSpawn` decides safety first (checked points within `partyMargin` of the safest, no
+     enemy nearer than 0.7× the safest's, not seen more), then ranks by `partyBonus` (`content/match-play.json`:
+     partyRange 30, partyBonus 10, partyMax 3, partyMargin 14). `hostile`/`canHurt` unchanged: no damage change.
+   - **Menu bundle:** 746.1 → 714.2 kB gzip (2645.6 → 2512.9 kB raw); budget back to 800 / 2800 kB (`sim/lookHitbox.ts`;
+     see "Menu bundle (2026-10-31)" below).
+   - **Tests:** shared `handoff.test.ts` (py/vote round trip and bounds; restore keeps parties and sides),
+     `mapVote.test.ts` (`MapVote.resumed`), `partySpawn.test.ts` (bonus, near the party, never over safety: an enemy
+     beside the party, a sight line, a much nearer enemy; in a match 30 respawns, damage unchanged); client
+     `localHost.test.ts` (two handoff carry-over cases: open vote with three votes and parties; a closed tie keeps the
+     old host's winner), `ffaParty.test.ts`; host `units.test.ts` (`rotation vote`, `liveArgs`). E2E `hostpage`:
+     the vote and rules on /host before Start (score 7, FF half, low gravity, vote off reach the match), then live
+     (vote on, Mix up pickups now, time limit waiting for the restart), and the launcher's vote box. Screenshots:
+     session scratchpad `party2/` (may not survive).
+   - **Owner deploy:** the site (`/host` page) ships with the usual site update; the Host Service downloads are built by
+     CI from main (players re-download for the vote box and live /host changes). No hub change, nothing on AWS.
 
 **Queued, in the owner's order:**
 1. **Tanks** (owner, 2026-11-07). Bots drive and fire tanks sensibly, and bail out when nearly dead.
@@ -489,6 +729,65 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   everywhere along it (flatten to within 3 m), or the slope between pulled and unpulled ground closes the tunnel.
   Open Stairs climb east as placed. Duplicate (Ctrl+D) + R + arrow keys moves 90 placements at once.
 - **Left / owner's calls:** see the report (lift cages and the portal back? the aqueduct? lights budget full).
+### Environment Phase 2: our trees, bushes and hedges; no Kenney foliage (`wip/env-p2`, agent, 2026-11-08/09; owner-approved; green on `check/env-p2` at 021993b, run 42550774281; LANDED: main 021993b; its claims released; CHANGELOG "Our own trees, bushes and hedges everywhere")
+- **Species** (content/environment/*.json, docs/CONTENT_PIPELINE.md "Environment Phase 2"): `env.broadleaf.maple`
+  (summer, autumn), `env.broadleaf.acacia` (green, dry; umbrella crown), `env.conifer.spruce` (summer, snow),
+  `env.palm.coconut`, `env.palm.leaning` (green, dry; new generator `env/palm.mjs`), `env.cactus.saguaro` (green, dry;
+  `env/cactus.mjs`), `env.shrub.laurel` (green, dry; conceals), `env.hedge.privet` (green, autumn), `env.hedge.yew`
+  (green, snow) (`env/hedge.mjs`). All assetVersion 1, fixture entries, LODs + stand-ins, budgets (plant budget now
+  700 / 200 / 8). Collision per §6: palm trunks and the saguaro capsules (block all, bark); hedges one hull (block
+  all, nav obstacle, role blocking, surface `bark` = full cover like the Kenney hedges, which were concrete by id
+  guess; a species may name its `surface`); laurel none, conceals. `envTilts`: plants without shapes only.
+  Bark picture 1024 × 512 (four strips), leaves atlas 1024 × 1280 (row 5: palm.0/1, acacia.0, hedge.0): every env
+  GLB rebuilt for the uv; shapes/sizes unchanged (fixture holds).
+- **Maps** (MapMaker Replace all, Keep height, driven in the real editor without ?test=1 by the scratchpad driver
+  `env2/tools/maker.mjs`; undo/redo checked per map; Export; release stamp dropped by `env2/tools/finalize.py`;
+  `compare.py`: nothing else changed but the format migration): 1,466 placements on 31 maps (then 16 on 3 more, below): norman_shores 267,
+  primeval_park 209, st_johns 136, eagle_spires 126, backwoods 92, iron_coast 61, jungle_steps 60, sunstone_crag 58,
+  hollowmere_manor 53, coldwater_gulch 51, sandsweep 48, citadel 45, sandgate 32, fernwood_moon 32, crossroads 31,
+  canyon 30, blackout 19, fort_meadow 19, apex_ring 16, atomic_court 14, capitol_mall 12, qasr_medina 12,
+  sunken_kingdom 10, gallows_yard 9, dustwater 6, rail_stockyard 6, serene_city 5, dockside_depot 4, dead_reel 1,
+  dune_harbor 1, pharaohs_reach 1. Mapping: oak/oak_dark/tree_detailed → oak; tree_round/fat/thin/tree/tree_tall →
+  maple; tree_plateau → acacia; pine_tall/pine/pine_crooked → pine; pine_round → spruce (snow variants on snow);
+  palm/palm_tall → coconut; palm_bent → leaning; cacti → saguaro; bush/bush_leafy → shrub; bush_large/cone → laurel
+  (dry on sand maps); hedge → privet; hedge_large → yew. validate-map 0 issues on all 31 (Fernwood Moon: pine
+  `prop_851` moved 1.7 m off `spawn_1112` in the inspector: its trunk reached the spawn). Apex Ring and Sandsweep's
+  export turned their old `track` into paths: `unifiedPaths.test.ts` now checks them against their old tracks
+  (fixtures/race-tracks-before-paths.json): identical.
+- **Then reactor (bush_large 4 → laurel), serpent_gorge (bush_large 5 → laurel, palm_bent 3 → leaning palm) and
+  sky_islands (pine_small → spruce, bush_large → laurel, tree_round → maple, bush_leafy → shrub)** the same way once
+  the trap spots released them (claimed 2026-11-09): 34 maps, 1,482 placements; validate-map 0 issues.
+- **Still Kenney, for later:** test_coverage (mushroom_tall 1; the MapMaker lane's claim: please Replace all it), and
+  with no species yet verdant_ziggurat's 4 hanging moss. Potted plants and `plant_small` (furniture kit, 91 indoors)
+  were left as decor (question for the owner). Card pictures (`maps/shots/`) of the changed maps still show the old
+  trees.
+- **Palette / brushes** (data-only edits inside the MapMaker lane's editor claim, asked in the claim lines):
+  `paletteCatalog.ts` retires every Kenney tree, bush, hedge, cactus and plant (`RETIRED_PROPS`), Nature → Trees and
+  Plants & Flowers list the species (`GROUND_COVER_SPECIES`), `REPLACEMENTS` suggests each; the Kenney hedges moved
+  to category Plants & Flowers (content/props/kenney-fantasy-town-kit.json) so the retirement hides them;
+  `shared/src/editor/scatter.ts` sets plant our species.
+- **Scenery:** `client/src/environment/envScatter.ts` (an EnvironmentVisuals of its own, 160–400 m squares): the
+  forest border (were Quaternius `nt_*` + cones; cones stay only without a model library), the backdrop belt's
+  plants (were Kenney) and the scenery forest's far trees (stand-ins only, forced level). The environment renderer is
+  on by default in matches (`envBatchedOn`, `?env=0` off; MapMaker keeps prop nodes; `?env=1` still opens MapMaker's
+  preview group).
+- **Screenshots** (session scratchpad `env2/`): `before-*/after-*` at eye level (iron_coast north/east/west/village,
+  norman_shores, primeval_park, hollowmere_manor, sandsweep, eagle_spires); `lab*-trees2/small2/palms` (envlab's new
+  Phase 2 lineup, views `trees2`, `small2`, `palms`, beside the old pieces with `before-…`); `palette-env.png`.
+- **Perf** (client-perf, medium, 20 s, SwiftShader at load ~7, two interleaved pairs, main 6c601df vs this; counts
+  only): Norman Shores 562 / 541 → 710 / 456 draws, 1.67 / 1.33 → 1.17 / 0.85 M triangles, casters 103 / 78 → 157 /
+  156; Primeval Park 300 / 361 → 756 / 376 draws, 1.00 / 1.17 → 1.55 / 0.92 M, casters 102 / 85 → 234 / 173; Iron
+  Coast 295 / 510 → 274 / 465 draws, 0.61 / 0.79 → 0.29 / 0.36 M, casters 122 / 583 → 227 / 274. Triangles down,
+  shadow casters up (each env batch near the camera casts); the camera turns, so draws swing. Server (`pnpm bench 48 40`, TDM, two
+  interleaved pairs, load ~7): avg tick Norman Shores 4.0 / 3.6 → 3.8 / 3.6 ms (CPU 4.73 / 4.97 → 4.93 / 5.48), Primeval
+  Park 6.5 / 4.8 → 5.7 / 4.8 ms (CPU 7.11 / 7.30 → 7.15 / 6.94): within the noise (capsule trunks for box trunks).
+  Not measured: a real GPU (the M1).
+- **bot-limits.json:** the check's 10 s+ idle spells 2.5 → 3.5 a match. The check's Fernwood Moon match (seed 1) went
+  from 3 such spells to 9 with its 32 pines' new trunks reshuffling the seeded match: 7 of the 9 at the north rope
+  lift (0, 14, 105) and its single-file queue, the known lift wait (see the 2.5 raise above). Seeds 1-4, 90 s, 32 bots:
+  main 3 / 5 / 5 / 4, this branch 9 / 6 / 2 / 2 (17 against 19). Revert with a fix for the lift wait.
+- **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
+  screenshots; the skipped maps above; card pictures.
 ### Gunplay pass 2: identities, readouts, the Battle Rifle (`wip/gunplay-2`, agent, 2026-11-08; owner-approved candidates 1-6 of the audit plus spec gap G2; green on `check/gunplay-2` at 2673702, run 42531571292, then with main merged in; LANDED on main by fast-forward from `check/gunplay-2`)
 
 docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunplay pass 2"; `pnpm gun-report` re-run
@@ -573,6 +872,20 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
 
+### Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall (`wip/mapmaker-setpieces`, agent, 2026-11-08; MapMaker lane)
+- **Built** (docs/SET_PIECES_PLAN.md, "As built: part 5"): twelve pieces (the catwalk bridge in three lengths) in their
+  own families: Power Core Hall, Catwalk Bridge, Twin-Stair Overlook, Atrium Tower, Loading Dock, Sunken Arena (new kit
+  tiles Arena Pit / Tiers / Tiers (Corner)), Reactor Room, Bunker Cluster, Courtyard Gate, Server Vault, Crossroads
+  Plaza, Ramp Junction; and **Sea Wall** / **Sea Wall (Breached)** for Iron Coast (not placed there: main hands them over).
+- **Retired tiles:** `content/setpieces/aliases.json` (generated into `SET_PIECE_TILE_ALIASES`); `map/setPieceAliases.ts`
+  plays a retired tile as its piece (loadMap as played); MapMaker keeps it and offers Replace all in the tile inspector
+  (`editor/retiredTiles.ts`, `replaceTilesWithSetPieceCommand`). Only `military.gantry` → Catwalk Bridge (Up) so far;
+  the other old pieces are parked (owner questions in the plan's table). No format change.
+- **Tests:** `setPieces5.test.ts` (bots along every way through and up both ends of every climb, in every turn and
+  mirror; players climb; the alias; Replace all and undo; the sea wall and breach); `setPiecePlay.test.ts` judges
+  "walled" with nothing built beyond; e2e `editorSetPiecePart5Checks` in editorux.
+- **Pitfall:** core.room_tall, core.atrium and orbital.reactor_hall have no roof of their own; a piece that tops out
+  with them needs a roof block (the three here have one).
 ### MapMaker overhaul: Play from here, the plan view, the card shot (`wip/mapmaker-p3a`, agent, 2026-11-08; Phase 3 items 1, 2 and 8)
 - **Built:** Play from here (Shift+F5, ▶ Here), the plan view (K, Plan; Export PNG), the card-shot camera (Map
   properties → Card shot: Set card shot…, eye level, Preview, Clear). As built: docs/MAPMAKER_OVERHAUL_PLAN.md under
@@ -6657,8 +6970,13 @@ The menu's first JS grows ~6–12 kB gzipped per style pack (Harbor 798, Snow 80
 tiles (catalog.ts imports packTiles*.ts statically), materials and the whole props table (props.generated.ts via
 getProp in geometry/match/validate) come in through the shared map and sim code the menu loads. The budget in
 tools/ci/bundle-budget.mjs was raised to 840 kB gzipped / 3000 kB raw for Snow, Desert City and Jungle Ruins.
-**To do:** load pack tiles and the props table on demand (a registry the editor and the match fill before they need
-it; the menu draws neither), then bring the budget back to ~800 kB.
+~~**To do:** load pack tiles and the props table on demand, then bring the budget back to ~800 kB.~~ **Done
+(2026-11-09, `wip/party-2`):** the "~840 kB" here was stale (content scalability step 1 took it to 649 kB; it was
+746.1 kB gzip / 2645.6 kB raw on main b65f068). Moving the measured hit-shape table out of the menu (`sim/lookHitbox.ts`:
+`hitbox.ts`, reached through the weapons, also held the lookups the match uses) took it to **714.2 kB gzip / 2512.9 kB
+raw**; the budget is **800 / 2800** again (docs/LOADING.md, "The hit-shape table"). Still in the menu chunk and worth a
+look next: `weapons.generated.ts` (~14 kB gzip), `characterAnimator.ts` (~25), `game/input.ts` (~8), vehicleCamera,
+handProbe, combatReadouts.
 
 ### Work split between the owner's two accounts (2026-10-31 ~06:40 UTC)
 The owner is splitting the style packs across two accounts. Each pack goes on its own `wip/<pack>-pack` branch built

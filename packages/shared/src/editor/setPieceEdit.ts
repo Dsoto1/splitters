@@ -9,6 +9,7 @@ import { boxQuat, isTilted, quatRotate, rotateSide, rotateXZ, yawXZ, type WorldB
 import { SetPieceDefinition, type MapDocument, type MapEntity, type Rotation, type SetPieceMaterialRole, type SetPiecePart, type SetPiecePlacement, type SurfaceStyle, type TilePlacement } from '../map/schema.ts';
 import { checkSetPieceDefinition } from '../map/setPieceCheck.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
+import { TILE_ALIASES, placementsForTiles } from '../map/setPieceAliases.ts';
 import { ROLE_THEME_SLOT, SET_PIECE_GRID, piecesFor, placementPack, setPieceMirrorProblem, setPieceParts, setPiecePorts, tileMirrorAxis, type SetPieceLibrary, type SetPieceRolePack } from '../map/setPieces.ts';
 import { newId, type EditCommand } from './commands.ts';
 import { checkLayout, unusedDefsCommand, type PlacementCheck, type Selection } from './operations.ts';
@@ -90,6 +91,24 @@ export function explodeSetPieceCommand(doc: MapDocument, id: string, catalog: Ti
     command: { kind: 'batch', commands: [{ kind: 'removeSetPieces', setPieces: [p] }, { kind: 'addTiles', tiles }, { kind: 'addEntities', entities }, ...[unusedDefsCommand(doc, new Set([p.id]))].filter((c): c is EditCommand => !!c)] },
     selection: { tiles: tiles.map((t) => t.id), entities: entities.map((e) => e.id) },
   };
+}
+
+/**
+ * "Replace all": every placement of tile `tile` becomes a placement of set piece `piece` at the same cell, level and
+ * turn (the alias table's piece for a retired tile when `piece` is left out), as one undo step. The piece must cover
+ * the tile's cells and levels; each one is checked where it goes, against everything else that stays.
+ */
+export function replaceTilesWithSetPieceCommand(doc: MapDocument, tile: string, piece?: string, catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): { command: EditCommand; placements: SetPiecePlacement[] } | { error: string } {
+  const to = piece ?? TILE_ALIASES.get(tile);
+  if (!to) return { error: `${tile} has no set piece to replace it` };
+  const def = piecesFor(doc, library).get(to);
+  if (!def) return { error: `unknown set piece ${to}` };
+  const old = doc.classicStructure.tiles.filter((t) => t.tile === tile);
+  if (!old.length) return { error: `the map places no ${catalog.get(tile)?.displayName ?? tile}` };
+  const placements = placementsForTiles(doc, old, to);
+  const check = checkSetPiecePlacement(doc, placements, old.map((t) => t.id), catalog, library);
+  if (!check.ok) return { error: check.reason };
+  return { command: { kind: 'batch', commands: [{ kind: 'removeTiles', tiles: old }, { kind: 'addSetPieces', setPieces: placements }] }, placements };
 }
 
 /** Put a set piece of the map's own (one saved from a selection) into the map, so placements of it play anywhere. */

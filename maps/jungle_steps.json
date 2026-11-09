@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 30,
   "metadata": {
     "id": "jungle_steps",
     "name": "Jungle Steps",
@@ -16,15 +16,7 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ],
-    "release": {
-      "mapId": "m_oah2unwu4m6kjknp",
-      "versionId": "v_xaavrqwpx2u2qwxe",
-      "revision": 1,
-      "contentHash": "sha256:b2e58151515ca8eab8b3baf4e11b0261d8225074eb4372b7a25e5f28d7f2b740",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T23:02:15.394Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1093,9 +1085,9 @@
         3
       ],
       "kind": "prop",
-      "model": "prop.palm",
+      "model": "env.palm.coconut",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.65,
       "solid": true,
       "tint": null
     },
@@ -1107,9 +1099,9 @@
         77
       ],
       "kind": "prop",
-      "model": "prop.palm",
+      "model": "env.palm.coconut",
       "yaw": 3.141592653589793,
-      "scale": 1,
+      "scale": 0.65,
       "solid": true,
       "tint": null
     },
@@ -1121,7 +1113,7 @@
         -2.5
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1135,7 +1127,7 @@
         82.5
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -1317,9 +1309,9 @@
         21
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 2.4,
-      "scale": 1,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -1331,9 +1323,9 @@
         59
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 0.7415926535897932,
-      "scale": 1,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -1779,9 +1771,9 @@
         21.78
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 5.880000000000001,
-      "scale": 0.93,
+      "scale": 0.69,
       "solid": true,
       "tint": null
     },
@@ -1789,13 +1781,13 @@
       "id": "prop_160",
       "position": [
         -3.26,
-        1.06,
+        1.15,
         10.64
       ],
       "kind": "prop",
-      "model": "prop.palm",
+      "model": "env.palm.coconut",
       "yaw": 3.55,
-      "scale": 1.1,
+      "scale": 0.71,
       "solid": true,
       "tint": null
     },
@@ -1817,11 +1809,11 @@
       "id": "prop_162",
       "position": [
         28.79,
-        -0.57,
+        -0.58,
         86.39
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 2.969999999999996,
       "scale": 0.93,
       "solid": true,
@@ -1887,11 +1879,11 @@
       "id": "prop_167",
       "position": [
         61.51,
-        -1.52,
+        -1.55,
         27.26
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 4.149999999999996,
       "scale": 0.94,
       "solid": true,
@@ -1919,9 +1911,9 @@
         -6.66
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 3.540000000000001,
-      "scale": 0.91,
+      "scale": 0.68,
       "solid": true,
       "tint": null
     },
@@ -1957,13 +1949,13 @@
       "id": "prop_172",
       "position": [
         63.11,
-        0.52,
+        0.54,
         4.66
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 4.9,
-      "scale": 0.98,
+      "scale": 0.73,
       "solid": true,
       "tint": null
     },
@@ -1989,9 +1981,9 @@
         9.1
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 2.469999999999999,
-      "scale": 0.93,
+      "scale": 0.69,
       "solid": true,
       "tint": null
     },
@@ -2055,11 +2047,11 @@
       "id": "prop_179",
       "position": [
         -0.25,
-        -1.94,
+        -1.98,
         59.39
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 3.389999999999998,
       "scale": 1.07,
       "solid": true,
@@ -2073,7 +2065,7 @@
         -4.94
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 1.88,
       "scale": 0.94,
       "solid": true,
@@ -2097,13 +2089,13 @@
       "id": "prop_182",
       "position": [
         -0.58,
-        -0.57,
+        -0.55,
         79.56
       ],
       "kind": "prop",
-      "model": "prop.palm",
+      "model": "env.palm.coconut",
       "yaw": 0.20999999999999908,
-      "scale": 0.94,
+      "scale": 0.61,
       "solid": true,
       "tint": null
     },
@@ -2115,9 +2107,9 @@
         49.05
       ],
       "kind": "prop",
-      "model": "prop.palm",
+      "model": "env.palm.coconut",
       "yaw": 3.5699999999999994,
-      "scale": 1.11,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -2143,9 +2135,9 @@
         11.57
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 3.679999999999998,
-      "scale": 0.96,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -2185,9 +2177,9 @@
         -6.65
       ],
       "kind": "prop",
-      "model": "prop.palm",
+      "model": "env.palm.coconut",
       "yaw": 0.5299999999999994,
-      "scale": 1.05,
+      "scale": 0.68,
       "solid": true,
       "tint": null
     },
@@ -2269,9 +2261,9 @@
         61.92
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 1.5900000000000007,
-      "scale": 1.24,
+      "scale": 1.25,
       "solid": true,
       "tint": null
     },
@@ -2279,11 +2271,11 @@
       "id": "prop_195",
       "position": [
         12.3,
-        -0.51,
+        -0.53,
         86.07
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 3.969999999999996,
       "scale": 0.88,
       "solid": true,
@@ -2297,7 +2289,7 @@
         1.16
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 3.3499999999999988,
       "scale": 1.06,
       "solid": true,
@@ -2339,9 +2331,9 @@
         -4.96
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 3.8099999999999996,
-      "scale": 1.22,
+      "scale": 1.23,
       "solid": true,
       "tint": null
     },
@@ -2367,9 +2359,9 @@
         -5.92
       ],
       "kind": "prop",
-      "model": "prop.palm",
+      "model": "env.palm.coconut",
       "yaw": 4.8,
-      "scale": 1.14,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -2395,9 +2387,9 @@
         71.01
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 2.1999999999999993,
-      "scale": 1.24,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -2447,11 +2439,11 @@
       "id": "prop_207",
       "position": [
         -6.03,
-        2.04,
+        1.99,
         15.73
       ],
       "kind": "prop",
-      "model": "prop.tree_tall",
+      "model": "env.broadleaf.maple",
       "yaw": 2.45,
       "scale": 1.14,
       "solid": true,
@@ -2489,13 +2481,13 @@
       "id": "prop_210",
       "position": [
         54.41,
-        -3.32,
+        -3.27,
         57.11
       ],
       "kind": "prop",
-      "model": "prop.palm",
+      "model": "env.palm.coconut",
       "yaw": 4.329999999999999,
-      "scale": 0.98,
+      "scale": 0.63,
       "solid": true,
       "tint": null
     },
@@ -2521,9 +2513,9 @@
         -5.46
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 3.630000000000001,
-      "scale": 0.94,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -2535,9 +2527,9 @@
         17.17
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 3.0700000000000003,
-      "scale": 1.14,
+      "scale": 0.85,
       "solid": true,
       "tint": null
     },
@@ -2559,13 +2551,13 @@
       "id": "prop_215",
       "position": [
         39.67,
-        -0.1,
+        -0.09,
         -6.63
       ],
       "kind": "prop",
-      "model": "prop.palm_bent",
+      "model": "env.palm.leaning",
       "yaw": 5.290000000000001,
-      "scale": 1.12,
+      "scale": 0.84,
       "solid": true,
       "tint": null
     },
@@ -2647,9 +2639,9 @@
         12.04
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 1.67,
-      "scale": 1.12,
+      "scale": 0.92,
       "solid": false,
       "tint": null
     },
@@ -2657,13 +2649,13 @@
       "id": "prop_222",
       "position": [
         58,
-        -0.42,
+        -0.43,
         4.44
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.11,
-      "scale": 1.17,
+      "scale": 0.92,
       "solid": false,
       "tint": null
     },
@@ -2675,9 +2667,9 @@
         67.78
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.159999999999999,
-      "scale": 1.18,
+      "scale": 0.93,
       "solid": false,
       "tint": null
     },
@@ -2713,13 +2705,13 @@
       "id": "prop_226",
       "position": [
         53.37,
-        -0.19,
+        -0.16,
         -2.15
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.21,
-      "scale": 1.18,
+      "scale": 0.93,
       "solid": false,
       "tint": null
     },
@@ -2727,13 +2719,13 @@
       "id": "prop_227",
       "position": [
         62.36,
-        1.63,
+        1.57,
         75.68
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.2700000000000005,
-      "scale": 1.2,
+      "scale": 0.95,
       "solid": false,
       "tint": null
     },
@@ -2741,13 +2733,13 @@
       "id": "prop_228",
       "position": [
         56.13,
-        -0.55,
+        -0.53,
         18.62
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 4.989999999999999,
-      "scale": 1.11,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },
@@ -2801,9 +2793,9 @@
         14.22
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.87,
-      "scale": 1.3,
+      "scale": 1.02,
       "solid": false,
       "tint": null
     },
@@ -2811,13 +2803,13 @@
       "id": "prop_233",
       "position": [
         -3.03,
-        -0.11,
+        -0.1,
         6.43
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.9299999999999979,
-      "scale": 0.99,
+      "scale": 0.81,
       "solid": false,
       "tint": null
     },
@@ -2829,9 +2821,9 @@
         16.71
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.78,
-      "scale": 1.29,
+      "scale": 1.02,
       "solid": false,
       "tint": null
     },
@@ -2843,9 +2835,9 @@
         8.79
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.6399999999999997,
-      "scale": 1.09,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -2867,13 +2859,13 @@
       "id": "prop_237",
       "position": [
         62.48,
-        2.25,
+        2.26,
         67.69
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.940000000000002,
-      "scale": 0.93,
+      "scale": 0.76,
       "solid": false,
       "tint": null
     },
@@ -2983,9 +2975,9 @@
         1.94
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 4.249999999999997,
-      "scale": 0.99,
+      "scale": 0.81,
       "solid": false,
       "tint": null
     },
@@ -3025,9 +3017,9 @@
         5.1
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.300000000000002,
-      "scale": 1.17,
+      "scale": 0.96,
       "solid": false,
       "tint": null
     },
@@ -3035,13 +3027,13 @@
       "id": "prop_249",
       "position": [
         22.72,
-        -1.28,
+        -1.29,
         -7.12
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.9699999999999989,
-      "scale": 1.21,
+      "scale": 0.95,
       "solid": false,
       "tint": null
     },
@@ -3063,13 +3055,13 @@
       "id": "prop_251",
       "position": [
         -2.76,
-        -0.23,
+        -0.21,
         83.46
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.13,
-      "scale": 1.14,
+      "scale": 0.94,
       "solid": false,
       "tint": null
     },
@@ -3175,13 +3167,13 @@
       "id": "prop_259",
       "position": [
         1.67,
-        -0.65,
+        -0.64,
         71.97
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.579999999999996,
-      "scale": 1.21,
+      "scale": 0.99,
       "solid": false,
       "tint": null
     },
@@ -3189,13 +3181,13 @@
       "id": "prop_260",
       "position": [
         16.83,
-        -0.94,
+        -0.92,
         86.9
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.2700000000000005,
-      "scale": 1.32,
+      "scale": 1.08,
       "solid": false,
       "tint": null
     },
@@ -3245,13 +3237,13 @@
       "id": "prop_264",
       "position": [
         -5.61,
-        -0.3,
+        -0.28,
         63.16
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.839999999999999,
-      "scale": 1.29,
+      "scale": 1.02,
       "solid": false,
       "tint": null
     },
@@ -3263,9 +3255,9 @@
         26.03
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.0699999999999994,
-      "scale": 1.33,
+      "scale": 1.05,
       "solid": false,
       "tint": null
     },
@@ -3287,13 +3279,13 @@
       "id": "prop_267",
       "position": [
         2.08,
-        -0.55,
+        -0.54,
         67.53
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.899999999999996,
-      "scale": 0.93,
+      "scale": 0.76,
       "solid": false,
       "tint": null
     },
@@ -3315,13 +3307,13 @@
       "id": "prop_269",
       "position": [
         55.93,
-        1.66,
+        1.69,
         86.13
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.9899999999999993,
-      "scale": 0.94,
+      "scale": 0.77,
       "solid": false,
       "tint": null
     },
@@ -3347,9 +3339,9 @@
         -5.21
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 2.8299999999999965,
-      "scale": 1.32,
+      "scale": 1.08,
       "solid": false,
       "tint": null
     },
@@ -3357,13 +3349,13 @@
       "id": "prop_272",
       "position": [
         42.23,
-        -0.27,
+        -0.26,
         -2.82
       ],
       "kind": "prop",
-      "model": "prop.bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.179999999999997,
-      "scale": 1.14,
+      "scale": 0.94,
       "solid": false,
       "tint": null
     },
@@ -3403,9 +3395,9 @@
         64.8
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.5599999999999996,
-      "scale": 1.24,
+      "scale": 0.98,
       "solid": false,
       "tint": null
     },
@@ -3445,9 +3437,9 @@
         8.4
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 1.1,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },
@@ -3459,9 +3451,9 @@
         71.6
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.041592653589793,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },
@@ -3557,9 +3549,9 @@
         26.6
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.2,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },
@@ -3571,9 +3563,9 @@
         53.4
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.941592653589793,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },
@@ -3641,9 +3633,9 @@
         30.4
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.6,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },
@@ -3655,9 +3647,9 @@
         49.6
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.541592653589793,
-      "scale": 1.15,
+      "scale": 0.91,
       "solid": false,
       "tint": null
     },

@@ -1,4 +1,4 @@
-import { MAX_TERRAIN_VERTS, TERRAIN_MATERIALS, smoothGrid, type TerrainData, type TerrainMaterial } from '@tiletrigger/shared';
+import { DEFAULT_TERRAIN_VERTS, TERRAIN_MATERIALS, smoothGrid, type TerrainData, type TerrainMaterial } from '@tiletrigger/shared';
 
 /**
  * Terrain heights from a height grid file (MapMaker → Terrain, owner only):
@@ -86,7 +86,7 @@ export interface HeightGridTerrain {
   terrain: TerrainData;
   /** The file height put at y 0 (m). */
   datum: number;
-  /** The grid was coarser than the file (the file had more than MAX_TERRAIN_VERTS heights along a side). */
+  /** The grid was coarser than the file (the file had more than DEFAULT_TERRAIN_VERTS heights along a side; Change grid can go finer after). */
   resampled: boolean;
 }
 
@@ -130,7 +130,7 @@ export function gridAreaHeightAt(g: HeightGrid, x: number, z: number, reach: num
 
 /**
  * A terrain covering the grid: vertices at the file's cell size (coarser when
- * the file is more than MAX_TERRAIN_VERTS heights along a side: each vertex
+ * the file is more than DEFAULT_TERRAIN_VERTS heights along a side: each vertex
  * then takes the average of the file round it, gridAreaHeightAt), heights =
  * file height − `datum` (default: the file's height at the map's centre point
  * (0, 0), else its lowest), with the ground 15 cm under level 0 like a new
@@ -143,11 +143,11 @@ export function terrainFromHeightGrid(g: HeightGrid, opts: { current?: TerrainDa
   if (opts.smoothing && opts.smoothing > 0) g = { ...g, values: smoothGrid(g.values, g.cols, g.rows, opts.smoothing / g.cell) };
   const w = (g.cols - 1) * g.cell;
   const d = (g.rows - 1) * g.cell;
-  const spacing = Math.max(g.cell, w / (MAX_TERRAIN_VERTS - 1), d / (MAX_TERRAIN_VERTS - 1));
+  const spacing = Math.max(g.cell, w / (DEFAULT_TERRAIN_VERTS - 1), d / (DEFAULT_TERRAIN_VERTS - 1));
   // Two decimals, so the grid stays tidy in the file; never over the vertex limit.
   const sp = Math.ceil(spacing * 100 - 1e-6) / 100;
-  const cols = Math.min(MAX_TERRAIN_VERTS, Math.floor(w / sp + 1e-6) + 1);
-  const rows = Math.min(MAX_TERRAIN_VERTS, Math.floor(d / sp + 1e-6) + 1);
+  const cols = Math.min(DEFAULT_TERRAIN_VERTS, Math.floor(w / sp + 1e-6) + 1);
+  const rows = Math.min(DEFAULT_TERRAIN_VERTS, Math.floor(d / sp + 1e-6) + 1);
   let low = Infinity;
   for (const v of g.values) if (Number.isFinite(v)) low = Math.min(low, v);
   if (!Number.isFinite(low)) low = 0;

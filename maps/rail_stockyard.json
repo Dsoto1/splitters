@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 30,
   "metadata": {
     "id": "rail_stockyard",
     "name": "Rail Stockyard",
@@ -4155,9 +4155,9 @@
         18.5
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.7371788453962654,
-      "scale": 1,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -4183,9 +4183,9 @@
         51
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 2.3449770042020828,
-      "scale": 1,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -4211,9 +4211,9 @@
         2.5
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.46972212295048,
-      "scale": 1,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -4239,9 +4239,9 @@
         18.5
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 0.9124679056648165,
-      "scale": 1,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -4267,9 +4267,9 @@
         51
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 3.1236744417902083,
-      "scale": 1,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -4295,9 +4295,9 @@
         2.5
       ],
       "kind": "prop",
-      "model": "prop.bush_large",
+      "model": "env.shrub.laurel",
       "yaw": 4.4325611572433266,
-      "scale": 1,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },

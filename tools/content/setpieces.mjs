@@ -23,6 +23,7 @@ import { check, comments, shape, tsInline } from './weapons.mjs';
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const DIR = 'content/setpieces';
 const ROLES = `${DIR}/roles.json`;
+const ALIASES = `${DIR}/aliases.json`;
 const GENERATED = 'packages/shared/src/content/setPieces.generated.ts';
 const CHECKER = 'tools/content/setpieces-check.ts';
 
@@ -31,8 +32,8 @@ const readJson = (root, rel) => JSON.parse(readFileSync(join(root, rel), 'utf8')
 
 /** The family files (every .json in content/setpieces/ but roles.json, sorted) and the role packs. */
 export function load(root = ROOT) {
-  const files = readdirSync(join(root, DIR)).filter((f) => f.endsWith('.json') && f !== 'roles.json').sort();
-  return { families: files.map((f) => ({ file: `${DIR}/${f}`, json: readJson(root, `${DIR}/${f}`) })), roles: readJson(root, ROLES) };
+  const files = readdirSync(join(root, DIR)).filter((f) => f.endsWith('.json') && f !== 'roles.json' && f !== 'aliases.json').sort();
+  return { families: files.map((f) => ({ file: `${DIR}/${f}`, json: readJson(root, `${DIR}/${f}`) })), roles: readJson(root, ROLES), aliases: existsSync(join(root, ALIASES)) ? readJson(root, ALIASES) : { tiles: [] } };
 }
 
 const MATERIAL_ROLES = ['stone', 'trim', 'floor', 'paving', 'roof', 'wood', 'metal'];
@@ -128,6 +129,24 @@ export function build(content, root = ROOT, opts = {}) {
     }
   }
 
+  // Retired tiles and their set pieces (the load-time alias table).
+  for (const k of Object.keys(content.aliases ?? {})) if (!['$comment', 'tiles'].includes(k)) problems.push(`${ALIASES}: unknown field "${k}"`);
+  const aliasShape = obj({ tile: str, piece: str, since: str, 'notes?': str });
+  const aliases = [];
+  const aliased = new Set();
+  for (const [i, a] of (Array.isArray(content.aliases?.tiles) ? content.aliases.tiles : []).entries()) {
+    const where = `${ALIASES}: tiles[${i}] (${a?.tile})`;
+    const bad = check(a, aliasShape, where);
+    problems.push(...bad);
+    if (bad.length) continue;
+    if (aliased.has(a.tile)) problems.push(`${where}: ${a.tile} is listed twice`);
+    aliased.add(a.tile);
+    if (!ids.has(a.piece)) problems.push(`${where}: ${a.piece} is not a set piece in ${DIR}/`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(a.since)) problems.push(`${where}: since is a date (YYYY-MM-DD)`);
+    const { notes: n, ...alias } = a;
+    aliases.push({ alias, notes: n ? { design: n } : undefined });
+  }
+
   // Maps name pieces and packs by id: one they use can't be renamed or removed.
   for (const [kind, id, where] of namedByMaps(root)) {
     if (kind === 'piece' && id.startsWith('setpiece.') && !ids.has(id)) problems.push(`${where}: places set piece ${id}, which isn't in ${DIR}/ (an id never changes)`);
@@ -135,16 +154,16 @@ export function build(content, root = ROOT, opts = {}) {
   }
 
   // The pieces themselves, with the game's code (schema, references, footprints, ports, mirror, every expansion).
-  if (!opts.skipDeep && pieces.length && !problems.length) problems.push(...deepCheck(root, pieces, packs));
-  return { problems, out: { pieces, packs } };
+  if (!opts.skipDeep && pieces.length && !problems.length) problems.push(...deepCheck(root, pieces, packs, aliases));
+  return { problems, out: { pieces, packs, aliases } };
 }
 
 /** tools/content/setpieces-check.ts on the pieces and packs (the game's TypeScript, run by node). */
-function deepCheck(root, pieces, packs) {
+function deepCheck(root, pieces, packs, aliases = []) {
   try {
     const stdout = execFileSync(process.execPath, ['--experimental-transform-types', '--no-warnings', join(root, CHECKER)], {
       cwd: root,
-      input: JSON.stringify({ pieces: pieces.map((p) => ({ where: p.where, def: p.def })), packs: packs.map((p) => p.pack) }),
+      input: JSON.stringify({ pieces: pieces.map((p) => ({ where: p.where, def: p.def })), packs: packs.map((p) => p.pack), aliases: aliases.map((a) => a.alias) }),
       maxBuffer: 64 << 20,
     });
     return JSON.parse(stdout.toString()).problems;
@@ -184,6 +203,14 @@ export function render(out) {
   L.push('export const SET_PIECE_PACKS: readonly SetPieceRolePackInput[] = [');
   for (const p of out.packs) L.push(`${comments(p.notes, '  ')}  ${tsInline(p.pack)},`);
   L.push('];');
+  L.push('');
+  L.push('/**');
+  L.push(' * Retired tiles and the set pieces that replace them (content/setpieces/aliases.json): a map placing one plays the');
+  L.push(" * piece in the tile's place (map/setPieceAliases.ts), and MapMaker's Replace all writes it.");
+  L.push(' */');
+  L.push('export const SET_PIECE_TILE_ALIASES: readonly { tile: string; piece: string; since: string }[] = [');
+  for (const a of out.aliases) L.push(`${comments(a.notes, '  ')}  ${tsInline(a.alias)},`);
+  L.push('];');
   return `${L.join('\n')}\n`;
 }
 
@@ -200,7 +227,7 @@ function main() {
   const { problems } = build(content);
   if (problems.length) return fail(problems);
   if (checkOnly && stale) return fail([`out of date: ${GENERATED} (run node tools/content/setpieces.mjs)`]);
-  console.log(`set pieces OK: ${first.out.pieces.length} pieces, ${first.out.packs.length} role packs${checkOnly ? '' : stale ? `; wrote ${GENERATED}` : '; up to date'}`);
+  console.log(`set pieces OK: ${first.out.pieces.length} pieces, ${first.out.packs.length} role packs, ${first.out.aliases.length} retired tile(s)${checkOnly ? '' : stale ? `; wrote ${GENERATED}` : '; up to date'}`);
 }
 
 function fail(problems) {

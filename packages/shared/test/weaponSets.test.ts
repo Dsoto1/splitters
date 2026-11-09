@@ -11,7 +11,6 @@ import {
   CORE_ITEMS,
   DEFAULT_COOP_RULES,
   DEFAULT_DEATHMATCH_RULES,
-  DEFAULT_RACE_RULES,
   DEFAULT_TDM_RULES,
   DEFAULT_ZOMBIES_RULES,
   WEAPON_CATEGORIES,
@@ -126,10 +125,9 @@ describe('spawn loadouts', () => {
 
   it("each set's spawn weapons, the last one held, and its first grenade", () => {
     expect(kit('standard')).toEqual({ weapons: ['core.knife', 'core.pistol'], throwable: { kind: 'frag', count: 1 } });
-    // Standard keeps the mode's own: co-op adds a rifle, Zombies two grenades, a race none.
+    // Standard keeps the mode's own: co-op adds a rifle, Zombies two grenades.
     expect(kit('standard', DEFAULT_COOP_RULES).weapons).toEqual(['core.knife', 'core.pistol', 'core.rifle']);
     expect(kit('standard', DEFAULT_ZOMBIES_RULES).throwable).toEqual({ kind: 'frag', count: 2 });
-    expect(kit('standard', DEFAULT_RACE_RULES).throwable).toBeNull();
     expect(kit('military')).toEqual({ weapons: ['core.knife', 'core.pistol', 'core.rifle'], throwable: { kind: 'frag', count: 1 } });
     expect(kit('scifi')).toEqual({ weapons: ['core.knife', 'core.pulse_pistol', 'core.plasma'], throwable: { kind: 'sticky', count: 1 } });
     expect(kit('medieval')).toEqual({ weapons: ['core.knife', 'core.spear'], throwable: { kind: 'incendiary', count: 1 } });

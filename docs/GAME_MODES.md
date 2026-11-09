@@ -11,7 +11,6 @@
 | Co-op | `core.coop` | players vs NPCs | none (logic ends it) | NPC encounters |
 | Fort Wars | `core.forts` | 2 | captures (default 3) | a **Flag Base** per team (any CTF map) |
 | Disc Arena | `core.discs` | none | knock-offs (default 10) | listed in the map's modes (decks over a void) |
-| Race | `core.race` | none | first over the line after the last lap | a **track** (Road tool) |
 | Breakthrough | `core.breakthrough` | 2 (attackers, defenders) | sectors (the attack's reinforcements and the sector clock end it) | **Sectors**, their **objectives** and each side's **spawn groups** |
 
 **Classes** isn't a mode but a match setting for any mode with weapons
@@ -54,7 +53,7 @@ revenge" to them); the same player downing you `callouts.nemesis` times (3) in a
 ## Player caps
 
 Each map has a **recommended** and a **most** player count for every mode it plays (free-for-all and team modes;
-co-op squads and races keep their own sizes). MapMaker sets them in Map properties, **Players by mode** (empty
+co-op squads keep their own sizes). MapMaker sets them in Map properties, **Players by mode** (empty
 fields show the automatic caps; Auto goes back to them); they are `metadata.playerCaps` in the map file, by mode.
 A mode without its own takes the **automatic caps** (`autoPlayerCaps`, sim/matchSetup.ts):
 
@@ -105,12 +104,34 @@ ended (12 s vote, 3 s winner, the map's load and the start countdown). Nobody is
 (`?join=CODE&party=TAG`: the host's in the Host tab, and anyone's who joined by code in the Match tab), so whoever
 follows one is in your party. `hello` carries the tag; a host keeps it on the player (`Combatant.party`, the roster's
 `py`), and **in team modes a joining member takes a bot's place on the team most of their party is on**
-(`Match.takeOverBot`, `partyTeam`), while it has a bot to give way; else the usual balance. Free-for-all: nothing
-changes but the scoreboard's **PARTY** mark. Travelling (the vote, the rotation, Change map) everyone rejoins the next
-match with the same tag, so the party lands on one side again. Bots fill and leave as people join and leave, as
+(`Match.takeOverBot`, `partyTeam`), while it has a bot to give way; else the usual balance. Travelling (the vote,
+the rotation, Change map) everyone rejoins the next match with the same tag, so the party lands on one side again. Bots fill and leave as people join and leave, as
 before; **a join beyond the map's player cap for the mode is refused** ("match full: <map> takes N players"), a
 player coming back to a kept place excepted. Online → Join a friend's game takes a code or a pasted invite link, and
 offers **Rejoin your last friend's game** for six hours.
+
+**Free-for-all parties** (Deathmatch, Roulette and every mode without teams; `game/ffaParty.ts`, `sim/spawns.ts`):
+party members stay each other's opponents (**no damage or scoring change**: they can hurt each other, and a kill of
+one counts like any other), but they see each other as friends:
+- **Friendly names:** your party's people wear the friendly colour (Options' ally marker colour; the default cyan
+  `#3ad1ff` when it is "team") in the kill feed, quick messages and the scoreboard (with its **PARTY** mark), and
+  get the ally marker (a diamond) over their heads. Strangers keep their own colours and no marker.
+- **Spawning near each other:** a member's spawn choice doesn't count the party as the danger it avoids (enemy
+  distance and sight lines are the strangers'), and **safety is decided first**: among the checked points about as
+  safe as the safest (within `partyMargin`, no enemy much nearer than the safest's nearest, none seen by more
+  enemies), each living member out of a fight (not hurt in the last 4 s) within `partyRange` adds `partyBonus`, up
+  to `partyMax`; one of the best few is picked at random as usual. The numbers are `content/match-play.json`
+  `spawnChoice` (`partyRange` 30 m, `partyBonus` 10, `partyMax` 3, `partyMargin` 14). With an enemy beside the party,
+  or a sight line on its spawns, the member spawns elsewhere. Tests: `shared/test/partySpawn.test.ts`.
+
+**Host handoff** (a browser host leaves; docs/MULTIPLAYER_PROTOCOL.md §13-14): parties and an open vote carry over to
+the successor. The checkpoint keeps each person's party tag (`py`) and side, and the vote as it stands: the ballot,
+everyone's votes (by their place in the checkpoint, so they follow people to their new slots), the seconds left, or
+the winner once it has closed (the old host's tie-break stands: the successor doesn't tally it again). The successor
+holds the scoreboard, shows the same cards and counts, takes votes on (friends who reconnect see it at once and may
+change theirs), and travels to the winner as the old host would have; a vote's votes reach the successor within a
+second (each change refreshes its checkpoint). Not carried: spectators' votes (spectators aren't in a checkpoint) and
+the old host's rotation and vote setting (the successor's own apply from the next match on).
 
 ## Capture the Flag
 
@@ -349,59 +370,27 @@ glance off anyone who spawned (or started the round) in the last 2 s.
 - MapMaker: **Map properties → Mode → Disc Arena**. A map listing only Disc
   Arena isn't asked for health pickups.
 
-## Race
+## Tracks and NPC traffic (Race mode removed)
 
-Everyone starts on the start grid in a vehicle and races the map's track
-(`sim/race.ts`). Needs a **track** (map format v18), drawn with MapMaker's
-Road tool.
+Race mode was removed (owner, 2026-11-08: "steer away from racing and focus on battles and maps"). Tracks stay as
+map spice for the battle modes: a path used as a track (MapMaker's Paths tool, Shift+G; `uses: ['race']` in the map
+file, unchanged, no format bump) carries **NPC traffic**.
 
-- **The start.** Racers are put at the wheel of a fresh vehicle on the
-  grid, two abreast behind the start line, in join order. A 3 s countdown
-  holds everyone still (when the match's own countdown has just run, the
-  race goes straight away). Unused grid vehicles are taken off the track.
-- **Checkpoints** are spaced about 40 m apart along the road (at least
-  four on a circuit); gate 0 is the start line, which is also the finish
-  line of a circuit. They count only in order and only when you cross the
-  line forwards within the road's width (plus 4 m), so cutting across the
-  infield doesn't help. A lap is a crossing of the start line; the race is
-  the track's laps (point to point: one run, start line to finish).
-- **Positions:** finishers by finish time, then by checkpoints passed, then
-  by distance to the next one. First over the line wins the round; the rest
-  have 30 s to finish (or until everyone is in). The HUD shows lap X/Y, your
-  place, the race clock, the current and best lap, a marker on the next
-  checkpoint (an arrow at the screen edge when it's behind you), the
-  running order, the countdown and a **WRONG WAY** warning.
-- **Back on track.** Wrecked, thrown out of your vehicle for 1.5 s, stuck
-  for 5 s or more than 30 m off the road for 3 s: you are put just past the
-  last checkpoint you passed, in a fresh vehicle. Dying (respawn key
-  included) does the same after the respawn delay. You can't get out (E).
-- **Clean or combat.** In a clean race nobody can hurt anybody (no shots,
-  no run-overs between racers, sentries asleep). A **combat race** turns on
-  weapons, vehicle guns (the speeder pilot's blasters) and the sideline
-  sentries. The track sets it; Arcade can override it, and the vehicle class
-  and laps too (`MatchRules.raceCombat`, `raceVehicle`, `raceLaps`).
-- **Grip.** On any map with a track, wheeled vehicles grip the road 1.7×
-  better and are 15% slower off it; hovercraft don't care.
-- **Bots** drive with the reusable `TrackDriver` (`sim/trackDriver.ts`):
-  look-ahead steering in their own lane, braking for the bends they see
-  coming, pulling out to pass slower cars (braking when boxed in), backing
-  out when stuck. In a combat race they fire bursts of their forward gun at
-  rivals ahead in reach, after the first 10 s.
-- **Ambient cars** (any mode): a track can carry up to 12 NPC-driven cars
-  (`track.ambient`, `ambientVehicle`) that lap it with the same driver. They
-  belong to no team: they run anyone over, anyone can shoot them up or take
-  the wheel (the AI lets go), and wrecked or stranded ones come back in the
-  pit lane (`track.pit`, else just off the road by the start line). For an
-  F1-style map with traffic while players fight round it.
-- **Events:** `race` with `a` = `go` / `gate` / `lap` / `best` / `finish`.
-  Snapshots carry `md.rc` (`RaceSnapshot`).
-- **Quick start:** `?offline=sandsweep&gamemode=core.race`. Headless:
-  `pnpm bench 8 200 maps/sandsweep.json --mode=core.race` (8 bots finish a
-  3-lap race in about 3 minutes, ~53 s laps).
-
-Sandsweep Circuit is the demo: a 1 km podrace circuit round a desert mesa
-in speeders, a combat race by default, with five sentries on the rocks 31 m
-off the straights (they reach only the near edge of the road).
+- **Ambient cars** (every mode): a track can carry up to 12 NPC-driven cars (`race.ambient`, `ambientVehicle`) that
+  lap it, driven by the reusable `TrackDriver` (`sim/trackDriver.ts`: look-ahead steering in their own lane, braking
+  for the bends they see coming, pulling out to pass slower cars, backing out when stuck). They belong to no team:
+  they run anyone over (roadkill, credited to nobody), anyone can shoot them up or take the wheel (the AI lets go),
+  and wrecked or stranded ones come back in the pit lane (`race.pit`, else just off the road by the start line).
+- **Grip.** On any map with a track, wheeled vehicles grip the road 1.7× better and are 15% slower off it
+  (`sim/road.ts`); hovercraft don't care.
+- **Checkpoints** are still sampled along the track (track data: `TrackGeometry.gates`), and MapMaker still shows
+  them; nothing scores them now. The track's other race settings (laps, grid, vehicle, combat) are kept in the file
+  but unused.
+- **Old maps.** A map whose modes still list `core.race` loads and simply doesn't offer it (`isGameMode` drops it;
+  only Deathmatch is offered when it listed nothing else); the validator warns `race.removed` so MapMaker can drop it
+  in Map properties. Saved setups, rotations, playlists and host commands that ask for race are refused or fall back.
+- **Quick look:** `?offline=apex_ring&gamemode=core.tdm` (twelve karts lap the Grand Prix circuit while the teams
+  fight). The e2e flow `traffic` checks it.
 
 ## Roulette
 

@@ -83,9 +83,9 @@ describe('the coverage map', () => {
     expect(placements.filter((p) => !parts.has(`sp_${p.id}`)).map((p) => p.piece)).toEqual([]);
   });
 
-  it('has the markers of every game mode, terrain, roads, a race track, an AI route and logic', () => {
+  it('has the markers of every game mode, terrain, roads, a track (NPC traffic), an AI route and logic', () => {
     expect(new Set(map.entities.flatMap((e) => (e.kind === 'flag' ? [e.team] : []))).size).toBeGreaterThanOrEqual(2);
-    expect(playableModes(map)).toEqual(expect.arrayContaining(['core.ctf', 'core.forts', 'core.koth', 'core.bomb', 'core.hostage', 'core.breakthrough', 'core.race', 'core.zombies']));
+    expect(playableModes(map)).toEqual(expect.arrayContaining(['core.ctf', 'core.forts', 'core.koth', 'core.bomb', 'core.hostage', 'core.breakthrough', 'core.zombies']));
     expect(raceTrack(map)).not.toBeNull();
     const uses = new Set((map.paths ?? []).flatMap((p) => p.uses));
     expect(missing(['road', 'race', 'route'], uses)).toEqual([]);

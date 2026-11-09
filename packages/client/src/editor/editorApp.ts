@@ -270,6 +270,7 @@ import {
   pasteCommand,
   clipboardCount,
   addSetPieceDefCommand,
+  replaceTilesWithSetPieceCommand,
   builtInSetPieces,
   checkSetPieceDefinition,
   checkSetPiecePlacement,
@@ -331,6 +332,7 @@ import { KeyOverlay } from './keyOverlay.ts';
 import { MeasureTool } from './measureTool.ts';
 import { RotateRing } from './rotateRing.ts';
 import { quickFacings } from './quickFacings.ts';
+import { isRetiredTile, retiredTilePanel } from './retiredTiles.ts';
 import { PropPlaceOptions } from './propPlaceOptions.ts';
 import { SurfaceBoxes } from './surfaceBoxes.ts';
 import { testMode } from '../testMode.ts';
@@ -363,6 +365,7 @@ import { cardShotSection, type CardShotHost } from './cardShot.ts';
 import { NoteTool } from './noteTool.ts';
 import { groupSection, type GroupHost } from './groupPanel.ts';
 import { openMirrorDialog } from './mirrorDialog.ts';
+import { openChangeGridDialog } from './changeGridDialog.ts';
 import { readClipboard, writeClipboard } from './clipboardStore.ts';
 import { templatePicker } from './templatePicker.ts';
 import { libraryThumb } from './libraryThumbs.ts';
@@ -957,6 +960,14 @@ export class EditorApp {
     if (!this.myPieces.size) return this.setPieceLib;
     if (this.placeLibCache?.rev !== this.myPiecesRev) this.placeLibCache = { rev: this.myPiecesRev, lib: { pieces: new Map([...this.setPieceLib.pieces, ...this.myPieces]), packs: this.setPieceLib.packs } };
     return this.placeLibCache.lib;
+  }
+
+  /** Replace all of a retired tile with the set piece that replaced it (one undo step), and select them. */
+  private replaceRetired(tile: string): void {
+    const r = replaceTilesWithSetPieceCommand(this.doc, tile, undefined, coreCatalog, this.setPieceLib);
+    if (!this.run('Replace all', 'error' in r ? r : r.command) || 'error' in r) return;
+    this.setSelection({ tiles: [], entities: [], setPieces: r.placements.map((p) => p.id) });
+    this.toast(`Replaced ${r.placements.length} ${coreCatalog.get(tile)?.displayName ?? tile} with ${this.pieceDef(r.placements[0]!.piece)?.displayName ?? r.placements[0]!.piece}`);
   }
 
   /** A set piece's definition: shipped, the map's own, or the player's. */
@@ -2977,7 +2988,8 @@ export class EditorApp {
     const tilePack = (id: string) => STYLE_PACKS.find((p) => id.startsWith(`${p.id}.`) || p.tiles.includes(id));
     for (const category of TILE_CATEGORIES) {
       const grid = this.palette.group($('ed-tiles'), `tiles:${category}`, category);
-      for (const def of coreCatalog.all().filter((d) => d.category === category)) this.paletteButton(grid, def, tilePack(def.id));
+      // Retired tiles (a set piece replaced them) stay out of the palette: maps that place one still load.
+      for (const def of coreCatalog.all().filter((d) => d.category === category && !isRetiredTile(d.id))) this.paletteButton(grid, def, tilePack(def.id));
     }
     this.buildSetPiecePalette();
     const edges = this.palette.group($('ed-edges'), 'walls', 'Walls & Openings', { note: 'Pick a style, then click any side of a room or corridor to build it that way (O cycles styles, right-click resets).' });
@@ -3386,7 +3398,8 @@ export class EditorApp {
     el.append(
       row(
         'Border',
-        select('ed-bd-border', borderOptions, b.border ?? 'none', (v) => {
+        // Coast is for the sides a shoreline runs out through: offered per side.
+        select('ed-bd-border', borderOptions.filter(([st]) => st !== 'coast' || b.border === 'coast'), b.border ?? 'none', (v) => {
           const { border: _border, borderSides: _sides, ...rest } = b;
           set('Change border', v === 'none' ? rest : { ...rest, border: v as BorderStyle });
         }),
@@ -3861,6 +3874,18 @@ export class EditorApp {
       // Undoable, one step: the main ground becomes the new one; cells painted another material keep it.
       this.setTerrain(`Main ground: ${TERRAIN_MATERIAL_LABELS[TERRAIN_MATERIALS[to]!]}`, { ...t, materials: t.materials.map((m) => (m === from ? to : m)) });
     });
+    $('ed-tr-grid').addEventListener('click', () =>
+      openChangeGridDialog({
+        doc: () => this.doc,
+        shownFor: (t) => this.groundShownFor(t),
+        apply: (label, cmd, moved) => {
+          if (!this.run(label, cmd)) return;
+          this.setTerrainBrush(this.terrainBrush);
+          this.toast(`${label}${moved ? `; ${moved} things on the ground moved with it` : ''} · Ctrl+Z undoes it`);
+        },
+        root: $('editor'),
+      }),
+    );
     $('ed-tr-smooth-all').addEventListener('click', () => this.smoothAllTerrain(Number($<HTMLSelectElement>('ed-tr-smooth-all-amount').value), $<HTMLInputElement>('ed-tr-smooth-hold').checked));
     $('ed-tr-cliffs').addEventListener('click', () => {
       if (this.doc.terrain) this.setTerrain('Paint cliffs as stone', paintSlopes(this.doc.terrain, 35, 'stone'));
@@ -4953,6 +4978,8 @@ export class EditorApp {
     } else if (tiles.length === 1 && entities.length === 0 && !pieces.length) {
       const t = doc.classicStructure.tiles.find((x) => x.id === tiles[0])!;
       el.append(h2(coreCatalog.get(t.tile)?.displayName ?? t.tile));
+      const retired = retiredTilePanel(doc, t.tile, (id) => this.pieceDef(id)?.displayName ?? id, (tile) => this.replaceRetired(tile));
+      if (retired) el.append(retired);
       const type = document.createElement('select');
       for (const def of coreCatalog.all()) type.append(new Option(def.displayName, def.id, false, def.id === t.tile));
       type.addEventListener('change', () => this.run('Replace tile', updateTileCommand(doc, t, { ...t, tile: type.value })));

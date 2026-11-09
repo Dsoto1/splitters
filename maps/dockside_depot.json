@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 30,
   "metadata": {
     "id": "dockside_depot",
     "name": "Dockside Depot",
@@ -16,15 +16,7 @@
     "supportedModes": [
       "core.tdm",
       "core.deathmatch"
-    ],
-    "release": {
-      "mapId": "m_wlnyyvayibx2npzp",
-      "versionId": "v_orykqzwsgul4cvbm",
-      "revision": 1,
-      "contentHash": "sha256:3c0163eb9dff8c508cdae2a3fbe243852a5ca8ce0832ee0ece44215687ff2993",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:03:47.495Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -4862,9 +4854,9 @@
         66.04
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.87,
-      "scale": 0.93,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -4890,9 +4882,9 @@
         30.95
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.02,
-      "scale": 1.17,
+      "scale": 0.88,
       "solid": true,
       "tint": null
     },
@@ -4904,9 +4896,9 @@
         42.25
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 1.18,
-      "scale": 1.19,
+      "scale": 0.89,
       "solid": true,
       "tint": null
     },
@@ -4918,9 +4910,9 @@
         42.94
       ],
       "kind": "prop",
-      "model": "prop.bush",
+      "model": "env.shrub.broadleaf",
       "yaw": 1.31,
-      "scale": 1.05,
+      "scale": 0.79,
       "solid": true,
       "tint": null
     },
@@ -31786,6 +31778,6 @@
       8
     ]
   },
-  "dependencies": [],
-  "weaponSet": "military"
+  "weaponSet": "military",
+  "dependencies": []
 }

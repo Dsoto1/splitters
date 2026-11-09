@@ -15,7 +15,7 @@
     "textureMaxBytes": 400000,
     "triangles": {
       "tree": [3000, 1000, 300, 8],
-      "plant": [500, 150, 8],
+      "plant": [700, 200, 8],
       "groundcover": [64],
       "rock": [64],
       "boulder": [760, 240, 70],

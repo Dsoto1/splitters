@@ -81,8 +81,8 @@ describe('the suggested score and time per mode (fitted to bot-report scoring ra
     expect([4, 8, 16, 24].map((n) => suggestedLimits('core.koth', 2 * n, [n, n]))).toEqual([{ scoreLimit: 120, minutes: 10 }, { scoreLimit: 180, minutes: 15 }, { scoreLimit: 180, minutes: 15 }, { scoreLimit: 240, minutes: 20 }]);
   });
 
-  it('rounds, missions, Fort Wars, Disc Arena and races keep their own score and the usual 10 minutes', () => {
-    const own: GameMode[] = ['core.elim', 'core.bomb', 'core.hostage', 'core.coop', 'core.zombies', 'core.forts', 'core.discs', 'core.race'];
+  it('rounds, missions, Fort Wars and Disc Arena keep their own score and the usual 10 minutes', () => {
+    const own: GameMode[] = ['core.elim', 'core.bomb', 'core.hostage', 'core.coop', 'core.zombies', 'core.forts', 'core.discs'];
     for (const mode of own) {
       expect(limitsScale(mode)).toBe(false);
       for (const n of [8, 48]) expect(suggestedLimits(mode, n, [n / 2, n / 2])).toEqual({ scoreLimit: DEFAULT_RULES[mode].scoreLimit, minutes: 10 });

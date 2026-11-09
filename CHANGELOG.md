@@ -26,6 +26,82 @@ flickers, so it is the same with Reduce flashing on.
 
 **MapMaker:** exploding or deleting the last placement of a map's own set piece (one saved from a selection) takes its
 definition out of the map too; it stays in your library, and one undo brings both back.
+**Tests**:
+- The e2e `teams` flow's friendly fire and team kill checks no longer fail at random: every bot holds fire while your
+  rounds are tested, the teammate's spawn shield is cleared, and its damage is counted by who dealt it.
+**Small fixes (owner, 2026-11-08)**:
+- Bots no longer queue 10-20 s for Fernwood Moon's north rope lift: they hop down off the north deck onto its ramp
+  when the lift is away (the navmesh had lost that 0.7 m hop).
+- The armour pickup's sparkle, armour breaking, heavy hits and kill-streak bursts read across a room: seen from
+  further than 3 m they keep the size they have 3 m off (an armour pickup 7 m off was a speck).
+- The tutorial shows no Deathmatch score bar (You / Leader).
+- capture-map-shots can write pictures outside the build (SHOT_OUT, SHOT_SUFFIX, SHOT_QUALITY, SHOT_TEST,
+  SHOT_RENDERED).
+**Race mode removed** (owner, 2026-11-08: "steer away from racing and focus on battles and maps"):
+- **No more Race** in Match Setup, Quick Play, the next-map vote, rotations, playlists, the host panel or the server
+  rules (`laps`, `racevehicle`, `racecombat` are gone). The race HUD (lap, place, running order, countdown), the race
+  scoring and the start grid are gone too.
+- **Tracks stay, as map spice:** a map's track still carries its NPC cars in every mode. On Apex Ring twelve karts lap
+  the Grand Prix circuit while the teams fight; they run anyone over and can be shot up or taken over, as before.
+  Roads still grip better on a track map.
+- **Old maps** that list Race load and simply don't offer it; MapMaker's checks say to drop it from the modes. The map
+  format is unchanged.
+- **Apex Ring** and **Sandsweep Circuit** no longer list Race (MapMaker, Map properties): Apex Ring plays Deathmatch,
+  Team Deathmatch, CTF and King of the Hill with its karts lapping; Sandsweep plays Deathmatch.
+**MapMaker: a finer terrain grid, Change grid, and the coast border** (map format v32; the editor half of the Iron
+Coast job):
+- **A finer grid:** a terrain can be up to 321 vertices a side (was 161), so a 380 m map can be 1.25 m apart. New
+  terrains are made as before; finer is a choice. The map file writes the terrain a grid row to a line (a 1.25 m
+  Iron Coast is 1.1 MB, where one value a line it would have been over the 2 MB budget).
+- **Terrain → Change grid…:** resample the terrain finer or coarser (1-4 m), heights, ground paint and plants, one
+  undo step, with a preview of the vertices, triangles and file size against the budget first. Heights where the
+  grids meet are kept exactly; Smooth curves rolling ground between them and keeps cliffs sharp, Exact keeps the
+  surface as it is.
+- **Coast border side** (Sky → Border → Per side): for a side a shoreline runs out through. Sand and shallow water
+  carry on past the boundary along the shore, cliffs ease to low headlands and dunes, forest grows only inland.
+  Scenery only: nothing to bump into.
+**Parties and the next-map vote, part 2** (owner-approved follow-ups, 2026-11-08):
+- **Host handoff keeps the party together:** when a browser host leaves and a friend takes over, everyone keeps their
+  party and side, and a vote on the next map that was open goes on with the new host (the same maps, votes and time
+  left; one that had just closed keeps its winner).
+- **Free-for-all parties:** friends who came together see each other's names in a friendly colour (kill feed,
+  messages, scoreboard) with the ally marker over their heads, and tend to spawn near each other (never at the cost of
+  a safe spawn). They can still shoot each other: damage and scoring are unchanged.
+- **The /host page** gets "Vote on the next map" and every Match setup rule (score, time, respawn, friendly fire,
+  weapon set, teams and the rest under More rules), each tagged with when it applies. Stopped, they go with Start;
+  running, a change reaches the match at once. The Host Service launcher's Rotation card gets the vote box too, and
+  the console `rotation vote on|off`.
+- **The menu's first download** is 32 kB smaller (746 → 714 kB gzip): the hit-shape table loads with the match, not
+  the menu. The budget goes back to 800 kB.
+
+**Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall** (docs/SET_PIECES_PLAN.md, "As built: part 5"):
+- **Twelve new set pieces** in MapMaker's Set pieces tab, each in its own group: Power Core Hall, Catwalk Bridge (three
+  lengths), Twin-Stair Overlook, Atrium Tower, Loading Dock, Sunken Arena, Reactor Room, Bunker Cluster, Courtyard
+  Gate, Server Vault, Crossroads Plaza and Ramp Junction, themed by the looks they suit. New kit tiles: Arena Pit,
+  Arena Tiers and Arena Tiers (Corner) (a pit 2 m down that carves the terrain).
+- **Retired tiles:** the Catwalk Gantry leaves the Tiles tab for the Catwalk Bridge (Up). Maps that place it still
+  load and play it as the bridge; its inspector in MapMaker offers **Replace all** (one undo step).
+- **Sea Wall** and **Sea Wall (Breached)** for MAP 21 (Iron Coast): a bay of concrete sea wall with a wave lip and a
+  fire step, and the same bay blown open with a rubble ramp through the gap.
+**Our own trees, bushes and hedges everywhere; no more Kenney foliage** (Environment Phase 2, owner-approved
+2026-11-08: "I don't want to see those"):
+- **Nine new generated species**, grounded and natural rather than toy-like: Field Maple (summer, autumn), Umbrella
+  Acacia (green, dry), Spruce (summer, snow), Coconut Palm and Leaning Palm (green, dry), Saguaro (green, dry), Laurel
+  Bush (green, dry), Privet Hedge and Yew Hedge. Each has levels of detail and a far stand-in, sways in the wind, and
+  plays like the piece it replaces: trunks, palms and cacti stop people and rounds, hedges are solid walls of cover,
+  bushes hide you as before.
+- **34 maps moved over** in MapMaker with Replace all: 1,482 Kenney trees, bushes, hedges and cacti (Norman Shores 267,
+  Primeval Park 209, St Johns 136, Eagle Spires 126, Backwoods 92 and 29 more). Fernwood Moon: one pine moved off a
+  spawn its trunk now reached.
+- **The forest border and the scenery** past every map are our trees too (they were Quaternius models and low-poly
+  cones): undergrowth, a wall of pines, spruces, oaks and maples (snowy pines on snow, palms, acacias and saguaros on
+  sand), and the far forest round the map.
+- **MapMaker:** Nature → Trees offers our oak, maple, acacia, pines, spruce, palms and saguaro; Plants & Flowers the
+  laurel and the hedges. Every Kenney tree, bush, hedge, cactus and plant is retired from the palette (maps that place
+  them still load them), and Replace all suggests each one's species. The scatter brushes plant our species.
+- **Drawn faster:** in matches, our species are drawn in batches with levels of detail by default (`?env=0` turns that
+  off).
+
 **Gunplay pass 2** (docs/GUNPLAY_AUDIT.md, "Pass 2"; the audit's candidates 1-6, owner-approved):
 - **Every gun owns its range.** The SMG wins up close (0.40 s to a kill to 15 m, the Assault Rifle 0.50; hip fire at
   25 m 0.77 s, was 3.4); the Assault Rifle owns 20-50 m and loses damage from 25 m; the Precision Rifle kills a body in two shots in under a second at every range (was 1.25-1.38 s) and owns

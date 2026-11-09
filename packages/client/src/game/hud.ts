@@ -1,5 +1,6 @@
 import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
 import { slotColor } from './view.ts';
+import { PARTY_COLOR, ffaPartyMate } from './ffaParty.ts';
 import { applyCrosshair, applyHitmarker } from './crosshair.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';
 import { Minimap } from './minimap.ts';
@@ -64,11 +65,10 @@ export class Hud {
   private readonly scoreboard = $('scoreboard');
   private readonly board = new ScoreBoard(this.scoreboard, { maxWidth: 1240, sizeSelf: true });
   private pauseBoard: ScoreBoard | null = null;
-  /** Scoreboard facts from snapshots: who is alive, team leaders, online pings, the race order. */
+  /** Scoreboard facts from snapshots: who is alive, team leaders, online pings. */
   private alive = new Map<number, boolean>();
   private leaders = new Set<number>();
   private pings = new Map<number, number>();
-  private raceOrder: Map<number, readonly [number, string]> | null = null;
   /** The mode's per-player objective stat ('Caps', 'Bomb', 'Saves'), or null. */
   private objLabel: string | null = null;
   /** Co-op and Zombies: everyone on one side, one list. */
@@ -125,6 +125,7 @@ export class Hud {
     this.sbLeft.innerHTML = '';
     this.sbRight.innerHTML = '';
     this.lastTeamScore = '';
+    this.showScorebar(true);
     this.portrait.removeAttribute('src');
     this.target.hidden = true;
     this.teams = null;
@@ -146,7 +147,6 @@ export class Hud {
     this.alive.clear();
     this.leaders.clear();
     this.pings.clear();
-    this.raceOrder = null;
     this.objLabel = null;
     this.coop = false;
     this.objectives.replaceChildren();
@@ -185,11 +185,6 @@ export class Hud {
   setPings(flat: readonly number[]): void {
     this.pings.clear();
     for (let i = 0; i + 1 < flat.length; i += 2) this.pings.set(flat[i]!, flat[i + 1]!);
-  }
-
-  /** Race: the running order, with each racer's lap or finish time. */
-  setRaceOrder(order: readonly (readonly [number, string])[]): void {
-    this.raceOrder = new Map(order.map(([slot, lap], i) => [slot, [i, lap] as const]));
   }
 
   /** Classes: who plays what (for the scoreboard). */
@@ -238,6 +233,21 @@ export class Hud {
       grid.append(b);
     });
     el.replaceChildren(Object.assign(document.createElement('b'), { textContent: 'Choose your class' }), grid, Object.assign(document.createElement('small'), { textContent: 'Number keys or click · L or , opens and closes this · a new class starts at your next spawn (straight away if you have only just spawned)' }));
+  }
+
+  /** Your own slot (the session sets it at the welcome): free-for-all parties' names (ffaParty.ts). */
+  self = -1;
+  /** The friendly colour your party's names wear in a free-for-all. */
+  partyColor = PARTY_COLOR;
+
+  /** A player's name colour: their team's, else (free-for-all) the friendly colour for your party, else their slot's. */
+  nameColor(slot: number, self = this.self): string {
+    return this.team(slot)?.color ?? (ffaPartyMate(this.roster, self, slot) ? this.partyColor : slotColor(slot));
+  }
+
+  /** Free-for-all: whether `slot` is in your party (friendly name and marker). */
+  partyMate(slot: number, self = this.self): boolean {
+    return ffaPartyMate(this.roster, self, slot);
   }
 
   setRoster(players: RosterEntry[]): void {
@@ -346,6 +356,11 @@ export class Hud {
 
   setPortrait(src: string): void {
     this.portrait.src = src;
+  }
+
+  /** The scorebar at the top (score boxes, timer, mode): hidden in the tutorial, where there is no score to play for. */
+  showScorebar(on: boolean): void {
+    $('scorebar').style.display = on ? '' : 'none';
   }
 
   /**
@@ -693,7 +708,7 @@ export class Hud {
 
   kill(killer: number | null, victim: number, weapon: string, localSlot: number, headshot = false, teamKill = false): void {
     const line = document.createElement('div');
-    const color = (slot: number | null) => (slot === null ? '#ccc' : (this.team(slot)?.color ?? slotColor(slot)));
+    const color = (slot: number | null) => (slot === null ? '#ccc' : this.nameColor(slot, localSlot));
     const name = (slot: number | null) => `<span style="color:${color(slot)}">${escapeHtml(this.name(slot))}</span>`;
     line.innerHTML = killer === null ? `${name(victim)} ${HAZARD_DEATHS[weapon] ?? 'blew themselves up'}` : `${name(killer)} <small>${escapeHtml(weaponLabel(weapon))}</small> ${name(victim)}`;
     // Weapon icon between the names (reference board), rendered from the weapon's model.
@@ -718,7 +733,7 @@ export class Hud {
   /** A slot changed hands mid-match: "Ana joined, replacing Mildred" (a player joined), or "Mildred took over for Ana" (they left). */
   takeover(slot: number, to: string, from: string, bot: boolean): void {
     const line = document.createElement('div');
-    const color = this.team(slot)?.color ?? slotColor(slot);
+    const color = this.nameColor(slot);
     line.className = 'say takeover';
     line.innerHTML = `<span style="color:${color}">${escapeHtml(to)}</span> ${bot ? 'took over for' : 'joined, replacing'} <span style="color:${color}">${escapeHtml(from)}</span>`;
     this.feed.prepend(line);
@@ -740,7 +755,7 @@ export class Hud {
   say(slot: number, text: string): void {
     if (!text) return;
     const line = document.createElement('div');
-    const color = this.team(slot)?.color ?? slotColor(slot);
+    const color = this.nameColor(slot);
     line.className = 'say';
     line.innerHTML = `<span style="color:${color}">${escapeHtml(this.name(slot))}:</span> ${escapeHtml(text)}`;
     this.feed.prepend(line);
@@ -957,7 +972,6 @@ export class Hud {
 
   /** What the scoreboards show: the teams (or everyone), sorted, with each row's stats. */
   boardData(scores: readonly ScoreEntry[], localSlot: number, final: boolean): BoardData {
-    const race = this.raceOrder;
     // Guests are marked once more than one person plays (an online match), so a typed name can't pass for an account.
     const people = [...this.roster.values()].filter((p) => !p.bot).length;
     // Your party (net/party.ts): the people who came with you, when there are any.
@@ -973,24 +987,24 @@ export class Hud {
         bot: !!p?.bot,
         ...(p && !p.bot ? (p.acct ? { who: 'acct' as const } : people > 1 ? { who: 'guest' as const } : {}) : {}),
         ...(inParty && p && !p.bot && p.py === myParty ? { party: true } : {}),
-        color: this.team(s.s)?.color ?? slotColor(s.s),
+        color: this.nameColor(s.s, localSlot),
         cls: cls === undefined ? '' : (CLASS_DEFS[CLASS_IDS[cls] ?? 'rocketeer']?.name ?? ''),
         k: s.k,
         d: s.d,
-        obj: race ? (race.get(s.s)?.[1] ?? '') : this.objLabel ? String(s.o ?? 0) : '',
+        obj: this.objLabel ? String(s.o ?? 0) : '',
         ping: p?.bot ? '–' : ping === undefined ? '' : String(ping),
         leader: this.leaders.has(s.s),
         dead: this.alive.get(s.s) === false,
         me: s.s === localSlot,
       };
     };
-    const sorted = [...scores].sort(race ? (a, b) => (race.get(a.s)?.[0] ?? 999) - (race.get(b.s)?.[0] ?? 999) || a.s - b.s : (a, b) => b.k - a.k || (b.o ?? 0) - (a.o ?? 0) || a.d - b.d || a.s - b.s);
+    const sorted = [...scores].sort((a, b) => b.k - a.k || (b.o ?? 0) - (a.o ?? 0) || a.d - b.d || a.s - b.s);
     const clock = this.timer.textContent ? ` · ${this.timer.textContent} left` : '';
     const watching = [...this.roster.values()].filter((p) => p.sp).map((p) => p.name);
     const spectators = watching.length ? `Spectating: ${watching.join(', ')}` : '';
     const note = [final && this.nextMap ? this.nextMap : '', this.onlineNote, spectators].filter(Boolean).join(' · ');
     const head = `${final ? 'Final · ' : ''}${this.mapName} · ${this.modeLabel.textContent ?? ''}${final ? '' : clock}`;
-    const flags = { cls: this.classes.size > 0, obj: race ? 'Lap' : this.objLabel, ping: this.pings.size > 0 };
+    const flags = { cls: this.classes.size > 0, obj: this.objLabel, ping: this.pings.size > 0 };
     if (!this.teams) {
       return { head, note, kind: this.coop ? 'coop' : 'ffa', groups: [{ id: 'all', name: '', color: '', score: 0, lead: false, rows: sorted.map(row) }], ...flags };
     }

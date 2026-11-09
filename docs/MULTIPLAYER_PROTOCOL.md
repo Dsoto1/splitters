@@ -405,10 +405,14 @@ A browser-hosted match with friends in no longer has to end with its host
   seconds left, fill, bot skill, objective team scores, and every player
   (people and bots): name, team, kills / deaths / self-kills / objective
   plays, alive, position, facing, health, armour, weapons with ammo and the
-  one in hand. People carry only a hashed key (`handoffKey`: `h:` + 32 hex of
+  one in hand, and a person's party tag (`py`, net/party.ts). People carry only a hashed key (`handoffKey`: `h:` + 32 hex of
   SHA-256 of `pk:…` or `sub:…`), never the key; bans likewise; plus the game
-  browser listing's name (never its id or secret). The successor checks shape and size
-  (`parseCheckpoint`, ≤ 96 KB).
+  browser listing's name (never its id or secret). Between matches, the open
+  next-map vote too (`vote`: `{ o, votes: [[player index, option]], left, w?, by? }`,
+  `CheckpointVote`); a change in the vote sends a fresh checkpoint at the host's
+  next once-a-second turn. The successor checks shape and size
+  (`parseCheckpoint`, ≤ 96 KB; a bad ballot drops the vote, bad votes are left out).
+  Older successors ignore `py` and `vote` (the party's tags and the vote start fresh there, as before).
 - **The host goes** (`bye`, or a drop after the reconnect try): the successor,
   if its checkpoint is at most 30 s old and for the map it has, starts the
   match from it (`LocalMatchOptions.restore`: `BotFiller.restore`,
@@ -447,7 +451,7 @@ A browser-hosted match with friends in no longer has to end with its host
   vehicles and turrets (back at their spots; riders are put on foot where
   they were), pickups (all available), doors / buttons / destructibles /
   scenario logic and timers, NPCs and encounters, flags and bombs (back at
-  base), Zombies waves (from wave 1), race progress, classes, kill streaks
+  base), Zombies waves (from wave 1), classes, kill streaks
   and UAVs, the dead (they respawn a second later). Bots get fresh brains.
 
 `standby`, `successor`, `checkpoint` and the `standby` client message are

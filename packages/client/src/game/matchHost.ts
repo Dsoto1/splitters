@@ -28,6 +28,7 @@ import {
   type RotationCommand,
   type HostState,
   type MapDocument,
+  type CheckpointVote,
   type MatchCheckpoint,
   type MatchRules,
   type PlayerInput,
@@ -245,8 +246,10 @@ export class MatchHost {
     let me: Combatant;
     if (cp) {
       // Handed on: everyone where the old host's checkpoint had them (the others' places kept for them), the clock and team scores too.
-      me = bots.restore(cp, fill, { name: this.opts.name, ...(this.opts.look ? { look: this.opts.look } : {}) })!;
+      const placed = new Map<number, Combatant>();
+      me = bots.restore(cp, fill, { name: this.opts.name, ...(this.opts.look ? { look: this.opts.look } : {}) }, placed)!;
       match.resume(cp.phase, cp.timeLeft, cp.teams);
+      this.resumeVote(match, me, cp, placed);
       for (const key of cp.banned ?? []) this.banned.add(key);
       if (cp.listing) this.listing = { name: cp.listing.name };
     } else {
@@ -273,6 +276,8 @@ export class MatchHost {
     this.sink.local({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState(), spectate: 1 });
     this.sink.local({ t: 'roster', players: match.roster() });
     this.sink.local({ t: 'host', state: control.state() });
+    // A vote carried over from the old host: on screen here at once (closed: the page travels to its winner).
+    this.voteToAll();
     this.sendFacts();
     // Friends who connected before the match had loaded (after a map change, they come straight back).
     for (const r of this.remotes.values()) {
@@ -493,6 +498,32 @@ export class MatchHost {
     this.voteToAll();
   }
 
+  /**
+   * Host handoff: the old host's open (or just closed) vote goes on here: the same ballot, everyone's votes on
+   * their new places, the time it had left (closed: its winner, as the old host decided it, and the travel).
+   */
+  private resumeVote(match: MatchT, me: Combatant, cp: MatchCheckpoint, placed: ReadonlyMap<number, Combatant>): void {
+    const cv = cp.vote;
+    if (!cv || match.intermissionEnds === null) return;
+    const votes = cv.votes.flatMap(([i, o]): [number, number][] => {
+      const c = placed.get(i);
+      return c ? [[c.slot, o]] : [];
+    });
+    const won = cv.w !== undefined ? { w: cv.w, ...(cv.by ? { by: cv.by } : {}) } : null;
+    this.vote = MapVote.resumed(cv.o, match.tick + cv.left * TICK_RATE, me.slot, votes, won);
+    match.holdIntermission(match.tick + (won ? VOTE_RESULT_SECONDS + 4 : cv.left + VOTE_RESULT_SECONDS + 1) * TICK_RATE);
+  }
+
+  /** The open vote for a checkpoint (`order`: the slots in the checkpoint's player order), or undefined. */
+  private voteCheckpoint(match: MatchT, order: readonly number[]): CheckpointVote | undefined {
+    const v = this.vote;
+    if (!v) return undefined;
+    const index = new Map(order.map((slot, i) => [slot, i]));
+    const st = v.state(match.tick);
+    const votes = v.ballots().flatMap(([slot, o]): [number, number][] => (index.has(slot) ? [[index.get(slot)!, o]] : []));
+    return { o: st.o, votes, left: st.left, ...(st.w !== undefined ? { w: st.w, ...(st.by ? { by: st.by } : {}) } : {}) };
+  }
+
   /** This browser's player votes (the host: its vote breaks a tie). */
   voteLocal(i: number): void {
     if (this.me) this.castVote(this.me.slot, i);
@@ -505,7 +536,10 @@ export class MatchHost {
 
   private voteToAll(): void {
     const v = this.vote;
-    if (v && this.match) this.announce({ t: 'vote', v: v.state(this.match.tick) });
+    if (!v || !this.match) return;
+    this.announce({ t: 'vote', v: v.state(this.match.tick) });
+    // The successor's checkpoint follows the vote at its next turn (not 3 s later): a handoff keeps the latest votes.
+    this.checkpointAt = 0;
   }
 
   /** Each tick of an open vote: close it on time (the page travels to the winner), a fresh count every second; over once a round starts. */
@@ -850,6 +884,7 @@ export class MatchHost {
       skill: bots.skill.id,
       ...(teams?.length ? { teams } : {}),
       players: match.checkpointPlayers(keyOf, successor),
+      ...((vote) => (vote ? { vote } : {}))(this.voteCheckpoint(match, match.combatants().map((c) => c.slot))),
       ...(this.banned.size ? { banned: [...this.banned].map((k) => (k.startsWith('h:') ? k : handoffKey(`pk:${k}`))) } : {}),
       ...(this.listing ? { listing: { name: this.listing.name } } : {}),
     };

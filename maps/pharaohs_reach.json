@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 30,
   "metadata": {
     "id": "pharaohs_reach",
     "name": "Pharaoh's Reach",
@@ -3117,9 +3117,9 @@
         -40
       ],
       "kind": "prop",
-      "model": "prop.cactus",
+      "model": "env.cactus.saguaro",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.41,
       "solid": true,
       "tint": null
     },
@@ -4193,7 +4193,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "clear",
     "scenery": "dunes",

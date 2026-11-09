@@ -1,0 +1,53 @@
+{
+  "$comment": "Crossroads plaza family (part 5). Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "plaza",
+  "pieces": [
+    {
+      "id": "setpiece.crossroads_plaza",
+      "displayName": "Crossroads Plaza",
+      "category": "Arenas & Plazas",
+      "blurb": "Two streets crossing, with a paved square a kerb up on each corner: planter walls along the streets for cover, a bench and a lamp on each, four ways in and out: 3 × 3 cells.",
+      "packs": ["suburban", "neon", "harbor", "collegiate", "medieval", "desert", "military", "snow"],
+      "footprint": { "cells": [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2],[2,2]], "levels": [0,1] },
+      "mirror": "none",
+      "ports": [
+        {"side":"S","cell":[1,0],"level":0,"kind":"opening"},
+        {"side":"N","cell":[1,2],"level":0,"kind":"opening"},
+        {"side":"W","cell":[0,1],"level":0,"kind":"opening"},
+        {"side":"E","cell":[2,1],"level":0,"kind":"opening"}
+      ],
+      "parts": [
+        {"kind":"tile","tile":"core.intersection","x":1,"y":1,"z":0,"rotation":0,"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.street","x":1,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:S":"open"},"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.street","x":1,"y":2,"z":0,"rotation":2,"edges":{"0,0,0:S":"open"},"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.street","x":0,"y":1,"z":0,"rotation":1,"edges":{"0,0,0:S":"open"},"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.street","x":2,"y":1,"z":0,"rotation":3,"edges":{"0,0,0:S":"open"},"surfaces":{"floor":{"role":"paving"},"solids":{"role":"stone"},"trim":{"role":"trim"}}},
+        {"kind":"tile","tile":"core.yard","x":0,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:W":"open","0,0,0:S":"open"},"surfaces":{"floor":{"role":"paving"}}},
+        {"kind":"block","name":"Kerb","position":[0,0,0],"size":[8,0.15,8],"material":{"role":"paving"}},
+        {"kind":"block","name":"Planter","position":[3.4,0.15,-1.2],"size":[1.2,0.75,5.6],"material":{"role":"stone"}},
+        {"kind":"block","name":"Planter","position":[-1.2,0.15,3.4],"size":[5.6,0.75,1.2],"material":{"role":"stone"}},
+        {"kind":"prop","model":"prop.bench","position":[-1.5,0.15,-1.5],"yaw":0.785,"scale":1},
+        {"kind":"prop","model":"prop.yard_lamp","position":[-3.2,0.15,-3.2],"yaw":0.785,"scale":1},
+        {"kind":"tile","tile":"core.yard","x":2,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:E":"open","0,0,0:S":"open"},"surfaces":{"floor":{"role":"paving"}}},
+        {"kind":"block","name":"Kerb","position":[16,0,0],"size":[8,0.15,8],"material":{"role":"paving"}},
+        {"kind":"block","name":"Planter","position":[12.6,0.15,-1.2],"size":[1.2,0.75,5.6],"material":{"role":"stone"}},
+        {"kind":"block","name":"Planter","position":[17.2,0.15,3.4],"size":[5.6,0.75,1.2],"material":{"role":"stone"}},
+        {"kind":"prop","model":"prop.bench","position":[17.5,0.15,-1.5],"yaw":-0.785,"scale":1},
+        {"kind":"prop","model":"prop.yard_lamp","position":[19.2,0.15,-3.2],"yaw":-0.785,"scale":1},
+        {"kind":"tile","tile":"core.yard","x":0,"y":2,"z":0,"rotation":0,"edges":{"0,0,0:W":"open","0,0,0:N":"open"},"surfaces":{"floor":{"role":"paving"}}},
+        {"kind":"block","name":"Kerb","position":[0,0,16],"size":[8,0.15,8],"material":{"role":"paving"}},
+        {"kind":"block","name":"Planter","position":[3.4,0.15,17.2],"size":[1.2,0.75,5.6],"material":{"role":"stone"}},
+        {"kind":"block","name":"Planter","position":[-1.2,0.15,12.6],"size":[5.6,0.75,1.2],"material":{"role":"stone"}},
+        {"kind":"prop","model":"prop.bench","position":[-1.5,0.15,17.5],"yaw":2.356,"scale":1},
+        {"kind":"prop","model":"prop.yard_lamp","position":[-3.2,0.15,19.2],"yaw":2.356,"scale":1},
+        {"kind":"tile","tile":"core.yard","x":2,"y":2,"z":0,"rotation":0,"edges":{"0,0,0:E":"open","0,0,0:N":"open"},"surfaces":{"floor":{"role":"paving"}}},
+        {"kind":"block","name":"Kerb","position":[16,0,16],"size":[8,0.15,8],"material":{"role":"paving"}},
+        {"kind":"block","name":"Planter","position":[12.6,0.15,17.2],"size":[1.2,0.75,5.6],"material":{"role":"stone"}},
+        {"kind":"block","name":"Planter","position":[17.2,0.15,12.6],"size":[5.6,0.75,1.2],"material":{"role":"stone"}},
+        {"kind":"prop","model":"prop.bench","position":[17.5,0.15,17.5],"yaw":-2.356,"scale":1},
+        {"kind":"prop","model":"prop.yard_lamp","position":[19.2,0.15,19.2],"yaw":-2.356,"scale":1}
+      ],
+      "notes": {"design":"An Intersection and four Streets (their sidewalks and lamps), four Courtyards on the corners with a kerb block 0.15 m up (level with the sidewalks), planters (blocks 0.75 m, waist-high cover) set back from the streets with a gap at the corner, a bench and a lamppost."}
+    }
+  ]
+}

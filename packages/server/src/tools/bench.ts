@@ -28,7 +28,7 @@ import { Behaviour } from './botMeasures.ts';
  * map's spawn points, endlessly reinforced) for mixed player + NPC load tests.
  * --mode plays that mode (with its default rules, no score or time limit; team
  * modes split the bots evenly) and reports its objective events: flag takes and
- * captures, hill holds, rounds, race checkpoints, laps and finishes.
+ * captures, hill holds, rounds, Breakthrough's sectors.
  *
  * --fireteams=N (with --mode) plays the Fireteams variant: every bot in a fixed squad of N, bot-led.
  * --warmup=S plays S seconds before measuring. --clump[=R] (two-team modes)
@@ -143,7 +143,7 @@ function benchMap(mapPath: string, clump: boolean): { row: string; cpuRow: strin
   let snapMs = 0;
   const objective = new Map<string, number>();
   const count = (ev: GameEvent) => {
-    const key = ev.e === 'flag' ? `flag ${ev.a}` : ev.e === 'hill' ? `hill ${ev.a}` : ev.e === 'elim' ? `round ${ev.a}` : ev.e === 'race' ? `race ${ev.a}` : ev.e === 'bt' ? `breakthrough ${ev.a}` : ev.e === 'round_end' && mode === 'core.race' ? 'races won' : null;
+    const key = ev.e === 'flag' ? `flag ${ev.a}` : ev.e === 'hill' ? `hill ${ev.a}` : ev.e === 'elim' ? `round ${ev.a}` : ev.e === 'bt' ? `breakthrough ${ev.a}` : null;
     if (key) objective.set(key, (objective.get(key) ?? 0) + 1);
   };
   // Idle: alive for the last five seconds and moved less than 2 m in them.

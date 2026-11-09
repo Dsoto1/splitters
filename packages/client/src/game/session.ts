@@ -162,7 +162,6 @@ import { CoverState } from './coverState.ts';
 import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
 import type { MinimapBlip } from './minimap.ts';
-import { RaceHud } from './raceHud.ts';
 import { RouletteHud } from './rouletteHud.ts';
 import { AwardsHud } from './awardsHud.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
@@ -510,7 +509,10 @@ export class GameSession {
     // Over them for everyone else; yours shows on the HUD (the burst would be round your own head).
     if (ev.killer === this.slot && !this.thirdPerson) return void this.hud.showMessage(`${n} kills in a row!`, 1.5);
     const p = ev.killer === this.slot && this.local ? this.local.state.pos : poses().find((x) => x.slot === ev.killer);
-    if (p) this.view.playGameplayFx('streak', this.view.towardCamera({ x: p.x, y: p.y + 2.1, z: p.z }, 0.3), { calmable: true });
+    if (p) {
+      const at = this.view.towardCamera({ x: p.x, y: p.y + 2.1, z: p.z }, 0.3);
+      this.view.playGameplayFx('streak', at, { calmable: true, size: this.view.farSize(at) });
+    }
   }
 
   /** A hit worth showing (the `hurt` event): armour breaking, a heavy hit (and, if it was you, the screen's edge). */
@@ -521,7 +523,8 @@ export class GameSession {
     // Not on yourself in first person (it would be round the camera).
     if (me && !this.thirdPerson) return;
     // On the body's near side, toward the camera: from its middle the burst would be hidden inside the body.
-    this.view.playGameplayFx(ev.a === 'armor' ? 'armor.break' : 'hit.big', this.view.towardCamera(at, 0.5), { calmable: true });
+    const near = this.view.towardCamera(at, 0.5);
+    this.view.playGameplayFx(ev.a === 'armor' ? 'armor.break' : 'hit.big', near, { calmable: true, size: this.view.farSize(near) });
   }
 
   /** Spawn protection on you: a line under the crosshair until it drops (firing ends it). */
@@ -552,8 +555,6 @@ export class GameSession {
   private readonly rlLoaded = new Set<string>();
   /** Fort Wars: pieces, the build-phase barrier, the Builder's ghost and panel. */
   private forts: FortsClient | null = null;
-  /** Race mode's lap counter, places, next-checkpoint marker and countdown. */
-  private raceHud: RaceHud | null = null;
 
   // Frame timing / instrumentation.
   private acc = 0;
@@ -1748,7 +1749,6 @@ export class GameSession {
     this.opts.audio.stopAll();
     this.modeHud?.dispose();
     this.forts?.dispose();
-    this.raceHud?.dispose();
     this.rouletteHud?.dispose();
     this.awardsHud?.dispose();
     this.voteHud?.dispose();
@@ -1770,13 +1770,15 @@ export class GameSession {
       case 'welcome': {
         this.welcomed = true;
         this.welcomeMap = msg.map;
-        // The race's start-grid vehicles and the track's ambient cars join the map's own mounts, as on the server.
-        const loaded = loadMap(withTrackVehicles(msg.map, msg.rules));
+        // The track's ambient NPC cars join the map's own mounts, as on the server.
+        const loaded = loadMap(withTrackVehicles(msg.map));
         if (!loaded.ok) {
           this.exit(`invalid map: ${loaded.issues[0]?.message}`);
           return;
         }
         this.slot = msg.slot;
+        this.hud.self = msg.slot;
+        if (this.markers.ally !== 'team') this.hud.partyColor = this.markers.ally;
         this.rules = msg.rules;
         // Grenades wear the weapon set's looks (the Military frag, the Sci-fi smoke canister) before the map's pickups are drawn.
         this.view.setWeaponSetLook(weaponSetInPlay(msg.rules, loaded.map)?.id);
@@ -1810,7 +1812,6 @@ export class GameSession {
         this.hostPanel.setMap(loaded.map);
         this.view.buildMap(loaded.map, geometry);
         if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage' || msg.rules.mode === 'core.breakthrough')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
-        if (msg.rules.mode === 'core.race') this.raceHud = new RaceHud(this.hud, this.view, loaded.map, () => this.slot);
         // The end-of-match awards and the revenge and nemesis callouts (every mode: awardsHud.ts).
         this.awardsHud?.dispose();
         this.awardsHud = new AwardsHud(this.hud, () => this.slot);
@@ -1859,7 +1860,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder }), mode: this.modeHud, race: () => this.raceHud?.state, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -1929,7 +1930,6 @@ export class GameSession {
         this.drops = msg.dw ?? [];
         this.modeHud?.snapshot(msg.md);
         this.forts?.apply(msg.md);
-        this.raceHud?.snapshot(msg.md?.rc);
         this.zombieHud(msg.md?.zb);
         this.awardsHud?.phase(msg.phase);
         this.shieldNote(((this.localStatus & FX_PROTECTED) !== 0) && msg.phase === 'playing');
@@ -1999,7 +1999,6 @@ export class GameSession {
           if (document.hidden && VISUAL_EVENTS.has(ev.e)) continue;
           if (!document.hidden) this.sfx.event(ev, posesNow, performance.now());
           this.modeHud?.event(ev);
-          this.raceHud?.event(ev);
           if (ev.e === 'hurt') this.hurtMoment(ev);
           if (ev.e === 'shot') {
             const def = CORE_WEAPONS[ev.w];
@@ -2132,7 +2131,8 @@ export class GameSession {
             if (ev.s === this.slot && getItem(ev.item)?.effect.kind === 'armor') this.tips?.trigger('armor', performance.now() / 1000);
             // A sparkle where it was taken (content/vfx.json map.gameplay, by the item's kind).
             const at = this.view.chestOf(ev.s);
-            if (at) this.view.playGameplayFx(`pickup.${getItem(ev.item)?.effect.kind ?? 'item'}`, at);
+            // Grown with distance (owner, 2026-11-08: an armour pickup 7 m off was a speck): as big on screen as at 3 m (View.farSize).
+            if (at) this.view.playGameplayFx(`pickup.${getItem(ev.item)?.effect.kind ?? 'item'}`, at, { size: this.view.farSize(at) });
           } else if (ev.e === 'kill') {
             this.hud.kill(ev.killer, ev.victim, ev.weapon, this.slot, !!ev.hs, !!ev.tk);
             if (ev.victim === this.slot && ev.killer !== null && ev.killer !== this.slot && this.local && msg.phase === 'playing') this.startKillCam(ev.killer, ev.weapon);
@@ -2709,6 +2709,8 @@ export class GameSession {
 
   private setUpCoach(): void {
     const tutorial = !!this.opts.tutorial;
+    // No "You / Leader" score in the tutorial (owner, 2026-11-08): there are no bots and no score to play for.
+    if (tutorial) this.hud.showScorebar(false);
     if (tutorial) this.tutorial = new Tutorial();
     if (this.opts.tips !== false && !tutorial) this.tips = new TipBook();
     if (!this.tutorial && !this.tips) return;
@@ -3179,7 +3181,6 @@ export class GameSession {
     this.view.scenario.liquids.fx.track(poses, shells);
     this.modeHud?.frame(poses, local?.alive ? local.eye : null, this.input.yaw, now);
     this.forts?.frame(local?.alive ? local.eye : null, this.input.yaw, this.input.pitch, !!local?.alive && building, poses.filter((p) => p.slot !== this.slot), local?.alive ? local.state.pos : null);
-    this.raceHud?.frame(this.view.camera.position, this.view.camera.rotation.y);
     // Your own character drawn where prediction has you (not the delayed server copy): in third person, and in
     // full-body first person (under the camera).
     const mine = local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
@@ -3227,6 +3228,8 @@ export class GameSession {
         const theirs = id < NPC_ID_BASE ? this.hud.team(id) : undefined;
         if (mine && theirs && mine.id === theirs.id) return this.markers.ally === 'team' ? mine.color : this.markers.ally;
         if (mine && theirs) return this.markers.enemy;
+        // Free-for-all: your party's people get the ally marker (ffaParty.ts).
+        if (!mine && id < NPC_ID_BASE && this.hud.partyMate(id)) return this.hud.partyColor;
         return null;
       },
       this.mounts?.riders(),

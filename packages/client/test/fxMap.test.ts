@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { CORE_WEAPONS, SURFACE_TYPE_IDS, WEAPONS_BY_SLOT, entityMaterial, guessSurface, type MapDocument, type MapEntity, type WorldBox } from '@tiletrigger/shared';
-import { arcFx, explosionFor, gameplayFx, impactSoundId, impactStyle, lastingFx, mappedEffects, mappedPacks, muzzleEffectFor, surfaceIndex, surfaceOfBox, weaponImpact } from '../src/game/fxMap.ts';
+import { arcFx, explosionFor, farFxSize, gameplayFx, impactSoundId, impactStyle, lastingFx, mappedEffects, mappedPacks, muzzleEffectFor, surfaceIndex, surfaceOfBox, weaponImpact } from '../src/game/fxMap.ts';
 import { portName } from '../src/game/godotVfx.ts';
 import { GameplayFxWatch, type WatchedPose } from '../src/game/gameplayFxWatch.ts';
 
@@ -133,5 +133,15 @@ describe('GameplayFxWatch', () => {
     // Running past without a pad or portal: nothing.
     w.update([pose({ x: 64 })], 112);
     expect(got).toHaveLength(5);
+  });
+});
+
+describe('farFxSize (bursts seen from afar)', () => {
+  it('keeps a burst as big on screen as 3 m off, up to 4 times', () => {
+    expect(farFxSize(0)).toBe(1);
+    expect(farFxSize(3)).toBe(1);
+    // An armour pickup 7 m off (owner, 2026-11-08: a speck): 2.33 times its size, the same on screen as 3 m off.
+    expect(farFxSize(7)).toBeCloseTo(7 / 3);
+    expect(farFxSize(40)).toBe(4);
   });
 });

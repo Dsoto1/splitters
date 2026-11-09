@@ -195,6 +195,7 @@ export function launcherPage(info: LauncherInfo, nonce: string): string {
       <div class="inline"><select id="rot-map" aria-label="Map to add"></select><select id="rot-mode" aria-label="Mode"></select><button type="button" id="rot-add">Add</button></div>
       <div class="inline"><select id="rot-preset" aria-label="Preset"><option value="">Start from a preset…</option></select><button type="button" id="rot-use">Use</button></div>
       <div class="row-btns"><label class="check"><input type="checkbox" id="rot-shuffle"> Shuffle</label><button type="button" id="rot-skip" title="Go on to the next map now">Skip to next</button><button type="button" id="rot-clear">Clear</button></div>
+      <div class="row-btns"><label class="check" title="Between matches everyone votes on the next map: two or three of our maps that fit the people playing, the rotation's next first (docs/GAME_MODES.md, Between matches). Off: plain rotation; an empty one replays."><input type="checkbox" id="rot-vote"> Vote on the next map</label></div>
       <code class="hint" id="h-rot"></code>
     </section>
     <section class="card" id="bots-card">
@@ -893,7 +894,7 @@ const SCRIPT = `
     if (running()) return S.host.rotation || null;
     if (!draft) return null;
     var list = draftEntries(draft.rotation);
-    return { entries: list.map(function (e) { return { map: e.map, mode: e.mode, name: mapById[e.map] ? mapById[e.map].name : e.map }; }), shuffle: !!draft.rotationShuffle, next: list.length ? 0 : null, current: null };
+    return { entries: list.map(function (e) { return { map: e.map, mode: e.mode, name: mapById[e.map] ? mapById[e.map].name : e.map }; }), shuffle: !!draft.rotationShuffle, vote: draft.mapVote !== false, next: list.length ? 0 : null, current: null };
   }
   function setDraftRotation(list) { draft.rotation = list.map(itemOf); renderAll(); }
   function renderRotation() {
@@ -926,10 +927,12 @@ const SCRIPT = `
     var nx = r.next != null ? r.entries[r.next] : null;
     $('rot-next').textContent = nx ? 'Next up: ' + nx.name + ' \\u00b7 ' + modeLabel(nx.mode) : 'Empty: each match replays its map. Add maps, or start from a preset.';
     if (document.activeElement !== $('rot-shuffle')) $('rot-shuffle').checked = !!r.shuffle;
+    // An older match process sends no vote: the box stays as the setting is.
+    if (document.activeElement !== $('rot-vote')) $('rot-vote').checked = r.vote !== undefined ? r.vote !== false : !!(draft && draft.mapVote !== false);
     $('rot-skip').disabled = !running() || !r.entries.length;
     $('rot-clear').disabled = !r.entries.length;
     $('rot-add').disabled = r.entries.length >= 20;
-    $('h-rot').textContent = running() ? 'rotation add <map> <mode> \\u00b7 rotation preset <name> \\u00b7 skip' : 'start  (with this rotation)';
+    $('h-rot').textContent = running() ? 'rotation add <map> <mode> \\u00b7 rotation preset <name> \\u00b7 rotation vote on|off \\u00b7 skip' : 'start  (with this rotation)';
   }
   $('rot-add').addEventListener('click', function () {
     var id = rotMap.value, mode = $('rot-mode').value;
@@ -948,6 +951,11 @@ const SCRIPT = `
     var on = $('rot-shuffle').checked;
     if (running()) return run('rotation shuffle ' + (on ? 'on' : 'off'));
     draft.rotationShuffle = on; renderAll();
+  });
+  $('rot-vote').addEventListener('change', function () {
+    var on = $('rot-vote').checked;
+    if (running()) return run('rotation vote ' + (on ? 'on' : 'off'));
+    draft.mapVote = on; renderAll();
   });
   $('rot-skip').addEventListener('click', function () { if (running()) run('skip'); });
   $('rot-clear').addEventListener('click', function () {
@@ -1174,7 +1182,7 @@ const SCRIPT = `
   function renderAll() { renderTop(); renderMap(); renderPlayers(); renderListing(); renderPeople(); renderBans(); renderRotation(); renderBots(); renderRules(); }
 
   $('b-start').addEventListener('click', function () {
-    var body = { map: draft.map, mode: draft.mode || '', botFill: draft.botFill, maxPlayers: draft.maxPlayers, name: draft.name, visibility: draft.visibility, rotation: draft.rotation || [], rotationShuffle: !!draft.rotationShuffle, botSet: typeof draft.botSet === 'string' ? draft.botSet : '', botDifficulty: draft.skill || 'normal', rules: draftRules(), motd: draft.motd || '', afkSeconds: draft.afkSeconds != null ? draft.afkSeconds : 90, idleKickMinutes: draft.idleKickMinutes != null ? draft.idleKickMinutes : 10 };
+    var body = { map: draft.map, mode: draft.mode || '', botFill: draft.botFill, maxPlayers: draft.maxPlayers, name: draft.name, visibility: draft.visibility, rotation: draft.rotation || [], rotationShuffle: !!draft.rotationShuffle, mapVote: draft.mapVote !== false, botSet: typeof draft.botSet === 'string' ? draft.botSet : '', botDifficulty: draft.skill || 'normal', rules: draftRules(), motd: draft.motd || '', afkSeconds: draft.afkSeconds != null ? draft.afkSeconds : 90, idleKickMinutes: draft.idleKickMinutes != null ? draft.idleKickMinutes : 10 };
     // A set saved from the match (an object) stays as it is: the service keeps it.
     if (draft.botSet && typeof draft.botSet === 'object') delete body.botSet;
     local('cmd', 'start  (' + (mapById[draft.map] ? mapById[draft.map].name : draft.map) + (draft.mode ? ', ' + modeShort(draft.mode) : '') + ', ' + draft.botFill + ' players and bots)');
@@ -1223,7 +1231,7 @@ const SCRIPT = `
       S = s;
       if (wasOffline || !$('overlay').hidden) { overlay(''); wasOffline = false; }
       var c = s.config || {};
-      if (!draft || running()) draft = { map: c.map && mapById[c.map] ? c.map : (DATA.maps[0] ? DATA.maps[0].id : 'frost_basin'), mode: c.mode || '', botFill: c.botFill || 24, maxPlayers: c.maxPlayers || 16, name: c.name || 'Dedicated host', visibility: c.visibility || 'listed', rotation: (c.rotation || []).slice(), rotationShuffle: !!c.rotationShuffle, botSet: c.botSet || '', skill: c.botDifficulty || 'normal', rules: JSON.parse(JSON.stringify(c.rules || {})), motd: c.motd || '', afkSeconds: c.afkSeconds, idleKickMinutes: c.idleKickMinutes };
+      if (!draft || running()) draft = { map: c.map && mapById[c.map] ? c.map : (DATA.maps[0] ? DATA.maps[0].id : 'frost_basin'), mode: c.mode || '', botFill: c.botFill || 24, maxPlayers: c.maxPlayers || 16, name: c.name || 'Dedicated host', visibility: c.visibility || 'listed', rotation: (c.rotation || []).slice(), rotationShuffle: !!c.rotationShuffle, mapVote: c.mapVote !== false, botSet: c.botSet || '', skill: c.botDifficulty || 'normal', rules: JSON.parse(JSON.stringify(c.rules || {})), motd: c.motd || '', afkSeconds: c.afkSeconds, idleKickMinutes: c.idleKickMinutes };
       renderAll();
     }, failed);
   }

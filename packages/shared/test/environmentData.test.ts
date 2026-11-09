@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { EnvironmentSpeciesSchema } from '../src/content/environmentSchema.ts';
-import { ENV_SPECIES, MAP_BUDGETS, SURFACE_TYPES, envModelFile, envPropDefinition, envVariant, getEnvSpecies, getProp, loadMap, newMapDocument, propMaterial, propSurface, validateMap, type EnvShape, type MapDocument } from '../src/index.ts';
+import { ENV_SPECIES, MAP_BUDGETS, envTilts, SURFACE_TYPES, envModelFile, envPropDefinition, envVariant, getEnvSpecies, getProp, loadMap, newMapDocument, propMaterial, propSurface, validateMap, type EnvShape, type MapDocument } from '../src/index.ts';
 
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/environment-resolved.json', import.meta.url), 'utf8')) as Record<string, unknown>;
 
@@ -30,12 +30,15 @@ function shapePoints(sh: EnvShape): [number, number, number][] {
 
 describe('environment data', () => {
   it('every species matches the schema', () => {
-    expect(ENV_SPECIES.length).toBe(10);
+    expect(ENV_SPECIES.length).toBe(19);
     for (const s of ENV_SPECIES) expect(() => EnvironmentSpeciesSchema.parse(s), s.id).not.toThrow();
   });
 
-  it('the six Phase 1 species and the plants brush flowers, fern, pebbles and eelgrass, each with material variants', () => {
-    expect(ENV_SPECIES.map((s) => s.id).sort()).toEqual(['env.broadleaf.oak', 'env.cliff.face', 'env.conifer.pine_tall', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.rock.boulder_angular', 'env.rock.pebbles', 'env.shrub.broadleaf', 'env.water.eelgrass']);
+  it('the Phase 1 species, the plants brush flowers, fern, pebbles and eelgrass and the Phase 2 trees, bushes and hedges, each with material variants', () => {
+    expect(ENV_SPECIES.map((s) => s.id).sort()).toEqual([
+      'env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump',
+      'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.pebbles', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass',
+    ]);
     for (const s of ENV_SPECIES) {
       expect(s.variants.length, s.id).toBeGreaterThanOrEqual(2);
       // Material variants share the structure, so they share the collision exactly.
@@ -64,7 +67,11 @@ describe('environment data', () => {
     expect(propMaterial('env.cliff.face')).toBe('stone');
     expect(propSurface('env.shrub.broadleaf')).toBe('foliage');
     // The shrub and the fern conceal (the rule bushes follow); grass is decoration only.
-    expect(ENV_SPECIES.filter((s) => s.conceals).map((s) => s.id).sort()).toEqual(['env.fern.bracken', 'env.shrub.broadleaf']);
+    expect(ENV_SPECIES.filter((s) => s.conceals).map((s) => s.id).sort()).toEqual(['env.fern.bracken', 'env.shrub.broadleaf', 'env.shrub.laurel']);
+    // Phase 2: palms and the saguaro are full cover like trunks; the hedges are walls of bark-hard cover (the Kenney
+    // hedges they replace stopped rounds), the laurel bush foliage.
+    for (const id of ['env.broadleaf.maple', 'env.broadleaf.acacia', 'env.conifer.spruce', 'env.palm.coconut', 'env.palm.leaning', 'env.cactus.saguaro', 'env.hedge.privet', 'env.hedge.yew']) expect(propMaterial(id), id).toBe('heavy_wood');
+    expect(propSurface('env.shrub.laurel')).toBe('foliage');
     const grass = getEnvSpecies('env.grass.clump')!;
     expect([grass.role, grass.nav, grass.variants[0]!.shapes.length]).toEqual(['decorative', 'none', 0]);
   });
@@ -80,6 +87,24 @@ describe('environment data', () => {
     const cliff = envVariant(getEnvSpecies('env.cliff.face')!, 0).shapes;
     expect(cliff.length === 1 && cliff[0]!.kind === 'mesh' && cliff[0]!.indices.length / 3 <= 200).toBe(true);
     expect(envVariant(getEnvSpecies('env.shrub.broadleaf')!, 0).shapes).toEqual([]);
+    // Phase 2: palm trunks and the saguaro's column and arms are capsules that stop everything; a hedge is one hull
+    // that stops everything (a wall, nav obstacle) and is drawn upright (it doesn't lean with the ground); the laurel
+    // bush has no collision.
+    for (const id of ['env.palm.coconut', 'env.palm.leaning', 'env.cactus.saguaro', 'env.conifer.spruce']) {
+      const shapes = envVariant(getEnvSpecies(id)!, 0).shapes;
+      expect(shapes.length > 0 && shapes.every((s) => s.kind === 'capsule' && s.blocks === 'all' && s.r >= 0.12), id).toBe(true);
+    }
+    expect(envVariant(getEnvSpecies('env.cactus.saguaro')!, 0).shapes.length).toBeGreaterThanOrEqual(5);
+    for (const id of ['env.hedge.privet', 'env.hedge.yew']) {
+      const s = getEnvSpecies(id)!;
+      const shapes = envVariant(s, 0).shapes;
+      expect([shapes.length, shapes[0]!.kind, shapes[0]!.blocks, s.nav, s.role, envTilts(id)], id).toEqual([1, 'hull', 'all', 'obstacle', 'blocking', false]);
+    }
+    // Lying along z as the Kenney hedges do (Replace all keeps their facing): privet 4.8 m long and 1.2 m high, yew 3.6 m and 2.2 m.
+    expect(getEnvSpecies('env.hedge.privet')!.variants[0]!.size[2]).toBeCloseTo(4.8, 0);
+    expect(getEnvSpecies('env.hedge.yew')!.variants[0]!.size[1]).toBeCloseTo(2.2, 0);
+    expect(envVariant(getEnvSpecies('env.shrub.laurel')!, 0).shapes).toEqual([]);
+    expect(envTilts('env.shrub.laurel')).toBe(true);
   });
 
   it('every shape lies inside the species\' visual bounds', () => {

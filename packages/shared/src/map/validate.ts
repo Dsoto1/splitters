@@ -23,6 +23,7 @@ import { arcSentryIssues } from '../sim/mounts.ts';
 import { ziplineShapeIssues } from '../sim/zipline.ts';
 import { GLASS_EDGES } from '../sim/glass.ts';
 import { expandSetPieces, setPieceOverlapIssues, type SetPieceLibrary } from './setPieces.ts';
+import { withTileAliases } from './setPieceAliases.ts';
 import { builtInSetPieces } from './setPieceLibrary.ts';
 import { checkSetPieceDefinition } from './setPieceCheck.ts';
 
@@ -83,14 +84,18 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
     };
   }
   const library = opts.library ?? builtInSetPieces();
+  // The map is checked as written (a retired tile is still a tile, and its release hash is the file's); as played a
+  // retired tile plays as the set piece that replaced it (setPieceAliases.ts: the piece covers exactly its cells, so
+  // nothing new can overlap), and MapMaker keeps it as made and offers Replace all.
   const issues = validateMap(parsed.data, catalog, library);
+  const doc = opts.forEditing ? parsed.data : withTileAliases(parsed.data);
   if (issues.some((i) => i.severity === 'error') && !(opts.forEditing && opts.openWithErrors)) return { ok: false, issues };
   // MapMaker (`forEditing`) keeps the map as made: its set pieces as placements, its paths, and its own ground, which
   // it never lowers under a floor, so the parts, the laid paths and the ground kept under the floors follow a piece, a
   // path or a floor that moves (and the ground under one that goes comes back). As played: set pieces expanded into
   // their parts, on the ground as played (settle.ts withGroundAsPlayed: the paths laid in, the terrain kept under
   // every floor, the set pieces' too, and the props on the ground re-bedded on it), as MapMaker draws it.
-  const map = opts.forEditing ? parsed.data : withGroundAsPlayed(expandSetPieces(parsed.data, library, catalog).map, catalog);
+  const map = opts.forEditing ? parsed.data : withGroundAsPlayed(expandSetPieces(doc, library, catalog).map, catalog);
   return { ok: true, map, issues, migratedFrom: migrated.fromVersion };
 }
 
@@ -319,7 +324,24 @@ export function glassIssues(map: MapDocument, catalog: TileCatalog = coreCatalog
 
 /** Serialise with stable key order and trailing newline so map files diff cleanly. */
 export function serializeMap(map: MapDocument): string {
-  return `${JSON.stringify(map, null, 2)}\n`;
+  const t = map.terrain;
+  if (!t) return `${JSON.stringify(map, null, 2)}\n`;
+  // The terrain's grids are written a grid row to a line (a 321 × 321 terrain is 100,000 heights: one to a line, as
+  // the rest of the file is laid out, its heights alone were over a megabyte). JSON all the same.
+  const mark = (k: string) => `\u0001terrain:${k}`;
+  let text = JSON.stringify({ ...map, terrain: { ...t, heights: mark('heights'), materials: mark('materials'), foliage: mark('foliage') } }, null, 2);
+  const rows = (values: readonly number[], perRow: number): string => {
+    if (!values.length) return '[]';
+    const lines: string[] = [];
+    for (let i = 0; i < values.length; i += perRow) lines.push(`      ${values.slice(i, i + perRow).join(', ')}`);
+    return `[\n${lines.join(',\n')}\n    ]`;
+  };
+  for (const [k, values, perRow] of [['heights', t.heights, t.cols], ['materials', t.materials, t.cols - 1], ['foliage', t.foliage, t.cols - 1]] as const) {
+    const key = `${JSON.stringify(k)}: ${JSON.stringify(mark(k))}`;
+    const at = text.indexOf(key);
+    if (at >= 0) text = `${text.slice(0, at)}${JSON.stringify(k)}: ${rows(values, Math.max(1, perRow))}${text.slice(at + key.length)}`;
+  }
+  return `${text}\n`;
 }
 
 /** Whether (x, z) is over a block's (turned) footprint. */

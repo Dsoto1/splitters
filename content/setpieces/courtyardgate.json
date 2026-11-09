@@ -1,0 +1,40 @@
+{
+  "$comment": "Courtyard gate family (part 5): a gatehouse over a passage. Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "courtyardgate",
+  "pieces": [
+    {
+      "id": "setpiece.courtyard_gate",
+      "displayName": "Courtyard Gate",
+      "category": "Gateways",
+      "blurb": "A gatehouse: a vaulted passage under a segmental arch at each end, a stair tower and a guard room either side with doors off the passage, the gate room over the arch, and a door out east onto a wall-walk: 3 × 1 cells.",
+      "packs": ["medieval", "collegiate", "gothic", "desert", "imperial", "jungle", "military"],
+      "footprint": { "cells": [[0,0],[1,0],[2,0]], "levels": [0,1] },
+      "mirror": "none",
+      "roles": {"glass":"none"},
+      "ports": [
+        {"side":"N","cell":[1,0],"level":0,"kind":"opening"},
+        {"side":"S","cell":[1,0],"level":0,"kind":"opening"},
+        {"side":"E","cell":[2,0],"level":1,"kind":"door"}
+      ],
+      "parts": [
+        {"kind":"tile","tile":"core.room","x":1,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:N":"arch_segmental","0,0,0:S":"arch_segmental","0,0,0:E":"door","0,0,0:W":"door"},"surfaces":{"floor":{"role":"paving"},"walls":{"role":"stone"},"solids":{"role":"stone"},"trim":{"role":"trim"}},"options":{"ceiling":"vault"}},
+        {"kind":"tile","tile":"core.room","x":1,"y":0,"z":1,"rotation":0,"edges":{"0,0,0:N":"windows","0,0,0:S":"windows","0,0,0:E":"door","0,0,0:W":"door"},"glass":{"0,0,0:N":{"role":"glass"},"0,0,0:S":{"role":"glass"}},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"wood"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof","facade":{"role":"facade"}}},
+        {"kind":"tile","tile":"core.stairwell","x":0,"y":0,"z":0,"rotation":2,"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}}},
+        {"kind":"tile","tile":"core.room","x":2,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:W":"door","0,0,0:E":"slit","0,0,0:N":"slit","0,0,0:S":"slit"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"wood"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof"}},
+        {"kind":"tile","tile":"core.room","x":2,"y":0,"z":1,"rotation":0,"edges":{"0,0,0:W":"door","0,0,0:E":"door","0,0,0:N":"slit","0,0,0:S":"slit"},"surfaces":{"floor":{"role":"floor"},"walls":{"role":"stone"},"solids":{"role":"wood"},"underside":{"role":"stone"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"ceiling":"roof","facade":{"role":"facade"}}},
+        {"kind":"door","name":"Tower door","position":[4,0,0],"yaw":1.570796,"style":{"role":"door"},"auto":true},
+        {"kind":"door","name":"Guard room door","position":[12,0,0],"yaw":1.570796,"style":{"role":"door"},"auto":true},
+        {"kind":"door","name":"Wall-walk door","position":[20,4,0],"yaw":1.570796,"style":{"role":"door"},"auto":true},
+        {"kind":"block","name":"Guard stone","position":[5.7,0,3.3],"size":[0.4,0.7,0.4],"material":{"role":"stone"}},
+        {"kind":"block","name":"Guard stone","position":[10.3,0,3.3],"size":[0.4,0.7,0.4],"material":{"role":"stone"}},
+        {"kind":"block","name":"Guard stone","position":[5.7,0,-3.3],"size":[0.4,0.7,0.4],"material":{"role":"stone"}},
+        {"kind":"block","name":"Guard stone","position":[10.3,0,-3.3],"size":[0.4,0.7,0.4],"material":{"role":"stone"}},
+        {"kind":"light","position":[4.53,2.3,2.5],"fixture":"wall","color":"#ffd9a0","intensity":1.1,"range":9,"yaw":1.570796},
+        {"kind":"light","position":[11.47,2.3,-2.5],"fixture":"wall","color":"#ffd9a0","intensity":1.1,"range":9,"yaw":-1.570796},
+        {"kind":"light","position":[8,7.3,0],"fixture":"ceiling","color":"#fff1d6","intensity":1,"range":10},
+        {"kind":"light","position":[16,3.3,0],"fixture":"ceiling","color":"#fff1d6","intensity":0.8,"range":8}
+      ],
+      "notes": {"design":"The carriageway's passage (segmental arches, the vault) between a Stairwell (west, turned so its doors face the passage on both floors) and a guard room, with the gate room over the arch joining the stair to the east tower's upper room and its wall-walk door. Put town wall either side. It can't be mirrored (the stairwell): turn it."}
+    }
+  ]
+}

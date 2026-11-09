@@ -236,6 +236,15 @@ Already done from the owner's earlier ask: **the real buildable area.**
 A short, skippable, interactive tour, remembered once done: place a room, a spawn and a pickup, then test it. It comes
 last, once the interface has settled.
 
+## Also in this lane: the Iron Coast job's editor half
+- **As built (2026-11-09, `wip/mapmaker-terrain`, map format v32):**
+  - the terrain cap raised to 321 vertices a side (`MAX_TERRAIN_VERTS`; new terrains and height-grid imports keep
+    `DEFAULT_TERRAIN_VERTS` = 161), the file's terrain grids a row to a line;
+  - **Terrain → Change grid…** (`shared/editor/changeGrid.ts`, `client/editor/changeGridDialog.ts`): one command, one
+    undo step, a preview of vertices, triangles and the file against its budget;
+  - the **coast** border side (`shared/map/borderCoast.ts`, `client/borderCoast.ts`), per side in Sky → Border;
+  - e2e `editorux` → `editorTerrainGridChecks`; unit `terrainGrid.test.ts`, `borderCoast.test.ts`.
+
 ## Order
 - **After set pieces part 2.** Both touch the palette, the ghost and selection, and set pieces give groups their
   machinery.
