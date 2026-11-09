@@ -1092,6 +1092,7 @@ async function editoruxFlow(browser) {
   await editorMeasureChecks(browser);
   await editorTurnChecks(browser);
   await editorWorkflowChecks(browser);
+  await editorPartBChecks(browser);
 }
 
 /**
@@ -1485,7 +1486,7 @@ async function editorWorkflowChecks(browser) {
   await frames(page, 2);
   const saved = (await doc()).metadata.cardCamera;
   check(saved && Math.abs(saved.position[1] - 1.55) < 0.15 && Math.abs(saved.yaw - 0.6) < 0.001 && Math.abs(saved.pitch + 0.15) < 0.001 && (await camera()).fov === fov0, `Enter saves the card camera in the map at eye level, and the lens goes back (${JSON.stringify(saved)})`);
-  check((await doc()).formatVersion === 30, 'the map is format v30');
+  check((await doc()).formatVersion >= 30, "the map is format v30 or later");
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).metadata.cardCamera === undefined, 'one undo takes the card camera off');
   await page.keyboard.press('Control+KeyY');
@@ -6045,6 +6046,229 @@ async function mapsFlow(browser, part = 0) {
 }
 
 /** Draw `n` more frames (a page's own clock, whatever the machine's speed). */
+/**
+ * MapMaker overhaul Phase 3 part B (docs/MAPMAKER_OVERHAUL_PLAN.md, items 3-7): groups (Ctrl+G: a click picks the
+ * whole group, Alt-click one; moved, flipped, duplicated as one; Ctrl+Shift+G), copy and paste between maps (Ctrl+C,
+ * Ctrl+V at the pointer, new ids; another theme refused, saying why), templates (New map → Start from), Mirror…
+ * (Shift+M: a mirrored copy swaps team things; half the map), and note pins (J: pin, edit, drag, list, delete; format
+ * v31). Screenshots go to E2E_SHOTS when set.
+ */
+async function editorPartBChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: process.env.E2E_SHOTS ? 2 : 1 })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.on('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const sel = () => page.evaluate(() => window.__editor.selection);
+  const toast = () => page.evaluate(() => document.getElementById('ed-toast').textContent);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  /** The camera over the middle of the map, looking north and down at it. */
+  const overview = async () => {
+    await page.evaluate(() => {
+      const v = window.__editor.view;
+      v.camera.position.set(0, 40, -40);
+      v.yaw = 0;
+      v.pitch = -0.8;
+      v.applyCamera();
+    });
+    await frames(page, 3);
+  };
+  const pointAt = async (x, y, z) => {
+    const p = await at(x, y, z);
+    await page.mouse.move(p.x, p.y);
+    await frames(page, 3);
+    return p;
+  };
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await frames(page, 3);
+  check((await doc()).formatVersion === 31, 'the map is format v31');
+
+  // ---- Groups: two pickups and the starter room, grouped with Ctrl+G.
+  await page.evaluate(() => window.__editor.run('Pickups', { kind: 'addEntities', entities: [{ id: 'pick_a', kind: 'pickup', position: [-12, 0, 2], item: 'core.health_small', respawnSeconds: null }, { id: 'pick_b', kind: 'pickup', position: [-12, 0, -4], item: 'core.health_small', respawnSeconds: null }] }));
+  const room = (await doc()).classicStructure.tiles[0].id;
+  await page.evaluate((room) => {
+    window.__editor.setTool({ kind: 'select' });
+    window.__editor.setSelection({ tiles: [room], entities: ['pick_a', 'pick_b'] });
+  }, room);
+  await page.keyboard.press('Control+KeyG');
+  await frames(page, 2);
+  const g = (await doc()).groups;
+  check(g?.length === 1 && g[0].members.length === 3, `Ctrl+G groups the selection (${JSON.stringify(g)})`);
+  check(await page.isVisible('#ed-group-name'), "the inspector shows the group's name field and Ungroup");
+  await page.fill('#ed-group-name', 'West base');
+  await page.press('#ed-group-name', 'Enter');
+  await frames(page, 2);
+  check((await doc()).groups?.[0]?.name === 'West base', 'the group is renamed from the inspector');
+  await shot('group');
+  // A click on one pickup picks the whole group; Alt-click just that one.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  const pa = await pointAt(-12, 0.5, 2);
+  await page.mouse.click(pa.x, pa.y);
+  await frames(page, 2);
+  let s = await sel();
+  check(s.tiles.length === 1 && s.entities.length === 2, `a click on a member selects the whole group (${JSON.stringify(s)})`);
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }, true));
+  await page.keyboard.down('Alt');
+  await page.mouse.click(pa.x, pa.y);
+  await page.keyboard.up('Alt');
+  await frames(page, 2);
+  s = await sel();
+  check(s.tiles.length === 0 && s.entities.length === 1 && s.entities[0] === 'pick_a', `Alt-click picks one member (${JSON.stringify(s)})`);
+  // Moved as one (→ a cell east), flipped as one (M), duplicated as one (Ctrl+D: a second group).
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.mouse.click(pa.x, pa.y);
+  await frames(page, 2);
+  await page.keyboard.press('ArrowRight');
+  await frames(page, 2);
+  let d = await doc();
+  check(d.classicStructure.tiles[0].x === 1 && d.entities.find((e) => e.id === 'pick_a').position[0] === -4 && d.entities.find((e) => e.id === 'pick_b').position[0] === -4, 'the arrow key moves the whole group a cell east');
+  await page.keyboard.press('KeyM');
+  await frames(page, 2);
+  d = await doc();
+  check(d.entities.find((e) => e.id === 'pick_a').position[0] === 12 && d.classicStructure.tiles[0].x === 0, `M flips the group east ↔ west about its own middle (${JSON.stringify(d.entities.find((e) => e.id === 'pick_a').position)})`);
+  await page.keyboard.press('Control+KeyD');
+  await frames(page, 2);
+  d = await doc();
+  check(d.groups?.length === 2 && d.groups[1].members.every((m) => !d.groups[0].members.includes(m)), 'Ctrl+D duplicates the group: the copies are a group of their own');
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  d = await doc();
+  check(d.groups?.length === 1 && d.classicStructure.tiles[0].x === 0 && d.entities.find((e) => e.id === 'pick_a').position[0] === -12, 'undo takes back the duplicate, the flip and the move, one step each');
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['pick_a'] }));
+  await page.keyboard.press('Control+Shift+KeyG');
+  await frames(page, 2);
+  check(!(await doc()).groups, 'Ctrl+Shift+G ungroups');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await doc()).groups?.length === 1, 'undo brings the group back');
+
+  // ---- Copy and paste between maps: Ctrl+C the group, a new map, Ctrl+V at the pointer.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['pick_b'] }));
+  await page.keyboard.press('Control+KeyC');
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.editor.clipboard') ?? 'null'));
+  check(stored?.format === 'tiletrigger.mapmaker.clipboard' && stored.tiles.length === 1 && stored.entities.length === 2 && stored.groups.length === 1, `Ctrl+C keeps the group in this browser's clipboard (${await toast()})`);
+  const firstMap = (await doc()).metadata.id;
+  await newMap(page, 96);
+  await overview();
+  await pointAt(16, 0, 8);
+  await page.keyboard.press('Control+KeyV');
+  await frames(page, 2);
+  d = await doc();
+  const pasted = await sel();
+  const pastedTile = d.classicStructure.tiles.find((t) => t.id === pasted.tiles[0]);
+  check(d.metadata.id !== firstMap && pasted.tiles.length === 1 && pasted.entities.length === 2 && pastedTile?.x === 2 && pastedTile?.y === 1, `Ctrl+V pastes into the other map with new ids, its anchor on the cell under the pointer (${JSON.stringify(pastedTile)}; ${await toast()})`);
+  check(d.groups?.length === 1 && !pasted.entities.includes('pick_a'), 'the pasted things are still a group, with new ids');
+  await shot('paste');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await doc()).classicStructure.tiles.length === 1, 'one undo takes the paste back');
+  await page.evaluate(() => window.__editor.run('Theme', { kind: 'setTheme', before: window.__editor.doc.classicStructure.theme, after: 'core.industrial' }));
+  await page.keyboard.press('Control+KeyV');
+  await frames(page, 1);
+  check(/Can't paste: copied from .*another theme/.test(await toast()), `into a map of another theme it is refused, saying why (${await toast()})`);
+  await page.keyboard.press('Control+KeyZ');
+
+  // ---- Mirror…: a red spawn and flag on the west, mirrored east (Shift+M): the copy is blue's.
+  await page.evaluate(() => window.__editor.run('Team things', { kind: 'addEntities', entities: [{ id: 'sp_red', kind: 'spawn', position: [-28, 0, 4], yaw: 1.571, faction: 'embers' }, { id: 'flag_red', kind: 'flag', position: [-32, 0, 0], yaw: 0, team: 'embers' }] }));
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['sp_red', 'flag_red'] }));
+  await page.keyboard.press('Shift+KeyM');
+  await page.waitForSelector('#ed-mirror-dialog[open]', { timeout: T(5000) });
+  await page.selectOption('#ed-mirror-across', 'eastWest');
+  await page.fill('#ed-mirror-x', '0');
+  await page.dispatchEvent('#ed-mirror-x', 'input');
+  const why = await page.textContent('#ed-mirror-why');
+  check(/Adds 2 mirrored things \(x = 0 m\); 2 swap team/.test(why), `the dialog says what it will do (${why})`);
+  await shot('mirror-dialog');
+  await page.click('#ed-mirror-go');
+  await frames(page, 2);
+  d = await doc();
+  const blueFlag = d.entities.find((e) => e.kind === 'flag' && e.id !== 'flag_red');
+  const blueSpawn = d.entities.find((e) => e.kind === 'spawn' && e.faction === 'tide');
+  check(blueFlag?.team === 'tide' && blueFlag.position[0] === 32 && blueSpawn?.position[0] === 28 && Math.abs(blueSpawn.yaw + 1.571) < 0.01, `the mirrored copy is on the east, its spawn and flag the other team's (${JSON.stringify([blueFlag, blueSpawn])})`);
+  await shot('mirror');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await doc()).entities.filter((e) => e.kind === 'flag').length === 1, 'one undo takes the mirrored copy back');
+  // Half the map: refused while the east half has things on it (the starter room straddles nothing: it's on the line).
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.keyboard.press('Shift+KeyM');
+  await page.waitForSelector('#ed-mirror-dialog[open]', { timeout: T(5000) });
+  check(await page.isChecked('#ed-mirror-half-on'), 'with nothing selected the dialog offers half the map');
+  await page.selectOption('#ed-mirror-half', 'west');
+  const halfWhy = await page.textContent('#ed-mirror-why');
+  check(/Adds \d+ mirrored things .*swap team.*on the line stay/.test(halfWhy) || /Can't: the east half/.test(halfWhy), `half the map: what it would do (${halfWhy})`);
+  await page.click('#ed-mirror-cancel');
+
+  // ---- Note pins: J, click the ground, write, pin; drag it; click it to edit; Map properties lists it; delete.
+  await page.keyboard.press('KeyJ');
+  await overview();
+  const np = await pointAt(8, 0, -8);
+  await page.mouse.click(np.x, np.y);
+  const opened = await page.waitForSelector('#ed-note-editor', { timeout: T(5000) }).then(() => true, () => false);
+  check(opened, `a click with the Note tool opens a new note's editor (${await page.evaluate(() => window.__editor.tool.kind)}; ${await toast()})`);
+  await page.fill('#ed-note-text', 'Sniper line from B is too long');
+  await shot('note-editor');
+  await page.click('#ed-note-save');
+  await frames(page, 3);
+  d = await doc();
+  check(d.editorNotes?.length === 1 && d.editorNotes[0].text === 'Sniper line from B is too long' && Math.abs(d.editorNotes[0].position[0] - 8) < 1, `a click with the Note tool pins a note there (${JSON.stringify(d.editorNotes)})`);
+  const pin = await page.$('.ed-note-pin');
+  check(!!pin && (await pin.isVisible()) && (await pin.textContent()).includes('Sniper line'), 'its pin shows over the view with its first line');
+  const box = await pin.boundingBox();
+  const to = await at(16, 0, -8);
+  await page.mouse.move(box.x + 11, box.y + 22);
+  await page.mouse.down();
+  await page.mouse.move((box.x + to.x) / 2, (box.y + to.y) / 2, { steps: 4 });
+  await page.mouse.move(to.x, to.y, { steps: 4 });
+  await page.mouse.up();
+  await frames(page, 3);
+  d = await doc();
+  check(Math.abs(d.editorNotes[0].position[0] - 16) < 1.5, `dragging the pin moves the note (${JSON.stringify(d.editorNotes[0].position)})`);
+  await page.click('.ed-note-pin');
+  await page.waitForSelector('#ed-note-editor', { timeout: T(5000) });
+  await page.fill('#ed-note-text', 'Sniper line: add a wall');
+  await page.click('#ed-note-save');
+  await frames(page, 2);
+  check((await doc()).editorNotes[0].text === 'Sniper line: add a wall', 'clicking the pin opens it to edit');
+  await page.keyboard.press('KeyV');
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await frames(page, 2);
+  check((await page.textContent('#ed-notes-list')).includes('Notes (1)') && (await page.textContent('#ed-notes-list')).includes('Sniper line: add a wall'), 'Map properties lists the notes');
+  await shot('notes');
+  await page.click('#ed-notes-list .ed-notes-del');
+  await frames(page, 2);
+  check(!(await doc()).editorNotes && !(await page.$('.ed-note-pin')), 'the list deletes a note (and its pin)');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await doc()).editorNotes?.length === 1, 'undo brings it back');
+
+  // ---- Templates: New map → Start from → Symmetric CTF.
+  await page.click('#ed-new');
+  await page.waitForSelector('#ed-new-templates [data-template="ctf"]', { timeout: T(5000) });
+  await page.click('#ed-new-templates [data-template="ctf"]');
+  await shot('templates');
+  await page.click('#ed-new-create');
+  await page.waitForFunction(() => window.__editor.doc.entities.filter((e) => e.kind === 'flag').length === 2, null, { timeout: T(15000) }).catch(() => {});
+  d = await doc();
+  const flags = d.entities.filter((e) => e.kind === 'flag');
+  check(flags.length === 2 && new Set(flags.map((f) => f.team)).size === 2 && d.metadata.name === 'Untitled Map' && d.metadata.id !== 'template_ctf', `Start from → Symmetric CTF makes a new map of its own from the layout (${d.metadata.id}, ${flags.length} flags)`);
+  const issues = await page.evaluate(() => document.getElementById('ed-issues')?.textContent ?? '');
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await frames(page, 4);
+  await shot('template-ctf');
+  check(!/error/i.test(issues), `the template validates clean (${issues.slice(0, 120)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await page.context().close();
+}
+
 function frames(page, n = 10) {
   return page.evaluate((n) => new Promise((done) => {
     let left = n;
