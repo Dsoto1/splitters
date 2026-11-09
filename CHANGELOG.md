@@ -43,6 +43,22 @@ made only on a commit that passed CI on a check branch.
   rain, Snow, Blizzard, Fog); from the Host tab it plays from the next match.
 - MapMaker: the boulder and cliff face species show their pictures in the palette, not text cards.
 
+**Whiteout Station, the owner's follow-ups** (2026-11-09, in MapMaker): King of the Hill on three hills (the yard, the
+radar ridge and the ice cave); three snow sleds to drive at the south road's west end (the two
+parked snowmobiles on the garage apron are gone); Tide's spawns a cell nearer the yard, so Team Deathmatch comes out even.
+
+**Fireteams, part 2** (owner-approved 2026-11-08):
+- **Bot squads play the objective first.** A bot-led squad goes for the flag, the hill or the bomb site together, on
+  one route and push of the team's plan, rather than trailing its leader; when its leader falls, the next best member
+  leads on, and whoever carries the flag leads the squad home. Kills are back to the variant-off levels in Team
+  Deathmatch and the hill is held as long; CTF captures are partly back (docs/FIRETEAMS_PLAN.md, "Part 2").
+- **Your squad forms up round you:** single file through corridors and doorways, a wedge, spread out on open ground;
+  Hold here, Go there and Defend the objective put them on a ring round the place.
+- **Spread out / Stay tight** on the order wheel (its seventh entry).
+- **Bounding:** in a fight on the move, half the squad covers (firing where the enemy ducked) while the other half
+  moves up cover to cover.
+- **The squad HUD:** your squadmates' portraits with their health and the squad's order, your squad on the minimap
+  (and where you sent it), and your squad's orange marker over their heads. On a phone it sits beside your health.
 **MapMaker follow-ups** (the owner's answers, 2026-11-08):
 - **The measure tool's jump hint looks at the ground along the line**, not only at its two ends: a slope you can walk
   up reads walkable, a ledge reads a step (with its height), and a pit you couldn't climb out of reads a gap (with its
