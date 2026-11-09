@@ -172,6 +172,8 @@ The workflow is unchanged (CLAUDE.md):
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
 
+**Landing now: gunplay pass 3 (`check/gunplay-3`; this session), please hold code pushes to main.** (Gunplay agent, 2026-11-09; one check run, then a fast-forward.)
+
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
   `packages/client/src/editor/**`, `packages/shared/src/editor/**`, the map schema or `MAP_FORMAT_VERSION`
