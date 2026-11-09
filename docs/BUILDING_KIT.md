@@ -179,6 +179,9 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   uploaded.
 - **The owner** also sees **Export for content/setpieces/**: the piece as a family file (its id `setpiece.<name>`) to
   add to `content/setpieces/` and ship, the way official maps are files (docs/CONTENT_PIPELINE.md, "Set pieces").
+- **Replace all with a set piece…** (every tile's inspector; set pieces part 6): pick a piece, and every placement of
+  that tile in the map becomes it at the same cell, level and turn, selected, one undo step. A piece bigger than the
+  tile must fit where it lands (MapMaker says what's in the way).
 - **Retired tiles and Replace all** (set pieces part 5): an old big tile a set piece replaces leaves the Tiles tab
   (`content/setpieces/aliases.json`; so far the **Catwalk Gantry**, replaced by **Catwalk Bridge (Up)**). A map that
   places one still opens with it; its inspector says what replaced it and offers **Replace all N with …**: every

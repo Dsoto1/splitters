@@ -198,8 +198,9 @@ describe('Ancient pack demo maps', () => {
   it("Pharaoh's Reach has its temple, pyramid, tomb with traps and the curse, the river and its boats, and the tomb portal", () => {
     const map = load('pharaohs_reach');
     expect(map.classicStructure.theme).toBe('core.egypt');
-    const tiles = new Set(map.classicStructure.tiles.map((x) => x.tile));
-    for (const id of ['egypt.pylon', 'egypt.hypostyle', 'egypt.sanctuary', 'egypt.pyramid', 'egypt.tomb_entrance', 'egypt.tomb_corridor', 'egypt.tomb_chamber', 'egypt.quay', 'egypt.river', 'egypt.avenue', 'egypt.house']) expect(tiles.has(id), id).toBe(true);
+    // Tiles and set pieces: set pieces part 6 swapped the old egypt.pylon for setpiece.temple_pylon in MapMaker.
+    const tiles = new Set([...map.classicStructure.tiles.map((x) => x.tile), ...(JSON.parse(read('maps/pharaohs_reach.json')).setPieces ?? []).map((p: { piece: string }) => p.piece)]);
+    for (const id of ['setpiece.temple_pylon', 'egypt.hypostyle', 'egypt.sanctuary', 'egypt.pyramid', 'egypt.tomb_entrance', 'egypt.tomb_corridor', 'egypt.tomb_chamber', 'egypt.quay', 'egypt.river', 'egypt.avenue', 'egypt.house']) expect(tiles.has(id), id).toBe(true);
     expect(map.entities.some((e) => e.kind === 'water')).toBe(true);
     expect(map.entities.filter((e) => e.kind === 'mover' && e.props?.length).length).toBe(2);
     expect(map.entities.filter((e) => e.kind === 'trap' && e.position[1] < -3).length).toBeGreaterThanOrEqual(5);

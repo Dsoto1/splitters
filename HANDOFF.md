@@ -910,6 +910,25 @@ docs/GUNPLAY_AUDIT.md "Pass 2" has the before/after table; docs/ARSENAL.md "Gunp
      or Defend the objective keeps its post. Keep that?
   3. The party preset (Part 3) and the squad HUD (Part 2) are next.
 
+### Set pieces, part 6: swapping the old big pieces (`wip/mapmaker-setpieces6`, agent, 2026-11-09; MapMaker lane)
+- **Done:** Replace all with a set piece… in every tile's inspector; the Town Wall Gatehouse (`setpiece.courtyard_gate_wall`)
+  and Market Town's gate swapped to it in MapMaker; Shingle Point's card camera backed up (card picture recaptured);
+  the coverage map's Tall Mushroom replaced by our Bracken Fern (a Kenney log stack keeps the Nature Kit pack covered).
+- **Also done (owner's answers):** the Bunker set piece (`setpiece.bunker`, the Bunker tile's size); Iron Maw and Shingle
+  Point (Warehouses → Loading Dock, Bunkers → Bunker), Neon Spire, Riot Junction and Underdrain (City Crossroads → Crossroads
+  Plaza, the ring filled with Platforms) swapped in MapMaker; checks and bot reports in docs/SET_PIECES_PLAN.md, "As built: part 6".
+- **Also done (Environment Phase 2 maps):** the City Wall Gatehouse (`setpiece.city_gate_wall`) and Temple Pylon
+  (`setpiece.temple_pylon`) set pieces; Blackout and Crossroads (Loading Dock, Bunker), Pharaoh's Reach and Sunken
+  Kingdom (Temple Pylon), Qasr Medina (City Wall Gatehouse) swapped in MapMaker; both pieces on the coverage map.
+- **Left:** Coldwater Gulch needs none (Bunker theme only); Whiteout Station (its rebuild). Bunker Cross, Concrete
+  Annex, Iron Tide, Ironhold Prison, Pump Tower and Silo Complex only use the Bunker theme (no old big tile). Iron
+  Compound still places a Bunker tile and the Catwalk Gantry (owner: leave it as it is).
+- **Pitfall:** a bot match parts another way after any change to a map's entities, even a block buried out of reach,
+  so a capture or kill count from one seed tells nothing about a swap: compare many seeds (SET_PIECES_PLAN, "As
+  built: part 6", Sunken Kingdom).
+- **Pitfall:** MapMaker with `?test=1` makes ids from a fixed sequence, so placing into a map that was itself built
+  under `?test=1` (the coverage map) can collide ("ID … already exists"): drive real edits without `test=1`.
+
 ### Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall (`wip/mapmaker-setpieces`, agent, 2026-11-08; MapMaker lane)
 - **Built** (docs/SET_PIECES_PLAN.md, "As built: part 5"): twelve pieces (the catwalk bridge in three lengths) in their
   own families: Power Core Hall, Catwalk Bridge, Twin-Stair Overlook, Atrium Tower, Loading Dock, Sunken Arena (new kit
