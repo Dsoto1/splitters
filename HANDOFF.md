@@ -15,7 +15,7 @@ released v0.9.0 from that build (tag and release with its assets). Fireteams par
 turning by mouse went in with it.
 
 **Gunplay pass 3: the network check (G3) and bots' weapon ranges (G4)** (`wip/gunplay-3`, agent, 2026-11-09;
-owner-approved audit candidates 7 and 8). Details and tables: docs/GUNPLAY_AUDIT.md, "G3" and "G4".
+owner-approved audit candidates 7 and 8; landed on main from its green `check/gunplay-3` run, landing line removed). Details and tables: docs/GUNPLAY_AUDIT.md, "G3" and "G4".
 - **G3, `pnpm net-report`:** a real host (server.ts) and 8 players over the real wire path and the browser's netcode,
   with latency, jitter and loss on the links (`server/src/tools/netLab.ts`). It runs in about 5 minutes and is
   manual. CI runs a 6 s smoke (`server/test/netLab.test.ts`).
@@ -206,8 +206,6 @@ The workflow is unchanged (CLAUDE.md):
 - run at most 3 agents, each on `wip/<name>`, green on `check/<name>`, then fast-forward main;
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
-
-**Landing now: gunplay pass 3 (`check/gunplay-3`; this session), please hold code pushes to main.** (Gunplay agent, 2026-11-09; one check run, then a fast-forward.)
 
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
