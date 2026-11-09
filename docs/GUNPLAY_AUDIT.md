@@ -411,7 +411,7 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 | 5 ✅ | Feel: reload / switch | Melee doesn't break a reload (spec §16 lists it; it did on the host, not in prediction); auto-reload when a magazine runs dry without a trigger pull; Spin Gun draw (1.23 s) | fewer moments where input feels ignored | small (sim + prediction test) |
 | 6 🟡 (a HUD panel, not a board) | Feel: recoil | Recoil wall readout: draw each spray's pattern on the range's recoil wall (impact decals already there) and print the settle time | recoil patterns become learnable by sight | medium |
 | 7 ✅ (`pnpm net-report`; see G3 above) | Network (G3) | An 8-client harness: latency 50-150 ms, jitter, 1-5 % loss, checking prediction vs host, hit registration and kill validation (today: one client at 100 ms, no loss, prediction.test.ts:13) | proves "lead for travel, never for latency" under real conditions | medium-large |
-| 8 ✅ (see G4 above) | Bots (G4) | Weapon choice and ranges from measured TTK (`gun-report` JSON) instead of hand-set `botRange` (e.g. Machine Pistol 0-14 m while it needs 16 rounds at 10 m); a bot-report line of hits/shots by weapon | bots pick and fight with each gun where it is good | medium |
+| 8 ✅ weapon choice; 🟡 distance (see G4 above) | Bots (G4) | Weapon choice and ranges from measured TTK (`gun-report` JSON) instead of hand-set `botRange` (e.g. Machine Pistol 0-14 m while it needs 16 rounds at 10 m); a bot-report line of hits/shots by weapon | bots pick and fight with each gun where it is good | medium |
 
 ## Appendix A: spec checklist (phases G0-G6, spec §50)
 
@@ -450,7 +450,7 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 | G4 recoil control | ✅ | bots counter by skill: `match.ts:2257-2260` |
 | G4 burst discipline | ✅ | `aim.ts:345-349` |
 | G4 reload decisions | ✅ | empty, or topping up out of sight / in cover: `shared/src/bots/brain.ts:2158-2161` |
-| G4 weapon selection, effective range | ✅ | pass 3 (G4 above): `weaponScore` by the measured band, `preferredRange` by the measured edge (`shared/src/bots/weaponBands.ts`, data from `pnpm gun-report --bands`); `botDesirability` still hand-set |
+| G4 weapon selection, effective range | 🟡 | pass 3 (G4 above): `weaponScore` by the measured band and the TTK at the distance (`shared/src/bots/weaponBands.ts`, data from `pnpm gun-report --bands`); `preferredRange` (how far to stand) and `botDesirability` still hand-set (the measured distance cost CTF captures: for the owner) |
 | **G5** lethality, ballistics, friendly fire | 🟡 | `shared/src/sim/rules.ts:188,193,124`, host's match setup (`client/src/frontend/frontEnd.ts:1279`), not per map in MapMaker |
 | G5 headshots, ammo, reload, penetration, destruction, killcam policy, aim-assist policy, global scales | ❌ | none in `MatchRules` |
 | **G6** exotic arsenal | 🟡 | many exotics already ship (Chaos set: bubble, goo, oil, singularity, freeze, flare, nailgun, flak); swappable ammo families and a slow-motion final kill ❌. The spec puts G6 after the foundation is excellent |
