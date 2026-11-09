@@ -1,5 +1,4 @@
 import type { MapDocument, SpawnEntity } from '../map/schema.ts';
-import { raceTrack } from '../map/track.ts';
 import { BROWSER_MAX_PLAYERS, MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { MAX_TEAMS, mapTeams } from './npc.ts';
 import { BREAKTHROUGH_POOL, BREAKTHROUGH_POOL_MAX, BREAKTHROUGH_SECTOR_SECONDS, DEFAULT_RULES, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, isTwoTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
@@ -83,9 +82,6 @@ export interface MatchSetup {
   fortBudget?: number;
   classes?: boolean;
   classLimit?: number;
-  raceLaps?: number;
-  raceVehicle?: 'kart' | 'speeder' | 'buggy';
-  raceCombat?: boolean;
   /**
    * Breakthrough: a second round with the sides swapped (absent: one round). Its reinforcements per attacker are the
    * setup's `scoreLimit` and each sector's minutes its `minutes`, both following the size like any score and time.
@@ -190,7 +186,7 @@ export function validateTeamSizes(raw: readonly unknown[] | undefined, mode: Gam
 /**
  * The team layout a setup plays on this map: its own, else the map's (its team setup, else its recommended most
  * split in two: 4v4 for the default 2–8), made valid for the mode and to fit `cap` players (the browser's
- * limit; the setup screen passes this device's, or a race grid's: playerCap).
+ * limit; the setup screen passes this device's: playerCap).
  */
 export function setupTeams(setup: Pick<MatchSetup, 'teams' | 'mode'>, map: MapDocument, cap = BROWSER_MAX_PLAYERS): number[] {
   const half = Math.max(1, Math.round(map.metadata.recommendedPlayers.max / 2));
@@ -223,8 +219,6 @@ export function modeUnavailableReason(map: MapDocument, mode: GameMode): string 
         return 'Needs a flag base for each of the two teams.';
       case 'core.koth':
         return 'Needs hill spots, and this map has none.';
-      case 'core.race':
-        return 'Needs a race track, and this map has none.';
       case 'core.breakthrough':
         return 'Needs sectors, with their objectives and both sides’ spawns, and this map has none.';
     }
@@ -279,11 +273,10 @@ export function capArea(map: MapDocument): number {
 /**
  * The automatic caps for a mode on a map (docs/GAME_MODES.md, "Player caps"):
  * - recommended: free-for-all, the map's recommended most (Map properties) as far as its spawn points go (one each,
- *   at least 2); teams, its team layout in all, else its recommended most; a squad, the squad it's made for; a race,
- *   its grid;
+ *   at least 2); teams, its team layout in all, else its recommended most; a squad, the squad it's made for;
  * - most: as many as its spawn points serve (SPAWN_SHARE each, as the match's own spawn waves do), its fought-over
  *   area holds (CAP_AREA_PER_PLAYER m² each) and CAP_STRETCH times the recommended, never under the recommended; even
- *   in team modes; a squad's and a race's are their recommended.
+ *   in team modes; a squad's is its recommended.
  * Free-for-all counts the shared spawn points (what it spawns on), or half of all of them when that is more.
  */
 export function autoPlayerCaps(map: MapDocument, mode: GameMode): { recommended: number; max: number } {
@@ -291,10 +284,6 @@ export function autoPlayerCaps(map: MapDocument, mode: GameMode): { recommended:
   const rec = map.metadata.recommendedPlayers;
   if (family === 'squad') {
     const n = squadRoom(map, MAX_PLAYER_SLOTS);
-    return { recommended: n, max: n };
-  }
-  if (family === 'race') {
-    const n = clampInt(Math.min(rec.max, raceGrid(mode, map) ?? rec.max), 2, MAX_PLAYER_SLOTS);
     return { recommended: n, max: n };
   }
   const spawns = spawnsOf(map);
@@ -331,10 +320,10 @@ export const capsLine = (c: Pick<PlayerCaps, 'recommended' | 'max'>): string => 
 
 /**
  * How a mode's players are set up: teams; free-for-all (Deathmatch, Disc Arena); a squad against the map
- * (co-op, Zombies); racers on a grid. Presets and the player controls take their form from it.
+ * (co-op, Zombies). Presets and the player controls take their form from it.
  */
-export type SetupFamily = 'teams' | 'ffa' | 'squad' | 'race';
-export const setupFamily = (mode: GameMode): SetupFamily => (isTeamMode(mode) ? 'teams' : isCoopMode(mode) ? 'squad' : mode === 'core.race' ? 'race' : 'ffa');
+export type SetupFamily = 'teams' | 'ffa' | 'squad';
+export const setupFamily = (mode: GameMode): SetupFamily => (isTeamMode(mode) ? 'teams' : isCoopMode(mode) ? 'squad' : 'ffa');
 
 /**
  * The team you play on before the match (by order, from 0): Fixed, the one you picked; Balanced, the first
@@ -377,31 +366,22 @@ export function setupSummary(setup: MatchSetup, map: MapDocument, people = 1, ca
 
 // ------------------------------------------------------------------ limits
 
-/** The most players a setup can have here, and whose limit that is: this device's (deviceMaxPlayers), or a race track's grid. */
+/** The most players a setup can have here, and whose limit that is: this device's (deviceMaxPlayers). */
 export interface PlayerCap {
   max: number;
-  by: 'device' | 'grid';
-}
-
-/** A race's start grid: how many racers start in a vehicle (null: not a race, or no track). */
-export function raceGrid(mode: GameMode, map: MapDocument): number | null {
-  if (mode !== 'core.race') return null;
-  return raceTrack(map)?.grid ?? null;
+  by: 'device';
 }
 
 /** The cap on players for a mode on a map, given what this device runs (`deviceMax`, you and bots). */
-export function playerCap(mode: GameMode, map: MapDocument, deviceMax: number): PlayerCap {
-  const device = clampInt(deviceMax, 2, BROWSER_MAX_PLAYERS);
-  const grid = raceGrid(mode, map);
-  return grid !== null && grid < device ? { max: Math.max(2, grid), by: 'grid' } : { max: device, by: 'device' };
+export function playerCap(_mode: GameMode, _map: MapDocument, deviceMax: number): PlayerCap {
+  return { max: clampInt(deviceMax, 2, BROWSER_MAX_PLAYERS), by: 'device' };
 }
 
 /**
  * Why a count stops where it does, in plain words: "24 per team is this computer's limit.", "48 players in all
- * is this computer's limit.", "8 racers fill this track's grid.". `device`: "this computer", "this phone".
+ * is this computer's limit.". `device`: "this computer", "this phone".
  */
 export function capMessage(cap: PlayerCap, o: { teams?: number; even?: boolean; device?: string } = {}): string {
-  if (cap.by === 'grid') return `${cap.max} racers fill this track's grid.`;
   const whose = `${o.device ?? 'this computer'}'s limit`;
   if (o.teams && o.even) return `${Math.max(1, Math.min(MAX_TEAM_SIZE, Math.floor(cap.max / o.teams)))} per team is ${whose}.`;
   return `${cap.max} players${o.teams ? ' in all' : ''} is ${whose}.`;
@@ -431,7 +411,7 @@ export const TEAM_FLOOR_NOTE = 'Every team needs at least one player.';
 /**
  * Bots on team `team` up (delta > 0) or down: the team grows or shrinks with them, since bots are what fill a
  * team (a team of 10 with 9 bots takes an eleventh, it doesn't refuse it). Even teams: every team changes alike.
- * A change stops at the cap (this device, a race grid), at MAX_TEAM_SIZE or at a team's people, and says why.
+ * A change stops at the cap (this device), at MAX_TEAM_SIZE or at a team's people, and says why.
  */
 export function changeTeamBots(sizes: readonly number[], team: number, delta: number, o: TeamChangeOptions): TeamChange {
   return setTeamSize(sizes, team, (sizes[team] ?? 1) + delta, o);
@@ -509,7 +489,7 @@ export interface SizePreset {
   label: string;
   teams?: number[];
   players?: number;
-  /** The layout in short: "12v12", "12 players", "squad of 4", "8 racers". */
+  /** The layout in short: "12v12", "12 players", "squad of 4". */
   value: string;
   /** What it is, for its tooltip. */
   tip: string;
@@ -540,7 +520,7 @@ export const squadRoom = (map: MapDocument, cap: number): number => clampInt(map
 
 /**
  * The size presets for a mode on a map: Duel, Small, Map's pick, Big battle and Max (free-for-all the same in
- * players; a squad's Solo, Duo, Map's pick, Big squad and Max; a race's Duel, Small, Map's pick and Full grid).
+ * players; a squad's Solo, Duo, Map's pick, Big squad and Max).
  * Small is the fewest the map is made for (at least two a side); Map's pick its own layout; Big battle as many
  * as its recommended most and spawn points hold, or half again its pick when they hold no more; Max what this
  * device runs. Presets that come out the same as another are left out.
@@ -570,11 +550,9 @@ export function sizePresets(mode: GameMode, map: MapDocument, o: PresetOptions):
     add('big', 'Big battle', even(Math.max(pickPer + 1, Math.floor(roomFor(sum(pick)) / n))), `As many as the map has room for: its recommended most (${rec.max}) and its ${spawns} spawn points, or half again its own layout.`);
     add('max', 'Max', even(top), `The most ${device} runs: ${n * top} players.`);
   } else {
-    const word = family === 'race' ? 'racers' : 'players';
-    const value = (n: number) => (family === 'squad' ? (n === 1 ? 'you alone' : n === 2 ? 'you + 1' : `squad of ${n}`) : `${n} ${word}`);
+    const value = (n: number) => (family === 'squad' ? (n === 1 ? 'you alone' : n === 2 ? 'you + 1' : `squad of ${n}`) : `${n} players`);
     const add = (id: SizePresetId, label: string, players: number, tip: string) => out.push({ id, label, players: clampInt(players, 1, cap.max), value: value(clampInt(players, 1, cap.max)), tip });
-    const grid = raceGrid(mode, map);
-    const pick = clampInt(family === 'race' ? Math.min(rec.max, grid ?? rec.max) : (o.pickPlayers ?? mapPickPlayers(rec)), 1, cap.max);
+    const pick = clampInt(o.pickPlayers ?? mapPickPlayers(rec), 1, cap.max);
     if (family === 'squad') {
       // No squad beyond what the map is made for (owner, 2026-11-06): its team layout in all, else its recommended most.
       const room = squadRoom(map, cap.max);
@@ -587,12 +565,9 @@ export function sizePresets(mode: GameMode, map: MapDocument, o: PresetOptions):
     } else {
       add('duel', 'Duel', 2, 'One on one: you against a bot (or a friend who joins).');
       add('small', 'Small', Math.min(Math.max(4, Math.min(rec.min, pick - 2)), pick - 1), `A small match: the fewest this map is made for (${rec.min}).`);
-      add('pick', "Map's pick", pick, family === 'race' ? `What the track is made for: up to ${Math.min(rec.max, grid ?? rec.max)} racers.` : `What the map is made for: up to ${rec.max} players.`);
-      if (family === 'race') add('max', cap.by === 'grid' ? 'Full grid' : 'Max', cap.max, cap.by === 'grid' ? `Every place on the grid: ${cap.max}.` : `The most ${device} runs: ${cap.max}.`);
-      else {
-        add('big', 'Big battle', Math.max(pick + 1, roomFor(pick)), `As many as the map has room for: its recommended most (${rec.max}) and its ${spawns} spawn points, or half again its pick.`);
-        add('max', 'Max', cap.max, `The most ${device} runs: ${cap.max} players.`);
-      }
+      add('pick', "Map's pick", pick, `What the map is made for: up to ${rec.max} players.`);
+      add('big', 'Big battle', Math.max(pick + 1, roomFor(pick)), `As many as the map has room for: its recommended most (${rec.max}) and its ${spawns} spawn points, or half again its pick.`);
+      add('max', 'Max', cap.max, `The most ${device} runs: ${cap.max} players.`);
     }
   }
   // One button per layout: the map's pick first, then Max over Big battle, Duel over Small; sizes that only go up.
@@ -635,7 +610,7 @@ export interface MatchLimits {
 /**
  * Modes whose score limit and time follow the match's size: Team Deathmatch and Deathmatch (kills), Capture the
  * Flag (the time: captures stay) and King of the Hill (hill seconds with the time). Rounds modes (Elimination,
- * Bomb, Hostage Rescue), co-op and Zombies, Fort Wars, Disc Arena and races keep their own.
+ * Bomb, Hostage Rescue), co-op and Zombies, Fort Wars and Disc Arena keep their own.
  */
 export const limitsScale = (mode: GameMode): boolean => mode === 'core.tdm' || mode === 'core.deathmatch' || mode === 'core.roulette' || mode === 'core.ctf' || mode === 'core.koth' || mode === 'core.breakthrough';
 
@@ -753,14 +728,14 @@ export function withSetupLimits(setup: MatchSetup, map: MapDocument, cap = BROWS
 // ------------------------------------------------------------------ fit
 
 export type FitLevel = 'fits' | 'crowded' | 'problem';
-export type FitTopic = 'caps' | 'device' | 'grid' | 'size' | 'spawns' | 'teams' | 'performance';
+export type FitTopic = 'caps' | 'device' | 'size' | 'spawns' | 'teams' | 'performance';
 
 /** One line of the fit check: what it found about one thing, how much that matters, and a fix when there is one. */
 export interface FitItem {
   topic: FitTopic;
   level: 'ok' | 'info' | 'warn' | 'problem';
   text: string;
-  /** A suggestion's button: "Use 12v12" (team sizes) or "Use 8 racers" (players in all, you included). */
+  /** A suggestion's button: "Use 12v12" (team sizes) or "Use 8 players" (players in all, you included). */
   fix?: { label: string; teams?: number[]; players?: number };
 }
 
@@ -775,9 +750,9 @@ export const FIT_LABELS: Record<FitLevel, string> = { fits: 'Fits', crowded: 'Cr
 
 /**
  * How well a setup fits its map and this device, as one verdict (Fits, Crowded, Problem) with the details
- * behind it, in this order: what the device runs, a race's grid, the map's recommended size (and its own
+ * behind it, in this order: what the device runs, the map's recommended size (and its own
  * layout, with a button to use it), its spawn points, teams without spawns of their own, how heavy the match
- * is. Only real problems are red: racers who would start on foot, more players than this device runs, far more
+ * is. Only real problems are red: more players than this device runs, far more
  * (over twice) than the map is made for. Nothing here stops the match.
  */
 export function setupFit(setup: MatchSetup, map: MapDocument, o: { deviceMax: number; device?: string; pickPlayers?: number }): SetupFit {
@@ -787,31 +762,28 @@ export function setupFit(setup: MatchSetup, map: MapDocument, o: { deviceMax: nu
   const recText = rec.min === rec.max ? `${rec.max}` : `${rec.min}–${rec.max}`;
   const device = o.device ?? 'this computer';
   const cap = playerCap(setup.mode, map, o.deviceMax);
-  // What it plays with here (this device's limit, a race's grid), and what it asks for.
+  // What it plays with here (this device's limit), and what it asks for.
   const players = setupPlayers(setup, map, cap.max);
   const asked = setupPlayers(setup, map);
-  const unit = family === 'race' ? 'racers' : 'players';
+  const unit = 'players';
   const sizes = family === 'teams' ? setupTeams(setup, map, cap.max) : [];
   const pick = family === 'teams' ? mapPickTeams(map, setup.mode, cap.max) : [];
-  const pickPlayers = clampInt(family === 'race' ? Math.min(rec.max, raceGrid(setup.mode, map) ?? rec.max) : (o.pickPlayers ?? mapPickPlayers(rec)), 1, cap.max);
+  const pickPlayers = clampInt(o.pickPlayers ?? mapPickPlayers(rec), 1, cap.max);
   const atPick = family === 'teams' ? sizes.join() === pick.join() : players === pickPlayers;
   const pickFix: NonNullable<FitItem['fix']> = family === 'teams' ? { label: `Use ${pick.join('v')}`, teams: pick } : { label: `Use ${pickPlayers} ${unit}`, players: pickPlayers };
 
-  // A setup made on a bigger computer, or a race with more racers than places on the grid, plays what fits here.
-  const grid = raceGrid(setup.mode, map);
+  // A setup made on a bigger computer plays what fits here.
   if (asked > players) {
     const plays = family === 'teams' ? sizes.join('v') : `${players} ${unit}`;
-    items.push(cap.by === 'grid'
-      ? { topic: 'grid', level: 'info', text: `${grid} places on the grid: ${players} race (this setup asks for ${asked}).` }
-      : { topic: 'device', level: 'info', text: `This setup asks for ${asked} ${unit}; ${device} runs ${cap.max}, so it plays ${plays}.` });
-  } else if (grid !== null) items.push({ topic: 'grid', level: 'ok', text: `${grid} places on the grid: every racer starts in a vehicle.` });
+    items.push({ topic: 'device', level: 'info', text: `This setup asks for ${asked} ${unit}; ${device} runs ${cap.max}, so it plays ${plays}.` });
+  }
   // The map's size, and its own layout when this isn't it.
   const suggest = family === 'teams' && map.teamSetup && !atPick ? ` The map suggests ${pick.join('v')}.` : '';
   // The mode's player caps (MapMaker's Map properties, else worked out from the map's size and spawn points).
   const caps = mapPlayerCaps(map, setup.mode);
   const capsWhat = `${MODE_LABELS[setup.mode]} here: ${caps.recommended} recommended, ${caps.max} at most${caps.auto ? ' (from its size and spawn points)' : " (the map's own)"}`;
   const capsFix: NonNullable<FitItem['fix']> = family === 'teams' ? { label: `Use ${caps.recommended}`, teams: splitTeams(caps.recommended, Math.max(2, sizes.length)) } : { label: `Use ${caps.recommended} ${unit}`, players: caps.recommended };
-  if (family !== 'squad' && family !== 'race') {
+  if (family !== 'squad') {
     if (players > caps.max) items.push({ topic: 'caps', level: 'problem', text: `${capsWhat}. ${players} is more than it holds.`, fix: capsFix });
     else if (players > caps.recommended) items.push({ topic: 'caps', level: 'info', text: `${capsWhat}. ${players} will be busy.` });
     else items.push({ topic: 'caps', level: 'ok', text: `${capsWhat}.` });
@@ -822,7 +794,7 @@ export function setupFit(setup: MatchSetup, map: MapDocument, o: { deviceMax: nu
   else items.push({ topic: 'size', level: suggest ? 'info' : 'ok', text: `The map is made for ${recText} players: ${players} fit.${suggest}`, ...(suggest ? { fix: pickFix } : {}) });
   // Spawn points: one each, else shared (the match makes more of its own for big matches).
   const spawns = spawnsOf(map);
-  if (family !== 'race' && spawns.length) {
+  if (spawns.length) {
     const sided = family === 'teams' ? spawns.filter((s) => s.faction).length : 0;
     const where = sided ? ` (${sided} on the teams' sides, ${spawns.length - sided} shared)` : '';
     if (players > spawns.length) {
@@ -898,11 +870,6 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSE
     rules.fortCombatSeconds = Math.round((s.fortCombat ?? 5) * 60);
     rules.fortCycles = s.fortCycles ?? 1;
     rules.fortBudget = s.fortBudget ?? 420;
-  }
-  if (s.mode === 'core.race') {
-    if (s.raceLaps) rules.raceLaps = s.raceLaps;
-    if (s.raceVehicle) rules.raceVehicle = s.raceVehicle;
-    if (s.raceCombat !== undefined) rules.raceCombat = s.raceCombat;
   }
   if (s.mode === 'core.breakthrough' && limits) {
     // The mode ends the match itself: the setup's score is reinforcements per attacker, its time each sector's.

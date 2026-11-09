@@ -166,6 +166,14 @@ export class MapStyler {
    * normals taken from the height grid so lighting runs smoothly across
    * material borders. Rebuilt on its own while MapMaker brushes are dragged.
    */
+  /**
+   * Draw a terrain finer than 2 m (map format v32, Change grid) at every `terrainDrawStep`-th vertex: the game sets 2 on
+   * Low graphics (phones start there), a quarter of the vertices to draw. Collision and the navmesh always use every
+   * vertex; the drawn surface leaves them only between the skipped vertices (on a grid made finer from a coarser one,
+   * hardly at all).
+   */
+  terrainDrawStep = 1;
+
   buildTerrain(doc: MapDocument, name = 'map'): void {
     for (const m of this.terrainMeshes) m.dispose();
     this.terrainMeshes = [];
@@ -174,6 +182,16 @@ export class MapStyler {
     const s = t.spacing;
     const cols = t.cols;
     const rows = t.rows;
+    const step = s < 2 && this.terrainDrawStep > 1 ? Math.round(this.terrainDrawStep) : 1;
+    // The vertex columns and rows drawn (every one, or every step-th and always the last).
+    const take = (n: number) => {
+      const out: number[] = [];
+      for (let i = 0; i < n - 1; i += step) out.push(i);
+      out.push(n - 1);
+      return out;
+    };
+    const ci = take(cols);
+    const ri = take(rows);
     // Heights and normals once per vertex (they were worked out again for each of up to four cells sharing a vertex).
     const hy = new Float32Array(cols * rows);
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) hy[r * cols + c] = vertexY(t, c, r);
@@ -190,12 +208,17 @@ export class MapStyler {
         nrm[i + 2] = nz / l;
       }
     }
+    // Drawn cells (k = row of drawn cells × drawn columns + column), each the material of its first fine cell.
     const byMaterial = new Map<number, number[]>();
-    t.materials.forEach((m, i) => {
-      let list = byMaterial.get(m);
-      if (!list) byMaterial.set(m, (list = []));
-      list.push(i);
-    });
+    const dc = ci.length - 1;
+    for (let r = 0; r < ri.length - 1; r++) {
+      for (let c = 0; c < dc; c++) {
+        const m = t.materials[ri[r]! * (cols - 1) + ci[c]!]!;
+        let list = byMaterial.get(m);
+        if (!list) byMaterial.set(m, (list = []));
+        list.push(r * dc + c);
+      }
+    }
     for (const [m, cells] of byMaterial) {
       const material = TERRAIN_MATERIALS[m] ?? 'grass';
       const style = terrainStyle(material);
@@ -208,15 +231,15 @@ export class MapStyler {
       const inv = 1 / def.scale;
       let k = 0;
       for (const i of cells) {
-        const c = i % (cols - 1);
-        const r = (i - c) / (cols - 1);
+        const cc = i % dc;
+        const rr = (i - cc) / dc;
         for (let q = 0; q < 4; q++) {
           // Corners 00, 10, 11, 01.
-          const dc = q === 1 || q === 2 ? 1 : 0;
-          const dr = q >= 2 ? 1 : 0;
-          const vi = (r + dr) * cols + (c + dc);
-          const x = t.origin[0] + (c + dc) * s;
-          const z = t.origin[1] + (r + dr) * s;
+          const vc = ci[cc + (q === 1 || q === 2 ? 1 : 0)]!;
+          const vr = ri[rr + (q >= 2 ? 1 : 0)]!;
+          const vi = vr * cols + vc;
+          const x = t.origin[0] + vc * s;
+          const z = t.origin[1] + vr * s;
           const p = (k * 4 + q) * 3;
           positions[p] = x;
           positions[p + 1] = hy[vi]!;

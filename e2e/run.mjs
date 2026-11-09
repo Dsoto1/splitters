@@ -33,7 +33,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'race', 'flashing', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', 'flashing', ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -1094,6 +1094,84 @@ async function editoruxFlow(browser) {
   await editorTurnChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
+  await editorTerrainGridChecks(browser);
+}
+
+/**
+ * Map format v32's MapMaker half (the Iron Coast job): Terrain → Change grid (a preview of the vertices and the budget,
+ * one undo step) on a 160 m terrain, and the coast border side chosen per side and drawn.
+ */
+async function editorTerrainGridChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 160);
+  // A cliff 8 m high across the north of the terrain (sculpted in one step), the beach south of it.
+  const start = await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    const heights = t.heights.map((h, i) => (t.origin[1] + Math.floor(i / t.cols) * t.spacing > -50 + 0.3 * (t.origin[0] + (i % t.cols) * t.spacing) ? 800 : h));
+    ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights } });
+    return { spacing: t.spacing, cols: t.cols, rows: t.rows };
+  });
+  await page.click('#ed-env-btn');
+  await page.click('#ed-pal-tabs [data-ws="environment"][data-pane="terrain"]');
+  await page.click('#ed-tr-grid');
+  await page.waitForSelector('#ed-grid-dialog', { timeout: T(5000) });
+  await page.selectOption('#ed-grid-spacing', '1');
+  const preview = await page.evaluate(() => ({ after: document.getElementById('ed-grid-after').textContent, verts: document.getElementById('ed-grid-verts').textContent, size: document.getElementById('ed-grid-size').textContent, go: !document.getElementById('ed-grid-go').disabled }));
+  check(preview.after === '1 m · 161 × 161' && /^25,921 \(×/.test(preview.verts) && /of 2 MB$/.test(preview.size) && preview.go, `Change grid previews the new grid, its vertices and the file against its budget (${JSON.stringify(preview)}; was ${start.cols} × ${start.rows} at ${start.spacing} m)`);
+  await page.selectOption('#ed-grid-spacing', '1.5');
+  const odd = await page.evaluate(() => document.getElementById('ed-grid-why').textContent);
+  check(/whole number of 1\.5 m cells/.test(odd), `a spacing that doesn't divide the terrain says it changes its size (${odd})`);
+  await page.selectOption('#ed-grid-spacing', '1');
+  await shot('change-grid');
+  const before = await page.evaluate(() => window.__editor.doc.terrain);
+  await page.click('#ed-grid-go');
+  await frames(page, 3);
+  const after = await page.evaluate(() => {
+    const t = window.__editor.doc.terrain;
+    const grass = window.__editor.view.scene.meshes.find((m) => m.name === 'edmap_terrain_grass' && !m.isDisposed());
+    return { spacing: t.spacing, cols: t.cols, rows: t.rows, heights: t.heights, cells: t.materials.length, label: document.getElementById('ed-tr-size').textContent, drawn: grass?.getTotalVertices() ?? 0, undo: window.__editor.history.undoLabel };
+  });
+  let same = true;
+  for (let r = 0; r < before.rows; r++) for (let c = 0; c < before.cols; c++) if (after.heights[r * 2 * after.cols + c * 2] !== before.heights[r * before.cols + c]) same = false;
+  check(after.spacing === 1 && after.cols === 161 && after.rows === 161 && after.cells === 160 * 160 && same, `Change grid resamples the terrain to 1 m, heights where the grids meet unchanged (${after.cols} × ${after.rows}, ${after.label})`);
+  check(after.drawn >= 160 * 160 * 4 * 0.9 && after.undo === 'Change grid to 1 m', `the finer terrain is drawn, one undo step (${after.drawn} vertices, "${after.undo}")`);
+  await page.keyboard.press('Control+KeyZ');
+  const undone = await page.evaluate(() => window.__editor.doc.terrain);
+  check(JSON.stringify(undone) === JSON.stringify(before), 'one undo puts the 2 m terrain back exactly');
+  // The coast border: a choice per side (Sky, Border, Per side); the sea south, the coast east carrying the beach on.
+  await page.click('#ed-pal-tabs [data-pane="sky"]');
+  const mainHasCoast = await page.evaluate(() => [...document.querySelectorAll('#ed-bd-border option')].some((o) => o.value === 'coast'));
+  await page.click('#ed-bd-border-sides summary');
+  await page.selectOption('#ed-bd-border-south', 'water');
+  // (The panel is drawn again from the new backdrop before the next side is set.)
+  await page.waitForFunction(() => window.__editor.doc.backdrop?.borderSides?.south === 'water', null, { timeout: T(5000) }).catch(() => {});
+  await frames(page, 3);
+  await page.selectOption('#ed-bd-border-east', 'coast');
+  await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'border_coast' && !m.isDisposed()), null, { timeout: T(10000) }).catch(() => {});
+  const coast = await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    const x1 = t.origin[0] + (t.cols - 1) * t.spacing;
+    const land = ed.view.scene.meshes.find((m) => m.name === 'border_coast' && !m.isDisposed());
+    const sea = ed.view.scene.meshes.find((m) => m.name === 'border_coast_sea' && !m.isDisposed());
+    land?.refreshBoundingInfo();
+    const b = land?.getBoundingInfo().boundingBox;
+    return { sides: ed.doc.backdrop?.borderSides, verts: land?.getTotalVertices() ?? 0, minX: b?.minimumWorld.x, x1, sea: !!sea, canopy: ed.view.scene.meshes.some((m) => m.name === 'border_canopy' && !m.isDisposed()) };
+  });
+  check(!mainHasCoast && coast.sides?.east === 'coast' && coast.sides?.south === 'water', `the coast is a per-side border choice (${JSON.stringify(coast.sides)})`);
+  check(coast.verts > 500 && coast.minX >= coast.x1 - 1 && coast.sea && coast.canopy, `the coast is drawn past the east line: its land, the sea past the beach, forest inland (${JSON.stringify(coast)})`);
+  await page.evaluate(([x, z]) => window.__editor.view.focus({ x, y: 0, z }), [coast.x1 + 10, -20]);
+  await frames(page, 4);
+  await shot('coast-border');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -5852,8 +5930,11 @@ async function arcTurretChecks(browser) {
   await page.context().close();
 }
 
-/** Race mode on Sandsweep Circuit, and drawing a track with MapMaker's Road tool. */
-async function raceFlow(browser) {
+/**
+ * Tracks as map spice: drawing a track with MapMaker's Paths tool, and Team Deathmatch on Apex Ring with its NPC cars
+ * lapping as traffic (Race mode was removed, owner 2026-11-08).
+ */
+async function trafficFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
@@ -5909,40 +5990,31 @@ async function raceFlow(browser) {
   check(t?.points.length === 2, `right-click deletes a road point (${t?.points.length})`);
   await page.keyboard.press('Escape');
 
-  // A race on Sandsweep Circuit: on the grid in a speeder, the countdown, then away.
-  await page.goto(`${CLIENT}/?offline=sandsweep&gamemode=core.race`);
-  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__match?.race && window.__match.phase === 'playing' && window.__cs.phase() === 'playing', null, { timeout: T(60000) });
+  // Team Deathmatch on Apex Ring: its track's NPC cars lap as traffic while the teams fight (Race mode is gone).
+  await page.goto(`${CLIENT}/?offline=apex_ring&gamemode=core.tdm&test=1`);
+  // Polled on a timer: a loading page may draw no frames for a while.
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && ['countdown', 'playing'].includes(window.__match?.phase), null, { timeout: T(120000), polling: 250 });
+  // Headless frame rates are slow: run the clock through the start countdown.
+  await page.evaluate(() => {
+    for (let i = 0; i < 60 * 10 && window.__match.phase !== 'playing'; i++) window.__match.step();
+  });
   const start = await page.evaluate(() => {
     const m = window.__match;
     const me = m.slots[window.__cs.slot];
-    return { seat: me.mount?.seat, grid: me.mount ? m.mounts[me.mount.index].index >= m.map.entities.length : false, racers: m.combatants().length, seated: m.combatants().filter((c) => c.mount?.seat === 0).length, placed: m.combatants().filter((c) => m.race.status(c.slot)).length };
+    const cars = m.mounts.filter((v) => v.ambient);
+    return { mode: m.rules.mode, race: 'race' in m, onFoot: !me.mount, cars: cars.length, pos: cars.map((v) => ({ x: v.pos.x, z: v.pos.z })), factions: cars.filter((v) => v.faction !== null).length };
   });
-  check(start.seat === 0 && start.grid, `you start at the wheel of a grid vehicle (seat ${start.seat})`);
-  // A combat race may already have wrecked someone (they are back in a moment): nearly everyone is at the wheel.
-  check(start.placed === start.racers && start.seated >= start.racers - 2, `every racer has a vehicle (${start.seated}/${start.racers} at the wheel)`);
+  check(start.mode === 'core.tdm' && !start.race, `Team Deathmatch, no race (${start.mode})`);
+  check(start.onFoot, 'you start on foot, not on a grid');
+  check(start.cars >= 4 && start.factions === 0, `the track's NPC cars are out, belonging to nobody (${start.cars})`);
   const road = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => /^road_/.test(m.name)).length);
   check(road > 5, `the road, curbs and arches are drawn (${road} meshes)`);
-  // Headless frame rates are slow: run the clock past the countdown.
-  await page.evaluate(() => {
-    for (let i = 0; i < 60 * 4 && window.__match.race.state === 0; i++) window.__match.step();
-  });
-  check(await page.evaluate(() => window.__match.race.state === 1), 'the countdown ends and the race is on');
-  await page.waitForFunction(() => /Lap 1\/3/.test(document.body.textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
-  check(await page.evaluate(() => /Lap 1\/3/.test(document.body.textContent ?? '')), 'the HUD shows the lap');
-  const rows = await page.evaluate(() => document.getElementById('race-order')?.children.length ?? 0);
-  check(rows === start.racers, `the running order lists every racer (${rows})`);
-  await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
-  await page.waitForFunction(() => (window.__match.race.status(window.__cs.slot)?.passed ?? 0) >= 1, null, { timeout: T(20000) }).catch(() => {});
-  const me = await page.evaluate(() => window.__match.race.status(window.__cs.slot));
-  check(me?.lap === 1 && me.passed >= 1, `you drive over the start line onto lap 1 (passed ${me?.passed})`);
-  await page.waitForFunction(() => !!document.querySelector('.mode-marker[data-id="race_next"]'), null, { timeout: T(5000) }).catch(() => {});
-  check(await page.evaluate(() => !!document.querySelector('.mode-marker[data-id="race_next"]')), 'a marker points to the next checkpoint');
-  // The bots race too.
+  // Headless frame rates are slow: run the clock 12 s.
   await page.evaluate(() => {
     for (let i = 0; i < 60 * 12; i++) window.__match.step();
   });
-  const bots = await page.evaluate(() => window.__match.combatants().filter((c) => c.bot).map((c) => window.__match.race.status(c.slot)?.passed ?? 0));
-  check(bots.length > 0 && bots.every((n) => n >= 2), `the bots drive the checkpoints (${bots.join(', ')})`);
+  const moved = await page.evaluate((before) => window.__match.mounts.filter((v) => v.ambient).map((v, i) => Math.round(Math.hypot(v.pos.x - before[i].x, v.pos.z - before[i].z))), start.pos);
+  check(moved.filter((d) => d > 40).length >= moved.length - 1, `the NPC cars drive the track (moved ${moved.join(', ')} m)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -6146,7 +6218,7 @@ async function editorPartBChecks(browser) {
   };
   await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
   await frames(page, 3);
-  check((await doc()).formatVersion === 31, 'the map is format v31');
+  check((await doc()).formatVersion >= 31, 'the map is format v31 or later');
 
   // ---- Groups: two pickups and the starter room, grouped with Ctrl+G.
   await page.evaluate(() => window.__editor.run('Pickups', { kind: 'addEntities', entities: [{ id: 'pick_a', kind: 'pickup', position: [-12, 0, 2], item: 'core.health_small', respawnSeconds: null }, { id: 'pick_b', kind: 'pickup', position: [-12, 0, -4], item: 'core.health_small', respawnSeconds: null }] }));
@@ -8002,6 +8074,53 @@ async function dedicatedhostFlow(browser) {
 
 }
 
+/** /host's next-map vote and Match rules before Start (owner, 10-31: every Match setup / Host tab setting there). */
+async function hostpageRulesChecks(page, controlPort, token) {
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/hostpage-${name}.png`, fullPage: true }).catch(() => {}) : Promise.resolve());
+  const form = await page.evaluate(() => ({
+    vote: !!document.getElementById('hp-vote'),
+    on: document.getElementById('hp-vote')?.checked,
+    mode: document.getElementById('hp-rules-mode')?.textContent,
+    rules: document.querySelectorAll('#hp-rules .hp-rule').length,
+    main: ['score', 'time', 'respawn', 'ff', 'set', 'teams'].every((k) => !!document.querySelector(`#hp-rules-main #hp-rule-${k}`)),
+    more: ['gravity', 'classes', 'leaders', 'fireteams', 'lethality'].every((k) => !!document.querySelector(`#hp-rules-more #hp-rule-${k}`)),
+    tags: document.querySelectorAll('#hp-rules .hp-tag').length,
+  }));
+  check(form.vote && form.on && /Team Deathmatch/.test(form.mode ?? '') && form.rules >= 20 && form.main && form.more && form.tags === form.rules, `/host has the next-map vote (on) and every Match setup rule for the mode, each tagged with when it applies (${JSON.stringify(form)})`);
+  await page.evaluate(() => (document.querySelector('#hp-rules-more')?.closest('details')?.setAttribute('open', '')));
+  await shot('rules-stopped');
+  // Set before Start, they go with it: score 7 (Team Deathmatch only), friendly fire half, low gravity, no vote.
+  await page.uncheck('#hp-vote');
+  await page.fill('#hp-rule-score', '7');
+  await page.press('#hp-rule-score', 'Tab');
+  await page.selectOption('#hp-rule-ff', 'half');
+  await page.selectOption('#hp-rule-gravity', 'low');
+  await page.locator('#hp-name').focus();
+}
+
+/** Running: a rule and the vote changed on /host reach the match at once, and the Host Service keeps them. */
+async function hostpageLiveChecks(page, controlPort, token) {
+  const status = () => fetch(`http://127.0.0.1:${controlPort}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/hostpage-${name}.png`, fullPage: true }).catch(() => {}) : Promise.resolve());
+  const started = await until(async () => { const s = await status(); return s.state === 'running' && !!s.host?.rules; }, T(30000));
+  const s0 = await status();
+  check(started && s0.config?.mapVote === false && s0.host?.rotation?.vote === false && s0.config?.rules?.modes?.tdm?.score === 7 && s0.config.rules.ff === 'half' && s0.config.rules.gravity === 'low' && s0.host.rules.now.scoreLimit === 7, `Start took the rules and the vote from /host (${JSON.stringify({ vote: s0.config?.mapVote, live: s0.host?.rotation?.vote, rules: s0.config?.rules, score: s0.host?.rules?.now?.scoreLimit })})`);
+  // Live: the vote back on, and a live rule (mix up weapon pickups) and a restart one (time limit).
+  await page.check('#hp-vote');
+  const voted = await until(async () => (await status()).host?.rotation?.vote === true, T(15000));
+  await page.selectOption('#hp-rule-mix', 'on');
+  await page.locator('#hp-name').focus();
+  const mixed = await until(async () => { const s = await status(); return s.host?.rules?.now?.mixPickups === true && s.config?.rules?.mix === true; }, T(15000));
+  await page.fill('#hp-rule-time', '9');
+  await page.press('#hp-rule-time', 'Tab');
+  await page.locator('#hp-name').focus();
+  const timed = await until(async () => (await status()).config?.rules?.modes?.tdm?.time === 9, T(15000));
+  const waits = await page.waitForFunction(() => /waits for the restart/.test(document.querySelector('#hp-rule-time')?.closest('.hp-rule')?.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(voted && mixed && timed && waits, `running, /host changes the match at once: the vote ${voted}, a live rule ${mixed}, a restart rule kept and shown waiting ${timed}/${waits} (${await page.evaluate(() => document.getElementById('hp-message')?.textContent)})`);
+  await page.evaluate(() => (document.querySelector('#hp-rules-more')?.closest('details')?.setAttribute('open', '')));
+  await shot('rules-running');
+}
+
 /** The /host page: download offered only when no Host Service runs; with one, pair, Start, see it listed, Stop. */
 async function hostpageFlow(browser) {
   const HUB_PORT = +(process.env.E2E_HOSTPAGE_HUB_PORT ?? 9080);
@@ -8027,10 +8146,13 @@ async function hostpageFlow(browser) {
   if (paired) {
     await page.fill('#hp-name', 'E2E From Host Page');
     await page.selectOption('#hp-map', 'sandgate');
+    await page.selectOption('#hp-mode', 'core.tdm');
     await page.fill('#hp-fill', '8');
+    await hostpageRulesChecks(page, CONTROL_PORT, token);
     await page.click('#hp-start');
     const running = await page.waitForFunction(() => /Running/.test(document.getElementById('hp-run-state')?.textContent ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
     check(running, `Start starts the server (${await page.evaluate(() => document.getElementById('hp-status')?.textContent)})`);
+    if (running) await hostpageLiveChecks(page, CONTROL_PORT, token);
     const listed = await hubUntil(async () => ((await hubGames(HUB_PORT)) ?? []).some((g) => g.name === 'E2E From Host Page' && g.hostType === 'dedicated'), T(30000));
     check(listed, 'the server it started is in the game browser');
     await page.click('#hp-stop');
@@ -8061,6 +8183,13 @@ async function hostpageFlow(browser) {
       return launcher.waitForFunction(() => [...document.querySelectorAll('#log .ln.cmd')].some((l) => /visibility listed/.test(l.textContent)), null, { timeout: 2000 }).then(() => true, () => false);
     }, T(10000));
     check(ran, 'a right-bar toggle runs its console command (visibility listed)');
+    // The Rotation card's Vote on the next map: on (the setting), and unticked it runs rotation vote off in the match.
+    const statusV = () => fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
+    const voteBox = await launcher.evaluate(() => document.getElementById('rot-vote')?.checked ?? null);
+    await launcher.uncheck('#rot-vote');
+    const voteOff = await until(async () => (await statusV()).host?.rotation?.vote === false, T(15000));
+    check(voteBox === true && voteOff, `the launcher's Vote on the next map box runs rotation vote off (box ${voteBox}, match ${voteOff})`);
+    await launcher.check('#rot-vote');
     // Match rules: the score and time limit steppers run rules commands, wait for the restart, and Restart now plays them.
     const status = () => fetch(`http://127.0.0.1:${CONTROL_PORT}/api/status`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
     await launcher.waitForFunction(() => !!document.querySelector('#rules-main .rule[data-k="score"] .stepper') && !!document.querySelector('#rules-main .rule[data-k="time"] .stepper'), null, { timeout: T(20000) }).catch(() => {});
@@ -8905,7 +9034,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, race: raceFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

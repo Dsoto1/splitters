@@ -14,7 +14,6 @@ import {
   partyUnavailable,
   playerCap,
   presetPatch,
-  racePathFromTrack,
   rulesFromSetup,
   setTeamSize,
   setVariant,
@@ -27,7 +26,6 @@ import {
   type GameMode,
   type MapDocument,
   type MatchSetup,
-  type Track,
 } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
@@ -48,17 +46,6 @@ function stJohns(): MapDocument {
 function small(): MapDocument {
   const map = makeMap([], Array.from({ length: 16 }, (_, i) => [i * 4, 0, 0] as [number, number, number]));
   return { ...map, metadata: { ...map.metadata, recommendedPlayers: { min: 2, max: 8 }, supportedModes: ['core.tdm', 'core.deathmatch'] } };
-}
-
-/** A race track with an 8-place grid, made for 2–8. */
-function track(): MapDocument {
-  const points: [number, number, number][] = Array.from({ length: 10 }, (_, i) => {
-    const a = (i / 10) * Math.PI * 2;
-    return [Math.round(Math.sin(a) * 55), 0, Math.round(-Math.cos(a) * 40)];
-  });
-  const t: Track = { points, width: 12, loop: true, laps: 3, grid: 8, vehicle: 'kart', combat: false, surface: 'asphalt', curbs: true, ambient: 0, ambientVehicle: 'kart', pit: null };
-  const map = makeMap([], [[0, 0, 0], [4, 0, 0]]);
-  return { ...map, paths: [racePathFromTrack(t)], metadata: { ...map.metadata, recommendedPlayers: { min: 2, max: 8 }, supportedModes: ['core.race', 'core.deathmatch'] } };
 }
 
 const setup = (over: Partial<MatchSetup> = {}): MatchSetup => ({ map: 'st_johns', mode: 'core.tdm', bots: 11, skill: 'normal', scoreLimit: 40, minutes: 10, ...over });
@@ -124,11 +111,9 @@ describe('adding bots grows the team', () => {
     expect(changeTeamBots([24, 24], 0, 1, onPhone).sizes).toEqual([24, 24]);
   });
 
-  it('a race track caps racers at its grid', () => {
-    const map = track();
-    expect(playerCap('core.race', map, 48)).toEqual({ max: 8, by: 'grid' });
+  it('caps players at what the device runs', () => {
+    const map = small();
     expect(playerCap('core.deathmatch', map, 48)).toEqual({ max: 48, by: 'device' });
-    expect(capMessage(playerCap('core.race', map, 48))).toBe("8 racers fill this track's grid.");
     expect(capMessage(playerCap('core.deathmatch', map, 16), { device: 'this phone' })).toBe("16 players is this phone's limit.");
   });
 });
@@ -157,7 +142,7 @@ describe('presets that scale with the map', () => {
     expect(values(sizePresets('core.deathmatch', map, desk))).toBe('2 players 4 players 8 players 12 players 48 players');
   });
 
-  it('free-for-all, squads and races get the same idea in their own form', () => {
+  it('free-for-all and squads get the same idea in their own form', () => {
     const map = stJohns();
     expect(values(sizePresets('core.deathmatch', map, desk))).toBe('2 players 8 players 12 players 32 players 48 players');
     // The Arcade's own starting count for the map is its pick.
@@ -166,8 +151,6 @@ describe('presets that scale with the map', () => {
     const squad = sizePresets('core.coop', map, desk);
     expect(squad.map((p) => p.label).join()).toBe("Solo,Duo,Map's pick,Max");
     expect(values(squad)).toBe('you alone you + 1 squad of 12 squad of 24');
-    const race = sizePresets('core.race', track(), desk);
-    expect(race.map((p) => `${p.label} ${p.value}`).join(', ')).toBe("Duel 2 racers, Small 4 racers, Map's pick 8 racers");
   });
 
   it('knows which preset a setup is on, and Custom once it changes', () => {
@@ -205,11 +188,7 @@ describe('the fit indicator', () => {
     expect(tiny.items.find((i) => i.topic === 'size')).toMatchObject({ level: 'warn', fix: { label: 'Use 4v4', teams: [4, 4] } });
   });
 
-  it('a setup asking for more than the device runs, or the grid holds, plays what fits and says so', () => {
-    const race = setupFit(setup({ map: 'track', mode: 'core.race', bots: 15 }), track(), desk);
-    expect(race.items[0]).toEqual({ topic: 'grid', level: 'info', text: '8 places on the grid: 8 race (this setup asks for 16).' });
-    expect(rulesFromSetup(setup({ map: 'track', mode: 'core.race', bots: 15 }), track(), playerCap('core.race', track(), 48).max).fill).toBe(8);
-    expect(setupFit(setup({ map: 'track', mode: 'core.race', bots: 7 }), track(), desk).items[0]).toMatchObject({ topic: 'grid', level: 'ok' });
+  it('a setup asking for more than the device runs plays what fits and says so', () => {
     const onPhone = setupFit(setup({ teams: [24, 24] }), stJohns(), phone);
     expect(onPhone.items[0]).toEqual({ topic: 'device', level: 'info', text: 'This setup asks for 48 players; this phone runs 16, so it plays 8v8.' });
     expect(onPhone.level).toBe('fits');
@@ -232,8 +211,7 @@ describe('variants', () => {
       for (const c of [...(v.conflicts ?? []), ...(v.needs ?? [])]) expect(SETUP_VARIANTS.some((x) => x.id === c)).toBe(true);
     }
     expect(SETUP_VARIANTS.map((v) => v.id)).toEqual(['lunar', 'roulette', 'signature', 'jackpots', 'streakpick', 'rerolls', 'swap', 'variety', 'rlteams', 'classes', 'spears', 'discs', 'fireteams']);
-    // A race offers Lunar only; co-op Lunar and Roulette bodies; the Roulette mode Lunar and its own (its bodies are its core).
-    expect(variantStates(setup({ mode: 'core.race' }), map, offered).map((v) => v.variant.id)).toEqual(['lunar']);
+    // Co-op offers Lunar and Roulette bodies; the Roulette mode Lunar and its own (its bodies are its core).
     expect(variantStates(setup({ mode: 'core.coop' }), map, offered).map((v) => v.variant.id)).toEqual(['lunar', 'roulette']);
     expect(variantStates(setup({ mode: 'core.roulette' }), map, offered).map((v) => v.variant.id)).toEqual(['lunar', 'signature', 'jackpots', 'streakpick', 'rerolls', 'swap', 'variety', 'rlteams']);
   });

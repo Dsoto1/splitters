@@ -962,8 +962,9 @@ walk-through in the inspector.
 
 ## Terrain (`map/terrain.ts`, format v7)
 
-A map can have one terrain: a height grid (up to 161 × 161 vertices, 2 m apart
-by default, so up to 320 m across) with a ground material per cell. Grounds are
+A map can have one terrain: a height grid (up to 321 × 321 vertices since map
+format v32, 161 before; a new terrain is 2 m apart, or 2.5-4 m past 320 m, so
+at most 161 a side) with a ground material per cell. Grounds are
 grass, dirt, stone, sand, gravel, snow, moss and mud, each drawn with an
 ambientCG texture. Heights are stored in whole centimetres, so maps stay
 small and exact.
@@ -985,6 +986,22 @@ small and exact.
   standing on the ground move with it. Spawns,
   pickups and props placed over terrain stand on it. New terrain sits 15 cm
   under level 0, so tiles placed on flat ground do not flicker against it.
+- **MapMaker, Terrain → Change grid…** (format v32; `editor/changeGrid.ts`).
+  Resamples the terrain to vertices 1, 1.25, 1.5, 2, 2.5, 3 or 4 m apart (a
+  380 m map can go to 1.25 m: 305 × 257), in one undo step. The dialog shows
+  the grid, vertices and triangles now and after, and the map file against its
+  2 MB budget, and says when the size changes (a width that isn't a whole
+  number of the new cells grows or shrinks by under half a cell). Heights where
+  old and new vertices meet stay exactly; between them **Smooth** (default)
+  draws a cubic through the old heights, kept inside each old cell's corners,
+  and keeps the old surface wherever the ground round it is steeper than
+  30-45°, so cliffs keep their sharp foot and lip; **Exact** keeps the old
+  surface everywhere. Ground paint and plants come across per cell (finer: the
+  old cell each new one lies in; coarser: the commonest under it). Spawns,
+  pickups, props, vehicles, flags and hills on the ground move with it. Cells
+  finer than 2 m grow plants in proportion to their area (as many to the
+  square metre as a 2 m grid). In the file the terrain's grids are written a
+  grid row to a line, so a 321 × 321 terrain is about 1 MB.
 - **MapMaker, Terrain → Real places (owner only, like Publish).** For a map of
   a real place. **Heights from a height grid file** reads an ESRI ASCII grid
   (`.asc`: `ncols`, `nrows`, `xllcorner`/`yllcorner` or `xllcenter`/`yllcenter`,

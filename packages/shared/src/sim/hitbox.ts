@@ -9,14 +9,11 @@
  * host has no skeleton). The player's movement collider is separate (physics.ts) and unchanged.
  *
  * Deterministic (plain arithmetic, no caches that change results) and the same on the host and every client.
+ * Which shapes a look has (the measured table) is sim/lookHitbox.ts, on its own: the menu reaches this module (weapons),
+ * and the table it doesn't need (about 32 kB gzip) stays out of its first JS (docs/LOADING.md).
  */
-import { MEASURED_HITBOXES } from '../content/hitboxes.generated.ts';
-import { decodeLook, getLook, NPC_KEPT_LOOKS, RETIRED_LOOKS } from '../content/looks.ts';
 import type { Vec3 } from '../math.ts';
-import { HITBOX_MARGIN, PLAYER, type Stance } from './constants.ts';
-import { CREATURE_SPECS, isCreature, zombieHasCreatureBody } from './creatures.ts';
-import type { NpcRole } from '../map/schema.ts';
-import { NPC_ROLE_SPECS, npcLookRole } from './npc.ts';
+import { HITBOX_MARGIN, type Stance } from './constants.ts';
 import type { HitZone } from './weapons.ts';
 
 /** A capsule squashed across the body: `x` its middle across, `w` half its width, `r` its depth radius, `a`→`b` its axis as [up, forward]. */
@@ -63,49 +60,6 @@ export interface HitBody {
   /** Multiplies the shapes (size class, a character-stats size, an NPC role's scale). */
   scale: number;
   box: LookHitbox;
-}
-
-const FALLBACK: LookHitbox = MEASURED_HITBOXES['base:male']!;
-
-/** A look's shapes and the scale they're drawn at before the body's size (players, bots and player skins). */
-export function lookHitbox(look: string | undefined): { box: LookHitbox; scale: number } {
-  const role = npcLookRole(look);
-  if (role) {
-    // A player in an NPC skin: a creature is fitted to a player's height (fitPlayerSkin), a soldier is the mannequin.
-    if (isCreature(role)) {
-      const box = MEASURED_HITBOXES[`creature:${role}`] ?? FALLBACK;
-      return { box, scale: creatureSkinScale(box) };
-    }
-    return { box: MEASURED_HITBOXES['base:male'] ?? FALLBACK, scale: 1 };
-  }
-  const id = look && NPC_KEPT_LOOKS.has(look) ? look : getLook(look).id;
-  const own = MEASURED_HITBOXES[id] ?? (look && !RETIRED_LOOKS[look] ? MEASURED_HITBOXES[look] : undefined);
-  if (own) return { box: own, scale: 1 };
-  // A design of yours: the mannequin of its body.
-  const body = (look && decodeLook(look)?.body) ?? getLook(look).body;
-  return { box: MEASURED_HITBOXES[`base:${body}`] ?? FALLBACK, scale: 1 };
-}
-
-/** Widest (m) a player's creature skin is grown to (client creatures.ts SKIN_MAX_WIDE). */
-const SKIN_MAX_WIDE = 1.3;
-/** A creature skin's scale on a player: its height to a player's, a small wide one grown only so far (fitPlayerSkin). */
-export function creatureSkinScale(box: LookHitbox): number {
-  const tall = box.rest;
-  if (tall < 0.3) return 1;
-  let s = PLAYER.height / tall;
-  const wide = box.wide ?? 0;
-  if (s > 1 && wide * s > SKIN_MAX_WIDE) s = Math.max(1, SKIN_MAX_WIDE / wide);
-  return s;
-}
-
-/** An NPC's shapes and scale (before its encounter size) as the client draws it (session.ts npcLook). */
-export function npcHitbox(role: NpcRole, id: number): { box: LookHitbox; scale: number } {
-  const spec = NPC_ROLE_SPECS[role];
-  if (role === 'zombie') return { box: MEASURED_HITBOXES[zombieHasCreatureBody(id) ? 'creature:zombie' : 'base:zombie'] ?? FALLBACK, scale: 1 };
-  if (isCreature(role) && CREATURE_SPECS[role]) return { box: MEASURED_HITBOXES[`creature:${role}`] ?? FALLBACK, scale: 1 };
-  if (spec.look) return { box: lookHitbox(spec.look).box, scale: spec.scale };
-  // Soldiers: about half of each squad on the female mannequin (the client's id % 2).
-  return { box: MEASURED_HITBOXES[id % 2 === 1 ? 'base:female' : 'base:male'] ?? FALLBACK, scale: spec.scale };
 }
 
 export function shapesFor(box: LookHitbox, stance: Stance): HitShapes {

@@ -63,7 +63,7 @@ export const SETUP_VARIANTS: readonly SetupVariant[] = [
     label: 'Roulette bodies',
     tip: "Everyone, you and the bots, plays a random character each life, with that character's own stats (size, health, speed, damage…).",
     // (The Roulette mode deals a new character every life anyway.)
-    modes: GAME_MODES.filter((m) => m !== 'core.race' && m !== 'core.roulette'),
+    modes: GAME_MODES.filter((m) => m !== 'core.roulette'),
     sets: { randomChars: true, stats: true },
   },
   // Roulette (docs/ROULETTE_MODE_PLAN.md; sim/roulette.ts): its standard features, then its variants.

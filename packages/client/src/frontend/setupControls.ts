@@ -101,7 +101,7 @@ const SCORE_UNITS: Partial<Record<GameMode, string>> = {
   'core.discs': 'knock-offs',
 };
 
-/** A score limit and time in words ("500 points, 20 min"): the parts the mode shows (a race has no score, Fort Wars no clock). */
+/** A score limit and time in words ("500 points, 20 min"): the parts the mode shows (Fort Wars has no clock). */
 export function limitsText(mode: GameMode, l: MatchLimits, shown: { score: boolean; time: boolean } = { score: true, time: true }): string {
   const parts = [shown.score ? `${l.scoreLimit} ${SCORE_UNITS[mode] ?? 'points'}` : '', shown.time ? (l.minutes ? `${l.minutes} min` : 'no time limit') : ''];
   return parts.filter(Boolean).join(', ');
@@ -235,7 +235,7 @@ export function sizeChips(presets: readonly SizePreset[], on: SizePreset | null,
 }
 
 /** The fit check's topics, as its details name them. */
-export const FIT_TOPICS: Record<FitTopic, string> = { caps: 'Players', device: 'This device', grid: 'Grid', size: 'Map size', spawns: 'Spawns', teams: 'Teams', performance: 'Performance' };
+export const FIT_TOPICS: Record<FitTopic, string> = { caps: 'Players', device: 'This device', size: 'Map size', spawns: 'Spawns', teams: 'Teams', performance: 'Performance' };
 
 /** The fit indicator: one chip, green Fits, amber Crowded or red Problem; it shows or hides the details. */
 export function fitChip(fit: SetupFit, open: boolean, onToggle: () => void, id: string): HTMLButtonElement {
@@ -296,7 +296,7 @@ export interface TeamEditorOptions {
   youLabel?: string;
   /** Most players in all (a browser's match: BROWSER_MAX_PLAYERS; a dedicated host's: MAX_PLAYER_SLOTS). */
   maxPlayers?: number;
-  /** The cap and whose it is (overrides maxPlayers): the device's, or a race grid's. */
+  /** The cap and whose it is (overrides maxPlayers): the device's. */
   cap?: PlayerCap;
   /** Whose limit the cap is, in its message: "this computer", "this phone". */
   device?: string;
@@ -317,7 +317,7 @@ const PIPS = 10;
  * Teams, freely: how many (2–8), and each one's people, bots and size, name and colour (from the palette).
  * Each team reads as who's on it ("You + 23 bots"); its − and + take a bot off or add one, and the team
  * shrinks or grows with it (a typed size sets the team). Even teams keep every team matched. A change
- * that hits a limit (the device, a race grid) says so under the teams. Drag a bot pip to another team to
+ * that hits a limit (the device) says so under the teams. Drag a bot pip to another team to
  * move a bot there, or drag yourself (or press Join) to play on that team.
  */
 export function teamEditor(o: TeamEditorOptions): HTMLElement {

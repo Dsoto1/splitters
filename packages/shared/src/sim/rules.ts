@@ -3,10 +3,10 @@ import { racePath } from '../map/track.ts';
 import { TICK_RATE } from './constants.ts';
 import { mapTeams } from './npc.ts';
 
-export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.breakthrough' | 'core.zombies' | 'core.forts' | 'core.discs' | 'core.race' | 'core.roulette';
+export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.breakthrough' | 'core.zombies' | 'core.forts' | 'core.discs' | 'core.roulette';
 
 /** Every mode, in menu order. */
-export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.roulette', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.breakthrough', 'core.forts', 'core.coop', 'core.zombies', 'core.discs', 'core.race'];
+export const GAME_MODES: readonly GameMode[] = ['core.deathmatch', 'core.roulette', 'core.tdm', 'core.ctf', 'core.koth', 'core.elim', 'core.bomb', 'core.hostage', 'core.breakthrough', 'core.forts', 'core.coop', 'core.zombies', 'core.discs'];
 
 export const MODE_LABELS: Record<GameMode, string> = {
   'core.deathmatch': 'Deathmatch',
@@ -22,7 +22,6 @@ export const MODE_LABELS: Record<GameMode, string> = {
   'core.zombies': 'Zombies',
   'core.forts': 'Fort Wars',
   'core.discs': 'Disc Arena',
-  'core.race': 'Race',
 };
 
 /** Modes played in teams (factions from mapTeams). */
@@ -104,7 +103,7 @@ export interface MatchRules {
   mixPickups?: boolean;
   /**
    * Drop weapon on death: a fallen player's or bot's primary with ammo left lies at the body for anyone to
-   * pick up, with exactly that ammo (sim/drops.ts). Default true; never in Disc Arena, races or spears/discs only.
+   * pick up, with exactly that ammo (sim/drops.ts). Default true; never in Disc Arena or spears/discs only.
    */
   dropWeapons?: boolean;
   /**
@@ -180,12 +179,6 @@ export interface MatchRules {
    * minute (gravity shifts for a while after a 3-second warning). Default off.
    */
   lunar?: boolean;
-  /** Race: the vehicle everyone races in (absent: the track's own). */
-  raceVehicle?: 'kart' | 'speeder' | 'buggy';
-  /** Race: weapons, vehicle guns and sideline sentries on (absent: the track's own setting). */
-  raceCombat?: boolean;
-  /** Race: laps of a circuit (absent: the track's own). */
-  raceLaps?: number;
   /**
    * Lethality (GUNPLAY_SPEC §10): one systemic damage multiple so every
    * weapon keeps its identity. Arcade ≈ 140% effective health, tactical ≈ 72%.
@@ -209,7 +202,7 @@ export const SCORE_LIMIT_MAX = 5000;
 export const restrictedWeapons = (rules: MatchRules): boolean => !!rules.weapons && rules.weapons !== 'normal';
 
 /** Whether weapons drop on death in this match: the rule (default on), and never where it makes no sense. */
-export const dropsInPlay = (rules: MatchRules): boolean => rules.dropWeapons !== false && !restrictedWeapons(rules) && rules.mode !== 'core.discs' && rules.mode !== 'core.race';
+export const dropsInPlay = (rules: MatchRules): boolean => rules.dropWeapons !== false && !restrictedWeapons(rules) && rules.mode !== 'core.discs';
 
 /** The gravity multiple and fall damage a match plays with: its own rules, else the map's, else normal / off. */
 export function matchPhysics(rules: MatchRules, map: { physics?: { gravity: number; fallDamage: boolean } | null }): { gravity: number; fallDamage: boolean } {
@@ -409,21 +402,6 @@ export const DEFAULT_DISCS_RULES: MatchRules = {
   killstreaks: false,
 };
 
-/**
- * Race: everyone starts on the grid in a vehicle; checkpoints in order, laps
- * of the circuit, first over the line wins (sim/race.ts). The score limit is
- * unused; the time limit is a safety net.
- */
-export const DEFAULT_RACE_RULES: MatchRules = {
-  mode: 'core.race',
-  scoreLimit: 0,
-  timeLimitSeconds: 900,
-  respawnDelayTicks: Math.round(TICK_RATE * 1.5),
-  startingWeapons: ['core.knife', 'core.pistol'],
-  startingGrenades: 0,
-  intermissionTicks: TICK_RATE * 10,
-};
-
 export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.deathmatch': DEFAULT_DEATHMATCH_RULES,
   'core.roulette': DEFAULT_ROULETTE_RULES,
@@ -438,10 +416,9 @@ export const DEFAULT_RULES: Record<GameMode, MatchRules> = {
   'core.zombies': DEFAULT_ZOMBIES_RULES,
   'core.forts': DEFAULT_FORTS_RULES,
   'core.discs': DEFAULT_DISCS_RULES,
-  'core.race': DEFAULT_RACE_RULES,
 };
 
-/** Race needs a track. */
+/** The map has a track (a path used as a track: ambient NPC cars lap it in any mode). */
 export const hasTrack = (map: MapDocument): boolean => !!racePath(map);
 
 /** Capture the Flag needs a flag base for each of its two teams. */
@@ -468,7 +445,6 @@ export function mapCanRun(map: MapDocument, mode: GameMode): boolean {
   if (mode === 'core.breakthrough') return hasSectors(map);
   if (mode === 'core.ctf' || mode === 'core.forts') return hasFlagBases(map);
   if (mode === 'core.koth') return hasHills(map);
-  if (mode === 'core.race') return hasTrack(map);
   return true;
 }
 
@@ -488,7 +464,6 @@ export function playableModes(map: MapDocument): GameMode[] {
   if (hasBombsites(map) && !out.includes('core.bomb')) out.push('core.bomb');
   if (hasHostages(map) && !out.includes('core.hostage')) out.push('core.hostage');
   if (hasSectors(map) && !out.includes('core.breakthrough')) out.push('core.breakthrough');
-  if (hasTrack(map) && !out.includes('core.race')) out.push('core.race');
   // Roulette is a free-for-all: it plays wherever Deathmatch or Team Deathmatch does.
   if ((out.includes('core.deathmatch') || out.includes('core.tdm')) && !out.includes('core.roulette')) out.splice(out.indexOf('core.deathmatch') >= 0 ? out.indexOf('core.deathmatch') + 1 : out.length, 0, 'core.roulette');
   // Zombies plays anywhere: the horde rises from the map's spawners, spawn points or open floor.

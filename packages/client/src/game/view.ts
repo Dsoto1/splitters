@@ -563,6 +563,8 @@ export class GameView {
   buildMap(doc: MapDocument, boxes: readonly WorldBox[]): void {
     this.ziplines = mapZiplines(doc.entities);
     const styler = new MapStyler(this.scene);
+    // A terrain finer than 2 m is drawn at half its resolution on Low graphics (phones); it collides at full.
+    styler.terrainDrawStep = loadGraphicsQuality() === 'low' ? 2 : 1;
     styler.build(doc, boxes);
     // The level's per-style meshes merged across styles over array textures (levelMerge.ts; WebGL2): the loading gate
     // (prewarm) waits for it, so its shader is built before play.

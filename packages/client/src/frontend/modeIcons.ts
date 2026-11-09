@@ -31,8 +31,6 @@ const PATHS: Record<GameMode, string> = {
   'core.zombies': 'M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z M7.5 12.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z M16.5 12.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z M12 14.2a.8.8 0 1 0 0 .01',
   // A disc in flight.
   'core.discs': 'M12 6c-5 0-9 2.7-9 6s4 6 9 6 9-2.7 9-6-4-6-9-6Z M12 9.5c-2.2 0-4 1.1-4 2.5s1.8 2.5 4 2.5 4-1.1 4-2.5-1.8-2.5-4-2.5Z',
-  // Chequered flag.
-  'core.race': 'M5 21V4 M5 4h14v9H5 M5 8.5h14 M9.7 4v9 M14.3 4v9 M5 4h4.7v4.5H5Z M14.3 4H19v4.5h-4.7Z M9.7 8.5h4.6V13H9.7Z',
 };
 
 /** The mode's icon as an inline SVG element. */
@@ -63,5 +61,4 @@ export const MODE_SHORT: Record<GameMode, string> = {
   'core.coop': 'Co-op',
   'core.zombies': 'Zombies',
   'core.discs': 'Discs',
-  'core.race': 'Race',
 };

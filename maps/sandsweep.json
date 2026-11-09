@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 30,
+  "formatVersion": 31,
   "metadata": {
     "id": "sandsweep",
     "name": "Sandsweep Circuit",
@@ -14,9 +14,16 @@
       "max": 8
     },
     "supportedModes": [
-      "core.race",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_o42gqpw3ur6gmf5v",
+      "versionId": "v_w2w5cvztqmmzdhs3",
+      "revision": 1,
+      "contentHash": "sha256:dfc9e0814aafb36dc23d087423f2205ae098393a2861b02907e26bded5d71d2c",
+      "schemaVersion": 31,
+      "releasedAt": "2026-11-09T03:31:40.456Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,

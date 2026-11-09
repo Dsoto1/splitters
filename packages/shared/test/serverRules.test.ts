@@ -4,7 +4,7 @@ import { makeMap } from './helpers.ts';
 
 const map = (() => {
   const m = makeMap([{ id: 'a', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }], [[0, 0, 0]]);
-  return { ...m, metadata: { ...m.metadata, id: 'test_yard', supportedModes: ['core.tdm', 'core.ctf', 'core.koth', 'core.forts', 'core.race', 'core.deathmatch'] } };
+  return { ...m, metadata: { ...m.metadata, id: 'test_yard', supportedModes: ['core.tdm', 'core.ctf', 'core.koth', 'core.forts', 'core.deathmatch'] } };
 })();
 const setup = (mode: GameMode, over: Partial<MatchSetup> = {}): MatchSetup => ({ map: 'test_yard', mode, bots: 7, skill: 'normal', scoreLimit: DEFAULT_RULES[mode].scoreLimit, minutes: DEFAULT_RULES[mode].timeLimitSeconds / 60, ...over });
 const served = (mode: GameMode, sr: ServerRules, fill = 8): MatchRules => applyServerRules(rulesForMode(map, mode), sr, map, fill).rules;
@@ -47,9 +47,6 @@ const PARITY: [string, unknown, GameMode, Partial<MatchSetup>, (keyof MatchRules
   ['fortcombat', 8, 'core.forts', { fortCombat: 8 }, ['fortCombatSeconds']],
   ['fortcycles', 3, 'core.forts', { fortCycles: 3 }, ['fortCycles']],
   ['fortbudget', 600, 'core.forts', { fortBudget: 600 }, ['fortBudget']],
-  ['laps', 5, 'core.race', { raceLaps: 5 }, ['raceLaps']],
-  ['racevehicle', 'buggy', 'core.race', { raceVehicle: 'buggy' }, ['raceVehicle']],
-  ['racecombat', false, 'core.race', { raceCombat: false }, ['raceCombat']],
 ];
 
 describe('server match rules (RULES): parity with the browser host', () => {

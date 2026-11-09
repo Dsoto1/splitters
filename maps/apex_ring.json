@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 30,
+  "formatVersion": 31,
   "metadata": {
     "id": "apex_ring",
     "name": "Apex Ring",
@@ -17,9 +17,16 @@
       "core.deathmatch",
       "core.tdm",
       "core.ctf",
-      "core.koth",
-      "core.race"
-    ]
+      "core.koth"
+    ],
+    "release": {
+      "mapId": "m_snj2ivjohajuozh5",
+      "versionId": "v_iscx4sp2ldwnbzc3",
+      "revision": 1,
+      "contentHash": "sha256:6e7c84c2cb75cdf6e3a832eda6a77b3670bd72edd771666663b9f90073604867",
+      "schemaVersion": 31,
+      "releasedAt": "2026-11-09T03:30:36.919Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,

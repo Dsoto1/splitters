@@ -123,10 +123,10 @@ and Car Kit, a Meshy Community snowmobile, Quaternius' Ultimate Spaceships and T
   Vehicle bodies are in the prediction physics, so walking into one feels
   solid.
 
-- **Roads.** On a map with a race track, wheeled vehicles grip the road
-  better and are a little slower off it. Race mode puts everyone in a
-  vehicle on the start grid; a track can also carry NPC-driven ambient cars
-  in any mode (see GAME_MODES.md, Race). `TrackDriver`
+- **Roads.** On a map with a track, wheeled vehicles grip the road
+  better and are a little slower off it. A track can carry NPC-driven
+  ambient cars in any mode (see GAME_MODES.md, "Tracks and NPC traffic";
+  Race mode was removed on 2026-11-08). `TrackDriver`
   (`sim/trackDriver.ts`) drives any vehicle round a track.
 
 Rockfall Canyon has a buggy, a speeder and a hover bike at each base, an MG

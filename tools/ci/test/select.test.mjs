@@ -134,10 +134,10 @@ describe('change-based selection', () => {
   });
 
   it('a map tours just that map (E2E_MAPS) and runs the flows that open it', () => {
-    const s = sel('maps/sandsweep.json');
+    const s = sel('maps/apex_ring.json');
     expect(s.full).toBe(false);
-    expect(s.flows).toEqual(['race', 'maps']);
-    expect(s.maps).toEqual(['sandsweep']);
+    expect(s.flows).toEqual(['traffic', 'maps']);
+    expect(s.maps).toEqual(['apex_ring']);
     expect(s.unit).toBe('all');
     const own = sel('maps/m3_vault.json');
     expect(own.flows).toEqual(['vault']);
@@ -152,11 +152,11 @@ describe('change-based selection', () => {
     expect(many.maps).toEqual([]);
     expect(many.flows.filter((f) => MAP_FLOWS.includes(f))).toEqual(MAP_FLOWS.slice(0, MAX_NAMED_MAPS + 1));
     // With shared code too: everything but the tour, and the changed map toured.
-    const both = sel('maps/sandsweep.json', 'packages/shared/src/sim/match.ts');
+    const both = sel('maps/apex_ring.json', 'packages/shared/src/sim/match.ts');
     expect(both.flows).toEqual(FLOWS.filter((f) => NO_TOUR.includes(f) || f === 'maps'));
-    expect(both.maps).toEqual(['sandsweep']);
+    expect(both.maps).toEqual(['apex_ring']);
     // Nightly: the map's tour part, no names.
-    expect(tourSel('maps/sandsweep.json')).toMatchObject({ flows: ['race', MAP_FLOWS[mapPartOf('sandsweep', mapIds)]], maps: [] });
+    expect(tourSel('maps/apex_ring.json')).toMatchObject({ flows: ['traffic', MAP_FLOWS[mapPartOf('apex_ring', mapIds)]], maps: [] });
   });
 
   it('the default map of most flows runs everything, still without the tour', () => {

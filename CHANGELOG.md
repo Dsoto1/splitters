@@ -16,6 +16,42 @@ made only on a commit that passed CI on a check branch.
 - **Bunker**, a new set piece the size of the Bunker tile: Iron Maw and Shingle Point's bunkers are now Bunkers, their
   warehouses Loading Docks; Neon Spire, Riot Junction and Underdrain's 4 × 4 crossroads are the Crossroads Plaza.
 - Shingle Point's card picture is taken from a few metres further back, so the cliff-top buildings show.
+**Race mode removed** (owner, 2026-11-08: "steer away from racing and focus on battles and maps"):
+- **No more Race** in Match Setup, Quick Play, the next-map vote, rotations, playlists, the host panel or the server
+  rules (`laps`, `racevehicle`, `racecombat` are gone). The race HUD (lap, place, running order, countdown), the race
+  scoring and the start grid are gone too.
+- **Tracks stay, as map spice:** a map's track still carries its NPC cars in every mode. On Apex Ring twelve karts lap
+  the Grand Prix circuit while the teams fight; they run anyone over and can be shot up or taken over, as before.
+  Roads still grip better on a track map.
+- **Old maps** that list Race load and simply don't offer it; MapMaker's checks say to drop it from the modes. The map
+  format is unchanged.
+- **Apex Ring** and **Sandsweep Circuit** no longer list Race (MapMaker, Map properties): Apex Ring plays Deathmatch,
+  Team Deathmatch, CTF and King of the Hill with its karts lapping; Sandsweep plays Deathmatch.
+**MapMaker: a finer terrain grid, Change grid, and the coast border** (map format v32; the editor half of the Iron
+Coast job):
+- **A finer grid:** a terrain can be up to 321 vertices a side (was 161), so a 380 m map can be 1.25 m apart. New
+  terrains are made as before; finer is a choice. The map file writes the terrain a grid row to a line (a 1.25 m
+  Iron Coast is 1.1 MB, where one value a line it would have been over the 2 MB budget).
+- **Terrain → Change grid…:** resample the terrain finer or coarser (1-4 m), heights, ground paint and plants, one
+  undo step, with a preview of the vertices, triangles and file size against the budget first. Heights where the
+  grids meet are kept exactly; Smooth curves rolling ground between them and keeps cliffs sharp, Exact keeps the
+  surface as it is.
+- **Coast border side** (Sky → Border → Per side): for a side a shoreline runs out through. Sand and shallow water
+  carry on past the boundary along the shore, cliffs ease to low headlands and dunes, forest grows only inland.
+  Scenery only: nothing to bump into.
+**Parties and the next-map vote, part 2** (owner-approved follow-ups, 2026-11-08):
+- **Host handoff keeps the party together:** when a browser host leaves and a friend takes over, everyone keeps their
+  party and side, and a vote on the next map that was open goes on with the new host (the same maps, votes and time
+  left; one that had just closed keeps its winner).
+- **Free-for-all parties:** friends who came together see each other's names in a friendly colour (kill feed,
+  messages, scoreboard) with the ally marker over their heads, and tend to spawn near each other (never at the cost of
+  a safe spawn). They can still shoot each other: damage and scoring are unchanged.
+- **The /host page** gets "Vote on the next map" and every Match setup rule (score, time, respawn, friendly fire,
+  weapon set, teams and the rest under More rules), each tagged with when it applies. Stopped, they go with Start;
+  running, a change reaches the match at once. The Host Service launcher's Rotation card gets the vote box too, and
+  the console `rotation vote on|off`.
+- **The menu's first download** is 32 kB smaller (746 → 714 kB gzip): the hit-shape table loads with the match, not
+  the menu. The budget goes back to 800 kB.
 
 **Set pieces, part 5: the brainstorm list, retired tiles, MAP 21's sea wall** (docs/SET_PIECES_PLAN.md, "As built: part 5"):
 - **Twelve new set pieces** in MapMaker's Set pieces tab, each in its own group: Power Core Hall, Catwalk Bridge (three
