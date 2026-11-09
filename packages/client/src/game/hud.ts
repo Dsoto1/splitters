@@ -64,11 +64,10 @@ export class Hud {
   private readonly scoreboard = $('scoreboard');
   private readonly board = new ScoreBoard(this.scoreboard, { maxWidth: 1240, sizeSelf: true });
   private pauseBoard: ScoreBoard | null = null;
-  /** Scoreboard facts from snapshots: who is alive, team leaders, online pings, the race order. */
+  /** Scoreboard facts from snapshots: who is alive, team leaders, online pings. */
   private alive = new Map<number, boolean>();
   private leaders = new Set<number>();
   private pings = new Map<number, number>();
-  private raceOrder: Map<number, readonly [number, string]> | null = null;
   /** The mode's per-player objective stat ('Caps', 'Bomb', 'Saves'), or null. */
   private objLabel: string | null = null;
   /** Co-op and Zombies: everyone on one side, one list. */
@@ -146,7 +145,6 @@ export class Hud {
     this.alive.clear();
     this.leaders.clear();
     this.pings.clear();
-    this.raceOrder = null;
     this.objLabel = null;
     this.coop = false;
     this.objectives.replaceChildren();
@@ -185,11 +183,6 @@ export class Hud {
   setPings(flat: readonly number[]): void {
     this.pings.clear();
     for (let i = 0; i + 1 < flat.length; i += 2) this.pings.set(flat[i]!, flat[i + 1]!);
-  }
-
-  /** Race: the running order, with each racer's lap or finish time. */
-  setRaceOrder(order: readonly (readonly [number, string])[]): void {
-    this.raceOrder = new Map(order.map(([slot, lap], i) => [slot, [i, lap] as const]));
   }
 
   /** Classes: who plays what (for the scoreboard). */
@@ -957,7 +950,6 @@ export class Hud {
 
   /** What the scoreboards show: the teams (or everyone), sorted, with each row's stats. */
   boardData(scores: readonly ScoreEntry[], localSlot: number, final: boolean): BoardData {
-    const race = this.raceOrder;
     // Guests are marked once more than one person plays (an online match), so a typed name can't pass for an account.
     const people = [...this.roster.values()].filter((p) => !p.bot).length;
     // Your party (net/party.ts): the people who came with you, when there are any.
@@ -977,20 +969,20 @@ export class Hud {
         cls: cls === undefined ? '' : (CLASS_DEFS[CLASS_IDS[cls] ?? 'rocketeer']?.name ?? ''),
         k: s.k,
         d: s.d,
-        obj: race ? (race.get(s.s)?.[1] ?? '') : this.objLabel ? String(s.o ?? 0) : '',
+        obj: this.objLabel ? String(s.o ?? 0) : '',
         ping: p?.bot ? '–' : ping === undefined ? '' : String(ping),
         leader: this.leaders.has(s.s),
         dead: this.alive.get(s.s) === false,
         me: s.s === localSlot,
       };
     };
-    const sorted = [...scores].sort(race ? (a, b) => (race.get(a.s)?.[0] ?? 999) - (race.get(b.s)?.[0] ?? 999) || a.s - b.s : (a, b) => b.k - a.k || (b.o ?? 0) - (a.o ?? 0) || a.d - b.d || a.s - b.s);
+    const sorted = [...scores].sort((a, b) => b.k - a.k || (b.o ?? 0) - (a.o ?? 0) || a.d - b.d || a.s - b.s);
     const clock = this.timer.textContent ? ` · ${this.timer.textContent} left` : '';
     const watching = [...this.roster.values()].filter((p) => p.sp).map((p) => p.name);
     const spectators = watching.length ? `Spectating: ${watching.join(', ')}` : '';
     const note = [final && this.nextMap ? this.nextMap : '', this.onlineNote, spectators].filter(Boolean).join(' · ');
     const head = `${final ? 'Final · ' : ''}${this.mapName} · ${this.modeLabel.textContent ?? ''}${final ? '' : clock}`;
-    const flags = { cls: this.classes.size > 0, obj: race ? 'Lap' : this.objLabel, ping: this.pings.size > 0 };
+    const flags = { cls: this.classes.size > 0, obj: this.objLabel, ping: this.pings.size > 0 };
     if (!this.teams) {
       return { head, note, kind: this.coop ? 'coop' : 'ffa', groups: [{ id: 'all', name: '', color: '', score: 0, lead: false, rows: sorted.map(row) }], ...flags };
     }

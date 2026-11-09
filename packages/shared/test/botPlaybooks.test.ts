@@ -14,7 +14,7 @@ describe('playbooks', () => {
       expect(pb.interceptors).toBeGreaterThanOrEqual(0);
     }
     // A mode without one plays by the default.
-    expect(playbookFor('core.race').team).toBe(DEFAULT_PLAYBOOK);
+    expect(playbookFor('core.deathmatch').team).toBe(DEFAULT_PLAYBOOK);
   });
 
   it("Capture the Flag's defenders by team size are the owner's (2-3; 3 for 12 or more), from the playbook", () => {

@@ -92,7 +92,7 @@ export function suitePool(mapsDir: string): {
     if (!known.has(id)) {
       // The raw document (as suiteLookup reads it): parsing is ~15 times cheaper than a full load, so reading one never
       // stalls the tick loop (a full load of a big map takes a fifth of a second). Its modes and caps match the loaded
-      // map's for every shipped map but race tracks (their paths migrate on load), which a ballot then leaves out.
+      // map's for every shipped map.
       let info: { name: string; caps: Map<GameMode, number> } | null = null;
       const file = join(mapsDir, `${id}.json`);
       if (isMapId(id) && !isRetiredMap(id) && existsSync(file)) {
