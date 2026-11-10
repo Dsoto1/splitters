@@ -244,7 +244,7 @@ The workflow is unchanged (CLAUDE.md):
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
 
-**Next in line to land: vehicle routing fixes (`check/vehicle-routing`; this session).** (Vehicle-routing agent, 2026-11-10; after maps retire/rename: one check run, then a fast-forward.)
+**Landing now: vehicle routing fixes (`check/vehicle-routing`; this session), please hold code pushes to main.** (Vehicle-routing agent, 2026-11-10; one check run, then a fast-forward.)
 
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
