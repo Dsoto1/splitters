@@ -44,7 +44,7 @@ export class SelectionEdits {
       this.app.pieceMirror = !this.app.pieceMirror;
       this.app.toast(`${def.displayName} ${this.app.pieceMirror ? 'mirrored (east and west swapped)' : 'not mirrored'}`);
       this.app.pieces.renderPieceInfo();
-      this.app.updateHover();
+      this.app.hover.updateHover();
       return;
     }
     const ids = this.app.selPieces();
@@ -79,7 +79,7 @@ export class SelectionEdits {
       this.app.rotation = ((this.app.rotation + 1) % 4) as Rotation;
       this.app.toast(`${this.app.toolName(this.app.tool)} turned to ${this.app.rotation * 90}°`);
       this.app.pieces.renderPieceInfo();
-      this.app.updateHover();
+      this.app.hover.updateHover();
     } else if (this.app.tool.kind === 'spawn') {
       this.app.spawnYaw = normalizeYaw(this.app.spawnYaw + yawStep('spawn', fine));
       this.app.toast(deg(this.app.spawnYaw));

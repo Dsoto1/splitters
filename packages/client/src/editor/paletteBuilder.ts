@@ -7,6 +7,7 @@ import {
   EDGE_STYLE_LABELS,
   EDGE_STYLES,
   ENV_SPECIES,
+  envModelFile,
   FACADE_LABELS,
   getProp,
   getStylePack,
@@ -15,18 +16,23 @@ import {
   isTileOptionTwin,
   MOUNT_DEFS,
   MOUNT_MODELS,
+  newMapDocument,
   NPC_PALETTE,
   SCENARIO_PALETTE,
+  setPieceParts,
   setThemeCommand,
   STYLE_PACKS,
   stylePackHas,
   TILE_CATEGORIES,
   TINT_SWATCHES,
   type GlassKind,
+  type MapDocument,
   type MountModel,
   type PaintScope,
   type PropDefinition,
   type ScenarioPaletteKey,
+  type SetPieceDefinition,
+  type SetPiecePlacement,
   type StylePack,
   type TileDefinition
 } from '@tiletrigger/shared';
@@ -269,7 +275,7 @@ export class PaletteBuilder {
       // Set pieces take the pack's look (its role pack), so their ghost re-themes; All pieces: the map theme's.
       this.app.pieces.pieceLook = pack ? (stylePackRoles(pack.id, this.app.setPieceLib.packs) ?? '') : '';
       this.app.pieces.renderPieceInfo();
-      this.app.updateHover();
+      this.app.hover.updateHover();
       this.filterPalette();
     });
     themeBtn.addEventListener('click', () => {
@@ -570,7 +576,7 @@ export class PaletteBuilder {
     if (kind === 'setpiece') {
       const def = this.app.pieceDef(id);
       if (!def) return null;
-      const { doc, models } = this.app.setPieceThumbDoc(def);
+      const { doc, models } = this.setPieceThumbDoc(def);
       // The player's pieces change as they save over them: the picture is keyed by their content.
       return this.app.thumbs.getMap(id.startsWith('local.') ? `${id}:${JSON.stringify(def).length}:${this.app.pieces.myPiecesRev}` : id, doc, models, size);
     }
@@ -597,5 +603,24 @@ export class PaletteBuilder {
       pack: pack?.displayName,
       picture: true,
     });
+  }
+
+  /**
+   * What a set piece's palette picture is drawn from: the piece alone on an empty map, in its first look (the theme that
+   * look is for), unturned; its props as models (tools/content/palette-items.ts hashes the same inputs).
+   */
+  setPieceThumbDoc(def: SetPieceDefinition): { doc: MapDocument; models: { file: string; position: [number, number, number]; yaw: number; scale: number }[] } {
+    const pack = def.packs[0] ? this.app.setPieceLib.packs.get(def.packs[0]) : undefined;
+    const theme = pack?.themes[0] ?? this.app.doc.classicStructure.theme;
+    const placement: SetPiecePlacement = { id: 'thumb', piece: def.id, x: 0, y: 0, z: 0, rotation: 0, mirror: false, ...(pack ? { pack: pack.id } : {}) };
+    const { tiles, entities } = setPieceParts(placement, def, theme, this.app.setPieceLib);
+    const base = newMapDocument('thumb');
+    const doc: MapDocument = { ...base, terrain: null, classicStructure: { ...base.classicStructure, theme, tiles }, entities: entities.filter((e) => e.kind === 'block') };
+    const models = entities.flatMap((e) => {
+      if (e.kind !== 'prop') return [];
+      const file = envModelFile(e.model, e.variant) ?? getProp(e.model)?.file;
+      return file ? [{ file, position: e.position, yaw: e.yaw, scale: e.scale }] : [];
+    });
+    return { doc, models };
   }
 }

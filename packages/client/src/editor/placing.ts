@@ -47,7 +47,7 @@ export class Placing {
 
   placeAtHover(): void {
     // Spawns, pickups, props, vehicles and NPCs over nothing or outside the boundary: the ghost is red and says why, and the click places nothing (ghostWhy.ts).
-    if (ghostRefuses(this.app.entityGhost()?.note)) return;
+    if (ghostRefuses(this.app.hover.entityGhost()?.note)) return;
     if (this.app.tool.kind === 'setpiece' && this.app.hoverCell) {
       const [x, y, z] = this.app.hoverCell;
       this.app.pieces.placeSetPiece(this.app.tool.piece, x, y, z);
@@ -133,11 +133,11 @@ export class Placing {
 
   /** Erase what's under the pointer, picked the way Select picks it: a whole moving build (Alt: just that piece). */
   eraseAtHover(single = false): void {
-    const hit = this.app.pick();
+    const hit = this.app.hover.pick();
     if (!hit) return this.app.toast(`Nothing to erase here on ${levelName(this.app.level)}`, true);
     const group = hit.kind === 'entity' && !single ? moverGroupOf(this.app.doc, hit.id) : null;
     const sel: Selection = hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : hit.kind === 'setpiece' ? { tiles: [], entities: [], setPieces: [hit.id] } : { tiles: [], entities: group ?? [hit.id] };
-    const name = group && group.length > 1 ? 'moving build' : this.app.targetName(hit);
+    const name = group && group.length > 1 ? 'moving build' : this.app.hover.targetName(hit);
     if (this.app.run(`Erase ${name}`, deleteCommand(this.app.doc, sel))) this.app.toast(`Erased ${name} · Ctrl+Z to undo`);
   }
 

@@ -61,7 +61,7 @@ export class TerrainTools {
       $(`${id}-v`).textContent = `${this.brushRadius} m`;
     }
     this.app.env.syncRadius(this.brushRadius);
-    this.app.updateHover();
+    this.app.hover.updateHover();
   }
 
   startStroke(invert: boolean): void {
@@ -91,7 +91,7 @@ export class TerrainTools {
       const y = terrainHeightAt(s.shown, h.x, h.z);
       if (y !== null) this.terrainHover = { ...h, y };
     }
-    this.app.updateHover();
+    this.app.hover.updateHover();
   }
 
   endStroke(): void {

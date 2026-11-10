@@ -21,7 +21,7 @@ const modelBytes = (file: string) => readFileSync(/^(props|creatures|city|packs|
 /** Prop id (`prop.<id>`) → its content pack (content/props/<pack>.json): the prop's atlas. */
 const packOf = new Map(loadPropManifest().props.map((p: { id: string; pack: string }) => [`prop.${p.id}`, p.pack]));
 const library = builtInSetPieces();
-/** A set piece's picture is drawn in its first role pack (editorApp.ts setPieceThumbDoc): that, its tiles and its props' models. */
+/** A set piece's picture is drawn in its first role pack (paletteBuilder.ts setPieceThumbDoc): that, its tiles and its props' models. */
 function setPieceHash(id: string): string {
   const def = library.pieces.get(id)!;
   const pack = def.packs[0] ? library.packs.get(def.packs[0]) : undefined;

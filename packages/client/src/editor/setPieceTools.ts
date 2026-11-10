@@ -336,7 +336,7 @@ export class SetPieceTools {
     const lookSel = this.lookSelect(def, look, (v) => {
       this.pieceLook = v;
       this.renderPieceInfo();
-      this.app.updateHover();
+      this.app.hover.updateHover();
     });
     lookSel.id = 'ed-sp-look';
     el.append(row('Look', lookSel));
