@@ -6888,8 +6888,11 @@ export class BotFiller {
     for (const n of this.match.namesInUse()) used.add(n.toLowerCase());
     if (self) used.delete(self.name.toLowerCase());
     if (this.set) for (const e of this.set.entries) used.add(e.name.toLowerCase());
+    // Roulette: every life wears another look, so a name after one ("Biscuit", the cat) soon names the wrong
+    // character (the owner aimed at the old man and read "Biscuit"): a general name, kept for the match.
+    const from = this.match.roulette ? undefined : look;
     // Matches differ in which names come up (the seed); seed 1 (tests, default) takes each list in order.
-    return botNameFor(look, (n) => used.has(n.toLowerCase()), (this.match.seed - 1) * 37);
+    return botNameFor(from, (n) => used.has(n.toLowerCase()), (this.match.seed - 1) * 37);
   }
 
   /**
