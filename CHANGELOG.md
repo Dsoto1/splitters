@@ -8,6 +8,16 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Bots remember, call out, and keep watch like players** (Bot AI Phase D):
+- Bots remember where they saw enemies, where shots came from and what teammates called out, and watch and pre-aim
+  those spots; a teammate's sighting reaches the bots nearby.
+- A bot holding a spot scans its angles one at a time and peeks past cover instead of sweeping back and forth.
+- Easy, normal and hard differ in more than aim: reaction (slower when surprised, quicker where they expected you),
+  memory, how fast they turn to fire from an unseen shooter, and how often they make the second-best choice.
+- Bots use the map's bot hints from MapMaker (sniper and camp spots, staging spots, chokepoints, jump links).
+- `?botdebug=1` (offline and when hosting): every bot's route, state, goal, scores and why it stopped, and where routes
+  failed.
+
 **Community maps: save as many maps as you like, host them, and Community Picks** (owner-approved plan, docs/COMMUNITY_MAPS.md):
 - **Unlimited local saving:** MapMaker's saved maps live in your browser's IndexedDB (as many as your disk allows; a
   few MB of localStorage held about 15 before). Maps you saved before move over by themselves. Open… adds
