@@ -6,6 +6,7 @@ import { perfProbe } from './perfProbe.ts';
 import { SnapshotCoalescer, type SnapshotBacklog } from './snapshotMerge.ts';
 import type { RemoteLink, Transport } from './transport.ts';
 import { checkTicket, helloTicket } from './ticketCheck.ts';
+import { PlayTracker } from './communityPlays.ts';
 
 export type { RemoteLink } from './transport.ts';
 
@@ -371,6 +372,8 @@ export class LocalTransport implements Transport {
 
   /** This game's join code while it's hosted (friends' account tickets are for it); set by the session. */
   joinCode: string | null = null;
+  /** Signed-in friends and how long they played (the end-of-match report on a community map: communityPlays.ts). */
+  readonly plays = new PlayTracker();
 
   /** Let a friend into this match (Host game). Links arriving while the match loads wait for it (a map change brings everyone back at once). */
   accept(link: RemoteLink): void {
@@ -394,12 +397,16 @@ export class LocalTransport implements Transport {
       if (!ticket || !code) return this.toHost({ k: 'msg', id, text });
       const waiting: string[] = (held = [text]);
       void checkTicket(ticket, code).then((proof) => {
-        if (proof && this.links.has(id)) this.toHost({ k: 'verified', id, sub: proof.sub, ...(proof.name ? { name: proof.name } : {}) });
+        if (proof && this.links.has(id)) {
+          this.toHost({ k: 'verified', id, sub: proof.sub, ...(proof.name ? { name: proof.name } : {}) });
+          this.plays.joined(id, proof.sub);
+        }
         held = null;
         for (const t of waiting) this.toHost({ k: 'msg', id, text: t });
       });
     });
     link.onClose(() => {
+      this.plays.left(id);
       if (!this.links.delete(id)) return;
       this.toHost({ k: 'closed', id });
     });

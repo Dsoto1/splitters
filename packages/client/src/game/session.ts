@@ -128,6 +128,7 @@ import {
   type RotationCommand,
   type RotationLookup,
   mapIdentity,
+  serializeMap,
   WEAPONS_BY_SLOT,
   parseVoteState,
   pickVoteOptions,
@@ -172,6 +173,8 @@ import { RouletteHud } from './rouletteHud.ts';
 import { AwardsHud } from './awardsHud.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
+import { currentAccount } from '../account.ts';
+import { sendPlayReport } from '../communityMaps.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
 import { TouchControls } from './touchControls.ts';
@@ -1722,8 +1725,30 @@ export class GameSession {
       (id, secret) => local.setListing(id ? { name: ($('host-name') as HTMLInputElement).value.trim() || `${me}'s game`, id, secret } : null),
     );
     this.advertiser.start();
+    this.listedSince ??= Date.now();
+    window.addEventListener('pagehide', this.pageHideReport);
     show();
     this.updateOnline();
+  }
+
+  /** When this match was first listed (a community map's end-of-match report counts from then). */
+  private listedSince?: number;
+  private readonly pageHideReport = () => this.reportCommunityPlays(true);
+
+  /**
+   * A listed match on a community map ends (leaving, a map change, the tab closing): the host's report of who played
+   * (signed-in players only) goes to the hub, which counts it toward Community Picks (docs/COMMUNITY_MAPS.md).
+   */
+  private reportCommunityPlays(closing = false): void {
+    const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
+    const id = this.community ? this.mapIdentity() : null;
+    const code = this.peerHost?.code;
+    if (!local || !id || !code || this.listedSince === undefined || !this.map) return;
+    const me = currentAccount();
+    const map = this.map;
+    const report = local.plays.report(code, id.contentHash, me ? { sub: me.sub, since: this.listedSince } : null);
+    this.listedSince = undefined;
+    void sendPlayReport(report, () => serializeMap(map), closing);
   }
 
   exit(reason?: string, how?: 'lost' | 'rejected'): void {
@@ -1732,6 +1757,8 @@ export class GameSession {
     // A recording running when the match ends is saved, not lost.
     this.stopRecording();
     perfProbe.use('overlay', false);
+    this.reportCommunityPlays();
+    window.removeEventListener('pagehide', this.pageHideReport);
     this.advertiser?.stop();
     const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
     if (reason === 'travel' && this.travel && this.peerHost && local) {

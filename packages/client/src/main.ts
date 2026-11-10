@@ -7,14 +7,14 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist, type CommunityPick } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
 import type { EditorApp, TestRequest } from './editor/editorApp.ts';
 import { FramePacer } from './game/framePacer.ts';
 import type { CharacterDesigner } from './designer/characterDesigner.ts';
-import { FrontEnd, type ArcadeMap } from './frontend/frontEnd.ts';
+import { FrontEnd, PICK_GROUP, type ArcadeMap } from './frontend/frontEnd.ts';
 import { MenuScene } from './frontend/menuScene.ts';
 import { ModelThumbnails } from './frontend/modelThumbs.ts';
 import { setWeaponIconSource } from './frontend/weaponIcons.ts';
@@ -25,6 +25,7 @@ import { MAP_INDEX, builtInMapJson, loadBuiltInMap, type MapIndexEntry } from '.
 import { loadMapContent } from './mapContentLoader.ts';
 import { publishedMaps, type PublishedEntry } from './publishedMaps.ts';
 import { initLocalMaps, listLocalMaps, readLocalMap } from './localMaps.ts';
+import { communityPicks, pickMapText } from './communityMaps.ts';
 import { PLAYLISTS, addToSuite, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import { installInputMode } from './inputMode.ts';
@@ -240,6 +241,27 @@ function ownMaps(): ArcadeMap[] {
   });
 }
 
+/** A Community Pick as a map card: its file comes from the hub when it is picked (and is checked as it loads). */
+function pickEntry(p: CommunityPick): ArcadeMap {
+  const entry: ArcadeMap = {
+    key: `pick:${p.contentHash.slice(7, 23)}`,
+    metadata: { id: p.mapId, name: p.name, description: p.description, author: p.creator, recommendedPlayers: p.recommendedPlayers },
+    load: async () => {
+      const [text, { loadMap }] = await Promise.all([pickMapText(p.contentHash), loadMapContent()]);
+      const r = loadMap(text);
+      if (!r.ok) throw new Error(`the Community Pick "${p.name}" failed to load`);
+      entry.map = r.map;
+      return r.map;
+    },
+    blurb: `${blurbOf(p.description) || 'A Community Pick'}${p.creator ? ` By ${p.creator}.` : ''}`,
+    modes: p.modes.filter(isGameMode),
+    bots: botsFor(p.recommendedPlayers),
+    group: PICK_GROUP,
+    contentHash: p.contentHash,
+  };
+  return entry;
+}
+
 /** Run `f` when the page is idle (soon after, at the latest). */
 function whenIdle(f: () => void, timeout = 3000): void {
   if (typeof requestIdleCallback === 'function') requestIdleCallback(() => f(), { timeout });
@@ -289,6 +311,8 @@ class App {
       void publishedMaps().then((p) => p.size && applyPublished(maps, p));
       // Your own maps (this browser's library) join under "Your maps" once it's open.
       void initLocalMaps().then(() => maps.push(...ownMaps()));
+      // The hub's Community Picks: their own tab in the map list (docs/COMMUNITY_MAPS.md).
+      void communityPicks().then((p) => maps.push(...p.map(pickEntry)));
       // The home screen's featured map draws its plan: fetch that one map alongside the engine.
       const featured = maps.find((m) => m.key === 'sandgate') ?? maps[0];
       const [created] = await Promise.all([createEngine($<HTMLCanvasElement>('view')), loadFonts(), featured && capped(featured.load(), 5000)]);
