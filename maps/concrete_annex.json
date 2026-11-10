@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 25,
+  "formatVersion": 34,
   "metadata": {
     "id": "concrete_annex",
     "name": "Concrete Annex",
@@ -32,20 +32,20 @@
         "z": 0,
         "rotation": 0,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -58,20 +58,20 @@
         "z": 0,
         "rotation": 2,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -84,20 +84,20 @@
         "z": 0,
         "rotation": 1,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -110,20 +110,20 @@
         "z": 0,
         "rotation": 3,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -136,20 +136,20 @@
         "z": 0,
         "rotation": 3,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -162,20 +162,20 @@
         "z": 0,
         "rotation": 1,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -188,20 +188,20 @@
         "z": 0,
         "rotation": 0,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -214,20 +214,20 @@
         "z": 0,
         "rotation": 2,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -240,20 +240,20 @@
         "z": 0,
         "rotation": 1,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -266,20 +266,20 @@
         "z": 0,
         "rotation": 3,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -292,20 +292,20 @@
         "z": 0,
         "rotation": 3,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -318,20 +318,20 @@
         "z": 0,
         "rotation": 1,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -344,20 +344,20 @@
         "z": 0,
         "rotation": 2,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -370,20 +370,20 @@
         "z": 0,
         "rotation": 0,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -396,20 +396,20 @@
         "z": 0,
         "rotation": 1,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_walkway",
             "tint": null
           },
           "walls": {
             "material": "core.pbr_grey_corrugated",
             "tint": null
           },
-          "floor": {
-            "material": "core.pbr_walkway",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -422,20 +422,20 @@
         "z": 0,
         "rotation": 3,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_walkway",
             "tint": null
           },
           "walls": {
             "material": "core.pbr_grey_corrugated",
             "tint": null
           },
-          "floor": {
-            "material": "core.pbr_walkway",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -448,20 +448,20 @@
         "z": 0,
         "rotation": 0,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_walkway",
             "tint": null
           },
           "walls": {
             "material": "core.pbr_grey_corrugated",
             "tint": null
           },
-          "floor": {
-            "material": "core.pbr_walkway",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -474,20 +474,20 @@
         "z": 0,
         "rotation": 2,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_walkway",
             "tint": null
           },
           "walls": {
             "material": "core.pbr_grey_corrugated",
             "tint": null
           },
-          "floor": {
-            "material": "core.pbr_walkway",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -500,20 +500,20 @@
         "z": 0,
         "rotation": 0,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_walkway",
             "tint": null
           },
           "walls": {
             "material": "core.pbr_grey_corrugated",
             "tint": null
           },
-          "floor": {
-            "material": "core.pbr_walkway",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -526,20 +526,20 @@
         "z": 0,
         "rotation": 2,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_walkway",
             "tint": null
           },
           "walls": {
             "material": "core.pbr_grey_corrugated",
             "tint": null
           },
-          "floor": {
-            "material": "core.pbr_walkway",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -552,20 +552,20 @@
         "z": 0,
         "rotation": 0,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_walkway",
             "tint": null
           },
           "walls": {
             "material": "core.pbr_grey_corrugated",
             "tint": null
           },
-          "floor": {
-            "material": "core.pbr_walkway",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -578,20 +578,20 @@
         "z": 0,
         "rotation": 2,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_walkway",
             "tint": null
           },
           "walls": {
             "material": "core.pbr_grey_corrugated",
             "tint": null
           },
-          "floor": {
-            "material": "core.pbr_walkway",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -604,20 +604,20 @@
         "z": 0,
         "rotation": 0,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -630,20 +630,20 @@
         "z": 0,
         "rotation": 2,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -655,12 +655,15 @@
         "y": 1,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:N": "open",
-          "0,0,0:W": "high"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_bunker_panels",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -668,15 +671,12 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_bunker_panels",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_concrete",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:W": "high"
         }
       },
       {
@@ -686,12 +686,15 @@
         "y": 4,
         "z": 0,
         "rotation": 2,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:N": "open",
-          "0,0,0:W": "high"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_tread_plate",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -699,15 +702,12 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_brick_old",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_tread_plate",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:W": "high"
         }
       },
       {
@@ -717,12 +717,15 @@
         "y": 1,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:S": "high",
-          "0,0,0:E": "window"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_bunker_panels",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -730,15 +733,12 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_bunker_panels",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_concrete",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:S": "high",
+          "0,0,0:E": "window"
         }
       },
       {
@@ -748,12 +748,15 @@
         "y": 4,
         "z": 0,
         "rotation": 2,
-        "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:S": "high",
-          "0,0,0:E": "window"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_tread_plate",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -761,15 +764,12 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_brick_old",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_tread_plate",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:S": "high",
+          "0,0,0:E": "window"
         }
       },
       {
@@ -779,10 +779,15 @@
         "y": 2,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_bunker_panels",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -790,15 +795,10 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_bunker_panels",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_concrete",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "open"
         }
       },
       {
@@ -808,10 +808,15 @@
         "y": 3,
         "z": 0,
         "rotation": 2,
-        "edges": {
-          "0,0,0:N": "open"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_tread_plate",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -819,15 +824,10 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_brick_old",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_tread_plate",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "open"
         }
       },
       {
@@ -837,11 +837,15 @@
         "y": 3,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:N": "open"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_bunker_panels",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -849,15 +853,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_bunker_panels",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_concrete",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
         }
       },
       {
@@ -867,11 +867,15 @@
         "y": 2,
         "z": 0,
         "rotation": 2,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:N": "open"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_tread_plate",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -879,15 +883,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_brick_old",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_tread_plate",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
         }
       },
       {
@@ -897,11 +897,15 @@
         "y": 3,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:E": "slit"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_bunker_panels",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -909,15 +913,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_bunker_panels",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_concrete",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "slit"
         }
       },
       {
@@ -927,11 +927,15 @@
         "y": 2,
         "z": 0,
         "rotation": 2,
-        "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:E": "slit"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_tread_plate",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -939,15 +943,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_brick_old",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_tread_plate",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "slit"
         }
       },
       {
@@ -957,11 +957,15 @@
         "y": 4,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:W": "wall"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_bunker_panels",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -969,15 +973,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_bunker_panels",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_concrete",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:W": "wall"
         }
       },
       {
@@ -987,11 +987,15 @@
         "y": 1,
         "z": 0,
         "rotation": 2,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:W": "wall"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_tread_plate",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -999,15 +1003,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_brick_old",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_tread_plate",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:W": "wall"
         }
       },
       {
@@ -1017,11 +1017,15 @@
         "y": 4,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "wall",
-          "0,0,0:E": "window"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_bunker_panels",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1029,15 +1033,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_bunker_panels",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_concrete",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:E": "window"
         }
       },
       {
@@ -1047,11 +1047,15 @@
         "y": 1,
         "z": 0,
         "rotation": 2,
-        "edges": {
-          "0,0,0:N": "wall",
-          "0,0,0:E": "window"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_tread_plate",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_brick_old",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1059,15 +1063,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_brick_old",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_tread_plate",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "wall",
+          "0,0,0:E": "window"
         }
       },
       {
@@ -1077,11 +1077,6 @@
         "y": 2,
         "z": 0,
         "rotation": 3,
-        "edges": {
-          "0,0,0:S": "open",
-          "0,0,0:E": "open",
-          "0,0,0:N": "high"
-        },
         "surfaces": {
           "solids": {
             "material": "core.pbr_steel",
@@ -1091,6 +1086,11 @@
             "material": "core.pbr_steel",
             "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:E": "open",
+          "0,0,0:N": "high"
         }
       },
       {
@@ -1100,11 +1100,6 @@
         "y": 3,
         "z": 0,
         "rotation": 1,
-        "edges": {
-          "0,0,0:S": "open",
-          "0,0,0:E": "open",
-          "0,0,0:N": "high"
-        },
         "surfaces": {
           "solids": {
             "material": "core.pbr_steel",
@@ -1114,6 +1109,11 @@
             "material": "core.pbr_steel",
             "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:S": "open",
+          "0,0,0:E": "open",
+          "0,0,0:N": "high"
         }
       },
       {
@@ -1123,9 +1123,6 @@
         "y": 3,
         "z": 1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:W": "wall"
-        },
         "surfaces": {
           "solids": {
             "material": "core.pbr_steel",
@@ -1135,6 +1132,9 @@
             "material": "core.pbr_steel",
             "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:W": "wall"
         }
       },
       {
@@ -1144,9 +1144,6 @@
         "y": 2,
         "z": 1,
         "rotation": 2,
-        "edges": {
-          "0,0,0:W": "wall"
-        },
         "surfaces": {
           "solids": {
             "material": "core.pbr_steel",
@@ -1156,6 +1153,9 @@
             "material": "core.pbr_steel",
             "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:W": "wall"
         }
       },
       {
@@ -1165,10 +1165,6 @@
         "y": 4,
         "z": 1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:W": "wall",
-          "0,0,0:N": "wall"
-        },
         "surfaces": {
           "solids": {
             "material": "core.pbr_steel",
@@ -1178,6 +1174,10 @@
             "material": "core.pbr_steel",
             "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:W": "wall",
+          "0,0,0:N": "wall"
         }
       },
       {
@@ -1187,10 +1187,6 @@
         "y": 1,
         "z": 1,
         "rotation": 2,
-        "edges": {
-          "0,0,0:W": "wall",
-          "0,0,0:N": "wall"
-        },
         "surfaces": {
           "solids": {
             "material": "core.pbr_steel",
@@ -1200,6 +1196,10 @@
             "material": "core.pbr_steel",
             "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:W": "wall",
+          "0,0,0:N": "wall"
         }
       },
       {
@@ -1209,9 +1209,6 @@
         "y": 4,
         "z": 1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "wall"
-        },
         "surfaces": {
           "solids": {
             "material": "core.pbr_steel",
@@ -1221,6 +1218,9 @@
             "material": "core.pbr_steel",
             "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "wall"
         }
       },
       {
@@ -1230,9 +1230,6 @@
         "y": 1,
         "z": 1,
         "rotation": 2,
-        "edges": {
-          "0,0,0:N": "wall"
-        },
         "surfaces": {
           "solids": {
             "material": "core.pbr_steel",
@@ -1242,6 +1239,9 @@
             "material": "core.pbr_steel",
             "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "wall"
         }
       },
       {
@@ -1251,12 +1251,15 @@
         "y": 1,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:N": "open",
-          "0,0,0:W": "slit"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_hex_paving",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1264,15 +1267,12 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_concrete_dark",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_hex_paving",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:W": "slit"
         }
       },
       {
@@ -1282,11 +1282,15 @@
         "y": 1,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:E": "door"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_hex_paving",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1294,15 +1298,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_concrete_dark",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_hex_paving",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "door"
         }
       },
       {
@@ -1312,11 +1312,15 @@
         "y": 4,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:W": "door"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_hex_paving",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1324,15 +1328,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_concrete_dark",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_hex_paving",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:W": "door"
         }
       },
       {
@@ -1342,10 +1342,15 @@
         "y": 4,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "slit"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_hex_paving",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1353,15 +1358,10 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_concrete_dark",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_hex_paving",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "slit"
         }
       },
       {
@@ -1371,10 +1371,6 @@
         "y": 2,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:N": "open"
-        },
         "surfaces": {
           "solids": {
             "material": "core.pbr_steel",
@@ -1384,6 +1380,10 @@
             "material": "core.pbr_steel",
             "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
         }
       },
       {
@@ -1393,10 +1393,6 @@
         "y": 2,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open",
-          "0,0,0:E": "slit"
-        },
         "surfaces": {
           "solids": {
             "material": "core.pbr_steel",
@@ -1406,6 +1402,10 @@
             "material": "core.pbr_steel",
             "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "open",
+          "0,0,0:E": "slit"
         }
       },
       {
@@ -1415,12 +1415,15 @@
         "y": 3,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:N": "open",
-          "0,0,0:W": "slit"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_hex_paving",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1428,15 +1431,12 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_concrete_dark",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_hex_paving",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:W": "slit"
         }
       },
       {
@@ -1446,10 +1446,15 @@
         "y": 3,
         "z": 0,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_hex_paving",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1457,15 +1462,10 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_concrete_dark",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_hex_paving",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "open"
         }
       },
       {
@@ -1512,20 +1512,20 @@
         "z": 1,
         "rotation": 1,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -1538,20 +1538,20 @@
         "z": 1,
         "rotation": 3,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -1563,11 +1563,15 @@
         "y": 1,
         "z": 1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:W": "window",
-          "0,0,0:E": "window"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_grey_corrugated",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1575,15 +1579,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_grey_corrugated",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_walkway",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:W": "window",
+          "0,0,0:E": "window"
         }
       },
       {
@@ -1593,11 +1593,15 @@
         "y": 4,
         "z": 1,
         "rotation": 2,
-        "edges": {
-          "0,0,0:W": "window",
-          "0,0,0:E": "window"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_grey_corrugated",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1605,15 +1609,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_grey_corrugated",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_walkway",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:W": "window",
+          "0,0,0:E": "window"
         }
       },
       {
@@ -1623,11 +1623,15 @@
         "y": 2,
         "z": 1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:W": "window",
-          "0,0,0:E": "slit"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_grey_corrugated",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1635,15 +1639,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_grey_corrugated",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_walkway",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:W": "window",
+          "0,0,0:E": "slit"
         }
       },
       {
@@ -1653,11 +1653,15 @@
         "y": 2,
         "z": 1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "slit",
-          "0,0,0:W": "slit"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_grey_corrugated",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1665,15 +1669,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_grey_corrugated",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_walkway",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "slit",
+          "0,0,0:W": "slit"
         }
       },
       {
@@ -1683,10 +1683,15 @@
         "y": 3,
         "z": 1,
         "rotation": 1,
-        "edges": {
-          "0,0,0:S": "slit"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.paint_matte",
+            "tint": "#7d8a72"
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1694,15 +1699,10 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.paint_matte",
-            "tint": "#7d8a72"
-          },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:S": "slit"
         }
       },
       {
@@ -1712,10 +1712,15 @@
         "y": 3,
         "z": 1,
         "rotation": 3,
-        "edges": {
-          "0,0,0:S": "window"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.paint_matte",
+            "tint": "#7d8a72"
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1723,15 +1728,10 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.paint_matte",
-            "tint": "#7d8a72"
-          },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:S": "window"
         }
       },
       {
@@ -1741,11 +1741,15 @@
         "y": 4,
         "z": 1,
         "rotation": 2,
-        "edges": {
-          "0,0,0:E": "wide",
-          "0,0,0:W": "window"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.paint_matte",
+            "tint": "#7d8a72"
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1753,15 +1757,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.paint_matte",
-            "tint": "#7d8a72"
-          },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "wide",
+          "0,0,0:W": "window"
         }
       },
       {
@@ -1771,11 +1771,15 @@
         "y": 1,
         "z": 1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "wide",
-          "0,0,0:W": "window"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_concrete_dark",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.paint_matte",
+            "tint": "#7d8a72"
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -1783,15 +1787,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.paint_matte",
-            "tint": "#7d8a72"
-          },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "wide",
+          "0,0,0:W": "window"
         }
       },
       {
@@ -1802,20 +1802,20 @@
         "z": -1,
         "rotation": 2,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_walkway",
             "tint": null
           },
           "walls": {
             "material": "core.pbr_grey_corrugated",
             "tint": null
           },
-          "floor": {
-            "material": "core.pbr_walkway",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -1828,20 +1828,20 @@
         "z": -1,
         "rotation": 0,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_walkway",
             "tint": null
           },
           "walls": {
             "material": "core.pbr_grey_corrugated",
             "tint": null
           },
-          "floor": {
-            "material": "core.pbr_walkway",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -1854,20 +1854,20 @@
         "z": -1,
         "rotation": 1,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -1880,20 +1880,20 @@
         "z": -1,
         "rotation": 3,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -1906,20 +1906,20 @@
         "z": -1,
         "rotation": 1,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -1932,20 +1932,20 @@
         "z": -1,
         "rotation": 3,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -1958,20 +1958,20 @@
         "z": -1,
         "rotation": 1,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -1984,20 +1984,20 @@
         "z": -1,
         "rotation": 3,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_concrete_dark",
             "tint": null
           },
           "walls": {
             "material": "core.paint_matte",
             "tint": "#7d8a72"
           },
-          "floor": {
-            "material": "core.pbr_concrete_dark",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -2009,11 +2009,15 @@
         "y": 2,
         "z": -1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "open",
-          "0,0,0:N": "open"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -2021,15 +2025,11 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_rusted_plate",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_walkway",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open"
         }
       },
       {
@@ -2039,10 +2039,15 @@
         "y": 3,
         "z": -1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:E": "open"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -2050,15 +2055,10 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_rusted_plate",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_walkway",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:E": "open"
         }
       },
       {
@@ -2068,10 +2068,15 @@
         "y": 2,
         "z": -1,
         "rotation": 0,
-        "edges": {
-          "0,0,0:N": "open"
-        },
         "surfaces": {
+          "floor": {
+            "material": "core.pbr_walkway",
+            "tint": null
+          },
+          "walls": {
+            "material": "core.pbr_rusted_plate",
+            "tint": null
+          },
           "solids": {
             "material": "core.pbr_steel",
             "tint": null
@@ -2079,15 +2084,10 @@
           "trim": {
             "material": "core.pbr_steel",
             "tint": null
-          },
-          "walls": {
-            "material": "core.pbr_rusted_plate",
-            "tint": null
-          },
-          "floor": {
-            "material": "core.pbr_walkway",
-            "tint": null
           }
+        },
+        "edges": {
+          "0,0,0:N": "open"
         }
       },
       {
@@ -2098,20 +2098,20 @@
         "z": -1,
         "rotation": 0,
         "surfaces": {
-          "solids": {
-            "material": "core.pbr_steel",
-            "tint": null
-          },
-          "trim": {
-            "material": "core.pbr_steel",
+          "floor": {
+            "material": "core.pbr_walkway",
             "tint": null
           },
           "walls": {
             "material": "core.pbr_rusted_plate",
             "tint": null
           },
-          "floor": {
-            "material": "core.pbr_walkway",
+          "solids": {
+            "material": "core.pbr_steel",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.pbr_steel",
             "tint": null
           }
         }
@@ -2541,7 +2541,7 @@
         34.8
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2555,7 +2555,7 @@
         5.200000000000003
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -2569,7 +2569,7 @@
         35
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2583,7 +2583,7 @@
         5
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -2597,7 +2597,7 @@
         7
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2611,7 +2611,7 @@
         33
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -2625,7 +2625,7 @@
         5.5
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2639,7 +2639,7 @@
         34.5
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -2653,7 +2653,7 @@
         8.5
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -2667,7 +2667,7 @@
         31.5
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 4.71238898038469,
       "scale": 1,
       "solid": true,
@@ -2821,7 +2821,7 @@
         -3.2
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -2835,7 +2835,7 @@
         43.2
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 3.541592653589793,
       "scale": 1,
       "solid": true,
@@ -2961,7 +2961,7 @@
         20.9
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -2975,7 +2975,7 @@
         19.1
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 4.71238898038469,
       "scale": 1,
       "solid": true,
@@ -4619,13 +4619,13 @@
     },
     {
       "id": "flames_jo92buckom",
-      "kind": "trap",
-      "trap": "flames",
       "position": [
         28,
         -4,
         20
       ],
+      "kind": "trap",
+      "trap": "flames",
       "yaw": 0,
       "activation": "cycle",
       "onSeconds": 2,

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 31,
+  "formatVersion": 34,
   "metadata": {
     "id": "riot_junction",
     "name": "Riot Junction",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_ruc3fnxenmg4ganz",
-      "versionId": "v_thkmdnc56ycilatt",
-      "revision": 3,
-      "contentHash": "sha256:217079c835fa5966c175d29682e5024a594a983e88519ad7f7081d2d63c80f62",
-      "schemaVersion": 31,
-      "releasedAt": "2026-11-09T05:21:12.026Z"
+      "versionId": "v_4d3gipjm26zry4vu",
+      "revision": 4,
+      "contentHash": "sha256:56e6f3d4a41ef00b45b14261ac26355b96e9d0071a4223d63a931a983a1daf5c",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:29:20.856Z"
     }
   },
   "classicStructure": {
@@ -18157,7 +18157,7 @@
         138
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -18171,7 +18171,7 @@
         62
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -18185,7 +18185,7 @@
         72
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -18199,7 +18199,7 @@
         50
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -22228,7 +22228,7 @@
         131.18
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 2.2714,
       "scale": 1,
       "solid": true,
@@ -22242,7 +22242,7 @@
         116.82
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": -0.696,
       "scale": 1,
       "solid": true,
@@ -22256,7 +22256,7 @@
         131.19
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": -2.2106,
       "scale": 1,
       "solid": true,
@@ -22270,7 +22270,7 @@
         116.81
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.5935,
       "scale": 1,
       "solid": true,
@@ -22284,7 +22284,7 @@
         123.18
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 2.4496,
       "scale": 1,
       "solid": true,
@@ -22298,7 +22298,7 @@
         116.82
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": -0.8443,
       "scale": 1,
       "solid": true,
@@ -22312,7 +22312,7 @@
         131.19
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 2.1606,
       "scale": 1,
       "solid": true,
@@ -22326,7 +22326,7 @@
         124.81
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.949,
       "scale": 1,
       "solid": true,
@@ -22340,7 +22340,7 @@
         131.19
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": -2.2249,
       "scale": 1,
       "solid": true,
@@ -23040,7 +23040,7 @@
         75.18
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 2.4053,
       "scale": 1,
       "solid": true,
@@ -23054,7 +23054,7 @@
         68.82
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.79,
       "scale": 1,
       "solid": true,
@@ -23068,7 +23068,7 @@
         75.18
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": -2.3136,
       "scale": 1,
       "solid": true,
@@ -23236,7 +23236,7 @@
         59.18
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": -2.4538,
       "scale": 1,
       "solid": true,
@@ -23250,7 +23250,7 @@
         44.82
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.7248,
       "scale": 1,
       "solid": true,
@@ -23278,7 +23278,7 @@
         44.82
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": -0.759,
       "scale": 1,
       "solid": true,
@@ -23292,7 +23292,7 @@
         59.18
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": -2.483,
       "scale": 1,
       "solid": true,
@@ -23306,7 +23306,7 @@
         44.82
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": -0.7786,
       "scale": 1,
       "solid": true,
@@ -23320,7 +23320,7 @@
         44.81
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.5934,
       "scale": 1,
       "solid": true,
@@ -23334,7 +23334,7 @@
         59.19
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 2.54,
       "scale": 1,
       "solid": true,

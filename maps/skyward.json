@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 29,
+  "formatVersion": 34,
   "metadata": {
     "id": "skyward",
     "name": "Skyward Yard",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_z2qxhdlix5uawhum",
-      "versionId": "v_y34flgupg56jvsc6",
-      "revision": 1,
-      "contentHash": "sha256:4ff90aadd9b21e9b92d5f091a133e08dd02425f8c293df5c69155a5b1dcc6897",
-      "schemaVersion": 29,
-      "releasedAt": "2026-11-08T20:28:17.400Z"
+      "versionId": "v_uvxoul2ddeseqczg",
+      "revision": 2,
+      "contentHash": "sha256:740e25ba04ecaa9ca543157bfb52eb3c5e31157a3ca10d634fd59c66ef1141dd",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:32:28.893Z"
     }
   },
   "classicStructure": {
@@ -242,7 +242,7 @@
         4
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -256,7 +256,7 @@
         -4
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": -0.3,
       "scale": 1,
       "solid": true,
@@ -270,7 +270,7 @@
         6
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -284,7 +284,7 @@
         -6
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0,
       "scale": 1,
       "solid": true,

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 32,
+  "formatVersion": 34,
   "metadata": {
     "id": "crossroads",
     "name": "Crossroads",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_oiei2uugkwd3jwdq",
-      "versionId": "v_cbwx4y44z3o37xhw",
-      "revision": 1,
-      "contentHash": "sha256:3593bcc3da0e1a3bbc62c3b93f2ca048f4a1f665078a830bd34758cd64319456",
-      "schemaVersion": 32,
-      "releasedAt": "2026-11-09T07:44:32.595Z"
+      "versionId": "v_exqt6obrumiwzjar",
+      "revision": 2,
+      "contentHash": "sha256:438e216546e994d8e0c304e8a0fea423b8e8e09ecf1043151a6d52ac726f4e23",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:12:43.781Z"
     }
   },
   "classicStructure": {
@@ -2315,7 +2315,7 @@
         21
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2343,7 +2343,7 @@
         14
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -2357,7 +2357,7 @@
         2
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": -0.3,
       "scale": 1,
       "solid": true,
@@ -2371,7 +2371,7 @@
         4
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2385,7 +2385,7 @@
         4.8
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2399,7 +2399,7 @@
         54
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2413,7 +2413,7 @@
         42
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -2427,7 +2427,7 @@
         60
       ],
       "kind": "prop",
-      "model": "prop.barrel_open",
+      "model": "kit.drum.steel_open",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2455,7 +2455,7 @@
         42
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.1,
       "scale": 1,
       "solid": true,
@@ -2705,7 +2705,7 @@
         5.09
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3797,7 +3797,7 @@
         45.56
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3937,7 +3937,7 @@
         59.19
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": -2.1891,
       "scale": 1,
       "solid": true,
@@ -3951,7 +3951,7 @@
         44.81
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.6517,
       "scale": 1,
       "solid": true,
@@ -3979,7 +3979,7 @@
         55.94
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -3993,7 +3993,7 @@
         56.75
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": -0.8708,
       "scale": 1,
       "solid": true,
@@ -4007,7 +4007,7 @@
         56.35
       ],
       "kind": "prop",
-      "model": "prop.barrel_open",
+      "model": "kit.drum.steel_open",
       "yaw": -0.1708,
       "scale": 1,
       "solid": true,
@@ -4021,7 +4021,7 @@
         56
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -4035,7 +4035,7 @@
         56
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": -1.2708,
       "scale": 1,
       "solid": true,

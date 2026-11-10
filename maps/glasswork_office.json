@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 34,
   "metadata": {
     "id": "glasswork_office",
     "name": "Glasswork Office",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_eu7kdm7dnuvylmjv",
-      "versionId": "v_fjzv7bd2ameur2m4",
-      "revision": 2,
-      "contentHash": "sha256:4b0478620d4b9fef8612c888d8cb749ddaa9b3d291ad0c3e3c43cfba2c5c1922",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:03:02.308Z"
+      "versionId": "v_2nmv4kcdux4ecqzd",
+      "revision": 3,
+      "contentHash": "sha256:5e37d4509eda3c4ca474b172fbd1c090d7fd8f2b39a9c65b07a41afb2dcbbd18",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:17:27.396Z"
     }
   },
   "classicStructure": {
@@ -5144,7 +5144,7 @@
         34
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5158,7 +5158,7 @@
         13.5
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5172,7 +5172,7 @@
         13.2
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5200,7 +5200,7 @@
         18
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8097,7 +8097,7 @@
         26.92
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 2.3525,
       "scale": 1,
       "solid": true,
@@ -8111,7 +8111,7 @@
         26.92
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": -2.5393,
       "scale": 1,
       "solid": true,
@@ -8125,7 +8125,7 @@
         21.08
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0.7546,
       "scale": 1,
       "solid": true,
@@ -8629,7 +8629,7 @@
         20.6
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0.7,
       "scale": 1,
       "solid": true,
@@ -9623,6 +9623,6 @@
       8
     ]
   },
-  "dependencies": [],
-  "weaponSet": "military"
+  "weaponSet": "military",
+  "dependencies": []
 }

@@ -278,7 +278,8 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 .lv-btn.used { color: var(--text); }
 .lv-btn small { color: var(--muted); font: 500 10px var(--font-body); }
 .lv-btn.on { border-color: var(--cyan); background: rgba(0, 209, 255, 0.16); color: #fff; box-shadow: inset 3px 0 0 var(--cyan); }
-.lv-all { display: flex; align-items: center; gap: 5px; margin-top: 2px; color: var(--muted); font-size: 11px; }
+#ed-levels .lv-all { margin-bottom: 3px; text-transform: none; letter-spacing: 0.02em; }
+#ed-levels .lv-all[aria-pressed='true'] { border-color: var(--cyan); background: rgba(0, 209, 255, 0.16); color: #fff; }
 #ed-level-name-bottom { color: var(--cyan); }
 @media (max-width: 1600px) { .tb-btn small { display: none; } }
 #ed-tb-delete kbd { font-size: 8px; }

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 32,
+  "formatVersion": 34,
   "metadata": {
     "id": "sunken_kingdom",
     "name": "Sunken Kingdom",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_e53hofcotjne4zfg",
-      "versionId": "v_es5lbwa466le7ziz",
-      "revision": 1,
-      "contentHash": "sha256:d9774f5475765464765d4e6792dc0b16f287349e247f1c5c1bff725b89add89a",
-      "schemaVersion": 32,
-      "releasedAt": "2026-11-09T07:26:41.764Z"
+      "versionId": "v_dnvpgub7jz7unb77",
+      "revision": 2,
+      "contentHash": "sha256:28b0efd2c0b29b29810f7f3fb9d6ff1b30f6f67b6ad2a66ad02c531895089810",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:32:52.213Z"
     }
   },
   "classicStructure": {
@@ -4470,7 +4470,7 @@
         54
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -4484,7 +4484,7 @@
         61
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": -1.7831077434004534,
       "scale": 1,
       "solid": true,
@@ -4498,7 +4498,7 @@
         54
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": -1.169359535306916,
       "scale": 1,
       "solid": true,
