@@ -20,7 +20,6 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { PointLight } from '@babylonjs/core/Lights/pointLight';
 import { ClusteredLightContainer } from '@babylonjs/core/Lights/Clustered/clusteredLightContainer';
-import { installPhoneLightMasks } from './clusteredLights.ts';
 import '@babylonjs/core/Lights/Clustered/clusteredLightingSceneComponent';
 import {
   LIGHT_FLASH,
@@ -702,8 +701,6 @@ export class ScenarioVisuals {
 
   private container(): ClusteredLightContainer | null {
     if (this.lights === undefined) {
-      // Phones: one light per tile-mask layer (clusteredLights.ts), so no tile drops a lamp.
-      installPhoneLightMasks();
       const c = new ClusteredLightContainer('map_lights', [], this.scene);
       this.lights = c.isSupported ? c : null;
       if (!this.lights) c.dispose();

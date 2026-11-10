@@ -1495,6 +1495,8 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
 }
 /* No keyboard on a phone: the key hints in the pause menu and footer say nothing there. */
 html.touch .menu-footer .hintbar, html.touch .pause-foot .hint { display: none; }
+/* The pause menu's foot is buttons (Resume, Tabs, Fullscreen): on a phone they keep their words, not the key caps. */
+html.touch #pause-hints kbd { display: none; }
 /* So off the main menu (no news there) a phone has no bottom bar at all: Back is at the top of every screen. */
 html.touch .menu-footer:not([data-screen='home']) { display: none; }
 html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-bottom: 14px; }
