@@ -67,6 +67,12 @@ export class EnemyMemory {
     s.push({ slot, pos: { x: pos.x, y: pos.y, z: pos.z }, tick, source });
   }
 
+  /** Does it know of that enemy (a spot of it within `keepTicks`)? */
+  knows(slot: number, tick: number, keepTicks: number): boolean {
+    for (const e of this.spots) if (e.slot === slot && tick - e.tick <= keepTicks) return true;
+    return false;
+  }
+
   /** That enemy is dead (or gone): nothing to remember of it. */
   forget(slot: number): void {
     for (let i = this.spots.length - 1; i >= 0; i--) if (this.spots[i]!.slot === slot) this.spots.splice(i, 1);

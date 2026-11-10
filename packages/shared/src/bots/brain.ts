@@ -1242,10 +1242,11 @@ export class BotBrain {
       }
     }
     const sweep = Math.sin((tick + this.slot * 53) / (p.kind === 'sniper' ? 90 : 55)) * (p.kind === 'sniper' ? 0.35 : 0.7);
-    // (A remembered enemy within the spot's view, or a shot at it from anywhere: watched instead: memory.ts.)
+    // (A shot at it from anywhere, and for a camper a remembered enemy within the spot's view: watched instead
+    // (memory.ts). A sniper otherwise keeps to its lane: looking off it at old sightings cost its scoped kills.)
     const m = this.remembered(view, p.kind === 'sniper' ? 110 : 60);
     const toM = m ? Math.atan2(m.pos.x - me.x, m.pos.z - me.z) : 0;
-    const watchYaw = m && m.source !== 'heard' && (m.source === 'shot' || Math.abs(angleDelta(spot.yaw, toM)) < 1.4) ? toM : spot.yaw;
+    const watchYaw = m && (m.source === 'shot' || (p.kind === 'camp' && m.source !== 'heard' && Math.abs(angleDelta(spot.yaw, toM)) < 1.4)) ? toM : spot.yaw;
     this.turnToward(watchYaw + sweep, spot.height > 2 ? -0.08 : 0);
     const scoped = !!this.heldDef(view)?.view.zoomFov;
     const settled = view.tick - this.underFireTick > TICK_RATE * 2;
@@ -2808,16 +2809,18 @@ export class BotBrain {
 
   /**
    * This sighting's reaction (ticks; Phase D item 3, skill tiers that feel human): its tier's and personality's
-   * reaction, slower by up to `reactionSpread` (people's reaction times are skewed slow), longer by `surprise` for someone showing outside its view (behind
-   * or beside it), shorter by `prepared` for someone showing where it expected them (a remembered spot: memory.ts).
+   * reaction, for a fresh contact up to `reactionSpread` longer, longer by `surprise` for someone showing
+   * outside its view (behind or beside it), shorter by `prepared` for someone showing where it expected them (a
+   * remembered spot at least a second old: memory.ts).
    */
   private reactAfter(o: CombatantView, outOfView: boolean, tick: number): number {
     const d = this.difficulty;
-    // (Only ever slower, by up to the spread: people's reaction times are skewed slow, and a draw quicker than the
-    // tier's own fires before the aim has settled: hard bots' hit rate fell under its band, botai.test.ts.)
-    let f = 1 + d.reactionSpread * this.skillRng();
+    const keep = this.memoryTicks;
+    // A fresh contact (nobody it knew of) takes up to the spread longer (people's reaction times are skewed slow);
+    // seen again after a moment out of sight, the tier's own reaction, as before.
+    let f = this.enemies.knows(o.slot, tick, keep) ? 1 : 1 + d.reactionSpread * this.skillRng();
     if (outOfView) f *= 1 + d.surprise;
-    else if (this.enemies.expected(o.pos, tick, this.memoryTicks)) f *= 1 - d.prepared;
+    else if (this.enemies.expected(o.pos, tick, keep)) f *= 1 - d.prepared;
     return Math.max(1, Math.ceil(this.reactionTicks() * f));
   }
 

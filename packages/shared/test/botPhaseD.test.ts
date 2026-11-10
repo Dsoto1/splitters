@@ -96,7 +96,7 @@ describe('skill tiers that feel human (item 3)', () => {
     expect(easy.surprise).toBeGreaterThan(hard.surprise);
   });
 
-  it('reaction varies sighting to sighting (only ever slower); slower from behind, quicker where it expected someone', () => {
+  it("a fresh contact's reaction varies (only ever slower); slower from behind, quicker where it expected someone", () => {
     const mean = (diff: keyof typeof BOT_DIFFICULTIES, how: 'plain' | 'behind' | 'expected') => {
       const brain = new BotBrain(1, CORE_BOT_PROFILES[0]!, BOT_DIFFICULTIES[diff], 3);
       if (how === 'expected') brain.enemies.note(9, at(10, 10), 100, 'callout');

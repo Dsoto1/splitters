@@ -900,7 +900,7 @@ Easy, normal and hard differ in more than aim error (`BotDifficulty`, profile.ts
 | | easy | normal | hard |
 |---|---|---|---|
 | reaction (as before) | 650 ms | 380 ms | 220 ms |
-| reaction slower by up to (each sighting) | 40 % | 25 % | 15 % |
+| a fresh contact (nobody it knew of) slower by up to | 40 % | 25 % | 15 % |
 | someone showing outside its view | +60 % | +25 % | +10 % |
 | someone showing where it expected them (a spot at least 1 s old) | - | -25 % | -45 % |
 | memory | 8 s | 15 s | 25 s |
