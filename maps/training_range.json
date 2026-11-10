@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 29,
+  "formatVersion": 34,
   "metadata": {
     "id": "training_range",
     "name": "Training Range",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_pdfp7ts5t32gemes",
-      "versionId": "v_7c3g724eldna5fje",
-      "revision": 3,
-      "contentHash": "sha256:7be89d74d79a11ce084ba235bee5da9e90e3326a187e9aacce1ec24d1eb3eab3",
-      "schemaVersion": 29,
-      "releasedAt": "2026-11-08T21:35:27.455Z"
+      "versionId": "v_s5er6zo3ltoo7afj",
+      "revision": 4,
+      "contentHash": "sha256:c1fd7fc641b1e8aceefd8a954d6dceeaefdbc2b3f801bd89c065c06bc98ee92b",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:33:52.780Z"
     }
   },
   "classicStructure": {
@@ -6042,7 +6042,7 @@
         -51
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6056,7 +6056,7 @@
         -60
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6962,12 +6962,12 @@
     },
     {
       "id": "pickup_2i5kihro74",
-      "kind": "pickup",
       "position": [
         -2,
         0,
         20
       ],
+      "kind": "pickup",
       "item": "core.weapon_battle_rifle",
       "respawnSeconds": 5
     }

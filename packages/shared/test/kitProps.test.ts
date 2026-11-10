@@ -120,7 +120,12 @@ describe('kit aliases', () => {
   });
 
   it('upgrade a map as played; MapMaker opens it as made', () => {
-    const json = readFileSync(new URL('bunker_cross.json', MAPS), 'utf8');
+    // An older file: the official maps name the kit families themselves since MapMaker's Replace all (2026-11-10), so
+    // Bunker Cross's are put back to the retired props they were made with.
+    const back = new Map(KIT_ALIASES.map((a) => [a.model, a.from]));
+    const doc = JSON.parse(readFileSync(new URL('bunker_cross.json', MAPS), 'utf8')) as { entities: { kind: string; model?: string }[] };
+    for (const e of doc.entities) if (e.kind === 'prop' && e.model && back.has(e.model)) e.model = back.get(e.model)!;
+    const json = JSON.stringify(doc);
     const made = loadMap(json, coreCatalog, { forEditing: true });
     const played = loadMap(json);
     expect(made.ok && played.ok).toBe(true);

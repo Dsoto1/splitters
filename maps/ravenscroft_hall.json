@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 34,
   "metadata": {
     "id": "ravenscroft_hall",
     "name": "Ravenscroft Hall",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_h4iqy7wdte3s52lb",
-      "versionId": "v_p56if7oj7xbjyfhl",
-      "revision": 2,
-      "contentHash": "sha256:12fbb97dcde30c31806bcf4441fba86941cb24314f1a31c5165eeb3283452b75",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T15:53:23.477Z"
+      "versionId": "v_e7lllfuvqyijjgk7",
+      "revision": 3,
+      "contentHash": "sha256:42c29fc84fd79f9cb037d9f294c3c9e684485979f47f7613066e79410985f79f",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:27:42.741Z"
     }
   },
   "classicStructure": {
@@ -444,7 +444,7 @@
         10.8
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -458,7 +458,7 @@
         11
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0.5,
       "scale": 1,
       "solid": true,
@@ -472,7 +472,7 @@
         10.8
       ],
       "kind": "prop",
-      "model": "prop.barrel_open",
+      "model": "kit.drum.steel_open",
       "yaw": 0,
       "scale": 1,
       "solid": true,

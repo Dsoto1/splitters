@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 34,
   "metadata": {
     "id": "maple_court",
     "name": "Maple Court",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_tqonszbqjn5i6g6u",
-      "versionId": "v_jwmtlbweixevsieb",
-      "revision": 1,
-      "contentHash": "sha256:b43de9ac837a5f170abb3714cd2f94cf70450655b3c6a0f34ec1b5414e4accde",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T23:02:46.031Z"
+      "versionId": "v_paw2r7wxgz6y3gjb",
+      "revision": 2,
+      "contentHash": "sha256:19222243da1f57ac948e50557151f08296ed98e535348321a20300e705510197",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:23:51.856Z"
     }
   },
   "classicStructure": {
@@ -11057,7 +11057,7 @@
         1
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -11657,7 +11657,7 @@
         37.09
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -11671,7 +11671,7 @@
         37.08
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0.7172,
       "scale": 1,
       "solid": true,
@@ -12329,7 +12329,7 @@
         74.92
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 2.4415,
       "scale": 1,
       "solid": true,
@@ -15045,7 +15045,7 @@
         41.43
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": -2.4416,
       "scale": 1,
       "solid": true,
@@ -15059,7 +15059,7 @@
         42.92
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": -2.5207,
       "scale": 1,
       "solid": true,
@@ -15563,7 +15563,7 @@
         19.19
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 2.2172,
       "scale": 1,
       "solid": true,
@@ -15689,7 +15689,7 @@
         15.45
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -15703,7 +15703,7 @@
         15.45
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -15717,7 +15717,7 @@
         18.92
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": -2.2002,
       "scale": 1,
       "solid": true,
@@ -15731,7 +15731,7 @@
         4.82
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": -0.8083,
       "scale": 1,
       "solid": true,

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 33,
+  "formatVersion": 34,
   "metadata": {
     "id": "jungle_steps",
     "name": "Cradle of Idols",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_avupmkddw4sadpi2",
-      "versionId": "v_4sn2hv3tn76qe5co",
-      "revision": 1,
-      "contentHash": "sha256:f88ff462fed0ab4a58e41427558aa0516347c925454eb7629a37d5121c9abfff",
-      "schemaVersion": 33,
-      "releasedAt": "2026-11-09T20:42:21.955Z"
+      "versionId": "v_4ttycrtaiynw4hez",
+      "revision": 2,
+      "contentHash": "sha256:31af43d948ccffd8a44df720ad70205e91a1150e17fbbf7d7ca866f7511b33b9",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:23:30.782Z"
     }
   },
   "classicStructure": {
@@ -1345,7 +1345,7 @@
         10
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -1359,7 +1359,7 @@
         70
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 2.941592653589793,
       "scale": 1,
       "solid": true,
@@ -3739,7 +3739,7 @@
         20.93
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -3809,7 +3809,7 @@
         59.15
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -3823,7 +3823,7 @@
         59.07
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
