@@ -1727,7 +1727,8 @@ async function editorMapTestChecks(browser) {
   // worker), then Cancel ends it at once.
   await page.selectOption('#ed-mt-length', '300');
   await page.click('#ed-mt-run');
-  await page.waitForFunction(() => /^\d:\d\d of 5:00 played/.test(document.getElementById('ed-mt-status').textContent), null, { timeout: T(60000) }).catch(() => {});
+  // (Wait for the first progress report, not just "0:00 … played": that line shows when the worker is ready, the bar still at 0.)
+  await page.waitForFunction(() => /^\d:\d\d of 5:00 played/.test(document.getElementById('ed-mt-status').textContent) && document.getElementById('ed-mt-bar').value > 0, null, { timeout: T(60000) }).catch(() => {});
   // (A click on the page while it runs: the grid toggle, then Cancel at once, before a slow software-drawn frame
   // lets the match finish.)
   const during = await page.evaluate(() => {
