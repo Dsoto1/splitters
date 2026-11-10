@@ -542,6 +542,8 @@ for the owner's review, not landed).**
 
 **Next in line to land: the mobile audit** (`check/mobile-audit`, mobile-audit agent, 2026-11-10), after MapMaker Phase 6: one check run, then a fast-forward.
 
+**Next in line to land: Fireteams part 3** (`check/fireteams-3`, Fireteams agent, 2026-11-10), after the mobile audit: one check run, then a fast-forward.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
