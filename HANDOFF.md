@@ -623,13 +623,84 @@ for the owner's review, not landed).**
 **The flaky `fireteams` check** (MapMaker lane's claim released, 2026-11-10): Community maps landed the fix (a tap of B in one page task). The MapMaker lane's own copy (`wip/mapmaker-fix-fireteams-test`, green) won't land. Optional, for the Fireteams owner: the "you lead a fireteam" check's wait for the HUD's "Follow me" (`T(15000)`) ran out under a 4x CPU throttle locally; 30 s passed.
 - **From community maps (2026-11-10): Community maps landed on main at 8c856ba (green on `check/community-maps`, run 42811718756; `fireteams` passed there, the tap of B included), and it already hardens both steps in `fireteamsFlow`: commit b77f23a.** The tap of B sends key down and up in one task (Playwright's two key events let a loaded runner draw a frame between them past WHEEL_HOLD_MS, 180 ms, so the order wheel opened instead), and taps again only once the menu, the wheel and the pause menu are seen closed; the squad-holds step counts a squadmate within 25 m of the spot and at least twice as far from you as from it (CI had all three 19-22 m off it, in a fight, you 72 m away). Reproduced locally on this branch and on origin/main alike. **MapMaker lane: please drop `wip/mapmaker-fix-fireteams-test`, or rebase it onto main and keep only what goes beyond this, so `e2e/run.mjs` doesn't conflict.**
 
-**Landing now: Fireteams CTF roles fix + mobile fixes, as one train (`check/train-*`; lead session, 2026-11-10), please hold code pushes to main.** One check run of both merged onto origin/main, then a fast-forward. Kit-prop generators move to the MapMaker lane (other account): it takes over `wip/kit-props` after this lands.
+
+### Hand-off to the MapMaker lane (owner, 2026-11-10)
+The MapMaker lane (other account) takes over all remaining work; the main session has stopped (weekly usage capped). Queue, owner decisions and open threads:
+
+#### Priority: St. John's performance (owner's recording, 2026-11-10 17:08; files in the owner's uploads, copied to the main session's scratchpad perf-stjohns/; ask the owner to re-send them to you)
+- **Setup:** M1 Pro, Chrome, High graphics, 1920×1080 @2, Roulette, 41 players and 63 bots, local match, build 0.9.0 (e64400d).
+- **Result:** about **25 fps** (40 ms median frame, 52 ms p95), with 546 hitches over 50 ms in 204 s.
+- **Per-frame medians:**
+  - **characters 13.6 ms**, with only about 20 in view. Of that, charAnim is 3.8 and charSkin 0.4, so about 9 ms is unaccounted for. Find it first.
+  - renderScene 11.5, renderShadow 6.7 (about 290 shadow casters), renderCull 3.3, net 2.7, game 1.5.
+  - About 1,540 draw calls and 740 meshes.
+  - Server tick 1.6 ms, so the sim isn't the problem.
+- **Hitches:** most are frame time outside our measured code ("outside" about 20 ms, i.e. GPU or browser) on top of about 40 ms busy.
+- **Treat it as a bug** (it jumps the queue). Use the perf toolset (docs/PERF_96.md, `?perf=1` recordings) and the far-copies / LOD work. Re-record on St. John's after each fix.
+
+#### Your queue, in order (owner decisions in brackets)
+1. **Kit-prop generators part 1** (`wip/kit-props` = `check/kit-props` 4aa5e42). The details are in the earlier note (mapmaker-lane-note7.md):
+   - Find the e2e failure in run 42846096828, fix it, and land.
+   - Then run "Replace all" for 722 placements on 57 maps.
+   - [Themed pieces stay authored. One look per retired prop.]
+2. **Kit-prop generators part 2:** fences and walls, then containers. [Owner: this order.]
+3. **Throwables and the flare gun** (owner 2026-11-10; Meshy Community models in the owner's Drive folder; check each post's licence: CC0 needs no credit, CC BY 4.0 needs one):
+   - **Dynamite** uses the Emergency Flare model (`Meshy_AI_Emergency_Flare_1110164645_texture.glb`): red sticks with a fuse. Keep dynamite's mechanics (3 s fuse, 6 m blast).
+   - **Airstrike flare becomes a flare-gun shot.** Bring in the flare gun model we already have but never imported (the Guns&Explosives pack in the Drive, docs/ARSENAL.md "Not imported: … the flare gun"). Use it for the airstrike marker:
+     - same aim and arc as grenade throwing (the grenade arc preview);
+     - it fires a fizzing, smoking light that lands and marks the spot;
+     - its smoke trail and sparks come from our FX pack (Binbun FX, docs/LOOK.md / the FX docs).
+     - Reduce flashing applies: a steady glow, no flicker over once a second, no bright flash.
+     - Also use the same model for the existing Flare Gun weapon (pistol slot), which is drawn in code today.
+   - **Sheep:** the explosive sheep, animated (`Meshy_AI_explosive_sheep_side_model_20261108_animated_All_animation.zip`). It walks, so use the walk clip.
+   - **Sandbags:** "mur de sacs 12" (`Meshy_AI_mur_de_sacs_12_1110164725_texture.glb`), as the 2 × 1 × 0.5 m cover.
+   - **Holy bomb:** "Gold Silver Toned Hi…" (`Meshy_AI__Gold_Silver_Toned_Hi_1110164632_texture.glb`), probably. Confirm with the owner.
+   - Process them like the grenades: docs/ARSENAL.md "Grenades", content provenance, and one model each in the hand, in flight and on the pickup.
+   - **Stormvolt Blaster** (`Meshy_AI_Stormvolt_Blaster_1109190242_texture.glb`, a gun) is NOT for now. Add it to the parked "new weapons" list with any other new ones, for a later full weapon release (new weapon types stay paused).
+4. **Vehicle refreshes, directly after the weapons** (six Meshy Community CC0 models, the Drive folder, 2026-11-08). Re-skin existing vehicles; no new vehicle types. Proposed match from the names; render each model and confirm with the owner before you build:
+
+   | Model | Proposed existing vehicle | Why |
+   |---|---|---|
+   | Dust Runner | Buggy | a desert runabout; 4 seats, riders shoot |
+   | Recon Trike | Go-Kart | a small 1-seat quick runner (or the Hover Bike, if it has no wheels) |
+   | Cyber Fang Mk III (Assault…) | Speeder | a sci-fi attack hover with forward guns (or the Armored Rover, if it's wheeled and heavy) |
+   | Sky Cruiser | Gunship | a flying craft with door guns (or the Skyfighter, if it's a 1-seat fighter) |
+   | TNR 1017 | Armored Rover | the name gives no clue; a guess, so decide from the render (Tank if it's tracked) |
+   | unnamed (`Meshy_AI__1108120754_texture.glb`) | unknown | render it first |
+
+   Keep each vehicle's seats, guns, health and handling. Fit the model to the existing seat, gun and collision points (`MOUNT_DEFS`), with cockpit views checked. Record provenance.
+5. **Player profiles.**
+6. **Quality tiers** (core/experimental + quality gates).
+7. **Rockfall Canyon refresh** (No Man's Field is retired).
+8. **Sci-Fi and Industrial style packs.**
+9. **Desert City dome kit.**
+10. **Binbun FX, the rest.**
+11. **Destructible environment:** audit what breaks today, then per-piece destruction on one opt-in map through MapMaker.
+12. **Map pass, one map at a time** (after Environment Phase 2, the MapMaker work and the new and rebuilt maps; check whether each map really needs it).
+13. Possibly: packed inputs to cut upload bandwidth.
+
+#### Open threads you inherit
+- **Mobile, owner check on a Galaxy S25+:** the dark wall block. Steps are in docs/MOBILE_AUDIT.md once the mobile fixes land.
+  - Owner said "yes" to: if the block still shows on Medium, make the exact one-lamp-per-layer mode the default there. Confirm that reading with the owner.
+- **Paused by the owner:** sound pass 2, new weapon types.
+- **Known issues:**
+  - Hyena Warrior can stay crouched after waking (characters3 flake).
+  - Iron Coast's coast-border canopy dark lip.
+  - Sandsweep plays weak as a battle map.
+  - Dead race track settings in map files.
+  - Iron Coast B/C defence (owner: leave for now).
+- **CI:** the e2e shard budget is full. [Owner: fold new checks into existing flows.]
+- **Owner decisions today:**
+  - Bot AI Phase D: all (a) (keep as built).
+  - Community maps: the defaults as built (JSON storage etc.).
+  - Rewind window: 300 ms.
+- **Session memory:** write .control-center/session-summary.json at the end of your sessions.
 
 **Kit-prop generators: not landed, paused** (2026-11-10; owner's usage cap). `check/kit-props` = `wip/kit-props` at 4aa5e42 (origin/main c322d74 merged in); run 42846096828 was still running when work stopped. The first try (run 42823940482) was red only on `editorux` and `editortools`, which clicked retired props; that is fixed. Left: if run 42846096828 is green and main hasn't moved, fast-forward main to 4aa5e42. Otherwise merge origin/main once, push to check/ once, and land. Details in the "Kit-prop generators, part 1" entry. Landing lock released.
 
-**Next in line to land: Fireteams CTF roles fix** (`check/fireteams-4`, from `wip/fireteams-4`, Fireteams follow-ups agent, 2026-11-10), after kit-prop generators: a gameplay fix (the lead's decision: the CTF defend role only from 4 squads a side; the role word hidden after a leader's order). One merge of origin/main, one check run, then a fast-forward. Touches shared `sim/modes/ctfBots.ts`, `sim/match.ts` (snapshot role), client `game/squadHud.ts`, tests, `e2e/run.mjs` `fireteamsCtfChecks` only, docs. **Status (paused for usage, 2026-11-10):** `wip/fireteams-4` at ec8ecfb, merged with main as of 1400b17. Done: the defender only from 4 squads a side (`SQUAD_DEFEND_MIN`), the HUD role word hidden after a person's order, unit tests, the e2e check (`fireteamsCtfChecks`, passed locally), docs; bot-report confirms the 3-squad maps play exactly as before the roles (Diamond Park 0.8, Obsidian Orb 2.8, Market Town 0.5 captures a match). Left: merge origin/main once, push `check/fireteams-4` once, fast-forward main on green (no check run yet).
+**Landed: Fireteams CTF roles fix** (`wip/fireteams-4` at ec8ecfb, in train `check/train-20261110-164310`, main = 37b7f94, green; lead session, 2026-11-10): the smallest squad defends only from 4+ squads a side; the HUD role word hides after a leader's order.
 
-**In flight: mobile fixes (`wip/mobile-fixes` at a47e62d; mobile fixes agent, 2026-11-10; paused: the owner's usage cap).** Done: the owner's mobile audit picks 1, 5, 6, 10 and 12 (docs/MOBILE_AUDIT.md on the branch: "Proposals 1, 5, 6, 10 and 12: done", with the owner's S25+ check). Phone lamps are dropped on Low with an indoor fill, and 4 a mask layer on Medium/High, sized to the texture limit. Also: the Room lights switch, ammo above Reload, tap the scorebar for scores, 12 px touch text, a 3-line kill feed. Passed locally: unit tests, typecheck, build, and e2e mobile, flashing, newplayer and offline. Left: the local `visual` flow timed out on its arena screenshot on a loaded box (menu and mapmaker matched their baselines; desktop code paths unchanged), not compared against main yet. Then: merge origin/main once, push `check/mobile-fixes` once (full suite: e2e/run.mjs), and fast-forward if green.
+**Landed: mobile fixes** (`wip/mobile-fixes` at a47e62d, in the same train, main = 37b7f94, green; 2026-11-10): audit picks 1, 5, 6, 10, 12 (docs/MOBILE_AUDIT.md: lamps on Low / packed lamp layers on Medium+, Room lights toggle, ammo panel by the fire buttons, tap the scorebar for scores, touch text 12 px+, kill feed 3 lines on short phones). Owner check on a Galaxy S25+: steps in docs/MOBILE_AUDIT.md.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
