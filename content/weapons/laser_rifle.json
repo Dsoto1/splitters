@@ -17,7 +17,7 @@
   "heat": { "perShot": 0.022, "coolPerTick": 0.01 },
   "view": {
     "model": "weapons/laser_rifle.glb",
-    "viewOffset": [0.21, -0.21, 0.52],
+    "viewOffset": [0.21, -0.31, 0.52],
     "tracer": "#ff3b4a",
     "hold": {
       "style": "long",

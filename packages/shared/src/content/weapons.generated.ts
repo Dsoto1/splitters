@@ -228,7 +228,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     spread: 0,
     view: {
       model: 'weapons/launcher.glb',
-      viewOffset: [0.22, -0.22, 0.55],
+      viewOffset: [0.22, -0.23, 0.55],
       tracer: '#c2c9a8',
       hold: { style: 'long', grip: [0, -0.1, 0.02], support: [0, 0.029, 0.187], shoulder: [0, 0.023, -0.43] },
     },
@@ -627,7 +627,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 20,
     view: {
       model: 'weapons/laser_rifle.glb',
-      viewOffset: [0.21, -0.21, 0.52],
+      viewOffset: [0.21, -0.31, 0.52],
       tracer: '#ff3b4a',
       hold: { style: 'long', grip: [0, -0.06, -0.08], support: [0, -0.012, 0.328], shoulder: [0, 0.078, -0.455] },
       sound: 'fire.laser',
@@ -768,7 +768,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     range: 120,
     view: {
       model: 'weapons/flak.glb',
-      viewOffset: [0.21, -0.21, 0.52],
+      viewOffset: [0.21, -0.25, 0.52],
       tracer: '#ffcf6a',
       hold: { style: 'long', grip: [0, -0.087, -0.18], support: [0, -0.057, 0.177], shoulder: [0, 0.078, -0.405] },
       sound: 'fire.flak',
@@ -992,7 +992,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     range: 120,
     view: {
       model: 'weapons/oil_slicker.glb',
-      viewOffset: [0.2, -0.18, 0.42],
+      viewOffset: [0.2, -0.2, 0.42],
       tracer: '#8a7a5a',
       hold: { style: 'long', grip: [0, -0.07, 0], support: [0, -0.037, 0.192], shoulder: [0, 0.014, -0.38] },
       sound: 'fire.goo',
@@ -1116,7 +1116,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     range: 120,
     view: {
       model: 'weapons/swarm.glb',
-      viewOffset: [0.21, -0.21, 0.52],
+      viewOffset: [0.21, -0.23, 0.52],
       tracer: '#ffb347',
       hold: { style: 'long', grip: [0, -0.07, -0.07], support: [0, 0.012, 0.247], shoulder: [0, 0.029, -0.405] },
       sound: 'fire.swarm',
@@ -1160,7 +1160,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     range: 120,
     view: {
       model: 'weapons/rockets.glb',
-      viewOffset: [0.24, -0.24, 0.5],
+      viewOffset: [0.24, -0.26, 0.5],
       tracer: '#ff4a3a',
       sound: 'fire.rockets',
       hold: { style: 'long', grip: [0, -0.1, 0], support: [0, -0.101, 0.24], shoulder: [0, 0.034, -0.48] },
@@ -1201,7 +1201,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     range: 120,
     view: {
       model: 'guns/plasma_blaster.glb',
-      viewOffset: [0.27, -0.28, 0.54],
+      viewOffset: [0.27, -0.31, 0.57],
       tracer: '#b07aff',
       hold: { style: 'long', grip: [0, -0.13, -0.17], support: [0, -0.076, 0.17], shoulder: [0, 0, -0.33] },
       fallback: 'weapons/singularity.glb',
@@ -1717,7 +1717,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     spread: 0,
     view: {
       model: 'weapons/rockets.glb',
-      viewOffset: [0.24, -0.24, 0.5],
+      viewOffset: [0.24, -0.26, 0.5],
       tracer: '#ffb347',
       sound: 'fire.rockets',
       hold: { style: 'long', grip: [0, -0.1, 0], support: [0, -0.101, 0.24], shoulder: [0, 0.034, -0.48] },
