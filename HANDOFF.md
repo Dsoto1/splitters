@@ -476,8 +476,6 @@ for the owner's review, not landed).**
 
 **Queued after MapMaker Phase 2: maps retire/rename** (`wip/maps-retire`, maps agent, 2026-11-10; lock released for MapMaker Phase 2 to go first).
 
-**Landing now: MapMaker Phase 2 (`check/mapmaker-p2-full`), please hold code pushes to main.** (MapMaker lane, 2026-11-10.)
-
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
@@ -615,7 +613,8 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   (`tools/ci/train.mjs`) on Tuesday 2026-11-10 morning (UTC), ready for the owner's Tuesday-afternoon testing; a
   second train only if something urgent comes up. Until then, MapMaker branches merge `origin/main` only when they
   need something from it.
-- **Started 2026-11-09: Phase 2 and the split of `editorApp.ts`** (`wip/mapmaker-p2`). It takes the editor-code claim. Until it lands, please avoid MapMaker client code. (Earlier note:) The split waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
+- **Landed 2026-11-10: Phase 2** (main 9c99ae7): the split (`editorApp.ts` 6,489 → 949 lines, 16 modules) and the interface (mode tabs, folding panels, the outliner, favourites by mode). The editor-code claim stays with the MapMaker lane. Note for the other session: characters3's far-character check (core.hyena drawn 1.5 of 2.12 m) failed twice on this run's first attempt and once on check/mapmaker-verdant; it passed on re-run, but it looks flaky since far copies.
+- (Was: started 2026-11-09: Phase 2 and the split of `editorApp.ts`) (`wip/mapmaker-p2`). It takes the editor-code claim. Until it lands, please avoid MapMaker client code. (Earlier note:) The split waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
 - **Also in this lane (owner, 2026-11-08, moved from the other session's queue):** set pieces (the 12-piece list,
