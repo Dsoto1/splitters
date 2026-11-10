@@ -7725,7 +7725,7 @@ async function fireteamsFlow(browser) {
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
   // You lead a squad: the match says so, and the HUD shows its order.
-  const led = await page.waitForFunction(() => window.__cs.squad().led !== null && document.querySelector('#squad-order b')?.textContent === 'Follow me', null, { timeout: T(15000) }).then(() => true, () => false);
+  const led = await page.waitForFunction(() => window.__cs.squad().led !== null && document.querySelector('#squad-order b')?.textContent === 'Follow me', null, { timeout: T(30000) }).then(() => true, () => false);
   const squad = await sim(page, (m, me) => {
     const s = m.fireteams?.squadOf(me.slot);
     return s ? { leader: s.leader === me.slot, members: s.members.length, human: s.human, others: m.fireteams.squads.filter((q) => q !== s && q.team === s.team).map((q) => q.members.length) } : null;
@@ -7738,12 +7738,23 @@ async function fireteamsFlow(browser) {
   await page.click('#resume').catch(() => {});
   await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
   await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
-  // A tap of B: the quick-message menu, as without Fireteams.
-  await page.keyboard.press('KeyB');
+  // A tap of B: the quick-message menu, as without Fireteams. The key goes down and up in one task: keyboard.press()
+  // sends them as two messages, and on a busy CI runner a long frame between them held B past WHEEL_HOLD_MS (180 ms),
+  // so the "tap" opened the order wheel (closed with nothing picked) and no menu showed.
+  const tapB = () => page.evaluate(() => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyB', key: 'b' }));
+    window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyB', key: 'b' }));
+  });
+  const inputState = () => page.evaluate(() => {
+    const i = window.__cs.input;
+    return { menu: document.getElementById('msg-menu')?.hidden === false, wheel: document.getElementById('order-wheel')?.hidden === false, msgMenu: i.msgMenu, wheelOpen: i.wheelOpen, ordersOn: i.ordersOn, locked: i.locked, alive: window.__cs.local?.alive, pause: document.getElementById('pause')?.hidden === false };
+  });
+  await tapB();
   const menu = await page.waitForFunction(() => !document.getElementById('msg-menu')?.hidden && document.getElementById('order-wheel')?.hidden !== false, null, { timeout: T(5000) }).then(() => true, () => false);
-  await page.keyboard.press('KeyB');
+  const tapState = await inputState();
+  await tapB();
   await page.waitForFunction(() => document.getElementById('msg-menu')?.hidden !== false, null, { timeout: T(5000) }).catch(() => {});
-  check(menu, `a tap of B opens the quick-message menu, not the order wheel (pause menu ${await page.evaluate(() => (document.getElementById('pause')?.hidden === false ? 'up' : 'down'))})`);
+  check(menu, `a tap of B opens the quick-message menu, not the order wheel (${JSON.stringify(tapState)})`);
   // Hold B: the order wheel, seven orders (Part 2's Spread out / Stay tight last), your squad's current one ringed.
   const at = await sim(page, (m, me) => ({ x: me.move.pos.x, z: me.move.pos.z }));
   await page.keyboard.down('KeyB');
