@@ -23,6 +23,15 @@
       "contentHash": "sha256:0724bcc2d9cc91971bc54a7e70799c229980abbcd446e469de8afd3423ab134e",
       "schemaVersion": 33,
       "releasedAt": "2026-11-10T01:18:23.173Z"
+    },
+    "cardCamera": {
+      "position": [
+        6,
+        1.55,
+        12
+      ],
+      "yaw": -0.2,
+      "pitch": 0.06
     }
   },
   "classicStructure": {
