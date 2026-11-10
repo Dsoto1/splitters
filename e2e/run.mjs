@@ -1105,6 +1105,136 @@ async function editoruxFlow(browser) {
   await shot('1280');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await editorInterfaceChecks(browser);
+}
+
+/**
+ * MapMaker overhaul Phase 2 (docs/MAPMAKER_OVERHAUL_PLAN.md): the seven mode tabs and their palettes and inspectors,
+ * the side panel's folding panels (kept per person), the outliner (search, select and frame, editor-only hide and lock,
+ * quick at 4,096 things) and the quick row's mode-first favourites.
+ */
+async function editorInterfaceChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await frames(page, 3);
+  // ---- Mode tabs: each shows its own palette tabs; every pane is in one of them.
+  const modes = { build: ['tiles', 'setpieces', 'advanced'], props: ['props', 'lights'], entities: ['entities', 'npcs', 'vehicles', 'scenario'], environment: ['paint', 'plants', 'terrain', 'sky'], paths: ['paths'], test: ['test'] };
+  const seen = {};
+  for (const ws of Object.keys(modes)) {
+    await page.click(`#ed-modes [data-ws="${ws}"]`);
+    await frames(page, 2);
+    seen[ws] = await page.evaluate(() => [...document.querySelectorAll('#ed-pal-tabs .tab')].filter((b) => !b.hidden).map((b) => b.dataset.pane));
+  }
+  check(Object.entries(modes).every(([ws, panes]) => JSON.stringify(seen[ws]) === JSON.stringify(panes)), `each mode tab shows its own palette tabs (${JSON.stringify(seen)})`);
+  check(await page.evaluate(() => ['Build', 'Props', 'Gameplay', 'Logic', 'Environment', 'Paths', 'Test'].every((l, i) => document.querySelectorAll('#ed-modes .tab')[i]?.textContent.includes(l === 'Gameplay' ? 'Game' : l))), 'the top bar has Build, Props, Gameplay, Logic, Environment, Paths and Test');
+  // Test: its pane plays; its inspector part says whether the map is ready.
+  check(await page.isVisible('#ed-tp-play') && await page.isVisible('#ed-tp-here') && (await page.getAttribute('#ed-mode-section', 'data-ws')) === 'test', 'the Test mode has its pane (play, play from here, bot test, plan) and its own inspector section');
+  await shot('mode-test');
+  await page.click('#ed-modes [data-ws="paths"]');
+  await frames(page, 2);
+  check(await page.isVisible('[data-tool="path"]') && await page.isVisible('[data-tool="path-race"]') && (await page.getAttribute('#ed-mode-section', 'data-ws')) === 'paths', 'the Paths mode holds the paths, the track and the drop routes, and its inspector lists the paths');
+  await shot('mode-paths');
+  await page.click('#ed-modes [data-ws="props"]');
+  await frames(page, 2);
+  check(await page.isVisible('#ed-pal-tabs [data-pane="lights"]') && !(await page.$('#ed-mode-section')), 'the Props mode has props and lights; its inspector is Map properties');
+  // A tool picked from another mode's card (here by key) moves the tabs to its mode.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
+  await frames(page, 2);
+  check(await page.evaluate(() => document.querySelector('#ed-modes .tab.on')?.dataset.ws === 'entities'), 'picking the spawn tool shows the Gameplay mode');
+  await page.keyboard.press('Escape');
+  await page.click('#ed-modes [data-ws="build"]');
+
+  // ---- Folding panels: the heading folds a panel; a reload keeps it folded (this browser only).
+  await page.click('.ed-panel[data-panel="issues"] .ed-panel-head button');
+  check(!(await page.isVisible('#ed-issues')) && (await page.evaluate(() => localStorage.getItem('tiletrigger.editor.panels'))) === '["issues"]', 'the Validation panel folds from its heading, remembered in this browser');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  check(!(await page.isVisible('#ed-issues')) && (await page.isVisible('#ed-inspector')), 'after a reload the folded panel stays folded, the others open');
+  await page.click('.ed-panel[data-panel="issues"] .ed-panel-head button');
+  check(await page.isVisible('#ed-issues'), 'and opens again from its heading');
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+
+  // ---- The outliner: 4,096 things, drawn virtualised, quick to rebuild.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const entities = Array.from({ length: 4096 }, (_, i) => ({ id: `olp${i}`, kind: 'prop', position: [(i % 64) - 32, 0, Math.floor(i / 64) - 32], model: i % 2 ? 'prop.barrel' : 'prop.metal_crate', yaw: 0, scale: 1, solid: true, tint: null }));
+    ed.run('Many props', { kind: 'addEntities', entities });
+  });
+  await page.waitForFunction(() => window.__editor.outliner.entriesFor === window.__editor.doc, null, { timeout: T(20000) });
+  const big = await page.evaluate(() => ({ ms: window.__editor.outliner.lastBuildMs, rows: document.querySelectorAll('#ed-ol-list [data-row]').length, height: document.querySelector('#ed-ol-list .ed-ol-spacer').getBoundingClientRect().height }));
+  check(big.rows > 0 && big.rows < 60 && big.height > 4096 * 22 * 0.9 && big.ms < 400 * (process.env.CI ? 2 : 1), `the outliner lists 4,096 things drawing only the rows in view (${JSON.stringify(big)})`);
+  await page.fill('#ed-ol-search', 'barrel 7');
+  await frames(page, 2);
+  const found = await page.$$eval('#ed-ol-list .ed-ol-item', (els) => els.map((e) => e.querySelector('.nm').textContent));
+  check(found.length > 0 && found.every((n) => /barrel/i.test(n) && n.includes('7')), `searching the outliner lists only what matches (${found.slice(0, 4).join(', ')}…)`);
+  await page.fill('#ed-ol-search', '');
+  await page.evaluate(() => window.__editor.history.undo());
+  await page.waitForFunction(() => window.__editor.doc.entities.length < 100, null, { timeout: T(10000) });
+  // A few things to pick, hide and lock.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.run('Two props', { kind: 'addEntities', entities: [{ id: 'olA', kind: 'prop', position: [20, 0, 20], model: 'prop.barrel', yaw: 0, scale: 1, solid: true, tint: null, name: 'Outliner barrel' }, { id: 'olB', kind: 'prop', position: [-20, 0, -20], model: 'prop.barrel', yaw: 0, scale: 1, solid: true, tint: null, name: 'Outliner crate' }] });
+  });
+  await page.fill('#ed-ol-search', 'outliner');
+  await frames(page, 3);
+  const camAt = () => page.evaluate(() => ({ x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z }));
+  const before = await camAt();
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] .nm');
+  await frames(page, 3);
+  const picked = await page.evaluate(() => ({ sel: window.__editor.selection.entities, target: { x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z }, on: document.querySelector('#ed-ol-list .ed-ol-item[data-id="olA"]')?.classList.contains('on') }));
+  check(JSON.stringify(picked.sel) === '["olA"]' && picked.on && Math.hypot(picked.target.x - 20, picked.target.z - 20) < Math.hypot(before.x - 20, before.z - 20), `a click in the outliner selects the thing and frames it (${JSON.stringify(picked)})`);
+  await shot('outliner');
+  // Hide: gone from the view, still in the map; the flag is this browser's, per map, not in the file.
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olB"] [data-act="hide"]');
+  await frames(page, 3);
+  const hid = await page.evaluate(() => ({ shown: window.__editor.view.entityShown('olB'), inDoc: window.__editor.doc.entities.some((e) => e.id === 'olB'), stored: localStorage.getItem(`tiletrigger.editor.outliner.${window.__editor.doc.metadata.id}`), file: JSON.stringify(window.__editor.doc).includes('"hidden"') }));
+  check(!hid.shown && hid.inDoc && JSON.parse(hid.stored ?? '{}').hidden?.includes('olB') && !hid.file, `the eye hides a thing from MapMaker's view only, kept per map in this browser (${JSON.stringify(hid)})`);
+  // Lock: a click on it in the outliner (or the map) doesn't select it.
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] [data-act="lock"]');
+  await frames(page, 2);
+  const lockedSel = await page.evaluate(() => window.__editor.selection.entities);
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] .nm');
+  await frames(page, 2);
+  const after = await page.evaluate(() => ({ sel: window.__editor.selection.entities, toast: document.getElementById('ed-toast').textContent }));
+  check(!lockedSel.includes('olA') && !after.sel.includes('olA') && /locked/.test(after.toast), `a locked thing drops out of the selection and can't be selected (${JSON.stringify(after)})`);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: ['olA'] });
+  });
+  check((await page.evaluate(() => window.__editor.selection.entities)).length === 0, 'selecting a locked thing by any route leaves it out');
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] [data-act="lock"]');
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olB"] [data-act="hide"]');
+  await frames(page, 3);
+  check(await page.evaluate(() => window.__editor.view.entityShown('olB')), 'showing it again draws it again');
+  await page.fill('#ed-ol-search', '');
+
+  // ---- Favourites and recent follow the mode: its own pieces first, then the rest (or only its own).
+  await page.evaluate(() => localStorage.setItem('tt.palette.favs', JSON.stringify(['prop:prop.barrel', 'tile:core.room', 'spawn'])));
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const firstFav = async (ws) => {
+    await page.click(`#ed-modes [data-ws="${ws}"]`);
+    await frames(page, 2);
+    return page.evaluate(() => [...document.querySelectorAll('#ed-pal-quick .ed-quick-row [data-pick]')].map((c) => c.dataset.pick));
+  };
+  const favs = { build: await firstFav('build'), props: await firstFav('props'), entities: await firstFav('entities') };
+  check(favs.build[0] === 'tile:core.room' && favs.props[0] === 'prop:prop.barrel' && favs.entities[0] === 'spawn' && favs.build.length === 3, `each mode's favourites come first in the quick row (${JSON.stringify(favs)})`);
+  await page.click('#ed-pal-quick [data-q="only"]');
+  check(JSON.stringify(await firstFav('props')) === '["prop:prop.barrel"]', 'This mode only shows just the mode\'s own');
+  await shot('favourites');
+  await page.click('#ed-pal-quick [data-q="only"]');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**

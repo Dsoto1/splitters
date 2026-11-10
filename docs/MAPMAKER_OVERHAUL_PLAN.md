@@ -124,15 +124,52 @@ Already done from the owner's earlier ask: **the real buildable area.**
 
 ## Phase 2: the interface
 1. **Mode tabs:** Build, Props, Gameplay, Logic, Environment, Paths, Test. Each has its own palette and inspector.
+   - **As built** (`wip/mapmaker-p2`): `client/src/editor/editorModes.ts` (`EDITOR_MODES`, `paneMode`, `firstPane`) and
+     the top bar's seven tabs. Build: Tiles, Set pieces, Walls. Props: Props, Lights. Gameplay (`data-ws="entities"`,
+     the old Entities tab): Gameplay, NPCs, Vehicles, Objects. Logic: the rules panel. Environment: Paint, Nature,
+     Terrain, Sky. Paths (new pane): the Paths group from the Terrain pane, the drop routes and the Track from the
+     Vehicles tab. Test (new pane, `modeInspector.ts fillTestPane`): Play test, Play from here, Bot test, Plan view,
+     Problems list (the Test tab no longer plays at once; F5 still does). The inspector with nothing selected starts
+     with the mode's own section (`modeSection`: Paths lists the paths; Test says ready or not, the first problem,
+     spawns and pickups; Gameplay counts spawns, objectives, pickups, squads, vehicles), then Map properties as
+     before (an owner's question). Unit test `client/test/editorModes.test.ts` (the page's tabs and panes against the
+     table); e2e `editorux` → `editorInterfaceChecks`.
 2. **Collapsible panels,** remembered per person.
+   - **As built:** the side panel is three panels, Outliner, Inspector and Validation, each folding from its heading
+     (`client/src/editor/panels.ts`, localStorage `tiletrigger.editor.panels`); the palette's groups and the two side
+     panels already folded and are remembered the same way.
 3. **An outliner:** everything in the map in one list.
    - It is searchable, grouped by kind and level.
    - Clicking an entry selects it and frames it.
    - Hide and lock are editor-only (kept per map in local storage, not in the map file).
    - It must stay quick with 4,096 entries.
+   - **As built:** shared `editor/outliner.ts` (`outlineEntries`: tiles, set pieces, entities named as the inspector
+     names them, "Door 2" numbering in one pass through `entityLabel`'s new `number`; `outlineRows`: kind groups in
+     `OUTLINE_GROUP_ORDER`, level headings inside a kind on several levels, folding, every-word search;
+     `outlineWindow`; `OutlinerFlags`, `parseOutlinerFlags`, `toggleOutlinerFlag`, `withoutHidden`,
+     `pickableSelection`). Client `outlinerPanel.ts`: a 200 px list of 22 px rows drawing only the rows in view; a
+     click selects (Shift adds), moves to the level and frames; the eye hides (left out of `EditorView.setMap` and of
+     picking and box select), the padlock locks (not picked, `setSelection` drops it). localStorage
+     `tiletrigger.editor.outliner.<map id>`; folded headings `tiletrigger.editor.outliner.closed`. Measured: 4,096
+     props, entries and rows rebuilt in a few ms in vitest (limit 500 ms for two builds with a search), and in the e2e
+     check the list keeps under 60 rows in the page. Unit test `shared/test/mapmakerOutliner.test.ts`.
 4. **Favourites and recently used pieces** in the palette.
+   - **As built:** they were already palette-wide (one quick row over every tab, `palette.ts`). Now the row follows
+     the mode: its own favourites (or recent pieces) first, the rest after (`quickOrder`), and **This mode only**
+     (localStorage `tt.palette.modeOnly`) shows just the mode's.
 5. **Split `editorApp.ts`** (about 4,700 lines) along the modes first, with no change in behaviour, before adding to
    it.
+   - **As built** (`wip/mapmaker-p2`, 12 commits, then green on `check/mapmaker-p2`): `editorApp.ts` 6,489 → 949 lines,
+     the coordinator: the shared state (document, history, selection, tool, level, pointer), the parts and the
+     built-in tools' hosts, `refresh`/`frame`, `run`/`undo`/`redo`, `setTool`, `setSelection`, levels, focus, play
+     test, and the test surface `window.__editor` keeps (`stroke`, `setBrushRadius`, `thumbFor`, `setEdge`, `pick`,
+     `tileGhost`, `tileGhostAt`, `allIssues` reach the modules they moved to). Each part is a class taking the
+     `EditorApp`: `editorInput.ts` (pointer, drag, box select, brushes, right-click menu, keys), `hover.ts` (picking,
+     hover card, ghosts), `placing.ts`, `selectionEdits.ts`, `paintTools.ts` (Paint and Walls), `terrainTools.ts`,
+     `setPieceTools.ts`, `paletteBuilder.ts`, `inspector.ts`, `entityInspector.ts`, `mapProperties.ts`, `topBar.ts`,
+     `mapChecks.ts`, `mapSaving.ts`; plain helpers in `editorDom.ts` and `editorParts.ts`. Done mechanically (each
+     member's `this.` rewritten to the part or `this.app`), so the code is the same code; `keymap.test.ts` now reads
+     every MapMaker module for hand-matched keys.
 
 ## Phase 3: workflow
 1. **Play from here.**
