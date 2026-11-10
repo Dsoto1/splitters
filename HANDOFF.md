@@ -75,7 +75,7 @@ owner-approved audit candidates 7 and 8; landed on main from its green `check/gu
   volume (`quantizationVolume: 'scene'`), and `tools/content/lod-audit.mjs` checks every far copy against its body
   (own skin, unmatched vertices, 6 poses): 161 far copies, 0 off. After, drawn far / full detail in the same pose:
   Hyena Warrior 1.91/1.92 m at 17 m, Honest Abe 1.91/1.91 m at 30 m, every dealt look within 1 cm. characters3's
-  three reds before landing (green on `check/far-copies`, run 42636289055, and again before landing; characters3 locally green 5 runs in a row; run 42679874806 stopped on the known host.test.ts kick-and-ban flake, and its re-run on characters3's scope check: the rifle came back after the marksman's give, now given again until held; run 42729978260 on dedicatedhost's "relay": false, 4 of 4: party and dedicatedhost both put their hub on 9079, and a shard that ran party first left dedicatedhost's host listed on party's hub, which has no relay; party's hub is on 9081 now):
+  three reds before landing (green on `check/far-copies`, run 42636289055, and at landing, run 42738552938 (characters3 FLAKY: the hyena below); characters3 locally green 5 runs in a row; run 42679874806 stopped on the known host.test.ts kick-and-ban flake, and its re-run on characters3's scope check: the rifle came back after the marksman's give, now given again until held; run 42729978260 on dedicatedhost's "relay": false, 4 of 4: party and dedicatedhost both put their hub on 9079, and a shard that ran party first left dedicatedhost's host listed on party's hub, which has no relay; party's hub is on 9081 now):
   - **Bots' hands 13-15 cm off their guns at 160 m:** not the far copies (the probe already measured the level drawn,
     and the far copy's hands match the body's within 0.5 cm) but the smoothed animation LOD. A first long-gun grip
     measures the torso's skin (`TorsoSurface.measure`, `skeleton.prepare(true)`) part way through the after-clip work;
@@ -85,10 +85,13 @@ owner-approved audit candidates 7 and 8; landed on main from its green `check/gu
     the body's skeleton because the far copy's own skeleton was never read part way. Free bots in a canyon match
     (12 bots, turning round): before, every far bot measured off its gun had its drawn wrist 10-28 cm from the joint;
     after, 2 of 1,657 samples (the rest still off are near bots mid-action, as on main).
-  - **Hyena Warrior 1.5 of 2.12 m on frame 0:** a pose, not a far copy (the full detail was as short in it). Not seen
-    locally (wake, fight then wake, and new bodies at 25-40 m: lowest 1.79 m); on CI it was one frame of a runner. The
-    whole-body check now judges standing height over the frames (short on at least 2 and over a third of them), and
-    still fails at once on vertices that aren't numbers or a level not drawn.
+  - **Hyena Warrior 1.5 of 2.12 m: OPEN, a pose, not the far copy** (its full detail is as short in it). Not seen
+    locally (wake, fight then wake, and new bodies at 25-40 m: lowest 1.79 m). The whole-body check now judges standing
+    height over the frames (short on at least 2 and over a third of them; it still fails at once on vertices that aren't
+    numbers or a level not drawn), but that didn't make it a one-frame thing: on the landing run (42738552938, attempt 1)
+    a hyena runner at 27 m was 1.51 m (full detail 1.54) on **12 of 12 frames** after the fight, sleep and wake; attempt
+    2 passed (characters3 FLAKY). So a hyena can hold a crouched or hunched pose for a while after waking from a fight
+    (another clip at weight, or its run held low): next, log that hyena's playing clips and weights when the check fails.
   - **The known-looks check measuring nothing on the second attempt:** on CI the flow passes Deathmatch's 10 minutes;
     the round's end left nobody to measure. farBodies now turns the round's clock and score limit off.
 - **Old branches:** `wip/roster-cleanup` (helmets on four looks): dropped, main has model gear with fitted helmets
