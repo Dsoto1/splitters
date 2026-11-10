@@ -953,7 +953,7 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - **The split** (steps 1-12, a3040bf8; main merged in at 2040c580): green on `check/mapmaker-p2`, run 42730322862. It
   can land on its own. `editorApp.ts` 6,489 → 949 lines; each part is a class taking the `EditorApp` (module map in
   the plan's "As built"). No behaviour change.
-- **The interface** (after 2040c580): seven mode tabs (`editorModes.ts`; Gameplay keeps `data-ws="entities"`), each
+- **The interface** (after 2040c580; green on `check/mapmaker-p2` at a7f1378e, run 42742986473): seven mode tabs (`editorModes.ts`; Gameplay keeps `data-ws="entities"`), each
   mode's own inspector part with nothing selected (`modeInspector.ts`), the Paths and Test panes; folding side panels
   (`panels.ts`, localStorage `tiletrigger.editor.panels`); the outliner (shared `editor/outliner.ts`, client
   `outlinerPanel.ts`; hide and lock in localStorage `tiletrigger.editor.outliner.<map id>`, never in the map; hidden
