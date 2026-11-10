@@ -391,6 +391,30 @@ and 2; waits for Tuesday's train).** docs/MAPMAKER_OVERHAUL_PLAN.md "As built" u
   per line.
 - **Phones:** Low graphics draws fine terrain at half resolution; collision and nav keep every vertex.
 
+**Iron Coast part 3 (`wip/iron-coast-3`, Iron Coast session, 2026-11-09/10; all in MapMaker; LANDED via `check/iron-coast-3`, its claim released).** Details: docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md, "Part 3".
+- **Done:** Change grid 1.25 m (Smooth); the cliff leaned back over 5-10 cells with a rounded lip and 43 scree mounds
+  where clear of pieces; every inland drop that gated nothing made a grassy slope (the crest's back bank beside the
+  trenches and bunkers, the east bunker's bank, the west plateau, the B3 knoll's west side, the plaza walls); east and
+  west borders Coast; A1/A2 Capture time 45 s; card picture recaptured. 1.02 MB; validate-map 0 issues; no Kenney
+  foliage; Sea Wall pieces not placed (the brief: no continuous sea wall).
+- **Walkability check:** part 2's vertex flood is misleading on a 1.25 m grid (it walks across steep triangles); part
+  3 floods triangles at 50° (PLAYER.maxSlopeDegrees, Recast's angle) and 55°: same bins as before at both, so no new
+  way up. Nav audit: 0 traps before and after.
+- **Bots** (Breakthrough, seeds 1-3, 1200 s). A / B / C fell at (s):
+  | | 16 v 16 | 24 v 24 |
+  |---|---|---|
+  | main (before) | A 52/69/69, B 155/143/211, C –/351/–; 1 of 3 broke through | A 56/83/59, B 209/226/161, C –; 0 of 3 |
+  | zones 60 s (tried) | A 122/147/125, B 234/237/231; 0 of 3 | – |
+  | final (zones 45 s) | A 94/109/84, B 248/259/248, C 311/–/320; 2 of 3 | A 103/88/109, B 226/151/261, C 263/212/308; 3 of 3 |
+  The beach holds 84-109 s now. The attack breaks through more (the walkable banks behind the crest): owner's call
+  whether B/C want more defence.
+- **Perf** (`pnpm bench 48 60`, Breakthrough, back to back at load ~11): avg tick 2.67 → 2.96 ms, p95 5.4 → 6.5 ms,
+  process CPU 3.67 → 3.83 ms a tick (budget 16.67).
+- **For the MapMaker lane:** the coast border's forest canopy band floated over Iron Coast's eased headlands (its 40 m
+  run past a free end of an inland stretch was held at the end's height). One line in `client/borderVisuals.ts`
+  (`under` samples the coast ground at the band's own u) lays it on the ground; a thin lip of the band can still show
+  over the east headland from the beach. Yours to refine.
+
 **MapMaker: bot hints (`wip/mapmaker-bothints`, map format v33, MapMaker lane, 2026-11-09).** Overhaul Phase 4 item 3,
 Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - **For the session that owns the bots:** the data is ready to read, bots don't use it yet. `MapDocument.botHints`
@@ -404,7 +428,6 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
   make, duplicates). "What bots know" works the computed spots out with the navigation check, only while it's ticked.
 - **Tests:** unit `shared/test/botHints.test.ts` (v32 → v33, commands and undo, the accessor, the checks, a real
   navmesh); e2e `editorux` → `editorBotHintChecks`.
-
 
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
@@ -451,9 +474,9 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
-**Landing now: Iron Coast part 3 (`check/iron-coast-3`; Iron Coast session), please hold code pushes to main.** (2026-11-10; one check run, then a fast-forward.)
+**Queued after MapMaker Phase 2: maps retire/rename** (`wip/maps-retire`, maps agent, 2026-11-10; lock released for MapMaker Phase 2 to go first).
 
-**Next in line to land: the MapMaker split** (`check/mapmaker-p2-split`, MapMaker lane, 2026-11-10). It has waited behind far copies and now Iron Coast part 3. Please let it go next, before starting another hold.
+**Next in line to land: MapMaker Phase 2, the split and the interface** (`check/mapmaker-p2-full`, MapMaker lane, 2026-11-10). It has waited behind far copies and now Iron Coast part 3. Please let it go next, before starting another hold.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
@@ -1622,7 +1645,6 @@ homing, walkers, mines and bots' targets stay on `hostile`. **Tests:** `shared/t
 path for real (rifle, shotgun, rockets, knife, flamethrower and its burn) at a teammate and an enemy with the rule
 off, half and full; Breakthrough; a team kill earns nothing (fails without the fix). e2e `teams`
 (`friendlyFireChecks`): Match setup's rule reaches the match; a teammate takes your rounds with it on and none off.
-
 
 ### Frozen characters in big matches (`wip/frozen-fix`, agent, 2026-11-07; green on `check/frozen-fix` at 63731808, run 42407015946; landed on main 63731808)
 **Root cause:** the figures frozen mid-run (some in the air) were the dead. Performance round 4's pose smoothing
@@ -4193,8 +4215,6 @@ like 2–3 bots protect a flag, and the rest go out there and try to get the oth
   - Also confirm it isn't a free-camera rendering effect. Animation LOD and dormant/culled state use
     `scene.activeCamera`, so free cam should be fine, but check that bots near the free camera animate and move.
 
-
-
 ### Owner's M1 re-record after performance round 3 (2026-11-06, app 463c247; files in session scratchpad perf4/)
 Recorded on the M1 Pro: TDM, 49 players, High, auto render scale, 60 fps cap. Steady state skips each match's first 5 s.
 
@@ -4919,7 +4939,6 @@ Plan: docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 and "Owner decisions". Status is
   environmentCollision covers both load paths); impact sounds per surface (no sounds yet).
 - **Resume:** `git fetch && git checkout wip/env-phase1`; `node tools/content/environment.mjs --check`.
 
-
 ## Earlier start notes (session of 2026-10-30 afternoon)
 
 **Read CLAUDE.md first.** Workflow: session branch → `check/candidate` → when green, fast-forward `main`.
@@ -5146,7 +5165,6 @@ Owner's request: a CI round in about 8-10 min (run 41851112171 took 36 min: buil
   try 4 shards or a duration-based split. hostcontrols (320 s) is the longest flow (it sets the shard goal of ~6 min).
   The first nightly run will be the first all-parts tour on 16 shards: check its times.
   check/ci-speed-client and check/ci-speed-map are probe branches; delete them, don't merge them.
-
 
 ### Procedural environment, Phase 0: audit and plan (`wip/env-audit`, agent, 2026-11-04; docs only, pushed, not merged)
 The owner's spec for replacing natural assets with an in-house procedural pipeline is `docs/PROCEDURAL_ENVIRONMENT.md`
@@ -7877,7 +7895,6 @@ Start the rest when agent slots free up:
   powerup pickups.
 
 ## Earlier state (2026-10-28)
-
 
 - **Live:** https://trigger.toshiroplay.com, version **0.3.0** (`v0.3.0` tag and
   GitHub release exist). `main` is at or past `ace6276`; all of it went green on
