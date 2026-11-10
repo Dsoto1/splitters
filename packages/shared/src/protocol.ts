@@ -115,6 +115,12 @@ export interface HostRulesPatch {
    * (their HostState.rules has no weaponSet, so the pause menu offers none).
    */
   weaponSet?: string | null;
+  /**
+   * The weather (MatchRules.weather; map/weather.ts WEATHER_CHOICES), null for the map's own: plays from the next
+   * match (the weather is fixed while one plays). Hosts that don't know it ignore it (their HostState.rules has no
+   * weather, so the pause menu offers none).
+   */
+  weather?: string | null;
 }
 
 /** The match's host settings, for the pause menu of whoever runs it. */
@@ -151,6 +157,8 @@ export interface HostState {
   mapCast?: string[];
   /** The map's own default weapon set (MapDocument.weaponSet; standard when it names none). */
   mapWeaponSet?: string;
+  /** The map's own weather, in a few words (map/weather.ts weatherLabel). */
+  mapWeather?: string;
 }
 
 export interface PlayerSnapshot {

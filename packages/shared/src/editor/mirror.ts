@@ -2,9 +2,10 @@ import { coreCatalog, type LocalBox, type Side, type TileCatalog, type TileDefin
 import { rotateSide, rotateXZ } from '../map/geometry.ts';
 import { SET_PIECE_GRID, mirrorWidth, piecesFor, setPieceFootprint, setPieceMirrorProblem, tileMirrorAxis, type SetPieceLibrary } from '../map/setPieces.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
-import type { MapDocument, MapEntity, Rotation, SetPieceDefinition, SetPiecePlacement, TilePlacement } from '../map/schema.ts';
+import type { BotHint, MapDocument, MapEntity, MapPath, Rotation, SetPieceDefinition, SetPiecePlacement, TilePlacement } from '../map/schema.ts';
+import type { TerrainData } from '../map/terrain.ts';
 import { mapTeams } from '../sim/npc.ts';
-import { applyCommand, type EditCommand } from './commands.ts';
+import { applyCommand, newId, type EditCommand } from './commands.ts';
 import { freshCopies, type MapItems } from './copyItems.ts';
 import { addGroupsCommand, copiedGroups } from './groups.ts';
 import { checkLayout, normalizeYaw, placementCells, type Selection } from './operations.ts';
@@ -24,8 +25,11 @@ import { checkLayout, normalizeYaw, placementCells, type Selection } from './ope
  * - The line or point sits where cells land on cells: on a cell's middle or its edge (snapMirrorAt).
  * - **Team things swap sides** in a mirrored copy (`swapTeams`): spawns, flags (the bases), team-only zones, doors,
  *   buttons and ziplines, and team vehicles and turrets of the map's first two teams trade teams. Breakthrough's
- *   attack and defend spawn groups keep their side (the sectors run one way).
- * - Terrain, paths and the map's boundary aren't mirrored.
+ *   attack and defend spawn groups keep their side (the sectors run one way). Bot hints of a team (a staging spot,
+ *   a camp…) swap with them (owner, 2026-11-09), in a half-map mirror (hints are no part of a selection).
+ * - Half the map also copies its bot hints, and with `ground` (the dialog's "Terrain and paths too"; owner,
+ *   2026-11-09) its terrain (heights, paint and plant cover, sampled at the mirrored point) and the paths wholly on it.
+ *   The map's boundary isn't mirrored.
  */
 export type MirrorAcross = 'eastWest' | 'northSouth' | 'point';
 export interface MirrorPlane {
@@ -403,21 +407,134 @@ export function mapHalf(doc: MapDocument, plane: MirrorPlane, half: MapHalf, cat
   return { from: pieceIds.length ? { ...out, setPieces: pieceIds } : out, onLine, other };
 }
 
+/** A bot hint mirrored (its spot, facing and a jump's landing); `swap` (a mirrored copy's teams) trades a teamed hint's side. */
+export function mirrorBotHint(h: BotHint, m: MirrorPlane, swap?: (team: string) => string): BotHint {
+  const out: BotHint = { ...h, position: mirrorPoint(h.position, m) };
+  if (h.yaw !== undefined) out.yaw = r3(Math.atan2(Math.sin(mirrorYaw(h.yaw, m)), Math.cos(mirrorYaw(h.yaw, m))));
+  if (h.to) out.to = mirrorPoint(h.to, m);
+  if (swap && h.team) out.team = swap(h.team);
+  return out;
+}
+
+/** A path mirrored as a copy (a new id; the track stays the map's one track, so the copy is a road or route only). */
+export function mirrorPathCopy(p: MapPath, m: MirrorPlane): MapPath {
+  const uses = p.uses.filter((u) => u !== 'race');
+  const { race: _race, ...rest } = p;
+  return { ...rest, id: newId('path'), points: p.points.map((q) => mirrorPoint(q, m)), uses: uses.length ? uses : ['road'] };
+}
+
+/** Bot hints and paths by side of the plane: wholly on `half`, wholly on the other half (a jump or path is by every point). */
+function halfOf<T>(items: readonly T[], points: (x: T) => readonly (readonly [number, number, number])[], m: MirrorPlane, half: MapHalf): { from: T[]; other: T[] } {
+  const want = HALF_SIGN[half];
+  const from: T[] = [];
+  const other: T[] = [];
+  for (const x of items) {
+    const s = new Set<number>(points(x).map((p) => sideOf(p[0], p[2], m, half)));
+    if (s.size === 1 && s.has(want)) from.push(x);
+    else if (s.size === 1 && s.has(-want)) other.push(x);
+  }
+  return { from, other };
+}
+
 /**
- * Mirror half the map onto the other half (team things swapping sides): one command. Refused while the other half
- * has anything on it (delete it first, or mirror a selection), so nothing is built twice.
+ * The terrain with the other half made `half`'s mirror image: every vertex strictly on the other side takes the
+ * height at its mirrored point (between vertices, the surface there), every cell whose middle is the paint and plant
+ * cover of the cell its mirrored middle lies in. Ground whose mirrored point is off the terrain stays as it is. The
+ * same terrain when nothing changes.
+ */
+export function mirrorTerrainHalf(t: TerrainData, plane: MirrorPlane, half: MapHalf): TerrainData {
+  const want = HALF_SIGN[half];
+  const s = t.spacing;
+  const heightCm = (x: number, z: number): number | null => {
+    const fx = (x - t.origin[0]) / s;
+    const fz = (z - t.origin[1]) / s;
+    if (fx < -1e-6 || fz < -1e-6 || fx > t.cols - 1 + 1e-6 || fz > t.rows - 1 + 1e-6) return null;
+    const c = Math.max(0, Math.min(t.cols - 2, Math.floor(fx + 1e-6)));
+    const r = Math.max(0, Math.min(t.rows - 2, Math.floor(fz + 1e-6)));
+    const u = Math.max(0, Math.min(1, fx - c));
+    const v = Math.max(0, Math.min(1, fz - r));
+    const at = (cc: number, rr: number) => t.heights[rr * t.cols + cc]!;
+    // On a vertex (the usual case: the line on the grid), its own height exactly.
+    if (u < 1e-6 && v < 1e-6) return at(c, r);
+    // The same triangles terrainHeightAt draws: split along the cell's diagonal.
+    const h = u + v <= 1 ? at(c, r) + (at(c + 1, r) - at(c, r)) * u + (at(c, r + 1) - at(c, r)) * v : at(c + 1, r + 1) + (at(c, r + 1) - at(c + 1, r + 1)) * (1 - u) + (at(c + 1, r) - at(c + 1, r + 1)) * (1 - v);
+    return Math.round(h);
+  };
+  let heights: number[] | null = null;
+  for (let r = 0; r < t.rows; r++) {
+    for (let c = 0; c < t.cols; c++) {
+      const x = t.origin[0] + c * s;
+      const z = t.origin[1] + r * s;
+      if (sideOf(x, z, plane, half) !== -want) continue;
+      const [sx, , sz] = mirrorPoint([x, 0, z], plane);
+      const h = heightCm(sx, sz);
+      const i = r * t.cols + c;
+      if (h === null || h === t.heights[i]) continue;
+      heights ??= [...t.heights];
+      heights[i] = h;
+    }
+  }
+  let materials: number[] | null = null;
+  let foliage: number[] | null = null;
+  const w = t.cols - 1;
+  for (let i = 0; i < t.materials.length; i++) {
+    const cx = t.origin[0] + ((i % w) + 0.5) * s;
+    const cz = t.origin[1] + (Math.floor(i / w) + 0.5) * s;
+    if (sideOf(cx, cz, plane, half) !== -want) continue;
+    const [sx, , sz] = mirrorPoint([cx, 0, cz], plane);
+    const sc = Math.floor((sx - t.origin[0]) / s);
+    const sr = Math.floor((sz - t.origin[1]) / s);
+    if (sc < 0 || sr < 0 || sc >= w || sr >= t.rows - 1) continue;
+    const j = sr * w + sc;
+    if (t.materials[j] !== t.materials[i]) (materials ??= [...t.materials])[i] = t.materials[j]!;
+    if (t.foliage.length && t.foliage[j] !== t.foliage[i]) (foliage ??= [...t.foliage])[i] = t.foliage[j]!;
+  }
+  if (!heights && !materials && !foliage) return t;
+  return { ...t, heights: heights ?? t.heights, materials: materials ?? t.materials, foliage: foliage ?? t.foliage };
+}
+
+/**
+ * Mirror half the map onto the other half (team things swapping sides): one command. Its bot hints come too (teamed
+ * ones swapping sides like spawns); with `ground`, its terrain and the paths wholly on it. Refused while the other half
+ * has anything on it (delete it first, or mirror a selection; with `ground`, a path there counts), so nothing is built
+ * twice.
  */
 export function mirrorHalfCommand(
   doc: MapDocument,
   plane: MirrorPlane,
   half: MapHalf,
-  opts: { swapTeams?: boolean } = {},
+  opts: { swapTeams?: boolean; ground?: boolean } = {},
   catalog: TileCatalog = coreCatalog,
   library: SetPieceLibrary = builtInSetPieces(),
-): (MirrorResult & { onLine: number }) | { error: string } {
+): (MirrorResult & { onLine: number; hints: number; paths: number; terrain: boolean }) | { error: string } {
   if (!mirrorHalves(plane.across).includes(half)) return { error: `a mirror ${plane.across === 'eastWest' ? 'east ↔ west copies the west or the east half' : 'north ↔ south copies the south or the north half'}` };
-  const { from, onLine, other } = mapHalf(doc, plane, half, catalog, library);
+  const { from, onLine, other: otherThings } = mapHalf(doc, plane, half, catalog, library);
+  const m: MirrorPlane = { across: plane.across, at: snapMirrorAt(plane.at, doc.classicStructure.cellSize) };
+  const hints = halfOf(doc.botHints ?? [], (h) => (h.to ? [h.position, h.to] : [h.position]), m, half);
+  const paths = opts.ground ? halfOf(doc.paths ?? [], (p) => p.points, m, half) : { from: [], other: [] };
+  const other = otherThings + hints.other.length + paths.other.length;
   if (other) return { error: `the ${OTHER_HALF[half]} half has ${other} thing${other === 1 ? '' : 's'} on it already: delete ${other === 1 ? 'it' : 'them'} first, or select what to mirror and mirror the selection` };
-  const r = mirrorCommand(doc, from, plane, { copy: true, swapTeams: opts.swapTeams ?? true }, catalog, library);
-  return 'error' in r ? (r.error === 'nothing selected' ? { error: `the ${half} half is empty: nothing to mirror` } : r) : { ...r, onLine };
+  const swapTeams = opts.swapTeams ?? true;
+  const things = from.tiles.length + from.entities.length + (from.setPieces?.length ?? 0);
+  const r = things ? mirrorCommand(doc, from, plane, { copy: true, swapTeams }, catalog, library) : null;
+  if (r && 'error' in r) return r;
+  const commands: EditCommand[] = r ? [r.command] : [];
+  const swap = swapTeams ? teamSwap(doc) : undefined;
+  const newHints = hints.from.map((h) => ({ ...mirrorBotHint(h, m, swap), id: newId('hint') }));
+  if (newHints.length) commands.push({ kind: 'setBotHints', before: doc.botHints ?? null, after: [...(doc.botHints ?? []), ...newHints] });
+  const newPaths = paths.from.map((p) => mirrorPathCopy(p, m));
+  if (newPaths.length) commands.push({ kind: 'setPaths', before: doc.paths ?? null, after: [...(doc.paths ?? []), ...newPaths] });
+  const terrain = opts.ground && doc.terrain ? mirrorTerrainHalf(doc.terrain, m, half) : doc.terrain;
+  if (terrain !== doc.terrain) commands.push({ kind: 'setTerrain', before: doc.terrain, after: terrain });
+  if (!commands.length) return { error: `the ${half} half is empty: nothing to mirror` };
+  const swappedHints = swap ? hints.from.filter((h) => h.team && swap(h.team) !== h.team).length : 0;
+  return {
+    command: commands.length === 1 ? commands[0]! : { kind: 'batch', commands },
+    selection: r ? r.selection : { tiles: [], entities: [] },
+    swapped: (r?.swapped ?? 0) + swappedHints,
+    onLine,
+    hints: newHints.length,
+    paths: newPaths.length,
+    terrain: terrain !== doc.terrain,
+  };
 }

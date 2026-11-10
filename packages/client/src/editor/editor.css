@@ -207,6 +207,16 @@ dialog { border-top: 3px solid var(--cyan); }
 #ed-tr-materials { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; }
 #ed-tr-create button, #ed-tr-edit > button { width: 100%; margin: 6px 0; }
 .ed-note { color: var(--muted); font-size: 11px; line-height: 1.4; margin: 4px 0 8px; }
+/* Map properties → Time of day & weather (skyWeatherSection.ts). */
+.ed-skyweather .sub-h { margin-top: 6px; }
+.ed-skyweather .row > input[type='checkbox'] { margin-left: auto; }
+.ed-skyweather .row > input[type='range'] { flex: 0 1 60%; min-width: 0; }
+.ed-tod-row { display: flex; margin: 0 0 4px; }
+.ed-tod-row #ed-tod { flex: 1; min-width: 0; }
+.ed-tod-label { min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+.ed-tod-presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 2px 0 8px; }
+.ed-tod-presets button { padding: 3px 4px; font-size: 11px; min-height: 0; }
+.ed-tod-presets button.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 label.check { display: flex; align-items: center; gap: 6px; color: var(--muted); margin: 8px 0; font-size: 12px; }
 label.stack > span { float: right; color: var(--text, #e8edf5); }
 button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
@@ -534,12 +544,20 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-top.fit-2 .ed-pick > span { display: none; }
 #ed-top.fit-2 #ed-theme { max-width: 104px; }
 #ed-top.fit-2 #ed-bots, #ed-top.fit-2 #ed-skill { max-width: 76px; }
-#ed-top.fit-3 .ed-file button:nth-child(n + 4) { display: none; }
+/* fit-3 tightens before anything goes (MapMaker fixes 2: with Bot test in the bar, Export, Import and Publish went at
+   1400 px; tightened, they stay): narrower name, snap, theme and skill, icon buttons and gaps drawn closer. */
+#ed-top.fit-3 { gap: 3px; }
 #ed-top.fit-3 #ed-name { width: 96px; }
 #ed-top.fit-3 #ed-snap { max-width: 84px; }
-#ed-top.fit-4 #ed-skill { display: none; }
-#ed-top.fit-4 #ed-grid, #ed-top.fit-4 #ed-grid-full, #ed-top.fit-4 #ed-overlaps, #ed-top.fit-4 #ed-plan, #ed-top.fit-4 #ed-maptest { padding: 5px; }
-#ed-top.fit-4 #ed-theme { max-width: 84px; }
+#ed-top.fit-3 #ed-theme { max-width: 84px; }
+#ed-top.fit-3 #ed-skill { max-width: 64px; }
+#ed-top.fit-3 .ed-file { gap: 2px; }
+/* Phase 2's seven mode tabs: they tighten here too, so Export and Import stay at 1400 px. */
+#ed-top.fit-3 #ed-modes .tab { padding: 5px 4px; letter-spacing: 0.02em; }
+#ed-top.fit-3 .ed-modes { padding: 2px; margin-left: 2px; }
+#ed-top.fit-3 .ed-file button, #ed-top.fit-3 #ed-grid, #ed-top.fit-3 #ed-grid-full, #ed-top.fit-3 #ed-overlaps, #ed-top.fit-3 #ed-plan, #ed-top.fit-3 #ed-maptest { padding: 5px; }
+#ed-top.fit-4 .ed-file button:nth-child(n + 4) { display: none; }
+#ed-top.fit-5 #ed-skill { display: none; }
 #ed-tr-edit .ed-tr-swap { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0; }
 #ed-tr-edit .ed-tr-swap label { flex: 1; margin: 0; }
 #ed-tr-edit .ed-tr-swap button { flex: none; margin: 0; }
@@ -775,3 +793,41 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-env-sp.on { color: var(--text, #e8edf5); }
 .ed-env-sp span.blocks::after { content: " \25CF"; color: #ff6a55; font-size: 9px; vertical-align: 2px; }
 .ed-env-sp input, .ed-env-sp select { width: 100%; min-width: 0; }
+
+/* MapMaker overhaul Phase 2: collapsible side panels (panels.ts), the outliner (outlinerPanel.ts), each mode's part
+   of the inspector and the Test pane (modeInspector.ts). */
+#ed-right .ed-panel + .ed-panel { margin-top: 6px; }
+#ed-right .ed-panel-head { display: flex; align-items: center; gap: 6px; margin: 4px 0 6px; padding: 0 0 4px; }
+#ed-right .ed-panel-head > button { flex: 1; display: flex; align-items: center; gap: 6px; padding: 0; background: none; border: 0; color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit; text-align: left; cursor: pointer; }
+#ed-right .ed-panel-head > button::before { content: '\25BE'; font-size: 10px; width: 10px; }
+#ed-right .ed-panel.folded .ed-panel-head > button::before { content: '\25B8'; }
+#ed-right .ed-panel-head > button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+#ed-ol-count { font-size: 10px; letter-spacing: 0; text-transform: none; color: var(--muted); }
+#ed-ol-search { width: 100%; box-sizing: border-box; font: inherit; padding: 5px 7px; border-radius: 6px; border: 1px solid rgba(142, 162, 192, 0.28); background: var(--deep-space); color: var(--fg); }
+.ed-ol-list { position: relative; height: 200px; overflow-y: auto; margin-top: 4px; border: 1px solid var(--line); border-radius: 6px; background: var(--deep-space); contain: strict; }
+.ed-ol-spacer { width: 1px; }
+.ed-ol-list > [data-row] { position: absolute; left: 0; right: 0; height: 22px; box-sizing: border-box; display: flex; align-items: center; gap: 4px; padding: 0 4px 0 8px; font-size: 12px; white-space: nowrap; }
+.ed-ol-head { cursor: pointer; color: var(--cyan); font-weight: 700; }
+.ed-ol-list > .ed-ol-head.level { padding-left: 16px; color: var(--muted); font-weight: 600; }
+.ed-ol-head:hover, .ed-ol-item:hover { background: var(--surface-3); }
+.ed-ol-list > .ed-ol-item { cursor: pointer; padding-left: 22px; }
+.ed-ol-item.on { background: color-mix(in srgb, var(--cyan) 22%, transparent); }
+.ed-ol-item .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.ed-ol-item .lv { color: var(--muted); font-size: 10px; }
+.ed-ol-item button { width: 18px; height: 18px; padding: 0; border: 0; background: none; color: var(--muted); opacity: 0.35; cursor: pointer; font-size: 11px; line-height: 18px; }
+.ed-ol-item:hover button, .ed-ol-item.hidden .ed-ol-eye, .ed-ol-item.locked .ed-ol-lock { opacity: 1; }
+.ed-ol-eye::before { content: '\25C9'; }
+.ed-ol-item.hidden .ed-ol-eye::before { content: '\25CB'; }
+.ed-ol-item.hidden .nm { color: var(--muted); font-style: italic; }
+.ed-ol-lock::before { content: '\25A1'; }
+.ed-ol-item.locked .ed-ol-lock::before { content: '\25A0'; }
+.ed-ol-item.locked .ed-ol-lock { color: var(--warning); }
+.ed-mode-section { margin: 0 0 10px; padding: 0 0 8px; border-bottom: 1px solid var(--line); }
+.ed-mode-list { margin: 4px 0; padding-left: 16px; font-size: 12px; }
+.ed-mode-status { margin: 4px 0; font-weight: 600; }
+.ed-mode-status.err { color: var(--danger); }
+.ed-mode-status.warn { color: var(--warning); }
+.ed-mode-status.ok { color: var(--success); }
+#ed-test-pane .ed-tp-col { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; }
+.ed-quick-tabs button.ed-quick-only { flex: 0 0 auto; }
+.ed-mode-section > small { display: block; margin: 2px 0; }

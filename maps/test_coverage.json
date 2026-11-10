@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 32,
+  "formatVersion": 33,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_dvcljtyhy6dh5gg3",
-      "revision": 12,
-      "contentHash": "sha256:86ecbc377984c4e669a891ac7bbabfc11190335356332c9a594adc175ab12d8e",
-      "schemaVersion": 32,
-      "releasedAt": "2026-11-09T08:03:04.612Z"
+      "versionId": "v_nrb2xkti3l5baizt",
+      "revision": 13,
+      "contentHash": "sha256:7edc41d64c84fab85d76bd747d2ab431d57cd1b61d5bd664fa383277f4f9037d",
+      "schemaVersion": 33,
+      "releasedAt": "2026-11-09T22:07:05.684Z"
     },
     "testOnly": true
   },
@@ -851,6 +851,38 @@
         "tile": "core.arena_tiers_corner",
         "x": 0,
         "y": -44,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_l73txpewkp",
+        "tile": "core.tunnel_vault_walled",
+        "x": 12,
+        "y": -20,
+        "z": 0,
+        "rotation": 1
+      },
+      {
+        "id": "tile_2dytw35g9y",
+        "tile": "core.tunnel_vault_bend_walled",
+        "x": 13,
+        "y": -20,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_f22r9xr65p",
+        "tile": "core.tunnel_vault_t_walled",
+        "x": 14,
+        "y": -20,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ygfuz7zkt5",
+        "tile": "core.tunnel_vault_cross_walled",
+        "x": 15,
+        "y": -20,
         "z": 0,
         "rotation": 0
       }

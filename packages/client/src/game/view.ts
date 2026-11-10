@@ -93,6 +93,8 @@ import {
   propFlushLifts,
   getProp,
   type Stance,
+  type MapWeather,
+  type SkyDefinition,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
@@ -129,6 +131,7 @@ import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
 import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
+import { WeatherVisuals } from '../weatherVisuals.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep, animStepByShare } from './animLod.ts';
@@ -137,7 +140,7 @@ import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts'
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
-import { loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode } from './graphicsSettings.ts';
+import { loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
@@ -375,6 +378,11 @@ export class GameView {
   /** City facades and building/street tile models. */
   readonly city: CityVisuals;
   private readonly skyEffects: SkyEffects;
+  /** The match's weather (map format v34; weatherVisuals.ts): set by the session once it knows the rules (setWeather). */
+  readonly weather: WeatherVisuals;
+  /** The sky the map was built under and the low ground its fog banks lie on (for setWeather). */
+  private weatherSky: SkyDefinition | null = null;
+  private weatherGround = 0;
   readonly scenario: ScenarioVisuals;
   readonly characters: CharacterLibrary;
   readonly creatures: CreatureLibrary;
@@ -521,6 +529,8 @@ export class GameView {
     this.viewRoot.parent = this.camera;
     this.atmosphere = new Atmosphere(this.scene, this.camera, sun, this.viewRoot);
     this.skyEffects = new SkyEffects(this.scene, this.camera, this.atmosphere.quality);
+    // Rain and snow fade out under a roof: a ray up from the camera against the level's shapes.
+    this.weather = new WeatherVisuals(this.scene, this.atmosphere.quality, (at) => !!this.physics?.raycast({ x: at.x, y: at.y + 0.2, z: at.z }, { x: 0, y: 1, z: 0 }, 40));
     this.flash = createStarFlash(this.scene, 'muzzleFlash', 0.32);
     this.flash.renderingGroupId = 1;
     // It rides on the gun in camera space and already faces you: billboarding it
@@ -583,6 +593,10 @@ export class GameView {
     const backdropVisuals = new BackdropVisuals(this.scene, styler, this.models);
     const backdrop = backdropVisuals.build(doc, boxes);
     if (backdropVisuals.sky) this.skyEffects.apply(doc, backdrop, backdropVisuals.sky);
+    this.weatherSky = backdropVisuals.sky;
+    // Fog banks lie on the low ground: the lowest fifth of the terrain, or the ground floor (as the ground mist).
+    const t = doc.terrain;
+    this.weatherGround = t ? t.baseY + [...t.heights].sort((a, b) => a - b)[Math.floor(t.heights.length * 0.2)]! / 100 : 0;
     this.border?.dispose();
     this.border = new BorderVisuals(this.scene, styler, this.models);
     this.border.update(doc, boxes);
@@ -3915,7 +3929,16 @@ export class GameView {
     this.scene.render();
   }
 
+  /**
+   * The match's weather (map/weather.ts matchWeather: the host's choice, else the map's), fixed while it plays.
+   * `quality`: draw it as another graphics setting would (the flicker check draws High's on its Low page).
+   */
+  setWeather(w: MapWeather, quality?: GraphicsQuality): void {
+    this.weather.set(w, this.weatherSky, this.weatherGround, quality);
+  }
+
   dispose(): void {
+    this.weather.dispose();
     setCharacterLodCrowd(false);
     for (const list of this.bodyPool.values()) for (const anim of list) anim.dispose();
     this.bodyPool.clear();

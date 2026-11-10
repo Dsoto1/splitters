@@ -957,13 +957,16 @@ async function editoruxFlow(browser) {
   await page.keyboard.press('Escape');
   await page.keyboard.press('PageDown');
 
-  // Terrain: scattered plants and rocks are bedded into the ground, a little below level 0; Erase must still reach them.
+  // Terrain: plants and rocks the Environment brush paints are bedded into the ground, a little below level 0; Erase must
+  // still reach them. (The Scatter Brush sets are retired, owner 2026-11-09: none left in the palette.)
   await page.click('#ed-env-btn');
   check((await page.getAttribute('#ed-env-btn', 'class')).includes('on') && (await page.isVisible('#ed-pal-tabs [data-ws="environment"][data-pane="paint"]')), 'the Environment workspace shows its own sub-tabs');
   await page.click('#ed-pal-tabs [data-ws="environment"][data-pane="terrain"]');
   await page.click('#ed-tr-new');
   await page.evaluate(() => window.__editor.view.focus({ x: 30, y: 0, z: 30 }));
-  await clickTool(page, '[data-tool="scatter:rocks"]');
+  check(!(await page.$('[data-tool^="scatter:"]')), 'the old Scatter Brush sets are gone from the palette');
+  await clickTool(page, '[data-tool="envbrush"]');
+  await page.selectOption('#ed-env-preset', 'alpine');
   await clickAt(30, 0, 30);
   d = await doc();
   const rocks = d.entities.filter((e) => e.kind === 'prop');
@@ -1083,6 +1086,16 @@ async function editoruxFlow(browser) {
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).entities.length === before, 'a stroke undoes in one step');
   await editorPhase1aChecks(page, { doc, at, clickAt, settle, shot });
+  await editorInspectorKeepChecks(page, { doc, clickAt, settle });
+  // At 1400 px the top bar keeps Export and Import (and the owner's Publish) beside the Bot test button.
+  await settle();
+  const bar1400 = await page.evaluate(() => {
+    const t = document.getElementById('ed-top');
+    const shown = (id) => getComputedStyle(document.getElementById(id)).display !== 'none';
+    return { fits: t.scrollWidth <= t.clientWidth + 1, shown: ['ed-export', 'ed-import', 'ed-maptest', 'ed-skill'].filter(shown), cls: t.className, width: innerWidth };
+  });
+  check(bar1400.fits && bar1400.shown.length === 4, `at 1400 px the top bar fits with Export, Import, Bot test and the bots' skill shown (${JSON.stringify(bar1400)})`);
+  await shot('topbar-1400');
   // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.evaluate(() => document.querySelector('#ed-modes [data-ws="build"]').click());
@@ -1092,17 +1105,343 @@ async function editoruxFlow(browser) {
   await shot('1280');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await editorInterfaceChecks(browser);
+}
+
+/**
+ * MapMaker overhaul Phase 2 (docs/MAPMAKER_OVERHAUL_PLAN.md): the seven mode tabs and their palettes and inspectors,
+ * the side panel's folding panels (kept per person), the outliner (search, select and frame, editor-only hide and lock,
+ * quick at 4,096 things) and the quick row's mode-first favourites.
+ */
+async function editorInterfaceChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await frames(page, 3);
+  // ---- Mode tabs: each shows its own palette tabs; every pane is in one of them.
+  const modes = { build: ['tiles', 'setpieces', 'advanced'], props: ['props', 'lights'], entities: ['entities', 'npcs', 'vehicles', 'scenario'], environment: ['paint', 'plants', 'terrain', 'sky'], paths: ['paths'], test: ['test'] };
+  const seen = {};
+  for (const ws of Object.keys(modes)) {
+    await page.click(`#ed-modes [data-ws="${ws}"]`);
+    await frames(page, 2);
+    seen[ws] = await page.evaluate(() => [...document.querySelectorAll('#ed-pal-tabs .tab')].filter((b) => !b.hidden).map((b) => b.dataset.pane));
+  }
+  check(Object.entries(modes).every(([ws, panes]) => JSON.stringify(seen[ws]) === JSON.stringify(panes)), `each mode tab shows its own palette tabs (${JSON.stringify(seen)})`);
+  check(await page.evaluate(() => ['Build', 'Props', 'Gameplay', 'Logic', 'Environment', 'Paths', 'Test'].every((l, i) => document.querySelectorAll('#ed-modes .tab')[i]?.textContent.includes(l === 'Gameplay' ? 'Game' : l))), 'the top bar has Build, Props, Gameplay, Logic, Environment, Paths and Test');
+  // Test: its pane plays; its inspector part says whether the map is ready.
+  check(await page.isVisible('#ed-tp-play') && await page.isVisible('#ed-tp-here') && (await page.getAttribute('#ed-mode-section', 'data-ws')) === 'test', 'the Test mode has its pane (play, play from here, bot test, plan) and its own inspector section');
+  await shot('mode-test');
+  await page.click('#ed-modes [data-ws="paths"]');
+  await frames(page, 2);
+  check(await page.isVisible('[data-tool="path"]') && await page.isVisible('[data-tool="path-race"]') && (await page.getAttribute('#ed-mode-section', 'data-ws')) === 'paths', 'the Paths mode holds the paths, the track and the drop routes, and its inspector lists the paths');
+  await shot('mode-paths');
+  await page.click('#ed-modes [data-ws="props"]');
+  await frames(page, 2);
+  check(await page.isVisible('#ed-pal-tabs [data-pane="lights"]') && !(await page.$('#ed-mode-section')), 'the Props mode has props and lights; its inspector is Map properties');
+  // A tool picked from another mode's card (here by key) moves the tabs to its mode.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
+  await frames(page, 2);
+  check(await page.evaluate(() => document.querySelector('#ed-modes .tab.on')?.dataset.ws === 'entities'), 'picking the spawn tool shows the Gameplay mode');
+  await page.keyboard.press('Escape');
+  await page.click('#ed-modes [data-ws="build"]');
+
+  // ---- Folding panels: the heading folds a panel; a reload keeps it folded (this browser only).
+  await page.click('.ed-panel[data-panel="issues"] .ed-panel-head button');
+  check(!(await page.isVisible('#ed-issues')) && (await page.evaluate(() => localStorage.getItem('tiletrigger.editor.panels'))) === '["issues"]', 'the Validation panel folds from its heading, remembered in this browser');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  check(!(await page.isVisible('#ed-issues')) && (await page.isVisible('#ed-inspector')), 'after a reload the folded panel stays folded, the others open');
+  await page.click('.ed-panel[data-panel="issues"] .ed-panel-head button');
+  check(await page.isVisible('#ed-issues'), 'and opens again from its heading');
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+
+  // ---- The outliner: 4,096 things, drawn virtualised, quick to rebuild.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const entities = Array.from({ length: 4096 }, (_, i) => ({ id: `olp${i}`, kind: 'prop', position: [(i % 64) - 32, 0, Math.floor(i / 64) - 32], model: i % 2 ? 'prop.barrel' : 'prop.metal_crate', yaw: 0, scale: 1, solid: true, tint: null }));
+    ed.run('Many props', { kind: 'addEntities', entities });
+  });
+  await page.waitForFunction(() => window.__editor.outliner.entriesFor === window.__editor.doc, null, { timeout: T(20000) });
+  const big = await page.evaluate(() => ({ ms: window.__editor.outliner.lastBuildMs, rows: document.querySelectorAll('#ed-ol-list [data-row]').length, height: document.querySelector('#ed-ol-list .ed-ol-spacer').getBoundingClientRect().height }));
+  check(big.rows > 0 && big.rows < 60 && big.height > 4096 * 22 * 0.9 && big.ms < 400 * (process.env.CI ? 2 : 1), `the outliner lists 4,096 things drawing only the rows in view (${JSON.stringify(big)})`);
+  await page.fill('#ed-ol-search', 'barrel 7');
+  await frames(page, 2);
+  // Every word matches the name, the kind or the id (a barrel whose id holds a 7 counts).
+  const found = await page.$$eval('#ed-ol-list .ed-ol-item', (els) => els.map((e) => ({ n: e.querySelector('.nm').textContent, id: e.dataset.id })));
+  check(found.length > 0 && found.every(({ n, id }) => /barrel/i.test(n) && (n.includes('7') || id.includes('7'))) && found.some(({ n }) => n === 'Barrel 7'), `searching the outliner lists only what matches (${found.slice(0, 4).map((f) => f.n).join(', ')}…)`);
+  await page.fill('#ed-ol-search', '');
+  await page.evaluate(() => window.__editor.history.undo());
+  await page.waitForFunction(() => window.__editor.doc.entities.length < 100, null, { timeout: T(10000) });
+  // A few things to pick, hide and lock.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.run('Two props', { kind: 'addEntities', entities: [{ id: 'olA', kind: 'prop', position: [20, 0, 20], model: 'prop.barrel', yaw: 0, scale: 1, solid: true, tint: null, name: 'Outliner barrel' }, { id: 'olB', kind: 'prop', position: [-20, 0, -20], model: 'prop.barrel', yaw: 0, scale: 1, solid: true, tint: null, name: 'Outliner crate' }] });
+  });
+  await page.fill('#ed-ol-search', 'outliner');
+  await frames(page, 3);
+  const camAt = () => page.evaluate(() => ({ x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z }));
+  const before = await camAt();
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] .nm');
+  await frames(page, 3);
+  const picked = await page.evaluate(() => ({ sel: window.__editor.selection.entities, target: { x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z }, on: document.querySelector('#ed-ol-list .ed-ol-item[data-id="olA"]')?.classList.contains('on') }));
+  check(JSON.stringify(picked.sel) === '["olA"]' && picked.on && Math.hypot(picked.target.x - 20, picked.target.z - 20) < Math.hypot(before.x - 20, before.z - 20), `a click in the outliner selects the thing and frames it (${JSON.stringify(picked)})`);
+  await shot('outliner');
+  // Hide: gone from the view, still in the map; the flag is this browser's, per map, not in the file.
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olB"] [data-act="hide"]');
+  await frames(page, 3);
+  const hid = await page.evaluate(() => ({ shown: window.__editor.view.entityShown('olB'), inDoc: window.__editor.doc.entities.some((e) => e.id === 'olB'), stored: localStorage.getItem(`tiletrigger.editor.outliner.${window.__editor.doc.metadata.id}`), file: JSON.stringify(window.__editor.doc).includes('"hidden"') }));
+  check(!hid.shown && hid.inDoc && JSON.parse(hid.stored ?? '{}').hidden?.includes('olB') && !hid.file, `the eye hides a thing from MapMaker's view only, kept per map in this browser (${JSON.stringify(hid)})`);
+  // Lock: a click on it in the outliner (or the map) doesn't select it.
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] [data-act="lock"]');
+  await frames(page, 2);
+  const lockedSel = await page.evaluate(() => window.__editor.selection.entities);
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] .nm');
+  await frames(page, 2);
+  const after = await page.evaluate(() => ({ sel: window.__editor.selection.entities, toast: document.getElementById('ed-toast').textContent }));
+  check(!lockedSel.includes('olA') && !after.sel.includes('olA') && /locked/.test(after.toast), `a locked thing drops out of the selection and can't be selected (${JSON.stringify(after)})`);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: ['olA'] });
+  });
+  check((await page.evaluate(() => window.__editor.selection.entities)).length === 0, 'selecting a locked thing by any route leaves it out');
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] [data-act="lock"]');
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olB"] [data-act="hide"]');
+  await frames(page, 3);
+  check(await page.evaluate(() => window.__editor.view.entityShown('olB')), 'showing it again draws it again');
+  await page.fill('#ed-ol-search', '');
+
+  // ---- Favourites and recent follow the mode: its own pieces first, then the rest (or only its own).
+  await page.evaluate(() => localStorage.setItem('tt.palette.favs', JSON.stringify(['prop:prop.barrel', 'tile:core.room', 'spawn'])));
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const firstFav = async (ws) => {
+    await page.click(`#ed-modes [data-ws="${ws}"]`);
+    await frames(page, 2);
+    return page.evaluate(() => [...document.querySelectorAll('#ed-pal-quick .ed-quick-row [data-pick]')].map((c) => c.dataset.pick));
+  };
+  const favs = { build: await firstFav('build'), props: await firstFav('props'), entities: await firstFav('entities') };
+  check(favs.build[0] === 'tile:core.room' && favs.props[0] === 'prop:prop.barrel' && favs.entities[0] === 'spawn' && favs.build.length === 3, `each mode's favourites come first in the quick row (${JSON.stringify(favs)})`);
+  await page.click('#ed-pal-quick [data-q="only"]');
+  check(JSON.stringify(await firstFav('props')) === '["prop:prop.barrel"]', 'This mode only shows just the mode\'s own');
+  await shot('favourites');
+  await page.click('#ed-pal-quick [data-q="only"]');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * The inspector keeps the first edit after a placement (MapMaker fixes 2, item 7; editor/inspectorKeep.ts). A placement
+ * builds the inspector for the new thing and the map change rebuilds it a frame later: a value typed in before that
+ * frame went with the old field. Here the placement is made as the Place tool makes it (run, then select), a value is
+ * typed into X at once, and three frames pass before Enter: the field still has it and commits it.
+ */
+async function editorInspectorKeepChecks(page, { doc, clickAt, settle }) {
+  await page.keyboard.press('Escape');
+  const r = await page.evaluate(async () => {
+    const ed = window.__editor;
+    const id = 'spawn_keep';
+    const raf = () => new Promise((res) => requestAnimationFrame(() => res()));
+    ed.run('Place spawn', { kind: 'addEntities', entities: [{ id, kind: 'spawn', position: [4, 0, 4], yaw: 0 }] });
+    ed.setSelection({ tiles: [], entities: [id] });
+    const field = (label) => [...document.querySelectorAll('#ed-inspector .row')].find((row) => row.firstChild?.textContent === label)?.querySelector('input');
+    const x = field('X');
+    if (!x) return { error: 'no X field' };
+    x.focus();
+    x.value = '9';
+    x.dispatchEvent(new Event('input', { bubbles: true }));
+    await raf();
+    await raf();
+    await raf();
+    const now = document.activeElement;
+    const kept = { tag: now?.tagName ?? null, value: now?.value ?? null, rebuilt: now !== x };
+    now?.dispatchEvent(new Event('change', { bubbles: true }));
+    await raf();
+    await raf();
+    return { kept, x: ed.doc.entities.find((e) => e.id === id)?.position[0] };
+  });
+  check(!r.error && r.kept.tag === 'INPUT' && r.kept.value === '9' && r.x === 9, `the inspector keeps the first edit after a placement through the rebuild a frame later (${JSON.stringify(r)})`);
+  // The same with the mouse and keyboard: the Spawn tool places one, X is typed at once and Enter commits it.
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
+  await settle();
+  await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
+  await clickAt(10, 0, 4);
+  const placed = (await doc()).entities.filter((e) => e.kind === 'spawn').at(-1);
+  await page.fill('#ed-inspector .row:has(> span:text-is("Z")) input', '-7');
+  await page.keyboard.press('Enter');
+  await settle();
+  const moved = (await doc()).entities.find((e) => e.id === placed?.id);
+  check(moved?.position[2] === -7, `typed into the inspector straight after placing with the mouse, the edit lands (z ${moved?.position[2]})`);
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('Escape');
+}
+
+/**
+ * MapMaker's checks were one flow (`editorux`, 1,337 s on CI run 42671626152: too long for a retry in the 45-minute
+ * job); split by area into four of about 5-6.5 minutes each (MapMaker fixes 2, item 10), every check kept, in the
+ * same order. `editorux`: the palette, tools, placing, levels, the inspector, the status bar and the top bar (one
+ * page). `editorpieces`: set pieces, the ground under floors, measuring. `editortools`: turning, the workflow (Play
+ * from here, the plan view, the card shot), Phase 3 part B (groups, paste, mirror, notes), the terrain grid and bot
+ * hints. `editorenv`: the bot test, the environment tools, and the time of day and weather (Phase 5).
+ */
+async function editorpiecesFlow(browser) {
   await editorSetPieceChecks(browser);
   await editorSetPiecePart5Checks(browser);
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
+}
+
+async function editortoolsFlow(browser) {
   await editorTurnChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
   await editorBotHintChecks(browser);
+  await editorTileOptionChecks(browser);
+}
+
+/**
+ * Tile options (Sandfall follow-up, owner 2026-11-09): the Vaulted Tunnel's Side walls, a checkbox in the tile
+ * inspector that swaps the tile for its walled twin (one undo step, and for several tunnels at once); the twin is kept
+ * out of the palette.
+ */
+async function editorTileOptionChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 0);
+  const palette = await page.evaluate(() => ({ plain: !!document.querySelector('[data-tool="tile:core.tunnel_vault"]'), twin: !!document.querySelector('[data-tool="tile:core.tunnel_vault_walled"]') }));
+  check(palette.plain && !palette.twin, `the palette has the Vaulted Tunnel, not its side-walled twin (${JSON.stringify(palette)})`);
+  // Two tunnels on level -1 (as the palette would place them), one selected.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Place', { kind: 'addTiles', tiles: [{ id: 'tile_tun_a', tile: 'core.tunnel_vault', x: 2, y: 0, z: -1, rotation: 0 }, { id: 'tile_tun_b', tile: 'core.tunnel_vault', x: 2, y: 1, z: -1, rotation: 0 }] });
+    ed.setSelection({ tiles: ['tile_tun_a'], entities: [] });
+  });
+  await frames(page, 2);
+  const box = await page.$('#ed-tile-opt-sideWalls');
+  check(!!box && !(await box.isChecked()), 'a Vaulted Tunnel\'s inspector has a Side walls option, off');
+  await page.click('#ed-tile-opt-sideWalls');
+  await frames(page, 2);
+  const on = await page.evaluate(() => ({ tiles: window.__editor.doc.classicStructure.tiles.filter((t) => t.id.startsWith('tile_tun')).map((t) => t.tile), undo: window.__editor.history.undoLabel, ticked: document.getElementById('ed-tile-opt-sideWalls')?.checked }));
+  check(on.tiles[0] === 'core.tunnel_vault_walled' && on.tiles[1] === 'core.tunnel_vault' && on.ticked && on.undo === 'Add side walls', `ticking it makes that tunnel side-walled, one undo step (${JSON.stringify(on)})`);
+  await page.evaluate(() => window.__editor.view.focus({ x: 16, y: -4, z: 4 }));
+  await frames(page, 3);
+  await shot('tunnel-side-walls');
+  // Both tunnels selected: the box is half ticked; a click walls both.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: ['tile_tun_a', 'tile_tun_b'], entities: [] }));
+  await frames(page, 2);
+  const half = await page.evaluate(() => ({ ind: document.getElementById('ed-tile-opt-sideWalls')?.indeterminate, label: document.querySelector('.ed-tile-options label span')?.textContent }));
+  check(half.ind === true && half.label === 'Side walls (1 of 2)', `with both selected it shows one of two walled (${JSON.stringify(half)})`);
+  await page.click('#ed-tile-opt-sideWalls');
+  await frames(page, 2);
+  const both = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.filter((t) => t.id.startsWith('tile_tun')).map((t) => t.tile));
+  check(both.every((t) => t === 'core.tunnel_vault_walled'), `a click walls both (${both})`);
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  const undone = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.filter((t) => t.id.startsWith('tile_tun')).map((t) => t.tile));
+  check(undone.every((t) => t === 'core.tunnel_vault'), `two undos take both back to the plain tunnel (${undone})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+async function editorenvFlow(browser) {
   await editorMapTestChecks(browser);
   await editorEnvironmentChecks(browser);
+  await editorSkyWeatherChecks(browser);
+}
+
+/**
+ * Time of day and weather (map format v34; MAPMAKER_OVERHAUL_PLAN.md Phase 5): Map properties' Time of day slider
+ * previews live (no edit) and sets the time when let go, its presets set one each, the weather's fall, how hard, wind
+ * and fog banks each make one undo step and show in the view; then TEST starts the match with the map's weather.
+ */
+async function editorSkyWeatherChecks(browser) {
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) });
+  // Medium graphics: Low (the flows' default, phones) draws no rain or snow, only the fog.
+  await context.addInitScript(() => localStorage.setItem('tiletrigger.graphics', 'medium'));
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const sun = () =>
+    page.evaluate(() => {
+      const l = window.__editor.view.scene.getLightByName('sun');
+      return { y: +l.direction.y.toFixed(3), x: +l.direction.x.toFixed(3), color: l.diffuse.toHexString(), doc: window.__editor.doc.timeOfDay ?? null, undo: window.__editor.history.undoLabel ?? null };
+    });
+  const panel = await page.evaluate(() => ['ed-tod-on', 'ed-tod', 'ed-weather-fall', 'ed-weather-amount', 'ed-weather-wind', 'ed-weather-fog'].map((id) => !!document.getElementById(id)));
+  check(panel.every(Boolean) && (await page.locator('.ed-tod-preset').count()) === 6, `Map properties: Time of day (switch, slider, six presets) and Weather (fall, how hard, wind, fog banks) (${JSON.stringify(panel)})`);
+  const before = await sun();
+  // The slider previews as it moves: the sun goes low and red at 18:30, nothing is edited.
+  await page.evaluate(() => {
+    const s = document.getElementById('ed-tod');
+    s.disabled = false;
+    s.value = '18.5';
+    s.dispatchEvent(new Event('input'));
+  });
+  const preview = await sun();
+  check(preview.doc === null && preview.undo === before.undo && preview.y > before.y && preview.color !== before.color, `the time slider previews live without an edit (sun ${JSON.stringify(before)} → ${JSON.stringify(preview)}; label ${await page.textContent('#ed-tod-label')})`);
+  // Let go: one undo step sets it.
+  await page.evaluate(() => document.getElementById('ed-tod').dispatchEvent(new Event('change')));
+  await frames(page, 2);
+  const set = await sun();
+  check(set.doc === 18.5 && /Time of day/.test(set.undo ?? ''), `letting go sets the time (one undo step: ${JSON.stringify(set)})`);
+  // A preset: Noon, the sun high in the south.
+  await page.click('.ed-tod-preset[data-hours="12"]');
+  await frames(page, 2);
+  const noon = await sun();
+  check(noon.doc === 12 && noon.y < -0.85 && Math.abs(noon.x) < 0.01, `the Noon preset puts the sun high in the south (${JSON.stringify(noon)})`);
+  await page.click('.ed-tod-preset[data-hours="22"]');
+  await shot('time-night');
+  // Weather: rain, harder, windy, fog; each one step, drawn in the view.
+  await page.selectOption('#ed-weather-fall', 'rain');
+  const slide = (id, v) =>
+    page.evaluate(([id, v]) => {
+      const s = document.getElementById(id);
+      s.value = String(v);
+      s.dispatchEvent(new Event('input'));
+      s.dispatchEvent(new Event('change'));
+    }, [id, v]);
+  await slide('ed-weather-amount', 100);
+  await slide('ed-weather-wind', 60);
+  await slide('ed-weather-fog', 40);
+  await frames(page, 4);
+  const rain = await page.evaluate(() => ({ weather: window.__editor.doc.weather, stats: { ...window.__editor.view.weather.stats }, note: document.getElementById('ed-weather-note')?.textContent }));
+  check(JSON.stringify(rain.weather) === JSON.stringify({ fall: 'rain', amount: 1, wind: 0.6, fog: 0.4 }) && rain.stats.particles > 0 && rain.stats.fogBanks > 0 && rain.stats.fogDensity > 0, `the weather is set and drawn: rain falling, fog banks, the haze thicker (${JSON.stringify(rain)})`);
+  await shot('weather-rain');
+  await page.keyboard.press('Control+z');
+  const undone = await page.evaluate(() => window.__editor.doc.weather?.fog ?? null);
+  check(undone === 0, `Undo takes back one weather step (fog ${undone})`);
+  await page.keyboard.press('Control+y');
+  // TEST: the match starts with the map's weather (and its time).
+  await page.keyboard.press('F5');
+  const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(90000) }).then(() => true, () => false);
+  check(playing, 'TEST plays the map');
+  if (playing) {
+    await frames(page, 6);
+    const inPlay = await page.evaluate(() => ({ weather: window.__cs.view.weather.current, stats: { ...window.__cs.view.weather.stats }, sun: window.__cs.view.scene.getLightByName('sun')?.diffuse.toHexString().toLowerCase() }));
+    check(inPlay.weather.fall === 'rain' && inPlay.weather.amount === 1 && inPlay.stats.particles > 0 && inPlay.sun === '#9fb8ff', `a match starts with the map's weather and time of day (${JSON.stringify(inPlay)})`);
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -1574,7 +1913,7 @@ async function editorEnvironmentChecks(browser) {
   // (Compared key by key: the order of an object's keys is not part of the map.)
   const canon = () => page.evaluate(() => JSON.stringify(window.__editor.doc.entities.filter((e) => e.kind === 'prop').map((e) => Object.fromEntries(Object.entries(e).sort(([a], [b]) => (a < b ? -1 : 1))))));
   const before = await canon();
-  // Export's own click, in the page: when the top bar is crowded its compact layout (fit-3) hides the File group's
+  // Export's own click, in the page: when the top bar is crowded its compact layout (fit-4) hides the File group's
   // later buttons, Export among them, and Playwright's click would wait for it to show.
   const [download] = await Promise.all([page.waitForEvent('download'), page.evaluate(() => document.getElementById('ed-export').click())]);
   const text = readFileSync(await download.path(), 'utf8');
@@ -3375,7 +3714,7 @@ async function sceneryFlow(browser) {
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const space = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.startsWith('backdrop_')).map((m) => m.name));
   check(space.includes('backdrop_sky') && !space.includes('backdrop_ground'), `Skyward floats in a starfield with no ground (${space.join(', ')})`);
-  // MapMaker: pick a backdrop, paint plants, scatter a forest.
+  // MapMaker: pick a backdrop, paint plants, brush a wood (the Environment brush).
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
@@ -3418,16 +3757,20 @@ async function sceneryFlow(browser) {
   await page.mouse.up();
   const lush = await page.evaluate(() => window.__editor.doc.terrain.foliage.filter((v) => v === 4).length);
   check(lush > 5, `the plants brush paints overgrown cells (${lush})`);
-  await clickTool(page, '[data-tool="scatter:forest"]');
+  // N takes up the Environment brush (the Scatter Brush it replaced is retired).
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('KeyN');
+  check(await page.evaluate(() => window.__editor.tool?.kind === 'envbrush'), 'N takes up the Environment brush');
+  await page.selectOption('#ed-env-preset', 'temperate');
   p = await at(20, 20);
   await page.mouse.move(p.x, p.y);
   await page.mouse.click(p.x, p.y);
   const trees = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop').length);
-  check(trees >= 3, `the scatter brush plants a patch of forest (${trees} trees)`);
+  check(trees >= 3, `the Environment brush plants a patch of woods (${trees} plants)`);
   await page.keyboard.press('Control+z');
   const undone = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop').length);
   check(undone === 0, 'one undo takes the whole patch back');
-  // Props stay on sloping ground: raise a hill, scatter rocks on its side, nothing floats.
+  // Props stay on sloping ground: raise a hill, brush rocks and plants on its side, nothing floats.
   await clickTool(page, '[data-tool="terrain:raise"]');
   p = await at(20, 20);
   await page.mouse.move(p.x, p.y);
@@ -3435,7 +3778,8 @@ async function sceneryFlow(browser) {
   // Hold until the hill stands at least 1.5 m tall (headless frame rates vary), at most 8 s.
   await page.waitForFunction(() => Math.max(...window.__editor.doc.terrain.heights) > 150 || window.__editor.stroke?.now && Math.max(...window.__editor.stroke.now.heights) > 150, null, { timeout: T(8000) }).catch(() => {});
   await page.mouse.up();
-  await clickTool(page, '[data-tool="scatter:rocks"]');
+  await clickTool(page, '[data-tool="envbrush"]');
+  await page.selectOption('#ed-env-preset', 'alpine');
   // Bring the hillside to the middle of the view, clear of the tool bar over its top edge.
   await page.evaluate(() => window.__editor.view.focus({ x: 18, y: 0, z: 18 }));
   p = await at(18, 18);
@@ -3453,7 +3797,7 @@ async function sceneryFlow(browser) {
     };
     return { n: props.length, worst: Math.max(...props.map((e) => e.position[1] - h(e.position[0], e.position[2]))) };
   });
-  check(rocks.n > 0 && rocks.worst < 0.02, `scattered rocks sit on the hillside (${rocks.n}, worst gap ${rocks.worst.toFixed(2)} m)`);
+  check(rocks.n > 0 && rocks.worst < 0.02, `brushed rocks and plants sit on the hillside (${rocks.n}, worst gap ${rocks.worst.toFixed(2)} m)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -6960,11 +7304,17 @@ async function editorPartBChecks(browser) {
   await page.keyboard.press('Control+KeyZ');
   await frames(page, 2);
   check((await doc()).classicStructure.tiles.length === 1, 'one undo takes the paste back');
-  await page.evaluate(() => window.__editor.run('Theme', { kind: 'setTheme', before: window.__editor.doc.classicStructure.theme, after: 'core.industrial' }));
+  // Into a map of another theme (owner, 2026-11-09: allowed): the pieces wear its theme, their own paint kept.
+  await page.evaluate(() => window.__editor.run('Theme', { kind: 'setTheme', before: window.__editor.doc.classicStructure.theme, after: 'core.factory' }));
   await page.keyboard.press('Control+KeyV');
-  await frames(page, 1);
-  check(/Can't paste: copied from .*another theme/.test(await toast()), `into a map of another theme it is refused, saying why (${await toast()})`);
+  await frames(page, 2);
+  const themed = await doc();
+  check(themed.classicStructure.theme === 'core.factory' && themed.classicStructure.tiles.length === 2 && /Pasted 3 things .*the pieces wear this map's .* theme, their own paint kept/.test(await toast()), `into a map of another theme it pastes, and says the pieces wear its theme (${await toast()})`);
+  await shot('paste-theme');
   await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await doc()).classicStructure.theme !== 'core.factory' && (await doc()).classicStructure.tiles.length === 1, 'two undos take the paste and the theme back');
 
   // ---- Mirror…: a red spawn and flag on the west, mirrored east (Shift+M): the copy is blue's.
   await page.evaluate(() => window.__editor.run('Team things', { kind: 'addEntities', entities: [{ id: 'sp_red', kind: 'spawn', position: [-28, 0, 4], yaw: 1.571, faction: 'embers' }, { id: 'flag_red', kind: 'flag', position: [-32, 0, 0], yaw: 0, team: 'embers' }] }));
@@ -7055,6 +7405,50 @@ async function editorPartBChecks(browser) {
   await frames(page, 4);
   await shot('template-ctf');
   check(!/error/i.test(issues), `the template validates clean (${issues.slice(0, 120)})`);
+
+  // ---- Mirror half the map with its bot hints and, ticked, its terrain and paths (owner, 2026-11-09).
+  await newMap(page, 96);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = structuredClone(ed.doc.terrain);
+    // A mound on the west half (x -20, z 6) and stone paint round it.
+    for (let r = 0; r < t.rows; r++) for (let c = 0; c < t.cols; c++) {
+      const x = t.origin[0] + c * t.spacing;
+      const z = t.origin[1] + r * t.spacing;
+      const d = Math.hypot(x + 20, z - 6);
+      if (d < 10) t.heights[r * t.cols + c] = Math.round(400 * (1 - d / 10));
+    }
+    ed.run('Mound', { kind: 'setTerrain', before: ed.doc.terrain, after: t });
+    ed.run('Hint', { kind: 'setBotHints', before: ed.doc.botHints ?? null, after: [{ id: 'hint_stage', kind: 'staging', position: [-24, 0, -10], radius: 6, team: 'embers' }] });
+    ed.run('Road', { kind: 'setPaths', before: ed.doc.paths ?? null, after: [{ id: 'road_w', points: [[-30, 0, -20], [-12, 0, 20]], closed: false, uses: ['road'], width: 3, style: 'dirt', lay: true }] });
+    ed.setSelection({ tiles: [], entities: [] });
+  });
+  await page.keyboard.press('Shift+KeyM');
+  await page.waitForSelector('#ed-mirror-dialog[open]', { timeout: T(5000) });
+  await page.selectOption('#ed-mirror-across', 'eastWest');
+  await page.fill('#ed-mirror-x', '0');
+  await page.dispatchEvent('#ed-mirror-x', 'input');
+  await page.selectOption('#ed-mirror-half', 'west');
+  const plainWhy = await page.textContent('#ed-mirror-why');
+  await page.check('#ed-mirror-ground');
+  const groundWhy = await page.textContent('#ed-mirror-why');
+  check(/1 bot hint/.test(plainWhy) && !/terrain/.test(plainWhy) && /1 bot hint, 1 path, the terrain/.test(groundWhy), `half the map brings its bot hint; ticked, its terrain and path too (${plainWhy} | ${groundWhy})`);
+  await shot('mirror-ground-dialog');
+  await page.click('#ed-mirror-go');
+  await frames(page, 3);
+  const mirrored = await page.evaluate(() => {
+    const doc = window.__editor.doc;
+    const t = doc.terrain;
+    const h = (x, z) => t.heights[Math.round((z - t.origin[1]) / t.spacing) * t.cols + Math.round((x - t.origin[0]) / t.spacing)];
+    return { west: h(-20, 6), east: h(20, 6), hint: doc.botHints?.find((x) => x.id !== 'hint_stage'), road: doc.paths?.find((x) => x.id !== 'road_w')?.points };
+  });
+  check(mirrored.west === 400 && mirrored.east === 400 && mirrored.hint?.team === 'tide' && mirrored.hint.position[0] === 24 && JSON.stringify(mirrored.road) === '[[30,0,-20],[12,0,20]]', `the east half is the west's mirror image: the mound, the staging spot (now the other team's) and the road (${JSON.stringify(mirrored)})`);
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await frames(page, 4);
+  await shot('mirror-ground');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check(await page.evaluate(() => !window.__editor.doc.botHints?.some((x) => x.team === 'tide') && window.__editor.doc.paths?.length === 1), 'one undo takes the whole mirror back');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   livePages.delete(page);
   await page.context().close();
@@ -7506,7 +7900,8 @@ async function frameStrip(frames, every = 4, cols = 5) {
  * blinking four times a second, an Arc Turret and an electric fence. In play, the brightest moments are recorded
  * frame by frame at 30 frames a second of the page's own time (e2e/frameClock.mjs: however slowly this machine draws,
  * a recorded second is a second of play): an arc fight up close, the fence zapping bots in front of you, four
- * grenade blasts in front of the camera, a machine gun firing at a wall in the dark, the alarm light. With the setting
+ * grenade blasts in front of the camera, a machine gun firing at a wall in the dark, heavy rain and a blizzard at
+ * night, the alarm light. With the setting
  * on each moment must stay under the thresholds; the same moments with it off are measured and reported as numbers
  * only. Frame strips (every 4th frame) and the numbers go to e2e-artifacts/ (flashing-<moment>-<on|off>.png,
  * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
@@ -7681,6 +8076,29 @@ async function flashingFlow(browser) {
         44: () => page.evaluate(() => window.__cs.view.playGameplayFx('pickup.armor', { x: 0, y: 1.2, z: 8 }, { size: window.__cs.view.farSize({ x: 0, y: 1.2, z: 8 }) })),
       },
     },
+    // Weather (map format v34; weatherVisuals.ts): a downpour and a blizzard with a gale at night, out in the open (the
+    // brightest contrast: pale drops and flakes against the dark), drawn as High graphics draws them (the most drops;
+    // the flow plays on Low, which draws none). No lightning: nothing in them may flash.
+    {
+      name: 'rain',
+      label: 'heavy rain in a gale at night, out in the open, looking up into it',
+      weapon: 'core.arc_caster',
+      me: [-10, 0, 0],
+      look: aim([-10, 0, 0], [0, 5, 6]),
+      bots: [],
+      before: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'rain', amount: 1, wind: 0.7, fog: 0.3 }, 'high')),
+      after: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'none', amount: 0, wind: 0, fog: 0 })),
+    },
+    {
+      name: 'snow',
+      label: 'a blizzard at night, out in the open',
+      weapon: 'core.arc_caster',
+      me: [-10, 0, 0],
+      look: aim([-10, 0, 0], [0, 1.4, 6]),
+      bots: [],
+      before: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'snow', amount: 1, wind: 0.85, fog: 0.45 }, 'high')),
+      after: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'none', amount: 0, wind: 0, fog: 0 })),
+    },
     {
       name: 'alarm',
       label: 'the red alarm light blinking 4 times a second, in its dark room',
@@ -7731,6 +8149,7 @@ async function flashingFlow(browser) {
       if (strip) writeFileSync(`${ARTIFACTS}/flashing-${mo.name}-${on ? 'on' : 'off'}.png`, strip);
       console.log(`flashing ${mo.name} ${on ? 'on ' : 'off'}: ${flickerSummary(r)}; screen brightness ${Math.min(...r.meanL).toFixed(3)}-${Math.max(...r.meanL).toFixed(3)}`);
     }
+    await mo.after?.();
     const { on, off } = runs;
     report.moments[mo.name] = Object.fromEntries(
       Object.entries(runs).map(([k, r]) => [k, { pass: r.pass, reasons: r.reasons, transitionsPerSecond: r.perSecond, flashesPerSecond: r.flashesPerSecond, fieldTransitionsPerSecond: r.fieldPerSecond, transitions: r.transitions.length, maxStep: +r.maxStep.toFixed(4), redTransitionsPerSecond: r.red.perSecond, redFlashes: r.red.onsets.length, maxRedArea: +r.red.maxArea.toFixed(4), activity: +r.activity.toFixed(4), meanL: r.meanL.map((x) => +x.toFixed(4)), change: r.change.map((x) => +x.toFixed(4)) }]),
@@ -8089,6 +8508,13 @@ async function wholeBodies(page, frames, upright = []) {
       const checked = new Set();
       const seen = new Set();
       const failed = new Map();
+      // Each upright character's lowest drawn height over the frames, and its full detail's in that pose.
+      const heights = new Map();
+      // Standing short (under 3/4 of its height) is judged on the settled pose, over the frames, not on one frame: a
+      // runner can show one frame's crouch (on CI, Hyena Warrior 1.5 of 2.12 m on the first frame measured, its full
+      // detail as short in that pose, then standing; runs 42563794663, 42567649540), while a body drawn as feet only
+      // (what this checks) is short on every frame.
+      const stood = new Map();
       await new Promise((resolve) => {
         let n = 0;
         const o3 = sc.onAfterRenderObservable.add(() => {
@@ -8102,6 +8528,7 @@ async function wholeBodies(page, frames, upright = []) {
             const dist = Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z);
             if (!lods.length || dist < Math.max(...lods.map((l) => l.distanceOrScreenCoverage)) + 1) continue;
             checked.add(slot);
+            heights.set(slot, heights.get(slot) ?? { look: JSON.parse(a.specKey).look, dist: Math.round(dist), drawn: Infinity, full: 0 });
             let lo = Infinity;
             let hi = -Infinity;
             let bad = 0;
@@ -8127,10 +8554,19 @@ async function wholeBodies(page, frames, upright = []) {
             const height = hi > lo ? hi - lo : 0;
             const want = fullHeight * (spec.size ?? 1);
             const full = hi0 > lo0 ? hi0 - lo0 : 0;
+            const hrow = heights.get(slot);
+            if (hrow && upright.includes(slot) && height < hrow.drawn) Object.assign(hrow, { drawn: +height.toFixed(2), full: +full.toFixed(2) });
             // (`full`: the full-detail mesh in the same pose, for the message: Hyena Warrior's low-detail level is drawn
             // 1.5-1.8 m against its full detail's 2.1 m in the same pose, on CI; see HANDOFF.)
-            if ((off.length || bad || (upright.includes(slot) && height < want * 0.75)) && !failed.has(slot)) {
-              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off });
+            const row = { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off };
+            if ((off.length || bad) && !failed.has(slot)) failed.set(slot, row);
+            if (upright.includes(slot)) {
+              const st = stood.get(slot) ?? stood.set(slot, { frames: 0, short: 0, first: null }).get(slot);
+              st.frames++;
+              if (height < want * 0.75) {
+                st.short++;
+                st.first ??= row;
+              }
             }
           }
           if (++n >= frames) {
@@ -8142,7 +8578,8 @@ async function wholeBodies(page, frames, upright = []) {
       proto.render = render0;
       sc.onBeforeDrawPhaseObservable.remove(o1);
       sc.onAfterDrawPhaseObservable.remove(o2);
-      return { checked: checked.size, seen: seen.size, failed: [...failed.values()] };
+      for (const [slot, st] of stood) if (!failed.has(slot) && st.short >= 2 && st.short * 3 > st.frames) failed.set(slot, { ...st.first, shortFrames: `${st.short} of ${st.frames}` });
+      return { checked: checked.size, seen: seen.size, failed: [...failed.values()], heights: [...heights.values()].filter((h) => h.drawn < Infinity) };
     },
     [frames, 1.8, upright],
   );
@@ -8165,8 +8602,14 @@ async function farBodies(browser) {
   await page.click('#resume').catch(() => {});
   await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot' && c.alive).length >= 20, null, T(30000));
   await holdBots(page);
+  // No end to the round: on a slow CI runner this flow passes Deathmatch's 10 minutes, and the round's end (the
+  // scoreboard, then the next round) left the known looks' check below with nobody to measure.
+  await sim(page, (m) => {
+    m.phaseEndTick = Infinity;
+    m.rules.scoreLimit = 0;
+  });
   // Open ground from where you are: the first way with a clear eye-high sight line 36 m out and ground under the spots.
-  const setup = await sim(page, (m, me) => {
+  const findGround = (m, me) => {
     const p = me.move.pos;
     const ground = (x, z) => {
       const d = m.physics.raycastWorld({ x, y: p.y + 6, z }, { x: 0, y: -1, z: 0 }, 14);
@@ -8202,7 +8645,16 @@ async function farBodies(browser) {
       return { yaw, slots: bots.map((c) => c.slot), from: { x: p.x, y: p.y, z: p.z } };
     }
     return null;
-  });
+  };
+  let setup = await sim(page, findGround);
+  // Not from every spawn (a spawn in a gully): from the next ones you respawn at.
+  for (let i = 0; i < 6 && !setup; i++) {
+    await sim(page, (m, me) => m.kill(me, null, 'core.respawn'));
+    await page.waitForFunction(() => !window.__cs.local.alive, null, { timeout: T(10000) }).catch(() => {});
+    await page.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(30000) }).catch(() => {});
+    await page.click('#resume').catch(() => {});
+    setup = await sim(page, findGround);
+  }
   if (!setup) {
     check(false, 'far bodies: found open ground 36 m out for the crowd');
     await page.context().close();
@@ -8254,10 +8706,37 @@ async function farBodies(browser) {
   await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(60000) }).catch(() => {});
   const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
   const r = await wholeBodies(page, 12, setup.slots);
-  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}${f.shortFrames ? ` (short on ${f.shortFrames} frames)` : ''}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
   // (For a failure: where you are now against where the crowd was set out from, and whether you are alive.)
   if (r.failed.length) broken.push(`you ${await sim(page, (m, me, from) => `${Math.hypot(me.move.pos.x - from.x, me.move.pos.z - from.z).toFixed(1)} m from the setup, ${me.alive ? 'alive' : 'dead'}, ${me.deaths} deaths`, setup.from)}`);
   check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
+  // Then known looks on the same runners (not the deck's draw): Hyena Warrior's far copy was drawn 15-30% short on CI
+  // (HANDOFF, "Flaky e2e checks"), then large, small and animal bodies. Each far copy stands as tall as its full body
+  // in the same pose (the lowest of the frames), and is skinned on the full body's skeleton (one pose for both).
+  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.tortoise', 'core.abe', 'core.panda', 'core.knight', 'core.croakley'];
+  await sim(page, (m, _me, [slots, looks]) => slots.forEach((s, i) => {
+    const c = m.combatants().find((x) => x.slot === s);
+    if (c && looks[i] && c.look !== looks[i]) m.swapLook(c, looks[i]);
+  }), [setup.slots, looks]);
+  const dealt = () => page.evaluate(([slots, looks]) => slots.filter((s, i) => {
+    const a = window.__cs.view.avatars.get(s);
+    return !looks[i] || (!!a?.anim?.ch && JSON.parse(a.specKey).look === looks[i] && a.anim.current === 'run');
+  }).length, [setup.slots, looks]);
+  await until(async () => (await dealt()) >= setup.slots.length, T(120000));
+  // (A few tries: on a slow runner the dealt looks can still be loading, or out of view, the first time.)
+  let r2 = await wholeBodies(page, 12, setup.slots);
+  for (let i = 0; i < 3 && !r2.heights.some((h) => h.look === 'core.hyena'); i++) {
+    await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), setup.yaw);
+    await until(async () => (await dealt()) >= setup.slots.length, T(30000));
+    r2 = await wholeBodies(page, 12, setup.slots);
+  }
+  const shared = await page.evaluate((slots) => slots.flatMap((s) => {
+    const ch = window.__cs.view.avatars.get(s)?.anim?.ch;
+    return (ch?.meshes ?? []).flatMap((m) => (m.getLODLevels?.() ?? []).filter((l) => l.mesh && l.mesh.skeleton !== m.skeleton).map(() => JSON.parse(window.__cs.view.avatars.get(s).specKey).look));
+  }), setup.slots);
+  const drawnHeights = r2.heights.map((h) => `${h.look} ${h.dist} m ${h.drawn}/${h.full} m`).join(', ');
+  const short = r2.heights.filter((h) => h.full > 0 && h.drawn < h.full * 0.9);
+  check(r2.heights.some((h) => h.look === 'core.hyena') && short.length === 0 && r2.failed.length === 0 && shared.length === 0, `far copies stand as tall as their full bodies in the same pose, on the same skeleton, Hyena Warrior's among them (drawn far / full detail, lowest of the frames: ${drawnHeights || 'none measured'}; short: ${short.map((h) => h.look).join(', ') || 'none'}; on a skeleton of their own: ${[...new Set(shared)].join(', ') || 'none'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -8336,19 +8815,19 @@ async function gripsInPlay(browser) {
       if (now !== last) window.__heldTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
     }, 50);
   });
-  await page.evaluate(() => window.__give('core.marksman'));
-  await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.marksman', null, { timeout: T(10000) }).catch(() => {});
-  for (let i = 0; i < 4; i++) {
-    const held = await page.evaluate(() => window.__cs.local.weapon?.id);
-    if (held === 'core.marksman') break;
-    await page.keyboard.press('Digit3');
-    await page.waitForFunction((was) => window.__cs.local.weapon?.id !== was, held, { timeout: T(10000) }).catch(() => {});
+  // On CI the rifle sometimes came back in your hands a few seconds after the give (twice in one run, 2026-11-09:
+  // marksman at 0.1 s, rifle at 0.7 s with no key pressed), and pressing 3 then only asked for the rifle again
+  // ("asked 3", run 42679874806). So the give is repeated until the marksman is held, drawn and raised.
+  const marksmanUp = () => window.__cs.local.weapon?.id === 'core.marksman' && window.__cs.view.viewWeapon === 'core.marksman' && !!window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0;
+  for (let i = 0; i < 6 && !(await page.evaluate(marksmanUp)); i++) {
+    if ((await page.evaluate(() => window.__cs.local.weapon?.id)) !== 'core.marksman') await page.evaluate(() => window.__give('core.marksman'));
+    await page.waitForFunction(marksmanUp, null, { timeout: T(10000) }).catch(() => {});
   }
-  await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.marksman' && window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0, null, { timeout: T(20000) }).catch(() => {});
   await page.evaluate(() => (window.__autoInput = { zoom: true }));
   const scopedIn = await page.waitForFunction(() => window.__cs.view.camera.fov < 0.8, null, { timeout: T(20000) }).then(() => true, () => false);
+  // (Up to a minute: on a loaded machine the sharper copy took over 20 s to load, locally.)
   const swapped = await page.evaluate(
-    () =>
+    (wait) =>
       new Promise((done) => {
         const v = window.__cs.view;
         const def = window.__cs.local.weapon;
@@ -8357,9 +8836,10 @@ async function gripsInPlay(browser) {
         if (!kept || !def.view.held) return done(false);
         v.sharpenViewmodel(def, kept, def.view.held.medium);
         const t0 = performance.now();
-        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > 20000 ? done(false) : setTimeout(poll, 50));
+        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > wait ? done(false) : setTimeout(poll, 50));
         poll();
       }),
+    T(60000),
   );
   await page.evaluate(() => (window.__autoInput = { zoom: false }));
   await page.waitForFunction(() => window.__cs.view.camera.fov > 1.2, null, { timeout: T(20000) }).catch(() => {});
@@ -8444,7 +8924,8 @@ async function gripsInPlay(browser) {
     held.push({ w, ok: !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) } });
   }
   check(held.every((h) => h.ok), `an Imp player holds the gun forward at the chest with a hand on its grip (${JSON.stringify(held)})`);
-  await imp.screenshot({ path: `${ARTIFACTS}/grips-imp-third.png` });
+  // (An artifact for a look: a slow page's screenshot timing out isn't a failed check.)
+  await imp.screenshot({ path: `${ARTIFACTS}/grips-imp-third.png` }).catch(() => {});
   await imp.context().close();
 }
 
@@ -9414,7 +9895,9 @@ async function partyFlow(browser) {
   await pctx.close();
 
   // Online: a hub, a host, a friend by the host's invite link.
-  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9079);
+  // Its own port: dedicatedhost's hub is on 9079, and when a shard ran party just before it, dedicatedhost's hub couldn't
+  // bind and its host listed on party's hub, which has no relay ("relay": false, check/far-copies run 42729978260).
+  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9081);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000)).catch(() => {});
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;
@@ -9722,7 +10205,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

@@ -44,6 +44,10 @@ export interface LocalBox {
   surface?: { material: string; tint?: string | null };
 }
 
+/** MapMaker's tile options that are tiles of their own (TileDefinition.optionOf), so a map needs no new field for one. */
+export const TILE_OPTIONS = ['sideWalls'] as const;
+export type TileOptionId = (typeof TILE_OPTIONS)[number];
+
 export interface TileDefinition {
   id: string;
   displayName: string;
@@ -75,6 +79,11 @@ export interface TileDefinition {
   blurb?: string;
   /** Takes room options (layout, floor, ceiling, corners) in MapMaker. */
   configurable?: boolean;
+  /**
+   * This tile is another tile with one of MapMaker's tile options switched on (the Vaulted Tunnel's side walls): the
+   * tile inspector's checkbox swaps between the two, and the palette shows only the plain one. Same cells and ports.
+   */
+  optionOf?: { tile: string; option: TileOptionId };
   /**
    * Drawn with a model (city buildings and streets) centred on the tile's
    * footprint and turned with it; collision comes from `solids` (`prop` boxes

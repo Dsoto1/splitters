@@ -26,7 +26,7 @@ Already done from the owner's earlier ask: **the real buildable area.**
   - No command writes the lowered ground into the document: groups, paste and templates move floors like any edit.
 - **Performance.** MapMaker stays smooth on the owner's M1. Anything that shows in play (time of day, weather) goes
   through the perf budgets and the phone tiers.
-- **Tests.** Each phase adds e2e checks to the `editorux` flow and regenerates the `mapmaker.png` baseline when the
+- **Tests.** Each phase adds e2e checks to the `editorux` flows (`editorux`, `editorpieces`, `editortools`, `editorenv` since 2026-11-09) and regenerates the `mapmaker.png` baseline when the
   look changes (`pnpm e2e:baselines`).
 
 ## Phase 1: feedback while building (quick wins)
@@ -124,15 +124,52 @@ Already done from the owner's earlier ask: **the real buildable area.**
 
 ## Phase 2: the interface
 1. **Mode tabs:** Build, Props, Gameplay, Logic, Environment, Paths, Test. Each has its own palette and inspector.
+   - **As built** (`wip/mapmaker-p2`): `client/src/editor/editorModes.ts` (`EDITOR_MODES`, `paneMode`, `firstPane`) and
+     the top bar's seven tabs. Build: Tiles, Set pieces, Walls. Props: Props, Lights. Gameplay (`data-ws="entities"`,
+     the old Entities tab): Gameplay, NPCs, Vehicles, Objects. Logic: the rules panel. Environment: Paint, Nature,
+     Terrain, Sky. Paths (new pane): the Paths group from the Terrain pane, the drop routes and the Track from the
+     Vehicles tab. Test (new pane, `modeInspector.ts fillTestPane`): Play test, Play from here, Bot test, Plan view,
+     Problems list (the Test tab no longer plays at once; F5 still does). The inspector with nothing selected starts
+     with the mode's own section (`modeSection`: Paths lists the paths; Test says ready or not, the first problem,
+     spawns and pickups; Gameplay counts spawns, objectives, pickups, squads, vehicles), then Map properties as
+     before (an owner's question). Unit test `client/test/editorModes.test.ts` (the page's tabs and panes against the
+     table); e2e `editorux` → `editorInterfaceChecks`.
 2. **Collapsible panels,** remembered per person.
+   - **As built:** the side panel is three panels, Outliner, Inspector and Validation, each folding from its heading
+     (`client/src/editor/panels.ts`, localStorage `tiletrigger.editor.panels`); the palette's groups and the two side
+     panels already folded and are remembered the same way.
 3. **An outliner:** everything in the map in one list.
    - It is searchable, grouped by kind and level.
    - Clicking an entry selects it and frames it.
    - Hide and lock are editor-only (kept per map in local storage, not in the map file).
    - It must stay quick with 4,096 entries.
+   - **As built:** shared `editor/outliner.ts` (`outlineEntries`: tiles, set pieces, entities named as the inspector
+     names them, "Door 2" numbering in one pass through `entityLabel`'s new `number`; `outlineRows`: kind groups in
+     `OUTLINE_GROUP_ORDER`, level headings inside a kind on several levels, folding, every-word search;
+     `outlineWindow`; `OutlinerFlags`, `parseOutlinerFlags`, `toggleOutlinerFlag`, `withoutHidden`,
+     `pickableSelection`). Client `outlinerPanel.ts`: a 200 px list of 22 px rows drawing only the rows in view; a
+     click selects (Shift adds), moves to the level and frames; the eye hides (left out of `EditorView.setMap` and of
+     picking and box select), the padlock locks (not picked, `setSelection` drops it). localStorage
+     `tiletrigger.editor.outliner.<map id>`; folded headings `tiletrigger.editor.outliner.closed`. Measured: 4,096
+     props, entries and rows rebuilt in a few ms in vitest (limit 500 ms for two builds with a search), and in the e2e
+     check the list keeps under 60 rows in the page. Unit test `shared/test/mapmakerOutliner.test.ts`.
 4. **Favourites and recently used pieces** in the palette.
+   - **As built:** they were already palette-wide (one quick row over every tab, `palette.ts`). Now the row follows
+     the mode: its own favourites (or recent pieces) first, the rest after (`quickOrder`), and **This mode only**
+     (localStorage `tt.palette.modeOnly`) shows just the mode's.
 5. **Split `editorApp.ts`** (about 4,700 lines) along the modes first, with no change in behaviour, before adding to
    it.
+   - **As built** (`wip/mapmaker-p2`, 12 commits, then green on `check/mapmaker-p2`): `editorApp.ts` 6,489 → 949 lines,
+     the coordinator: the shared state (document, history, selection, tool, level, pointer), the parts and the
+     built-in tools' hosts, `refresh`/`frame`, `run`/`undo`/`redo`, `setTool`, `setSelection`, levels, focus, play
+     test, and the test surface `window.__editor` keeps (`stroke`, `setBrushRadius`, `thumbFor`, `setEdge`, `pick`,
+     `tileGhost`, `tileGhostAt`, `allIssues` reach the modules they moved to). Each part is a class taking the
+     `EditorApp`: `editorInput.ts` (pointer, drag, box select, brushes, right-click menu, keys), `hover.ts` (picking,
+     hover card, ghosts), `placing.ts`, `selectionEdits.ts`, `paintTools.ts` (Paint and Walls), `terrainTools.ts`,
+     `setPieceTools.ts`, `paletteBuilder.ts`, `inspector.ts`, `entityInspector.ts`, `mapProperties.ts`, `topBar.ts`,
+     `mapChecks.ts`, `mapSaving.ts`; plain helpers in `editorDom.ts` and `editorParts.ts`. Done mechanically (each
+     member's `this.` rewritten to the part or `this.app`), so the code is the same code; `keymap.test.ts` now reads
+     every MapMaker module for hand-matched keys.
 
 ## Phase 3: workflow
 1. **Play from here.**
@@ -179,6 +216,10 @@ Already done from the owner's earlier ask: **the real buildable area.**
      and portal pairs linked; the anchor on the cell under the pointer, on the level edited; one undo step).
      `pasteRefusal`: another cell size or level height is refused; another theme too while `PASTE_ACROSS_THEMES` is off
      (an owner's call: HANDOFF, Phase 3 part B). Client: `editor/clipboardStore.ts` (localStorage `tiletrigger.editor.clipboard`).
+   - **As built, the owner's answer (2026-11-09, `wip/mapmaker-fixes2`):** `PASTE_ACROSS_THEMES` is on: a copy goes
+     into a map of another theme, its pieces wearing that theme wherever they wore their old map's, their own paint
+     kept (a surface painted by hand, a set piece's own role pack); `pasteNote` puts it in the toast. Unit test in
+     `mapmakerEditing.test.ts`; e2e `editortools` → `editorPartBChecks` (pasted into a Factory map).
 5. **Templates.** Start a new map from an official starter layout: arena, symmetric CTF, assault, open terrain.
    - **As built:** `maps/templates/<id>.json` (arena, ctf, assault, open_terrain), built in MapMaker (its tools in the
      plan view; CTF's east half made with Mirror…) and exported. They sit outside `maps/*.json`, so the map index, the
@@ -198,6 +239,14 @@ Already done from the owner's earlier ask: **the real buildable area.**
      the map's first two teams swap (spawns, flags, team zones, doors, buttons, ziplines, team vehicles); Breakthrough
      spawn groups keep their side. Terrain and paths aren't mirrored (an owner's call: HANDOFF, Phase 3 part B). One undo step.
      Dialog: `editor/mirrorDialog.ts` (Shift+M). A unit test checks every mirrored tile's geometry is the mirror image.
+   - **As built, the owner's answers (2026-11-09, `wip/mapmaker-fixes2`):** half the map brings its bot hints
+     (`mirrorBotHint`: spot, facing, a jump's landing), team hints swapping sides with spawns; a hint on the far half
+     counts as something there. The dialog's **Terrain and paths too** (half the map only; `mirrorHalfCommand`'s
+     `ground`): `mirrorTerrainHalf` gives every vertex strictly on the far side the height at its mirrored point (on
+     the triangles the terrain draws) and every cell there the paint and plant cover of the cell its mirrored middle
+     lies in; paths wholly on the near half are copied (`mirrorPathCopy`: new ids; the track stays the map's one, so
+     a copy is a road or route), and a path on the far half then counts as something there. One undo step. Unit tests
+     in `mapmakerEditing.test.ts`; e2e `editortools` → `editorPartBChecks`.
 7. **Note pins:** notes left on the map for its makers.
    - They show in MapMaker, never in play.
    - They are stored in the map as editor notes (a format bump).
@@ -245,7 +294,7 @@ Already done from the owner's earlier ask: **the real buildable area.**
    - It builds on Bot AI Phase A (the scorecard and the navigation audit, docs/BOT_AI_PLAN.md).
    - **As built** (`wip/mapmaker-p4`, 2026-11-09; no format change, nothing stored in the map): the top bar's **Bot
      test** opens the Test panel (`client/editor/mapTestPanel.ts`): mode (the map's playable modes), bots a team or
-     in all (up to 32), 30 s to 5 min; a progress bar and Cancel (`Worker.terminate`). The run is
+     in all (up to 32; 64 since `wip/mapmaker-fixes2`, owner 2026-11-09), 30 s to 5 min; a progress bar and Cancel (`Worker.terminate`). The run is
      `shared/editor/mapTest.ts` `BotTestRun`: the same Match `pnpm bot-report` plays (bots added as the server adds
      them, no limits), stepped 15 ticks at a time in a worker of its own (`mapTestWorker.ts` / `mapTestWorkerCore.ts`,
      split as the match worker is for Safari). Stuck recoveries and failed searches come through `bots/botTrace.ts`
@@ -258,7 +307,7 @@ Already done from the owner's earlier ask: **the real buildable area.**
      posts the map and draws the result; the panel times MapMaker's frames during a run and shows the longest with the
      result. On this 4-core box at load 10-13: 75-100 ms of the worker's time a match second with 6-8 bots (a 5-minute
      run about 25-30 s), a navmesh build first (70 ms on Phase 0 Arena, 1.5 s on Diamond Park). e2e
-     `editorux` → `editorMapTestChecks`; unit `shared/test/mapTest.test.ts`.
+     `editorenv` → `editorMapTestChecks`; unit `shared/test/mapTest.test.ts`.
 2. **Sightlines and spawn exposure.**
    - For each spawn: how much can see it, and from how far.
    - Long sightlines drawn on the map.
@@ -294,6 +343,29 @@ Already done from the owner's earlier ask: **the real buildable area.**
    - Phone tiers: Low draws no particles, only the mist.
    - It is a map setting the host may override.
    - Its effect on play is kept small: what you can see, through fog.
+- **As built (2026-11-09, `wip/mapmaker-p5`, map format v34):**
+  - **time of day:** `MapDocument.timeOfDay` (hours 0-24; absent: the sky's own look, as before). `shared/map/timeOfDay.ts`
+    `sunAt`: the sun's arc (east at 06:00, south at noon at 62°, west at 18:00; the moon by night, west at dusk to east
+    at dawn, never under 6°), the light (hemisphere, sun, colour), the haze colours and the sky picture blended between
+    key times (night, dusk, sunrise, the map's own day sky, sunset, dusk, night; a grey day sky keeps its own picture at
+    sunrise and sunset). `client/backdrop.ts` draws the blend (a second sky box faded over the first) and sets the sun
+    once when the map is built, so the shadow cache stays valid; `previewTime` is MapMaker's live preview;
+  - **weather:** `MapDocument.weather` (`fall` none/rain/snow, `amount`, `wind`, `fog`, 0-1; `shared/map/weather.ts`).
+    `client/weatherVisuals.ts`: the fall is one mesh of quads placed by the vertex shader round the camera (wrapped in
+    a 36 m box; one draw), fog banks a second mesh of large soft sprites; the haze thickened by `weatherFogDensity`
+    (fog 0.5: about 360 m of sight; 1: 180 m), on every tier. Low draws no particles (`WEATHER_PARTICLES` low 0,
+    medium 2,500, high 6,000 at full amount). Under a roof (a ray up from the camera, four times a second) the fall
+    fades out. Sounds: `weather.rain` and `weather.wind`, synth recipes `rain` and `wind` (`game/weatherAudio.ts`,
+    docs/AUDIO.md). No lightning;
+  - **the host's override:** `MatchRules.weather` (`WEATHER_CHOICES`: clear, rain, storm, snow, blizzard, fog;
+    `matchWeather`): Match setup's Advanced rules (`MatchSetup.weather`) and the Host tab (`HostRulesPatch.weather`,
+    saved for the next match like the score limit; the weather never changes mid-match);
+  - **MapMaker:** Map properties → Time of day & weather (`client/editor/skyWeatherSection.ts`; the commands
+    `setTimeOfDay` and `setWeather`, `shared/editor/skyWeather.ts`): the sliders preview live (`EditorView.previewSky`)
+    and make one undo step when let go;
+  - **tests:** unit `shared/test/timeOfDayWeather.test.ts` (the sun maths, v33 → v34, the settings, the host
+    override), `client/test/weatherAudio.test.ts`; e2e `editorenv` → `editorSkyWeatherChecks` (the controls, the live
+    preview, TEST starts with the map's weather), `flashing` → the `rain` and `snow` moments.
 
 ## Phase 6: a guided first-time tour
 A short, skippable, interactive tour, remembered once done: place a room, a spawn and a pickup, then test it. It comes
@@ -306,7 +378,9 @@ last, once the interface has settled.
   - **Terrain → Change grid…** (`shared/editor/changeGrid.ts`, `client/editor/changeGridDialog.ts`): one command, one
     undo step, a preview of vertices, triangles and the file against its budget;
   - the **coast** border side (`shared/map/borderCoast.ts`, `client/borderCoast.ts`), per side in Sky → Border;
-  - e2e `editorux` → `editorTerrainGridChecks`; unit `terrainGrid.test.ts`, `borderCoast.test.ts`.
+  - e2e `editortools` → `editorTerrainGridChecks`; unit `terrainGrid.test.ts`, `borderCoast.test.ts`.
+  - **As built, the owner's answer (2026-11-09, `wip/mapmaker-fixes2`):** plants on a grid finer than 2 m grow as many
+    to the square metre as a 2.5 m grid (`terrain.ts` `plantShare`, `FINE_GRID_PLANTS_AS`; was 2 m).
 
 ### Environment Phase 3's MapMaker tools (lane item, owner 2026-11-08)
 - **As built (2026-11-09, `wip/mapmaker-env3`, no format change):** the Nature tab's Environment group (Trees, Plants,
@@ -315,9 +389,44 @@ last, once the interface has settled.
   variants, four presets, slope / altitude / material filters, keep-clear of spawns, routes and objectives with a
   confirmation to turn it off or to place a blocker there by hand), Show what blocks, the environment budget in the
   pane and as the brush's stop. Logic `shared/editor/envBrush.ts`, UI `client/editor/envTools.ts`; unit
-  `envBrush.test.ts`, e2e `editorux` → `editorEnvironmentChecks`. Docs: SCENERY.md "Environment group and brush".
+  `envBrush.test.ts`, e2e `editorenv` → `editorEnvironmentChecks`. Docs: SCENERY.md "Environment group and brush".
+- **As built, the owner's answer (2026-11-09, `wip/mapmaker-fixes2`):** the old Scatter Brush sets are retired from
+  the palette (its group, the `scatter` tool and its slider); N takes up the Environment brush (`envBrush` in
+  `EDITOR_KEYS`). No shipped map or test needed them: maps store the plants as props; the shared
+  `scatterProps` stays for unit tests that want a patch of plants. e2e: the rock and forest checks in `editorux` and
+  `scenery` paint with the Environment brush.
 - **Race wording (same branch):** the race layer reads track / NPC traffic; Map properties drops Race
   (`shared/editor/mapModes.ts`).
+
+## MapMaker fixes 2 (2026-11-09, `wip/mapmaker-fixes2`): bugs found building The Spillway, tests, the top bar
+- **The inspector dropped the first edit after a placement.** Cause: a placement selects the new thing (the
+  inspector is built) and changes the map (built again on the next frame, `EditorApp.refresh`); a value typed into
+  the first build's field before that frame went with the field (fields commit on `change`). Fix:
+  `client/editor/inspectorKeep.ts` `rebuildKeepingEdit`: every rebuild puts the field being typed in back (the same
+  field by place and kind gets the focus, the typed value and the caret, when it still shows the value the typing
+  started from). e2e `editorux` → `editorInspectorKeepChecks` (fails without the fix: the focus and value are gone).
+- **Stair feet.** `settle.ts` `terrainUnderFloors` (worked out, never stored) also brings ground a little under a
+  step (a solid no taller than `PLAYER.maxStepHeight`) up to 2 cm under its base within one grid spacing; a floor's
+  edge there stays 2 cm (not 5) under its top. Idempotent (a second pass changes nothing), checked on every shipped
+  map. bot-report (sunken_kingdom, glacier_line, fogbound; TDM, seeds 1-2, 120 s): stuck 42 → 25 a match.
+- **Lowering deeper than 3 m: not in general** (measured: it would carve six shipped maps, up to 27 m; BUILDING_KIT
+  "Ground and floors"). Instead **Cut ground to floors** (selection menu; `shared/editor/groundCut.ts`): the map's own
+  ground lowered under the selected floors, any depth, one undo step. Unit tests in `terrainFloors.test.ts`.
+- **`editorux` split** into `editorux`, `editorpieces`, `editortools` and `editorenv` (e2e/flowMap.mjs
+  `EDITOR_UX_FLOWS`), every check kept in its order.
+- **The top bar** fits Export, Import and Publish at 1400 px again (editor.css).
+
+### Map follow-ups: tile options (Sandfall, owner 2026-11-09)
+- **As built (2026-11-09, `wip/mapmaker-sandfall`, no format change):** a tile option is a tile of its own
+  (`content/tiles/core.json` `optionOf: { tile, option }`, `TileDefinition.optionOf`, checked by tools/content/tiles.mjs:
+  same cells and ports as the plain tile, one tile per option). The first: **Side walls** on the four Vaulted Tunnels
+  (`core.tunnel_vault*_walled`): the masonry capped by a kerb 0.25 m under the level above, the passage's floor inset
+  0.3 m from the closed sides and a buried floor inside each wall, so `terrainUnderFloors` keeps the ground on the
+  closed sides at the kerb instead of pulling it down to the passage. The palette lists only the plain tile; the tile
+  inspector's **Options** checkbox swaps them for one tile or several (`shared/editor/tileVariants.ts`
+  `setTileOptionCommand`, one undo step; UI `client/editor/tileOptionPanel.ts`). Unit `tileVariants.test.ts` (swap,
+  undo, several, the ground kept at the kerb, no earth in any walled tunnel's passage in any turn); e2e `editorux` →
+  `editorTileOptionChecks`.
 
 ## Order
 - **After set pieces part 2.** Both touch the palette, the ghost and selection, and set pieces give groups their

@@ -79,3 +79,51 @@ All in MapMaker, driven like a person (the same scratch Playwright driver), Expo
   (`turret_mg`) went behind each strongpoint's sandbags (the defenders' gun crews, a quarter of them, post there
   first). The numbers: HANDOFF's Iron Coast entry.
 - **Haze 0.4, mist 0.2** (golden hour, the sunset sky kept).
+
+## Part 3 (2026-11-09): the 1.25 m grid, natural cliffs, inland banks, the coast border, A1/A2 zone time
+All in MapMaker, driven like a person (the scratch Playwright driver, graphics Low), Export to `maps/iron_coast.json`.
+The MapMaker lane's editor half (map format v32: 321-vertex grids, Terrain → Change grid, the `coast` border side) made it possible.
+- **Grid**: Terrain → Change grid… → 1.25 m, Smooth (305 × 257 vertices). Every old vertex kept its height exactly
+  (checked), so the cliff was exactly as before until sculpted. File 1.02 MB of the 2 MB budget.
+- **The walkability check, corrected.** Part 2's climb flood walked vertex to vertex at 48°. On a 1.25 m grid that
+  check is wrong both ways: right after Change grid (heights unchanged) it "opened" x -190..-50 and 120..150, because
+  vertex steps across a steep triangle can zigzag along it at a gentler grade, which nothing in the game can do. The
+  game goes by the triangle: a character stands on ground up to 50° (`PLAYER.maxSlopeDegrees`) and Recast marks
+  triangles walkable by their own slope at the same angle. So part 3 floods **triangles** (each walkable if its own
+  slope is at most the angle, joined by shared edges, beach z < -75 to crest z > 0) at 50° and, for margin, 55°: on
+  the grid-changed map it finds exactly what part 1/2's map had (50°: x -155..-145 and 35..45, the far-west steps' and
+  the wooden stair's cuts; 55°: also 140..150, the east steps' cut). Every stroke of the reshape was checked with it,
+  and the final map gives **the same bins at 50° and at 55°**: no new way up. Bot nav audit: 0 traps before and after
+  (3,300 → 3,203 polygons, 124 → 123 ledge-drop links, islands 40 → 34).
+- **The cliff**: along the stretches clear of pieces (a brush footprint 1 m clear of every set piece, tile, block and
+  zone: x -189..-178, -142..-138, -119..-100, -95..-74, -39..-18, 9..18, 64..86, 114..121, 124..132, 165..174,
+  175..189), Smooth strokes along the face's middle, one pass for an 8 m face, two for 12 m, three for 16 m, an extra
+  one here and there, the line wandering ±0.6 m. The faces now rise over 5-10 cells (6-12 m; median 6-9 cells) with a
+  rounded lip and foot, steepest 55-80°. Where that left a face under 55° (x -92..-76, -33..-17, 77..89) the upper
+  part was brought forward again (Flatten to the cliff-top height along the line 62 % of the way up, a 1.6 m brush):
+  a steep upper face over a talus slope. Then 43 scree mounds at the foot (Raise, 2.5-4.3 m brushes, 0.5-2 m tall,
+  gaps between; clear of spawns, zones, props and pieces), painted gravel, plants Bare; Paint steep slopes as stone.
+- **Inland drops to banks** (Flatten to typed heights in bands from the toe up, a smoothstep profile with the toe and
+  length wandering, then Smooth; painted grass, plants Grassy): the crest's back bank 12 → 16 m (x -188..108, was z
+  20-28 in one or two old cells, now a 12-15 m slope, about 15-20°; the owner's screenshot: the bank beside the
+  bunkers behind the crest), the east bank by the bunker at x 104 (12 → 16 m over 11.5 m), the west plateau's bank (x
+  -138 → -125, 8 → 12 m) and its north steps (8 → 10 → 12 m at z -4 and 6, now one bank), the B3 knoll's west side, and
+  the grand stair plaza's two side walls (8 → 12 m over 8 m). None of them gated a route: everything they join is on
+  top already.
+- **Coast border**: Sky → Border → Per side: east and west **Coast** (south Shoreline & sea, north Forest wall). Scenery
+  only; the boundary and play area are the terrain's, unchanged. The forest's dark canopy band floated over the eased
+  headlands (held at the inland stretch's end height for its 40 m run towards the shore): `borderVisuals.ts` now lays
+  it on the coast's ground there too (one line; the MapMaker lane is told in HANDOFF). A thin lip of the band can still
+  show above the east headland from the beach.
+- **A1/A2 zone time**: Capture time 45 s each (inspector; was the default 20 s). 60 s was tried first: the beach then
+  fell at 122-147 s at 16 v 16 and the attack never broke through; 45 s gives 84-109 s (HANDOFF's table).
+- **Sea Wall / Sea Wall (Breached)**: not placed. The brief (MAP_21_Iron_Coast.md: "No continuous sea wall", "Cliff
+  foot: walls and pillboxes as in the image, not a long sea wall") puts cliff-foot defences in its place, which the map has.
+- **No Kenney foliage**: none in the map (Environment Phase 2 replaced it; checked: 0 Kenney props, all plants `env.*`).
+- **Steep faces left, and why**: the cliff beside each route and gun, where a brush would reach the piece (x
+  -176..-143 B1's casemate, the far-west steps and their pillbox; -136..-120 the west stair; -72..-40 B2's casemate and
+  the stone stair; -16..8 the grand stair's gatehouse; 20..63 the wooden stair and B3's knoll; 87..113 the cave and its
+  stair; 133..165 the east steps and B4's casemate): still one or two old cells, 70-80°, as before. The cave's cut (x
+  81..102, z -28..-20) and the pit round B2's casemate (they gate routes 6 and B2). The B3 knoll's north and east sides
+  (the casemate stands on them). A hollow behind the lip at x -118..-100 (an old one-cell gash at z -28, filled to a
+  3 m dip by the smoothing; nav audit finds no trap).

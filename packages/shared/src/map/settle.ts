@@ -4,6 +4,7 @@ import type { Vec3 } from '../math.ts';
 import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { blockBoxes, buildMapGeometry, propBoxes, type WorldBox } from './geometry.ts';
 import { withPathsLaid } from './paths.ts';
+import { PLAYER } from '../sim/constants.ts';
 import type { LightEntity, LightFixture, MapDocument, PropEntity } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
 
@@ -248,12 +249,24 @@ export function hungPropLift(boxes: readonly WorldBox[], e: Pick<PropEntity, 'id
  * a floor the ground goes just under the slab; on the floor's edges just under
  * its top, so open ground outside meets the floor without a step. Only ground
  * near a floor is touched (within FLOOR_REACH of its top): a hill a floor is
- * buried in, or a valley far below a bridge, stays as it is. Returns the same
- * terrain when nothing needed lowering. It only ever lowers, so it is worked
- * out from the ground as made every time (withGroundAsPlayed: every load as
- * played, and MapMaker's view) and never stored: the map's file and MapMaker's
- * document keep the ground as made, and the ground under a floor that moves or
- * goes comes back as it was.
+ * buried in, or a valley far below a bridge, stays as it is.
+ *
+ * Why not deeper (measured 2026-11-09, docs/BUILDING_KIT.md "Ground and floors"): the shipped maps hold floors the
+ * hill is meant to cover deeper than that: Sandfall's hypogeum rooms, the top of every flight cut into a terrace
+ * (Sunken Kingdom, Iron Coast, Whiteout Station: the ground the flight arrives on is 4 m over its floor), Eagle
+ * Spires' stepped blocks under its hills. A height grid can't tell those from a tunnel's cut, and a hill over a
+ * tunnel always crosses its mouth. A deep cut is the map maker's to make: MapMaker's Cut ground to floors (the
+ * selection menu) lowers the ground as made over the selected floors, however deep, in one undo step.
+ *
+ * Stair feet (stepFeet): open ground a little under the foot of a flight, a kerb or any step (a solid no taller than
+ * a player steps, standing on a floor or the ground) comes up to just under the step's base, so a flight rising from
+ * the ground (new terrain sits 0.15 m under a level, a flight's first step is 0.25 m up) is climbed as a step, not a
+ * 0.4 m lip bots and players can't take.
+ *
+ * Returns the same terrain when nothing changed. It is worked out from the ground as made every time
+ * (withGroundAsPlayed: every load as played, and MapMaker's view) and never stored: the map's file and MapMaker's
+ * document keep the ground as made, and the ground under a floor (or by a step) that moves or goes comes back as it
+ * was.
  */
 export const FLOOR_REACH = 3;
 export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] = buildMapGeometry(map)): TerrainData | null {
@@ -265,6 +278,7 @@ export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] 
   // Highest floors first: ground lowered under an upper floor may then reach a lower one, and goes under that
   // too in the same pass (so a second pass changes nothing).
   const floors = boxes.filter((b) => b.kind === 'floor' && !b.yaw && !b.pitch && !b.roll).sort((a, b) => b.max[1] - a.max[1]);
+  const foot = stepFootVertices(t, boxes);
   for (const b of floors) {
     const top = b.max[1];
     const c0 = Math.max(0, Math.ceil((b.min[0] - 0.01 - t.origin[0]) / s));
@@ -280,8 +294,11 @@ export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] 
         const i = r * t.cols + c;
         const h = (heights ?? t.heights)[i]!;
         const y = t.baseY + h / 100;
-        if (y > top + FLOOR_REACH || y <= top - 0.05) continue;
-        const want = cm(edge ? top - 0.05 : Math.min(top - 0.05, b.min[1] - 0.02));
+        // The edge at a step's foot (a flight starting on the floor's edge) stays only STEP_GAP under the top.
+        const footBase = edge ? foot.get(i) : undefined;
+        const gap = footBase !== undefined && Math.abs(top - footBase) < 0.06 ? STEP_GAP : 0.05;
+        if (y <= top - gap + 1e-6 || y > top + FLOOR_REACH) continue;
+        const want = cm(edge ? top - gap : Math.min(top - 0.05, b.min[1] - 0.02));
         if (h > want) {
           heights ??= [...t.heights];
           heights[i] = want;
@@ -289,7 +306,87 @@ export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] 
       }
     }
   }
-  return heights ? { ...t, heights } : t;
+  const under = heights ? { ...t, heights } : t;
+  return stepFeet(under, foot, floors) ?? under;
+}
+
+/** Whether (x, z) is within `d` metres of a box's footprint (a turned box by its turn). */
+function within(b: WorldBox, x: number, z: number, d: number): boolean {
+  let px = x;
+  let pz = z;
+  if (b.yaw) {
+    const cx = (b.min[0] + b.max[0]) / 2;
+    const cz = (b.min[2] + b.max[2]) / 2;
+    const c = Math.cos(-b.yaw);
+    const sn = Math.sin(-b.yaw);
+    px = cx + (x - cx) * c + (z - cz) * sn;
+    pz = cz - (x - cx) * sn + (z - cz) * c;
+  }
+  return Math.max(b.min[0] - px, 0, px - b.max[0]) <= d + 1e-6 && Math.max(b.min[2] - pz, 0, pz - b.max[2]) <= d + 1e-6;
+}
+
+/** The tallest a box is and still a step (a flight's step, a kerb): what a player steps up. */
+const STEP_RISE = PLAYER.maxStepHeight + 0.01;
+/** Ground at most this far under a step's base comes up to it; lower ground (a drop, a ditch) is left. */
+const STEP_REACH = 0.6;
+/** How far under a step's base the ground at its foot comes up to (a floor's edge there too, not its usual 5 cm). */
+const STEP_GAP = 0.02;
+
+/** The terrain vertices at the foot of a step (within one grid spacing of a solid no taller than a player steps up), each with the highest such step's base. */
+function stepFootVertices(t: TerrainData, boxes: readonly WorldBox[]): Map<number, number> {
+  const s = t.spacing;
+  const out = new Map<number, number>();
+  for (const b of boxes) {
+    if (b.kind !== 'solid' || b.pitch || b.roll || b.max[1] - b.min[1] > STEP_RISE) continue;
+    const base = b.min[1];
+    // The box's footprint (a turned one by the circle round it), one spacing out.
+    const rad = b.yaw ? Math.hypot(b.max[0] - b.min[0], b.max[2] - b.min[2]) / 2 : 0;
+    const cx = (b.min[0] + b.max[0]) / 2;
+    const cz = (b.min[2] + b.max[2]) / 2;
+    const [x0, x1, z0, z1] = b.yaw ? [cx - rad, cx + rad, cz - rad, cz + rad] : [b.min[0], b.max[0], b.min[2], b.max[2]];
+    const c0 = Math.max(0, Math.ceil((x0 - s - t.origin[0]) / s));
+    const c1 = Math.min(t.cols - 1, Math.floor((x1 + s - t.origin[0]) / s));
+    const r0 = Math.max(0, Math.ceil((z0 - s - t.origin[1]) / s));
+    const r1 = Math.min(t.rows - 1, Math.floor((z1 + s - t.origin[1]) / s));
+    for (let r = r0; r <= r1; r++) {
+      const z = t.origin[1] + r * s;
+      for (let c = c0; c <= c1; c++) {
+        const i = r * t.cols + c;
+        if ((out.get(i) ?? -Infinity) >= base) continue;
+        if (within(b, t.origin[0] + c * s, z, s)) out.set(i, base);
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Open ground at the foot of a step brought up to just under the step's base (terrainUnderFloors), where it lies a
+ * little under it (STEP_REACH). A vertex a floor keeps lower is left as the floors put it (all but the edge of a floor
+ * at the step's own height, which terrainUnderFloors leaves STEP_GAP under its top). Null when nothing changed.
+ */
+function stepFeet(t: TerrainData, foot: ReadonlyMap<number, number>, floors: readonly WorldBox[]): TerrainData | null {
+  const s = t.spacing;
+  let heights: number[] | null = null;
+  for (const [i, base] of foot) {
+    const h = (heights ?? t.heights)[i]!;
+    const want = Math.floor((base - STEP_GAP - t.baseY) * 100);
+    if (h >= want || h < (base - STEP_REACH - t.baseY) * 100) continue;
+    const x = t.origin[0] + (i % t.cols) * s;
+    const z = t.origin[1] + Math.floor(i / t.cols) * s;
+    const y = t.baseY + want / 100;
+    const kept = floors.some((f) => {
+      const top = f.max[1];
+      if (y <= top - 0.05 || y > top + FLOOR_REACH) return false;
+      if (x < f.min[0] - 0.01 || x > f.max[0] + 0.01 || z < f.min[2] - 0.01 || z > f.max[2] + 0.01) return false;
+      const edge = x <= f.min[0] + 0.01 || x >= f.max[0] - 0.01 || z <= f.min[2] + 0.01 || z >= f.max[2] - 0.01;
+      return !(edge && Math.abs(top - base) < 0.06);
+    });
+    if (kept) continue;
+    heights ??= [...t.heights];
+    heights[i] = want;
+  }
+  return heights ? { ...t, heights } : null;
 }
 
 /**

@@ -17,6 +17,7 @@
     "bot-report": "pnpm --silent --filter @tiletrigger/server bot-report",
     "nav-audit": "pnpm --silent --filter @tiletrigger/server nav-audit",
     "gun-report": "pnpm --silent --filter @tiletrigger/server gun-report",
+    "net-report": "pnpm --silent --filter @tiletrigger/server net-report",
     "bench:96:clump": "pnpm --filter @tiletrigger/server bench 96 30 maps/norman_shores.json maps/frost_basin.json maps/riot_junction.json --mode=core.tdm --warmup=10 --variants=spread,clump",
     "validate-map": "pnpm --filter @tiletrigger/server validate-map",
     "e2e": "node e2e/run.mjs",

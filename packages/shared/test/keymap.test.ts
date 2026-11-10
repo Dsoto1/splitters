@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { EDITOR_KEYS, EDITOR_KEY_NOTES, FLY_KEYS, FREE_MEASURE_KEYS, FREE_PLACE_KEYS, editorKeyGroups, keyFor, matchEditorKey, type KeyAction } from '../src/index.ts';
@@ -36,7 +37,7 @@ function before(code: string, shift: boolean, mod: boolean): KeyAction | null {
     KeyX: 'erase',
     KeyU: 'measure',
     KeyG: shift ? 'raceTrack' : 'paths',
-    KeyN: 'scatter',
+    KeyN: 'envBrush',
     KeyP: 'place',
     KeyI: 'pickStyle',
     KeyV: 'select',
@@ -122,7 +123,10 @@ describe('MapMaker key table and the ? overlay (Phase 1, item 5)', () => {
     const held = new Set(EDITOR_KEY_NOTES.flatMap((n) => n.held ?? []));
     for (const c of [...Object.values(FLY_KEYS), ...FREE_PLACE_KEYS, ...FREE_MEASURE_KEYS]) expect(held.has(c), c).toBe(true);
     // MapMaker reads no other held key by name: every `keys.has('…')` in the editor is from the table's lists.
-    const src = readFileSync(fileURLToPath(new URL('../../client/src/editor/editorApp.ts', import.meta.url)), 'utf8');
+    // Every MapMaker module (editorApp.ts was split along its features: the keys are in editorInput.ts).
+    const dir = fileURLToPath(new URL('../../client/src/editor/', import.meta.url));
+    const src = readdirSync(dir).filter((f) => f.endsWith('.ts')).map((f) => readFileSync(join(dir, f), 'utf8')).join('\n');
+    expect(src).toContain('matchEditorKey');
     expect(src.match(/keys\.has\('[A-Za-z]+'\)/g) ?? []).toEqual([]);
     expect(src.match(/\['(Control|Shift|Alt|Meta)\w+'/g) ?? [], 'held-key lists come from the table').toEqual([]);
     // And no key is matched by hand outside the table (the old handler's `case 'KeyR':` and `e.code === 'F5'`).

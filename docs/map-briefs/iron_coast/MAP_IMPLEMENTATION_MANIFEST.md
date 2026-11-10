@@ -107,10 +107,20 @@ export. The reasons and the measurements are in `DECISIONS_AND_DEVIATIONS.md`, "
 - A prop placed where the level plane (y 0) is above the ground (the surf) stands on the plane: **Settle all props on
   ground** (Map properties) beds them all.
 
+## Progress, part 3 (2026-11-09)
+All through MapMaker's UI (the scratch driver, Export), `validate-map` **0 issues**. Details in `DECISIONS_AND_DEVIATIONS.md`, "Part 3".
+- **Terrain**: Change grid to 1.25 m (Smooth); the cliff leaned back with a rounded lip and scree where it is clear of
+  pieces; the inland drops (crest's back bank, east bank, west plateau, knoll's west side, plaza walls) are grassy
+  slopes. Checked with a triangle flood at 50° and 55°: no new way up.
+- **Border**: east and west Coast (south Shoreline & sea, north Forest wall).
+- **A1/A2**: Capture time 45 s.
+- **Driver tricks**: graphics Low makes the driven MapMaker about 4× faster (8 fps idle on this map at 1.25 m); keep
+  palette-side points off the canvas edge (chunks of 40 m, not 90); check walkability by triangles, not vertex steps.
+
 **Left (next steps, in order):**
-1. The owner's calls: the finer terrain grid (DECISIONS, "Part 2"); whether the beach should hold longer still (more
-   zone time, or more posts).
-2. Playtest the beach and the stairs with people.
+1. Playtest the beach (45 s zones) and the new banks with people; the attack now breaks through more often in bot
+   matches (the inland slopes help it move behind the crest): the owner's call whether B/C need more.
+2. The cliff beside the routes and guns is still sheer (DECISIONS, "Part 3", steep faces left).
 
 **MapMaker driver tricks (the scratch driver won't survive):**
 - Keep ONE MapMaker open (vite preview, not dev) and feed it command files; reloading a big map costs minutes. Import

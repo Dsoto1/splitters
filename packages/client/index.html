@@ -197,10 +197,13 @@
         </div>
         <button id="ed-status" class="pill">Checking…</button>
         <div class="tabs ed-modes" id="ed-modes">
-          <button id="ed-build-btn" class="tab on" data-ws="build" title="Build: tiles, walls and openings, props">Build</button>
-          <button id="ed-entities-btn" class="tab" data-ws="entities" title="Entities: NPCs, spawns and pickups, vehicles, doors and traps">Entities</button>
+          <button id="ed-build-btn" class="tab on" data-ws="build" title="Build: tiles, set pieces, walls and openings">Build</button>
+          <button id="ed-props-btn" class="tab" data-ws="props" title="Props: furniture, clutter and dressing by theme; lights and liquids">Props</button>
+          <button id="ed-entities-btn" class="tab" data-ws="entities" title="Gameplay: spawns, objectives and pickups, NPCs, vehicles, doors, logic objects and traps"><span class="wide">Gameplay</span><span class="narrow">Game</span></button>
           <button id="ed-logic-btn" class="tab" data-ws="logic" title="Scenario logic: objectives, variables, timers, rules (L)">Logic</button>
           <button id="ed-env-btn" class="tab" data-ws="environment" title="Environment: paint, plants and terrain; sky, backdrop and border"><span class="wide">Environment</span><span class="narrow">Env</span></button>
+          <button id="ed-paths-btn" class="tab" data-ws="paths" title="Paths: roads, streets and trails, the track for NPC traffic, AI routes and drop routes">Paths</button>
+          <button id="ed-testmode-btn" class="tab" data-ws="test" title="Test: play the map, play from here, the bot test and the plan view">Test</button>
         </div>
         <div class="spacer"></div>
         <button id="ed-grid" class="ed-toggle on" aria-pressed="true" title="Grid lines on the level being edited, round where you're looking (the playable boundary and build limit always show)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="wide">Grid</span></button>
@@ -223,16 +226,18 @@
             <button class="tab on" data-ws="build" data-pane="tiles" data-cat="structure" title="Structure: rooms, corridors, buildings, stairs and open ground">Tiles</button>
             <button class="tab" data-ws="build" data-pane="setpieces" data-cat="structure" title="Set pieces: structures of several cells placed as one (a carriageway, a skybridge, a casemate), and your own, saved from a selection">Set pieces</button>
             <button class="tab" data-ws="build" data-pane="advanced" data-cat="structure" title="Walls &amp; openings: build any side of a room as a wall, window, doorway or gap">Walls</button>
-            <button class="tab" data-ws="build" data-pane="props" data-cat="props" title="Props by theme: home &amp; town, industrial, sci-fi, medieval, dungeons, western, ancient">Props</button>
+            <button class="tab" data-ws="props" data-pane="props" data-cat="props" title="Props by theme: home &amp; town, industrial, sci-fi, medieval, dungeons, western, ancient" hidden>Props</button>
             <button class="tab" data-ws="entities" data-pane="entities" data-cat="gameplay" title="Gameplay: spawns, game-mode objectives and pickups" hidden>Gameplay</button>
             <button class="tab" data-ws="entities" data-pane="npcs" data-cat="npcs" title="NPCs: soldiers, squads and spawners" hidden>NPCs</button>
-            <button class="tab" data-ws="entities" data-pane="vehicles" data-cat="vehicles" title="Vehicles &amp; turrets, parked vehicles and tracks for NPC traffic" hidden>Vehicles</button>
+            <button class="tab" data-ws="entities" data-pane="vehicles" data-cat="vehicles" title="Vehicles &amp; turrets: parked vehicles, turrets and gunships (the track for NPC traffic is in Paths)" hidden>Vehicles</button>
             <button class="tab" data-ws="entities" data-pane="scenario" data-cat="objects" title="Objects &amp; logic: doors, buttons, triggers, lifts, platforms, destructibles and traps" hidden>Objects</button>
-            <button class="tab" data-ws="entities" data-pane="lights" data-cat="lights" title="Lights &amp; FX: lamps, neon, fire and liquids" hidden>Lights</button>
+            <button class="tab" data-ws="props" data-pane="lights" data-cat="lights" title="Lights &amp; FX: lamps, neon, fire and liquids" hidden>Lights</button>
             <button class="tab" data-ws="environment" data-pane="paint" data-cat="paint" title="Paint: materials and tints for any surface" hidden>Paint</button>
-            <button class="tab" data-ws="environment" data-pane="plants" data-cat="nature" title="Nature: trees, rocks and plants, and the scatter brush" hidden>Nature</button>
+            <button class="tab" data-ws="environment" data-pane="plants" data-cat="nature" title="Nature: trees, rocks and plants, and the Environment brush" hidden>Nature</button>
             <button class="tab" data-ws="environment" data-pane="terrain" data-cat="terrain" title="Terrain: sculpt and paint open ground" hidden>Terrain</button>
             <button class="tab" data-ws="environment" data-pane="sky" data-cat="sky" title="Sky: sky, distant scenery, haze and the border round the map" hidden>Sky</button>
+            <button class="tab" data-ws="paths" data-pane="paths" data-cat="terrain" title="Paths: roads, streets, trails and walkways, the track for NPC traffic, AI routes and drop routes" hidden>Paths</button>
+            <button class="tab" data-ws="test" data-pane="test" data-cat="gameplay" title="Test: play the map, play from here, the bot test and the plan view" hidden>Test</button>
           </div>
           <div class="ed-search-row">
             <input id="ed-search" type="search" placeholder="Search all pieces… ( / )" autocomplete="off" spellcheck="false" aria-label="Search the palette: names, themes and packs" />
@@ -245,7 +250,7 @@
         </div>
         <div id="ed-pack-note" class="ed-note" hidden></div>
         <div id="ed-pal-quick">
-          <div class="ed-quick-tabs"><button type="button" data-q="favs">★ Favourites <small></small></button><button type="button" data-q="recent">Recent <small></small></button></div>
+          <div class="ed-quick-tabs"><button type="button" data-q="favs">★ Favourites <small></small></button><button type="button" data-q="recent">Recent <small></small></button><button type="button" data-q="only" class="ed-quick-only" aria-pressed="false" title="Only this mode's pieces (otherwise they come first, the rest after)">This mode only</button></div>
           <div class="ed-quick-row"></div>
           <p class="ed-quick-empty ed-note"></p>
         </div>
@@ -284,8 +289,13 @@
         <div class="ed-pane" data-pane="lights" data-cat="lights" hidden>
           <div id="ed-lights"></div>
         </div>
-        <div class="ed-pane" data-pane="terrain" data-cat="terrain" hidden>
+        <div class="ed-pane" data-pane="paths" data-cat="terrain" hidden>
           <div id="ed-terrain-paths"></div>
+        </div>
+        <div class="ed-pane" data-pane="test" data-cat="gameplay" hidden>
+          <div id="ed-test-pane"></div>
+        </div>
+        <div class="ed-pane" data-pane="terrain" data-cat="terrain" hidden>
           <h3>Terrain</h3>
           <div id="ed-tr-create">
             <p class="ed-note">Open ground you can sculpt into hills, ridges and canyons, then paint with grass, dirt, stone and more. Tiles and props sit on top.</p>
@@ -347,10 +357,17 @@
         </div>
       </aside>
       <aside id="ed-right">
-        <section id="ed-inspector"></section>
-        <section>
-          <h3>Validation</h3>
-          <ul id="ed-issues"></ul>
+        <section class="ed-panel" data-panel="outliner" id="ed-outliner-panel">
+          <h3 class="ed-panel-head"><button type="button" aria-expanded="true" title="Everything in the map: search, select and frame, hide and lock (editor only)">Outliner</button><span id="ed-ol-count"></span></h3>
+          <div class="ed-panel-body" id="ed-outliner"></div>
+        </section>
+        <section class="ed-panel" data-panel="inspector">
+          <h3 class="ed-panel-head"><button type="button" aria-expanded="true">Inspector</button></h3>
+          <div class="ed-panel-body"><section id="ed-inspector"></section></div>
+        </section>
+        <section class="ed-panel" data-panel="issues">
+          <h3 class="ed-panel-head"><button type="button" aria-expanded="true">Validation</button></h3>
+          <div class="ed-panel-body"><ul id="ed-issues"></ul></div>
         </section>
       </aside>
       <div id="ed-overlay">

@@ -44,6 +44,16 @@ const store = {
 };
 
 const RECENT_MAX = 14;
+
+/**
+ * The quick row's order (favourites or recent, as kept): the current mode's pieces first, in their own order, then the
+ * rest; with `only`, the mode's alone. `panes` null (no mode yet): as kept.
+ */
+export function quickOrder(keys: readonly string[], paneOf: (key: string) => string | undefined, panes: readonly string[] | null, only: boolean): string[] {
+  if (!panes) return [...keys];
+  const mine = keys.filter((k) => panes.includes(paneOf(k) ?? ''));
+  return only ? mine : [...mine, ...keys.filter((k) => !mine.includes(k))];
+}
 const RESULTS_MAX = 120;
 const ARROWS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End']);
 
@@ -59,6 +69,9 @@ export class Palette {
   private recent: string[] = store.get<string[]>('recent', []);
   private openGroups: Record<string, boolean> = store.get('groups', {});
   private quickMode: 'favs' | 'recent' = store.get('quick', 'favs');
+  /** The current mode's panes (null: before one is shown), and whether the quick row shows only that mode's pieces. */
+  private modePanes: readonly string[] | null = null;
+  private modeOnly: boolean = store.get('modeOnly', false);
   private query = '';
   private readonly observer?: IntersectionObserver;
   private readonly thumbKeys = new WeakMap<Element, string>();
@@ -277,11 +290,27 @@ export class Palette {
     this.renderQuick();
   }
 
+  /**
+   * The mode the palette shows (editorModes.ts): its panes' favourites and recent pieces come first in the quick row,
+   * the rest after them, or only its own with "This mode only".
+   */
+  setMode(panes: readonly string[]): void {
+    if (this.modePanes?.join() === panes.join()) return;
+    this.modePanes = panes;
+    this.renderQuick();
+  }
+
   private renderQuick(): void {
-    const list = (this.quickMode === 'favs' ? this.favs : this.recent).map((k) => this.entries.get(k)).filter((e): e is Entry => !!e && e.inPack);
+    const keys = quickOrder(this.quickMode === 'favs' ? this.favs : this.recent, (k) => this.entries.get(k)?.pane, this.modePanes, this.modeOnly);
+    const list = keys.map((k) => this.entries.get(k)).filter((e): e is Entry => !!e && e.inPack);
     for (const b of this.quick.querySelectorAll<HTMLElement>('.ed-quick-tabs button')) {
+      if (b.dataset.q === 'only') {
+        b.classList.toggle('on', this.modeOnly);
+        b.setAttribute('aria-pressed', String(this.modeOnly));
+        continue;
+      }
       b.classList.toggle('on', b.dataset.q === this.quickMode);
-      const n = (b.dataset.q === 'favs' ? this.favs : this.recent).filter((k) => this.entries.has(k)).length;
+      const n = quickOrder(b.dataset.q === 'favs' ? this.favs : this.recent, (k) => this.entries.get(k)?.pane, this.modePanes, this.modeOnly).filter((k) => this.entries.has(k)).length;
       b.querySelector('small')!.textContent = n ? String(n) : '';
     }
     const row = this.quick.querySelector<HTMLElement>('.ed-quick-row')!;
@@ -488,8 +517,13 @@ export class Palette {
     this.root.addEventListener('focusout', () => this.hideTip());
     this.root.addEventListener('scroll', () => this.hideTip(), { passive: true });
     this.quick.querySelector('.ed-quick-tabs')!.addEventListener('click', (e) => {
-      const q = (e.target as HTMLElement).closest<HTMLElement>('button')?.dataset.q as 'favs' | 'recent' | undefined;
+      const q = (e.target as HTMLElement).closest<HTMLElement>('button')?.dataset.q as 'favs' | 'recent' | 'only' | undefined;
       if (!q) return;
+      if (q === 'only') {
+        this.modeOnly = !this.modeOnly;
+        store.set('modeOnly', this.modeOnly);
+        return this.renderQuick();
+      }
       this.quickMode = q;
       store.set('quick', q);
       this.renderQuick();
