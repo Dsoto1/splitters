@@ -593,6 +593,8 @@ for the owner's review, not landed).**
 
 **Landing now: Community maps (`check/community-maps`; community maps agent), please hold code pushes to main.** (2026-11-10; one merge of origin/main, one check run, then a fast-forward.)
 
+**Next in line to land: the MapMaker tour's Help button** (`check/mapmaker-tour-help`, MapMaker lane, 2026-11-10; green, run 42798341358), after Community maps: one merge of origin/main, a check run if code moved, then a fast-forward.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - **The overhaul is complete (2026-11-10):** Phase 6, the first-time tour, landed last; the editor-code claim is released. Still in this lane: The Spillway and Verdant Protocol (built, green, waiting for the owner's review) and their follow-ups.
