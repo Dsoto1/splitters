@@ -591,6 +591,12 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
+**Next in line to land: the MapMaker tour's Help button** (`check/mapmaker-tour-help`, MapMaker lane, 2026-11-10; green, run 42798341358), after Community maps: one merge of origin/main, a check run if code moved, then a fast-forward.
+
+**Next in line to land: Community maps** (`check/community-maps` at 3a43a6c, community maps agent, 2026-11-10), after the tour's Help button. Not landed: run 42802508683 is red only on the e2e `fireteams` flow ("a tap of B opens the quick-message menu" in 3 of 4 attempts, once "the squad holds"; that check also failed once on fireteams part 3's own run 42780770897); every other flow passed, `community`, `lobby` and `editor` included. The one allowed re-run is used: the owner or the next session decides (re-run, or look at `fireteams` first). Landing lock released.
+
+**Next in line to land: Bot AI Phase D** (`check/bots-d`, Bot AI Phase D agent, 2026-11-10), after Community maps: one merge of origin/main, one check run, then a fast-forward. Touches brain.ts, director.ts, teamBrain.ts, vantage.ts, nav/parkour.ts, sim/mapNav.ts, match.ts (a debug-frame method, the director's hints), the client's session.ts / localTransport.ts / matchHost.ts (the `?botdebug=1` view) and one e2e check in `teams`; no editor or map files.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - **The overhaul is complete (2026-11-10):** Phase 6, the first-time tour, landed last; the editor-code claim is released. Still in this lane: The Spillway and Verdant Protocol (built, green, waiting for the owner's review) and their follow-ups.
