@@ -777,6 +777,7 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 - **Session memory:** write .control-center/session-summary.json at the end of your sessions.
 
 **Landing now: kit-prop generators part 1 (`check/mapmaker-kit-props`, from `wip/mapmaker-kit-props` = `wip/kit-props` 4aa5e42 + the test fix + origin/main; MapMaker lane, now the main session, 2026-11-10), please hold code pushes to main.** Run 42846096828 was red on one check, `editorenv` "the bot test run goes on in the background": the test read the progress bar at the worker's ready line ("0:00 of 5:00 played", bar 0). It now waits for the first progress report; the flow passes locally. One check run, then a fast-forward; this line goes when it lands or fails.
+**Next in line to land: throwables (dynamite)** (`check/weapons-throwables`, `wip/weapons-throwables` 3705351: Dynamite wears the Emergency Flare model; content, one model, docs only; weapon and vehicle lane, 2026-11-10).
 
 **Landed: Fireteams CTF roles fix** (`wip/fireteams-4` at ec8ecfb, in train `check/train-20261110-164310`, main = 37b7f94, green; lead session, 2026-11-10): the smallest squad defends only from 4+ squads a side; the HUD role word hides after a leader's order.
 
