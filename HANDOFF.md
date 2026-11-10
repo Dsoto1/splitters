@@ -625,7 +625,7 @@ for the owner's review, not landed).**
 
 
 ### Hand-off to the MapMaker lane (owner, 2026-11-10)
-The MapMaker lane (other account) takes over all remaining work; the main session has stopped (weekly usage capped). Queue, owner decisions and open threads:
+The MapMaker lane (other account) is **the main session for the rest of the week** (owner, 2026-11-10) and owns this whole queue, except the **weapon and vehicle lane** (items 3 and 4: throwables + flare gun, vehicle refreshes), which stays with this account on `wip/weapons-*` / `wip/vehicles-*` branches, claimed here first; if that lane says here that it has stopped, the work is yours. Same rules for both: claims, one "Landing now" lock at a time with "Next in line" turns, merge origin/main once, one check/ push, fast-forward only to green, re-run only a known flake and only once, no rebases or force-pushes of pushed work, no PRs, no unattended push loops. Queue, owner decisions and open threads:
 
 #### Priority: St. John's performance (owner's recording, 2026-11-10 17:08; files in the owner's uploads, copied to the main session's scratchpad perf-stjohns/; ask the owner to re-send them to you)
 - **Setup:** M1 Pro, Chrome, High graphics, 1920×1080 @2, Roulette, 41 players and 63 bots, local match, build 0.9.0 (e64400d).
@@ -644,7 +644,7 @@ The MapMaker lane (other account) takes over all remaining work; the main sessio
    - Then run "Replace all" for 722 placements on 57 maps.
    - [Themed pieces stay authored. One look per retired prop.]
 2. **Kit-prop generators part 2:** fences and walls, then containers. [Owner: this order.]
-3. **Throwables and the flare gun** (owner 2026-11-10; Meshy Community models in the owner's Drive folder; check each post's licence: CC0 needs no credit, CC BY 4.0 needs one):
+3. **[weapon and vehicle lane, this account] Throwables and the flare gun** (owner 2026-11-10; Meshy Community models in the owner's Drive folder; check each post's licence: CC0 needs no credit, CC BY 4.0 needs one):
    - **Dynamite** uses the Emergency Flare model (`Meshy_AI_Emergency_Flare_1110164645_texture.glb`): red sticks with a fuse. Keep dynamite's mechanics (3 s fuse, 6 m blast).
    - **Airstrike flare becomes a flare-gun shot.** Bring in the flare gun model we already have but never imported (the Guns&Explosives pack in the Drive, docs/ARSENAL.md "Not imported: … the flare gun"). Use it for the airstrike marker:
      - same aim and arc as grenade throwing (the grenade arc preview);
@@ -657,7 +657,7 @@ The MapMaker lane (other account) takes over all remaining work; the main sessio
    - **Holy bomb:** "Gold Silver Toned Hi…" (`Meshy_AI__Gold_Silver_Toned_Hi_1110164632_texture.glb`), probably. Confirm with the owner.
    - Process them like the grenades: docs/ARSENAL.md "Grenades", content provenance, and one model each in the hand, in flight and on the pickup.
    - **Stormvolt Blaster** (`Meshy_AI_Stormvolt_Blaster_1109190242_texture.glb`, a gun) is NOT for now. Add it to the parked "new weapons" list with any other new ones, for a later full weapon release (new weapon types stay paused).
-4. **Vehicle refreshes, directly after the weapons** (six Meshy Community CC0 models, the Drive folder, 2026-11-08). Re-skin existing vehicles; no new vehicle types. Proposed match from the names; render each model and confirm with the owner before you build:
+4. **[weapon and vehicle lane, this account] Vehicle refreshes, directly after the weapons** (six Meshy Community CC0 models, the Drive folder, 2026-11-08). Re-skin existing vehicles; no new vehicle types. Proposed match from the names; render each model and confirm with the owner before you build:
 
    | Model | Proposed existing vehicle | Why |
    |---|---|---|
