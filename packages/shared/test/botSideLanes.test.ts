@@ -30,7 +30,7 @@ describe('side lanes by a corridor of the trip', () => {
   it('never the shortest, nor one for another goal, nor one with no corridor that side', () => {
     expect(sideCorridor([trip()], me, { x: 80, y: 0, z: 100 }, 1)).toBeNull();
     const one = trip();
-    (one.trip as { corridors: Corridor[] }).corridors = one.trip.corridors.slice(0, 2);
+    (one.trip as unknown as { corridors: Corridor[] }).corridors = one.trip.corridors.slice(0, 2);
     expect(sideCorridor([one], me, goal, 1)).toBeNull();
     expect(sideCorridor([one], me, goal, -1)!.via!.x).toBe(-30);
     expect(sideCorridor(undefined, me, goal, 1)).toBeNull();

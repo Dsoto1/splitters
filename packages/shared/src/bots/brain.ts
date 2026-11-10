@@ -1285,7 +1285,7 @@ export class BotBrain {
       // Route spread: a corridor of the side's trip there, on that side of the way, by its vias (where it is furthest
       // from the trip's other corridors), rather than a sampled place to the side, which re-joined the main way by the
       // trip's middle (CTF's busiest way about 60 %).
-      const c = far && side && SIDE_CORRIDORS ? sideCorridor(view.plan?.trips, me, g.pos, side) : null;
+      const c = far && side && BOT_SWITCHES.sideCorridors ? sideCorridor(view.plan?.trips, me, g.pos, side) : null;
       if (c && c.vias.every((v) => view.nav.reachable(me, v)) && view.nav.reachable(c.vias[c.vias.length - 1]!, g.pos)) {
         this.laneCorridors++;
         lane = this.lane = { goal: { ...g.pos }, via: null, c };
@@ -4113,7 +4113,7 @@ export class BotBrain {
   private pastHulls(view: BotWorldView, aim: Vec3): Vec3 {
     const hulls = view.hulls;
     const me = view.self;
-    if (!hulls?.length || me.riding || me.climbing || this.link || me.grounded === false) return aim;
+    if (!hulls?.length || !BOT_SWITCHES.hulls || me.riding || me.climbing || this.link || me.grounded === false) return aim;
     const tick = view.tick;
     const hp = this.hullPass;
     if (hp && tick < hp.until && horizontalDistance(me.pos, hp.pos) > 0.6) return hp.pos;
@@ -4621,12 +4621,11 @@ function farthest(points: readonly Vec3[], from: Vec3): Vec3 | undefined {
  * length with the teammates on it, and the deaths and sightings near it), with a little of the bot's own taste (up to
  * ×1.3): null when no trip ends there.
  */
-/** Side lanes take a corridor of the side's trip (sideCorridor); off: laneWaypoint, as before. */
-export let SIDE_CORRIDORS = true;
-/** For measuring with and without (tests, bot-report ablations). */
-export function setSideCorridors(on: boolean): void {
-  SIDE_CORRIDORS = on;
-}
+/**
+ * Switches for measuring with and without (tests; bot-report's BOT_OFF=sideCorridors,hulls): side lanes by a corridor
+ * of the side's trip (sideCorridor; off: laneWaypoint, as before), and walking round still hulls (pastHulls).
+ */
+export const BOT_SWITCHES = { sideCorridors: true, hulls: true };
 
 /**
  * A corridor (not the shortest) of the side's trip to `goal` whose via lies on `side` of the way from `me` (-1 left,

@@ -3,10 +3,13 @@ import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOT_DIFFICULTIES, CHARACTER_PROFILES, bodyClass, getLook, getMountDef, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getItem, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
-import { BotTrace, BreakthroughMode, CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
+import { BOT_SWITCHES, BotTrace, BreakthroughMode, CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
 import { SquadMeter, squadText, squadTotals, type SquadRow } from './squadMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
+
+// Ablations: BOT_OFF=sideCorridors,hulls plays with those bot changes switched off (brain.ts BOT_SWITCHES).
+for (const k of (process.env.BOT_OFF ?? '').split(',')) if (k in BOT_SWITCHES) BOT_SWITCHES[k as keyof typeof BOT_SWITCHES] = false;
 
 /**
  * Bot behaviour report and scorecard (docs/BOTS.md, "Measuring" and "Scorecard"): plays headless matches of Player
@@ -152,6 +155,9 @@ export interface MatchRow {
   keptRight?: number;
   /** Stuck recoveries within a metre of a hull standing still (a parked vehicle, a wreck, a turret: off the navmesh). */
   stuckByHull?: number;
+  /** Samples of living bots on foot, and of those within 0.8 m of a teammate on foot (crowds: overlapping). */
+  onFoot?: number;
+  overlapping?: number;
   /** Tall bodies' routes (NavWorld.findPath `tall`) on a map with low headroom, and those that went under it (no way round). */
   tallRoutes?: number;
   lowRoutes?: number;
@@ -671,6 +677,13 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     }
     if (k % SAMPLE) continue;
     const dt = SAMPLE / TICK_RATE;
+    // Crowds: living bots on foot, and those within 0.8 m of a teammate on foot (bodies pass through each other: a clump).
+    for (const c of bots) {
+      if (!c.alive || c.mount) continue;
+      out.onFoot = (out.onFoot ?? 0) + 1;
+      const p = c.move.pos;
+      if (bots.some((o) => o !== c && o.alive && !o.mount && o.faction === c.faction && Math.abs(o.move.pos.y - p.y) < 1 && Math.hypot(o.move.pos.x - p.x, o.move.pos.z - p.z) < 0.8)) out.overlapping = (out.overlapping ?? 0) + 1;
+    }
     for (const c of bots) {
       const r = rec.get(c.slot)!;
       const b = c.bot!;
@@ -1055,7 +1068,7 @@ function printMatch(m: MatchRow): void {
   if (m.weaponKills) console.log(`weapons (${getWeaponSet(m.set).name}): ${killsText(new Map(Object.entries(m.weaponKills)))}`);
   if (m.weaponUse && Object.keys(m.weaponUse).length) console.log(`weapon use (bots' rounds, hits, mean hit distance; spread ${useSpread([m]).toFixed(3)}): ${Object.entries(m.weaponUse).sort((a, b) => b[1][0] - a[1][0]).map(([w, [n, h, d]]) => `${w.replace('core.', '')} ${n}/${h} ${d.toFixed(1)} m`).join(', ')}`);
   const made = [0, 1, 2].map((k) => sum(m.bots, (r) => r.parkour?.[k] ?? 0));
-  if (m.parkourLinks) console.log(`parkour: links ${m.parkourLinks[0]} drops, ${m.parkourLinks[1]} gap jumps, ${m.parkourLinks[2]} jumps up | made ${made[0]} drops, ${made[1]} gap jumps, ${made[2]} jumps up (missed ${sum(m.bots, (r) => r.parkourMissed ?? 0)}, given up ${sum(m.bots, (r) => r.parkourGaveUp ?? 0)}) | routes along a group's corridor ${sum(m.bots, (r) => r.along ?? 0)} | searches put off a tick ${m.searchesPutOff ?? 0} | ticks keeping right of a teammate ${m.keptRight ?? 0} | still hulls walked round ${sum(m.bots, (r) => r.hulls ?? 0)}, stuck recoveries by one ${m.stuckByHull ?? 0} | side lanes by a corridor ${sum(m.bots, (r) => r.laneCorridors ?? 0)}`);
+  if (m.parkourLinks) console.log(`parkour: links ${m.parkourLinks[0]} drops, ${m.parkourLinks[1]} gap jumps, ${m.parkourLinks[2]} jumps up | made ${made[0]} drops, ${made[1]} gap jumps, ${made[2]} jumps up (missed ${sum(m.bots, (r) => r.parkourMissed ?? 0)}, given up ${sum(m.bots, (r) => r.parkourGaveUp ?? 0)}) | routes along a group's corridor ${sum(m.bots, (r) => r.along ?? 0)} | searches put off a tick ${m.searchesPutOff ?? 0} | ticks keeping right of a teammate ${m.keptRight ?? 0} | still hulls walked round ${sum(m.bots, (r) => r.hulls ?? 0)}, stuck recoveries by one ${m.stuckByHull ?? 0} | overlapping a teammate ${(((m.overlapping ?? 0) / Math.max(1, m.onFoot ?? 0)) * 100).toFixed(1)} % of bot-time on foot | side lanes by a corridor ${sum(m.bots, (r) => r.laneCorridors ?? 0)}`);
   console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)} (only parkour reaches ${sum(snipers, (r) => r.parkourPosts ?? 0)}), rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, moved on after shots ${sum(snipers, (r) => r.moves ?? 0)}, shots held ${sum(snipers, (r) => r.held ?? 0)} s, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
   const why = new Map<string, number>();
   for (const r of m.bots) for (const [k, v] of Object.entries(r.why)) why.set(k, (why.get(k) ?? 0) + v);
@@ -1523,7 +1536,8 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
   };
   console.log(`retreating ${doingShare(before, 'retreat')} → ${doingShare(after, 'retreat')} % of alive time; parkour moves a match (drops/gap jumps/jumps up) ${moves(before)} → ${moves(after)}`);
   const perMatch = (ms: readonly MatchRow[], of: (m: MatchRow) => number) => (sum(ms, of) / Math.max(1, ms.length)).toFixed(1);
-  console.log(`still hulls walked round ${perMatch(before, (m) => sum(m.bots, (r) => r.hulls ?? 0))} → ${perMatch(after, (m) => sum(m.bots, (r) => r.hulls ?? 0))} a match, stuck recoveries by one ${perMatch(before, (m) => m.stuckByHull ?? 0)} → ${perMatch(after, (m) => m.stuckByHull ?? 0)}; side lanes by a corridor ${perMatch(before, (m) => sum(m.bots, (r) => r.laneCorridors ?? 0))} → ${perMatch(after, (m) => sum(m.bots, (r) => r.laneCorridors ?? 0))} a match`);
+  const share = (ms: readonly MatchRow[]) => ((sum(ms, (m) => m.overlapping ?? 0) / Math.max(1, sum(ms, (m) => m.onFoot ?? 0))) * 100).toFixed(1);
+  console.log(`still hulls walked round ${perMatch(before, (m) => sum(m.bots, (r) => r.hulls ?? 0))} → ${perMatch(after, (m) => sum(m.bots, (r) => r.hulls ?? 0))} a match, stuck recoveries by one ${perMatch(before, (m) => m.stuckByHull ?? 0)} → ${perMatch(after, (m) => m.stuckByHull ?? 0)}; overlapping a teammate ${share(before)} → ${share(after)} % of bot-time on foot; side lanes by a corridor ${perMatch(before, (m) => sum(m.bots, (r) => r.laneCorridors ?? 0))} → ${perMatch(after, (m) => sum(m.bots, (r) => r.laneCorridors ?? 0))} a match`);
   // Per mode: each mode's objective and the measures every mode has.
   const modes = [...new Set([...before, ...after].map((m) => m.mode))].sort();
   if (modes.length > 1 || !modes.includes('core.ctf')) {
