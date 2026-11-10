@@ -552,6 +552,9 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-top.fit-3 #ed-theme { max-width: 84px; }
 #ed-top.fit-3 #ed-skill { max-width: 64px; }
 #ed-top.fit-3 .ed-file { gap: 2px; }
+/* Phase 2's seven mode tabs: they tighten here too, so Export and Import stay at 1400 px. */
+#ed-top.fit-3 #ed-modes .tab { padding: 5px 4px; letter-spacing: 0.02em; }
+#ed-top.fit-3 .ed-modes { padding: 2px; margin-left: 2px; }
 #ed-top.fit-3 .ed-file button, #ed-top.fit-3 #ed-grid, #ed-top.fit-3 #ed-grid-full, #ed-top.fit-3 #ed-overlaps, #ed-top.fit-3 #ed-plan, #ed-top.fit-3 #ed-maptest { padding: 5px; }
 #ed-top.fit-4 .ed-file button:nth-child(n + 4) { display: none; }
 #ed-top.fit-5 #ed-skill { display: none; }

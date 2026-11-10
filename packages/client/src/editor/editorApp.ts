@@ -260,6 +260,7 @@ export class EditorApp {
     // The side panel's Outliner, Inspector and Validation fold from their headings, as each person left them.
     this.outliner.open = mountPanels($('ed-right'), (id, open) => id === 'outliner' && this.outliner.setOpen(open)).isOpen('outliner');
     this.view = new EditorView(host.engine);
+    this.view.outlinerHidden = (id) => this.outliner.hidden.size > 0 && (this.outliner.hidden.has(id) || this.outliner.hidden.has(this.expansion.partOf.get(id) ?? ''));
     this.thumbs = new ModelThumbnails(host.engine);
     this.paths = new PathTool({
       doc: () => this.doc,

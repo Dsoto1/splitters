@@ -1174,8 +1174,9 @@ async function editorInterfaceChecks(browser) {
   check(big.rows > 0 && big.rows < 60 && big.height > 4096 * 22 * 0.9 && big.ms < 400 * (process.env.CI ? 2 : 1), `the outliner lists 4,096 things drawing only the rows in view (${JSON.stringify(big)})`);
   await page.fill('#ed-ol-search', 'barrel 7');
   await frames(page, 2);
-  const found = await page.$$eval('#ed-ol-list .ed-ol-item', (els) => els.map((e) => e.querySelector('.nm').textContent));
-  check(found.length > 0 && found.every((n) => /barrel/i.test(n) && n.includes('7')), `searching the outliner lists only what matches (${found.slice(0, 4).join(', ')}…)`);
+  // Every word matches the name, the kind or the id (a barrel whose id holds a 7 counts).
+  const found = await page.$$eval('#ed-ol-list .ed-ol-item', (els) => els.map((e) => ({ n: e.querySelector('.nm').textContent, id: e.dataset.id })));
+  check(found.length > 0 && found.every(({ n, id }) => /barrel/i.test(n) && (n.includes('7') || id.includes('7'))) && found.some(({ n }) => n === 'Barrel 7'), `searching the outliner lists only what matches (${found.slice(0, 4).map((f) => f.n).join(', ')}…)`);
   await page.fill('#ed-ol-search', '');
   await page.evaluate(() => window.__editor.history.undo());
   await page.waitForFunction(() => window.__editor.doc.entities.length < 100, null, { timeout: T(10000) });
