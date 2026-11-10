@@ -307,6 +307,15 @@ const isEnemyTag = (color: string): boolean => color.toLowerCase() === '#ff3b3b'
 const SMOKE_FOG = new Color3(0.42, 0.44, 0.46);
 const SMOKE_FOG_DENSITY = 0.42;
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
+/**
+ * A material's glow, set only when it differs: setting a colour makes Babylon look through every mesh of the scene
+ * for the material's users (thousands in a big match), and a new avatar's "no glow" is usually what it has already
+ * (several of a character's meshes share a material, too).
+ */
+function setGlow(mat: { emissiveColor: Color3 }, color: Color3): void {
+  if (!mat.emissiveColor.equals(color)) mat.emissiveColor = color;
+}
+
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
 
 /**
@@ -2156,7 +2165,7 @@ export class GameView {
       const glowKey = `${glowColor}|${a.anim ? 1 : 0}`;
       const reglow = a.glowKey !== glowKey;
       a.glowKey = glowKey;
-      if (reglow) a.mat.emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
+      if (reglow) setGlow(a.mat, glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black());
       // Spawn protection: a faint shimmer round them until it drops (content/vfx.json map.lasting shield.spawn; Reduce
       // flashing: the steady glow below instead of the pack's crackling ball). A powerup: a low flame at the feet.
       const size = a.root.scaling.y || 1;
@@ -2174,8 +2183,8 @@ export class GameView {
         a.shieldStep = step;
         const k = (step / 10) * SHIELD_GLOW_PEAK;
         const base = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
-        a.mat.emissiveColor = base.add(SHIELD_GLOW.scale(k));
-        if (a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = (glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black()).add(SHIELD_GLOW.scale(k));
+        setGlow(a.mat, base.add(SHIELD_GLOW.scale(k)));
+        if (a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, (glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black()).add(SHIELD_GLOW.scale(k)));
       }
       if (a.anim) {
         // Riders stand (or sit) still in their seats, however fast the vehicle goes.
@@ -2227,7 +2236,7 @@ export class GameView {
           sprinting: !!p.sprinting,
           ...(sit ? { seated: true, legDrop: sit.legDrop, straddle: sit.straddle ?? 0, seatFacing: angleDelta(p.yaw, sit.yaw) } : {}),
         });
-        if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) (m.material as unknown as { emissiveColor: Color3 }).emissiveColor = glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black();
+        if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black());
       }
       if (p.weapon !== a.weaponSlot) this.setAvatarWeapon(a, p.weapon);
       if (p.status || a.aura) {
