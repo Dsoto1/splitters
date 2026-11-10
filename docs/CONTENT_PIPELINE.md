@@ -423,7 +423,10 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
      not ambient track cars, which a track driver drives). From 12.7 m/s a Hauler (12) stops in about 7 m.
    - `vehicle.routeFit`: bot drivers take only routes clear this share of its half width either side
      (bots/vehicles.ts `vehicleRouteFits`; default 0.95, the probe's width; the Tank 0.8), and high enough for its hull
-     (`half[1]` × 2) over the highest ground within half its length (a level hull up stairs). Flyers have no check.
+     (`half[1]` × 2) over the highest ground within half its length (a level hull up stairs); and its footprint (that
+     width, its full length) swept along the route's heading every 0.75 m, swinging through both legs at a corner, must
+     clear doorways and gaps (`hullFits`: a 1.3 m sled doesn't take a 1.6 m door it would have to turn in). Flyers have
+     no check.
    - `bailHealth`: bots get out below this share of health (default 0.3; the Tank 0.25), or when it is on fire.
    Bots: drivers fight from a sealed vehicle (close to 28 m, hold and turn the hull onto the target), fire limited
    shells only at targets worth one (a vehicle, a turret or a sentry; someone on foot past 10 m while over 30 % of the

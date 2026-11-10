@@ -8,6 +8,16 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Bot vehicle routing and getting out by a wall** (bugs found on Whiteout Station and Riot Junction):
+- **Bots no longer drive vehicles into doorways they only fit square on.** A bot checked the route for a vehicle's
+  width only every 2 m, so a door a little wider than the vehicle passed, and the vehicle stalled in it (Whiteout
+  Station's Snow Sleds in the hangar's doors). Bots now sweep the vehicle's whole footprint along the route, turning
+  with it at corners. A route it doesn't fit through is kept off, or the bot goes on foot. On the old Whiteout layout
+  (sleds on the garage apron, King of the Hill, seeds 1-4) sled stalls fell from 10 to 0.
+- **Getting out of a vehicle parked against a wall puts you on your side of it.** The step-out spot was checked only
+  for headroom, so beside Riot Junction's east wall a Buggy put its rider beyond the wall. The rider fell 4 m under the
+  street and couldn't get out. The spot now needs nothing solid between it and the vehicle and ground under it (else
+  the next side, or the roof).
 **Gunplay pass 3: the network check and bots' weapon ranges** (owner-approved audit candidates 7 and 8):
 - **Fewer snap-backs and lost shots on a lossy connection.** When a packet was lost and resent, the inputs behind it
   reached the host together, and the host dropped the oldest past 16. You snapped back (up to 1.4 m) and rounds you
