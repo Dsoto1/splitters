@@ -1374,6 +1374,18 @@ html.touch #minimap { left: calc(60px + env(safe-area-inset-left)); top: 8px; wi
 html.touch #vitals { left: calc(8px + env(safe-area-inset-left)); bottom: auto; top: 118px; transform: scale(0.72); transform-origin: top left; }
 html.touch #ammo { right: auto; left: 50%; bottom: 6px; transform: translateX(-50%) scale(0.8); transform-origin: bottom center; }
 html.touch #feed { transform: scale(0.85); transform-origin: top right; }
+/* Narrow phones sideways (under ~760 px, e.g. 658 × 320): the kill feed ran over the scorebar's right box. The scorebar
+   is smaller and each feed line keeps to the room right of it (long names end in "…"). docs/MOBILE_AUDIT.md. */
+@media (max-width: 760px) {
+  html.touch #scorebar { transform: translateX(-50%) scale(0.8); transform-origin: top center; }
+  html.touch #feed { max-width: calc((50vw - 140px) / 0.85); }
+  html.touch #feed div { max-width: 100%; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+/* Short phones (~320 px tall): the minimap and vitals end above the move pad (they overlapped its top). */
+@media (max-height: 360px) {
+  html.touch #minimap { width: 88px; height: 88px; }
+  html.touch #vitals { top: 100px; transform: scale(0.64); }
+}
 
 /* The on-screen controls (game/touchControls.ts). */
 #touch-ui { position: fixed; inset: 0; z-index: 2; pointer-events: none; touch-action: none; font-family: var(--font-display); --pad: clamp(120px, 42vmin, 190px); }
@@ -1401,7 +1413,8 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
 #touch-ui .tc-reload { right: calc(84px + env(safe-area-inset-right)); bottom: 148px; }
 #touch-ui .tc-throw { right: calc(14px + env(safe-area-inset-right)); bottom: 146px; width: 50px; height: 50px; }
 #touch-ui .tc-use { right: calc(204px + env(safe-area-inset-right)); bottom: 50px; }
-#touch-ui .tc-wheel { right: calc(158px + env(safe-area-inset-right)); bottom: 160px; width: 64px; height: 64px; border-color: rgba(0, 209, 255, 0.6); }
+#touch-ui .tc-wheel { right: calc(158px + env(safe-area-inset-right)); bottom: 160px; width: 64px; height: 64px; border-color: rgba(0, 209, 255, 0.6); font-size: 10px; letter-spacing: 0; }
+/* ("Weapons" at 11 px ran past the ring.) */
 /* Fireteams: the Orders button (the order wheel), orange like orders and objectives; only while you lead a squad. */
 #touch-ui .tc-orders { right: calc(230px + env(safe-area-inset-right)); bottom: 136px; border-color: rgba(255, 179, 71, 0.7); }
 #touch-ui .tc-orders.on { background: rgba(255, 179, 71, 0.35); border-color: var(--orange); }
