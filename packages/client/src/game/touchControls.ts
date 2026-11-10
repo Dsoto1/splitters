@@ -24,6 +24,7 @@ const DEADZONE = 0.12;
  *   Melee       a punch, kick or swing (Y)
  *   Reload, Use (E: vehicles, doors, pickups), Throw (hold to aim, let go), Weapons (the wheel), Orders
  *   (Fireteams' order wheel, while you lead a squad), pause
+ *   scorebar    tap to show the scoreboard, tap again to hide it
  */
 export class TouchControls {
   readonly el: HTMLDivElement;
@@ -34,6 +35,8 @@ export class TouchControls {
   /** Fireteams: the order wheel's button (shown while you lead a squad). */
   private readonly ordersBtn: HTMLButtonElement;
   private readonly watchBar: HTMLDivElement;
+  /** The scorebar's tap target (proposal 6 in docs/MOBILE_AUDIT.md). */
+  private readonly scoresBtn: HTMLButtonElement;
   private readonly joinBtn: HTMLButtonElement;
 
   constructor(
@@ -70,7 +73,9 @@ export class TouchControls {
     this.ordersBtn = btn('tc-orders', 'Orders', 'Squad orders (the order wheel)');
     this.ordersBtn.hidden = true;
     const pause = btn('tc-pause', 'II', 'Pause');
-    this.el.append(look, pad, fire, this.aimBtn, melee, reload, use, thrw, this.wheelBtn, this.ordersBtn, pause);
+    // Over the scorebar (top middle): a tap shows the scoreboard, another hides it (Tab on a keyboard, held).
+    this.scoresBtn = btn('tc-scores', '', 'Scores: tap to show or hide the scoreboard');
+    this.el.append(look, pad, fire, this.aimBtn, melee, reload, use, thrw, this.wheelBtn, this.ordersBtn, pause, this.scoresBtn);
     // Watching (dead, or spectating): previous / next player, follow or free camera, and Join (spectators).
     this.watchBar = div('tc-watch');
     this.watchBar.hidden = true;
@@ -198,6 +203,7 @@ export class TouchControls {
       up: () => undefined,
     });
     track(pause, { down: () => this.hooks.pause(), up: () => undefined });
+    track(this.scoresBtn, { down: () => this.input.virtualKey('Tab', !this.input.held('Tab')), up: () => undefined });
 
     // The pad: an analog stick drawn as a d-pad; its middle is jump (tap) and crouch (hold).
     let centre: { id: number; at: number; timer: number; long: boolean } | null = null;
@@ -292,6 +298,8 @@ export class TouchControls {
   setActive(on: boolean): void {
     if (this.el.hidden === !on) return;
     this.el.hidden = !on;
+    // Paused: the scoreboard a tap opened closes (the pause menu shows the scores).
+    if (!on && this.input.held('Tab')) this.input.virtualKey('Tab', false);
   }
 
   /** Out of play: the watching buttons (Join for spectators by choice); null hides them. */
@@ -303,6 +311,7 @@ export class TouchControls {
   /** Once a frame: the toggle buttons show their state. */
   update(): void {
     this.aimBtn.classList.toggle('on', this.input.held('KeyX'));
+    this.scoresBtn.classList.toggle('on', this.input.held('Tab'));
     this.wheelBtn.classList.toggle('on', this.input.wheelOpen && this.input.wheelKind === 'weapon');
     if (this.ordersBtn.hidden === this.input.ordersOn) this.ordersBtn.hidden = !this.input.ordersOn;
     this.ordersBtn.classList.toggle('on', this.input.wheelOpen && this.input.wheelKind === 'order');

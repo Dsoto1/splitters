@@ -1194,10 +1194,11 @@ squads by proximity with **fixed squads** made from the roster.
   map has no Team Deathmatch or fewer than `FIRETEAMS_SIDE_MIN` (8) a side.
 
 ### Fireteams follow-ups: CTF squad roles, squad points through a host handoff (docs/FIRETEAMS_PLAN.md, "Follow-ups")
-- **CTF squad roles** (owner, 2026-11-10; `ctfSquadRoles`, `CtfBotPlan.squadRoles`, `ModeLogic.squadRole`): with 3 or
-  more squads on a side the **smallest defends** its own flag, ties to the **higher squad id** (squads are numbered as
-  they form, a person's usually first, so a bot-led squad defends rather than a person's); with 2 squads (or 1) every
-  squad attacks. Sizes count every member, people too, alive or not. The defenders play `ctfBotGoal`'s defend role: they
+- **CTF squad roles** (owner, 2026-11-10; `ctfSquadRoles`, `CtfBotPlan.squadRoles`, `ModeLogic.squadRole`): with
+  `SQUAD_DEFEND_MIN` (4) or more squads on a side the **smallest defends** its own flag, ties to the **higher squad id**
+  (squads are numbered as they form, a person's usually first, so a bot-led squad defends rather than a person's);
+  with 3 or fewer every squad attacks (the lead's decision, 2026-11-10: from 3 squads it cost most captures on the
+  3-squad maps, FIRETEAMS_PLAN.md "Follow-ups, measured"). Sizes count every member, people too, alive or not. The defenders play `ctfBotGoal`'s defend role: they
   hold round the base (`DEFEND_RADIUS`, watching the enemy's side), go and touch our dropped flag wherever it lies, chase
   our flag's carrier and close in on enemies at the flag. Worked out again at once when the line-up changes (who is in
   which squad, or a person's first order: the plan's line-up key carries both) and every 5 s otherwise.
@@ -1206,7 +1207,8 @@ squads by proximity with **fixed squads** made from the roster.
     on Defend by default has its bots play the defence (`Match.roleDefault`: `memberGoal` is skipped); after an order
     they do what they're told and count as attackers.
   - **The squad HUD's line** names your squad's role: "Squad · Attack · Follow me" (`#squad-order em`, `data-role`;
-    the snapshot's `fs` carries it at index 10, members from 11). A steady word, nothing blinks.
+    the snapshot's `fs` carries it at index 10, members from 11). A steady word, nothing blinks. A person's squad's
+    word goes once they've given an order (the snapshot sends no role for it; the team's plan keeps it).
   - `BOT_OFF=squadDefend` (brain.ts `BOT_SWITCHES`) plays Part 2's rule (a squad defends only when it fits in the
     defenders wanted), for measuring.
 - **Host handoff carries the squad points**: the checkpoint's `squads` (members and leader by player index, each

@@ -1,5 +1,6 @@
 // Ray's side effect (scene picking, camera.getForwardRay): Babylon's pointer handling can pick on any scene, and
 // only the MapMaker imported it before it loaded on demand.
+import { IndoorFill } from './indoorFill.ts';
 import '@babylonjs/core/Culling/ray';
 import type { PerfCounter } from '@babylonjs/core/Misc/perfCounter';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
@@ -3911,11 +3912,22 @@ export class GameView {
     return { draws: counter?.current ?? 0, meshes: this.scene.getActiveMeshes().length, casters: this.atmosphere.casterCount, characters, effects: this.vfx.count + this.effects.length };
   }
 
+  /** Rooms without lamp light (phones on Low): see render. */
+  indoorFill: IndoorFill | null = null;
+
   render(): void {
     const now = performance.now();
     // Prop batches' levels of detail (and small props' near shadows) follow the camera.
     const cam = this.scene.activeCamera;
     if (this.propBatches && cam) this.propBatches.update(cam.globalPosition);
+    // Phones on Low draw no lamp light: rooms get a brighter sky light under a roof instead (indoorFill.ts).
+    if (this.scenario.lampsDropped && this.hemi && cam) {
+      this.indoorFill ??= new IndoorFill(this.hemi, () => {
+        const at = cam.globalPosition;
+        return !!this.physics?.raycast({ x: at.x, y: at.y + 0.2, z: at.z }, { x: 0, y: 1, z: 0 }, 40);
+      });
+      this.indoorFill.update(now);
+    }
     this.effects = this.effects.filter((fx) => {
       const f = (now - fx.born) / fx.ttl;
       if (f >= 1) {

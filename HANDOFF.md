@@ -81,12 +81,18 @@ jump ahead, or something the owner explicitly bumps.
 - **Tools:** `prop-lineup.mjs` takes `ONLY=kit.crate.wood,kit.crate.wood#2`, and `__lineup.show` takes `id#n`.
   `prop-contacts.mjs` measures kit families too.
 **Fireteams follow-ups: CTF squad roles, handoff carries squad points, bot-report squad scores (`wip/fireteams-4`, agent, 2026-11-10; the owner's three decisions; green on `check/fireteams-4` at 3183b96, run 42841290451; LANDED; landing line removed).** Details and numbers: docs/FIRETEAMS_PLAN.md, "Follow-ups"; docs/BOTS.md, "Fireteams follow-ups". CHANGELOG "Fireteams: CTF squad roles".
-- **CTF squad roles** (`ctfSquadRoles`, `CtfBotPlan.squadRoles`, `ModeLogic.squadRole`): 3+ squads a side, the smallest defends (ties to the higher id); 2, both attack; a person's squad only by default until their first order (`Squad.ordered`). The squad HUD line shows it (`#squad-order em`); the snapshot's `fs` carries it at index 10 (members from 11). `BOT_OFF=squadDefend` plays the old rule.
-- **Measured: it does not help, it costs captures on 3-squad maps** (Diamond Park 0.8 → 0.3, Obsidian Orb 2.8 → 0.3, Market Town 0.5 → 0.3 a match; takes 53 → 12 in 12 matches); 2-squad maps unchanged. Questions for the owner in the report and FIRETEAMS_PLAN.
+- **CTF squad roles** (`ctfSquadRoles`, `CtfBotPlan.squadRoles`, `ModeLogic.squadRole`): 4+ squads a side (`SQUAD_DEFEND_MIN`; first landed from 3, changed by the lead after the numbers below), the smallest defends (ties to the higher id); 3 or fewer, all attack; a person's squad only by default until their first order (`Squad.ordered`). The squad HUD line shows it (`#squad-order em`); the snapshot's `fs` carries it at index 10 (members from 11). `BOT_OFF=squadDefend` plays the old rule.
+- **Measured: it does not help, it costs captures on 3-squad maps** (Diamond Park 0.8 → 0.3, Obsidian Orb 2.8 → 0.3, Market Town 0.5 → 0.3 a match; takes 53 → 12 in 12 matches); 2-squad maps unchanged. **The lead's fix:** a defender only from 4 squads a side, and the HUD's role word hidden after a person's order; the 3-squad maps then play exactly as before. A 4-squad sample (Glacier Line, Riot Junction, 16 a side, squads of 4): no captures either way, takes 3.5 → 1.5 in 4 matches (FIRETEAMS_PLAN, "Follow-ups, measured").
 - **Handoff:** `MatchCheckpoint.squads` and `CheckpointPlayer.sp` (`Match.checkpointSquads` / `restoreSquads`, `Fireteams.adopt`); matchHost.ts's checkpoint adds one line.
 - **bot-report:** `squad scores:` line, best squad / MVP columns, CTF defence table (captures, returns, by defenders, flags defended, defend squad-s).
 - **Tests:** `shared/test/fireteamsFollowups.test.ts`, `server/test/squadScoreLine.test.ts`, squadHud's role; e2e `ctf` → `fireteamsCtfChecks` (its own function and page; `fireteamsFlow` untouched; a flow of its own didn't fit the 16 shards: `select.test.mjs`'s packing check failed even at 60 s), mapped from `squadHud.ts` and twin_spires. Locally the `ctf` flow's own first page (Bunker Cross, main-thread sim) closes the browser on this box at the countdown, on an old main build too (environmental); `fireteamsCtfChecks` passed alone (148 s at load 10).
 - **Pitfall:** `pnpm build` ran out of heap (2 GB) on this box while two bot-reports ran: `NODE_OPTIONS=--max-old-space-size=5120 pnpm build`.
+**Mobile fixes (`wip/mobile-fixes`, agent, 2026-11-10; the owner picked mobile audit proposals 1, 5, 6, 10 and 12; owner's phone: Galaxy S25+, Graphics Low or Medium).** Details, measurements and the owner's check on the phone: docs/MOBILE_AUDIT.md, "Proposals 1, 5, 6, 10 and 12: done". CHANGELOG "Phones: the dark block on lit walls".
+- **Lamps on phones** (`game/clusteredLights.ts`): Low has no lamp light (fixtures glow; `game/indoorFill.ts` raises the sky light under a roof, eased); Medium/High 4 lamps to a mask layer (an exact sum in any float target), the mask sized to the map's lamps and the device's texture limit. Desktop unchanged. Switches: Room lights (Options → Display, pause → Settings; `game/roomLights.ts`, `?roomlights=0`), `?lampbatch=N`, `?lamps=1`.
+- **Touch HUD:** ammo above Reload/Throw; a tap on the scorebar toggles the scoreboard (`touchControls.ts` `tc-scores`, Tab); touch text at least 12 px (HUD, pad, Match Setup chips); the kill feed keeps 3 lines on touch screens up to 480 px tall (`game/feedLimit.ts`).
+- **Tests:** `client/test/mobileLights.test.ts`; e2e `mobile` → `mobileHudChecks` (915 × 412, 832 × 384, 658 × 320) and `mobileLamps` (Flatpack Depot, Medium and Low).
+- **Pitfall:** one lamp to a layer is exact even in 8-bit targets but costs a texture read per nearby lamp per pixel (Flatpack Depot in SwiftShader: 4-10 times the frame time); don't make it the default without a phone measurement.
+- **Next: the owner's check on the S25+** (MOBILE_AUDIT.md, "How the owner checks it").
 
 **Community maps (`wip/community-maps`, agent, 2026-11-10; the owner-approved plan, queued item 6; all five build steps; green on `check/community-maps` at 8c856ba, run 42811718756; LANDED; landing line and editor claim removed).** Details, tests and the owner's open questions: docs/COMMUNITY_MAPS.md, "What's built". CHANGELOG "Community maps".
 - **Local library in IndexedDB** (`client/src/localMaps.ts`; `editor/storage.ts` and `mapSaving.ts`: save/load hooks only): unlimited saved maps, the old localStorage library moves in once; Open… has Duplicate and Rename. Your maps join Match setup under "Your maps".
@@ -689,9 +695,91 @@ for the owner's review, not landed).**
 **The flaky `fireteams` check** (MapMaker lane's claim released, 2026-11-10): Community maps landed the fix (a tap of B in one page task). The MapMaker lane's own copy (`wip/mapmaker-fix-fireteams-test`, green) won't land. Optional, for the Fireteams owner: the "you lead a fireteam" check's wait for the HUD's "Follow me" (`T(15000)`) ran out under a 4x CPU throttle locally; 30 s passed.
 - **From community maps (2026-11-10): Community maps landed on main at 8c856ba (green on `check/community-maps`, run 42811718756; `fireteams` passed there, the tap of B included), and it already hardens both steps in `fireteamsFlow`: commit b77f23a.** The tap of B sends key down and up in one task (Playwright's two key events let a loaded runner draw a frame between them past WHEEL_HOLD_MS, 180 ms, so the order wheel opened instead), and taps again only once the menu, the wheel and the pause menu are seen closed; the squad-holds step counts a squadmate within 25 m of the spot and at least twice as far from you as from it (CI had all three 19-22 m off it, in a fight, you 72 m away). Reproduced locally on this branch and on origin/main alike. **MapMaker lane: please drop `wip/mapmaker-fix-fireteams-test`, or rebase it onto main and keep only what goes beyond this, so `e2e/run.mjs` doesn't conflict.**
 
-**Landing now: kit-prop generators (`check/kit-props`; kit-prop generators agent), please hold code pushes to main.** (2026-11-10, second try: one merge of origin/main into `wip/kit-props`, one check run, then a fast-forward; this line goes when it lands or fails.)
 
-**Next in line to land: Fireteams CTF roles fix** (`check/fireteams-4`, from `wip/fireteams-4`, Fireteams follow-ups agent, 2026-11-10), after kit-prop generators: a gameplay fix (the lead's decision: the CTF defend role only from 4 squads a side; the role word hidden after a leader's order). One merge of origin/main, one check run, then a fast-forward. Touches shared `sim/modes/ctfBots.ts`, `sim/match.ts` (snapshot role), client `game/squadHud.ts`, tests, `e2e/run.mjs` `fireteamsCtfChecks` only, docs.
+### Lean mode (owner, 2026-11-10; both accounts, rest of the week): save Claude usage
+- **Local checks only:** `pnpm typecheck` and `pnpm test:changed`, plus at most one e2e flow you're actively fixing (`E2E_ONLY=<flow>`). No local full or `e2e:changed` runs. GitHub runs the full suite on the check/ push (Actions minutes, not Claude usage).
+- **One check-in per push:** after pushing to check/, schedule a single check-in for when the run should be done (about 25 min). Don't poll.
+- **On red, read only the failing job's log.** Fix and push once more; re-run only a known flake, and only once.
+- **One agent at a time** unless the owner asks for more. Short reports.
+- All the usual merge rules still apply: claims, one "Landing now" lock, "Next in line" turns, one merge of origin/main, fast-forward only to green.
+
+### Hand-off to the MapMaker lane (owner, 2026-11-10)
+The MapMaker lane (other account) is **the main session for the rest of the week** (owner, 2026-11-10) and owns this whole queue, except the **weapon and vehicle lane** (items 3 and 4: throwables + flare gun, vehicle refreshes), which stays with this account on `wip/weapons-*` / `wip/vehicles-*` branches, claimed here first; if that lane says here that it has stopped, the work is yours. Same rules for both: claims, one "Landing now" lock at a time with "Next in line" turns, merge origin/main once, one check/ push, fast-forward only to green, re-run only a known flake and only once, no rebases or force-pushes of pushed work, no PRs, no unattended push loops. Queue, owner decisions and open threads:
+
+#### Priority: St. John's performance (owner's recording, 2026-11-10 17:08; files in the owner's uploads, copied to the main session's scratchpad perf-stjohns/; ask the owner to re-send them to you)
+- **Setup:** M1 Pro, Chrome, High graphics, 1920×1080 @2, Roulette, 41 players and 63 bots, local match, build 0.9.0 (e64400d).
+- **Result:** about **25 fps** (40 ms median frame, 52 ms p95), with 546 hitches over 50 ms in 204 s.
+- **Per-frame medians:**
+  - **characters 13.6 ms**, with only about 20 in view. Of that, charAnim is 3.8 and charSkin 0.4, so about 9 ms is unaccounted for. Find it first.
+  - renderScene 11.5, renderShadow 6.7 (about 290 shadow casters), renderCull 3.3, net 2.7, game 1.5.
+  - About 1,540 draw calls and 740 meshes.
+  - Server tick 1.6 ms, so the sim isn't the problem.
+- **Hitches:** most are frame time outside our measured code ("outside" about 20 ms, i.e. GPU or browser) on top of about 40 ms busy.
+- **Treat it as a bug** (it jumps the queue). Use the perf toolset (docs/PERF_96.md, `?perf=1` recordings) and the far-copies / LOD work. Re-record on St. John's after each fix.
+
+#### Your queue, in order (owner decisions in brackets)
+1. **Kit-prop generators part 1** (`wip/kit-props` = `check/kit-props` 4aa5e42). The details are in the earlier note (mapmaker-lane-note7.md):
+   - Find the e2e failure in run 42846096828, fix it, and land.
+   - Then run "Replace all" for 722 placements on 57 maps.
+   - [Themed pieces stay authored. One look per retired prop.]
+2. **Kit-prop generators part 2:** fences and walls, then containers. [Owner: this order.]
+3. **[weapon and vehicle lane, this account] Throwables and the flare gun** (owner 2026-11-10; Meshy Community models in the owner's Drive folder; check each post's licence: CC0 needs no credit, CC BY 4.0 needs one):
+   - **Dynamite** uses the Emergency Flare model (`Meshy_AI_Emergency_Flare_1110164645_texture.glb`): red sticks with a fuse. Keep dynamite's mechanics (3 s fuse, 6 m blast).
+   - **Airstrike flare becomes a flare-gun shot.** Bring in the flare gun model we already have but never imported (the Guns&Explosives pack in the Drive, docs/ARSENAL.md "Not imported: … the flare gun"). Use it for the airstrike marker:
+     - same aim and arc as grenade throwing (the grenade arc preview);
+     - it fires a fizzing, smoking light that lands and marks the spot;
+     - its smoke trail and sparks come from our FX pack (Binbun FX, docs/LOOK.md / the FX docs).
+     - Reduce flashing applies: a steady glow, no flicker over once a second, no bright flash.
+     - Also use the same model for the existing Flare Gun weapon (pistol slot), which is drawn in code today.
+   - **Sheep:** the explosive sheep, animated (`Meshy_AI_explosive_sheep_side_model_20261108_animated_All_animation.zip`). It walks, so use the walk clip.
+   - **Sandbags:** "mur de sacs 12" (`Meshy_AI_mur_de_sacs_12_1110164725_texture.glb`), as the 2 × 1 × 0.5 m cover.
+   - **Holy bomb:** "Gold Silver Toned Hi…" (`Meshy_AI__Gold_Silver_Toned_Hi_1110164632_texture.glb`), probably. Confirm with the owner.
+   - Process them like the grenades: docs/ARSENAL.md "Grenades", content provenance, and one model each in the hand, in flight and on the pickup.
+   - **Stormvolt Blaster** (`Meshy_AI_Stormvolt_Blaster_1109190242_texture.glb`, a gun) is NOT for now. Add it to the parked "new weapons" list with any other new ones, for a later full weapon release (new weapon types stay paused).
+4. **[weapon and vehicle lane, this account] Vehicle refreshes, directly after the weapons** (six Meshy Community CC0 models, the Drive folder, 2026-11-08). Re-skin existing vehicles; no new vehicle types. Proposed match from the names; render each model and confirm with the owner before you build:
+
+   | Model | Proposed existing vehicle | Why |
+   |---|---|---|
+   | Dust Runner | Buggy | a desert runabout; 4 seats, riders shoot |
+   | Recon Trike | Go-Kart | a small 1-seat quick runner (or the Hover Bike, if it has no wheels) |
+   | Cyber Fang Mk III (Assault…) | Speeder | a sci-fi attack hover with forward guns (or the Armored Rover, if it's wheeled and heavy) |
+   | Sky Cruiser | Gunship | a flying craft with door guns (or the Skyfighter, if it's a 1-seat fighter) |
+   | TNR 1017 | Armored Rover | the name gives no clue; a guess, so decide from the render (Tank if it's tracked) |
+   | unnamed (`Meshy_AI__1108120754_texture.glb`) | unknown | render it first |
+
+   Keep each vehicle's seats, guns, health and handling. Fit the model to the existing seat, gun and collision points (`MOUNT_DEFS`), with cockpit views checked. Record provenance.
+5. **Player profiles.**
+6. **Quality tiers** (core/experimental + quality gates).
+7. **Rockfall Canyon refresh** (No Man's Field is retired).
+8. **Sci-Fi and Industrial style packs.**
+9. **Desert City dome kit.**
+10. **Binbun FX, the rest.**
+11. **Destructible environment:** audit what breaks today, then per-piece destruction on one opt-in map through MapMaker.
+12. **Map pass, one map at a time** (after Environment Phase 2, the MapMaker work and the new and rebuilt maps; check whether each map really needs it).
+13. Possibly: packed inputs to cut upload bandwidth.
+
+#### Open threads you inherit
+- **Mobile, owner check on a Galaxy S25+:** the dark wall block. Steps are in docs/MOBILE_AUDIT.md once the mobile fixes land.
+  - Owner said "yes" to: if the block still shows on Medium, make the exact one-lamp-per-layer mode the default there. Confirm that reading with the owner.
+- **Paused by the owner:** sound pass 2, new weapon types.
+- **Known issues:**
+  - Hyena Warrior can stay crouched after waking (characters3 flake).
+  - Iron Coast's coast-border canopy dark lip.
+  - Sandsweep plays weak as a battle map.
+  - Dead race track settings in map files.
+  - Iron Coast B/C defence (owner: leave for now).
+- **CI:** the e2e shard budget is full. [Owner: fold new checks into existing flows.]
+- **Owner decisions today:**
+  - Bot AI Phase D: all (a) (keep as built).
+  - Community maps: the defaults as built (JSON storage etc.).
+  - Rewind window: 300 ms.
+- **Session memory:** write .control-center/session-summary.json at the end of your sessions.
+
+**Kit-prop generators: not landed, paused** (2026-11-10; owner's usage cap). `check/kit-props` = `wip/kit-props` at 4aa5e42 (origin/main c322d74 merged in); run 42846096828 was still running when work stopped. The first try (run 42823940482) was red only on `editorux` and `editortools`, which clicked retired props; that is fixed. Left: if run 42846096828 is green and main hasn't moved, fast-forward main to 4aa5e42. Otherwise merge origin/main once, push to check/ once, and land. Details in the "Kit-prop generators, part 1" entry. Landing lock released.
+
+**Landed: Fireteams CTF roles fix** (`wip/fireteams-4` at ec8ecfb, in train `check/train-20261110-164310`, main = 37b7f94, green; lead session, 2026-11-10): the smallest squad defends only from 4+ squads a side; the HUD role word hides after a leader's order.
+
+**Landed: mobile fixes** (`wip/mobile-fixes` at a47e62d, in the same train, main = 37b7f94, green; 2026-11-10): audit picks 1, 5, 6, 10, 12 (docs/MOBILE_AUDIT.md: lamps on Low / packed lamp layers on Medium+, Room lights toggle, ammo panel by the fire buttons, tap the scorebar for scores, touch text 12 px+, kill feed 3 lines on short phones). Owner check on a Galaxy S25+: steps in docs/MOBILE_AUDIT.md.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.

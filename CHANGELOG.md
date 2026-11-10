@@ -19,10 +19,10 @@ made only on a commit that passed CI on a check branch.
   about the fight changes. MapMaker's palette offers only the new ones (Crates & Barrels), the prop inspector picks a
   look (Variant), Randomise rolls one, and Replace all suggests the new piece for an old one.
 **Fireteams: CTF squad roles, squad points kept when the host leaves** (Fireteams follow-ups, docs/FIRETEAMS_PLAN.md):
-- Capture the Flag with Fireteams: with 3 or more squads a side the smallest squad defends its flag (holds by its
-  base, returns it when dropped) and the rest attack; with 2 squads both attack. A bot-led squad defends rather than
+- Capture the Flag with Fireteams: with 4 or more squads a side the smallest squad defends its flag (holds by its
+  base, returns it when dropped) and the rest attack; with 3 or fewer every squad attacks. A bot-led squad defends rather than
   yours when sizes tie, and your squad does what you order: the role is only its default until you give one.
-- Your squad's line on the HUD says its role: "Squad · Attack · Follow me".
+- Your squad's line on the HUD says its role: "Squad · Attack · Follow me", until you give your squad an order.
 - When the host leaves and a friend takes over, every squad keeps its points and every player theirs (they started
   from zero before).
 - `pnpm bot-report`: a squad-score line (each squad's points, Best Squad, the MVP) and CTF defence numbers.
@@ -36,6 +36,22 @@ made only on a commit that passed CI on a check branch.
 - Bots use the map's bot hints from MapMaker (sniper and camp spots, staging spots, chokepoints, jump links).
 - `?botdebug=1` (offline and when hosting): every bot's route, state, goal, scores and why it stopped, and where routes
   failed.
+**Phones: the dark block on lit walls, and a clearer HUD** (owner-picked mobile audit proposals 1, 5, 6, 10 and 12, docs/MOBILE_AUDIT.md):
+- **Map lamps on phones:** on Low (a phone's default) lamps glow but no longer light rooms; instead, under a roof the
+  sky light rises, easing in over about a second. This removes the lamp mask behind the dark block and halves the cost
+  of lamps. On Medium and High a phone keeps the lamps, 4 to a mask layer instead of 8. Each tile's sum then stays
+  exact in a lower-precision float target. The mask is sized to the map's lamp count and the device's texture limit,
+  so no map can overflow it (the earlier one-lamp-a-layer try put every lamp on Flatpack Depot out).
+- **Room lights** (Options → Display, and the pause menu's Settings): on by default. Off, lamps glow but light nothing,
+  to check whether the dark block goes with them. Also `?roomlights=0`; `?lampbatch=1` or `?lampbatch=8` try other mask
+  layouts, and `?lamps=1` keeps the lamps on Low.
+- **Ammo by the fire buttons** on touch: the panel sits above Reload and Throw, clearing the lower centre.
+- **Tap the scorebar** on touch to show the scoreboard, and tap again to hide it (before, only the pause menu showed
+  scores).
+- **Touch text is at least 12 px:** button labels, the mode label, the scorebar's names, the kill feed, the pad's
+  "hold: crouch" (about 6.5 px before) and Match Setup's mode tiles, variants, size chips and field names.
+- **The kill feed keeps 3 lines** on a phone sideways (5 elsewhere), so it never reaches the Weapons button or the ammo.
+- Desktop looks the same.
 
 **Community maps: save as many maps as you like, host them, and Community Picks** (owner-approved plan, docs/COMMUNITY_MAPS.md):
 - **Unlimited local saving:** MapMaker's saved maps live in your browser's IndexedDB (as many as your disk allows; a

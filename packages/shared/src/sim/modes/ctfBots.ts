@@ -55,6 +55,8 @@ export function ctfDefenders(teamSize: number): number {
 }
 
 /** A squad's CTF role (Fireteams): it defends its own flag, or attacks the enemy's. */
+/** From this many squads on a side one of them (the smallest) defends (Fireteams follow-ups). */
+export const SQUAD_DEFEND_MIN = 4;
 export type SquadRole = 'defend' | 'attack';
 
 /** A squad as the CTF roles see it: its id and how many are in it (people included, alive or not). */
@@ -64,14 +66,16 @@ export interface SquadSize {
 }
 
 /**
- * Fireteams follow-ups (owner, 2026-11-10): each squad's CTF role on one side. With 3 or more squads the smallest
- * defends its own flag (ties to the higher squad id: squads are numbered as they form, a person's usually first, so a
- * bot-led squad defends rather than a person's when it can); with 1 or 2 squads they all attack.
+ * Fireteams follow-ups (owner, 2026-11-10; the threshold the lead's, 2026-11-10): each squad's CTF role on one side.
+ * With SQUAD_DEFEND_MIN (4) or more squads the smallest defends its own flag (ties to the higher squad id: squads are
+ * numbered as they form, a person's usually first, so a bot-led squad defends rather than a person's when it can);
+ * with fewer they all attack. (From 3 squads it cost most captures on Diamond Park, Obsidian Orb and Market Town:
+ * docs/FIRETEAMS_PLAN.md, "Follow-ups, measured".)
  */
 export function ctfSquadRoles(squads: readonly SquadSize[]): Map<number, SquadRole> {
   const out = new Map<number, SquadRole>();
   let def: SquadSize | null = null;
-  if (squads.length >= 3) for (const q of squads) if (!def || q.size < def.size || (q.size === def.size && q.id > def.id)) def = q;
+  if (squads.length >= SQUAD_DEFEND_MIN) for (const q of squads) if (!def || q.size < def.size || (q.size === def.size && q.id > def.id)) def = q;
   for (const q of squads) out.set(q.id, q === def ? 'defend' : 'attack');
   return out;
 }
@@ -187,9 +191,9 @@ export class CtfBotPlan {
   }
 
   /**
-   * Fireteams follow-ups (owner, 2026-11-10): roles by whole squads (ctfSquadRoles). With 3 or more squads on the side
-   * the smallest defends its own flag (holds round its base, goes to touch it when dropped, chases its carrier:
-   * ctfBotGoal's defend), ties to the higher squad id; with 2 both attack. A bot-led squad plays its role; a person's
+   * Fireteams follow-ups (owner, 2026-11-10): roles by whole squads (ctfSquadRoles). With SQUAD_DEFEND_MIN (4) or more
+   * squads on the side the smallest defends its own flag (holds round its base, goes to touch it when dropped, chases its carrier:
+   * ctfBotGoal's defend), ties to the higher squad id; with fewer all attack. A bot-led squad plays its role; a person's
    * squad has it only as its default until the person gives an order (then the bots do what they're told, and play
    * attack meanwhile when ordered: they follow the person). `everyone`: the side's players, people included (each squad's
    * size counts them, alive or not). BOT_OFF=squadDefend: Part 2's rule (fitSquadRoles), for measuring.

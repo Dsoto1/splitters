@@ -142,6 +142,7 @@ import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
+import { ROOM_LIGHTS_EVENT, roomLightsOn, saveRoomLights } from './roomLights.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
 import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, toggleFullscreen } from '../fullscreen.ts';
 import { testMode } from '../testMode.ts';
@@ -917,6 +918,11 @@ export class GameSession {
     flashBox.checked = reduceFlashing();
     flashBox.addEventListener('change', () => saveReduceFlashing(flashBox.checked), { signal });
     window.addEventListener(REDUCE_FLASHING_EVENT, () => (flashBox.checked = reduceFlashing()), { signal });
+    // Room lights (also Options → Display): the map's lamps light the rooms, applied at once (roomLights.ts).
+    const roomBox = $('room-lights') as HTMLInputElement;
+    roomBox.checked = roomLightsOn();
+    roomBox.addEventListener('change', () => saveRoomLights(roomBox.checked), { signal });
+    window.addEventListener(ROOM_LIGHTS_EVENT, () => (roomBox.checked = roomLightsOn()), { signal });
     // A round landing in the level sounds like what it struck (its surface type's sound family: bark knocks, metal rings).
     this.sfx.worldImpact = (from, to) => {
       const struck = this.view.surfaceStruck(from, to);

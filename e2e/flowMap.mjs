@@ -144,6 +144,8 @@ const RULES = [
   // Phones and tablets (on-screen controls, touch detection) and the weapon wheel.
   // (Fireteams' order wheel is the weapon wheel's ring, and has an Orders button on a phone.)
   [/^packages\/client\/src\/(touchDevice|game\/(touchControls|weaponWheel))\.ts$/, ['mobile', 'offline', 'fireteams'], ['client']],
+  // Phones' lamps (the tile mask, Room lights, the indoor fill on Low) and the kill feed's lines (docs/MOBILE_AUDIT.md).
+  [/^packages\/client\/src\/game\/(clusteredLights|roomLights|indoorFill|feedLimit)\.ts$/, ['mobile', 'offline', 'flashing', 'setpieces'], ['client']],
   [/^packages\/client\/src\/editor\//, ['editor', ...EDITOR_UX_FLOWS, 'scenery', 'canyon', 'traffic', 'weaponsets', 'visual'], ['client']],
   [/^packages\/client\/src\/designer\//, ['designer', ...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/tools\/characterViewer/, [...CHARACTER_FLOWS], ['client']],

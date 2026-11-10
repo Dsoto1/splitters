@@ -265,13 +265,15 @@ and the preset in `sim/setupVariants.ts`. What changed:
 The rules as built: docs/BOTS.md, "Fireteams follow-ups". What changed:
 
 1. **CTF squad roles with Fireteams on** (`ctfSquadRoles`, `CtfBotPlan.squadRoles`, `ModeLogic.squadRole`):
-   - 3 or more squads on a side: the **smallest defends** its own flag (holds round the base, returns a dropped flag,
-     chases our flag's carrier); the others attack. 2 squads: both attack.
+   - **4 or more squads on a side** (`SQUAD_DEFEND_MIN`; the lead's decision after the measurements below, first built
+     from 3): the **smallest defends** its own flag (holds round the base, returns a dropped flag, chases our flag's
+     carrier); the others attack. 3 squads or fewer: all attack.
    - Ties for smallest go to the **higher squad id**, so a bot-led squad defends rather than a person's when it can.
    - A **person's squad** keeps its leader's orders: the role is only its default until they give one
      (`Squad.ordered`); bot-led squads always play their role.
    - Worked out again at once when squads change (joins, leaves, takeovers, a person's first order), else every 5 s.
-   - The squad HUD's line shows the role: "Squad · Attack · Follow me" (existing tokens; no animation).
+   - The squad HUD's line shows the role: "Squad · Attack · Follow me" (existing tokens; no animation); a person's
+     squad's word goes once they've given an order (the lead's decision).
    - `BOT_OFF=squadDefend` plays Part 2's rule (a squad defends only when it fits in the defenders wanted: in practice
      every squad attacked), for measuring.
 2. **Host handoff carries squad points**: the checkpoint has the squads (members and leader by player index, each
@@ -304,6 +306,20 @@ within 20 m of the killer's own flag base, or of our flag's carrier.
   Orb made 2.8 a match. Part 2 measured the same with a squad of 4 holding each base (no captures in 4 matches).
 - Cohesion is a little better (Diamond Park 21.8 → 20.3 m to the leader, Market Town 26.0 → 20.8 m): defenders stay
   together.
-- The owner's call: keep it as decided, or one of the options in HANDOFF's open questions.
+- **The lead's decision (2026-11-10): a defender only from 4 squads a side** (`SQUAD_DEFEND_MIN`), and the HUD's role
+  word hidden once a person has given their squad an order. Re-measured with it, the same command: Diamond Park,
+  Obsidian Orb and Market Town play exactly as before (every row identical to `BOT_OFF=squadDefend`: 0.8, 2.8 and 0.5
+  captures a match).
+- **A 4-squad sample** (`pnpm bot-report glacier_line riot_junction --mode=core.ctf --fireteams=4 --seeds=1,2
+  --seconds=180`: 16 a side, squads of 4, 4 squads a side; before `BOT_OFF=squadDefend`, after the rule):
+
+  | Map | captures | flag takes | flag returns (by defenders) | flags defended | kills a minute | idle out of a fight |
+  |---|---|---|---|---|---|---|
+  | Glacier Line | 0.0 → 0.0 | 0.5 → 0.0 | 0.5 (0) → 0.0 (0) | 24.5 → 14.5 | 37.0 → 31.3 | 1.2 → 7.0 % |
+  | Riot Junction | 0.0 → 0.0 | 3.0 → 1.5 | 1.0 (0) → 1.5 (1.0) | 4.0 → 3.0 | 68.2 → 53.3 | 0.8 → 7.4 % |
+
+  No captures either way on these two (both 16 a side, long ways between the flags); with a defending squad fewer
+  flags are taken and fewer kills made, and the defenders stand by their base (most of the idle out of a fight).
+  Defenders returned a flag once in 4 matches. Two maps and two seeds: a sample, not a verdict on 4-squad maps.
 
 
