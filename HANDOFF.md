@@ -54,6 +54,18 @@ jump ahead, or something the owner explicitly bumps.
     (iron_tide), 451 → 450 (flatpack_depot), 232 → 231 (undergate_transit). Triangles in view 0.30 → 0.31,
     0.51 → 0.51, 0.41 → 0.42 and 0.18 → 0.22 M (undergate's crates are close, at full detail).
   - Not measured on a real GPU.
+- **Checks (locally, load 11-17):**
+  - typecheck;
+  - `pnpm content:rebuild` (new `kitprops` palette atlas, provenance, prop contacts) and content:check;
+  - `pnpm test:changed`: 2,632 passed. Three failures were fixed: the surface-type fixture holds the pack props only;
+    stylePacks2's demo maps validate as written (played, a retired prop plays as its family, so the release stamp no
+    longer describes it); and new kit tests. zfight `sandfall_colosseum` and `netLab` timed out under load and pass
+    alone.
+  - e2e `visual` (every baseline within its share: canyon 0.7 %, arena 0.8 %), `coverage` and `setpieces` passed.
+    `offline` failed on the spectator's "follows the next player" once, passed on a re-run, and passed on main.
+  - The other 41 flows CI's plan picks were not run locally.
+  - Screenshots: session scratchpad `kitprops/` (`shots/<map>-before|after.png` for bunker_cross, iron_tide,
+    flatpack_depot and undergate_transit; `lineup-old/`, `lineup-new/`, `close/`).
 - **Pitfall found:** the prop batches (`client/game/propBatches.ts`) rebuild a model from its vertex data, and
   normalised byte vertex colours came out grey there; only unbreakable kit props, batched at 8+ copies, showed it. The
   kit GLBs store colours as floats.
