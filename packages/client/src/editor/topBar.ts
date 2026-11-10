@@ -7,6 +7,7 @@ import {
 import { isBuiltInMap } from '../mapIndex.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
+import { firstPane } from './editorModes.ts';
 import { TOOL_ICONS } from './editorParts.ts';
 import { openPublishDialog } from './ownerPublish.ts';
 import {
@@ -99,26 +100,32 @@ export class TopBar {
   }
 
   /**
-   * Top-bar workspaces (reference board): Build, Entities and Environment
-   * pick the palette's sub-tabs; Logic opens the rules panel; Test plays the map.
+   * The top bar's mode tabs (editorModes.ts): each picks its own row of palette tabs and opens on its first pane; Logic
+   * opens the rules panel. Test is a mode of its own (its pane plays the map), no longer a shortcut that plays at once.
    */
   setWorkspace(ws: string): void {
-    if (ws === 'test') return this.app.test();
     if (ws === 'logic') {
       if (!this.app.logic.isOpen) this.app.logic.open();
       return;
     }
     if (this.app.logic.isOpen) this.app.logic.close();
-    const first: Record<string, string> = { build: 'tiles', entities: 'entities', environment: 'paint' };
     this.app.paletteWs = ws;
-    this.app.showPane(first[ws] ?? 'tiles');
+    this.app.showPane(firstPane(ws));
     if (ws === 'environment' && this.app.selCount()) this.app.setSelection(emptySelection());
   }
+
+  /** The mode the inspector last drew for (its part with nothing selected follows the mode: modeInspector.ts). */
+  private shownWs = '';
 
   /** Light the top bar's workspace tab: Logic while its panel is open, else the palette's workspace. */
   syncWorkspaceTabs(): void {
     const on = this.app.logic?.isOpen ? 'logic' : this.app.paletteWs;
     for (const b of document.querySelectorAll<HTMLElement>('#ed-modes .tab')) b.classList.toggle('on', b.dataset.ws === on);
+    if (this.shownWs !== this.app.paletteWs) {
+      const first = !this.shownWs;
+      this.shownWs = this.app.paletteWs;
+      if (!first && this.app.history && this.app.selCount() === 0) this.app.inspector.renderInspector();
+    }
   }
 
   bindUi(): void {

@@ -72,6 +72,8 @@ import { LogicPanel } from './logicPanel.ts';
 import { MapChecks } from './mapChecks.ts';
 import { MapProperties } from './mapProperties.ts';
 import { MapSaving } from './mapSaving.ts';
+import { OutlinerPanel } from './outlinerPanel.ts';
+import { mountPanels } from './panels.ts';
 import { MapTestPanel } from './mapTestPanel.ts';
 import { MeasureTool } from './measureTool.ts';
 import { NoteTool } from './noteTool.ts';
@@ -147,6 +149,8 @@ export class EditorApp {
   readonly checks: MapChecks;
   /** Drafts, Save, Quit, New and Open… (mapSaving.ts). */
   readonly saving: MapSaving;
+  /** Everything in the map in one list; hide and lock, editor-only (outlinerPanel.ts). */
+  readonly outliner: OutlinerPanel;
 
   // ---------------------------------------------------------------- the editor's state
 
@@ -228,6 +232,7 @@ export class EditorApp {
   private renderedRevision = -1;
   private renderedLevel = -1;
   private renderedShowAll = false;
+  private renderedFlags = -1;
   private toastTimer?: number;
   active = false;
   /** Boxes currently shown (respecting floor isolation), for surface picking. */
@@ -251,6 +256,9 @@ export class EditorApp {
     this.topBar = new TopBar(this);
     this.checks = new MapChecks(this);
     this.saving = new MapSaving(this);
+    this.outliner = new OutlinerPanel(this, $('ed-outliner'));
+    // The side panel's Outliner, Inspector and Validation fold from their headings, as each person left them.
+    this.outliner.open = mountPanels($('ed-right'), (id, open) => id === 'outliner' && this.outliner.setOpen(open)).isOpen('outliner');
     this.view = new EditorView(host.engine);
     this.thumbs = new ModelThumbnails(host.engine);
     this.paths = new PathTool({
@@ -525,12 +533,15 @@ export class EditorApp {
   refresh(force: boolean): void {
     const rev = this.history.revision;
     const docChanged = force || rev !== this.renderedRevision;
-    const viewChanged = this.level !== this.renderedLevel || this.showAll !== this.renderedShowAll;
+    // The outliner's hide and lock are per map: read the map's before drawing it.
+    if (docChanged) this.outliner.update();
+    const viewChanged = this.level !== this.renderedLevel || this.showAll !== this.renderedShowAll || this.outliner.flagsRev !== this.renderedFlags;
     if (docChanged || viewChanged) {
-      // Set pieces drawn as their parts (the document keeps the placements).
-      this.visibleBoxes = this.view.setMap(this.viewDoc, this.level, this.showAll, this.mapBoxes());
+      // Set pieces drawn as their parts (the document keeps the placements); what the outliner hides left out.
+      this.visibleBoxes = this.view.setMap(this.outliner.shown(this.viewDoc), this.level, this.showAll, this.mapBoxes());
       this.renderedLevel = this.level;
       this.renderedShowAll = this.showAll;
+      this.renderedFlags = this.outliner.flagsRev;
       this.updateSelectionVisuals();
       this.topBar.updateCounts();
       this.renderLevels();
@@ -698,10 +709,12 @@ export class EditorApp {
   /** Select: anything in a group brings its whole group (groups.ts), unless `single` (Alt-click: just that one). */
   setSelection(sel: Selection, single = false, keepHint = false): void {
     if (!keepHint) this.hints.deselect();
-    this.selection = single ? sel : withGroups(this.doc, sel);
+    // Locked things (the outliner's padlock, editor-only) can't be selected.
+    this.selection = this.outliner.selectable(single ? sel : withGroups(this.doc, sel));
     this.updateSelectionVisuals();
     this.inspector.renderInspector();
     this.topBar.syncToolbar();
+    this.outliner.draw(true);
   }
 
   updateSelectionVisuals(offset?: [number, number, number], bad = false): void {

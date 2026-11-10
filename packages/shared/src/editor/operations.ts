@@ -1134,24 +1134,33 @@ export const sectorOrders = (doc: MapDocument): number[] => [...new Set(doc.enti
 
 const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane', mover: 'Mover', portal: 'Portal', zipline: 'Zipline', sector: 'Sector', objective: 'Objective' };
 
-/** Display name for an entity: its creator name, or "Door 2" style numbering by kind. */
-export function entityLabel(doc: MapDocument, e: MapEntity): string {
+/** An entity's kind as MapMaker names it: "Door", a trap's or object's own name, a prop's model name. */
+export function entityKindLabel(e: MapEntity): string {
+  if (e.kind === 'trap') return TRAP_SPECS[e.trap].label;
+  if (e.kind === 'destructible') return DESTRUCTIBLE_SPECS[e.model].label;
+  if (e.kind === 'prop') return getProp(e.model)?.displayName ?? 'Prop';
+  return KIND_LABELS[e.kind];
+}
+
+/** What "Door 2" style numbering counts within: the kind, and a trap's, object's or prop's own sort. */
+export function entityNumberKey(e: MapEntity): string {
+  return e.kind === 'trap' ? `trap:${e.trap}` : e.kind === 'destructible' ? `destructible:${e.model}` : e.kind === 'prop' ? `prop:${e.model}` : e.kind;
+}
+
+/**
+ * Display name for an entity: its creator name, or "Door 2" style numbering by kind. `number` (its place among its
+ * sort, from 1) saves counting when the caller names many at once (the outliner).
+ */
+export function entityLabel(doc: MapDocument, e: MapEntity, number?: number): string {
   if (e.name) return e.kind === 'sector' ? `Sector ${e.order}: ${e.name}` : e.name;
   // Breakthrough pieces go by their order and label: "Sector 2", "Destroy Target B1".
   if (e.kind === 'sector') return `Sector ${e.order}`;
   if (e.kind === 'objective') return `${BREAKTHROUGH_OBJECTIVE_LABELS[e.objective]} ${e.label}`;
-  let kind = KIND_LABELS[e.kind];
-  if (e.kind === 'trap') kind = TRAP_SPECS[e.trap].label;
-  if (e.kind === 'destructible') kind = DESTRUCTIBLE_SPECS[e.model].label;
-  if (e.kind === 'prop') kind = getProp(e.model)?.displayName ?? 'Prop';
-  const same = doc.entities.filter(
-    (o) =>
-      o.kind === e.kind &&
-      (e.kind !== 'trap' || (o.kind === 'trap' && o.trap === e.trap)) &&
-      (e.kind !== 'destructible' || (o.kind === 'destructible' && o.model === e.model)) &&
-      (e.kind !== 'prop' || (o.kind === 'prop' && o.model === e.model)),
-  );
-  return `${kind} ${same.indexOf(e) + 1}`;
+  if (number === undefined) {
+    const key = entityNumberKey(e);
+    number = doc.entities.filter((o) => entityNumberKey(o) === key).indexOf(e) + 1;
+  }
+  return `${entityKindLabel(e)} ${number}`;
 }
 
 /** One side of one grid cell: what the MapMaker's wall tool points at. */

@@ -35,6 +35,8 @@ export const PANE_CATEGORY: Readonly<Record<string, PaletteCategory>> = {
   scenario: 'objects',
   lights: 'lights',
   paint: 'paint',
+  paths: 'terrain',
+  test: 'gameplay',
 };
 
 /**

@@ -255,9 +255,9 @@ export class EditorInput {
       if (!here.length) return null;
       return { x: (here.reduce((s, c) => s + c[0]!, 0) / here.length) * cellSize, y: this.app.level * levelHeight + 1, z: (here.reduce((s, c) => s + c[1]!, 0) / here.length) * cellSize };
     };
-    const tiles = this.app.doc.classicStructure.tiles.filter((t) => ((c) => !!c && inside(c))(middle(placementCells(t) ?? []))).map((t) => t.id);
-    const pieces = [...this.app.expansion.footprints].filter(([, cells]) => ((c) => !!c && inside(c))(middle(cells))).map(([id]) => id);
-    const things = this.app.doc.entities.filter((e) => this.app.hover.reachable(e) && this.app.view.entityShown(e.id) && inside({ x: e.position[0], y: e.position[1] + 0.5, z: e.position[2] }));
+    const tiles = this.app.doc.classicStructure.tiles.filter((t) => !this.app.outliner.blocked.has(t.id) && ((c) => !!c && inside(c))(middle(placementCells(t) ?? []))).map((t) => t.id);
+    const pieces = [...this.app.expansion.footprints].filter(([id, cells]) => !this.app.outliner.blocked.has(id) && ((c) => !!c && inside(c))(middle(cells))).map(([id]) => id);
+    const things = this.app.doc.entities.filter((e) => !this.app.outliner.blocked.has(e.id) && this.app.hover.reachable(e) && this.app.view.entityShown(e.id) && inside({ x: e.position[0], y: e.position[1] + 0.5, z: e.position[2] }));
     const entities = withMoverGroups(this.app.doc, things.map((e) => e.id));
     const union = (a: readonly string[], b: readonly string[]) => [...new Set([...a, ...b])];
     const setPieces = m.add ? union(this.app.selPieces(), pieces) : pieces;

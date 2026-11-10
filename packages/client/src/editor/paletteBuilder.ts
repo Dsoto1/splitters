@@ -38,6 +38,8 @@ import {
 } from '@tiletrigger/shared';
 import { materialThumbnail } from '../materials/patterns.ts';
 import type { EditorApp } from './editorApp.ts';
+import { paneMode } from './editorModes.ts';
+import { fillTestPane } from './modeInspector.ts';
 import { $, escapeHtml, small } from './editorDom.ts';
 import { edgeIcon, itemIcon, npcIcon, SCENARIO_ICONS } from './editorParts.ts';
 import { DEFAULT_HEIGHT_GRID_SMOOTHING, HEIGHT_GRID_SMOOTHING, MAX_HEIGHT_GRID_BYTES, parseAsciiGrid, terrainFromHeightGrid } from './heightGrid.ts';
@@ -165,8 +167,8 @@ export class PaletteBuilder {
     this.buildPropPalette();
     this.buildMountPalette();
     this.app.terrain.buildTerrainPalette();
-    // Paths: one tool for roads, streets, trails and walkways, the track (NPC traffic) and AI routes, in the Terrain
-    // pane (roads lie on the ground and shape it). The track and route cards open it on that kind of path.
+    // Paths: one tool for roads, streets, trails and walkways, the track (NPC traffic) and AI routes, in the Paths mode's
+    // pane, with the drop routes and the track. The track and route cards open it on that kind of path.
     const pathGroup = this.app.palette.group($('ed-terrain-paths'), 'terrain:paths', 'Paths, Roads & Routes');
     const pathCard = (tool: string, kind: PathKind, svg: string, label: string, title: string, tags: string) => {
       const b = document.createElement('button');
@@ -203,7 +205,7 @@ export class PaletteBuilder {
     pathPane.id = 'ed-paths';
     pathGroup.after(pathPane);
     this.app.paths.renderPane(pathPane);
-    const track = this.app.palette.group($('ed-mounts'), 'vehicles:track', 'Track (NPC traffic)');
+    const track = this.app.palette.group($('ed-terrain-paths'), 'vehicles:track', 'Track (NPC traffic)');
     track.append(
       pathCard('path-race', 'race', '<path d="M8 50 C8 20 48 36 48 6" stroke="#3a3f48" stroke-width="12" fill="none"/><path d="M8 50 C8 20 48 36 48 6" stroke="#f2f2f2" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/><path d="M40 4h12v4H40zM40 8h4v4h-4zM48 8h4v4h-4z" fill="#f2f2f2"/>', 'Track', 'Track for NPC traffic (Shift+G): a path NPC cars lap in every mode: click its points (a circuit at once), then set how many cars, their vehicle and the pit lane in the Paths pane', 'road track circuit traffic npc cars race lap'),
     );
@@ -224,6 +226,8 @@ export class PaletteBuilder {
       }
       for (const p of document.querySelectorAll<HTMLElement>('#ed-palette .ed-pane')) p.hidden = p.dataset.pane !== pane;
       $('ed-palette').dataset.cat = btn.dataset.cat ?? '';
+      // The quick row puts this mode's favourites and recent pieces first (palette.ts quickOrder).
+      this.app.palette.setMode(paneMode(pane)?.panes ?? [pane]);
       this.app.topBar.syncWorkspaceTabs();
     };
     this.app.showPane = showPane;
@@ -244,6 +248,7 @@ export class PaletteBuilder {
       if (ws) this.app.topBar.setWorkspace(ws);
     });
     this.buildPackPicker();
+    fillTestPane(this.app, $('ed-test-pane'));
     this.app.palette.refresh();
     this.app.setTool({ kind: 'select' });
   }

@@ -104,8 +104,11 @@ export class Hover {
       return placement ? { kind: 'setpiece', id: placement } : { kind: h.kind, id: h.id };
     };
     const byId = new Map(view.entities.map((e) => [e.id, e]));
-    const ok = (e: MapEntity | undefined): e is MapEntity => !!e && this.reachable(e) && this.app.view.entityShown(e.id);
-    const tilesHere = new Set(view.classicStructure.tiles.filter((t) => (placementCells(t) ?? []).some((c) => c[2] === this.app.level)).map((t) => t.id));
+    // What the outliner hides or locks (editor-only) can't be picked: a set piece's parts follow their placement.
+    const blocked = this.app.outliner.blocked;
+    const free = (id: string) => !blocked.size || !(blocked.has(id) || blocked.has(partOf.get(id) ?? ''));
+    const ok = (e: MapEntity | undefined): e is MapEntity => !!e && free(e.id) && this.reachable(e) && this.app.view.entityShown(e.id);
+    const tilesHere = new Set(view.classicStructure.tiles.filter((t) => free(t.id) && (placementCells(t) ?? []).some((c) => c[2] === this.app.level)).map((t) => t.id));
     let best: { kind: 'tile' | 'entity'; id: string; d: number } | null = null;
     const ray = this.app.ray;
     if (ray) {
@@ -132,10 +135,10 @@ export class Hover {
     const cell = this.app.hoverCell;
     if (!cell) return null;
     const tile = tileAt(view, cell[0], cell[1], this.app.level);
-    if (tile) return whole({ kind: 'tile', id: tile.id });
+    if (tile && free(tile.id)) return whole({ kind: 'tile', id: tile.id });
     // A cell a set piece claims (its footprint holds every level of it), even where none of its parts stands.
     const held = this.app.expansion.footprints;
-    for (const [id, cells] of held) if (cells.some((c) => c[0] === cell[0] && c[1] === cell[1] && c[2] === this.app.level)) return { kind: 'setpiece', id };
+    for (const [id, cells] of held) if (free(id) && cells.some((c) => c[0] === cell[0] && c[1] === cell[1] && c[2] === this.app.level)) return { kind: 'setpiece', id };
     return null;
   }
 

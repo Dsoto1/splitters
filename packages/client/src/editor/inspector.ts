@@ -62,6 +62,7 @@ import {
   type TilePlacement
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
+import { modeSection } from './modeInspector.ts';
 import { $, button, h2, numberInput, row, small, text } from './editorDom.ts';
 import { dressable, dressTag } from './editorParts.ts';
 import { groupSection, type GroupHost } from './groupPanel.ts';
@@ -102,7 +103,12 @@ export class Inspector {
     const { tiles, entities } = this.app.selection;
     const pieces = this.app.selPieces();
     const doc = this.app.doc;
-    if (this.app.selCount() === 0) return this.app.mapProps.renderMapProperties(el);
+    if (this.app.selCount() === 0) {
+      // The mode's own section first (modeInspector.ts), then Map properties.
+      const mode = modeSection(this.app);
+      if (mode) el.append(mode);
+      return this.app.mapProps.renderMapProperties(el);
+    }
     if (pieces.length === 1 && tiles.length + entities.length === 0) {
       this.app.pieces.pieceInspector(el, pieces[0]!);
     } else if (tiles.length === 1 && entities.length === 0 && !pieces.length) {
