@@ -669,6 +669,7 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: content tile ids `core.tunnel_vault_walled`, `core.tunnel_vault_bend_walled`, `core.tunnel_vault_t_walled`, `core.tunnel_vault_cross_walled` (the Side walls tile option; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-09.
 - Claimed: `maps/test_coverage.json` (one of each side-walled vaulted tunnel, placed in MapMaker; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-09.
+- Claimed: content ids `core.dynamite` (the Dynamite throwable's look, `guns/dynamite.glb`), later `sandbags` and holy bomb throwable looks; `content/throwables.json`, `content/guns.json`, `content/guns.lock.json`, `content/provenance.json`, the throwables rows of docs/ARSENAL.md (`wip/weapons-throwables`), weapon and vehicle lane (this account), 2026-11-10.
 
 **Whiteout Station follow-ups (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; the owner's answers; CI on
 `check/mapmaker-whiteout`):** King of the Hill on three hills (yard, radar ridge, ice cave); three drivable snow sleds
@@ -775,7 +776,7 @@ The MapMaker lane (other account) is **the main session for the rest of the week
   - Rewind window: 300 ms.
 - **Session memory:** write .control-center/session-summary.json at the end of your sessions.
 
-**Kit-prop generators: not landed, paused** (2026-11-10; owner's usage cap). `check/kit-props` = `wip/kit-props` at 4aa5e42 (origin/main c322d74 merged in); run 42846096828 was still running when work stopped. The first try (run 42823940482) was red only on `editorux` and `editortools`, which clicked retired props; that is fixed. Left: if run 42846096828 is green and main hasn't moved, fast-forward main to 4aa5e42. Otherwise merge origin/main once, push to check/ once, and land. Details in the "Kit-prop generators, part 1" entry. Landing lock released.
+**Landing now: kit-prop generators part 1 (`check/mapmaker-kit-props`, from `wip/mapmaker-kit-props` = `wip/kit-props` 4aa5e42 + the test fix + origin/main; MapMaker lane, now the main session, 2026-11-10), please hold code pushes to main.** Run 42846096828 was red on one check, `editorenv` "the bot test run goes on in the background": the test read the progress bar at the worker's ready line ("0:00 of 5:00 played", bar 0). It now waits for the first progress report; the flow passes locally. One check run, then a fast-forward; this line goes when it lands or fails.
 
 **Landed: Fireteams CTF roles fix** (`wip/fireteams-4` at ec8ecfb, in train `check/train-20261110-164310`, main = 37b7f94, green; lead session, 2026-11-10): the smallest squad defends only from 4+ squads a side; the HUD role word hides after a leader's order.
 
