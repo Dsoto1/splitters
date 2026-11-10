@@ -441,6 +441,10 @@ owner's review, not landed).**
   dark glass block with a neon trim (not a greenhouse); a level −1 passage needs a level-0 floor over its whole length
   (the slope where the ground is pulled under its floor cuts into it); background tasks stop at 30 minutes unless given
   a longer limit (start the preview server detached).
+- Proof done 2026-11-10 (QA_REPORT.md, screenshots/): validate-map 0, z-fight 0, bot-report TDM/CTF/KotH at 32,
+  bench p95 9.4 ms, 944 collision boxes. Open: KotH leans to Tide with the hills mostly empty (question 7).
+- Tip: clean eye-level pictures in MapMaker come from the card-shot frame (Set card shot, screenshot `.ed-card-crop`,
+  Cancel): plants and walls drawn as in play, no editor overlays; the plain 3D view at a high level leaves both out.
 
 **Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
 for the owner's review, not landed).**
