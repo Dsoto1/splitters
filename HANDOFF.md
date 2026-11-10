@@ -73,7 +73,8 @@ owner-approved audit candidates 7 and 8; landed on main from its green `check/gu
   - `botDesirability` is still hand-set.
 
 **Bot vehicle routing and getting out by a wall (`wip/vehicle-routing`, agent, 2026-11-10; the MapMaker lane's Whiteout
-report and gunplay pass 3's Riot Junction find).** CHANGELOG "Bot vehicle routing and getting out by a wall".
+report and gunplay pass 3's Riot Junction find; LANDED: green on `check/vehicle-routing` at d234b0f, run 42762326837,
+shard 6's unrelated `fireteams` hold check re-run once; landing line removed).** CHANGELOG "Bot vehicle routing and getting out by a wall".
 - **Vehicle routes (Whiteout Station).**
   - **Cause:** `vehicleRouteFits` checked the foot route with `routeFits` only: a square box (the hull's half width,
     from 0.9 m to the hull's top) every 2 m. Its height part was already right. But a doorway a little wider than the
@@ -280,8 +281,6 @@ The workflow is unchanged (CLAUDE.md):
 - run at most 3 agents, each on `wip/<name>`, green on `check/<name>`, then fast-forward main;
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
-
-**Landing now: vehicle routing fixes (`check/vehicle-routing`; this session), please hold code pushes to main.** (Vehicle-routing agent, 2026-11-10; one check run, then a fast-forward.)
 
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
@@ -670,7 +669,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - bots plan a vehicle's drive on the walking route, checked only for the vehicle's width (`routeFits`);
   - a hangar whose doorway is too low or narrow passes that check, and the sled then stalls at its north door;
   - details are in `docs/map-briefs/whiteout_station/DECISIONS_AND_DEVIATIONS.md`.
-  - **Answer (vehicle-routing session, 2026-11-10):** fixed on main, see "Bot vehicle routing and getting out by a
+  - **Answer (vehicle-routing session, 2026-11-10):** fixed on main (landed from `check/vehicle-routing`), see "Bot vehicle routing and getting out by a
     wall" near the top. The route check now sweeps the hull's footprint along the route (`hullFits`), so the sled no
     longer takes the hangar or the west block's door (old apron layout, KotH seeds 1-4: stalls 10 → 0). Moving the
     sleds back to the apron is the lane's call. From there bots would drive them east along the road, and leave them
