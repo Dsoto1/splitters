@@ -6,10 +6,10 @@
   "family": "objective",
   "maps": [
     { "map": "cinder_foundry", "mode": "core.koth" },
-    { "map": "dune_harbor", "mode": "core.bomb" },
+    { "map": "iron_tide", "mode": "core.bomb" },
     { "map": "glasswork_office", "mode": "core.hostage" },
     { "map": "eagle_spires", "mode": "core.elim" },
-    { "map": "starhaven", "mode": "core.bomb" },
+    { "map": "runway_nine", "mode": "core.bomb" },
     { "map": "neon_spire", "mode": "core.koth" }
   ]
 }

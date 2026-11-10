@@ -18,6 +18,37 @@ made only on a commit that passed CI on a check branch.
   health stays clear of the move pad.
 - **Pause menu on a phone**: no keyboard keys shown on its buttons.
 - The audit and what's next for phones: docs/MOBILE_AUDIT.md.
+**MapMaker: a first-time tour** (MapMaker overhaul Phase 6): the first visit walks you through a tiny map with the real
+tools: place a room, a spawn and a pickup, then play it. Each step moves on when you do it; Skip or Esc ends it, and it
+won't show again. Take it again from the `?` key list.
+
+**Bot vehicle routing and getting out by a wall** (bugs found on Whiteout Station and Riot Junction):
+- **Bots no longer drive vehicles into doorways they only fit square on.** A bot checked the route for a vehicle's
+  width only every 2 m, so a door a little wider than the vehicle passed, and the vehicle stalled in it (Whiteout
+  Station's Snow Sleds in the hangar's doors). Bots now sweep the vehicle's whole footprint along the route, turning
+  with it at corners. A route it doesn't fit through is kept off, or the bot goes on foot. On the old Whiteout layout
+  (sleds on the garage apron, King of the Hill, seeds 1-4) sled stalls fell from 10 to 0.
+- **Getting out of a vehicle parked against a wall puts you on your side of it.** The step-out spot was checked only
+  for headroom, so beside Riot Junction's east wall a Buggy put its rider beyond the wall. The rider fell 4 m under the
+  street and couldn't get out. The spot now needs nothing solid between it and the vehicle and ground under it (else
+  the next side, or the roof).
+**Map line-up** (owner, 2026-11-09):
+- **Six maps retired:** Fogbound, Bottling Plant, Dune Harbor, No Man's Field, Overhang and Starhaven are gone from
+  the game (menus, Quick Play, the map vote, rotations). In the rotations Pump Tower and Razor Edge take their places
+  in Deathmatch Classics, Midnight Keel and Runway Nine in Objective Mix (Bomb), Market Town in Flag Run.
+- **Three maps renamed:** Iron Tide is now **Midnight Keel**, Ironhold Prison **Cormorant Isle** and Jungle Steps
+  **Cradle of Idols** (same maps, same places).
+- **Iron Maw** is for 16-64 players (was 16-32).
+**MapMaker: modes, folding panels and an outliner** (MapMaker overhaul Phase 2):
+- **Seven mode tabs:** Build, Props, Gameplay, Logic, Environment, Paths and Test, each with its own palette tabs and its
+  own part of the side panel. Roads, the track and the drop routes have their own Paths mode; Test gathers Play test,
+  Play from here, the bot test and the plan view.
+- **An outliner:** everything in the map in one list, searchable, grouped by kind and level. Click to select and frame;
+  hide or lock things while you work (MapMaker only, kept per map in your browser, never in the map). Quick with 4,096
+  things.
+- **Folding panels:** the Outliner, Inspector and Validation fold from their headings and stay as you left them.
+- **Favourites and recent follow the mode:** the mode's own pieces first, or only them.
+- Under the hood, MapMaker's 6,500-line controller is split into 16 modules, with no change in behaviour.
 
 **Iron Coast, part 3: natural cliffs and banks, the beach goes on** (owner, 2026-11-08/09; all in MapMaker)
 - **Finer ground**: the terrain is on a 1.25 m grid (Terrain → Change grid, Smooth), so slopes are drawn smoothly.

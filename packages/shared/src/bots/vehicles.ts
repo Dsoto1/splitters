@@ -154,9 +154,9 @@ const FIT_HULL_SLACK = 0.15;
  * FIT_STEP m past the first `skip` m (where the vehicle itself stands) the ground is found under the route (a ray down;
  * the route's corners are far apart over open ground, and hills rise between them) and a box that wide (square, so any
  * heading) must be clear from 0.9 to 1.9 m over it. A tank is kept out of passages a person fits through and it
- * doesn't, where it would wedge (Iron Tide's hangar). With `hull` (its height and half length) the box reaches up to
+ * doesn't, where it would wedge (Midnight Keel's hangar). With `hull` (its height and half length) the box reaches up to
  * the hull's top over the highest ground within half its length: a hull rides level, so going up stairs its rear
- * stands as high as its front (Iron Tide's centre stairs, under a beam at 3 m at their foot: a tank stopped on the
+ * stands as high as its front (Midnight Keel's centre stairs, under a beam at 3 m at their foot: a tank stopped on the
  * first step and was left there, in everyone's way).
  */
 export function routeFits(
@@ -230,18 +230,116 @@ export function routeFits(
   return true;
 }
 
-type FitPhysics = { boxClear(center: Vec3, half: Vec3): boolean; raycastHit(origin: Vec3, dir: Vec3, max: number): { dist: number } | null };
+type FitPhysics = {
+  /** `yaw` (hullFits) turns the box about the vertical; absent, it is upright and square to the axes. */
+  boxClear(center: Vec3, half: Vec3, skip?: undefined, levelOnly?: boolean, yaw?: number): boolean;
+  raycastHit(origin: Vec3, dir: Vec3, max: number): { dist: number } | null;
+};
+
+/** The hull's sweep (hullFits): a footprint every this many metres along the route (under its length: a doorway's depth can't fall between two). */
+const HULL_STEP = 0.75;
+/** Its box runs from this high (m) over the highest ground under it (kerbs and sills it rides over) to its top. */
+const HULL_LIFT = 0.45;
+/** The ground under a sample: a first ray down from this high (m) over the route (under a doorway's lintel, a roof or an arch), then from FIT_PROBE if that starts in something (a hill). */
+const HULL_PROBE_LOW = 0.7;
+/** Off the route's line it may run (m, + right of its heading), moving at most one place along this list from one footprint to the next (it can't hop sideways round a wall). */
+const HULL_SHIFTS = [-1.2, -0.8, -0.4, 0, 0.4, 0.8, 1.2];
 
 /**
- * Does vehicle `m` fit along `path` (routeFits, at its `routeHalfWidth`), checked from just past its own hull to `upTo`
- * m along? Flyers (no routeHalfWidth) always do. Bot drivers keep to routes their hull fits: before, a Hauler followed
- * the foot route into Iron Tide's 3 m doors.
+ * Does a hull `half` (x across, z along, m; `height` tall) fit along `path` as a driver steers it: turned to the route's
+ * heading, every HULL_STEP m from `skip` to `upTo` m along, and near a corner (within its half length) turned to the
+ * leg before and after it as well, since it swings through both there? Each footprint may run a little off the line
+ * (HULL_SHIFTS, drifting a step at a time) and must be clear from HULL_LIFT over the highest ground under its middle, nose and tail to its top,
+ * less the slack its top may graze.
+ *
+ * routeFits' square box, every 2 m, missed doorways only a little wider than the hull: a Snow Sled (1.3 m wide, 3 m
+ * long) came at Whiteout Station's 1.6 m hangar doors at a slant (the foot route crosses the hangar on the diagonal and
+ * turns hard just past the north door), passed the check and stalled in the doorway, again and again.
+ */
+export function hullFits(
+  physics: FitPhysics,
+  path: readonly Vec3[],
+  hull: { half: readonly [number, number, number]; height: number },
+  skip = 4,
+  upTo = Infinity,
+): boolean {
+  const down = { x: 0, y: -1, z: 0 };
+  const [hx, , hz] = hull.half;
+  const ground = (x: number, y: number, z: number): number => {
+    const low = physics.raycastHit({ x, y: y + HULL_PROBE_LOW, z }, down, HULL_PROBE_LOW + 4);
+    if (low && low.dist > 0.01) return y + HULL_PROBE_LOW - low.dist;
+    const high = physics.raycastHit({ x, y: y + FIT_PROBE, z }, down, FIT_PROBE + 4);
+    return high ? y + FIT_PROBE - high.dist : y;
+  };
+  const headings: number[] = [];
+  const lengths: number[] = [];
+  for (let i = 1; i < path.length; i++) {
+    const a = path[i - 1]!;
+    const b = path[i]!;
+    lengths.push(Math.hypot(b.x - a.x, b.z - a.z));
+    headings.push(Math.atan2(b.x - a.x, b.z - a.z));
+  }
+  const fitsAt = (x: number, y: number, z: number, yaw: number, k: number): boolean => {
+    const s = Math.sin(yaw);
+    const c = Math.cos(yaw);
+    // Right of the heading is (cos, -sin); forward is (sin, cos).
+    const px = x + c * k;
+    const pz = z - s * k;
+    const top = Math.max(ground(px, y, pz), ground(px + s * hz, y, pz + c * hz), ground(px - s * hz, y, pz - c * hz));
+    const bottom = top + HULL_LIFT;
+    const roof = top + hull.height - FIT_HULL_SLACK;
+    if (roof <= bottom) return true;
+    return physics.boxClear({ x: px, y: (bottom + roof) / 2, z: pz }, { x: hx, y: (roof - bottom) / 2, z: hz }, undefined, false, yaw);
+  };
+  // The places off the line it can be at (HULL_SHIFTS' indices): any, to begin with.
+  let open: boolean[] = HULL_SHIFTS.map(() => true);
+  let along = 0;
+  for (let i = 0; i < lengths.length; i++) {
+    const a = path[i]!;
+    const b = path[i + 1]!;
+    const len = lengths[i]!;
+    for (let d = 0; d < len; d += HULL_STEP) {
+      if (along + d < skip) continue;
+      if (along + d > upTo) return true;
+      const t = d / len;
+      const x = a.x + (b.x - a.x) * t;
+      const y = a.y + (b.y - a.y) * t;
+      const z = a.z + (b.z - a.z) * t;
+      const yaws = [headings[i]!];
+      if (i > 0 && d < hz) yaws.push(headings[i - 1]!, midAngle(headings[i - 1]!, headings[i]!));
+      if (i + 1 < headings.length && len - d < hz) yaws.push(headings[i + 1]!, midAngle(headings[i]!, headings[i + 1]!));
+      const was = open;
+      open = HULL_SHIFTS.map((k, j) => (was[j] || was[j - 1] === true || was[j + 1] === true) && yaws.every((yaw) => fitsAt(x, y, z, yaw, k)));
+      if (!open.includes(true)) return false;
+    }
+    along += len;
+  }
+  return true;
+}
+
+/** Halfway between two headings (radians), the short way round. */
+function midAngle(a: number, b: number): number {
+  let d = b - a;
+  while (d > Math.PI) d -= 2 * Math.PI;
+  while (d < -Math.PI) d += 2 * Math.PI;
+  return a + d / 2;
+}
+
+/**
+ * Does vehicle `m` fit along `path`, checked from just past its own hull to `upTo` m along? Two checks: routeFits'
+ * clearance at its `routeHalfWidth` (any heading, its hull's height over the highest ground under it, no ledge it can't
+ * climb) and hullFits' sweep of its own footprint along the route's heading (doorways, arches and gaps it would only
+ * get through square on). Flyers (no routeHalfWidth) always do. Bot drivers keep to routes their hull fits: before, a
+ * Hauler followed the foot route into Midnight Keel's 3 m doors, and a Snow Sled into Whiteout Station's hangar doors.
  */
 export function vehicleRouteFits(physics: FitPhysics, m: Pick<MountView, 'routeHalfWidth' | 'half'>, path: readonly Vec3[], upTo = Infinity): boolean {
   if (!m.routeHalfWidth || !m.half) return true;
   const long = Math.max(m.half[0], m.half[2]);
   const wide = Math.min(m.half[0], m.half[2]);
-  return routeFits(physics, path, m.routeHalfWidth, long + wide + 0.5, upTo, { height: m.half[1] * 2, reach: long });
+  const skip = long + wide + 0.5;
+  if (!routeFits(physics, path, m.routeHalfWidth, skip, upTo, { height: m.half[1] * 2, reach: long })) return false;
+  // The footprint at its routeFit share across (as routeHalfWidth), its whole length along.
+  return hullFits(physics, path, { half: [m.routeHalfWidth, m.half[1], long], height: m.half[1] * 2 }, skip, upTo);
 }
 
 /** The seat a bot is in. */

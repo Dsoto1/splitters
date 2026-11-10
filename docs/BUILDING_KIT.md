@@ -3,6 +3,40 @@
 Everything here is data in `packages/shared` and works in MapMaker, offline
 matches and the dedicated server alike.
 
+## MapMaker's modes, panels and outliner (MapMaker overhaul Phase 2)
+
+- **Mode tabs** (top bar; `client/src/editor/editorModes.ts`): **Build** (Tiles, Set pieces, Walls), **Props** (Props,
+  Lights), **Gameplay** (Gameplay, NPCs, Vehicles, Objects: the old Entities tab), **Logic** (the rules panel),
+  **Environment** (Paint, Nature, Terrain, Sky), **Paths** (roads, streets, trails and walkways, the track for NPC traffic,
+  AI routes and the drop routes; they were in the Terrain pane and the Vehicles tab) and **Test** (Play test, Play from
+  here, the bot test, the plan view, the problems list; picking Test no longer plays at once). Every palette pane is in
+  one mode; a card picked from search, favourites or by its key moves the tabs to its mode. With nothing selected the
+  inspector starts with the mode's own section (Paths: the map's paths; Test: ready or not, its first problem, spawns and
+  pickups; Gameplay: counts of spawns, objectives, pickups, NPC squads and vehicles), then Map properties.
+- **Folding panels:** the side panel's Outliner, Inspector and Validation fold from their headings; the palette's groups
+  fold from theirs; Backslash and Shift+Backslash fold the whole palette and side panel. All of it stays as each person
+  left it (this browser's storage).
+- **Outliner** (side panel; `client/src/editor/outlinerPanel.ts`, the list's rules shared `editor/outliner.ts`): every
+  tile, set piece and entity, grouped by kind and, inside a kind on several levels, by level. Search matches names, kinds
+  and ids (every word). A click selects and frames (Shift adds), moving to its level. The eye hides a thing from
+  MapMaker's view (not picked either); the padlock keeps it from being picked or selected. Hide and lock are kept per map
+  in this browser and never go in the map file: a test match and the game play everything. The list draws only the rows
+  in view, so a map with 4,096 things stays quick.
+- **Favourites and recent:** the quick row over the palette puts the current mode's favourites (or recent pieces) first
+  and the rest after; **This mode only** shows just the mode's.
+
+## MapMaker's first-time tour (MapMaker overhaul Phase 6)
+
+- The first time someone opens MapMaker a small card over the view walks them through a tiny map with the real tools:
+  **place a room** (Build, the Room card), **add a spawn** (Gameplay, Player Spawn), **add a pickup** (Health (Small)),
+  then **try it out** (▶ Here or ▶ PLAY TEST). The button or card to use has a steady yellow ring; until you're in the
+  right mode, the mode tab has it. Each step moves on when you do it (the edit going into the history, or the test
+  starting); an undo never counts. A new map already has a room and a spawn, so the tour asks for one more of each.
+- **Skip tour** or **Esc** ends it at any step; it never blocks editing. Done or skipped, this browser remembers it
+  (`localStorage` `tiletrigger.editor.tour`). **Take the tour** in the `?` key list starts it again.
+- Steps and wording: shared `editor/tour.ts` (`TOUR_STEPS`); the card: `client/src/editor/tour.ts`. Browser tests
+  (`?test=1`) never see it unless they add `&tour=1` (e2e `editorux` → `editorTourChecks`).
+
 ## Pieces (`content/tiles/core.json`, built by `map/catalog.ts`)
 
 The core kit's tiles and the edge styles below are data in `content/tiles/` (how to add one:
@@ -911,7 +945,7 @@ Temple" (sandstone with teal-and-gold inlay, teal/gold banners, wall torches, ha
 spikes, a portcullis, multi-level terraces with waterfalls). The owner folded Ancient Temple into the Jungle
 Ruins refresh (2026-10-31: the two sounded alike), so it is one pack, 06 Jungle Ruins; 03 Imperial Arena stays
 Roman. The pack's first twelve tiles (`packTiles2.ts`) and 17 `jg_*` props are unchanged, so Verdant Ziggurat,
-Erosion, Sunken Kingdom, Fernwood Moon, After Hours and Jungle Steps load as before. New theme
+Erosion, Sunken Kingdom, Fernwood Moon, After Hours and Cradle of Idols load as before. New theme
 `core.ancient_temple` (mossy stone slab floors, carved temple stone walls, temple sandstone solids, jungle rock
 undersides, gold trim; backdrop clear sky, forest, moss). Demo map: `maps/vinefall_sanctum.json` (Vinefall
 Sanctum; Verdant Ziggurat was the demo before).

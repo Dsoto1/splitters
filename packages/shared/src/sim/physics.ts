@@ -345,7 +345,7 @@ export class PhysicsWorld {
    * Each move starts `lift` (5 cm) up and asks to come down by as much. Pinched between two contacts it can slide
    * along neither (a doorway or gap narrower than the probe: its jambs; a beam and the floor), the controller moves it
    * nowhere at all, not even down, and the lift stayed: the vehicle rose 5 cm a tick, up the door into its lintel
-   * and the roof over it, and stuck there (a Hauler at the top of Iron Tide's stairs, in the 3 m door under the
+   * and the roof over it, and stuck there (a Hauler at the top of Midnight Keel's stairs, in the 3 m door under the
    * deck's roof). A move the controller refuses now keeps the vehicle where it was, resting (it still falls when it
    * can: the drop is tried on its own), so it can be driven back out the way it came; and a move that creeps up
    * into something over the probe (the controller lets it, climbing a sill under a lintel) keeps its height.
@@ -553,12 +553,14 @@ export class PhysicsWorld {
   /**
    * True when no world collider (level, door, crate, built piece; not `skip`) overlaps the upright box. `levelOnly`:
    * only the level itself counts (its boxes, environment shapes and terrain; not vehicles, doors or built pieces).
+   * `yaw` turns the box about the vertical (a vehicle's hull along its heading: bots/vehicles.ts hullFits).
    */
-  boxClear(center: Vec3, half: Vec3, skip?: RAPIER.Collider, levelOnly = false): boolean {
+  boxClear(center: Vec3, half: Vec3, skip?: RAPIER.Collider, levelOnly = false, yaw = 0): boolean {
     if (this.dirty) this.commit();
     const shape = new RAPIER.Cuboid(Math.max(0.01, half.x), Math.max(0.01, half.y), Math.max(0.01, half.z));
     const level = levelOnly ? (c: RAPIER.Collider) => this.staticBoxes.has(c.handle) || this.staticShapes.has(c.handle) || c.collisionGroups() >>> 16 === GROUP_TERRAIN : undefined;
-    return !this.world.intersectionWithShape(center, { x: 0, y: 0, z: 0, w: 1 }, shape, undefined, WORLD_ONLY_QUERY, skip, undefined, level);
+    const rot = yaw ? { x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) } : { x: 0, y: 0, z: 0, w: 1 };
+    return !this.world.intersectionWithShape(center, rot, shape, undefined, WORLD_ONLY_QUERY, skip, undefined, level);
   }
 
   /** True when nothing static blocks the segment a -> b. */

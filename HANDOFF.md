@@ -20,6 +20,30 @@ pick from: docs/MOBILE_AUDIT.md.**
   clustered map lights' 64 × 64 tile mask on that phone's GPU; SwiftShader can't show it. One lamp per mask layer
   was tried and reverted (Flatpack Depot's 138 lamps overflow the mask texture). The next step is proposal 1 in the
   audit: ask the owner's phone and Graphics setting, and a room-lights switch to confirm.
+**Map line-up (`wip/maps-retire`, 2026-11-09/10; owner's decisions of 2026-11-09; green on `check/maps-retire` at b9365b0, run 42759236295; LANDED; claims released).**
+- **Retired (files deleted; git history keeps them):** fogbound, bottling (Bottling Plant), dune_harbor, no_mans_field,
+  overhang, starhaven: `maps/<id>.json`, their card pictures (`client/public/maps/shots/<id>.jpg`), `inspirations.ts`
+  lines, rotations, tests and current docs. Not added to `RETIRED_MAPS` (that list is for maps whose files stay; the
+  deleted ones of the earlier map review weren't either). No e2e flow, flowMap entry, bot-report/bot-limits default,
+  Quick Play list, playlist, server/host default or `test_coverage` named them.
+- **Rotation replacements** (same mode, not retired): Deathmatch Classics bottling → pump_tower, overhang → razor_edge;
+  Objective Mix (Bomb) dune_harbor → iron_tide, starhaven → runway_nine; Flag Run (CTF) no_mans_field → market_town
+  (not on BOTS.md's "still without a capture" list).
+- **Tests:** `rotation.test.ts`'s stub suite uses razor_edge for overhang; `hoverCeiling.test.ts`'s Dune Harbor doorway
+  (0.9 m sill, lintel at 2.5 m, roof at 3.5 m) is now built in the test's yard (Speeder through, Hauler stops and backs
+  out; passes). Code comments naming the retired maps reworded.
+- **Renamed in the real MapMaker** (Playwright: Import, Map properties' Name, Export; ids kept): iron_tide **Midnight
+  Keel**, ironhold_prison **Cormorant Isle** (also its match-start Logic message, "Cormorant Isle. Lights on: ..."),
+  jungle_steps **Cradle of Idols**. Checked unique first against every map name on origin/main and the unlanded
+  wip/mapmaker-* branches (no shared word, no shared 4-letter start, "of"/"the" ignored). Card pictures show no name
+  (unchanged). Docs, test titles and comments use the new names (CHANGELOG/HANDOFF history keeps the old ones).
+- **Iron Maw:** Players 16-64 in Map properties (was 16-32).
+- Every exported file differs from before only in that field (and the Logic text), `formatVersion` → 33 and the
+  release stamp (semantic diff); the terrain is written a row per line now, so the text diffs are large.
+  validate-map: 0 issues on all four.
+- Locally (box at load 9-22): typecheck, content:check, test:changed (6 timeouts under load; the map ones pass alone);
+  e2e maps/vehicles/hostcontrols/dedicatedhost timed out under load (iron_tide's offline match took 90 s against the
+  flow's 60 s; it starts and plays). CI ran the full suite (deleted card pictures are unmapped paths): green.
 
 **Release 0.9.0 (2026-11-08, owner-approved "wait for the passenger fix, then release together"):** main 4d8f205
 (green on `check/release-090`, run 42502393727; three e2e shards failed first in flows the release doesn't touch,
@@ -56,11 +80,49 @@ owner-approved audit candidates 7 and 8; landed on main from its green `check/gu
   - **Before → after, 28 matches on main after the MapMaker train:** kills a minute 32.3 → 32.1; stuck 0.99 → 0.93
     a bot-minute; idle out of a fight 4.4 → 4.4 %. Hit rates rose for 12 of 14 guns (the shotguns +21-37 points, the
     Precision Rifle 8 → 21 %). `bot-report --check` passes.
-  - **Found, not fixed:** on the rebuilt Riot Junction a bot can end up 4 m under the street by a buggy's spawn,
-    at (196, -4, 42), with no route out for 105 s. Repro:
-    `pnpm bot-report riot_junction --mode=core.tdm --seeds=1 --set=military --spells`. For the owner or the vehicles
-    and nav lane.
+  - **Found here, fixed since** (`wip/vehicle-routing`, below): on the rebuilt Riot Junction a bot could end up 4 m
+    under the street by a buggy's spawn, at (196, -4, 42), with no route out for 105 s.
   - `botDesirability` is still hand-set.
+
+**Bot vehicle routing and getting out by a wall (`wip/vehicle-routing`, agent, 2026-11-10; the MapMaker lane's Whiteout
+report and gunplay pass 3's Riot Junction find; LANDED: green on `check/vehicle-routing` at d234b0f, run 42762326837,
+shard 6's unrelated `fireteams` hold check re-run once; landing line removed).** CHANGELOG "Bot vehicle routing and getting out by a wall".
+- **Vehicle routes (Whiteout Station).**
+  - **Cause:** `vehicleRouteFits` checked the foot route with `routeFits` only: a square box (the hull's half width,
+    from 0.9 m to the hull's top) every 2 m. Its height part was already right. But a doorway a little wider than the
+    hull passed even where the vehicle can't get through it: at a slant, or turning in it. The Snow Sled (1.3 m × 3 m)
+    met the hangar's 1.6 m north doors with the foot route's hard turn right in the doorway, and the west block's door
+    the same way. Old layout (sleds on the garage apron, commit 1024fcb), KotH seeds 1-4: 10 stalls (1,022 ticks)
+    at (4, 0, -12) and (8, 0, -28), 9 sleds given up on; TDM seed 2: 4 stalls at (-36..-40, 0, -8).
+  - **Fix:** `bots/vehicles.ts hullFits`, run after routeFits. The hull's own footprint (routeFit share across, full
+    length along) is turned to the route's heading every 0.75 m. Near a corner it is checked at both legs' headings
+    and between them. Its box runs from 0.45 m over the highest ground under its middle, nose and tail to its top
+    (less 0.15 m). It may drift off the line a step at a time (±1.2 m); before, the box could hop round a wall
+    between samples. `physics.boxClear` takes a `yaw`. The brain is unchanged: a route that doesn't fit at boarding
+    leaves the vehicle alone for 20 s; at the wheel the bot keeps the route it has or gets out.
+  - **Measured.** Old Whiteout layout, KotH seeds 1-4: stalls 10 → 0, give-ups 9 → 0.
+    TDM 240 s, seeds 1-2 on whiteout_station, riot_junction, iron_tide, canyon, runway_nine and frost_basin, main → this:
+    - stalls 37 (4,327 ticks) → 8 (689); wedges 3 → 1;
+    - kills 1,297 → 1,315; stuck recoveries 1,218 → 1,161 (iron_tide seed 1 rose, 139 → 275; seed 2 fell, 292 → 196);
+    - boarding tries 203 → 111: bots take vehicles less, only where they fit.
+    The current Whiteout layout (sleds at the road's west end) plays exactly as before (KotH seeds 1-4, TDM seeds 1-2):
+    no bot takes a sled. From there the way north goes through the west block's door, which a sled doesn't fit.
+  - **Tests:** `shared/test/vehicleRouteHull.test.ts`. On the Whiteout hangar, the apron → yard route passed routeFits
+    and fails now. Square on through the door fits; turning in the doorway or crossing it at 45° doesn't. The road
+    east still fits. A bot at the wheel on the apron never noses into the door (the test fails without the fix).
+- **Riot Junction: under the street (gunplay pass 3's find).**
+  - **Cause:** a game bug, not the map. A bot rode a Buggy that stopped against the street's east wall
+    (x 203.5..204.1). `leaveMount`'s first step-out spot was checked only for headroom, and it lay beyond the wall,
+    over the void outside the street (x 204.2). The bot fell to the slab at y -4.05 under the street and walked under
+    it to (196, -4, 42), with no navmesh there (195 s of noPath).
+  - **Fix:** `Match.exitReachable`. A spot needs nothing solid between the hull's face and it (rays at 0.5 and 1.2 m)
+    and ground within 2 m under it (or water; a flyer's rider may step out anywhere). Otherwise the next side, then
+    the roof. No map edit.
+  - **Repro after:** `pnpm bot-report riot_junction --mode=core.tdm --seeds=1 --set=military --spells`. Longest spell
+    195 s (noPath) → 44 s (a post); no-route idle 2.7 → 0.0 %; failed searches 39 → 0 %. Seed 2 has no spell over 18 s.
+  - **Test:** `shared/test/exitBeyondWall.test.ts`: a Buggy against that wall; before, the rider stepped out at x 204.3.
+- **Checks:** typecheck; test:changed (2,511 passed); e2e `vehicles` locally (passes with CI's timeouts; another
+  session's e2e loaded the machine).
 
 **Small fixes of 2026-11-08 (`wip/small-fixes`, agent, 2026-11-09; owner-approved list).**
 - **Fernwood Moon's rope-lift waits (bots).** Cause: the north deck's only walkable way down was the north rope lift
@@ -445,6 +507,7 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
 - Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
+- Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 
 **MapMaker: time of day and weather (`wip/mapmaker-p5`, map format v34, MapMaker lane, 2026-11-09).** Overhaul Phase 5
 (docs/MAPMAKER_OVERHAUL_PLAN.md "As built"), chained after v33 (bot hints). Lands in a train.
@@ -487,12 +550,13 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
-**Queued after MapMaker Phase 2: maps retire/rename** (`wip/maps-retire`, maps agent, 2026-11-10; lock released for MapMaker Phase 2 to go first).
+**Landing now: the mobile audit (`check/mobile-audit`; this session), please hold code pushes to main.** (Mobile-audit agent, 2026-11-10; one check run, then a fast-forward.)
 
-**Next in line to land: MapMaker Phase 2, the split and the interface** (`check/mapmaker-p2-full`, MapMaker lane, 2026-11-10). It has waited behind far copies and now Iron Coast part 3. Please let it go next, before starting another hold.
+**Next in line to land: Fireteams part 3** (`check/fireteams-3`, Fireteams agent, 2026-11-10), after the mobile audit: one check run, then a fast-forward.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
+- **The overhaul is complete (2026-11-10):** Phase 6, the first-time tour, landed last; the editor-code claim is released. Still in this lane: The Spillway and Verdant Protocol (built, green, waiting for the owner's review) and their follow-ups.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
   randomise), then Phase 3 item 9 (the rotate ring, quick facings) and the rest of Phase 3 that doesn't need the split.
@@ -618,6 +682,12 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - bots plan a vehicle's drive on the walking route, checked only for the vehicle's width (`routeFits`);
   - a hangar whose doorway is too low or narrow passes that check, and the sled then stalls at its north door;
   - details are in `docs/map-briefs/whiteout_station/DECISIONS_AND_DEVIATIONS.md`.
+  - **Answer (vehicle-routing session, 2026-11-10):** fixed on main (landed from `check/vehicle-routing`), see "Bot vehicle routing and getting out by a
+    wall" near the top. The route check now sweeps the hull's footprint along the route (`hullFits`), so the sled no
+    longer takes the hangar or the west block's door (old apron layout, KotH seeds 1-4: stalls 10 → 0). Moving the
+    sleds back to the apron is the lane's call. From there bots would drive them east along the road, and leave them
+    alone towards the yard. From the west end no route a sled fits reaches the yard (the west block's door), so bots
+    still don't ride them. A sled-wide way north (a wider door or an open lane) would bring them back into play.
 - **Phase 5 questions** (the lane's recommendations, as the owner asked):
   - fog caps bots' sight at the players' distance;
   - the lane proposes a time and weather per official map, set in MapMaker;
@@ -628,7 +698,8 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   (`tools/ci/train.mjs`) on Tuesday 2026-11-10 morning (UTC), ready for the owner's Tuesday-afternoon testing; a
   second train only if something urgent comes up. Until then, MapMaker branches merge `origin/main` only when they
   need something from it.
-- **Started 2026-11-09: Phase 2 and the split of `editorApp.ts`** (`wip/mapmaker-p2`). It takes the editor-code claim. Until it lands, please avoid MapMaker client code. (Earlier note:) The split waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
+- **Landed 2026-11-10: Phase 2** (main 9c99ae7): the split (`editorApp.ts` 6,489 → 949 lines, 16 modules) and the interface (mode tabs, folding panels, the outliner, favourites by mode). The editor-code claim stays with the MapMaker lane. Note for the other session: characters3's far-character check (core.hyena drawn 1.5 of 2.12 m) failed twice on this run's first attempt and once on check/mapmaker-verdant; it passed on re-run, but it looks flaky since far copies.
+- (Was: started 2026-11-09: Phase 2 and the split of `editorApp.ts`) (`wip/mapmaker-p2`). It takes the editor-code claim. Until it lands, please avoid MapMaker client code. (Earlier note:) The split waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
 - **Also in this lane (owner, 2026-11-08, moved from the other session's queue):** set pieces (the 12-piece list,
@@ -996,6 +1067,31 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   main 3 / 5 / 5 / 4, this branch 9 / 6 / 2 / 2 (17 against 19). Revert with a fix for the lift wait.
 - **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
   screenshots; the skipped maps above; card pictures.
+
+### MapMaker overhaul Phase 6: the first-time tour (`wip/mapmaker-p6`, agent, 2026-11-10; MapMaker lane; docs/MAPMAKER_OVERHAUL_PLAN.md "Phase 6", docs/BUILDING_KIT.md "MapMaker's first-time tour")
+- A card over the view on the first visit: welcome, place a room, add a spawn, add a pickup, try it out, a closing
+  card. Rules and wording shared `editor/tour.ts`; the card and highlight `client/editor/tour.ts` (wired with a few lines
+  in `editorApp.ts`: built after the budget bar, `startFresh` → `maybeStart`, `test()` → `note({kind:'test'})`; the key
+  list's **Take the tour**). Remembered in `localStorage` `tiletrigger.editor.tour` (`done` / `skipped`).
+- **Pitfalls:** it chains onto `history.onChange` (the budget bar's first); `HistoryChange.undo` marks undos. It never
+  starts in `?test=1` unless `&tour=1`, so other flows and baselines don't see it. A new map has a room and a spawn
+  already: the steps ask for another of each. The closing card ignores Esc (the Esc that leaves a test would close it).
+- Tests: unit `shared/test/mapmakerTour.test.ts`; e2e `editorux` → `editorTourChecks`.
+
+### MapMaker overhaul Phase 2: the split, modes, folding panels, the outliner (`wip/mapmaker-p2`, agents, 2026-11-09/10; MapMaker lane; docs/MAPMAKER_OVERHAUL_PLAN.md "Phase 2", docs/BUILDING_KIT.md "MapMaker's modes, panels and outliner")
+- **The split** (steps 1-12, a3040bf8; main merged in at 2040c580): green on `check/mapmaker-p2`, run 42730322862. It
+  can land on its own. `editorApp.ts` 6,489 → 949 lines; each part is a class taking the `EditorApp` (module map in
+  the plan's "As built"). No behaviour change.
+- **The interface** (after 2040c580; green on `check/mapmaker-p2` at a7f1378e, run 42742986473): seven mode tabs (`editorModes.ts`; Gameplay keeps `data-ws="entities"`), each
+  mode's own inspector part with nothing selected (`modeInspector.ts`), the Paths and Test panes; folding side panels
+  (`panels.ts`, localStorage `tiletrigger.editor.panels`); the outliner (shared `editor/outliner.ts`, client
+  `outlinerPanel.ts`; hide and lock in localStorage `tiletrigger.editor.outliner.<map id>`, never in the map; hidden
+  entities are skipped by `EditorView.setEntities` through `view.outlinerHidden`, tiles by `withoutHidden`); the quick
+  row's mode-first favourites and recent (`palette.ts quickOrder`, "This mode only"). The mode tabs tighten at the top
+  bar's `fit-3` so Export and Import stay at 1400 px. e2e `editorux` → `editorInterfaceChecks`; unit tests
+  `client/test/editorModes.test.ts`, `shared/test/mapmakerOutliner.test.ts`.
+- **Pitfalls:** the Test tab no longer plays at once (F5 and the Test pane do); the side panel now starts with the
+  outliner (200 px), so the inspector sits lower; `mapmaker.png` was regenerated for the new top bar.
 
 ### Sandfall Colosseum follow-ups (`wip/mapmaker-sandfall`, agent, 2026-11-09; the owner's answers of 2026-11-09; CI on `check/mapmaker-sandfall`)
 - **Collision boxes 31,724 → 22,240:** the arcades under the tiers (all sides, gate lines kept) and the east and west

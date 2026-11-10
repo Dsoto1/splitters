@@ -12,7 +12,7 @@ how they behave (whether a portal can be switched by logic, say), it says so.
 
 None of these repeat a map already in `maps/` (Dustwater's station train,
 Neon Spire's glass elevator, Hollowmere's trap manor, Primeval Park, Runway
-Nine, Iron Tide, Ironhold Prison and the rest were checked). Where an idea is
+Nine, Midnight Keel, Cormorant Isle and the rest were checked). Where an idea is
 close to one of them, it says what makes it different.
 
 **How to read an entry.** *Kit* lists the features that make the signature
@@ -33,8 +33,8 @@ models, 3,000 solid blocks.
 | 4 | Gull Rock Light | Immersive | Hostage, Elimination | 6–10 | M |
 | 5 | Floodgate | Tactical | Bomb, Elimination | 8–10 | M |
 | 6 | Shoot House | Tactical | Elimination | 6–10 | S |
-| 7 | Fogbound | Tactical | CTF, TDM | 12–24 | S |
-| 8 | No Man's Field | Tactical | CTF, TDM | 8–16 | S |
+| 7 | Fogbound (built; deleted 2026-11-09) | Tactical | CTF, TDM | 12–24 | S |
+| 8 | No Man's Field (built; deleted 2026-11-09) | Tactical | CTF, TDM | 8–16 | S |
 | 9 | Clockwork | Tactical (duel) | DM, TDM 2v2 | 2–6 | S |
 | 10 | Express Lobby | Spectacle | KOTH, TDM | 8–16 | M |
 | 11 | Meltdown Protocol | Spectacle | TDM, Elimination | 8–16 | M |

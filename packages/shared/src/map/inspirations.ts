@@ -4,7 +4,6 @@
  * Keyed by map id.
  */
 export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
-  bottling: 'Facility (GoldenEye 007)',
   step_temple: 'Temple (GoldenEye 007)',
   silo_complex: 'Complex (GoldenEye 007)',
   reactor: 'Nuke (Counter-Strike)',
@@ -33,9 +32,7 @@ export const MAP_INSPIRATIONS: Readonly<Record<string, string>> = {
   capitol_mall: 'the National Mall, Washington, D.C.',
   norman_shores: 'Lake Norman, North Carolina',
   primeval_park: 'Jurassic Park',
-  starhaven: 'the Enterprise (Star Trek)',
   obsidian_orb: 'the Death Star (Star Wars)',
-  dune_harbor: 'Mos Eisley (Star Wars)',
   fernwood_moon: 'Endor (Star Wars)',
   glacier_line: 'Hoth (Star Wars)',
   serene_city: 'Demolition Man',

@@ -600,7 +600,7 @@ one, through MapMaker. Iron Compound stays as it is (its Catwalk Gantry plays as
       thick either way.
 - **Not swapped:** Coldwater Gulch places no Bunker tile (Bunker theme only); Whiteout Station's rebuild handles its
   hangar; Iron Compound stays as it is (owner). The seven maps with the Bunker theme (`core.bunker`) place no Bunker
-  tile (Bunker Cross, Coldwater Gulch, Concrete Annex, Iron Tide, Ironhold Prison, Pump Tower, Silo Complex).
+  tile (Bunker Cross, Coldwater Gulch, Concrete Annex, Midnight Keel, Cormorant Isle, Pump Tower, Silo Complex).
 
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks

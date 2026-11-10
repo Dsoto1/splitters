@@ -232,7 +232,7 @@ the forts (`sim/modes/forts.ts`, pieces and placement rules in
   maps, the open ones work well: in a 40 s build test bots put up most of
   their template on St John's, Twin Spires, Canyon, Elm Grove and Ridge
   Camp. Bases indoors or on narrow ground leave little room (Temple, Step
-  Temple, Void Yard, Bottling), and the huge maps (Blood Gulch, Frost Basin)
+  Temple, Void Yard), and the huge maps (Blood Gulch, Frost Basin)
   keep their bases on structures and are too big for the navmesh rebuild.
 
 ## King of the Hill

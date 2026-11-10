@@ -423,7 +423,10 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
      not ambient track cars, which a track driver drives). From 12.7 m/s a Hauler (12) stops in about 7 m.
    - `vehicle.routeFit`: bot drivers take only routes clear this share of its half width either side
      (bots/vehicles.ts `vehicleRouteFits`; default 0.95, the probe's width; the Tank 0.8), and high enough for its hull
-     (`half[1]` × 2) over the highest ground within half its length (a level hull up stairs). Flyers have no check.
+     (`half[1]` × 2) over the highest ground within half its length (a level hull up stairs); and its footprint (that
+     width, its full length) swept along the route's heading every 0.75 m, swinging through both legs at a corner, must
+     clear doorways and gaps (`hullFits`: a 1.3 m sled doesn't take a 1.6 m door it would have to turn in). Flyers have
+     no check.
    - `bailHealth`: bots get out below this share of health (default 0.3; the Tank 0.25), or when it is on fire.
    Bots: drivers fight from a sealed vehicle (close to 28 m, hold and turn the hull onto the target), fire limited
    shells only at targets worth one (a vehicle, a turret or a sentry; someone on foot past 10 m while over 30 % of the
@@ -1095,7 +1098,7 @@ The pass of 2026-11-06 (measured from the built models, before → after):
 | `hh_desk` (Household) | 0.85 → 0.77 m | top 0.84 → 0.76 m |
 | `hh_basin` (Household) | 0.76 → 0.95 m | rim 0.67 → 0.84 m |
 
-The maps followed in MapMaker: 44 Kenney benches at ×2.5, ×2.6 or ×1.5 (Ironhold Prison, Diamond Park,
+The maps followed in MapMaker: 44 Kenney benches at ×2.5, ×2.6 or ×1.5 (Cormorant Isle, Diamond Park,
 Neon Galleria, Riot Junction, Grand Marquee) and St John's 65 dressers at ×0.8 went back to ×1; 7
 monitors and lamps on household desks came down with the desk tops; 27 placements (14 sofas, 6
 armchairs, 6 benches, a basin) moved 0.05–0.32 m clear of the wall, bookcase or plant their new size

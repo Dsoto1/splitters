@@ -161,7 +161,7 @@ const jungleMaps = readdirSync(new URL('../../../maps/', import.meta.url))
   .filter((f) => /"jungle\.|prop\.jg_|prop\.jt_|core\.jungle_temple|core\.ancient_temple/.test(read(`maps/${f}`)) || f === 'jungle_steps.json');
 
 describe('maps using Jungle Ruins pieces still load', () => {
-  it('finds them (Verdant Ziggurat, Erosion, Jungle Steps and the rest)', () => {
+  it('finds them (Verdant Ziggurat, Erosion, Cradle of Idols and the rest)', () => {
     for (const f of ['verdant_ziggurat.json', 'erosion.json', 'jungle_steps.json', 'sunken_kingdom.json']) expect(jungleMaps, f).toContain(f);
   });
   for (const f of jungleMaps) {
