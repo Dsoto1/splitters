@@ -16,6 +16,7 @@ made only on a commit that passed CI on a check branch.
 - **Smoother big matches, step 2.** Characters out of view (and spare bodies) no longer keep their paused animations on the engine's running list, which every animation change had to search; glow colours are set only when they change.
 - **Smoother big Roulette matches (St. John's, step 1).** Hidden spare characters no longer pile up (at most 16 kept), a replaced character is cleared away in one pass, and the spawn-shield fade is skipped out of view. More to come.
 - Dynamite now wears the Emergency Flare model (Meshy Community CC0): a red stick with a fuse, in hand, in flight and on its pickup. Mechanics unchanged.
+- The Sandbags wear the owner's mur de sacs model (Meshy Community CC0), and the deployed wall is drawn from it too. Mechanics unchanged.
 - The Holy Bomb now wears a gold orb model (Meshy Community CC0), in hand, in flight and on its pickup. Mechanics unchanged.
 
 **Our own crates, drums and cartons** (kit-prop generators, Phase 6 part 1; owner-approved 2026-11-05):
