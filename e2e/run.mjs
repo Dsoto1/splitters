@@ -1106,6 +1106,134 @@ async function editoruxFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await editorInterfaceChecks(browser);
+  await editorTourChecks(browser);
+}
+
+/**
+ * MapMaker overhaul Phase 6 (docs/MAPMAKER_OVERHAUL_PLAN.md): the first-time tour. Not in `?test=1` unless `&tour=1`;
+ * the whole tour with the real tools (a room, a spawn, a pickup, PLAY TEST), each step moving on when it's done; not
+ * shown again once done; started again from the `?` key list; Skip and Esc end it; the card fits at 1280 and 1920 px.
+ */
+async function editorTourChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const ctx = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await ctx.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  const tour = () => page.evaluate(() => ({ shown: !document.getElementById('ed-tour').hidden, step: document.getElementById('ed-tour').dataset.step, count: document.getElementById('ed-tour-count').textContent, title: document.getElementById('ed-tour-title').textContent, lit: [...document.querySelectorAll('.ed-tour-spot')].map((e) => e.id || e.dataset.tool || e.dataset.ws || e.dataset.pane || e.className), stored: localStorage.getItem('tiletrigger.editor.tour') }));
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const clickAt = async (x, y, z) => {
+    const p = await at(x, y, z);
+    await page.mouse.move(p.x, p.y);
+    await frames(page, 3);
+    await page.mouse.click(p.x, p.y);
+    await frames(page, 2);
+  };
+  // In test mode it stays away unless asked.
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await frames(page, 3);
+  check(!(await tour()).shown, 'the tour does not start in ?test=1');
+  await page.goto(`${CLIENT}/?mode=editor&test=1&tour=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await frames(page, 3);
+  let t = await tour();
+  check(t.shown && t.step === 'welcome' && (await page.evaluate(() => document.activeElement?.id)) === 'ed-tour-next', `?tour=1 starts it on a first visit, on the welcome, its button focused (${JSON.stringify(t)})`);
+  await shot('tour-1-welcome');
+  // Enter on the focused button: keyboard reachable.
+  await page.keyboard.press('Enter');
+  await frames(page, 2);
+  t = await tour();
+  check(t.step === 'room' && t.count === 'Step 1 of 4' && t.lit.includes('tile:core.room'), `Let's go: place a room, the Room card lit (${JSON.stringify(t)})`);
+  await shot('tour-2-room');
+  // Editing isn't blocked: the wrong thing waits; the right one moves it on.
+  await clickTool(page, '[data-tool="tile:core.corridor"]');
+  // A new map has a room and a spawn: the tour asks for another of each.
+  await clickAt(-8, 0, 0);
+  check((await tour()).step === 'room' && (await page.evaluate(() => window.__editor.doc.classicStructure.tiles.length)) === 2, 'a corridor is placed but the tour still waits for a room');
+  await page.keyboard.press('Control+KeyZ');
+  await clickTool(page, '[data-tool="tile:core.room"]');
+  await clickAt(8, 0, 0);
+  t = await tour();
+  check(t.step === 'spawn' && t.lit.includes('ed-entities-btn'), `placing a room moves on to the spawn, the Gameplay tab lit (${JSON.stringify(t)})`);
+  await shot('tour-3-spawn-mode');
+  await page.click('#ed-modes [data-ws="entities"]');
+  await frames(page, 2);
+  t = await tour();
+  check(t.lit.includes('spawn'), `in Gameplay the Player Spawn card is lit (${JSON.stringify(t.lit)})`);
+  await shot('tour-3-spawn');
+  await page.click('[data-tool="spawn"]');
+  await clickAt(8, 0, 0);
+  t = await tour();
+  check(t.step === 'pickup' && t.lit.includes('pickup:core.health_small'), `placing a spawn moves on to the pickup, its card lit (${JSON.stringify(t)})`);
+  await shot('tour-4-pickup');
+  await page.click('[data-tool="pickup:core.health_small"]');
+  await clickAt(10, 0, 2);
+  t = await tour();
+  check(t.step === 'test' && t.lit.includes('ed-test') && t.lit.includes('ed-test-here'), `placing a pickup moves on to testing, ▶ Here and PLAY TEST lit (${JSON.stringify(t)})`);
+  await shot('tour-5-test');
+  await page.click('#ed-test');
+  const started = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) }).then(() => true, () => false);
+  check(started && (await tour()).stored === 'done', `PLAY TEST starts the match; the tour is remembered as done (${started})`);
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
+  await frames(page, 2);
+  t = await tour();
+  check(t.shown && t.step === 'done', `back in MapMaker the closing card waits (the Esc that left the test didn't close it) (${JSON.stringify(t)})`);
+  await shot('tour-6-done');
+  await page.click('#ed-tour-next');
+  check(!(await tour()).shown, 'Done closes it');
+  // Not again: another visit in the same browser.
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await frames(page, 3);
+  t = await tour();
+  check(!t.shown && t.stored === 'done', `once done it doesn't show again (${JSON.stringify(t)})`);
+  // Started again from the ? key list.
+  await page.mouse.move(700, 400);
+  await page.keyboard.press('Shift+Slash');
+  await frames(page, 2);
+  await shot('tour-keys');
+  await page.click('#ed-keys-tour');
+  await frames(page, 2);
+  t = await tour();
+  check(t.shown && t.step === 'welcome' && !(await page.evaluate(() => document.getElementById('ed-keys').open)), `the key list's Take the tour starts it again (${JSON.stringify(t)})`);
+  // The card stays between the panels, on screen, at 1280 and 1920 px.
+  const fit = () => page.evaluate(() => {
+    const c = document.getElementById('ed-tour').getBoundingClientRect();
+    const pal = document.getElementById('ed-palette').getBoundingClientRect();
+    const right = document.getElementById('ed-right');
+    const r = right.offsetParent ? right.getBoundingClientRect().left : innerWidth;
+    return { ok: c.left >= pal.right - 1 && c.right <= r + 1 && c.bottom <= innerHeight && c.width >= 280, c: [Math.round(c.left), Math.round(c.right)], pal: Math.round(pal.right), r: Math.round(r) };
+  });
+  const fits = {};
+  for (const [w, h] of [[1280, 720], [1920, 1080]]) {
+    await page.setViewportSize({ width: w, height: h });
+    await frames(page, 3);
+    fits[w] = await fit();
+    await shot(`tour-${w}`);
+  }
+  check(fits[1280].ok && fits[1920].ok, `the card sits between the palette and the side panel at 1280 and 1920 px (${JSON.stringify(fits)})`);
+  await page.setViewportSize({ width: 1400, height: 820 });
+  // Skip ends it at any step; so does Esc.
+  await page.click('#ed-tour-next');
+  await page.click('#ed-tour-skip');
+  t = await tour();
+  check(!t.shown && t.stored === 'skipped' && !t.lit.length, `Skip ends it mid-tour, remembered as skipped (${JSON.stringify(t)})`);
+  await page.keyboard.press('Shift+Slash');
+  await page.click('#ed-keys-tour');
+  await page.click('#ed-tour-next');
+  await frames(page, 2);
+  await page.mouse.move(700, 400);
+  await page.keyboard.press('Escape');
+  t = await tour();
+  check(!t.shown && !t.lit.length, `Esc ends it too (${JSON.stringify(t)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await ctx.close();
 }
 
 /**
@@ -3422,6 +3550,7 @@ async function mobileFlow(browser) {
   await page.tap('.opt-nav button[data-tab="controls"]');
   check(await page.isVisible('.opt-sub:has-text("Touch")'), 'Options → Controls lists the touch controls on a phone');
   await page.screenshot({ path: `${ARTIFACTS}/mobile-options.png` });
+  await mobileCharacterSelect(page);
 
   // You alone on the range (&bots=1: one player in all). Its deathmatch bots shot the god-mode you about (their swarm
   // rockets' and rounds' knockback): the "walk" could be a blast's push, and the jump's tap could land while a hit
@@ -3531,6 +3660,26 @@ async function mobileFlow(browser) {
   check(await page.waitForFunction(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden, null, { timeout: T(5000) }).then(() => true, () => false), 'the pause button opens the pause menu and hides the controls');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await ctx.close();
+}
+
+/**
+ * Character Select on a phone sideways (docs/MOBILE_AUDIT.md): the info panel keeps to a short strip, so the grid shows
+ * two rows of portraits with their names (before: one row, 109 px, the names cut off, and the panel wider than itself).
+ */
+async function mobileCharacterSelect(page) {
+  await page.goto(CLIENT);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.tap('#nav-characters');
+  await page.waitForFunction(() => document.querySelectorAll('.char-grid .char-tile').length > 6 && document.querySelector('.char-info h3'), null, { timeout: T(15000) }).catch(() => {});
+  const fit = await page.evaluate(() => {
+    const grid = document.querySelector('.char-grid');
+    const info = document.querySelector('.char-info');
+    const g = grid.getBoundingClientRect();
+    const tile = grid.querySelector('.char-tile')?.getBoundingClientRect();
+    return { grid: Math.round(g.height), info: Math.round(info.getBoundingClientRect().height), tile: Math.round(tile?.height ?? 0), spills: info.scrollWidth > info.clientWidth + 1, name: !!info.querySelector('h3')?.getBoundingClientRect().width };
+  });
+  await page.screenshot({ path: `${ARTIFACTS}/mobile-characters.png` });
+  check(fit.grid >= fit.tile * 1.6 && fit.info <= 120 && !fit.spills && fit.name, `Character Select on a phone sideways shows more than a row of characters beside a short info strip (${JSON.stringify(fit)})`);
 }
 
 async function vaultFlow(browser) {
@@ -7539,23 +7688,34 @@ async function environmentFlow(browser) {
 }
 
 /**
- * Fireteams (docs/FIRETEAMS_PLAN.md, Parts 1 and 2): the variant on in Match setup (its squad size beside the score) →
+ * Fireteams (docs/FIRETEAMS_PLAN.md, Parts 1-3): the Fireteams party preset in Match setup (Team Deathmatch, the
+ * variant on, squads to fit the map's teams: Sandgate's 8 a side, squads of 4) →
  * you lead a squad of bots (the HUD's order line) → hold B: the order wheel (a tap of B is still the quick-message menu)
  * → pick Hold here → a bot answers; the squad HUD shows a card per squadmate → Spread out from the wheel (the squad
- * keeps its order, the HUD says so) → the squad holds there while you go off. Screenshots:
- * e2e-artifacts/fireteams-wheel-desktop.png, fireteams-hud-desktop.png. (The phone's Orders button: packages/client/test/inputWheel.test.ts; a
+ * keeps its order, the HUD says so) → the squad holds there while you go off → (Part 3) a kill with a squadmate's
+ * assist, then the end of the match with the vote: the scoreboard grouped by squad with their points, every squad's
+ * MVP on its line, Best Squad and your squad's MVP among the awards. Screenshots:
+ * e2e-artifacts/fireteams-wheel-desktop.png, fireteams-hud-desktop.png, fireteams-board-desktop.png, fireteams-board-phone.png
+ * (the same page at a phone's size). (The phone's Orders button: packages/client/test/inputWheel.test.ts; a
  * second match on a phone here would cost another minute and a half of the shards' budget.)
  */
 async function fireteamsFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 11, skill: 'easy', scoreLimit: 200, minutes: 20, fireteams: true })));
-  await page.goto(`${CLIENT}/?test=1&god=1`);
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.deathmatch', bots: 11, skill: 'easy', scoreLimit: 200, minutes: 20, spears: true })));
+  await page.goto(`${CLIENT}/?test=1&god=1&vote=1`);
   await page.click('#nav-play');
-  await page.waitForSelector('#setup-variant-fireteams', { timeout: T(30000) });
-  const setup = await page.evaluate(() => ({ on: document.getElementById('setup-variant-fireteams')?.getAttribute('aria-pressed'), size: document.querySelector('#arcade-squad-size .tab.on')?.textContent }));
-  check(setup.on === 'true' && setup.size === '5', `Match setup: the Fireteams variant is on, squads of 5 by default (${JSON.stringify(setup)})`);
+  // The party preset (Part 3): one click into Team Deathmatch with Fireteams, the map's teams, squads to fit them.
+  await page.waitForSelector('#setup-party-fireteams', { timeout: T(30000) });
+  await page.click('#setup-party-fireteams');
+  const setup = await page.waitForFunction(() => {
+    const on = document.getElementById('setup-variant-fireteams')?.getAttribute('aria-pressed');
+    const size = document.querySelector('#arcade-squad-size .tab.on')?.textContent;
+    const chip = document.getElementById('setup-party-fireteams')?.getAttribute('aria-pressed');
+    return on === 'true' && size ? { on, size, chip, spears: document.getElementById('setup-variant-spears')?.getAttribute('aria-pressed') ?? null, mode: JSON.parse(localStorage.getItem('cs.arcade')).mode } : null;
+  }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
+  check(setup?.chip === 'true' && setup.size === '4' && setup.mode === 'core.tdm' && setup.spears !== 'true', `the Fireteams party preset: Team Deathmatch, the variant on (Spears off), squads of 4 for Sandgate's 8 a side (${JSON.stringify(setup)})`);
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
   // You lead a squad: the match says so, and the HUD shows its order.
@@ -7564,17 +7724,20 @@ async function fireteamsFlow(browser) {
     const s = m.fireteams?.squadOf(me.slot);
     return s ? { leader: s.leader === me.slot, members: s.members.length, human: s.human, others: m.fireteams.squads.filter((q) => q !== s && q.team === s.team).map((q) => q.members.length) } : null;
   });
-  check(led && squad?.leader && squad.human && squad.members === 5, `you lead a fireteam of 5 (HUD "Follow me"; ${JSON.stringify(squad)})`);
-  check(!!squad && squad.others.length > 0 && squad.others.every((n) => n >= 2 && n <= 5), `bot-led squads fill the rest of your team (${JSON.stringify(squad?.others)})`);
+  check(led && squad?.leader && squad.human && squad.members === 4, `you lead a fireteam of 4 (HUD "Follow me"; ${JSON.stringify(squad)})`);
+  check(!!squad && squad.others.length > 0 && squad.others.every((n) => n >= 2 && n <= 4), `bot-led squads fill the rest of your team (${JSON.stringify(squad?.others)})`);
   // Play: the pointer is captured on a real desktop; a headless page without pointer lock plays as touch does.
+  // (The match opens paused: Resume, once it's there, and the pause menu gone before the keys.)
+  await page.waitForSelector('#resume', { state: 'visible', timeout: T(10000) }).catch(() => {});
   await page.click('#resume').catch(() => {});
+  await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
   await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
   // A tap of B: the quick-message menu, as without Fireteams.
   await page.keyboard.press('KeyB');
   const menu = await page.waitForFunction(() => !document.getElementById('msg-menu')?.hidden && document.getElementById('order-wheel')?.hidden !== false, null, { timeout: T(5000) }).then(() => true, () => false);
   await page.keyboard.press('KeyB');
   await page.waitForFunction(() => document.getElementById('msg-menu')?.hidden !== false, null, { timeout: T(5000) }).catch(() => {});
-  check(menu, 'a tap of B opens the quick-message menu, not the order wheel');
+  check(menu, `a tap of B opens the quick-message menu, not the order wheel (pause menu ${await page.evaluate(() => (document.getElementById('pause')?.hidden === false ? 'up' : 'down'))})`);
   // Hold B: the order wheel, seven orders (Part 2's Spread out / Stay tight last), your squad's current one ringed.
   const at = await sim(page, (m, me) => ({ x: me.move.pos.x, z: me.move.pos.z }));
   await page.keyboard.down('KeyB');
@@ -7601,7 +7764,7 @@ async function fireteamsFlow(browser) {
     const list = [...document.querySelectorAll('#squad-hud .sq-mate')];
     return hud && hud.place && list.length === hud.members.length - 1 && list.every((c) => c.querySelector('.sq-name')?.textContent && c.querySelector('.sq-hp i')) ? list.map((c) => ({ name: c.querySelector('.sq-name').textContent, hp: c.querySelector('.sq-hp i').style.width, down: c.classList.contains('down') })) : null;
   }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
-  check(!!cards && cards.length === 4 && cards.every((c) => c.down || parseInt(c.hp, 10) > 0), `the squad HUD shows your 4 squadmates' cards with their health (${JSON.stringify(cards)})`);
+  check(!!cards && cards.length === 3 && cards.every((c) => c.down || parseInt(c.hp, 10) > 0), `the squad HUD shows your 3 squadmates' cards with their health (${JSON.stringify(cards)})`);
   await page.screenshot({ path: `${ARTIFACTS}/fireteams-hud-desktop.png` });
   // Spread out (Part 2): the wheel's last entry; the squad keeps its order, spreads its ring, and the HUD says so.
   await page.keyboard.down('KeyB');
@@ -7613,13 +7776,13 @@ async function fireteamsFlow(browser) {
   const spreadHud = await page.waitForFunction(() => document.querySelector('#squad-order i')?.textContent === 'Spread out' && [...document.querySelectorAll('#feed .say, .say')].some((l) => /Spreading out!/.test(l.textContent)), null, { timeout: T(10000) }).then(() => true, () => false);
   check(spread && spreadHud, 'Spread out from the wheel: the squad spreads (keeping Hold here), a squadmate answers "Spreading out!", the HUD says Spread out');
   const spot = await sim(page, (m, me) => m.fireteams.squadOf(me.slot).order.pos);
-  // You go off (to a teammate of another squad, out of sight of the spot); the squad stays where you told it.
+  // You go off, to the map's own spawn point furthest from the spot (a fixed place: a bot to stand by moved with the
+  // match, and on check/vehicle-routing every one was 4-10 m from the spot); god mode keeps you safe. The squad stays.
   const away = await sim(page, (m, me, p) => {
-    const s = m.fireteams.squadOf(me.slot);
-    const mate = m.combatants().filter((c) => c.alive && c.faction === me.faction && !s.members.includes(c.slot)).sort((a, b) => Math.hypot(b.move.pos.x - p.x, b.move.pos.z - p.z) - Math.hypot(a.move.pos.x - p.x, a.move.pos.z - p.z))[0];
-    if (!mate) return null;
-    me.move = { pos: { x: mate.move.pos.x + 1, y: mate.move.pos.y + 0.2, z: mate.move.pos.z }, velY: 0, grounded: false };
-    return { tick: m.tick, x: Math.round(me.move.pos.x), z: Math.round(me.move.pos.z) };
+    const far = m.spawnPoints.filter((sp) => !sp.generated).sort((a, b) => Math.hypot(b.pos.x - p.x, b.pos.z - p.z) - Math.hypot(a.pos.x - p.x, a.pos.z - p.z))[0];
+    if (!far) return null;
+    me.move = { pos: { x: far.pos.x, y: far.pos.y + 0.2, z: far.pos.z }, velY: 0, grounded: false };
+    return { tick: m.tick, x: Math.round(me.move.pos.x), z: Math.round(me.move.pos.z), d: Math.round(Math.hypot(far.pos.x - p.x, far.pos.z - p.z)) };
   }, spot);
   const holding = await meWait(page, (m, me, a) => {
     const s = m.fireteams.squadOf(me.slot);
@@ -7631,7 +7794,50 @@ async function fireteamsFlow(browser) {
     const s = m.fireteams.squadOf(me.slot);
     return { me: Math.round(Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z)), bots: s.members.filter((x) => x !== me.slot).map((x) => m.slots[x]).filter((c) => c?.alive).map((c) => Math.round(Math.hypot(c.move.pos.x - p.x, c.move.pos.z - p.z))) };
   }, spot);
-  check(!!away && holding && where.me > 12, `the squad holds where you gave the order after you go off (you ${where.me} m from it, the squad ${where.bots.join(', ')} m; from ${JSON.stringify(at)} to ${JSON.stringify(away)})`);
+  check(!!away && away.d > 20 && holding && where.me > 12, `the squad holds where you gave the order after you go off (you ${where.me} m from it, the squad ${where.bots.join(', ')} m; from ${JSON.stringify(at)} to ${JSON.stringify(away)})`);
+  // Part 3: a squadmate hurts an enemy and you down it (your kill, their assist), then the match ends with the vote.
+  const scored = await sim(page, (m, me) => {
+    const s = m.fireteams.squadOf(me.slot);
+    const mate = m.slots[s.members.find((x) => x !== me.slot)];
+    const foe = m.combatants().find((c) => c.alive && c.faction !== me.faction);
+    const assists = m.fireteams.scores.player(mate.slot).assists;
+    // (Past any spawn protection, so the hit lands.)
+    foe.shieldUntil = 0;
+    m.damage(foe, 10, mate, 'core.rifle');
+    m.kill(foe, me, 'core.rifle');
+    return { squad: s.id, points: m.fireteams.scores.squad(s.id).points, me: m.fireteams.scores.points(me.slot), mate: m.fireteams.scores.player(mate.slot).assists - assists, squads: m.fireteams.squads.filter((q) => q.team === me.faction).length };
+  });
+  check(scored.points >= 15 && scored.me >= 10 && scored.mate >= 1, `your kill (10) and your squadmate's assist (5) go to your squad (${JSON.stringify(scored)})`);
+  // (The scoreboard held up for the checks and the pictures.)
+  await sim(page, (m) => {
+    m.endMatch();
+    m.phaseEndTick = m.tick + 60 * 120;
+  });
+  const board = await page.waitForFunction((id) => {
+    const sb = document.getElementById('scoreboard');
+    const awards = document.getElementById('match-awards');
+    if (!sb || sb.hidden || !awards || awards.hidden || document.getElementById('map-vote')?.hidden !== false) return null;
+    const lines = [...sb.querySelectorAll('.sb-squad')];
+    const mine = sb.querySelector(`.sb-squad.mine[data-squad="${id}"]`);
+    if (!mine || !mine.querySelector('.sb-sqmvp')?.textContent) return null;
+    // Each squad's rows follow its line (until the next line).
+    const after = [];
+    for (let e = mine.nextElementSibling; e && !e.classList.contains('sb-squad'); e = e.nextElementSibling) after.push(Number(e.dataset.slot));
+    return { lines: lines.length, best: sb.querySelectorAll('.sb-squad.best').length, mine: { first: mine.previousElementSibling?.classList.contains('sb-hd'), name: mine.querySelector('.sb-sqname').textContent, points: Number(mine.querySelector('.sb-sqpts').textContent), mvp: mine.querySelector('.sb-sqmvp').textContent, best: mine.classList.contains('best'), rows: after.length, me: after.includes(window.__cs.slot) }, pts: [...sb.querySelectorAll('.sb-hd')].some((h) => /Pts/.test(h.textContent)), awards: [...awards.querySelectorAll('.award b')].map((b) => b.textContent), blink: [...sb.querySelectorAll('.sb-squad, .sb-squad *'), ...awards.querySelectorAll('*')].some((e) => getComputedStyle(e).animationName !== 'none') };
+  }, scored.squad, { timeout: T(20000) }).then((h) => h.jsonValue(), () => null);
+  await page.screenshot({ path: `${ARTIFACTS}/fireteams-board-desktop.png` });
+  check(!!board && board.lines >= scored.squads * 2 - 1 && board.mine.rows === 4 && board.mine.me && board.mine.points >= 15 && board.pts && board.mine.first, `the scoreboard groups each team by squad (${board?.lines} squad lines; yours: ${JSON.stringify(board?.mine)})`);
+  check(!!board && /^MVP \S/.test(board.mine.mvp) && board.best === 1 && board.awards.includes('Best Squad') && board.awards.includes("Your Squad's MVP") && !board.blink, `the end of the match with the vote: every squad's MVP on its line, Best Squad and your squad's MVP among the awards, nothing animated (${JSON.stringify(board?.awards)})`);
+  // A phone's size: the board keeps its squads (the awards make room for the vote there).
+  await page.setViewportSize({ width: 844, height: 390 });
+  const phone = await page.waitForFunction(() => {
+    const sb = document.getElementById('scoreboard');
+    const r = sb?.getBoundingClientRect();
+    const lines = sb ? [...sb.querySelectorAll('.sb-squad')] : [];
+    return r && r.width <= innerWidth && lines.length && lines.every((l) => l.scrollWidth <= l.clientWidth + 1) ? { width: Math.round(r.width), lines: lines.length } : null;
+  }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
+  await page.screenshot({ path: `${ARTIFACTS}/fireteams-board-phone.png` });
+  check(!!phone, `at a phone's size the board fits with its squad lines (${JSON.stringify(phone)})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

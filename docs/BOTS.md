@@ -1107,6 +1107,22 @@ squads by proximity with **fixed squads** made from the roster.
 - **Measured** (`squadMeasures.ts`): besides Part 1's, squad-seconds in each shape, the members' distance to their
   spots, covering-fire rounds.
 
+### Fireteams Part 3: squad scores, the squad MVP, the party preset (docs/FIRETEAMS_PLAN.md, "Part 3")
+- **Points** (`sim/squadScores.ts` `SQUAD_POINTS`, `Fireteams.scores`): a kill 10, an assist 5 (a hostile hit on the
+  victim by someone else in the last `ASSIST_SECONDS`, 10), an objective play 30 (each new count of the combatant's
+  `objective`, the scoreboard's column, read every 6 ticks and at the round's end, so every mode's way of crediting it
+  counts), King of the Hill 1 a second on the hill (`onHill`) while the player's team alone holds it. To the player and
+  the squad they're in then. Team kills, falls and NPC kills nothing; no revives in team modes. Reset with the round.
+- **Awards** (with the match's, `MatchAward`): `['bestsquad', leader, points, squad]` (ties to the lower squad id; a
+  squad whose leader left is named by its first member still here) and `['squadmvp', slot, points, squad]` for every
+  squad with a member still in the match and points (ties to the lower slot).
+- **The board** (`client/game/squadBoard.ts`): the snapshot's `fs` carries each squad's points at index 9 (members
+  from 10), `ScoreEntry.p` each player's; each team's rows grouped by squad (yours first, then by points), each
+  squad's MVP on its line at the end, Best Squad marked.
+- **The party preset** (`PARTY_PRESETS` `fireteams`): Team Deathmatch, Fireteams, the map's layout, `fireteamPartySize`
+  (4 to 14 a side, 5 to 17, 6 from 18); `partyMapMove` moves to the first of its maps that fits the device when this
+  map has no Team Deathmatch or fewer than `FIRETEAMS_SIDE_MIN` (8) a side.
+
 ## Snipers (Bot AI Phase B)
 
 The sniper role plays like a sniper (`bots/sniper.ts`; BOT_AI_PLAN.md Phase B item 5; the owner: "camping in tucked

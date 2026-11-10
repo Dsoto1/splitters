@@ -11,6 +11,7 @@ import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
 import { getLook } from '../content/looks.ts';
 import type { GameEvent } from '../protocol.ts';
 import type { RouletteAward } from './roulette.ts';
+import type { SquadAward } from './squadScores.ts';
 
 /** The match's own awards (every mode); Roulette's kinds join them in Roulette. */
 export type MatchAwardKind = 'accurate' | 'streak' | 'nemesis' | 'revenge';
@@ -18,9 +19,10 @@ export type MatchAwardKind = 'accurate' | 'streak' | 'nemesis' | 'revenge';
 /**
  * An award at the end of a match: [kind, slot, value, extra]. Value: accuracy in percent, kills, revenge kills (and
  * Roulette's: characters, kills, air kills, tenths of a second). Extra: Nemesis, the slot of the one they kept
- * downing; Most Accurate, the rounds fired; Unluckiest Roll, the look.
+ * downing; Most Accurate, the rounds fired; Unluckiest Roll, the look. Fireteams' Best Squad and Squad MVP
+ * (sim/squadScores.ts): points, and the squad's id.
  */
-export type MatchAward = [kind: MatchAwardKind, slot: number, value: number, extra?: number] | RouletteAward;
+export type MatchAward = [kind: MatchAwardKind, slot: number, value: number, extra?: number] | RouletteAward | SquadAward;
 
 /** A callout as a kill makes it: `s` got revenge on `t`, or `s` became `t`'s nemesis (`n` kills in a row). */
 export type Callout = { a: 'revenge'; s: number; t: number } | { a: 'nemesis'; s: number; t: number; n: number };
@@ -170,6 +172,10 @@ export function awardText(a: MatchAward, name: (slot: number) => string): { titl
       return { title: 'Giant Slayer', line: `${who}: ${a[2]} large ${a[2] === 1 ? 'character' : 'characters'} downed as a small one` };
     case 'moonwalker':
       return { title: 'Moonwalker', line: `${who}: ${a[2]} air ${a[2] === 1 ? 'kill' : 'kills'}` };
+    case 'bestsquad':
+      return { title: 'Best Squad', line: `${who}'s squad: ${a[2]} points` };
+    case 'squadmvp':
+      return { title: 'Squad MVP', line: `${who}: ${a[2]} points` };
     case 'unlucky':
       return { title: 'Unluckiest Roll', line: `${who} as ${getLook(String(a[3])).name}: down in ${(a[2] / 10).toFixed(1)} s` };
   }

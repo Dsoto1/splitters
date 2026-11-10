@@ -1,10 +1,11 @@
-import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
+import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
 import { slotColor } from './view.ts';
 import { PARTY_COLOR, ffaPartyMate } from './ffaParty.ts';
 import { applyCrosshair, applyHitmarker } from './crosshair.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';
 import { Minimap } from './minimap.ts';
 import { ScoreBoard, type BoardData, type BoardRow } from './scoreBoard.ts';
+import { readSquads, squadGroups, squadHonours, type SquadHonours } from './squadBoard.ts';
 import { HEAVY_LOOK, HURT_LOOKS, HeavyFade, HurtFade, paintVignette } from './hurtVignette.ts';
 import { reduceFlashing } from './reduceFlashing.ts';
 
@@ -141,6 +142,7 @@ export class Hud {
     this.powerups.innerHTML = '';
     this.scope.hidden = true;
     this.scoreboard.hidden = true;
+    this.scoreboard.parentElement?.classList.remove('sb-up');
     this.board.clear();
     this.boardOpen = false;
     this.pauseBoard?.clear();
@@ -257,6 +259,18 @@ export class Hud {
   setTeams(teams: readonly Faction[] | null): void {
     this.teams = teams;
   }
+
+  /** Fireteams (Part 3): the snapshot's squads (`fs`; null: the variant is off), for the scoreboard's squads. */
+  setSquads(fs: readonly (readonly number[])[] | null): void {
+    this.squadsRaw = fs;
+  }
+  private squadsRaw: readonly (readonly number[])[] | null = null;
+
+  /** Fireteams: the squad awards at the end of the match (each squad's MVP, the Best Squad); [] clears them. */
+  setSquadAwards(aw: readonly MatchAward[]): void {
+    this.honours = squadHonours(aw);
+  }
+  private honours: SquadHonours = { mvp: new Map(), best: null };
 
   teamById(id: string | null): Faction | undefined {
     return id ? this.teams?.find((t) => t.id === id) : undefined;
@@ -936,7 +950,11 @@ export class Hud {
    * most 4 times a second while it stays open (cheap at 96 players).
    */
   renderScoreboard(visible: boolean, scores: readonly ScoreEntry[], localSlot: number, final = false): void {
-    if (this.scoreboard.hidden !== !visible) this.scoreboard.hidden = !visible;
+    if (this.scoreboard.hidden !== !visible) {
+      this.scoreboard.hidden = !visible;
+      // (Fireteams: the squad panel gives way to the board, style.css #hud.sb-up.)
+      this.scoreboard.parentElement?.classList.toggle('sb-up', visible);
+    }
     if (!visible) {
       this.boardOpen = false;
       return;
@@ -963,6 +981,8 @@ export class Hud {
     // Your party (net/party.ts): the people who came with you, when there are any.
     const myParty = this.roster.get(localSlot)?.py;
     const inParty = myParty ? [...this.roster.values()].filter((p) => !p.bot && p.py === myParty).length > 1 : false;
+    // Fireteams: the teams' rows grouped by squad, with a points column.
+    const squads = this.teams && this.squadsRaw ? readSquads(this.squadsRaw) : null;
     const row = (s: ScoreEntry): BoardRow => {
       const p = this.roster.get(s.s);
       const cls = this.classes.get(s.s);
@@ -979,6 +999,7 @@ export class Hud {
         d: s.d,
         obj: this.objLabel ? String(s.o ?? 0) : '',
         ping: p?.bot ? '–' : ping === undefined ? '' : String(ping),
+        ...(squads ? { pts: String(s.p ?? 0) } : {}),
         leader: this.leaders.has(s.s),
         dead: this.alive.get(s.s) === false,
         me: s.s === localSlot,
@@ -990,20 +1011,25 @@ export class Hud {
     const spectators = watching.length ? `Spectating: ${watching.join(', ')}` : '';
     const note = [final && this.nextMap ? this.nextMap : '', this.onlineNote, spectators].filter(Boolean).join(' · ');
     const head = `${final ? 'Final · ' : ''}${this.mapName} · ${this.modeLabel.textContent ?? ''}${final ? '' : clock}`;
-    const flags = { cls: this.classes.size > 0, obj: this.objLabel, ping: this.pings.size > 0 };
+    const flags = { cls: this.classes.size > 0, obj: this.objLabel, ping: this.pings.size > 0, ...(squads ? { pts: true } : {}) };
     if (!this.teams) {
       return { head, note, kind: this.coop ? 'coop' : 'ffa', groups: [{ id: 'all', name: '', color: '', score: 0, lead: false, rows: sorted.map(row) }], ...flags };
     }
     const totals = this.teamTotals(scores);
     const top = Math.max(...this.teams.map((t) => totals.get(t.id) ?? 0));
-    const groups = this.teams.map((t) => ({
-      id: t.id,
-      name: t.name,
-      color: t.color,
-      score: totals.get(t.id) ?? 0,
-      lead: top > 0 && (totals.get(t.id) ?? 0) === top,
-      rows: sorted.filter((s) => this.roster.get(s.s)?.team === t.id).map(row),
-    }));
+    const groups = this.teams.map((t, i) => {
+      const rows = sorted.filter((s) => this.roster.get(s.s)?.team === t.id).map(row);
+      const sq = squads ? squadGroups(rows, squads, i, localSlot, this.honours, (slot) => this.name(slot)) : null;
+      return {
+        id: t.id,
+        name: t.name,
+        color: t.color,
+        score: totals.get(t.id) ?? 0,
+        lead: top > 0 && (totals.get(t.id) ?? 0) === top,
+        rows: sq ? sq.flatMap((q) => q.rows) : rows,
+        ...(sq ? { squads: sq } : {}),
+      };
+    });
     return { head, note, kind: 'teams', groups, ...flags };
   }
 

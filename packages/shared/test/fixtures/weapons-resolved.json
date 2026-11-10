@@ -605,7 +605,7 @@
      "model": "weapons/launcher.glb",
      "viewOffset": [
       0.22,
-      -0.22,
+      -0.23,
       0.55
      ],
      "tracer": "#c2c9a8",
@@ -1696,7 +1696,7 @@
      "model": "weapons/laser_rifle.glb",
      "viewOffset": [
       0.21,
-      -0.21,
+      -0.31,
       0.52
      ],
      "tracer": "#ff3b4a",
@@ -2115,7 +2115,7 @@
      "model": "weapons/flak.glb",
      "viewOffset": [
       0.21,
-      -0.21,
+      -0.25,
       0.52
      ],
      "tracer": "#ffcf6a",
@@ -2600,7 +2600,7 @@
      "model": "weapons/oil_slicker.glb",
      "viewOffset": [
       0.2,
-      -0.18,
+      -0.2,
       0.42
      ],
      "tracer": "#8a7a5a",
@@ -2895,7 +2895,7 @@
      "model": "weapons/swarm.glb",
      "viewOffset": [
       0.21,
-      -0.21,
+      -0.23,
       0.52
      ],
      "tracer": "#ffb347",
@@ -2982,7 +2982,7 @@
      "model": "weapons/rockets.glb",
      "viewOffset": [
       0.24,
-      -0.24,
+      -0.26,
       0.5
      ],
      "tracer": "#ff4a3a",
@@ -3069,8 +3069,8 @@
      "model": "guns/plasma_blaster.glb",
      "viewOffset": [
       0.27,
-      -0.28,
-      0.54
+      -0.31,
+      0.57
      ],
      "tracer": "#b07aff",
      "hold": {
@@ -4169,7 +4169,7 @@
      "model": "weapons/rockets.glb",
      "viewOffset": [
       0.24,
-      -0.24,
+      -0.26,
       0.5
      ],
      "tracer": "#ffb347",

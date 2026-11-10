@@ -43,8 +43,10 @@ nobody else's damage gets through until it runs out or you fire, throw or strike
 | Nemesis | the most kills of one opponent ("downed X 6 times") | 3 kills of them |
 | Most Revenge Kills | the most kills of whoever downed you last | 1 |
 
-Roulette adds its own after them: Shapeshifter, Giant Slayer, Moonwalker (Lunar) and Unluckiest Roll. The
-thresholds are `content/match-play.json` `awards`.
+Roulette adds its own after them: Shapeshifter, Giant Slayer, Moonwalker (Lunar) and Unluckiest Roll. Fireteams adds
+**Best Squad** (the squad with the most squad points) and a **Squad MVP** for every squad (its member with the most
+points; on the scoreboard each squad's line names it, and the awards panel shows yours): docs/BOTS.md, "Fireteams Part
+3". The thresholds are `content/match-play.json` `awards`.
 
 **Callouts** (the `callout` event): downing whoever downed you last is **revenge** ("Revenge on X!"; "X got their
 revenge" to them); the same player downing you `callouts.nemesis` times (3) in a row with none back becomes your
@@ -99,6 +101,11 @@ ended (12 s vote, 3 s winner, the map's load and the start countdown). Nobody is
   a card per map (its picture, name, mode, votes, a bar), the seconds left. **1-3** (keyboard), a click or a tap
   votes; your card is lit cyan, the winner orange. The mouse is free while it's up (the pause menu waits for Esc).
 - Not for chains and playlists (a won co-op map goes where its "Next map" says) or MapMaker TEST.
+
+**Party presets** (Match setup, under the size presets; `PARTY_PRESETS`): Lunar Roulette, Spear Fight and **Fireteams**
+(Team Deathmatch where every person leads a squad of bots, squads sized to the map's teams; on a map without Team
+Deathmatch or under 8 a side it moves to one that suits: docs/FIRETEAMS_PLAN.md, "Part 3"). Host online and the invite
+link below bring a party in on one side.
 
 **Parties** (`net/party.ts`): a party is a random tag a tab keeps (sessionStorage). Invite links carry it
 (`?join=CODE&party=TAG`: the host's in the Host tab, and anyone's who joined by code in the Match tab), so whoever

@@ -8,6 +8,35 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Fireteams part 3: squad scores, the squad MVP, the party preset (`wip/fireteams-3`, agent, 2026-11-10; owner-approved; green on `check/fireteams-3` at da05b91, run 42780770897; LANDED; landing line removed).**
+Details: docs/FIRETEAMS_PLAN.md, "Part 3"; docs/BOTS.md, "Fireteams Part 3".
+- **Squad scores** in the sim (`sim/squadScores.ts`, `Fireteams.scores`): kill 10, assist 5 (a hit within 10 s before
+  someone else's kill), objective play 30 (the scoreboard's objective count), King of the Hill 1 a second on the held
+  hill; no revives exist in team modes. The snapshot's `fs` carries each squad's points (index 9; members from 10),
+  `ScoreEntry.p` each player's.
+- **Scoreboard grouped by squad** (`client/game/squadBoard.ts`, `scoreBoard.ts`): a line per squad (◆ leader, points),
+  your squad first, a Pts column; at the end every squad's MVP on its line and BEST on the best squad.
+- **Squad MVP:** `bestsquad` and `squadmvp` awards; the awards panel shows Best Squad and Your Squad's MVP, with the vote.
+- **Fireteams party preset:** TDM + Fireteams, squads 4 (to 14 a side) / 5 (to 17) / 6; a map without TDM or under 8
+  a side moves to Eagle Spires, Riot Junction, Sandgate, Frost Basin or Canyon (first that fits the device).
+- **Not carried by host handoff:** the squads' points (a successor starts them from zero).
+- **e2e `fireteams`:** extended for the preset, the board's squads and the MVP with the vote; its "squad holds" check now sends you to the map's
+  spawn point furthest from the spot (it stood you by a moving bot before, 4-10 m off on check/vehicle-routing run 42762326837).
+- **Next: the owner's playtest** of Fireteams (Parts 1-3).
+**Mobile audit (`wip/mobile-audit`, agent, 2026-11-10; owner-approved; green on `check/mobile-audit` at 6b66630, run 42772271488, `party` passed on the re-run of its job; LANDED). Full report and ranked proposals for the owner to
+pick from: docs/MOBILE_AUDIT.md.**
+- **Fixed:**
+  - First-person guns: 8 bulky sci-fi guns lowered to cover at most 11 % of the screen (Flak 13.8 → 10.5 %);
+    `shared/test/viewmodelCover.test.ts` holds every carried gun to that budget, so a new gun's `viewOffset` must pass it.
+  - Character Select on phones sideways keeps two rows of characters (e2e `mobile` → `mobileCharacterSelect`).
+  - Narrow-phone HUD overlaps: kill feed over the scorebar, "Weapons" past its ring, vitals over the pad.
+  - The pause menu's key caps on touch.
+- **Not fixed: the owner's dark block on a lit wall (Bottling Plant, since retired; any lamp-lit map can show it).**
+  It is screen-aligned, which points at the clustered map lights' 64 × 64 tile mask on that phone's GPU; SwiftShader
+  can't show it. One lamp per mask layer was tried and reverted (Flatpack Depot's 138 lamps overflow the mask
+  texture). The next step is proposal 1 in the audit: ask the owner's phone and Graphics setting, and a room-lights
+  switch to confirm.
+
 **Map line-up (`wip/maps-retire`, 2026-11-09/10; owner's decisions of 2026-11-09; green on `check/maps-retire` at b9365b0, run 42759236295; LANDED; claims released).**
 - **Retired (files deleted; git history keeps them):** fogbound, bottling (Bottling Plant), dune_harbor, no_mans_field,
   overhang, starhaven: `maps/<id>.json`, their card pictures (`client/public/maps/shots/<id>.jpg`), `inspirations.ts`
@@ -560,12 +589,11 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
-**Next in line to land: MapMaker Phase 6, the first-time tour** (`check/mapmaker-p6`, MapMaker lane, 2026-11-10), after the vehicle routing fixes.
-
-**Next in line to land: the mobile audit** (`check/mobile-audit`, mobile-audit agent, 2026-11-10), after MapMaker Phase 6: one check run, then a fast-forward.
+**Landing now: Bot AI Phase C part 3 (`check/bots-c3`; Bot AI Phase C agent), please hold code pushes to main.** (2026-11-10; one check run, then a fast-forward.)
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
+- **The overhaul is complete (2026-11-10):** Phase 6, the first-time tour, landed last; the editor-code claim is released. Still in this lane: The Spillway and Verdant Protocol (built, green, waiting for the owner's review) and their follow-ups.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
   randomise), then Phase 3 item 9 (the rotate ring, quick facings) and the rest of Phase 3 that doesn't need the split.
@@ -1076,6 +1104,16 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   main 3 / 5 / 5 / 4, this branch 9 / 6 / 2 / 2 (17 against 19). Revert with a fix for the lift wait.
 - **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
   screenshots; the skipped maps above; card pictures.
+
+### MapMaker overhaul Phase 6: the first-time tour (`wip/mapmaker-p6`, agent, 2026-11-10; MapMaker lane; docs/MAPMAKER_OVERHAUL_PLAN.md "Phase 6", docs/BUILDING_KIT.md "MapMaker's first-time tour")
+- A card over the view on the first visit: welcome, place a room, add a spawn, add a pickup, try it out, a closing
+  card. Rules and wording shared `editor/tour.ts`; the card and highlight `client/editor/tour.ts` (wired with a few lines
+  in `editorApp.ts`: built after the budget bar, `startFresh` → `maybeStart`, `test()` → `note({kind:'test'})`; the key
+  list's **Take the tour**). Remembered in `localStorage` `tiletrigger.editor.tour` (`done` / `skipped`).
+- **Pitfalls:** it chains onto `history.onChange` (the budget bar's first); `HistoryChange.undo` marks undos. It never
+  starts in `?test=1` unless `&tour=1`, so other flows and baselines don't see it. A new map has a room and a spawn
+  already: the steps ask for another of each. The closing card ignores Esc (the Esc that leaves a test would close it).
+- Tests: unit `shared/test/mapmakerTour.test.ts`; e2e `editorux` → `editorTourChecks`.
 
 ### MapMaker overhaul Phase 2: the split, modes, folding panels, the outliner (`wip/mapmaker-p2`, agents, 2026-11-09/10; MapMaker lane; docs/MAPMAKER_OVERHAUL_PLAN.md "Phase 2", docs/BUILDING_KIT.md "MapMaker's modes, panels and outliner")
 - **The split** (steps 1-12, a3040bf8; main merged in at 2040c580): green on `check/mapmaker-p2`, run 42730322862. It

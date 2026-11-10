@@ -97,6 +97,7 @@ import {
 import { SurfaceBoxes } from './surfaceBoxes.ts';
 import { TerrainTools } from './terrainTools.ts';
 import { TopBar } from './topBar.ts';
+import { EditorTour } from './tour.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -194,6 +195,8 @@ export class EditorApp {
   /** Bot hints (Y; botHintTool.ts, MapMaker overhaul Phase 4 item 3): drawn over the view, edited in the inspector. */
   readonly hints: BotHintTool;
   lastHint: BotHintKind = 'choke';
+  /** The first-time tour (MapMaker overhaul Phase 6; tour.ts). */
+  readonly tour: EditorTour;
   /** The prop tool's placing options: Randomise. */
   readonly propOpts: PropPlaceOptions;
   /** What props and the measure tool land on, per document version and view. */
@@ -387,6 +390,8 @@ export class EditorApp {
       this.setSelection({ tiles: [], entities: ids });
       this.toast(`Selected ${ids.length} counted as ${row.label.toLowerCase()} (${row.what})`);
     }, $('ed-target'));
+    this.tour = new EditorTour(this);
+    this.keyOverlay.onTour = () => this.tour.start();
     this.logic = new LogicPanel({
       doc: () => this.doc,
       commit: (label, after) => this.run(label, { kind: 'setLogic', before: this.doc.logic, after }),
@@ -412,6 +417,7 @@ export class EditorApp {
     this.saving.replaceDocument(starterMap(STARTER_TERRAIN, 'grass'));
     const drafts = listDrafts().length;
     this.toast(drafts ? `New blank map · ${drafts} unsaved draft${drafts > 1 ? 's' : ''} in Open…` : 'New blank map · Open… loads a saved map or template');
+    this.tour.maybeStart();
   }
 
   get doc(): MapDocument {
@@ -913,6 +919,7 @@ export class EditorApp {
     const fill = teams ? Math.min(32, teams.reduce((a, b) => a + b, 0)) : botCount + 1;
     // As played: paths laid into the ground, terrain under the floors (what loadMap gives every match).
     const played = loadMap(this.doc);
+    this.tour.note({ kind: 'test' });
     this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}) });
   }
 

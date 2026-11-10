@@ -9,6 +9,8 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
  */
 export class KeyOverlay {
   readonly dialog: HTMLDialogElement;
+  /** The header's Take the tour button (tour.ts): set by MapMaker. */
+  onTour: (() => void) | null = null;
 
   constructor(parent: HTMLElement) {
     this.dialog = document.createElement('dialog');
@@ -25,6 +27,10 @@ export class KeyOverlay {
     });
     this.dialog.addEventListener('click', (e) => {
       if (e.target === this.dialog || (e.target as HTMLElement).closest('[data-close]')) this.close();
+      if ((e.target as HTMLElement).closest('[data-tour]')) {
+        this.close();
+        this.onTour?.();
+      }
     });
     parent.append(this.dialog);
   }
@@ -43,7 +49,7 @@ export class KeyOverlay {
             .join('')}</dl></section>`,
       )
       .join('');
-    this.dialog.innerHTML = `<div class="ed-keys-inner"><header><h2 id="ed-keys-title">Keys</h2><span class="ed-keys-hint">Esc or ? closes</span><button type="button" data-close aria-label="Close">✕</button></header><div class="ed-keys-grid">${groups}</div></div>`;
+    this.dialog.innerHTML = `<div class="ed-keys-inner"><header><h2 id="ed-keys-title">Keys</h2><span class="ed-keys-hint">Esc or ? closes</span><button type="button" data-tour id="ed-keys-tour" title="A short walk through making a map: a room, a spawn, a pickup, then test it">Take the tour</button><button type="button" data-close aria-label="Close">✕</button></header><div class="ed-keys-grid">${groups}</div></div>`;
     this.dialog.showModal();
   }
 

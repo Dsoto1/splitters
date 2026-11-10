@@ -299,7 +299,7 @@ interface HistoryEntry {
 }
 
 /** What EditHistory tells its `onChange`: a command and the document it gave, or a document put in wholesale. */
-export type HistoryChange = { command: EditCommand; doc: MapDocument; reset?: undefined } | { reset: MapDocument; command?: undefined };
+export type HistoryChange = { command: EditCommand; doc: MapDocument; reset?: undefined; /** An undo (its command is the step's inverse). */ undo?: boolean } | { reset: MapDocument; command?: undefined; undo?: undefined };
 
 /** Undo/redo history over an immutable MapDocument. */
 export class EditHistory {
@@ -381,7 +381,7 @@ export class EditHistory {
     this.current = entry.before;
     this.redoStack.push(entry);
     this.revision++;
-    this.onChange?.({ command: invertCommand(entry.command), doc: entry.before });
+    this.onChange?.({ command: invertCommand(entry.command), doc: entry.before, undo: true });
     return entry.label;
   }
 

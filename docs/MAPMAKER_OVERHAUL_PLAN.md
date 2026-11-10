@@ -370,6 +370,13 @@ Already done from the owner's earlier ask: **the real buildable area.**
 ## Phase 6: a guided first-time tour
 A short, skippable, interactive tour, remembered once done: place a room, a spawn and a pickup, then test it. It comes
 last, once the interface has settled.
+- **As built (2026-11-10, `wip/mapmaker-p6`, no format change):** six cards: a welcome, Place a room, Add a spawn, Add
+  a pickup, Try it out (▶ Here or ▶ PLAY TEST), and a closing card. Each step lights its mode tab until you're in the
+  mode, then its palette card (or the palette tab, folded group or palette toggle hiding it), and moves on from the
+  edit history (`HistoryChange` now marks undos, which never count) or the test starting, never a timer. Skip or Esc
+  ends it; done or skipped is remembered (`tiletrigger.editor.tour`); the `?` key list's **Take the tour** restarts it.
+  Not in `?test=1` unless `&tour=1`. Rules shared `editor/tour.ts`; card `client/editor/tour.ts`; unit
+  `mapmakerTour.test.ts`; e2e `editorux` → `editorTourChecks`. BUILDING_KIT.md "MapMaker's first-time tour".
 
 ## Also in this lane: the Iron Coast job's editor half
 - **As built (2026-11-09, `wip/mapmaker-terrain`, map format v32):**
