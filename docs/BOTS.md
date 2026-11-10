@@ -824,8 +824,23 @@ most: a second or so).
 ## Bot hints (map data)
 Map format v33 (BOT_AI_PLAN.md Phase D item 5; MapMaker overhaul Phase 4 item 3): places the map's maker marks for bots
 in MapMaker (the Bot hints tool, Y). They are **map data on top of what bots work out themselves**: the computed spots
-(vantage spots, parkour links) stay the default, and a map with no hints plays as before. **Bots don't read them yet**:
-this is the data, its placement, checks and display; the bot side is the bots session's to build.
+(vantage spots, parkour links) stay the default, and a map with no hints plays as before.
+
+**What bots do with them** (Phase D item 5, `bots/hints.ts`; read once per match or per side, nothing per tick; a hint
+with a `team` is that side's only, except jump links, which go into the shared navmesh for everyone):
+- **sniper, camp**: vantage spots of their own (`hintSpots`, added to the match's `VantageBoard` with the computed
+  ones), scored 2.6 (sniper) and 2.2 (camp) against the computed spots' 1-3, so a camper or sniper near one usually
+  takes it. A computed spot of the same kind within 8 m of a hint gives way to it. Facing: the hint's, else the most
+  open of eight directions. Only campers and snipers use them (the roles: "Roles").
+- **staging**: a group of attackers gathers at the staging hint by its corridor (`stageHint`: within 14 m of the
+  route and 40 m of the spot the team brain worked out, not nearer the objective than that spot by more than the
+  hint's radius) instead of the computed one (teamBrain.ts `stageOn`).
+- **choke**: a bot holding a spot near one (35 m, in sight) scans it (see "Holding a spot: the scan" below).
+- **jump**: a parkour candidate before any computed one (`dropOptions` → `parkourLinks`), whatever walk it saves,
+  played through the movement code like the rest: a hinted jump the movement can't make is left out (its two ends
+  are taken on the navmesh within the hint checks' 1.2 m; its kind by the rise: up past a step, a running jump across
+  1.5 m or more, else a drop). `parkourStats.hints` counts those given and made. Links are cached per navmesh and
+  hints, so MapMaker's "What bots know" shows the hinted links too.
 
 **The format** (`MapDocument.botHints`, `map/schema.ts` `BotHint`; absent: none; at most 256 a map):
 
@@ -856,6 +871,61 @@ reach": a jump link's landing is often ground only that jump gets to.
 true })` also returns `computed` (`ComputedBotSpots`): the vantage spots (`vantageFor` on the main area's places and the
 parkour places, as the match works them out before the trips' lanes reweigh them) and the parkour links. Bots work out
 no chokepoints or staging spots of their own today.
+
+## Memory and callouts (Bot AI Phase D item 1)
+Each bot keeps a small memory of its enemies (`bots/memory.ts` `EnemyMemory`, 8 entries, `BotBrain.enemies`): where
+each was last seen, where shots at it came from, what it heard, and teammates' callouts, each for its skill tier's
+`memorySeconds` (easy 8, normal 15, hard 25), across its lives. The dead are forgotten (checked once a second).
+- **Callouts:** a bot that has someone in its sights says where (`CalloutBoard`, one per side in the director, a ring
+  of 64; once every 2 s per caller and enemy at most). Teammates within their tier's `calloutRange` of the spot (easy
+  25 m, normal 45, hard 60) take it into their memory at their next look about. Squad alerts (a leader's enemy, an
+  order) still send squad members to look, as before.
+- **What memory does:** it sends nobody anywhere (chasing and noises stay the scored choices', so objectives play as
+  before). A bot holding a spot watches the freshest threat it remembers (a shot most: once its tier has turned to it,
+  `shotTurnMs`); one on its way checks (pre-aims) a remembered spot within 30 m while it is within 75 degrees of the
+  way it goes (not a flag carrier); a camper or sniper on its spot watches one within its view; and someone showing
+  where it expected them is reacted to faster (see "Skill tiers").
+
+## Holding a spot: the scan (Bot AI Phase D item 2)
+On top of "Standing still"'s keeping watch (shifting between places round the spot, crouching, the glance over the
+shoulder), a bot holding a spot with nothing to look at scans: the way it watches, then chokepoint hints near it, then
+the two most open of eight ways (rays at eye height, once per place it stands; each angle at least 50 degrees from the
+others), one at a time, dwelling on each for its tier's `scanDwell` (easy 3.2 s, normal 2.4, hard 1.6; ±25 %) with a
+small sway. Where the way it watches is blocked within 2.5 m (a wall's corner beside it), it **peeks**: a step of
+1.2 m to the side from which it is open, for one dwell in three, then back.
+
+## Skill tiers (Bot AI Phase D item 3)
+Easy, normal and hard differ in more than aim error (`BotDifficulty`, profile.ts; normal plays much as before):
+
+| | easy | normal | hard |
+|---|---|---|---|
+| reaction (as before) | 650 ms | 380 ms | 220 ms |
+| reaction varies by (each sighting) | ±40 % | ±25 % | ±15 % |
+| someone showing outside its view | +60 % | +25 % | +10 % |
+| someone showing where it expected them | - | -25 % | -45 % |
+| memory | 8 s | 15 s | 25 s |
+| callouts reach it from | 25 m | 45 m | 60 m |
+| turns to an unseen shooter's rounds after | 700 ms | 350 ms | 150 ms |
+| noise on its scored choices | ±0.35 | ±0.08 | none |
+| dwells on each angle when holding | 3.2 s | 2.4 s | 1.6 s |
+
+The noise on scored choices (choices.ts; MARGIN is 0.25) has an easy bot now and then do the second-best thing (chase
+a noise instead of its goal, keep to cover a moment longer); a carrier's run home is never noisy. These draw from a
+random stream of their own (`skillRng`), so the bot's other choices stay as they were by seed.
+
+## Bot debug view (Bot AI Phase D item 4)
+`?botdebug=1` on the page's address, in a match that runs in this browser (offline, MapMaker TEST, Host game: the
+LocalTransport; not a guest's or a dedicated server's, and not while a friend plays in the hosted match: it shows
+every bot through walls). Four times a second the match sends a frame (`Match.botDebugFrame`, `bots/debugView.ts`;
+nothing runs while it is off), and the page (`game/botDebugView.ts`) draws:
+- each bot's route in its team's colour, a thin line on to its goal, its remembered enemy spots (orange posts) and
+  its scan's angles (cyan);
+- every failed route search of the match (the latest 200): a red cross where it was going, a dark red line from where
+  it asked;
+- over each bot, its name, state and what it did on its last think (`BotBrain.doing`), the distance to its goal, and
+  "stopped:" and why when it meant to stand or couldn't move;
+- a panel: every bot's team, role, skill, state, what it did, its scored choice and top three scores, why it stopped,
+  its failed searches and stuck count.
 
 ## Ground that goes (Bot AI Phase C item 2)
 The navmesh is fixed for the match and has breakable props and free blocks that crumble, break, hide or show, and
