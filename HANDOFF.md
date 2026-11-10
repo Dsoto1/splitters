@@ -611,6 +611,8 @@ for the owner's review, not landed).**
 
 **Kit-prop generators: not landed** (`check/kit-props` at 9a4e32d, run 42823940482, 2026-11-10). Red on e2e `editorux` and `editortools` only: they click the Props tab's `prop.crate_small` and `prop.barrel` buttons, which this branch retires from the palette. Every other red flow was stopped by stop-on-failure. Landing lock released; the fix (the editor flows place the kit families instead) comes back as a new Next-in-line line.
 
+**Landing now: Fireteams follow-ups** (`check/fireteams-4`, Fireteams follow-ups agent, 2026-11-10): please hold code pushes to main until this line is gone (docs are fine).
+
 **Next in line to land: Fireteams follow-ups** (`check/fireteams-4`, from `wip/fireteams-4`, Fireteams follow-ups agent, 2026-11-10): one merge of origin/main, one check run (full suite: shared sim code), then a fast-forward. Touches shared `sim/fireteams.ts`, `sim/squadScores.ts`, `sim/match.ts` (Fireteams block, checkpoint/restore, BotFiller.restore), `sim/modes/ctf.ts`, `ctfBots.ts`, `types.ts`, `modes/index.ts`, `net/handoff.ts`, one line in `bots/brain.ts` (`BOT_SWITCHES`), client `game/squadHud.ts`, `game/matchHost.ts` (one checkpoint line), `style.css` (three lines by `#squad-order`), server `tools/bot-report.ts` and `squadMeasures.ts`, tests, a new e2e flow `fireteamsctf` (its own function; `fireteamsFlow` untouched) and its `e2e/flowMap.mjs` entries; no map or editor files.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
