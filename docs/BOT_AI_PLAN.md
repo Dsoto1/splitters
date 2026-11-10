@@ -825,6 +825,32 @@ halved captures.
 5. **Bot hints in MapMaker:** chokepoints, sniper and camp spots, staging spots, jump links.
    - They are map data. The computed ones stay the default.
 
+### Phase D, measured (items 1-4, and bots reading item 5's hints; 2026-11-10; `wip/bots-d`)
+Built as docs/BOTS.md describes ("Memory and callouts", "Holding a spot: the scan", "Skill tiers", "Bot debug view",
+"Bot hints (map data)"). MapMaker's side of item 5 (the tool, the format, its checks) is the MapMaker lane's and landed
+before (map format v33); no map carries hints yet, so every map plays its hints-free path, and the hint code is proven
+by unit tests (botPhaseD.test.ts).
+
+**Before and after** (bot-report, normal skill, base = main dfa7e01; both run side by side on the same box, so think
+times compare; CTF 3 seeds × 180 s on Diamond Park, Eagle Spires and Bunker Cross; TDM 2 seeds × 120 s):
+
+| Map | captures/match | flag takes | idle out of a fight % | going to goal % | stuck/match | kills/min | think ms |
+|---|---|---|---|---|---|---|---|
+| diamond_park ctf | 0.3 → 1.3 (1/3 → 3/3 matches) | 7.0 → 6.3 | 4.1 → 3.5 | 24.1 → 25.1 | 62 → 66 | 50.7 → 50.2 | 1.45 → 1.55 |
+| eagle_spires ctf | 0.0 → 0.0 | 3.3 → 3.3 | 1.2 → 2.2 | 27.0 → 25.5 | 77 → 89 | 17.1 → 18.0 | 1.66 → 1.71 |
+| bunker_cross ctf | 1.3 → 2.0 | 5.0 → 6.3 | 3.0 → 2.7 | 29.2 → 30.2 | 90 → 91 | 23.8 → 24.8 | 0.96 → 1.00 |
+| fernwood_moon tdm | - | - | 6.8 → 4.6 | - | 83 → 52 | 29.8 → 37.5 | 1.89 → 1.92 |
+| riot_junction tdm | - | - | 4.6 → 4.7 | - | 39 → 44 | 40.5 → 40.0 | 1.55 → 1.56 |
+
+`pnpm bot-report --check` (CI's quick check): every limit held, before and after (all: idle out of a fight 5.4 → 4.7 %,
+stuck a bot-minute 1.39 → 1.11, think 1.06 → 1.09 ms).
+
+**Cost.** Bot thinking +1-7 % in those matches (memory upkeep at each look about, callouts read from a 64-entry ring,
+a remembered spot checked on the way, eight rays when a holding bot picks a place to stand). `pnpm bench:96:clump`:
+bot thinking 2.69 ms a tick before and 2.69 after (the mean of its six runs, CPU-scaled; the after run at load 8-12
+on 4 cores, the before at load 1, so only the like-for-like bot-report figures above say much). The debug view costs
+nothing while off; on, a frame four times a second (each bot's state, route and scores copied).
+
 ## Performance
 **Where bots run.** In the shared sim: on the dedicated server, or in the host's match worker. The page's own thread
 spends nothing on them (docs/PERF_96.md). Rendering, not bots, is what limits frame rate today.
