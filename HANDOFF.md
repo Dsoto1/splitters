@@ -16,10 +16,12 @@ pick from: docs/MOBILE_AUDIT.md.**
   - Character Select on phones sideways keeps two rows of characters (e2e `mobile` → `mobileCharacterSelect`).
   - Narrow-phone HUD overlaps: kill feed over the scorebar, "Weapons" past its ring, vitals over the pad.
   - The pause menu's key caps on touch.
-- **Not fixed: the owner's dark block on a lit wall (Bottling Plant).** It is screen-aligned, which points at the
-  clustered map lights' 64 × 64 tile mask on that phone's GPU; SwiftShader can't show it. One lamp per mask layer
-  was tried and reverted (Flatpack Depot's 138 lamps overflow the mask texture). The next step is proposal 1 in the
-  audit: ask the owner's phone and Graphics setting, and a room-lights switch to confirm.
+- **Not fixed: the owner's dark block on a lit wall (Bottling Plant, since retired; any lamp-lit map can show it).**
+  It is screen-aligned, which points at the clustered map lights' 64 × 64 tile mask on that phone's GPU; SwiftShader
+  can't show it. One lamp per mask layer was tried and reverted (Flatpack Depot's 138 lamps overflow the mask
+  texture). The next step is proposal 1 in the audit: ask the owner's phone and Graphics setting, and a room-lights
+  switch to confirm.
+
 **Map line-up (`wip/maps-retire`, 2026-11-09/10; owner's decisions of 2026-11-09; green on `check/maps-retire` at b9365b0, run 42759236295; LANDED; claims released).**
 - **Retired (files deleted; git history keeps them):** fogbound, bottling (Bottling Plant), dune_harbor, no_mans_field,
   overhang, starhaven: `maps/<id>.json`, their card pictures (`client/public/maps/shots/<id>.jpg`), `inspirations.ts`
@@ -549,8 +551,6 @@ for the owner's review, not landed).**
   roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
-
-**Landing now: the mobile audit (`check/mobile-audit`; this session), please hold code pushes to main.** (Mobile-audit agent, 2026-11-10; one check run, then a fast-forward.)
 
 **Next in line to land: Fireteams part 3** (`check/fireteams-3`, Fireteams agent, 2026-11-10), after the mobile audit: one check run, then a fast-forward.
 

@@ -52,7 +52,8 @@ Not changed:
 - **Texture filtering on phones is already handled.** Level textures are trilinear with 8× anisotropy. On a phone at
   Performance the merged level gets a full mip level of bias (`levelMipBias`), against shimmer. The terrazzo's
   coarse look is the texture itself: Terrazzo013 at 2 m a repeat, large high-contrast specks (proposal 9).
-- **Dark blocks on lit walls (owner's Bottling Plant shot, A2): diagnosed, not fixed.**
+- **Dark blocks on lit walls (owner's Bottling Plant shot, A2; the map has since been retired, but any lamp-lit map
+  can show it): diagnosed, not fixed.**
   - **The evidence:** the block's edges are exactly horizontal and vertical on screen while the wall runs off at an
     angle, so it's screen space, not a shadow or a mesh. The tiles inside are still drawn, just without the lamp
     light their neighbours get.
