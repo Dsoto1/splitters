@@ -1,0 +1,10 @@
+Tile Trigger kit props (generated in code)
+
+These models are original to Tile Trigger. They are not taken from any pack
+and no generative AI service made them: tools/content/kitprops.mjs builds each
+one from plain geometry (boards, boxes, turned shells) and seeded random
+numbers, from the families in content/kitprops/*.json. Re-run it to rebuild
+them; the same seeds write the same files.
+
+They belong to the Tile Trigger owner and ship as part of the game
+(licence "Owned" in content/kitprops.json and the provenance ledger).

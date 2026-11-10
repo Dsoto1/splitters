@@ -705,6 +705,53 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
   for its category, run the build, add its fixture entry, check it in `?envlab`. No simulation code changes.
 - **Map budget:** environment species have their own (docs/MAP_BUDGETS.md), apart from props.
 
+### Kit props (procedural, Phase 6)
+
+Simple man-made props generated in code from seeds, the way the environment species are (docs/PROCEDURAL_ENVIRONMENT.md
+§11 Phase 6, owner-approved 2026-11-05): owned, nothing downloaded or AI-made. They replace the Kenney toy crates,
+barrels and boxes first; fences and walls, then containers, come next.
+
+- **Sources:** `content/kitprops.json` (generator version, pack provenance, budgets by generator kind, `aliases`) and
+  `content/kitprops/<type>.json` (families: id `kit.<type>.<name>`, display name, palette `category` (an existing prop
+  category), `assetVersion` with a note per version, `size` (the box it fills), `surface` (a surface type: impacts and
+  ballistics), `detail` (the content/surfaces.json picture drawn on it), optional `breakable`, the generator's kind and
+  settings, levels of detail, variants: `index`, `name`, `seed`, `look` (colours and wear) and optional `set` (settings
+  of its own: an X brace, no brace, narrower planks)).
+- **Build:** `node tools/content/kitprops.mjs` (`content:rebuild` and `content:check` run it, after prepare-props).
+  Code in `tools/content/kit/`: `geom.mjs` (flat-shaded boards and boxes, turned shells, colour helpers; every quad faces
+  the way it is asked to), `crate.mjs` (the board crate: sheathing inside a batten frame on every face, a diagonal or X
+  brace, skids; the steel-framed crate; the open cargo bin), `drum.mjs` (a steel drum turned from a profile: chimes,
+  rolling hoops, a lid with bungs or open with something inside; paint worn bare at the hoops, rust from seeded noise),
+  `carton.mjs` (a taped carton with softened corners and bowed sides, a label or a second tape), `glb.mjs` (the writer).
+  Randomness only from `env/rng.mjs` streams.
+- **Outputs:** `packages/client/public/kit/<type>.<name>.<variant>.glb`: one material (the family's surface: roughness,
+  metalness and material extras `{ surface, tile, uv, detail }` that `client/content/propSurfaces.ts` turns into the
+  shared detail map, as for the Kenney props), vertex colours for everything else, box-projected detail coordinates in
+  TEXCOORD_1 (whole millimetres), lighter levels as nodes with glTF extras `{ lod, distance }` (ModelLibrary and the prop
+  batches read them; one material keeps every level one mesh). `content/kitprops.lock.json` (sha, bytes, triangles per
+  level, bounds, generator and asset versions) and `packages/shared/src/content/kitProps.generated.ts` (`KIT_PROPS`:
+  each family as a PropDefinition; `KIT_FAMILIES`: surface, level distances, each variant's file; `KIT_ALIASES`).
+- **In the game:** a family is an ordinary catalogue prop (`CORE_PROPS`, `getProp`; shared/src/content/kitProps.ts), so
+  collision, settling, footing, budgets, breaking, the palette and the inspector need nothing new. Its collision is its
+  box: every variant's level 0 fills `size` to 2 mm and no level leaves it (the build and
+  `tools/content/test/kitprops.test.mjs` check). Variants (`PropEntity.variant`) share the size, collision, surface and
+  breakable data and change only the drawn file (`kitModelFile`; client game/propVisuals.ts). MapMaker offers each
+  family in its category; the prop inspector picks a variant, Randomise rolls one.
+- **Budgets:** triangles per level by kind (`budgets.triangles`), bytes per file; and against what each alias
+  replaces: from the first lighter level on, no more triangles than the retired prop (content/props.lock.json).
+  The Kenney crates were 124 triangles, the barrel 412, the cardboard box 60.
+- **Aliases** (`aliases`: retired id → family, variant, scale): as played, loadMap gives a retired prop's placements
+  the family (shared/src/map/propAliases.ts, after set pieces are expanded); MapMaker keeps the map as made, lists the
+  retired props as `RETIRED_PROPS` (out of the palette) and suggests the family in Replace all (`REPLACEMENTS`). Each
+  family has the retired prop's exact size and a surface of the same ballistic class, so an alias changes no
+  collision box, breakable health, ballistic class or footing (`packages/shared/test/kitProps.test.ts` checks every
+  official map). The retired props' files stay in the build until no official map places them (MapMaker's Replace all)
+  and no alias needs them.
+- **Adding a family:** an entry in its type file (or a new type file and generator kind in `KINDS`), a budget for its
+  kind, run the build, add it to the content test's family list, look at it in the lineup
+  (`node tools/content/prop-lineup.mjs` with `ONLY=`, or `window.__lineup.show(['kit.crate.wood#2'], 'eye')`). A change
+  to a family's size, collision or surface bumps its `assetVersion` with a note: it is a gameplay change.
+
 ### Tiles and edge styles
 
 The core building kit is data (docs/CONTENT_SCALABILITY.md step 7, scope "core kit"): what a tile occupies, where its

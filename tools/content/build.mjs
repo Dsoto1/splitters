@@ -552,6 +552,11 @@ console.log(`checked ${gearCount} gear models`);
 const envManifest = JSON.parse(readFileSync(join(ROOT, 'content/environment.json'), 'utf8'));
 const envCount = checkLocked('content/environment.lock.json', 'env', () => envManifest.pack, { maxBytes: envManifest.budgets.maxBytes }, (f) => (f.file.endsWith('.glb') ? ['generated in code from its seed (tools/content/environment.mjs): levels of detail and a two-card stand-in for the distance'] : ['drawn in code from seeded noise (tools/content/env/textures.mjs)']), 'node tools/content/environment.mjs');
 console.log(`checked ${envCount} environment files`);
+
+// The kit props (tools/content/kitprops.mjs): simple man-made props generated in code from seeds, owned; files locked.
+const kitManifest = JSON.parse(readFileSync(join(ROOT, 'content/kitprops.json'), 'utf8'));
+const kitCount = checkLocked('content/kitprops.lock.json', 'kit', () => kitManifest.pack, { maxBytes: kitManifest.budgets.maxBytes }, () => ['generated in code from its seed (tools/content/kitprops.mjs): plain geometry and vertex colours, levels of detail for the distance'], 'node tools/content/kitprops.mjs');
+console.log(`checked ${kitCount} kit-prop files`);
 console.log(`checked ${textureCount} texture files, ${surfaceCount} prop surfaces, ${propCount} props, ${skyCount} skies, ${cityCount} city files, ${packFileCount} style pack files and ${gunCount} gun models`);
 
 // Map pictures (tools/content/capture-map-shots.mjs): one 640×360 JPEG per shipped (not retired, not test) map, within budget, nothing else.
@@ -671,7 +676,7 @@ else {
 // The data tables (weapons, vehicles, NPC roles, pickups, weapon sets, materials, surface types, tiles, set pieces) and the measured
 // hit shapes (hitboxes): their content checks, and the generated files and codes lock up to date. prop-openings: no
 // prop's collision fills an opening it doesn't say why it fills (docs/CONTENT_PIPELINE.md, "Prop collision").
-for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'weapon-sets', 'roulette', 'match-play', 'materials', 'surface-types', 'tiles', 'setpieces', 'hitboxes', 'environment', 'prop-contacts', 'prop-openings']) {
+for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'weapon-sets', 'roulette', 'match-play', 'materials', 'surface-types', 'tiles', 'setpieces', 'hitboxes', 'environment', 'kitprops', 'prop-contacts', 'prop-openings']) {
   if (!check) break;
   try {
     execFileSync(process.execPath, [join(ROOT, `tools/content/${gen}.mjs`), '--check'], { cwd: ROOT, stdio: 'inherit' });

@@ -1,0 +1,25 @@
+{
+  "$comment": "Cardboard cartons (tools/content/kit/carton.mjs).",
+  "type": "box",
+  "props": [
+    {
+      "id": "kit.box.carton",
+      "displayName": "Cardboard Carton",
+      "category": "Crates & Barrels",
+      "assetVersion": 1,
+      "notes": { "1": "First version: a taped carton the size of the Kenney cardboard box (0.378 × 0.5 × 0.378 m)." },
+      "size": [0.378, 0.5, 0.378],
+      "surface": "thin_wood",
+      "detail": "cardboard",
+      "breakable": { "health": 10, "debris": "#c8a070" },
+      "generator": { "kind": "carton", "bevel": 0.012, "bow": 0.006, "tape": 0.05, "flap": 0.14, "tapeDown": 0.3 },
+      "lods": [{ "distance": 0 }, { "distance": 10 }, { "distance": 30 }],
+      "variants": [
+        { "index": 0, "name": "kraft", "seed": 3101, "look": { "board": "#b48e60", "tape": "#c9a873", "jitter": 0.05, "grime": 0.2 } },
+        { "index": 1, "name": "label", "seed": 3102, "look": { "board": "#ad885a", "tape": "#d2b483", "label": "#e9e4d8", "jitter": 0.05, "grime": 0.2 } },
+        { "index": 2, "name": "cross", "seed": 3103, "look": { "board": "#a07b50", "tape": "#8c8a86", "cross": true, "jitter": 0.06, "grime": 0.25 } },
+        { "index": 3, "name": "white", "seed": 3104, "look": { "board": "#d9d3c4", "tape": "#c8c2b2", "label": "#3a3a3a", "jitter": 0.03, "grime": 0.15 } }
+      ]
+    }
+  ]
+}

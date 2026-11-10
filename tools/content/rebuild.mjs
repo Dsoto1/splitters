@@ -24,6 +24,7 @@
 //              tools/content/setpieces.mjs           setPieces.generated.ts from content/setpieces/ (after the tiles: it
 //                                                     expands every piece with them)
 //              tools/content/environment.mjs         the environment species (public/env/), environment.lock.json and both environment.generated.ts
+//              tools/content/kitprops.mjs            the kit-prop families (public/kit/), kitprops.lock.json and kitProps.generated.ts
 //   3. atlas   tools/content/build-palette-atlas.mjs --offline: the palette atlases from the pictures
 //                                                     already made (any old atlas, either side of a conflict)
 //      only when a piece has no picture yet (new or changed model):
@@ -88,6 +89,7 @@ node('tools/content/surface-types.mjs');
 node('tools/content/tiles.mjs');
 node('tools/content/setpieces.mjs');
 node('tools/content/environment.mjs');
+node('tools/content/kitprops.mjs');
 // Hit shapes measured from the character models (after the looks: it reads them).
 node('tools/content/hitboxes.mjs');
 // Props' contact faces, measured from the built prop models (after prepare-props).

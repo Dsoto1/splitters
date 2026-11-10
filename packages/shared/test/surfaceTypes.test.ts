@@ -22,6 +22,7 @@ import {
   gunplayOf,
   guessSurface,
   initPhysics,
+  isKitModel,
   lookAngles,
   materialSurface,
   penetrate,
@@ -42,6 +43,12 @@ const before = JSON.parse(readFileSync(new URL('./fixtures/surface-classes-befor
   materials: Record<string, { ballistic: BallisticMaterial; effect: string }>;
   props: Record<string, { ballistic: BallisticMaterial; effect: string }>;
 };
+
+/**
+ * The pack props the fixture holds. Kit families (`kit.*`, content/kitProps.ts) came after it: kitProps.test.ts holds
+ * each one to the ballistic class of the prop it replaces.
+ */
+const PACK_PROPS = CORE_PROPS.filter((p) => !isKitModel(p.id));
 
 const propClass = (model: string) => entityMaterial({ id: 'x', kind: 'prop', model, position: [0, 0, 0], yaw: 0 } as unknown as MapEntity);
 
@@ -75,7 +82,7 @@ const OLD_EFFECT: Record<string, string> = { stone: 'concrete', metal: 'metal', 
 describe('surface types: nothing changed but the intended fixes', () => {
   it('the fixture covers every material and prop', () => {
     expect(Object.keys(before.materials).sort()).toEqual(CORE_MATERIALS.map((m) => m.id).sort());
-    expect(Object.keys(before.props).sort()).toEqual(CORE_PROPS.map((p) => p.id).sort());
+    expect(Object.keys(before.props).sort()).toEqual(PACK_PROPS.map((p) => p.id).sort());
   });
 
   it('every library material keeps its ballistic class and its impact effect (none names a surface yet)', () => {
@@ -85,7 +92,7 @@ describe('surface types: nothing changed but the intended fixes', () => {
 
   it('props change ballistic class only where INTENDED says, exactly as it says', () => {
     const got: Record<string, string> = {};
-    for (const p of CORE_PROPS) {
+    for (const p of PACK_PROPS) {
       const was = before.props[p.id]!.ballistic;
       const now = propClass(p.id);
       if (was !== now) got[p.id] = `${was} -> ${now}`;
@@ -97,7 +104,7 @@ describe('surface types: nothing changed but the intended fixes', () => {
 
   it('a prop with no surface keeps its old impact effect; one with a surface draws that surface', () => {
     const changed: string[] = [];
-    for (const p of CORE_PROPS) {
+    for (const p of PACK_PROPS) {
       const own = propSurfaceOf(p.id);
       if (own) expect(propSurface(p.id)).toBe(own);
       else if (propSurface(p.id) !== OLD_EFFECT[before.props[p.id]!.effect]) changed.push(p.id);

@@ -8,6 +8,16 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Our own crates, drums and cartons** (kit-prop generators, Phase 6 part 1; owner-approved 2026-11-05):
+- **The Kenney toy crates, barrels and cardboard boxes are replaced by ones we generate in code:** board crates in a
+  batten frame with a diagonal or X brace, long crates on skids, open cargo bins between tall corner posts, steel-framed
+  crates, steel drums with rolled hoops, worn paint and rust (closed, or open with something inside), and taped
+  cartons. Each comes in several looks (pine, weathered, dark, military green; red, blue, olive, rusty or yellow drums;
+  plain, labelled or cross-taped cartons) and draws lighter versions of itself further away.
+- **Every map picks them up by itself**, saved maps and old files too: the old pieces now play and draw as the new
+  ones, with the same size, the same cover, the same health when shot apart and the same effect on rounds, so nothing
+  about the fight changes. MapMaker's palette offers only the new ones (Crates & Barrels), the prop inspector picks a
+  look (Variant), Randomise rolls one, and Replace all suggests the new piece for an old one.
 **Fireteams: CTF squad roles, squad points kept when the host leaves** (Fireteams follow-ups, docs/FIRETEAMS_PLAN.md):
 - Capture the Flag with Fireteams: with 4 or more squads a side the smallest squad defends its flag (holds by its
   base, returns it when dropped) and the rest attack; with 3 or fewer every squad attacks. A bot-led squad defends rather than

@@ -11,7 +11,7 @@ import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { BODY_SIZES, CORE_PROPS, PLAYER, getProp, type BodySize, type PropDefinition } from '@tiletrigger/shared';
+import { BODY_SIZES, CORE_PROPS, PLAYER, envModelFile, getProp, kitModelFile, type BodySize, type PropDefinition } from '@tiletrigger/shared';
 import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';
@@ -152,19 +152,22 @@ export async function openPropLineup(engine: AbstractEngine): Promise<void> {
     label('2 m', new Vector3(x + 0.03, 2, 0), 'transform:translate(6px,-50%);color:#c0392b');
     x += 0.06 + GAP;
     const placed: { id: string; at: number; size: readonly number[] }[] = [];
-    for (const [i, id] of ids.entries()) {
+    for (const [i, choice] of ids.entries()) {
+      // `id#n`: a kit family's or a species' variant n (content/kitProps.ts, content/environment.ts).
+      const [id, v] = choice.split('#') as [string, string | undefined];
+      const variant = v === undefined ? undefined : Number(v);
       const def: PropDefinition | undefined = getProp(id);
       if (!def) continue;
       const s = scales[i] ?? 1;
       // Side view: turned a quarter so its profile (its depth, z) faces the camera.
       const across = (side ? def.size[2] : def.size[0]) * s;
-      const node = await models.instantiateStatic(def.file, `lineup_prop_${i}`);
+      const node = await models.instantiateStatic(kitModelFile(id, variant) ?? envModelFile(id, variant) ?? def.file, `lineup_prop_${i}`);
       node.scaling.setAll(s);
       node.rotation.y = facing;
       node.position.set(x + across / 2, 0, 0);
       shown.push(node);
       placed.push({ id, at: x + across / 2, size: def.size.map((v) => v * s) });
-      label(`${def.displayName}\n${(def.size[1] * s).toFixed(2)} m${s !== 1 ? ` (×${s})` : ''}`, new Vector3(x + across / 2, -0.04, 0), 'white-space:pre;font-weight:500');
+      label(`${def.displayName}${variant ? ` #${variant}` : ''}\n${(def.size[1] * s).toFixed(2)} m${s !== 1 ? ` (×${s})` : ''}`, new Vector3(x + across / 2, -0.04, 0), 'white-space:pre;font-weight:500');
       x += across + GAP;
     }
     // Guides across the row at the reference heights, a hair behind the props' middles.
