@@ -137,6 +137,7 @@
         "bounce": 0.25,
         "knockback": 16
       },
+      "view": { "model": "guns/holy_bomb.glb" },
       "notes": { "group": "Worms-style special.", "design": "Heavy, slow fuse, enormous blast: get well clear." }
     },
     {

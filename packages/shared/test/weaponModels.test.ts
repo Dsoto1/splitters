@@ -13,7 +13,7 @@ const exists = (path: string) => path.startsWith('procedural/') || existsSync(jo
 const lock = JSON.parse(readFileSync(join(__dirname, '../../../content/guns.lock.json'), 'utf8')) as { files: { file: string; triangles: number; tier?: string; heldOf?: string; bytes: number }[] };
 const locked = new Map(lock.files.map((f) => [f.file, f]));
 /** Throwables drawn in code (arsenalVisuals.ts): no model for them in the intake. */
-const DRAWN_IN_CODE = new Set(['holy', 'sheep', 'airstrike', 'sandbag', 'dynamite']);
+const DRAWN_IN_CODE = new Set(['sheep', 'airstrike', 'sandbag']);
 
 describe('weapon models', () => {
   it('every weapon has its model, its fallback and its held copies on disk', () => {
@@ -56,6 +56,7 @@ describe('weapon models', () => {
     expect(throwableModel('frag', 'military')).toBe('guns/frag_m67.glb');
     expect(throwableModel('smoke', 'scifi')).toBe('guns/smoke_scifi.glb');
     expect(throwableModel('smoke', 'medieval')).toBe('guns/smoke_m18.glb');
-    expect(throwableModel('holy')).toBeNull();
+    expect(throwableModel('holy')).toBe('guns/holy_bomb.glb');
+    expect(throwableModel('dynamite')).toBe('guns/dynamite.glb');
   });
 });
