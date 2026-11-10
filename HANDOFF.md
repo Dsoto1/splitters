@@ -8,7 +8,7 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
-**Map line-up (`wip/maps-retire`, 2026-11-09; owner's decisions of 2026-11-09).**
+**Map line-up (`wip/maps-retire`, 2026-11-09/10; owner's decisions of 2026-11-09; green on `check/maps-retire` at b9365b0, run 42759236295; LANDED; claims released).**
 - **Retired (files deleted; git history keeps them):** fogbound, bottling (Bottling Plant), dune_harbor, no_mans_field,
   overhang, starhaven: `maps/<id>.json`, their card pictures (`client/public/maps/shots/<id>.jpg`), `inspirations.ts`
   lines, rotations, tests and current docs. Not added to `RETIRED_MAPS` (that list is for maps whose files stay; the
@@ -31,7 +31,7 @@ jump ahead, or something the owner explicitly bumps.
   validate-map: 0 issues on all four.
 - Locally (box at load 9-22): typecheck, content:check, test:changed (6 timeouts under load; the map ones pass alone);
   e2e maps/vehicles/hostcontrols/dedicatedhost timed out under load (iron_tide's offline match took 90 s against the
-  flow's 60 s; it starts and plays). CI ran the full suite (deleted card pictures are unmapped paths).
+  flow's 60 s; it starts and plays). CI ran the full suite (deleted card pictures are unmapped paths): green.
 
 **Release 0.9.0 (2026-11-08, owner-approved "wait for the passenger fix, then release together"):** main 4d8f205
 (green on `check/release-090`, run 42502393727; three e2e shards failed first in flows the release doesn't touch,
@@ -243,8 +243,6 @@ The workflow is unchanged (CLAUDE.md):
 - run at most 3 agents, each on `wip/<name>`, green on `check/<name>`, then fast-forward main;
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
-
-**Landing now: maps retire/rename (`check/maps-retire`; this session), please hold code pushes to main.** (Maps agent, 2026-11-10; one check run, then a fast-forward.)
 
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
@@ -460,7 +458,6 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
-- Claimed: `maps/fogbound.json`, `maps/bottling.json`, `maps/dune_harbor.json`, `maps/no_mans_field.json`, `maps/overhang.json`, `maps/starhaven.json` (retired: removed with every reference), `maps/iron_tide.json`, `maps/ironhold_prison.json`, `maps/jungle_steps.json` (renamed in MapMaker) and `maps/iron_maw.json` (Players 16-64 in MapMaker); `wip/maps-retire`, maps retire/rename session, 2026-11-09.
 
 **MapMaker: time of day and weather (`wip/mapmaker-p5`, map format v34, MapMaker lane, 2026-11-09).** Overhaul Phase 5
 (docs/MAPMAKER_OVERHAUL_PLAN.md "As built"), chained after v33 (bot hints). Lands in a train.
