@@ -4775,7 +4775,7 @@ async function botDebugChecks(browser) {
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(90000) });
   // A frame has come (four a second) with the bots in it, and the routes are drawn.
-  await page.waitForFunction(() => /bots [1-9]/.test(document.querySelector('[data-testid=botdebug] .botdebug-panel')?.textContent ?? '') && !!window.__cs.view.scene.getMeshByName('botdebug_lines'), null, { timeout: T(30000) });
+  await page.waitForFunction(() => /bots [1-9]/.test(document.querySelector('[data-testid=botdebug] .botdebug-panel')?.textContent ?? '') && !!window.__cs.view.scene.getMeshByName('botdebug_lines'), null, { timeout: T(30000), polling: 250 });
   const seen = await page.evaluate(() => {
     const panel = document.querySelector('[data-testid=botdebug] .botdebug-panel')?.textContent ?? '';
     const rows = panel.split('\n').slice(2);

@@ -45,7 +45,7 @@ export class BotDebugView {
     Object.assign(this.root.style, { position: 'fixed', inset: '0', pointerEvents: 'none', zIndex: '40', font: '11px/1.25 ui-monospace, Menlo, monospace', color: '#fff' });
     this.panel = document.createElement('div');
     this.panel.className = 'botdebug-panel';
-    Object.assign(this.panel.style, { position: 'absolute', right: '8px', top: '64px', maxHeight: '70vh', overflow: 'hidden', background: 'rgba(0,0,0,0.62)', padding: '6px 8px', borderRadius: '4px', whiteSpace: 'pre' });
+    Object.assign(this.panel.style, { position: 'absolute', right: '8px', top: '112px', maxHeight: '60vh', overflow: 'hidden', background: 'rgba(0,0,0,0.62)', padding: '6px 8px', borderRadius: '4px', whiteSpace: 'pre' });
     this.root.appendChild(this.panel);
     document.body.appendChild(this.root);
   }
