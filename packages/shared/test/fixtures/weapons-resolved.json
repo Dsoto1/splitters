@@ -5044,6 +5044,10 @@
       ],
       "health": 300
      }
+    },
+    "view": {
+     "model": "guns/sandbags.glb",
+     "cover": "guns/sandbag_wall.glb"
     }
    }
   },

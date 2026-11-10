@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 34,
   "metadata": {
     "id": "silo_complex",
     "name": "Silo Complex",
@@ -696,7 +696,7 @@
         26
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -710,7 +710,7 @@
         14
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -776,7 +776,7 @@
         -2.6
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -790,7 +790,7 @@
         -1
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -846,7 +846,7 @@
         3
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -860,7 +860,7 @@
         3.1
       ],
       "kind": "prop",
-      "model": "prop.barrel_open",
+      "model": "kit.drum.steel_open",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -874,7 +874,7 @@
         3.2
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1512,7 +1512,7 @@
         29.1
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,

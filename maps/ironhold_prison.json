@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 33,
+  "formatVersion": 34,
   "metadata": {
     "id": "ironhold_prison",
     "name": "Cormorant Isle",
@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_hec75nt4d7ttj6ub",
-      "versionId": "v_hmvqtb65bjdsvai4",
-      "revision": 4,
-      "contentHash": "sha256:8ecf62a5f1ac66c18ab2165766a7fb880e76d8869a2b5681c72281aa10d3c9d1",
-      "schemaVersion": 33,
-      "releasedAt": "2026-11-09T20:40:36.463Z"
+      "versionId": "v_haebxityzqxqeojt",
+      "revision": 5,
+      "contentHash": "sha256:9152532a505620ab25b04e09dd9be1751c12499ab7866a46058fe962728a3713",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:23:00.956Z"
     }
   },
   "classicStructure": {
@@ -18781,7 +18781,7 @@
         29.4
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -18823,7 +18823,7 @@
         30
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19019,7 +19019,7 @@
         69.2
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19299,7 +19299,7 @@
         77.2
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20069,7 +20069,7 @@
         -2.6
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20615,7 +20615,7 @@
         11
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20685,7 +20685,7 @@
         -2.6
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20699,7 +20699,7 @@
         -2.6
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -20909,7 +20909,7 @@
         70
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -21007,7 +21007,7 @@
         90
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.1,
       "scale": 1,
       "solid": true,
@@ -21021,7 +21021,7 @@
         92.2
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -21077,7 +21077,7 @@
         79
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 34,
   "metadata": {
     "id": "twin_spires",
     "name": "Twin Spires",
@@ -33,11 +33,11 @@
     },
     "release": {
       "mapId": "m_i2jy7vkt55pclgvj",
-      "versionId": "v_6f34udfiol52pm7t",
-      "revision": 1,
-      "contentHash": "sha256:8a157275312e431ff338346fa1d744289a58d8221e7f8b8ed2956d475963ebae",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:09:19.805Z"
+      "versionId": "v_xdx56e7bcoehdd7l",
+      "revision": 2,
+      "contentHash": "sha256:a49e479d7adbf863427e344a526d0f3f0d853a2b44d5cab8cee454568e643e7f",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:34:10.024Z"
     }
   },
   "classicStructure": {
@@ -1108,7 +1108,7 @@
         1
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -1122,7 +1122,7 @@
         -1
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": -0.2,
       "scale": 1,
       "solid": true,
@@ -1192,7 +1192,7 @@
         9
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -1206,7 +1206,7 @@
         -9
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": -0.3,
       "scale": 1,
       "solid": true,
@@ -1248,7 +1248,7 @@
         2
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1262,7 +1262,7 @@
         -2
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1332,7 +1332,7 @@
         9
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -1458,7 +1458,7 @@
         9
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -1741,6 +1741,6 @@
       8
     ]
   },
-  "dependencies": [],
-  "weaponSet": "scifi"
+  "weaponSet": "scifi",
+  "dependencies": []
 }

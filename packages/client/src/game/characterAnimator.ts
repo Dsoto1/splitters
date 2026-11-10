@@ -761,7 +761,10 @@ export class CharacterAnimator {
     const bladeTarget = this.grip?.style === 'long' && !s.celebrate ? LONG_GUN_BLADE * this.ik : 0;
     this.blade += (bladeTarget - this.blade) * Math.min(1, dt * 8);
     // Clips the state machine started while asleep wait too.
-    if (this.dormant) for (const g of this.groups()) this.sleep(g);
+    if (this.dormant) {
+      for (const g of this.groups()) this.sleep(g);
+      this.park();
+    }
   }
 
   /** 0..1: how far the gait has faded from the run into the sprint. */
@@ -1043,12 +1046,45 @@ export class CharacterAnimator {
     this.dormant = on;
     if (on) {
       for (const g of this.groups()) this.sleep(g);
+      this.park();
       return;
     }
+    this.unpark();
     // Only what sleep paused plays on: the shot and hit clips a fight keeps paused at weight 0 (trigger) stay paused
     // until their next play (restarted at weight 0 they joined the blend and broke it: see patchAnimatables).
     for (const g of this.slept) if (g.isStarted && !g.isPlaying) g.restart();
     this.slept.clear();
+  }
+
+  /**
+   * The sleeping clips' animations, taken off the scene's list of running ones until it wakes. Paused, they do
+   * nothing there, but the list is walked by every clip that starts or stops and for every animated node disposed:
+   * a 100-player match's hidden characters (out of view, spare bodies) kept some 30,000 on it (St. John's, 2026-11-10).
+   */
+  private readonly parked = new Set<Animatable>();
+
+  private park(): void {
+    let fresh: Set<Animatable> | null = null;
+    for (const g of this.slept) for (const a of g.animatables) if (!this.parked.has(a)) (fresh ??= new Set()).add(a);
+    if (!fresh) return;
+    // One sweep of the list for all of them.
+    const running = (this.scene as unknown as { _activeAnimatables: Animatable[] })._activeAnimatables;
+    let kept = 0;
+    for (let i = 0; i < running.length; i++) {
+      const a = running[i]!;
+      if (fresh.has(a)) this.parked.add(a);
+      else running[kept++] = a;
+    }
+    running.length = kept;
+    // (One not on the list: ended or stopped. Nothing to bring back.)
+  }
+
+  /** Waking: the parked animations of clips still started go back on the list (a clip stopped meanwhile dropped its own). */
+  private unpark(): void {
+    if (!this.parked.size) return;
+    const running = (this.scene as unknown as { _activeAnimatables: Animatable[] })._activeAnimatables;
+    for (const g of this.slept) for (const a of g.animatables) if (this.parked.delete(a)) running.push(a);
+    this.parked.clear();
   }
 
   /** The clips asleep (setDormant) paused, to play on when it wakes. */

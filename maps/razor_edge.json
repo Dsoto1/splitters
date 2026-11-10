@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 19,
+  "formatVersion": 34,
   "metadata": {
     "id": "razor_edge",
     "name": "Razor Edge",
@@ -3587,7 +3587,7 @@
         26.5
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3601,7 +3601,7 @@
         26.5
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3713,7 +3713,7 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -4524,7 +4524,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "storm",
     "scenery": "mountains",

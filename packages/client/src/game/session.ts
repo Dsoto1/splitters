@@ -1909,7 +1909,7 @@ export class GameSession {
         if (this.scenario.movers.defs.length) this.local.platforms = this.scenario;
         if (this.local.portals.length) this.local.portalOn = this.scenario.portalOn;
         this.mounts = new MountState(loaded.map, physics);
-        this.covers = new CoverState(this.view.scene, physics, (at) => this.view.debris(at, '#b39b6b', 0.7));
+        this.covers = new CoverState(this.view.scene, physics, (at) => this.view.debris(at, '#b39b6b', 0.7), this.view.models);
         if (teams && msg.rules.mode === 'core.forts') this.forts = new FortsClient(this.view, physics, loaded.map, teams, () => this.hud.team(this.slot)?.id ?? null, this.opts.audio);
         this.scenario.apply(msg.sc);
         this.hud.show();

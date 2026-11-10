@@ -253,6 +253,7 @@
         "visual": "sandbag",
         "cover": { "half": [0.95, 0.5, 0.3], "health": 300 }
       },
+      "view": { "model": "guns/sandbags.glb", "cover": "guns/sandbag_wall.glb" },
       "notes": {
         "group": "Worms-style special.",
         "design": "Tossed a few metres ahead; where it lands it becomes a waist-high wall facing you."

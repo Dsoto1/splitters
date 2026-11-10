@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 34,
   "metadata": {
     "id": "saltmarsh_harbor",
     "name": "Saltmarsh Harbor",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_qxyvyiqpuk3bopv2",
-      "versionId": "v_nmxnjetp6vapb55m",
-      "revision": 2,
-      "contentHash": "sha256:3f9a456fa053201093783829b29e9fe7cc0961eb175b3cbab031edcbe7d9fd4f",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T15:59:14.575Z"
+      "versionId": "v_nq4qqoj6wzx52g6t",
+      "revision": 3,
+      "contentHash": "sha256:92c1689b88b6caafffb896a485126c033bd0281810828aaed56441866b1d476f",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:30:12.357Z"
     }
   },
   "classicStructure": {
@@ -2785,7 +2785,7 @@
         -1.5
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2799,7 +2799,7 @@
         -1.2
       ],
       "kind": "prop",
-      "model": "prop.barrel_open",
+      "model": "kit.drum.steel_open",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2813,7 +2813,7 @@
         -18
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2827,7 +2827,7 @@
         -16
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,

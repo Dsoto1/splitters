@@ -2133,6 +2133,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       visual: 'sandbag',
       cover: { half: [0.95, 0.5, 0.3], health: 300 },
     },
+    view: { model: 'guns/sandbags.glb', cover: 'guns/sandbag_wall.glb' },
   },
   // design: Style Pack 02 Frontier Dust: a lit stick on a long fuse, a big blast that throws people about.
   dynamite: {

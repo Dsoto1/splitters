@@ -1,3 +1,4 @@
+import { ModelLibrary } from '../content/models.ts';
 import type { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -25,6 +26,7 @@ export class CoverState {
     private readonly scene: Scene,
     private readonly physics: PhysicsWorld,
     private readonly broke: (at: Vec3) => void,
+    private readonly models?: ModelLibrary,
   ) {}
 
   apply(list: readonly CoverSnapshot[] | undefined): void {
@@ -57,6 +59,16 @@ export class CoverState {
     node.position.set(pos.x, pos.y, pos.z);
     node.rotation.y = yaw;
     const [hx, hy, hz] = this.half;
+    const wall = THROWABLE_DEFS.sandbag.view?.cover;
+    if (wall && this.models) {
+      // The owner's sandbag wall model fills the collision box (built to its size: content/guns.json).
+      void this.models.instantiate(wall, `coverwall_${id}`).then((m) => {
+        if (node.isDisposed()) return m.dispose();
+        m.parent = node;
+        m.position.y = hy;
+      });
+      return node;
+    }
     const rows = 3;
     const h = (hy * 2) / rows;
     for (let r = 0; r < rows; r++) {

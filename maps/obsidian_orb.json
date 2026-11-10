@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 29,
+  "formatVersion": 34,
   "metadata": {
     "id": "obsidian_orb",
     "name": "Obsidian Orb",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_oyvr2rvdsjvrhwut",
-      "versionId": "v_pzrworzdz5siv345",
-      "revision": 2,
-      "contentHash": "sha256:3bfcdfb54427a0621eaa42e271a5b3a7d9038b6bbf78a791cd5e7eb9020c23af",
-      "schemaVersion": 29,
-      "releasedAt": "2026-11-08T21:50:40.880Z"
+      "versionId": "v_yjsvaxxeqtpdlbvs",
+      "revision": 3,
+      "contentHash": "sha256:3d456ee094afa7163e743c4720ab89aa5dc1089864d691bec9cb76426b51d488",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:25:40.491Z"
     }
   },
   "classicStructure": {
@@ -6474,7 +6474,7 @@
         27.03
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": -2.5283,
       "scale": 1,
       "solid": true,
@@ -6488,7 +6488,7 @@
         27.03
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 2.2856,
       "scale": 1,
       "solid": true,
@@ -6530,7 +6530,7 @@
         -19.03
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0.7055,
       "scale": 1,
       "solid": true,
@@ -6544,7 +6544,7 @@
         13.09
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
