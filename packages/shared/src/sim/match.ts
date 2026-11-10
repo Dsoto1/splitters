@@ -111,7 +111,15 @@ const MAX_INPUTS_PER_TICK = 2;
 const SPOT_GROUND = { x: 0.8, y: 1.6, z: 0.8 };
 /** Fireteams: a bot leader's members this near (m) are told where its enemy is. */
 const SQUAD_ALERT = 45;
-const MAX_QUEUED_INPUTS = 16;
+/**
+ * Inputs held for a player at most (older ones are dropped). Links are reliable and ordered, so a lost packet holds
+ * everything behind it until it is sent again: about a round trip and a few packet gaps later the inputs arrive at
+ * once. At 150-250 ms that burst is 15-25 inputs on top of the one or two waiting, and every input dropped here is a
+ * step the player's prediction took and the host didn't (a snap back) or a round they saw leave and the host never
+ * fired (docs/GUNPLAY_AUDIT.md, G3; it was 16). The cap only bounds how far behind a player can be; speed hacks are
+ * held by MAX_INPUTS_PER_TICK.
+ */
+export const MAX_QUEUED_INPUTS = 32;
 /** The default look's shapes (a new combatant's until its look is set). */
 const DEFAULT_HITBOX = lookHitbox(DEFAULT_LOOK);
 /** Lag compensation never rewinds further than this (≈ 300 ms). */

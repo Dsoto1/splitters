@@ -8,6 +8,18 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Gunplay pass 3: the network check and bots' weapon ranges** (owner-approved audit candidates 7 and 8):
+- **Fewer snap-backs and lost shots on a lossy connection.** When a packet was lost and resent, the inputs behind it
+  reached the host together, and the host dropped the oldest past 16. You snapped back (up to 1.4 m) and rounds you
+  saw leave were never fired. The host now holds 32 inputs. At 150 ms and 5 % loss, snap-backs fell from 2.7 to 0.3
+  a minute; at 250 ms, inputs dropped fell from 717 to 7 in 25 s.
+- **Bots draw the gun that wins at the distance, as measured.** Which gun a bot holds now comes from each gun's time
+  to kill measured in the game's own simulation (`pnpm gun-report`), not a hand-set range. A shotgun comes out at arm's
+  length, a Precision Rifle far off, and bots' hit rates rose for most guns. How far bots stand is unchanged.
+- **`pnpm net-report`** (for developers): a real host with 8 players over links with latency, jitter and packet loss.
+  It measures hit registration, lag-compensation error, time to the hit marker, rubber-banding and bandwidth
+  (docs/GUNPLAY_AUDIT.md, "G3").
+- **`pnpm bot-report`** lists each weapon's rounds, hit rate and hit distance, and how evenly bots use their guns.
 **MapMaker fixes** (the owner's answers, 2026-11-09, and bugs found building The Spillway):
 - **Paste into a map of another theme:** the pieces take the new map's theme and keep their own paint; the toast says
   so.

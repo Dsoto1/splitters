@@ -14,6 +14,41 @@ arsenal, weaponsets and hostgame, as on other branches that hour, and passed on 
 released v0.9.0 from that build (tag and release with its assets). Fireteams part 1 and MapMaker's measure tool and
 turning by mouse went in with it.
 
+**Gunplay pass 3: the network check (G3) and bots' weapon ranges (G4)** (`wip/gunplay-3`, agent, 2026-11-09;
+owner-approved audit candidates 7 and 8; landed on main from its green `check/gunplay-3` run, landing line removed). Details and tables: docs/GUNPLAY_AUDIT.md, "G3" and "G4".
+- **G3, `pnpm net-report`:** a real host (server.ts) and 8 players over the real wire path and the browser's netcode,
+  with latency, jitter and loss on the links (`server/src/tools/netLab.ts`). It runs in about 5 minutes and is
+  manual. CI runs a 6 s smoke (`server/test/netLab.test.ts`).
+  - **Lag compensation is accurate:** where the host rewound a body against where the screen drew it, p95 under
+    11 cm.
+  - **Registration:** at 50 / 100 ms, 94 / 88 % of screen hits were confirmed. The rest are mostly targets someone
+    else had already killed.
+- **Fixed:** the host's input queue (`MAX_QUEUED_INPUTS` 16 → 32, match.ts) dropped the burst a resent packet
+  releases. That caused snap-backs (up to 1.4 m) and rounds never fired at 150 ms+ with loss.
+- **For the owner (not changed):**
+  - (1) The rewind window `MAX_REWIND_TICKS` is 18 ticks (300 ms). At 150 ms ping 21-30 % of screen hits fall
+    outside it, and at 250 ms most do. With 30 ticks, registration goes 67 → 86 % (150/30/3) and 38 → 72 % (250 ms).
+    It is a fairness call between shooter and victim.
+  - (2) Extrapolated frames send the newest snapshot's tick as the view tick: a possible small client change, not
+    proven yet.
+  - (3) Inputs go up as plain JSON (8 KB/s a player).
+- **G4:** which gun a bot holds (`weaponScore`) now comes from the measurements (`shared/src/bots/weaponBands.ts`):
+  each gun's measured band, plus its TTK at the distance (and, under 15 m, its draw if not in hand) against the
+  benchmark median.
+  - The data comes from `pnpm gun-report --json=docs/gunplay-audit.json --bands`; rerun it after any weapon change.
+    bot-report now has a weapon-use line.
+  - **How far bots stand (`preferredRange`) stays hand-set (`botRange`).** The measured distances cost Diamond Park's
+    CTF captures (seeds 1-6: 2 of 6 against 6 of 6). For the owner: keep it hand-set, or use the measured near end for
+    long guns outside flag modes. Details: docs/GUNPLAY_AUDIT.md, "G4".
+  - **Before → after, 28 matches on main after the MapMaker train:** kills a minute 32.3 → 32.1; stuck 0.99 → 0.93
+    a bot-minute; idle out of a fight 4.4 → 4.4 %. Hit rates rose for 12 of 14 guns (the shotguns +21-37 points, the
+    Precision Rifle 8 → 21 %). `bot-report --check` passes.
+  - **Found, not fixed:** on the rebuilt Riot Junction a bot can end up 4 m under the street by a buggy's spawn,
+    at (196, -4, 42), with no route out for 105 s. Repro:
+    `pnpm bot-report riot_junction --mode=core.tdm --seeds=1 --set=military --spells`. For the owner or the vehicles
+    and nav lane.
+  - `botDesirability` is still hand-set.
+
 **Small fixes of 2026-11-08 (`wip/small-fixes`, agent, 2026-11-09; owner-approved list).**
 - **Fernwood Moon's rope-lift waits (bots).** Cause: the north deck's only walkable way down was the north rope lift
   (17 s round trip; bots waited 10-23 s at the top). Its 0.7 m hop down onto the ramp at (0, 14, 87) was a parkour drop
@@ -172,7 +207,7 @@ The workflow is unchanged (CLAUDE.md):
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
 
-**Landing now: gunplay pass 3 (`check/gunplay-3`; this session), please hold code pushes to main.** (Gunplay agent, 2026-11-09; one check run, then a fast-forward.)
+**Landing now: far copies (`check/far-copies`; this session), please hold code pushes to main.** (Far-copies agent, 2026-11-10; one check run, then a fast-forward.)
 
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
