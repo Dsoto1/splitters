@@ -16,6 +16,8 @@ import { findCover, stillCovered, type CoverSpot } from './cover.ts';
 import type { SightCache } from './sight.ts';
 import type { ViewGrid } from './grid.ts';
 import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
+import { EnemyMemory, type EnemySpot } from './memory.ts';
+import { chokesNear } from './hints.ts';
 import type { BotPlan } from './director.ts';
 import type { PricedTrip } from './teamBrain.ts';
 import { GUN_WEIGHT, OPT_CHASE, OPT_COVER, OPT_FIGHT, OPT_NOISE, OPT_PICKUP, OPT_POST, OPT_RETREAT, OPTIONS, POST_WEIGHT, SCOPE_WEIGHT, bestChoice, scoreChoices, type ChoiceInput } from './choices.ts';
@@ -474,6 +476,43 @@ interface ThrowPlan {
  * the map, checking corners and clearing rooms on the way), and human-like
  * aim (aim.ts) with reaction time and trigger discipline.
  */
+/** The scored choices' names (choices.ts OPT_*), for the debug view. */
+export const OPTION_NAMES = ['goal', 'roam', 'cover', 'retreat', 'pickup', 'chase', 'noise', 'fight', 'post'] as const;
+
+/** A bot as the debug view shows it (BotBrain.debugInfo). */
+export interface BotDebugInfo {
+  state: BotState;
+  doing: BotDoing;
+  moving: boolean;
+  option: string | null;
+  scores: Record<string, number>;
+  goal: Vec3 | null;
+  standIn: Vec3 | null;
+  path: Vec3[];
+  target: number | null;
+  memory: { slot: number; pos: Vec3; tick: number; source: EnemySpot['source'] }[];
+  watch: { spot: Vec3; looks: number[]; peek: Vec3 | null } | null;
+  vantage: { kind: VantageKind; pos: Vec3; arrived: boolean; parkour: boolean } | null;
+  noRoute: { from: Vec3; goal: Vec3 } | null;
+  failures: number;
+  stuck: number;
+  skill: BotDifficulty['id'];
+}
+
+/**
+ * Keeping watch on station (keepWatch): the place it stands, until when, the way it faces, and its scan (Phase D item
+ * 2): the angles it looks at in turn, since when, how long on each (ticks), and a peek past cover (null: none).
+ */
+interface WatchPlan {
+  spot: Vec3;
+  until: number;
+  yaw: number;
+  looks: number[];
+  since: number;
+  dwell: number;
+  peek: Vec3 | null;
+}
+
 export class BotBrain {
   state: BotState = 'roam';
   /** Current path corners, exposed for the debug overlay. */
@@ -502,7 +541,7 @@ export class BotBrain {
   /** The pickup it last set out for (the same object as roamGoal while it still goes for it). */
   private pickupAt: Vec3 | null = null;
   /** Keeping watch on station (keepWatch): the place it stands, until when, and the way it faces. */
-  private watch: { spot: Vec3; until: number; yaw: number } | null = null;
+  private watch: WatchPlan | null = null;
   /** In a seat at the last think (the transport plane, a flyer), and out of one in the air with no canopy yet. */
   private seated = false;
   private bailedOut = false;
@@ -552,6 +591,17 @@ export class BotBrain {
   private readonly rng: () => number;
   private readonly aim: AimModel;
   private readonly memory = new MapMemory();
+  /**
+   * What it remembers of its enemies (Phase D item 1, memory.ts): where each was seen, where shots came from, noises
+   * and teammates' callouts, for its skill's `memorySeconds`. Kept across lives (a player remembers where they died).
+   */
+  readonly enemies = new EnemyMemory();
+  /** Its skill tier's choices (reaction spread, decision noise, scan dwell): a stream of its own, so the others stay as they were. */
+  private readonly skillRng: () => number;
+  /** When it has reacted to each enemy in sight (the tick: its skill's reaction for that sighting; reactAfter). */
+  private readonly reactAt = new Map<number, number>();
+  /** The last tick it read its side's callouts. */
+  private calloutsRead = -1;
   private targetSlot: number | null = null;
   private visibleSince = new Map<number, number>();
   /** Last tick each enemy in visibleSince was confirmed in sight. */
@@ -761,6 +811,7 @@ export class BotBrain {
     this.baseProfile = profile;
     this.rng = createRng(seed * 7919 + slot);
     this.routeRng = createRng((seed * 104729 + slot * 7919 + 17) >>> 0);
+    this.skillRng = createRng((seed * 15485863 + slot * 31337 + 101) >>> 0);
     this.aim = new AimModel(this.rng, difficulty, profile);
     this.clearCheck = () => this.clearShot();
     this.choice = { me: { x: 0, y: 0, z: 0 }, goal: null, profile, hurt: false, lowAmmo: false, cover: false, retreating: false, pickup: -Infinity, post: -Infinity, lost: null, noise: null, posted: false };
@@ -809,6 +860,7 @@ export class BotBrain {
     this.targetSlot = null;
     this.portalled = false;
     this.visibleSince.clear();
+    this.reactAt.clear();
     this.confirmed.clear();
     this.unchecked.clear();
     this.lastKnown = null;
@@ -864,6 +916,35 @@ export class BotBrain {
     if (p?.kind === 'sniper' && p.arrived >= 0) p.until = Math.min(p.until, tick + Math.round(TICK_RATE * (0.6 + this.routeRng() * 0.8)));
   }
 
+  /**
+   * What the in-game bot debug view shows of it (`?botdebug=1`, debugView.ts; Phase D item 4): its state, what it did on
+   * its last think and whether it meant to move (why it stood still), its goal and the rest of its route, the scored
+   * choices it weighed, what it remembers, its scan, its vantage spot and the last search that found no way.
+   */
+  debugInfo(): BotDebugInfo {
+    const scores: Record<string, number> = {};
+    for (let i = 0; i < OPTIONS; i++) if (this.scores[i]! > -Infinity) scores[OPTION_NAMES[i]!] = Math.round(this.scores[i]! * 100) / 100;
+    const w = this.watch;
+    return {
+      state: this.state,
+      doing: this.doing,
+      moving: this.meantToMove,
+      option: this.option >= 0 ? OPTION_NAMES[this.option]! : null,
+      scores,
+      goal: this.goal ? { ...this.goal } : null,
+      standIn: this.standIn ? { ...this.standIn } : null,
+      path: this.path.slice(this.pathIndex, this.pathIndex + 32).map((p) => ({ ...p })),
+      target: this.targetSlot,
+      memory: this.enemies.spots.map((e) => ({ slot: e.slot, pos: { ...e.pos }, tick: e.tick, source: e.source })),
+      watch: w ? { spot: { ...w.spot }, looks: [...w.looks], peek: w.peek ? { ...w.peek } : null } : null,
+      vantage: this.vantage,
+      noRoute: this.lastNoRoute ? { from: { ...this.lastNoRoute.from }, goal: { ...this.lastNoRoute.goal } } : null,
+      failures: this.pathFailures,
+      stuck: this.stuckCount,
+      skill: this.difficulty.id,
+    };
+  }
+
   /** Holding (or heading for) a vantage spot: its kind and position (debug and tests). */
   get vantage(): { kind: VantageKind; pos: Vec3; arrived: boolean; parkour: boolean } | null {
     const p = this.post;
@@ -892,6 +973,7 @@ export class BotBrain {
     if (view.shotAt && view.tick - view.shotAt.tick <= 1) {
       this.underFireTick = view.shotAt.tick;
       this.threatFrom = { x: view.shotAt.from.x, y: view.shotAt.from.y - PLAYER.eyeHeight, z: view.shotAt.from.z };
+      this.enemies.note(-1, this.threatFrom, view.tick, 'shot');
     }
 
     const interval = this.difficulty.perceptionIntervalTicks;
@@ -1143,7 +1225,11 @@ export class BotBrain {
       }
     }
     const sweep = Math.sin((tick + this.slot * 53) / (p.kind === 'sniper' ? 90 : 55)) * (p.kind === 'sniper' ? 0.35 : 0.7);
-    this.turnToward(spot.yaw + sweep, spot.height > 2 ? -0.08 : 0);
+    // (A remembered enemy within the spot's view, or a shot at it from anywhere: watched instead: memory.ts.)
+    const m = this.remembered(view, p.kind === 'sniper' ? 110 : 60);
+    const toM = m ? Math.atan2(m.pos.x - me.x, m.pos.z - me.z) : 0;
+    const watchYaw = m && m.source !== 'heard' && (m.source === 'shot' || Math.abs(angleDelta(spot.yaw, toM)) < 1.4) ? toM : spot.yaw;
+    this.turnToward(watchYaw + sweep, spot.height > 2 ? -0.08 : 0);
     const scoped = !!this.heldDef(view)?.view.zoomFov;
     const settled = view.tick - this.underFireTick > TICK_RATE * 2;
     const prone = p.kind === 'sniper' && scoped && settled;
@@ -1453,6 +1539,10 @@ export class BotBrain {
     c.posted = !!this.post;
     c.post = this.postScore(view, g);
     scoreChoices(c, this.scores);
+    // Decision quality by skill tier (Phase D item 3): an easy bot's weighing is noisier, and now and then it does the
+    // second-best thing (a hard bot's isn't). Not a carrier's run home (nothing outweighs it anyway).
+    const noise = this.difficulty.decisionNoise;
+    if (noise > 0 && !g?.run) for (let i = 0; i < OPTIONS; i++) if (this.scores[i]! > -Infinity) this.scores[i] = this.scores[i]! + noise * (this.skillRng() * 2 - 1);
     const best = bestChoice(this.scores, this.option, !!g);
     // Done with a chase or a noise (a chase that got there and found nobody looks round first).
     if (this.state === 'chase' && best !== OPT_CHASE) {
@@ -2486,17 +2576,35 @@ export class BotBrain {
     const tick = view.tick;
     let w = this.watch;
     if (!w || tick >= w.until || horizontalDistance(w.spot, g.pos) > g.radius + 0.5) w = this.watch = this.watchSpot(view, g, w, brisk);
-    // Where to look: a threat it knows of (shot at, an enemy that slipped away, a noise), else the way it watches.
+    // Where to look: a threat it knows of (shot at, once its tier has turned to it; an enemy that slipped away, a
+    // remembered spot: memory.ts; a noise), else a scan over the spot's angles (Phase D item 2: the way it watches, a
+    // chokepoint hint near it, the most open ways), dwelling on each for its tier's scanDwell.
     const recent = (t: number) => tick - t < TICK_RATE * 12;
-    let look = w.yaw;
-    if (this.threatFrom && recent(this.underFireTick)) look = Math.atan2(this.threatFrom.x - me.x, this.threatFrom.z - me.z);
+    const keep = this.memoryTicks;
+    let look: number | null = null;
+    const shotTurned = tick - this.underFireTick >= (this.difficulty.shotTurnMs / 1000) * TICK_RATE;
+    if (this.threatFrom && recent(this.underFireTick) && shotTurned) look = Math.atan2(this.threatFrom.x - me.x, this.threatFrom.z - me.z);
     else if (this.lastKnown && recent(this.lastKnown.tick)) look = Math.atan2(this.lastKnown.pos.x - me.x, this.lastKnown.pos.z - me.z);
-    else if (this.heard && recent(this.heard.tick)) look = Math.atan2(this.heard.pos.x - me.x, this.heard.pos.z - me.z);
-    // A slow sweep across it, and now and then a glance over the shoulder.
+    else {
+      const m = this.remembered(view);
+      if (m && (m.source !== 'shot' || shotTurned)) look = Math.atan2(m.pos.x - me.x, m.pos.z - me.z);
+      else if (this.heard && tick - this.heard.tick < keep) look = Math.atan2(this.heard.pos.x - me.x, this.heard.pos.z - me.z);
+    }
     const t = tick + this.slot * 41;
+    let peeking = false;
+    if (look === null) {
+      // The scan: one angle at a time, a small sway on it; a peek out past cover when the way it watches is blocked.
+      const k = Math.floor((tick - w.since) / w.dwell);
+      look = w.looks[k % w.looks.length]!;
+      peeking = !!w.peek && (tick - w.since) % (w.dwell * 3) < w.dwell;
+      if (peeking) look = w.looks[0]!;
+      look += Math.sin(t / 40) * 0.18;
+    } else look += Math.sin(t / 50) * 0.35;
+    // Now and then a glance over the shoulder.
     const glance = t % (TICK_RATE * 7) < TICK_RATE * 0.8 ? Math.PI * 0.7 * (this.slot % 2 ? 1 : -1) : 0;
-    this.turnToward(look + Math.sin(t / 50) * 0.7 + glance, Math.sin(t / 90) * 0.05);
-    let moveYaw = horizontalDistance(me, w.spot) > 0.5 ? this.followPathTo(view, w.spot, false) : null;
+    this.turnToward(look + glance, Math.sin(t / 90) * 0.05);
+    const at = peeking ? w.peek! : w.spot;
+    let moveYaw = horizontalDistance(me, at) > (peeking ? 0.3 : 0.5) ? (peeking && horizontalDistance(me, w.spot) < 2 ? Math.atan2(at.x - me.x, at.z - me.z) : this.followPathTo(view, w.spot, false)) : null;
     // No way to that place after all: another next time, and no standing about waiting for a route meanwhile.
     if (moveYaw === null && this.pathMiss) {
       w.until = tick;
@@ -2530,7 +2638,7 @@ export class BotBrain {
   }
 
   /** The next place to keep watch from: inside the area, on its floor, in sight of its middle, not where it just was. */
-  private watchSpot(view: BotWorldView, g: { pos: Vec3; radius: number; watch?: Vec3 | null }, prev: { spot: Vec3 } | null, brisk = false): { spot: Vec3; until: number; yaw: number } {
+  private watchSpot(view: BotWorldView, g: { pos: Vec3; radius: number; watch?: Vec3 | null }, prev: { spot: Vec3 } | null, brisk = false): WatchPlan {
     // (Gathering for a push: shifting about more, a short spell at each place.)
     const hold = brisk ? 1.5 + this.routeRng() * 2 : (this.methodical ? 6 : this.arena ? 2.5 : 4) + this.routeRng() * 5;
     const facing = g.watch ? Math.atan2(g.watch.x - g.pos.x, g.watch.z - g.pos.z) : null;
@@ -2554,7 +2662,53 @@ export class BotBrain {
     }
     // Facing: the way the enemy comes, else outward from the middle, else the way it faces now.
     const yaw = facing ?? (horizontalDistance(spot, g.pos) > 0.5 ? Math.atan2(spot.x - g.pos.x, spot.z - g.pos.z) : this.yaw);
-    return { spot, until: view.tick + Math.round(TICK_RATE * hold), yaw };
+    const { looks, peek } = this.scanFrom(view, spot, yaw);
+    const dwell = Math.max(TICK_RATE * 0.8, Math.round(TICK_RATE * this.difficulty.scanDwell * (0.75 + this.skillRng() * 0.5)));
+    return { spot, until: view.tick + Math.round(TICK_RATE * hold), yaw, looks, since: view.tick, dwell, peek };
+  }
+
+  /**
+   * The angles a bot holding `spot` scans (Phase D item 2): the way it watches first, then the chokepoint hints near it
+   * (the map's: bots/hints.ts), then the two most open of eight ways (rays at eye height, once per spot), each at least
+   * 50 degrees from the others. And a peek: when the way it watches is blocked within 2.5 m (a wall's corner), a step
+   * of 1.2 m to the side from which it is open (stepping out to look, then back).
+   */
+  private scanFrom(view: BotWorldView, spot: Vec3, yaw: number): { looks: number[]; peek: Vec3 | null } {
+    const looks = [yaw];
+    const apart = (a: number) => looks.every((l) => Math.abs(angleDelta(l, a)) > 0.87);
+    const eye = { x: spot.x, y: spot.y + PLAYER.eyeHeight, z: spot.z };
+    for (const c of chokesNear(view.plan?.hints?.chokes ?? [], spot, 35)) {
+      if (looks.length >= 3) break;
+      if (horizontalDistance(c.pos, spot) < 2) continue;
+      const a = Math.atan2(c.pos.x - spot.x, c.pos.z - spot.z);
+      if (apart(a) && view.physics.lineOfSight(eye, { x: c.pos.x, y: c.pos.y + 1.2, z: c.pos.z })) looks.push(a);
+    }
+    const open: { a: number; d: number }[] = [];
+    let ahead = 0;
+    for (let k = 0; k < 8; k++) {
+      const a = yaw + (k / 8) * Math.PI * 2;
+      const d = view.physics.raycastWorld(eye, { x: Math.sin(a), y: 0, z: Math.cos(a) }, 40) ?? 40;
+      if (k === 0) ahead = d;
+      else open.push({ a, d });
+    }
+    open.sort((p, q) => q.d - p.d);
+    for (const o of open) {
+      if (looks.length >= 4) break;
+      if (o.d >= 8 && apart(o.a)) looks.push(o.a);
+    }
+    let peek: Vec3 | null = null;
+    if (ahead < 2.5) {
+      for (const side of [1, -1]) {
+        const p = view.nav.closestPoint({ x: spot.x + Math.cos(yaw) * 1.2 * side, y: spot.y + 0.5, z: spot.z - Math.sin(yaw) * 1.2 * side }, { x: 0.6, y: 1.5, z: 0.6 });
+        if (!p || Math.abs(p.y - spot.y) > 0.6 || horizontalDistance(p, spot) < 0.6) continue;
+        const pe = { x: p.x, y: p.y + PLAYER.eyeHeight, z: p.z };
+        if (!view.physics.lineOfSight({ x: spot.x, y: spot.y + 0.5, z: spot.z }, { x: p.x, y: p.y + 0.5, z: p.z })) continue;
+        if ((view.physics.raycastWorld(pe, { x: Math.sin(yaw), y: 0, z: Math.cos(yaw) }, 12) ?? 12) < 6) continue;
+        peek = p;
+        break;
+      }
+    }
+    return { looks, peek };
   }
 
   /** Where to retreat to: health close by, or the far side from the threat; re-picked only now and then. */
@@ -2618,7 +2772,63 @@ export class BotBrain {
 
   private reacted(view: Pick<BotWorldView, 'tick'>, target: CombatantView): boolean {
     const since = this.visibleSince.get(target.slot);
-    return since !== undefined && view.tick - since >= this.reactionTicks();
+    if (since === undefined) return false;
+    return view.tick >= (this.reactAt.get(target.slot) ?? since + this.reactionTicks());
+  }
+
+  /**
+   * This sighting's reaction (ticks; Phase D item 3, skill tiers that feel human): its tier's and personality's
+   * reaction, varied by `reactionSpread` either way, longer by `surprise` for someone showing outside its view (behind
+   * or beside it), shorter by `prepared` for someone showing where it expected them (a remembered spot: memory.ts).
+   */
+  private reactAfter(o: CombatantView, outOfView: boolean, tick: number): number {
+    const d = this.difficulty;
+    let f = 1 + d.reactionSpread * (this.skillRng() * 2 - 1);
+    if (outOfView) f *= 1 + d.surprise;
+    else if (this.enemies.expected(o.pos, tick, this.memoryTicks)) f *= 1 - d.prepared;
+    return Math.max(1, Math.round(this.reactionTicks() * f));
+  }
+
+  /** How long (ticks) it remembers an enemy's spot, a shot or a callout (its tier's memorySeconds). */
+  private get memoryTicks(): number {
+    return this.difficulty.memorySeconds * TICK_RATE;
+  }
+
+  /**
+   * Memory upkeep at each look about (memory.ts): old spots go, the dead are forgotten (once a second), and its side's
+   * callouts since the last look, within its tier's calloutRange of it, come in.
+   */
+  private recall(view: BotWorldView): void {
+    const tick = view.tick;
+    const mem = this.enemies;
+    if ((tick + this.slot) % TICK_RATE < this.difficulty.perceptionIntervalTicks) {
+      mem.expire(tick, this.memoryTicks);
+      for (let i = mem.spots.length - 1; i >= 0; i--) {
+        const e = mem.spots[i]!;
+        if (e.slot < 0) continue;
+        let alive = false;
+        for (const o of view.others) {
+          if (o.slot === e.slot) {
+            alive = o.alive;
+            break;
+          }
+        }
+        if (!alive) mem.forget(e.slot);
+      }
+    }
+    const board = view.plan?.callouts;
+    if (board) {
+      const since = this.calloutsRead < 0 ? tick - TICK_RATE : this.calloutsRead;
+      this.calloutsRead = tick;
+      board.read(since, view.self.pos, this.difficulty.calloutRange, this.slot, (c) => {
+        if (c.slot !== this.targetSlot) mem.note(c.slot, c.pos, c.tick, 'callout');
+      });
+    }
+  }
+
+  /** The remembered spot most worth a look (null: none, or a dead one), within `range` m. */
+  private remembered(view: BotWorldView, range = 60): EnemySpot | null {
+    return this.enemies.best(view.self.pos, view.tick, this.memoryTicks, range);
   }
 
   private wantsProne(view: BotWorldView, dist: number): boolean {
@@ -3655,8 +3865,12 @@ export class BotBrain {
       if (!clear) continue;
       // Behind bulletproof glass: seen, but not worth a bullet.
       if (view.physics.armorGlass && !view.physics.shotLine(myEye, theirEye)) continue;
-      if (!this.visibleSince.has(o.slot)) this.visibleSince.set(o.slot, tick);
+      if (!this.visibleSince.has(o.slot)) {
+        this.visibleSince.set(o.slot, tick);
+        this.reactAt.set(o.slot, tick + this.reactAfter(o, c.dx * fx + c.dz * fz < FOV_COS, tick));
+      }
       this.confirmed.set(o.slot, tick);
+      this.enemies.note(o.slot, o.pos, tick, 'seen');
       if (!best) best = c;
     }
     // Lost from sight: checked and blocked, or gone from view. Tracked enemies not checked this
@@ -3666,6 +3880,7 @@ export class BotBrain {
       const at = this.confirmed.get(slot) ?? -Infinity;
       if (at === tick || (this.unchecked.get(slot) === tick && tick - at <= TRACK_UNCHECKED_TICKS)) continue;
       this.visibleSince.delete(slot);
+      this.reactAt.delete(slot);
       this.confirmed.delete(slot);
     }
 
@@ -3673,9 +3888,12 @@ export class BotBrain {
       this.targetSlot = best.o.slot;
       const t = best.o;
       this.lastKnown = { pos: { ...t.pos }, tick };
+      // A callout: teammates hear where it is (memory.ts CalloutBoard; once every 2 s per enemy at most).
+      view.plan?.callouts?.post(this.slot, t.slot, t.pos, tick);
     } else {
       this.targetSlot = null;
     }
+    this.recall(view);
     // Hearing: gunfire and explosions from enemies we can't see.
     if (view.noises?.length && !best) {
       const hostile = slotsOf(view.others);
@@ -3699,7 +3917,10 @@ export class BotBrain {
         // Roughly where it came from (hearing isn't exact).
         const err = Math.min(4, loud.d * 0.08);
         const p = view.nav.closestPoint({ x: loud.pos.x + (this.rng() * 2 - 1) * err, y: loud.pos.y + 0.5, z: loud.pos.z + (this.rng() * 2 - 1) * err }, { x: 3, y: 3, z: 3 });
-        if (p) this.heard = { pos: p, tick: loud.tick };
+        if (p) {
+          this.heard = { pos: p, tick: loud.tick };
+          this.enemies.note(-1, p, loud.tick, 'heard');
+        }
       }
     }
   }
@@ -3709,6 +3930,16 @@ export class BotBrain {
     if (!corner) return;
     const me = view.self;
     const a = lookAngles({ x: me.pos.x, y: me.pos.y + PLAYER.eyeHeight, z: me.pos.z }, { x: corner.x, y: corner.y + PLAYER.eyeHeight, z: corner.z });
+    // On the way, an angle where it remembers an enemy close by (seen, a shot from it, a callout: memory.ts) is checked
+    // (pre-aimed) while it is within 75 degrees of the way it goes: a player watches where trouble was. Not a carrier.
+    const m = view.orderGoal?.run ? null : this.remembered(view, 30);
+    if (m && m.source !== 'heard') {
+      const to = lookAngles({ x: me.pos.x, y: me.pos.y + PLAYER.eyeHeight, z: me.pos.z }, { x: m.pos.x, y: m.pos.y + 1.2, z: m.pos.z });
+      if (Math.abs(angleDelta(a.yaw, to.yaw)) < 1.3) {
+        this.turnToward(to.yaw, to.pitch);
+        return;
+      }
+    }
     // Glance about now and then while moving through open ground.
     const glance = Math.sin((view.tick + this.slot * 37) / 50) * 0.45 * (this.careful() ? 1 : 0.3);
     this.turnToward(a.yaw + glance, 0);

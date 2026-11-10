@@ -10,6 +10,9 @@ import { Fireteams, REFUSALS, SQUAD_SPACINGS, checkOrder, squadHalf, squadSnapsh
 import type { TeamBrain } from '../bots/teamBrain.ts';
 import { regionLayout } from '../bots/regions.ts';
 import { VantageBoard, vantageFor } from '../bots/vantage.ts';
+import { hintSpots, withHintSpots } from '../bots/hints.ts';
+import { BotDebugCollector, type BotDebugFrame } from '../bots/debugView.ts';
+import { mapBotHints } from '../map/botHints.ts';
 import { buildMapGeometry, mapKillY, mapTerrainMesh, type WorldBox } from '../map/geometry.ts';
 import { EncounterEntity as EncounterSchema, NPC_ROLES, PLAYERS_FACTION, type EncounterEntity, type Faction, type MapDocument, type NpcRole, type PickupEntity } from '../map/schema.ts';
 import { add, createRng, distance, dot, horizontalDistance, lookAngles, normalize, scale, sub, viewDirection, type Vec3, hypot } from '../math.ts';
@@ -687,6 +690,27 @@ export class Match {
   private readonly history: { tick: number; at: Map<number, PastBody>; pool: Map<number, PastBody> }[] = [];
   /** Bot AI time spent in the most recent tick, for instrumentation. */
   lastAiMs = 0;
+
+  /**
+   * The in-game bot debug view's frame (`?botdebug=1`, host or offline: bots/debugView.ts), built only when the page
+   * asks (a few times a second while the view is on). Player Bots only.
+   */
+  botDebugFrame(): BotDebugFrame {
+    this.botDebug ??= new BotDebugCollector();
+    const d = this.director;
+    const slots = this.slots;
+    const tick = this.tick;
+    return this.botDebug.frame({
+      tick,
+      *bots() {
+        for (const c of slots) {
+          if (!c?.bot || c.kind !== 'bot') continue;
+          yield { slot: c.slot, faction: c.faction, pos: c.move.pos, alive: c.alive, brain: c.bot, role: d?.roleOf(c.slot) ?? null, callouts: d && c.faction ? d.calloutsFor(c.faction).recent(tick, TICK_RATE * 3) : [] };
+        }
+      },
+    });
+  }
+  private botDebug: BotDebugCollector | null = null;
   /**
    * Slots that count as people watching for movement detail (load tests stand
    * bots in for players with it; see relaxedMove).
@@ -2281,7 +2305,8 @@ export class Match {
     this.rolesFor = bots.length;
     // (The main area's places: regions, lanes and vantage spots a route gets to, not roofs and pits.)
     const places = this.nav.mainPlaces();
-    this.director ??= new BotDirector(this.seed, regionLayout(places), places, (a, b) => this.physics.lineOfSight(a, b));
+    // (With the map's bot hints, MapMaker's: extra candidates on top of the computed spots; bots/hints.ts.)
+    this.director ??= new BotDirector(this.seed, regionLayout(places), places, (a, b) => this.physics.lineOfSight(a, b), mapBotHints(this.map));
     const roles = assignRoles(
       bots.map((c) => ({ slot: c.slot, profile: c.bot!.profile })),
       this.rules.botStyle ?? 'mixed',
@@ -2296,7 +2321,8 @@ export class Match {
     this.botTrips();
     if (!this.director.vantage && [...roles.values()].some((r) => r === 'camper' || r === 'sniper')) {
       // (With the roofs and ledges only parkour reaches, nav/parkour.ts: snipers' spots others don't go to.)
-      this.director.vantage = new VantageBoard(vantageFor(places, (o, d, max) => this.physics.raycastWorld(o, d, max), this.nav.parkourPlaces()));
+      const ray = (o: Vec3, d: Vec3, max: number) => this.physics.raycastWorld(o, d, max);
+      this.director.vantage = new VantageBoard(withHintSpots(vantageFor(places, ray, this.nav.parkourPlaces()), hintSpots(this.director.hints, ray)));
       // Snipers' spots are worth more the better they look down the ways the enemy comes (the trips' corridors).
       this.director.vantage.lanes(
         this.botTrips().flatMap((t) => t.trip.corridors.map((c) => c.line)),

@@ -1,3 +1,4 @@
+import { stageHint, type HintSpot } from './hints.ts';
 import { horizontalDistance, type Vec3 } from '../math.ts';
 import { TICK_RATE } from '../sim/constants.ts';
 import { placeOn, type Corridor, type Trip } from '../nav/corridors.ts';
@@ -239,6 +240,8 @@ export class TeamBrain {
   constructor(
     readonly playbook: Playbook = DEFAULT_PLAYBOOK,
     private readonly sees: ((a: Vec3, b: Vec3) => boolean) | null = null,
+    /** The map's staging hints for the side (hints.ts): a corridor's group gathers at one by its route instead. */
+    private readonly stagingHints: readonly HintSpot[] = [],
   ) {
     this.pb = playbook;
   }
@@ -480,7 +483,10 @@ export class TeamBrain {
   /** A corridor's staging spot (worked out once per corridor: a few sight lines). */
   private stageOn(c: Corridor, pb: Playbook): Vec3 {
     let at = this.stages.get(c);
-    if (!at) this.stages.set(c, (at = stagePoint(c, pb, this.sees)));
+    if (!at) {
+      at = stagePoint(c, pb, this.sees);
+      this.stages.set(c, (at = stageHint(c.line, at, this.stagingHints) ?? at));
+    }
     return at;
   }
 

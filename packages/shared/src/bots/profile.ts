@@ -80,6 +80,25 @@ export interface BotDifficulty {
   perceptionIntervalTicks: number;
   /** 0..1: how well it plays tactically (cover, corner checks, grenades, reloading in cover). */
   tactics: number;
+  /**
+   * Skill tiers that feel human (BOT_AI_PLAN.md Phase D item 3; docs/BOTS.md, "Skill tiers"), beyond aim error:
+   * - `reactionSpread`: each sighting's reaction time varies by up to this share either way (people aren't metronomes);
+   * - `surprise`: an enemy showing from outside its view (behind or beside it) takes this share longer;
+   * - `prepared`: one showing where it expected someone (a remembered spot, memory.ts) takes this share less: pre-aimed;
+   * - `memorySeconds`: how long it remembers where an enemy was, where shots came from, a callout;
+   * - `calloutRange`: how far (m) from the spot a teammate's callout still reaches it;
+   * - `shotTurnMs`: how long before it turns to where an unseen shooter's rounds came from;
+   * - `decisionNoise`: noise on its scored choices (choices.ts): an easy bot now and then does the second-best thing;
+   * - `scanDwell`: seconds it dwells on each angle while holding a spot (shorter: a quicker, more systematic scan).
+   */
+  reactionSpread: number;
+  surprise: number;
+  prepared: number;
+  memorySeconds: number;
+  calloutRange: number;
+  shotTurnMs: number;
+  decisionNoise: number;
+  scanDwell: number;
 }
 
 export const BOT_DIFFICULTIES: Readonly<Record<BotDifficulty['id'], BotDifficulty>> = {
@@ -91,6 +110,14 @@ export const BOT_DIFFICULTIES: Readonly<Record<BotDifficulty['id'], BotDifficult
     turnRateRadPerSec: 3,
     perceptionIntervalTicks: 12,
     tactics: 0.35,
+    reactionSpread: 0.4,
+    surprise: 0.6,
+    prepared: 0,
+    memorySeconds: 8,
+    calloutRange: 25,
+    shotTurnMs: 700,
+    decisionNoise: 0.35,
+    scanDwell: 3.2,
   },
   normal: {
     id: 'normal',
@@ -99,6 +126,14 @@ export const BOT_DIFFICULTIES: Readonly<Record<BotDifficulty['id'], BotDifficult
     turnRateRadPerSec: 6,
     perceptionIntervalTicks: 8,
     tactics: 0.7,
+    reactionSpread: 0.25,
+    surprise: 0.25,
+    prepared: 0.25,
+    memorySeconds: 15,
+    calloutRange: 45,
+    shotTurnMs: 350,
+    decisionNoise: 0.08,
+    scanDwell: 2.4,
   },
   hard: {
     id: 'hard',
@@ -107,6 +142,14 @@ export const BOT_DIFFICULTIES: Readonly<Record<BotDifficulty['id'], BotDifficult
     turnRateRadPerSec: 9,
     perceptionIntervalTicks: 5,
     tactics: 1,
+    reactionSpread: 0.15,
+    surprise: 0.1,
+    prepared: 0.45,
+    memorySeconds: 25,
+    calloutRange: 60,
+    shotTurnMs: 150,
+    decisionNoise: 0,
+    scanDwell: 1.6,
   },
 };
 

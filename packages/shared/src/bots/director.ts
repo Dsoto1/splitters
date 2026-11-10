@@ -7,6 +7,9 @@ import { hasTag, type BotProfile, type BotStyle } from './profile.ts';
 import { RegionMap, type RegionLayout } from './regions.ts';
 import { TeamBrain, type PricedTrip, type PushStats, type SideBrief, type TeamJob } from './teamBrain.ts';
 import type { VantageBoard } from './vantage.ts';
+import { CalloutBoard } from './memory.ts';
+import { sideHints, type SideHints } from './hints.ts';
+import type { BotHint } from '../map/schema.ts';
 
 /**
  * Match-level bot planning (docs/BOTS.md): roles, squads ("clusters") and
@@ -50,6 +53,10 @@ export interface BotPlan {
   job: TeamJob | null;
   /** The side's common trips, each corridor priced (crowd, deaths, sightings): a loose bot takes the cheapest. */
   trips: readonly PricedTrip[];
+  /** Its side (a faction id; set by the side's update), the side's callouts (memory.ts) and the map's bot hints for it. */
+  side?: string;
+  callouts?: CalloutBoard | null;
+  hints?: SideHints | null;
 }
 
 /** One member as the match reports it to the director. */
@@ -149,6 +156,10 @@ export class BotDirector {
   private readonly rng: () => number;
   private nextId = 1;
   vantage: VantageBoard | null = null;
+  /** Each side's callouts (memory.ts: a teammate's sighting reaches the others). */
+  private readonly callouts = new Map<string, CalloutBoard>();
+  /** The map's bot hints by side (hints.ts). */
+  private readonly sideHints = new Map<string, SideHints>();
 
   constructor(
     seed: number,
@@ -156,6 +167,8 @@ export class BotDirector {
     private readonly places: readonly Vec3[],
     /** Whether one eye point sees another (the match's physics), for the team brains' staging spots. */
     private readonly sees: ((a: Vec3, b: Vec3) => boolean) | null = null,
+    /** The map's bot hints (map/botHints.ts; MapMaker's Bot hints tool): extra candidates on top of the computed spots. */
+    readonly hints: readonly BotHint[] = [],
   ) {
     this.rng = createRng((seed * 2246822519 + 3266489917) >>> 0);
   }
@@ -170,8 +183,22 @@ export class BotDirector {
   /** A side's team brain (made on first use). */
   brainFor(side: string): TeamBrain {
     let b = this.brains.get(side);
-    if (!b) this.brains.set(side, (b = new TeamBrain(undefined, this.sees)));
+    if (!b) this.brains.set(side, (b = new TeamBrain(undefined, this.sees, this.hintsFor(side).staging)));
     return b;
+  }
+
+  /** A side's callouts (made on first use). */
+  calloutsFor(side: string): CalloutBoard {
+    let b = this.callouts.get(side);
+    if (!b) this.callouts.set(side, (b = new CalloutBoard()));
+    return b;
+  }
+
+  /** The map's bot hints a side's bots use (its own and every side's). */
+  hintsFor(side: string): SideHints {
+    let h = this.sideHints.get(side);
+    if (!h) this.sideHints.set(side, (h = sideHints(this.hints, side)));
+    return h;
   }
 
   /** Someone on `side` died here: the team brain prices the corridors near it up for a minute. */
@@ -231,6 +258,9 @@ export class BotDirector {
       plan.vantage = this.vantage;
       plan.job = (m.unit !== undefined ? jobs.get(m.unit) : undefined) ?? jobs.get(m.slot) ?? null;
       plan.trips = brain.trips;
+      plan.side = side;
+      plan.callouts = this.calloutsFor(side);
+      plan.hints = this.hintsFor(side);
     }
     let list = this.clusters.get(side);
     if (!list) this.clusters.set(side, (list = []));

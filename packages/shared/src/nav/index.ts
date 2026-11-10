@@ -12,7 +12,7 @@ import type { Aabb, OBox } from '../sim/scenarioDefs.ts';
 import { simProfile } from '../sim/profile.ts';
 import { hypot } from '../math.ts';
 import { auditNavigation, edgesOf, polyShapes, reachSet, routeComponents, trapExits, type AuditOptions, type FallOptions } from './audit.ts';
-import { PARKOUR_AREA, parkourLinks, type ParkourLink } from './parkour.ts';
+import { PARKOUR_AREA, parkourLinks, type HintJump, type ParkourLink } from './parkour.ts';
 import { generateSolo, LOW_AREA, type LowHeadroom, type SoloIntermediates } from './solo.ts';
 
 export { LOW_AREA } from './solo.ts';
@@ -30,6 +30,8 @@ export interface DropOptions extends FallOptions {
    * panels, breakable walls and boards): parkour links are played through with them in the way.
    */
   blockers?: readonly OBox[];
+  /** The map's jump links (bot hints: bots/hints.ts hintJumps): parkour candidates before the computed ones. */
+  jumps?: readonly HintJump[];
 }
 
 let initPromise: Promise<void> | undefined;
