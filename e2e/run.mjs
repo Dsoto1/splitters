@@ -3935,6 +3935,8 @@ async function sceneryFlow(browser) {
   await page.selectOption('#ed-env-preset', 'alpine');
   // Bring the hillside to the middle of the view, clear of the tool bar over its top edge.
   await page.evaluate(() => window.__editor.view.focus({ x: 18, y: 0, z: 18 }));
+  // The camera's matrices follow on the next drawn frame: aim after it, not with the old view.
+  await frames(page, 2);
   p = await at(18, 18);
   await page.mouse.move(p.x, p.y);
   await page.mouse.click(p.x, p.y);
