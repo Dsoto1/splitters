@@ -547,7 +547,9 @@ export class BotBrain {
   /** The hop across (planEscape) is up a ledge higher than a jump clears: the legs tuck up in the air till it lands. */
   private tuckHop = false;
   /** The way it takes to a far objective (orderTarget): the goal it was picked for and the waypoint (null: straight). */
-  private lane: { goal: Vec3; via: Vec3 | null } | null = null;
+  private lane: { goal: Vec3; via: Vec3 | null; c?: Corridor } | null = null;
+  /** Side-lane trips that took a corridor of the side's trip by its vias (orderTarget; bot-report). */
+  laneCorridors = 0;
   /**
    * Route variety: the corridor it goes by to a far goal (its group's, its squad's, or the cheapest of its side's trip:
    * teamBrain.ts), the goal it is for, whether it has been by the corridor's via yet, and when it last went by it.
@@ -1280,11 +1282,24 @@ export class BotBrain {
       const far = horizontalDistance(me, g.pos) > LANE_FROM;
       const r = this.routeRng();
       const side = r < 0.35 ? -1 : r < 0.7 ? 1 : 0;
-      let via = far && side ? laneWaypoint(view.nav.mainPlaces(), me, g.pos, side) : null;
-      // Only a waypoint routes get to from here and on from to the goal (the samples cover roofs and pools a route
-      // never reaches: a bot sent by one of those stood where it was, Capitol Mall).
-      if (via && (!view.nav.reachable(me, via) || !view.nav.reachable(via, g.pos))) via = null;
-      lane = this.lane = { goal: { ...g.pos }, via };
+      // Route spread: a corridor of the side's trip there, on that side of the way, by its vias (where it is furthest
+      // from the trip's other corridors), rather than a sampled place to the side, which re-joined the main way by the
+      // trip's middle (CTF's busiest way about 60 %).
+      const c = far && side && SIDE_CORRIDORS ? sideCorridor(view.plan?.trips, me, g.pos, side) : null;
+      if (c && c.vias.every((v) => view.nav.reachable(me, v)) && view.nav.reachable(c.vias[c.vias.length - 1]!, g.pos)) {
+        this.laneCorridors++;
+        lane = this.lane = { goal: { ...g.pos }, via: null, c };
+      } else {
+        let via = far && side ? laneWaypoint(view.nav.mainPlaces(), me, g.pos, side) : null;
+        // Only a waypoint routes get to from here and on from to the goal (the samples cover roofs and pools a route
+        // never reaches: a bot sent by one of those stood where it was, Capitol Mall).
+        if (via && (!view.nav.reachable(me, via) || !view.nav.reachable(via, g.pos))) via = null;
+        lane = this.lane = { goal: { ...g.pos }, via };
+      }
+    }
+    if (lane.c) {
+      if (horizontalDistance(me, g.pos) <= ROUTE_FROM) return g.pos;
+      return this.viaRoute(view, lane.c, g.pos);
     }
     const via = lane.via;
     // Near it, or already nearer the goal than it is: on to the goal.
@@ -4606,6 +4621,53 @@ function farthest(points: readonly Vec3[], from: Vec3): Vec3 | undefined {
  * length with the teammates on it, and the deaths and sightings near it), with a little of the bot's own taste (up to
  * ×1.3): null when no trip ends there.
  */
+/** Side lanes take a corridor of the side's trip (sideCorridor); off: laneWaypoint, as before. */
+export let SIDE_CORRIDORS = true;
+/** For measuring with and without (tests, bot-report ablations). */
+export function setSideCorridors(on: boolean): void {
+  SIDE_CORRIDORS = on;
+}
+
+/**
+ * A corridor (not the shortest) of the side's trip to `goal` whose via lies on `side` of the way from `me` (-1 left,
+ * +1 right, as laneWaypoint) and between the two; the cheapest by the team brain's price. Null when none.
+ */
+export function sideCorridor(trips: readonly PricedTrip[] | undefined, me: Vec3, goal: Vec3, side: number): Corridor | null {
+  if (!trips?.length) return null;
+  let best: PricedTrip | null = null;
+  let bestD = 40;
+  for (const t of trips) {
+    const d = horizontalDistance(t.trip.to, goal);
+    if (d < bestD && t.trip.corridors.length > 1) {
+      bestD = d;
+      best = t;
+    }
+  }
+  if (!best) return null;
+  const dx = goal.x - me.x;
+  const dz = goal.z - me.z;
+  const D = Math.hypot(dx, dz);
+  if (D < 1) return null;
+  let pick: Corridor | null = null;
+  let low = Infinity;
+  best.trip.corridors.forEach((c, k) => {
+    const v = c.via;
+    if (k === 0 || !v) return;
+    const rx = v.x - me.x;
+    const rz = v.z - me.z;
+    const along = (rx * dx + rz * dz) / (D * D);
+    // (laneWaypoint's side: `rx uz - rz ux`, + for lane +1.)
+    const off = (rx * dz - rz * dx) / D;
+    if (along < 0.1 || along > 0.9 || off * side < 4) return;
+    const cost = best!.cost[k] ?? c.length;
+    if (cost < low) {
+      low = cost;
+      pick = c;
+    }
+  });
+  return pick;
+}
+
 function cheapestRoute(trips: readonly PricedTrip[], goal: Vec3, rng: () => number): Corridor | null {
   let best: PricedTrip | null = null;
   let bestD = 40;

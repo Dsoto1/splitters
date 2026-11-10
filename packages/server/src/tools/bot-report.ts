@@ -119,6 +119,8 @@ interface BotRow {
   along?: number;
   /** Still hulls (parked vehicles, wrecks, turrets) it walked round (bots/hulls.ts). */
   hulls?: number;
+  /** Side-lane trips that took a corridor of the side's trip by its vias (brain.ts sideCorridor). */
+  laneCorridors?: number;
   /** Its body size class (BODY_SIZES), and seconds it spent ducking under a low roof (brain.ts lowRoute, mustDuck). */
   size?: string;
   ducked?: number;
@@ -832,6 +834,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     r.parkourMissed = c.bot!.parkourMissed;
     r.along = c.bot!.alongRoutes;
     r.hulls = c.bot!.hullDetours;
+    r.laneCorridors = c.bot!.laneCorridors;
     r.size = bodyClass(c.look, match.rules);
     r.ducked = Math.round((c.bot!.duckTicks / TICK_RATE) * 10) / 10;
     out.bots.push(r);
@@ -1052,7 +1055,7 @@ function printMatch(m: MatchRow): void {
   if (m.weaponKills) console.log(`weapons (${getWeaponSet(m.set).name}): ${killsText(new Map(Object.entries(m.weaponKills)))}`);
   if (m.weaponUse && Object.keys(m.weaponUse).length) console.log(`weapon use (bots' rounds, hits, mean hit distance; spread ${useSpread([m]).toFixed(3)}): ${Object.entries(m.weaponUse).sort((a, b) => b[1][0] - a[1][0]).map(([w, [n, h, d]]) => `${w.replace('core.', '')} ${n}/${h} ${d.toFixed(1)} m`).join(', ')}`);
   const made = [0, 1, 2].map((k) => sum(m.bots, (r) => r.parkour?.[k] ?? 0));
-  if (m.parkourLinks) console.log(`parkour: links ${m.parkourLinks[0]} drops, ${m.parkourLinks[1]} gap jumps, ${m.parkourLinks[2]} jumps up | made ${made[0]} drops, ${made[1]} gap jumps, ${made[2]} jumps up (missed ${sum(m.bots, (r) => r.parkourMissed ?? 0)}, given up ${sum(m.bots, (r) => r.parkourGaveUp ?? 0)}) | routes along a group's corridor ${sum(m.bots, (r) => r.along ?? 0)} | searches put off a tick ${m.searchesPutOff ?? 0} | ticks keeping right of a teammate ${m.keptRight ?? 0} | still hulls walked round ${sum(m.bots, (r) => r.hulls ?? 0)}, stuck recoveries by one ${m.stuckByHull ?? 0}`);
+  if (m.parkourLinks) console.log(`parkour: links ${m.parkourLinks[0]} drops, ${m.parkourLinks[1]} gap jumps, ${m.parkourLinks[2]} jumps up | made ${made[0]} drops, ${made[1]} gap jumps, ${made[2]} jumps up (missed ${sum(m.bots, (r) => r.parkourMissed ?? 0)}, given up ${sum(m.bots, (r) => r.parkourGaveUp ?? 0)}) | routes along a group's corridor ${sum(m.bots, (r) => r.along ?? 0)} | searches put off a tick ${m.searchesPutOff ?? 0} | ticks keeping right of a teammate ${m.keptRight ?? 0} | still hulls walked round ${sum(m.bots, (r) => r.hulls ?? 0)}, stuck recoveries by one ${m.stuckByHull ?? 0} | side lanes by a corridor ${sum(m.bots, (r) => r.laneCorridors ?? 0)}`);
   console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)} (only parkour reaches ${sum(snipers, (r) => r.parkourPosts ?? 0)}), rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, moved on after shots ${sum(snipers, (r) => r.moves ?? 0)}, shots held ${sum(snipers, (r) => r.held ?? 0)} s, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
   const why = new Map<string, number>();
   for (const r of m.bots) for (const [k, v] of Object.entries(r.why)) why.set(k, (why.get(k) ?? 0) + v);
@@ -1519,6 +1522,8 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
     return `${k.map((v) => v.toFixed(1)).join('/')} (missed ${missed.toFixed(1)}, given up ${gave.toFixed(1)})`;
   };
   console.log(`retreating ${doingShare(before, 'retreat')} → ${doingShare(after, 'retreat')} % of alive time; parkour moves a match (drops/gap jumps/jumps up) ${moves(before)} → ${moves(after)}`);
+  const perMatch = (ms: readonly MatchRow[], of: (m: MatchRow) => number) => (sum(ms, of) / Math.max(1, ms.length)).toFixed(1);
+  console.log(`still hulls walked round ${perMatch(before, (m) => sum(m.bots, (r) => r.hulls ?? 0))} → ${perMatch(after, (m) => sum(m.bots, (r) => r.hulls ?? 0))} a match, stuck recoveries by one ${perMatch(before, (m) => m.stuckByHull ?? 0)} → ${perMatch(after, (m) => m.stuckByHull ?? 0)}; side lanes by a corridor ${perMatch(before, (m) => sum(m.bots, (r) => r.laneCorridors ?? 0))} → ${perMatch(after, (m) => sum(m.bots, (r) => r.laneCorridors ?? 0))} a match`);
   // Per mode: each mode's objective and the measures every mode has.
   const modes = [...new Set([...before, ...after].map((m) => m.mode))].sort();
   if (modes.length > 1 || !modes.includes('core.ctf')) {
