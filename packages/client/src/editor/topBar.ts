@@ -122,17 +122,17 @@ export class TopBar {
   }
 
   bindUi(): void {
-    $('ed-home').addEventListener('click', () => this.app.quit());
+    $('ed-home').addEventListener('click', () => this.app.saving.quit());
     $('ed-undo').addEventListener('click', () => this.app.undo());
     $('ed-redo').addEventListener('click', () => this.app.redo());
-    $('ed-save').addEventListener('click', () => this.app.save());
+    $('ed-save').addEventListener('click', () => this.app.saving.save());
     $('ed-export').addEventListener('click', () => {
       // Keep the identity the export stamped (map ID, version, hash), so the next export continues it.
       const release = exportMap(this.app.doc).metadata.release;
       if (release) this.app.doc.metadata.release = release;
     });
-    $('ed-new').addEventListener('click', () => this.app.newMapDialog());
-    $('ed-open').addEventListener('click', () => this.app.openDialog());
+    $('ed-new').addEventListener('click', () => this.app.saving.newMapDialog());
+    $('ed-open').addEventListener('click', () => this.app.saving.openDialog());
     $('ed-import').addEventListener('click', () => $('ed-import-file').click());
     $('ed-publish').addEventListener('click', () => {
       void openPublishDialog($<HTMLDialogElement>('ed-publish-dialog'), { doc: () => this.app.doc, builtIn: isBuiltInMap, toast: (t, err) => this.app.toast(t, err) });
@@ -143,8 +143,8 @@ export class TopBar {
       if (!file) return;
       const r = await importMapFile(file);
       if (!('map' in r)) return this.app.toast(`Import failed: ${r.issues[0]?.message ?? 'unknown error'}`, true);
-      this.app.keepDraft();
-      this.app.replaceDocument(r.map);
+      this.app.saving.keepDraft();
+      this.app.saving.replaceDocument(r.map);
       const errors = r.issues.filter((i) => i.severity === 'error').length;
       this.app.toast(`Imported ${r.map.metadata.name}${errors ? ` (${errors} problem${errors === 1 ? '' : 's'} to fix before it plays: see the list)` : ''}`);
     });
@@ -184,10 +184,10 @@ export class TopBar {
     $('ed-grid-full').addEventListener('click', () => this.setGridFull(!this.app.view.area.gridFull));
     // Overlaps: highlight where two pieces' faces share a plane (the geometry.coplanar warning's places).
     $('ed-overlaps').addEventListener('click', () => {
-      this.app.overlapsOn = !this.app.overlapsOn;
-      $('ed-overlaps').classList.toggle('on', this.app.overlapsOn);
-      $('ed-overlaps').setAttribute('aria-pressed', String(this.app.overlapsOn));
-      this.app.view.setOverlaps(this.app.overlapsOn ? this.app.zSpots : null);
+      this.app.checks.overlapsOn = !this.app.checks.overlapsOn;
+      $('ed-overlaps').classList.toggle('on', this.app.checks.overlapsOn);
+      $('ed-overlaps').setAttribute('aria-pressed', String(this.app.checks.overlapsOn));
+      this.app.view.setOverlaps(this.app.checks.overlapsOn ? this.app.checks.zSpots : null);
     });
     $<HTMLSelectElement>('ed-snap').addEventListener('change', (e) => (this.app.snapMode = (e.target as HTMLSelectElement).value as typeof this.app.snapMode));
     const theme = $<HTMLSelectElement>('ed-theme');
@@ -206,7 +206,7 @@ export class TopBar {
     $<HTMLSelectElement>('ed-theme').value = this.app.doc.classicStructure.theme;
     const name = $<HTMLInputElement>('ed-name');
     if (document.activeElement !== name) name.value = this.app.doc.metadata.name;
-    $('ed-dirty').classList.toggle('on', this.app.isDirty());
+    $('ed-dirty').classList.toggle('on', this.app.saving.isDirty());
     $<HTMLButtonElement>('ed-undo').disabled = !this.app.history.canUndo;
     $<HTMLButtonElement>('ed-redo').disabled = !this.app.history.canRedo;
     $('ed-undo').title = this.app.history.undoLabel ? `Undo ${this.app.history.undoLabel} (Ctrl+Z)` : 'Undo (Ctrl+Z)';

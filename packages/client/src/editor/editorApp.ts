@@ -389,6 +389,8 @@ import { TopBar } from './topBar.ts';
 import { MapProperties } from './mapProperties.ts';
 import { EntityInspector } from './entityInspector.ts';
 import { Inspector } from './inspector.ts';
+import { MapChecks } from './mapChecks.ts';
+import { MapSaving } from './mapSaving.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -413,6 +415,10 @@ export interface EditorHost {
  * templates are loaded on purpose from Open….
  */
 export class EditorApp {
+  /** Saving and loading the map: drafts kept while unsaved, Save, Quit, New, Open… and replacing the document being edited (mapSaving.ts). */
+  readonly saving: MapSaving;
+  /** The map's checks: validation, navigation and the bots' own spots worked out a moment after each edit, coplanar overlaps, and the issues list and status pill (mapChecks.ts). */
+  readonly checks: MapChecks;
   /** The side panel's inspector: what's selected (a tile, a set piece, an entity, a moving build, several things) or Map properties with nothing selected; the tile's walls, room options, upper floors, dressing and surfaces (inspector.ts). */
   readonly inspector: Inspector;
   /** The inspector for one entity: spawns, pickups, props, doors, lights, movers, triggers, traps, NPC squads, vehicles, objectives and the rest (entityInspector.ts). */
@@ -506,20 +512,10 @@ export class EditorApp {
   private drag: DragState | null = null;
   looking: { x: number; y: number; moved: boolean; travel: number; button: number } | null = null;
   private keys = new Set<string>();
-  private issues: ValidationIssue[] = [];
-  private navIssues: ValidationIssue[] = [];
+  issues: ValidationIssue[] = [];
   private renderedRevision = -1;
   private renderedLevel = -1;
   private renderedShowAll = false;
-  private savedRevision = 0;
-  private autosaveTimer?: number;
-  private navTimer?: number;
-  /** Coplanar overlaps (geometry.coplanar), worked out a moment after each edit like navigation. */
-  private zIssues: ValidationIssue[] = [];
-  zSpots: CoplanarSpot[] = [];
-  private zTimer?: number;
-  overlapsOn = false;
-  private navToken = 0;
   private toastTimer?: number;
   private active = false;
   /** Boxes currently shown (respecting floor isolation), for surface picking. */
@@ -534,7 +530,9 @@ export class EditorApp {
   paintStyle: SurfaceStyle = { material: 'core.red_brick', tint: null };
   paintScope: PaintScope = 'surface';
 
-  constructor(private readonly host: EditorHost) {
+  constructor(readonly host: EditorHost) {
+    this.saving = new MapSaving(this);
+    this.checks = new MapChecks(this);
     this.inspector = new Inspector(this);
     this.entityPane = new EntityInspector(this);
     this.mapProps = new MapProperties(this);
@@ -558,7 +556,7 @@ export class EditorApp {
     this.mapTest = new MapTestPanel({ doc: () => this.doc, played: () => {
         const r = loadMap(this.doc);
         return r.ok ? r.map : this.doc;
-      }, errors: () => this.allIssues().filter((i) => i.severity === 'error').length, issuesChanged: () => this.renderIssues(), toast: (t, bad) => this.toast(t, bad), root: $('editor'), overlay: { scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor') } });
+      }, errors: () => this.checks.allIssues().filter((i) => i.severity === 'error').length, issuesChanged: () => this.checks.renderIssues(), toast: (t, bad) => this.toast(t, bad), root: $('editor'), overlay: { scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor') } });
     this.env = new EnvTools({
       doc: () => this.doc,
       run: (label, cmd) => this.run(label, cmd),
@@ -620,7 +618,7 @@ export class EditorApp {
         if (this.hints.selected() && this.selCount()) this.setSelection(emptySelection(), true, true);
         this.inspector.renderInspector();
       },
-      wantComputed: () => this.validate(),
+      wantComputed: () => this.checks.validate(),
       overlay: $('editor'),
     });
     this.ring = new RotateRing(
@@ -682,7 +680,7 @@ export class EditorApp {
     this.view.focus({ x: 0, y: 0, z: 0 });
     $('ed-reset-view').addEventListener('click', () => this.resetView());
     // Closing the tab mid-edit: keep the pending draft.
-    window.addEventListener('pagehide', () => this.autosaveTimer !== undefined && this.flushDraft());
+    window.addEventListener('pagehide', () => this.saving.autosaveTimer !== undefined && this.saving.flushDraft());
   }
 
   /**
@@ -690,8 +688,8 @@ export class EditorApp {
    * work from before stays in Open… as a draft rather than being restored.
    */
   startFresh(): void {
-    if (this.autosaveTimer !== undefined) this.flushDraft();
-    this.replaceDocument(starterMap(STARTER_TERRAIN, 'grass'));
+    if (this.saving.autosaveTimer !== undefined) this.saving.flushDraft();
+    this.saving.replaceDocument(starterMap(STARTER_TERRAIN, 'grass'));
     const drafts = listDrafts().length;
     this.toast(drafts ? `New blank map · ${drafts} unsaved draft${drafts > 1 ? 's' : ''} in Open…` : 'New blank map · Open… loads a saved map or template');
   }
@@ -813,7 +811,7 @@ export class EditorApp {
   }
 
   /** Bring meshes and panels up to date with the document and view settings. */
-  private refresh(force: boolean): void {
+  refresh(force: boolean): void {
     const rev = this.history.revision;
     const docChanged = force || rev !== this.renderedRevision;
     const viewChanged = this.level !== this.renderedLevel || this.showAll !== this.renderedShowAll;
@@ -837,7 +835,7 @@ export class EditorApp {
       this.pieces.renderMyPieces();
       this.updateSelectionVisuals();
       this.topBar.syncToolbar();
-      this.validate();
+      this.checks.validate();
       this.budgetBar.update(this.budgets.counts);
       this.inspector.renderInspector();
       this.topBar.updateTopBar();
@@ -849,7 +847,7 @@ export class EditorApp {
       this.paths.renderPane($('ed-paths'));
       this.env.refresh();
       this.env.updateStatus();
-      if (!force) this.scheduleAutosave();
+      if (!force) this.saving.scheduleAutosave();
     }
   }
 
@@ -1781,33 +1779,7 @@ export class EditorApp {
   }
 
   private focusEntity(id: string): void {
-    this.focusIssue({ severity: 'suggestion', code: 'focus', message: '', targetId: id });
-  }
-
-  /** Select and frame the object a validation issue points at (or open the logic item). */
-  private focusIssue(issue: ValidationIssue): void {
-    if (!issue.targetId) return;
-    const tile = this.doc.classicStructure.tiles.find((t) => t.id === issue.targetId);
-    const entity = this.doc.entities.find((e) => e.id === issue.targetId);
-    // A set piece, or one of its parts (the overlaps check names parts): the placement.
-    const piece = this.placementOf(this.expansion.partOf.get(issue.targetId) ?? issue.targetId);
-    const { logic } = this.doc;
-    if (!tile && !entity && !piece && [...logic.rules, ...logic.objectives, ...logic.variables, ...logic.timers].some((x) => x.id === issue.targetId)) {
-      this.logic.open(issue.targetId);
-      return;
-    }
-    if (piece) {
-      this.setLevel(piece.z);
-      this.setSelection({ tiles: [], entities: [], setPieces: [piece.id] });
-    } else if (tile) {
-      this.setLevel(tile.z);
-      this.setSelection({ tiles: [tile.id], entities: [] });
-    } else if (entity) {
-      this.setLevel(Math.floor((entity.position[1] + 0.01) / this.doc.classicStructure.levelHeight));
-      this.setSelection({ tiles: [], entities: [entity.id] });
-    } else return;
-    this.setTool({ kind: 'select' });
-    this.focusSelection();
+    this.checks.focusIssue({ severity: 'suggestion', code: 'focus', message: '', targetId: id });
   }
 
   // ---------------------------------------------------------------- hover / drag
@@ -2394,7 +2366,7 @@ export class EditorApp {
     planView: () => this.plan.toggle(),
     undo: () => this.undo(),
     redo: () => this.redo(),
-    save: () => this.save(),
+    save: () => this.saving.save(),
     duplicate: () => this.duplicate(),
     togglePalette: () => this.topBar.toggleSidebar('pal'),
     toggleSidePanel: () => this.topBar.toggleSidebar('right'),
@@ -2529,299 +2501,6 @@ export class EditorApp {
     return { doc, models };
   }
 
-  // ---------------------------------------------------------------- validation
-
-  private validate(): void {
-    this.issues = [...validateMap(this.doc), ...this.portIssues()];
-    this.renderIssues();
-    clearTimeout(this.navTimer);
-    const token = ++this.navToken;
-    // Navigation and overlaps as played: set pieces expanded into their parts, on the ground as shown (paths laid in,
-    // kept under the floors).
-    const ground = this.view.ground;
-    const doc = ground && ground !== this.viewDoc.terrain ? { ...this.viewDoc, terrain: ground } : this.viewDoc;
-    if (this.issues.some((i) => i.severity === 'error')) {
-      this.navIssues = [];
-      this.renderIssues();
-      return;
-    }
-    this.scheduleOverlaps();
-    this.navTimer = window.setTimeout(async () => {
-      const { initNavigation, validateMapNavigation } = await import('@tiletrigger/shared/match');
-      await initNavigation();
-      if (token !== this.navToken) return;
-      try {
-        await initPhysics();
-        // The navmesh as the match builds it, and the navigation audit (traps, spawn points, objectives and pickups
-        // cut off): warnings for creators (errors only on the official maps' own checks).
-        const nav = validateMapNavigation(doc, false, { computed: this.hints.computedOn });
-        this.navIssues = nav.issues;
-        // "What bots know" (bot hints): the bots' own spots, worked out on the same navmesh.
-        this.hints.setComputed(nav.computed ?? null);
-      } catch (e) {
-        this.navIssues = [{ severity: 'warning', code: 'nav.failed', message: `navigation could not be generated: ${(e as Error).message}` }];
-      }
-      this.renderIssues();
-    }, 400);
-  }
-
-  /** A set piece's port with a wall in it (MapMaker's warning; the outline shows it red): one per port. */
-  private portIssues(): ValidationIssue[] {
-    const out: ValidationIssue[] = [];
-    for (const p of this.doc.setPieces ?? []) {
-      const def = this.pieceDef(p.piece);
-      if (!def) continue;
-      for (const s of setPiecePortStates(p, def, this.mapBoxes())) {
-        if (!s.blockedBy) continue;
-        out.push({ severity: 'warning', code: 'setpiece.port', message: `${def.displayName}: ${this.pieces.portName(s)} faces a wall (${this.pieces.blockerName(s.blockedBy)}): open it, or move the piece`, targetId: p.id });
-      }
-    }
-    return out;
-  }
-
-  /** Coplanar overlaps of the map as it is now (its warning and the Overlaps highlight), a moment after the last edit. */
-  private scheduleOverlaps(): void {
-    clearTimeout(this.zTimer);
-    const { map: doc, partOf } = this.expansion;
-    this.zTimer = window.setTimeout(() => {
-      if (doc !== this.viewDoc) return;
-      try {
-        // A set piece's parts against each other are the piece's own business (the author can't move a part).
-        this.zSpots = coplanarSpots(doc, undefined, partOf);
-      } catch {
-        this.zSpots = [];
-      }
-      this.zIssues = coplanarIssues(doc, this.zSpots);
-      if (this.overlapsOn) this.view.setOverlaps(this.zSpots);
-      this.renderIssues();
-    }, 450);
-  }
-
-  private allIssues(): ValidationIssue[] {
-    const order = { error: 0, warning: 1, suggestion: 2 } as const;
-    return [...this.issues, ...this.navIssues, ...this.zIssues, ...this.mapTest.issues()].sort((a, b) => order[a.severity] - order[b.severity]);
-  }
-
-  private renderIssues(): void {
-    const issues = this.allIssues();
-    const list = $('ed-issues');
-    list.replaceChildren();
-    if (!issues.length) {
-      const li = document.createElement('li');
-      li.className = 'none';
-      li.textContent = 'No problems found. Ready to test.';
-      list.append(li);
-    }
-    for (const issue of issues) {
-      const li = document.createElement('li');
-      li.className = issue.severity;
-      li.textContent = issue.message;
-      li.title = issue.code;
-      li.addEventListener('click', () => this.focusIssue(issue));
-      list.append(li);
-    }
-    const errors = issues.filter((i) => i.severity === 'error').length;
-    const warnings = issues.filter((i) => i.severity === 'warning').length;
-    const pill = $('ed-status');
-    pill.className = `pill ${errors ? 'err' : warnings ? 'warn' : 'ok'}`;
-    pill.textContent = errors ? `${errors} error${errors > 1 ? 's' : ''}` : warnings ? `${warnings} warning${warnings > 1 ? 's' : ''}` : '✓ Ready';
-  }
-
-  // ---------------------------------------------------------------- persistence / test
-
-  isDirty(): boolean {
-    return this.history.revision !== this.savedRevision;
-  }
-
-  private scheduleAutosave(): void {
-    clearTimeout(this.autosaveTimer);
-    this.autosaveTimer = window.setTimeout(() => this.flushDraft(), 400);
-  }
-
-  /** Write the draft now: unsaved changes are kept, a clean map has none. */
-  private flushDraft(): void {
-    clearTimeout(this.autosaveTimer);
-    this.autosaveTimer = undefined;
-    if (this.isDirty()) writeDraft(this.doc);
-    else clearDraft(this.doc.metadata.id);
-  }
-
-  /** Before switching maps: unsaved changes stay in Open… as a draft. */
-  keepDraft(): void {
-    if (!this.isDirty()) return;
-    this.flushDraft();
-    this.toast(`Unsaved changes to "${this.doc.metadata.name}" kept as a draft in Open…`);
-  }
-
-  save(): boolean {
-    const stored = saveToLibrary(this.doc);
-    if (!stored) {
-      this.toast('Could not save to browser storage — use Export to keep a copy', true);
-      return false;
-    }
-    clearTimeout(this.autosaveTimer);
-    this.autosaveTimer = undefined;
-    clearDraft(stored.metadata.id);
-    this.savedRevision = this.history.revision;
-    this.topBar.updateTopBar();
-    this.toast(`Saved "${stored.metadata.name}"`);
-    return true;
-  }
-
-  /**
-   * Quit to the main menu. With unsaved changes it asks first: Save & quit
-   * (naming a map that was never saved), Quit without saving, or Cancel.
-   */
-  quit(): void {
-    if (!this.isDirty()) return this.host.goHome();
-    const dialog = $<HTMLDialogElement>('ed-quit-dialog');
-    const saved = inLibrary(this.doc.metadata.id);
-    const name = $<HTMLInputElement>('ed-quit-name');
-    $('ed-quit-msg').textContent = saved ? `"${this.doc.metadata.name}" has changes that are not saved.` : 'This map has never been saved. Name it to keep it in Open….';
-    $('ed-quit-name-row').hidden = saved;
-    name.value = this.doc.metadata.name;
-    $('ed-quit-save').onclick = () => {
-      const v = name.value.trim().slice(0, 80) || 'Untitled Map';
-      if (!saved && v !== this.doc.metadata.name) this.run('Rename map', { kind: 'setMetadata', before: { name: this.doc.metadata.name }, after: { name: v } });
-      if (!this.save()) return;
-      dialog.close();
-      this.host.goHome();
-    };
-    $('ed-quit-discard').onclick = () => {
-      clearTimeout(this.autosaveTimer);
-      this.autosaveTimer = undefined;
-      clearDraft(this.doc.metadata.id);
-      dialog.close();
-      this.host.goHome();
-    };
-    $('ed-quit-cancel').onclick = () => dialog.close();
-    dialog.showModal();
-    if (!saved) name.select();
-  }
-
-  replaceDocument(doc: MapDocument): void {
-    this.plan.exit();
-    this.history.reset(doc);
-    this.savedRevision = this.history.revision;
-    this.selection = emptySelection();
-    this.setLevel(0, true);
-    this.view.focus({ x: 0, y: 0, z: 0 });
-    this.refresh(true);
-  }
-
-  /** New: pick a size of open ground (or the sky, with no terrain) and a ground material. */
-  newMapDialog(): void {
-    const dialog = $<HTMLDialogElement>('ed-new-dialog');
-    const sizes = $('ed-new-sizes');
-    let size = STARTER_TERRAIN;
-    const pick = (v: number) => {
-      size = v;
-      for (const b of sizes.querySelectorAll('button')) b.classList.toggle('on', Number((b as HTMLElement).dataset.size) === v);
-      $<HTMLSelectElement>('ed-new-ground').disabled = v === 0;
-    };
-    sizes.replaceChildren(
-      ...NEW_MAP_SIZES.map(([v, label, note]) => {
-        const b = document.createElement('button');
-        b.dataset.size = String(v);
-        b.setAttribute('role', 'radio');
-        b.innerHTML = `<b>${label}</b><small>${note}</small>`;
-        b.addEventListener('click', () => pick(v));
-        b.addEventListener('dblclick', () => $('ed-new-create').click());
-        return b;
-      }),
-    );
-    const ground = $<HTMLSelectElement>('ed-new-ground');
-    if (!ground.options.length) for (const m of TERRAIN_MATERIALS) ground.append(new Option(TERRAIN_MATERIAL_LABELS[m], m, m === 'grass', m === 'grass'));
-    pick(STARTER_TERRAIN);
-    // Start from a template (MapMaker overhaul Phase 3 item 5; templatePicker.ts), or open ground in a size.
-    const template = templatePicker(dialog, sizes);
-    $('ed-new-create').onclick = () => {
-      dialog.close();
-      this.keepDraft();
-      const from = template.chosen();
-      if (from)
-        return void template.load(from).then((doc) => {
-          if (!doc) return this.toast(`Couldn't load the ${from} template`, true);
-          this.replaceDocument(doc);
-          this.toast(`New map from the ${template.label(from)} template: make it your own`);
-        });
-      this.replaceDocument(starterMap(size || null, ground.value as TerrainMaterial));
-    };
-    $('ed-new-cancel').onclick = () => dialog.close();
-    dialog.showModal();
-    (sizes.querySelector('button.on') as HTMLButtonElement | null)?.focus();
-  }
-
-  openDialog(): void {
-    const dialog = $<HTMLDialogElement>('ed-open-dialog');
-    const list = $('ed-library');
-    list.replaceChildren();
-    // Each row shows the map's picture and plan (loaded and drawn as it scrolls into view).
-    // Templates are built-in maps: each loads (its own chunk) when its row is seen or opened.
-    const tpl = (id: string) => ({ load: () => loadBuiltInMap(id, { forEditing: true }), shipped: true });
-    const remix = (id: string, name: (m: MapDocument) => string) => () =>
-      void loadBuiltInMap(id, { forEditing: true }).then((m) => m && this.replaceDocument({ ...m, metadata: { ...m.metadata, id: newId('map'), name: name(m), parentId: m.metadata.id } }));
-    // The owner opens our maps as they are (same ID), to fix them and Publish; everyone else gets a remix to make their own.
-    const edit = (id: string) => () =>
-      void loadBuiltInMap(id, { forEditing: true }).then((m) => {
-        if (!m) return this.toast(`Couldn't open ${id}`, true);
-        this.replaceDocument(m);
-        this.toast(`Editing the official ${m.metadata.name}: Publish puts your changes live for everyone`);
-      });
-    const template = (id: string, name: (m: MapDocument) => string) => (this.owner ? edit(id) : remix(id, name));
-    const kind = this.owner ? 'Official map' : 'Template';
-    const cls = this.owner ? 'official' : '';
-    const add = (label: string, sub: string, open: () => void, remove?: () => void, cls = '', preview?: { load: () => MapDocument | null | Promise<MapDocument | null>; shipped: boolean }) => {
-      const li = document.createElement('li');
-      if (cls) li.className = cls;
-      if (preview) li.append(libraryThumb(preview.load, preview.shipped));
-      const b = button('', () => {
-        dialog.close();
-        this.keepDraft();
-        open();
-      });
-      b.innerHTML = `${escapeHtml(label)}<br><small>${escapeHtml(sub)}</small>`;
-      li.append(b);
-      if (remove) li.append(button('Delete', () => confirm(`Delete "${label}" from this browser?`) && (remove(), this.openDialog())));
-      list.append(li);
-    };
-    // Unsaved drafts first (not the map being edited), then saved maps, then templates.
-    for (const draft of listDrafts()) {
-      if (draft.map.metadata.id === this.doc.metadata.id) continue;
-      const when = new Date(draft.savedAt).toLocaleString();
-      add(`Unsaved draft (${draft.map.metadata.name}, ${when})`, inLibrary(draft.map.metadata.id) ? 'Changes not saved to your saved copy' : 'Never saved', () => {
-        this.replaceDocument(draft.map);
-        // Still unsaved: the dirty dot stays on and Quit asks to save.
-        this.savedRevision = -1;
-        this.topBar.updateTopBar();
-        this.toast(`Opened the unsaved draft of "${draft.map.metadata.name}"`);
-      }, () => clearDraft(draft.map.metadata.id), 'draft', { load: () => draft.map, shipped: SHIPPED_IDS.has(draft.map.metadata.id) });
-    }
-    for (const entry of listLibrary()) {
-      add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {
-        const r = openFromLibrary(entry.id, true);
-        if ('map' in r) {
-          this.replaceDocument(r.map);
-          this.toast(`Opened "${r.map.metadata.name}"`);
-        } else this.toast(`Could not open: ${r.issues[0]?.message}`, true);
-      }, () => deleteFromLibrary(entry.id), '', { load: () => ((r) => ('map' in r ? r.map : null))(openFromLibrary(entry.id, true)), shipped: SHIPPED_IDS.has(entry.id) });
-    }
-    add('Sandgate', `${kind} · desert town for Team Deathmatch, with open courtyards`, template('sandgate', () => 'Sandgate Remix'), undefined, cls, tpl('sandgate'));
-    add('Citadel', `${kind} · castle keep with a two-storey atrium, roof terraces, props and breakables`, template('citadel', () => 'Citadel Remix'), undefined, cls, tpl('citadel'));
-    add('Rockfall Canyon', `${kind} · sculpted terrain canyon with two bases, boulders and a ridge ledge`, template('canyon', () => 'Canyon Remix'), undefined, cls, tpl('canyon'));
-    // Every other shipped map (the homage maps and later additions) is a template too (listed from the index: the maps that load).
-    const known = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
-    for (const { key: id, metadata } of MAP_INDEX) {
-      if (known.has(id) || isRetiredMap(id)) continue;
-      add(metadata.name, `${kind} · ${metadata.description.split(/(?<=\.)\s/)[0] ?? ''}`, template(id, (m) => `${m.metadata.name} Remix`), undefined, cls, tpl(id));
-    }
-    // Official maps added by publishing (not built into the site) join the list once the hub answers.
-    void publishedMaps().then((p) => {
-      for (const e of p.values()) if (e.added && dialog.open) add(e.name, `${kind} · ${e.description.split(/(?<=\.)\s/)[0] ?? ''}`, template(e.id, (m) => `${m.metadata.name} Remix`), undefined, cls, tpl(e.id));
-    });
-    dialog.showModal();
-  }
-
   /**
    * Play from here (MapMaker overhaul Phase 3 item 1; Shift+F5, the top bar's ▶ Here): a test match with you standing
    * on the nearest walkable ground below the camera, facing where it looks (shared editor/playFromHere.ts). Refused,
@@ -2841,7 +2520,7 @@ export class EditorApp {
   }
 
   test(startAt?: TestRequest['startAt']): void {
-    const errors = this.allIssues().filter((i) => i.severity === 'error');
+    const errors = this.checks.allIssues().filter((i) => i.severity === 'error');
     if (errors.length) {
       this.toast(`Fix ${errors.length} error${errors.length > 1 ? 's' : ''} before testing: ${errors[0]!.message}`, true);
       return;
