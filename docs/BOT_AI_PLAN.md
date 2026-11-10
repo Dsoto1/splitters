@@ -790,11 +790,19 @@ Before: main fc625d6. After: `wip/bots-c3`. `pnpm bot-report`, 180 s matches (th
 | Vehicle maps TDM (Midnight Keel, Riot Junction, Canyon, Runway Nine, Frost Basin, Whiteout; seeds 1-2): stuck a bot-minute | 1.27 | 1.20 |
 | Vehicle maps: stuck recoveries within a metre of a still hull, a match; 10 s+ idle spells a match | 42.5; 1.1 | 34.0; 0.6 |
 | Vehicle maps: kills a minute; still hulls walked round a match | 27.4; - | 27.4; 32.3 |
-| Team Deathmatch (Eagle Spires, Twin Spires, Riot Junction; seeds 1-4): stuck a bot-minute; kills a minute | TDM_BEFORE | TDM_AFTER |
+| Team Deathmatch (Eagle Spires, Twin Spires, Riot Junction; seeds 1-4): stuck a bot-minute; kills a minute | 0.79; 26.4 (failed searches 1.18 %) | 0.63; 26.9 (0.00 %) |
 
 Captures 36 → 46 (per take 0.14 → 0.22; takes 251 → 211, mostly Bunker Cross 30 → 12) is within the ±10 that 48 matches move by between builds that differ in one rule. Midnight Keel's
 stuck recoveries 236 → 187 a match (the parked hovercraft and jeeps by the docks); what's left by a hull is mostly a
-vehicle left plugging a passage, where there is no way round (the stuck recovery's sidestep, as before). Bench: BENCH.
+vehicle left plugging a passage, where there is no way round (the stuck recovery's sidestep, as before; looked for again
+only every half second then).
+
+**Bench** (`pnpm bench:96:clump`, 4 cores at load 1.2-1.6, main and the branch one after the other): bot thinking a tick
+(wall) 1.7-2.1 ms on main, 1.7-2.4 on the branch, inside the 2.5 ms guard; Frost Basin clumped, interleaved twice more:
+main 2.1 and 1.9, the branch 2.3 and 2.2 (its 18 vehicles and turrets by the spawns: corner checks round them). The
+bench's Frost Basin clumped idle share went 7 → 12 % on its one seed; a scratch replay over seeds 42-44 (idle bots, a
+sample a second) gave 137, 96, 119 with the change against 117, 109, 110 without: one seed's fight, not hulls (none of
+the idle bots was going round one).
 
 **Route spread, why it didn't move:** 18.7 side lanes a CTF match took a corridor (of about 150 bots' trips there),
 and the busiest way stayed 57-58 %. Most of a team's bots past a trip's middle aren't loose side-laners on a long trip:

@@ -92,10 +92,10 @@ export interface HullWay {
 
 /**
  * The way round the nearest still hull that the next HULL_LOOK metres from `me` toward `to` run into: the corner to
- * head for; 'beyond' when `to` is under the hull and the way straight on to `w.beyond` is clear (on past `to`); or
- * null when no hull is in the way (or no way round is clear).
+ * head for; 'beyond' when `to` is under the hull and the way straight on to `w.beyond` is clear (on past `to`);
+ * 'none' when one is in the way and no way round is clear (plugging a passage); null when no hull is in the way.
  */
-export function hullDetour(hulls: readonly MountView[], me: Vec3, to: Vec3, w: HullWay): HullPass | 'beyond' | null {
+export function hullDetour(hulls: readonly MountView[], me: Vec3, to: Vec3, w: HullWay): HullPass | 'beyond' | 'none' | null {
   let wx = to.x - me.x;
   let wz = to.z - me.z;
   const len = Math.hypot(wx, wz);
@@ -184,5 +184,5 @@ export function hullDetour(hulls: readonly MountView[], me: Vec3, to: Vec3, w: H
     if (!w.ok(q ?? p, { ...goal, y: me.y })) continue;
     return { pos: p, index: best.index, side: v.side };
   }
-  return null;
+  return 'none';
 }

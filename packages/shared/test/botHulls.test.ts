@@ -13,7 +13,7 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
 const view = (over: Partial<MountView> = {}): MountView => ({ index: 0, kind: 'vehicle', pos: { x: 0, y: 0, z: 0 }, yaw: 0, health: 1, alive: true, enterRadius: 2, seats: [], speed: 0, half: [1, 1, 2.5], ...over });
 const anywhere = () => true;
-const det = (hulls: MountView[], me: Vec3, to: Vec3, keep: { index: number; side: number } | null, ok: (a: Vec3, b: Vec3) => boolean, beyond?: Vec3) => hullDetour(hulls, me, to, { keep, ok, beyond: beyond ?? null }) as HullPass | null;
+const det = (hulls: MountView[], me: Vec3, to: Vec3, keep: { index: number; side: number } | null, ok: (a: Vec3, b: Vec3) => boolean, beyond?: Vec3) => { const r = hullDetour(hulls, me, to, { keep, ok, beyond: beyond ?? null }); return r === 'none' ? null : (r as HullPass | null); };
 
 describe('hull geometry', () => {
   it('finds where a segment enters a box, and misses one beside it', () => {
@@ -47,7 +47,7 @@ describe('hull geometry', () => {
     // That side walled off (the caller's check): the other.
     const walled = det([hull], me, to, null, (a, c) => a.z < 0 || c.z < 0)!;
     expect(walled.pos.z).toBeLessThan(-2.5);
-    expect(det([hull], me, to, null, () => false)).toBeNull();
+    expect(hullDetour([hull], me, to, { ok: () => false })).toBe('none');
   });
 
   it('ignores a hull off the way, one being boarded, a moving one, and one under the bot', () => {

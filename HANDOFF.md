@@ -72,6 +72,25 @@ owner-approved audit candidates 7 and 8; landed on main from its green `check/gu
     under the street by a buggy's spawn, at (196, -4, 42), with no route out for 105 s.
   - `botDesirability` is still hand-set.
 
+**Bot AI Phase C, part 3: parked vehicles in the way, side lanes by a corridor (`wip/bots-c3`, agent, 2026-11-10;
+owner-approved queue; BOT_AI_PLAN.md "Phase C, measured (part 3)", docs/BOTS.md "Parked vehicles, wrecks and turrets in
+the way" and "Side lanes by a corridor").** CHANGELOG "Bots walk round parked vehicles". No map or editor files touched.
+- **Parked vehicles, wrecks, turrets** (`bots/hulls.ts`, `BotBrain.pastHulls`/`cornerBeyond`, `BotWorldView.hulls`,
+  `MountView.wreck`): a bot on foot goes round a still hull in its next 7 m by the nearer corner, every leg checked for
+  walls and ground; a route corner under a hull is gone round to the next. `botHulls.test.ts`.
+- **Route spread** (`sideCorridor` in brain.ts): side lanes to an objective take a corridor of the side's trip on that
+  side, by its vias. `botSideLanes.test.ts`. The busiest way didn't move (58 → 57 %): see the plan for why and what next.
+- **bot-report:** still hulls walked round, stuck recoveries by one, overlap with a teammate (crowds), side lanes by a
+  corridor; `BOT_OFF=hulls,sideCorridors` switches the two off (brain.ts `BOT_SWITCHES`).
+- **Numbers** (main fc625d6 → branch): CTF 48 matches captures 36 → 46 (takes 251 → 211), stuck 1.20 → 1.17 a
+  bot-minute; vehicle maps (TDM, 12 matches) stuck 1.27 → 1.20, stuck by a still hull 42.5 → 34.0 a match, 10 s+ idle
+  spells 1.1 → 0.6; TDM sample stuck 0.79 → 0.63, failed searches 1.18 → 0.00 %. `bot-report --check`: every limit held.
+  `pnpm bench:96:clump` (load 1.2-1.6): bot thinking 1.7-2.1 ms a tick on main, 1.7-2.4 here (Frost Basin clumped
+  +0.2-0.3 ms: its vehicles by the spawns), inside the 2.5 ms guard.
+- **Not done, left for later:** crowd steering in clumps (measured: about 1 % of bot-time on foot within 0.8 m of a
+  teammate; not worth local avoidance yet); parkour links on a navmesh rebuilt mid-match (Fort Wars) and ways opened by
+  broken crates or walls (both need a tiled navmesh); a vehicle plugging a passage (no way round: the old sidestep).
+
 **Bot vehicle routing and getting out by a wall (`wip/vehicle-routing`, agent, 2026-11-10; the MapMaker lane's Whiteout
 report and gunplay pass 3's Riot Junction find; LANDED: green on `check/vehicle-routing` at d234b0f, run 42762326837,
 shard 6's unrelated `fireteams` hold check re-run once; landing line removed).** CHANGELOG "Bot vehicle routing and getting out by a wall".

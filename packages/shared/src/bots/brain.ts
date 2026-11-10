@@ -4151,9 +4151,10 @@ export class BotBrain {
       this.hullPass = null;
       return this.path[j]!;
     }
-    if (!pass) {
+    if (!pass || pass === 'none') {
       this.hullPass = null;
-      this.hullFreeUntil = tick + HULL_LOOK_TICKS;
+      // (No way round: not looked for again for half a second; each look is a few nav and ray queries.)
+      this.hullFreeUntil = tick + (pass ? TICK_RATE / 2 : HULL_LOOK_TICKS);
       return aim;
     }
     if (!hp || hp.index !== pass.index) this.hullDetours++;
