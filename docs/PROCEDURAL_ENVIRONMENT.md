@@ -163,6 +163,23 @@ Each family includes collision, surface types, LODs, budgets and tests, like the
 - **Target:** roughly 60–75% of today's ~1,366 props generated, for one consistent, grounded art style.
 - **Later option:** generate at load instead of at build time, for smaller downloads, measured against load time.
 
+**Phase 6 status (2026-11-10):**
+- **Part 1, crates and barrels: built** (`wip/kit-props`; docs/CONTENT_PIPELINE.md, "Kit props"). Seven families,
+  each with variants: `kit.crate.wood`, `kit.crate.wood_long`, `kit.crate.bin`, `kit.crate.framed`, `kit.box.carton`,
+  `kit.drum.steel` and `kit.drum.steel_open` (`tools/content/kitprops.mjs`, `tools/content/kit/`).
+  - **Gameplay:** each family is a catalogue prop; its collision is its box (§6: a crate is solid cover), every variant
+    fills it, and variants change only what is drawn.
+  - **Detail and budgets:** three levels of detail each; from the first lighter level on, no heavier than the Kenney
+    prop it replaces.
+  - **Aliases:** seven Kenney props are retired from the palette (`prop.crate_small`, `crate_large`, `cargo_crate`,
+    `metal_crate`, `cardboard_box`, `barrel`, `barrel_open`). Their aliases play them as the families, at the same size
+    and ballistic class, so no map's collision changes. The maps still name them until MapMaker's Replace all moves
+    them, so their files stay in the build.
+- **Left authored for now** (owner's call): the Meshy street barrels, and the themed or explosive pieces: ammo,
+  dynamite and powder-keg crates, the fuel drum, sci-fi crates and barrels, the dungeon and Wild West barrels, and the
+  fish and tarp crates.
+- **Next:** part 2, fences and walls; then part 3, containers.
+
 Do not scale to dozens of generated species before the first vertical slice looks good at eye level and passes performance/collision checks.
 
 ## 12. Required automated and manual acceptance tests

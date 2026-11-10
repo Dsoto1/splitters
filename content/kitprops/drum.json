@@ -51,7 +51,7 @@
           "seed": 2101,
           "look": {
             "paint": "#9c2a1e",
-            "band": "#7d8288",
+            "band": "#5f6569",
             "rust": 0.18,
             "wear": 0.3
           }
@@ -150,7 +150,7 @@
           "seed": 2201,
           "look": {
             "paint": "#9c2a1e",
-            "band": "#7d8288",
+            "band": "#5f6569",
             "rust": 0.25,
             "wear": 0.35,
             "fill": 0.7

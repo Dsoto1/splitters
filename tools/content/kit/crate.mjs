@@ -238,7 +238,8 @@ function crateFlat(seed, size, g, look) {
  */
 export function framedCrateMesh(seed, size, g, look, level) {
   const [w, h, d] = size;
-  if (level >= 2) return standIn(size, hex(look.frame), hex(look.frame));
+  // The farthest level: the bounds in the faces' average colour (more board than frame).
+  if (level >= 2) return standIn(size, mix3(hex(look.frame), hex(look.wood), 0.6), mix3(hex(look.frame), hex(look.wood), 0.55));
   const r = rng(seed);
   const m = new Mesh();
   const tb = g.tube;

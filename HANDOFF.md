@@ -8,6 +8,38 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Kit-prop generators, part 1: crates and barrels (`wip/kit-props`, agent, 2026-11-10; owner-approved Phase 6; docs/PROCEDURAL_ENVIRONMENT.md §11 "Phase 6 status", docs/CONTENT_PIPELINE.md "Kit props"; CHANGELOG "Our own crates, drums and cartons").**
+- **Seven generated families** (`tools/content/kitprops.mjs`, generators in `tools/content/kit/`, content in
+  `content/kitprops.json` and `content/kitprops/*.json`, models in `public/kit/`):
+  - `kit.crate.wood` (5 variants), `kit.crate.wood_long` (4), `kit.crate.bin` (3) and `kit.crate.framed` (4);
+  - `kit.box.carton` (4);
+  - `kit.drum.steel` (5) and `kit.drum.steel_open` (3).
+  - Each has three levels of detail and one material (its surface's detail map, vertex colours).
+- **They are ordinary catalogue props** (`CORE_PROPS` = packs + `KIT_PROPS`; `shared/content/kitProps.ts`). Collision
+  is the box each fills. `PropEntity.variant` only picks the drawn file (`kitModelFile`, client `propVisuals.ts`).
+- **Aliases** (`content/kitprops.json`; `shared/map/propAliases.ts`, run in `loadMap` as played, after set pieces are
+  expanded):
+  - `prop.crate_small` → `kit.crate.wood`, `crate_large` → `wood_long`, `cargo_crate` → `bin`, `metal_crate` →
+    `framed`, `cardboard_box` → `carton`, `barrel` → `drum.steel`, `barrel_open` → `drum.steel_open`; all variant 0,
+    scale 1.
+  - Each family has the old prop's exact size, breakable health and debris, and a surface of the same ballistic class.
+  - `shared/test/kitProps.test.ts` checks every official map: prop collision boxes, breakables and footing are
+    unchanged. **No map's collision changed.**
+  - MapMaker keeps maps as made. The seven are in `RETIRED_PROPS`, out of the Props tab too (the prop groups now skip
+    retired props), and `REPLACEMENTS` suggests the family.
+- **Editor hooks (claimed):**
+  - the prop inspector's Variant row for kit families (`entityInspector.ts`);
+  - Randomise rolls kit variants (`propRandom.ts`);
+  - Replace all reads `kit.<id>#<n>` (`parseModelChoice`);
+  - the palette atlas group `kitprops`.
+- **For the MapMaker lane:**
+  - Replace all of the seven retired props on the official maps, when it suits. As played they already draw the new
+    pieces; Replace all lets the files go later.
+  - 722 placements on 57 maps (bunker_cross 82, iron_tide 54, undergate_transit 44), plus three set pieces
+    (`content/setpieces/sunkenarena.json`, `reactor.json`, `loadingdock.json`; they upgrade as played too).
+  - The old files stay in the build until then.
+- **Tools:** `prop-lineup.mjs` takes `ONLY=kit.crate.wood,kit.crate.wood#2`, and `__lineup.show` takes `id#n`.
+  `prop-contacts.mjs` measures kit families too.
 **Fireteams part 3: squad scores, the squad MVP, the party preset (`wip/fireteams-3`, agent, 2026-11-10; owner-approved; green on `check/fireteams-3` at da05b91, run 42780770897; LANDED; landing line removed).**
 Details: docs/FIRETEAMS_PLAN.md, "Part 3"; docs/BOTS.md, "Fireteams Part 3".
 - **Squad scores** in the sim (`sim/squadScores.ts`, `Fireteams.scores`): kill 10, assist 5 (a hit within 10 s before
