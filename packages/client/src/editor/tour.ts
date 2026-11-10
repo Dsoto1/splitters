@@ -96,7 +96,8 @@ export class EditorTour {
 
   start(): void {
     this.set(startTour());
-    (this.card.querySelector('#ed-tour-next') as HTMLButtonElement).focus({ preventScroll: true });
+    // Its button takes the keyboard (once MapMaker is on screen: entering it starts the tour before it shows).
+    requestAnimationFrame(() => this.state.step === 0 && (this.card.querySelector('#ed-tour-next') as HTMLButtonElement).focus({ preventScroll: true }));
   }
 
   skip(): void {

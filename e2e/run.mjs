@@ -1106,6 +1106,134 @@ async function editoruxFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await editorInterfaceChecks(browser);
+  await editorTourChecks(browser);
+}
+
+/**
+ * MapMaker overhaul Phase 6 (docs/MAPMAKER_OVERHAUL_PLAN.md): the first-time tour. Not in `?test=1` unless `&tour=1`;
+ * the whole tour with the real tools (a room, a spawn, a pickup, PLAY TEST), each step moving on when it's done; not
+ * shown again once done; started again from the `?` key list; Skip and Esc end it; the card fits at 1280 and 1920 px.
+ */
+async function editorTourChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const ctx = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await ctx.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  const tour = () => page.evaluate(() => ({ shown: !document.getElementById('ed-tour').hidden, step: document.getElementById('ed-tour').dataset.step, count: document.getElementById('ed-tour-count').textContent, title: document.getElementById('ed-tour-title').textContent, lit: [...document.querySelectorAll('.ed-tour-spot')].map((e) => e.id || e.dataset.tool || e.dataset.ws || e.dataset.pane || e.className), stored: localStorage.getItem('tiletrigger.editor.tour') }));
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const clickAt = async (x, y, z) => {
+    const p = await at(x, y, z);
+    await page.mouse.move(p.x, p.y);
+    await frames(page, 3);
+    await page.mouse.click(p.x, p.y);
+    await frames(page, 2);
+  };
+  // In test mode it stays away unless asked.
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await frames(page, 3);
+  check(!(await tour()).shown, 'the tour does not start in ?test=1');
+  await page.goto(`${CLIENT}/?mode=editor&test=1&tour=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await frames(page, 3);
+  let t = await tour();
+  check(t.shown && t.step === 'welcome' && (await page.evaluate(() => document.activeElement?.id)) === 'ed-tour-next', `?tour=1 starts it on a first visit, on the welcome, its button focused (${JSON.stringify(t)})`);
+  await shot('tour-1-welcome');
+  // Enter on the focused button: keyboard reachable.
+  await page.keyboard.press('Enter');
+  await frames(page, 2);
+  t = await tour();
+  check(t.step === 'room' && t.count === 'Step 1 of 4' && t.lit.includes('tile:core.room'), `Let's go: place a room, the Room card lit (${JSON.stringify(t)})`);
+  await shot('tour-2-room');
+  // Editing isn't blocked: the wrong thing waits; the right one moves it on.
+  await clickTool(page, '[data-tool="tile:core.corridor"]');
+  // A new map has a room and a spawn: the tour asks for another of each.
+  await clickAt(-8, 0, 0);
+  check((await tour()).step === 'room' && (await page.evaluate(() => window.__editor.doc.classicStructure.tiles.length)) === 2, 'a corridor is placed but the tour still waits for a room');
+  await page.keyboard.press('Control+KeyZ');
+  await clickTool(page, '[data-tool="tile:core.room"]');
+  await clickAt(8, 0, 0);
+  t = await tour();
+  check(t.step === 'spawn' && t.lit.includes('ed-entities-btn'), `placing a room moves on to the spawn, the Gameplay tab lit (${JSON.stringify(t)})`);
+  await shot('tour-3-spawn-mode');
+  await page.click('#ed-modes [data-ws="entities"]');
+  await frames(page, 2);
+  t = await tour();
+  check(t.lit.includes('spawn'), `in Gameplay the Player Spawn card is lit (${JSON.stringify(t.lit)})`);
+  await shot('tour-3-spawn');
+  await page.click('[data-tool="spawn"]');
+  await clickAt(8, 0, 0);
+  t = await tour();
+  check(t.step === 'pickup' && t.lit.includes('pickup:core.health_small'), `placing a spawn moves on to the pickup, its card lit (${JSON.stringify(t)})`);
+  await shot('tour-4-pickup');
+  await page.click('[data-tool="pickup:core.health_small"]');
+  await clickAt(10, 0, 2);
+  t = await tour();
+  check(t.step === 'test' && t.lit.includes('ed-test') && t.lit.includes('ed-test-here'), `placing a pickup moves on to testing, ▶ Here and PLAY TEST lit (${JSON.stringify(t)})`);
+  await shot('tour-5-test');
+  await page.click('#ed-test');
+  const started = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) }).then(() => true, () => false);
+  check(started && (await tour()).stored === 'done', `PLAY TEST starts the match; the tour is remembered as done (${started})`);
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
+  await frames(page, 2);
+  t = await tour();
+  check(t.shown && t.step === 'done', `back in MapMaker the closing card waits (the Esc that left the test didn't close it) (${JSON.stringify(t)})`);
+  await shot('tour-6-done');
+  await page.click('#ed-tour-next');
+  check(!(await tour()).shown, 'Done closes it');
+  // Not again: another visit in the same browser.
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await frames(page, 3);
+  t = await tour();
+  check(!t.shown && t.stored === 'done', `once done it doesn't show again (${JSON.stringify(t)})`);
+  // Started again from the ? key list.
+  await page.mouse.move(700, 400);
+  await page.keyboard.press('Shift+Slash');
+  await frames(page, 2);
+  await shot('tour-keys');
+  await page.click('#ed-keys-tour');
+  await frames(page, 2);
+  t = await tour();
+  check(t.shown && t.step === 'welcome' && !(await page.evaluate(() => document.getElementById('ed-keys').open)), `the key list's Take the tour starts it again (${JSON.stringify(t)})`);
+  // The card stays between the panels, on screen, at 1280 and 1920 px.
+  const fit = () => page.evaluate(() => {
+    const c = document.getElementById('ed-tour').getBoundingClientRect();
+    const pal = document.getElementById('ed-palette').getBoundingClientRect();
+    const right = document.getElementById('ed-right');
+    const r = right.offsetParent ? right.getBoundingClientRect().left : innerWidth;
+    return { ok: c.left >= pal.right - 1 && c.right <= r + 1 && c.bottom <= innerHeight && c.width >= 280, c: [Math.round(c.left), Math.round(c.right)], pal: Math.round(pal.right), r: Math.round(r) };
+  });
+  const fits = {};
+  for (const [w, h] of [[1280, 720], [1920, 1080]]) {
+    await page.setViewportSize({ width: w, height: h });
+    await frames(page, 3);
+    fits[w] = await fit();
+    await shot(`tour-${w}`);
+  }
+  check(fits[1280].ok && fits[1920].ok, `the card sits between the palette and the side panel at 1280 and 1920 px (${JSON.stringify(fits)})`);
+  await page.setViewportSize({ width: 1400, height: 820 });
+  // Skip ends it at any step; so does Esc.
+  await page.click('#ed-tour-next');
+  await page.click('#ed-tour-skip');
+  t = await tour();
+  check(!t.shown && t.stored === 'skipped' && !t.lit.length, `Skip ends it mid-tour, remembered as skipped (${JSON.stringify(t)})`);
+  await page.keyboard.press('Shift+Slash');
+  await page.click('#ed-keys-tour');
+  await page.click('#ed-tour-next');
+  await frames(page, 2);
+  await page.mouse.move(700, 400);
+  await page.keyboard.press('Escape');
+  t = await tour();
+  check(!t.shown && !t.lit.length, `Esc ends it too (${JSON.stringify(t)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await ctx.close();
 }
 
 /**

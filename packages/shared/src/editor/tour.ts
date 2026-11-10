@@ -27,8 +27,8 @@ export interface TourStep {
 
 export const TOUR_STEPS: readonly TourStep[] = [
   { id: 'welcome', title: 'Welcome to MapMaker', hint: "Let's make a tiny map and play it. It takes about a minute.", on: 'button' },
-  { id: 'room', title: 'Place a room', hint: 'Pick Room, then click the ground to put it down.', mode: 'build', targets: ['tile:core.room'], on: 'edit' },
-  { id: 'spawn', title: 'Add a spawn', hint: 'In Gameplay, pick Player Spawn and click inside your room.', mode: 'entities', targets: ['spawn'], on: 'edit' },
+  { id: 'room', title: 'Place a room', hint: 'Pick Room, then click the ground next to the first room.', mode: 'build', targets: ['tile:core.room'], on: 'edit' },
+  { id: 'spawn', title: 'Add a spawn', hint: 'In Gameplay, pick Player Spawn and click inside your new room.', mode: 'entities', targets: ['spawn'], on: 'edit' },
   { id: 'pickup', title: 'Add a pickup', hint: 'Pick one, say Health (Small), and drop it near the spawn.', mode: 'entities', targets: ['pickup:core.health_small'], on: 'edit' },
   { id: 'test', title: 'Try it out', hint: '▶ Here plays from where you look; ▶ PLAY TEST starts at a spawn.', targets: ['#ed-test-here', '#ed-test'], on: 'test' },
   { id: 'done', title: 'Nice work!', hint: "That's the whole loop. Press ? for every key, and to take this tour again.", on: 'button' },
