@@ -221,6 +221,8 @@ The workflow is unchanged (CLAUDE.md):
 
 **Landing now: maps retire/rename (`check/maps-retire`; this session), please hold code pushes to main.** (Maps agent, 2026-11-10; one check run, then a fast-forward.)
 
+**Next in line to land: vehicle routing fixes (`check/vehicle-routing`; this session).** (Vehicle-routing agent, 2026-11-10; after maps retire/rename: one check run, then a fast-forward.)
+
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
   `packages/client/src/editor/**`, `packages/shared/src/editor/**`, the map schema or `MAP_FORMAT_VERSION`
