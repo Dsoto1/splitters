@@ -8,6 +8,14 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Fireteams follow-ups: CTF squad roles, handoff carries squad points, bot-report squad scores (`wip/fireteams-4`, agent, 2026-11-10; the owner's three decisions; not landed yet: see the Next-in-line line below).** Details and numbers: docs/FIRETEAMS_PLAN.md, "Follow-ups"; docs/BOTS.md, "Fireteams follow-ups". CHANGELOG "Fireteams: CTF squad roles".
+- **CTF squad roles** (`ctfSquadRoles`, `CtfBotPlan.squadRoles`, `ModeLogic.squadRole`): 3+ squads a side, the smallest defends (ties to the higher id); 2, both attack; a person's squad only by default until their first order (`Squad.ordered`). The squad HUD line shows it (`#squad-order em`); the snapshot's `fs` carries it at index 10 (members from 11). `BOT_OFF=squadDefend` plays the old rule.
+- **Measured: it does not help, it costs captures on 3-squad maps** (Diamond Park 0.8 → 0.3, Obsidian Orb 2.8 → 0.3, Market Town 0.5 → 0.3 a match; takes 53 → 12 in 12 matches); 2-squad maps unchanged. Questions for the owner in the report and FIRETEAMS_PLAN.
+- **Handoff:** `MatchCheckpoint.squads` and `CheckpointPlayer.sp` (`Match.checkpointSquads` / `restoreSquads`, `Fireteams.adopt`); matchHost.ts's checkpoint adds one line.
+- **bot-report:** `squad scores:` line, best squad / MVP columns, CTF defence table (captures, returns, by defenders, flags defended, defend squad-s).
+- **Tests:** `shared/test/fireteamsFollowups.test.ts`, `server/test/squadScoreLine.test.ts`, squadHud's role; e2e `fireteamsctf` (new flow, its own function; `fireteamsFlow` untouched), mapped from `squadHud.ts` and twin_spires.
+- **Pitfall:** `pnpm build` ran out of heap (2 GB) on this box while two bot-reports ran: `NODE_OPTIONS=--max-old-space-size=5120 pnpm build`.
+
 **Community maps (`wip/community-maps`, agent, 2026-11-10; the owner-approved plan, queued item 6; all five build steps; green on `check/community-maps` at 8c856ba, run 42811718756; LANDED; landing line and editor claim removed).** Details, tests and the owner's open questions: docs/COMMUNITY_MAPS.md, "What's built". CHANGELOG "Community maps".
 - **Local library in IndexedDB** (`client/src/localMaps.ts`; `editor/storage.ts` and `mapSaving.ts`: save/load hooks only): unlimited saved maps, the old localStorage library moves in once; Open… has Duplicate and Rename. Your maps join Match setup under "Your maps".
 - **Hosting:** a hosted own map is listed as a Community map with its creator (first signed-in lister of the map ID) and a Report button; the game browser has a map filter.
