@@ -476,7 +476,7 @@ for the owner's review, not landed).**
 
 **Queued after MapMaker Phase 2: maps retire/rename** (`wip/maps-retire`, maps agent, 2026-11-10; lock released for MapMaker Phase 2 to go first).
 
-**Next in line to land: MapMaker Phase 2, the split and the interface** (`check/mapmaker-p2-full`, MapMaker lane, 2026-11-10). It has waited behind far copies and now Iron Coast part 3. Please let it go next, before starting another hold.
+**Landing now: MapMaker Phase 2 (`check/mapmaker-p2-full`), please hold code pushes to main.** (MapMaker lane, 2026-11-10.)
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
