@@ -2650,7 +2650,7 @@ export class FrontEnd {
       ['display', 'Display', [
         row('Fullscreen', fullscreen, 'F11 or Alt+Enter also switch it.'),
         row('Graphics', graphics, 'Applies from your next match. Medium suits most computers; drop to Low if the game stutters, try High on a strong graphics card.'),
-        row('Room lights', toggle(roomLights), 'On by default: lamps light the rooms around them. Off, they still glow but the sun and sky light everything: try it if dark squares show on lit walls (and tell us). Also in the pause menu (Settings).'),
+        row('Room lights', toggle(roomLights), 'On by default: lamps light the rooms around them. Off, they still glow but the sun and sky light everything: try it if dark squares show on lit walls (and tell us). On a phone at Low graphics lamps only glow, and rooms are lit a little brighter instead. Also in the pause menu (Settings).'),
         row('Render scale', renderScale, 'Pixels drawn per screen point. Native on a Retina screen is four times the work; Auto is barely softer and much cooler and quieter on laptops.'),
         row('Frame cap', frameCap, 'Most frames drawn a second. 60 is smooth and keeps laptops cool.'),
         row('First person', firstPerson, 'Full body: look down and see your character, legs and feet. Arms only: just your arms on the gun. The gun handles the same either way.'),
