@@ -10,6 +10,7 @@ made only on a commit that passed CI on a check branch.
 
 - **Iron Coast loads again.** Every mode on it fell back to the menu ("local match failed: Maximum call stack size exceeded"): its fine terrain grid has 78,385 heights, more than the browser takes in one call.
 - **Roulette: bots have general names.** A bot named after the character it first wore (Biscuit, the cat) kept the name while every life dealt it another look, so the name over the old man read Biscuit.
+- **Smoother big matches, step 2.** Characters out of view (and spare bodies) no longer keep their paused animations on the engine's running list, which every animation change had to search; glow colours are set only when they change.
 - **Smoother big Roulette matches (St. John's, step 1).** Hidden spare characters no longer pile up (at most 16 kept), a replaced character is cleared away in one pass, and the spawn-shield fade is skipped out of view. More to come.
 - Dynamite now wears the Emergency Flare model (Meshy Community CC0): a red stick with a fuse, in hand, in flight and on its pickup. Mechanics unchanged.
 - The Holy Bomb now wears a gold orb model (Meshy Community CC0), in hand, in flight and on its pickup. Mechanics unchanged.
