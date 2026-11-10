@@ -223,7 +223,7 @@ sits, and thins over its last 3 s: 18 s in all. It is only sight:
   out over about two thirds of a second: no flash, no white-out, no flicker), and the sky, which draws without fog,
   fades to the same grey (else the skyline, and anyone against it, showed through); an enemy's marker behind smoke
   isn't drawn. Left as it is: at High the screen-space shading still picks out faint, low-contrast shapes of the
-  scenery past the cloud. A map without haze (the space maps: Halcyon Station, Starhaven, Twin Spires and Void Yard,
+  scenery past the cloud. A map without haze (the space maps: Halcyon Station, Twin Spires and Void Yard,
   all Sci-fi, where the set hands smoke out, and the retired Creature Lab, Obsidian Orb and Skyward) draws with the
   scene's fog on at density 0 (`BackdropVisuals.build`), so a cloud, or water, only changes its colour and thickness.
   With the fog off there, the first step into smoke switched it on, and every material in view was built again with

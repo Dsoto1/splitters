@@ -154,9 +154,9 @@ const FIT_HULL_SLACK = 0.15;
  * FIT_STEP m past the first `skip` m (where the vehicle itself stands) the ground is found under the route (a ray down;
  * the route's corners are far apart over open ground, and hills rise between them) and a box that wide (square, so any
  * heading) must be clear from 0.9 to 1.9 m over it. A tank is kept out of passages a person fits through and it
- * doesn't, where it would wedge (Iron Tide's hangar). With `hull` (its height and half length) the box reaches up to
+ * doesn't, where it would wedge (Midnight Keel's hangar). With `hull` (its height and half length) the box reaches up to
  * the hull's top over the highest ground within half its length: a hull rides level, so going up stairs its rear
- * stands as high as its front (Iron Tide's centre stairs, under a beam at 3 m at their foot: a tank stopped on the
+ * stands as high as its front (Midnight Keel's centre stairs, under a beam at 3 m at their foot: a tank stopped on the
  * first step and was left there, in everyone's way).
  */
 export function routeFits(
@@ -235,7 +235,7 @@ type FitPhysics = { boxClear(center: Vec3, half: Vec3): boolean; raycastHit(orig
 /**
  * Does vehicle `m` fit along `path` (routeFits, at its `routeHalfWidth`), checked from just past its own hull to `upTo`
  * m along? Flyers (no routeHalfWidth) always do. Bot drivers keep to routes their hull fits: before, a Hauler followed
- * the foot route into Iron Tide's 3 m doors.
+ * the foot route into Midnight Keel's 3 m doors.
  */
 export function vehicleRouteFits(physics: FitPhysics, m: Pick<MountView, 'routeHalfWidth' | 'half'>, path: readonly Vec3[], upTo = Infinity): boolean {
   if (!m.routeHalfWidth || !m.half) return true;

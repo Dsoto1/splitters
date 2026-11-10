@@ -1310,7 +1310,7 @@ export class NavWorld {
       }
     }
     // None of them: the goal's part's own ground nearest the point. The places are 7 m apart, and the step or lip out
-    // of a sunken sliver can be a couple of metres from ground none of them is on (Underdrain's sump, Fogbound's gullies).
+    // of a sunken sliver can be a couple of metres from ground none of them is on (Underdrain's sump).
     if (!out.length) {
       const q = this.query.queryPolygons(from, { x: ESCAPE_REACH, y: 5, z: ESCAPE_REACH }, { maxPolys: 512 });
       const ground: { p: Vec3; d: number }[] = [];

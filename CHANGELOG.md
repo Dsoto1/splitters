@@ -12,6 +12,13 @@ made only on a commit that passed CI on a check branch.
 tools: place a room, a spawn and a pickup, then play it. Each step moves on when you do it; Skip or Esc ends it, and it
 won't show again. Take it again from the `?` key list.
 
+**Map line-up** (owner, 2026-11-09):
+- **Six maps retired:** Fogbound, Bottling Plant, Dune Harbor, No Man's Field, Overhang and Starhaven are gone from
+  the game (menus, Quick Play, the map vote, rotations). In the rotations Pump Tower and Razor Edge take their places
+  in Deathmatch Classics, Midnight Keel and Runway Nine in Objective Mix (Bomb), Market Town in Flag Run.
+- **Three maps renamed:** Iron Tide is now **Midnight Keel**, Ironhold Prison **Cormorant Isle** and Jungle Steps
+  **Cradle of Idols** (same maps, same places).
+- **Iron Maw** is for 16-64 players (was 16-32).
 **MapMaker: modes, folding panels and an outliner** (MapMaker overhaul Phase 2):
 - **Seven mode tabs:** Build, Props, Gameplay, Logic, Environment, Paths and Test, each with its own palette tabs and its
   own part of the side panel. Roads, the track and the drop routes have their own Paths mode; Test gathers Play test,

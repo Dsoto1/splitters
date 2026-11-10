@@ -8,6 +8,31 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Map line-up (`wip/maps-retire`, 2026-11-09/10; owner's decisions of 2026-11-09; green on `check/maps-retire` at b9365b0, run 42759236295; LANDED; claims released).**
+- **Retired (files deleted; git history keeps them):** fogbound, bottling (Bottling Plant), dune_harbor, no_mans_field,
+  overhang, starhaven: `maps/<id>.json`, their card pictures (`client/public/maps/shots/<id>.jpg`), `inspirations.ts`
+  lines, rotations, tests and current docs. Not added to `RETIRED_MAPS` (that list is for maps whose files stay; the
+  deleted ones of the earlier map review weren't either). No e2e flow, flowMap entry, bot-report/bot-limits default,
+  Quick Play list, playlist, server/host default or `test_coverage` named them.
+- **Rotation replacements** (same mode, not retired): Deathmatch Classics bottling → pump_tower, overhang → razor_edge;
+  Objective Mix (Bomb) dune_harbor → iron_tide, starhaven → runway_nine; Flag Run (CTF) no_mans_field → market_town
+  (not on BOTS.md's "still without a capture" list).
+- **Tests:** `rotation.test.ts`'s stub suite uses razor_edge for overhang; `hoverCeiling.test.ts`'s Dune Harbor doorway
+  (0.9 m sill, lintel at 2.5 m, roof at 3.5 m) is now built in the test's yard (Speeder through, Hauler stops and backs
+  out; passes). Code comments naming the retired maps reworded.
+- **Renamed in the real MapMaker** (Playwright: Import, Map properties' Name, Export; ids kept): iron_tide **Midnight
+  Keel**, ironhold_prison **Cormorant Isle** (also its match-start Logic message, "Cormorant Isle. Lights on: ..."),
+  jungle_steps **Cradle of Idols**. Checked unique first against every map name on origin/main and the unlanded
+  wip/mapmaker-* branches (no shared word, no shared 4-letter start, "of"/"the" ignored). Card pictures show no name
+  (unchanged). Docs, test titles and comments use the new names (CHANGELOG/HANDOFF history keeps the old ones).
+- **Iron Maw:** Players 16-64 in Map properties (was 16-32).
+- Every exported file differs from before only in that field (and the Logic text), `formatVersion` → 33 and the
+  release stamp (semantic diff); the terrain is written a row per line now, so the text diffs are large.
+  validate-map: 0 issues on all four.
+- Locally (box at load 9-22): typecheck, content:check, test:changed (6 timeouts under load; the map ones pass alone);
+  e2e maps/vehicles/hostcontrols/dedicatedhost timed out under load (iron_tide's offline match took 90 s against the
+  flow's 60 s; it starts and plays). CI ran the full suite (deleted card pictures are unmapped paths): green.
+
 **Release 0.9.0 (2026-11-08, owner-approved "wait for the passenger fix, then release together"):** main 4d8f205
 (green on `check/release-090`, run 42502393727; three e2e shards failed first in flows the release doesn't touch,
 arsenal, weaponsets and hostgame, as on other branches that hour, and passed on a re-run of the failed jobs). CI
@@ -218,6 +243,8 @@ The workflow is unchanged (CLAUDE.md):
 - run at most 3 agents, each on `wip/<name>`, green on `check/<name>`, then fast-forward main;
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
+
+**Landing now: vehicle routing fixes (`check/vehicle-routing`; this session), please hold code pushes to main.** (Vehicle-routing agent, 2026-11-10; one check run, then a fast-forward.)
 
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
@@ -433,6 +460,7 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
 - Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
+- Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 
 **MapMaker: time of day and weather (`wip/mapmaker-p5`, map format v34, MapMaker lane, 2026-11-09).** Overhaul Phase 5
 (docs/MAPMAKER_OVERHAUL_PLAN.md "As built"), chained after v33 (bot hints). Lands in a train.
@@ -474,8 +502,6 @@ for the owner's review, not landed).**
   roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
-
-**Queued after MapMaker Phase 2: maps retire/rename** (`wip/maps-retire`, maps agent, 2026-11-10; lock released for MapMaker Phase 2 to go first).
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.

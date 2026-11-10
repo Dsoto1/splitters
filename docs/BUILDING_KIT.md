@@ -945,7 +945,7 @@ Temple" (sandstone with teal-and-gold inlay, teal/gold banners, wall torches, ha
 spikes, a portcullis, multi-level terraces with waterfalls). The owner folded Ancient Temple into the Jungle
 Ruins refresh (2026-10-31: the two sounded alike), so it is one pack, 06 Jungle Ruins; 03 Imperial Arena stays
 Roman. The pack's first twelve tiles (`packTiles2.ts`) and 17 `jg_*` props are unchanged, so Verdant Ziggurat,
-Erosion, Sunken Kingdom, Fernwood Moon, After Hours and Jungle Steps load as before. New theme
+Erosion, Sunken Kingdom, Fernwood Moon, After Hours and Cradle of Idols load as before. New theme
 `core.ancient_temple` (mossy stone slab floors, carved temple stone walls, temple sandstone solids, jungle rock
 undersides, gold trim; backdrop clear sky, forest, moss). Demo map: `maps/vinefall_sanctum.json` (Vinefall
 Sanctum; Verdant Ziggurat was the demo before).
