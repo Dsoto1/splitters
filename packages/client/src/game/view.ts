@@ -583,6 +583,8 @@ export class GameView {
     const styler = new MapStyler(this.scene);
     // A terrain finer than 2 m is drawn at half its resolution on Low graphics (phones); it collides at full.
     styler.terrainDrawStep = loadGraphicsQuality() === 'low' ? 2 : 1;
+    // Soft paint borders are a second, see-through layer over the border cells: not on Low.
+    styler.terrainBlend = loadGraphicsQuality() !== 'low';
     styler.build(doc, boxes);
     // The level's per-style meshes merged across styles over array textures (levelMerge.ts; WebGL2): the loading gate
     // (prewarm) waits for it, so its shader is built before play.

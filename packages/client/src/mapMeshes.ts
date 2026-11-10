@@ -268,6 +268,127 @@ export class MapStyler {
       this.styleOf.set(mesh, style);
       this.terrainMeshes.push(mesh);
     }
+    if (this.terrainBlend && byMaterial.size > 1) this.buildTerrainBlend(t, name, ci, ri, hy, nrm);
+  }
+
+  /**
+   * Blend the terrain's paint across cell borders (owner, 2026-11-10: painted paths read as chunky squares): the game
+   * sets it off on Low graphics. Drawing only; the cells' materials (footsteps, bullets, the plan) are as painted.
+   */
+  terrainBlend = true;
+
+  /**
+   * Soft paint borders: over each cell, every other material painted on a neighbouring cell is drawn again, fading
+   * from its share of the cells round each corner (half along a straight border, a quarter or three quarters at a
+   * corner) to nothing at the corners it doesn't touch. Both sides of a border fade into each other, so the mix is
+   * the same on either side of the cell edge: a path is a band that fades over a cell each way, not a row of squares.
+   * One see-through mesh a material, on the very triangles of the ground under it (the same vertices and diagonal).
+   */
+  private buildTerrainBlend(t: NonNullable<MapDocument['terrain']>, name: string, ci: number[], ri: number[], hy: Float32Array, nrm: Float32Array): void {
+    const cols = t.cols;
+    const dc = ci.length - 1;
+    const dr = ri.length - 1;
+    const cell = (c: number, r: number): number => (c < 0 || r < 0 || c >= dc || r >= dr ? -1 : t.materials[ri[r]! * (cols - 1) + ci[c]!]!);
+    // A material's share of the (up to four) cells round a drawn vertex.
+    const share = (m: number, vc: number, vr: number): number => {
+      let has = 0;
+      let all = 0;
+      for (let dz = -1; dz <= 0; dz++) {
+        for (let dx = -1; dx <= 0; dx++) {
+          const at = cell(vc + dx, vr + dz);
+          if (at < 0) continue;
+          all++;
+          if (at === m) has++;
+        }
+      }
+      return all ? has / all : 0;
+    };
+    const quads = new Map<number, number[]>();
+    const others = new Set<number>();
+    for (let r = 0; r < dr; r++) {
+      for (let c = 0; c < dc; c++) {
+        const own = cell(c, r);
+        others.clear();
+        for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) others.add(cell(c + dx, r + dz));
+        others.delete(own);
+        others.delete(-1);
+        for (const m of others) {
+          let list = quads.get(m);
+          if (!list) quads.set(m, (list = []));
+          list.push(c, r);
+        }
+      }
+    }
+    for (const [m, list] of quads) {
+      const material = TERRAIN_MATERIALS[m] ?? 'grass';
+      const style = terrainStyle(material);
+      const inv = 1 / style.material.scale;
+      const n = list.length / 2;
+      const positions = new Float32Array(n * 12);
+      const normals = new Float32Array(n * 12);
+      const uvs = new Float32Array(n * 8);
+      const colors = new Float32Array(n * 16);
+      const indices = new Uint32Array(n * 6);
+      for (let k = 0; k < n; k++) {
+        const cc = list[k * 2]!;
+        const rr = list[k * 2 + 1]!;
+        for (let q = 0; q < 4; q++) {
+          // Corners 00, 10, 11, 01, as the ground's own.
+          const dvc = cc + (q === 1 || q === 2 ? 1 : 0);
+          const dvr = rr + (q >= 2 ? 1 : 0);
+          const vc = ci[dvc]!;
+          const vr = ri[dvr]!;
+          const vi = vr * cols + vc;
+          const x = t.origin[0] + vc * t.spacing;
+          const z = t.origin[1] + vr * t.spacing;
+          const p = (k * 4 + q) * 3;
+          positions[p] = x;
+          positions[p + 1] = hy[vi]!;
+          positions[p + 2] = z;
+          normals[p] = nrm[vi * 3]!;
+          normals[p + 1] = nrm[vi * 3 + 1]!;
+          normals[p + 2] = nrm[vi * 3 + 2]!;
+          uvs[(k * 4 + q) * 2] = x * inv;
+          uvs[(k * 4 + q) * 2 + 1] = z * inv;
+          const col = (k * 4 + q) * 4;
+          colors[col] = colors[col + 1] = colors[col + 2] = 1;
+          colors[col + 3] = share(m, dvc, dvr);
+        }
+        const base = k * 4;
+        indices.set([base, base + 1, base + 2, base, base + 2, base + 3], k * 6);
+      }
+      const vd = new VertexData();
+      vd.positions = positions;
+      vd.normals = normals;
+      vd.uvs = uvs;
+      vd.colors = colors;
+      vd.indices = indices;
+      const mesh = new Mesh(`${name}_terrainblend_${material}`, this.scene);
+      vd.applyToMesh(mesh);
+      mesh.hasVertexAlpha = true;
+      mesh.material = this.blendMaterial(style);
+      // Where three paints meet they are laid in the same order from every side.
+      mesh.alphaIndex = m;
+      mesh.isPickable = false;
+      // The ground under it casts the shadow.
+      mesh.metadata = { castsNoShadow: true };
+      mesh.freezeWorldMatrix();
+      this.terrainMeshes.push(mesh);
+    }
+  }
+
+  /** A style's material for the soft paint borders: the same look, drawn just in front of the ground it lies on. */
+  private blendMaterial(style: ResolvedStyle): StandardMaterial {
+    const key = `blend:${styleKey(style)}`;
+    let mat = this.materials.get(key);
+    if (!mat) {
+      mat = this.material(style).clone(`mat_${key}`);
+      // Half the level's depth bias: in front of the ground (merged or not), still behind what lies on it (a rug, a crate's base).
+      mat.zOffset = LEVEL_DEPTH_BIAS.factor / 2;
+      mat.zOffsetUnits = LEVEL_DEPTH_BIAS.units / 2;
+      this.materials.set(key, mat);
+    }
+    return mat;
   }
 
   /**
