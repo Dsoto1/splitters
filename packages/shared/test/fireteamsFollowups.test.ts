@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { CORE_BOT_PROFILES, DEFAULT_RULES, FLAG_DROPPED, FLAG_HOME, TICK_RATE, handoffKey, initPhysics, loadMap, orderSay, parseCheckpoint, readSquad, type MatchCheckpoint } from '../src/index.ts';
-import { BotFiller, CtfMode, Match, ctfSquadRoles, initNavigation, type Combatant } from '../src/match.ts';
+import { BotFiller, CtfMode, Match, SQUAD_DEFEND_MIN, ctfSquadRoles, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
 /**
- * Fireteams follow-ups (docs/FIRETEAMS_PLAN.md, "Follow-ups"): CTF squad roles (the smallest of 3+ squads a side
- * defends its flag, ties to the higher squad id; 2 squads both attack; a person's squad only by default, until they
+ * Fireteams follow-ups (docs/FIRETEAMS_PLAN.md, "Follow-ups"): CTF squad roles (the smallest of 4+ squads a side
+ * defends its flag, ties to the higher squad id; 3 or fewer all attack; a person's squad only by default, until they
  * give an order), worked out again as squads change; and host handoff carrying the squad and player points.
  */
 
@@ -50,31 +50,34 @@ function rolesFollowTheRule(match: Match): void {
 }
 
 describe('Fireteams follow-ups: CTF squad roles', () => {
-  it('the rule: 3+ squads, the smallest defends (ties to the higher id); 1 or 2 squads all attack', () => {
+  it('the rule: 4+ squads, the smallest defends (ties to the higher id); 3 or fewer squads all attack', () => {
     const roles = (l: [number, number][]) => Object.fromEntries(ctfSquadRoles(l.map(([id, size]) => ({ id, size }))));
-    expect(roles([[1, 5], [2, 5], [3, 4]])).toEqual({ 1: 'attack', 2: 'attack', 3: 'defend' });
+    expect(SQUAD_DEFEND_MIN).toBe(4);
+    expect(roles([[1, 5], [2, 5], [3, 4]])).toEqual({ 1: 'attack', 2: 'attack', 3: 'attack' });
+    expect(roles([[1, 4], [2, 4], [3, 4]])).toEqual({ 1: 'attack', 2: 'attack', 3: 'attack' });
     expect(roles([[1, 3], [2, 5], [3, 5], [4, 5]])).toEqual({ 1: 'defend', 2: 'attack', 3: 'attack', 4: 'attack' });
-    expect(roles([[1, 4], [2, 4], [3, 4]])).toEqual({ 1: 'attack', 2: 'attack', 3: 'defend' });
+    expect(roles([[1, 4], [2, 4], [3, 4], [4, 4]])).toEqual({ 1: 'attack', 2: 'attack', 3: 'attack', 4: 'defend' });
     expect(roles([[1, 5], [2, 3], [3, 4], [4, 3]])).toEqual({ 1: 'attack', 2: 'attack', 3: 'attack', 4: 'defend' });
+    expect(roles([[1, 6], [2, 6], [3, 6], [4, 6], [5, 5]])).toEqual({ 1: 'attack', 2: 'attack', 3: 'attack', 4: 'attack', 5: 'defend' });
     expect(roles([[1, 5], [2, 2]])).toEqual({ 1: 'attack', 2: 'attack' });
     expect(roles([[7, 1]])).toEqual({ 7: 'attack' });
     expect(roles([])).toEqual({});
   });
 
   it('in a match: whole squads take the role; worked out again when a squad changes size or a person takes one over', () => {
-    const match = ctfMatch([12, 12], 4);
+    const match = ctfMatch([16, 16], 4);
     const filler = new BotFiller(match);
-    for (let i = 0; i < 24; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!);
+    for (let i = 0; i < 32; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!);
     play(match);
     const ft = match.fireteams!;
     const mode = match.mode as CtfMode;
     rolesFollowTheRule(match);
     const team = match.teams![0]!.id;
-    // 3 squads of 4: the highest id defends.
+    // 4 squads of 4: the highest id defends.
     let sq = ft.teamSquads(team);
-    expect(sq.map((s) => s.members.length)).toEqual([4, 4, 4]);
+    expect(sq.map((s) => s.members.length)).toEqual([4, 4, 4, 4]);
     expect(sq.filter((s) => mode.squadRole(s.id) === 'defend').map((s) => s.id)).toEqual([Math.max(...sq.map((s) => s.id))]);
-    // A bot of the first squad leaves: that squad, now the smallest (3), defends at once; the one that did attacks.
+    // A bot of the first squad leaves: that squad, now the smallest (3, still 4 squads), defends at once; the one that did attacks.
     const first = sq[0]!;
     const was = sq.find((s) => mode.squadRole(s.id) === 'defend')!;
     match.remove(first.members.find((m) => m !== first.leader)!);
@@ -84,7 +87,7 @@ describe('Fireteams follow-ups: CTF squad roles', () => {
     rolesFollowTheRule(match);
     // A person joins: they take over the squad with a hole (the defending one); sizes are even again, so the highest id
     // defends (a person's squad has its role only as a default: they lead it).
-    const ana = filler.join('Ana', undefined, 24)!;
+    const ana = filler.join('Ana', undefined, 32)!;
     for (let i = 0; i < 7; i++) match.step();
     const hers = ft.squadOf(ana.slot)!;
     expect(hers.human).toBe(true);
@@ -93,17 +96,22 @@ describe('Fireteams follow-ups: CTF squad roles', () => {
     // The snapshot carries each squad's role for the squad HUD.
     const views = (match.snapshot([]).fs ?? []).map(readSquad);
     for (const v of views) expect(v.role).toBe(mode.squadRole(v.id));
+    // (Hers is shown until she gives an order.)
+    expect(views.find((v) => v.id === hers.id)?.role).toBe(mode.squadRole(hers.id));
     expect(views.some((v) => v.role === 'defend')).toBe(true);
   });
 
-  it('with 2 squads a side both attack', () => {
-    const match = ctfMatch([8, 8], 4, 3);
-    for (let i = 0; i < 16; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!);
+  it.each([
+    [2, [8, 8] as [number, number]],
+    [3, [12, 12] as [number, number]],
+  ])('with %i squads a side all attack', (n, teams) => {
+    const match = ctfMatch(teams, 4, 3);
+    for (let i = 0; i < teams[0] + teams[1]; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!);
     play(match);
     const mode = match.mode as CtfMode;
     for (const t of match.teams!) {
       const sq = match.fireteams!.teamSquads(t.id);
-      expect(sq).toHaveLength(2);
+      expect(sq).toHaveLength(n);
       for (const s of sq) {
         expect(mode.squadRole(s.id)).toBe('attack');
         for (const m of s.members) expect(mode.botPlan.roles.get(m)).toBe('attack');
@@ -112,8 +120,8 @@ describe('Fireteams follow-ups: CTF squad roles', () => {
   });
 
   it('the defending squad holds round its flag base and returns its dropped flag', () => {
-    const match = ctfMatch([12, 12], 4, 4);
-    for (let i = 0; i < 24; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!);
+    const match = ctfMatch([16, 16], 4, 4);
+    for (let i = 0; i < 32; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!);
     play(match);
     const mode = match.mode as CtfMode;
     const ft = match.fireteams!;
@@ -167,18 +175,18 @@ describe('Fireteams follow-ups: CTF squad roles', () => {
   }, 120000);
 
   it("a person's squad: the role is its default until they give an order (the smallest, a person's, defends by default)", () => {
-    // Three people on one side, each leading a squad of 2 (themselves and a bot): the highest id is smallest by the tie.
-    const match = ctfMatch([6, 6], 4, 5);
+    // Four people on one side, each leading a squad of 2 (themselves and a bot): the highest id is smallest by the tie.
+    const match = ctfMatch([8, 8], 4, 5);
     const team = match.teams![0]!.id;
     const other = match.teams![1]!.id;
-    const people = [0, 1, 2].map((i) => match.addHuman(`p${i}`, undefined, team)!);
-    for (let i = 0; i < 3; i++) match.addBot(`a${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, undefined, false, { team });
-    for (let i = 0; i < 6; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, undefined, false, { team: other });
+    const people = [0, 1, 2, 3].map((i) => match.addHuman(`p${i}`, undefined, team)!);
+    for (let i = 0; i < 4; i++) match.addBot(`a${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, undefined, false, { team });
+    for (let i = 0; i < 8; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, undefined, false, { team: other });
     play(match);
     const ft = match.fireteams!;
     const mode = match.mode as CtfMode;
     const sq = ft.teamSquads(team);
-    expect(sq.map((s) => [s.human, s.members.length])).toEqual([[true, 2], [true, 2], [true, 2]]);
+    expect(sq.map((s) => [s.human, s.members.length])).toEqual([[true, 2], [true, 2], [true, 2], [true, 2]]);
     const def = sq.find((s) => mode.squadRole(s.id) === 'defend')!;
     expect(def.id).toBe(Math.max(...sq.map((s) => s.id)));
     const lead = match.slots[def.leader!]!;
@@ -196,8 +204,12 @@ describe('Fireteams follow-ups: CTF squad roles', () => {
     expect(mode.botPlan.roles.get(mate.slot)).toBe('attack');
     expect((match as unknown as { fireteamGoal: (c: Combatant) => object | null }).fireteamGoal(mate)).not.toBeNull();
     rolesFollowTheRule(match);
-    // The squad's role itself stays the team's plan (shown on the HUD line).
-    expect(readSquad((match.snapshot([]).fs ?? []).find((a) => a[0] === def.id)!).role).toBe('defend');
+    const roleOf = (id: number) => readSquad((match.snapshot([]).fs ?? []).find((a) => a[0] === id)!).role;
+    // The HUD's role word goes once its leader has given an order (the lead's decision); the team's plan keeps the role,
+    // and the other people's squads, not ordered yet, still show theirs.
+    expect(mode.squadRole(def.id)).toBe('defend');
+    expect(roleOf(def.id)).toBeNull();
+    for (const s of sq) if (s !== def) expect(roleOf(s.id)).toBe('attack');
     void people;
   });
 

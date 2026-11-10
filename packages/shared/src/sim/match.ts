@@ -2764,7 +2764,7 @@ export class Match {
       this.squadNotes(ft.sync(roster, this.tick));
     }
     // Objective first (Part 2): the mode gives a bot-led squad one role for all of it (CTF: attack or defend together).
-    // (Follow-ups: every squad by size, people's too, so CTF's smallest of 3+ squads defends: ModeLogic.squadRole.)
+    // (Follow-ups: every squad by size, people's too, so CTF's smallest of 4+ squads defends: ModeLogic.squadRole.)
     this.mode?.botUnits?.(this.squadUnit, this.squadInfo);
     if (this.phase === 'playing' && this.tick % 6 === 0) this.squadNotes(ft.step(this.tick, this.squadWorld));
     // Squad scores (Part 3): objective plays as they're counted, and King of the Hill's seconds on the hill.
@@ -2814,7 +2814,7 @@ export class Match {
   };
 
   /**
-   * Fireteams follow-ups: a person's squad plays its mode role by itself (CTF: Defend, the smallest of 3+ squads) until
+   * Fireteams follow-ups: a person's squad plays its mode role by itself (CTF: Defend, the smallest of 4+ squads) until
    * the person gives it an order; meanwhile its bots play the role as a bot-led squad's do (ctfBotGoal's defend: round
    * our flag's base, to our dropped flag, after its carrier).
    */
@@ -6718,7 +6718,7 @@ export class Match {
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),
       ...(this.rules.leaders && this.teams ? { ld: this.teams.map((t) => this.leaderOf.get(t.id) ?? -1) } : {}),
-      ...(this.fireteams && this.teams ? { fs: this.fireteams.squads.map((q) => squadSnapshot(q, this.teams!.findIndex((t) => t.id === q.team), this.fireteams!.scores.squad(q.id).points, this.mode?.squadRole?.(q.id) ?? null)) } : {}),
+      ...(this.fireteams && this.teams ? { fs: this.fireteams.squads.map((q) => squadSnapshot(q, this.teams!.findIndex((t) => t.id === q.team), this.fireteams!.scores.squad(q.id).points, q.human && q.ordered ? null : (this.mode?.squadRole?.(q.id) ?? null))) } : {}),
       ...(this.roulette?.snapshot() ? { rl: this.roulette.snapshot()! } : {}),
       ...(this.mode ? { md: this.mode.snapshot() } : this.zombies ? { md: { ts: [this.zombies.wave], zb: this.zombies.snapshot() } } : {}),
     };
