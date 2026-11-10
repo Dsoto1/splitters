@@ -102,7 +102,7 @@ owner-approved audit candidates 7 and 8; landed on main from its green `check/gu
   - `botDesirability` is still hand-set.
 
 **Bot AI Phase C, part 3: parked vehicles in the way, side lanes by a corridor (`wip/bots-c3`, agent, 2026-11-10;
-owner-approved queue; BOT_AI_PLAN.md "Phase C, measured (part 3)", docs/BOTS.md "Parked vehicles, wrecks and turrets in
+owner-approved queue; LANDED from `check/bots-c3`, landing line removed; BOT_AI_PLAN.md "Phase C, measured (part 3)", docs/BOTS.md "Parked vehicles, wrecks and turrets in
 the way" and "Side lanes by a corridor").** CHANGELOG "Bots walk round parked vehicles". No map or editor files touched.
 - **Parked vehicles, wrecks, turrets** (`bots/hulls.ts`, `BotBrain.pastHulls`/`cornerBeyond`, `BotWorldView.hulls`,
   `MountView.wreck`): a bot on foot goes round a still hull in its next 7 m by the nearer corner, every leg checked for
@@ -588,8 +588,6 @@ for the owner's review, not landed).**
   roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
-
-**Landing now: Bot AI Phase C part 3 (`check/bots-c3`; Bot AI Phase C agent), please hold code pushes to main.** (2026-11-10; one check run, then a fast-forward.)
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
