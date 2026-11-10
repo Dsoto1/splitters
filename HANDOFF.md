@@ -38,6 +38,25 @@ jump ahead, or something the owner explicitly bumps.
   - 722 placements on 57 maps (bunker_cross 82, iron_tide 54, undergate_transit 44), plus three set pieces
     (`content/setpieces/sunkenarena.json`, `reactor.json`, `loadingdock.json`; they upgrade as played too).
   - The old files stay in the build until then.
+- **Budgets** (triangles at levels 0 / 1 / 2, against the Kenney prop replaced):
+  - crate_small 124 → wood 308 / 52 / 10 (levels at 0, 14 and 40 m);
+  - crate_large 124 → wood_long 346 / 68 / 10;
+  - cargo_crate 76 → bin 314 / 66 / 50;
+  - metal_crate 428 → framed 270 / 146 / 10;
+  - cardboard_box 60 → carton 160 / 12 / 10;
+  - barrel 412 → drum 896 / 208 / 24, and barrel_open 380 → open drum 864 / 240 / 24.
+  - Files are 12-37 KB (the Kenney ones 5-40 KB).
+- **Perf** (SwiftShader, medium, load 12-17, main 732d570 against this branch):
+  - client-perf, `PERF_BOTS=16`, one pass each: bunker_cross 726 → 874 draws, 0.80 → 0.74 M triangles, 816 → 791
+    casters. iron_tide 482 → 479 draws, 1.06 → 0.97 M triangles, 378 → 180 casters.
+  - The fps was 0.1-0.3, so each figure is one or two frames and noisy.
+  - Fixed eye-level cameras at each map's busiest crate cluster: active meshes 258 → 255 (bunker_cross), 458 → 449
+    (iron_tide), 451 → 450 (flatpack_depot), 232 → 231 (undergate_transit). Triangles in view 0.30 → 0.31,
+    0.51 → 0.51, 0.41 → 0.42 and 0.18 → 0.22 M (undergate's crates are close, at full detail).
+  - Not measured on a real GPU.
+- **Pitfall found:** the prop batches (`client/game/propBatches.ts`) rebuild a model from its vertex data, and
+  normalised byte vertex colours came out grey there; only unbreakable kit props, batched at 8+ copies, showed it. The
+  kit GLBs store colours as floats.
 - **Tools:** `prop-lineup.mjs` takes `ONLY=kit.crate.wood,kit.crate.wood#2`, and `__lineup.show` takes `id#n`.
   `prop-contacts.mjs` measures kit families too.
 **Fireteams part 3: squad scores, the squad MVP, the party preset (`wip/fireteams-3`, agent, 2026-11-10; owner-approved; green on `check/fireteams-3` at da05b91, run 42780770897; LANDED; landing line removed).**
