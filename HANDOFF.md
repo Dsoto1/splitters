@@ -485,6 +485,7 @@ The workflow is unchanged (CLAUDE.md):
   landed on main with this answer): every bot holds fire and the air is clear before the shots, the teammate's spawn
   shield is cleared, and its damage is logged by attacker (`hurt` = your rounds; friendly fire off also needs nothing
   lost). Merge origin/main and the teams flow should hold.
+- Claimed: vehicle refresh (`wip/vehicles-refresh`, weapon and vehicle lane, this account, 2026-11-10): `content/vehicles/{gun_jeep,buggy,hover_bike,speeder,armored_rover,hauler}.json`, their entries in `content/guns.json` (new models `vehicles/*.glb`), the buggy's seats (6: driver + 5) and the code that assumes its 4 (`riderPlacement.ts`, `bots/vehicles.ts`, client `content/cockpits.ts`); no map or editor code. Re-skins first, then the 6-seat buggy; the Hauler (Sky Cruiser) last, its own landing.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
   Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
