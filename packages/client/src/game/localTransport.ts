@@ -125,7 +125,8 @@ export class LocalTransport implements Transport {
    */
   botDebug(onFrame: ((f: BotDebugFrame) => void) | null): void {
     this.onBotDebug = onFrame ?? undefined;
-    this.toHost({ k: 'botdebug', on: !!onFrame });
+    // (Before the match is started, it is asked for once it is: the worker drops anything before its 'start'.)
+    if (this.worker || this.inThread) this.toHost({ k: 'botdebug', on: !!onFrame });
   }
 
   /** A browser test's deterministic match (testMode.ts): offline only. */
@@ -244,8 +245,8 @@ export class LocalTransport implements Transport {
     if (typeof window.addEventListener === 'function') window.addEventListener('pagehide', this.onPageHide);
     // This browser's key goes with the match: a successor keeps our place for it if the match is handed on.
     const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, maxPlayers: deviceMaxPlayers(), ...this.opts }, hidden: document.hidden };
-    if (simThreadWanted() === 'worker' && this.startWorker(start)) return;
-    this.startHere(start);
+    if (!(simThreadWanted() === 'worker' && this.startWorker(start))) this.startHere(start);
+    if (this.onBotDebug) this.toHost({ k: 'botdebug', on: true });
   }
 
   /** The match in a module worker. False when one can't be made here. */
