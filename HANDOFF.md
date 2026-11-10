@@ -552,7 +552,7 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
-**Next in line to land: Fireteams part 3** (`check/fireteams-3`, Fireteams agent, 2026-11-10), after the mobile audit: one check run, then a fast-forward.
+**Landing now: Fireteams part 3 (`check/fireteams-3`; Fireteams agent), please hold code pushes to main.** (2026-11-10; one check run, then a fast-forward.)
 
 **Next in line to land: Bot AI Phase C part 3** (`check/bots-c3`, Bot AI Phase C agent, 2026-11-10), after Fireteams part 3: one check run, then a fast-forward. Touches brain.ts, match.ts (one view field and a wreck flag), bot-report, bench; no editor or map files.
 
