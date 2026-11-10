@@ -13,16 +13,18 @@ describe('Fireteams scoreboard squads (Part 3)', () => {
   const row = (slot: number, k: number, pts: number): BoardRow => ({ slot, name: `P${slot}`, bot: slot !== 0, color: '#fff', cls: '', k, d: 0, obj: '', ping: '', pts: String(pts), leader: false, dead: false, me: slot === 0 });
   const names = (slot: number) => `P${slot}`;
 
-  it('a team grouped by squad, the best squad first, each squad by points; the leader marked; your squad marked', () => {
+  it('a team grouped by squad, yours first, then the best; each squad by points; the leader marked; your squad marked', () => {
     const fs = ft.squads.map((s) => squadSnapshot(s, s.team === 'a' ? 0 : 1, s === other ? 40 : s === mine ? 25 : 0));
     const rows = [0, 1, 2, 3, 4, 5, 6, 7].map((s) => row(s, s, s * 5));
     const groups = squadGroups(rows, readSquads(fs), 0, 0, squadHonours([]), names);
-    expect(groups.map((g) => g.id)).toEqual([other.id, mine.id]);
-    expect(groups.map((g) => g.points)).toEqual([40, 25]);
-    expect(groups[1]).toMatchObject({ name: "P0's squad", mine: true, mvp: '', best: false });
-    expect(groups[0]!.mine).toBe(false);
+    expect(groups.map((g) => g.id)).toEqual([mine.id, other.id]);
+    expect(groups.map((g) => g.points)).toEqual([25, 40]);
+    expect(groups[0]).toMatchObject({ name: 'P0', mine: true, mvp: '', best: false });
+    expect(groups[1]!.mine).toBe(false);
+    // Watching from the other team (or as a spectator): best first.
+    expect(squadGroups(rows, readSquads(fs), 0, 99, squadHonours([]), names).map((g) => g.id)).toEqual([other.id, mine.id]);
     // Rows by points, the leader marked.
-    const m = groups[1]!.rows;
+    const m = groups[0]!.rows;
     expect(m.map((r) => r.slot)).toEqual([...mine.members].sort((a, b) => b - a));
     expect(m.find((r) => r.slot === 0)?.squadLead).toBe(true);
     expect(groups.flatMap((g) => g.rows).map((r) => r.slot).sort()).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
@@ -33,8 +35,8 @@ describe('Fireteams scoreboard squads (Part 3)', () => {
     const aw: MatchAward[] = [['streak', 3, 4], ['bestsquad', 0, 30, mine.id], ['squadmvp', 0, 20, mine.id], ['squadmvp', other.members[1]!, 10, other.id]];
     const groups = squadGroups([0, 1, 2, 3, 4, 5, 6, 7].map((s) => row(s, 1, 1)), readSquads(fs), 0, 0, squadHonours(aw), names);
     const g = new Map(groups.map((x) => [x.id, x]));
-    expect(g.get(mine.id)).toMatchObject({ mvp: 'P0 · 20', best: true });
-    expect(g.get(other.id)).toMatchObject({ mvp: `P${other.members[1]} · 10`, best: false });
+    expect(g.get(mine.id)).toMatchObject({ mvp: 'P0', best: true });
+    expect(g.get(other.id)).toMatchObject({ mvp: `P${other.members[1]}`, best: false });
   });
 
   it('a row in no squad yet (someone joining) comes last under "Joining"; the other team’s squads are left out', () => {

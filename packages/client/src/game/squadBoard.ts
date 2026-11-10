@@ -3,8 +3,9 @@ import type { BoardRow, BoardSquad } from './scoreBoard.ts';
 
 /**
  * Fireteams Part 3 (docs/FIRETEAMS_PLAN.md): the scoreboard's squads. A team's rows grouped by squad (the snapshot's
- * `fs`), the squads best first (points, then id), each squad's rows by points, then kills; the squad's name is its
- * leader's. At the end of the match the squad awards (sim/squadScores.ts) name each squad's MVP and the Best Squad.
+ * `fs`), your squad first (so your row sits with it), then best first (points, then id), each squad's rows by points,
+ * then kills; a squad goes by its leader's name. At the end of the match the squad awards (sim/squadScores.ts) name
+ * each squad's MVP and the Best Squad.
  */
 
 /** The squad awards as the board reads them: each squad's MVP (slot, points) and the Best Squad's id. */
@@ -36,7 +37,7 @@ export function squadGroups(rows: readonly BoardRow[], squads: readonly SquadVie
   const pts = (r: BoardRow) => Number(r.pts) || 0;
   const order = (a: BoardRow, b: BoardRow) => pts(b) - pts(a) || b.k - a.k || a.d - b.d || a.slot - b.slot;
   const out: BoardSquad[] = [];
-  for (const q of [...squads].filter((s) => s.team === team).sort((a, b) => b.points - a.points || a.id - b.id)) {
+  for (const q of [...squads].filter((s) => s.team === team).sort((a, b) => Number(b.members.includes(me)) - Number(a.members.includes(me)) || b.points - a.points || a.id - b.id)) {
     const list = q.members.map((m) => bySlot.get(m)).filter((r): r is BoardRow => !!r && !used.has(r.slot));
     if (!list.length) continue;
     for (const r of list) used.add(r.slot);
@@ -44,9 +45,9 @@ export function squadGroups(rows: readonly BoardRow[], squads: readonly SquadVie
     const mvp = honours.mvp.get(q.id);
     out.push({
       id: q.id,
-      name: lead !== null ? `${name(lead)}'s squad` : 'Squad',
+      name: lead !== null ? name(lead) : 'Squad',
       points: q.points,
-      mvp: mvp ? `${name(mvp.slot)} · ${mvp.points}` : '',
+      mvp: mvp ? name(mvp.slot) : '',
       best: honours.best === q.id,
       mine: q.members.includes(me),
       rows: list.map((r) => (r.slot === lead ? { ...r, squadLead: true } : r)).sort(order),

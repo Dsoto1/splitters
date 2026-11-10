@@ -7539,23 +7539,34 @@ async function environmentFlow(browser) {
 }
 
 /**
- * Fireteams (docs/FIRETEAMS_PLAN.md, Parts 1 and 2): the variant on in Match setup (its squad size beside the score) →
+ * Fireteams (docs/FIRETEAMS_PLAN.md, Parts 1-3): the Fireteams party preset in Match setup (Team Deathmatch, the
+ * variant on, squads to fit the map's teams: Sandgate's 8 a side, squads of 4) →
  * you lead a squad of bots (the HUD's order line) → hold B: the order wheel (a tap of B is still the quick-message menu)
  * → pick Hold here → a bot answers; the squad HUD shows a card per squadmate → Spread out from the wheel (the squad
- * keeps its order, the HUD says so) → the squad holds there while you go off. Screenshots:
- * e2e-artifacts/fireteams-wheel-desktop.png, fireteams-hud-desktop.png. (The phone's Orders button: packages/client/test/inputWheel.test.ts; a
+ * keeps its order, the HUD says so) → the squad holds there while you go off → (Part 3) a kill with a squadmate's
+ * assist, then the end of the match with the vote: the scoreboard grouped by squad with their points, every squad's
+ * MVP on its line, Best Squad and your squad's MVP among the awards. Screenshots:
+ * e2e-artifacts/fireteams-wheel-desktop.png, fireteams-hud-desktop.png, fireteams-board-desktop.png, fireteams-board-phone.png
+ * (the same page at a phone's size). (The phone's Orders button: packages/client/test/inputWheel.test.ts; a
  * second match on a phone here would cost another minute and a half of the shards' budget.)
  */
 async function fireteamsFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 11, skill: 'easy', scoreLimit: 200, minutes: 20, fireteams: true })));
-  await page.goto(`${CLIENT}/?test=1&god=1`);
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.deathmatch', bots: 11, skill: 'easy', scoreLimit: 200, minutes: 20, spears: true })));
+  await page.goto(`${CLIENT}/?test=1&god=1&vote=1`);
   await page.click('#nav-play');
-  await page.waitForSelector('#setup-variant-fireteams', { timeout: T(30000) });
-  const setup = await page.evaluate(() => ({ on: document.getElementById('setup-variant-fireteams')?.getAttribute('aria-pressed'), size: document.querySelector('#arcade-squad-size .tab.on')?.textContent }));
-  check(setup.on === 'true' && setup.size === '5', `Match setup: the Fireteams variant is on, squads of 5 by default (${JSON.stringify(setup)})`);
+  // The party preset (Part 3): one click into Team Deathmatch with Fireteams, the map's teams, squads to fit them.
+  await page.waitForSelector('#setup-party-fireteams', { timeout: T(30000) });
+  await page.click('#setup-party-fireteams');
+  const setup = await page.waitForFunction(() => {
+    const on = document.getElementById('setup-variant-fireteams')?.getAttribute('aria-pressed');
+    const size = document.querySelector('#arcade-squad-size .tab.on')?.textContent;
+    const chip = document.getElementById('setup-party-fireteams')?.getAttribute('aria-pressed');
+    return on === 'true' && size ? { on, size, chip, spears: document.getElementById('setup-variant-spears')?.getAttribute('aria-pressed') ?? null, mode: JSON.parse(localStorage.getItem('cs.arcade')).mode } : null;
+  }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
+  check(setup?.chip === 'true' && setup.size === '4' && setup.mode === 'core.tdm' && setup.spears !== 'true', `the Fireteams party preset: Team Deathmatch, the variant on (Spears off), squads of 4 for Sandgate's 8 a side (${JSON.stringify(setup)})`);
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
   // You lead a squad: the match says so, and the HUD shows its order.
@@ -7564,17 +7575,20 @@ async function fireteamsFlow(browser) {
     const s = m.fireteams?.squadOf(me.slot);
     return s ? { leader: s.leader === me.slot, members: s.members.length, human: s.human, others: m.fireteams.squads.filter((q) => q !== s && q.team === s.team).map((q) => q.members.length) } : null;
   });
-  check(led && squad?.leader && squad.human && squad.members === 5, `you lead a fireteam of 5 (HUD "Follow me"; ${JSON.stringify(squad)})`);
-  check(!!squad && squad.others.length > 0 && squad.others.every((n) => n >= 2 && n <= 5), `bot-led squads fill the rest of your team (${JSON.stringify(squad?.others)})`);
+  check(led && squad?.leader && squad.human && squad.members === 4, `you lead a fireteam of 4 (HUD "Follow me"; ${JSON.stringify(squad)})`);
+  check(!!squad && squad.others.length > 0 && squad.others.every((n) => n >= 2 && n <= 4), `bot-led squads fill the rest of your team (${JSON.stringify(squad?.others)})`);
   // Play: the pointer is captured on a real desktop; a headless page without pointer lock plays as touch does.
+  // (The match opens paused: Resume, once it's there, and the pause menu gone before the keys.)
+  await page.waitForSelector('#resume', { state: 'visible', timeout: T(10000) }).catch(() => {});
   await page.click('#resume').catch(() => {});
+  await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
   await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
   // A tap of B: the quick-message menu, as without Fireteams.
   await page.keyboard.press('KeyB');
   const menu = await page.waitForFunction(() => !document.getElementById('msg-menu')?.hidden && document.getElementById('order-wheel')?.hidden !== false, null, { timeout: T(5000) }).then(() => true, () => false);
   await page.keyboard.press('KeyB');
   await page.waitForFunction(() => document.getElementById('msg-menu')?.hidden !== false, null, { timeout: T(5000) }).catch(() => {});
-  check(menu, 'a tap of B opens the quick-message menu, not the order wheel');
+  check(menu, `a tap of B opens the quick-message menu, not the order wheel (pause menu ${await page.evaluate(() => (document.getElementById('pause')?.hidden === false ? 'up' : 'down'))})`);
   // Hold B: the order wheel, seven orders (Part 2's Spread out / Stay tight last), your squad's current one ringed.
   const at = await sim(page, (m, me) => ({ x: me.move.pos.x, z: me.move.pos.z }));
   await page.keyboard.down('KeyB');
@@ -7601,7 +7615,7 @@ async function fireteamsFlow(browser) {
     const list = [...document.querySelectorAll('#squad-hud .sq-mate')];
     return hud && hud.place && list.length === hud.members.length - 1 && list.every((c) => c.querySelector('.sq-name')?.textContent && c.querySelector('.sq-hp i')) ? list.map((c) => ({ name: c.querySelector('.sq-name').textContent, hp: c.querySelector('.sq-hp i').style.width, down: c.classList.contains('down') })) : null;
   }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
-  check(!!cards && cards.length === 4 && cards.every((c) => c.down || parseInt(c.hp, 10) > 0), `the squad HUD shows your 4 squadmates' cards with their health (${JSON.stringify(cards)})`);
+  check(!!cards && cards.length === 3 && cards.every((c) => c.down || parseInt(c.hp, 10) > 0), `the squad HUD shows your 3 squadmates' cards with their health (${JSON.stringify(cards)})`);
   await page.screenshot({ path: `${ARTIFACTS}/fireteams-hud-desktop.png` });
   // Spread out (Part 2): the wheel's last entry; the squad keeps its order, spreads its ring, and the HUD says so.
   await page.keyboard.down('KeyB');
@@ -7613,10 +7627,10 @@ async function fireteamsFlow(browser) {
   const spreadHud = await page.waitForFunction(() => document.querySelector('#squad-order i')?.textContent === 'Spread out' && [...document.querySelectorAll('#feed .say, .say')].some((l) => /Spreading out!/.test(l.textContent)), null, { timeout: T(10000) }).then(() => true, () => false);
   check(spread && spreadHud, 'Spread out from the wheel: the squad spreads (keeping Hold here), a squadmate answers "Spreading out!", the HUD says Spread out');
   const spot = await sim(page, (m, me) => m.fireteams.squadOf(me.slot).order.pos);
-  // You go off (to a teammate of another squad, out of sight of the spot); the squad stays where you told it.
+  // You go off (to the player or bot furthest from the spot, not in your squad: god mode keeps you safe); the squad stays where you told it.
   const away = await sim(page, (m, me, p) => {
     const s = m.fireteams.squadOf(me.slot);
-    const mate = m.combatants().filter((c) => c.alive && c.faction === me.faction && !s.members.includes(c.slot)).sort((a, b) => Math.hypot(b.move.pos.x - p.x, b.move.pos.z - p.z) - Math.hypot(a.move.pos.x - p.x, a.move.pos.z - p.z))[0];
+    const mate = m.combatants().filter((c) => c.alive && !s.members.includes(c.slot)).sort((a, b) => Math.hypot(b.move.pos.x - p.x, b.move.pos.z - p.z) - Math.hypot(a.move.pos.x - p.x, a.move.pos.z - p.z))[0];
     if (!mate) return null;
     me.move = { pos: { x: mate.move.pos.x + 1, y: mate.move.pos.y + 0.2, z: mate.move.pos.z }, velY: 0, grounded: false };
     return { tick: m.tick, x: Math.round(me.move.pos.x), z: Math.round(me.move.pos.z) };
@@ -7632,6 +7646,49 @@ async function fireteamsFlow(browser) {
     return { me: Math.round(Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z)), bots: s.members.filter((x) => x !== me.slot).map((x) => m.slots[x]).filter((c) => c?.alive).map((c) => Math.round(Math.hypot(c.move.pos.x - p.x, c.move.pos.z - p.z))) };
   }, spot);
   check(!!away && holding && where.me > 12, `the squad holds where you gave the order after you go off (you ${where.me} m from it, the squad ${where.bots.join(', ')} m; from ${JSON.stringify(at)} to ${JSON.stringify(away)})`);
+  // Part 3: a squadmate hurts an enemy and you down it (your kill, their assist), then the match ends with the vote.
+  const scored = await sim(page, (m, me) => {
+    const s = m.fireteams.squadOf(me.slot);
+    const mate = m.slots[s.members.find((x) => x !== me.slot)];
+    const foe = m.combatants().find((c) => c.alive && c.faction !== me.faction);
+    const assists = m.fireteams.scores.player(mate.slot).assists;
+    // (Past any spawn protection, so the hit lands.)
+    foe.shieldUntil = 0;
+    m.damage(foe, 10, mate, 'core.rifle');
+    m.kill(foe, me, 'core.rifle');
+    return { squad: s.id, points: m.fireteams.scores.squad(s.id).points, me: m.fireteams.scores.points(me.slot), mate: m.fireteams.scores.player(mate.slot).assists - assists, squads: m.fireteams.squads.filter((q) => q.team === me.faction).length };
+  });
+  check(scored.points >= 15 && scored.me >= 10 && scored.mate >= 1, `your kill (10) and your squadmate's assist (5) go to your squad (${JSON.stringify(scored)})`);
+  // (The scoreboard held up for the checks and the pictures.)
+  await sim(page, (m) => {
+    m.endMatch();
+    m.phaseEndTick = m.tick + 60 * 120;
+  });
+  const board = await page.waitForFunction((id) => {
+    const sb = document.getElementById('scoreboard');
+    const awards = document.getElementById('match-awards');
+    if (!sb || sb.hidden || !awards || awards.hidden || document.getElementById('map-vote')?.hidden !== false) return null;
+    const lines = [...sb.querySelectorAll('.sb-squad')];
+    const mine = sb.querySelector(`.sb-squad.mine[data-squad="${id}"]`);
+    if (!mine || !mine.querySelector('.sb-sqmvp')?.textContent) return null;
+    // Each squad's rows follow its line (until the next line).
+    const after = [];
+    for (let e = mine.nextElementSibling; e && !e.classList.contains('sb-squad'); e = e.nextElementSibling) after.push(Number(e.dataset.slot));
+    return { lines: lines.length, best: sb.querySelectorAll('.sb-squad.best').length, mine: { first: mine.previousElementSibling?.classList.contains('sb-hd'), name: mine.querySelector('.sb-sqname').textContent, points: Number(mine.querySelector('.sb-sqpts').textContent), mvp: mine.querySelector('.sb-sqmvp').textContent, best: mine.classList.contains('best'), rows: after.length, me: after.includes(window.__cs.slot) }, pts: [...sb.querySelectorAll('.sb-hd')].some((h) => /Pts/.test(h.textContent)), awards: [...awards.querySelectorAll('.award b')].map((b) => b.textContent), blink: [...sb.querySelectorAll('.sb-squad, .sb-squad *'), ...awards.querySelectorAll('*')].some((e) => getComputedStyle(e).animationName !== 'none') };
+  }, scored.squad, { timeout: T(20000) }).then((h) => h.jsonValue(), () => null);
+  await page.screenshot({ path: `${ARTIFACTS}/fireteams-board-desktop.png` });
+  check(!!board && board.lines >= scored.squads * 2 - 1 && board.mine.rows === 4 && board.mine.me && board.mine.points >= 15 && board.pts && board.mine.first, `the scoreboard groups each team by squad (${board?.lines} squad lines; yours: ${JSON.stringify(board?.mine)})`);
+  check(!!board && /^MVP \S/.test(board.mine.mvp) && board.best === 1 && board.awards.includes('Best Squad') && board.awards.includes("Your Squad's MVP") && !board.blink, `the end of the match with the vote: every squad's MVP on its line, Best Squad and your squad's MVP among the awards, nothing animated (${JSON.stringify(board?.awards)})`);
+  // A phone's size: the board keeps its squads (the awards make room for the vote there).
+  await page.setViewportSize({ width: 844, height: 390 });
+  const phone = await page.waitForFunction(() => {
+    const sb = document.getElementById('scoreboard');
+    const r = sb?.getBoundingClientRect();
+    const lines = sb ? [...sb.querySelectorAll('.sb-squad')] : [];
+    return r && r.width <= innerWidth && lines.length && lines.every((l) => l.scrollWidth <= l.clientWidth + 1) ? { width: Math.round(r.width), lines: lines.length } : null;
+  }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
+  await page.screenshot({ path: `${ARTIFACTS}/fireteams-board-phone.png` });
+  check(!!phone, `at a phone's size the board fits with its squad lines (${JSON.stringify(phone)})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

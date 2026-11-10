@@ -60,10 +60,10 @@ export interface BoardGroup {
 /** A Fireteams squad's part of its team's list. */
 export interface BoardSquad {
   id: number;
-  /** "Rex's squad" (its leader's name). */
+  /** Its leader's name ("Squad" for a moment without one). */
   name: string;
   points: number;
-  /** The end of the match: the squad's MVP ("Ava · 120"), else ''. */
+  /** The end of the match: the squad's MVP's name, else ''. */
   mvp: string;
   /** Best Squad (the end of the match). */
   best: boolean;
@@ -290,7 +290,9 @@ export class ScoreBoard {
     if (k === e.key) return e;
     e.key = k;
     e.name.textContent = q.name;
+    e.name.title = q.id >= 0 ? `${q.name}'s squad` : 'Joining a squad';
     e.mvp.textContent = q.mvp ? `MVP ${q.mvp}` : '';
+    e.mvp.title = q.mvp ? `Squad MVP: ${q.mvp}` : '';
     e.mvp.hidden = !q.mvp;
     e.points.textContent = String(q.points);
     e.points.title = 'Squad points: a kill 10, an assist 5, an objective 30, a second on the hill 1';
