@@ -1,5 +1,5 @@
-import { BREAKTHROUGH_POOL_MAX, DEFAULT_TEAMS, botSetLabel, getWeaponSet, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, SCORE_LIMIT_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, limitsScale, mapPickPlayers, matchingPreset, peopleAndBots, scoreStep, setupFit, sizePresets, suggestedLimits, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
-import { botCastSelect, choice, el, field, fitChip, fitList, limitsText, segmented, settingRow, sizeChips, stepper, teamEditor, weaponSetSelect } from '../frontend/setupControls.ts';
+import { WEATHER_PRESETS, isWeatherChoice, BREAKTHROUGH_POOL_MAX, DEFAULT_TEAMS, botSetLabel, getWeaponSet, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, SCORE_LIMIT_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, limitsScale, mapPickPlayers, matchingPreset, peopleAndBots, scoreStep, setupFit, sizePresets, suggestedLimits, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
+import { botCastSelect, choice, el, field, fitChip, fitList, limitsText, segmented, settingRow, sizeChips, stepper, teamEditor, weaponSetSelect, weatherSelect } from '../frontend/setupControls.ts';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
 
@@ -46,6 +46,7 @@ const rulePhrases = (p: HostRulesPatch): string[] => [
   ...(p.timeLimitSeconds !== undefined ? [`time ${p.timeLimitSeconds ? `${Math.round(p.timeLimitSeconds / 60)} min` : '∞'}`] : []),
   ...(p.respawnDelayTicks !== undefined ? [`respawn ${Math.round(p.respawnDelayTicks / TICK_RATE)} s`] : []),
   ...(p.friendlyFire !== undefined ? [`friendly fire ${FF_LABELS[p.friendlyFire].toLowerCase()}`] : []),
+  ...(p.weather !== undefined ? [`weather ${isWeatherChoice(p.weather) ? WEATHER_PRESETS[p.weather].label.toLowerCase() : "the map's"}`] : []),
 ];
 
 /**
@@ -487,6 +488,8 @@ export class HostPanel {
       if (s.rules?.mixPickups !== undefined) ruleRows.push(settingRow('Mix up weapon pickups', 'Every weapon pickup not marked "keep fixed" in MapMaker holds a random weapon of the same kind as the one placed there, and a new one each time it comes back. Applies at once.', choice([['off', 'Off'], ['on', 'On']] as const, r.mixPickups ? 'on' : 'off', (v) => ((r.mixPickups = v === 'on'), redraw()), 'hc-mix'), { live: true }));
       // The weapon set (null: the map's default): hosts that know it send it in HostState.rules.
       if (s.rules?.weaponSet !== undefined && s.mode !== 'core.discs') ruleRows.push(settingRow('Weapon set', "What everyone spawns with and what the weapon and grenade pickups hold (Map default: the map maker's choice). Applies at once: the pickups change now, and everyone's next life spawns with the set.", weaponSetSelect(r.weaponSet ?? undefined, s.mapWeaponSet ?? 'standard', (v) => ((r.weaponSet = v ?? null), redraw()), 'hc-weapons'), { live: true }));
+      // The weather (null: the map's own), for the next match: hosts that know it send it in HostState.rules.
+      if (s.rules?.weather !== undefined) ruleRows.push(settingRow('Weather', `Rain, snow, wind and fog for everyone (fog: everyone sees less far). Map: the map maker's choice (${s.mapWeather ?? 'Clear'}). Fixed while a match plays: it changes from the next match.`, weatherSelect(r.weather ?? undefined, s.mapWeather ?? 'Clear', (v) => ((r.weather = v ?? null), redraw()), 'hc-weather'), { restart: true }));
       if (s.rules?.dropWeapons !== undefined && s.mode !== 'core.discs') ruleRows.push(settingRow('Drop weapon on death', "A fallen player's or bot's primary with ammo left lies at the body for 30 s, with exactly that ammo; the rest of what they carried is recycled. Applies at once (off clears the ones lying about).", choice([['on', 'On'], ['off', 'Off']] as const, r.dropWeapons ? 'on' : 'off', (v) => ((r.dropWeapons = v === 'on'), redraw()), 'hc-drops'), { live: true }));
     }
     const pending = s.pending && Object.keys(s.pending).length ? s.pending : null;

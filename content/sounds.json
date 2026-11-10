@@ -1002,6 +1002,16 @@
       "gain": 0.55,
       "range": "mid",
       "jitter": 0.08
+    },
+    "weather.rain": {
+      "synth": "rain",
+      "variants": 2,
+      "gain": 0.32
+    },
+    "weather.wind": {
+      "synth": "wind",
+      "variants": 2,
+      "gain": 0.38
     }
   }
 }

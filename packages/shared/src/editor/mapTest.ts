@@ -35,8 +35,8 @@ export interface BotTestOptions {
   seed?: number;
 }
 
-/** The most bots a test run plays (a few minutes of a big match is still minutes of CPU). */
-export const BOT_TEST_MAX_BOTS = 32;
+/** The most bots a test run plays (owner, 2026-11-09: 64; a few minutes of a big match is still minutes of CPU, in a worker). */
+export const BOT_TEST_MAX_BOTS = 64;
 /** Where bots went is sampled this often (match seconds). */
 const VISIT_EVERY = 0.5;
 

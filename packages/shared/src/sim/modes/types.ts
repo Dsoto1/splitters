@@ -134,6 +134,12 @@ export interface ModeLogic {
    * play, the sector's objectives), or null for none. Absent: the side's trips to hold, else any of its trips.
    */
   defendSpot?(team: string, near: Vec3): Vec3 | null;
+  /**
+   * Fireteams (Part 2, objective first): `unitOf` gives a bot's bot-led squad (an id: the squad plays one role, its
+   * leader's goal for all of it), null for a bot in a person's squad (it does what the person says), undefined without
+   * squads. Called every tick while the variant is on (keep it cheap).
+   */
+  botUnits?(unitOf: (slot: number) => number | null | undefined): void;
   /** May this player spawn beside this teammate (squad spawn)? Absent: yes. */
   spawnBeside?(c: Combatant, mate: Combatant): boolean;
   /** Seconds the match clock shows while in play (Breakthrough: the sector clock); null: the match's own. */

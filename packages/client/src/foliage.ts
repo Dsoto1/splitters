@@ -6,7 +6,7 @@ import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { BaseTexture } from '@babylonjs/core/Materials/Textures/baseTexture';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { TERRAIN_MATERIALS, boxBounds, cellFoliage, envModelFile, getProp, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, boxBounds, cellFoliage, envModelFile, getProp, plantShare, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { loadGraphicsQuality } from './game/graphicsSettings.ts';
 import { envMaterialsFor } from './environment/envMaterials.ts';
@@ -364,8 +364,8 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, 
     return d;
   };
   // Amounts are per cell: a grid finer than 2 m (map format v32, Change grid) grows in proportion to its cells' area,
-  // as many plants to the square metre as a 2 m grid (coarser grids grow as they always have).
-  const share = t.spacing < 2 ? (t.spacing / 2) ** 2 : 1;
+  // as many plants to the square metre as a 2.5 m grid (terrain.ts plantShare; coarser grids grow as they always have).
+  const share = plantShare(t.spacing);
   for (let i = 0; i < t.materials.length; i++) {
     const level = cellFoliage(t, i);
     const c = i % w;

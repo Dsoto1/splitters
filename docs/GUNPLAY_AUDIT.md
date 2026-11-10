@@ -6,7 +6,8 @@ and one standard target (100 health, standard look, no character stats). Machine
 [gunplay-audit.json](gunplay-audit.json). Judged against [GUNPLAY_DIRECTION.md](GUNPLAY_DIRECTION.md) (arcade
 responsiveness + ballistic depth + modern polish; responsiveness > realism) and [GUNPLAY_SPEC.md](GUNPLAY_SPEC.md).
 The audit itself changed no weapon (main f1a16d3); **pass 2 (below) tuned candidates 1-6 the same day**, and every
-table here, the chart and the JSON are re-measured after it. The October feel pass is in git (78c11a0, cc5c673).
+table here, the chart and the JSON are re-measured after it. **Pass 3** (2026-11-09) added the network check (G3) and
+bots' weapon ranges from the measurements (G4); it changed no weapon. The October feel pass is in git (78c11a0, cc5c673).
 
 ![Time to kill by distance for the benchmark seven](gunplay-ttk.svg)
 
@@ -81,6 +82,247 @@ perfect tracking, full recoil counter and drop held over. *Hip* and *ADS* use th
 perfect tracking and counter, median of 8 seeds; "–" = no kill within 8 s in most seeds. Shots to kill (STK) are the
 fewest rounds that kill. Armoured = full armour (100, takes two thirds of each hit). Distances in metres, times in
 seconds unless marked.
+
+## G3: the network check (candidate 7, 2026-11-09)
+
+`wip/gunplay-3`. `pnpm net-report` (`packages/server/src/tools/net-report.ts`, the lab in `netLab.ts`) runs a real
+host, the dedicated server (`server.ts`, the code the Host Service runs), with 8 players joined over the real wire
+path (`peerConn`: one deflate stream per link, the same messages, the snapshot deltas). Each player runs the
+browser's own netcode (`client/src/game`: the Interpolator and its server clock, LocalPlayer prediction and
+reconciliation, the SnapshotCoalescer). Only the WebRTC data channel is replaced, by a link with latency, jitter and
+loss each way. The game's channels are reliable and ordered (SCTP), so a lost packet is resent about a round trip
+and three packet gaps later, and everything behind it waits (head-of-line blocking). Bandwidth is not limited.
+
+The players are bots driving the client through its inputs, as a person would. Free-for-all on a flat open 64 m
+deck, everyone with the Assault Rifle. Each bot strafes and now and then jumps at 8-25 m, aims at a random point on
+the nearest body its screen draws, and taps the trigger. Ammunition is topped up so firing never stops.
+
+Each round is judged twice, both times along the host's own path for it (its eye and its spread):
+- **on the screen**: against the bodies as the shooter's screen drew them at that moment and the ticks after, as the
+  round flies;
+- **on the host**: the host's verdict, from its lag-compensated rewind.
+
+The two verdicts can only differ by where each had the bodies. Results: [gunplay-net.json](gunplay-net.json).
+`pnpm net-report --conditions=100/20/2 --seconds=30 --clients=8 [--weapon=core.pistol]` runs one condition;
+`--smoke` runs a short check. CI runs only a 6-second, 4-player smoke run (`server/test/netLab.test.ts`, at
+100/20/2). The full run takes about 5 minutes and is manual.
+
+Round trip is the ping before jitter; jitter adds 0 to that many ms of queueing delay each way; loss is per packet
+each way. 30 s a condition, 8 players. The numbers are after the input-queue fix below.
+
+| Condition (RTT / jitter / loss) | Ping p50 / p95 | Screen hits the host confirmed | Missed: target already dead on host / rewind clamped / other | Lag-comp error p50 / p95 | Trigger to hit marker p50 / p95 | Rubber-banding (corrections a player-minute, largest) | Down / up per player |
+|---|---|---|---|---|---|---|---|
+| 0 / 0 / 0 % | 3 / 7 ms | 353 of 368 (95.9 %) | 10 / 0 / 5 | 1 / 5 cm | 27 / 42 ms | 0 | 2.9 / 8.0 KB/s |
+| 50 ms / 10 / 1 % | 62 / 130 ms | 347 of 368 (94.3 %) | 15 / 0 / 6 | 2 / 9 cm | 85 / 180 ms | 0 | 2.9 / 8.0 KB/s |
+| 100 ms / 20 / 2 % | 126 / 315 ms | 318 of 363 (87.6 %) | 27 / 14 / 4 | 2 / 8 cm | 153 / 328 ms | 0 | 2.9 / 8.1 KB/s |
+| 150 ms / 30 / 3 % | 206 / 532 ms | 261 of 389 (67.1 %) | 46 / **82** / 0 | 2 / 9 cm | 223 / 451 ms | 0 | 2.9 / 8.3 KB/s |
+| 150 ms / 30 / 5 % | 310 / 630 ms | 246 of 408 (60.3 %) | 37 / **124** / 1 | 2 / 10 cm | 343 / 622 ms | 0.5 (26 cm) | 2.8 / 8.4 KB/s |
+| 250 ms / 30 / 2 % | 304 / 639 ms | 193 of 473 (40.8 %) | 44 / **236** / 0 | – (all clamped) | 324 / 680 ms | 2 (64 cm) | 3.2 / 8.6 KB/s |
+
+Also measured:
+- **Hits the host gave that the screen missed:** 1-7 a condition (of about 450 rounds).
+- **Rounds the client fired that the host never did:** 2-57 a condition. Almost all came from a shooter the host
+  already had dead (a trade). With the fix below, only 0-8 were not trades.
+- **Corrections after being hit:** 51-70 a player-minute, p95 7 cm (no latency) to 46 cm (150 ms, 5 %). Stopping power
+  shoves the body on the host (spec §23) and no client predicts it. This is by design; the report lists it apart.
+- **Host tick:** about 0.3 ms.
+- **The lab's own stalls:** p99 14-22 ms. Everything shares one process, so these delay every link a little.
+
+**What holds up.**
+- **Lag compensation is accurate:** where the host rewound a body to against where the screen drew it, p95 5-10 cm
+  at every condition the rewind covers. That is well under a body's width: "lead for travel, never for latency"
+  holds.
+- **Rounds the host fires agree with the screen:** at 50-100 ms, 94-88 % of screen hits are confirmed.
+  - Most of the rest are on a target the host already had dead: someone else got the kill first. No netcode can fix
+    that.
+  - The other misses are 1-2 %: grazing hits on a body's edge.
+- **Phantom hits are rare:** under 2 % of rounds.
+- **Prediction is exact:** no corrections at all except after being hit, and after the loss bursts covered below.
+- **Bandwidth is small:** about 3 KB/s down and 8 KB/s up a player on this deck.
+  - Players send their inputs as plain JSON every frame (about 130 bytes, 60 a second), so up is the larger.
+  - Down grows with the match. `tools/perf/host96.mjs` measures it at 96 players.
+
+**Fixed (small, with a test).** The host's input queue dropped a resent packet's burst.
+- **The bug:** a lost packet holds every input behind it until it is resent. The inputs then arrive together: 15-25 of
+  them at 150-250 ms. The host kept 16 (`MAX_QUEUED_INPUTS`, about 267 ms) and dropped the oldest.
+- **What the player saw:** each dropped input was a step their prediction took and the host didn't, so they snapped
+  back (up to 1.4 m). A round they saw leave was never fired.
+- **The fix:** the queue now holds 32 (`shared/src/sim/match.ts`). Speed hacks are still capped by the two inputs a
+  tick the host applies.
+- **The test:** `match.test.ts`, "keeps the burst of inputs a resent packet releases".
+
+Same tool and settings, 25 s, before → after:
+
+| Condition | Inputs dropped | Corrections a player-minute (largest) | Rounds not fired (not trades) |
+|---|---|---|---|
+| 150 ms / 30 / 3 % | 64 → 8 | 0.6 (95 cm) → 0 | 4 → 0 |
+| 150 ms / 30 / 5 % | 267 → 9 | 2.7 (139 cm) → 0.3 (12 cm) | 10 → 0 |
+| 250 ms / 30 / 2 % | 717 → 7 | 16.5 (99 cm) → 0.6 (50 cm) | 29 → 2 |
+
+**For the owner (not changed).**
+1. **The rewind window is too short past about 120 ms of ping.**
+   - **The cause:** the host rewinds at most `MAX_REWIND_TICKS` = 18 ticks (300 ms). A shot needs its ping, plus the
+     100 ms players are drawn behind (INTERP_DELAY_TICKS), plus jitter and any resend.
+   - **What it costs:** at 150 ms with 30 ms jitter, 21-30 % of screen hits fall outside the window and miss, and at
+     250 ms nearly all do. Players then have to lead for latency, which the spec rules out (§38).
+   - **Measured with 30 ticks (500 ms)**, same runs, 25 s:
+
+     | Condition | 18 ticks | 30 ticks |
+     |---|---|---|
+     | 150 ms / 30 / 3 % | 66.8 % confirmed | 85.8 % |
+     | 150 ms / 30 / 5 % | 56.4 % | 78.1 % |
+     | 250 ms / 30 / 2 % | 38.2 % | 72.1 % |
+
+   - **The cost of more:** a player on a slow link can hit someone who has already reached cover, up to half a second
+     ago on the victim's screen.
+   - **Suggested:** 27-30 ticks (450-500 ms), or a host rule ("max rewind").
+   - **Your decision:** it is a fairness call between the shooter and the victim.
+2. **The view tick stops at the newest snapshot when a snapshot is late.**
+   - **The cause:** while a snapshot is late the screen draws remote players up to 5 ticks past the newest one
+     (extrapolating), but the input's view tick stops at that snapshot (`interpolation.ts` renderTick). The host then
+     rewinds to a pose the screen isn't drawing.
+   - **What it costs:** those shots (1-3 % of rounds) err by 27-61 cm p95 (over several runs), against about 10 cm otherwise.
+   - **Tried:** sending the drawn tick instead. It cut that error at 100 ms (39 → 14 cm) and was mixed at 150 ms/5 %.
+     Registration was within the run-to-run noise, so it was left as is.
+   - **Next:** worth a longer run before changing the client.
+3. **Upstream:** inputs as plain JSON (about 8 KB/s a player) could be packed or deflated like the host's stream. That
+   is about 2 Mbit/s into a 32-player host. Not a problem on today's connections; noted.
+4. **Not covered by the lab:**
+   - real WebRTC congestion control, bandwidth limits and TURN;
+   - vehicles and explosives (the bots fire the rifle only);
+   - real maps: the deck is flat and open, and the clients' bots don't navigate;
+   - 16-32 players. Run `--clients=16` for a quick look; the one process then stalls more. Bandwidth and load at 96
+     players are host96's.
+
+## G4: bots' weapon ranges from the measured TTK (candidate 8, 2026-11-09)
+
+`wip/gunplay-3`. Bots used to choose and place their guns by hand-set `botRange` values. Some of those were well
+off: the Machine Pistol was set to 0-14 m though it needs 16 rounds at 10 m, and the guided launchers to 10-60 m.
+Now **which gun a bot holds** comes from the time to kill measured in the shared sim. **How far it stands** still
+comes from `botRange`: the measured distances were tried and cost CTF its captures (below, and for the owner).
+
+**How the data is made.**
+- `pnpm gun-report` also sweeps each gun's body TTK from 5 to 150 m as bots fire it (`botSweep` in
+  [gunplay-audit.json](gunplay-audit.json)).
+  - Bots fire from the hip, except that a scoped gun is aimed past 7 m (as `brain.ts` zooms).
+  - Each value is the median over the trials, with the real spread.
+- `--bands` writes the curves to `shared/src/bots/weaponBands.generated.ts`.
+- `shared/src/bots/weaponBands.ts` works out the band and the edge from those curves; nothing is copied by hand.
+
+**Band: where a gun kills in good time** (`botBand`).
+- It is the run of distances around the gun's quickest kill where it still kills within the slack: at most 1.6 times
+  as long, or 0.5 s longer, whichever is more; never over 2.5 s; anything under 0.8 s counts.
+- A launcher whose blast hurts its shooter starts outside that blast.
+- `weaponScore` (which gun to hold) gives a gun in its band the bonus the hand-set range used to.
+- Guns with no curve keep `botRange`: melee, tools, the Flare Gun, the Oil Slicker and the Singularity Cannon.
+
+**Edge at the distance** (`ttkEdge`, also in `weaponScore`).
+- This is the gun's TTK at the actual distance against the benchmark seven's median there: +1 to -1, weighted 0.4.
+- In a close fight (under 15 m), a gun not in hand adds its measured draw (gun-report's `drawMs`). A bot then switches
+  only when the new gun still wins after drawing it: it keeps a loaded SMG at 6 m rather than draw a shotgun
+  (`botWeapons.test.ts`).
+- Further off there is time to draw: counting the draw at every range cost Sunken Kingdom's CTF bots their captures
+  (1 of seeds 1-4).
+- **Why it is needed:** a band only says a gun can kill there, and a Precision Rifle (0.83 s from the muzzle) and a
+  shotgun (one shell) are both in band at 2 m. Without it, a sniper-minded bot kept its rifle at arm's length
+  (`weapons.test.ts`, "pick weapons by range").
+
+**Preferred distance: measured, tried, not used** (`botEdge`; `preferredRange` keeps `botRange`).
+- **The measured version:** the band from the first two-in-a-row distances where the gun kills at least as fast as
+  the benchmark median. A Precision Rifle bot would keep past 27.5 m; a Pistol bot would stand at 8.5-26 m (hand-set:
+  3-17.5).
+- **What it did:** it kept CTF attackers standing off. On Diamond Park's five-minute capture test (on main after the
+  MapMaker train), seeds 1-6 captured:
+  - 6 of 6 with the hand-set distances;
+  - 2 of 6 with the measured ones;
+  - 4 of 6 with the measured near end and the hand-set far end;
+  - 5 of 6 with measured weapon choice alone (this pass).
+- **Before that:** with the band alone, Precision Rifle bots walked into close fights (TDM 31.4 → 28.9 kills a
+  minute), which is why the edge exists.
+- **For the owner:** how far to stand also decides how hard bots push an objective. Two options: keep it hand-set, or
+  use the measured near end for long guns only, in modes without a flag to carry.
+
+Bands, hand-set → measured:
+
+| Gun | Hand-set range | Band | Measured edge from (not used) |
+|---|---|---|---|
+| Pistol | 2-25 | 0-45 | 7.5 m |
+| Assault Rifle | 4-35 | 0-87.5 | 0 m |
+| Shotgun | 0-9 | 0-12.5 | 0 m |
+| Precision Rifle | 18-120 | 0-150 | 27.5 m |
+| SMG | 0-18 | 0-27.5 | 0 m |
+| Machine Pistol | 0-14 | 0-12.5 | 0 m |
+| Marksman Rifle | 12-90 | 0-137.5 | 7.5 m |
+| Battle Rifle | 8-70 | 0-55 | 7.5 m |
+| Heavy Revolver | 3-40 | 0-27.5 | 7.5 m |
+| Rocket Launcher | 7-40 | 6-27.5 | 6 m |
+| Guided Rocket | 10-60 | 6-17.5 | 6 m |
+| Laser Rifle | 3-40 | 0-87.5 | 27.5 m |
+
+**Measured with `pnpm bot-report`, before → after**, both on main after the MapMaker train (4fb799e and later; the
+before runs with the measurement table emptied, which is the old behaviour exactly). 28 matches of 150 s each, seeds 1
+and 2:
+- Team Deathmatch on fernwood_moon, riot_junction, halcyon_station and shingle_point, in the Standard and Military
+  sets;
+- Deathmatch on concrete_annex and pump_tower, in the Standard and Sci-fi sets;
+- CTF on diamond_park and eagle_spires.
+
+| Measure | Before | After |
+|---|---|---|
+| Kills a minute (all) | 32.3 | 32.1 |
+| Kills a minute: TDM / DM / CTF | 30.7 / 35.3 / 33.0 | 29.8 / 35.6 / 34.2 |
+| CTF captures (in 4 matches) / flag takes a match | 2 / 3.0 | 1 / 5.5 |
+| Engagement (mean hit distance) | 17.3 m | 16.9 m |
+| Weapon use spread (bots' rounds by weapon, 0..1) | 0.592 | 0.576 |
+| Stuck a bot-minute | 0.99 | 0.93 |
+| Idle out of a fight | 4.4 % | 4.4 % |
+| Frozen | 0.4 % | 0.5 % |
+| 10 s+ idle spells a match | 0.3 | 0.5 |
+| Failed route searches | 0.00 % | 2.56 % (one match, below) |
+
+`pnpm bot-report --check` (bot-limits.json): every limit held, before and after.
+
+**The failed searches** are one match: Riot Junction, seed 1, Military set. A bot spends 105 s at (196, -4, 42), 4 m
+under the street beside a buggy's spawn (198, 0, 46), with no route out. With the old weapon choice that match never
+went there. It looks like a vehicle or nav hole on the rebuilt Riot Junction (set pieces part 6), not a weapon
+matter; listed for the owner. Repro: `pnpm bot-report riot_junction --mode=core.tdm --seeds=1 --set=military --spells`.
+
+Hit rate and mean hit distance by gun, before → after (bots' rounds):
+
+| Gun | Rounds | Hit % | Hit distance (m) |
+|---|---|---|---|
+| Assault Rifle | 22073 → 23676 | 11 → 12 | 12.6 → 11.9 |
+| Pistol | 17090 → 16329 | 11 → 10 | 8.2 → 8.4 |
+| SMG | 4859 → 4564 | 22 → 23 | 8.0 → 8.0 |
+| Spin Gun | 3342 → 3150 | 4 → 5 | 12.9 → 11.2 |
+| Burst Rifle | 2261 → 2152 | 16 → 19 | 12.7 → 11.1 |
+| Marksman Rifle | 1405 → 1192 | 6 → 12 | 17.1 → 12.8 |
+| Laser Rifle | 1213 → 1103 | 33 → 32 | 11.7 → 9.1 |
+| Pulse Pistol | 284 → 262 | 39 → 45 | 9.1 → 6.0 |
+| Shotgun | 337 → 222 | 50 → 81 | 10.5 → 6.8 |
+| Precision Rifle | 206 → 198 | 8 → 21 | 19.9 → 15.8 |
+| Railgun | 125 → 193 | 18 → 33 | 37.4 → 19.0 |
+| Sawed-Off | 73 → 130 | 38 → 75 | 5.0 → 7.0 |
+| Auto Shotgun | 170 → 108 | 38 → 59 | 9.9 → 10.9 |
+| Battle Rifle | 372 → 108 | 5 → 19 | 14.1 → 13.4 |
+
+**Reading it.**
+- **Hit rates:** bots now hold the gun that lands. Hit rates rose for 12 of these 14 guns:
+  - the shotguns gained 21-37 points;
+  - the Precision Rifle 8 → 21 %, the Battle Rifle 5 → 19 %, the Railgun 18 → 33 %;
+  - the Pistol and Laser Rifle lost a point.
+- **Kills and movement:** unchanged within a seeded match's noise.
+- **Weapon use** narrowed a little (0.592 → 0.576): bots draw fewer of the guns that lose at the distance at hand
+  (the Battle Rifle 372 → 108 rounds, the Hand Cannon 49 → 13).
+- **What still decides which guns bots carry:** pickups and `botDesirability` (hand-set).
+- **Seeded tests:** `botCtf.test.ts`, `forts.test.ts` and the rest pass unchanged on main's seeds.
+
+**To refresh:** after a weapon change, run `pnpm gun-report --json=docs/gunplay-audit.json --bands` (about 5
+minutes). The run rewrites the audit JSON and the bands' data; then run `pnpm bot-report --check`.
+
+**Not done:** `botDesirability` (how much a bot wants a gun at all) is still hand-set. Deriving it from the curves,
+for example a gun's TTK against the benchmark median over its band, would be the next step, with the owner's say on
+power weapons.
 
 ## The benchmark seven
 
@@ -158,7 +400,7 @@ As the audit found them (items 1-4 are tuned in pass 2, above; item 5, the Machi
 Armour roughly doubles every TTK (it takes two thirds of each hit until 150 damage are spent: 200 effective health);
 the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 
-## Candidate improvements (ranked; 1-6 done in pass 2)
+## Candidate improvements (ranked; 1-6 done in pass 2, 7-8 in pass 3)
 
 | # | Area | What | Expected effect | Size |
 |---|---|---|---|---|
@@ -168,8 +410,8 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 | 4 ✅ | Feel: recoil | Precision Rifle body case (e.g. 2-shot kill with a faster bolt, or 100 body at range) and the Pulse/Marksman dominance checked per weapon set | each long gun answers "why pick me" | small (data) |
 | 5 ✅ | Feel: reload / switch | Melee doesn't break a reload (spec §16 lists it; it did on the host, not in prediction); auto-reload when a magazine runs dry without a trigger pull; Spin Gun draw (1.23 s) | fewer moments where input feels ignored | small (sim + prediction test) |
 | 6 🟡 (a HUD panel, not a board) | Feel: recoil | Recoil wall readout: draw each spray's pattern on the range's recoil wall (impact decals already there) and print the settle time | recoil patterns become learnable by sight | medium |
-| 7 | Network (G3) | An 8-client harness: latency 50-150 ms, jitter, 1-5 % loss, checking prediction vs host, hit registration and kill validation (today: one client at 100 ms, no loss, prediction.test.ts:13) | proves "lead for travel, never for latency" under real conditions | medium-large |
-| 8 | Bots (G4) | Weapon choice and ranges from measured TTK (`gun-report` JSON) instead of hand-set `botRange` (e.g. Machine Pistol 0-14 m while it needs 16 rounds at 10 m); a bot-report line of hits/shots by weapon | bots pick and fight with each gun where it is good | medium |
+| 7 ✅ (`pnpm net-report`; see G3 above) | Network (G3) | An 8-client harness: latency 50-150 ms, jitter, 1-5 % loss, checking prediction vs host, hit registration and kill validation (today: one client at 100 ms, no loss, prediction.test.ts:13) | proves "lead for travel, never for latency" under real conditions | medium-large |
+| 8 ✅ weapon choice; 🟡 distance (see G4 above) | Bots (G4) | Weapon choice and ranges from measured TTK (`gun-report` JSON) instead of hand-set `botRange` (e.g. Machine Pistol 0-14 m while it needs 16 rounds at 10 m); a bot-report line of hits/shots by weapon | bots pick and fight with each gun where it is good | medium |
 
 ## Appendix A: spec checklist (phases G0-G6, spec §50)
 
@@ -201,14 +443,14 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 | G2 battle rifle | ✅ | pass 2: `content/weapons/battle_rifle.json` (the `battle_rifle` family's first weapon) |
 | G2 handling extras | ❌ | no sprint-exit time, per-weapon movement speed or scope holdover marks (spec §35, §5) |
 | **G3** server authority, kill validation | ✅ | hits and damage only on the host: `match.ts:5305` `damage`, `kill` after it |
-| G3 latency simulation | 🟡 | one client at ~100 ms, prediction exact: `client/test/prediction.test.ts:13`; rewind bounded at 18 ticks `match.ts:112` |
-| G3 projectile reconciliation | 🟡 | bullets catch up the shooter's latency then fly live: `ballistics.test.ts:197` |
-| G3 8 players, packet loss, scaling 16/24/32 | ❌ | no multi-client hit-registration test under loss or jitter (perf tools measure load and bandwidth, not hits) |
+| G3 latency simulation | ✅ | `pnpm net-report` (G3 above): 8 players over 0-250 ms, jitter, 1-5 % loss; prediction exact (corrections only from being hit); rewind bounded at 18 ticks `match.ts` MAX_REWIND_TICKS (too short past ~120 ms: for the owner) |
+| G3 projectile reconciliation | ✅ | bullets catch up the shooter's latency then fly live (`ballistics.test.ts:197`); net-report: the host's rewound bodies within 6-11 cm (p95) of the screen's |
+| G3 8 players, packet loss, scaling 16/24/32 | 🟡 | 8 players under loss and jitter: net-report (CI: a 4-player smoke, `server/test/netLab.test.ts`); 16-32 not run as a hit check (`--clients=16` works; host96 measures load and bandwidth at 96) |
 | **G4** leading, drop | ✅ | `shared/src/bots/aim.ts:289` (lead by flight × skill), `:296` (drop comp) |
 | G4 recoil control | ✅ | bots counter by skill: `match.ts:2257-2260` |
 | G4 burst discipline | ✅ | `aim.ts:345-349` |
 | G4 reload decisions | ✅ | empty, or topping up out of sight / in cover: `shared/src/bots/brain.ts:2158-2161` |
-| G4 weapon selection, effective range | 🟡 | `brain.ts:4413` `weaponScore`, `:1274` `preferredRange` by hand-set `botRange` / `botDesirability`, not the measured ranges |
+| G4 weapon selection, effective range | 🟡 | pass 3 (G4 above): `weaponScore` by the measured band and the TTK at the distance (`shared/src/bots/weaponBands.ts`, data from `pnpm gun-report --bands`); `preferredRange` (how far to stand) and `botDesirability` still hand-set (the measured distance cost CTF captures: for the owner) |
 | **G5** lethality, ballistics, friendly fire | 🟡 | `shared/src/sim/rules.ts:188,193,124`, host's match setup (`client/src/frontend/frontEnd.ts:1279`), not per map in MapMaker |
 | G5 headshots, ammo, reload, penetration, destruction, killcam policy, aim-assist policy, global scales | ❌ | none in `MatchRules` |
 | **G6** exotic arsenal | 🟡 | many exotics already ship (Chaos set: bubble, goo, oil, singularity, freeze, flare, nailgun, flak); swappable ammo families and a slow-motion final kill ❌. The spec puts G6 after the foundation is excellent |
@@ -300,7 +542,8 @@ a few steps of the spawns. The map description says so. `validate-map`: 0 issues
 
 ## Appendix D: method and caveats
 
-- `pnpm gun-report [--weapons=a,b] [--trials=8] [--json=…] [--svg=…]` (about 3 minutes for all 34 guns);
+- `pnpm gun-report [--weapons=a,b] [--trials=6] [--json=…] [--svg=…] [--bands]` (about 5 minutes for all 35 guns with
+  the bots' sweep; `--bands` also rewrites the bots' weapon bands' data);
   `--from=docs/gunplay-audit.json --svg=…` redraws the chart.
 - The shooter is perfect: it tracks the target's middle (torso or head shape, as measured for its look), counters all
   recoil, holds over for drop and lobs launchers on the low arc. Hip and ADS cells add only the real spread. Real

@@ -12,6 +12,8 @@ export interface MinimapBlip {
   color: string;
   /** An objective: drawn as a square with its label, and held at the rim (pointing the way) when out of range. */
   label?: string;
+  /** Your squadmates (Fireteams): a bigger dot, ringed in the HUD's dark, apart from the rest of the team. */
+  ring?: boolean;
 }
 
 /**
@@ -84,7 +86,7 @@ export class Minimap {
     if (!g || !this.plan) return;
     // Nothing moved by a pixel (you stood still, so did the dots): the canvas already shows it.
     let key = `${Math.round(x * PX_PER_M)},${Math.round(z * PX_PER_M)},${Math.round(yaw * 200)}`;
-    for (const b of blips) key += `|${Math.round(b.x * 2)},${Math.round(b.z * 2)},${b.color},${b.label ?? ''}`;
+    for (const b of blips) key += `|${Math.round(b.x * 2)},${Math.round(b.z * 2)},${b.color},${b.label ?? ''},${b.ring ? 1 : 0}`;
     if (key === this.last) return;
     this.last = key;
     const size = this.canvas.width;
@@ -112,17 +114,22 @@ export class Minimap {
     const sh = Math.min(src.height, Math.ceil(py + reach)) - sy;
     if (sw > 0 && sh > 0) g.drawImage(src, sx, sy, sw, sh, sx, sy, sw, sh);
     for (const b of blips) {
-      if (b.label) continue;
+      if (b.label !== undefined) continue;
       const [bx, by] = toPlan(b.x, b.z);
       g.fillStyle = b.color;
       g.beginPath();
-      g.arc(bx, by, 4.5 / scale, 0, Math.PI * 2);
+      g.arc(bx, by, (b.ring ? 5.5 : 4.5) / scale, 0, Math.PI * 2);
       g.fill();
+      if (b.ring) {
+        g.strokeStyle = '#0b0f1a';
+        g.lineWidth = 2 / scale;
+        g.stroke();
+      }
     }
     g.restore();
     // Objectives: a labelled square where they are, or on the rim the way they lie when further off.
     for (const b of blips) {
-      if (!b.label) continue;
+      if (b.label === undefined) continue;
       const dx = b.x - x;
       const dz = b.z - z;
       // The view turns with you (facing up): a point ahead is up the canvas.

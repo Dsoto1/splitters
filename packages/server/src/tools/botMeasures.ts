@@ -63,6 +63,33 @@ export class Behaviour {
     this.active.set(slot, now);
   }
 
+  /** Bots' rounds by weapon (a shotgun shell is one), their hits on enemies and the summed distance of those hits (m). */
+  private readonly byWeapon = new Map<string, { shots: number; hits: number; dist: number }>();
+
+  private weaponShot(match: Match, e: Extract<GameEvent, { e: 'shot' }>): void {
+    if (match.actor(e.s)?.kind !== 'bot') return;
+    const w = this.byWeapon.get(e.w) ?? { shots: 0, hits: 0, dist: 0 };
+    this.byWeapon.set(e.w, w);
+    w.shots++;
+    const flying = new Set(e.fl ?? []);
+    const i = e.hit.findIndex((h, k) => h !== null && h !== undefined && h !== e.s && !flying.has(k) && this.enemies(match, e.s, h));
+    if (i < 0) return;
+    const to = e.to[i]!;
+    w.hits++;
+    w.dist += Math.hypot(to[0] - e.from[0], to[1] - e.from[1], to[2] - e.from[2]);
+  }
+
+  private enemies(match: Match, a: number, b: number): boolean {
+    const x = match.actor(a);
+    const y = match.actor(b);
+    return !!x && !!y && y.kind !== 'npc' && !(x.faction && x.faction === y.faction);
+  }
+
+  /** Bots' rounds by weapon: [rounds, rounds that hit an enemy, mean distance of those hits (m)]. */
+  weaponUse(): Record<string, [number, number, number]> {
+    return Object.fromEntries([...this.byWeapon].map(([id, w]) => [id, [w.shots, w.hits, w.hits ? round2(w.dist / w.hits) : 0]]));
+  }
+
   private hit(match: Match, shooter: number, target: number | null | undefined, from?: readonly number[], to?: readonly number[]): void {
     if (target === null || target === undefined || target === shooter) return;
     const a = match.actor(shooter);
@@ -80,6 +107,7 @@ export class Behaviour {
   events(match: Match, events: readonly GameEvent[]): void {
     for (const e of events) {
       if (e.e === 'shot') {
+        this.weaponShot(match, e);
         const flying = new Set(e.fl ?? []);
         e.hit.forEach((h, i) => !flying.has(i) && this.hit(match, e.s, h, e.from, e.to[i]));
         continue;

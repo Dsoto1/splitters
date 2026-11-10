@@ -207,6 +207,16 @@ dialog { border-top: 3px solid var(--cyan); }
 #ed-tr-materials { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; }
 #ed-tr-create button, #ed-tr-edit > button { width: 100%; margin: 6px 0; }
 .ed-note { color: var(--muted); font-size: 11px; line-height: 1.4; margin: 4px 0 8px; }
+/* Map properties → Time of day & weather (skyWeatherSection.ts). */
+.ed-skyweather .sub-h { margin-top: 6px; }
+.ed-skyweather .row > input[type='checkbox'] { margin-left: auto; }
+.ed-skyweather .row > input[type='range'] { flex: 0 1 60%; min-width: 0; }
+.ed-tod-row { display: flex; margin: 0 0 4px; }
+.ed-tod-row #ed-tod { flex: 1; min-width: 0; }
+.ed-tod-label { min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+.ed-tod-presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 2px 0 8px; }
+.ed-tod-presets button { padding: 3px 4px; font-size: 11px; min-height: 0; }
+.ed-tod-presets button.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 label.check { display: flex; align-items: center; gap: 6px; color: var(--muted); margin: 8px 0; font-size: 12px; }
 label.stack > span { float: right; color: var(--text, #e8edf5); }
 button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
@@ -534,12 +544,17 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-top.fit-2 .ed-pick > span { display: none; }
 #ed-top.fit-2 #ed-theme { max-width: 104px; }
 #ed-top.fit-2 #ed-bots, #ed-top.fit-2 #ed-skill { max-width: 76px; }
-#ed-top.fit-3 .ed-file button:nth-child(n + 4) { display: none; }
+/* fit-3 tightens before anything goes (MapMaker fixes 2: with Bot test in the bar, Export, Import and Publish went at
+   1400 px; tightened, they stay): narrower name, snap, theme and skill, icon buttons and gaps drawn closer. */
+#ed-top.fit-3 { gap: 3px; }
 #ed-top.fit-3 #ed-name { width: 96px; }
 #ed-top.fit-3 #ed-snap { max-width: 84px; }
-#ed-top.fit-4 #ed-skill { display: none; }
-#ed-top.fit-4 #ed-grid, #ed-top.fit-4 #ed-grid-full, #ed-top.fit-4 #ed-overlaps, #ed-top.fit-4 #ed-plan, #ed-top.fit-4 #ed-maptest { padding: 5px; }
-#ed-top.fit-4 #ed-theme { max-width: 84px; }
+#ed-top.fit-3 #ed-theme { max-width: 84px; }
+#ed-top.fit-3 #ed-skill { max-width: 64px; }
+#ed-top.fit-3 .ed-file { gap: 2px; }
+#ed-top.fit-3 .ed-file button, #ed-top.fit-3 #ed-grid, #ed-top.fit-3 #ed-grid-full, #ed-top.fit-3 #ed-overlaps, #ed-top.fit-3 #ed-plan, #ed-top.fit-3 #ed-maptest { padding: 5px; }
+#ed-top.fit-4 .ed-file button:nth-child(n + 4) { display: none; }
+#ed-top.fit-5 #ed-skill { display: none; }
 #ed-tr-edit .ed-tr-swap { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0; }
 #ed-tr-edit .ed-tr-swap label { flex: 1; margin: 0; }
 #ed-tr-edit .ed-tr-swap button { flex: none; margin: 0; }

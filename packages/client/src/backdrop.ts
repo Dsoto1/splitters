@@ -11,7 +11,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { CORE_THEMES, PROP_FENCES, SKIES, borderStyleAt, boxBounds, coastHeightAt, coastSides, pathsExtent, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
+import { CORE_THEMES, PROP_FENCES, SKIES, mapTimeOfDay, presetDirection, sunAt, borderStyleAt, boxBounds, coastHeightAt, coastSides, pathsExtent, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { createPropNode } from './game/propVisuals.ts';
 import { EnvScatter, type EnvCopy } from './environment/envScatter.ts';
@@ -51,29 +51,33 @@ export class BackdropVisuals {
   /** How the ground past the border rises, and what stands on it. */
   private profile: BeltProfile = BELTS.none!;
 
-  /** (Re)build for this map; cheap to call again when nothing changed. `dim` darkens the sky (MapMaker). */
-  /** The sky of the last build (its colours and sun drive the mist and light shafts). */
+  /** The sky of the last build (its colours and sun drive the mist and light shafts; with a time of day, the blend). */
   sky: SkyDefinition | null = null;
+  /** The sky's own meshes and materials (the picture, and a second one blended over it at a time of day). */
+  private skyParts: { meshes: Mesh[]; materials: (StandardMaterial | Texture | RawTexture)[] } = { meshes: [], materials: [] };
+  private skyKey = '';
+  private dim = 1;
+  /** Counts the sky and haze being set afresh (anything added to the haze since is gone: weatherVisuals.ts adds again). */
+  revision = 0;
+
+  /**
+   * The sky and light at a time of day, without rebuilding the rest (MapMaker's live preview while the slider moves;
+   * null: the sky's own look). The next build puts the map's own time back.
+   */
+  previewTime(doc: MapDocument, hours: number | null): void {
+    const backdrop = resolveBackdrop(doc);
+    this.applySky(backdrop, { ...doc, timeOfDay: hours ?? undefined }, this.dim);
+  }
 
   build(doc: MapDocument, boxes: readonly WorldBox[], dim = 1): Backdrop {
     const backdrop = resolveBackdrop(doc);
     const area = playArea(doc, boxes);
-    const key = JSON.stringify([backdrop, area, doc.classicStructure.theme, dim]);
+    const key = JSON.stringify([backdrop, area, doc.classicStructure.theme, dim, doc.timeOfDay ?? null]);
     if (key === this.key) return backdrop;
     this.dispose();
     this.key = key;
-    const sky = skyFor(backdrop, doc);
-    this.sky = sky;
-    const horizon = Color3.FromHexString(sky.horizon);
-    this.applyLighting(sky);
-    this.scene.clearColor = new Color4(horizon.r * dim, horizon.g * dim, horizon.b * dim, 1);
-    if (sky.file || sky.id === 'space') this.buildSky(sky, dim);
-    // Haze: thin near the action, thick far out, so distant scenery melts into the horizon.
-    // No haze (space, or a backdrop without it): the fog is still on, at nothing. A smoke cloud or water you step into
-    // thickens it; switching it on there would rebuild every material in view (Babylon's FOG define) in that frame.
-    this.scene.fogMode = 2; // Scene.FOGMODE_EXP2
-    this.scene.fogColor = horizon.scale(dim);
-    this.scene.fogDensity = backdrop.haze > 0 && sky.id !== 'space' ? 0.0002 + backdrop.haze * 0.0014 : 0;
+    this.dim = dim;
+    const sky = this.applySky(backdrop, doc, dim);
     const rand = seeded(doc.metadata.id);
     this.profile = beltProfile(backdrop, doc.classicStructure.theme);
     if (backdrop.ground !== 'none') {
@@ -84,7 +88,47 @@ export class BackdropVisuals {
     return backdrop;
   }
 
+  /** Sky picture(s), light, clear colour and haze for the map's sky at its time of day (or the sky's own look). */
+  private applySky(backdrop: Backdrop, doc: MapDocument, dim: number): SkyDefinition {
+    const base = skyFor(backdrop, doc);
+    const hours = mapTimeOfDay(doc, backdrop.sky);
+    const sun = hours === null ? null : sunAt(hours, backdrop.sky, base.id === 'plain' ? base.horizon : undefined);
+    const sky = sun ? sun.sky : base;
+    this.sky = sky;
+    this.revision++;
+    const horizon = Color3.FromHexString(sky.horizon);
+    this.applyLighting(sky, sun ? sun.direction : presetDirection(sky));
+    this.scene.clearColor = new Color4(horizon.r * dim, horizon.g * dim, horizon.b * dim, 1);
+    // The sky's picture: its own, or at a time of day the key's picture with the next blended over it.
+    const skyKey = JSON.stringify(sun ? [sun.from, sun.to, +sun.mix.toFixed(3), dim] : [base.id, base.file, dim]);
+    if (skyKey !== this.skyKey) {
+      this.disposeSky();
+      this.skyKey = skyKey;
+      if (sun) {
+        const from = SKIES.get(sun.from);
+        const to = SKIES.get(sun.to);
+        if (from?.file && sun.mix < 1) this.buildSky(from, dim, 1, 0);
+        if (to?.file && sun.mix > 0) this.buildSky(to, dim, from?.file && sun.mix < 1 ? sun.mix : 1, 1);
+      } else if (sky.file || sky.id === 'space') this.buildSky(sky, dim, 1, 0);
+    }
+    // Haze: thin near the action, thick far out, so distant scenery melts into the horizon.
+    // No haze (space, or a backdrop without it): the fog is still on, at nothing. A smoke cloud or water you step into
+    // thickens it; switching it on there would rebuild every material in view (Babylon's FOG define) in that frame.
+    this.scene.fogMode = 2; // Scene.FOGMODE_EXP2
+    this.scene.fogColor = horizon.scale(dim);
+    this.scene.fogDensity = backdrop.haze > 0 && sky.id !== 'space' ? 0.0002 + backdrop.haze * 0.0014 : 0;
+    return sky;
+  }
+
+  private disposeSky(): void {
+    for (const m of this.skyParts.meshes) m.dispose();
+    for (const m of this.skyParts.materials) m.dispose();
+    this.skyParts = { meshes: [], materials: [] };
+    this.skyKey = '';
+  }
+
   dispose(): void {
+    this.disposeSky();
     for (const n of this.nodes) n.dispose();
     this.nodes = [];
     for (const sc of this.scatters) sc.dispose();
@@ -96,7 +140,7 @@ export class BackdropVisuals {
     this.key = '';
   }
 
-  private applyLighting(sky: SkyDefinition): void {
+  private applyLighting(sky: SkyDefinition, direction: readonly [number, number, number]): void {
     const hemi = this.scene.getLightByName('hemi') as HemisphericLight | null;
     const sun = this.scene.getLightByName('sun') as DirectionalLight | null;
     // A stronger sun against a softer sky light, so shadows and the sunny sides of things read (tone mapping evens it
@@ -109,13 +153,14 @@ export class BackdropVisuals {
     if (sun) {
       sun.intensity = sky.light.sun * LIGHT_BALANCE.sun;
       sun.diffuse = Color3.FromHexString(sky.light.sunColor);
-      const el = (sky.light.elevation * Math.PI) / 180;
-      sun.direction = new Vector3(-0.8 * Math.cos(el), -Math.max(0.15, Math.sin(el)), 0.6 * Math.cos(el));
+      // The preset's fixed sun (presetDirection, as it always was), or the sun or moon at the map's time of day.
+      sun.direction = new Vector3(direction[0], direction[1], direction[2]);
     }
   }
 
-  private buildSky(sky: SkyDefinition, dim: number): void {
-    const box = CreateBox('backdrop_sky', { size: 1800, sideOrientation: Mesh.BACKSIDE }, this.scene);
+  /** A sky picture on a box at infinity; `alpha` below 1 blends it over the one drawn before it (`order` 0, then 1). */
+  private buildSky(sky: SkyDefinition, dim: number, alpha: number, order: number): void {
+    const box = CreateBox(order ? 'backdrop_sky_blend' : 'backdrop_sky', { size: 1800 - order * 20, sideOrientation: Mesh.BACKSIDE }, this.scene);
     box.infiniteDistance = true;
     box.isPickable = false;
     const mat = new StandardMaterial('backdrop_skyMat', this.scene);
@@ -128,10 +173,14 @@ export class BackdropVisuals {
     tex.coordinatesMode = Texture.FIXED_EQUIRECTANGULAR_MODE;
     mat.reflectionTexture = tex;
     mat.reflectionTexture.level = dim;
+    if (alpha < 1) {
+      mat.alpha = alpha;
+      box.alphaIndex = order;
+    }
     box.material = mat;
     box.applyFog = false;
-    this.meshes.push(box);
-    this.materials.push(mat, tex);
+    this.skyParts.meshes.push(box);
+    this.skyParts.materials.push(mat, tex);
   }
 
   /**

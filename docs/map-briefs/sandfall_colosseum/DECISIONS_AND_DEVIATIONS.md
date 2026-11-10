@@ -69,3 +69,27 @@
 - 432 tiles, 367 set pieces (as placed), ~31,800 collision boxes (shipped maps: 2,700-3,900; the stands are most of
   it: 772 a radial line), lights 253 of 256 (the stands' bays and the hypogeum's torches: no room for braziers).
 - Server tick (bench, 24 bots, TDM, load 13): avg 3.9 ms, p95 10.3 ms (budget 16.7). Navmesh build 8-15 s.
+
+## Follow-ups (owner's answers, 2026-11-09; `wip/mapmaker-sandfall`)
+- **Collision boxes trimmed** ("drop the arcades on the far sides"; keep the look from the sand): the arcades under
+  the tiers on all four sides (depths 6-9 on the ground and level 2; the gate lines' passages kept) and the east and
+  west stands' facade arcades (three storeys each) deleted in MapMaker; ten Sky Blocks of limestone ("Stand fill")
+  fill under the tiers and stand as the east and west outer walls, so nothing hollow shows. **31,724 → 22,240** boxes
+  (the side walls and the gates add 16). Still about six times a shipped map: what is left is the tiers (4,264), the
+  north and south facades and gate lines (~4,300), the podium bays, the corner towers (3,136), the village (4,646) and
+  the hypogeum (1,846). Going further changes what you see (the village's insulae, the towers, the north and south
+  facades) or needs the game to merge boxes (a coarser collision for the Grand arch's 17 voussoir slices would take
+  about 7,000 off with no visible change): the owner's call (report). What went: the ambulacra under the stands
+  (walkable before; reached from the gates and towers) and the arcaded outside of the east and west stands (a plain
+  limestone wall now, seen from the east and west streets). The attic walk stays (6 boxes a bay; its lights matter).
+  Physics build 2.2 s → 1.1 s, navmesh 28.5 s → 13.3 s here (load 16-20; same machine, so comparable).
+- **Portcullis gates** (as the old map's main gate): a Portcullis door in each Gladiator Gate's opening onto the sand
+  (gates 1-4 at (±24, ±29)), a winch button in the passage and a chain button on the sand; each button's rule toggles
+  its gate and sounds the buzzer. They **start raised** (Embers spawn in the gate 3/4 passages; the old main gate
+  started down and its side gates opened by themselves): the owner's call (report). Bots press the buttons when a gate
+  is down across their route (docs/BOTS.md, doors).
+- **Deathmatch** offered again (Map properties, Also offered).
+- **Side walls** on the vaulted tunnels at the four ways out ((0, ±10), (±10, 0)), MapMaker's new tile option.
+- **Hatch ladders turned round:** their tops let you off 0.9 m on from the ladder, which was still over the 3.2 m
+  hatch, so climbers dropped back in; turned, they let you off onto the sand. Bot stuck recoveries (240 s, 24 bots,
+  seed 1): King of the Hill 604 → 98, CTF 555 → 223, TDM 260 → 160; no idle spells at the ladders after.
