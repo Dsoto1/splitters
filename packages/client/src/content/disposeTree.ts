@@ -20,9 +20,13 @@ export function disposeTree(root: Node, disposeMaterialAndTextures = false): voi
   }
   const search = scene.stopAnimation;
   scene.stopAnimation = () => {};
+  // And the scene's lists of what it drew are freed once for the tree, not once a mesh (Babylon's own switch for this).
+  const blocked = scene.blockfreeActiveMeshesAndRenderingGroups;
+  scene.blockfreeActiveMeshesAndRenderingGroups = true;
   try {
     root.dispose(false, disposeMaterialAndTextures);
   } finally {
     scene.stopAnimation = search;
+    scene.blockfreeActiveMeshesAndRenderingGroups = blocked;
   }
 }
