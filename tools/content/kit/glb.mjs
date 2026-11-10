@@ -15,7 +15,6 @@ const R = (x, q = 1e4) => {
   const v = Math.round(x * q) / q;
   return Object.is(v, -0) ? 0 : v;
 };
-const byte = (list) => Uint8Array.from(list, (x) => Math.round(Math.min(1, Math.max(0, x)) * 255));
 /** Metres per unit of the detail coordinates. */
 export const UV_UNIT = 0.001;
 
@@ -71,7 +70,9 @@ export async function writeKitModel(name, levels, surface) {
       .setAttribute('POSITION', doc.createAccessor().setType('VEC3').setArray(P).setBuffer(buffer))
       .setAttribute('NORMAL', doc.createAccessor().setType('VEC3').setArray(N).setNormalized(true).setBuffer(buffer))
       .setAttribute('TEXCOORD_1', doc.createAccessor().setType('VEC2').setArray(UV).setBuffer(buffer))
-      .setAttribute('COLOR_0', doc.createAccessor().setType('VEC3').setArray(byte(m.C)).setNormalized(true).setBuffer(buffer))
+      // Colours as floats: the prop batches rebuild a model's geometry from its vertex data, which reads normalised byte
+      // colours wrong (client game/propBatches.ts); floats come through as they are.
+      .setAttribute('COLOR_0', doc.createAccessor().setType('VEC3').setArray(new Float32Array(m.C.map((x) => R(Math.min(1, Math.max(0, x)), 1e3)))).setBuffer(buffer))
       .setMaterial(material);
     mesh.addPrimitive(prim);
     const node = doc.createNode(i ? `${name}_lod${i}` : name).setMesh(mesh);
