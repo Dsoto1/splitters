@@ -24,6 +24,7 @@ import { dropListing } from './game/hub.ts';
 import { MAP_INDEX, builtInMapJson, loadBuiltInMap, type MapIndexEntry } from './mapIndex.ts';
 import { loadMapContent } from './mapContentLoader.ts';
 import { publishedMaps, type PublishedEntry } from './publishedMaps.ts';
+import { initLocalMaps, listLocalMaps, readLocalMap } from './localMaps.ts';
 import { PLAYLISTS, addToSuite, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import { installInputMode } from './inputMode.ts';
@@ -212,11 +213,30 @@ function applyPublished(maps: ArcadeMap[], published: ReadonlyMap<string, Publis
   maps.push(...rest);
 }
 
-/** Your MapMaker maps (this browser's library), for an offline host's Change map (in a match: `code` is its code). */
-function ownMaps(code: MatchCode): ArcadeMap[] {
-  return code.listLibrary().flatMap((e): ArcadeMap[] => {
-    const r = code.openFromLibrary(e.id);
-    return 'map' in r ? [loadedEntry(`own:${e.id}`, r.map, { blurb: 'Your map', modes: playableModes(r.map), bots: 4, group: 'Your' })] : [];
+/**
+ * Your MapMaker maps (this browser's library: localMaps.ts, IndexedDB), under "Your maps" in Match setup and an offline
+ * host's Change map. Each card comes from the library's list; the map itself loads when it's picked. Hosted online,
+ * one is listed in the game browser as a Community map (docs/COMMUNITY_MAPS.md).
+ */
+function ownMaps(): ArcadeMap[] {
+  return listLocalMaps().map((e): ArcadeMap => {
+    const metadata = { id: e.id, name: e.name, description: e.description ?? '', author: e.author ?? '', recommendedPlayers: e.recommendedPlayers ?? { min: 2, max: 8 } };
+    const entry: ArcadeMap = {
+      key: `own:${e.id}`,
+      metadata,
+      load: async () => {
+        const [text, { loadMap }] = await Promise.all([readLocalMap(e.id), loadMapContent()]);
+        const r = text ? loadMap(text) : null;
+        if (!r?.ok) throw new Error(`your map "${e.name}" failed to load`);
+        entry.map = r.map;
+        return r.map;
+      },
+      blurb: 'Your map',
+      modes: (e.modes ?? ['core.deathmatch']).filter(isGameMode),
+      bots: 4,
+      group: 'Your',
+    };
+    return entry;
   });
 }
 
@@ -267,6 +287,8 @@ class App {
       if (testMap && testDoc && !maps.some((m) => m.key === testMap)) maps.push(loadedEntry(testMap, testDoc, { blurb: blurbOf(testDoc.metadata.description), modes: playableModes(testDoc), bots: botsFor(testDoc.metadata.recommendedPlayers) }));
       // The owner's published maps update the list as soon as the hub answers (the menu draws from it when opened).
       void publishedMaps().then((p) => p.size && applyPublished(maps, p));
+      // Your own maps (this browser's library) join under "Your maps" once it's open.
+      void initLocalMaps().then(() => maps.push(...ownMaps()));
       // The home screen's featured map draws its plan: fetch that one map alongside the engine.
       const featured = maps.find((m) => m.key === 'sandgate') ?? maps[0];
       const [created] = await Promise.all([createEngine($<HTMLCanvasElement>('view')), loadFonts(), featured && capped(featured.load(), 5000)]);
@@ -381,7 +403,7 @@ class App {
   }
 
   async openEditor(): Promise<void> {
-    const [{ EditorApp }] = await Promise.all([import('./editor/editorApp.ts'), this.init()]);
+    const [{ EditorApp }] = await Promise.all([import('./editor/editorApp.ts'), this.init(), initLocalMaps()]);
     finishBoot();
     const first = !this.editor;
     this.editor ??= new EditorApp({
@@ -552,11 +574,12 @@ class App {
   }
 
   /** The host's Change map (pause menu → Match): the Arcade's map cards; offline, your MapMaker maps too. */
-  private mapPicker = (code: MatchCode): NonNullable<SessionOptions['mapPicker']> => (o) =>
+  private mapPicker = (_code: MatchCode): NonNullable<SessionOptions['mapPicker']> => (o) =>
     this.front!.hostMapPicker({
       ...o,
       isSuite: inSuite,
-      own: o.suiteOnly ? [] : ownMaps(code),
+      // Your own maps are in the list already ("Your maps"; ownMaps).
+      own: [],
       // A built-in map loads when its card is picked; usually it's in by the time Change map is pressed.
       onPick: (m, mode) => (m.map ? o.onPick(m.map, mode) : void m.load().then((doc) => o.onPick(doc, mode), (e: unknown) => console.warn('map failed to load', e))),
     });
