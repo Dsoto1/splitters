@@ -619,6 +619,8 @@ for the owner's review, not landed).**
 
 **Next in line to land: kit-prop generators** (`check/kit-props`, from `wip/kit-props` at bfbd84c, kit-prop generators agent, 2026-11-10), after Fireteams follow-ups. Second try: run 42823940482 was red on `editorux` and `editortools`, which clicked the Props tab's retired `prop.crate_small` and `prop.barrel`. Those flows now place `kit.crate.wood` and `kit.drum.steel`, and passed locally with CI's timeouts. Then one merge of origin/main, one check run (full suite), a fast-forward.
 
+**Next in line to land: Fireteams CTF roles fix** (`check/fireteams-4`, from `wip/fireteams-4`, Fireteams follow-ups agent, 2026-11-10), after kit-prop generators: a gameplay fix (the lead's decision: the CTF defend role only from 4 squads a side; the role word hidden after a leader's order). One merge of origin/main, one check run, then a fast-forward. Touches shared `sim/modes/ctfBots.ts`, `sim/match.ts` (snapshot role), client `game/squadHud.ts`, tests, `e2e/run.mjs` `fireteamsCtfChecks` only, docs.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - **The tour's Help button landed (2026-11-10, green on `check/mapmaker-tour-help`, run 42798341358; owner's tour answers 1b 2a 3a 4a 5a 6a):** the tool bar's Help, after Keys, starts the tour again. The `scenery` flow's hillside brush check now aims after the camera's move is drawn (it had clicked the tool bar's top edge). The run's one `fireteams` failure ("a tap of B opens the quick-message menu") passed on its re-run: the same flaky check that holds Community maps.
