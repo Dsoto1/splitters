@@ -35,6 +35,21 @@ export const LOBBY_LIMITS = {
 export interface ListingPolicy {
   /** Our suite's map IDs (maps/ less retired ones). Unset: not checked (tests, a hub without the maps). */
   suite?: ReadonlySet<string>;
+  /**
+   * Community maps (community.ts): the word filter and hidden or withdrawn maps (`problem`), the creator and Community
+   * Pick badge in the list (`decorate`), and each community listing's join code and creator (`listed`).
+   */
+  community?: {
+    listingProblem(a: LobbyAdvert): string | null;
+    decorate(contentHash: string | undefined, mapId: string | undefined): { creator?: string; pick?: boolean };
+    listed(a: LobbyAdvert, sub: string | null, username: string | null): void;
+  };
+}
+
+/** Who listed a game: the signed-in account (with its username) when the host sent its sign-in. */
+export interface Lister {
+  sub: string;
+  username: string | null;
 }
 
 /** Compares two secrets in constant time (also when their lengths differ). */
@@ -71,6 +86,8 @@ export class LobbyStore {
   private mapProblem(a: LobbyAdvert): string | null {
     // Nobody's listing is official, and none may look it: names can't claim to be ours.
     if (claimsOfficial(a.name) || claimsOfficial(a.host)) return "a listing's name can't claim to be official (ToshiroPlay, Tile Trigger): pick another";
+    const word = this.policy.community?.listingProblem(a);
+    if (word) return word;
     if (a.community) return a.mapId && a.versionId && a.contentHash ? null : 'a community map listing needs its map ID, version ID and content hash';
     if (this.policy.suite && !(a.mapId && this.policy.suite.has(a.mapId))) return "that map isn't one of the game's own: list it as a community map";
     return null;
@@ -83,7 +100,7 @@ export class LobbyStore {
     return false;
   }
 
-  add(body: unknown, ip: string): { id: string; secret: string } | { error: string; status: number } {
+  add(body: unknown, ip: string, by: Lister | null = null): { id: string; secret: string } | { error: string; status: number } {
     this.prune();
     const advert = parseAdvert(body);
     if (!advert) return { error: 'bad listing', status: 400 };
@@ -101,6 +118,7 @@ export class LobbyStore {
     const id = randomBytes(6).toString('hex');
     const secret = randomBytes(16).toString('hex');
     this.entries.set(id, { listing: { ...advert, id }, secret, ip, seen: t });
+    this.policy.community?.listed(advert, by?.sub ?? null, by?.username ?? null);
     return { id, secret };
   }
 
@@ -113,6 +131,7 @@ export class LobbyStore {
     if (!advert || advert.code !== e.listing.code || this.mapProblem(advert)) return 400;
     e.listing = { ...advert, id };
     e.seen = this.now();
+    this.policy.community?.listed(advert, null, null);
     return 204;
   }
 
@@ -131,7 +150,7 @@ export class LobbyStore {
     const fresh = t - LOBBY_STALE_SECONDS * 1000;
     return [...this.entries.values()]
       .filter((e) => e.seen >= fresh && (version === undefined || e.listing.version === version))
-      .map((e) => ({ ...e.listing, community: !!e.listing.community, age: Math.round((t - e.seen) / 1000) }))
+      .map((e) => ({ ...e.listing, community: !!e.listing.community, ...(e.listing.community ? this.policy.community?.decorate(e.listing.contentHash, e.listing.mapId) : {}), age: Math.round((t - e.seen) / 1000) }))
       .sort((a, b) => b.players - a.players || a.name.localeCompare(b.name));
   }
 
@@ -187,6 +206,11 @@ export interface LobbyOptions {
   lan?: () => Promise<{ addresses: string[]; servers: ServerInfo[] }>;
   /** Whether a game is open under this join code (on the hub's broker): relay credentials are only for live games. */
   isLive?: (code: string) => boolean;
+  /**
+   * The host's sign-in on a new listing (Authorization: Bearer, optional): a community map's creator is the first
+   * signed-in account to list it. A token that doesn't check out lists the game all the same, with no creator.
+   */
+  whoIs?: (token: string) => Promise<Lister | null>;
 }
 
 /**
@@ -217,7 +241,7 @@ export function lobbyHandler(store: LobbyStore, o: LobbyOptions = {}) {
     if (path !== '/lobby' && !path.startsWith('/lobby/')) return next?.();
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Lobby-Secret');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Lobby-Secret');
     res.setHeader('Access-Control-Max-Age', '600');
     res.setHeader('Cache-Control', 'no-store');
     const send = (status: number, body?: unknown) => {
@@ -258,7 +282,9 @@ export function lobbyHandler(store: LobbyStore, o: LobbyOptions = {}) {
         }
         if (req.method === 'POST') {
           if (!writes.allow(ip)) return send(429, { error: 'slow down' });
-          const r = store.add(await readBody(req), ip);
+          const bearer = /^Bearer ([A-Za-z0-9_.-]+)$/.exec(String(req.headers.authorization ?? ''))?.[1];
+          const by = bearer && o.whoIs ? await o.whoIs(bearer).catch(() => null) : null;
+          const r = store.add(await readBody(req), ip, by);
           return 'error' in r ? send(r.status, { error: r.error }) : send(201, r);
         }
         return send(405, { error: 'method not allowed' });

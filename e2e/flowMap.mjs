@@ -26,7 +26,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 export const FLOWS = [
   'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
   'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer', 'fireteams',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer', 'fireteams',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -154,11 +154,15 @@ const RULES = [
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
   // New players: the tutorial, first-time tips and their HUD (Quick Play is frontend/).
   [/^packages\/client\/src\/game\/(tutorial|tips|coachHud)\.ts$|^packages\/client\/src\/game\/coach\.css$/, ['newplayer', 'offline', 'mobile'], ['client']],
-  [/^packages\/client\/src\/frontend\//, ['newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
+  [/^packages\/client\/src\/frontend\//, ['newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'community', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline'], ['client']],
   [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'party', 'lobby', 'dedicatedhost'], ['client']],
-  [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode|party|mapVoteHud)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost'], ['client']],
+  [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode|party|mapVoteHud)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost'], ['client']],
+  // Community maps (docs/COMMUNITY_MAPS.md): your map library (MapMaker's Open…, Match setup's Your maps), the hub's
+  // picks and reports, the host's end-of-match report.
+  [/^packages\/client\/src\/localMaps\.ts$/, ['community', 'editor', 'lobby'], ['client']],
+  [/^packages\/client\/src\/(communityMaps|game\/communityPlays)\.ts$/, ['community', 'lobby'], ['client']],
   [/^packages\/client\/src\/game\/hostLeft\.ts$/, ['hostgame', 'handoff'], ['client']],
   [/^packages\/client\/src\/game\/spectatorCam\.ts$/, ['offline', 'teams', 'hostgame'], ['client']],
   [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera|riderPlacement|ownBody)\.ts$/, ['vehicles', 'traffic'], ['client']],
@@ -178,7 +182,7 @@ const RULES = [
 
   // The server (dedicated server, hub, lobby).
   [/^packages\/server\/src\/tools\//, NONE, ['server']],
-  [/^packages\/server\//, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost', 'hostpage'], ['server', 'host']],
+  [/^packages\/server\//, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage'], ['server', 'host']],
   // The Host Service (dedicated host); its packaging tool runs in CI's host-release job.
   [/^packages\/host\/tools\//, NONE, []],
   [/^packages\/host\//, ['dedicatedhost', 'hostpage'], ['host']],

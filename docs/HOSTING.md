@@ -713,6 +713,16 @@ hosting friends), in `BotFiller` (`shared/src/sim/match.ts`, `AWAY`):
   everyone if the screen turns off; the host gets a warning. Keeping a match
   alive without its host (moving it to another player) isn't done.
 
+## Community maps
+
+Players host their own maps (Match setup → Your maps → Host online); the game browser lists them as **Community
+map** with their creator. The hub counts plays per map version and keeps the **Community Picks** (maps that cleared
+the play thresholds and its own check). All of it: docs/COMMUNITY_MAPS.md, "What's built". On the hub
+(`packages/server/src/community.ts`): `COMMUNITY_DIR` (default: `community` beside `PROFILES_DIR`, so
+`/var/lib/tiletrigger/community` on the box with no new setting), `COMMUNITY_THRESHOLDS` (JSON) and
+`COMMUNITY_BLOCKED_WORDS`. The owner's weekly summary: Profile → Community maps, or
+`pnpm --filter @tiletrigger/server community-summary /var/lib/tiletrigger/community` on the box.
+
 ## Profiles
 
 Signed-in players pick a **username** (Profile: the Profile entry top right

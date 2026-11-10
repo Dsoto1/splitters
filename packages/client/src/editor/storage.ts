@@ -1,21 +1,18 @@
-import { loadMap, parseSetPiece, serializeMap, stampMapRelease, type MapDocument, type SetPieceDefinition, type ValidationIssue } from '@tiletrigger/shared';
+import { loadMap, newId, parseSetPiece, playableModes, serializeMap, stampMapRelease, type MapDocument, type SetPieceDefinition, type ValidationIssue } from '@tiletrigger/shared';
+import { deleteLocalMap, hasLocalMap, listLocalMaps, readLocalMap, writeLocalMap, type LocalMapEntry } from '../localMaps.ts';
 
 /**
- * Local map storage. Browser storage can be missing or cleared (private
- * windows, quota), so every call is guarded and Export/Import to files stays
- * the durable path until accounts and cloud storage exist (Phase 5).
+ * Local map storage. Saved maps are in IndexedDB (../localMaps.ts: as many as
+ * the disk allows); unsaved drafts stay in localStorage (a few). Browser storage
+ * can be missing or cleared (private windows), so every call is guarded and
+ * Export/Import to files stays the durable path (docs/COMMUNITY_MAPS.md).
  */
 /** The single rolling autosave used before drafts; read once and moved into the drafts. */
 const AUTOSAVE_KEY = 'cs.editor.autosave';
 const DRAFTS_KEY = 'cs.editor.drafts';
-const INDEX_KEY = 'cs.maps.index';
-const mapKey = (id: string) => `cs.map.${id}`;
 
-export interface LibraryEntry {
-  id: string;
-  name: string;
-  updatedAt: string;
-}
+/** A saved map as Open… lists it. */
+export type LibraryEntry = LocalMapEntry;
 
 function get(key: string): string | null {
   try {
@@ -62,10 +59,7 @@ export function listDrafts(): Draft[] {
     try {
       const parsed = JSON.parse(legacy) as { map: unknown; savedAt: string };
       const r = loadMap(parsed.map, undefined, { forEditing: true, openWithErrors: true });
-      // Skip it when it is just the saved copy of a library map.
-      const saved = r.ok ? openFromLibrary(r.map.metadata.id, true) : null;
-      const same = r.ok && saved && 'map' in saved && sameContent(saved.map, r.map);
-      if (r.ok && !same && !storedDrafts().some((d) => (d.map as MapDocument)?.metadata?.id === r.map.metadata.id)) {
+      if (r.ok && !storedDrafts().some((d) => (d.map as MapDocument)?.metadata?.id === r.map.metadata.id)) {
         set(DRAFTS_KEY, JSON.stringify([{ map: r.map, savedAt: parsed.savedAt }, ...storedDrafts()].slice(0, MAX_DRAFTS)));
       }
     } catch {
@@ -98,49 +92,51 @@ export function clearDraft(id: string): void {
   if (rest.length !== list.length) set(DRAFTS_KEY, JSON.stringify(rest));
 }
 
-function sameContent(a: MapDocument, b: MapDocument): boolean {
-  const strip = (m: MapDocument) => serializeMap({ ...m, metadata: { ...m.metadata, updatedAt: '' } });
-  return strip(a) === strip(b);
-}
-
 /** Whether this map has been saved to the local library. */
 export function inLibrary(id: string): boolean {
-  return listLibrary().some((e) => e.id === id);
+  return hasLocalMap(id);
 }
 
+/** Your saved maps, newest first (localMaps.ts: IndexedDB, unlimited; opened as the page starts). */
 export function listLibrary(): LibraryEntry[] {
-  try {
-    const list = JSON.parse(get(INDEX_KEY) ?? '[]') as LibraryEntry[];
-    return Array.isArray(list) ? list.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)) : [];
-  } catch {
-    return [];
-  }
+  return listLocalMaps();
 }
 
-/** Save to the local library, stamping updatedAt. Returns the stored document, or null if storage failed. */
-export function saveToLibrary(map: MapDocument): MapDocument | null {
+/** Save to the local library, stamping updatedAt. Resolves to the stored document, or null if storage refused it. */
+export async function saveToLibrary(map: MapDocument): Promise<MapDocument | null> {
   const stamped: MapDocument = { ...map, metadata: { ...map.metadata, updatedAt: new Date().toISOString() } };
-  if (!set(mapKey(stamped.metadata.id), serializeMap(stamped))) return null;
-  const list = listLibrary().filter((e) => e.id !== stamped.metadata.id);
-  list.push({ id: stamped.metadata.id, name: stamped.metadata.name, updatedAt: stamped.metadata.updatedAt });
-  return set(INDEX_KEY, JSON.stringify(list)) ? stamped : null;
+  const m = stamped.metadata;
+  const entry: LocalMapEntry = { id: m.id, name: m.name, updatedAt: m.updatedAt, description: m.description, author: m.author, recommendedPlayers: m.recommendedPlayers, modes: playableModes(stamped) };
+  return (await writeLocalMap(entry, serializeMap(stamped))) ? stamped : null;
 }
 
 /** A saved map: as played, or `forEditing` (MapMaker: paths kept out of the ground, see loadMap). */
-export function openFromLibrary(id: string, forEditing = false): { map: MapDocument } | { issues: ValidationIssue[] } {
-  const raw = get(mapKey(id));
+export async function openFromLibrary(id: string, forEditing = false): Promise<{ map: MapDocument } | { issues: ValidationIssue[] }> {
+  const raw = await readLocalMap(id);
   if (!raw) return { issues: [{ severity: 'error', code: 'storage.missing', message: 'map not found in local storage' }] };
   const r = loadMap(raw, undefined, { forEditing });
   return r.ok ? { map: r.map } : { issues: r.issues };
 }
 
-export function deleteFromLibrary(id: string): void {
-  try {
-    localStorage.removeItem(mapKey(id));
-  } catch {
-    /* storage unavailable */
-  }
-  set(INDEX_KEY, JSON.stringify(listLibrary().filter((e) => e.id !== id)));
+export function deleteFromLibrary(id: string): Promise<void> {
+  return deleteLocalMap(id);
+}
+
+/** A copy of a saved map under a new ID (and a new identity: it is a map of its own), saved beside it. */
+export async function duplicateInLibrary(id: string): Promise<MapDocument | null> {
+  const r = await openFromLibrary(id, true);
+  if (!('map' in r)) return null;
+  const { release: _r, ...metadata } = r.map.metadata;
+  const name = `${metadata.name} copy`.slice(0, 80);
+  return saveToLibrary({ ...r.map, metadata: { ...metadata, id: newId('map'), name, parentId: r.map.metadata.id } });
+}
+
+/** Rename a saved map (its file and the list). */
+export async function renameInLibrary(id: string, name: string): Promise<MapDocument | null> {
+  const r = await openFromLibrary(id, true);
+  const v = name.trim().slice(0, 80);
+  if (!('map' in r) || !v) return null;
+  return saveToLibrary({ ...r.map, metadata: { ...r.map.metadata, name: v } });
 }
 
 /**

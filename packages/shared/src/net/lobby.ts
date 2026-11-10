@@ -38,6 +38,13 @@ export interface LobbyListing {
   versionId?: string;
   contentHash?: string;
   /**
+   * A community map's creator: the username of the signed-in account that first listed the map (by its map ID), set
+   * by the hub (never taken from the host's advert). Absent: the hub knows no creator for it.
+   */
+  creator?: string;
+  /** A community map that is a Community Pick (docs/COMMUNITY_MAPS.md), set by the hub. */
+  pick?: boolean;
+  /**
    * Where the match runs: a player's browser tab (Host game; ends when they
    * leave), or a dedicated Host Service on someone's always-on computer
    * (packages/host). Either way community-run: no listing is ever official.
@@ -52,7 +59,7 @@ export interface LobbyListing {
 export type HostType = 'browser' | 'dedicated';
 
 /** What a host sends to list or refresh its game. */
-export type LobbyAdvert = Omit<LobbyListing, 'id' | 'age'>;
+export type LobbyAdvert = Omit<LobbyListing, 'id' | 'age' | 'creator' | 'pick'>;
 
 /** Hosts check in this often; a listing that misses one is hidden (stale), one that misses a few drops off. */
 export const LOBBY_HEARTBEAT_SECONDS = 20;

@@ -1223,8 +1223,12 @@ async function editorTourChecks(browser) {
   await page.click('#ed-tour-skip');
   t = await tour();
   check(!t.shown && t.stored === 'skipped' && !t.lit.length, `Skip ends it mid-tour, remembered as skipped (${JSON.stringify(t)})`);
-  await page.keyboard.press('Shift+Slash');
-  await page.click('#ed-keys-tour');
+  // The tool bar's Help button starts it again too (owner, 2026-11-10: tour question 1b).
+  await page.click('#ed-tb-help');
+  await frames(page, 2);
+  t = await tour();
+  check(t.shown && t.step === 'welcome', `the tool bar's Help button starts it again (${JSON.stringify(t)})`);
+  await shot('tour-help');
   await page.click('#ed-tour-next');
   await frames(page, 2);
   await page.mouse.move(700, 400);
@@ -3931,6 +3935,8 @@ async function sceneryFlow(browser) {
   await page.selectOption('#ed-env-preset', 'alpine');
   // Bring the hillside to the middle of the view, clear of the tool bar over its top edge.
   await page.evaluate(() => window.__editor.view.focus({ x: 18, y: 0, z: 18 }));
+  // The camera's matrices follow on the next drawn frame: aim after it, not with the old view.
+  await frames(page, 2);
   p = await at(18, 18);
   await page.mouse.move(p.x, p.y);
   await page.mouse.click(p.x, p.y);
@@ -7761,9 +7767,20 @@ async function fireteamsFlow(browser) {
   await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
   await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
   // A tap of B: the quick-message menu, as without Fireteams.
-  await page.keyboard.press('KeyB');
-  const menu = await page.waitForFunction(() => !document.getElementById('msg-menu')?.hidden && document.getElementById('order-wheel')?.hidden !== false, null, { timeout: T(5000) }).then(() => true, () => false);
-  await page.keyboard.press('KeyB');
+  // The tap's key down and up go in one task: a held B opens the order wheel after WHEEL_HOLD_MS (180 ms), and a
+  // loaded runner could draw a frame between two separate key events that late (CI: the wheel instead of the menu).
+  // It is tapped again only once the menu, the wheel and the pause menu are seen closed (a tap toggles the menu).
+  await page.waitForFunction(() => window.__cs.input.locked && document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
+  const tapB = () => page.evaluate(() => ['keydown', 'keyup'].forEach((type) => window.dispatchEvent(new KeyboardEvent(type, { code: 'KeyB', key: 'b', bubbles: true }))));
+  const menuOpen = () => page.waitForFunction(() => !document.getElementById('msg-menu')?.hidden && document.getElementById('order-wheel')?.hidden !== false, null, { timeout: T(5000) }).then(() => true, () => false);
+  const allClosed = () => page.evaluate(() => document.getElementById('msg-menu')?.hidden !== false && document.getElementById('order-wheel')?.hidden !== false && document.getElementById('pause')?.hidden !== false && window.__cs.input.locked);
+  await tapB();
+  let menu = await menuOpen();
+  if (!menu && (await allClosed())) {
+    await tapB();
+    menu = await menuOpen();
+  }
+  await tapB();
   await page.waitForFunction(() => document.getElementById('msg-menu')?.hidden !== false, null, { timeout: T(5000) }).catch(() => {});
   check(menu, `a tap of B opens the quick-message menu, not the order wheel (pause menu ${await page.evaluate(() => (document.getElementById('pause')?.hidden === false ? 'up' : 'down'))})`);
   // Hold B: the order wheel, seven orders (Part 2's Spread out / Stay tight last), your squad's current one ringed.
@@ -7815,8 +7832,14 @@ async function fireteamsFlow(browser) {
   const holding = await meWait(page, (m, me, a) => {
     const s = m.fireteams.squadOf(me.slot);
     const bots = s.members.filter((x) => x !== me.slot).map((x) => m.slots[x]).filter((c) => c?.alive);
-    const near = bots.filter((c) => Math.hypot(c.move.pos.x - a.p.x, c.move.pos.z - a.p.z) < 8).length;
-    return m.tick - a.tick > 8 * 60 && s.order.kind === 'hold' && bots.length > 0 && near * 2 > bots.length;
+    // Held: most of the squad by the spot (its ring is 4 m spread out), not with you. A squadmate in a fight may stand
+    // off it for a while (CI: all three 19-22 m off, you 72 m away), so a squadmate within 25 m of the spot and at least
+    // twice as far from you counts as holding it; following you would bring them within a few metres of you.
+    const holds = bots.filter((c) => {
+      const off = Math.hypot(c.move.pos.x - a.p.x, c.move.pos.z - a.p.z);
+      return off < 8 || (off < 25 && Math.hypot(c.move.pos.x - me.move.pos.x, c.move.pos.z - me.move.pos.z) > 2 * off);
+    }).length;
+    return m.tick - a.tick > 8 * 60 && s.order.kind === 'hold' && bots.length > 0 && holds * 2 > bots.length;
   }, { p: spot, tick: away?.tick ?? 0 }, 25);
   const where = await sim(page, (m, me, p) => {
     const s = m.fireteams.squadOf(me.slot);
@@ -9315,6 +9338,106 @@ async function lobbyFlow(browser) {
   await setupHost.context().close();
 }
 
+/**
+ * Community maps (docs/COMMUNITY_MAPS.md): a player's own map (in their library, moved into IndexedDB as the page
+ * opens) is hosted from Match setup, listed in the game browser with the "Community map" label and its name, found
+ * with the Community maps filter, and joined by a stranger; the hub keeps its numbers, turns down a listing with a
+ * blocked word, and its Community Picks show in their own tab of the map list.
+ */
+async function communityFlow(browser) {
+  const HUB_PORT = +(process.env.E2E_COMMUNITY_HUB_PORT ?? 9082);
+  const dir = mkdtempSync(join(tmpdir(), 'tt-community-e2e-'));
+  // A Community Pick the hub already keeps (its numbers and its file), for the Community Picks tab.
+  const arena = JSON.parse(readFileSync(new URL('../maps/phase0_arena.json', import.meta.url), 'utf8'));
+  const pickHex = 'c'.repeat(64);
+  mkdirSync(join(dir, 'picks'), { recursive: true });
+  writeFileSync(join(dir, 'picks', `${pickHex}.json`), JSON.stringify({ ...arena, metadata: { ...arena.metadata, id: 'e2e_pick_yard', name: 'E2E Pick Yard' } }));
+  const pickRow = { mapId: 'm_e2epickyardaaaaaaa'.slice(0, 18), versionId: 'v_e2epickyardaaaaa', name: 'E2E Pick Yard', status: 'pick', firstAt: 0, lastAt: Date.now(), players: {}, hosts: [], days: [], minutes: 0, matches: 0, reporters: [], reviewed: 0, pickedAt: Date.now(), description: 'A test pick.', modes: ['core.deathmatch'], recommendedPlayers: { min: 2, max: 4 } };
+  writeFileSync(join(dir, 'community.json'), JSON.stringify({ salt: 'e2e', versions: { [`sha256:${pickHex}`]: pickRow }, maps: {}, hostLast: {} }));
+  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', LAN_DISCOVERY: '0', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478', COMMUNITY_DIR: dir });
+  const up = await until(() => fetch(`http://127.0.0.1:${HUB_PORT}/lobby/health`).then((r) => r.ok), T(30000));
+  check(up, 'the community hub starts');
+  const hub = `hub=127.0.0.1:${HUB_PORT}`;
+  const errors = [];
+
+  // The host's own map, saved in MapMaker before the library moved to IndexedDB (localStorage): it moves in as the
+  // page opens and joins Match setup under "Your maps".
+  const own = { ...arena, metadata: { ...arena.metadata, id: 'e2e_dune_run', name: 'E2E Dune Run', author: 'Hosty' } };
+  const host = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
+  await host.addInitScript((map) => {
+    if (sessionStorage.getItem('seeded')) return;
+    sessionStorage.setItem('seeded', '1');
+    localStorage.setItem('cs.name', 'Hosty');
+    localStorage.setItem('cs.maps.index', JSON.stringify([{ id: map.metadata.id, name: map.metadata.name, updatedAt: '2026-11-01T10:00:00.000Z' }]));
+    localStorage.setItem(`cs.map.${map.metadata.id}`, JSON.stringify(map));
+    localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.deathmatch', bots: 1, skill: 'easy', scoreLimit: 40, minutes: 10 }));
+  }, own);
+  // (No ?test=1 here: a test-mode match is offline only, never hosted or listed; the lobby flow hosts the same way.)
+  await host.goto(`${CLIENT}/?${hub}`, { waitUntil: 'domcontentloaded' });
+  await host.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await host.evaluate(() => document.getElementById('nav-play').click());
+  const card = await host.waitForFunction(() => [...document.querySelectorAll('#map-cards .map-card')].some((c) => c.title === 'E2E Dune Run'), null, { timeout: T(30000) }).then(() => true, () => false);
+  const moved = await host.evaluate(() => ({ index: localStorage.getItem('cs.maps.index'), heading: [...document.querySelectorAll('#map-cards .map-group')].map((h) => h.textContent) }));
+  check(card && moved.index === null && moved.heading.includes('Your maps'), `your saved map moves into IndexedDB and is offered under "Your maps" in Match setup (${JSON.stringify(moved)})`);
+  // The hub's Community Picks have their own tab.
+  const picksTab = await host.waitForFunction(() => !!document.querySelector('#map-tabs .map-tab.picks'), null, { timeout: T(15000) }).then(() => true, () => false);
+  if (picksTab) {
+    await host.evaluate(() => document.querySelector('#map-tabs .map-tab.picks').click());
+    const shown = await host.evaluate(() => [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.title));
+    check(shown.length === 1 && shown[0] === 'E2E Pick Yard', `the Community Picks tab lists the hub's picks only (${shown.join(', ')})`);
+    if (process.env.E2E_SHOTS) {
+      // (Once the start-up screen has gone: boot.ts removes it.)
+      await host.waitForFunction(() => !document.getElementById('boot'), null, { timeout: T(30000) }).catch(() => {});
+      await host.screenshot({ path: `${process.env.E2E_SHOTS}/community-picks-tab.png` });
+    }
+    await host.evaluate(() => document.querySelector('#map-tabs .map-tab[data-mode="all"]').click());
+  } else check(false, 'the map list has a Community Picks tab');
+  const allShown = await host.evaluate(() => [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.title));
+  check(!allShown.includes('E2E Pick Yard'), 'All maps leaves the picks to their tab');
+  await host.evaluate(() => [...document.querySelectorAll('#map-cards .map-card')].find((c) => c.title === 'E2E Dune Run').click());
+  await host.waitForSelector('#arcade-host', { timeout: T(30000) });
+  await host.evaluate(() => document.getElementById('arcade-host').click());
+  await host.evaluate(() => document.getElementById('arcade-start').click());
+  const ours = () => hubGames(HUB_PORT).then((g) => (g ?? []).find((x) => x.host === 'Hosty') ?? null);
+  const listed = await hubUntil(async () => !!(await ours()), T(120000));
+  const game = await ours();
+  check(listed && game?.community === true && game.map === 'E2E Dune Run' && /^sha256:/.test(game.contentHash ?? ''), `hosting your own map lists it as a community map, with its name and exact version (${JSON.stringify(game)})`);
+  const badge = await host.waitForFunction(() => /Community map/.test(window.__cs?.hud?.onlineNote ?? ''), null, { timeout: T(60000) }).then(() => true, () => false);
+  check(badge, `the host's online line says Community map (${await host.evaluate(() => window.__cs?.hud?.onlineNote ?? '')})`);
+
+  // The hub's word filter: a listing named with a blocked word is turned down.
+  const bad = await fetch(`http://127.0.0.1:${HUB_PORT}/lobby/games`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: 'QWE234', name: 'Sh1t Show', host: 'Rude', map: 'Arena', mode: 'core.deathmatch', players: 1, max: 8, version: game?.version ?? 1, relay: false, community: true, mapId: 'rude_map', versionId: 'v_abcdefghijklmnop', contentHash: `sha256:${'d'.repeat(64)}` }) }).then(async (r) => ({ status: r.status, body: await r.json() }));
+  check(bad.status === 400 && /word/.test(bad.body.error ?? ''), `the hub turns down a listing with a blocked word (${JSON.stringify(bad)})`);
+
+  // A stranger finds it with the Community maps filter, sees the label, and joins from the list.
+  const player = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  player.on('pageerror', (e) => errors.push(`player: ${e.message}`));
+  await player.addInitScript(() => localStorage.setItem('cs.name', 'Stranger'));
+  await player.goto(`${CLIENT}/?${hub}`, { waitUntil: 'domcontentloaded' });
+  await player.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  // Online (pressed again until its screen is up: a press while the menu is still starting can be missed).
+  await player.waitForFunction(() => !!document.getElementById('gb-filter') || void document.getElementById('nav-online')?.click(), null, { timeout: T(45000), polling: 1000 });
+  await player.selectOption('#gb-filter', 'community');
+  const rowText = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Dune Run')) ?? null, null, { timeout: T(45000) }).then((h) => h.jsonValue(), () => null);
+  check(!!rowText && rowText.includes('Community map') && rowText.includes('Hosty') && rowText.includes('Report'), `the game browser lists it with the Community map label, its name, its host and Report (${rowText})`);
+  if (process.env.E2E_SHOTS) await player.screenshot({ path: `${process.env.E2E_SHOTS}/community-browser.png` });
+  await player.selectOption('#gb-filter', 'ours');
+  const hidden = await player.waitForFunction(() => !document.querySelector('.gb-list').textContent.includes('E2E Dune Run'), null, { timeout: T(15000) }).then(() => true, () => false);
+  check(hidden, 'the Our maps filter leaves it out');
+  await player.selectOption('#gb-filter', 'community');
+  await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].some((r) => r.textContent.includes('E2E Dune Run')), null, { timeout: T(15000) }).catch(() => {});
+  await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Dune Run'))?.querySelector('button.primary')?.click());
+  const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(120000) }).then(() => true, () => false);
+  check(joined, 'joining from the game browser puts the stranger in the match on the community map (sent by the host)');
+  // The hub's numbers: the version is known (its plays count only for signed-in players: none here).
+  const kept = await hubUntil(() => Promise.resolve(existsSync(join(dir, 'community.json')) && readFileSync(join(dir, 'community.json'), 'utf8').includes('E2E Dune Run')), T(15000));
+  check(kept, 'the hub keeps the community map version (by its content hash)');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await player.context().close();
+  await host.context().close();
+}
+
 /** A Host Service (packages/host) on a local hub: started as the owner would (`pnpm host`), with its own state folder. */
 async function startHostService({ hubPort, controlPort, env = {}, idle = false }) {
   const state = mkdtempSync(join(tmpdir(), 'tt-host-e2e-'));
@@ -10439,7 +10562,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

@@ -8,6 +8,14 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Community maps (`wip/community-maps`, agent, 2026-11-10; the owner-approved plan, queued item 6; all five build steps; green on `check/community-maps` at 8c856ba, run 42811718756; LANDED; landing line and editor claim removed).** Details, tests and the owner's open questions: docs/COMMUNITY_MAPS.md, "What's built". CHANGELOG "Community maps".
+- **Local library in IndexedDB** (`client/src/localMaps.ts`; `editor/storage.ts` and `mapSaving.ts`: save/load hooks only): unlimited saved maps, the old localStorage library moves in once; Open… has Duplicate and Rename. Your maps join Match setup under "Your maps".
+- **Hosting:** a hosted own map is listed as a Community map with its creator (first signed-in lister of the map ID) and a Report button; the game browser has a map filter.
+- **Hub** (`server/src/community.ts`, `communityCheck.ts`, `shared/src/net/community.ts`): play statistics per content hash from the host's end-of-match report (`game/communityPlays.ts`), counted only for accounts the hub ticketed for that code; promotion by the thresholds (`COMMUNITY_THRESHOLDS`); the one-time file fetch checked in a worker; Community Picks (`/api/v1/community/picks`, their own tab in the map list); word filter, reports, auto-hide, withdraw; the owner's summary and Official / Take down / Restore (Profile → Community maps; `pnpm --filter @tiletrigger/server community-summary`).
+- **Owner deploy:** nothing on AWS: the hub keeps `/var/lib/tiletrigger/community` beside the profiles; the usual box update brings it.
+- **Open for the owner:** 7 questions in docs/COMMUNITY_MAPS.md ("Open questions"): JSON vs SQLite, creator identity, the creator as a host, "over 3 days", the auto-hide threshold, Host Services' plays, where Report shows.
+- **Pitfall:** a host sends the map as it plays it (paths laid into the ground); a pick of a map with paths may hash differently when hosted again, which starts that version's numbers from zero.
+
 **Fireteams part 3: squad scores, the squad MVP, the party preset (`wip/fireteams-3`, agent, 2026-11-10; owner-approved; green on `check/fireteams-3` at da05b91, run 42780770897; LANDED; landing line removed).**
 Details: docs/FIRETEAMS_PLAN.md, "Part 3"; docs/BOTS.md, "Fireteams Part 3".
 - **Squad scores** in the sim (`sim/squadScores.ts`, `Fireteams.scores`): kill 10, assist 5 (a hit within 10 s before
@@ -355,7 +363,7 @@ The workflow is unchanged (CLAUDE.md):
 - **Disk:** each session's container is its own; remove a worktree once its branch has landed.
 
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
-- Claimed: `packages/client/src/editor/storage.ts` and `packages/client/src/editor/mapSaving.ts` (community maps part 1: the local map library moves to IndexedDB, Open… gets Duplicate and Rename; save/load hooks only, no other editor files, no map format change), community maps (`wip/community-maps`), 2026-11-10. (The MapMaker lane's `editor/**` claim above was released on 2026-11-10: "In flight: MapMaker overhaul".)
+- Claimed: the new content ids `kit.*` (generated kit-prop families: crates, barrels, drums, boxes; later fences, walls, containers), the palette data in `packages/client/src/editor/paletteCatalog.ts` (`RETIRED_PROPS`, `REPLACEMENTS`, the `kit` atlas group) and three small hooks so kit variants can be chosen like the species' (`client/src/editor/entityInspector.ts` the prop's Variant row, `shared/src/editor/propRandom.ts` Randomise's variant, `shared/src/editor/operations.ts` `parseModelChoice`; no other editor code), `packages/shared/src/content/props.ts` and a load-time prop alias step in `map/validate.ts` `loadMap` (as played only; no map format change, no `maps/*.json` edited), kit-prop generators (`wip/kit-props`), 2026-11-10.
 - **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
 - **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
   (team kills and roulette).
@@ -590,8 +598,16 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
+**Fixing the flaky `fireteams` check** ("a tap of B opens the quick-message menu"; owner, 2026-11-10: fix the test before Community maps lands): MapMaker lane, `wip/mapmaker-fix-fireteams-test`. Claimed: `e2e/run.mjs` `fireteamsFlow` only (no game code unless the cause is there; if it is, I'll say so here first).
+- **From community maps (2026-11-10): Community maps landed on main at 8c856ba (green on `check/community-maps`, run 42811718756; `fireteams` passed there, the tap of B included), and it already hardens both steps in `fireteamsFlow`: commit b77f23a.** The tap of B sends key down and up in one task (Playwright's two key events let a loaded runner draw a frame between them past WHEEL_HOLD_MS, 180 ms, so the order wheel opened instead), and taps again only once the menu, the wheel and the pause menu are seen closed; the squad-holds step counts a squadmate within 25 m of the spot and at least twice as far from you as from it (CI had all three 19-22 m off it, in a fight, you 72 m away). Reproduced locally on this branch and on origin/main alike. **MapMaker lane: please drop `wip/mapmaker-fix-fireteams-test`, or rebase it onto main and keep only what goes beyond this, so `e2e/run.mjs` doesn't conflict.**
+
+**Landing now: Bot AI Phase D (`check/bots-d`; Bot AI Phase D agent), please hold code pushes to main.** (2026-11-10; one merge of origin/main, one check run, then a fast-forward.)
+
+**Next in line to land: kit-prop generators** (`check/kit-props`, from `wip/kit-props` at 95929c8, kit-prop generators agent, 2026-11-10), after Bot AI Phase D: one merge of origin/main, one check run (full suite: shared code), then a fast-forward. Touches new `kit.*` content and tools (content/kitprops*, tools/content/kitprops.mjs and kit/, public/kit/), shared content/props.ts, content/kitProps.ts, map/propAliases.ts and validate.ts `loadMap`, surfaceTypes.ts, the claimed editor hooks (paletteCatalog, paletteBuilder's retired filter, entityInspector's Variant row, propRandom, parseModelChoice), client content/models.ts and game/propVisuals.ts, tools/propLineup.ts, two shared tests; no map files.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
+- **The tour's Help button landed (2026-11-10, green on `check/mapmaker-tour-help`, run 42798341358; owner's tour answers 1b 2a 3a 4a 5a 6a):** the tool bar's Help, after Keys, starts the tour again. The `scenery` flow's hillside brush check now aims after the camera's move is drawn (it had clicked the tool bar's top edge). The run's one `fireteams` failure ("a tap of B opens the quick-message menu") passed on its re-run: the same flaky check that holds Community maps.
 - **The overhaul is complete (2026-11-10):** Phase 6, the first-time tour, landed last; the editor-code claim is released. Still in this lane: The Spillway and Verdant Protocol (built, green, waiting for the owner's review) and their follow-ups.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
@@ -922,7 +938,7 @@ Phase 1 items 1, 2, 5): the ghost says why, the live budget bar, the `?` key lis
 4. ~~**Fireteams.**~~ Parts 1 and 2 done: see "Fireteams, part 1" and "part 2" below. Part 3 (squad scores, MVP, the
    party preset) is next.
 5. **The MapMaker overhaul.** Its Phase 3 item 9 is the rotate ring.
-6. **Community maps.**
+6. ~~**Community maps.**~~ Built: see "Community maps" in Start here (docs/COMMUNITY_MAPS.md).
 7. **Kit-prop generators.**
 8. **Player profiles,** last.
 
@@ -4802,7 +4818,7 @@ Plan in docs/COMMUNITY_MAPS.md:
 - maps reach Community Picks automatically by play thresholds, with a weekly owner summary and one-click Official;
 - Community Pick map files are kept on the hub.
 
-MULTIPLAYER_DIRECTION §7 is amended to match. Starts after the current work.
+MULTIPLAYER_DIRECTION §7 is amended to match. **Built 2026-11-10** (`wip/community-maps`): see "Community maps" in Start here.
 
 ### Queued (owner-approved 2026-11-06, "all if able"): MapMaker quality-of-life list = the MapMaker overhaul, plan in docs/MAPMAKER_OVERHAUL_PLAN.md
 The owner asked what MapMaker could use, by comparison with the Far Cry and TimeSplitters editors. My picks, in order:

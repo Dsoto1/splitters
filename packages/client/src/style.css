@@ -1035,6 +1035,16 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 .gb-tag.relay { color: var(--success); border-color: rgba(46, 204, 113, 0.45); }
 .gb-tag.community { color: #7fc4ff; border-color: rgba(127, 196, 255, 0.45); }
 .gb-tag.dedicated { color: #d7b8ff; border-color: rgba(215, 184, 255, 0.45); }
+/* Community maps (frontend/communityUi.ts): the creator under the map, Community Pick, Report, the map filter, Profile. */
+.gb-tag.pick { color: #ffd76a; border-color: rgba(255, 215, 106, 0.5); }
+.gb-creator { color: var(--muted); font: 500 11px var(--font-body); }
+.gb-join { display: flex; flex-direction: column; align-items: stretch; gap: 2px; }
+.gb-report, .setup-community .link { font: 500 11px var(--font-body); color: var(--muted); padding: 0; }
+#gb-filter { background: var(--surface-1); color: var(--text); border: 1px solid var(--line); padding: 4px 6px; font: 500 12px var(--font-body); }
+.map-tab.picks { color: #ffd76a; }
+.prof-community-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 4px 0; }
+.prof-community-row small { color: var(--muted); }
+.prof-community-owner h5, .prof-community-owner h6 { margin: 10px 0 2px; }
 .gb-map, .gb-mode { color: var(--text); font: 500 13px var(--font-body); }
 .gb-map { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .gb-thumbs { gap: 4px; }

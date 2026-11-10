@@ -374,7 +374,7 @@ last, once the interface has settled.
   a pickup, Try it out (▶ Here or ▶ PLAY TEST), and a closing card. Each step lights its mode tab until you're in the
   mode, then its palette card (or the palette tab, folded group or palette toggle hiding it), and moves on from the
   edit history (`HistoryChange` now marks undos, which never count) or the test starting, never a timer. Skip or Esc
-  ends it; done or skipped is remembered (`tiletrigger.editor.tour`); the `?` key list's **Take the tour** restarts it.
+  ends it; done or skipped is remembered (`tiletrigger.editor.tour`); the `?` key list's **Take the tour** and the tool bar's **Help** button restart it (owner, 2026-11-10: 1b).
   Not in `?test=1` unless `&tour=1`. Rules shared `editor/tour.ts`; card `client/editor/tour.ts`; unit
   `mapmakerTour.test.ts`; e2e `editorux` → `editorTourChecks`. BUILDING_KIT.md "MapMaker's first-time tour".
 
