@@ -66,6 +66,13 @@ jump ahead, or something the owner explicitly bumps.
   - e2e `visual` (every baseline within its share: canyon 0.7 %, arena 0.8 %), `coverage` and `setpieces` passed.
     `offline` failed on the spectator's "follows the next player" once, passed on a re-run, and passed on main.
   - The other 41 flows CI's plan picks were not run locally.
+  - First landing try (`check/kit-props` at 9a4e32d, run 42823940482): red on `editorux` and `editortools`. Those
+    flows clicked the Props tab's `prop.crate_small` and `prop.barrel`, now retired. They now place `kit.crate.wood`
+    and `kit.drum.steel`, which have the same sizes. The atlas check now expects `kitprops`, and the pack-search check
+    uses `prop.dungeon_barrel` (e2e/run.mjs, 18 lines).
+  - Locally with CI's timeouts (`CI=1`), these passed: `editortools`, `editorpieces`, `editorenv`, and `editorux` (its
+    budget-toggle click timed out twice under load 12, then passed). `editor` failed only on the known local load
+    timeouts: TEST start budget, a random pickup drawn, and the jump-off hint.
   - Screenshots: session scratchpad `kitprops/` (`shots/<map>-before|after.png` for bunker_cross, iron_tide,
     flatpack_depot and undergate_transit; `lineup-old/`, `lineup-new/`, `close/`).
 - **Pitfall found:** the prop batches (`client/game/propBatches.ts`) rebuild a model from its vertex data, and
