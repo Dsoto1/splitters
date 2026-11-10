@@ -599,10 +599,17 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
-**Landing now: Community maps (`check/community-maps`; community maps agent), please hold code pushes to main.** (2026-11-10; one merge of origin/main, one check run, then a fast-forward.)
+**Landing now: Community maps (`check/community-maps`; community maps agent), please hold code pushes to main.** (2026-11-10, second try: the `fireteams` flow's tap of B and squad-holds checks hardened on `wip/community-maps`; one merge of origin/main, one check run, then a fast-forward.)
+
+**Fixing the flaky `fireteams` check** ("a tap of B opens the quick-message menu"; owner, 2026-11-10: fix the test before Community maps lands): MapMaker lane, `wip/mapmaker-fix-fireteams-test`. Claimed: `e2e/run.mjs` `fireteamsFlow` only (no game code unless the cause is there; if it is, I'll say so here first).
+
+**Next in line to land: Bot AI Phase D** (`check/bots-d`, Bot AI Phase D agent, 2026-11-10), after Community maps: one merge of origin/main, one check run, then a fast-forward. Touches brain.ts, director.ts, teamBrain.ts, vantage.ts, nav/parkour.ts, sim/mapNav.ts, match.ts (a debug-frame method, the director's hints), the client's session.ts / localTransport.ts / matchHost.ts (the `?botdebug=1` view) and one e2e check in `teams`; no editor or map files.
+
+**Next in line to land: kit-prop generators** (`check/kit-props`, from `wip/kit-props` at 95929c8, kit-prop generators agent, 2026-11-10), after Bot AI Phase D: one merge of origin/main, one check run (full suite: shared code), then a fast-forward. Touches new `kit.*` content and tools (content/kitprops*, tools/content/kitprops.mjs and kit/, public/kit/), shared content/props.ts, content/kitProps.ts, map/propAliases.ts and validate.ts `loadMap`, surfaceTypes.ts, the claimed editor hooks (paletteCatalog, paletteBuilder's retired filter, entityInspector's Variant row, propRandom, parseModelChoice), client content/models.ts and game/propVisuals.ts, tools/propLineup.ts, two shared tests; no map files.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
+- **The tour's Help button landed (2026-11-10, green on `check/mapmaker-tour-help`, run 42798341358; owner's tour answers 1b 2a 3a 4a 5a 6a):** the tool bar's Help, after Keys, starts the tour again. The `scenery` flow's hillside brush check now aims after the camera's move is drawn (it had clicked the tool bar's top edge). The run's one `fireteams` failure ("a tap of B opens the quick-message menu") passed on its re-run: the same flaky check that holds Community maps.
 - **The overhaul is complete (2026-11-10):** Phase 6, the first-time tour, landed last; the editor-code claim is released. Still in this lane: The Spillway and Verdant Protocol (built, green, waiting for the owner's review) and their follow-ups.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with

@@ -40,7 +40,7 @@ function remember(how: 'done' | 'skipped'): void {
  * view with one line per step, and the button or palette card to use lit up. It never blocks editing: the card is
  * the only thing it puts in the way, and each step moves on when the person does it (the history's edits, a test
  * starting). Esc or Skip ends it at any step. It starts by itself on a first visit (not in `?test=1`, unless
- * `&tour=1`), and again from the `?` key list.
+ * `&tour=1`), and again from the `?` key list and the tool bar's Help button.
  */
 export class EditorTour {
   state: TourState = TOUR_OFF;

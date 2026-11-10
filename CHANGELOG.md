@@ -57,7 +57,7 @@ made only on a commit that passed CI on a check branch.
 
 **MapMaker: a first-time tour** (MapMaker overhaul Phase 6): the first visit walks you through a tiny map with the real
 tools: place a room, a spawn and a pickup, then play it. Each step moves on when you do it; Skip or Esc ends it, and it
-won't show again. Take it again from the `?` key list.
+won't show again. Take it again from the tool bar's Help button or the `?` key list.
 
 **Bot vehicle routing and getting out by a wall** (bugs found on Whiteout Station and Riot Junction):
 - **Bots no longer drive vehicles into doorways they only fit square on.** A bot checked the route for a vehicle's
