@@ -7725,9 +7725,11 @@ async function environmentFlow(browser) {
 
 /**
  * Fireteams follow-ups (docs/FIRETEAMS_PLAN.md, "Follow-ups"): CTF squad roles. Capture the Flag on Twin Spires with
- * Fireteams (squads of 4, 9 a side: your squad and two bot-led ones, 3 and 2) → the smallest squad (bot-led) defends,
- * the others attack, as the sim works it out (ctfSquadRoles) → your squad HUD's line names your squad's role
- * ("Attack") in a steady word (no animation: Reduce flashing).
+ * Fireteams (squads of 4, 9 a side: your squad and two bot-led ones, 3 and 2) → with 3 squads a side every squad
+ * attacks (a defender only from 4 squads, the lead's decision; ctfSquadRoles) → your squad HUD's line names your
+ * squad's role ("Attack") in a steady word (no animation: Reduce flashing) → once you give an order the word goes.
+ * (4+ squads, the smallest defending: shared/test/fireteamsFollowups.test.ts; a bigger match here would cost the
+ * shards' budget.)
  * Screenshot: e2e-artifacts/fireteams-ctf-roles.png. Part of the `ctf` flow (its own function, kept out of fireteamsFlow,
  * which the MapMaker lane also edits; a flow of its own didn't fit the 16 shards' budget). The defence itself (holding
  * round the base, returning a dropped flag) is checked headless: shared/test/fireteamsFollowups.test.ts.
@@ -7750,7 +7752,7 @@ async function fireteamsCtfChecks(browser) {
   await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
   // (A headless page without pointer lock plays as touch does, so the pause menu stays down for the HUD's picture.)
   await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
-  // The roles, as the sim has them: by squad, the smallest of 3+ a side defends (ties to the higher id).
+  // The roles, as the sim has them: by squad, the smallest of 4+ a side defends (ties to the higher id), else all attack.
   const readRoles = (m, me) => {
       const ft = m.fireteams;
       const mode = m.mode;
@@ -7763,11 +7765,10 @@ async function fireteamsCtfChecks(browser) {
   const roles = (await simWait(page, readRoles, null, T(20000))) ? await sim(page, readRoles) : null;
   const byRule = (list) => {
     const small = list.reduce((a, s) => (!a || s.size < a.size || (s.size === a.size && s.id > a.id) ? s : a), null);
-    return list.every((s) => s.role === (list.length >= 3 && s === small ? 'defend' : 'attack'));
+    return list.every((s) => s.role === (list.length >= 4 && s === small ? 'defend' : 'attack'));
   };
-  check(!!roles && byRule(roles.mine) && byRule(roles.theirs), `CTF squad roles: the smallest of 3+ squads a side defends, the rest attack (${JSON.stringify(roles)})`);
-  const def = roles?.mine.find((s) => s.role === 'defend');
-  check(!!def && !def.human && def.bots.every((r) => r === 'defend') && roles.mine.filter((s) => s !== def && !s.human).every((s) => s.bots.every((r) => r === 'attack')), `a bot-led squad defends, all of it; the others' bots attack (${JSON.stringify(roles?.mine)})`);
+  check(!!roles && byRule(roles.mine) && byRule(roles.theirs), `CTF squad roles by the rule (the smallest of 4+ squads a side defends) (${JSON.stringify(roles)})`);
+  check(!!roles && roles.mine.length === 3 && [...roles.mine, ...roles.theirs].every((s) => s.role === 'attack' && s.bots.every((r) => r === 'attack')), `with 3 squads a side every squad attacks, all of each (${JSON.stringify(roles?.mine)})`);
   // Your squad's line: "Squad · Attack · Follow me", the role a steady word (no animation or transition).
   const mineRole = roles?.mine.find((s) => s.id === roles.me)?.role;
   const hud = await page
@@ -7781,6 +7782,11 @@ async function fireteamsCtfChecks(browser) {
   await page.evaluate(() => (document.getElementById('pause').style.visibility = 'hidden'));
   await page.screenshot({ path: `${ARTIFACTS}/fireteams-ctf-roles.png` });
   await page.evaluate(() => (document.getElementById('pause').style.visibility = ''));
+  // You give your squad an order (Follow me, as the wheel would): your squad does what you say, and the role word goes.
+  await sim(page, (m, me) => m.squadOrder(me, 'follow'));
+  const gone = await page.waitForFunction(() => document.querySelector('#squad-order em')?.hidden === true, null, { timeout: T(10000) }).then(() => true, () => false);
+  const ordered = await sim(page, (m, me) => m.fireteams.squadOf(me.slot)?.ordered ?? null);
+  check(gone && ordered === true, `after your order the squad HUD's role word is gone (ordered ${ordered})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

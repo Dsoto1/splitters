@@ -9,10 +9,10 @@ made only on a commit that passed CI on a check branch.
 ## Unreleased
 
 **Fireteams: CTF squad roles, squad points kept when the host leaves** (Fireteams follow-ups, docs/FIRETEAMS_PLAN.md):
-- Capture the Flag with Fireteams: with 3 or more squads a side the smallest squad defends its flag (holds by its
-  base, returns it when dropped) and the rest attack; with 2 squads both attack. A bot-led squad defends rather than
+- Capture the Flag with Fireteams: with 4 or more squads a side the smallest squad defends its flag (holds by its
+  base, returns it when dropped) and the rest attack; with 3 or fewer every squad attacks. A bot-led squad defends rather than
   yours when sizes tie, and your squad does what you order: the role is only its default until you give one.
-- Your squad's line on the HUD says its role: "Squad · Attack · Follow me".
+- Your squad's line on the HUD says its role: "Squad · Attack · Follow me", until you give your squad an order.
 - When the host leaves and a friend takes over, every squad keeps its points and every player theirs (they started
   from zero before).
 - `pnpm bot-report`: a squad-score line (each squad's points, Best Squad, the MVP) and CTF defence numbers.
