@@ -1223,8 +1223,12 @@ async function editorTourChecks(browser) {
   await page.click('#ed-tour-skip');
   t = await tour();
   check(!t.shown && t.stored === 'skipped' && !t.lit.length, `Skip ends it mid-tour, remembered as skipped (${JSON.stringify(t)})`);
-  await page.keyboard.press('Shift+Slash');
-  await page.click('#ed-keys-tour');
+  // The tool bar's Help button starts it again too (owner, 2026-11-10: tour question 1b).
+  await page.click('#ed-tb-help');
+  await frames(page, 2);
+  t = await tour();
+  check(t.shown && t.step === 'welcome', `the tool bar's Help button starts it again (${JSON.stringify(t)})`);
+  await shot('tour-help');
   await page.click('#ed-tour-next');
   await frames(page, 2);
   await page.mouse.move(700, 400);

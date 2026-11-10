@@ -89,6 +89,18 @@ export class TopBar {
     add('ed-tb-rotate', 'rotate', 'Rotate', 'R', 'Rotate the selection, or the piece you are placing (Shift+R: a finer step)', () => this.app.edits.rotate());
     add('ed-tb-delete', 'delete', 'Delete', 'Del', 'Delete the selection', () => this.app.edits.deleteSelection());
     this.app.keyOverlay.mountButton(bar);
+    // Help: the first-time tour again (tour.ts), for anyone without a ? key to reach the key list's Take the tour.
+    const help = document.createElement('button');
+    help.id = 'ed-tb-help';
+    help.className = 'tb-btn';
+    help.title = 'Help: a short walk through making a map (a room, a spawn, a pickup, then test it)';
+    help.innerHTML =
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.2 9.3a2.9 2.9 0 1 1 4.1 2.6c-.8.4-1.3 1-1.3 1.9v.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.2" fill="currentColor"/></svg><span class="tb-label">Help</span>';
+    help.addEventListener('click', () => {
+      help.blur();
+      this.app.tour.start();
+    });
+    bar.append(help);
     this.syncToolbar();
   }
 

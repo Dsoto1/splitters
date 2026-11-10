@@ -33,7 +33,7 @@ matches and the dedicated server alike.
   right mode, the mode tab has it. Each step moves on when you do it (the edit going into the history, or the test
   starting); an undo never counts. A new map already has a room and a spawn, so the tour asks for one more of each.
 - **Skip tour** or **Esc** ends it at any step; it never blocks editing. Done or skipped, this browser remembers it
-  (`localStorage` `tiletrigger.editor.tour`). **Take the tour** in the `?` key list starts it again.
+  (`localStorage` `tiletrigger.editor.tour`). **Take the tour** in the `?` key list, or the tool bar's **Help** button, starts it again.
 - Steps and wording: shared `editor/tour.ts` (`TOUR_STEPS`); the card: `client/src/editor/tour.ts`. Browser tests
   (`?test=1`) never see it unless they add `&tour=1` (e2e `editorux` → `editorTourChecks`).
 
