@@ -8,6 +8,20 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Fireteams part 3: squad scores, the squad MVP, the party preset (`wip/fireteams-3`, agent, 2026-11-10; owner-approved).**
+Details: docs/FIRETEAMS_PLAN.md, "Part 3"; docs/BOTS.md, "Fireteams Part 3".
+- **Squad scores** in the sim (`sim/squadScores.ts`, `Fireteams.scores`): kill 10, assist 5 (a hit within 10 s before
+  someone else's kill), objective play 30 (the scoreboard's objective count), King of the Hill 1 a second on the held
+  hill; no revives exist in team modes. The snapshot's `fs` carries each squad's points (index 9; members from 10),
+  `ScoreEntry.p` each player's.
+- **Scoreboard grouped by squad** (`client/game/squadBoard.ts`, `scoreBoard.ts`): a line per squad (◆ leader, points),
+  your squad first, a Pts column; at the end every squad's MVP on its line and BEST on the best squad.
+- **Squad MVP:** `bestsquad` and `squadmvp` awards; the awards panel shows Best Squad and Your Squad's MVP, with the vote.
+- **Fireteams party preset:** TDM + Fireteams, squads 4 (to 14 a side) / 5 (to 17) / 6; a map without TDM or under 8
+  a side moves to Eagle Spires, Riot Junction, Sandgate, Frost Basin or Canyon (first that fits the device).
+- **Not carried by host handoff:** the squads' points (a successor starts them from zero).
+- **Next: the owner's playtest** of Fireteams (Parts 1-3).
+
 **Map line-up (`wip/maps-retire`, 2026-11-09/10; owner's decisions of 2026-11-09; green on `check/maps-retire` at b9365b0, run 42759236295; LANDED; claims released).**
 - **Retired (files deleted; git history keeps them):** fogbound, bottling (Bottling Plant), dune_harbor, no_mans_field,
   overhang, starhaven: `maps/<id>.json`, their card pictures (`client/public/maps/shots/<id>.jpg`), `inspirations.ts`

@@ -8,6 +8,16 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Fireteams, part 3: squad scores, the squad MVP and a party preset** (owner-approved, 2026-11-10):
+- **Squad scores:** a kill 10, an assist 5, an objective 30 (captures, plants, defuses, rescues, zones), and a point a
+  second on the hill in King of the Hill. The scoreboard groups each team by squad (your squad first) with each
+  squad's points and a Pts column.
+- **Squad MVP:** at the end of the match, Best Squad and your squad's MVP join the awards, and every squad's MVP is
+  named on its line of the scoreboard, above the vote on the next map.
+- **Fireteams party preset:** one click in Match setup for Team Deathmatch with Fireteams, squads sized to the map's
+  teams; on a map too small for squads it moves to one that suits. Friends who follow your invite link land on your
+  side and each lead a squad.
+
 **Map line-up** (owner, 2026-11-09):
 - **Six maps retired:** Fogbound, Bottling Plant, Dune Harbor, No Man's Field, Overhang and Starhaven are gone from
   the game (menus, Quick Play, the map vote, rotations). In the rotations Pump Tower and Razor Edge take their places
