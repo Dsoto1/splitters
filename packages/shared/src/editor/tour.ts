@@ -19,7 +19,7 @@ export interface TourStep {
   hint: string;
   /** The mode (`data-ws`) the step's tool is in: until the person is in it, the mode tab is what's highlighted. */
   mode?: string;
-  /** What's highlighted: a palette card's key (`data-key`) or a page element's id (`#id`), first shown wins. */
+  /** What's highlighted: palette cards (`data-tool`) or page elements (`#id`), each that is shown. */
   targets?: readonly string[];
   /** What moves it on: its button (welcome, done), an edit, or a test match starting. */
   on: 'button' | 'edit' | 'test';
@@ -87,6 +87,8 @@ export function startTour(): TourState {
 export function tourAdvance(state: TourState, ev: TourEvent, ctx: TourContext): TourState {
   if (state.step === null) return state;
   const step = TOUR_STEPS[state.step];
+  // The closing card goes with its button or the next edit: it never stays in the way of the work.
+  if (step?.id === 'done' && ev.kind === 'edit' && !ev.undo) return { step: null, ended: 'done' };
   if (!step || !tourStepDone(step, ev, ctx)) return state;
   if (step.id === 'done') return { step: null, ended: 'done' };
   const next = state.step + 1;
