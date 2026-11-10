@@ -869,6 +869,22 @@ button-called lift), and a bot whose route was planned before plans again. When 
 A breakable crate or wall that opens a way when it breaks doesn't open a route (the navmesh has no ground under it):
 that needs the navmesh rebuilt there (a tiled navmesh: not done).
 
+## Parked vehicles, wrecks and turrets in the way (Bot AI Phase C, moving obstacles)
+The navmesh is built once, without mounts (vehicles move), so a route can run straight through a parked vehicle, a
+wreck or a turret. Before, a bot walked into the hull until it was judged stuck three times, then stepped 3-5 m aside
+(`planSidestep`): six seconds or more against a parked jeep or a landed dropship. Now a bot on foot looks along the
+next 7 m of its way every few ticks (`BotBrain.pastHulls`, `bots/hulls.ts hullDetour`) for a hull standing still
+(`stillHull`: a turret or sentry, a vehicle slower than 1 m/s, a wreck while it lasts; `MountView.wreck`) and heads for
+the corner of the hull that makes the shorter way round, 0.95 m off its sides, then on along its route. It keeps to the
+side it chose for that hull (the other must be 1.5 m shorter), and every leg of the way round is checked for walls and
+ground (`walkClear`, the navmesh under the corner), so a vehicle parked against a wall is gone round by its open end.
+When the route's own corner lies under the hull (a vehicle left in a passage), it goes round to the route's first corner
+beyond it, and straight on there once it is in sight (`insideHull`, `cornerBeyond`). Not for the mount it is getting
+into, nor for a goal under a hull. The match hands every bot on foot the hulls (`BotWorldView.hulls`), even a flag
+carrier, whose `mounts` are left out. When no way round is clear (a hull plugging a passage), the stuck recovery is as
+before. `bot-report` prints hulls walked round and stuck recoveries within a metre of a still hull; `BOT_OFF=hulls`
+plays without it. Measured: BOT_AI_PLAN.md, "Phase C, measured".
+
 ## Crowds (Bot AI Phase C item 3)
 Bodies don't block each other in this game (the movement code ignores other players), so crowds never jam: bots pass
 through each other. They did so head-on in doorways, tunnels and on stairs. Now a travelling bot with a teammate within
@@ -899,6 +915,14 @@ cached per navmesh already (`findCorridors`).
 over it keeps the route it has and plans next tick (one with no route left, or with ground gone under its route, always
 searches). A 96-bot match averages about ten a tick; the budget only flattens spikes (a respawn wave, a flag taken)
 (`bot-report`: searches put off a tick).
+
+## Side lanes by a corridor (Bot AI Phase C, route spread)
+A loose bot sent to an objective more than 50 m off takes the left (35 %), the right (35 %) or the straight way (30 %),
+once per goal and life (`orderTarget`). The side ways were a place sampled to that side of the straight line
+(`laneWaypoint`), which re-joined the main way by the trip's middle. Now a side lane takes a corridor of its side's trip
+there whose via lies on that side and between bot and goal (`sideCorridor`; not the shortest; the cheapest by the team
+brain's price when two do), by its vias (`viaRoute`, so the team brain's crowd price counts it); with none that side,
+the sampled place as before. `bot-report` prints side lanes by a corridor; `BOT_OFF=sideCorridors` plays without.
 
 ## Team brain and route variety (Bot AI Phase B)
 
