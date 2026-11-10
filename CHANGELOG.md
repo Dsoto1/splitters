@@ -8,6 +8,25 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Community maps: save as many maps as you like, host them, and Community Picks** (owner-approved plan, docs/COMMUNITY_MAPS.md):
+- **Unlimited local saving:** MapMaker's saved maps live in your browser's IndexedDB (as many as your disk allows; a
+  few MB of localStorage held about 15 before). Maps you saved before move over by themselves. Open… adds
+  **Duplicate** and **Rename** beside Delete; Export and Import move maps between browsers as files.
+- **Host your own map:** your saved maps are in Match setup under **Your maps**. Host one online and the game browser
+  lists it as a **Community map**, with its name and its creator (the signed-in player who first shared it, ✓). The
+  game browser has a map filter: All maps, Our maps, Community maps.
+- **Community Picks:** the hub counts plays of each map version (signed-in players only, each once; no bots, not the
+  creator's own plays, one match an hour from each host). A map with 25+ players from 5+ hosts over 3+ days, under 30 %
+  early quits and under 3 reports per 100 players, that passes the hub's own check (it loads and validates, spawns
+  reachable, no logic loops), becomes a Community Pick: the hub keeps its file, and it has its own tab in the map
+  list, playable while its creator is offline.
+- **Safety:** a word filter on listing names, map names and a map's own text; a **Report** button on every community
+  map (signed in); a map hides itself past a report threshold until the owner looks. Creators withdraw their own maps
+  from Profile → Community maps.
+- **For the owner:** Profile → Community maps shows the week's summary (new picks, hidden maps, the most played) with
+  **Make Official** (published as an official map), **Take down** and **Restore**; also
+  `GET /api/v1/community/summary?format=text` and `pnpm --filter @tiletrigger/server community-summary` on the box.
+
 **Fireteams, part 3: squad scores, the squad MVP and a party preset** (owner-approved, 2026-11-10):
 - **Squad scores:** a kill 10, an assist 5, an objective 30 (captures, plants, defuses, rescues, zones), and a point a
   second on the hill in King of the Hill. The scoreboard groups each team by squad (your squad first) with each
