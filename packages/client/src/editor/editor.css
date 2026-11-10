@@ -831,3 +831,27 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 #ed-test-pane .ed-tp-col { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; }
 .ed-quick-tabs button.ed-quick-only { flex: 0 0 auto; }
 .ed-mode-section > small { display: block; margin: 2px 0; }
+
+/* ------------------------------------------------------------------
+   The first-time tour (MapMaker overhaul Phase 6; tour.ts): a small card over the view, centred between the
+   palette and the side panel and above the toast, and a steady ring on what to use. No blinking or pulsing
+   (Reduce flashing): the ring stays still.
+   ------------------------------------------------------------------ */
+#editor > .ed-tour {
+  position: absolute; z-index: 30; bottom: 96px;
+  left: calc(var(--ed-pal-w) + (100% - var(--ed-pal-w) - var(--ed-right-w)) / 2); transform: translateX(-50%);
+  width: min(400px, calc(100% - var(--ed-pal-w) - var(--ed-right-w) - 24px)); box-sizing: border-box;
+  padding: 12px 14px; border-radius: 10px; background: #0d1320; color: var(--text);
+  border: 1px solid #ffd34d; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+}
+#editor > .ed-tour[hidden] { display: none; }
+.ed-tour-count { font: 600 11px var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: #ffd34d; }
+.ed-tour h3 { margin: 2px 0 4px; font: 700 16px var(--font-display); color: #fff; }
+.ed-tour p { margin: 0 0 10px; font-size: 14px; line-height: 1.4; color: #dbe6f7; }
+.ed-tour-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.ed-tour-actions button { min-height: 32px; padding: 0 14px; }
+.ed-tour-actions button[hidden] { display: none; }
+.ed-tour button:focus-visible, .ed-tour-spot:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.ed-tour-spot { outline: 3px solid #ffd34d !important; outline-offset: 1px; box-shadow: 0 0 0 6px rgba(255, 211, 77, 0.28) !important; position: relative; z-index: 2; }
+@media (pointer: coarse) { .ed-tour-actions button { min-height: 44px; } }
+.ed-keys header button[data-tour] { width: auto; padding: 0 12px; }

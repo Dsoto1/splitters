@@ -46,7 +46,7 @@
   },
   "view": {
     "model": "weapons/oil_slicker.glb",
-    "viewOffset": [0.2, -0.18, 0.42],
+    "viewOffset": [0.2, -0.2, 0.42],
     "tracer": "#8a7a5a",
     "hold": { "style": "long", "grip": [0, -0.07, 0], "support": [0, -0.037, 0.192], "shoulder": [0, 0.014, -0.38] },
     "sound": "fire.goo"

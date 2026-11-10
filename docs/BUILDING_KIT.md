@@ -25,6 +25,18 @@ matches and the dedicated server alike.
 - **Favourites and recent:** the quick row over the palette puts the current mode's favourites (or recent pieces) first
   and the rest after; **This mode only** shows just the mode's.
 
+## MapMaker's first-time tour (MapMaker overhaul Phase 6)
+
+- The first time someone opens MapMaker a small card over the view walks them through a tiny map with the real tools:
+  **place a room** (Build, the Room card), **add a spawn** (Gameplay, Player Spawn), **add a pickup** (Health (Small)),
+  then **try it out** (▶ Here or ▶ PLAY TEST). The button or card to use has a steady yellow ring; until you're in the
+  right mode, the mode tab has it. Each step moves on when you do it (the edit going into the history, or the test
+  starting); an undo never counts. A new map already has a room and a spawn, so the tour asks for one more of each.
+- **Skip tour** or **Esc** ends it at any step; it never blocks editing. Done or skipped, this browser remembers it
+  (`localStorage` `tiletrigger.editor.tour`). **Take the tour** in the `?` key list starts it again.
+- Steps and wording: shared `editor/tour.ts` (`TOUR_STEPS`); the card: `client/src/editor/tour.ts`. Browser tests
+  (`?test=1`) never see it unless they add `&tour=1` (e2e `editorux` → `editorTourChecks`).
+
 ## Pieces (`content/tiles/core.json`, built by `map/catalog.ts`)
 
 The core kit's tiles and the edge styles below are data in `content/tiles/` (how to add one:

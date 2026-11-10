@@ -133,6 +133,7 @@ export * from './editor/spawnExposure.ts';
 export * from './editor/mapModes.ts';
 export * from './editor/envBrush.ts';
 export * from './editor/outliner.ts';
+export * from './editor/tour.ts';
 export * from './sim/forts.ts';
 export * from './sim/classes.ts';
 export * from './sim/discs.ts';

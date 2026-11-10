@@ -18,6 +18,31 @@ made only on a commit that passed CI on a check branch.
   teams; on a map too small for squads it moves to one that suits. Friends who follow your invite link land on your
   side and each lead a squad.
 
+**Phones: bulky guns sit lower, Character Select shows your characters, a tidier HUD** (owner's mobile audit, 2026-11-09)
+- **First-person guns**: the big sci-fi guns (Flak Cannon, Laser Rifle, Singularity Cannon, Blast Rockets, Guided
+  Rocket, Swarm Launcher, Oil Slicker, Grenade Launcher) sit lower in your hands; none covers more than about a tenth
+  of the screen (the Flak Cannon 14 % → 10 %).
+- **Character Select on a phone held sideways**: the info strip is half as tall, so you see two rows of characters
+  with their names (one cut-off row before; none on smaller phones).
+- **HUD on narrow phones**: the kill feed no longer runs over the score bar, "Weapons" fits its button, and your
+  health stays clear of the move pad.
+- **Pause menu on a phone**: no keyboard keys shown on its buttons.
+- The audit and what's next for phones: docs/MOBILE_AUDIT.md.
+
+**MapMaker: a first-time tour** (MapMaker overhaul Phase 6): the first visit walks you through a tiny map with the real
+tools: place a room, a spawn and a pickup, then play it. Each step moves on when you do it; Skip or Esc ends it, and it
+won't show again. Take it again from the `?` key list.
+
+**Bot vehicle routing and getting out by a wall** (bugs found on Whiteout Station and Riot Junction):
+- **Bots no longer drive vehicles into doorways they only fit square on.** A bot checked the route for a vehicle's
+  width only every 2 m, so a door a little wider than the vehicle passed, and the vehicle stalled in it (Whiteout
+  Station's Snow Sleds in the hangar's doors). Bots now sweep the vehicle's whole footprint along the route, turning
+  with it at corners. A route it doesn't fit through is kept off, or the bot goes on foot. On the old Whiteout layout
+  (sleds on the garage apron, King of the Hill, seeds 1-4) sled stalls fell from 10 to 0.
+- **Getting out of a vehicle parked against a wall puts you on your side of it.** The step-out spot was checked only
+  for headroom, so beside Riot Junction's east wall a Buggy put its rider beyond the wall. The rider fell 4 m under the
+  street and couldn't get out. The spot now needs nothing solid between it and the vehicle and ground under it (else
+  the next side, or the roof).
 **Map line-up** (owner, 2026-11-09):
 - **Six maps retired:** Fogbound, Bottling Plant, Dune Harbor, No Man's Field, Overhang and Starhaven are gone from
   the game (menus, Quick Play, the map vote, rotations). In the rotations Pump Tower and Razor Edge take their places

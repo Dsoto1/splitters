@@ -28,7 +28,7 @@
   },
   "view": {
     "model": "guns/plasma_blaster.glb",
-    "viewOffset": [0.27, -0.28, 0.54],
+    "viewOffset": [0.27, -0.31, 0.57],
     "tracer": "#b07aff",
     "hold": { "style": "long", "grip": [0, -0.13, -0.17], "support": [0, -0.076, 0.17], "shoulder": [0, 0, -0.33] },
     "fallback": "weapons/singularity.glb",

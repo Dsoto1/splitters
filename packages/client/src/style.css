@@ -1386,6 +1386,18 @@ html.touch #minimap { left: calc(60px + env(safe-area-inset-left)); top: 8px; wi
 html.touch #vitals { left: calc(8px + env(safe-area-inset-left)); bottom: auto; top: 118px; transform: scale(0.72); transform-origin: top left; }
 html.touch #ammo { right: auto; left: 50%; bottom: 6px; transform: translateX(-50%) scale(0.8); transform-origin: bottom center; }
 html.touch #feed { transform: scale(0.85); transform-origin: top right; }
+/* Narrow phones sideways (under ~760 px, e.g. 658 × 320): the kill feed ran over the scorebar's right box. The scorebar
+   is smaller and each feed line keeps to the room right of it (long names end in "…"). docs/MOBILE_AUDIT.md. */
+@media (max-width: 760px) {
+  html.touch #scorebar { transform: translateX(-50%) scale(0.8); transform-origin: top center; }
+  html.touch #feed { max-width: calc((50vw - 140px) / 0.85); }
+  html.touch #feed div { max-width: 100%; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+/* Short phones (~320 px tall): the minimap and vitals end above the move pad (they overlapped its top). */
+@media (max-height: 360px) {
+  html.touch #minimap { width: 88px; height: 88px; }
+  html.touch #vitals { top: 100px; transform: scale(0.64); }
+}
 
 /* The on-screen controls (game/touchControls.ts). */
 #touch-ui { position: fixed; inset: 0; z-index: 2; pointer-events: none; touch-action: none; font-family: var(--font-display); --pad: clamp(120px, 42vmin, 190px); }
@@ -1413,7 +1425,8 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
 #touch-ui .tc-reload { right: calc(84px + env(safe-area-inset-right)); bottom: 148px; }
 #touch-ui .tc-throw { right: calc(14px + env(safe-area-inset-right)); bottom: 146px; width: 50px; height: 50px; }
 #touch-ui .tc-use { right: calc(204px + env(safe-area-inset-right)); bottom: 50px; }
-#touch-ui .tc-wheel { right: calc(158px + env(safe-area-inset-right)); bottom: 160px; width: 64px; height: 64px; border-color: rgba(0, 209, 255, 0.6); }
+#touch-ui .tc-wheel { right: calc(158px + env(safe-area-inset-right)); bottom: 160px; width: 64px; height: 64px; border-color: rgba(0, 209, 255, 0.6); font-size: 10px; letter-spacing: 0; }
+/* ("Weapons" at 11 px ran past the ring.) */
 /* Fireteams: the Orders button (the order wheel), orange like orders and objectives; only while you lead a squad. */
 #touch-ui .tc-orders { right: calc(230px + env(safe-area-inset-right)); bottom: 136px; border-color: rgba(255, 179, 71, 0.7); }
 #touch-ui .tc-orders.on { background: rgba(255, 179, 71, 0.35); border-color: var(--orange); }
@@ -1464,20 +1477,38 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
   .screen.characters .screen-head h2, .screen.profile .screen-head h2 { font-size: 22px; }
   .char-jump { margin-top: 8px; padding: 4px 6px; }
   .char-sec-tiles { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
-  .char-info { margin-top: 8px; grid-template-columns: 56px 1fr auto auto; gap: 10px; padding: 8px; }
-  .char-info > img { width: 56px; height: 56px; }
-  .char-info h3 { font-size: 18px; }
+  /* The info panel is half its height (the stats in two columns, no second portrait: the model shows them), so a
+     phone sideways sees two rows of characters with their names, not one cut off (docs/MOBILE_AUDIT.md). */
+  .char-grid, .char-jump, .char-info { width: min(900px, 70vw); }
+  .char-info { margin-top: 8px; grid-template-columns: minmax(96px, 1fr) auto auto; gap: 12px; padding: 6px 10px; }
+  .char-info > img { display: none; }
+  .char-info .who { min-width: 0; overflow: hidden; }
+  .char-info h3 { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .char-info .tags { flex-wrap: wrap; gap: 4px; }
+  .char-info .tags span { white-space: nowrap; }
   .char-info .who p, .char-info .loadout { display: none; }
-  .char-stats { min-width: 170px; }
-  .char-info .char-actions { flex-direction: row; }
+  .char-stats { grid-template-columns: 1fr 1fr; column-gap: 14px; row-gap: 2px; min-width: 0; }
+  .char-stats h4 { grid-column: 1 / -1; margin: 0; }
+  .stat-row { grid-template-columns: 52px 56px 38px; }
+  .char-info .char-actions { flex-direction: column; }
   .char-info .char-actions button { padding: 6px 10px; font-size: 12px; }
   .profile-panel { margin-top: 8px; max-height: calc(100% - 40px); }
   .prof-sec { padding: 10px 14px; }
   .prof-char > img { width: 64px; height: 64px; }
   .menu-footer .hintbar { display: none; }
 }
+/* Smaller phones sideways (~320 px tall): the stats as numbers, no tags, so the name, stats and buttons share a row. */
+@media (max-height: 360px) {
+  .char-grid, .char-jump, .char-info { width: min(900px, 74vw); }
+  .char-info { gap: 8px; }
+  .char-info .tags, .char-stats h4, .char-stats .stat-bar { display: none; }
+  .stat-row { grid-template-columns: 56px 40px; }
+  .char-info .char-actions button { padding: 6px 8px; }
+}
 /* No keyboard on a phone: the key hints in the pause menu and footer say nothing there. */
 html.touch .menu-footer .hintbar, html.touch .pause-foot .hint { display: none; }
+/* The pause menu's foot is buttons (Resume, Tabs, Fullscreen): on a phone they keep their words, not the key caps. */
+html.touch #pause-hints kbd { display: none; }
 /* So off the main menu (no news there) a phone has no bottom bar at all: Back is at the top of every screen. */
 html.touch .menu-footer:not([data-screen='home']) { display: none; }
 html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-bottom: 14px; }
