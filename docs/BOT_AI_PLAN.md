@@ -831,19 +831,26 @@ Built as docs/BOTS.md describes ("Memory and callouts", "Holding a spot: the sca
 before (map format v33); no map carries hints yet, so every map plays its hints-free path, and the hint code is proven
 by unit tests (botPhaseD.test.ts).
 
-**Before and after** (bot-report, normal skill, base = main dfa7e01; both run side by side on the same box, so think
-times compare; CTF 3 seeds × 180 s on Diamond Park, Eagle Spires and Bunker Cross; TDM 2 seeds × 120 s):
+**Before and after** (bot-report, normal skill, base = main 732d570, with Phase C part 3; both run side by side on
+the same box, so think times compare, at load 10-14 on 4 cores; CTF 3 seeds × 180 s on Diamond Park, Eagle Spires and
+Bunker Cross; TDM 2 seeds × 120 s):
 
-| Map | captures/match | flag takes | idle out of a fight % | going to goal % | stuck/match | kills/min | think ms |
-|---|---|---|---|---|---|---|---|
-| diamond_park ctf | 0.3 → 1.3 (1/3 → 3/3 matches) | 7.0 → 6.3 | 4.1 → 3.5 | 24.1 → 25.1 | 62 → 66 | 50.7 → 50.2 | 1.45 → 1.55 |
-| eagle_spires ctf | 0.0 → 0.0 | 3.3 → 3.3 | 1.2 → 2.2 | 27.0 → 25.5 | 77 → 89 | 17.1 → 18.0 | 1.66 → 1.71 |
-| bunker_cross ctf | 1.3 → 2.0 | 5.0 → 6.3 | 3.0 → 2.7 | 29.2 → 30.2 | 90 → 91 | 23.8 → 24.8 | 0.96 → 1.00 |
-| fernwood_moon tdm | - | - | 6.8 → 4.6 | - | 83 → 52 | 29.8 → 37.5 | 1.89 → 1.92 |
-| riot_junction tdm | - | - | 4.6 → 4.7 | - | 39 → 44 | 40.5 → 40.0 | 1.55 → 1.56 |
+| Map | captures/match | flag takes | idle out of a fight % | going to goal % | stuck/match | kills/min | scoped kills | think ms |
+|---|---|---|---|---|---|---|---|---|
+| diamond_park ctf | 1.3 → 1.0 (3/3 → 2/3 matches) | 6.0 → 5.0 | 3.7 → 3.7 | 23.6 → 24.4 | 71 → 67 | 50.6 → 52.6 | 9.3 → 5.7 | 1.73 → 1.75 |
+| eagle_spires ctf | 0.0 → 0.0 | 2.0 → 4.7 | 1.6 → 1.9 | 25.5 → 24.4 | 76 → 66 | 19.0 → 15.4 | 14.7 → 11.7 | 2.33 → 2.19 |
+| bunker_cross ctf | 1.0 → 1.7 (2/3 → 3/3) | 2.0 → 3.3 | 4.2 → 3.9 | 26.1 → 26.4 | 71 → 77 | 27.4 → 25.7 | 7.0 → 4.0 | 1.05 → 1.22 |
+| fernwood_moon tdm | - | - | 5.6 → 5.5 | - | 100 → 69 | 36.3 → 36.3 | 9.0 → 14.5 | 2.55 → 2.46 |
+| riot_junction tdm | - | - | 4.9 → 4.5 | - | 39 → 41 | 36.0 → 43.0 | 8.0 → 7.0 | 1.91 → 2.08 |
 
-`pnpm bot-report --check` (CI's quick check): every limit held, before and after (all: idle out of a fight 5.4 → 4.7 %,
-stuck a bot-minute 1.39 → 1.11, think 1.06 → 1.09 ms).
+Captures over the nine CTF matches 7 → 8, flag takes up on two maps of three, stuck recoveries down on three maps of
+five. **Scoped kills from spots fell on the CTF maps** (31 → 21 a match in all): snipers react a little slower to a
+fresh contact now (up to 25 % for normal, skewed slow) and the first version, which also turned snipers off their lane
+to old sightings, cost more (31 → 20; since then a sniper on its spot turns only for a shot at it). Fernwood Moon's
+went up. An earlier run of the first version against main dfa7e01 (before Phase C part 3) had captures 5 → 10.
+
+`pnpm bot-report --check` (CI's quick check): every limit held, before and after (all, after: idle out of a fight
+4.9 %, stuck a bot-minute 0.83, captures 0.3 a match).
 
 **Cost.** Bot thinking +1-7 % in those matches (memory upkeep at each look about, callouts read from a 64-entry ring,
 a remembered spot checked on the way, eight rays when a holding bot picks a place to stand). `pnpm bench:96:clump`:
