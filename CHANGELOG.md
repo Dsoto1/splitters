@@ -8,6 +8,8 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+- Dynamite now wears the Emergency Flare model (Meshy Community CC0): a red stick with a fuse, in hand, in flight and on its pickup. Mechanics unchanged.
+
 **Our own crates, drums and cartons** (kit-prop generators, Phase 6 part 1; owner-approved 2026-11-05):
 - **The Kenney toy crates, barrels and cardboard boxes are replaced by ones we generate in code:** board crates in a
   batten frame with a diagonal or X brace, long crates on skids, open cargo bins between tall corner posts, steel-framed

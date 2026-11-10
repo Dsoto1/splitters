@@ -669,7 +669,7 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: content tile ids `core.tunnel_vault_walled`, `core.tunnel_vault_bend_walled`, `core.tunnel_vault_t_walled`, `core.tunnel_vault_cross_walled` (the Side walls tile option; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-09.
 - Claimed: `maps/test_coverage.json` (one of each side-walled vaulted tunnel, placed in MapMaker; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-09.
-- Claimed: content ids `core.dynamite` (the Dynamite throwable's look, `guns/dynamite.glb`), later `sandbags` and holy bomb throwable looks; `content/throwables.json`, `content/guns.json`, `content/guns.lock.json`, `content/provenance.json`, the throwables rows of docs/ARSENAL.md (`wip/weapons-throwables`), weapon and vehicle lane (this account), 2026-11-10.
+- Done (landed 167df2f, 2026-11-10): dynamite wears the Emergency Flare model (`guns/dynamite.glb`, Meshy Community CC0). Next for the weapon lane: sandbags (`mur de sacs 12`) and holy bomb (Drive ids in the queue item 3), then the flare gun; `wip/weapons-throwables` is free to reuse.
 
 **Whiteout Station follow-ups (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; the owner's answers; CI on
 `check/mapmaker-whiteout`):** King of the Hill on three hills (yard, radar ridge, ice cave); three drivable snow sleds
@@ -777,7 +777,6 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 - **Session memory:** write .control-center/session-summary.json at the end of your sessions.
 
 **Landed: kit-prop generators part 1** (`wip/mapmaker-kit-props` = `wip/kit-props` 4aa5e42 + one test fix; green on `check/mapmaker-kit-props` at d7b47b6, run 42872729649; MapMaker lane, the main session, 2026-11-10). Run 42846096828 had been red on one check, `editorenv` "the bot test run goes on in the background": the test read the progress bar at the worker's ready line ("0:00 of 5:00 played", bar 0); it now waits for the first progress report. Landing lock released. Left of part 1: MapMaker's "Replace all" for the 722 placements on 57 maps (as played they already draw the new pieces).
-**Landing now: throwables (dynamite)** (`check/weapons-throwables`, `wip/weapons-throwables`; weapon and vehicle lane, 2026-11-10).
 **Next in line to land, after throwables: Iron Coast loads again** (`wip/mapmaker-iron-coast-load` 1 commit on main; MapMaker lane, 2026-11-10). Live bug (owner, 2026-11-10): every mode on Iron Coast fell back to the menu, "local match failed: Maximum call stack size exceeded": `Math.min(...terrain.heights)` over its 78,385 heights (1.25 m grid) overflows the stack in the browser's match worker (node's stack hid it from the unit tests). `terrainLowest()` in `map/terrain.ts` replaces the three spreads (`map/geometry.ts` ×2, `map/border.ts`); a test in `terrainGrid.test.ts`. Checked in a browser: Breakthrough plays. Weapon lane: this is a small fix to a broken official map; if your landing isn't about to start, please let it go first (say so here).
 
 **Landed: Fireteams CTF roles fix** (`wip/fireteams-4` at ec8ecfb, in train `check/train-20261110-164310`, main = 37b7f94, green; lead session, 2026-11-10): the smallest squad defends only from 4+ squads a side; the HUD role word hides after a leader's order.
