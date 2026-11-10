@@ -825,6 +825,39 @@ halved captures.
 5. **Bot hints in MapMaker:** chokepoints, sniper and camp spots, staging spots, jump links.
    - They are map data. The computed ones stay the default.
 
+### Phase D, measured (items 1-4, and bots reading item 5's hints; 2026-11-10; `wip/bots-d`)
+Built as docs/BOTS.md describes ("Memory and callouts", "Holding a spot: the scan", "Skill tiers", "Bot debug view",
+"Bot hints (map data)"). MapMaker's side of item 5 (the tool, the format, its checks) is the MapMaker lane's and landed
+before (map format v33); no map carries hints yet, so every map plays its hints-free path, and the hint code is proven
+by unit tests (botPhaseD.test.ts).
+
+**Before and after** (bot-report, normal skill, base = main 732d570, with Phase C part 3; both run side by side on
+the same box, so think times compare, at load 10-14 on 4 cores; CTF 3 seeds × 180 s on Diamond Park, Eagle Spires and
+Bunker Cross; TDM 2 seeds × 120 s):
+
+| Map | captures/match | flag takes | idle out of a fight % | going to goal % | stuck/match | kills/min | scoped kills | think ms |
+|---|---|---|---|---|---|---|---|---|
+| diamond_park ctf | 1.3 → 1.0 (3/3 → 2/3 matches) | 6.0 → 5.0 | 3.7 → 3.7 | 23.6 → 24.4 | 71 → 67 | 50.6 → 52.6 | 9.3 → 5.7 | 1.73 → 1.75 |
+| eagle_spires ctf | 0.0 → 0.0 | 2.0 → 4.7 | 1.6 → 1.9 | 25.5 → 24.4 | 76 → 66 | 19.0 → 15.4 | 14.7 → 11.7 | 2.33 → 2.19 |
+| bunker_cross ctf | 1.0 → 1.7 (2/3 → 3/3) | 2.0 → 3.3 | 4.2 → 3.9 | 26.1 → 26.4 | 71 → 77 | 27.4 → 25.7 | 7.0 → 4.0 | 1.05 → 1.22 |
+| fernwood_moon tdm | - | - | 5.6 → 5.5 | - | 100 → 69 | 36.3 → 36.3 | 9.0 → 14.5 | 2.55 → 2.46 |
+| riot_junction tdm | - | - | 4.9 → 4.5 | - | 39 → 41 | 36.0 → 43.0 | 8.0 → 7.0 | 1.91 → 2.08 |
+
+Captures over the nine CTF matches 7 → 8, flag takes up on two maps of three, stuck recoveries down on three maps of
+five. **Scoped kills from spots fell on the CTF maps** (31 → 21 a match in all): snipers react a little slower to a
+fresh contact now (up to 25 % for normal, skewed slow) and the first version, which also turned snipers off their lane
+to old sightings, cost more (31 → 20; since then a sniper on its spot turns only for a shot at it). Fernwood Moon's
+went up. An earlier run of the first version against main dfa7e01 (before Phase C part 3) had captures 5 → 10.
+
+`pnpm bot-report --check` (CI's quick check): every limit held, before and after (all, after: idle out of a fight
+4.9 %, stuck a bot-minute 0.83, captures 0.3 a match).
+
+**Cost.** Bot thinking +1-7 % in those matches (memory upkeep at each look about, callouts read from a 64-entry ring,
+a remembered spot checked on the way, eight rays when a holding bot picks a place to stand). `pnpm bench:96:clump`:
+bot thinking 2.69 ms a tick before and 2.69 after (the mean of its six runs, CPU-scaled; the after run at load 8-12
+on 4 cores, the before at load 1, so only the like-for-like bot-report figures above say much). The debug view costs
+nothing while off; on, a frame four times a second (each bot's state, route and scores copied).
+
 ## Performance
 **Where bots run.** In the shared sim: on the dedicated server, or in the host's match worker. The page's own thread
 spends nothing on them (docs/PERF_96.md). Rendering, not bots, is what limits frame rate today.

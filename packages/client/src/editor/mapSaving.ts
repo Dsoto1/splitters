@@ -16,10 +16,12 @@ import { libraryThumb } from './libraryThumbs.ts';
 import {
   clearDraft,
   deleteFromLibrary,
+  duplicateInLibrary,
   inLibrary,
   listDrafts,
   listLibrary,
   openFromLibrary,
+  renameInLibrary,
   saveToLibrary,
   writeDraft
 } from './storage.ts';
@@ -58,8 +60,10 @@ export class MapSaving {
     this.app.toast(`Unsaved changes to "${this.app.doc.metadata.name}" kept as a draft in Open…`);
   }
 
-  save(): boolean {
-    const stored = saveToLibrary(this.app.doc);
+  /** Save to your library (IndexedDB). Resolves false when the browser refused it (Export still keeps a copy). */
+  async save(): Promise<boolean> {
+    const revision = this.app.history.revision;
+    const stored = await saveToLibrary(this.app.doc);
     if (!stored) {
       this.app.toast('Could not save to browser storage — use Export to keep a copy', true);
       return false;
@@ -67,7 +71,7 @@ export class MapSaving {
     clearTimeout(this.autosaveTimer);
     this.autosaveTimer = undefined;
     clearDraft(stored.metadata.id);
-    this.savedRevision = this.app.history.revision;
+    this.savedRevision = revision;
     this.app.topBar.updateTopBar();
     this.app.toast(`Saved "${stored.metadata.name}"`);
     return true;
@@ -88,9 +92,11 @@ export class MapSaving {
     $('ed-quit-save').onclick = () => {
       const v = name.value.trim().slice(0, 80) || 'Untitled Map';
       if (!saved && v !== this.app.doc.metadata.name) this.app.run('Rename map', { kind: 'setMetadata', before: { name: this.app.doc.metadata.name }, after: { name: v } });
-      if (!this.save()) return;
-      dialog.close();
-      this.app.host.goHome();
+      void this.save().then((ok) => {
+        if (!ok) return;
+        dialog.close();
+        this.app.host.goHome();
+      });
     };
     $('ed-quit-discard').onclick = () => {
       clearTimeout(this.autosaveTimer);
@@ -176,7 +182,7 @@ export class MapSaving {
     const template = (id: string, name: (m: MapDocument) => string) => (this.app.owner ? edit(id) : remix(id, name));
     const kind = this.app.owner ? 'Official map' : 'Template';
     const cls = this.app.owner ? 'official' : '';
-    const add = (label: string, sub: string, open: () => void, remove?: () => void, cls = '', preview?: { load: () => MapDocument | null | Promise<MapDocument | null>; shipped: boolean }) => {
+    const add = (label: string, sub: string, open: () => void, remove?: () => unknown, cls = '', preview?: { load: () => MapDocument | null | Promise<MapDocument | null>; shipped: boolean }, extra: HTMLElement[] = []) => {
       const li = document.createElement('li');
       if (cls) li.className = cls;
       if (preview) li.append(libraryThumb(preview.load, preview.shipped));
@@ -186,8 +192,8 @@ export class MapSaving {
         open();
       });
       b.innerHTML = `${escapeHtml(label)}<br><small>${escapeHtml(sub)}</small>`;
-      li.append(b);
-      if (remove) li.append(button('Delete', () => confirm(`Delete "${label}" from this browser?`) && (remove(), this.openDialog())));
+      li.append(b, ...extra);
+      if (remove) li.append(button('Delete', () => confirm(`Delete "${label}" from this browser?`) && void Promise.resolve(remove()).then(() => this.openDialog())));
       list.append(li);
     };
     // Unsaved drafts first (not the map being edited), then saved maps, then templates.
@@ -202,14 +208,34 @@ export class MapSaving {
         this.app.toast(`Opened the unsaved draft of "${draft.map.metadata.name}"`);
       }, () => clearDraft(draft.map.metadata.id), 'draft', { load: () => draft.map, shipped: SHIPPED_IDS.has(draft.map.metadata.id) });
     }
+    // Your saved maps (as many as you like: IndexedDB), each with Duplicate and Rename beside Delete.
     for (const entry of listLibrary()) {
+      const dup = button('Duplicate', () => void duplicateInLibrary(entry.id).then((m) => (m ? (this.app.toast(`Saved a copy: "${m.metadata.name}"`), this.openDialog()) : this.app.toast('Could not copy that map', true))));
+      const ren = button('Rename', () => {
+        const name = prompt('New name for the map', entry.name);
+        if (!name?.trim() || name.trim() === entry.name) return;
+        void renameInLibrary(entry.id, name).then((m) => {
+          if (!m) return this.app.toast('Could not rename that map', true);
+          // The map being edited is this one: its name follows (an undoable rename, already saved).
+          if (this.app.doc.metadata.id === m.metadata.id && this.app.doc.metadata.name !== m.metadata.name) {
+            const clean = !this.isDirty();
+            this.app.run('Rename map', { kind: 'setMetadata', before: { name: this.app.doc.metadata.name }, after: { name: m.metadata.name } });
+            if (clean) this.savedRevision = this.app.history.revision;
+          }
+          this.openDialog();
+        });
+      });
+      dup.classList.add('ed-lib-dup');
+      ren.classList.add('ed-lib-rename');
+      const opened = () => openFromLibrary(entry.id, true).then((r) => ('map' in r ? r.map : null));
       add(entry.name, `Saved ${new Date(entry.updatedAt).toLocaleString()}`, () => {
-        const r = openFromLibrary(entry.id, true);
-        if ('map' in r) {
-          this.replaceDocument(r.map);
-          this.app.toast(`Opened "${r.map.metadata.name}"`);
-        } else this.app.toast(`Could not open: ${r.issues[0]?.message}`, true);
-      }, () => deleteFromLibrary(entry.id), '', { load: () => ((r) => ('map' in r ? r.map : null))(openFromLibrary(entry.id, true)), shipped: SHIPPED_IDS.has(entry.id) });
+        void openFromLibrary(entry.id, true).then((r) => {
+          if ('map' in r) {
+            this.replaceDocument(r.map);
+            this.app.toast(`Opened "${r.map.metadata.name}"`);
+          } else this.app.toast(`Could not open: ${r.issues[0]?.message}`, true);
+        });
+      }, () => deleteFromLibrary(entry.id), '', { load: opened, shipped: SHIPPED_IDS.has(entry.id) }, [dup, ren]);
     }
     add('Sandgate', `${kind} · desert town for Team Deathmatch, with open courtyards`, template('sandgate', () => 'Sandgate Remix'), undefined, cls, tpl('sandgate'));
     add('Citadel', `${kind} · castle keep with a two-storey atrium, roof terraces, props and breakables`, template('citadel', () => 'Citadel Remix'), undefined, cls, tpl('citadel'));

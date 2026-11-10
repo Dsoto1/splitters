@@ -6,6 +6,8 @@ import { perfProbe } from './perfProbe.ts';
 import { SnapshotCoalescer, type SnapshotBacklog } from './snapshotMerge.ts';
 import type { RemoteLink, Transport } from './transport.ts';
 import { checkTicket, helloTicket } from './ticketCheck.ts';
+import type { BotDebugFrame } from '@tiletrigger/shared/match';
+import { PlayTracker } from './communityPlays.ts';
 
 export type { RemoteLink } from './transport.ts';
 
@@ -108,6 +110,7 @@ export class LocalTransport implements Transport {
   private nextEval = 1;
   private onVisibility?: () => void;
   private onMessage?: (m: ServerMessage) => void;
+  private onBotDebug?: (f: BotDebugFrame) => void;
   private onClose?: (reason: string) => void;
   /** With the match in a worker: a page that fell behind handles the snapshots waiting for it as one. */
   private snapshots?: SnapshotCoalescer;
@@ -116,6 +119,16 @@ export class LocalTransport implements Transport {
     private readonly map: MapDocument,
     private readonly opts: LocalMatchOptions,
   ) {}
+
+  /**
+   * The in-game bot debug view (`?botdebug=1`, host or offline: game/botDebugView.ts): frames from the match a few
+   * times a second while `onFrame` is given; null turns it off.
+   */
+  botDebug(onFrame: ((f: BotDebugFrame) => void) | null): void {
+    this.onBotDebug = onFrame ?? undefined;
+    // (Before the match is started, it is asked for once it is: the worker drops anything before its 'start'.)
+    if (this.worker || this.inThread) this.toHost({ k: 'botdebug', on: !!onFrame });
+  }
 
   /** A browser test's deterministic match (testMode.ts): offline only. */
   get testMode(): boolean {
@@ -233,8 +246,8 @@ export class LocalTransport implements Transport {
     if (typeof window.addEventListener === 'function') window.addEventListener('pagehide', this.onPageHide);
     // This browser's key goes with the match: a successor keeps our place for it if the match is handed on.
     const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, maxPlayers: deviceMaxPlayers(), ...this.opts }, hidden: document.hidden };
-    if (simThreadWanted() === 'worker' && this.startWorker(start)) return;
-    this.startHere(start);
+    if (!(simThreadWanted() === 'worker' && this.startWorker(start))) this.startHere(start);
+    if (this.onBotDebug) this.toHost({ k: 'botdebug', on: true });
   }
 
   /** The match in a module worker. False when one can't be made here. */
@@ -353,6 +366,8 @@ export class LocalTransport implements Transport {
       }
       case 'failed':
         return this.fail(`local match failed: ${m.error}`);
+      case 'botdebug':
+        return this.onBotDebug?.(m.f);
       case 'eval': {
         const p = this.evals.get(m.req);
         this.evals.delete(m.req);
@@ -371,6 +386,8 @@ export class LocalTransport implements Transport {
 
   /** This game's join code while it's hosted (friends' account tickets are for it); set by the session. */
   joinCode: string | null = null;
+  /** Signed-in friends and how long they played (the end-of-match report on a community map: communityPlays.ts). */
+  readonly plays = new PlayTracker();
 
   /** Let a friend into this match (Host game). Links arriving while the match loads wait for it (a map change brings everyone back at once). */
   accept(link: RemoteLink): void {
@@ -394,12 +411,16 @@ export class LocalTransport implements Transport {
       if (!ticket || !code) return this.toHost({ k: 'msg', id, text });
       const waiting: string[] = (held = [text]);
       void checkTicket(ticket, code).then((proof) => {
-        if (proof && this.links.has(id)) this.toHost({ k: 'verified', id, sub: proof.sub, ...(proof.name ? { name: proof.name } : {}) });
+        if (proof && this.links.has(id)) {
+          this.toHost({ k: 'verified', id, sub: proof.sub, ...(proof.name ? { name: proof.name } : {}) });
+          this.plays.joined(id, proof.sub);
+        }
         held = null;
         for (const t of waiting) this.toHost({ k: 'msg', id, text: t });
       });
     });
     link.onClose(() => {
+      this.plays.left(id);
       if (!this.links.delete(id)) return;
       this.toHost({ k: 'closed', id });
     });

@@ -1,9 +1,12 @@
 import { existsSync, readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
-import { isRetiredMap } from '@tiletrigger/shared';
+import { isRetiredMap, parseThresholds } from '@tiletrigger/shared';
 import { JwksCache, accountHandler, authConfigScript, cognitoFromEnv, issuerOf, verifyCognitoToken } from './auth.ts';
 import { createBroker } from './broker.ts';
+import { CommunityStore, communityHandler } from './community.ts';
+import { checkInWorker } from './communityCheck.ts';
 import { iceFromEnv } from './ice.ts';
 import { discoverLan, lanInterfaces } from './lan.ts';
 import { LobbyStore, lobbyHandler } from './lobby.ts';
@@ -20,12 +23,16 @@ import { TicketSigner } from './tickets.ts';
  * - keeps the game browser's list (/lobby),
  * - hands out relay credentials for live games (ice.ts) so strict networks still connect,
  * - checks sign-in tokens (/api/v1/me, auth.ts; sign-in is optional),
- * - keeps the maps the owner publishes from MapMaker (/api/v1/maps, publish.ts).
+ * - keeps the maps the owner publishes from MapMaker (/api/v1/maps, publish.ts),
+ * - counts plays of community maps and keeps the Community Picks (/api/v1/community, community.ts).
  * No match runs here: players' browsers run them.
  *   PORT (9000), HOST (0.0.0.0), TRUST_PROXY=1 behind a reverse proxy on the same box (Caddy; see clientIp.ts),
  *   MAPS_DIR (../../../maps: the suite, for listing rules),
  *   PUBLISHED_MAPS_DIR (where published maps are kept; unset: publishing is off), OWNER_SUBS (accounts that may publish),
- *   PROFILES_DIR (players' usernames and regions, profiles.ts; unset: profiles are off).
+ *   PROFILES_DIR (players' usernames and regions, profiles.ts; unset: profiles are off),
+ *   COMMUNITY_DIR (community maps' play statistics and Community Picks, community.ts; unset: next to PROFILES_DIR,
+ *     as <its parent>/community, or off without either), COMMUNITY_THRESHOLDS (JSON, any of the promotion thresholds:
+ *     shared/net/community.ts DEFAULT_THRESHOLDS), COMMUNITY_BLOCKED_WORDS (more words for the word filter, by commas).
  * A site built with VITE_HUB=self uses the hub it was served from; otherwise
  * point the game at it with ?hub=<host:port> or VITE_HUB=<host:port>.
  */
@@ -43,26 +50,41 @@ const suite = existsSync(mapsDir)
     )
   : undefined;
 const builtIn = new Set(suite ?? []);
-const store = new LobbyStore(Date.now, { suite });
+// Community maps (community.ts, docs/COMMUNITY_MAPS.md): kept beside the profiles unless COMMUNITY_DIR says where.
+const communityDir = process.env.COMMUNITY_DIR || (process.env.PROFILES_DIR ? join(dirname(process.env.PROFILES_DIR), 'community') : '');
+const blockedWords = (process.env.COMMUNITY_BLOCKED_WORDS ?? '').split(',').map((w) => w.trim()).filter(Boolean);
+let thresholdsJson: unknown = null;
+try {
+  thresholdsJson = process.env.COMMUNITY_THRESHOLDS ? JSON.parse(process.env.COMMUNITY_THRESHOLDS) : null;
+} catch {
+  console.warn('COMMUNITY_THRESHOLDS is not JSON: using the default thresholds');
+}
+const community = communityDir ? new CommunityStore(communityDir, parseThresholds(thresholdsJson), blockedWords) : null;
+const store = new LobbyStore(Date.now, { suite, ...(community ? { community } : {}) });
 const ice = iceFromEnv();
 const server = createServer();
 const broker = createBroker(server, proxied);
 // LAN discovery for browsers (which can't send UDP): the hub broadcasts for them. Off behind a proxy (it's for home networks).
 const lanHttp = () => lanInterfaces().map((i) => `http://${i.address}:${port}`);
 const lan = proxied || process.env.LAN_DISCOVERY === '0' ? undefined : async () => ({ addresses: lanHttp(), servers: await discoverLan({ timeoutMs: 350, targets: ['127.0.0.1'] }) });
-const lobby = lobbyHandler(store, { trustProxy: proxied, ice, lan, isLive: (code) => broker.isLive(code) });
 const cognito = cognitoFromEnv();
 // Account tickets (tickets.ts): signed-in players prove their account to game hosts. HUB_TICKET_KEY (PEM) keeps the key across restarts.
 const tickets = new TicketSigner(process.env.HUB_TICKET_KEY || undefined);
 const jwks = cognito ? new JwksCache(`${issuerOf(cognito)}/.well-known/jwks.json`) : undefined;
 // Profiles (profiles.ts): usernames go into account tickets, so hosts show them as verified accounts.
 const profiles = process.env.PROFILES_DIR ? new ProfileStore(process.env.PROFILES_DIR) : null;
-const account = accountHandler(cognito, proxied, jwks, tickets, (sub) => profiles?.username(sub) ?? null);
+const verifyToken = cognito && jwks ? (t: string) => verifyCognitoToken(t, cognito, jwks) : null;
+// The game browser: a community map's creator is the first signed-in account to list it (the host sends its sign-in).
+const lobby = lobbyHandler(store, { trustProxy: proxied, ice, lan, isLive: (code) => broker.isLive(code), ...(verifyToken ? { whoIs: async (t: string) => ((u) => ({ sub: u.sub, username: profiles?.username(u.sub) ?? null }))(await verifyToken(t)) } : {}) });
+const account = accountHandler(cognito, proxied, jwks, tickets, (sub) => profiles?.username(sub) ?? null, community ? (sub, code) => community.ticketIssued(code, sub) : undefined);
 // Published maps (publish.ts): the owner's MapMaker publishes; everyone reads.
 const owners = new Set((process.env.OWNER_SUBS ?? '').split(/[\s,]+/).filter(Boolean));
 const published = process.env.PUBLISHED_MAPS_DIR ? new PublishedMaps(process.env.PUBLISHED_MAPS_DIR, builtIn, suite) : null;
 const publish = published ? publishHandler(published, { owners, trustProxy: proxied, verify: cognito && jwks ? (t) => verifyCognitoToken(t, cognito, jwks) : null }) : noPublishingHandler();
 const profile = profiles ? profileHandler(profiles, { trustProxy: proxied, verify: cognito && jwks ? (t) => verifyCognitoToken(t, cognito, jwks) : null }) : (_req: unknown, _res: unknown, next: () => void) => next();
+const communityApi = community
+  ? communityHandler(community, { verify: verifyToken, owners, trustProxy: proxied, published, check: (text, hash) => checkInWorker(text, hash, blockedWords) })
+  : (_req: unknown, _res: unknown, next: () => void) => next();
 // The page's sign-in settings (auth.ts authConfigScript): served, never compiled into the site.
 const authConfig = authConfigScript(cognito);
 const siteDir = process.env.SITE_DIR ?? fileURLToPath(new URL('../../client/dist', import.meta.url));
@@ -83,11 +105,11 @@ server.on('request', (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     return void res.end(authConfig);
   }
-  void lobby(req, res, () => void publish(req, res, () => void profile(req, res, () => void account(req, res, () => (site ? void site(req, res, notFound) : notFound()))))).catch(() => notFound());
+  void lobby(req, res, () => void publish(req, res, () => void profile(req, res, () => void communityApi(req, res, () => void account(req, res, () => (site ? void site(req, res, notFound) : notFound())))))).catch(() => notFound());
 });
 server.listen(port, host, () => {
   console.log(
-    `Tile Trigger hub on :${port} — site ${site ? siteDir : 'not built (pnpm build to serve it)'}, broker at /broker, game browser at /lobby, relay ${ice.provider ?? 'none (see src/ice.ts)'} (${ice.ttl} s credentials), sign-in ${cognito ? 'on' : 'off'}, publishing ${published ? `${published.list().length} maps, ${owners.size} owner${owners.size === 1 ? '' : 's'}` : 'off'}, suite ${suite?.size ?? 'unchecked'} maps`,
+    `Tile Trigger hub on :${port} — site ${site ? siteDir : 'not built (pnpm build to serve it)'}, broker at /broker, game browser at /lobby, relay ${ice.provider ?? 'none (see src/ice.ts)'} (${ice.ttl} s credentials), sign-in ${cognito ? 'on' : 'off'}, publishing ${published ? `${published.list().length} maps, ${owners.size} owner${owners.size === 1 ? '' : 's'}` : 'off'}, suite ${suite?.size ?? 'unchecked'} maps, community maps ${community ? communityDir : 'off'}`,
   );
   if (site && lanHttp().length) console.log(`On your network, open the game at: ${lanHttp().join('  ')}`);
 });

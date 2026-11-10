@@ -1,4 +1,5 @@
 import { LOBBY_HEARTBEAT_SECONDS, PROTOCOL_VERSION, type LobbyAdvert, type LobbyListing } from '@tiletrigger/shared';
+import { accessToken } from '../account.ts';
 
 /**
  * The community hub (packages/server/src/hub.ts): the PeerJS broker for Host
@@ -115,7 +116,10 @@ export class LobbyAdvertiser {
         if (res.ok) return this.set(null);
         this.id = null; // forgotten (hub restarted, or it expired): list it again below
       }
-      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+      // Signed in, the host's sign-in goes with a new listing: the first signed-in account to list a community map is
+      // shown as its creator (docs/COMMUNITY_MAPS.md).
+      const token = accessToken();
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body });
       const data = (await res.json()) as { id?: string; secret?: string; error?: string };
       if (this.stopped) return this.takeDown(false, data.id, data.secret);
       if (!res.ok || !data.id) return this.set(data.error ?? `game browser answered ${res.status}`);

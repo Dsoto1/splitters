@@ -1,3 +1,4 @@
+import { hintJumps } from '../bots/hints.ts';
 import { blockBoxes, boxesRay, buildMapGeometry, mapKillY, mapTerrainMesh, propBoxes, type WorldBox } from '../map/geometry.ts';
 import { environmentNavTriangles, environmentShapes, joinTriangles, type EnvWorldShape } from '../map/environment.ts';
 import type { MapDocument } from '../map/schema.ts';
@@ -58,6 +59,8 @@ export function dropOptions(map: MapDocument, physics: PhysicsWorld, geometry: r
     underLiquid: liquids.length ? (p) => !!liquidAt(liquids, { x: p.x, y: p.y + SWIM_DEPTH + 0.2, z: p.z }) : undefined,
     // Breakable props and moving or breaking blocks: the scenario's, added to the physics after the navmesh.
     solids: [...propBoxes(map, true), ...blockBoxes(map, true)],
+    // The map's jump links (bot hints): parkour candidates first, played through like the rest.
+    jumps: hintJumps(map),
   };
 }
 

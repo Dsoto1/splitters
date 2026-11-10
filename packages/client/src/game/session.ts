@@ -128,6 +128,7 @@ import {
   type RotationCommand,
   type RotationLookup,
   mapIdentity,
+  serializeMap,
   WEAPONS_BY_SLOT,
   parseVoteState,
   pickVoteOptions,
@@ -151,6 +152,7 @@ import { MountState } from './mountState.ts';
 import { RiderPlacement } from './riderPlacement.ts';
 import { ownBodyDrawn } from './ownBody.ts';
 import { LocalTransport } from './localTransport.ts';
+import { BotDebugView, botDebugWanted } from './botDebugView.ts';
 import { SYS, netProbe, perfProbe } from './perfProbe.ts';
 import { PerfOverlay, loadPerfOverlay, savePerfOverlay } from './perfOverlay.ts';
 import { loadHitboxOverlay } from './hitboxPrefs.ts';
@@ -172,6 +174,8 @@ import { RouletteHud } from './rouletteHud.ts';
 import { AwardsHud } from './awardsHud.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
+import { currentAccount } from '../account.ts';
+import { sendPlayReport } from '../communityMaps.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
 import { TouchControls } from './touchControls.ts';
@@ -400,6 +404,8 @@ export class GameSession {
     return this.rlTiny.has(slot) ? size * TINY_SIZE : size;
   }
   private botStates: string[] = [];
+  /** The bot debug view (`?botdebug=1`, host or offline: botDebugView.ts), when asked for. */
+  private botDebug: BotDebugView | null = null;
   private outbox: PlayerInput[] = [];
   private showStats: boolean;
   private closed = false;
@@ -646,6 +652,11 @@ export class GameSession {
     this.view = new GameView(opts.engine);
     // Show hitboxes (dev and test setting): every body's hit shapes drawn over it.
     this.view.showHitboxes = loadHitboxOverlay();
+    // The bot debug view (`?botdebug=1`): only where the match runs in this browser (offline, MapMaker TEST, Host game).
+    if (botDebugWanted() && opts.transport instanceof LocalTransport) {
+      const v = (this.botDebug = new BotDebugView(this.view.scene, () => this.view.scene.activeCamera, (slot) => this.hud.name(slot)));
+      opts.transport.botDebug((f) => v.update(f));
+    }
     this.input = new InputState(opts.canvas);
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
     this.weatherSound = new WeatherAudio(opts.audio);
@@ -1722,8 +1733,30 @@ export class GameSession {
       (id, secret) => local.setListing(id ? { name: ($('host-name') as HTMLInputElement).value.trim() || `${me}'s game`, id, secret } : null),
     );
     this.advertiser.start();
+    this.listedSince ??= Date.now();
+    window.addEventListener('pagehide', this.pageHideReport);
     show();
     this.updateOnline();
+  }
+
+  /** When this match was first listed (a community map's end-of-match report counts from then). */
+  private listedSince?: number;
+  private readonly pageHideReport = () => this.reportCommunityPlays(true);
+
+  /**
+   * A listed match on a community map ends (leaving, a map change, the tab closing): the host's report of who played
+   * (signed-in players only) goes to the hub, which counts it toward Community Picks (docs/COMMUNITY_MAPS.md).
+   */
+  private reportCommunityPlays(closing = false): void {
+    const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
+    const id = this.community ? this.mapIdentity() : null;
+    const code = this.peerHost?.code;
+    if (!local || !id || !code || this.listedSince === undefined || !this.map) return;
+    const me = currentAccount();
+    const map = this.map;
+    const report = local.plays.report(code, id.contentHash, me ? { sub: me.sub, since: this.listedSince } : null);
+    this.listedSince = undefined;
+    void sendPlayReport(report, () => serializeMap(map), closing);
   }
 
   exit(reason?: string, how?: 'lost' | 'rejected'): void {
@@ -1732,6 +1765,8 @@ export class GameSession {
     // A recording running when the match ends is saved, not lost.
     this.stopRecording();
     perfProbe.use('overlay', false);
+    this.reportCommunityPlays();
+    window.removeEventListener('pagehide', this.pageHideReport);
     this.advertiser?.stop();
     const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
     if (reason === 'travel' && this.travel && this.peerHost && local) {
@@ -1767,6 +1802,8 @@ export class GameSession {
     this.voteHud?.dispose();
     this.voteHud = null;
     this.coach?.dispose();
+    this.botDebug?.dispose();
+    this.botDebug = null;
     document.getElementById('pause-skip-tutorial')?.remove();
     this.hud.hide();
     $('pause').hidden = true;
@@ -3337,6 +3374,7 @@ export class GameSession {
       this.frames = 0;
       this.fpsAt = now;
     }
+    this.botDebug?.draw();
     this.hud.renderPerf(
       this.showStats,
       {

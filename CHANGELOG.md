@@ -18,6 +18,34 @@ made only on a commit that passed CI on a check branch.
   ones, with the same size, the same cover, the same health when shot apart and the same effect on rounds, so nothing
   about the fight changes. MapMaker's palette offers only the new ones (Crates & Barrels), the prop inspector picks a
   look (Variant), Randomise rolls one, and Replace all suggests the new piece for an old one.
+**Bots remember, call out, and keep watch like players** (Bot AI Phase D):
+- Bots remember where they saw enemies, where shots came from and what teammates called out, and watch and pre-aim
+  those spots; a teammate's sighting reaches the bots nearby.
+- A bot holding a spot scans its angles one at a time and peeks past cover instead of sweeping back and forth.
+- Easy, normal and hard differ in more than aim: reaction (slower when surprised, quicker where they expected you),
+  memory, how fast they turn to fire from an unseen shooter, and how often they make the second-best choice.
+- Bots use the map's bot hints from MapMaker (sniper and camp spots, staging spots, chokepoints, jump links).
+- `?botdebug=1` (offline and when hosting): every bot's route, state, goal, scores and why it stopped, and where routes
+  failed.
+
+**Community maps: save as many maps as you like, host them, and Community Picks** (owner-approved plan, docs/COMMUNITY_MAPS.md):
+- **Unlimited local saving:** MapMaker's saved maps live in your browser's IndexedDB (as many as your disk allows; a
+  few MB of localStorage held about 15 before). Maps you saved before move over by themselves. Open… adds
+  **Duplicate** and **Rename** beside Delete; Export and Import move maps between browsers as files.
+- **Host your own map:** your saved maps are in Match setup under **Your maps**. Host one online and the game browser
+  lists it as a **Community map**, with its name and its creator (the signed-in player who first shared it, ✓). The
+  game browser has a map filter: All maps, Our maps, Community maps.
+- **Community Picks:** the hub counts plays of each map version (signed-in players only, each once; no bots, not the
+  creator's own plays, one match an hour from each host). A map with 25+ players from 5+ hosts over 3+ days, under 30 %
+  early quits and under 3 reports per 100 players, that passes the hub's own check (it loads and validates, spawns
+  reachable, no logic loops), becomes a Community Pick: the hub keeps its file, and it has its own tab in the map
+  list, playable while its creator is offline.
+- **Safety:** a word filter on listing names, map names and a map's own text; a **Report** button on every community
+  map (signed in); a map hides itself past a report threshold until the owner looks. Creators withdraw their own maps
+  from Profile → Community maps.
+- **For the owner:** Profile → Community maps shows the week's summary (new picks, hidden maps, the most played) with
+  **Make Official** (published as an official map), **Take down** and **Restore**; also
+  `GET /api/v1/community/summary?format=text` and `pnpm --filter @tiletrigger/server community-summary` on the box.
 
 **Bots walk round parked vehicles** (Bot AI Phase C, part 3):
 - **Bots on foot no longer walk into parked vehicles, wrecks and turrets.** These aren't part of the map bots plan
@@ -49,7 +77,7 @@ made only on a commit that passed CI on a check branch.
 
 **MapMaker: a first-time tour** (MapMaker overhaul Phase 6): the first visit walks you through a tiny map with the real
 tools: place a room, a spawn and a pickup, then play it. Each step moves on when you do it; Skip or Esc ends it, and it
-won't show again. Take it again from the `?` key list.
+won't show again. Take it again from the tool bar's Help button or the `?` key list.
 
 **Bot vehicle routing and getting out by a wall** (bugs found on Whiteout Station and Riot Junction):
 - **Bots no longer drive vehicles into doorways they only fit square on.** A bot checked the route for a vehicle's

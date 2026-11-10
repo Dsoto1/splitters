@@ -21,6 +21,9 @@ export interface VantageSpot {
   score: number;
   /** Only parkour gets there (a roof or ledge a jump reaches: nav/parkour.ts): where others don't normally go. */
   parkour?: boolean;
+  /** From the map's bot hints (hints.ts; the hint's id), and the team it is for (absent: every side's). */
+  hint?: string;
+  team?: string;
 }
 
 /** Sample places looked at (a spread-out subset of the navmesh's places), and spots kept of each kind. */
@@ -181,12 +184,12 @@ export class VantageBoard {
    * nearer is better (within `within` m), and `prefer` (0..1 per spot, e.g. the
    * middle of the map in team modes) on top. Returns its index, or -1.
    */
-  pick(kind: VantageKind, from: Vec3, tick: number, within: number, rng: () => number, prefer?: (p: Vec3) => number, skip = -1): number {
+  pick(kind: VantageKind, from: Vec3, tick: number, within: number, rng: () => number, prefer?: (p: Vec3) => number, skip = -1, side?: string): number {
     let best = -1;
     let bestS = -Infinity;
     for (let i = 0; i < this.spots.length; i++) {
       const s = this.spots[i]!;
-      if (s.kind !== kind || i === skip || tick < this.badUntil[i]! || (this.holder[i]! >= 0 && tick < this.holdUntil[i]!)) continue;
+      if (s.kind !== kind || i === skip || (s.team !== undefined && s.team !== side) || tick < this.badUntil[i]! || (this.holder[i]! >= 0 && tick < this.holdUntil[i]!)) continue;
       const d = horizontalDistance(s.pos, from) + Math.abs(s.pos.y - from.y) * 2;
       if (d > within) continue;
       const score = s.score + this.bonus[i]! - d / within + (prefer ? prefer(s.pos) : 0) + rng() * 0.3;

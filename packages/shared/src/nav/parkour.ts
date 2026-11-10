@@ -92,6 +92,42 @@ export function parkourAlong(link: ParkourLink, pos: Vec3): number {
   return (pos.x - link.start.x) * Math.sin(link.yaw) + (pos.z - link.start.z) * Math.cos(link.yaw);
 }
 
+/** A jump link the map's maker marked (a bot hint: map/botHints.ts): its start and landing, both on the ground. */
+export interface HintJump {
+  start: Vec3;
+  end: Vec3;
+}
+
+/**
+ * A hinted jump as a candidate: on the navmesh at both ends (within the hint checks' 1.2 m), its kind by the rise
+ * (a jump up past a step, a running jump across a metre or more, else a drop), and the edge it leaves from found by
+ * walking the ground from its start toward its landing (the first place the floor falls away or a ledge rises).
+ */
+function hintCandidate(nav: NavWorld, physics: PhysicsWorld, j: HintJump): Candidate | null {
+  const a = nav.nearestPoly(j.start, { x: 1.2, y: 1.6, z: 1.2 });
+  const b = nav.nearestPoly(j.end, { x: 1.2, y: 1.6, z: 1.2 });
+  if (!a || !b || a.index === b.index) return null;
+  const start = a.point;
+  const end = b.point;
+  const rise = end.y - start.y;
+  const across = hypot(end.x - start.x, end.z - start.z);
+  if (across < 0.3) return null;
+  const kind: ParkourKind = rise > UP_MIN ? 'up' : across >= 1.5 && rise > -3.5 ? 'gap' : 'drop';
+  const dx = (end.x - start.x) / across;
+  const dz = (end.z - start.z) / across;
+  let at: Vec3 = { x: (start.x + end.x) / 2, y: start.y, z: (start.z + end.z) / 2 };
+  for (let t = 0.2; t < across; t += PROBE_STEP) {
+    const p = { x: start.x + dx * t, y: start.y + 0.4, z: start.z + dz * t };
+    const down = physics.raycastWorld(p, { x: 0, y: -1, z: 0 }, 1.2);
+    const wall = kind === 'up' ? physics.raycastWorld({ x: p.x, y: start.y + 0.35, z: p.z }, { x: dx, y: 0, z: dz }, PROBE_STEP) : null;
+    if (down === null || wall !== null) {
+      at = { x: p.x, y: start.y, z: p.z };
+      break;
+    }
+  }
+  return { kind, from: a.index, to: b.index, start, end, at, saving: Infinity, hint: true };
+}
+
 /** Where a candidate move goes and what it takes, before it is played through. */
 interface Candidate {
   kind: ParkourKind;
@@ -103,6 +139,8 @@ interface Candidate {
   at: Vec3;
   /** What it saves: the walk round (m) over the move's length (Infinity: no walk round). */
   saving: number;
+  /** From the map's jump links (bot hints). */
+  hint?: boolean;
 }
 
 /**
@@ -273,11 +311,12 @@ function playThrough(physics: PhysicsWorld, collider: Parameters<typeof stepMove
  * round).
  */
 /** Counts from the last parkourLinks call (debug: candidates, trials and links by kind, ms). */
-export const parkourStats = { cands: {} as Record<string, number>, trials: {} as Record<string, number>, links: {} as Record<string, number>, sims: 0, ticks: 0, findMs: 0, verifyMs: 0 };
+export const parkourStats = { cands: {} as Record<string, number>, trials: {} as Record<string, number>, links: {} as Record<string, number>, sims: 0, ticks: 0, findMs: 0, verifyMs: 0, hints: { given: 0, made: 0 } };
 
-export function parkourLinks(nav: NavWorld, physics: PhysicsWorld, opts: FallOptions & { blockers?: readonly OBox[] }, gravity = 1, others: readonly (readonly [number, number])[] = [], spawns: readonly Vec3[] = []): ParkourLink[] {
+export function parkourLinks(nav: NavWorld, physics: PhysicsWorld, opts: FallOptions & { blockers?: readonly OBox[]; jumps?: readonly HintJump[] }, gravity = 1, others: readonly (readonly [number, number])[] = [], spawns: readonly Vec3[] = []): ParkourLink[] {
   const g = nav.graph();
-  const key = `${fingerprint(g)}|${gravity}|${opts.maxDrop}|${opts.solids?.length ?? 0}|${opts.blockers?.length ?? 0}|${others.length}|${spawns.length}`;
+  const jumps = (opts.jumps ?? []).map((j) => `${j.start.x.toFixed(1)},${j.start.y.toFixed(1)},${j.start.z.toFixed(1)}>${j.end.x.toFixed(1)},${j.end.y.toFixed(1)},${j.end.z.toFixed(1)}`).join(';');
+  const key = `${fingerprint(g)}|${gravity}|${opts.maxDrop}|${opts.solids?.length ?? 0}|${opts.blockers?.length ?? 0}|${others.length}|${spawns.length}|${jumps}`;
   const known = cache.get(key);
   if (known) return known;
   const links = parkourLinksNow(nav, g, physics, opts, gravity, others, spawns);
@@ -294,7 +333,7 @@ function fingerprint(g: NavGraph): string {
   return `${g.count}:${g.vxyz.length}:${h >>> 0}`;
 }
 
-function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts: FallOptions & { blockers?: readonly OBox[] }, gravity: number, others: readonly (readonly [number, number])[], spawns: readonly Vec3[]): ParkourLink[] {
+function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts: FallOptions & { blockers?: readonly OBox[]; jumps?: readonly HintJump[] }, gravity: number, others: readonly (readonly [number, number])[], spawns: readonly Vec3[]): ParkourLink[] {
   const n = g.count;
   if (!n) return [];
   const { centre } = polyShapes(g);
@@ -362,6 +401,13 @@ function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts
     }
     for (const p of touched) dist[p] = Infinity;
   }
+  // The map's jump links (bot hints, MapMaker's; bots/hints.ts): candidates before any computed one, whatever walk they
+  // save, played through like the rest (a hint the movement can't make is left out).
+  parkourStats.hints = { given: opts.jumps?.length ?? 0, made: 0 };
+  for (const j of opts.jumps ?? []) {
+    const c = hintCandidate(nav, physics, j);
+    if (c) cands.push(c);
+  }
   for (const c of cands) parkourStats.cands[c.kind] = (parkourStats.cands[c.kind] ?? 0) + 1;
   const t1 = performance.now();
   parkourStats.findMs = t1 - t0;
@@ -384,7 +430,7 @@ function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts
       dist[p] = Infinity;
     }
   }
-  cands.sort((a, b) => (a.saving === b.saving ? 0 : b.saving - a.saving) || walked[b.from]! - walked[a.from]! || a.start.x - b.start.x || a.start.z - b.start.z || a.start.y - b.start.y);
+  cands.sort((a, b) => (b.hint ? 1 : 0) - (a.hint ? 1 : 0) || (a.saving === b.saving ? 0 : b.saving - a.saving) || walked[b.from]! - walked[a.from]! || a.start.x - b.start.x || a.start.z - b.start.z || a.start.y - b.start.y);
   const out: ParkourLink[] = [];
   const ends: [number, number][] = [];
   const kinds: Record<ParkourKind, number> = { drop: 0, gap: 0, up: 0 };
@@ -422,6 +468,7 @@ function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts
         continue;
       }
       out.push(link);
+      if (c.hint) parkourStats.hints.made++;
       ends.push([c.from, c.to]);
       kinds[c.kind]++;
     }

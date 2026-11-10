@@ -7,14 +7,14 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist } from '@tiletrigger/shared';
+import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist, type CommunityPick } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
 import type { EditorApp, TestRequest } from './editor/editorApp.ts';
 import { FramePacer } from './game/framePacer.ts';
 import type { CharacterDesigner } from './designer/characterDesigner.ts';
-import { FrontEnd, type ArcadeMap } from './frontend/frontEnd.ts';
+import { FrontEnd, PICK_GROUP, type ArcadeMap } from './frontend/frontEnd.ts';
 import { MenuScene } from './frontend/menuScene.ts';
 import { ModelThumbnails } from './frontend/modelThumbs.ts';
 import { setWeaponIconSource } from './frontend/weaponIcons.ts';
@@ -24,6 +24,8 @@ import { dropListing } from './game/hub.ts';
 import { MAP_INDEX, builtInMapJson, loadBuiltInMap, type MapIndexEntry } from './mapIndex.ts';
 import { loadMapContent } from './mapContentLoader.ts';
 import { publishedMaps, type PublishedEntry } from './publishedMaps.ts';
+import { initLocalMaps, listLocalMaps, readLocalMap } from './localMaps.ts';
+import { communityPicks, pickMapText } from './communityMaps.ts';
 import { PLAYLISTS, addToSuite, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import { installInputMode } from './inputMode.ts';
@@ -212,12 +214,52 @@ function applyPublished(maps: ArcadeMap[], published: ReadonlyMap<string, Publis
   maps.push(...rest);
 }
 
-/** Your MapMaker maps (this browser's library), for an offline host's Change map (in a match: `code` is its code). */
-function ownMaps(code: MatchCode): ArcadeMap[] {
-  return code.listLibrary().flatMap((e): ArcadeMap[] => {
-    const r = code.openFromLibrary(e.id);
-    return 'map' in r ? [loadedEntry(`own:${e.id}`, r.map, { blurb: 'Your map', modes: playableModes(r.map), bots: 4, group: 'Your' })] : [];
+/**
+ * Your MapMaker maps (this browser's library: localMaps.ts, IndexedDB), under "Your maps" in Match setup and an offline
+ * host's Change map. Each card comes from the library's list; the map itself loads when it's picked. Hosted online,
+ * one is listed in the game browser as a Community map (docs/COMMUNITY_MAPS.md).
+ */
+function ownMaps(): ArcadeMap[] {
+  return listLocalMaps().map((e): ArcadeMap => {
+    const metadata = { id: e.id, name: e.name, description: e.description ?? '', author: e.author ?? '', recommendedPlayers: e.recommendedPlayers ?? { min: 2, max: 8 } };
+    const entry: ArcadeMap = {
+      key: `own:${e.id}`,
+      metadata,
+      load: async () => {
+        const [text, { loadMap }] = await Promise.all([readLocalMap(e.id), loadMapContent()]);
+        const r = text ? loadMap(text) : null;
+        if (!r?.ok) throw new Error(`your map "${e.name}" failed to load`);
+        entry.map = r.map;
+        return r.map;
+      },
+      blurb: 'Your map',
+      modes: (e.modes ?? ['core.deathmatch']).filter(isGameMode),
+      bots: 4,
+      group: 'Your',
+    };
+    return entry;
   });
+}
+
+/** A Community Pick as a map card: its file comes from the hub when it is picked (and is checked as it loads). */
+function pickEntry(p: CommunityPick): ArcadeMap {
+  const entry: ArcadeMap = {
+    key: `pick:${p.contentHash.slice(7, 23)}`,
+    metadata: { id: p.mapId, name: p.name, description: p.description, author: p.creator, recommendedPlayers: p.recommendedPlayers },
+    load: async () => {
+      const [text, { loadMap }] = await Promise.all([pickMapText(p.contentHash), loadMapContent()]);
+      const r = loadMap(text);
+      if (!r.ok) throw new Error(`the Community Pick "${p.name}" failed to load`);
+      entry.map = r.map;
+      return r.map;
+    },
+    blurb: `${blurbOf(p.description) || 'A Community Pick'}${p.creator ? ` By ${p.creator}.` : ''}`,
+    modes: p.modes.filter(isGameMode),
+    bots: botsFor(p.recommendedPlayers),
+    group: PICK_GROUP,
+    contentHash: p.contentHash,
+  };
+  return entry;
 }
 
 /** Run `f` when the page is idle (soon after, at the latest). */
@@ -267,6 +309,10 @@ class App {
       if (testMap && testDoc && !maps.some((m) => m.key === testMap)) maps.push(loadedEntry(testMap, testDoc, { blurb: blurbOf(testDoc.metadata.description), modes: playableModes(testDoc), bots: botsFor(testDoc.metadata.recommendedPlayers) }));
       // The owner's published maps update the list as soon as the hub answers (the menu draws from it when opened).
       void publishedMaps().then((p) => p.size && applyPublished(maps, p));
+      // Your own maps (this browser's library) join under "Your maps" once it's open.
+      void initLocalMaps().then(() => maps.push(...ownMaps()));
+      // The hub's Community Picks: their own tab in the map list (docs/COMMUNITY_MAPS.md).
+      void communityPicks().then((p) => maps.push(...p.map(pickEntry)));
       // The home screen's featured map draws its plan: fetch that one map alongside the engine.
       const featured = maps.find((m) => m.key === 'sandgate') ?? maps[0];
       const [created] = await Promise.all([createEngine($<HTMLCanvasElement>('view')), loadFonts(), featured && capped(featured.load(), 5000)]);
@@ -381,7 +427,7 @@ class App {
   }
 
   async openEditor(): Promise<void> {
-    const [{ EditorApp }] = await Promise.all([import('./editor/editorApp.ts'), this.init()]);
+    const [{ EditorApp }] = await Promise.all([import('./editor/editorApp.ts'), this.init(), initLocalMaps()]);
     finishBoot();
     const first = !this.editor;
     this.editor ??= new EditorApp({
@@ -552,11 +598,12 @@ class App {
   }
 
   /** The host's Change map (pause menu → Match): the Arcade's map cards; offline, your MapMaker maps too. */
-  private mapPicker = (code: MatchCode): NonNullable<SessionOptions['mapPicker']> => (o) =>
+  private mapPicker = (_code: MatchCode): NonNullable<SessionOptions['mapPicker']> => (o) =>
     this.front!.hostMapPicker({
       ...o,
       isSuite: inSuite,
-      own: o.suiteOnly ? [] : ownMaps(code),
+      // Your own maps are in the list already ("Your maps"; ownMaps).
+      own: [],
       // A built-in map loads when its card is picked; usually it's in by the time Change map is pressed.
       onPick: (m, mode) => (m.map ? o.onPick(m.map, mode) : void m.load().then((doc) => o.onPick(doc, mode), (e: unknown) => console.warn('map failed to load', e))),
     });

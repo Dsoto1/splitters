@@ -105,6 +105,7 @@ import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
 import { reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
 import { hitboxOverlayAllowed, loadHitboxOverlay, saveHitboxOverlay } from '../game/hitboxPrefs.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
+import { communityMapRow, communityPanel, reportButton } from './communityUi.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { mapThumbs, thumbPair, type MapThumbs } from './mapThumbs.ts';
@@ -237,6 +238,9 @@ function lazyPlans(root: HTMLElement): (card: Element, draw: () => void) => void
   };
 }
 
+/** The map list's group for Community Picks (main.ts): shown in their own tab, not under All maps. */
+export const PICK_GROUP = 'Community Pick';
+
 export interface ArcadeMap {
   key: string;
   /** What its card shows; the same as `map.metadata` once loaded. */
@@ -250,6 +254,8 @@ export interface ArcadeMap {
   bots: number;
   /** Shown under its own heading after the built-in maps (e.g. "Your"). */
   group?: string;
+  /** A Community Pick's content hash (its Report button). */
+  contentHash?: string;
 }
 
 /** Play → match setup's settings (saved as `cs.arcade`; older saves load too). */
@@ -895,6 +901,8 @@ export class FrontEnd {
   private setupScroll = 0;
   /** Refreshes the game browser while the Online screen is open. */
   private browserTimer?: number;
+  /** The game browser's map filter (kept for this page). */
+  private gbMaps: 'all' | 'ours' | 'community' = 'all';
   /**
    * The match setup's sections and folds that are open (by id). A desktop starts with Players & teams open
    * (and Advanced rules' Rules, once it's opened); small screens and phones with every section closed, since
@@ -906,7 +914,8 @@ export class FrontEnd {
   /** The saved setup loaded last (its name), to show whether the setup still matches it. */
   private setupName: string | null = lastSetup();
   /** The map list's mode tab and search (this visit) and its sort, view and favourites (kept). */
-  private mapFilter: GameMode | 'all' = 'all';
+  /** The map list's tab: all maps, one mode's, or the Community Picks (docs/COMMUNITY_MAPS.md). */
+  private mapFilter: GameMode | 'all' | 'picks' = 'all';
   private mapQuery = '';
   private readonly browse = loadBrowsePrefs();
   /** Even teams: a bot added or taken away changes every team alike (shown on while the teams are the same size). */
@@ -1038,13 +1047,15 @@ export class FrontEnd {
     requestAnimationFrame(() => (cards.scrollTop = this.mapScroll));
 
     // ---- the list's controls: a tab per mode, search, sort, grid or list
-    const used = GAME_MODES.filter((g) => this.maps.some((m) => m.modes.includes(g)));
-    if (this.mapFilter !== 'all' && !used.includes(this.mapFilter)) this.mapFilter = 'all';
+    const used = GAME_MODES.filter((g) => this.maps.some((m) => m.group !== PICK_GROUP && m.modes.includes(g)));
+    // The Community Picks tab: when the hub has any (players' maps that earned it by being played).
+    const picks = this.maps.some((m) => m.group === PICK_GROUP);
+    if (this.mapFilter === 'picks' ? !picks : this.mapFilter !== 'all' && !used.includes(this.mapFilter)) this.mapFilter = 'all';
     const tabs = el('div', { class: 'map-tabs', id: 'map-tabs', role: 'tablist' });
     const drawTabs = () =>
       tabs.replaceChildren(
-        ...(['all', ...used] as const).map((f) => {
-          const b = el('button', { type: 'button', class: `map-tab${f === this.mapFilter ? ' on' : ''}`, textContent: f === 'all' ? 'All maps' : MODE_LABEL[f], role: 'tab' });
+        ...(['all', ...(picks ? (['picks'] as const) : []), ...used] as const).map((f) => {
+          const b = el('button', { type: 'button', class: `map-tab${f === this.mapFilter ? ' on' : ''}${f === 'picks' ? ' picks' : ''}`, textContent: f === 'all' ? 'All maps' : f === 'picks' ? 'Community Picks' : MODE_LABEL[f], role: 'tab' });
           b.setAttribute('aria-selected', String(f === this.mapFilter));
           b.dataset.mode = f;
           b.addEventListener('click', () => {
@@ -1088,7 +1099,8 @@ export class FrontEnd {
       const q = this.mapQuery.trim().toLowerCase();
       const favs = new Set(this.browse.favs);
       const built = this.maps.map((m, i) => ({ m, i }));
-      const shown = built.filter(({ m }) => (this.mapFilter === 'all' || m.modes.includes(this.mapFilter)) && (!q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q))));
+      const tab = this.mapFilter;
+      const shown = built.filter(({ m }) => (tab === 'picks' ? m.group === PICK_GROUP : m.group !== PICK_GROUP && (tab === 'all' || m.modes.includes(tab))) && (!q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q))));
       const rank = (key: string) => {
         const f = FEATURED_MAPS.indexOf(key);
         return f < 0 ? FEATURED_MAPS.length : f;
@@ -1107,7 +1119,7 @@ export class FrontEnd {
       for (const { m } of shown) {
         if (m.group !== group) {
           group = m.group;
-          if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
+          if (group) cards.append(el('h4', { class: 'map-group', textContent: group === PICK_GROUP ? 'Community Picks' : `${group} maps` }));
         }
         const featured = !m.group && FEATURED_MAPS.includes(m.key);
         const { card, draw } = mapCard(m, m.key === current.key, featured ? 'Featured' : undefined, {
@@ -1126,13 +1138,13 @@ export class FrontEnd {
           card.classList.add('on');
           this.setupScroll = 0;
           // A filtered list already picked a mode the map has: that one.
-          if (this.mapFilter !== 'all' && m.modes.includes(this.mapFilter) && this.setup.mode !== this.mapFilter) this.setMode(this.mapFilter);
+          if (tab !== 'all' && tab !== 'picks' && m.modes.includes(tab) && this.setup.mode !== tab) this.setMode(tab);
           this.refreshSetup();
         });
         cards.append(card);
         lazy(card, draw);
       }
-      if (!shown.length) cards.append(el('p', { class: 'map-empty', textContent: q ? `No maps match "${this.mapQuery.trim()}".` : 'No maps for this mode.' }));
+      if (!shown.length) cards.append(el('p', { class: 'map-empty', textContent: q ? `No maps match "${this.mapQuery.trim()}".` : tab === 'picks' ? 'No Community Picks yet.' : 'No maps for this mode.' }));
     };
     drawTabs();
     drawCards();
@@ -1233,6 +1245,7 @@ export class FrontEnd {
         el('h3', {}, map.metadata.name, infoTip(about)),
         ...inspired(current.key),
         el('p', { class: 'setup-blurb', textContent: current.blurb }),
+        ...(current.contentHash ? [el('p', { class: 'setup-community hint' }, `A player's map${current.metadata.author ? ` by ${current.metadata.author}` : ''}. `, reportButton(current.contentHash, map.metadata.name))] : []),
         facts,
         mapSelect,
       ),
@@ -2251,6 +2264,12 @@ export class FrontEnd {
     const list = el('div', { class: 'gb-list' });
     const status = el('span', { class: 'gb-status' });
     const refresh = el('button', { class: 'tab', textContent: 'Refresh' });
+    // Which maps: all, the game's own, or community maps (made in MapMaker and hosted by players).
+    const filter = el('select', { id: 'gb-filter', title: 'Which maps' }, ...([['all', 'All maps'], ['ours', 'Our maps'], ['community', 'Community maps']] as const).map(([v, t]) => el('option', { value: v, textContent: t, selected: v === this.gbMaps })));
+    filter.addEventListener('change', () => {
+      this.gbMaps = filter.value as typeof this.gbMaps;
+      void load();
+    });
     const hub = el('input', { value: hubSetting(), placeholder: 'host:port', autocomplete: 'off', title: 'Community hub address' });
     const saveHubBtn = el('button', { class: 'tab', textContent: 'Use' });
     saveHubBtn.addEventListener('click', () => (saveHub(hub.value), void load()));
@@ -2268,6 +2287,11 @@ export class FrontEnd {
         const community = el('span', { class: 'gb-tag community', textContent: 'Community map' });
         community.dataset.tip = "Made by a player in MapMaker, not one of the game's own maps (checked when it loads: it can't run code or bring outside files).";
         tags.push(community);
+        if (g.pick) {
+          const pick = el('span', { class: 'gb-tag pick', textContent: 'Community Pick' });
+          pick.dataset.tip = 'Players made this a Community Pick by playing it (docs: Community maps).';
+          tags.push(pick);
+        }
       }
       if (g.region) {
         const near = g.region === myRegion();
@@ -2284,10 +2308,10 @@ export class FrontEnd {
         'div',
         { class: 'gb-row' },
         el('div', { class: 'gb-name' }, el('b', { textContent: g.name }), el('small', { textContent: `hosted by ${g.host}` }), el('div', { class: 'gb-tags' }, ...tags)),
-        this.listingMap(g),
+        g.community ? communityMapRow(g, this.listingMap(g)) : this.listingMap(g),
         el('span', { class: 'gb-mode', textContent: MODE_LABEL[g.mode] ?? g.mode }),
         el('span', { class: 'gb-players', textContent: `${g.players}/${g.max}` }),
-        join,
+        g.community && g.contentHash ? el('span', { class: 'gb-join' }, join, reportButton(g.contentHash, g.map)) : join,
       );
     };
     const load = async () => {
@@ -2300,7 +2324,7 @@ export class FrontEnd {
       try {
         // Games in your region first (smoother), then the rest, each as the hub lists them.
         const mine = myRegion();
-        const games = (await fetchGames()).map((g, i) => ({ g, i })).sort((a, b) => Number(b.g.region === mine) - Number(a.g.region === mine) || a.i - b.i).map((x) => x.g);
+        const games = (await fetchGames()).filter((g) => this.gbMaps === 'all' || (this.gbMaps === 'community') === !!g.community).map((g, i) => ({ g, i })).sort((a, b) => Number(b.g.region === mine) - Number(a.g.region === mine) || a.i - b.i).map((x) => x.g);
         status.textContent = `${games.length} game${games.length === 1 ? '' : 's'} · updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
         list.replaceChildren(...(games.length ? [el('div', { class: 'gb-row gb-head' }, el('span', { textContent: 'Game' }), el('span', { textContent: 'Map' }), el('span', { textContent: 'Mode' }), el('span', { textContent: 'Players' }), el('span')), ...games.map(row)] : [el('p', { class: 'gb-empty', textContent: 'No public games right now. Host one: start a match, press Esc, Host game, and tick "List in the game browser".' })]));
       } catch (e) {
@@ -2314,7 +2338,7 @@ export class FrontEnd {
     return el(
       'div',
       { class: 'panel game-browser' },
-      el('div', { class: 'gb-top' }, el('h3', { class: 'panel-title', textContent: 'Game browser' }), status, refresh),
+      el('div', { class: 'gb-top' }, el('h3', { class: 'panel-title', textContent: 'Game browser' }), status, filter, refresh),
       list,
       el('div', { class: 'gb-hub' }, el('span', { textContent: 'Community hub' }), hub, saveHubBtn),
     );
@@ -2418,7 +2442,8 @@ export class FrontEnd {
     const id = el('button', { type: 'button', class: 'link', id: 'account-id', textContent: 'Copy my account ID' });
     id.addEventListener('click', () => void navigator.clipboard?.writeText(who.sub).then(() => (id.textContent = 'Account ID copied'), () => (id.textContent = who.sub)));
     foot.append(id);
-    return panel(form);
+    // Your community maps on the hub (and the owner's summary): communityUi.ts.
+    return hubSetting() ? panel(form, communityPanel(kicker)) : panel(form);
   }
 
   private options(): HTMLElement {
