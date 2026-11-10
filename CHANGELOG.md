@@ -333,6 +333,12 @@ definition out of the map too; it stays in your library, and one undo brings bot
   the station) and an ice cave in the rocks; three outdoor flanks and a sunken service trench.
 - Deathmatch and Team Deathmatch (Elimination with it); the old map's flags and hills are gone. Military weapons.
 
+**New map: The Spillway** (MAP 02, built in MapMaker; waits for the owner's review):
+- A hydroelectric dam across a mountain gorge, for big team battles (24 v 24, room for 32 v 32). Fight along the dam
+  crest high over the gorge, through the powerhouse's generator halls at its foot, and across the rocky basin where
+  the tailrace runs out; the west maintenance yard steps down its terraces, and in the east the switchyard sits on its
+  ledge over a service tunnel through the rock.
+- Team Deathmatch, Capture the Flag and King of the Hill; the Military weapon set by default.
 **Tests**:
 - The e2e `teams` flow's friendly fire and team kill checks no longer fail at random: every bot holds fire while your
   rounds are tested, the teammate's spawn shield is cleared, and its damage is counted by who dealt it.

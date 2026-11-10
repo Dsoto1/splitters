@@ -649,6 +649,21 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
 - Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
+**The Spillway built from MAP 02 (`wip/mapmaker-spillway`, MapMaker lane, 2026-11-09; green on `check/mapmaker-spillway`
+at 60c0c184, run 42677907883; waits for the owner's review, not landed).**
+- A new map made in the real MapMaker only (a scratch Playwright driver: New map, Create terrain and the brushes,
+  palette clicks, the inspector, Map properties, the scatter brush, Sky, Set card shot, Export). No map code.
+- What it is, the choices, the owner's questions: docs/map-briefs/the_spillway/ (DECISIONS_AND_DEVIATIONS.md,
+  MAP_IMPLEMENTATION_MANIFEST.md, QA_REPORT.md). TDM main (CTF and KotH from its flags and hills), 24 v 24, 64 spawns,
+  Military weapon set, no vehicles.
+- Map lists, MapMaker templates, the all-maps test and the map tour pick it up by itself (maps/ is scanned); its card
+  picture is `packages/client/public/maps/shots/the_spillway.jpg` from its card camera.
+- Pitfalls for the next build (also docs/BUILDING_KIT.md, Terrain): ground is lowered under a floor only within 3 m
+  (cut a deep tunnel's slot with Flatten); a stair's foot on new terrain needs the ground flattened to the floor's
+  height (the 0.15 m offset plus the first step is a lip bots can't climb); hold Flatten on each spot (it levels at a
+  rate a frame) and overlap neighbouring areas; the inspector can drop the first edit after a placement.
+- Claimed: the characters' far copies (`packages/client/public/characters/*.glb` LODs, `content/meshy.lock.json`, the e2e `characters3` flow's far-copy checks; `wip/far-copies`), far-copies agent, 2026-11-09.
+
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 
 **MapMaker: time of day and weather (`wip/mapmaker-p5`, map format v34, MapMaker lane, 2026-11-09).** Overhaul Phase 5
