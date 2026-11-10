@@ -13,6 +13,7 @@ build notes (manifest, QA report, decisions and deviations) go in `docs/map-brie
 | (Style Pack 10 demo; owner's Medieval Village tileset sheet) | n/a | `maps/market_town.json` | built on `wip/medieval-pack` (2026-10-31); notes in `market_town/`; bots don't reach the belfry or the NW watchtower lookout |
 | (Style Pack 11 demo; owner's Coastal Harbor tileset sheet) | n/a | `maps/saltmarsh_harbor.json` | built on `wip/harbor-pack` (2026-10-31); notes in `saltmarsh_harbor/` |
 | (Style Pack 06 Jungle Ruins refresh demo; owner's Jungle Ruins and Ancient Temple tileset sheets, folded into one pack) | n/a | `maps/vinefall_sanctum.json` | built on `wip/jungle-ruins-pack` (2026-10-31); notes in `vinefall_sanctum/`; zipline is an owner question (scenery posts + Grapple Hook for now) |
+| MAP_04_Verdant_Protocol.md | verdant_protocol_reference.jpg | `maps/verdant_protocol.json` | built in MapMaker on `wip/mapmaker-verdant` (2026-11-09/10); notes in `verdant_protocol/`; waits for the owner's review; questions in its DECISIONS_AND_DEVIATIONS.md |
 
 `AGENT_BUILD_CONTRACT.md` (the owner's, v1.0) applies to every map, with these repo adaptations:
 - The map file stays `maps/<id>.json` (the game loads maps from there; CLAUDE.md "Maps"). The contract's

@@ -348,6 +348,20 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 
+**Verdant Protocol, a new map from MAP 04 (`wip/mapmaker-verdant`, MapMaker lane, 2026-11-09/10; waits for the
+owner's review, not landed).**
+- Made in the real MapMaker only (a scratch Playwright driver: New map, Create terrain and the brushes, palette clicks,
+  the inspector, the Walls tool, Map properties, the Environment brush, Set card shot, Export). No map code.
+- What it is, the choices and six owner questions: docs/map-briefs/verdant_protocol/ (DECISIONS_AND_DEVIATIONS.md,
+  MAP_IMPLEMENTATION_MANIFEST.md, QA_REPORT.md). 16-32 players, 16 v 16, TDM with CTF and KotH, Military set.
+- `shared/test/verdantProtocol.test.ts` checks the landmarks, the bunker under its yard, our-foliage-only and the
+  navigation both ways (yard, ward, watchpost, plateau).
+- Pitfalls for the next map build: a Courtyard tile's unconnected sides are capped with walls (open the ways in in its
+  inspector, or the yard is an island); Map properties' Facade "none" is the empty option; the Glass tower facade is a
+  dark glass block with a neon trim (not a greenhouse); a level −1 passage needs a level-0 floor over its whole length
+  (the slope where the ground is pulled under its floor cuts into it); background tasks stop at 30 minutes unless given
+  a longer limit (start the preview server detached).
+
 **Whiteout Station rebuilt from MAP 03 Frostbite Station (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; waits
 for the owner's review, not landed).**
 - Made in the real MapMaker only (a scratch Playwright driver: Import, plan-view drag-box Delete, Create terrain and

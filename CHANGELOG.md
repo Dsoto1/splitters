@@ -8,6 +8,12 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**New map: Verdant Protocol** (MAP 04, the owner's approved brief; built in MapMaker): an overgrown jungle research
+and security compound for 16-32 players (16 v 16), Team Deathmatch with Capture the Flag and King of the Hill. Red-earth
+footpaths twist through our own jungle between the command post on its rise, the glass greenhouse lab, a crashed supply
+craft you can walk through and the old watchpost on its knoll (the one overlook); in the middle a walled yard over the
+underground quarantine bunker, with short stairways down and a covered way across beneath it. Military weapon set.
+
 **MapMaker follow-ups** (the owner's answers, 2026-11-08):
 - **The measure tool's jump hint looks at the ground along the line**, not only at its two ends: a slope you can walk
   up reads walkable, a ledge reads a step (with its height), and a pit you couldn't climb out of reads a gap (with its
