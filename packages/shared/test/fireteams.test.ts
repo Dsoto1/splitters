@@ -434,10 +434,10 @@ describe('Fireteams Part 2: objective first', () => {
     expect(mine.downAt).toBe(18);
   });
 
-  it('CTF: bot-led squads take their role together; a squad defends only when it fits in the defenders', () => {
-    // (Squads of 3 with 3 defenders wanted: one defends, the rest attack.)
-    expect(ctfSquadRoles([3, 3, 3], 3)).toEqual(['defend', 'attack', 'attack']);
-    expect(ctfSquadRoles([4, 4], 3)).toEqual(['attack', 'attack']);
+  it('CTF: bot-led squads take their role together; with 3 squads a side the smallest defends (ties: the higher id)', () => {
+    // (The rule itself: docs/FIRETEAMS_PLAN.md, "Follow-ups"; fireteamsFollowups.test.ts.)
+    expect([...ctfSquadRoles([{ id: 1, size: 3 }, { id: 2, size: 3 }, { id: 3, size: 3 }])]).toEqual([[1, 'attack'], [2, 'attack'], [3, 'defend']]);
+    expect([...ctfSquadRoles([{ id: 1, size: 4 }, { id: 2, size: 4 }]).values()]).toEqual(['attack', 'attack']);
     const { match } = ctfFireteamMatch();
     play(match);
     const mode = match.mode as CtfMode;
@@ -446,12 +446,12 @@ describe('Fireteams Part 2: objective first', () => {
       const roles = new Set(s.members.map((m) => mode.botPlan.roles.get(m)));
       expect(roles.size).toBe(1);
     }
-    // 12 a side, squads of 4 (3 a side), 3 defenders wanted: no squad of 4 fits, so all three attack.
+    // 12 a side, squads of 4 (3 a side, all of 4): the one with the highest id defends, the other two attack.
     for (const team of match.teams!.map((t) => t.id)) {
       const sq = match.fireteams!.teamSquads(team);
-      const defend = sq.filter((s) => mode.botPlan.roles.get(s.leader!) === 'defend');
-      expect(defend).toHaveLength(0);
       expect(sq.length).toBe(3);
+      const defend = sq.filter((s) => mode.botPlan.roles.get(s.leader!) === 'defend');
+      expect(defend.map((s) => s.id)).toEqual([Math.max(...sq.map((s) => s.id))]);
     }
   });
 });

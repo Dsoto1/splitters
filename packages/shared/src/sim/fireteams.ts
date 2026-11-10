@@ -129,6 +129,11 @@ export interface Squad {
   laid: string;
   /** The squad is on the move (its anchor moved lately) until this tick: members bound cover to cover in a fight on the way. */
   movingUntil: number;
+  /**
+   * Follow-ups: its person has given it an order since leading it (the wheel or the B menu; not the match's own). Until
+   * then a mode's squad role (CTF: defend or attack, ModeLogic.squadRole) is its default.
+   */
+  ordered: boolean;
 }
 
 /** The follow point moves on once the leader is this far from it (m, or 2 m up or down). */
@@ -389,8 +394,23 @@ export class Fireteams {
     return notes;
   }
 
+  /**
+   * Host handoff (follow-ups): the squads as the old host had them, made again before the first `sync` (in the old
+   * host's order, so ties that go by squad id still go the same way). Members not in the match are dropped by `sync`;
+   * a squad led by someone not here now is led by its best member. Returns each new squad (null: none to make).
+   */
+  adopt(list: readonly { team: string; leader: number | null; members: readonly number[]; human: boolean }[], tick: number): (Squad | null)[] {
+    const notes: SquadNote[] = [];
+    return list.map((q) => {
+      const members = q.members.filter((m) => !this.bySlot.has(m));
+      if (!members.length) return null;
+      const leader = q.leader !== null && members.includes(q.leader) ? q.leader : members[0]!;
+      return this.create(q.team, members, leader, q.human && leader === q.leader, tick, notes);
+    });
+  }
+
   private create(team: string, members: number[], leader: number, human: boolean, tick: number, notes: SquadNote[]): Squad {
-    const s: Squad = { id: this.nextId++, team, leader: null, members: [...members], human, order: follow(tick), downAt: null, holds: new Map(), anchor: null, spacing: 'normal', shape: 'wedge', heading: 0, trail: [], spots: new Map(), laid: '', movingUntil: -1 };
+    const s: Squad = { id: this.nextId++, team, leader: null, members: [...members], human, order: follow(tick), downAt: null, holds: new Map(), anchor: null, spacing: 'normal', shape: 'wedge', heading: 0, trail: [], spots: new Map(), laid: '', movingUntil: -1, ordered: false };
     this.squads.push(s);
     for (const m of members) this.bySlot.set(m, s);
     this.lead(s, leader, human, tick, notes);
@@ -414,6 +434,7 @@ export class Fireteams {
     if (!handover) {
       s.order = follow(tick, true);
       s.spacing = 'normal';
+      s.ordered = false;
     }
     s.downAt = null;
     s.holds.clear();
@@ -428,6 +449,7 @@ export class Fireteams {
    * (`spacing`) sets the squad's spacing and keeps its order (it is recorded, carried out at once).
    */
   order(s: Squad, kind: OrderKind, pos: Vec3 | null, target: number | null, tick: number, auto = false): FireteamOrder {
+    if (!auto) s.ordered = true;
     if (kind === 'spacing') {
       s.spacing = nextSpacing(s.spacing);
       s.laid = '';
@@ -735,10 +757,16 @@ export function checkOrder(kind: OrderKind, c: OrderContext): { ok: true; pos: V
   }
 }
 
-/** One squad as the snapshot carries it (protocol `fs`): see ServerMessage's snapshot. */
-export function squadSnapshot(s: Squad, teamIndex: number, points = 0): number[] {
+/** A squad's role in the mode as the snapshot carries it (follow-ups; CTF): none, attack, defend. */
+export type SquadRoleView = 'attack' | 'defend' | null;
+const ROLE_CODES: readonly SquadRoleView[] = [null, 'attack', 'defend'];
+/** The squad HUD's word for a squad's role. */
+export const SQUAD_ROLE_TEXT: Readonly<Record<'attack' | 'defend', string>> = { attack: 'Attack', defend: 'Defend' };
+
+/** One squad as the snapshot carries it (protocol `fs`): see ServerMessage's snapshot. `role`: its mode role (CTF), if any. */
+export function squadSnapshot(s: Squad, teamIndex: number, points = 0, role: SquadRoleView = null): number[] {
   const p = s.order.pos;
-  return [s.id, teamIndex, s.leader ?? -1, ORDER_KINDS.indexOf(s.order.kind), SQUAD_SPACINGS.indexOf(s.spacing), FORMATION_SHAPES.indexOf(s.shape), s.human ? 1 : 0, p ? Math.round(p.x * 10) : 0, p ? Math.round(p.z * 10) : 0, points, ...s.members];
+  return [s.id, teamIndex, s.leader ?? -1, ORDER_KINDS.indexOf(s.order.kind), SQUAD_SPACINGS.indexOf(s.spacing), FORMATION_SHAPES.indexOf(s.shape), s.human ? 1 : 0, p ? Math.round(p.x * 10) : 0, p ? Math.round(p.z * 10) : 0, points, ROLE_CODES.indexOf(role), ...s.members];
 }
 
 /** A squad as the client reads it from the snapshot (`fs`). */
@@ -755,6 +783,8 @@ export interface SquadView {
   members: number[];
   /** The squad's points (Part 3, sim/squadScores.ts). */
   points: number;
+  /** Its role in the mode (follow-ups; CTF: defend its flag or attack), or null. */
+  role: SquadRoleView;
 }
 
 export function readSquad(a: readonly number[]): SquadView {
@@ -769,6 +799,7 @@ export function readSquad(a: readonly number[]): SquadView {
     human: a[6] === 1,
     place: placeOrder(order) ? { x: a[7]! / 10, z: a[8]! / 10 } : null,
     points: a[9] ?? 0,
-    members: a.slice(10),
+    role: ROLE_CODES[a[10] ?? 0] ?? null,
+    members: a.slice(11),
   };
 }

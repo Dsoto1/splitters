@@ -36,6 +36,22 @@ export interface SquadRow {
   shapes?: { file: number; wedge: number; open: number };
   spot?: number;
   coverShots?: number;
+  /**
+   * Squad scores at the end (Part 3, sim/squadScores.ts; the variant on): every squad's points with its team, leader's
+   * name and CTF role (follow-ups), the best squad and the match's MVP (of the squads' MVPs, the most points; ties to
+   * the earlier squad), as the awards name them.
+   */
+  scores?: SquadScoreRow;
+}
+
+/** Squad scores for bot-report (the variant on). */
+export interface SquadScoreRow {
+  /** [squad id, team, its leader's name (or first member's), points, role ('' none)], the most points first (ties: the lower id). */
+  squads: [id: number, team: string, leader: string, points: number, role: string][];
+  /** The best squad: its id, leader's name and points (null: nobody scored). */
+  best: [id: number, leader: string, points: number] | null;
+  /** The MVP across squads: name, squad id and points (null: nobody scored). */
+  mvp: [name: string, squad: number, points: number] | null;
 }
 
 /** Scripted orders (--orders): one every this many seconds per squad, staggered by squad. */
@@ -165,6 +181,7 @@ export class SquadMeter {
       if (r && r[1]) r[2] = Math.round((r[2] / r[1]) * 10) / 10;
     }
     const pct = (n: number, d: number) => (d ? Math.round((n / d) * 1000) / 1000 : 0);
+    const scores = this.on && this.match.fireteams ? squadScores(this.match) : null;
     return {
       on: this.on,
       size: this.ft.size,
@@ -182,8 +199,34 @@ export class SquadMeter {
             coverShots: this.match.combatants().reduce((a, c) => a + (c.bot?.coverShots ?? 0), 0),
           }
         : {}),
+      ...(scores ? { scores } : {}),
     };
   }
+}
+
+/** The squad scores of a match with Fireteams on, as they stand (the awards' rules: sim/squadScores.ts awards). */
+export function squadScores(match: Match): SquadScoreRow | null {
+  const ft = match.fireteams;
+  if (!ft) return null;
+  const name = (slot: number | null | undefined) => (slot === null || slot === undefined ? '-' : (match.slots[slot]?.name ?? `#${slot}`));
+  const role = (id: number) => match.mode?.squadRole?.(id) ?? '';
+  const squads = ft.squads
+    .map((q): [number, string, string, number, string] => [q.id, q.team, name(q.leader ?? q.members[0]), ft.scores.squad(q.id).points, role(q.id)])
+    .sort((a, b) => b[3] - a[3] || a[0] - b[0]);
+  const here = new Set(match.combatants().map((c) => c.slot));
+  const aw = ft.scores.awards(ft.squads, here);
+  const b = aw.find((a) => a[0] === 'bestsquad');
+  let mvp: SquadScoreRow['mvp'] = null;
+  for (const a of aw) if (a[0] === 'squadmvp' && (!mvp || a[2] > mvp[2])) mvp = [name(a[1]), a[3], a[2]];
+  return { squads, best: b ? [b[3], name(b[1]), b[2]] : null, mvp };
+}
+
+/** The squad-score line: per-squad points (with its CTF role), the best squad and the MVP. */
+export function squadScoreText(r: SquadScoreRow): string {
+  const list = r.squads.map(([id, team, lead, pts, role]) => `#${id} ${team} ${lead}${role ? ` (${role})` : ''} ${pts}`).join(', ');
+  const best = r.best ? `best squad #${r.best[0]} (${r.best[1]}) ${r.best[2]}` : 'best squad -';
+  const mvp = r.mvp ? `MVP ${r.mvp[0]} (#${r.mvp[1]}) ${r.mvp[2]}` : 'MVP -';
+  return `squad scores: ${list || '-'} | ${best} | ${mvp}`;
 }
 
 /** One line for a match (bot-report's printMatch). */

@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { BOT_DIFFICULTIES, CHARACTER_PROFILES, bodyClass, getLook, getMountDef, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getItem, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
 import { BOT_SWITCHES, BotTrace, BreakthroughMode, CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
-import { SquadMeter, squadText, squadTotals, type SquadRow } from './squadMeasures.ts';
+import { SquadMeter, squadScoreText, squadText, squadTotals, type SquadRow } from './squadMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
 
 // Ablations: BOT_OFF=sideCorridors,hulls plays with those bot changes switched off (brain.ts BOT_SWITCHES).
@@ -171,6 +171,14 @@ export interface MatchRow {
   drops: number;
   firstTake: number | null;
   firstCapture: number | null;
+  /**
+   * CTF (Fireteams follow-ups): flags defended (a kill of an enemy within DEFENDED_RANGE m of the killer's own flag
+   * base, or of the carrier of the killer's flag), flag returns by a bot defending, and squad-seconds of squads on the
+   * defend role (squads with the variant on).
+   */
+  defends?: number;
+  defendReturns?: number;
+  defendSquadSeconds?: number;
   /** Each flag run: when taken, how long it lasted, how it ended, by whom. */
   runs: { t: number; seconds: number; end: 'capture' | 'drop' | 'open'; slot: number; from: number }[];
   kills: number;
@@ -293,6 +301,8 @@ const style = opt('style') as 'mixed' | 'arena' | 'tactical' | undefined;
 const showSpells = flags.includes('--spells');
 /** --fireteams=N: the Fireteams variant on, squads of N (4-6); --orders: each squad given an order every 30 s. */
 const fireteamsArg = opt('fireteams') ? Number(opt('fireteams')) : null;
+/** CTF: a kill of an enemy this near (m) the killer's own flag base counts as a flag defended. */
+const DEFENDED_RANGE = 20;
 const scriptOrders = flags.includes('--orders');
 const showBots = flags.includes('--bots');
 const quiet = flags.includes('--quiet');
@@ -592,7 +602,15 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
       else hill.empty += 1 / TICK_RATE;
     }
     if (forts) for (const p of forts.pieces) pieceIds.add(p.id);
+    // CTF: who dropped which side's flag this tick (a kill of our flag's carrier is a flag defended).
+    const droppedBy = ctf ? new Map((events as GameEvent[]).flatMap((e) => (e.e === 'flag' && e.a === 'drop' && e.s !== null ? [[e.s, e.team] as const] : []))) : null;
     for (const e of events as GameEvent[]) {
+      if (ctf && e.e === 'kill' && e.killer !== null && e.killer !== undefined && e.killer !== e.victim) {
+        const k = match.actor(e.killer);
+        const v = match.actor(e.victim);
+        const own = k?.faction ? ctf.flags.find((f) => f.team === k.faction) : undefined;
+        if (k && v && own && v.faction !== k.faction && (droppedBy!.get(e.victim) === own.team || Math.hypot(v.move.pos.x - own.base.x, v.move.pos.z - own.base.z) < DEFENDED_RANGE)) out.defends = (out.defends ?? 0) + 1;
+      }
       if (e.e === 'kill') {
         out.kills++;
         const v = rec.get(e.victim);
@@ -667,6 +685,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
       } else if (e.a === 'return') {
         out.returns++;
         if (r) r.returns++;
+        const c = e.s === null ? undefined : match.actor(e.s);
+        if (ctf && c?.bot && ctf.botPlan.roles.get(c.slot) === 'defend') out.defendReturns = (out.defendReturns ?? 0) + 1;
       } else if (e.a === 'drop') {
         out.drops++;
         if (r) r.drops++;
@@ -677,6 +697,8 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     }
     if (k % SAMPLE) continue;
     const dt = SAMPLE / TICK_RATE;
+    // CTF with Fireteams: squad-seconds on the defend role (follow-ups: the smallest of 3+ squads a side).
+    if (ctf && match.fireteams && match.phase === 'playing') for (const q of match.fireteams.squads) if (ctf.squadRole(q.id) === 'defend') out.defendSquadSeconds = (out.defendSquadSeconds ?? 0) + dt;
     // Crowds: living bots on foot, and those within 0.8 m of a teammate on foot (bodies pass through each other: a clump).
     for (const c of bots) {
       if (!c.alive || c.mount) continue;
@@ -1029,7 +1051,7 @@ function printMatch(m: MatchRow): void {
   console.log(`\n== ${m.map} ${m.mode} seed ${m.seed} | ${m.players} bots, ${m.seconds} s | tick ${m.tickMs.toFixed(2)} ms (p95 ${m.tickP95.toFixed(2)}), bot thinking ${(m.thinkMs ?? 0).toFixed(2)} ms`);
   if (m.mode === 'core.ctf' || m.mode === 'core.forts' || m.takes || m.captures) {
     const runs = m.runs.map((r) => `${r.t.toFixed(0)}s:${r.end}${r.end === 'open' ? '' : `@${r.seconds}s`}(${r.from}m)`).join(' ');
-    console.log(`flags: captures ${m.captures} | takes ${m.takes} | drops ${m.drops} | returns ${m.returns} | first take ${m.firstTake?.toFixed(0) ?? '-'} s, first capture ${m.firstCapture?.toFixed(0) ?? '-'} s | runs ${runs || 'none'}`);
+    console.log(`flags: captures ${m.captures} | takes ${m.takes} | drops ${m.drops} | returns ${m.returns} (by defenders ${m.defendReturns ?? 0}) | defended ${m.defends ?? 0}${m.defendSquadSeconds ? ` | squads defending ${Math.round(m.defendSquadSeconds)} squad-s` : ''} | first take ${m.firstTake?.toFixed(0) ?? '-'} s, first capture ${m.firstCapture?.toFixed(0) ?? '-'} s | runs ${runs || 'none'}`);
   }
   if (m.objective && Object.keys(m.objective).length) console.log(`objective: ${Object.entries(m.objective).map(([k, v]) => `${k} ${v}`).join(' | ')}`);
   const perMin = (n: number) => ((n / m.seconds) * 60).toFixed(1);
@@ -1041,6 +1063,7 @@ function printMatch(m: MatchRow): void {
   if (m.pieces !== undefined) console.log(`forts: ${m.pieces} pieces built`);
   if (m.breakthrough) console.log(`breakthrough: ${breakthroughText(m.breakthrough)}`);
   if (m.squads) console.log(squadText(m.squads));
+  if (m.squads?.scores) console.log(squadScoreText(m.squads.scores));
   if (m.roulette) for (const line of rouletteText(m.roulette)) console.log(line);
   if (m.wedges) console.log(`vehicles: stalled ${m.wedges.stalls} times (${m.wedges.stallTicks} ticks), wedged ${m.wedges.times} times (${m.wedges.ticks} ticks aboard)${Object.values(m.wedges.byVehicle).some((r) => r[0] || r[2]) ? ` | by vehicle (stalls/wedged): ${Object.entries(m.wedges.byVehicle).filter(([, r]) => r[0] || r[2]).map(([k, [n, , st]]) => `${k} ${st}/${n}`).join(', ')}` : ''}${m.wedges.at.length ? ` | stalls where: ${m.wedges.at.map(([k, v]) => `${k} ${v}`).join(', ')}` : ''}`);
   if (m.wedges?.inside !== undefined) console.log(`vehicles inside the level: ${m.wedges.inside} vehicle-seconds${m.wedges.insideAt?.length ? ` (${m.wedges.insideAt.map(([k, v]) => `${k} ${v} s`).join(', ')})` : ''} | at the end: ${m.wedges.parked?.join(', ')}`);
@@ -1406,6 +1429,7 @@ function printSummary(rs: readonly MatchRow[]): void {
   const sets = weaponSetTable(rs);
   if (sets.length) console.log(`\n${sets.join('\n')}`);
   printSquads(rs);
+  printCtfDefence(rs);
   // Roulette over every match: kills spread over characters and sizes, picks taken.
   const rls = rs.filter((r) => r.roulette).map((r) => r.roulette!);
   if (rls.length > 1) {
@@ -1462,6 +1486,7 @@ export function sizeLine(ms: readonly MatchRow[]): string {
 
 function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): void {
   printSquads(after, before);
+  printCtfDefence(after, before);
   const a = new Map(perMap(before).map((m) => [m.key, m]));
   const b = perMap(after);
   const f = (x: number | undefined, d = 1, k = 1) => (x === undefined ? '-' : (x * k).toFixed(d));
@@ -1569,6 +1594,34 @@ function printCompare(before: readonly MatchRow[], after: readonly MatchRow[]): 
 
 await main();
 
+/**
+ * CTF per map, a match on average (Fireteams follow-ups: squad roles): captures, flag returns (by defenders), flags
+ * defended (kills by our flag or of its carrier), and squad-seconds on the defend role.
+ */
+function printCtfDefence(rs: readonly MatchRow[], before?: readonly MatchRow[]): void {
+  const by = (list: readonly MatchRow[]) => {
+    const out = new Map<string, MatchRow[]>();
+    for (const r of list) if (r.mode === 'core.ctf') out.set(r.map, [...(out.get(r.map) ?? []), r]);
+    return out;
+  };
+  const now = by(rs);
+  if (!now.size) return;
+  const was = before ? by(before) : null;
+  const cell = (rows: MatchRow[] | undefined) => {
+    if (!rows?.length) return ['-', '-', '-', '-', '-'];
+    const n = rows.length;
+    const avg = (f: (r: MatchRow) => number) => (rows.reduce((a, r) => a + f(r), 0) / n).toFixed(1);
+    return [avg((r) => r.captures), avg((r) => r.returns), avg((r) => r.defendReturns ?? 0), avg((r) => r.defends ?? 0), avg((r) => r.defendSquadSeconds ?? 0)];
+  };
+  console.log('\n| Map (CTF) | matches | captures | flag returns | returns by defenders | flags defended | defend squad-s |');
+  console.log('|---|---|---|---|---|---|---|');
+  for (const [k, rows] of now) {
+    const a = cell(rows);
+    const b = was ? cell(was.get(k)) : null;
+    console.log(`| ${k} | ${was ? `${was.get(k)?.length ?? 0} → ` : ''}${rows.length} | ${a.map((v, i) => (b ? `${b[i]} → ${v}` : v)).join(' | ')} |`);
+  }
+}
+
 /** Squads per map (Fireteams' measures): cohesion, within 10 m, survival, and orders carried out (done/given, mean s). */
 function printSquads(rs: readonly MatchRow[], before?: readonly MatchRow[]): void {
   const by = (list: readonly MatchRow[]) => {
@@ -1580,13 +1633,16 @@ function printSquads(rs: readonly MatchRow[], before?: readonly MatchRow[]): voi
   if (!now.size) return;
   const was = before ? by(before) : null;
   const cell = (rows: SquadRow[] | undefined) => {
-    if (!rows?.length) return ['-', '-', '-', '-', '-'];
+    if (!rows?.length) return ['-', '-', '-', '-', '-', '-', '-'];
     const t = squadTotals(rows);
     const orders = Object.entries(t.orders).map(([k, [g, d, s]]) => `${k} ${d}/${g} ${d ? `${s.toFixed(1)} s` : ''}`.trim()).join(', ') || '-';
-    return [`${rows[0]!.on ? 'on' : 'off'} (${rows[0]!.size})`, t.cohesion.toFixed(1), (t.within10 * 100).toFixed(0), (t.survival * 100).toFixed(0), orders];
+    // Squad scores (the variant on): the best squad's points and the MVP's, a match on average.
+    const sc = rows.map((r) => r.scores).filter((x) => !!x);
+    const avg = (f: (x: NonNullable<SquadRow['scores']>) => number) => (sc.length ? (sc.reduce((a, x) => a + f(x), 0) / sc.length).toFixed(0) : '-');
+    return [`${rows[0]!.on ? 'on' : 'off'} (${rows[0]!.size})`, t.cohesion.toFixed(1), (t.within10 * 100).toFixed(0), (t.survival * 100).toFixed(0), orders, avg((x) => x.best?.[2] ?? 0), avg((x) => x.mvp?.[2] ?? 0)];
   };
-  console.log(`\n| Map | Fireteams | to the leader m | within 10 m % | members alive % | orders carried out (done/given, mean) |`);
-  console.log('|---|---|---|---|---|---|');
+  console.log(`\n| Map | Fireteams | to the leader m | within 10 m % | members alive % | orders carried out (done/given, mean) | best squad pts | MVP pts |`);
+  console.log('|---|---|---|---|---|---|---|---|');
   for (const [k, rows] of now) {
     const a = cell(rows);
     const b = was ? cell(was.get(k)) : null;

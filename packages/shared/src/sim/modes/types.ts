@@ -139,7 +139,13 @@ export interface ModeLogic {
    * leader's goal for all of it), null for a bot in a person's squad (it does what the person says), undefined without
    * squads. Called every tick while the variant is on (keep it cheap).
    */
-  botUnits?(unitOf: (slot: number) => number | null | undefined): void;
+  botUnits?(unitOf: (slot: number) => number | null | undefined, squadOf?: (slot: number) => { id: number; human: boolean; ordered: boolean } | undefined): void;
+  /**
+   * Fireteams follow-ups (CTF): a squad's role on its side, 'defend' (its own flag) or 'attack', by squad id; null or
+   * absent: the mode gives squads none. A bot-led squad plays it; a person's squad has it as its default until they
+   * give an order. Shown on the squad HUD.
+   */
+  squadRole?(squad: number): 'defend' | 'attack' | null;
   /** May this player spawn beside this teammate (squad spawn)? Absent: yes. */
   spawnBeside?(c: Combatant, mate: Combatant): boolean;
   /** Seconds the match clock shows while in play (Breakthrough: the sector clock); null: the match's own. */

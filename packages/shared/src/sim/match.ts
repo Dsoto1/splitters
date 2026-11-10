@@ -76,7 +76,8 @@ import { terrainHeightAt } from '../map/terrain.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, dropsInPlay, isTeamMode, matchPhysics, restrictedWeapons, rouletteOn, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
-import type { CheckpointPlayer, MatchCheckpoint } from '../net/handoff.ts';
+import type { CheckpointPlayer, CheckpointSquad, MatchCheckpoint } from '../net/handoff.ts';
+import { tallied, tallyOf, tallyRow } from './squadScores.ts';
 import { CLASS_DEFS, ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
 import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_POWERS, DISC_POWER_SHOTS, discThrows, dodgeDisc, keepOnDeck, splitVelocities, type DiscPower } from './discs.ts';
 import { createMode, type ModeLogic } from './modes/index.ts';
@@ -2763,7 +2764,8 @@ export class Match {
       this.squadNotes(ft.sync(roster, this.tick));
     }
     // Objective first (Part 2): the mode gives a bot-led squad one role for all of it (CTF: attack or defend together).
-    this.mode?.botUnits?.(this.squadUnit);
+    // (Follow-ups: every squad by size, people's too, so CTF's smallest of 3+ squads defends: ModeLogic.squadRole.)
+    this.mode?.botUnits?.(this.squadUnit, this.squadInfo);
     if (this.phase === 'playing' && this.tick % 6 === 0) this.squadNotes(ft.step(this.tick, this.squadWorld));
     // Squad scores (Part 3): objective plays as they're counted, and King of the Hill's seconds on the hill.
     if (this.phase === 'playing' && this.tick % 6 === 0) this.tallySquads(this.tick % TICK_RATE === 0);
@@ -2804,6 +2806,21 @@ export class Match {
     const s = this.fireteams?.squadOf(slot);
     return s ? (s.human ? null : s.id) : undefined;
   };
+
+  /** Fireteams follow-ups: any slot's squad for the mode's squad roles (its id, a person leads it, they've given it an order). */
+  private readonly squadInfo = (slot: number): { id: number; human: boolean; ordered: boolean } | undefined => {
+    const s = this.fireteams?.squadOf(slot);
+    return s ? { id: s.id, human: s.human, ordered: s.ordered } : undefined;
+  };
+
+  /**
+   * Fireteams follow-ups: a person's squad plays its mode role by itself (CTF: Defend, the smallest of 3+ squads) until
+   * the person gives it an order; meanwhile its bots play the role as a bot-led squad's do (ctfBotGoal's defend: round
+   * our flag's base, to our dropped flag, after its carrier).
+   */
+  private roleDefault(s: { id: number; human: boolean; ordered: boolean }): boolean {
+    return s.human && !s.ordered && this.mode?.squadRole?.(s.id) === 'defend';
+  }
 
   /** What the squads' step reads of the match (formations: sight lines at chest height, the walkable ground). */
   private readonly squadWorld = {
@@ -2901,6 +2918,8 @@ export class Match {
   private fireteamGoal(c: Combatant): OrderGoal | null {
     const s = c.kind === 'bot' ? this.fireteams?.squadOf(c.slot) : undefined;
     if (!s || s.leader === null || s.leader === c.slot) return null;
+    // (A person's squad on its mode role's default, Defend, until they give an order: its bots play the role.)
+    if (this.roleDefault(s)) return null;
     const leader = this.slots[s.leader];
     const t = s.order.kind === 'attack' && s.order.target !== null ? this.actor(s.order.target) : null;
     // (Following the squad's anchor: the leader's position, moved on every few metres, so routes aren't asked afresh
@@ -6233,7 +6252,58 @@ export class Match {
         ...(c.alive ? { p: [r(c.move.pos.x), r(c.move.pos.y), r(c.move.pos.z)] as [number, number, number], yaw: r(c.yaw), hp: Math.round(c.health), ar: Math.round(c.armor) } : {}),
         w: [...c.weapons.values()].map((w): [string, number, number] => [w.def.id, w.mag, w.reserve]),
         ...(held ? { cur: held.def.id } : {}),
+        ...((t) => (t && tallied(t) ? { sp: tallyRow(t) } : {}))(this.fireteams?.scores.player(c.slot)),
       };
+    });
+  }
+
+  /**
+   * Host handoff (Fireteams follow-ups): the squads as they stand, their members and leader by their index in
+   * `checkpointPlayers`' list (the same order: `combatants()`), with each squad's points. Undefined: no squads.
+   */
+  checkpointSquads(): CheckpointSquad[] | undefined {
+    const ft = this.fireteams;
+    if (!ft?.squads.length) return undefined;
+    const index = new Map(this.combatants().map((c, i) => [c.slot, i]));
+    const out: CheckpointSquad[] = [];
+    for (const q of ft.squads) {
+      const m = q.members.map((slot) => index.get(slot)).filter((i): i is number => i !== undefined);
+      if (!m.length) continue;
+      const l = q.leader !== null ? (index.get(q.leader) ?? -1) : -1;
+      out.push({ m, l, t: tallyRow(ft.scores.squad(q.id)), ...(q.human ? { h: 1 as const } : {}) });
+    }
+    return out.length ? out : undefined;
+  }
+
+  /**
+   * Host handoff (Fireteams follow-ups): the squads and points a checkpoint carried, put back once its players are in
+   * (`placed`: each checkpoint player's index → their new place). The squads are made again as they were (in their
+   * order, members and leader), each with its points, and every player gets their own points back, so nothing starts
+   * from zero; the next `sync` brings them in line with whoever is here (a person still away: a bot leads their squad
+   * until they're back, as for anyone away).
+   */
+  restoreSquads(cp: MatchCheckpoint, placed: ReadonlyMap<number, Combatant>): void {
+    const size = this.rules.fireteams;
+    if (!size || !this.teams || !fireteamMode(this.rules.mode)) return;
+    if (!this.fireteams || this.fireteams.size !== size) {
+      this.fireteams = new Fireteams(size);
+      this.rolesFor = -1;
+    }
+    const ft = this.fireteams;
+    this.squadsDirty = true;
+    cp.players.forEach((p, i) => {
+      const c = placed.get(i);
+      if (c && p.sp) ft.scores.restorePlayer(c.slot, tallyOf(p.sp));
+    });
+    const list = (cp.squads ?? []).map((q) => {
+      const lead = q.l >= 0 ? placed.get(q.l) : undefined;
+      const first = lead ?? q.m.map((i) => placed.get(i)).find((c) => !!c?.faction);
+      const team = first?.faction ?? null;
+      const members = q.m.map((i) => placed.get(i)).filter((c): c is Combatant => !!c && c.faction === team && team !== null).map((c) => c.slot);
+      return { team: team ?? '', leader: lead && lead.faction === team ? lead.slot : null, members: team === null ? [] : members, human: q.h === 1 && lead?.kind === 'human' };
+    });
+    ft.adopt(list, this.tick).forEach((s, k) => {
+      if (s) ft.scores.restoreSquad(s.id, tallyOf(cp.squads![k]!.t));
     });
   }
 
@@ -6648,7 +6718,7 @@ export class Match {
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),
       ...(this.rules.leaders && this.teams ? { ld: this.teams.map((t) => this.leaderOf.get(t.id) ?? -1) } : {}),
-      ...(this.fireteams && this.teams ? { fs: this.fireteams.squads.map((q) => squadSnapshot(q, this.teams!.findIndex((t) => t.id === q.team), this.fireteams!.scores.squad(q.id).points)) } : {}),
+      ...(this.fireteams && this.teams ? { fs: this.fireteams.squads.map((q) => squadSnapshot(q, this.teams!.findIndex((t) => t.id === q.team), this.fireteams!.scores.squad(q.id).points, this.mode?.squadRole?.(q.id) ?? null)) } : {}),
       ...(this.roulette?.snapshot() ? { rl: this.roulette.snapshot()! } : {}),
       ...(this.mode ? { md: this.mode.snapshot() } : this.zombies ? { md: { ts: [this.zombies.wave], zb: this.zombies.snapshot() } } : {}),
     };
@@ -7052,7 +7122,7 @@ export class BotFiller {
    * player, marked `succ`) as a player, and everyone else as an away player whose place a bot keeps, held
    * for their next connection by their hashed key (reclaim). Returns the successor's own player.
    */
-  restore(cp: MatchCheckpoint, fill: number, me: { name: string; look?: string }, placed?: Map<number, Combatant>): Combatant | null {
+  restore(cp: MatchCheckpoint, fill: number, me: { name: string; look?: string }, placed: Map<number, Combatant> = new Map()): Combatant | null {
     let mine: Combatant | null = null;
     // People first (their teams as they were), then the bots. `placed`: each checkpoint player's index → their new place.
     const order = cp.players.map((p, i) => ({ p, i })).sort((a, b) => (a.p.kind === b.p.kind ? 0 : a.p.kind === 'human' ? -1 : 1));
@@ -7064,20 +7134,22 @@ export class BotFiller {
         if (!c) continue;
         c.look = validLookId(p.look);
         this.match.restoreCombatant(c, p);
-        placed?.set(i, c);
+        placed.set(i, c);
         continue;
       }
       const self = p.succ === 1 && !mine;
       const c = this.match.addHuman(self ? me.name : p.name, self ? (me.look ?? p.look) : p.look, p.team);
       if (!c) continue;
       this.match.restoreCombatant(c, p);
-      placed?.set(i, c);
+      placed.set(i, c);
       if (self) mine = c;
       // Their place waits for them (twice the usual hold: everyone is reconnecting at once, some on slow machines);
       // with no key, a bot takes it over for good.
       else this.hold(c.slot, 'dropped', p.key ?? null, fill, AWAY.holdSeconds * 2);
     }
     mine ??= this.match.addHuman(me.name, me.look);
+    // Fireteams: the squads and their points as the old host had them (follow-ups).
+    this.match.restoreSquads(cp, placed);
     this.rebalance(fill);
     return mine;
   }

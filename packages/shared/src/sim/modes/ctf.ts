@@ -2,7 +2,7 @@ import { horizontalDistance, type Vec3 } from '../../math.ts';
 import { FLAG_CARRIED, FLAG_DROPPED, FLAG_HOME, type FlagAction, type ModeSnapshot } from '../../protocol.ts';
 import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
-import { CtfBotPlan, ctfBotAwareness, ctfBotGoal, ctfBotTookFlag } from './ctfBots.ts';
+import { CtfBotPlan, ctfBotAwareness, ctfBotGoal, ctfBotTookFlag, type SquadOf, type SquadRole } from './ctfBots.ts';
 import { playbookFor } from '../../bots/playbooks.ts';
 import type { SideBrief } from '../../bots/teamBrain.ts';
 import type { BotGoal, BotTripSpec, ModeHost, ModeLogic } from './types.ts';
@@ -183,9 +183,15 @@ export class CtfMode implements ModeLogic {
     return { attack, intercept: carrier !== null ? { pos: { ...own.pos }, to: { ...enemy.base }, slot: carrier } : null, playbook: playbookFor('core.ctf').team };
   }
 
-  /** Fireteams (Part 2): bot-led squads take their CTF role together (CtfBotPlan.unitOf). */
-  botUnits(unitOf: (slot: number) => number | null | undefined): void {
+  /** Fireteams (Part 2): bot-led squads take their CTF role together (CtfBotPlan.unitOf); the follow-ups: by squad size (`squadOf`). */
+  botUnits(unitOf: (slot: number) => number | null | undefined, squadOf?: SquadOf): void {
     this.botPlan.unitOf = unitOf;
+    this.botPlan.squadOf = squadOf ?? null;
+  }
+
+  /** Fireteams follow-ups: a squad's CTF role (defend its flag or attack), for its default and the squad HUD. */
+  squadRole(squad: number): SquadRole | null {
+    return this.botPlan.squadRole(squad);
   }
 
   /** Fireteams' "Defend the objective": our flag where it is (at its base, or lying where it fell; its base while carried off). */

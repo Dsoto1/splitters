@@ -34,4 +34,11 @@ describe('Fireteams squad HUD (Part 2)', () => {
     hud.read(ft.squads.map((s) => squadSnapshot(s, 0)), 0);
     expect(hud.blips(0, pos)).toContainEqual({ x: 40, z: -12, color: SQUAD_COLOR, label: 'H' });
   });
+
+  it("the squad's role in the mode (CTF's Defend / Attack, follow-ups) rides along; none outside such a mode", () => {
+    const hud = new SquadHud({} as HTMLElement);
+    expect(hud.read(ft.squads.map((s) => squadSnapshot(s, 0, 0, 'defend')), 0)).toMatchObject({ role: 'defend', members: mine.members });
+    expect(hud.read(ft.squads.map((s) => squadSnapshot(s, 0, 12, 'attack')), 0)).toMatchObject({ role: 'attack', points: 12 });
+    expect(hud.read(fs, 0)!.role).toBeNull();
+  });
 });

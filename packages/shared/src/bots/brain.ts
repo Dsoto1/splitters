@@ -4886,9 +4886,10 @@ function farthest(points: readonly Vec3[], from: Vec3): Vec3 | undefined {
  */
 /**
  * Switches for measuring with and without (tests; bot-report's BOT_OFF=sideCorridors,hulls): side lanes by a corridor
- * of the side's trip (sideCorridor; off: laneWaypoint, as before), and walking round still hulls (pastHulls).
+ * of the side's trip (sideCorridor; off: laneWaypoint, as before), walking round still hulls (pastHulls), and
+ * Fireteams' CTF squad roles (squadDefend: the smallest of 3+ squads defends; off: Part 2's fit-in-the-defenders rule).
  */
-export const BOT_SWITCHES = { sideCorridors: true, hulls: true };
+export const BOT_SWITCHES = { sideCorridors: true, hulls: true, squadDefend: true };
 
 /**
  * A corridor (not the shortest) of the side's trip to `goal` whose via lies on `side` of the way from `me` (-1 left,
