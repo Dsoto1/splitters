@@ -22,6 +22,7 @@
     "gun-report": "tsx src/tools/gun-report.ts",
     "net-report": "tsx src/tools/net-report.ts",
     "nav-audit": "tsx src/tools/nav-audit.ts",
+    "community-summary": "tsx src/tools/community-summary.ts",
     "typecheck": "tsc -p .",
     "hub": "tsx src/hub.ts"
   },

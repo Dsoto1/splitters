@@ -90,6 +90,7 @@ export * from './map/environment.ts';
 export * from './protocol.ts';
 export * from './net/clientMessages.ts';
 export * from './net/lobby.ts';
+export * from './net/community.ts';
 export * from './net/handoff.ts';
 export * from './net/party.ts';
 export * from './net/profile.ts';
