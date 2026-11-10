@@ -2156,6 +2156,8 @@ export class Match {
         shotAt: aware < Infinity ? null : (c.shotAt ?? null),
         // Bots that may not take a vehicle right now (carrying the bomb, leading hostages) don't see any to get in.
         mounts: aware < Infinity ? undefined : mounts && !c.mount && this.mode?.blocksVehicle(c) ? mounts.filter((m) => m.kind !== 'vehicle') : mounts,
+        // Every mount's hull, for walking round the ones standing still (BotBrain.pastHulls), even for a focused bot.
+        hulls: c.mount ? undefined : mounts,
         seat: c.mount ? this.seatView(c) : null,
         guides: this.guides,
         squad: npc ? this.encounters.squadFor(c.slot, npc.role) : null,
@@ -2529,6 +2531,7 @@ export class Match {
       ...(m.def.vehicle ? { maxSpeed: m.def.vehicle.maxSpeed, speed: Math.abs(m.speed) } : {}),
       ...(m.def.vehicle && m.speed < -0.5 ? { reversing: true } : {}),
       ...(m.burning ? { burning: true } : {}),
+      ...(!m.alive && m.wreckUntil > this.tick ? { wreck: true } : {}),
       ...(m.floats ? { floats: true } : {}),
       ...(m.wedged ? { wedged: true } : {}),
       ...(m.def.armour?.sealed ? { sealed: true } : {}),

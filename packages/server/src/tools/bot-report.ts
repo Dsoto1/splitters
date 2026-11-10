@@ -117,6 +117,8 @@ interface BotRow {
   parkourMissed?: number;
   /** Route searches that kept to its group's corridor all the way (NavWorld.pathAlong). */
   along?: number;
+  /** Still hulls (parked vehicles, wrecks, turrets) it walked round (bots/hulls.ts). */
+  hulls?: number;
   /** Its body size class (BODY_SIZES), and seconds it spent ducking under a low roof (brain.ts lowRoute, mustDuck). */
   size?: string;
   ducked?: number;
@@ -146,6 +148,8 @@ export interface MatchRow {
   /** Route searches the per-tick budget put off a tick, and teammates passed on the right (crowds), in the match. */
   searchesPutOff?: number;
   keptRight?: number;
+  /** Stuck recoveries within a metre of a hull standing still (a parked vehicle, a wreck, a turret: off the navmesh). */
+  stuckByHull?: number;
   /** Tall bodies' routes (NavWorld.findPath `tall`) on a map with low headroom, and those that went under it (no way round). */
   tallRoutes?: number;
   lowRoutes?: number;
@@ -445,6 +449,20 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     const h = hy * 2;
     return !match.physics.boxClear({ x: wm.pos.x, y: wm.pos.y + h * 0.8 - 0.025, z: wm.pos.z }, { x: r, y: h * 0.2 - 0.025, z: r }, wm.body as Parameters<typeof match.physics.boxClear>[2], true);
   };
+  // Next to a hull standing still (bots/hulls.ts stillHull, the match's own mounts): within a metre of its sides.
+  type HullMount = { def: { kind: string; vehicle?: unknown; half: [number, number, number] }; pos: { x: number; y: number; z: number }; yaw: number; speed: number; alive: boolean; wreckUntil: number };
+  const hullMounts = (match as unknown as { mounts: HullMount[] }).mounts ?? [];
+  const byStillHull = (p: { x: number; y: number; z: number }): boolean =>
+    hullMounts.some((m) => {
+      if (m.alive ? m.def.vehicle && Math.abs(m.speed) >= 1 : !(m.wreckUntil > match.tick)) return false;
+      const [hx, hy, hz] = m.def.half;
+      if (p.y > m.pos.y + hy * 2 - 0.4 || p.y < m.pos.y - 1.2) return false;
+      const c = Math.cos(m.yaw);
+      const s = Math.sin(m.yaw);
+      const dx = p.x - m.pos.x;
+      const dz = p.z - m.pos.z;
+      return Math.abs(dx * c - dz * s) < hx + 1 && Math.abs(dx * s + dz * c) < hz + 1;
+    });
   const insideAt = new Map<string, number>();
   let insideSeconds = 0;
   const wedges = { times: 0, ticks: 0, stalls: 0, stallTicks: 0, byVehicle: {} as Record<string, [number, number, number]>, at: new Map<string, number>() };
@@ -660,6 +678,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
       if (tr.stuck > 0) {
         const key = `${Math.round(tr.at.x / 4) * 4},${Math.round(tr.at.y)},${Math.round(tr.at.z / 4) * 4} ${tr.doing}`;
         stuckAt.set(key, (stuckAt.get(key) ?? 0) + tr.stuck);
+        if (byStillHull(tr.at)) out.stuckByHull = (out.stuckByHull ?? 0) + tr.stuck;
       }
       // Failed searches since the last sample: where the last of them was (from, toward). Past FAIL_SPOTS, every third
       // one overwrites an older one in turn (deterministic), so late ones show too.
@@ -812,6 +831,7 @@ function play(map: MapDocument, mode: GameMode, seed: number, seconds: number, s
     r.parkourGaveUp = c.bot!.parkourGaveUp;
     r.parkourMissed = c.bot!.parkourMissed;
     r.along = c.bot!.alongRoutes;
+    r.hulls = c.bot!.hullDetours;
     r.size = bodyClass(c.look, match.rules);
     r.ducked = Math.round((c.bot!.duckTicks / TICK_RATE) * 10) / 10;
     out.bots.push(r);
@@ -1032,7 +1052,7 @@ function printMatch(m: MatchRow): void {
   if (m.weaponKills) console.log(`weapons (${getWeaponSet(m.set).name}): ${killsText(new Map(Object.entries(m.weaponKills)))}`);
   if (m.weaponUse && Object.keys(m.weaponUse).length) console.log(`weapon use (bots' rounds, hits, mean hit distance; spread ${useSpread([m]).toFixed(3)}): ${Object.entries(m.weaponUse).sort((a, b) => b[1][0] - a[1][0]).map(([w, [n, h, d]]) => `${w.replace('core.', '')} ${n}/${h} ${d.toFixed(1)} m`).join(', ')}`);
   const made = [0, 1, 2].map((k) => sum(m.bots, (r) => r.parkour?.[k] ?? 0));
-  if (m.parkourLinks) console.log(`parkour: links ${m.parkourLinks[0]} drops, ${m.parkourLinks[1]} gap jumps, ${m.parkourLinks[2]} jumps up | made ${made[0]} drops, ${made[1]} gap jumps, ${made[2]} jumps up (missed ${sum(m.bots, (r) => r.parkourMissed ?? 0)}, given up ${sum(m.bots, (r) => r.parkourGaveUp ?? 0)}) | routes along a group's corridor ${sum(m.bots, (r) => r.along ?? 0)} | searches put off a tick ${m.searchesPutOff ?? 0} | ticks keeping right of a teammate ${m.keptRight ?? 0}`);
+  if (m.parkourLinks) console.log(`parkour: links ${m.parkourLinks[0]} drops, ${m.parkourLinks[1]} gap jumps, ${m.parkourLinks[2]} jumps up | made ${made[0]} drops, ${made[1]} gap jumps, ${made[2]} jumps up (missed ${sum(m.bots, (r) => r.parkourMissed ?? 0)}, given up ${sum(m.bots, (r) => r.parkourGaveUp ?? 0)}) | routes along a group's corridor ${sum(m.bots, (r) => r.along ?? 0)} | searches put off a tick ${m.searchesPutOff ?? 0} | ticks keeping right of a teammate ${m.keptRight ?? 0} | still hulls walked round ${sum(m.bots, (r) => r.hulls ?? 0)}, stuck recoveries by one ${m.stuckByHull ?? 0}`);
   console.log(`fights: in cover ${pct(sum(m.bots, (r) => r.coverFight ?? 0), fightT)} of fight time | scoped kills ${sum(m.bots, (r) => r.scopedKills ?? 0)} (from a vantage spot ${sum(m.bots, (r) => r.postKills ?? 0)}) | snipers ${snipers.length}: spots ${sum(snipers, (r) => r.posts ?? 0)} (only parkour reaches ${sum(snipers, (r) => r.parkourPosts ?? 0)}), rounds from spots ${sum(snipers, (r) => r.postShots ?? 0)}, moved on after shots ${sum(snipers, (r) => r.moves ?? 0)}, shots held ${sum(snipers, (r) => r.held ?? 0)} s, kills ${sum(snipers, (r) => r.kills)} (scoped ${sum(snipers, (r) => r.scopedKills ?? 0)})`);
   const why = new Map<string, number>();
   for (const r of m.bots) for (const [k, v] of Object.entries(r.why)) why.set(k, (why.get(k) ?? 0) + v);

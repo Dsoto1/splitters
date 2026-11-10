@@ -16,6 +16,7 @@ import { findCover, stillCovered, type CoverSpot } from './cover.ts';
 import type { SightCache } from './sight.ts';
 import type { ViewGrid } from './grid.ts';
 import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
+import { hullDetour, type HullPass } from './hulls.ts';
 import type { BotPlan } from './director.ts';
 import type { PricedTrip } from './teamBrain.ts';
 import { GUN_WEIGHT, OPT_CHASE, OPT_COVER, OPT_FIGHT, OPT_NOISE, OPT_PICKUP, OPT_POST, OPT_RETREAT, OPTIONS, POST_WEIGHT, SCOPE_WEIGHT, bestChoice, scoreChoices, type ChoiceInput } from './choices.ts';
@@ -179,6 +180,9 @@ export interface BotWorldView {
   shotAt?: { tick: number; from: Vec3 } | null;
   /** Turrets and vehicles on the map. */
   mounts?: readonly MountView[];
+  /** Every mount's hull (turrets, vehicles, wrecks), on foot only, also for a focused bot whose `mounts` is left out: the ones
+   * standing still are walked round (hulls.ts). */
+  hulls?: readonly MountView[] | undefined;
   /** Routes and roads a bot driving a vehicle follows when one runs its way (guides.ts). */
   guides?: readonly Guide[];
   /** The seat the bot is in, if any. */
@@ -394,6 +398,8 @@ const STEP_OFF = 2.2;
 const CORNER_RADIUS = 0.45;
 /** How strongly teammates close by push a bot going somewhere out of a fight aside, at most (the way itself is 1). */
 const SEPARATE_MAX = 0.8;
+/** Ticks between looks for a still hull in the way (pastHulls). */
+const HULL_LOOK_TICKS = 6;
 /** A teammate coming the other way this close ahead (m) is passed on the right (separate). */
 const ONCOMING = 4;
 const PASS_RADIUS = 1.4;
@@ -517,6 +523,13 @@ export class BotBrain {
    * was found at, when it started on it, and when it jumped (-1: not yet) or went over the edge (a drop).
    */
   private link: { l: ParkourLink; path: Vec3[]; index: number; since: number; jumped: number; left: number } | null = null;
+  /** Going round a still hull (hulls.ts): the corner, till when it stands before a fresh look, and the side kept for that hull. */
+  private hullPass: (HullPass & { until: number }) | null = null;
+  private hullSide: { index: number; side: number; until: number } | null = null;
+  /** No still hull in the way: not looked for again till this tick. */
+  private hullFreeUntil = 0;
+  /** Hulls walked round (bot-report). */
+  hullDetours = 0;
   /** Parkour moves it made, by kind, and gave up on (measuring: bot-report). */
   readonly parkourDone: Record<ParkourKind, number> = { drop: 0, gap: 0, up: 0 };
   parkourGaveUp = 0;
@@ -838,6 +851,8 @@ export class BotBrain {
     this.lowRoute = false;
     this.duckUntil = -Infinity;
     this.link = null;
+    this.hullPass = null;
+    this.hullSide = null;
     this.linkClock = null;
     this.spacing = 'hold';
     this.strafing = false;
@@ -4055,7 +4070,8 @@ export class BotBrain {
         this.pathMiss = true;
         return null;
       }
-      return Math.atan2(goal.x - me.pos.x, goal.z - me.pos.z);
+      const g = this.pastHulls(view, goal);
+      return Math.atan2(g.x - me.pos.x, g.z - me.pos.z);
     }
     // The leg ahead a parkour link (a drop, a jump across or up): act() runs it (parkourMove).
     if (view.nav.parkour.length) this.watchLink(view, corner);
@@ -4069,7 +4085,40 @@ export class BotBrain {
       if (horizontalDistance(me.pos, grab) < 1.1) this.zipPress = true;
       return Math.atan2(grab.x - me.pos.x, grab.z - me.pos.z);
     }
-    return Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z);
+    // A parked vehicle, a wreck or a turret on the way (not on the navmesh): round its nearer corner first.
+    const aim = this.pastHulls(view, corner);
+    return Math.atan2(aim.x - me.pos.x, aim.z - me.pos.z);
+  }
+
+  /**
+   * Where to head for on the way to `aim`: `aim` itself, or the corner of a still hull in the way (hulls.ts). Looked
+   * for every few ticks; a corner chosen stands till it is reached or the next look. Not on a ladder, a zipline or a
+   * parkour link.
+   */
+  private pastHulls(view: BotWorldView, aim: Vec3): Vec3 {
+    const hulls = view.hulls;
+    const me = view.self;
+    if (!hulls?.length || me.riding || me.climbing || this.link || me.grounded === false) return aim;
+    const tick = view.tick;
+    const hp = this.hullPass;
+    if (hp && tick < hp.until && horizontalDistance(me.pos, hp.pos) > 0.6) return hp.pos;
+    if (!hp && tick < this.hullFreeUntil) return aim;
+    const keep = this.hullSide && tick < this.hullSide.until ? this.hullSide : null;
+    const pass = hullDetour(hulls, me.pos, aim, keep, (from, p) => {
+      const ground = view.nav.closestPoint({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0.6, y: 1.5, z: 0.6 });
+      if (!ground || horizontalDistance(ground, p) > 0.6 || Math.abs(ground.y - from.y) > 1.2) return false;
+      p.y = ground.y;
+      return this.walkClear(view)(from, p);
+    });
+    if (!pass) {
+      this.hullPass = null;
+      this.hullFreeUntil = tick + HULL_LOOK_TICKS;
+      return aim;
+    }
+    if (!hp || hp.index !== pass.index) this.hullDetours++;
+    this.hullPass = { ...pass, until: tick + HULL_LOOK_TICKS * 2 };
+    this.hullSide = { index: pass.index, side: pass.side, until: tick + TICK_RATE * 3 };
+    return pass.pos;
   }
 
   /**
