@@ -961,7 +961,7 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #squad-hud { position: absolute; left: 18px; bottom: 112px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; pointer-events: none; }
 #squad-hud[hidden] { display: none; }
 /* The scoreboard up (Tab, the end of the match): the squad panel gives way, so it never covers your squad's rows. */
-#hud:has(#scoreboard:not([hidden])) #squad-hud { display: none; }
+#hud.sb-up #squad-hud { display: none; }
 #squad-order { display: flex; gap: 8px; align-items: baseline; padding: 4px 12px 4px 10px; background: linear-gradient(90deg, rgba(11, 15, 26, 0.9), rgba(11, 15, 26, 0.45)); border-left: 3px solid var(--orange); font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
 #squad-order small { font: 600 11px var(--font-display); color: var(--muted); }
 #squad-order b { font: 700 14px var(--font-display); color: var(--orange); }

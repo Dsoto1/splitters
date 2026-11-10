@@ -142,6 +142,7 @@ export class Hud {
     this.powerups.innerHTML = '';
     this.scope.hidden = true;
     this.scoreboard.hidden = true;
+    this.scoreboard.parentElement?.classList.remove('sb-up');
     this.board.clear();
     this.boardOpen = false;
     this.pauseBoard?.clear();
@@ -949,7 +950,11 @@ export class Hud {
    * most 4 times a second while it stays open (cheap at 96 players).
    */
   renderScoreboard(visible: boolean, scores: readonly ScoreEntry[], localSlot: number, final = false): void {
-    if (this.scoreboard.hidden !== !visible) this.scoreboard.hidden = !visible;
+    if (this.scoreboard.hidden !== !visible) {
+      this.scoreboard.hidden = !visible;
+      // (Fireteams: the squad panel gives way to the board, style.css #hud.sb-up.)
+      this.scoreboard.parentElement?.classList.toggle('sb-up', visible);
+    }
     if (!visible) {
       this.boardOpen = false;
       return;
