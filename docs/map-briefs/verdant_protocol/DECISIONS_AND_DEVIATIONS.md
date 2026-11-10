@@ -82,6 +82,10 @@ jungle between the paths.
   would be a paved strip three cells wide through the jungle (question 4).
 - **The crashed craft** is built from free blocks (there is no aircraft wreck model): it reads as a broken fuselage
   and wings, boxy close up (question 5).
+- **The greenhouse's walls:** the plan's glass facade is MapMaker's Glass tower facade, a dark glass block with a neon
+  trim that reads as an office tower, not a greenhouse; the lab's rooms keep the map's own walls with twin windows of
+  breakable glass and skylights (glass where a greenhouse has it). A true greenhouse (glazed walls and roof) would be a
+  new facade in MapMaker.
 - **No climbing vines:** the knoll's and the outcrops' sides are slopes, not walls, and the one overlook already has
   two ramps; vines would add a second way onto the knoll the brief doesn't need.
 - **The jungle** is our species with the Environment brush's Jungle preset (palms, acacia, laurel and broadleaf
