@@ -1,0 +1,41 @@
+{
+  "$comment": "Low walls (tools/content/kit/fence.mjs): drystone walls, each the size of the Kenney piece it replaces.",
+  "type": "wall",
+  "props": [
+    {
+      "id": "kit.wall.stone",
+      "displayName": "Low Stone Wall",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": { "1": "First version: a drystone wall with capstones, the size of the Kenney low stone wall (1.931 × 1.4 × 0.386 m)." },
+      "size": [1.931, 1.4, 0.386],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": { "kind": "stonewall", "courses": 6, "stone": [0.24, 0.5], "cap": 0.13, "inset": 0.022 },
+      "lods": [{ "distance": 0 }, { "distance": 16 }, { "distance": 50 }],
+      "variants": [
+        { "index": 0, "name": "grey", "seed": 5101, "look": { "stone": "#8a877e", "dark": "#2b2a27", "jitter": 0.13 } },
+        { "index": 1, "name": "mossy", "seed": 5102, "look": { "stone": "#7f7d73", "dark": "#262622", "moss": "#586b38", "jitter": 0.14 } },
+        { "index": 2, "name": "sandstone", "seed": 5103, "look": { "stone": "#a8946f", "dark": "#3a3024", "jitter": 0.12 } },
+        { "index": 3, "name": "dark", "seed": 5104, "look": { "stone": "#5c5a57", "dark": "#1e1d1c", "jitter": 0.12 } }
+      ]
+    },
+    {
+      "id": "kit.wall.stone_broken",
+      "displayName": "Crumbling Wall",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": { "1": "First version: the drystone wall fallen away at one end, stones at its foot, the size of the Kenney crumbling wall (1.793 × 1.3 × 0.359 m)." },
+      "size": [1.793, 1.3, 0.359],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": { "kind": "stonewall", "courses": 6, "stone": [0.24, 0.5], "cap": 0.12, "inset": 0.022, "broken": 0.6 },
+      "lods": [{ "distance": 0 }, { "distance": 16 }, { "distance": 50 }],
+      "variants": [
+        { "index": 0, "name": "grey", "seed": 5201, "look": { "stone": "#8a877e", "dark": "#2b2a27", "jitter": 0.13 } },
+        { "index": 1, "name": "mossy", "seed": 5202, "look": { "stone": "#7f7d73", "dark": "#262622", "moss": "#586b38", "jitter": 0.14 } },
+        { "index": 2, "name": "sandstone", "seed": 5203, "look": { "stone": "#a8946f", "dark": "#3a3024", "jitter": 0.12 } }
+      ]
+    }
+  ]
+}

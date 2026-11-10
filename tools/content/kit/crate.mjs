@@ -11,7 +11,7 @@ import { noise3 } from '../env/noise.mjs';
 import { Mesh, board, box, clamp01, groundShade, hex, mix3, quad, quadN, scale3, standIn } from './geom.mjs';
 
 /** A colour function for wood: per-board tone, grime in the lower part and near edges, a little noise. */
-function woodTone(base, r, look, seed) {
+export function woodTone(base, r, look, seed) {
   const n = noise3(seed);
   const tone = 1 + r.jitter(look.jitter ?? 0.1);
   const warm = r.jitter(0.04);

@@ -1,5 +1,5 @@
 {
-  "$comment": "Kit props (docs/PROCEDURAL_ENVIRONMENT.md \u00a711 Phase 6; docs/CONTENT_PIPELINE.md, \"Kit props\"): simple man-made props generated in code from seeds, families in content/kitprops/<type>.json, built by tools/content/kitprops.mjs. Budgets: bytes per file and triangles per level of detail by generator kind. Aliases: a retired catalogue prop and the family and variant that take its place as played (map/validate.ts loadMap; MapMaker keeps the map as made and offers Replace all); `scale` multiplies the placement's own.",
+  "$comment": "Kit props (docs/PROCEDURAL_ENVIRONMENT.md §11 Phase 6; docs/CONTENT_PIPELINE.md, \"Kit props\"): simple man-made props generated in code from seeds, families in content/kitprops/<type>.json, built by tools/content/kitprops.mjs. Budgets: bytes per file and triangles per level of detail by generator kind. Aliases: a retired catalogue prop and the family and variant that take its place as played (map/validate.ts loadMap; MapMaker keeps the map as made and offers Replace all); `scale` multiplies the placement's own.",
   "generatorVersion": 1,
   "pack": {
     "id": "tiletrigger-kitprops",
@@ -36,6 +36,26 @@
         260,
         40,
         10
+      ],
+      "fence": [
+        900,
+        420,
+        60
+      ],
+      "railing": [
+        900,
+        420,
+        80
+      ],
+      "stonewall": [
+        800,
+        360,
+        40
+      ],
+      "barrier": [
+        400,
+        60,
+        30
       ]
     }
   },
@@ -73,6 +93,51 @@
     "prop.barrel_open": {
       "model": "kit.drum.steel_open",
       "variant": 0,
+      "scale": 1
+    },
+    "prop.fence": {
+      "model": "kit.fence.rail",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.palisade": {
+      "model": "kit.fence.palisade",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.town_fence": {
+      "model": "kit.fence.town",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.iron_fence": {
+      "model": "kit.fence.iron",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.iron_fence_damaged": {
+      "model": "kit.fence.iron_broken",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.stone_wall": {
+      "model": "kit.wall.stone",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.stone_wall_damaged": {
+      "model": "kit.wall.stone_broken",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.jersey_barrier": {
+      "model": "kit.barrier.concrete",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.jersey_barrier_striped": {
+      "model": "kit.barrier.concrete",
+      "variant": 1,
       "scale": 1
     }
   }

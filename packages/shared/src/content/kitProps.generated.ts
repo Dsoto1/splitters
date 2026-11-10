@@ -7,6 +7,7 @@ export const KIT_GENERATOR_VERSION = 1;
 
 /** Every kit family as a catalogue prop: its size, collision box, palette category and breakable data (its first variant's file). */
 export const KIT_PROPS: readonly PropDefinition[] = [
+  { id: 'kit.barrier.concrete', file: 'kit/barrier.concrete.plain.glb', displayName: 'Concrete Barrier', category: 'Military', size: [2, 1, 0.75], collision: [2, 1, 0.75], breakable: { health: 400, debris: '#9c9a94' } },
   { id: 'kit.box.carton', file: 'kit/box.carton.kraft.glb', displayName: 'Cardboard Carton', category: 'Crates & Barrels', size: [0.378, 0.5, 0.378], collision: [0.378, 0.5, 0.378], breakable: { health: 10, debris: '#c8a070' } },
   { id: 'kit.crate.wood', file: 'kit/crate.wood.pine.glb', displayName: 'Wooden Crate', category: 'Crates & Barrels', size: [0.6, 0.6, 0.6], collision: [0.6, 0.6, 0.6], breakable: { health: 30, debris: '#8a5a32' } },
   { id: 'kit.crate.wood_long', file: 'kit/crate.wood_long.pine.glb', displayName: 'Long Wooden Crate', category: 'Crates & Barrels', size: [1.1, 1.1, 2.2], collision: [1.1, 1.1, 2.2], breakable: { health: 60, debris: '#8a5a32' } },
@@ -14,10 +15,18 @@ export const KIT_PROPS: readonly PropDefinition[] = [
   { id: 'kit.crate.framed', file: 'kit/crate.framed.graphite.glb', displayName: 'Steel-Framed Crate', category: 'Crates & Barrels', size: [1.1, 1.1, 1.1], collision: [1.1, 1.1, 1.1] },
   { id: 'kit.drum.steel', file: 'kit/drum.steel.red.glb', displayName: 'Steel Drum', category: 'Crates & Barrels', size: [0.653, 0.95, 0.653], collision: [0.653, 0.95, 0.653], breakable: { health: 40, debris: '#8a5a32' } },
   { id: 'kit.drum.steel_open', file: 'kit/drum.steel_open.red.glb', displayName: 'Open Steel Drum', category: 'Crates & Barrels', size: [0.653, 0.95, 0.653], collision: [0.653, 0.95, 0.653], breakable: { health: 40, debris: '#8a5a32' } },
+  { id: 'kit.fence.rail', file: 'kit/fence.rail.rail.glb', displayName: 'Wooden Fence', category: 'Medieval', size: [1.159, 1.2, 0.099], collision: [1.159, 1.2, 0.099], breakable: { health: 40, debris: '#8a5a32' } },
+  { id: 'kit.fence.palisade', file: 'kit/fence.palisade.logs.glb', displayName: 'Palisade', category: 'Medieval', size: [1.739, 1.8, 0.184], collision: [1.739, 1.8, 0.184], breakable: { health: 100, debris: '#8a5a32' } },
+  { id: 'kit.fence.town', file: 'kit/fence.town.planks.glb', displayName: 'Town Fence', category: 'Town & Market', size: [0.217, 1.1, 2.895], collision: [0.217, 1.1, 2.895] },
+  { id: 'kit.fence.iron', file: 'kit/fence.iron.black.glb', displayName: 'Iron Fence', category: 'Gothic', size: [1.82, 1.6, 0.2], collision: [1.82, 1.6, 0.2] },
+  { id: 'kit.fence.iron_broken', file: 'kit/fence.iron_broken.black.glb', displayName: 'Broken Iron Fence', category: 'Gothic', size: [1.817, 1.6, 0.59], collision: [1.817, 1.6, 0.59], breakable: { health: 60, debris: '#3a3a3a' } },
+  { id: 'kit.wall.stone', file: 'kit/wall.stone.grey.glb', displayName: 'Low Stone Wall', category: 'Gothic', size: [1.931, 1.4, 0.386], collision: [1.931, 1.4, 0.386] },
+  { id: 'kit.wall.stone_broken', file: 'kit/wall.stone_broken.grey.glb', displayName: 'Crumbling Wall', category: 'Gothic', size: [1.793, 1.3, 0.359], collision: [1.793, 1.3, 0.359] },
 ];
 
 /** Per family: its generator, asset version, surface type, where each level of detail starts (m), the most triangles a variant has at each, and each variant's file. */
 export const KIT_FAMILIES: readonly KitFamilyData[] = [
+  { id: 'kit.barrier.concrete', kind: 'barrier', assetVersion: 1, surface: 'concrete', lods: [0, 20, 60], triangles: [128, 22, 22], variants: [{ index: 0, name: 'plain', file: 'kit/barrier.concrete.plain.glb' }, { index: 1, name: 'striped', file: 'kit/barrier.concrete.striped.glb' }, { index: 2, name: 'hazard', file: 'kit/barrier.concrete.hazard.glb' }, { index: 3, name: 'worn', file: 'kit/barrier.concrete.worn.glb' }] },
   { id: 'kit.box.carton', kind: 'carton', assetVersion: 1, surface: 'thin_wood', lods: [0, 10, 30], triangles: [224, 12, 10], variants: [{ index: 0, name: 'kraft', file: 'kit/box.carton.kraft.glb' }, { index: 1, name: 'label', file: 'kit/box.carton.label.glb' }, { index: 2, name: 'cross', file: 'kit/box.carton.cross.glb' }, { index: 3, name: 'white', file: 'kit/box.carton.white.glb' }] },
   { id: 'kit.crate.wood', kind: 'crate', assetVersion: 1, surface: 'thin_wood', lods: [0, 14, 40], triangles: [324, 52, 10], variants: [{ index: 0, name: 'pine', file: 'kit/crate.wood.pine.glb' }, { index: 1, name: 'x_brace', file: 'kit/crate.wood.x_brace.glb' }, { index: 2, name: 'weathered', file: 'kit/crate.wood.weathered.glb' }, { index: 3, name: 'military', file: 'kit/crate.wood.military.glb' }, { index: 4, name: 'dark', file: 'kit/crate.wood.dark.glb' }] },
   { id: 'kit.crate.wood_long', kind: 'crate', assetVersion: 1, surface: 'thin_wood', lods: [0, 20, 60], triangles: [376, 68, 10], variants: [{ index: 0, name: 'pine', file: 'kit/crate.wood_long.pine.glb' }, { index: 1, name: 'x_brace', file: 'kit/crate.wood_long.x_brace.glb' }, { index: 2, name: 'weathered', file: 'kit/crate.wood_long.weathered.glb' }, { index: 3, name: 'military', file: 'kit/crate.wood_long.military.glb' }] },
@@ -25,6 +34,13 @@ export const KIT_FAMILIES: readonly KitFamilyData[] = [
   { id: 'kit.crate.framed', kind: 'framed', assetVersion: 1, surface: 'thin_wood', lods: [0, 20, 55], triangles: [270, 146, 10], variants: [{ index: 0, name: 'graphite', file: 'kit/crate.framed.graphite.glb' }, { index: 1, name: 'olive', file: 'kit/crate.framed.olive.glb' }, { index: 2, name: 'blue', file: 'kit/crate.framed.blue.glb' }, { index: 3, name: 'orange', file: 'kit/crate.framed.orange.glb' }] },
   { id: 'kit.drum.steel', kind: 'drum', assetVersion: 1, surface: 'sheet_metal', lods: [0, 15, 40], triangles: [896, 208, 24], variants: [{ index: 0, name: 'red', file: 'kit/drum.steel.red.glb' }, { index: 1, name: 'blue', file: 'kit/drum.steel.blue.glb' }, { index: 2, name: 'olive', file: 'kit/drum.steel.olive.glb' }, { index: 3, name: 'rusty', file: 'kit/drum.steel.rusty.glb' }, { index: 4, name: 'yellow', file: 'kit/drum.steel.yellow.glb' }] },
   { id: 'kit.drum.steel_open', kind: 'drum', assetVersion: 1, surface: 'sheet_metal', lods: [0, 15, 40], triangles: [864, 240, 24], variants: [{ index: 0, name: 'red', file: 'kit/drum.steel_open.red.glb' }, { index: 1, name: 'blue', file: 'kit/drum.steel_open.blue.glb' }, { index: 2, name: 'rusty', file: 'kit/drum.steel_open.rusty.glb' }] },
+  { id: 'kit.fence.rail', kind: 'fence', assetVersion: 1, surface: 'thin_wood', lods: [0, 14, 45], triangles: [164, 44, 36], variants: [{ index: 0, name: 'rail', file: 'kit/fence.rail.rail.glb' }, { index: 1, name: 'weathered', file: 'kit/fence.rail.weathered.glb' }, { index: 2, name: 'planks', file: 'kit/fence.rail.planks.glb' }, { index: 3, name: 'pickets', file: 'kit/fence.rail.pickets.glb' }, { index: 4, name: 'dark', file: 'kit/fence.rail.dark.glb' }] },
+  { id: 'kit.fence.palisade', kind: 'fence', assetVersion: 1, surface: 'wood', lods: [0, 18, 55], triangles: [148, 108, 30], variants: [{ index: 0, name: 'logs', file: 'kit/fence.palisade.logs.glb' }, { index: 1, name: 'weathered', file: 'kit/fence.palisade.weathered.glb' }, { index: 2, name: 'dark', file: 'kit/fence.palisade.dark.glb' }] },
+  { id: 'kit.fence.town', kind: 'fence', assetVersion: 1, surface: 'thin_wood', lods: [0, 16, 50], triangles: [322, 78, 54], variants: [{ index: 0, name: 'planks', file: 'kit/fence.town.planks.glb' }, { index: 1, name: 'pickets', file: 'kit/fence.town.pickets.glb' }, { index: 2, name: 'rails', file: 'kit/fence.town.rails.glb' }] },
+  { id: 'kit.fence.iron', kind: 'railing', assetVersion: 1, surface: 'metal', lods: [0, 14, 40], triangles: [214, 184, 50], variants: [{ index: 0, name: 'black', file: 'kit/fence.iron.black.glb' }, { index: 1, name: 'rusty', file: 'kit/fence.iron.rusty.glb' }, { index: 2, name: 'green', file: 'kit/fence.iron.green.glb' }] },
+  { id: 'kit.fence.iron_broken', kind: 'railing', assetVersion: 1, surface: 'metal', lods: [0, 14, 40], triangles: [192, 174, 70], variants: [{ index: 0, name: 'black', file: 'kit/fence.iron_broken.black.glb' }, { index: 1, name: 'rusty', file: 'kit/fence.iron_broken.rusty.glb' }] },
+  { id: 'kit.wall.stone', kind: 'stonewall', assetVersion: 1, surface: 'stone', lods: [0, 16, 50], triangles: [518, 56, 10], variants: [{ index: 0, name: 'grey', file: 'kit/wall.stone.grey.glb' }, { index: 1, name: 'mossy', file: 'kit/wall.stone.mossy.glb' }, { index: 2, name: 'sandstone', file: 'kit/wall.stone.sandstone.glb' }, { index: 3, name: 'dark', file: 'kit/wall.stone.dark.glb' }] },
+  { id: 'kit.wall.stone_broken', kind: 'stonewall', assetVersion: 1, surface: 'stone', lods: [0, 16, 50], triangles: [400, 44, 30], variants: [{ index: 0, name: 'grey', file: 'kit/wall.stone_broken.grey.glb' }, { index: 1, name: 'mossy', file: 'kit/wall.stone_broken.mossy.glb' }, { index: 2, name: 'sandstone', file: 'kit/wall.stone_broken.sandstone.glb' }] },
 ];
 
 /** Retired catalogue props and the family and variant that take their place as played (`scale` multiplies the placement's). */
@@ -35,5 +51,14 @@ export const KIT_ALIASES: readonly KitAlias[] = [
   { from: 'prop.cargo_crate', model: 'kit.crate.bin', variant: 0, scale: 1 },
   { from: 'prop.crate_large', model: 'kit.crate.wood_long', variant: 0, scale: 1 },
   { from: 'prop.crate_small', model: 'kit.crate.wood', variant: 0, scale: 1 },
+  { from: 'prop.fence', model: 'kit.fence.rail', variant: 0, scale: 1 },
+  { from: 'prop.iron_fence', model: 'kit.fence.iron', variant: 0, scale: 1 },
+  { from: 'prop.iron_fence_damaged', model: 'kit.fence.iron_broken', variant: 0, scale: 1 },
+  { from: 'prop.jersey_barrier', model: 'kit.barrier.concrete', variant: 0, scale: 1 },
+  { from: 'prop.jersey_barrier_striped', model: 'kit.barrier.concrete', variant: 1, scale: 1 },
   { from: 'prop.metal_crate', model: 'kit.crate.framed', variant: 0, scale: 1 },
+  { from: 'prop.palisade', model: 'kit.fence.palisade', variant: 0, scale: 1 },
+  { from: 'prop.stone_wall', model: 'kit.wall.stone', variant: 0, scale: 1 },
+  { from: 'prop.stone_wall_damaged', model: 'kit.wall.stone_broken', variant: 0, scale: 1 },
+  { from: 'prop.town_fence', model: 'kit.fence.town', variant: 0, scale: 1 },
 ];
