@@ -7733,9 +7733,20 @@ async function fireteamsFlow(browser) {
   await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
   await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
   // A tap of B: the quick-message menu, as without Fireteams.
-  await page.keyboard.press('KeyB');
-  const menu = await page.waitForFunction(() => !document.getElementById('msg-menu')?.hidden && document.getElementById('order-wheel')?.hidden !== false, null, { timeout: T(5000) }).then(() => true, () => false);
-  await page.keyboard.press('KeyB');
+  // The tap's key down and up go in one task: a held B opens the order wheel after WHEEL_HOLD_MS (180 ms), and a
+  // loaded runner could draw a frame between two separate key events that late (CI: the wheel instead of the menu).
+  // It is tapped again only once the menu, the wheel and the pause menu are seen closed (a tap toggles the menu).
+  await page.waitForFunction(() => window.__cs.input.locked && document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
+  const tapB = () => page.evaluate(() => ['keydown', 'keyup'].forEach((type) => window.dispatchEvent(new KeyboardEvent(type, { code: 'KeyB', key: 'b', bubbles: true }))));
+  const menuOpen = () => page.waitForFunction(() => !document.getElementById('msg-menu')?.hidden && document.getElementById('order-wheel')?.hidden !== false, null, { timeout: T(5000) }).then(() => true, () => false);
+  const allClosed = () => page.evaluate(() => document.getElementById('msg-menu')?.hidden !== false && document.getElementById('order-wheel')?.hidden !== false && document.getElementById('pause')?.hidden !== false && window.__cs.input.locked);
+  await tapB();
+  let menu = await menuOpen();
+  if (!menu && (await allClosed())) {
+    await tapB();
+    menu = await menuOpen();
+  }
+  await tapB();
   await page.waitForFunction(() => document.getElementById('msg-menu')?.hidden !== false, null, { timeout: T(5000) }).catch(() => {});
   check(menu, `a tap of B opens the quick-message menu, not the order wheel (pause menu ${await page.evaluate(() => (document.getElementById('pause')?.hidden === false ? 'up' : 'down'))})`);
   // Hold B: the order wheel, seven orders (Part 2's Spread out / Stay tight last), your squad's current one ringed.
@@ -7787,8 +7798,14 @@ async function fireteamsFlow(browser) {
   const holding = await meWait(page, (m, me, a) => {
     const s = m.fireteams.squadOf(me.slot);
     const bots = s.members.filter((x) => x !== me.slot).map((x) => m.slots[x]).filter((c) => c?.alive);
-    const near = bots.filter((c) => Math.hypot(c.move.pos.x - a.p.x, c.move.pos.z - a.p.z) < 8).length;
-    return m.tick - a.tick > 8 * 60 && s.order.kind === 'hold' && bots.length > 0 && near * 2 > bots.length;
+    // Held: most of the squad by the spot (its ring is 4 m spread out), not with you. A squadmate in a fight may stand
+    // off it for a while (CI: all three 19-22 m off, you 72 m away), so a squadmate within 25 m of the spot and at least
+    // twice as far from you counts as holding it; following you would bring them within a few metres of you.
+    const holds = bots.filter((c) => {
+      const off = Math.hypot(c.move.pos.x - a.p.x, c.move.pos.z - a.p.z);
+      return off < 8 || (off < 25 && Math.hypot(c.move.pos.x - me.move.pos.x, c.move.pos.z - me.move.pos.z) > 2 * off);
+    }).length;
+    return m.tick - a.tick > 8 * 60 && s.order.kind === 'hold' && bots.length > 0 && holds * 2 > bots.length;
   }, { p: spot, tick: away?.tick ?? 0 }, 25);
   const where = await sim(page, (m, me, p) => {
     const s = m.fireteams.squadOf(me.slot);
