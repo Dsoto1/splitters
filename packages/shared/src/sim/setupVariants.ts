@@ -1,7 +1,7 @@
 import type { MapDocument } from '../map/schema.ts';
-import { LUNAR_GRAVITY, mapPickPlayers, presetPatch, sizePresets, type MatchSetup } from './matchSetup.ts';
+import { LUNAR_GRAVITY, mapPickPlayers, mapPickTeams, presetPatch, sizePresets, type MatchSetup } from './matchSetup.ts';
 import { DEFAULT_RULES, GAME_MODES, MODE_LABELS, type GameMode } from './rules.ts';
-import { FIRETEAM_MODES } from './fireteams.ts';
+import { DEFAULT_FIRETEAM_SIZE, FIRETEAM_MODES } from './fireteams.ts';
 
 /**
  * Mode variants and party presets (Play → match setup, under the mode chips).
@@ -278,6 +278,17 @@ export interface PartyPreset {
   mode: { teams?: GameMode; ffa?: GameMode };
   /** The variants it switches on; every other variant goes off (but those on by default, which stay on). */
   variants: readonly string[];
+  /**
+   * Fireteams: the squad size for the map's team layout (`side`: the bigger team's players), else the setup's own.
+   */
+  squadSize?: (side: number) => number;
+  /**
+   * Why a map that can play it doesn't suit it (too small a side for squads), else null. With `maps`, a map that
+   * doesn't suit (or can't play it) moves the setup to the first of `maps` the menu has that fits the device.
+   */
+  suits?: (map: MapDocument, offered: readonly GameMode[], deviceMax: number) => string | null;
+  /** The suite maps it moves to, best first (`suits` says when). */
+  maps?: readonly string[];
 }
 
 /** Whether a party preset wants a variant on: one it lists, or one on by default. */
@@ -303,7 +314,53 @@ export const PARTY_PRESETS: readonly PartyPreset[] = [
     mode: { teams: 'core.tdm', ffa: 'core.deathmatch' },
     variants: ['spears'],
   },
+  {
+    id: 'fireteams',
+    label: 'Fireteams',
+    line: 'Team Deathmatch where everyone leads their own squad of bots: your friends on your side, each with a squad.',
+    mode: { teams: 'core.tdm' },
+    variants: ['fireteams'],
+    squadSize: fireteamPartySize,
+    suits: (map, offered, deviceMax) => {
+      if (!offered.includes('core.tdm')) return 'This map has no Team Deathmatch.';
+      const side = Math.min(...mapPickTeams(map, 'core.tdm', deviceMax));
+      return side >= FIRETEAMS_SIDE_MIN ? null : `Its teams of ${side} are too small for squads (${FIRETEAMS_SIDE_MIN} a side at least).`;
+    },
+    maps: ['eagle_spires', 'riot_junction', 'sandgate', 'frost_basin', 'canyon'],
+  },
 ];
+
+/** The Fireteams party preset wants at least this many a side (two squads of 4). */
+export const FIRETEAMS_SIDE_MIN = 8;
+
+/**
+ * The Fireteams party preset's squad size for a side of `side` players: squads of 4 up to 14 a side (two or three
+ * squads, so a party of friends each leads one), 5 up to 17, 6 from 18 (four squads or more).
+ */
+export function fireteamPartySize(side: number): number {
+  return side >= 18 ? 6 : side >= 15 ? DEFAULT_FIRETEAM_SIZE : 4;
+}
+
+/** A map the menu has, as a party preset's map choice sees it (its key, modes, recommended most, one of the suite). */
+export interface PartyMapCandidate {
+  key: string;
+  modes: readonly string[];
+  recommendedMax: number;
+  official: boolean;
+}
+
+/**
+ * Where a party preset plays: null to stay on the current map (it can play it and it suits), else the first of the
+ * preset's `maps` the menu has (official, playing the preset's mode) that fits this device, else the first of them
+ * here at all; null when the preset has no maps or none is here.
+ */
+export function partyMapMove(p: PartyPreset, map: MapDocument, offered: readonly GameMode[], deviceMax: number, maps: readonly PartyMapCandidate[]): string | null {
+  if (!p.maps?.length) return null;
+  if (!partyUnavailable(p, map, offered) && !p.suits?.(map, offered, deviceMax)) return null;
+  const mode = p.mode.teams ?? p.mode.ffa!;
+  const here = p.maps.map((k) => maps.find((m) => m.key === k && m.official && m.modes.includes(mode))).filter((m): m is PartyMapCandidate => !!m);
+  return (here.find((m) => m.recommendedMax <= deviceMax) ?? here[0])?.key ?? null;
+}
 
 /** Whether a map has teams of its own: a team layout, or spawn points by side. */
 export const mapHasTeams = (map: MapDocument): boolean => !!map.teamSetup || map.entities.some((e) => e.kind === 'spawn' && !!e.faction);
@@ -348,6 +405,12 @@ export function applyParty(p: PartyPreset, setup: MatchSetup, map: MapDocument, 
   for (const v of SETUP_VARIANTS) if (variantFor(v, mode) && partyWants(p, v) && !variantOn(v, out, map)) out = setVariant(out, v.id, true);
   const pick = sizePresets(mode, map, { deviceMax: o.deviceMax, pickPlayers: o.pickPlayers ?? mapPickPlayers(map.metadata.recommendedPlayers) }).find((x) => x.id === 'pick');
   if (pick) Object.assign(out, presetPatch(pick));
+  // Fireteams: a squad size for the layout (the standard one is left out, as the size picker does).
+  if (p.squadSize && out.fireteams) {
+    const size = p.squadSize(Math.max(...(out.teams ?? mapPickTeams(map, mode, o.deviceMax))));
+    if (size === DEFAULT_FIRETEAM_SIZE) delete out.squadSize;
+    else out.squadSize = size;
+  }
   if (out.playerTeam !== undefined && out.teams && out.playerTeam >= out.teams.length) out.playerTeam = out.teams.length - 1;
   return out;
 }

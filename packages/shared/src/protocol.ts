@@ -425,6 +425,8 @@ export interface ScoreEntry {
   x?: number;
   /** Objective plays: flag captures, bomb plants and defuses, hostage rescues (only when > 0). */
   o?: number;
+  /** Fireteams: their squad points (sim/squadScores.ts; only when > 0). */
+  p?: number;
 }
 
 export interface RosterEntry {
@@ -633,7 +635,8 @@ export type ServerMessage =
       /**
        * Fireteams' squads (sim/fireteams.ts squadSnapshot; the squad HUD, its minimap markers and its colour): per squad
        * [id, team index, leader slot (-1: none), order (ORDER_KINDS index), spacing (SQUAD_SPACINGS index), formation
-       * (FORMATION_SHAPES index), a person leads it (1/0), the order's place x and z (dm; 0 0 with none, see the order),
+       * (FORMATION_SHAPES index), a person leads it (1/0), the order's place x and z (dm; 0 0 with none, see the order), the
+       * squad's points (Part 3, sim/squadScores.ts),
        * ...member slots]. Absent: the variant is off. Sent when it changes.
        */
       fs?: number[][];

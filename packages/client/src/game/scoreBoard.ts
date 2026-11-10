@@ -12,6 +12,8 @@
  * - co-op as one list.
  * Each team's list scrolls inside its column; the local player's row is
  * sticky, so it stays in view (pinned to the list's bottom or top edge).
+ * Fireteams (docs/FIRETEAMS_PLAN.md, Part 3): each team's rows grouped by
+ * squad under a line with the squad's name and points (its MVP at the end).
  */
 
 /** One player's line. Strings are shown as they are (already formatted). */
@@ -33,6 +35,10 @@ export interface BoardRow {
   obj: string;
   /** Round trip ('' offline or for bots). */
   ping: string;
+  /** Fireteams: their squad points ('' when the board has no points column). */
+  pts?: string;
+  /** Fireteams: they lead their squad (marked ◆ unless a team leader's ★). */
+  squadLead?: boolean;
   leader: boolean;
   dead: boolean;
   me: boolean;
@@ -46,6 +52,23 @@ export interface BoardGroup {
   score: number;
   /** Top score among the teams (ties included). */
   lead: boolean;
+  rows: BoardRow[];
+  /** Fireteams: the team's squads, best first; `rows` then has them all in this order. */
+  squads?: BoardSquad[];
+}
+
+/** A Fireteams squad's part of its team's list. */
+export interface BoardSquad {
+  id: number;
+  /** "Rex's squad" (its leader's name). */
+  name: string;
+  points: number;
+  /** The end of the match: the squad's MVP ("Ava · 120"), else ''. */
+  mvp: string;
+  /** Best Squad (the end of the match). */
+  best: boolean;
+  /** Your squad. */
+  mine: boolean;
   rows: BoardRow[];
 }
 
@@ -61,6 +84,8 @@ export interface BoardData {
   cls: boolean;
   obj: string | null;
   ping: boolean;
+  /** Fireteams: a points column (squad points). */
+  pts?: boolean;
 }
 
 export interface BoardLayout {
@@ -140,6 +165,15 @@ interface RowEls {
   d: HTMLElement;
   obj: HTMLElement;
   ping: HTMLElement;
+  pts: HTMLElement;
+  key: string;
+}
+
+interface SquadEls {
+  el: HTMLElement;
+  name: HTMLElement;
+  mvp: HTMLElement;
+  points: HTMLElement;
   key: string;
 }
 
@@ -157,9 +191,11 @@ export class ScoreBoard {
   private body: HTMLElement | null = null;
   private groups: GroupEls[] = [];
   private rows = new Map<number, RowEls>();
+  /** Fireteams' squad lines, by `team:squad`. */
+  private squadEls = new Map<string, SquadEls>();
   private shape = '';
   /** Which optional cells the rows have (set with the layout). */
-  private cells = { rank: false, cls: false, obj: false, ping: false };
+  private cells = { rank: false, cls: false, obj: false, ping: false, pts: false };
 
   /**
    * `maxWidth`: the most room the board may take (px); it uses less when the
@@ -177,6 +213,7 @@ export class ScoreBoard {
     this.head = this.note = this.body = null;
     this.groups = [];
     this.rows.clear();
+    this.squadEls.clear();
     this.shape = '';
   }
 
@@ -184,7 +221,7 @@ export class ScoreBoard {
     const width = Math.min(this.opts.maxWidth, (window.innerWidth || this.opts.maxWidth) * 0.96 - 24);
     const layout = boardLayout(data, width);
     const columns = data.kind === 'ffa' ? ffaColumns(data.groups[0]?.rows ?? [], layout.cols) : data.groups.map((g) => g.rows);
-    const flags = `${data.cls ? 1 : 0}${data.obj ?? '-'}${data.ping ? 1 : 0}`;
+    const flags = `${data.cls ? 1 : 0}${data.obj ?? '-'}${data.ping ? 1 : 0}${data.pts ? 1 : 0}`;
     const shape = `${layout.name}|${layout.cols}|${layout.dense}|${layout.tall}|${flags}|${data.kind === 'ffa' ? columns.length : data.groups.map((g) => g.id).join(',')}`;
     if (shape !== this.shape || !this.body || this.body.parentNode !== this.root) this.build(data, layout, columns.length, shape);
     if (this.head!.textContent !== data.head) this.head!.textContent = data.head;
@@ -204,14 +241,24 @@ export class ScoreBoard {
     // Rows: patch each, then put each list in order.
     const seen = new Set<number>();
     let rank = 0;
+    const squadsSeen = new Set<string>();
     columns.forEach((rows, i) => {
       const ge = this.groups[i]!;
       const want: HTMLElement[] = [ge.hd];
-      for (const r of rows) {
+      const squads = data.kind === 'teams' ? data.groups[i]?.squads : undefined;
+      const add = (r: BoardRow) => {
         rank++;
         seen.add(r.slot);
         want.push(this.row(r, data.kind === 'ffa' ? rank : 0).el);
-      }
+      };
+      if (squads) {
+        for (const q of squads) {
+          const key = `${data.groups[i]!.id}:${q.id}`;
+          squadsSeen.add(key);
+          want.push(this.squadLine(key, q).el);
+          for (const r of q.rows) add(r);
+        }
+      } else for (const r of rows) add(r);
       const have = ge.list.children;
       let same = have.length === want.length;
       for (let j = 0; same && j < want.length; j++) same = have[j] === want[j];
@@ -222,19 +269,49 @@ export class ScoreBoard {
       r.el.remove();
       this.rows.delete(slot);
     }
+    for (const [key, q] of this.squadEls) {
+      if (squadsSeen.has(key)) continue;
+      q.el.remove();
+      this.squadEls.delete(key);
+    }
+  }
+
+  /** A squad's line (Fireteams): its name, its MVP at the end, its points; patched in place. */
+  private squadLine(key: string, q: BoardSquad): SquadEls {
+    let e = this.squadEls.get(key);
+    if (!e) {
+      const el = make('div', 'sb-squad');
+      el.dataset.squad = String(q.id);
+      e = { el, name: make('span', 'sb-sqname'), mvp: make('span', 'sb-sqmvp'), points: make('b', 'sb-sqpts'), key: '' };
+      el.append(e.name, e.mvp, e.points);
+      this.squadEls.set(key, e);
+    }
+    const k = `${q.name}|${q.points}|${q.mvp}|${q.best ? 1 : 0}|${q.mine ? 1 : 0}`;
+    if (k === e.key) return e;
+    e.key = k;
+    e.name.textContent = q.name;
+    e.mvp.textContent = q.mvp ? `MVP ${q.mvp}` : '';
+    e.mvp.hidden = !q.mvp;
+    e.points.textContent = String(q.points);
+    e.points.title = 'Squad points: a kill 10, an assist 5, an objective 30, a second on the hill 1';
+    e.el.classList.toggle('best', q.best);
+    e.el.classList.toggle('mine', q.mine);
+    e.el.title = q.best ? 'Best Squad' : '';
+    return e;
   }
 
   private build(data: BoardData, layout: BoardLayout, count: number, shape: string): void {
     this.root.replaceChildren();
     this.rows.clear();
     this.shape = shape;
-    this.cells = { rank: data.kind === 'ffa', cls: data.cls, obj: !!data.obj, ping: data.ping };
+    this.cells = { rank: data.kind === 'ffa', cls: data.cls, obj: !!data.obj, ping: data.ping, pts: !!data.pts };
+    this.squadEls.clear();
     this.root.classList.remove('sb-t2', 'sb-t4', 'sb-tn', 'sb-ffa', 'sb-coop', 'sb-dense');
     this.root.classList.add('sb', `sb-${layout.name}`);
     this.root.classList.toggle('sb-dense', layout.dense);
     this.root.style.setProperty('--sb-cols', String(layout.cols));
     // Cell widths: rank, mark + name, class, K, D, objective, ping.
-    const tpl = [data.kind === 'ffa' ? '2.1em' : '', 'minmax(0, 1fr)', data.cls ? 'minmax(0, 5.6em)' : '', '2.3em', '2.3em', data.obj ? '3.1em' : '', data.ping ? '2.9em' : ''].filter(Boolean).join(' ');
+    const tpl = [data.kind === 'ffa' ? '2.1em' : '', 'minmax(0, 1fr)', data.cls ? 'minmax(0, 5.6em)' : '', '2.3em', '2.3em', data.obj ? '3.1em' : '', data.pts ? '2.9em' : '', data.ping ? '2.9em' : ''].filter(Boolean).join(' ');
     this.root.style.setProperty('--sb-tpl', tpl);
     if (this.opts.sizeSelf) this.root.style.width = `min(${Math.round(layout.cols * (layout.name === 'tn' ? 270 : 330) + 32)}px, 96vw)`;
     this.head = make('div', 'sb-head');
@@ -273,6 +350,7 @@ export class ScoreBoard {
       th('sb-n', 'K', 'Kills');
       th('sb-n', 'D', 'Deaths');
       if (data.obj) th('sb-n', data.obj);
+      if (data.pts) th('sb-n', 'Pts', 'Squad points: a kill 10, an assist 5, an objective 30, a second on the hill 1');
       if (data.ping) th('sb-n', 'Ping', 'Round trip (ms)');
       list.append(hd);
       el.append(list);
@@ -293,7 +371,7 @@ export class ScoreBoard {
       const mark = make('i', 'sb-mark');
       const name = make('span', 'sb-nm');
       nameCell.append(mark, name);
-      e = { el, rank: rk, mark, name, cls: make('span', 'sb-cls'), k: make('span', 'sb-n'), d: make('span', 'sb-n'), obj: make('span', 'sb-n'), ping: make('span', 'sb-n sb-ping'), key: '' };
+      e = { el, rank: rk, mark, name, cls: make('span', 'sb-cls'), k: make('span', 'sb-n'), d: make('span', 'sb-n'), obj: make('span', 'sb-n'), ping: make('span', 'sb-n sb-ping'), pts: make('span', 'sb-n sb-pts'), key: '' };
       // Same cells as the header row.
       const f = this.cells;
       if (f.rank) el.append(rk);
@@ -301,10 +379,11 @@ export class ScoreBoard {
       if (f.cls) el.append(e.cls);
       el.append(e.k, e.d);
       if (f.obj) el.append(e.obj);
+      if (f.pts) el.append(e.pts);
       if (f.ping) el.append(e.ping);
       this.rows.set(r.slot, e);
     }
-    const key = `${rank}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.leader}|${r.dead}|${r.me}|${r.party ? 1 : 0}`;
+    const key = `${rank}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.pts ?? ''}|${r.squadLead ? 1 : 0}|${r.leader}|${r.dead}|${r.me}|${r.party ? 1 : 0}`;
     if (key === e.key) return e;
     e.key = key;
     const set = (el: HTMLElement, text: string) => {
@@ -317,10 +396,11 @@ export class ScoreBoard {
     e.name.classList.toggle('guest', r.who === 'guest');
     e.name.classList.toggle('party', !!r.party);
     e.name.title = [r.party ? 'In your party' : '', r.who === 'acct' ? 'Signed in: a verified account' : r.who === 'guest' ? 'Guest: not signed in, so the name is just what they typed' : ''].filter(Boolean).join(' · ');
-    set(e.mark, r.leader ? '★' : '●');
+    set(e.mark, r.leader ? '★' : r.squadLead ? '◆' : '●');
     e.mark.style.color = r.leader ? '' : r.color;
     e.mark.classList.toggle('leader', r.leader);
-    e.mark.title = r.leader ? 'Team leader' : '';
+    e.mark.title = r.leader ? 'Team leader' : r.squadLead ? 'Squad leader' : '';
+    set(e.pts, r.pts ?? '');
     set(e.cls, r.cls);
     set(e.k, String(r.k));
     set(e.d, String(r.d));

@@ -77,6 +77,7 @@ import type { CheckpointPlayer, MatchCheckpoint } from '../net/handoff.ts';
 import { CLASS_DEFS, ClassPlay, classFromSay, classIndex, classesInPlay, type ClassState } from './classes.ts';
 import { ARENA_DISC, DISC_KNOCK_CREDIT_SECONDS, DISC_SPAWN_GUARD_SECONDS, DISC_POWERS, DISC_POWER_SHOTS, discThrows, dodgeDisc, keepOnDeck, splitVelocities, type DiscPower } from './discs.ts';
 import { createMode, type ModeLogic } from './modes/index.ts';
+import { KothMode, onHill } from './modes/koth.ts';
 import { teamHome, type BotTripSpec } from './modes/types.ts';
 import { findCorridors, type Trip } from '../nav/corridors.ts';
 import { Scenario, teamAllows } from './scenario.ts';
@@ -1697,6 +1698,7 @@ export class Match {
     }
     this.activity.delete(slot);
     if (this.phase === 'playing') this.mode?.onLeave(c);
+    this.fireteams?.scores.leave(c.slot);
     this.classes?.onLeave(c);
     this.roulette?.forget(slot);
     this.readySlots.delete(slot);
@@ -2732,6 +2734,8 @@ export class Match {
     // Objective first (Part 2): the mode gives a bot-led squad one role for all of it (CTF: attack or defend together).
     this.mode?.botUnits?.(this.squadUnit);
     if (this.phase === 'playing' && this.tick % 6 === 0) this.squadNotes(ft.step(this.tick, this.squadWorld));
+    // Squad scores (Part 3): objective plays as they're counted, and King of the Hill's seconds on the hill.
+    if (this.phase === 'playing' && this.tick % 6 === 0) this.tallySquads(this.tick % TICK_RATE === 0);
     // A bot leader in a fight: its members not in one are told where its enemy is (once a second, squads staggered).
     if (this.phase === 'playing') {
       for (const s of ft.squads) {
@@ -2745,6 +2749,23 @@ export class Match {
         }
       }
     }
+  }
+
+  /** Fireteams: the squad a slot is in now (its id), for the squad scores. */
+  private readonly squadIdOf = (slot: number): number | undefined => this.fireteams?.squadOf(slot)?.id;
+
+  /**
+   * Squad scores (sim/squadScores.ts): each player's objective plays since last counted (the scoreboard's objective
+   * column, however the mode credits it) go to them and their squad; `second`: King of the Hill's second on the hill
+   * for every living player of the team alone holding it.
+   */
+  private tallySquads(second: boolean): void {
+    const ft = this.fireteams;
+    if (!ft) return;
+    for (const c of this.combatants()) ft.scores.objectives(c.slot, c.objective, ft.squadOf(c.slot)?.id);
+    const koth = second && this.mode instanceof KothMode ? this.mode : null;
+    if (!koth || !koth.holder || koth.holder === 'contested') return;
+    for (const c of this.combatants()) if (c.alive && c.faction === koth.holder && onHill(koth.hill, c.move.pos)) ft.scores.hill(c.slot, ft.squadOf(c.slot)?.id);
   }
 
   /** Fireteams: a bot's unit for the mode's roles (its bot-led squad's id; null: in a person's squad; undefined: none). */
@@ -5518,6 +5539,8 @@ export class Match {
     victim.health -= dmg;
     victim.hurtAt = this.tick;
     if (attacker && attacker !== victim) {
+      // Fireteams' assists (sim/squadScores.ts): an enemy's hit on a player or bot.
+      if (this.fireteams && !attacker.npc && !victim.npc && this.hostile(attacker, victim)) this.fireteams.scores.hurt(attacker.slot, victim.slot, this.tick);
       const k = victim.size;
       const at = { x: victim.move.pos.x, y: victim.move.pos.y + (head ? 1.75 : 1.2) * k, z: victim.move.pos.z };
       this.noteDealt(attacker, hit, (head ? 1 : 0) | (armoured ? 2 : 0) | (victim.health <= 0 ? 4 : 0), at, victim.slot);
@@ -5578,6 +5601,8 @@ export class Match {
       // Awards and callouts (sim/awards.ts): a scoring kill, else just a death (a fall, their own grenade, a team kill).
       const scored = !!credited && credited !== victim && !credited.npc;
       for (const call of this.awards.kill(scored ? credited!.slot : null, victim.slot)) this.pendingEvents.push({ e: 'callout', ...call });
+      // Fireteams' squad scores (Part 3): the kill and its assists, to each player and the squad they're in.
+      if (this.fireteams) this.fireteams.scores.kill(scored ? credited!.slot : null, victim.slot, this.tick, TICK_RATE, this.squadIdOf);
     }
     if (victim.npc) {
       victim.npc.removeAt = this.tick + TICK_RATE * 2;
@@ -6092,7 +6117,10 @@ export class Match {
     this.phaseEndTick = this.tick + this.rules.intermissionTicks;
     // The match's awards (and Roulette's), with the round's end: the scoreboard shows them.
     const players = this.combatants().filter((c) => c.kind !== 'npc');
-    const aw = [...this.awards.awards(players.map((c) => c.slot)), ...(this.roulette ? this.roulette.awards(players) : [])];
+    // (Fireteams: the objective plays of this last tick counted first.)
+    if (this.fireteams) this.tallySquads(false);
+    const here = new Set(players.map((c) => c.slot));
+    const aw = [...this.awards.awards(players.map((c) => c.slot)), ...(this.fireteams ? this.fireteams.scores.awards(this.fireteams.squads, here) : []), ...(this.roulette ? this.roulette.awards(players) : [])];
     if (aw.length) this.pendingEvents.push({ e: 'awards', aw });
     // (Lunar's storm is over with the round.)
     if (this.roulette) this.phys.gravity = this.roulette.calmGravity();
@@ -6298,6 +6326,7 @@ export class Match {
     this.classes?.reset();
     this.roulette?.reset();
     this.awards.reset();
+    this.fireteams?.scores.reset();
     for (const c of this.combatants()) this.spawnOrQueue(c);
     if (this.opts.startGate) {
       // Every round opens with the countdown (round_start comes when it ends).
@@ -6528,7 +6557,11 @@ export class Match {
   }
 
   scores(): ScoreEntry[] {
-    return this.combatants().map((c) => ({ s: c.slot, k: c.kills, d: c.deaths, ...(c.selfKills ? { x: c.selfKills } : {}), ...(c.objective ? { o: c.objective } : {}) }));
+    const ft = this.fireteams;
+    return this.combatants().map((c) => {
+      const pts = ft ? ft.scores.points(c.slot) : 0;
+      return { s: c.slot, k: c.kills, d: c.deaths, ...(c.selfKills ? { x: c.selfKills } : {}), ...(c.objective ? { o: c.objective } : {}), ...(pts ? { p: pts } : {}) };
+    });
   }
 
   /** Credit objective plays (the scoreboard's Caps / Bomb / Rescues column) to the player who made them. */
@@ -6562,7 +6595,7 @@ export class Match {
       sc: this.scenario.delta(),
       np: this.npcSnapshots(),
       ...(this.rules.leaders && this.teams ? { ld: this.teams.map((t) => this.leaderOf.get(t.id) ?? -1) } : {}),
-      ...(this.fireteams && this.teams ? { fs: this.fireteams.squads.map((q) => squadSnapshot(q, this.teams!.findIndex((t) => t.id === q.team))) } : {}),
+      ...(this.fireteams && this.teams ? { fs: this.fireteams.squads.map((q) => squadSnapshot(q, this.teams!.findIndex((t) => t.id === q.team), this.fireteams!.scores.squad(q.id).points)) } : {}),
       ...(this.roulette?.snapshot() ? { rl: this.roulette.snapshot()! } : {}),
       ...(this.mode ? { md: this.mode.snapshot() } : this.zombies ? { md: { ts: [this.zombies.wave], zb: this.zombies.snapshot() } } : {}),
     };
