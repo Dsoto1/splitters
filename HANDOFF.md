@@ -8,7 +8,7 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
-**Mobile audit (`wip/mobile-audit`, agent, 2026-11-10; owner-approved). Full report and ranked proposals for the owner to
+**Mobile audit (`wip/mobile-audit`, agent, 2026-11-10; owner-approved; green on `check/mobile-audit` at 6b66630, run 42772271488, `party` passed on the re-run of its job; LANDED). Full report and ranked proposals for the owner to
 pick from: docs/MOBILE_AUDIT.md.**
 - **Fixed:**
   - First-person guns: 8 bulky sci-fi guns lowered to cover at most 11 % of the screen (Flak 13.8 → 10.5 %);
