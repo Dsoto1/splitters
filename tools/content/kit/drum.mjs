@@ -67,7 +67,8 @@ export function drumMesh(seed, size, g, look, level) {
     add(R, h - chime);
     add(R * 0.96, h);
   }
-  const between = (y) => band && y > hoops[0] * h + 0.03 && y < hoops[hoops.length - 1] * h - 0.03;
+  // The painted band between the hoops (its rows' own vertices: the hoops keep their paint).
+  const between = (y) => band && y >= hoops[0] * h + 0.03 - 1e-6 && y <= hoops[hoops.length - 1] * h - 0.03 + 1e-6;
   const colour = (p, n, row) => {
     const worn = crest.has(row) || crest.has(row + 1);
     let c = between(p[1]) ? band : paint;

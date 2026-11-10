@@ -12,7 +12,7 @@
       "surface": "thin_wood",
       "detail": "cardboard",
       "breakable": { "health": 10, "debris": "#c8a070" },
-      "generator": { "kind": "carton", "bevel": 0.012, "bow": 0.006, "tape": 0.05, "grid": 3 },
+      "generator": { "kind": "carton", "bevel": 0.012, "bow": 0.006, "tape": 0.05, "flap": 0.14, "tapeDown": 0.3 },
       "lods": [{ "distance": 0 }, { "distance": 10 }, { "distance": 30 }],
       "variants": [
         { "index": 0, "name": "kraft", "seed": 3101, "look": { "board": "#b48e60", "tape": "#c9a873", "jitter": 0.05, "grime": 0.2 } },

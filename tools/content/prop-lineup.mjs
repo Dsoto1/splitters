@@ -11,7 +11,7 @@
 // The out dir must be outside the repo (default: <tmp>/tiletrigger-prop-lineup). Every pack with furniture or everyday
 // props (chairs, stools, sofas, benches, tables, desks, counters, beds, shelves, cabinets, doors, toilets, sinks,
 // fridges, lamps, kitchen and office pieces) by default; PACKS=<pack ids> for some packs, ONLY=<prop ids> for some
-// props (one sheet, "only"). PER_ROW=<n> props a row (default 5). SCALE=<factor> draws every prop that much bigger (a
+// props (one sheet, "only"; kit families and variants by id too: kit.crate.wood, kit.crate.wood#2). PER_ROW=<n> props a row (default 5). SCALE=<factor> draws every prop that much bigger (a
 // "game size" furniture factor to show the owner; the catalogue is unchanged). CHROMIUM=<path> uses that browser build.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -32,7 +32,9 @@ const SCALE = Number(process.env.SCALE ?? 1);
 const manifest = loadPropManifest();
 const only = process.env.ONLY?.split(',').filter(Boolean);
 const packs = process.env.PACKS?.split(',').filter(Boolean);
-const chosen = manifest.props.filter((p) => (only ? only.includes(p.id) : isFurniture(p) && (!packs || packs.includes(p.pack))));
+// Kit families and their variants by id (`kit.crate.wood`, `kit.crate.wood#2`) go on the sheet as they are.
+const kitIds = (only ?? []).filter((id) => id.startsWith('kit.')).map((id) => ({ id, pack: 'only', kit: true }));
+const chosen = [...manifest.props.filter((p) => (only ? only.includes(p.id) : isFurniture(p) && (!packs || packs.includes(p.pack)))), ...kitIds];
 const byPack = new Map();
 for (const p of chosen) {
   const key = only ? 'only' : p.pack;
@@ -67,7 +69,7 @@ for (const [pack, props] of byPack) {
   const tiles = [];
   let top = LABEL * 2;
   for (const row of rows) {
-    const ids = row.map((p) => `prop.${p.id}`);
+    const ids = row.map((p) => (p.kit ? p.id : `prop.${p.id}`));
     for (const [col, view] of ['eye', 'side'].entries()) {
       await page.evaluate(([ids, view, scale]) => window.__lineup.show(ids, view, ids.map(() => scale)), [ids, view, SCALE]);
       const shot = await page.screenshot({ type: 'png' });

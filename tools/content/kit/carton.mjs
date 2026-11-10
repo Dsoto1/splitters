@@ -7,8 +7,8 @@ import { noise3 } from '../env/noise.mjs';
 import { Mesh, clamp01, groundShade, hex, quadN, scale3, standIn, triN } from './geom.mjs';
 
 /**
- * Settings `g`: `bevel` (corner softening, m), `bow` (how far the sides bow out, m), `tape` (tape width, m), `grid`
- * (side cells across, level 0). `look`: `board` (hex), `tape` (hex), `label` (hex, or none), `cross` (a second
+ * Settings `g`: `bevel` (corner softening, m), `bow` (how far the sides bow out, m), `tape` (tape width, m), `flap`
+ * (the flaps' depth down the sides, a share of the height), `tapeDown` (how far the tape runs down them). `look`: `board` (hex), `tape` (hex), `label` (hex, or none), `cross` (a second
  * tape across), `jitter`, `grime`, `crease` (how dark the folds are).
  */
 export function cartonMesh(seed, size, g, look, level) {
@@ -23,14 +23,15 @@ export function cartonMesh(seed, size, g, look, level) {
   const tw = g.tape;
   const bev = level === 0 ? g.bevel : 0;
   const bow = level === 0 ? g.bow : 0;
-  const cells = level === 0 ? g.grid ?? 4 : 1;
   const X = w / 2;
   const Z = d / 2;
   const grime = look.grime ?? 0.2;
   const tone = (c) => (p) => scale3(c, groundShade(p[1], 0.15, 1 - grime) * (1 - 0.12 * clamp01(n(p[0] * 9, p[1] * 9, p[2] * 9))));
-  // Labels sit on the +z face (lower middle), the tape runs over the top along x and down the ±x faces.
-  const labelCell = label ? [Math.floor(cells / 2) - (cells > 2 ? 1 : 0), Math.max(0, Math.floor(cells / 2) - 1)] : null;
-  // Sides: a grid of cells on each, the inner points bowed out (the bow tapers to 0 at the edges and corners).
+  // Each side is cut into columns and rows where its look changes: the top and bottom flaps' folds (a darker line),
+  // the tape's run down the ±x faces (and the +-z faces with `cross`), a label on the +z face. The inner points bow out
+  // (the bow tapers to 0 at the edges and corners).
+  const fold = h * (g.flap ?? 0.12);
+  const crease = scale3(board, 1 - (look.crease ?? 0.25));
   const side = (k, s) => {
     const ua = k === 0 ? 2 : 0;
     const half = k === 0 ? Z : X;
@@ -41,40 +42,40 @@ export function cartonMesh(seed, size, g, look, level) {
       const p = [0, 0, 0];
       const t = (u + half) / (2 * half);
       const bowAt = bow * Math.sin(Math.PI * t) * Math.sin(Math.PI * (v / h));
-      // Bevelled corners: the face stops `bev` short of the corner; the corner strip closes the gap.
       p[ua] = u;
       p[1] = v;
       p[k] = s * (plane - bow + bowAt);
       return p;
     };
-    const u0 = -half + bev;
-    const u1 = half - bev;
-    for (let i = 0; i < cells; i++)
-      for (let j = 0; j < cells; j++) {
-        const a0 = u0 + ((u1 - u0) * i) / cells;
-        const a1 = u0 + ((u1 - u0) * (i + 1)) / cells;
-        const b0 = (h * j) / cells;
-        const b1 = (h * (j + 1)) / cells;
+    const taped = level === 0 && (k === 0 || (look.cross && k === 2));
+    const labelled = level === 0 && label && k === 2 && s > 0;
+    const lw = Math.min(half * 0.9, 0.12);
+    const us = [-half + bev, ...(taped ? [-tw / 2, tw / 2] : []), ...(labelled ? [-half * 0.15 - lw / 2, -half * 0.15 + lw / 2] : []), half - bev].sort((a, b) => a - b);
+    const ft = 0.006;
+    const vs = level === 0 ? [0, fold - ft, fold, h * 0.38, h * 0.38 + lw * 0.7, h - fold, h - fold + ft, h * (1 - (g.tapeDown ?? 0.3)), h] : [0, h];
+    const V = [...new Set(vs)].sort((a, b) => a - b);
+    for (let i = 0; i + 1 < us.length; i++)
+      for (let j = 0; j + 1 < V.length; j++) {
+        const [a0, a1, b0, b1] = [us[i], us[i + 1], V[j], V[j + 1]];
+        const mu = (a0 + a1) / 2;
+        const mv = (b0 + b1) / 2;
         let c = board;
-        if (labelCell && k === 2 && s > 0 && i === labelCell[0] && j === labelCell[1]) c = label;
-        // The tape's down-run: the middle columns of the top row on the ±x faces.
-        const mid = (a0 + a1) / 2;
-        if (k === 0 && j === cells - 1 && Math.abs(mid) < tw && level === 0) c = tape;
-        if (look.cross && k === 2 && j === cells - 1 && Math.abs(mid) < tw && level === 0) c = tape;
+        if (level === 0 && ((mv > fold - ft && mv < fold) || (mv > h - fold && mv < h - fold + ft))) c = crease;
+        if (labelled && Math.abs(mu + half * 0.15) < lw / 2 && mv > h * 0.38 && mv < h * 0.38 + lw * 0.7) c = label;
+        if (taped && Math.abs(mu) < tw / 2 && mv > h * (1 - (g.tapeDown ?? 0.3))) c = tape;
         quadN(m, P(a0, b0), P(a1, b0), P(a1, b1), P(a0, b1), want, tone(c));
       }
   };
   for (const [k, s] of [[0, 1], [0, -1], [2, 1], [2, -1]]) side(k, s);
   // Softened corners: a strip at each vertical corner from one face's edge to the next, darker (a fold).
   if (bev > 0) {
-    const fold = scale3(board, 1 - (look.crease ?? 0.25));
     for (const sx of [-1, 1])
       for (const sz of [-1, 1]) {
         const a0 = [sx * (X - bow), 0, sz * (Z - bev)];
         const b0 = [sx * (X - bev), 0, sz * (Z - bow)];
         const a1 = [a0[0], h, a0[2]];
         const b1 = [b0[0], h, b0[2]];
-        quadN(m, a0, b0, b1, a1, [sx, 0, sz], tone(fold));
+        quadN(m, a0, b0, b1, a1, [sx, 0, sz], tone(crease));
       }
   }
   // The top: two flaps meeting along x under the tape (strips side by side, never on top of each other).
