@@ -147,6 +147,8 @@ export const COUNTDOWN_SECONDS = 3;
 const RAM_MIN_SPEED = 5;
 /** A vehicle nobody drives brakes at this rate (m/s²) when its data has no `vehicle.idleBrake`. */
 const DEFAULT_IDLE_BRAKE = 10;
+/** A rider steps out of a vehicle on the ground only where there is ground within this far (m) under the spot (leaveMount, exitReachable). */
+const EXIT_STEP_DOWN = 2;
 /** The share of a vehicle's half width a bot's route must be clear for (MountView.routeHalfWidth) without `vehicle.routeFit`: its probe's (0.95). */
 const ROUTE_FIT = 0.95;
 const RAM_DAMAGE = 8;
@@ -4473,10 +4475,32 @@ export class Match {
       const spot = mountToWorld(m.pos, m.yaw, o);
       // Room to stand: nothing solid from the knees to above the head (a ray starting inside a wall hits at once).
       if (this.physics.raycastHit({ x: spot.x, y: spot.y + 0.4, z: spot.z }, { x: 0, y: 1, z: 0 }, PLAYER.height)) continue;
+      if (!this.exitReachable(m, o, spot)) continue;
       c.move = this.bailOut({ x: spot.x, y: spot.y + 0.3, z: spot.z });
       return;
     }
     c.move = this.bailOut({ x: m.pos.x, y: m.pos.y + m.def.half[1] * 2 + 0.2, z: m.pos.z });
+  }
+
+  /**
+   * A side's step-out spot (leaveMount) is on this side of whatever the hull is parked against: nothing solid (a wall,
+   * a fence) between the hull's face and the spot, at the knees and at the chest; and ground under it within
+   * EXIT_STEP_DOWN (or water; a flyer's rider may step out anywhere, under the parachute when high): a buggy parked along Riot Junction's east wall put a
+   * rider beyond the wall, over the void outside the street, and it fell to the slab 4 m under the street with no
+   * way out (gunplay pass 3's find).
+   */
+  private exitReachable(m: MountRt, o: readonly [number, number, number], spot: Vec3): boolean {
+    const len = Math.hypot(o[0], o[2]);
+    const face = Math.abs(o[0]) > 0 ? m.def.half[0] : m.def.half[2];
+    const dir = { x: (spot.x - m.pos.x) / len, y: 0, z: (spot.z - m.pos.z) / len };
+    const reach = len - face + PLAYER.radius;
+    for (const h of [0.5, 1.2]) {
+      const from = { x: m.pos.x + dir.x * (face + 0.02), y: spot.y + h, z: m.pos.z + dir.z * (face + 0.02) };
+      if (this.physics.moveRay(from, dir, reach) !== null) return false;
+    }
+    // (A flyer in the air: out under the parachute. Afloat: into the water.)
+    if (m.def.vehicle?.fly || liquidAt(this.liquids, { x: spot.x, y: spot.y + 0.1, z: spot.z })) return true;
+    return this.physics.moveRay({ x: spot.x, y: spot.y + 0.4, z: spot.z }, { x: 0, y: -1, z: 0 }, 0.4 + EXIT_STEP_DOWN) !== null;
   }
 
   /** Stepping out at `at`: high up (a flyer in the air), the parachute's automatic opener is armed. */

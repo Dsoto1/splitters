@@ -553,12 +553,14 @@ export class PhysicsWorld {
   /**
    * True when no world collider (level, door, crate, built piece; not `skip`) overlaps the upright box. `levelOnly`:
    * only the level itself counts (its boxes, environment shapes and terrain; not vehicles, doors or built pieces).
+   * `yaw` turns the box about the vertical (a vehicle's hull along its heading: bots/vehicles.ts hullFits).
    */
-  boxClear(center: Vec3, half: Vec3, skip?: RAPIER.Collider, levelOnly = false): boolean {
+  boxClear(center: Vec3, half: Vec3, skip?: RAPIER.Collider, levelOnly = false, yaw = 0): boolean {
     if (this.dirty) this.commit();
     const shape = new RAPIER.Cuboid(Math.max(0.01, half.x), Math.max(0.01, half.y), Math.max(0.01, half.z));
     const level = levelOnly ? (c: RAPIER.Collider) => this.staticBoxes.has(c.handle) || this.staticShapes.has(c.handle) || c.collisionGroups() >>> 16 === GROUP_TERRAIN : undefined;
-    return !this.world.intersectionWithShape(center, { x: 0, y: 0, z: 0, w: 1 }, shape, undefined, WORLD_ONLY_QUERY, skip, undefined, level);
+    const rot = yaw ? { x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) } : { x: 0, y: 0, z: 0, w: 1 };
+    return !this.world.intersectionWithShape(center, rot, shape, undefined, WORLD_ONLY_QUERY, skip, undefined, level);
   }
 
   /** True when nothing static blocks the segment a -> b. */
