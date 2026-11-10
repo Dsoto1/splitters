@@ -591,7 +591,7 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
-**Next in line to land: Community maps** (`check/community-maps` at 3a43a6c, community maps agent, 2026-11-10), now first in line (the tour's Help button landed). Not landed: run 42802508683 is red only on the e2e `fireteams` flow ("a tap of B opens the quick-message menu" in 3 of 4 attempts, once "the squad holds"; that check also failed once on fireteams part 3's own run 42780770897); every other flow passed, `community`, `lobby` and `editor` included. The one allowed re-run is used: the owner or the next session decides (re-run, or look at `fireteams` first). Landing lock released.
+**Landing now: Community maps (`check/community-maps`; community maps agent), please hold code pushes to main.** (2026-11-10, second try: the `fireteams` flow's tap of B and squad-holds checks hardened on `wip/community-maps`; one merge of origin/main, one check run, then a fast-forward.)
 
 **Fixing the flaky `fireteams` check** ("a tap of B opens the quick-message menu"; owner, 2026-11-10: fix the test before Community maps lands): MapMaker lane, `wip/mapmaker-fix-fireteams-test`. Claimed: `e2e/run.mjs` `fireteamsFlow` only (no game code unless the cause is there; if it is, I'll say so here first).
 
