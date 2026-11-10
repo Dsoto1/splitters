@@ -43,11 +43,48 @@ owner-approved audit candidates 7 and 8; landed on main from its green `check/gu
   - **Before → after, 28 matches on main after the MapMaker train:** kills a minute 32.3 → 32.1; stuck 0.99 → 0.93
     a bot-minute; idle out of a fight 4.4 → 4.4 %. Hit rates rose for 12 of 14 guns (the shotguns +21-37 points, the
     Precision Rifle 8 → 21 %). `bot-report --check` passes.
-  - **Found, not fixed:** on the rebuilt Riot Junction a bot can end up 4 m under the street by a buggy's spawn,
-    at (196, -4, 42), with no route out for 105 s. Repro:
-    `pnpm bot-report riot_junction --mode=core.tdm --seeds=1 --set=military --spells`. For the owner or the vehicles
-    and nav lane.
+  - **Found here, fixed since** (`wip/vehicle-routing`, below): on the rebuilt Riot Junction a bot could end up 4 m
+    under the street by a buggy's spawn, at (196, -4, 42), with no route out for 105 s.
   - `botDesirability` is still hand-set.
+
+**Bot vehicle routing and getting out by a wall (`wip/vehicle-routing`, agent, 2026-11-10; the MapMaker lane's Whiteout
+report and gunplay pass 3's Riot Junction find).** CHANGELOG "Bot vehicle routing and getting out by a wall".
+- **Vehicle routes (Whiteout Station).**
+  - **Cause:** `vehicleRouteFits` checked the foot route with `routeFits` only: a square box (the hull's half width,
+    from 0.9 m to the hull's top) every 2 m. Its height part was already right. But a doorway a little wider than the
+    hull passed even where the vehicle can't get through it: at a slant, or turning in it. The Snow Sled (1.3 m × 3 m)
+    met the hangar's 1.6 m north doors with the foot route's hard turn right in the doorway, and the west block's door
+    the same way. Old layout (sleds on the garage apron, commit 1024fcb), KotH seeds 1-4: 10 stalls (1,022 ticks)
+    at (4, 0, -12) and (8, 0, -28), 9 sleds given up on; TDM seed 2: 4 stalls at (-36..-40, 0, -8).
+  - **Fix:** `bots/vehicles.ts hullFits`, run after routeFits. The hull's own footprint (routeFit share across, full
+    length along) is turned to the route's heading every 0.75 m. Near a corner it is checked at both legs' headings
+    and between them. Its box runs from 0.45 m over the highest ground under its middle, nose and tail to its top
+    (less 0.15 m). It may drift off the line a step at a time (±1.2 m); before, the box could hop round a wall
+    between samples. `physics.boxClear` takes a `yaw`. The brain is unchanged: a route that doesn't fit at boarding
+    leaves the vehicle alone for 20 s; at the wheel the bot keeps the route it has or gets out.
+  - **Measured.** Old Whiteout layout, KotH seeds 1-4: stalls 10 → 0, give-ups 9 → 0.
+    TDM 240 s, seeds 1-2 on whiteout_station, riot_junction, iron_tide, canyon, runway_nine and frost_basin, main → this:
+    - stalls 37 (4,327 ticks) → 8 (689); wedges 3 → 1;
+    - kills 1,297 → 1,315; stuck recoveries 1,218 → 1,161 (iron_tide seed 1 rose, 139 → 275; seed 2 fell, 292 → 196);
+    - boarding tries 203 → 111: bots take vehicles less, only where they fit.
+    The current Whiteout layout (sleds at the road's west end) plays exactly as before (KotH seeds 1-4, TDM seeds 1-2):
+    no bot takes a sled. From there the way north goes through the west block's door, which a sled doesn't fit.
+  - **Tests:** `shared/test/vehicleRouteHull.test.ts`. On the Whiteout hangar, the apron → yard route passed routeFits
+    and fails now. Square on through the door fits; turning in the doorway or crossing it at 45° doesn't. The road
+    east still fits. A bot at the wheel on the apron never noses into the door (the test fails without the fix).
+- **Riot Junction: under the street (gunplay pass 3's find).**
+  - **Cause:** a game bug, not the map. A bot rode a Buggy that stopped against the street's east wall
+    (x 203.5..204.1). `leaveMount`'s first step-out spot was checked only for headroom, and it lay beyond the wall,
+    over the void outside the street (x 204.2). The bot fell to the slab at y -4.05 under the street and walked under
+    it to (196, -4, 42), with no navmesh there (195 s of noPath).
+  - **Fix:** `Match.exitReachable`. A spot needs nothing solid between the hull's face and it (rays at 0.5 and 1.2 m)
+    and ground within 2 m under it (or water; a flyer's rider may step out anywhere). Otherwise the next side, then
+    the roof. No map edit.
+  - **Repro after:** `pnpm bot-report riot_junction --mode=core.tdm --seeds=1 --set=military --spells`. Longest spell
+    195 s (noPath) → 44 s (a post); no-route idle 2.7 → 0.0 %; failed searches 39 → 0 %. Seed 2 has no spell over 18 s.
+  - **Test:** `shared/test/exitBeyondWall.test.ts`: a Buggy against that wall; before, the rider stepped out at x 204.3.
+- **Checks:** typecheck; test:changed (2,511 passed); e2e `vehicles` locally (passes with CI's timeouts; another
+  session's e2e loaded the machine).
 
 **Small fixes of 2026-11-08 (`wip/small-fixes`, agent, 2026-11-09; owner-approved list).**
 - **Fernwood Moon's rope-lift waits (bots).** Cause: the north deck's only walkable way down was the north rope lift
@@ -570,6 +607,12 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - bots plan a vehicle's drive on the walking route, checked only for the vehicle's width (`routeFits`);
   - a hangar whose doorway is too low or narrow passes that check, and the sled then stalls at its north door;
   - details are in `docs/map-briefs/whiteout_station/DECISIONS_AND_DEVIATIONS.md`.
+  - **Answer (vehicle-routing session, 2026-11-10):** fixed on main, see "Bot vehicle routing and getting out by a
+    wall" near the top. The route check now sweeps the hull's footprint along the route (`hullFits`), so the sled no
+    longer takes the hangar or the west block's door (old apron layout, KotH seeds 1-4: stalls 10 → 0). Moving the
+    sleds back to the apron is the lane's call. From there bots would drive them east along the road, and leave them
+    alone towards the yard. From the west end no route a sled fits reaches the yard (the west block's door), so bots
+    still don't ride them. A sled-wide way north (a wider door or an open lane) would bring them back into play.
 - **Phase 5 questions** (the lane's recommendations, as the owner asked):
   - fog caps bots' sight at the players' distance;
   - the lane proposes a time and weather per official map, set in MapMaker;
