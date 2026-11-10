@@ -554,6 +554,8 @@ for the owner's review, not landed).**
 
 **Next in line to land: Fireteams part 3** (`check/fireteams-3`, Fireteams agent, 2026-11-10), after the mobile audit: one check run, then a fast-forward.
 
+**Next in line to land: Bot AI Phase C part 3** (`check/bots-c3`, Bot AI Phase C agent, 2026-11-10), after Fireteams part 3: one check run, then a fast-forward. Touches brain.ts, match.ts (one view field and a wreck flag), bot-report, bench; no editor or map files.
+
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
 - **The overhaul is complete (2026-11-10):** Phase 6, the first-time tour, landed last; the editor-code claim is released. Still in this lane: The Spillway and Verdant Protocol (built, green, waiting for the owner's review) and their follow-ups.
