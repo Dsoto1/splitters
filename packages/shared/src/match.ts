@@ -11,6 +11,8 @@ export { VantageBoard, computeVantage, vantageFor, type VantageKind, type Vantag
 export { leadAbility } from './bots/director.ts';
 export * from './bots/botTrace.ts';
 export * from './bots/debugView.ts';
+export * from './bots/memory.ts';
+export * from './bots/hints.ts';
 export * from './editor/mapTest.ts';
 export * from './nav/index.ts';
 export * from './nav/audit.ts';

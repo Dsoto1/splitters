@@ -4757,6 +4757,34 @@ async function teamsFlow(browser) {
   await setupLimitsFlow(browser);
   await spectateStartFlow(browser);
   await friendlyFireChecks(browser);
+  await botDebugChecks(browser);
+}
+
+/**
+ * The bot debug view (`?botdebug=1`, offline: BOT_AI_PLAN.md Phase D item 4): the panel lists every bot with its
+ * state and what it did, labels float over them, and their routes and failed searches are drawn in the world.
+ * Screenshot to E2E_SHOTS (botdebug.png).
+ */
+async function botDebugChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'normal', scoreLimit: 40, minutes: 10 })));
+  await page.goto(`${CLIENT}/?test=1&botdebug=1`);
+  await page.click('#nav-play');
+  await page.click('#arcade-start');
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(90000) });
+  // A frame has come (four a second) with the bots in it, and the routes are drawn.
+  await page.waitForFunction(() => /bots [1-9]/.test(document.querySelector('[data-testid=botdebug] .botdebug-panel')?.textContent ?? '') && !!window.__cs.view.scene.getMeshByName('botdebug_lines'), null, { timeout: T(30000) });
+  const seen = await page.evaluate(() => {
+    const panel = document.querySelector('[data-testid=botdebug] .botdebug-panel')?.textContent ?? '';
+    const rows = panel.split('\n').slice(2);
+    return { rows: rows.length, states: rows.filter((r) => /(roam|advance|engage|cover|chase|investigate|retreat|hold|mount|dead)/.test(r)).length, labels: document.querySelectorAll('[data-testid=botdebug] > div:not(.botdebug-panel)').length };
+  });
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/botdebug.png` }).catch(() => {});
+  check(seen.rows >= 3 && seen.states === seen.rows && seen.labels >= 3, `the bot debug view lists every bot with its state, and labels them (${JSON.stringify(seen)})`);
+  check(errors.length === 0, `no page errors with the bot debug view (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**

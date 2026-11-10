@@ -125,7 +125,7 @@ function hintCandidate(nav: NavWorld, physics: PhysicsWorld, j: HintJump): Candi
       break;
     }
   }
-  return { kind, from: a.index, to: b.index, start, end, at, saving: Infinity };
+  return { kind, from: a.index, to: b.index, start, end, at, saving: Infinity, hint: true };
 }
 
 /** Where a candidate move goes and what it takes, before it is played through. */
@@ -139,6 +139,8 @@ interface Candidate {
   at: Vec3;
   /** What it saves: the walk round (m) over the move's length (Infinity: no walk round). */
   saving: number;
+  /** From the map's jump links (bot hints). */
+  hint?: boolean;
 }
 
 /**
@@ -309,7 +311,7 @@ function playThrough(physics: PhysicsWorld, collider: Parameters<typeof stepMove
  * round).
  */
 /** Counts from the last parkourLinks call (debug: candidates, trials and links by kind, ms). */
-export const parkourStats = { cands: {} as Record<string, number>, trials: {} as Record<string, number>, links: {} as Record<string, number>, sims: 0, ticks: 0, findMs: 0, verifyMs: 0 };
+export const parkourStats = { cands: {} as Record<string, number>, trials: {} as Record<string, number>, links: {} as Record<string, number>, sims: 0, ticks: 0, findMs: 0, verifyMs: 0, hints: { given: 0, made: 0 } };
 
 export function parkourLinks(nav: NavWorld, physics: PhysicsWorld, opts: FallOptions & { blockers?: readonly OBox[]; jumps?: readonly HintJump[] }, gravity = 1, others: readonly (readonly [number, number])[] = [], spawns: readonly Vec3[] = []): ParkourLink[] {
   const g = nav.graph();
@@ -401,6 +403,7 @@ function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts
   }
   // The map's jump links (bot hints, MapMaker's; bots/hints.ts): candidates before any computed one, whatever walk they
   // save, played through like the rest (a hint the movement can't make is left out).
+  parkourStats.hints = { given: opts.jumps?.length ?? 0, made: 0 };
   for (const j of opts.jumps ?? []) {
     const c = hintCandidate(nav, physics, j);
     if (c) cands.push(c);
@@ -427,7 +430,7 @@ function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts
       dist[p] = Infinity;
     }
   }
-  cands.sort((a, b) => (a.saving === b.saving ? 0 : b.saving - a.saving) || walked[b.from]! - walked[a.from]! || a.start.x - b.start.x || a.start.z - b.start.z || a.start.y - b.start.y);
+  cands.sort((a, b) => (b.hint ? 1 : 0) - (a.hint ? 1 : 0) || (a.saving === b.saving ? 0 : b.saving - a.saving) || walked[b.from]! - walked[a.from]! || a.start.x - b.start.x || a.start.z - b.start.z || a.start.y - b.start.y);
   const out: ParkourLink[] = [];
   const ends: [number, number][] = [];
   const kinds: Record<ParkourKind, number> = { drop: 0, gap: 0, up: 0 };
@@ -465,6 +468,7 @@ function parkourLinksNow(nav: NavWorld, g: NavGraph, physics: PhysicsWorld, opts
         continue;
       }
       out.push(link);
+      if (c.hint) parkourStats.hints.made++;
       ends.push([c.from, c.to]);
       kinds[c.kind]++;
     }
