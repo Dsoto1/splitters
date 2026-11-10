@@ -5064,6 +5064,9 @@
      "visual": "dynamite",
      "bounce": 0.3,
      "knockback": 12
+    },
+    "view": {
+     "model": "guns/dynamite.glb"
     }
    }
   },

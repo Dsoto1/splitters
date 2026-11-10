@@ -275,6 +275,7 @@
         "bounce": 0.3,
         "knockback": 12
       },
+      "view": { "model": "guns/dynamite.glb" },
       "notes": {
         "design": "Style Pack 02 Frontier Dust: a lit stick on a long fuse, a big blast that throws people about."
       }

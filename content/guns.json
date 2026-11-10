@@ -72,6 +72,16 @@
       "meshy": true,
       "glb": true
     },
+    "meshy-community-drive-1110": {
+      "title": "Meshy community models (throwables, textured GLB downloads from the owner's Drive, 2026-11-10)",
+      "creator": "Meshy community (authors not recorded; CC0 per the owner's rule of 2026-11-06)",
+      "url": "https://www.meshy.ai (community post URLs pending from the owner)",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/meshy-community/License.txt",
+      "retrieved": "2026-11-10",
+      "meshy": true,
+      "glb": true
+    },
     "meshy-community-arsenal": {
       "title": "Meshy community models (weapons, turrets, the medkit, the WWII tank, the buggy and its tire; textured GLB downloads)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -884,6 +894,19 @@
       "label": "\"just a grenade\" (Meshy Community download, 2026-11-06): the Vortex Grenade",
       "forward": "+z",
       "height": 0.12,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/dynamite.glb",
+      "pack": "meshy-community-drive-1110",
+      "glb": "Meshy_AI_Emergency_Flare_1110164645_texture.glb",
+      "label": "Emergency Flare (Meshy Community download, 2026-11-10): the Dynamite",
+      "forward": "+x",
+      "length": 0.2,
       "triangles": 3000,
       "maxError": 0.03,
       "normalSize": 256,

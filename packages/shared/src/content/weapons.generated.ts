@@ -2151,6 +2151,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       bounce: 0.3,
       knockback: 12,
     },
+    view: { model: 'guns/dynamite.glb' },
   },
   // design: Owner, 2026-11-06: a cloud a few metres across for about 18 s that hides whoever is behind it (players see the cloud; bots and the match's sight checks treat it as opaque) while bullets still go through. Cover to cross open ground. No flash and no white-out: the cloud is grey and eases in.
   smoke: {
