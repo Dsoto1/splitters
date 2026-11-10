@@ -85,7 +85,7 @@ switched on in Match Setup's variants row. There is also a party preset.
 
 ## Part 1: done (2026-11-08, `wip/fireteams`)
 Part 1 was the variant, fixed squads, the order wheel, respawn on the leader and the measures. Part 2 (objective first,
-formations and bounding, the squad HUD) is done (below); Part 3 (squad scores, MVP, the party preset) is still to come. The rules as built are in
+formations and bounding, the squad HUD) and Part 3 (squad scores, the squad MVP, the party preset) are done (below). The rules as built are in
 docs/BOTS.md, "Fireteams"; the code is `sim/fireteams.ts`.
 
 - **The variant:** "Fireteams" in Match setup's Variants row for Team Deathmatch, CTF, King of the Hill, Bomb, Hostage and
@@ -228,4 +228,36 @@ its leader, the share within 10 m, kills, captures / hill seconds. Per match.
   branch costs about what Part 1 did; spread Frost Basin and Riot Junction are higher (2.6-2.8 against 2.0-2.3), with
   more fighting (Riot Junction 86 kills in the 30 s against 68). Clumped Norman Shores is over 2.5 ms with Part 1 too at
   this load: re-measure on a quiet machine.
+
+## Part 3: done (2026-11-10, `wip/fireteams-3`; owner-approved)
+The rules as built: docs/BOTS.md, "Fireteams Part 3"; the code is `sim/squadScores.ts`, `client/game/squadBoard.ts`
+and the preset in `sim/setupVariants.ts`. What changed:
+
+1. **Squad scores** (in the sim, deterministic, cleared with the round): a kill 10, an assist 5 (you hurt an enemy
+   someone else downs within 10 s), an objective play 30 (what the scoreboard's objective column counts: flag
+   captures, bomb plants and defuses, hostage rescues, Breakthrough zones and charges), and in King of the Hill a point a
+   second on the hill your team alone holds. **No revives:** the team modes have none, so none count. Points go to the
+   player and to the squad they are in at that moment (a squad keeps what its members earned in it). Team kills,
+   falls and NPC kills earn nothing. The snapshot carries each squad's points (`fs`, after the order's place) and each
+   player's (`ScoreEntry.p`).
+2. **The scoreboard grouped by squad:** each team's list under a line per squad (◆ its leader's name, its points),
+   your squad first so your row sits with it, then the best; each squad's rows by points; a **Pts** column; the squad's
+   leader marked ◆. Nothing in it blinks (Reduce flashing).
+3. **The squad MVP** at the end of the match: **Best Squad** (the most points, ties to the lower squad id, named by its
+   leader) and a **Squad MVP** for every squad (its member still in the match with the most points; ties to the lower
+   slot). On the scoreboard every squad's line names its MVP and the best squad is marked BEST; the awards panel adds
+   Best Squad and "Your Squad's MVP" (the best squad's MVP when you're in none) to the match's awards. It works with
+   the between-match vote: the board and the awards sit above the vote (on a short phone screen the awards give way to
+   the vote, and the MVPs stay on the board's lines).
+4. **The Fireteams party preset** (Match setup → Party presets): Team Deathmatch with Fireteams on (other variants
+   off), the map's own team layout, and squads to fit it: 4 up to 14 a side, 5 up to 17, 6 from 18 (so a party's friends
+   each lead a squad). A map without Team Deathmatch, or with fewer than 8 a side, moves to the first of Eagle Spires,
+   Riot Junction, Sandgate, Frost Basin and Canyon that fits the device (its chip's tip says where). With the party
+   features as they are: Host online and the invite link bring friends in, `partyTeam` puts them on your side, and each
+   person who joins takes over a bot-led squad (Part 1).
+
+**Not in it:** host handoff doesn't carry the squad points yet (a successor starts the squads' points from zero; the
+players' kills and objective plays carry as before). Bot-report has no squad-score line.
+
+**Next: the owner's playtest** (Fireteams Parts 1-3 together).
 

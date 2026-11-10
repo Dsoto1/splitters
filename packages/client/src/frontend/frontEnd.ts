@@ -45,6 +45,7 @@ import {
   matchingPreset,
   modeOptions,
   normalizeSetup,
+  partyMapMove,
   partyMode,
   partyOn,
   partyUnavailable,
@@ -957,6 +958,25 @@ export class FrontEnd {
     this.refreshSetup();
   }
 
+  /** A party preset on another map (Fireteams on a map with room for squads): the map loaded, picked, then the preset. */
+  private async partyOnMap(p: (typeof PARTY_PRESETS)[number], entry: ArcadeMap): Promise<void> {
+    let map: MapDocument;
+    try {
+      map = await entry.load();
+    } catch {
+      return this.setStatus(`${entry.metadata.name} failed to load`);
+    }
+    if (this.screen !== 'play') return;
+    this.pickMap(entry.key);
+    const next = applyParty(p, this.setup, map, entry.modes, { deviceMax: this.device().max, pickPlayers: entry.bots + 1 });
+    if (!next) return;
+    if (next.teams) this.evenTeams = next.teams.every((n) => n === next.teams![0]);
+    this.setup = next;
+    this.saveSetup();
+    this.setupScroll = 0;
+    this.go('play');
+  }
+
   /** A new setup in place of the old one (a variant, a party preset), remembered and drawn. */
   private replaceSetup(next: ArcadeSetup): void {
     this.setup = next;
@@ -1314,16 +1334,22 @@ export class FrontEnd {
     const unit = coop ? 'in the squad' : 'players';
     const sizeRow = sizeChips(presets, onPreset, team ? sizes.join('v') : `${players} ${unit}`, (p) => this.applyLayout(presetPatch(p)), 'setup-sizes');
     const party = el('div', { class: 'party-chips', id: 'setup-party', role: 'group' }, ...PARTY_PRESETS.map((p) => {
-      const offWhy = partyUnavailable(p, map, current.modes);
-      const on = !offWhy && partyOn(p, s, map, current.modes);
-      const mode = partyMode(p, map, current.modes);
+      // A preset with maps of its own (Fireteams) moves to one when this map can't play it or doesn't suit it.
+      const move = partyMapMove(p, map, current.modes, dev.max, this.maps.map((m) => ({ key: m.key, modes: m.modes, recommendedMax: m.metadata.recommendedPlayers.max, official: !m.group })));
+      const moveTo = move ? this.maps.find((m) => m.key === move) : undefined;
+      const offWhy = moveTo ? null : partyUnavailable(p, map, current.modes);
+      const on = !offWhy && !moveTo && partyOn(p, s, map, current.modes);
+      const mode = moveTo ? (p.mode.teams ?? p.mode.ffa ?? null) : partyMode(p, map, current.modes);
       const b = el('button', { type: 'button', class: `party-chip${on ? ' on' : ''}`, id: `setup-party-${p.id}` }, el('b', { textContent: p.label }), el('small', { textContent: p.line }));
       b.dataset.party = p.id;
-      b.dataset.tip = `${mode ? MODE_LABEL[mode] : ''}${p.variants.map((id) => ` · ${getVariant(id)?.label ?? id}`).join('')} · the map's own team layout`;
+      const squads = p.squadSize ? ' · squads to fit the teams' : '';
+      b.dataset.tip = `${mode ? MODE_LABEL[mode] : ''}${p.variants.map((id) => ` · ${getVariant(id)?.label ?? id}`).join('')} · ${moveTo ? `on ${moveTo.metadata.name}` : "the map's own team layout"}${squads}${p.squadSize ? '. Invite links bring friends onto your side, each leading a squad.' : ''}`;
+      if (moveTo) b.dataset.map = moveTo.key;
       b.setAttribute('aria-pressed', String(on));
       inert(b, offWhy);
       b.addEventListener('click', () => {
         if (offWhy) return;
+        if (moveTo) return void this.partyOnMap(p, moveTo);
         const next = applyParty(p, this.setup, map, current.modes, { deviceMax: dev.max, pickPlayers });
         if (!next) return;
         if (next.teams) this.evenTeams = next.teams.every((n) => n === next.teams![0]);

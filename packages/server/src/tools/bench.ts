@@ -6,7 +6,10 @@ import { deflateRawSync } from 'node:zlib';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, MAX_PLAYER_SLOTS, SNAPSHOT_INTERVAL_TICKS, SnapshotStream, TICK_RATE, encodeSnapshots, initPhysics, isGameMode, loadMap, mapCanRun, rulesForMode, type GameEvent, type GameMode } from '@tiletrigger/shared';
-import { Match, clumpArea, clumpInto, initNavigation, simProfile } from '@tiletrigger/shared/match';
+import { BOT_SWITCHES, Match, clumpArea, clumpInto, initNavigation, simProfile } from '@tiletrigger/shared/match';
+
+// Ablations, as bot-report: BOT_OFF=sideCorridors,hulls (brain.ts BOT_SWITCHES).
+for (const k of (process.env.BOT_OFF ?? '').split(',')) if (k in BOT_SWITCHES) BOT_SWITCHES[k as keyof typeof BOT_SWITCHES] = false;
 import { Behaviour } from './botMeasures.ts';
 
 /**

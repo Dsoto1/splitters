@@ -18,6 +18,7 @@ import type { ViewGrid } from './grid.ts';
 import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
 import { EnemyMemory, type EnemySpot } from './memory.ts';
 import { chokesNear } from './hints.ts';
+import { hullDetour, insideHull, type HullPass } from './hulls.ts';
 import type { BotPlan } from './director.ts';
 import type { PricedTrip } from './teamBrain.ts';
 import { GUN_WEIGHT, OPT_CHASE, OPT_COVER, OPT_FIGHT, OPT_NOISE, OPT_PICKUP, OPT_POST, OPT_RETREAT, OPTIONS, POST_WEIGHT, SCOPE_WEIGHT, bestChoice, scoreChoices, type ChoiceInput } from './choices.ts';
@@ -181,6 +182,9 @@ export interface BotWorldView {
   shotAt?: { tick: number; from: Vec3 } | null;
   /** Turrets and vehicles on the map. */
   mounts?: readonly MountView[];
+  /** Every mount's hull (turrets, vehicles, wrecks), on foot only, also for a focused bot whose `mounts` is left out: the ones
+   * standing still are walked round (hulls.ts). */
+  hulls?: readonly MountView[] | undefined;
   /** Routes and roads a bot driving a vehicle follows when one runs its way (guides.ts). */
   guides?: readonly Guide[];
   /** The seat the bot is in, if any. */
@@ -396,6 +400,8 @@ const STEP_OFF = 2.2;
 const CORNER_RADIUS = 0.45;
 /** How strongly teammates close by push a bot going somewhere out of a fight aside, at most (the way itself is 1). */
 const SEPARATE_MAX = 0.8;
+/** Ticks between looks for a still hull in the way (pastHulls). */
+const HULL_LOOK_TICKS = 6;
 /** A teammate coming the other way this close ahead (m) is passed on the right (separate). */
 const ONCOMING = 4;
 const PASS_RADIUS = 1.4;
@@ -556,6 +562,13 @@ export class BotBrain {
    * was found at, when it started on it, and when it jumped (-1: not yet) or went over the edge (a drop).
    */
   private link: { l: ParkourLink; path: Vec3[]; index: number; since: number; jumped: number; left: number } | null = null;
+  /** Going round a still hull (hulls.ts): the corner, till when it stands before a fresh look, and the side kept for that hull. */
+  private hullPass: (HullPass & { until: number }) | null = null;
+  private hullSide: { index: number; side: number; until: number } | null = null;
+  /** No still hull in the way: not looked for again till this tick. */
+  private hullFreeUntil = 0;
+  /** Hulls walked round (bot-report). */
+  hullDetours = 0;
   /** Parkour moves it made, by kind, and gave up on (measuring: bot-report). */
   readonly parkourDone: Record<ParkourKind, number> = { drop: 0, gap: 0, up: 0 };
   parkourGaveUp = 0;
@@ -573,7 +586,9 @@ export class BotBrain {
   /** The hop across (planEscape) is up a ledge higher than a jump clears: the legs tuck up in the air till it lands. */
   private tuckHop = false;
   /** The way it takes to a far objective (orderTarget): the goal it was picked for and the waypoint (null: straight). */
-  private lane: { goal: Vec3; via: Vec3 | null } | null = null;
+  private lane: { goal: Vec3; via: Vec3 | null; c?: Corridor } | null = null;
+  /** Side-lane trips that took a corridor of the side's trip by its vias (orderTarget; bot-report). */
+  laneCorridors = 0;
   /**
    * Route variety: the corridor it goes by to a far goal (its group's, its squad's, or the cheapest of its side's trip:
    * teamBrain.ts), the goal it is for, whether it has been by the corridor's via yet, and when it last went by it.
@@ -890,6 +905,8 @@ export class BotBrain {
     this.lowRoute = false;
     this.duckUntil = -Infinity;
     this.link = null;
+    this.hullPass = null;
+    this.hullSide = null;
     this.linkClock = null;
     this.spacing = 'hold';
     this.strafing = false;
@@ -1351,11 +1368,24 @@ export class BotBrain {
       const far = horizontalDistance(me, g.pos) > LANE_FROM;
       const r = this.routeRng();
       const side = r < 0.35 ? -1 : r < 0.7 ? 1 : 0;
-      let via = far && side ? laneWaypoint(view.nav.mainPlaces(), me, g.pos, side) : null;
-      // Only a waypoint routes get to from here and on from to the goal (the samples cover roofs and pools a route
-      // never reaches: a bot sent by one of those stood where it was, Capitol Mall).
-      if (via && (!view.nav.reachable(me, via) || !view.nav.reachable(via, g.pos))) via = null;
-      lane = this.lane = { goal: { ...g.pos }, via };
+      // Route spread: a corridor of the side's trip there, on that side of the way, by its vias (where it is furthest
+      // from the trip's other corridors), rather than a sampled place to the side, which re-joined the main way by the
+      // trip's middle (CTF's busiest way about 60 %).
+      const c = far && side && BOT_SWITCHES.sideCorridors ? sideCorridor(view.plan?.trips, me, g.pos, side) : null;
+      if (c && c.vias.every((v) => view.nav.reachable(me, v)) && view.nav.reachable(c.vias[c.vias.length - 1]!, g.pos)) {
+        this.laneCorridors++;
+        lane = this.lane = { goal: { ...g.pos }, via: null, c };
+      } else {
+        let via = far && side ? laneWaypoint(view.nav.mainPlaces(), me, g.pos, side) : null;
+        // Only a waypoint routes get to from here and on from to the goal (the samples cover roofs and pools a route
+        // never reaches: a bot sent by one of those stood where it was, Capitol Mall).
+        if (via && (!view.nav.reachable(me, via) || !view.nav.reachable(via, g.pos))) via = null;
+        lane = this.lane = { goal: { ...g.pos }, via };
+      }
+    }
+    if (lane.c) {
+      if (horizontalDistance(me, g.pos) <= ROUTE_FROM) return g.pos;
+      return this.viaRoute(view, lane.c, g.pos);
     }
     const via = lane.via;
     // Near it, or already nearer the goal than it is: on to the goal.
@@ -4286,7 +4316,8 @@ export class BotBrain {
         this.pathMiss = true;
         return null;
       }
-      return Math.atan2(goal.x - me.pos.x, goal.z - me.pos.z);
+      const g = this.pastHulls(view, goal);
+      return Math.atan2(g.x - me.pos.x, g.z - me.pos.z);
     }
     // The leg ahead a parkour link (a drop, a jump across or up): act() runs it (parkourMove).
     if (view.nav.parkour.length) this.watchLink(view, corner);
@@ -4300,7 +4331,67 @@ export class BotBrain {
       if (horizontalDistance(me.pos, grab) < 1.1) this.zipPress = true;
       return Math.atan2(grab.x - me.pos.x, grab.z - me.pos.z);
     }
-    return Math.atan2(corner.x - me.pos.x, corner.z - me.pos.z);
+    // A parked vehicle, a wreck or a turret on the way (not on the navmesh): round its nearer corner first.
+    const aim = this.pastHulls(view, corner);
+    return Math.atan2(aim.x - me.pos.x, aim.z - me.pos.z);
+  }
+
+  /**
+   * The route's first corner from `from` on that isn't under a still hull (a vehicle left on the route: the navmesh
+   * doesn't know of it), when the corner at `from` is under one (not the one it is getting into); else -1.
+   */
+  private cornerBeyond(view: BotWorldView, from: number): number {
+    const hulls = view.hulls!;
+    const boarding = this.mountPlan?.index ?? -1;
+    let j = from;
+    while (j < this.path.length - 1 && insideHull(hulls, this.path[j]!, boarding)) j++;
+    return j > from ? j : -1;
+  }
+
+  /**
+   * Where to head for on the way to `aim`: `aim` itself, or the corner of a still hull in the way (hulls.ts). Looked
+   * for every few ticks; a corner chosen stands till it is reached or the next look. Not on a ladder, a zipline or a
+   * parkour link.
+   */
+  private pastHulls(view: BotWorldView, aim: Vec3): Vec3 {
+    const hulls = view.hulls;
+    const me = view.self;
+    if (!hulls?.length || !BOT_SWITCHES.hulls || me.riding || me.climbing || this.link || me.grounded === false) return aim;
+    const tick = view.tick;
+    const hp = this.hullPass;
+    if (hp && tick < hp.until && horizontalDistance(me.pos, hp.pos) > 0.6) return hp.pos;
+    if (!hp && tick < this.hullFreeUntil) return aim;
+    const keep = this.hullSide && tick < this.hullSide.until ? this.hullSide : null;
+    // (The route's corner under a hull: round it to the first beyond.)
+    const onPath = this.path[this.pathIndex] === aim;
+    const j = onPath ? this.cornerBeyond(view, this.pathIndex) : -1;
+    const walk = this.walkClear(view);
+    const pass = hullDetour(hulls, me.pos, aim, {
+      keep,
+      beyond: j >= 0 ? this.path[j]! : null,
+      boarding: this.mountPlan?.index ?? -1,
+      ok: (from, p) => {
+        const ground = view.nav.closestPoint({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0.6, y: 1.5, z: 0.6 });
+        if (!ground || horizontalDistance(ground, p) > 0.6 || Math.abs(ground.y - from.y) > 1.2) return false;
+        return walk(from, { x: p.x, y: ground.y, z: p.z });
+      },
+    });
+    if (pass === 'beyond') {
+      // Round it already: on along the route past the corners under it.
+      this.pathIndex = j;
+      this.hullPass = null;
+      return this.path[j]!;
+    }
+    if (!pass || pass === 'none') {
+      this.hullPass = null;
+      // (No way round: not looked for again for half a second; each look is a few nav and ray queries.)
+      this.hullFreeUntil = tick + (pass ? TICK_RATE / 2 : HULL_LOOK_TICKS);
+      return aim;
+    }
+    if (!hp || hp.index !== pass.index) this.hullDetours++;
+    this.hullPass = { ...pass, until: tick + HULL_LOOK_TICKS * 2 };
+    this.hullSide = { index: pass.index, side: pass.side, until: tick + TICK_RATE * 3 };
+    return pass.pos;
   }
 
   /**
@@ -4788,6 +4879,52 @@ function farthest(points: readonly Vec3[], from: Vec3): Vec3 | undefined {
  * length with the teammates on it, and the deaths and sightings near it), with a little of the bot's own taste (up to
  * ×1.3): null when no trip ends there.
  */
+/**
+ * Switches for measuring with and without (tests; bot-report's BOT_OFF=sideCorridors,hulls): side lanes by a corridor
+ * of the side's trip (sideCorridor; off: laneWaypoint, as before), and walking round still hulls (pastHulls).
+ */
+export const BOT_SWITCHES = { sideCorridors: true, hulls: true };
+
+/**
+ * A corridor (not the shortest) of the side's trip to `goal` whose via lies on `side` of the way from `me` (-1 left,
+ * +1 right, as laneWaypoint) and between the two; the cheapest by the team brain's price. Null when none.
+ */
+export function sideCorridor(trips: readonly PricedTrip[] | undefined, me: Vec3, goal: Vec3, side: number): Corridor | null {
+  if (!trips?.length) return null;
+  let best: PricedTrip | null = null;
+  let bestD = 40;
+  for (const t of trips) {
+    const d = horizontalDistance(t.trip.to, goal);
+    if (d < bestD && t.trip.corridors.length > 1) {
+      bestD = d;
+      best = t;
+    }
+  }
+  if (!best) return null;
+  const dx = goal.x - me.x;
+  const dz = goal.z - me.z;
+  const D = Math.hypot(dx, dz);
+  if (D < 1) return null;
+  let pick: Corridor | null = null;
+  let low = Infinity;
+  best.trip.corridors.forEach((c, k) => {
+    const v = c.via;
+    if (k === 0 || !v) return;
+    const rx = v.x - me.x;
+    const rz = v.z - me.z;
+    const along = (rx * dx + rz * dz) / (D * D);
+    // (laneWaypoint's side: `rx uz - rz ux`, + for lane +1.)
+    const off = (rx * dz - rz * dx) / D;
+    if (along < 0.1 || along > 0.9 || off * side < 4) return;
+    const cost = best!.cost[k] ?? c.length;
+    if (cost < low) {
+      low = cost;
+      pick = c;
+    }
+  });
+  return pick;
+}
+
 function cheapestRoute(trips: readonly PricedTrip[], goal: Vec3, rng: () => number): Corridor | null {
   let best: PricedTrip | null = null;
   let bestD = 40;

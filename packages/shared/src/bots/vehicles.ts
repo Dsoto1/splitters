@@ -91,6 +91,8 @@ export interface MountView {
   hostile?: boolean;
   /** On fire: it blows up in a few seconds. */
   burning?: boolean;
+  /** Destroyed, and its charred wreck still there (solid, no seats). */
+  wreck?: boolean;
   /** Vehicles: going backwards (`speed` is how fast either way). */
   reversing?: boolean;
   /** Collision box half extents (getting in near the hull, not just its centre: enterReach). Absent: its centre only. */

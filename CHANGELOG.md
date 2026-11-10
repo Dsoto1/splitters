@@ -8,6 +8,23 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Bots walk round parked vehicles** (Bot AI Phase C, part 3):
+- **Bots on foot no longer walk into parked vehicles, wrecks and turrets.** These aren't part of the map bots plan
+  their routes on, so a bot walked into a parked jeep or a landed dropship until it gave up and stepped aside, six
+  seconds or more. Now it goes round by the nearer end, keeping clear of walls the vehicle is parked against. On the
+  vehicle maps, stuck moments by a parked vehicle fell by a fifth, and long stands (10 s or more) almost halved.
+- **Bots taking a side way to an objective keep to it further.** A bot sent the left or right way now follows one of
+  the map's own side routes, where there is one on that side, instead of re-joining the main way halfway.
+**Fireteams, part 3: squad scores, the squad MVP and a party preset** (owner-approved, 2026-11-10):
+- **Squad scores:** a kill 10, an assist 5, an objective 30 (captures, plants, defuses, rescues, zones), and a point a
+  second on the hill in King of the Hill. The scoreboard groups each team by squad (your squad first) with each
+  squad's points and a Pts column.
+- **Squad MVP:** at the end of the match, Best Squad and your squad's MVP join the awards, and every squad's MVP is
+  named on its line of the scoreboard, above the vote on the next map.
+- **Fireteams party preset:** one click in Match setup for Team Deathmatch with Fireteams, squads sized to the map's
+  teams; on a map too small for squads it moves to one that suits. Friends who follow your invite link land on your
+  side and each lead a squad.
+
 **Phones: bulky guns sit lower, Character Select shows your characters, a tidier HUD** (owner's mobile audit, 2026-11-09)
 - **First-person guns**: the big sci-fi guns (Flak Cannon, Laser Rifle, Singularity Cannon, Blast Rockets, Guided
   Rocket, Swarm Launcher, Oil Slicker, Grenade Launcher) sit lower in your hands; none covers more than about a tenth

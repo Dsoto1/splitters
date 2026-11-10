@@ -1839,7 +1839,7 @@ export class GameSession {
         if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage' || msg.rules.mode === 'core.breakthrough')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         // The end-of-match awards and the revenge and nemesis callouts (every mode: awardsHud.ts).
         this.awardsHud?.dispose();
-        this.awardsHud = new AwardsHud(this.hud, () => this.slot);
+        this.awardsHud = new AwardsHud(this.hud, () => this.slot, () => this.squadHud.current?.id ?? null);
         // Between matches: the vote on the next map (hosts that have one send it; mapVoteHud.ts).
         this.voteHud?.dispose();
         this.voteHud = new MapVoteHud((i) => this.opts.transport.sendVote?.(i), (id) => this.opts.mapPicture?.(id) ?? null);
@@ -1931,6 +1931,7 @@ export class GameSession {
         if (msg.ld) this.view.setLeaders(new Set(msg.ld.filter((s) => s >= 0)));
         this.hud.setLeaders(msg.ld);
         if (msg.fs || this.squadHud.current) this.squadSnapshot(msg.fs, msg.players);
+        this.hud.setSquads(msg.fs ?? null);
         this.hud.setLife(msg.players);
         this.zones = msg.zn ?? [];
         this.mounts?.apply(msg.mt, msg.tick);

@@ -2,6 +2,7 @@ import type { OrderGoal } from '../bots/brain.ts';
 import { horizontalDistance, type Vec3 } from '../math.ts';
 import { TICK_RATE } from './constants.ts';
 import type { GameMode } from './rules.ts';
+import { SquadScores } from './squadScores.ts';
 
 /**
  * Fireteams (docs/FIRETEAMS_PLAN.md, Part 1): a variant for every team mode where each person leads a fixed squad
@@ -237,6 +238,8 @@ export class Fireteams {
   private readonly records = new Map<FireteamOrder, OrderRecord>();
   /** Each bot's lead ability (the roster's `lead`), for a bot-led squad's next leader when its leader falls. */
   private readonly leadScore = new Map<number, number>();
+  /** Part 3: each squad's and player's points (kills, assists, objective plays, hill seconds) and the squad MVP. */
+  readonly scores = new SquadScores();
 
   constructor(readonly size: number) {}
 
@@ -733,9 +736,9 @@ export function checkOrder(kind: OrderKind, c: OrderContext): { ok: true; pos: V
 }
 
 /** One squad as the snapshot carries it (protocol `fs`): see ServerMessage's snapshot. */
-export function squadSnapshot(s: Squad, teamIndex: number): number[] {
+export function squadSnapshot(s: Squad, teamIndex: number, points = 0): number[] {
   const p = s.order.pos;
-  return [s.id, teamIndex, s.leader ?? -1, ORDER_KINDS.indexOf(s.order.kind), SQUAD_SPACINGS.indexOf(s.spacing), FORMATION_SHAPES.indexOf(s.shape), s.human ? 1 : 0, p ? Math.round(p.x * 10) : 0, p ? Math.round(p.z * 10) : 0, ...s.members];
+  return [s.id, teamIndex, s.leader ?? -1, ORDER_KINDS.indexOf(s.order.kind), SQUAD_SPACINGS.indexOf(s.spacing), FORMATION_SHAPES.indexOf(s.shape), s.human ? 1 : 0, p ? Math.round(p.x * 10) : 0, p ? Math.round(p.z * 10) : 0, points, ...s.members];
 }
 
 /** A squad as the client reads it from the snapshot (`fs`). */
@@ -750,6 +753,8 @@ export interface SquadView {
   /** The order's place (Hold here, Go there, Defend the objective), or null. */
   place: { x: number; z: number } | null;
   members: number[];
+  /** The squad's points (Part 3, sim/squadScores.ts). */
+  points: number;
 }
 
 export function readSquad(a: readonly number[]): SquadView {
@@ -763,6 +768,7 @@ export function readSquad(a: readonly number[]): SquadView {
     shape: FORMATION_SHAPES[a[5]!] ?? 'wedge',
     human: a[6] === 1,
     place: placeOrder(order) ? { x: a[7]! / 10, z: a[8]! / 10 } : null,
-    members: a.slice(9),
+    points: a[9] ?? 0,
+    members: a.slice(10),
   };
 }

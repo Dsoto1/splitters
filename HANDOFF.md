@@ -8,6 +8,21 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Fireteams part 3: squad scores, the squad MVP, the party preset (`wip/fireteams-3`, agent, 2026-11-10; owner-approved; green on `check/fireteams-3` at da05b91, run 42780770897; LANDED; landing line removed).**
+Details: docs/FIRETEAMS_PLAN.md, "Part 3"; docs/BOTS.md, "Fireteams Part 3".
+- **Squad scores** in the sim (`sim/squadScores.ts`, `Fireteams.scores`): kill 10, assist 5 (a hit within 10 s before
+  someone else's kill), objective play 30 (the scoreboard's objective count), King of the Hill 1 a second on the held
+  hill; no revives exist in team modes. The snapshot's `fs` carries each squad's points (index 9; members from 10),
+  `ScoreEntry.p` each player's.
+- **Scoreboard grouped by squad** (`client/game/squadBoard.ts`, `scoreBoard.ts`): a line per squad (◆ leader, points),
+  your squad first, a Pts column; at the end every squad's MVP on its line and BEST on the best squad.
+- **Squad MVP:** `bestsquad` and `squadmvp` awards; the awards panel shows Best Squad and Your Squad's MVP, with the vote.
+- **Fireteams party preset:** TDM + Fireteams, squads 4 (to 14 a side) / 5 (to 17) / 6; a map without TDM or under 8
+  a side moves to Eagle Spires, Riot Junction, Sandgate, Frost Basin or Canyon (first that fits the device).
+- **Not carried by host handoff:** the squads' points (a successor starts them from zero).
+- **e2e `fireteams`:** extended for the preset, the board's squads and the MVP with the vote; its "squad holds" check now sends you to the map's
+  spawn point furthest from the spot (it stood you by a moving bot before, 4-10 m off on check/vehicle-routing run 42762326837).
+- **Next: the owner's playtest** of Fireteams (Parts 1-3).
 **Mobile audit (`wip/mobile-audit`, agent, 2026-11-10; owner-approved; green on `check/mobile-audit` at 6b66630, run 42772271488, `party` passed on the re-run of its job; LANDED). Full report and ranked proposals for the owner to
 pick from: docs/MOBILE_AUDIT.md.**
 - **Fixed:**
@@ -85,6 +100,28 @@ owner-approved audit candidates 7 and 8; landed on main from its green `check/gu
   - **Found here, fixed since** (`wip/vehicle-routing`, below): on the rebuilt Riot Junction a bot could end up 4 m
     under the street by a buggy's spawn, at (196, -4, 42), with no route out for 105 s.
   - `botDesirability` is still hand-set.
+
+**Bot AI Phase C, part 3: parked vehicles in the way, side lanes by a corridor (`wip/bots-c3`, agent, 2026-11-10;
+owner-approved queue; LANDED from `check/bots-c3`, landing line removed; BOT_AI_PLAN.md "Phase C, measured (part 3)", docs/BOTS.md "Parked vehicles, wrecks and turrets in
+the way" and "Side lanes by a corridor").** CHANGELOG "Bots walk round parked vehicles". No map or editor files touched.
+- **Parked vehicles, wrecks, turrets** (`bots/hulls.ts`, `BotBrain.pastHulls`/`cornerBeyond`, `BotWorldView.hulls`,
+  `MountView.wreck`): a bot on foot goes round a still hull in its next 7 m by the nearer corner, every leg checked for
+  walls and ground; a route corner under a hull is gone round to the next. `botHulls.test.ts`.
+- **Route spread** (`sideCorridor` in brain.ts): side lanes to an objective take a corridor of the side's trip on that
+  side, by its vias. `botSideLanes.test.ts`. The busiest way didn't move (58 → 57 %): see the plan for why and what next.
+- **bot-report:** still hulls walked round, stuck recoveries by one, overlap with a teammate (crowds), side lanes by a
+  corridor; `BOT_OFF=hulls,sideCorridors` switches the two off (brain.ts `BOT_SWITCHES`).
+- **Numbers** (main fc625d6 → branch): CTF 48 matches captures 36 → 46 (takes 251 → 211), stuck 1.20 → 1.17 a
+  bot-minute; vehicle maps (TDM, 12 matches) stuck 1.27 → 1.20, stuck by a still hull 42.5 → 34.0 a match, 10 s+ idle
+  spells 1.1 → 0.6; TDM sample stuck 0.79 → 0.63, failed searches 1.18 → 0.00 %. `bot-report --check`: every limit held.
+  `pnpm bench:96:clump` (load 1.2-1.6): bot thinking 1.7-2.1 ms a tick on main, 1.7-2.4 here (Frost Basin clumped
+  +0.2-0.3 ms: its vehicles by the spawns), inside the 2.5 ms guard.
+- **Checks:** typecheck; test:changed (1,579 passed; `botPush.test`'s garrison bound for seed 1 lowered 0.25 → 0.18:
+  walking round parked vehicles reshuffles that seed to 0.20, seeds 1-5 average 0.27 against 0.29 without); e2e `ctf`
+  and `vehicles` locally with CI's timeouts (the machine at load 8 from other sessions).
+- **Not done, left for later:** crowd steering in clumps (measured: about 1 % of bot-time on foot within 0.8 m of a
+  teammate; not worth local avoidance yet); parkour links on a navmesh rebuilt mid-match (Fort Wars) and ways opened by
+  broken crates or walls (both need a tiled navmesh); a vehicle plugging a passage (no way round: the old sidestep).
 
 **Bot vehicle routing and getting out by a wall (`wip/vehicle-routing`, agent, 2026-11-10; the MapMaker lane's Whiteout
 report and gunplay pass 3's Riot Junction find; LANDED: green on `check/vehicle-routing` at d234b0f, run 42762326837,
@@ -318,6 +355,7 @@ The workflow is unchanged (CLAUDE.md):
 - **Disk:** each session's container is its own; remove a worktree once its branch has landed.
 
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
+- Claimed: `packages/client/src/editor/storage.ts` and `packages/client/src/editor/mapSaving.ts` (community maps part 1: the local map library moves to IndexedDB, Open… gets Duplicate and Rename; save/load hooks only, no other editor files, no map format change), community maps (`wip/community-maps`), 2026-11-10. (The MapMaker lane's `editor/**` claim above was released on 2026-11-10: "In flight: MapMaker overhaul".)
 - **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
 - **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
   (team kills and roulette).
@@ -551,10 +589,6 @@ for the owner's review, not landed).**
   roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
-
-**Landing now: Fireteams part 3 (`check/fireteams-3`; Fireteams agent), please hold code pushes to main.** (2026-11-10; one check run, then a fast-forward.)
-
-**Next in line to land: Bot AI Phase C part 3** (`check/bots-c3`, Bot AI Phase C agent, 2026-11-10), after Fireteams part 3: one check run, then a fast-forward. Touches brain.ts, match.ts (one view field and a wreck flag), bot-report, bench; no editor or map files.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
