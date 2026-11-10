@@ -3759,7 +3759,7 @@ async function mobileLamps(browser) {
   const { PNG } = await import('pngjs');
   for (const quality of ['medium', 'low']) {
     // (Small: a software renderer draws one lamp to a layer slowly.)
-    const ctx = await browser.newContext({ ...phone, viewport: { width: 640, height: 296 }, screen: { width: 640, height: 296 } });
+    const ctx = await browser.newContext({ ...phone, viewport: { width: 480, height: 222 }, screen: { width: 480, height: 222 } });
     await ctx.addInitScript((q) => localStorage.setItem('tiletrigger.graphics', q), quality);
     const page = await ctx.newPage();
     const errors = [];

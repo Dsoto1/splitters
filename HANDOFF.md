@@ -8,6 +8,13 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Mobile fixes (`wip/mobile-fixes`, agent, 2026-11-10; the owner picked mobile audit proposals 1, 5, 6, 10 and 12; owner's phone: Galaxy S25+, Graphics Low or Medium).** Details, measurements and the owner's check on the phone: docs/MOBILE_AUDIT.md, "Proposals 1, 5, 6, 10 and 12: done". CHANGELOG "Phones: the dark block on lit walls".
+- **Lamps on phones** (`game/clusteredLights.ts`): Low has no lamp light (fixtures glow; `game/indoorFill.ts` raises the sky light under a roof, eased); Medium/High 4 lamps to a mask layer (an exact sum in any float target), the mask sized to the map's lamps and the device's texture limit. Desktop unchanged. Switches: Room lights (Options → Display, pause → Settings; `game/roomLights.ts`, `?roomlights=0`), `?lampbatch=N`, `?lamps=1`.
+- **Touch HUD:** ammo above Reload/Throw; a tap on the scorebar toggles the scoreboard (`touchControls.ts` `tc-scores`, Tab); touch text at least 12 px (HUD, pad, Match Setup chips); the kill feed keeps 3 lines on touch screens up to 480 px tall (`game/feedLimit.ts`).
+- **Tests:** `client/test/mobileLights.test.ts`; e2e `mobile` → `mobileHudChecks` (915 × 412, 832 × 384, 658 × 320) and `mobileLamps` (Flatpack Depot, Medium and Low).
+- **Pitfall:** one lamp to a layer is exact even in 8-bit targets but costs a texture read per nearby lamp per pixel (Flatpack Depot in SwiftShader: 4-10 times the frame time); don't make it the default without a phone measurement.
+- **Next: the owner's check on the S25+** (MOBILE_AUDIT.md, "How the owner checks it").
+
 **Community maps (`wip/community-maps`, agent, 2026-11-10; the owner-approved plan, queued item 6; all five build steps; green on `check/community-maps` at 8c856ba, run 42811718756; LANDED; landing line and editor claim removed).** Details, tests and the owner's open questions: docs/COMMUNITY_MAPS.md, "What's built". CHANGELOG "Community maps".
 - **Local library in IndexedDB** (`client/src/localMaps.ts`; `editor/storage.ts` and `mapSaving.ts`: save/load hooks only): unlimited saved maps, the old localStorage library moves in once; Open… has Duplicate and Rename. Your maps join Match setup under "Your maps".
 - **Hosting:** a hosted own map is listed as a Community map with its creator (first signed-in lister of the map ID) and a Report button; the game browser has a map filter.

@@ -65,7 +65,7 @@ Not changed:
   - **What was tried:** SwiftShader draws Bottling Plant's tiled rooms correctly on the phone profile, Low and Medium.
     One lamp per layer (exact on any target) was tried and reverted: Flatpack Depot has 138 lamps, a 64 × 8,832 mask,
     past the texture limit (8,192 here, often 4,096 on phones), and every lamp went out.
-  - **Next:** proposal 1.
+  - **Next:** proposal 1 (done in `wip/mobile-fixes`; see "Proposals 1, 5, 6, 10 and 12: done" below).
 
 ## Menus and HUD on a phone: findings
 
@@ -95,19 +95,51 @@ there's no "play this map" from the home screen.
   is a 2,772 px page in a 320 px window.
 - **Height:** the panel ends 90 px above the bottom of the screen.
 
+## Proposals 1, 5, 6, 10 and 12: done (`wip/mobile-fixes`, 2026-11-10)
+
+The owner picked these. Their phone is a Samsung Galaxy S25+, on Graphics Low (the default) or maybe Medium.
+
+| # | What changed | Check |
+|---|---|---|
+| 1 | **Lamps on phones** (`game/clusteredLights.ts`). **Low:** no lamp light at all. The fixtures still glow, so no lamp mask exists to lose a lamp. Under a roof the sky light rises to twice its strength instead, easing in and out over about a second (`game/indoorFill.ts`). Flatpack Depot's showroom then has a mean brightness of 78, against 86 with lamps and 43 without. **Medium and High:** 4 lamps to a mask layer instead of Babylon's 8, so a tile's sum is at most 15. That is exact in any float target down to 10-bit floats (8 lamps' 255 needs 8 bits of mantissa). The mask is sized to the map's lamp count and the device's texture limit: rows of tiles drop where layers × 64 would pass it, so no map can overflow (Neon Galleria's 202 lamps at 2,048: 40 rows). **Room lights** switch (Options → Display, pause → Settings; `game/roomLights.ts`): off, lamps glow but light nothing. | `client/test/mobileLights.test.ts` (mask sizing on 2,048-16,384 limits, 0-300 lamps, the fill's easing); e2e `mobile` → `mobileLamps` (Flatpack Depot: Medium 4 a layer within the limit, lamps lighting the room and Room lights off darkening it; Low no lamp light and the fill under the roof). |
+| 5 | **Ammo by the fire buttons:** above Reload and Throw, with the weapon name kept and no scaling (12 px+). On ~320 px tall phones it drops the name and sits just above Reload. | e2e `mobileHudChecks`: right of 60 % of the width, above Reload, over no button. |
+| 6 | **Tap the scorebar** to show the scoreboard, and tap again to hide it: an invisible tap target over the scorebar (`touchControls.ts` `tc-scores`, Tab on a keyboard). Pausing closes it. | e2e: the target covers the scorebar; tap shows `#scoreboard` with rows, tap hides it. |
+| 10 | **12 px text floor on touch:** button labels 11 → 12 px (Weapons ring 64 → 68 px to fit), the mode label and the scorebar's names (15 px under the narrow 80 % scorebar), the kill feed (11 px drawn → 12), the pad's Jump and "hold: crouch" (6.5 → 12 px; the circle is no longer drawn at half size), and Match Setup's mode tiles, "Not on this map", variants, size chips, field names, fit chip and "~15 min". | e2e: no text in `#hud` / `#touch-ui` drawn under 12 px on 915 × 412, 832 × 384 and 658 × 320. |
+| 12 | **Kill feed 3 lines** on a touch screen at most 480 px tall (5 elsewhere; `game/feedLimit.ts`). On ~320 px tall phones its lines are a little tighter, so the ammo panel fits under it. | Unit test; e2e: 5 lines in, 3 shown, clear of the ammo panel and Weapons. |
+
+Desktop is unchanged: every rule is under `html.touch`, and the lamps change only on a phone's WebGL 2.
+
+**Costs measured** (SwiftShader, Flatpack Depot, 832 × 384, frames a second; relative only):
+- **Low:** Babylon's 8 a layer 1.3-1.7; no lamps 1.3-3.2 (load varied); 1 a layer 0.2-0.4. One lamp a layer is
+  exact even in an 8-bit target, but a pixel reads a layer for every lamp near its depth, so it isn't the default
+  (`?lampbatch=1` tries it).
+- **Medium:** 8 a layer 0.40-0.45; 4 a layer 0.39.
+
+**How the owner checks it on the S25+:**
+1. Update the page (the version on the menu), then open a lamp-lit map: Flatpack Depot, Neon Galleria or Cormorant
+   Isle. Go where the block showed (a lit wall indoors).
+2. **On Low:** the block should be gone, since no lamp light is drawn. Rooms are a little brighter under a roof than
+   before.
+3. **Options → Display → Graphics: Medium**, then start a match again. Lamps light the rooms, 4 to a layer. If the
+   block is gone, precision was the cause and this fixes it.
+4. **If it shows on Medium:** pause → Settings → Room lights off. If the block goes with the lamps, the lamp mask is
+   to blame: open the page with `?lampbatch=1` added (one lamp a layer, slower) and say whether it goes. If the block
+   stays with Room lights off, it isn't the lamps: send a screenshot and Pause → Settings → Copy performance report.
+5. To see the old behaviour for comparison: `?lampbatch=8` (Babylon's 8 a layer, also on Low).
+
 ## Proposals, ranked (impact / size)
 
 | # | Proposal | Impact | Size |
 |---|---|---|---|
-| 1 | **Find the dark-block cause on the owner's phone.** Ask which Graphics setting and phone. Ship a Display option "Room lights" (on/off), or a `?roomlights=0` test switch, so the owner can see whether the block goes with the lamps. If it does: (a) pick the lamps-per-layer from the map's lamp count and the device's texture limit (1 for ≤ 64 lamps, more only where the mask must fit); or (b) on Low, drop the clustered lamps and raise the sky light indoors to compensate. Either also cuts a phone's per-pixel light work (Flatpack's 138 lamps are 18 layers). | High | S-M |
+| 1 | (done) **Find the dark-block cause on the owner's phone.** Ask which Graphics setting and phone. Ship a Display option "Room lights" (on/off), or a `?roomlights=0` test switch, so the owner can see whether the block goes with the lamps. If it does: (a) pick the lamps-per-layer from the map's lamp count and the device's texture limit (1 for ≤ 64 lamps, more only where the mask must fit); or (b) on Low, drop the clustered lamps and raise the sky light indoors to compensate. Either also cuts a phone's per-pixel light work (Flatpack's 138 lamps are 18 layers). | High | S-M |
 | 2 | **Map cards on phones.** The map name in Match Setup opens a full-screen picker reusing the desktop grid (pictures, mode tags, search, favourites), not a `<select>`. Also a "Pick a map" card in Quick Play. | High | M |
 | 3 | **Touch layout options.** Options → Controls: button size (S/M/L), opacity, left-handed swap, and Aim as hold or toggle. Later, drag-to-place. | High | M |
 | 4 | **Character Select as a phone layout.** A full-height grid with the details as a slide-up sheet on tap. Add search and favourites, and arrows instead of Q/E caps on touch. | High | M |
-| 5 | **Ammo by the fire cluster on touch** (above Reload, smaller), clearing the lower centre; the weapon name as an icon. | Med | S |
-| 6 | **Scores on touch:** tap the scorebar to show the scoreboard (hold or toggle). | Med | S |
+| 5 | (done) **Ammo by the fire cluster on touch** (above Reload, smaller), clearing the lower centre; the weapon name as an icon. | Med | S |
+| 6 | (done) **Scores on touch:** tap the scorebar to show the scoreboard (hold or toggle). | Med | S |
 | 7 | **Phone Options in one column:** setting name and control on one line, the description behind an (i). Tabs as chips at the top. The panel uses the full height. | Med | S-M |
 | 8 | **Textured sci-fi guns.** A material pass for the Quaternius sci-fi pack (metal and paint maps through the existing held-copy tiers), or swap the bulkiest (Flak, Swarm, Laser Rifle) for textured models. | Med | M (content) |
 | 9 | **Speckled floors:** Terrazzo013 finer (scale 1-1.25 m) and lower contrast, or another terrazzo; check gravel and carpet the same way. | Low-Med | S |
-| 10 | **Text floor on touch:** HUD and menu text at least 12 px on phones (button labels, mode label, Match Setup's chips), and the pad's "hold: crouch" readable or dropped after the tutorial. | Med | S |
+| 10 | (done) **Text floor on touch:** HUD and menu text at least 12 px on phones (button labels, mode label, Match Setup's chips), and the pad's "hold: crouch" readable or dropped after the tutorial. | Med | S |
 | 11 | **Match Setup on phones:** a sticky header (map, mode), "Not on this map" folded away, 40 px steppers. | Med | S-M |
-| 12 | **Kill feed lines on short phones:** at most 3, so it never reaches the Weapons button (4-5 lines can). | Low | XS |
+| 12 | (done) **Kill feed lines on short phones:** at most 3, so it never reaches the Weapons button (4-5 lines can). | Low | XS |
