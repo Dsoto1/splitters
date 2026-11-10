@@ -1180,7 +1180,7 @@ export class BotBrain {
       }
       return v;
     };
-    const i = board.pick(kind, view.self.pos, tick, kind === 'sniper' ? 110 : 75, this.routeRng, prefer, this.lastSpot);
+    const i = board.pick(kind, view.self.pos, tick, kind === 'sniper' ? 110 : 75, this.routeRng, prefer, this.lastSpot, plan.side);
     if (i < 0) {
       this.nextPost = tick + TICK_RATE * 8;
       return;

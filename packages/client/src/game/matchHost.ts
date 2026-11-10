@@ -40,6 +40,10 @@ import {
   mapPlayerCaps,
 } from '@tiletrigger/shared';
 import { Zipper } from '@tiletrigger/shared/peerZip';
+import type { BotDebugFrame } from '@tiletrigger/shared/match';
+
+/** How often (ticks) the bot debug view gets a frame while on: four a second. */
+const BOT_DEBUG_EVERY = Math.round(TICK_RATE / 4);
 
 /** Messages kept from a friend whose link opened before the match was ready. */
 const MAX_EARLY_MESSAGES = 64;
@@ -102,6 +106,8 @@ export interface MatchHostSink {
   guest(id: number, slot: number | null): void;
   /** The host settings, rules or carry-over changed. */
   facts(f: HostFacts): void;
+  /** The in-game bot debug view's frame (`?botdebug=1`: shared bots/debugView.ts), while the page has it on. */
+  botdebug?(f: BotDebugFrame): void;
 }
 
 /**
@@ -336,6 +342,7 @@ export class MatchHost {
         ticks++;
         next += tickMs;
         if (match.tick % 30 === 0) this.sendFacts();
+        if (this.botDebugOn && match.tick % BOT_DEBUG_EVERY === 0) this.sendBotDebug(match);
         // A new bot set swaps in a bot every quarter second (every screen builds the new characters in turn).
         const bots = this.bots;
         if (bots?.settling && match.tick % Math.round(TICK_RATE / 4) === 0 && this.control && bots.stage(this.control.fill)) {
@@ -435,6 +442,20 @@ export class MatchHost {
   /** The page's tab was hidden or shown again (a hidden tab's timers wake rarely: catch up further then). */
   setHidden(hidden: boolean): void {
     this.hidden = hidden;
+  }
+
+  /**
+   * The bot debug view (`?botdebug=1`, host or offline: BOT_AI_PLAN.md Phase D item 4): frames a few times a second
+   * while on. Not while a friend plays in the match (it shows every bot, enemies included, through walls).
+   */
+  private botDebugOn = false;
+  setBotDebug(on: boolean): void {
+    this.botDebugOn = on;
+  }
+
+  private sendBotDebug(match: MatchT): void {
+    for (const r of this.remotes.values()) if (r.slot !== null) return;
+    this.sink.botdebug?.(match.botDebugFrame());
   }
 
   /** When this browser's own player last sent inputs (ms): the page is alive and passing friends' messages on. */
@@ -987,6 +1008,8 @@ export type ToSimHost =
   | { k: 'listing'; listing: HostListing | null }
   | { k: 'eval'; req: number; src: string; arg?: unknown }
   | { k: 'give'; id: string }
+  /** The bot debug view on or off (`?botdebug=1`). */
+  | { k: 'botdebug'; on: boolean }
   | { k: 'stop' }
   /** Load the simulation now, before a match is asked for (a worker started ahead of time). */
   | { k: 'warm' };
@@ -1001,7 +1024,8 @@ export type FromSimHost =
   | { k: 'guest'; id: number; slot: number | null }
   | { k: 'facts'; facts: HostFacts }
   | { k: 'failed'; error: string }
-  | { k: 'eval'; req: number; ok: boolean; value?: unknown; error?: string };
+  | { k: 'eval'; req: number; ok: boolean; value?: unknown; error?: string }
+  | { k: 'botdebug'; f: BotDebugFrame };
 
 /**
  * A sink that turns everything the host says into messages for the page. Friends' links that
@@ -1028,6 +1052,7 @@ export function sinkTo(post: (m: FromSimHost, transfer?: Transferable[]) => void
     },
     guest: (id, slot) => post({ k: 'guest', id, slot }),
     facts: (facts) => post({ k: 'facts', facts }),
+    botdebug: (f) => post({ k: 'botdebug', f }),
   };
 }
 
@@ -1072,6 +1097,8 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return host.setListing(m.listing);
     case 'give':
       return host.give(m.id);
+    case 'botdebug':
+      return host.setBotDebug(m.on);
     case 'eval':
       try {
         post({ k: 'eval', req: m.req, ok: true, value: host.evaluate(m.src, m.arg) });

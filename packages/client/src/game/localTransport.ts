@@ -6,6 +6,7 @@ import { perfProbe } from './perfProbe.ts';
 import { SnapshotCoalescer, type SnapshotBacklog } from './snapshotMerge.ts';
 import type { RemoteLink, Transport } from './transport.ts';
 import { checkTicket, helloTicket } from './ticketCheck.ts';
+import type { BotDebugFrame } from '@tiletrigger/shared/match';
 
 export type { RemoteLink } from './transport.ts';
 
@@ -108,6 +109,7 @@ export class LocalTransport implements Transport {
   private nextEval = 1;
   private onVisibility?: () => void;
   private onMessage?: (m: ServerMessage) => void;
+  private onBotDebug?: (f: BotDebugFrame) => void;
   private onClose?: (reason: string) => void;
   /** With the match in a worker: a page that fell behind handles the snapshots waiting for it as one. */
   private snapshots?: SnapshotCoalescer;
@@ -116,6 +118,15 @@ export class LocalTransport implements Transport {
     private readonly map: MapDocument,
     private readonly opts: LocalMatchOptions,
   ) {}
+
+  /**
+   * The in-game bot debug view (`?botdebug=1`, host or offline: game/botDebugView.ts): frames from the match a few
+   * times a second while `onFrame` is given; null turns it off.
+   */
+  botDebug(onFrame: ((f: BotDebugFrame) => void) | null): void {
+    this.onBotDebug = onFrame ?? undefined;
+    this.toHost({ k: 'botdebug', on: !!onFrame });
+  }
 
   /** A browser test's deterministic match (testMode.ts): offline only. */
   get testMode(): boolean {
@@ -353,6 +364,8 @@ export class LocalTransport implements Transport {
       }
       case 'failed':
         return this.fail(`local match failed: ${m.error}`);
+      case 'botdebug':
+        return this.onBotDebug?.(m.f);
       case 'eval': {
         const p = this.evals.get(m.req);
         this.evals.delete(m.req);

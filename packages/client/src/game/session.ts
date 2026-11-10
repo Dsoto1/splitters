@@ -151,6 +151,7 @@ import { MountState } from './mountState.ts';
 import { RiderPlacement } from './riderPlacement.ts';
 import { ownBodyDrawn } from './ownBody.ts';
 import { LocalTransport } from './localTransport.ts';
+import { BotDebugView, botDebugWanted } from './botDebugView.ts';
 import { SYS, netProbe, perfProbe } from './perfProbe.ts';
 import { PerfOverlay, loadPerfOverlay, savePerfOverlay } from './perfOverlay.ts';
 import { loadHitboxOverlay } from './hitboxPrefs.ts';
@@ -400,6 +401,8 @@ export class GameSession {
     return this.rlTiny.has(slot) ? size * TINY_SIZE : size;
   }
   private botStates: string[] = [];
+  /** The bot debug view (`?botdebug=1`, host or offline: botDebugView.ts), when asked for. */
+  private botDebug: BotDebugView | null = null;
   private outbox: PlayerInput[] = [];
   private showStats: boolean;
   private closed = false;
@@ -646,6 +649,11 @@ export class GameSession {
     this.view = new GameView(opts.engine);
     // Show hitboxes (dev and test setting): every body's hit shapes drawn over it.
     this.view.showHitboxes = loadHitboxOverlay();
+    // The bot debug view (`?botdebug=1`): only where the match runs in this browser (offline, MapMaker TEST, Host game).
+    if (botDebugWanted() && opts.transport instanceof LocalTransport) {
+      const v = (this.botDebug = new BotDebugView(this.view.scene, () => this.view.scene.activeCamera, (slot) => this.hud.name(slot)));
+      opts.transport.botDebug((f) => v.update(f));
+    }
     this.input = new InputState(opts.canvas);
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
     this.weatherSound = new WeatherAudio(opts.audio);
@@ -1767,6 +1775,8 @@ export class GameSession {
     this.voteHud?.dispose();
     this.voteHud = null;
     this.coach?.dispose();
+    this.botDebug?.dispose();
+    this.botDebug = null;
     document.getElementById('pause-skip-tutorial')?.remove();
     this.hud.hide();
     $('pause').hidden = true;
@@ -3336,6 +3346,7 @@ export class GameSession {
       this.frames = 0;
       this.fpsAt = now;
     }
+    this.botDebug?.draw();
     this.hud.renderPerf(
       this.showStats,
       {

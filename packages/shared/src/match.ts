@@ -10,6 +10,7 @@ export * from './bots/playbooks.ts';
 export { VantageBoard, computeVantage, vantageFor, type VantageKind, type VantageSpot } from './bots/vantage.ts';
 export { leadAbility } from './bots/director.ts';
 export * from './bots/botTrace.ts';
+export * from './bots/debugView.ts';
 export * from './editor/mapTest.ts';
 export * from './nav/index.ts';
 export * from './nav/audit.ts';
