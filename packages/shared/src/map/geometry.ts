@@ -3,7 +3,7 @@ import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorIns
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
-import { terrainBoundary, terrainTriangles } from './terrain.ts';
+import { terrainBoundary, terrainLowest, terrainTriangles } from './terrain.ts';
 import { resolveBackdrop } from './backdrop.ts';
 import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './border.ts';
 import { pathsExtent } from './paths.ts';
@@ -653,7 +653,7 @@ export function mapTerrainMesh(map: MapDocument): { positions: Float32Array; ind
 export function mapKillY(boxes: readonly WorldBox[], map?: MapDocument): number {
   let low = Infinity;
   for (const b of boxes) if (b.kind === 'floor') low = Math.min(low, b.max[1]);
-  if (map?.terrain) low = Math.min(low, map.terrain.baseY + Math.min(...map.terrain.heights) / 100);
+  if (map?.terrain) low = Math.min(low, terrainLowest(map.terrain));
   return Number.isFinite(low) ? low - 14 : -40;
 }
 
@@ -710,7 +710,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
   if (map.bounds) {
     let floorY = Infinity;
     for (const b of boxes) if (b.kind === 'floor') floorY = Math.min(floorY, b.max[1]);
-    if (map.terrain) floorY = Math.min(floorY, map.terrain.baseY + Math.min(...map.terrain.heights) / 100);
+    if (map.terrain) floorY = Math.min(floorY, terrainLowest(map.terrain));
     boxes.push(...boundaryBoxes(map.bounds, Number.isFinite(floorY) ? floorY : 0));
   }
   // Borders (cliffs, city blocks, fences…) are solid, and so are placed electric fences.
