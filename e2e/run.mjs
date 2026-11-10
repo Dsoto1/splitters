@@ -7627,13 +7627,13 @@ async function fireteamsFlow(browser) {
   const spreadHud = await page.waitForFunction(() => document.querySelector('#squad-order i')?.textContent === 'Spread out' && [...document.querySelectorAll('#feed .say, .say')].some((l) => /Spreading out!/.test(l.textContent)), null, { timeout: T(10000) }).then(() => true, () => false);
   check(spread && spreadHud, 'Spread out from the wheel: the squad spreads (keeping Hold here), a squadmate answers "Spreading out!", the HUD says Spread out');
   const spot = await sim(page, (m, me) => m.fireteams.squadOf(me.slot).order.pos);
-  // You go off (to the player or bot furthest from the spot, not in your squad: god mode keeps you safe); the squad stays where you told it.
+  // You go off, to the map's own spawn point furthest from the spot (a fixed place: a bot to stand by moved with the
+  // match, and on check/vehicle-routing every one was 4-10 m from the spot); god mode keeps you safe. The squad stays.
   const away = await sim(page, (m, me, p) => {
-    const s = m.fireteams.squadOf(me.slot);
-    const mate = m.combatants().filter((c) => c.alive && !s.members.includes(c.slot)).sort((a, b) => Math.hypot(b.move.pos.x - p.x, b.move.pos.z - p.z) - Math.hypot(a.move.pos.x - p.x, a.move.pos.z - p.z))[0];
-    if (!mate) return null;
-    me.move = { pos: { x: mate.move.pos.x + 1, y: mate.move.pos.y + 0.2, z: mate.move.pos.z }, velY: 0, grounded: false };
-    return { tick: m.tick, x: Math.round(me.move.pos.x), z: Math.round(me.move.pos.z) };
+    const far = m.spawnPoints.filter((sp) => !sp.generated).sort((a, b) => Math.hypot(b.pos.x - p.x, b.pos.z - p.z) - Math.hypot(a.pos.x - p.x, a.pos.z - p.z))[0];
+    if (!far) return null;
+    me.move = { pos: { x: far.pos.x, y: far.pos.y + 0.2, z: far.pos.z }, velY: 0, grounded: false };
+    return { tick: m.tick, x: Math.round(me.move.pos.x), z: Math.round(me.move.pos.z), d: Math.round(Math.hypot(far.pos.x - p.x, far.pos.z - p.z)) };
   }, spot);
   const holding = await meWait(page, (m, me, a) => {
     const s = m.fireteams.squadOf(me.slot);
@@ -7645,7 +7645,7 @@ async function fireteamsFlow(browser) {
     const s = m.fireteams.squadOf(me.slot);
     return { me: Math.round(Math.hypot(me.move.pos.x - p.x, me.move.pos.z - p.z)), bots: s.members.filter((x) => x !== me.slot).map((x) => m.slots[x]).filter((c) => c?.alive).map((c) => Math.round(Math.hypot(c.move.pos.x - p.x, c.move.pos.z - p.z))) };
   }, spot);
-  check(!!away && holding && where.me > 12, `the squad holds where you gave the order after you go off (you ${where.me} m from it, the squad ${where.bots.join(', ')} m; from ${JSON.stringify(at)} to ${JSON.stringify(away)})`);
+  check(!!away && away.d > 20 && holding && where.me > 12, `the squad holds where you gave the order after you go off (you ${where.me} m from it, the squad ${where.bots.join(', ')} m; from ${JSON.stringify(at)} to ${JSON.stringify(away)})`);
   // Part 3: a squadmate hurts an enemy and you down it (your kill, their assist), then the match ends with the vote.
   const scored = await sim(page, (m, me) => {
     const s = m.fireteams.squadOf(me.slot);
