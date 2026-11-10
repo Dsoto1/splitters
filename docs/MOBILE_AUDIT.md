@@ -25,7 +25,7 @@ Screenshots (annotated A1-A7; folder `/tmp/claude-0/-home-user/99559628-4a1b-594
 | `px-characters-before2.png` / `px-characters-after.png` | Character Select on the Pixel 7, before and after. |
 | `A5-setup-px.png` / `desk-setup.png` | Match Setup on the phone and on desktop. |
 | `A6-options-px.png` | Options on the phone. |
-| `A7-pause-px-before.png` | The pause menu on the phone. |
+| `A7-pause-px-before.png` / `pause-px-after.png` | The pause menu on the phone, before and after. |
 | `flak-before-after.png` | The Flak Cannon on the phone, before and after. |
 
 ## Fixed in this job (`wip/mobile-audit`)
