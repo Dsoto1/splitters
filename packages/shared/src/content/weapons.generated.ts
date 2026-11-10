@@ -2024,6 +2024,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       bounce: 0.25,
       knockback: 16,
     },
+    view: { model: 'guns/holy_bomb.glb' },
   },
   // group: Worms-style special.
   cluster: {

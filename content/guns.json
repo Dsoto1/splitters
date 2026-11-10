@@ -914,6 +914,19 @@
       "pbr": true
     },
     {
+      "out": "guns/holy_bomb.glb",
+      "pack": "meshy-community-drive-1110",
+      "glb": "Meshy_AI__Gold_Silver_Toned_Hi_1110164632_texture.glb",
+      "label": "Gold and silver toned orb (Meshy Community download, 2026-11-10): the Holy Bomb",
+      "forward": "+z",
+      "height": 0.2,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
       "out": "guns/sunburst_grenade.glb",
       "pack": "meshy-community-drive-1106c",
       "glb": "Meshy_AI_Sunburst_Grenade_1106213842_texture.glb",

@@ -4909,6 +4909,9 @@
      "visual": "holy",
      "bounce": 0.25,
      "knockback": 16
+    },
+    "view": {
+     "model": "guns/holy_bomb.glb"
     }
    }
   },
