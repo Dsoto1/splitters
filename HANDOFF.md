@@ -453,7 +453,7 @@ for the owner's review, not landed).**
 
 **Landing now: Iron Coast part 3 (`check/iron-coast-3`; Iron Coast session), please hold code pushes to main.** (2026-11-10; one check run, then a fast-forward.)
 
-**Next in line to land: the MapMaker split** (`check/mapmaker-p2-split`, MapMaker lane, 2026-11-10). It has waited behind far copies and now Iron Coast part 3. Please let it go next, before starting another hold.
+**Next in line to land: MapMaker Phase 2, the split and the interface** (`check/mapmaker-p2-full`, MapMaker lane, 2026-11-10). It has waited behind far copies and now Iron Coast part 3. Please let it go next, before starting another hold.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
