@@ -597,6 +597,7 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: content tile ids `core.tunnel_vault_walled`, `core.tunnel_vault_bend_walled`, `core.tunnel_vault_t_walled`, `core.tunnel_vault_cross_walled` (the Side walls tile option; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-09.
 - Claimed: `maps/test_coverage.json` (one of each side-walled vaulted tunnel, placed in MapMaker; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-09.
+- Claimed: content ids `core.dynamite` (the Dynamite throwable's look, `guns/dynamite.glb`), later `sandbags` and holy bomb throwable looks; `content/throwables.json`, `content/guns.json`, `content/guns.lock.json`, `content/provenance.json`, the throwables rows of docs/ARSENAL.md (`wip/weapons-throwables`), weapon and vehicle lane (this account), 2026-11-10.
 
 **Whiteout Station follow-ups (`wip/mapmaker-whiteout`, MapMaker lane, 2026-11-09; the owner's answers; CI on
 `check/mapmaker-whiteout`):** King of the Hill on three hills (yard, radar ridge, ice cave); three drivable snow sleds
