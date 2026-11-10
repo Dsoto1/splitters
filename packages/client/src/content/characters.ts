@@ -1,4 +1,5 @@
 import type { Scene } from '@babylonjs/core/scene';
+import { disposeTree } from './disposeTree.ts';
 import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
@@ -437,7 +438,7 @@ export class CharacterLibrary {
       dispose: () => {
         for (const g of new Set(clips.values())) g.dispose();
         for (const o of owned) o.dispose();
-        holder.dispose(false, false);
+        disposeTree(holder);
       },
     };
   }

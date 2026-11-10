@@ -118,6 +118,16 @@ export function newTerrain(sizeMetres: number, spacing = 2, centre: [number, num
 /** Height (world Y) of vertex (c, r). */
 export const vertexY = (t: TerrainData, c: number, r: number): number => t.baseY + (t.heights[r * t.cols + c] ?? 0) / 100;
 
+/**
+ * The terrain's lowest ground (world y; Infinity with no heights). A loop, not `Math.min(...heights)`: a fine grid has tens of thousands of
+ * heights (Iron Coast's 1.25 m grid: 78,385), and spreading that many arguments overflows the stack in a browser.
+ */
+export function terrainLowest(t: Pick<TerrainData, 'baseY' | 'heights'>): number {
+  let low = Infinity;
+  for (const h of t.heights) if (h < low) low = h;
+  return t.baseY + low / 100;
+}
+
 /** Ground height at a world X/Z (on the triangle surface), or null off the terrain. */
 export function terrainHeightAt(t: TerrainData, x: number, z: number): number | null {
   const fx = (x - t.origin[0]) / t.spacing;

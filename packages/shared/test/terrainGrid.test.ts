@@ -3,6 +3,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  borderFloor,
+  terrainLowest,
   DEFAULT_TERRAIN_VERTS,
   FINE_GRID_PLANTS_AS,
   plantShare,
@@ -248,5 +250,15 @@ describe('plants on fine grids (owner, 2026-11-09)', () => {
     expect(FINE_GRID_PLANTS_AS).toBe(2.5);
     for (const s of [1, 1.25, 1.5, 1.75]) expect(perSquareMetre(s)).toBeCloseTo(1 / (2.5 * 2.5), 9);
     for (const s of [2, 2.5, 3, 4]) expect(plantShare(s)).toBe(1);
+  });
+
+  it('finds the lowest ground of a very fine terrain without spreading its heights (Iron Coast: a browser\'s stack overflowed)', () => {
+    // Far more heights than a call takes as arguments anywhere (Math.min(...heights) throws a RangeError here).
+    const heights = new Array<number>(1_000_000).fill(250);
+    heights[777_777] = -340;
+    const terrain = { baseY: -0.15, heights } as unknown as TerrainData;
+    expect(terrainLowest(terrain)).toBeCloseTo(-3.55, 9);
+    expect(borderFloor({ terrain }, [])).toBeCloseTo(-3.55, 9);
+    expect(terrainLowest({ baseY: 0, heights: [] })).toBe(Infinity);
   });
 });
