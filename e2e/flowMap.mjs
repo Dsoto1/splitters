@@ -26,7 +26,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 export const FLOWS = [
   'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
   'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer', 'fireteams', 'fireteamsctf',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer', 'fireteams',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -51,7 +51,7 @@ const MAP_USERS = {
   training_range: ['physicsfx', 'newplayer'],
   bunker_cross: ['ctf'],
   fort_meadow: ['forts'],
-  twin_spires: ['classes', 'fireteamsctf'],
+  twin_spires: ['classes', 'ctf'],
   grid_rings: ['classes'],
   apex_ring: ['traffic'],
   atomic_court: ['hostcontrols'],
@@ -169,7 +169,7 @@ const RULES = [
   [/^packages\/client\/src\/roadMeshes\.ts$/, ['traffic'], ['client']],
   [/^packages\/client\/src\/game\/fortsClient\.ts$/, ['forts'], ['client']],
   // Fireteams' squad HUD (the order line, its CTF role, the squadmates' cards).
-  [/^packages\/client\/src\/game\/squadHud\.ts$/, ['fireteams', 'fireteamsctf'], ['client']],
+  [/^packages\/client\/src\/game\/squadHud\.ts$/, ['fireteams', 'ctf'], ['client']],
   [/^packages\/client\/src\/game\/rouletteHud\.ts$/, ['roulette', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'breakthrough', 'zombies', 'teams', 'classes', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party'], ['client']],

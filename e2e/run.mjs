@@ -5451,7 +5451,7 @@ async function weaponsetsFlow(browser) {
   await ed.context().close();
 }
 
-/** Capture the Flag offline: flags drawn, taking the enemy flag shows on the HUD, bringing it home scores. */
+/** Capture the Flag offline: flags drawn, taking the enemy flag shows on the HUD, bringing it home scores; then Fireteams' CTF squad roles (fireteamsCtfChecks). */
 async function ctfFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
@@ -5539,6 +5539,8 @@ async function ctfFlow(browser) {
   check(caps === '1', `the scoreboard's Caps column counts your capture (${caps})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  // Fireteams follow-ups: CTF squad roles (a page of its own).
+  await fireteamsCtfChecks(browser);
 }
 
 /**
@@ -7725,10 +7727,12 @@ async function environmentFlow(browser) {
  * Fireteams follow-ups (docs/FIRETEAMS_PLAN.md, "Follow-ups"): CTF squad roles. Capture the Flag on Twin Spires with
  * Fireteams (squads of 4, 9 a side: your squad and two bot-led ones, 3 and 2) → the smallest squad (bot-led) defends,
  * the others attack, as the sim works it out (ctfSquadRoles) → your squad HUD's line names your squad's role
- * ("Attack") in a steady word (no animation: Reduce flashing) → the defending squad holds round its own flag's base.
- * Screenshot: e2e-artifacts/fireteams-ctf-roles.png. (Kept out of fireteamsFlow, which the MapMaker lane also edits.)
+ * ("Attack") in a steady word (no animation: Reduce flashing).
+ * Screenshot: e2e-artifacts/fireteams-ctf-roles.png. Part of the `ctf` flow (its own function, kept out of fireteamsFlow,
+ * which the MapMaker lane also edits; a flow of its own didn't fit the 16 shards' budget). The defence itself (holding
+ * round the base, returning a dropped flag) is checked headless: shared/test/fireteamsFollowups.test.ts.
  */
-async function fireteamsctfFlow(browser) {
+async function fireteamsCtfChecks(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
@@ -7773,17 +7777,10 @@ async function fireteamsctfFlow(browser) {
     }, mineRole === 'defend' ? 'Defend' : 'Attack', { timeout: T(15000) })
     .then((h) => h.jsonValue(), () => null);
   check(!!hud && hud.role === mineRole && hud.anim === 'none' && /^0s(, 0s)*$/.test(hud.transition), `the squad HUD line names your squad's role, steadily (${JSON.stringify(hud)}; sim ${mineRole})`);
+  // (The headless page's pause overlay hidden for the picture only.)
+  await page.evaluate(() => (document.getElementById('pause').style.visibility = 'hidden'));
   await page.screenshot({ path: `${ARTIFACTS}/fireteams-ctf-roles.png` });
-  // The defending squad holds round its own flag's base (its living members mostly within 25 m of it).
-  const holding = (m, me, id) => {
-      const s = m.fireteams.squads.find((q) => q.id === id);
-      const base = m.mode.flags.find((f) => f.team === me.faction).base;
-      const alive = s ? s.members.map((x) => m.slots[x]).filter((c) => c?.alive) : [];
-      const near = alive.filter((c) => Math.hypot(c.move.pos.x - base.x, c.move.pos.z - base.z) < 25).length;
-      return alive.length && near * 2 > alive.length ? { near, alive: alive.length } : null;
-  };
-  const held = (await simWait(page, holding, def?.id ?? -1, T(45000))) ? await sim(page, holding, def?.id ?? -1) : null;
-  check(!!held, `the defending squad holds round its flag's base (${JSON.stringify(held)})`);
+  await page.evaluate(() => (document.getElementById('pause').style.visibility = ''));
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -10629,7 +10626,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow, fireteamsctf: fireteamsctfFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

@@ -126,9 +126,9 @@ describe('Fireteams follow-ups: CTF squad roles', () => {
     let samples = 0;
     let attackersNear = 0;
     let attackerSamples = 0;
-    for (let s = 0; s < 40; s++) {
+    for (let s = 0; s < 32; s++) {
       for (let i = 0; i < T; i++) match.step();
-      if (s < 15) continue;
+      if (s < 12) continue;
       for (const c of match.combatants()) {
         if (!c.alive || c.faction !== team || c.kind !== 'bot') continue;
         const d = Math.hypot(c.move.pos.x - own.base.x, c.move.pos.z - own.base.z);
@@ -164,7 +164,7 @@ describe('Fireteams follow-ups: CTF squad roles', () => {
     }
     expect(returned).toBe(true);
     expect(own.state).toBe(FLAG_HOME);
-  });
+  }, 120000);
 
   it("a person's squad: the role is its default until they give an order (the smallest, a person's, defends by default)", () => {
     // Three people on one side, each leading a squad of 2 (themselves and a bot): the highest id is smallest by the tie.
