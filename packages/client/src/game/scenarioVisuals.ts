@@ -21,6 +21,8 @@ import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { PointLight } from '@babylonjs/core/Lights/pointLight';
 import { ClusteredLightContainer } from '@babylonjs/core/Lights/Clustered/clusteredLightContainer';
 import '@babylonjs/core/Lights/Clustered/clusteredLightingSceneComponent';
+import { dropLamps, makeLightContainer, maskRows } from './clusteredLights.ts';
+import { ROOM_LIGHTS_EVENT, roomLightsOn } from './roomLights.ts';
 import {
   LIGHT_FLASH,
   LIGHT_ON,
@@ -162,6 +164,8 @@ export class ScenarioVisuals {
     this.clear();
     this.dynamicBlocks = map ? dynamicBlockIds(map) : new Set();
     this.ceilings = map && entities.some((e) => e.kind === 'light') ? buildMapGeometry(map) : [];
+    this.lampCount = entities.filter((e) => e.kind === 'light').length;
+    this.fitLightMask();
     // Lights nothing ever changes (no logic aims at them, not off or blinking at the start) share their
     // glow material, and their fixtures are merged into a few meshes below.
     const targets = map && !this.opts.editor ? logicTargets(map.logic) : null;
@@ -699,13 +703,49 @@ export class ScenarioVisuals {
    */
   private lights: ClusteredLightContainer | null | undefined;
 
+  /** The lamps of the map being built (the light mask is sized to them: clusteredLights.ts). */
+  private lampCount = 0;
+  /** How the light mask is laid out (tests and the performance report read it). */
+  lightMask: { lamps: number; perLayer: number; verticalTiles: number; maxTexture: number; on: boolean; dropped?: boolean } | null = null;
+
+  /** Phones on Low: the map's lamps light nothing (the fixtures glow; the game view's indoorFill.ts lights rooms instead). */
+  get lampsDropped(): boolean {
+    return !!this.lightMask?.dropped;
+  }
+
   private container(): ClusteredLightContainer | null {
+    if (this.lights === undefined && !this.opts.editor && dropLamps(this.scene, loadGraphicsQuality(), this.lampCount)) {
+      this.lights = null;
+      this.lightMask = { lamps: this.lampCount, perLayer: 0, verticalTiles: 0, maxTexture: 0, on: false, dropped: true };
+    }
     if (this.lights === undefined) {
-      const c = new ClusteredLightContainer('map_lights', [], this.scene);
-      this.lights = c.isSupported ? c : null;
-      if (!this.lights) c.dispose();
+      // Sized to the map's lamps, so a phone's exact one-lamp layers fit the texture limit (clusteredLights.ts).
+      const made = makeLightContainer(this.scene, this.lampCount);
+      this.lights = made?.container ?? null;
+      if (made) {
+        this.lightMask = { lamps: this.lampCount, ...made.plan, maxTexture: made.maxTexture, on: roomLightsOn() };
+        made.container.setEnabled(roomLightsOn());
+        // Room lights (roomLights.ts): off, the fixtures glow but light nothing; applied at once.
+        if (typeof window !== 'undefined') {
+          const apply = () => {
+            if (!this.lights || this.lights !== made.container) return;
+            this.lights.setEnabled(roomLightsOn());
+            if (this.lightMask) this.lightMask.on = roomLightsOn();
+          };
+          window.addEventListener(ROOM_LIGHTS_EVENT, apply);
+          made.container.onDisposeObservable.addOnce(() => window.removeEventListener(ROOM_LIGHTS_EVENT, apply));
+        }
+      }
     }
     return this.lights;
+  }
+
+  /** A rebuild with more (or fewer) lamps than the container was made for (MapMaker): its tile rows fit them again. */
+  private fitLightMask(): void {
+    if (!this.lights || !this.lightMask || this.lightMask.lamps === this.lampCount) return;
+    this.lightMask.lamps = this.lampCount;
+    this.lightMask.verticalTiles = maskRows(this.lampCount, this.lightMask.perLayer, this.lightMask.maxTexture);
+    this.lights.verticalTiles = this.lightMask.verticalTiles;
   }
 
   private light(name: string, e: LightEntity): Visual {

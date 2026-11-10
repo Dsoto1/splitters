@@ -8,6 +8,8 @@ import { ScoreBoard, type BoardData, type BoardRow } from './scoreBoard.ts';
 import { readSquads, squadGroups, squadHonours, type SquadHonours } from './squadBoard.ts';
 import { HEAVY_LOOK, HURT_LOOKS, HeavyFade, HurtFade, paintVignette } from './hurtVignette.ts';
 import { reduceFlashing } from './reduceFlashing.ts';
+import { feedLines } from './feedLimit.ts';
+import { isTouchDevice } from '../touchDevice.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -740,8 +742,14 @@ export class Hud {
       line.insertAdjacentHTML('afterbegin', '<b class="tk-tag" title="Team kill">TK</b> ');
     }
     this.feed.prepend(line);
-    while (this.feed.children.length > 5) this.feed.lastChild?.remove();
+    this.trimFeed();
     window.setTimeout(() => line.remove(), 5000);
+  }
+
+  /** The feed keeps its newest lines: 5, or 3 on a phone sideways (feedLimit.ts). */
+  private trimFeed(): void {
+    const keep = feedLines(isTouchDevice(), window.innerHeight);
+    while (this.feed.children.length > keep) this.feed.lastChild?.remove();
   }
 
   /** A slot changed hands mid-match: "Ana joined, replacing Mildred" (a player joined), or "Mildred took over for Ana" (they left). */
@@ -751,7 +759,7 @@ export class Hud {
     line.className = 'say takeover';
     line.innerHTML = `<span style="color:${color}">${escapeHtml(to)}</span> ${bot ? 'took over for' : 'joined, replacing'} <span style="color:${color}">${escapeHtml(from)}</span>`;
     this.feed.prepend(line);
-    while (this.feed.children.length > 5) this.feed.lastChild?.remove();
+    this.trimFeed();
     window.setTimeout(() => line.remove(), 6000);
   }
 
@@ -761,7 +769,7 @@ export class Hud {
     line.className = 'say note';
     line.textContent = text;
     this.feed.prepend(line);
-    while (this.feed.children.length > 5) this.feed.lastChild?.remove();
+    this.trimFeed();
     window.setTimeout(() => line.remove(), 6000);
   }
 
@@ -773,7 +781,7 @@ export class Hud {
     line.className = 'say';
     line.innerHTML = `<span style="color:${color}">${escapeHtml(this.name(slot))}:</span> ${escapeHtml(text)}`;
     this.feed.prepend(line);
-    while (this.feed.children.length > 5) this.feed.lastChild?.remove();
+    this.trimFeed();
     window.setTimeout(() => line.remove(), 6000);
   }
 

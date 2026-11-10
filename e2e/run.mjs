@@ -3566,6 +3566,15 @@ async function mobileFlow(browser) {
   await page.waitForFunction(() => !document.getElementById('touch-ui').hidden && document.getElementById('pause').hidden, null, { timeout: T(5000) }).catch(() => {});
   check(await page.isVisible('#touch-ui .tc-pad') && (await page.isVisible('#touch-ui .tc-fire')) && (await page.isVisible('#touch-ui .tc-wheel')), 'Resume starts touch play: pad, Fire and Weapons buttons show (no pointer lock)');
   await page.screenshot({ path: `${ARTIFACTS}/mobile-play.png` });
+  await mobileHudChecks(page, touch, 'Pixel 7');
+  // Other phones sideways: an S25+-like 832 × 384 and a short Galaxy S9+-like 658 × 320 (the same page, resized).
+  for (const [w, h, label] of [[832, 384, 'S25+ 832x384'], [658, 320, 'S9+ 658x320']]) {
+    await page.setViewportSize({ width: w, height: h });
+    await page.waitForFunction(([w, h]) => innerWidth === w && innerHeight === h, [w, h], { timeout: T(5000) }).catch(() => {});
+    await mobileHudChecks(page, touch, label);
+    await page.screenshot({ path: `${ARTIFACTS}/mobile-hud-${w}x${h}.png` });
+  }
+  await page.setViewportSize({ width: phone.viewport.height, height: phone.viewport.width });
 
   // Move: push the pad forward.
   const pad = await centre('#touch-ui .tc-pad');
@@ -3664,6 +3673,132 @@ async function mobileFlow(browser) {
   check(await page.waitForFunction(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden, null, { timeout: T(5000) }).then(() => true, () => false), 'the pause button opens the pause menu and hides the controls');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await ctx.close();
+  await mobileLamps(browser);
+}
+
+/** Boxes of the touch HUD's parts on the page (null: not shown). */
+function touchHudBoxes(page) {
+  return page.evaluate(() => {
+    const r = (sel) => {
+      const e = document.querySelector(sel);
+      if (!e || e.closest('[hidden]') || getComputedStyle(e).display === 'none') return null;
+      const b = e.getBoundingClientRect();
+      return b.width && b.height ? { l: b.left, t: b.top, r: b.right, b: b.bottom } : null;
+    };
+    const buttons = [...document.querySelectorAll('#touch-ui .tc-btn')].filter((b) => !b.hidden && !b.classList.contains('tc-scores') && !b.classList.contains('tc-wbtn')).map((b) => {
+      const x = b.getBoundingClientRect();
+      return { name: b.textContent, l: x.left, t: x.top, r: x.right, b: x.bottom };
+    });
+    return { w: innerWidth, h: innerHeight, ammo: r('#ammo'), feed: r('#feed'), reload: r('#touch-ui .tc-reload'), wheel: r('#touch-ui .tc-wheel'), scorebar: r('#scorebar'), scores: r('#touch-ui .tc-scores'), buttons };
+  });
+}
+
+/** Text in the HUD and the touch controls drawn under 12 px (font size times any scale), as "size text" lines. */
+function smallText(page, root) {
+  return page.evaluate((root) => {
+    const out = [];
+    for (const top of document.querySelectorAll(root)) {
+      const walk = document.createTreeWalker(top, NodeFilter.SHOW_TEXT);
+      for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+        const t = n.textContent.trim();
+        // Letters only (arrows, carets and dots are glyphs, not text to read).
+        if (!/[A-Za-z0-9]/.test(t)) continue;
+        const e = n.parentElement;
+        const b = e.getBoundingClientRect();
+        if (!b.width || e.closest('[hidden]') || getComputedStyle(e).display === 'none' || getComputedStyle(e).visibility === 'hidden') continue;
+        if (b.bottom < 0 || b.top > innerHeight || b.right < 0 || b.left > innerWidth) continue;
+        const px = parseFloat(getComputedStyle(e).fontSize) * (e.offsetWidth ? b.width / e.offsetWidth : 1);
+        if (px < 11.5) out.push(`${px.toFixed(1)}px "${t.slice(0, 24)}"`);
+      }
+    }
+    return [...new Set(out)];
+  }, root);
+}
+
+const overlaps = (a, b) => !!a && !!b && Math.min(a.r, b.r) - Math.max(a.l, b.l) > 1 && Math.min(a.b, b.b) - Math.max(a.t, b.t) > 1;
+
+/**
+ * The touch HUD in a match on a phone sideways (docs/MOBILE_AUDIT.md, proposals 5, 6, 10 and 12): the ammo panel sits
+ * by the fire buttons (above Reload, clear of the lower centre and of every button), a tap on the scorebar shows the
+ * scoreboard and another hides it, HUD text is at least 12 px, and the kill feed keeps 3 lines, clear of the ammo.
+ */
+async function mobileHudChecks(page, touch, label) {
+  const box = await touchHudBoxes(page);
+  const hit = box.buttons.filter((b) => overlaps(box.ammo, b)).map((b) => b.name);
+  check(!!box.ammo && box.ammo.l > box.w * 0.6 && box.ammo.b <= box.reload.t + 1 && hit.length === 0, `${label}: the ammo panel sits by the fire buttons, above Reload, over no button (${JSON.stringify({ ammo: box.ammo, reload: box.reload, hit })})`);
+  // Five lines into the feed: it keeps 3, above the ammo panel.
+  await page.evaluate(() => { for (let i = 0; i < 5; i++) window.__cs.hud.note(`Line ${i}: Salamander Warlord took over for Elder Tomo`); });
+  const feed = await page.evaluate(() => document.getElementById('feed').children.length);
+  const after = await touchHudBoxes(page);
+  check(feed === 3 && !overlaps(after.feed, after.ammo) && !overlaps(after.feed, after.wheel), `${label}: the kill feed keeps 3 lines, clear of the ammo panel and Weapons (${feed} lines, ${JSON.stringify({ feed: after.feed, ammo: after.ammo })})`);
+  const small = await smallText(page, '#hud, #touch-ui');
+  check(small.length === 0, `${label}: HUD and touch text is at least 12 px (${small.join(', ')})`);
+  // The scorebar: a tap shows the scores, another hides them.
+  const s = box.scores;
+  const bar = box.scorebar;
+  check(!!s && !!bar && s.l <= bar.l + 2 && s.r >= bar.r - 2 && s.t <= bar.t && s.b >= bar.b - 6, `${label}: the scorebar has a tap target over it (${JSON.stringify({ s, bar })})`);
+  const tap = async (id) => {
+    await touch('touchStart', [{ x: (s.l + s.r) / 2, y: (s.t + s.b) / 2, id }]);
+    await touch('touchEnd', []);
+  };
+  await tap(40);
+  const shown = await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard tr, #scoreboard .sb-row, #scoreboard [data-slot]').length > 0, null, { timeout: T(5000) }).then(() => true, () => false);
+  await page.screenshot({ path: `${ARTIFACTS}/mobile-scores-${label.replace(/\W+/g, '-')}.png` });
+  await tap(41);
+  const hidden = await page.waitForFunction(() => document.getElementById('scoreboard').hidden, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(shown && hidden, `${label}: a tap on the scorebar shows the scoreboard, another hides it (shown ${shown}, hidden ${hidden})`);
+}
+
+/**
+ * Map lamps on a phone (docs/MOBILE_AUDIT.md, proposal 1; clusteredLights.ts), on Flatpack Depot's 138 lamps: on
+ * Medium 4 lamps to a mask layer, the mask within the texture limit, and the lamps light the room (Room lights off in
+ * the pause menu darkens it); on Low no lamp light and the rooms' sky light raised under the roof instead.
+ */
+async function mobileLamps(browser) {
+  const phone = devices['Pixel 7'];
+  const { PNG } = await import('pngjs');
+  for (const quality of ['medium', 'low']) {
+    // (Small: a software renderer draws one lamp to a layer slowly.)
+    const ctx = await browser.newContext({ ...phone, viewport: { width: 480, height: 222 }, screen: { width: 480, height: 222 } });
+    await ctx.addInitScript((q) => localStorage.setItem('tiletrigger.graphics', q), quality);
+    const page = await ctx.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto(`${CLIENT}/?offline=flatpack_depot&test=1&god=1&bots=1`);
+    await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+    await page.evaluate(() => document.getElementById('resume')?.click());
+    await page.waitForFunction(() => document.getElementById('pause').hidden, null, { timeout: T(20000) }).catch(() => {});
+    const mask = await page.evaluate(() => window.__cs.view.scenario.lightMask);
+    if (quality === 'medium') {
+      const height = mask ? mask.verticalTiles * Math.ceil(mask.lamps / mask.perLayer) : 0;
+      check(!!mask && mask.lamps > 100 && mask.perLayer === 4 && height <= mask.maxTexture && !mask.dropped, `Medium on a phone: 4 lamps to a mask layer (an exact sum), the mask within the texture limit (${JSON.stringify(mask)}, ${height} texels tall)`);
+      // Lamps light the room: Room lights off (the pause menu's switch) darkens the view.
+      const mean = async () => {
+        const png = PNG.sync.read(await page.screenshot({ timeout: T(90000) }));
+        let sum = 0;
+        for (let i = 0; i < png.data.length; i += 4) sum += png.data[i] + png.data[i + 1] + png.data[i + 2];
+        return sum / (png.data.length / 4) / 3;
+      };
+      await page.waitForFunction(() => window.__cs.view.scene.isReady(), null, { timeout: T(30000) }).catch(() => {});
+      const lit = await mean();
+      await page.screenshot({ path: `${ARTIFACTS}/mobile-lamps-medium.png`, timeout: T(90000) });
+      await page.evaluate(() => { const b = document.getElementById('room-lights'); b.checked = false; b.dispatchEvent(new Event('change')); });
+      await page.waitForFunction(() => window.__cs.view.scenario.lightMask?.on === false, null, { timeout: T(5000) }).catch(() => {});
+      // (Two frames drawn with the lamps off.)
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+      const dark = await mean();
+      await page.screenshot({ path: `${ARTIFACTS}/mobile-lamps-medium-off.png`, timeout: T(90000) });
+      check(lit > dark + 8, `Medium on a phone: the lamps light the room, and Room lights off darkens it (mean ${lit.toFixed(1)} lit, ${dark.toFixed(1)} off)`);
+      await page.evaluate(() => { const b = document.getElementById('room-lights'); b.checked = true; b.dispatchEvent(new Event('change')); });
+    } else {
+      check(!!mask?.dropped, `Low on a phone: no lamp light (the fixtures glow) (${JSON.stringify(mask)})`);
+      const filled = await page.waitForFunction(() => (window.__cs.view.indoorFill?.fill ?? 0) > 0.9, null, { timeout: T(20000) }).then(() => true, () => false);
+      await page.screenshot({ path: `${ARTIFACTS}/mobile-lamps-low.png`, timeout: T(90000) });
+      check(filled, `Low on a phone: under the depot's roof the sky light is raised instead (fill ${await page.evaluate(() => window.__cs.view.indoorFill?.fill)})`);
+    }
+    check(errors.length === 0, `lamps on ${quality}: no page errors (${errors.join('; ')})`);
+    await ctx.close();
+  }
 }
 
 /**

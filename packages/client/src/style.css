@@ -496,6 +496,13 @@ button.cta:hover { background: #ffc46e; }
 /* A phone has no bottom bar off the main menu: the setup takes that room too. */
 html.touch #menu .screen.play { padding-bottom: 10px; }
 html.touch .setup .seg-opt { min-height: 36px; }
+/* Touch text is at least 12 px (docs/MOBILE_AUDIT.md, proposal 10): the mode tiles, variants, "Not on this map", the
+   size chips, the fields' names. Letter spacing gives way so they keep their width; mode tiles a little wider for
+   Breakthrough. */
+html.touch .mode-pick { grid-template-columns: repeat(auto-fill, minmax(126px, 1fr)); }
+html.touch .mode-chip b, html.touch .mode-chip b.long { font-size: 12px; letter-spacing: 0; }
+html.touch :is(.variant-label, .variant-chip, .field-label, .mode-off, .fit-chip, .saved-pop h4, .size-chip b) { font-size: 12px; letter-spacing: 0.02em; }
+html.touch .fact-time { font-size: 12px; }
 .info { display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(142, 162, 192, 0.6); color: var(--muted); font: italic 700 11px/1 Georgia, serif; text-transform: none; letter-spacing: 0; cursor: help; }
 .info:hover, .info:focus-visible { color: var(--deep-space); background: var(--cyan); border-color: var(--cyan); outline: none; }
 .tip-card { position: fixed; left: 0; top: 0; z-index: 1000; max-width: 300px; padding: 10px 12px; white-space: pre-line; pointer-events: none; color: var(--text); font: 500 13px/1.4 var(--font-body); background: rgba(11, 15, 26, 0.96); border: 1px solid var(--cyan); border-left-width: 3px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
@@ -1397,19 +1404,36 @@ html.touch input:not([type]), html.touch input[type='text'], html.touch input[ty
 html.touch #weapon-bar { display: none; }
 html.touch #minimap { left: calc(60px + env(safe-area-inset-left)); top: 8px; width: 104px; height: 104px; }
 html.touch #vitals { left: calc(8px + env(safe-area-inset-left)); bottom: auto; top: 118px; transform: scale(0.72); transform-origin: top left; }
-html.touch #ammo { right: auto; left: 50%; bottom: 6px; transform: translateX(-50%) scale(0.8); transform-origin: bottom center; }
-html.touch #feed { transform: scale(0.85); transform-origin: top right; }
+/* The ammo panel sits by the fire buttons, above Reload and Throw, clearing the lower centre (where targets' feet are). */
+html.touch #ammo { right: calc(14px + env(safe-area-inset-right)); bottom: 212px; padding: 3px 10px 3px 14px; }
+html.touch #ammo-count { font-size: 26px; }
+html.touch #ammo-count.reloading { font-size: 15px; }
+html.touch #ammo-reserve, html.touch #throwable { font-size: 14px; }
+html.touch #throwable { margin-left: 6px; padding-left: 6px; }
+html.touch #ammo-alt { font-size: 12px; letter-spacing: 0.06em; }
+/* Touch text is at least 12 px (docs/MOBILE_AUDIT.md, proposal 10): the feed, the scorebar's labels. */
+html.touch #feed { font-size: 12px; gap: 3px; }
+html.touch #feed div { padding: 3px 10px; }
+html.touch #mode-label, html.touch .sb-box small { font-size: 12px; letter-spacing: 0.08em; }
 /* Narrow phones sideways (under ~760 px, e.g. 658 × 320): the kill feed ran over the scorebar's right box. The scorebar
    is smaller and each feed line keeps to the room right of it (long names end in "…"). docs/MOBILE_AUDIT.md. */
 @media (max-width: 760px) {
   html.touch #scorebar { transform: translateX(-50%) scale(0.8); transform-origin: top center; }
-  html.touch #feed { max-width: calc((50vw - 140px) / 0.85); }
+  /* (12 px drawn at 80 %.) */
+  html.touch #mode-label, html.touch .sb-box small { font-size: 15px; letter-spacing: 0.04em; }
+  html.touch #feed { max-width: calc(50vw - 140px); }
   html.touch #feed div { max-width: 100%; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 /* Short phones (~320 px tall): the minimap and vitals end above the move pad (they overlapped its top). */
 @media (max-height: 360px) {
   html.touch #minimap { width: 88px; height: 88px; }
   html.touch #vitals { top: 100px; transform: scale(0.64); }
+  /* The ammo panel just above Reload, without the weapon's name (the feed keeps 3 lines above it: feedLimit.ts). */
+  html.touch #feed { gap: 2px; }
+  html.touch #feed div { padding: 1px 10px; }
+  html.touch #ammo { bottom: 206px; padding: 1px 10px 1px 12px; }
+  html.touch #weapon-name { display: none; }
+  html.touch #ammo-count { font-size: 22px; }
 }
 
 /* The on-screen controls (game/touchControls.ts). */
@@ -1425,11 +1449,12 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
 #touch-ui .tc-arm.left { top: 50%; left: 7%; margin-top: -11px; border-right-color: var(--text); border-left-width: 0; }
 #touch-ui .tc-arm.right { top: 50%; right: 7%; margin-top: -11px; border-left-color: var(--text); border-right-width: 0; }
 #touch-ui .tc-knob { position: absolute; left: 50%; top: 50%; width: 30%; height: 30%; margin: -15% 0 0 -15%; border-radius: 50%; background: rgba(0, 209, 255, 0.18); pointer-events: none; transition: transform 0.04s; }
-#touch-ui .tc-jump { position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%, -50%) scale(0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%; background: rgba(230, 240, 255, 0.16); border: 2px solid rgba(230, 240, 255, 0.5); color: var(--text); pointer-events: none; }
-#touch-ui .tc-jump span { font: 700 22px var(--font-display); text-transform: uppercase; }
-#touch-ui .tc-jump small { font: 600 13px var(--font-display); color: var(--muted); white-space: nowrap; }
+#touch-ui .tc-jump { position: absolute; left: 50%; top: 50%; width: 32%; height: 32%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%; background: rgba(230, 240, 255, 0.16); border: 2px solid rgba(230, 240, 255, 0.5); color: var(--text); pointer-events: none; }
+#touch-ui .tc-jump span { font: 700 13px var(--font-display); text-transform: uppercase; }
+/* (At least 12 px: it was 13 px drawn at half size. It runs past the small circle, over the pad.) */
+#touch-ui .tc-jump small { font: 600 12px var(--font-display); color: var(--text); white-space: nowrap; text-shadow: 0 1px 2px #000; }
 #touch-ui .tc-jump.on { background: rgba(0, 209, 255, 0.4); }
-#touch-ui .tc-btn { position: absolute; display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; min-height: 0; padding: 0; border-radius: 50%; border: 2px solid rgba(230, 240, 255, 0.45); background: rgba(18, 24, 39, 0.5); color: var(--text); font: 700 11px var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; -webkit-user-select: none; user-select: none; }
+#touch-ui .tc-btn { position: absolute; display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; min-height: 0; padding: 0; border-radius: 50%; border: 2px solid rgba(230, 240, 255, 0.45); background: rgba(18, 24, 39, 0.5); color: var(--text); font: 700 12px var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; -webkit-user-select: none; user-select: none; }
 #touch-ui .tc-btn.on { background: rgba(0, 209, 255, 0.4); border-color: var(--cyan); }
 #touch-ui .tc-fire { right: calc(26px + env(safe-area-inset-right)); bottom: 34px; width: 92px; height: 92px; font-size: 15px; border-color: rgba(255, 94, 94, 0.75); background: rgba(80, 20, 28, 0.45); }
 #touch-ui .tc-fire.on { background: rgba(255, 70, 70, 0.5); border-color: #ff6b6b; }
@@ -1438,8 +1463,11 @@ html.touch #feed { transform: scale(0.85); transform-origin: top right; }
 #touch-ui .tc-reload { right: calc(84px + env(safe-area-inset-right)); bottom: 148px; }
 #touch-ui .tc-throw { right: calc(14px + env(safe-area-inset-right)); bottom: 146px; width: 50px; height: 50px; }
 #touch-ui .tc-use { right: calc(204px + env(safe-area-inset-right)); bottom: 50px; }
-#touch-ui .tc-wheel { right: calc(158px + env(safe-area-inset-right)); bottom: 160px; width: 64px; height: 64px; border-color: rgba(0, 209, 255, 0.6); font-size: 10px; letter-spacing: 0; }
-/* ("Weapons" at 11 px ran past the ring.) */
+#touch-ui .tc-wheel { right: calc(158px + env(safe-area-inset-right)); bottom: 160px; width: 68px; height: 68px; border-color: rgba(0, 209, 255, 0.6); font-size: 12px; letter-spacing: -0.02em; }
+/* ("Weapons" ran past the 64 px ring at 11 px; 12 px fits the 68 px one without letter spacing.) */
+/* The scorebar's tap target: invisible, over the scorebar; a tap shows the scoreboard, another hides it. */
+#touch-ui .tc-scores { left: 50%; top: 0; width: min(300px, 40vw); height: 66px; transform: translateX(-50%); border: 0; border-radius: 0; background: transparent; }
+#touch-ui .tc-scores.on { background: transparent; }
 /* Fireteams: the Orders button (the order wheel), orange like orders and objectives; only while you lead a squad. */
 #touch-ui .tc-orders { right: calc(230px + env(safe-area-inset-right)); bottom: 136px; border-color: rgba(255, 179, 71, 0.7); }
 #touch-ui .tc-orders.on { background: rgba(255, 179, 71, 0.35); border-color: var(--orange); }
