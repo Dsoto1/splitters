@@ -75,7 +75,7 @@ owner-approved audit candidates 7 and 8; landed on main from its green `check/gu
   volume (`quantizationVolume: 'scene'`), and `tools/content/lod-audit.mjs` checks every far copy against its body
   (own skin, unmatched vertices, 6 poses): 161 far copies, 0 off. After, drawn far / full detail in the same pose:
   Hyena Warrior 1.91/1.92 m at 17 m, Honest Abe 1.91/1.91 m at 30 m, every dealt look within 1 cm. characters3's
-  three reds before landing (green on `check/far-copies`, run 42636289055, and again after the MapMaker train; characters3 locally green 5 runs in a row):
+  three reds before landing (green on `check/far-copies`, run 42636289055, and again before landing; characters3 locally green 5 runs in a row; run 42679874806 stopped on the known host.test.ts kick-and-ban flake, and its re-run on characters3's scope check: the rifle came back after the marksman's give, now given again until held):
   - **Bots' hands 13-15 cm off their guns at 160 m:** not the far copies (the probe already measured the level drawn,
     and the far copy's hands match the body's within 0.5 cm) but the smoothed animation LOD. A first long-gun grip
     measures the torso's skin (`TorsoSurface.measure`, `skeleton.prepare(true)`) part way through the after-clip work;
@@ -218,8 +218,6 @@ The workflow is unchanged (CLAUDE.md):
 - run at most 3 agents, each on `wip/<name>`, green on `check/<name>`, then fast-forward main;
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
-
-**Landing now: far copies (`check/far-copies`; this session), please hold code pushes to main.** (Far-copies agent, 2026-11-10; one check run, then a fast-forward.)
 
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
