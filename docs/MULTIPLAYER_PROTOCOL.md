@@ -413,6 +413,11 @@ A browser-hosted match with friends in no longer has to end with its host
   next once-a-second turn. The successor checks shape and size
   (`parseCheckpoint`, ≤ 96 KB; a bad ballot drops the vote, bad votes are left out).
   Older successors ignore `py` and `vote` (the party's tags and the vote start fresh there, as before).
+  With Fireteams on, each player's own squad points (`sp`: `[points, kills, assists, objectives, hill s]`) and the
+  squads themselves (`squads`: `[{ m: [player index…], l: leader index or -1, t: tally, h?: 1 }]`,
+  `Match.checkpointSquads`); the successor makes the squads again as they were, with their points
+  (`Match.restoreSquads`, from `BotFiller.restore`), so neither restarts from zero (Fireteams follow-ups,
+  2026-11-10). Older successors ignore both (the squads' points started from zero there before).
 - **The host goes** (`bye`, or a drop after the reconnect try): the successor,
   if its checkpoint is at most 30 s old and for the map it has, starts the
   match from it (`LocalMatchOptions.restore`: `BotFiller.restore`,

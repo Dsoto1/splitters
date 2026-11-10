@@ -7722,6 +7722,73 @@ async function environmentFlow(browser) {
 }
 
 /**
+ * Fireteams follow-ups (docs/FIRETEAMS_PLAN.md, "Follow-ups"): CTF squad roles. Capture the Flag on Twin Spires with
+ * Fireteams (squads of 4, 9 a side: your squad and two bot-led ones, 3 and 2) → the smallest squad (bot-led) defends,
+ * the others attack, as the sim works it out (ctfSquadRoles) → your squad HUD's line names your squad's role
+ * ("Attack") in a steady word (no animation: Reduce flashing) → the defending squad holds round its own flag's base.
+ * Screenshot: e2e-artifacts/fireteams-ctf-roles.png. (Kept out of fireteamsFlow, which the MapMaker lane also edits.)
+ */
+async function fireteamsctfFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'twin_spires', mode: 'core.ctf', bots: 17, skill: 'easy', scoreLimit: 0, minutes: 20, scoreAuto: false, timeAuto: false, teams: [9, 9], fireteams: true, squadSize: 4 })));
+  await page.goto(`${CLIENT}/?test=1&god=1`);
+  await page.click('#nav-play');
+  await page.waitForSelector('#arcade-start', { timeout: T(30000) });
+  const setup = await page.evaluate(() => ({ on: document.getElementById('setup-variant-fireteams')?.getAttribute('aria-pressed'), size: document.querySelector('#arcade-squad-size .tab.on')?.textContent ?? null }));
+  check(setup.on === 'true' && setup.size === '4', `Match setup: CTF with Fireteams, squads of 4 (${JSON.stringify(setup)})`);
+  await page.click('#arcade-start');
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+  // (The match opens paused in a headless page: Resume, once it's there.)
+  await page.waitForSelector('#resume', { state: 'visible', timeout: T(10000) }).catch(() => {});
+  await page.click('#resume').catch(() => {});
+  await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
+  // (A headless page without pointer lock plays as touch does, so the pause menu stays down for the HUD's picture.)
+  await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
+  // The roles, as the sim has them: by squad, the smallest of 3+ a side defends (ties to the higher id).
+  const readRoles = (m, me) => {
+      const ft = m.fireteams;
+      const mode = m.mode;
+      if (!ft || !mode?.squadRole) return null;
+      const side = (team) => ft.teamSquads(team).map((s) => ({ id: s.id, size: s.members.length, human: s.human, role: mode.squadRole(s.id), bots: s.members.filter((x) => m.slots[x]?.kind === 'bot').map((x) => mode.botPlan.roles.get(x)) }));
+      const mine = side(me.faction);
+      const theirs = side(m.teams.find((t) => t.id !== me.faction).id);
+      return mine.length >= 3 && mine.every((s) => s.role) ? { mine, theirs, me: ft.squadOf(me.slot)?.id } : null;
+  };
+  const roles = (await simWait(page, readRoles, null, T(20000))) ? await sim(page, readRoles) : null;
+  const byRule = (list) => {
+    const small = list.reduce((a, s) => (!a || s.size < a.size || (s.size === a.size && s.id > a.id) ? s : a), null);
+    return list.every((s) => s.role === (list.length >= 3 && s === small ? 'defend' : 'attack'));
+  };
+  check(!!roles && byRule(roles.mine) && byRule(roles.theirs), `CTF squad roles: the smallest of 3+ squads a side defends, the rest attack (${JSON.stringify(roles)})`);
+  const def = roles?.mine.find((s) => s.role === 'defend');
+  check(!!def && !def.human && def.bots.every((r) => r === 'defend') && roles.mine.filter((s) => s !== def && !s.human).every((s) => s.bots.every((r) => r === 'attack')), `a bot-led squad defends, all of it; the others' bots attack (${JSON.stringify(roles?.mine)})`);
+  // Your squad's line: "Squad · Attack · Follow me", the role a steady word (no animation or transition).
+  const mineRole = roles?.mine.find((s) => s.id === roles.me)?.role;
+  const hud = await page
+    .waitForFunction((want) => {
+      const em = document.querySelector('#squad-order em');
+      return em && !em.hidden && em.textContent === want ? { text: em.textContent, role: em.dataset.role, anim: getComputedStyle(em).animationName, transition: getComputedStyle(em).transitionDuration, order: document.querySelector('#squad-order b')?.textContent } : null;
+    }, mineRole === 'defend' ? 'Defend' : 'Attack', { timeout: T(15000) })
+    .then((h) => h.jsonValue(), () => null);
+  check(!!hud && hud.role === mineRole && hud.anim === 'none' && /^0s(, 0s)*$/.test(hud.transition), `the squad HUD line names your squad's role, steadily (${JSON.stringify(hud)}; sim ${mineRole})`);
+  await page.screenshot({ path: `${ARTIFACTS}/fireteams-ctf-roles.png` });
+  // The defending squad holds round its own flag's base (its living members mostly within 25 m of it).
+  const holding = (m, me, id) => {
+      const s = m.fireteams.squads.find((q) => q.id === id);
+      const base = m.mode.flags.find((f) => f.team === me.faction).base;
+      const alive = s ? s.members.map((x) => m.slots[x]).filter((c) => c?.alive) : [];
+      const near = alive.filter((c) => Math.hypot(c.move.pos.x - base.x, c.move.pos.z - base.z) < 25).length;
+      return alive.length && near * 2 > alive.length ? { near, alive: alive.length } : null;
+  };
+  const held = (await simWait(page, holding, def?.id ?? -1, T(45000))) ? await sim(page, holding, def?.id ?? -1) : null;
+  check(!!held, `the defending squad holds round its flag's base (${JSON.stringify(held)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
  * Fireteams (docs/FIRETEAMS_PLAN.md, Parts 1-3): the Fireteams party preset in Match setup (Team Deathmatch, the
  * variant on, squads to fit the map's teams: Sandgate's 8 a side, squads of 4) →
  * you lead a squad of bots (the HUD's order line) → hold B: the order wheel (a tap of B is still the quick-message menu)
@@ -10562,7 +10629,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow, fireteamsctf: fireteamsctfFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];
