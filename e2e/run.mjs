@@ -8508,6 +8508,13 @@ async function wholeBodies(page, frames, upright = []) {
       const checked = new Set();
       const seen = new Set();
       const failed = new Map();
+      // Each upright character's lowest drawn height over the frames, and its full detail's in that pose.
+      const heights = new Map();
+      // Standing short (under 3/4 of its height) is judged on the settled pose, over the frames, not on one frame: a
+      // runner can show one frame's crouch (on CI, Hyena Warrior 1.5 of 2.12 m on the first frame measured, its full
+      // detail as short in that pose, then standing; runs 42563794663, 42567649540), while a body drawn as feet only
+      // (what this checks) is short on every frame.
+      const stood = new Map();
       await new Promise((resolve) => {
         let n = 0;
         const o3 = sc.onAfterRenderObservable.add(() => {
@@ -8521,6 +8528,7 @@ async function wholeBodies(page, frames, upright = []) {
             const dist = Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z);
             if (!lods.length || dist < Math.max(...lods.map((l) => l.distanceOrScreenCoverage)) + 1) continue;
             checked.add(slot);
+            heights.set(slot, heights.get(slot) ?? { look: JSON.parse(a.specKey).look, dist: Math.round(dist), drawn: Infinity, full: 0 });
             let lo = Infinity;
             let hi = -Infinity;
             let bad = 0;
@@ -8546,10 +8554,19 @@ async function wholeBodies(page, frames, upright = []) {
             const height = hi > lo ? hi - lo : 0;
             const want = fullHeight * (spec.size ?? 1);
             const full = hi0 > lo0 ? hi0 - lo0 : 0;
+            const hrow = heights.get(slot);
+            if (hrow && upright.includes(slot) && height < hrow.drawn) Object.assign(hrow, { drawn: +height.toFixed(2), full: +full.toFixed(2) });
             // (`full`: the full-detail mesh in the same pose, for the message: Hyena Warrior's low-detail level is drawn
             // 1.5-1.8 m against its full detail's 2.1 m in the same pose, on CI; see HANDOFF.)
-            if ((off.length || bad || (upright.includes(slot) && height < want * 0.75)) && !failed.has(slot)) {
-              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off });
+            const row = { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off };
+            if ((off.length || bad) && !failed.has(slot)) failed.set(slot, row);
+            if (upright.includes(slot)) {
+              const st = stood.get(slot) ?? stood.set(slot, { frames: 0, short: 0, first: null }).get(slot);
+              st.frames++;
+              if (height < want * 0.75) {
+                st.short++;
+                st.first ??= row;
+              }
             }
           }
           if (++n >= frames) {
@@ -8561,7 +8578,8 @@ async function wholeBodies(page, frames, upright = []) {
       proto.render = render0;
       sc.onBeforeDrawPhaseObservable.remove(o1);
       sc.onAfterDrawPhaseObservable.remove(o2);
-      return { checked: checked.size, seen: seen.size, failed: [...failed.values()] };
+      for (const [slot, st] of stood) if (!failed.has(slot) && st.short >= 2 && st.short * 3 > st.frames) failed.set(slot, { ...st.first, shortFrames: `${st.short} of ${st.frames}` });
+      return { checked: checked.size, seen: seen.size, failed: [...failed.values()], heights: [...heights.values()].filter((h) => h.drawn < Infinity) };
     },
     [frames, 1.8, upright],
   );
@@ -8584,8 +8602,14 @@ async function farBodies(browser) {
   await page.click('#resume').catch(() => {});
   await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot' && c.alive).length >= 20, null, T(30000));
   await holdBots(page);
+  // No end to the round: on a slow CI runner this flow passes Deathmatch's 10 minutes, and the round's end (the
+  // scoreboard, then the next round) left the known looks' check below with nobody to measure.
+  await sim(page, (m) => {
+    m.phaseEndTick = Infinity;
+    m.rules.scoreLimit = 0;
+  });
   // Open ground from where you are: the first way with a clear eye-high sight line 36 m out and ground under the spots.
-  const setup = await sim(page, (m, me) => {
+  const findGround = (m, me) => {
     const p = me.move.pos;
     const ground = (x, z) => {
       const d = m.physics.raycastWorld({ x, y: p.y + 6, z }, { x: 0, y: -1, z: 0 }, 14);
@@ -8621,7 +8645,16 @@ async function farBodies(browser) {
       return { yaw, slots: bots.map((c) => c.slot), from: { x: p.x, y: p.y, z: p.z } };
     }
     return null;
-  });
+  };
+  let setup = await sim(page, findGround);
+  // Not from every spawn (a spawn in a gully): from the next ones you respawn at.
+  for (let i = 0; i < 6 && !setup; i++) {
+    await sim(page, (m, me) => m.kill(me, null, 'core.respawn'));
+    await page.waitForFunction(() => !window.__cs.local.alive, null, { timeout: T(10000) }).catch(() => {});
+    await page.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(30000) }).catch(() => {});
+    await page.click('#resume').catch(() => {});
+    setup = await sim(page, findGround);
+  }
   if (!setup) {
     check(false, 'far bodies: found open ground 36 m out for the crowd');
     await page.context().close();
@@ -8673,10 +8706,37 @@ async function farBodies(browser) {
   await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(60000) }).catch(() => {});
   const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
   const r = await wholeBodies(page, 12, setup.slots);
-  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}${f.shortFrames ? ` (short on ${f.shortFrames} frames)` : ''}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
   // (For a failure: where you are now against where the crowd was set out from, and whether you are alive.)
   if (r.failed.length) broken.push(`you ${await sim(page, (m, me, from) => `${Math.hypot(me.move.pos.x - from.x, me.move.pos.z - from.z).toFixed(1)} m from the setup, ${me.alive ? 'alive' : 'dead'}, ${me.deaths} deaths`, setup.from)}`);
   check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
+  // Then known looks on the same runners (not the deck's draw): Hyena Warrior's far copy was drawn 15-30% short on CI
+  // (HANDOFF, "Flaky e2e checks"), then large, small and animal bodies. Each far copy stands as tall as its full body
+  // in the same pose (the lowest of the frames), and is skinned on the full body's skeleton (one pose for both).
+  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.tortoise', 'core.abe', 'core.panda', 'core.knight', 'core.croakley'];
+  await sim(page, (m, _me, [slots, looks]) => slots.forEach((s, i) => {
+    const c = m.combatants().find((x) => x.slot === s);
+    if (c && looks[i] && c.look !== looks[i]) m.swapLook(c, looks[i]);
+  }), [setup.slots, looks]);
+  const dealt = () => page.evaluate(([slots, looks]) => slots.filter((s, i) => {
+    const a = window.__cs.view.avatars.get(s);
+    return !looks[i] || (!!a?.anim?.ch && JSON.parse(a.specKey).look === looks[i] && a.anim.current === 'run');
+  }).length, [setup.slots, looks]);
+  await until(async () => (await dealt()) >= setup.slots.length, T(120000));
+  // (A few tries: on a slow runner the dealt looks can still be loading, or out of view, the first time.)
+  let r2 = await wholeBodies(page, 12, setup.slots);
+  for (let i = 0; i < 3 && !r2.heights.some((h) => h.look === 'core.hyena'); i++) {
+    await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), setup.yaw);
+    await until(async () => (await dealt()) >= setup.slots.length, T(30000));
+    r2 = await wholeBodies(page, 12, setup.slots);
+  }
+  const shared = await page.evaluate((slots) => slots.flatMap((s) => {
+    const ch = window.__cs.view.avatars.get(s)?.anim?.ch;
+    return (ch?.meshes ?? []).flatMap((m) => (m.getLODLevels?.() ?? []).filter((l) => l.mesh && l.mesh.skeleton !== m.skeleton).map(() => JSON.parse(window.__cs.view.avatars.get(s).specKey).look));
+  }), setup.slots);
+  const drawnHeights = r2.heights.map((h) => `${h.look} ${h.dist} m ${h.drawn}/${h.full} m`).join(', ');
+  const short = r2.heights.filter((h) => h.full > 0 && h.drawn < h.full * 0.9);
+  check(r2.heights.some((h) => h.look === 'core.hyena') && short.length === 0 && r2.failed.length === 0 && shared.length === 0, `far copies stand as tall as their full bodies in the same pose, on the same skeleton, Hyena Warrior's among them (drawn far / full detail, lowest of the frames: ${drawnHeights || 'none measured'}; short: ${short.map((h) => h.look).join(', ') || 'none'}; on a skeleton of their own: ${[...new Set(shared)].join(', ') || 'none'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -8755,19 +8815,19 @@ async function gripsInPlay(browser) {
       if (now !== last) window.__heldTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
     }, 50);
   });
-  await page.evaluate(() => window.__give('core.marksman'));
-  await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.marksman', null, { timeout: T(10000) }).catch(() => {});
-  for (let i = 0; i < 4; i++) {
-    const held = await page.evaluate(() => window.__cs.local.weapon?.id);
-    if (held === 'core.marksman') break;
-    await page.keyboard.press('Digit3');
-    await page.waitForFunction((was) => window.__cs.local.weapon?.id !== was, held, { timeout: T(10000) }).catch(() => {});
+  // On CI the rifle sometimes came back in your hands a few seconds after the give (twice in one run, 2026-11-09:
+  // marksman at 0.1 s, rifle at 0.7 s with no key pressed), and pressing 3 then only asked for the rifle again
+  // ("asked 3", run 42679874806). So the give is repeated until the marksman is held, drawn and raised.
+  const marksmanUp = () => window.__cs.local.weapon?.id === 'core.marksman' && window.__cs.view.viewWeapon === 'core.marksman' && !!window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0;
+  for (let i = 0; i < 6 && !(await page.evaluate(marksmanUp)); i++) {
+    if ((await page.evaluate(() => window.__cs.local.weapon?.id)) !== 'core.marksman') await page.evaluate(() => window.__give('core.marksman'));
+    await page.waitForFunction(marksmanUp, null, { timeout: T(10000) }).catch(() => {});
   }
-  await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.marksman' && window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0, null, { timeout: T(20000) }).catch(() => {});
   await page.evaluate(() => (window.__autoInput = { zoom: true }));
   const scopedIn = await page.waitForFunction(() => window.__cs.view.camera.fov < 0.8, null, { timeout: T(20000) }).then(() => true, () => false);
+  // (Up to a minute: on a loaded machine the sharper copy took over 20 s to load, locally.)
   const swapped = await page.evaluate(
-    () =>
+    (wait) =>
       new Promise((done) => {
         const v = window.__cs.view;
         const def = window.__cs.local.weapon;
@@ -8776,9 +8836,10 @@ async function gripsInPlay(browser) {
         if (!kept || !def.view.held) return done(false);
         v.sharpenViewmodel(def, kept, def.view.held.medium);
         const t0 = performance.now();
-        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > 20000 ? done(false) : setTimeout(poll, 50));
+        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > wait ? done(false) : setTimeout(poll, 50));
         poll();
       }),
+    T(60000),
   );
   await page.evaluate(() => (window.__autoInput = { zoom: false }));
   await page.waitForFunction(() => window.__cs.view.camera.fov > 1.2, null, { timeout: T(20000) }).catch(() => {});
@@ -8863,7 +8924,8 @@ async function gripsInPlay(browser) {
     held.push({ w, ok: !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) } });
   }
   check(held.every((h) => h.ok), `an Imp player holds the gun forward at the chest with a hand on its grip (${JSON.stringify(held)})`);
-  await imp.screenshot({ path: `${ARTIFACTS}/grips-imp-third.png` });
+  // (An artifact for a look: a slow page's screenshot timing out isn't a failed check.)
+  await imp.screenshot({ path: `${ARTIFACTS}/grips-imp-third.png` }).catch(() => {});
   await imp.context().close();
 }
 
@@ -9833,7 +9895,9 @@ async function partyFlow(browser) {
   await pctx.close();
 
   // Online: a hub, a host, a friend by the host's invite link.
-  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9079);
+  // Its own port: dedicatedhost's hub is on 9079, and when a shard ran party just before it, dedicatedhost's hub couldn't
+  // bind and its host listed on party's hub, which has no relay ("relay": false, check/far-copies run 42729978260).
+  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9081);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000)).catch(() => {});
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;

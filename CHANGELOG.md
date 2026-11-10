@@ -19,6 +19,11 @@ made only on a commit that passed CI on a check branch.
 - **Favourites and recent follow the mode:** the mode's own pieces first, or only them.
 - Under the hood, MapMaker's 6,500-line controller is split into 16 modules, with no change in behaviour.
 
+**Far characters** (`wip/far-copies`):
+- Far-off characters are drawn in the same pose as up close: 74 characters' low-detail copies moved onto their body's
+  skeleton (Hyena Warrior was drawn 15-30% short at a distance, Honest Abe 15%).
+- Far characters' hands stay on their guns: a far character's first animation step drew its hands 10-25 cm off the
+  gun until the next one.
 **Gunplay pass 3: the network check and bots' weapon ranges** (owner-approved audit candidates 7 and 8):
 - **Fewer snap-backs and lost shots on a lossy connection.** When a packet was lost and resent, the inputs behind it
   reached the host together, and the host dropped the oldest past 16. You snapped back (up to 1.4 m) and rounds you

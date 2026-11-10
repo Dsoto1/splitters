@@ -67,18 +67,30 @@ owner-approved audit candidates 7 and 8; landed on main from its green `check/gu
   clock, now 2.3× as big. Nearer than 3 m nothing changes. The `flashing` flow's fight moment adds an armour pickup 3 m
   off and one at your own chest.
 - **Tutorial:** no score bar (`Hud.showScorebar`); `newplayer` checks it hidden, and shown again in Quick Play.
-- **Far characters' pose (the characters3 flake): found, not landed (`wip/far-copies`).** The import added each Meshy
+- **Far characters' pose (the characters3 flake): landed from `wip/far-copies`.** The import added each Meshy
   character's far copy and then quantized each mesh on its own: the far copy got a skin of its own, the game a second
-  skeleton for it, posed apart from the body's. 74 of 116 Meshy characters were so (locally Honest Abe's far copy was
-  drawn 1.75 of 2.06 m at 27 m). On `wip/far-copies` (from this branch at 70fb51b): the 74 far copies remade on the
-  body's skin (`relod-built.mjs`), `prepare-meshy-characters.mjs` quantizing in one volume (`quantizationVolume:
-  'scene'`), `tools/content/lod-audit.mjs` (every far copy against its body: own skin, unmatched vertices, 6 poses;
-  161 far copies, 0 off) and a characters3 check dealing eight known looks. On CI that check passed (every far copy
-  within 1 cm of its body's height), but characters3 still failed on: Hyena Warrior's whole body (far copy and full
-  detail alike) 1.5 of 2.12 m on the first frame after waking (the wake pose, not the far copy: runs 42563794663,
-  42567649540); bots' hands 13-15 cm off their guns at 160 m (3 of 8; the probe pools every mesh, full and far);
-  the new check measuring nothing on the flow's second attempt. Reverted here so the rest lands; next: the wake
-  frame, the hand probe at a distance, then land `wip/far-copies`.
+  skeleton for it, posed apart from the body's. 74 of 116 Meshy characters were so (before: Hyena Warrior's far copy
+  drawn 1.5-1.8 m against its body's 2.12 m on CI; Honest Abe's 1.75 of 2.06 m at 27 m locally). The 74 far copies are
+  remade on the body's skin (`relod-built.mjs`), `prepare-meshy-characters.mjs` quantizes body and far copy in one
+  volume (`quantizationVolume: 'scene'`), and `tools/content/lod-audit.mjs` checks every far copy against its body
+  (own skin, unmatched vertices, 6 poses): 161 far copies, 0 off. After, drawn far / full detail in the same pose:
+  Hyena Warrior 1.91/1.92 m at 17 m, Honest Abe 1.91/1.91 m at 30 m, every dealt look within 1 cm. characters3's
+  three reds before landing (green on `check/far-copies`, run 42636289055, and again before landing; characters3 locally green 5 runs in a row; run 42679874806 stopped on the known host.test.ts kick-and-ban flake, and its re-run on characters3's scope check: the rifle came back after the marksman's give, now given again until held; run 42729978260 on dedicatedhost's "relay": false, 4 of 4: party and dedicatedhost both put their hub on 9079, and a shard that ran party first left dedicatedhost's host listed on party's hub, which has no relay; party's hub is on 9081 now):
+  - **Bots' hands 13-15 cm off their guns at 160 m:** not the far copies (the probe already measured the level drawn,
+    and the far copy's hands match the body's within 0.5 cm) but the smoothed animation LOD. A first long-gun grip
+    measures the torso's skin (`TorsoSurface.measure`, `skeleton.prepare(true)`) part way through the after-clip work;
+    the skin wrapper recorded that half-done pose as the evaluation's and drew it until the next evaluation (seconds at
+    5 Hz on a 1-2 fps page): the drawn wrist 10-25 cm off the joint the gun follows. Now only the frame's own skinning
+    (`prepare()`) records (characterAnimator.ts; unit test in `smoothedDeath.test.ts`). It showed with the far copies on
+    the body's skeleton because the far copy's own skeleton was never read part way. Free bots in a canyon match
+    (12 bots, turning round): before, every far bot measured off its gun had its drawn wrist 10-28 cm from the joint;
+    after, 2 of 1,657 samples (the rest still off are near bots mid-action, as on main).
+  - **Hyena Warrior 1.5 of 2.12 m on frame 0:** a pose, not a far copy (the full detail was as short in it). Not seen
+    locally (wake, fight then wake, and new bodies at 25-40 m: lowest 1.79 m); on CI it was one frame of a runner. The
+    whole-body check now judges standing height over the frames (short on at least 2 and over a third of them), and
+    still fails at once on vertices that aren't numbers or a level not drawn.
+  - **The known-looks check measuring nothing on the second attempt:** on CI the flow passes Deathmatch's 10 minutes;
+    the round's end left nobody to measure. farBodies now turns the round's clock and score limit off.
 - **Old branches:** `wip/roster-cleanup` (helmets on four looks): dropped, main has model gear with fitted helmets
   (headFit.ts) and those four looks are retired. `wip/host-handoff-uncommitted`: dropped, every change in it is on main
   (pageHeardAt, `linked`, LINKED_WAIT_MS, the 120 s hold, HANDOFF_JOIN_SECONDS 10). `wip/map-review`:
@@ -206,8 +218,6 @@ The workflow is unchanged (CLAUDE.md):
 - run at most 3 agents, each on `wip/<name>`, green on `check/<name>`, then fast-forward main;
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
-
-**Landing now: far copies (`check/far-copies`; this session), please hold code pushes to main.** (Far-copies agent, 2026-11-10; one check run, then a fast-forward.)
 
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
@@ -398,8 +408,6 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
-- Claimed: the characters' far copies (`packages/client/public/characters/*.glb` LODs, `content/meshy.lock.json`, the e2e `characters3` flow's far-copy checks; `wip/far-copies`), far-copies agent, 2026-11-09.
-
 - Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
 
 **MapMaker: time of day and weather (`wip/mapmaker-p5`, map format v34, MapMaker lane, 2026-11-09).** Overhaul Phase 5
@@ -442,6 +450,10 @@ for the owner's review, not landed).**
   roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
+
+**Landing now: Iron Coast part 3 (`check/iron-coast-3`; Iron Coast session), please hold code pushes to main.** (2026-11-10; one check run, then a fast-forward.)
+
+**Next in line to land: the MapMaker split** (`check/mapmaker-p2-split`, MapMaker lane, 2026-11-10). It has waited behind far copies and now Iron Coast part 3. Please let it go next, before starting another hold.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
