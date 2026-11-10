@@ -391,7 +391,7 @@ and 2; waits for Tuesday's train).** docs/MAPMAKER_OVERHAUL_PLAN.md "As built" u
   per line.
 - **Phones:** Low graphics draws fine terrain at half resolution; collision and nav keep every vertex.
 
-**Iron Coast part 3 (`wip/iron-coast-3`, Iron Coast session, 2026-11-09; all in MapMaker).** Details: docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md, "Part 3".
+**Iron Coast part 3 (`wip/iron-coast-3`, Iron Coast session, 2026-11-09/10; all in MapMaker; LANDED via `check/iron-coast-3`, its claim released).** Details: docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md, "Part 3".
 - **Done:** Change grid 1.25 m (Smooth); the cliff leaned back over 5-10 cells with a rounded lip and 43 scree mounds
   where clear of pieces; every inland drop that gated nothing made a grassy slope (the crest's back bank beside the
   trenches and bunkers, the east bunker's bank, the west plateau, the B3 knoll's west side, the plaza walls); east and
@@ -414,7 +414,6 @@ and 2; waits for Tuesday's train).** docs/MAPMAKER_OVERHAUL_PLAN.md "As built" u
   run past a free end of an inland stretch was held at the end's height). One line in `client/borderVisuals.ts`
   (`under` samples the coast ground at the band's own u) lays it on the ground; a thin lip of the band can still show
   over the east headland from the beach. Yours to refine.
-- Claimed: map format v33 (bot hints in MapMaker, `wip/mapmaker-bothints`), MapMaker lane, 2026-11-09.
 
 **MapMaker: bot hints (`wip/mapmaker-bothints`, map format v33, MapMaker lane, 2026-11-09).** Overhaul Phase 4 item 3,
 Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
@@ -429,7 +428,6 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
   make, duplicates). "What bots know" works the computed spots out with the navigation check, only while it's ticked.
 - **Tests:** unit `shared/test/botHints.test.ts` (v32 → v33, commands and undo, the accessor, the checks, a real
   navmesh); e2e `editorux` → `editorBotHintChecks`.
-
 
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
@@ -451,9 +449,6 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - **Leftover done first:** the environment atlas now holds every species (Angular Boulder, Cliff Face were text
   cards; `pictureKeys`), rebuilt with content:rebuild's atlas step.
 
-- Claimed: `maps/iron_coast.json` (Iron Coast part 3: the 1.25 m grid, natural cliffs, inland banks, coast border sides, A1/A2 zone time; in MapMaker, `wip/iron-coast-3`), Iron Coast session, 2026-11-09.
-
-**Landing now: MapMaker train (check/train-<timestamp>), please hold code pushes to main.** (MapMaker lane, 2026-11-09; followups, bothints, p4, env3, setpieces6, sandfall, whiteout.)
 - Claimed: content tile ids `core.tunnel_vault_walled`, `core.tunnel_vault_bend_walled`, `core.tunnel_vault_t_walled`, `core.tunnel_vault_cross_walled` (the Side walls tile option; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-09.
 - Claimed: `maps/test_coverage.json` (one of each side-walled vaulted tunnel, placed in MapMaker; `wip/mapmaker-sandfall`), MapMaker lane, 2026-11-09.
 
@@ -478,8 +473,6 @@ for the owner's review, not landed).**
   roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
-
-**Landing now: Iron Coast part 3 (`check/iron-coast-3`; Iron Coast session), please hold code pushes to main.** (2026-11-10; one check run, then a fast-forward.)
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
@@ -1633,7 +1626,6 @@ homing, walkers, mines and bots' targets stay on `hostile`. **Tests:** `shared/t
 path for real (rifle, shotgun, rockets, knife, flamethrower and its burn) at a teammate and an enemy with the rule
 off, half and full; Breakthrough; a team kill earns nothing (fails without the fix). e2e `teams`
 (`friendlyFireChecks`): Match setup's rule reaches the match; a teammate takes your rounds with it on and none off.
-
 
 ### Frozen characters in big matches (`wip/frozen-fix`, agent, 2026-11-07; green on `check/frozen-fix` at 63731808, run 42407015946; landed on main 63731808)
 **Root cause:** the figures frozen mid-run (some in the air) were the dead. Performance round 4's pose smoothing
@@ -4204,8 +4196,6 @@ like 2–3 bots protect a flag, and the rest go out there and try to get the oth
   - Also confirm it isn't a free-camera rendering effect. Animation LOD and dormant/culled state use
     `scene.activeCamera`, so free cam should be fine, but check that bots near the free camera animate and move.
 
-
-
 ### Owner's M1 re-record after performance round 3 (2026-11-06, app 463c247; files in session scratchpad perf4/)
 Recorded on the M1 Pro: TDM, 49 players, High, auto render scale, 60 fps cap. Steady state skips each match's first 5 s.
 
@@ -4930,7 +4920,6 @@ Plan: docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 and "Owner decisions". Status is
   environmentCollision covers both load paths); impact sounds per surface (no sounds yet).
 - **Resume:** `git fetch && git checkout wip/env-phase1`; `node tools/content/environment.mjs --check`.
 
-
 ## Earlier start notes (session of 2026-10-30 afternoon)
 
 **Read CLAUDE.md first.** Workflow: session branch → `check/candidate` → when green, fast-forward `main`.
@@ -5157,7 +5146,6 @@ Owner's request: a CI round in about 8-10 min (run 41851112171 took 36 min: buil
   try 4 shards or a duration-based split. hostcontrols (320 s) is the longest flow (it sets the shard goal of ~6 min).
   The first nightly run will be the first all-parts tour on 16 shards: check its times.
   check/ci-speed-client and check/ci-speed-map are probe branches; delete them, don't merge them.
-
 
 ### Procedural environment, Phase 0: audit and plan (`wip/env-audit`, agent, 2026-11-04; docs only, pushed, not merged)
 The owner's spec for replacing natural assets with an in-house procedural pipeline is `docs/PROCEDURAL_ENVIRONMENT.md`
@@ -7888,7 +7876,6 @@ Start the rest when agent slots free up:
   powerup pickups.
 
 ## Earlier state (2026-10-28)
-
 
 - **Live:** https://trigger.toshiroplay.com, version **0.3.0** (`v0.3.0` tag and
   GitHub release exist). `main` is at or past `ace6276`; all of it went green on
