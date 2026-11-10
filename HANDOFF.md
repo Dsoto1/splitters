@@ -538,7 +538,7 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
-**Next in line to land: the mobile audit** (`check/mobile-audit`, mobile-audit agent, 2026-11-10), after MapMaker Phase 6: one check run, then a fast-forward.
+**Landing now: the mobile audit (`check/mobile-audit`; this session), please hold code pushes to main.** (Mobile-audit agent, 2026-11-10; one check run, then a fast-forward.)
 
 **Next in line to land: Fireteams part 3** (`check/fireteams-3`, Fireteams agent, 2026-11-10), after the mobile audit: one check run, then a fast-forward.
 
