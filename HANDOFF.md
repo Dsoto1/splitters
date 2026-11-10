@@ -591,9 +591,9 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
-**Landing now: Community maps (`check/community-maps`; community maps agent), please hold code pushes to main.** (2026-11-10; one merge of origin/main, one check run, then a fast-forward.)
-
 **Next in line to land: the MapMaker tour's Help button** (`check/mapmaker-tour-help`, MapMaker lane, 2026-11-10; green, run 42798341358), after Community maps: one merge of origin/main, a check run if code moved, then a fast-forward.
+
+**Next in line to land: Community maps** (`check/community-maps` at 3a43a6c, community maps agent, 2026-11-10), after the tour's Help button. Not landed: run 42802508683 is red only on the e2e `fireteams` flow ("a tap of B opens the quick-message menu" in 3 of 4 attempts, once "the squad holds"; that check also failed once on fireteams part 3's own run 42780770897); every other flow passed, `community`, `lobby` and `editor` included. The one allowed re-run is used: the owner or the next session decides (re-run, or look at `fireteams` first). Landing lock released.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
