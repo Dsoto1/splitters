@@ -87,6 +87,9 @@ the way" and "Side lanes by a corridor").** CHANGELOG "Bots walk round parked ve
   spells 1.1 → 0.6; TDM sample stuck 0.79 → 0.63, failed searches 1.18 → 0.00 %. `bot-report --check`: every limit held.
   `pnpm bench:96:clump` (load 1.2-1.6): bot thinking 1.7-2.1 ms a tick on main, 1.7-2.4 here (Frost Basin clumped
   +0.2-0.3 ms: its vehicles by the spawns), inside the 2.5 ms guard.
+- **Checks:** typecheck; test:changed (1,579 passed; `botPush.test`'s garrison bound for seed 1 lowered 0.25 → 0.18:
+  walking round parked vehicles reshuffles that seed to 0.20, seeds 1-5 average 0.27 against 0.29 without); e2e `ctf`
+  and `vehicles` locally with CI's timeouts (the machine at load 8 from other sessions).
 - **Not done, left for later:** crowd steering in clumps (measured: about 1 % of bot-time on foot within 0.8 m of a
   teammate; not worth local avoidance yet); parkour links on a navmesh rebuilt mid-match (Fort Wars) and ways opened by
   broken crates or walls (both need a tiled navmesh); a vehicle plugging a passage (no way round: the old sidestep).
