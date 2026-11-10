@@ -763,6 +763,46 @@ via (the point furthest from the other corridors) instead of `laneWaypoint`, mea
 
 **Next step:** route spread (part 2 is settled: the moderate price, above).
 
+### Phase C, measured (part 3: parked vehicles in the way, side lanes by a corridor; `wip/bots-c3`, 2026-11-10)
+What was still open in Phase C, and what this part did:
+- **Moving obstacles, the vehicles:** done for hulls standing still. Parked vehicles, wrecks and turrets aren't on the
+  navmesh, and bots walked into them until the stuck recovery stepped them aside. Now a bot on foot goes round a still
+  hull in its next 7 m by its nearer corner, every leg checked for walls, and round to the route's next corner when the
+  route's own corner is under the hull (docs/BOTS.md, "Parked vehicles, wrecks and turrets in the way";
+  `bots/hulls.ts`, `botHulls.test.ts`: a bot reaches a gun behind a broadside Hauler with no stuck recovery, and round
+  one parked at a wall's end on its route's corner; without it, it never gets there in 20 s). Moving vehicles are left to
+  the roadkill dodge (`watchTraffic`).
+- **Route spread:** side lanes to an objective take a corridor of the side's trip on that side by its vias, instead of
+  `laneWaypoint` (docs/BOTS.md, "Side lanes by a corridor"; `botSideLanes.test.ts`). The busiest way did **not** move.
+- **Crowds in clumps:** measured, not changed. `bot-report` now prints the share of bot-time on foot within 0.8 m of a
+  teammate: 1.0 % in the CTF sample, 0.9-1.2 % in Team Deathmatch. Bodies pass through each other, and keeping right
+  plus the 2.2 m push already keep clumps rare; local avoidance would buy little here.
+- **Drop and jump links:** no gap found that this part could close in general code. Still open: links on a navmesh
+  rebuilt mid-match (Fort Wars), and a way opened by a broken crate or wall (needs a tiled navmesh).
+
+Before: main fc625d6. After: `wip/bots-c3`. `pnpm bot-report`, 180 s matches (the vehicle maps 240 s):
+
+| Sample | main | Part 3 |
+|---|---|---|
+| CTF, the eight maps, seeds 1-6 (48 matches): captures (flag takes); matches with one | 36 (251); 23 | 46 (211); 23 |
+| CTF: stuck recoveries a bot-minute; failed searches; idle out of a fight | 1.20; 0.00 %; 4.7 % | 1.17; 0.00 %; 4.7 % |
+| CTF: busiest way; side lanes by a corridor a match; still hulls walked round a match | 58 %; -; - | 57 %; 18.7; 14.4 |
+| Vehicle maps TDM (Midnight Keel, Riot Junction, Canyon, Runway Nine, Frost Basin, Whiteout; seeds 1-2): stuck a bot-minute | 1.27 | 1.20 |
+| Vehicle maps: stuck recoveries within a metre of a still hull, a match; 10 s+ idle spells a match | 42.5; 1.1 | 34.0; 0.6 |
+| Vehicle maps: kills a minute; still hulls walked round a match | 27.4; - | 27.4; 32.3 |
+| Team Deathmatch (Eagle Spires, Twin Spires, Riot Junction; seeds 1-4): stuck a bot-minute; kills a minute | TDM_BEFORE | TDM_AFTER |
+
+Captures 36 → 46 (per take 0.14 → 0.22; takes 251 → 211, mostly Bunker Cross 30 → 12) is within the ±10 that 48 matches move by between builds that differ in one rule. Midnight Keel's
+stuck recoveries 236 → 187 a match (the parked hovercraft and jeeps by the docks); what's left by a hull is mostly a
+vehicle left plugging a passage, where there is no way round (the stuck recovery's sidestep, as before). Bench: BENCH.
+
+**Route spread, why it didn't move:** 18.7 side lanes a CTF match took a corridor (of about 150 bots' trips there),
+and the busiest way stayed 57-58 %. Most of a team's bots past a trip's middle aren't loose side-laners on a long trip:
+groups follow their own corridors already, defenders and carriers go the short way, and on trips with only two corridors
+one side has none to take. What's left to try: spread the straight 30 % too (by the team brain's crowd price), measured
+for captures; the earlier try of that (all loose bots on a corridor by `pathAlong`, capped at 1.3 times the shortest)
+halved captures.
+
 ## Phase D: polish and tools
 1. **Memory:**
    - last-known enemy spots kept for a while;
