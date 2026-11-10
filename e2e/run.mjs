@@ -3291,6 +3291,7 @@ async function mobileFlow(browser) {
   await page.tap('.opt-nav button[data-tab="controls"]');
   check(await page.isVisible('.opt-sub:has-text("Touch")'), 'Options → Controls lists the touch controls on a phone');
   await page.screenshot({ path: `${ARTIFACTS}/mobile-options.png` });
+  await mobileCharacterSelect(page);
 
   // You alone on the range (&bots=1: one player in all). Its deathmatch bots shot the god-mode you about (their swarm
   // rockets' and rounds' knockback): the "walk" could be a blast's push, and the jump's tap could land while a hit
@@ -3400,6 +3401,26 @@ async function mobileFlow(browser) {
   check(await page.waitForFunction(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden, null, { timeout: T(5000) }).then(() => true, () => false), 'the pause button opens the pause menu and hides the controls');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await ctx.close();
+}
+
+/**
+ * Character Select on a phone sideways (docs/MOBILE_AUDIT.md): the info panel keeps to a short strip, so the grid shows
+ * two rows of portraits with their names (before: one row, 109 px, the names cut off, and the panel wider than itself).
+ */
+async function mobileCharacterSelect(page) {
+  await page.goto(CLIENT);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.tap('#nav-characters');
+  await page.waitForFunction(() => document.querySelectorAll('.char-grid .char-tile').length > 6 && document.querySelector('.char-info h3'), null, { timeout: T(15000) }).catch(() => {});
+  const fit = await page.evaluate(() => {
+    const grid = document.querySelector('.char-grid');
+    const info = document.querySelector('.char-info');
+    const g = grid.getBoundingClientRect();
+    const tile = grid.querySelector('.char-tile')?.getBoundingClientRect();
+    return { grid: Math.round(g.height), info: Math.round(info.getBoundingClientRect().height), tile: Math.round(tile?.height ?? 0), spills: info.scrollWidth > info.clientWidth + 1, name: !!info.querySelector('h3')?.getBoundingClientRect().width };
+  });
+  await page.screenshot({ path: `${ARTIFACTS}/mobile-characters.png` });
+  check(fit.grid >= fit.tile * 1.6 && fit.info <= 120 && !fit.spills && fit.name, `Character Select on a phone sideways shows more than a row of characters beside a short info strip (${JSON.stringify(fit)})`);
 }
 
 async function vaultFlow(browser) {
