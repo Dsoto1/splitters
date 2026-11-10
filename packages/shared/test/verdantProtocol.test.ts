@@ -23,8 +23,9 @@ describe('Verdant Protocol', () => {
     // The command building: a Server Vault and Barracks on the plateau (level 1).
     expect((raw.setPieces ?? []).some((p) => p.piece === 'setpiece.server_vault' && p.z === 1)).toBe(true);
     expect(tiles.filter((t) => t.tile === 'military.barracks' && t.z === 1).length).toBeGreaterThanOrEqual(2);
-    // The greenhouse lab: glass rooms (the glass facade, skylights, breakable glass in the windows).
-    const glass = tiles.filter((t) => t.tile === 'core.room' && t.z === 0 && t.options?.facade === 'glass' && t.options?.ceiling === 'skylight');
+    // The greenhouse lab: glass rooms (skylights, breakable glass in the windows; no Glass tower facade, which is a dark
+    // glass block with a neon trim, not a greenhouse).
+    const glass = tiles.filter((t) => t.tile === 'core.room' && t.z === 0 && !t.options?.facade && t.options?.ceiling === 'skylight');
     expect(glass.length).toBeGreaterThanOrEqual(6);
     expect(glass.some((t) => Object.values(t.glass ?? {}).includes('breakable'))).toBe(true);
     // The old watchpost: a Guard Tower on the knoll (level 2), the one overlook.
