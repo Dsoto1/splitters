@@ -8,6 +8,19 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Mobile audit (`wip/mobile-audit`, agent, 2026-11-10; owner-approved). Full report and ranked proposals for the owner to
+pick from: docs/MOBILE_AUDIT.md.**
+- **Fixed:**
+  - First-person guns: 8 bulky sci-fi guns lowered to cover at most 11 % of the screen (Flak 13.8 → 10.5 %);
+    `shared/test/viewmodelCover.test.ts` holds every carried gun to that budget, so a new gun's `viewOffset` must pass it.
+  - Character Select on phones sideways keeps two rows of characters (e2e `mobile` → `mobileCharacterSelect`).
+  - Narrow-phone HUD overlaps: kill feed over the scorebar, "Weapons" past its ring, vitals over the pad.
+  - The pause menu's key caps on touch.
+- **Not fixed: the owner's dark block on a lit wall (Bottling Plant).** It is screen-aligned, which points at the
+  clustered map lights' 64 × 64 tile mask on that phone's GPU; SwiftShader can't show it. One lamp per mask layer
+  was tried and reverted (Flatpack Depot's 138 lamps overflow the mask texture). The next step is proposal 1 in the
+  audit: ask the owner's phone and Graphics setting, and a room-lights switch to confirm.
+
 **Release 0.9.0 (2026-11-08, owner-approved "wait for the passenger fix, then release together"):** main 4d8f205
 (green on `check/release-090`, run 42502393727; three e2e shards failed first in flows the release doesn't touch,
 arsenal, weaponsets and hostgame, as on other branches that hour, and passed on a re-run of the failed jobs). CI

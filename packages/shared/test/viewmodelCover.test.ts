@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { CORE_WEAPONS } from '../src/index.ts';
 
 /**
- * How much of the screen the gun in your hands covers at rest (docs/MOBILE_AUDIT.md, "Viewmodels"). The Quaternius
+ * How much of the screen the gun in your hands covers at rest (docs/MOBILE_AUDIT.md, "Fixed in this job"). The Quaternius
  * sci-fi guns are tall, solid blocks; at the rifle's place the Flak Cannon covered 13.8 % of a 16:9 screen and the
  * Laser Rifle 17 % (the rifle 5 %), a grey wall over the right of the view that phones (whose touch buttons sit there
  * too) showed worst. Every weapon you carry in a slot now stays within VIEWMODEL_BUDGET at its `viewOffset`.

@@ -8,6 +8,17 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**Phones: bulky guns sit lower, Character Select shows your characters, a tidier HUD** (owner's mobile audit, 2026-11-09)
+- **First-person guns**: the big sci-fi guns (Flak Cannon, Laser Rifle, Singularity Cannon, Blast Rockets, Guided Rocket,
+  Swarm Launcher, Oil Slicker, Grenade Launcher) sit lower in your hands; none covers more than about a tenth of the screen (the Flak
+  Cannon 14 % → 10 %).
+- **Character Select on a phone held sideways**: the info strip is half as tall, so you see two rows of characters
+  with their names (one cut-off row before; none on smaller phones).
+- **HUD on narrow phones**: the kill feed no longer runs over the score bar, "Weapons" fits its button, and your
+  health stays clear of the move pad.
+- **Pause menu on a phone**: no keyboard keys shown on its buttons.
+- The audit and what's next for phones: docs/MOBILE_AUDIT.md.
+
 **Iron Coast, part 3: natural cliffs and banks, the beach goes on** (owner, 2026-11-08/09; all in MapMaker)
 - **Finer ground**: the terrain is on a 1.25 m grid (Terrain → Change grid, Smooth), so slopes are drawn smoothly.
 - **The cliff** leans back over 6-10 m of rock with a rounded lip and scree at its foot along the stretches clear of
