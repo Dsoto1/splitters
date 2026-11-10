@@ -8,6 +8,10 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+**MapMaker: a first-time tour** (MapMaker overhaul Phase 6): the first visit walks you through a tiny map with the real
+tools: place a room, a spawn and a pickup, then play it. Each step moves on when you do it; Skip or Esc ends it, and it
+won't show again. Take it again from the `?` key list.
+
 **MapMaker: modes, folding panels and an outliner** (MapMaker overhaul Phase 2):
 - **Seven mode tabs:** Build, Props, Gameplay, Logic, Environment, Paths and Test, each with its own palette tabs and its
   own part of the side panel. Roads, the track and the drop routes have their own Paths mode; Test gathers Play test,

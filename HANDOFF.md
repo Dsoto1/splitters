@@ -984,6 +984,16 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
   screenshots; the skipped maps above; card pictures.
 
+### MapMaker overhaul Phase 6: the first-time tour (`wip/mapmaker-p6`, agent, 2026-11-10; MapMaker lane; docs/MAPMAKER_OVERHAUL_PLAN.md "Phase 6", docs/BUILDING_KIT.md "MapMaker's first-time tour")
+- A card over the view on the first visit: welcome, place a room, add a spawn, add a pickup, try it out, a closing
+  card. Rules and wording shared `editor/tour.ts`; the card and highlight `client/editor/tour.ts` (wired with a few lines
+  in `editorApp.ts`: built after the budget bar, `startFresh` → `maybeStart`, `test()` → `note({kind:'test'})`; the key
+  list's **Take the tour**). Remembered in `localStorage` `tiletrigger.editor.tour` (`done` / `skipped`).
+- **Pitfalls:** it chains onto `history.onChange` (the budget bar's first); `HistoryChange.undo` marks undos. It never
+  starts in `?test=1` unless `&tour=1`, so other flows and baselines don't see it. A new map has a room and a spawn
+  already: the steps ask for another of each. The closing card ignores Esc (the Esc that leaves a test would close it).
+- Tests: unit `shared/test/mapmakerTour.test.ts`; e2e `editorux` → `editorTourChecks`.
+
 ### MapMaker overhaul Phase 2: the split, modes, folding panels, the outliner (`wip/mapmaker-p2`, agents, 2026-11-09/10; MapMaker lane; docs/MAPMAKER_OVERHAUL_PLAN.md "Phase 2", docs/BUILDING_KIT.md "MapMaker's modes, panels and outliner")
 - **The split** (steps 1-12, a3040bf8; main merged in at 2040c580): green on `check/mapmaker-p2`, run 42730322862. It
   can land on its own. `editorApp.ts` 6,489 → 949 lines; each part is a class taking the `EditorApp` (module map in
