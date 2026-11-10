@@ -16,7 +16,7 @@ import { findCover, stillCovered, type CoverSpot } from './cover.ts';
 import type { SightCache } from './sight.ts';
 import type { ViewGrid } from './grid.ts';
 import { MapMemory, laneWaypoint, pickExploreGoal } from './explore.ts';
-import { hullDetour, type HullPass } from './hulls.ts';
+import { hullDetour, insideHull, type HullPass } from './hulls.ts';
 import type { BotPlan } from './director.ts';
 import type { PricedTrip } from './teamBrain.ts';
 import { GUN_WEIGHT, OPT_CHASE, OPT_COVER, OPT_FIGHT, OPT_NOISE, OPT_PICKUP, OPT_POST, OPT_RETREAT, OPTIONS, POST_WEIGHT, SCOPE_WEIGHT, bestChoice, scoreChoices, type ChoiceInput } from './choices.ts';
@@ -4106,6 +4106,18 @@ export class BotBrain {
   }
 
   /**
+   * The route's first corner from `from` on that isn't under a still hull (a vehicle left on the route: the navmesh
+   * doesn't know of it), when the corner at `from` is under one (not the one it is getting into); else -1.
+   */
+  private cornerBeyond(view: BotWorldView, from: number): number {
+    const hulls = view.hulls!;
+    const boarding = this.mountPlan?.index ?? -1;
+    let j = from;
+    while (j < this.path.length - 1 && insideHull(hulls, this.path[j]!, boarding)) j++;
+    return j > from ? j : -1;
+  }
+
+  /**
    * Where to head for on the way to `aim`: `aim` itself, or the corner of a still hull in the way (hulls.ts). Looked
    * for every few ticks; a corner chosen stands till it is reached or the next look. Not on a ladder, a zipline or a
    * parkour link.
@@ -4119,12 +4131,26 @@ export class BotBrain {
     if (hp && tick < hp.until && horizontalDistance(me.pos, hp.pos) > 0.6) return hp.pos;
     if (!hp && tick < this.hullFreeUntil) return aim;
     const keep = this.hullSide && tick < this.hullSide.until ? this.hullSide : null;
-    const pass = hullDetour(hulls, me.pos, aim, keep, (from, p) => {
-      const ground = view.nav.closestPoint({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0.6, y: 1.5, z: 0.6 });
-      if (!ground || horizontalDistance(ground, p) > 0.6 || Math.abs(ground.y - from.y) > 1.2) return false;
-      p.y = ground.y;
-      return this.walkClear(view)(from, p);
+    // (The route's corner under a hull: round it to the first beyond.)
+    const onPath = this.path[this.pathIndex] === aim;
+    const j = onPath ? this.cornerBeyond(view, this.pathIndex) : -1;
+    const walk = this.walkClear(view);
+    const pass = hullDetour(hulls, me.pos, aim, {
+      keep,
+      beyond: j >= 0 ? this.path[j]! : null,
+      boarding: this.mountPlan?.index ?? -1,
+      ok: (from, p) => {
+        const ground = view.nav.closestPoint({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0.6, y: 1.5, z: 0.6 });
+        if (!ground || horizontalDistance(ground, p) > 0.6 || Math.abs(ground.y - from.y) > 1.2) return false;
+        return walk(from, { x: p.x, y: ground.y, z: p.z });
+      },
     });
+    if (pass === 'beyond') {
+      // Round it already: on along the route past the corners under it.
+      this.pathIndex = j;
+      this.hullPass = null;
+      return this.path[j]!;
+    }
     if (!pass) {
       this.hullPass = null;
       this.hullFreeUntil = tick + HULL_LOOK_TICKS;
