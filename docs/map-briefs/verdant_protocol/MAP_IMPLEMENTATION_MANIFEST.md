@@ -40,8 +40,9 @@
   - TDM: embers 51 · tide 80, 131 kills, stuck recoveries 36, no route 0 %, spawn deaths 0; three ways each side.
   - CTF: tide 1 capture (first take 39 s, capture 80 s), 128 kills, stuck 39 (2 loops), no route 0 %, spawn deaths
     2.3 %.
-  - KotH: tide 39 · embers 0 (hill held 40 s, empty 110 s, 2 moves), 112 kills, stuck 26, no route 0 %. One seed: the
-    lopsided hill score wants more seeds and a look at the hills' order before landing.
+  - KotH: tide 39 · embers 0 (hill held 40 s, empty 110 s, 2 moves), 112 kills, stuck 26, no route 0 %. Seed 2: tide 23 ·
+    embers 3 (held 27 s, empty 123 s), 122 kills, stuck 39. Tide leads both seeds and the hills stand empty most of
+    the time: the hills' order and places want a look in the owner's review (question 7).
   - Stuck spots (TDM): the yard's south-west outside corner (−28..−32, −28..−36), its south-east corner (28, −28..−36),
     the west stair hut's foot (−24, −16), the ward (12, −4, −24); idle posts at the south-west road (−32, −73).
 - Bench (server tick, 32 bots, TDM, 60 s, load 11): avg 4.8 ms, p50 2.9, p95 9.4 ms of 16.7; spawn deaths 1 of 35.

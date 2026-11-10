@@ -106,3 +106,6 @@ jungle between the paths.
    subscription) placed in its gouge.
 6. **The map's edge:** (a) the raised rim with no border, as built; (b) a jungle Forest wall (the border choosing
    palms on grass in a jungle map: a small MapMaker change).
+7. **King of the Hill balance:** in two bot runs Tide (east spawns) out-held Embers 39-0 and 23-3, and the hill stood
+   empty most of the match: (a) keep the four hills as built and judge in play; (b) reorder them so the first hill is
+   the yard (centre) and move the north-east hill off Tide's side; (c) drop KotH from this map.
