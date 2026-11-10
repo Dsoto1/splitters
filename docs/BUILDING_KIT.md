@@ -125,6 +125,12 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
 - **Vaulted Tunnel, Bend, Junction, Crossing:** a 3.6 m passage between masonry under a barrel vault (2.2 m to 3.28 m),
   groin-vaulted where two cross, a drain down the middle. No walls of their own at their sides: what is built beside
   them builds its own.
+- **Side walls** (the tile inspector's Options, on any vaulted tunnel, one or several selected): the tunnel's masonry
+  rises to a kerb 0.25 m under the level above, and the ground on its closed sides stays up at that kerb instead of
+  banking down to the passage (where a tunnel runs under open ground, or out into a cut, you see masonry, not a slope
+  of earth). It is the tile "Vaulted Tunnel (Side Walls)" (and Bend, Junction, Crossing): the palette shows only the
+  plain ones, and the checkbox swaps between them in one undo step, keeping paint and walls. The ground over the
+  passage itself must still be within 3 m of its floor (Flatten it), as for the plain tunnel.
 - **Corner Hatch:** open floor with a quarter of a 3.2 m hatch at its north-east corner: four round a corner open a
   hatch on it (a 4 m board square on a cell corner).
 - **Sandbags** (material): our own procedural paint, bags 0.6 m by 0.3 m in stretcher bond.
@@ -163,6 +169,20 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   sunk trench carves its slot), the same as the map does when it loads; moving or deleting it gives the ground back
   (MapMaker keeps the ground you sculpted and works out the ground under floors from it, after every edit). MapMaker's **Overlaps** warning leaves a
   piece's own parts out: it points only at your blocks flush with a piece in another look.
+- **Ground and floors (MapMaker fixes 2, 2026-11-09).** The worked-out ground (settle.ts `terrainUnderFloors`, never
+  stored) does two things:
+  - **Under a floor** it lowers the ground within 3 m of the floor's top (`FLOOR_REACH`). Deeper ground is kept: a hill
+    a floor is buried in stays. That is on purpose: shipped maps hold floors the hill is meant to cover deeper than
+    3 m (Sandfall's hypogeum rooms; the top of every flight cut into a terrace on Sunken Kingdom, Iron Coast and
+    Whiteout Station, where the ground the flight arrives on is 4 m over its floor; Eagle Spires' stepped blocks), and
+    a height grid can't tell those from a tunnel's cut. Measured: lowering deeper in general would have changed those
+    six maps, opening pits up to 27 m deep. For a tunnel's cut or a sunken yard, select its floors and use **Cut
+    ground to floors** (the selection menu): it lowers the map's own ground under them, however deep, one undo step
+    (then roof the cut with a free block if it is a tunnel).
+  - **At a step's foot** (a flight's first step, a kerb: a solid no taller than a player steps up) it brings ground a
+    little under the step (up to 0.6 m) up to 2 cm under the step's base. New terrain sits 0.15 m under a level and a
+    flight's first step is 0.25 m up: before, that 0.4 m lip stopped bots and players at every flight rising from the
+    ground, and its foot had to be flattened by hand. No need now.
 - **Explode to tiles** (inspector button, or the right-click menu): the placement becomes its parts, ordinary tiles,
   blocks, props, doors and lights you can edit one by one (they keep their ids, `sp_<placement>_<n>`, and are
   selected); one undo puts the set piece back.
@@ -1004,7 +1024,7 @@ small and exact.
   old cell each new one lies in; coarser: the commonest under it). Spawns,
   pickups, props, vehicles, flags and hills on the ground move with it. Cells
   finer than 2 m grow plants in proportion to their area (as many to the
-  square metre as a 2 m grid). In the file the terrain's grids are written a
+  square metre as a 2.5 m grid: owner, 2026-11-09). In the file the terrain's grids are written a
   grid row to a line, so a 321 × 321 terrain is about 1 MB.
 - **MapMaker, Terrain → Real places (owner only, like Publish).** For a map of
   a real place. **Heights from a height grid file** reads an ESRI ASCII grid
@@ -1335,7 +1355,20 @@ tab → **Bot hints** (or **Y**, the last kind you used).
 
 ## Backdrops and plants
 
-Skies, distant scenery, ground past the border, terrain plants, the scatter brush and the Nature tab's Environment group and brush (our trees, plants, rocks and cliffs: placing, painting, presets, filters, keep-clear and the collision preview) are covered in [SCENERY.md](SCENERY.md).
+Skies, distant scenery, ground past the border, terrain plants and the Nature tab's Environment group and brush (our trees, plants, rocks and cliffs: placing, painting, presets, filters, keep-clear and the collision preview) are covered in [SCENERY.md](SCENERY.md).
+
+### Time of day and weather (map format v34)
+
+Map properties (nothing selected) → **Time of day & weather**:
+- **Time of day:** tick it and drag the slider (quarter hours), or click Dawn, Morning, Noon, Afternoon, Dusk or Night.
+  The view shows the time as you drag; letting go sets it (one undo step). The map's sky (Environment → Sky) is its
+  look by day; the time moves the sun (east at dawn, high in the south at noon, west at dusk, the moon at night) and
+  blends the light and the sky towards sunrise, sunset, dusk and night. Untick it for the sky's own look. A starfield
+  has no sun: the time changes nothing under it. It is fixed for the match.
+- **Weather:** None, Rain or Snow, then **How hard**, **Wind** and **Fog banks** (each 0-100, previewed as you drag,
+  one undo step each). Fog is the weather's one effect on play: everyone sees less far (fog banks at 50: about 360 m;
+  at 100: about 180 m). Rain and wind have their sounds; rain fades under a roof. Low graphics draw no rain or snow,
+  only the fog. The host may play another weather (Match setup, the Host tab).
 
 Free blocks (sky platforms, crumbling floors, trapdoors, pitched ramps and roofs, movers), liquids (and their colours) and the jetpack are in [SET_PIECES.md](SET_PIECES.md); size limits in [MAP_BUDGETS.md](MAP_BUDGETS.md).
 

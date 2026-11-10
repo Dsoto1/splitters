@@ -33,6 +33,9 @@ import {
   noteTitle,
   parseClipboard,
   pasteCommand,
+  pasteNote,
+  PASTE_ACROSS_THEMES,
+  resolveSurface,
   placeSetPieceCommand,
   renameGroupCommand,
   rotateCommand,
@@ -46,7 +49,11 @@ import {
   withCopiedGroups,
   withGroups,
   withGroupsTidied,
+  newTerrain,
+  terrainHeightAt,
+  type BotHint,
   type EditCommand,
+  type MapPath,
   type MapDocument,
   type MapEntity,
   type MirrorPlane,
@@ -323,6 +330,75 @@ describe('mirror for team maps (item 6)', () => {
     expect('error' in again && again.error).toMatch(/east half has 4 things/);
     expect('error' in mirrorHalfCommand(doc, plane, 'north')).toBe(true);
   });
+
+  it("half the map brings its bot hints, teamed ones swapping sides like spawns (owner, 2026-11-09)", () => {
+    let doc = makeMap([], [[-12, 0, 0]]);
+    const hints: BotHint[] = [
+      { id: 'h_stage', kind: 'staging', position: [-20, 0, 4], radius: 6, team: 'embers' },
+      { id: 'h_camp', kind: 'camp', position: [-10, 0, -6], yaw: 0.5, radius: 3 },
+      { id: 'h_jump', kind: 'jump', position: [-30, 0, 0], to: [-27, 1, 0], radius: 1 },
+      { id: 'h_line', kind: 'choke', position: [0, 0, 10], radius: 4 },
+    ];
+    doc = applyCommand(doc, { kind: 'setBotHints', before: null, after: hints });
+    const plane: MirrorPlane = { across: 'eastWest', at: [0, 0] };
+    const r = ok(mirrorHalfCommand(doc, plane, 'west'));
+    expect(r.hints).toBe(3);
+    const after = roundTrip(doc, r.command);
+    const added = after.botHints!.filter((h) => !hints.some((x) => x.id === h.id));
+    expect(added.map((h) => [h.kind, h.position, h.team ?? null, h.yaw ?? null, h.to ?? null])).toEqual([
+      ['staging', [20, 0, 4], 'tide', null, null],
+      ['camp', [10, 0, -6], null, -0.5, null],
+      ['jump', [30, 0, 0], null, null, [27, 1, 0]],
+    ]);
+    // The swap counts the teamed hint (the spawn has no team); unticked, teams stay.
+    expect(r.swapped).toBe(1);
+    const kept = ok(mirrorHalfCommand(doc, plane, 'west', { swapTeams: false }));
+    expect(roundTrip(doc, kept.command).botHints!.find((h) => h.kind === 'staging' && h.id !== 'h_stage')!.team).toBe('embers');
+    // A hint already on the far half counts as something there.
+    const twice = mirrorHalfCommand(after, plane, 'west');
+    expect('error' in twice && twice.error).toMatch(/east half has \d+ things/);
+  });
+
+  it('half the map with "terrain and paths too": the far half of the terrain and the paths wholly on the near half mirrored', () => {
+    let doc = makeMap([]);
+    const t = newTerrain(40, 2);
+    // A hill and stone paint in the west only; plants painted by cell.
+    t.foliage = new Array(t.materials.length).fill(0);
+    for (let r = 0; r < t.rows; r++) for (let c = 0; c < t.cols; c++) {
+      const x = t.origin[0] + c * t.spacing;
+      const z = t.origin[1] + r * t.spacing;
+      t.heights[r * t.cols + c] = x < 0 ? Math.round(300 + 20 * x + 7 * z) : 0;
+    }
+    const w = t.cols - 1;
+    for (let i = 0; i < t.materials.length; i++) if (t.origin[0] + ((i % w) + 0.5) * t.spacing < 0) [t.materials[i], t.foliage[i]] = [2, 3];
+    const road: MapPath = { id: 'road_w', points: [[-16, 0, -10], [-6, 0, 4]], closed: false, uses: ['road'], width: 3, style: 'dirt', lay: true };
+    const track: MapPath = { id: 'track', points: [[-18, 0, -12], [-8, 0, -12], [-8, 0, 12]], closed: false, uses: ['race', 'road'], width: 6, style: 'asphalt', lay: true };
+    const across: MapPath = { id: 'across', points: [[-10, 0, 16], [10, 0, 16]], closed: false, uses: ['route'], width: 2, style: 'dirt', lay: false };
+    doc = { ...doc, terrain: t, paths: [road, track, across] };
+    const plane: MirrorPlane = { across: 'eastWest', at: [0, 0] };
+    // Without the box: terrain and paths stay as they are (here nothing else is on the west half).
+    const plain = mirrorHalfCommand(doc, plane, 'west');
+    expect('error' in plain && plain.error).toMatch(/west half is empty/);
+    const r = ok(mirrorHalfCommand(doc, plane, 'west', { ground: true }));
+    expect(r.terrain).toBe(true);
+    expect(r.paths).toBe(2);
+    const after = roundTrip(doc, r.command);
+    const g = after.terrain!;
+    for (const [x, z] of [[6, 4], [14, -8], [20, 20], [2, 0]] as const) expect(terrainHeightAt(g, x, z)).toBeCloseTo(terrainHeightAt(t, -x, z)!, 2);
+    // The line and the west half as they were.
+    for (const [x, z] of [[0, 4], [-6, 4], [-20, -20]] as const) expect(terrainHeightAt(g, x, z)).toBe(terrainHeightAt(t, x, z));
+    const cellAt = (x: number, z: number) => Math.floor((z - g.origin[1]) / g.spacing) * w + Math.floor((x - g.origin[0]) / g.spacing);
+    expect([g.materials[cellAt(5, 5)], g.foliage[cellAt(5, 5)]]).toEqual([2, 3]);
+    const paths = after.paths!.filter((p) => ![road, track, across].some((x) => x.id === p.id));
+    expect(paths.map((p) => [p.points, p.uses])).toEqual([
+      [[[16, 0, -10], [6, 0, 4]], ['road']],
+      [[[18, 0, -12], [8, 0, -12], [8, 0, 12]], ['road']],
+    ]);
+    expect(paths.every((p) => !p.race)).toBe(true);
+    // Paths on the far half count as things there (only when ground mirrors too).
+    const twice = mirrorHalfCommand(after, plane, 'west', { ground: true });
+    expect('error' in twice && twice.error).toMatch(/east half has 2 things/);
+  });
 });
 
 describe('copy and paste between maps (item 4)', () => {
@@ -352,14 +428,36 @@ describe('copy and paste between maps (item 4)', () => {
     expect('error' in twice && twice.error).toMatch(/overlaps/);
   });
 
-  it("refuses a map with another grid or theme, saying why; a copied set piece of the map's own travels with it", () => {
+  it('refuses a map with another grid, saying why', () => {
     const src = scene();
     const clip = ok(copySelection(src, sel(['room_a'])));
     const big = { ...makeMap([]), classicStructure: { ...makeMap([]).classicStructure, cellSize: 10 } };
     expect(pasteCommand(big, clip, [0, 0], 0)).toEqual({ error: expect.stringMatching(/8 m cells and 4 m levels; this map's are 10 m and 4 m/) });
-    const themed = { ...makeMap([]), classicStructure: { ...makeMap([]).classicStructure, theme: 'core.industrial' } };
-    expect(pasteCommand(themed, clip, [0, 0], 0)).toEqual({ error: expect.stringMatching(/another theme \(core\.prototype\); this map is core\.industrial/) });
     expect('error' in copySelection(src, sel([]))).toBe(true);
+  });
+
+  it("pastes into a map of another theme (owner, 2026-11-09): the pieces wear its theme and keep their own paint", () => {
+    expect(PASTE_ACROSS_THEMES).toBe(true);
+    const src = scene();
+    // room_a's walls painted by hand; room_b as the theme paints it.
+    const painted = src.classicStructure.tiles.find((t) => t.id === 'room_a')!;
+    const own = { ...painted, surfaces: { walls: { material: 'core.red_brick', tint: '#aa6644' } } };
+    const from = applyCommand(src, { kind: 'updateTiles', before: [painted], after: [own] });
+    const clip = ok(copySelection(from, sel(['room_a', 'room_b'])));
+    const themed = { ...makeMap([]), classicStructure: { ...makeMap([]).classicStructure, theme: 'core.factory' } };
+    expect(pasteNote(themed, clip)).toMatch(/the pieces wear this map's .* theme, their own paint kept/);
+    expect(pasteNote(from, clip)).toBeNull();
+    const r = ok(pasteCommand(themed, clip, [0, 0], 0));
+    const after = roundTrip(themed, r.command);
+    const pasted = after.classicStructure.tiles.filter((t) => r.selection.tiles.includes(t.id));
+    expect(pasted).toHaveLength(2);
+    const [mine, plain] = [pasted.find((t) => t.surfaces)!, pasted.find((t) => !t.surfaces)!];
+    expect(mine.surfaces).toEqual(own.surfaces);
+    expect(resolveSurface(after, mine, 'walls').material.id).toBe(resolveSurface(from, own, 'walls').material.id);
+    // The unpainted room and the painted room's unpainted floor wear the new map's theme.
+    expect(resolveSurface(after, plain, 'walls').material.id).toBe(resolveSurface(themed, undefined, 'walls').material.id);
+    expect(resolveSurface(after, mine, 'floor').material.id).toBe(resolveSurface(themed, undefined, 'floor').material.id);
+    expect(resolveSurface(after, plain, 'walls').material.id).not.toBe(resolveSurface(from, undefined, 'walls').material.id);
   });
 });
 

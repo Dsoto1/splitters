@@ -1294,3 +1294,20 @@ added so the sets' oddballs get used:
 - **The oil slicker**: puddles round the target, then its igniter (the second trigger) about every three seconds of
   the fight; its bot value went from 0.3 to 0.45 now that it kills (Chaos on Atomic Court, a probe with everyone
   carrying it: 29 slicks laid, 22 lit, 8 kills in 120 s).
+
+## Weapon choice from the measurements (gunplay G4, November 2026)
+
+Which gun a bot holds (`weaponScore`) no longer comes from the hand-set `botRange`. It comes from each gun's time to
+kill as bots fire it, measured in the shared sim by `pnpm gun-report` (`shared/src/bots/weaponBands.ts`, data in
+`weaponBands.generated.ts`).
+- **Band** (`botBand`): where the gun kills within 1.6 times its quickest kill (or 0.5 s more, at most 2.5 s).
+- **Edge at the distance** (`ttkEdge`): the gun's TTK there against the benchmark guns' median. Under 15 m, a gun
+  not in hand pays its measured draw first. So a shotgun beats a Precision Rifle at arm's length, though both are in
+  band, and a bot keeps a loaded SMG at 6 m rather than draw a shotgun.
+
+**Not measured yet: how far a bot stands.** `preferredRange` keeps `botRange`. The measured version (`botEdge`) kept
+CTF attackers standing off: Diamond Park captured in 2 of seeds 1-6 against 6 (docs/GUNPLAY_AUDIT.md, "G4").
+
+Guns without a measurement keep `botRange`. After a weapon change, run
+`pnpm gun-report --json=docs/gunplay-audit.json --bands`, then `pnpm bot-report --check`. bot-report prints each
+gun's rounds, hit rate and hit distance (`weapon use`), and `--compare` shows the spread of weapon use.

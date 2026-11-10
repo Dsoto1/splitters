@@ -3,6 +3,7 @@ import type { HostRulesPatch, HostState, MatchCommand } from '../protocol.ts';
 import { botSetLabel, sameBotSet, validateBotSet } from './botSet.ts';
 import { botCastLabel, validBotCast } from '../content/botThemes.ts';
 import { getWeaponSet, isWeaponSetId, mapWeaponSet } from './weaponSets.ts';
+import { isWeatherChoice, mapWeather, weatherLabel } from '../map/weather.ts';
 import { MAX_PLAYER_SLOTS } from './constants.ts';
 import { BREAKTHROUGH_POOL, BREAKTHROUGH_POOL_MAX, BREAKTHROUGH_SECTOR_SECONDS, SCORE_LIMIT_MAX, type MatchRules } from './rules.ts';
 import { teamCount, teamsLabel, withPending } from './hostRules.ts';
@@ -49,7 +50,8 @@ export class HostControl {
     if (!Object.keys(this.pending).length) return;
     // (The weapon set never waits: it plays at once.)
     const { weaponSet: _set, ...p } = this.pending;
-    this.match.setRules({ ...p, ...(p.friendlyFire === 'off' ? { friendlyFire: undefined } : {}) });
+    const { weather, ...q } = p;
+    this.match.setRules({ ...q, ...(p.friendlyFire === 'off' ? { friendlyFire: undefined } : {}), ...(weather !== undefined ? { weather: weather ?? undefined } : {}) });
     this.pending = {};
     this.onNextRules?.();
   }
@@ -70,13 +72,14 @@ export class HostControl {
       teamNames: this.match.teams?.map((t) => t.name) ?? [],
       teamColors: this.match.teams?.map((t) => t.color) ?? [],
       sizes: teams ? Array.from({ length: teams }, (_, i) => sizes[i] ?? Math.max(1, Math.round(this.fill / teams))) : [],
-      rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks, mixPickups: !!r.mixPickups, dropWeapons: r.dropWeapons !== false, breakthroughPool: r.breakthroughPool ?? BREAKTHROUGH_POOL, breakthroughSectorSeconds: r.breakthroughSectorSeconds ?? BREAKTHROUGH_SECTOR_SECONDS, breakthroughSwap: !!r.breakthroughSwap, weaponSet: isWeaponSetId(r.weaponSet) ? r.weaponSet : null },
+      rules: { scoreLimit: r.scoreLimit, timeLimitSeconds: r.timeLimitSeconds, friendlyFire: r.friendlyFire ?? 'off', respawnDelayTicks: r.respawnDelayTicks, mixPickups: !!r.mixPickups, dropWeapons: r.dropWeapons !== false, breakthroughPool: r.breakthroughPool ?? BREAKTHROUGH_POOL, breakthroughSectorSeconds: r.breakthroughSectorSeconds ?? BREAKTHROUGH_SECTOR_SECONDS, breakthroughSwap: !!r.breakthroughSwap, weaponSet: isWeaponSetId(r.weaponSet) ? r.weaponSet : null, weather: isWeatherChoice(r.weather) ? r.weather : null },
       pending: { ...this.pending },
       botSet: this.bots.botSet,
       ...(this.bots.botSet && !this.bots.hostSet ? { mapBots: true } : {}),
       cast: r.botCast ? [...r.botCast] : null,
       mapCast: validBotCast(this.match.map.botCast),
       mapWeaponSet: mapWeaponSet(this.match.map),
+      mapWeather: weatherLabel(mapWeather(this.match.map)),
     };
   }
 
@@ -96,6 +99,8 @@ export class HostControl {
       if (r.breakthroughPool !== undefined) p.breakthroughPool = Math.max(1, Math.min(BREAKTHROUGH_POOL_MAX, Math.round(r.breakthroughPool)));
       if (r.breakthroughSectorSeconds !== undefined) p.breakthroughSectorSeconds = Math.max(60, Math.min(1800, Math.round(r.breakthroughSectorSeconds)));
       if (r.breakthroughSwap !== undefined) p.breakthroughSwap = r.breakthroughSwap;
+      // The weather waits for the next match (it is fixed while one plays); null is the map's own.
+      if (r.weather !== undefined) p.weather = isWeatherChoice(r.weather) ? r.weather : null;
       // Mixing up weapon pickups needs no restart: the pickups roll (or go back) at once.
       let mixed: string | undefined;
       if (r.mixPickups !== undefined && r.mixPickups !== !!this.match.rules.mixPickups) {
@@ -118,7 +123,7 @@ export class HostControl {
       this.pending = { ...this.pending, ...p };
       // Back to what's playing now: nothing waits.
       const now = this.match.rules;
-      const current = (k: keyof HostRulesPatch) => (k === 'friendlyFire' ? (now.friendlyFire ?? 'off') : k === 'breakthroughPool' ? (now.breakthroughPool ?? BREAKTHROUGH_POOL) : k === 'breakthroughSectorSeconds' ? (now.breakthroughSectorSeconds ?? BREAKTHROUGH_SECTOR_SECONDS) : k === 'breakthroughSwap' ? !!now.breakthroughSwap : now[k]);
+      const current = (k: keyof HostRulesPatch) => (k === 'friendlyFire' ? (now.friendlyFire ?? 'off') : k === 'breakthroughPool' ? (now.breakthroughPool ?? BREAKTHROUGH_POOL) : k === 'breakthroughSectorSeconds' ? (now.breakthroughSectorSeconds ?? BREAKTHROUGH_SECTOR_SECONDS) : k === 'breakthroughSwap' ? !!now.breakthroughSwap : k === 'weather' ? (isWeatherChoice(now.weather) ? now.weather : null) : now[k]);
       for (const k of Object.keys(this.pending) as (keyof HostRulesPatch)[]) if (current(k) === this.pending[k]) delete this.pending[k];
       if (Object.keys(p).length) return { notice: `${mixed ? `${mixed}; ` : ''}${who} changed the rules for the next match` };
       return mixed ? { notice: mixed } : {};

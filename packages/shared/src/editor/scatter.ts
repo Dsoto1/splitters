@@ -5,6 +5,9 @@ import { settledPropY } from '../map/settle.ts';
  * Scatter brush sets: a mix of props planted with a minimum spacing, random
  * turns and sizes. Trees keep solid trunks; bushes, flowers and grass can be
  * walked through.
+ *
+ * Retired from MapMaker's palette (owner, 2026-11-09): the Environment brush and its presets (envBrush.ts) replace
+ * them. Kept for tests that need a patch of plants; MapMaker no longer offers them.
  */
 export interface ScatterSet {
   label: string;
