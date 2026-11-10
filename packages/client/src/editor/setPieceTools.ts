@@ -62,6 +62,7 @@ export class SetPieceTools {
   /** The player's own set pieces (their library in this browser, storage.ts), by id; `myPiecesRev` counts changes. */
   myPieces = new Map<string, SetPieceDefinition>();
   myPiecesRev = 0;
+  /** The look the set piece tool places in (a role pack id; '' the map theme's). */
   pieceLook = '';
 
   /** The pieces MapMaker can place: the shipped ones and the player's own (their library), with the role packs. */

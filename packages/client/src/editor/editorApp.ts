@@ -1,401 +1,100 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
-  EditHistory,
-  playFromHereSpot,
+  applyCommand,
   blockBoxes,
-  propBoxes,
-  BOT_CAST_CHOICES,
-  BOT_CAST_MAX,
-  CHARACTER_GROUPS,
-  botCastLabel,
-  castLooks,
-  validBotCast,
-  mapWeaponSet,
-  weaponSetList,
-  getWeaponSet,
-  terrainUnderFloors,
-  withPathsLaid,
-  addSpawnCommand,
-  buildMapGeometry,
-  tileGhostCheck,
-  checkNote,
-  entityGhostNote,
-  ghostRefuses,
-  zoneNote as zoneGhostNote,
-  type GhostNote,
-  type GhostEntityKind,
-  type PlacementCheck,
-  BudgetTracker,
   budgetCulprits,
+  BudgetTracker,
+  BUILD_LEVELS,
+  buildMapGeometry,
+  builtInSetPieces,
+  coreCatalog,
+  EDGE_STYLE_LABELS,
+  EditHistory,
+  emptySelection,
+  expandSetPieces,
   FLY_KEYS,
   FLY_PAUSE_KEYS,
   FREE_PLACE_KEYS,
-  FREE_MEASURE_KEYS,
-  matchEditorKey,
-  type KeyAction,
-  BUILD_LEVELS,
-  buildZone,
-  levelName,
-  placeTileCommand,
-  setUpperFloorsCommand,
-  upperFloorLevels,
-  coreCatalog,
-  isTileOptionTwin,
-  deleteCommand,
-  duplicateCommand,
-  emptySelection,
-  loadMap,
-  moveCommand,
-  moveEntitiesCommand,
-  settlePropsCommand,
-  replacePropsCommand,
-  type ReplaceSize,
-  settledPropY,
-  newId,
-  newMapDocument,
-  normalizeYaw,
-  paintCommand,
-  resolveSurface,
-  faceSlot,
-  rotateCommand,
-  yawStep,
-  setThemeCommand,
-  coreMaterials,
-  coreThemes,
-  CORE_ITEMS,
-  WEAPON_CATEGORIES,
-  WEAPON_CATEGORY_LABELS,
-  categoryItems,
-  isWeaponCategory,
-  itemCategory,
-  DESTRUCTIBLE_MODELS,
-  DESTRUCTIBLE_SPECS,
-  NPC_ROLES,
-  NPC_ROLE_SPECS,
-  rosterSize,
-  SQUAD_ORDERS,
-  ENCOUNTER_ENTRANCES,
-  type EncounterEntrance,
-  mapFactions,
-  mapTeams,
-  botSetLabel,
-  mapBotSet,
-  type MapBotSet,
-  playableModes,
-  setupFamily,
-  mapPlayerCaps,
-  autoPlayerCaps,
-  isTeamMode,
-  MODE_LABELS,
-  hasRemovedMode,
-  withMainMode,
-  SCENARIO_PALETTE,
-  STYLE_PACKS,
-  getStylePack,
-  stylePackHas,
-  type StylePack,
-  DOOR_STYLES,
-  DOOR_STYLE_LABELS,
-  LADDER_STYLES,
-  LADDER_STYLE_LABELS,
-  type LadderStyle,
-  type DoorStyle,
-  TRAP_ACTIVATIONS,
-  TRAP_KINDS,
-  TRAP_SPECS,
-  entityLabel,
-  BREAKTHROUGH_MAX_SECTORS,
-  BREAKTHROUGH_OBJECTIVES,
-  BREAKTHROUGH_OBJECTIVE_LABELS,
-  sectorOrders,
-  type ObjectiveEntity,
-  newScenarioEntities,
-  MOVER_MODES,
-  type MoverMode,
-  snapToDoorway,
-  snapsToDoorway,
   getItem,
-  SURFACE_SLOTS,
-  SURFACE_SLOT_LABELS,
-  TINT_SWATCHES,
-  tileAt,
-  updateTileCommand,
-  validateMap,
-  coplanarIssues,
-  coplanarSpots,
-  type CoplanarSpot,
-  type EditCommand,
-  type MapDocument,
-  type TilePlacement,
-  type MapEntity,
-  type ScenarioPaletteKey,
-  type PaintScope,
-  type SurfaceSlot,
-  type SurfaceStyle,
-  type WorldBox,
-  type Rotation,
-  type Selection,
-  type TileDefinition,
-  type ValidationIssue,
-  type Vec3,
-  type BotHintKind,
-  EDGE_STYLES,
-  EDGE_STYLE_LABELS,
-  CEILINGS,
-  CEILING_LABELS,
-  CORNERS,
-  CORNER_LABELS,
-  FACADES,
-  FACADE_LABELS,
-  FLOOR_INSERTS,
-  FLOOR_INSERT_LABELS,
-  ROOM_LAYOUTS,
-  ROOM_LAYOUT_LABELS,
-  type RoomOptions,
-  DRESS_DENSITIES,
-  ROOM_TYPES,
-  ROOM_TYPE_LABELS,
-  buildOccupancy,
-  dressRoom,
-  dressSpace,
-  guessRoomType,
-  modelBudget,
-  roomCells,
-  seededRandom,
-  type DressDensity,
-  type RoomType,
-  SIDES,
-  TILE_CATEGORIES,
-  edgeChoiceAt,
-  edgeSegments,
-  edgeTargetAt,
-  setEdgeCommand,
-  setEdgeGlassCommand,
-  applyCommand,
-  edgeGlassAt,
-  GLASS_EDGES,
-  GLASS_KINDS,
-  GLASS_KIND_LABELS,
-  type GlassKind,
-  type EdgeStyle,
-  type EdgeTarget,
-  CORE_PROPS,
-  type PropDefinition,
-  PROP_CATEGORIES,
   getProp,
-  placementCells,
-  TERRAIN_BRUSHES,
-  BLOCK_BEHAVIOURS,
-  LIQUIDS,
-  LIQUID_SPECS,
-  ENV_SPECIES,
-  getEnvSpecies,
-  BACKDROP_GROUNDS,
-  SCENERY_IDS,
-  SCENERY_LABELS,
-  SKIES,
-  SKY_IDS,
-  resolveBackdrop,
-  BORDER_LABELS,
-  BORDER_SIDES,
-  BORDER_STYLES,
-  ELECTRIC_FENCE,
-  borderRect,
-  hasBorder,
-  type BorderStyle,
-  type Backdrop,
-  BLOOD_AMOUNTS,
-  DEFAULT_BLOOD,
-  type BloodSettings,
-  type MapPhysics,
-  type BackdropGround,
-  type SceneryId,
-  type SkyId,
-  FOLIAGE_LEVELS,
-  TERRAIN_MATERIALS,
-  TERRAIN_MATERIAL_LABELS,
-  TERRAIN_SURFACES,
-  terrainMaterialFor,
-  applyBrush,
-  initPhysics,
-  mapPads,
-  padLandings,
-  fitBounds,
-  CORE_WEAPONS,
+  isTeamMode,
+  levelName,
+  loadMap,
+  mapTeams,
   MOUNT_DEFS,
-  MOUNT_MODELS,
-  type MountModel,
-  MOUNT_SKINS,
-  FLOAT,
-  MOUNT_SKIN_LABELS,
-  type MountSkin,
-  AIRDROP_MODES,
-  AIR_CRAFTS,
-  AIR_CRAFT_LABELS,
-  type AirCraft,
-  type AirdropMode,
-  MAX_TEAMS,
-  PLAYER,
-  TEAM_PRESETS,
-  teamLayoutLabel,
-  type BoundaryStyle,
-  newTerrain,
-  terrainSpacingFor,
-  paintSlopes,
-  blockBox,
-  boxFootprint,
-  smoothTerrain,
-  terrainHoldMask,
-  terrainHeightAt,
-  terrainRaycast,
-  type TerrainBrush,
-  type TerrainData,
-  type TerrainMaterial,
   NPC_PALETTE,
-  placeNpcCommand,
-  type LightFixture,
-  isRetiredMap,
-  moverGroupOf,
-  withMoverGroups,
-  withGroups,
-  withGroupsTidied,
-  withCopiedGroups,
-  groupCommand,
-  ungroupCommand,
-  groupOf,
-  groupName,
-  selectionGroup,
-  flipCommand,
-  selectionMiddle,
-  copySelection,
-  pasteCommand,
-  pasteNote,
-  cutGroundToFloorsCommand,
-  clipboardCount,
-  addSetPieceDefCommand,
-  replaceTilesWithSetPieceCommand,
-  builtInSetPieces,
-  checkSetPieceDefinition,
-  checkSetPiecePlacement,
-  envModelFile,
-  expandSetPieces,
-  explodeSetPieceCommand,
-  mirrorSetPieceCommand,
   piecesFor,
-  placeSetPieceCommand,
-  placementPack,
-  setPieceFootprint,
-  setPieceFromSelection,
-  setPieceMirrorRefusal,
-  setPieceParts,
-  setPiecePortStates,
-  updateSetPieceCommand,
-  SET_PIECE_MATERIAL_ROLES,
-  type SetPieceDefinition,
-  type SetPieceLibrary,
-  type SetPiecePlacement,
-  type SetPieceRole,
-  type SetPieceExpansion,
-  propDrop,
+  placementCells,
+  playFromHereSpot,
+  propBoxes,
   ringStep,
-  setFacingCommand,
-  snapMeasurePoint,
+  SCENARIO_PALETTE,
+  setPieceFootprint,
+  setPieceMirrorRefusal,
+  terrainUnderFloors,
   turnByCommand,
   turnLabel,
-  type MeasurePoint,
-  surfaceHit,
+  withGroups,
+  withGroupsTidied,
+  withPathsLaid,
+  type BotHintKind,
+  type EdgeStyle,
+  type EdgeTarget,
+  type EditCommand,
+  type GlassKind,
+  type MapDocument,
+  type PlacementCheck,
+  type Rotation,
+  type Selection,
+  type SetPieceDefinition,
+  type SetPieceExpansion,
+  type SetPieceLibrary,
+  type SetPiecePlacement,
+  type TerrainData,
+  type ValidationIssue,
+  type Vec3,
+  type WorldBox
 } from '@tiletrigger/shared';
-import { MAP_INDEX, isBuiltInMap, loadBuiltInMap } from '../mapIndex.ts';
-import { EditorView, type PieceOutline, type TraceImage } from './editorView.ts';
-import { LIQUID_LOOKS } from '../game/scenarioVisuals.ts';
-import {
-  clearDraft,
-  deleteFromLibrary,
-  deleteSetPiece,
-  exportMap,
-  exportSetPiece,
-  importMapFile,
-  importSetPieceFile,
-  inLibrary,
-  listDrafts,
-  listLibrary,
-  listSetPieces,
-  openFromLibrary,
-  saveSetPiece,
-  saveToLibrary,
-  writeDraft,
-} from './storage.ts';
-import { tileIcon } from './tileIcon.ts';
-import { raycastBoxes, type BoxHit } from './raycast.ts';
-import { BudgetBar } from './budgetBar.ts';
-import { KeyOverlay } from './keyOverlay.ts';
-import { MeasureTool } from './measureTool.ts';
-import { MapTestPanel } from './mapTestPanel.ts';
-import { RotateRing } from './rotateRing.ts';
-import { quickFacings } from './quickFacings.ts';
-import { isRetiredTile, replaceTilePanel } from './retiredTiles.ts';
-import { tileOptionPanel } from './tileOptionPanel.ts';
-import { PropPlaceOptions } from './propPlaceOptions.ts';
-import { SurfaceBoxes } from './surfaceBoxes.ts';
-import { testMode } from '../testMode.ts';
-import { materialThumbnail } from '../materials/patterns.ts';
-import { itemColor } from '../game/pickupVisuals.ts';
-import { LogicPanel } from './logicPanel.ts';
-import { removedModesRow } from './removedModes.ts';
-import { PathTool, pathLabel, type PathKind } from './pathTool.ts';
-import { EnvTools } from './envTools.ts';
-import { RouteTool } from './routeTool.ts';
 import { ModelThumbnails } from '../frontend/modelThumbs.ts';
+import { testMode } from '../testMode.ts';
+import { BotHintTool } from './botHintTool.ts';
+import { BudgetBar } from './budgetBar.ts';
+import { $, escapeHtml, isTyping } from './editorDom.ts';
+import { EditorInput } from './editorInput.ts';
+import { fitTopBar, FLY_SPEED, PLACING, STARTER_TERRAIN, starterMap, toolKey, type Hit, type Tool } from './editorParts.ts';
+import { EditorView, type PieceOutline } from './editorView.ts';
+import { EntityInspector } from './entityInspector.ts';
+import { EnvTools } from './envTools.ts';
+import { Hover } from './hover.ts';
+import { Inspector } from './inspector.ts';
+import { KeyOverlay } from './keyOverlay.ts';
+import { LogicPanel } from './logicPanel.ts';
+import { MapChecks } from './mapChecks.ts';
+import { MapProperties } from './mapProperties.ts';
+import { MapSaving } from './mapSaving.ts';
+import { MapTestPanel } from './mapTestPanel.ts';
+import { MeasureTool } from './measureTool.ts';
+import { NoteTool } from './noteTool.ts';
+import { isOwner } from './ownerPublish.ts';
+import { PaintTools } from './paintTools.ts';
 import { Palette } from './palette.ts';
 import { PaletteAtlas } from './paletteAtlas.ts';
-import {
-  GROUND_COVER_IDS,
-  NATURE_PROP_CATEGORIES,
-  PROP_GROUPS,
-  REPLACEMENTS,
-  RETIRED_PROPS,
-  propGroup,
-  scenarioGroup,
-  setPieceFamilyLabel,
-  setPieceFamilyOrder,
-  setPieceSuitsStylePack,
-  stylePackRoles,
-} from './paletteCatalog.ts';
-import { envRendererOn } from '../environment/envFlag.ts';
-import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
-import { PlanView } from './planView.ts';
-import { cardShotSection, type CardShotHost } from './cardShot.ts';
-import { skyWeatherSection, type SkyWeatherHost } from './skyWeatherSection.ts';
-import { NoteTool } from './noteTool.ts';
-import { BotHintTool } from './botHintTool.ts';
-import { groupSection, type GroupHost } from './groupPanel.ts';
-import { rebuildKeepingEdit } from './inspectorKeep.ts';
-import { openMirrorDialog } from './mirrorDialog.ts';
-import { openChangeGridDialog } from './changeGridDialog.ts';
-import { readClipboard, writeClipboard } from './clipboardStore.ts';
-import { templatePicker } from './templatePicker.ts';
-import { libraryThumb } from './libraryThumbs.ts';
-import { isOwner, openPublishDialog } from './ownerPublish.ts';
-import { DEFAULT_HEIGHT_GRID_SMOOTHING, HEIGHT_GRID_SMOOTHING, MAX_HEIGHT_GRID_BYTES, parseAsciiGrid, terrainFromHeightGrid } from './heightGrid.ts';
-import { publishedMaps } from '../publishedMaps.ts';
-import { botManager } from '../frontend/botManager.ts';
-import { BOT_SET_PRESETS } from '../playlists.ts';
-import { $, isTyping, button, h2, text, small, row, numberInput, escapeHtml } from './editorDom.ts';
-import { SHIPPED_IDS, itemIcon, CARD_HIDDEN_KINDS, STARTER_TERRAIN, NEW_MAP_SIZES, mainGround, fitTopBar, starterMap, PIECE_PART_KINDS, ROLE_LABELS, rolesUsed, SCENARIO_ICONS, PLACING, toolKey, TOOL_ICONS, npcIcon, pickRadius, FLY_SPEED, LOOK_SENSITIVITY, snap, dressable, dressTag, edgeIcon, addedEntities, type Tool, type Hit, type DragState } from './editorParts.ts';
-import { TerrainTools } from './terrainTools.ts';
-import { SetPieceTools } from './setPieceTools.ts';
 import { PaletteBuilder } from './paletteBuilder.ts';
-import { TopBar } from './topBar.ts';
-import { MapProperties } from './mapProperties.ts';
-import { EntityInspector } from './entityInspector.ts';
-import { Inspector } from './inspector.ts';
-import { MapChecks } from './mapChecks.ts';
-import { MapSaving } from './mapSaving.ts';
-import { PaintTools } from './paintTools.ts';
+import { PathTool } from './pathTool.ts';
 import { Placing } from './placing.ts';
+import { PlanView } from './planView.ts';
+import { PropPlaceOptions } from './propPlaceOptions.ts';
+import { type BoxHit } from './raycast.ts';
+import { RotateRing } from './rotateRing.ts';
+import { RouteTool } from './routeTool.ts';
 import { SelectionEdits } from './selectionEdits.ts';
-import { Hover } from './hover.ts';
-import { EditorInput } from './editorInput.ts';
+import { SetPieceTools } from './setPieceTools.ts';
+import {
+  listDrafts
+} from './storage.ts';
+import { SurfaceBoxes } from './surfaceBoxes.ts';
+import { TerrainTools } from './terrainTools.ts';
+import { TopBar } from './topBar.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -420,41 +119,44 @@ export interface EditorHost {
  * templates are loaded on purpose from Open….
  */
 export class EditorApp {
-  /** MapMaker's input: the pointer on the view (pick, drag, box select, brushes, fly-look), right-click and its menu, and the keys through the key table (keymap.ts) (editorInput.ts). */
+  // ---------------------------------------------------------------- MapMaker's parts (each its own module)
+
+  /** The pointer on the view, right-click and the keys (editorInput.ts). */
   readonly input: EditorInput;
-  /** What's under the pointer: the pointer's ray onto the level, the ground and surfaces, picking, the hover card and status line, and the placing ghosts with why one is refused (hover.ts). */
+  /** What's under the pointer: picking, the hover card, the placing ghosts (hover.ts). */
   readonly hover: Hover;
-  /** Edits to the selection: turn, nudge, delete, duplicate, group and ungroup, copy and paste, mirror and flip, cut the ground to the floors and settle props on the ground (selectionEdits.ts). */
-  readonly edits: SelectionEdits;
-  /** Placing and erasing: where each kind of thing lands under the pointer (snapped, on the ground, in a doorway, on a surface), what the placing tools' ghosts show, and Erase (placing.ts). */
+  /** Placing and erasing (placing.ts). */
   readonly placing: Placing;
-  /** The Paint and Walls tools: painting surfaces and the ground, building a cell side as a wall, door or window with its glass, and picking a style up (paintTools.ts). */
+  /** Edits to the selection: turn, delete, duplicate, group, copy and paste, mirror (selectionEdits.ts). */
+  readonly edits: SelectionEdits;
+  /** The Paint and Walls tools (paintTools.ts). */
   readonly paint: PaintTools;
-  /** Saving and loading the map: drafts kept while unsaved, Save, Quit, New, Open… and replacing the document being edited (mapSaving.ts). */
-  readonly saving: MapSaving;
-  /** The map's checks: validation, navigation and the bots' own spots worked out a moment after each edit, coplanar overlaps, and the issues list and status pill (mapChecks.ts). */
-  readonly checks: MapChecks;
-  /** The side panel's inspector: what's selected (a tile, a set piece, an entity, a moving build, several things) or Map properties with nothing selected; the tile's walls, room options, upper floors, dressing and surfaces (inspector.ts). */
-  readonly inspector: Inspector;
-  /** The inspector for one entity: spawns, pickups, props, doors, lights, movers, triggers, traps, NPC squads, vehicles, objectives and the rest (entityInspector.ts). */
-  readonly entityPane: EntityInspector;
-  /** Map properties, the inspector with nothing selected: name, theme, players, modes, teams, weapons, bots, time and weather, layers, blood, physics, the boundary, and Environment → Sky's backdrop (mapProperties.ts). */
-  readonly mapProps: MapProperties;
-  /** The top bar and the tool bar: file buttons, workspace tabs, levels, grid, overlaps, snap, theme, the counts line, and folding the side panels (topBar.ts). */
-  readonly topBar: TopBar;
-  /** The palette's contents: every tab's cards (tiles, walls, gameplay, pickups, props, vehicles, paint, NPCs, paths, real places), the Style Pack picker and the palette's pictures (paletteBuilder.ts). */
-  readonly palettes: PaletteBuilder;
-  /** Set pieces: placing them (the ghost, its ports, the look), the Set pieces palette and the player's own pieces, saving a selection as a piece, exploding one and the set piece inspector (setPieceTools.ts). */
-  readonly pieces: SetPieceTools;
-  /** The Terrain tool: its brush, live sculpting strokes, whole-map smoothing, the trace image and the Terrain palette (terrainTools.ts). */
+  /** The Terrain tool (terrainTools.ts). */
   readonly terrain: TerrainTools;
+  /** Set pieces: placing, the palette, the player's own, the inspector (setPieceTools.ts). */
+  readonly pieces: SetPieceTools;
+  /** The palette's contents and pictures (paletteBuilder.ts). */
+  readonly palettes: PaletteBuilder;
+  /** The inspector (inspector.ts); one entity's (entityInspector.ts); Map properties (mapProperties.ts). */
+  readonly inspector: Inspector;
+  readonly entityPane: EntityInspector;
+  readonly mapProps: MapProperties;
+  /** The top bar and the tool bar (topBar.ts). */
+  readonly topBar: TopBar;
+  /** Validation, navigation, overlaps and the issues list (mapChecks.ts). */
+  readonly checks: MapChecks;
+  /** Drafts, Save, Quit, New and Open… (mapSaving.ts). */
+  readonly saving: MapSaving;
+
+  // ---------------------------------------------------------------- the editor's state
+
   readonly view: EditorView;
   readonly history: EditHistory;
   tool: Tool = { kind: 'select' };
   rotation: Rotation = 0;
   /** The shipped set pieces and role packs. MapMaker's document keeps placements; it draws them expanded (viewDoc). */
   readonly setPieceLib: SetPieceLibrary = builtInSetPieces();
-  /** The set piece tool: mirrored (M), and the look it places in (a role pack id; '' the map theme's). */
+  /** The set piece tool: mirrored (M); its look is SetPieceTools.pieceLook. */
   pieceMirror = false;
   /** What the set piece tool's ghost shows now: the placement it would make, whether it fits (and why not), its ports. */
   pieceHover: { def: SetPieceDefinition; placement: SetPiecePlacement; ok: boolean; reason: string; short: string; blocked: number } | null = null;
@@ -537,18 +239,18 @@ export class EditorApp {
   constructor(readonly host: EditorHost) {
     this.input = new EditorInput(this);
     this.hover = new Hover(this);
-    this.edits = new SelectionEdits(this);
     this.placing = new Placing(this);
+    this.edits = new SelectionEdits(this);
     this.paint = new PaintTools(this);
-    this.saving = new MapSaving(this);
-    this.checks = new MapChecks(this);
+    this.terrain = new TerrainTools(this);
+    this.pieces = new SetPieceTools(this);
+    this.palettes = new PaletteBuilder(this);
     this.inspector = new Inspector(this);
     this.entityPane = new EntityInspector(this);
     this.mapProps = new MapProperties(this);
     this.topBar = new TopBar(this);
-    this.palettes = new PaletteBuilder(this);
-    this.pieces = new SetPieceTools(this);
-    this.terrain = new TerrainTools(this);
+    this.checks = new MapChecks(this);
+    this.saving = new MapSaving(this);
     this.view = new EditorView(host.engine);
     this.thumbs = new ModelThumbnails(host.engine);
     this.paths = new PathTool({
@@ -1207,5 +909,41 @@ export class EditorApp {
     el.classList.add('on');
     clearTimeout(this.toastTimer);
     this.toastTimer = window.setTimeout(() => el.classList.remove('on'), error ? 3500 : 2000);
+  }
+
+  // ---------------------------------------------------------------- the test surface
+  // `window.__editor` (main.ts) is what the e2e flows and tools/content/build-palette-atlas.mjs drive and read; these
+  // reach the parts that moved into their own modules.
+
+  get stroke(): TerrainTools['stroke'] {
+    return this.terrain.stroke;
+  }
+
+  setBrushRadius(r: number): void {
+    this.terrain.setBrushRadius(r);
+  }
+
+  thumbFor(key: string, size?: number): Promise<string> | null {
+    return this.palettes.thumbFor(key, size);
+  }
+
+  setEdge(target: EdgeTarget, style: EdgeStyle, glass: GlassKind | null): void {
+    this.paint.setEdge(target, style, glass);
+  }
+
+  pick(): Hit | null {
+    return this.hover.pick();
+  }
+
+  tileGhost(tile: string, cell: [number, number, number]): PlacementCheck {
+    return this.hover.tileGhost(tile, cell);
+  }
+
+  get tileGhostAt(): Hover['tileGhostAt'] {
+    return this.hover.tileGhostAt;
+  }
+
+  allIssues(): ValidationIssue[] {
+    return this.checks.allIssues();
   }
 }
