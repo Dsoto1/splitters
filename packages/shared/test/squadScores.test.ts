@@ -126,7 +126,7 @@ type Damage = (v: Combatant, amount: number, a: Combatant | null, w: string) => 
 
 describe('Fireteams Part 3 in a match', () => {
   it('kills and assists go to the squads; the snapshot carries squad and player points; the end of the match gives the squad awards', () => {
-    const match = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [6, 6], fireteams: 4, scoreLimit: 0, timeLimitSeconds: 0, friendlyFire: true }, 3);
+    const match = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [6, 6], fireteams: 4, scoreLimit: 0, timeLimitSeconds: 0, friendlyFire: 'on' }, 3);
     const filler = new BotFiller(match);
     const me = filler.join('me', undefined, 12)!;
     for (let i = 0; i < 11; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!);
