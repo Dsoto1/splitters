@@ -219,8 +219,6 @@ The workflow is unchanged (CLAUDE.md):
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
 
-**Landing now: maps retire/rename (`check/maps-retire`; this session), please hold code pushes to main.** (Maps agent, 2026-11-10; one check run, then a fast-forward.)
-
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
   `packages/client/src/editor/**`, `packages/shared/src/editor/**`, the map schema or `MAP_FORMAT_VERSION`
@@ -475,6 +473,8 @@ for the owner's review, not landed).**
   roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
+
+**Queued after MapMaker Phase 2: maps retire/rename** (`wip/maps-retire`, maps agent, 2026-11-10; lock released for MapMaker Phase 2 to go first).
 
 **Next in line to land: MapMaker Phase 2, the split and the interface** (`check/mapmaker-p2-full`, MapMaker lane, 2026-11-10). It has waited behind far copies and now Iron Coast part 3. Please let it go next, before starting another hold.
 
