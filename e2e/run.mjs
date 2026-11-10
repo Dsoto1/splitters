@@ -615,15 +615,15 @@ async function editoruxFlow(browser) {
   }));
   check(/\/thumbs\/tiles-[a-z]+\.[0-9a-f]+\.webp/.test(tilePics.bg), `tile cards show pictures from a tiles atlas (${tilePics.bg.slice(0, 80)})`);
   check(!tilePics.loaded.includes('props-lowpolyassets-wild-west') && !tilePics.loaded.includes('props-quaternius-modular-scifi-megakit') && tilePics.rendered === 0, `only the shown groups' atlases load, nothing is rendered at runtime (${tilePics.loaded.join(', ')}; ${tilePics.rendered} rendered)`);
-  // A piece the atlas lacks (new or user content) falls back to the runtime renderer.
+  // A piece the atlas lacks (new or user content) falls back to the runtime renderer. (The Props tab's crate and drum are the kit families: the Kenney ones are retired, content/kitprops.json.)
   await page.evaluate(async () => {
     const m = await window.__editor.paletteAtlas.manifest;
-    delete m.items['prop:prop.barrel'];
+    delete m.items['prop:kit.drum.steel'];
   });
-  await clickTool(page, '[data-tool="prop:prop.crate_small"]');
-  await page.waitForFunction(() => document.querySelector('[data-tool="prop:prop.barrel"] .thumb img')?.src.startsWith('data:image/png'), null, { timeout: T(30000) }).catch(() => {});
-  const propPics = await page.evaluate(() => ({ barrel: !!document.querySelector('[data-tool="prop:prop.barrel"] .thumb img')?.src.startsWith('data:image/png'), crate: document.querySelector('[data-tool="prop:prop.crate_small"] .thumb')?.dataset.atlas, loaded: [...window.__editor.paletteAtlas.loaded] }));
-  check(propPics.barrel && propPics.crate === 'props-kenney-survival-kit', `a prop missing from the atlas is rendered at runtime, the rest come from its pack's atlas (${JSON.stringify(propPics)})`);
+  await clickTool(page, '[data-tool="prop:kit.crate.wood"]');
+  await page.waitForFunction(() => document.querySelector('[data-tool="prop:kit.drum.steel"] .thumb img')?.src.startsWith('data:image/png'), null, { timeout: T(30000) }).catch(() => {});
+  const propPics = await page.evaluate(() => ({ barrel: !!document.querySelector('[data-tool="prop:kit.drum.steel"] .thumb img')?.src.startsWith('data:image/png'), crate: document.querySelector('[data-tool="prop:kit.crate.wood"] .thumb')?.dataset.atlas, loaded: [...window.__editor.paletteAtlas.loaded] }));
+  check(propPics.barrel && propPics.crate === 'kitprops', `a prop missing from the atlas is rendered at runtime, the rest come from its pack's atlas (${JSON.stringify(propPics)})`);
   check(!propPics.loaded.includes('props-lowpolyassets-wild-west'), 'closed prop groups load nothing');
 
   // Search: fuzzy over names, tags and packs, ranked across every tab; Enter picks the best match.
@@ -636,8 +636,8 @@ async function editoruxFlow(browser) {
   }));
   check(found.picks.includes('prop:prop.sandbag_wall') && found.panes === 0, `search with a typo finds the sandbag wall and shows only results (${found.picks.slice(0, 4).join(', ')})`);
   await page.fill('#ed-search', 'kenney barrel');
-  await page.waitForFunction(() => !!document.querySelector('#ed-pal-results [data-pick="prop:prop.barrel"]'), null, { timeout: T(5000) }).catch(() => {});
-  check((await page.$$eval('#ed-pal-results [data-pick]', (b) => b.map((x) => x.dataset.pick))).includes('prop:prop.barrel'), 'search matches the pack a prop comes from');
+  await page.waitForFunction(() => !!document.querySelector('#ed-pal-results [data-pick="prop:prop.dungeon_barrel"]'), null, { timeout: T(5000) }).catch(() => {});
+  check((await page.$$eval('#ed-pal-results [data-pick]', (b) => b.map((x) => x.dataset.pick))).includes('prop:prop.dungeon_barrel'), 'search matches the pack a prop comes from');
   await page.fill('#ed-search', 'jump pad');
   await page.press('#ed-search', 'Enter');
   check(await page.evaluate(() => window.__editor.tool.kind === 'scenario' && window.__editor.tool.key === 'pad'), 'Enter in the search box picks the best match');
@@ -1352,7 +1352,7 @@ async function editorInterfaceChecks(browser) {
   await page.fill('#ed-ol-search', '');
 
   // ---- Favourites and recent follow the mode: its own pieces first, then the rest (or only its own).
-  await page.evaluate(() => localStorage.setItem('tt.palette.favs', JSON.stringify(['prop:prop.barrel', 'tile:core.room', 'spawn'])));
+  await page.evaluate(() => localStorage.setItem('tt.palette.favs', JSON.stringify(['prop:kit.drum.steel', 'tile:core.room', 'spawn'])));
   await page.reload();
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   const firstFav = async (ws) => {
@@ -1361,9 +1361,9 @@ async function editorInterfaceChecks(browser) {
     return page.evaluate(() => [...document.querySelectorAll('#ed-pal-quick .ed-quick-row [data-pick]')].map((c) => c.dataset.pick));
   };
   const favs = { build: await firstFav('build'), props: await firstFav('props'), entities: await firstFav('entities') };
-  check(favs.build[0] === 'tile:core.room' && favs.props[0] === 'prop:prop.barrel' && favs.entities[0] === 'spawn' && favs.build.length === 3, `each mode's favourites come first in the quick row (${JSON.stringify(favs)})`);
+  check(favs.build[0] === 'tile:core.room' && favs.props[0] === 'prop:kit.drum.steel' && favs.entities[0] === 'spawn' && favs.build.length === 3, `each mode's favourites come first in the quick row (${JSON.stringify(favs)})`);
   await page.click('#ed-pal-quick [data-q="only"]');
-  check(JSON.stringify(await firstFav('props')) === '["prop:prop.barrel"]', 'This mode only shows just the mode\'s own');
+  check(JSON.stringify(await firstFav('props')) === '["prop:kit.drum.steel"]', 'This mode only shows just the mode\'s own');
   await shot('favourites');
   await page.click('#ed-pal-quick [data-q="only"]');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -2205,11 +2205,11 @@ async function editorMeasureChecks(browser) {
   await clickAt(0, 0, 1);
   const table = (await props()).find((e) => e.model === 'prop.table');
   check(table && table.position[1] === 0, `a table placed on the room's floor (${JSON.stringify(table?.position)})`);
-  await clickTool(page, '[data-tool="prop:prop.crate_small"]');
+  await clickTool(page, '[data-tool="prop:kit.crate.wood"]');
   await hoverAt(0.3, 0.8, 1.2);
   const ghostY = await page.evaluate(() => window.__editor.view.scene.getNodeByName('propGhost')?.position.y);
   await clickAt(0.3, 0.8, 1.2);
-  const crate = (await props()).find((e) => e.model === 'prop.crate_small');
+  const crate = (await props()).find((e) => e.model === 'kit.crate.wood');
   check(crate && Math.abs(crate.position[1] - 0.8) < 0.001 && Math.abs(ghostY - 0.8) < 0.001, `a prop dropped on the table sits on its top, as its ghost showed (crate ${JSON.stringify(crate?.position)}, ghost y ${ghostY})`);
   await page.mouse.move(10, 400);
   await shot('prop-on-table');
@@ -2249,7 +2249,7 @@ async function editorMeasureChecks(browser) {
   page.once('dialog', (d) => d.accept());
   await newMap(page, 96);
   await focus(20, 0, 20);
-  await clickTool(page, '[data-tool="prop:prop.barrel"]');
+  await clickTool(page, '[data-tool="prop:kit.drum.steel"]');
   await hoverAt(20, 0, 20);
   await clickAt(20, 0, 20);
   const barrel = (await props())[0];
@@ -2380,7 +2380,7 @@ async function editorTurnChecks(browser) {
     await page.mouse.click(p.x, p.y);
     await frames(page, 3);
   }
-  const barrel = await place('[data-tool="prop:prop.barrel"]', 12, 0);
+  const barrel = await place('[data-tool="prop:kit.drum.steel"]', 12, 0);
   const spawn = await place('[data-tool="spawn"]', 12, 8);
   // A point on the ring of the selected thing at `centre`, facing `a` (radians; 0 is +Z, a quarter turn +X).
   const ringAt = async (centre, a) => {
@@ -2495,7 +2495,7 @@ async function editorWorkflowChecks(browser) {
   await page.evaluate(() => window.__editor.view.focus({ x: 12, y: 0, z: 4 }));
   await frames(page, 3);
   // A barrel out on the ground, placed with its tool (an edit to undo later), and selected.
-  await clickTool(page, '[data-tool="prop:prop.barrel"]');
+  await clickTool(page, '[data-tool="prop:kit.drum.steel"]');
   const bp = await at(12, 0, 0);
   await page.mouse.move(bp.x, bp.y);
   await frames(page, 3);
@@ -2695,7 +2695,7 @@ async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
   check(spawnsAfter === spawnsBefore && (await page.evaluate(() => window.__editor.history.revision)) === revBefore, `the click over nothing places no spawn (${spawnsBefore} → ${spawnsAfter})`);
   // A prop over nothing the same way; over the ground on Ground its ghost is its own colour again.
   await page.evaluate(() => {
-    window.__editor.setTool({ kind: 'prop', model: 'prop.barrel' });
+    window.__editor.setTool({ kind: 'prop', model: 'kit.drum.steel' });
     window.__editor.setLevel(1);
   });
   await settle();
@@ -2733,7 +2733,7 @@ async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
       return { inBar, level: el?.dataset.level, sum: el?.querySelector('.ed-budget-sum')?.textContent ?? '', props: row('props')?.querySelector('.ed-budget-amt')?.textContent ?? '', lights: row('lights')?.querySelector('.ed-budget-amt')?.textContent ?? '', lightsWord: row('lights')?.querySelector('.ed-budget-word')?.textContent ?? '' };
     });
   const b0 = await bar();
-  await clickTool(page, '[data-tool="prop:prop.barrel"]');
+  await clickTool(page, '[data-tool="prop:kit.drum.steel"]');
   await clickAt(0, 0, -24);
   await settle();
   const b1 = await bar();
