@@ -304,7 +304,6 @@ The workflow is unchanged (CLAUDE.md):
 - **Disk:** each session's container is its own; remove a worktree once its branch has landed.
 
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
-- Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 6, the first-time tour, `wip/mapmaker-p6`), MapMaker lane, 2026-11-10.
 - **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
 - **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
   (team kills and roulette).
@@ -539,12 +538,13 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
-**Landing now: MapMaker Phase 6 (`check/mapmaker-p6`), please hold code pushes to main.** (MapMaker lane, 2026-11-10.)
-
 **Next in line to land: the mobile audit** (`check/mobile-audit`, mobile-audit agent, 2026-11-10), after MapMaker Phase 6: one check run, then a fast-forward.
+
+**Next in line to land: Fireteams part 3** (`check/fireteams-3`, Fireteams agent, 2026-11-10), after the mobile audit: one check run, then a fast-forward.
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
+- **The overhaul is complete (2026-11-10):** Phase 6, the first-time tour, landed last; the editor-code claim is released. Still in this lane: The Spillway and Verdant Protocol (built, green, waiting for the owner's review) and their follow-ups.
 - Sea Wall and Sea Wall (Breached) are on main (content/setpieces/seawall.json), ready for the other session to place on Iron Coast.
 - **Now:** Phase 1 (the ghost says why, the live budget bar, the `?` overlay; the measure tool, props snap to surfaces with
   randomise), then Phase 3 item 9 (the rotate ring, quick facings) and the rest of Phase 3 that doesn't need the split.
