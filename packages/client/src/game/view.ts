@@ -1116,6 +1116,10 @@ export class GameView {
     a.aura?.setEnabled(false);
     a.jet?.setEnabled(false);
     a.trolley?.setEnabled(false);
+    // The team leader's gold marker goes with the tag (it stayed up over the body: the avatar's own update, which hides
+    // it, stops when the body is handed over), and so do the test hitbox shapes.
+    a.crown?.setEnabled(false);
+    a.hitbox?.hide();
     this.dropCanopy(a);
     a.flash?.setEnabled(false);
     a.flashRig?.hide();
