@@ -25,6 +25,8 @@ export interface EnemySpot {
 export const MEMORY_SIZE = 8;
 /** Spots this close (m) of the same enemy, or of nobody known, are one spot. */
 const SAME = 4;
+/** A spot this old (ticks) at least is one it expects someone at (younger: the same sighting, lost a moment). */
+const EXPECT_AFTER = TICK_RATE;
 /** How much each source counts when picking where to look (a shot at it most: someone is there and knows it is here). */
 const WEIGHT: Record<MemorySource, number> = { shot: 1.6, seen: 1.2, callout: 0.9, heard: 0.6 };
 
@@ -96,9 +98,16 @@ export class EnemyMemory {
     return best;
   }
 
-  /** Is `pos` (an enemy just seen) where it expected someone: within `near` m of a fresh spot? */
+  /**
+   * Is `pos` (an enemy just seen) where it expected someone: within `near` m of a spot it remembers, at least
+   * EXPECT_AFTER old (one lost from sight a moment ago and seen again is no surprise either way: the full reaction, as
+   * before) and fresh enough.
+   */
   expected(pos: Vec3, tick: number, keepTicks: number, near = 7): boolean {
-    for (const e of this.spots) if (tick - e.tick <= keepTicks && horizontalDistance(e.pos, pos) < near && Math.abs(e.pos.y - pos.y) < 4) return true;
+    for (const e of this.spots) {
+      const age = tick - e.tick;
+      if (age >= EXPECT_AFTER && age <= keepTicks && horizontalDistance(e.pos, pos) < near && Math.abs(e.pos.y - pos.y) < 4) return true;
+    }
     return false;
   }
 }

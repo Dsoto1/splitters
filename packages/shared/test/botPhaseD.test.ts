@@ -37,8 +37,10 @@ describe('memory (item 1)', () => {
     m.note(3, at(50, 50), 90, 'callout');
     expect(m.spots.find((s) => s.slot === 3)!.pos.x).toBe(12);
     // Where it expects someone, and the spot most worth a look (a shot counts most).
-    expect(m.expected(at(14, 2), 130, 600)).toBe(true);
-    expect(m.expected(at(40, 0), 130, 600)).toBe(false);
+    expect(m.expected(at(14, 2), 200, 600)).toBe(true);
+    // (Not one seen a moment ago: that is the same sighting, lost for a moment.)
+    expect(m.expected(at(14, 2), 115, 600)).toBe(false);
+    expect(m.expected(at(40, 0), 200, 600)).toBe(false);
     expect(m.best(at(20, 15), 130, 600)!.source).toBe('shot');
     m.forget(3);
     expect(m.spots.some((s) => s.slot === 3)).toBe(false);
@@ -94,13 +96,13 @@ describe('skill tiers that feel human (item 3)', () => {
     expect(easy.surprise).toBeGreaterThan(hard.surprise);
   });
 
-  it('reaction varies sighting to sighting; slower from behind, quicker where it expected someone', () => {
+  it('reaction varies sighting to sighting (only ever slower); slower from behind, quicker where it expected someone', () => {
     const mean = (diff: keyof typeof BOT_DIFFICULTIES, how: 'plain' | 'behind' | 'expected') => {
       const brain = new BotBrain(1, CORE_BOT_PROFILES[0]!, BOT_DIFFICULTIES[diff], 3);
       if (how === 'expected') brain.enemies.note(9, at(10, 10), 100, 'callout');
       const r = brain as unknown as { reactAfter(o: { slot: number; pos: Vec3 }, outOfView: boolean, tick: number): number };
       const all: number[] = [];
-      for (let i = 0; i < 200; i++) all.push(r.reactAfter({ slot: 9, pos: at(11, 10) }, how === 'behind', 110));
+      for (let i = 0; i < 200; i++) all.push(r.reactAfter({ slot: 9, pos: at(11, 10) }, how === 'behind', 100 + TICK_RATE * 2));
       return { mean: all.reduce((a, b) => a + b, 0) / all.length, spread: Math.max(...all) - Math.min(...all) };
     };
     for (const d of ['easy', 'normal', 'hard'] as const) {

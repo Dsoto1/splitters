@@ -2808,15 +2808,17 @@ export class BotBrain {
 
   /**
    * This sighting's reaction (ticks; Phase D item 3, skill tiers that feel human): its tier's and personality's
-   * reaction, varied by `reactionSpread` either way, longer by `surprise` for someone showing outside its view (behind
+   * reaction, slower by up to `reactionSpread` (people's reaction times are skewed slow), longer by `surprise` for someone showing outside its view (behind
    * or beside it), shorter by `prepared` for someone showing where it expected them (a remembered spot: memory.ts).
    */
   private reactAfter(o: CombatantView, outOfView: boolean, tick: number): number {
     const d = this.difficulty;
-    let f = 1 + d.reactionSpread * (this.skillRng() * 2 - 1);
+    // (Only ever slower, by up to the spread: people's reaction times are skewed slow, and a draw quicker than the
+    // tier's own fires before the aim has settled: hard bots' hit rate fell under its band, botai.test.ts.)
+    let f = 1 + d.reactionSpread * this.skillRng();
     if (outOfView) f *= 1 + d.surprise;
     else if (this.enemies.expected(o.pos, tick, this.memoryTicks)) f *= 1 - d.prepared;
-    return Math.max(1, Math.round(this.reactionTicks() * f));
+    return Math.max(1, Math.ceil(this.reactionTicks() * f));
   }
 
   /** How long (ticks) it remembers an enemy's spot, a shot or a callout (its tier's memorySeconds). */
