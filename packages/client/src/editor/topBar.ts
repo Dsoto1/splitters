@@ -8,6 +8,7 @@ import { isBuiltInMap } from '../mapIndex.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
 import { firstPane } from './editorModes.ts';
+import { rememberedShowAll } from './showAllSetting.ts';
 import { TOOL_ICONS } from './editorParts.ts';
 import { openPublishDialog } from './ownerPublish.ts';
 import {
@@ -177,7 +178,12 @@ export class TopBar {
     $('ed-status').addEventListener('click', () => $('ed-issues').scrollIntoView({ behavior: 'smooth' }));
     $('ed-level-up').addEventListener('click', () => this.app.setLevel(this.app.level + 1));
     $('ed-level-down').addEventListener('click', () => this.app.setLevel(this.app.level - 1));
-    $<HTMLInputElement>('ed-showall').addEventListener('change', (e) => this.app.setShowAll((e.target as HTMLInputElement).checked));
+    $('ed-showall').addEventListener('click', (e) => {
+      this.app.setShowAll(!this.app.showAll);
+      (e.currentTarget as HTMLElement).blur();
+    });
+    // As it was left last time (the level list's Show all levels, H).
+    if (rememberedShowAll()) this.app.setShowAll(true, true);
 
     const name = $<HTMLInputElement>('ed-name');
     name.addEventListener('change', () => {

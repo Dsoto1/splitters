@@ -60,6 +60,7 @@ import { testMode } from '../testMode.ts';
 import { BotHintTool } from './botHintTool.ts';
 import { BudgetBar } from './budgetBar.ts';
 import { $, escapeHtml, isTyping } from './editorDom.ts';
+import { rememberShowAll } from './showAllSetting.ts';
 import { EditorInput } from './editorInput.ts';
 import { fitTopBar, FLY_SPEED, PLACING, STARTER_TERRAIN, starterMap, toolKey, type Hit, type Tool } from './editorParts.ts';
 import { EditorView, type PieceOutline } from './editorView.ts';
@@ -881,9 +882,11 @@ export class EditorApp {
     this.toast('Pick a piece, prop, item or NPC from the palette on the left to place it');
   }
 
+  /** Show all levels (the level list's button, H). `quiet`: a tool's own switch (the plan view, a card shot), not the user's: no toast, not remembered. */
   setShowAll(on: boolean, quiet = false): void {
     this.showAll = on;
-    $<HTMLInputElement>('ed-showall').checked = on;
+    $('ed-showall').setAttribute('aria-pressed', String(on));
+    if (!quiet) rememberShowAll(on);
     if (!quiet) this.toast(on ? 'Showing every level (the others ghosted)' : `Showing ${levelName(this.level)} and below`);
   }
 
