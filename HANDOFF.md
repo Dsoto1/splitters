@@ -624,6 +624,13 @@ for the owner's review, not landed).**
 - **From community maps (2026-11-10): Community maps landed on main at 8c856ba (green on `check/community-maps`, run 42811718756; `fireteams` passed there, the tap of B included), and it already hardens both steps in `fireteamsFlow`: commit b77f23a.** The tap of B sends key down and up in one task (Playwright's two key events let a loaded runner draw a frame between them past WHEEL_HOLD_MS, 180 ms, so the order wheel opened instead), and taps again only once the menu, the wheel and the pause menu are seen closed; the squad-holds step counts a squadmate within 25 m of the spot and at least twice as far from you as from it (CI had all three 19-22 m off it, in a fight, you 72 m away). Reproduced locally on this branch and on origin/main alike. **MapMaker lane: please drop `wip/mapmaker-fix-fireteams-test`, or rebase it onto main and keep only what goes beyond this, so `e2e/run.mjs` doesn't conflict.**
 
 
+### Lean mode (owner, 2026-11-10; both accounts, rest of the week): save Claude usage
+- **Local checks only:** `pnpm typecheck` and `pnpm test:changed`, plus at most one e2e flow you're actively fixing (`E2E_ONLY=<flow>`). No local full or `e2e:changed` runs. GitHub runs the full suite on the check/ push (Actions minutes, not Claude usage).
+- **One check-in per push:** after pushing to check/, schedule a single check-in for when the run should be done (about 25 min). Don't poll.
+- **On red, read only the failing job's log.** Fix and push once more; re-run only a known flake, and only once.
+- **One agent at a time** unless the owner asks for more. Short reports.
+- All the usual merge rules still apply: claims, one "Landing now" lock, "Next in line" turns, one merge of origin/main, fast-forward only to green.
+
 ### Hand-off to the MapMaker lane (owner, 2026-11-10)
 The MapMaker lane (other account) is **the main session for the rest of the week** (owner, 2026-11-10) and owns this whole queue, except the **weapon and vehicle lane** (items 3 and 4: throwables + flare gun, vehicle refreshes), which stays with this account on `wip/weapons-*` / `wip/vehicles-*` branches, claimed here first; if that lane says here that it has stopped, the work is yours. Same rules for both: claims, one "Landing now" lock at a time with "Next in line" turns, merge origin/main once, one check/ push, fast-forward only to green, re-run only a known flake and only once, no rebases or force-pushes of pushed work, no PRs, no unattended push loops. Queue, owner decisions and open threads:
 
