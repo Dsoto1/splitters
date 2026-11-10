@@ -1119,7 +1119,7 @@ export class FrontEnd {
       for (const { m } of shown) {
         if (m.group !== group) {
           group = m.group;
-          if (group) cards.append(el('h4', { class: 'map-group', textContent: `${group} maps` }));
+          if (group) cards.append(el('h4', { class: 'map-group', textContent: group === PICK_GROUP ? 'Community Picks' : `${group} maps` }));
         }
         const featured = !m.group && FEATURED_MAPS.includes(m.key);
         const { card, draw } = mapCard(m, m.key === current.key, featured ? 'Featured' : undefined, {

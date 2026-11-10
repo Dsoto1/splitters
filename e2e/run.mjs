@@ -9303,7 +9303,7 @@ async function communityFlow(browser) {
   writeFileSync(join(dir, 'picks', `${pickHex}.json`), JSON.stringify({ ...arena, metadata: { ...arena.metadata, id: 'e2e_pick_yard', name: 'E2E Pick Yard' } }));
   const pickRow = { mapId: 'm_e2epickyardaaaaaaa'.slice(0, 18), versionId: 'v_e2epickyardaaaaa', name: 'E2E Pick Yard', status: 'pick', firstAt: 0, lastAt: Date.now(), players: {}, hosts: [], days: [], minutes: 0, matches: 0, reporters: [], reviewed: 0, pickedAt: Date.now(), description: 'A test pick.', modes: ['core.deathmatch'], recommendedPlayers: { min: 2, max: 4 } };
   writeFileSync(join(dir, 'community.json'), JSON.stringify({ salt: 'e2e', versions: { [`sha256:${pickHex}`]: pickRow }, maps: {}, hostLast: {} }));
-  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', LAN_DISCOVERY: '0', COMMUNITY_DIR: dir });
+  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', LAN_DISCOVERY: '0', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478', COMMUNITY_DIR: dir });
   const up = await until(() => fetch(`http://127.0.0.1:${HUB_PORT}/lobby/health`).then((r) => r.ok), T(30000));
   check(up, 'the community hub starts');
   const hub = `hub=127.0.0.1:${HUB_PORT}`;
@@ -9335,7 +9335,11 @@ async function communityFlow(browser) {
     await host.evaluate(() => document.querySelector('#map-tabs .map-tab.picks').click());
     const shown = await host.evaluate(() => [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.title));
     check(shown.length === 1 && shown[0] === 'E2E Pick Yard', `the Community Picks tab lists the hub's picks only (${shown.join(', ')})`);
-    if (process.env.E2E_SHOTS) await host.screenshot({ path: `${process.env.E2E_SHOTS}/community-picks-tab.png` });
+    if (process.env.E2E_SHOTS) {
+      // (Once the start-up screen has gone: boot.ts removes it.)
+      await host.waitForFunction(() => !document.getElementById('boot'), null, { timeout: T(30000) }).catch(() => {});
+      await host.screenshot({ path: `${process.env.E2E_SHOTS}/community-picks-tab.png` });
+    }
     await host.evaluate(() => document.querySelector('#map-tabs .map-tab[data-mode="all"]').click());
   } else check(false, 'the map list has a Community Picks tab');
   const allShown = await host.evaluate(() => [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.title));
@@ -9361,8 +9365,8 @@ async function communityFlow(browser) {
   await player.addInitScript(() => localStorage.setItem('cs.name', 'Stranger'));
   await player.goto(`${CLIENT}/?${hub}`, { waitUntil: 'domcontentloaded' });
   await player.waitForFunction(() => window.__front, null, { timeout: T(30000) });
-  await player.evaluate(() => document.getElementById('nav-online')?.click());
-  await player.waitForSelector('#gb-filter', { timeout: T(15000) });
+  // Online (pressed again until its screen is up: a press while the menu is still starting can be missed).
+  await player.waitForFunction(() => !!document.getElementById('gb-filter') || void document.getElementById('nav-online')?.click(), null, { timeout: T(45000), polling: 1000 });
   await player.selectOption('#gb-filter', 'community');
   const rowText = await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].map((r) => r.textContent).find((t) => t.includes('E2E Dune Run')) ?? null, null, { timeout: T(45000) }).then((h) => h.jsonValue(), () => null);
   check(!!rowText && rowText.includes('Community map') && rowText.includes('Hosty') && rowText.includes('Report'), `the game browser lists it with the Community map label, its name, its host and Report (${rowText})`);
@@ -9374,8 +9378,7 @@ async function communityFlow(browser) {
   await player.waitForFunction(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].some((r) => r.textContent.includes('E2E Dune Run')), null, { timeout: T(15000) }).catch(() => {});
   await player.evaluate(() => [...document.querySelectorAll('.gb-row:not(.gb-head)')].find((r) => r.textContent.includes('E2E Dune Run'))?.querySelector('button.primary')?.click());
   const joined = await player.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(120000) }).then(() => true, () => false);
-  const onMap = joined ? await player.evaluate(() => window.__cs?.map?.metadata?.name ?? null).catch(() => null) : null;
-  check(joined, `joining from the game browser puts the stranger in the match on the community map (${onMap})`);
+  check(joined, 'joining from the game browser puts the stranger in the match on the community map (sent by the host)');
   // The hub's numbers: the version is known (its plays count only for signed-in players: none here).
   const kept = await hubUntil(() => Promise.resolve(existsSync(join(dir, 'community.json')) && readFileSync(join(dir, 'community.json'), 'utf8').includes('E2E Dune Run')), T(15000));
   check(kept, 'the hub keeps the community map version (by its content hash)');
