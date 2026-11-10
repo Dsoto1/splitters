@@ -6,6 +6,7 @@ import { TICK_RATE } from '../constants.ts';
 import type { Combatant } from '../match.ts';
 import type { FlagRt } from './ctf.ts';
 import type { BotGoal } from './types.ts';
+import { BOT_SWITCHES } from '../../bots/brain.ts';
 
 /**
  * Capture the Flag goals for Player Bots (docs/BOTS.md, "Capture the Flag").
@@ -53,11 +54,36 @@ export function ctfDefenders(teamSize: number): number {
   return ctfDefendersBy(ROLES, teamSize);
 }
 
+/** A squad's CTF role (Fireteams): it defends its own flag, or attacks the enemy's. */
+export type SquadRole = 'defend' | 'attack';
+
+/** A squad as the CTF roles see it: its id and how many are in it (people included, alive or not). */
+export interface SquadSize {
+  id: number;
+  size: number;
+}
+
 /**
- * Fireteams: each squad's CTF role, the squads in the order best suited to defend: a squad defends while it fits in the
- * `n` defenders wanted (with those already holding) and another squad is still left to attack.
+ * Fireteams follow-ups (owner, 2026-11-10): each squad's CTF role on one side. With 3 or more squads the smallest
+ * defends its own flag (ties to the higher squad id: squads are numbered as they form, a person's usually first, so a
+ * bot-led squad defends rather than a person's when it can); with 1 or 2 squads they all attack.
  */
-export function ctfSquadRoles(sizes: readonly number[], n: number): ('defend' | 'attack')[] {
+export function ctfSquadRoles(squads: readonly SquadSize[]): Map<number, SquadRole> {
+  const out = new Map<number, SquadRole>();
+  let def: SquadSize | null = null;
+  if (squads.length >= 3) for (const q of squads) if (!def || q.size < def.size || (q.size === def.size && q.id > def.id)) def = q;
+  for (const q of squads) out.set(q.id, q === def ? 'defend' : 'attack');
+  return out;
+}
+
+/**
+ * The squads for the CTF roles (ModeLogic.botUnits): a slot's squad (its id; a person leads it; that person has given
+ * it an order since taking the lead), or undefined (no squads, or not in one).
+ */
+export type SquadOf = (slot: number) => { id: number; human: boolean; ordered: boolean } | undefined;
+
+/** Before the follow-ups (BOT_OFF=squadDefend, for measuring): a squad defends only when it fits in the `n` defenders wanted and another still attacks. */
+function fitRoles(sizes: readonly number[], n: number): SquadRole[] {
   let held = 0;
   let attackers = sizes.length;
   return sizes.map((size) => {
@@ -95,16 +121,28 @@ export class CtfBotPlan {
    * (null: a bot in a person's squad, no role of its own; undefined: no squads).
    */
   unitOf: ((slot: number) => number | null | undefined) | null = null;
+  /** Fireteams follow-ups: every slot's squad, people's included (ModeLogic.botUnits' second argument). */
+  squadOf: SquadOf | null = null;
+  /** Fireteams follow-ups: each squad's role (by squad id), worked out with the bots' roles. */
+  readonly squadRoleOf = new Map<number, SquadRole>();
 
   update(tick: number, everyone: readonly Combatant[], flags: readonly FlagRt[]): void {
     // Roles: when the line-up changes, else every few seconds (they only change with it).
     if ((tick % 6) !== 0 && tick - this.rolesAt < TICK_RATE * 5) return;
     const unit = this.unitOf;
-    const lineup = everyone.map((c) => `${c.slot}${c.faction ?? ''}${c.kind[0]}${unit ? `:${unit(c.slot) ?? '-'}` : ''}`).join(',');
+    const sq = this.squadOf;
+    // (With squads: who is in which squad, and whether its person has given an order, so a join, a leave or a takeover
+    // works the roles out again at once.)
+    const squadKey = (slot: number): string => {
+      const q = sq?.(slot);
+      return q ? `${q.id}${q.human ? (q.ordered ? 'o' : 'h') : ''}` : '-';
+    };
+    const lineup = everyone.map((c) => `${c.slot}${c.faction ?? ''}${c.kind[0]}${unit ? `:${unit(c.slot) ?? '-'}` : ''}${sq ? `/${squadKey(c.slot)}` : ''}`).join(',');
     if (lineup !== this.lineup || tick - this.rolesAt >= TICK_RATE * 5) {
       this.lineup = lineup;
       this.rolesAt = tick;
       this.roles.clear();
+      this.squadRoleOf.clear();
       const teams = new Map<string, Combatant[]>();
       for (const c of everyone) {
         if (!c.faction || c.kind === 'npc') continue;
@@ -117,7 +155,8 @@ export class CtfBotPlan {
         // A team of bots alone keeps at least one attacker; with people on it, the bots may all hold the base.
         const keep = members.some((c) => c.kind === 'human') ? 0 : 1;
         const n = Math.max(0, Math.min(ctfDefenders(members.length), bots.length - keep));
-        if (unit && bots.some((c) => unit(c.slot) !== undefined)) this.squadRoles(bots, n, unit);
+        if (sq && members.some((c) => sq(c.slot) !== undefined)) this.squadRoles(members, bots, n, sq);
+        else if (unit && bots.some((c) => unit(c.slot) !== undefined)) this.fitSquadRoles(bots, n, unit);
         else bots.forEach((c, i) => this.roles.set(c.slot, i < n ? 'defend' : 'attack'));
       }
     }
@@ -148,15 +187,43 @@ export class CtfBotPlan {
   }
 
   /**
-   * Fireteams (objective first): roles by whole squads. A bot-led squad defends only when it fits in the team's
-   * defenders (a squad of 3 when 3 are wanted) and another squad still attacks; every other squad attacks, its members
-   * with it. Bots in a person's squad attack (they follow the person anyway). So with squads of 4-6 and 2-3 defenders a
-   * team has nobody standing at its flag: a flag in trouble is answered by whoever is near and its carrier chased
-   * (ctfBotGoal), and the squads go for the enemy's flag. Measured (docs/FIRETEAMS_PLAN.md, Part 2): a squad of 4
-   * holding each base (one more than the 3 defenders) left Diamond Park without a capture in 2 matches of 3 minutes;
-   * with none, 1-2 a match and kills above the variant off.
+   * Fireteams follow-ups (owner, 2026-11-10): roles by whole squads (ctfSquadRoles). With 3 or more squads on the side
+   * the smallest defends its own flag (holds round its base, goes to touch it when dropped, chases its carrier:
+   * ctfBotGoal's defend), ties to the higher squad id; with 2 both attack. A bot-led squad plays its role; a person's
+   * squad has it only as its default until the person gives an order (then the bots do what they're told, and play
+   * attack meanwhile when ordered: they follow the person). `everyone`: the side's players, people included (each squad's
+   * size counts them, alive or not). BOT_OFF=squadDefend: Part 2's rule (fitSquadRoles), for measuring.
    */
-  private squadRoles(bots: readonly Combatant[], n: number, unit: (slot: number) => number | null | undefined): void {
+  private squadRoles(everyone: readonly Combatant[], bots: readonly Combatant[], n: number, sq: SquadOf): void {
+    if (!BOT_SWITCHES.squadDefend) {
+      const unit = (slot: number): number | null | undefined => {
+        const q = sq(slot);
+        return q ? (q.human ? null : q.id) : undefined;
+      };
+      this.fitSquadRoles(bots, n, unit);
+      return;
+    }
+    const sizes = new Map<number, number>();
+    for (const c of everyone) {
+      const q = sq(c.slot);
+      if (q) sizes.set(q.id, (sizes.get(q.id) ?? 0) + 1);
+    }
+    const roles = ctfSquadRoles([...sizes].map(([id, size]) => ({ id, size })));
+    for (const [id, r] of roles) this.squadRoleOf.set(id, r);
+    for (const c of bots) {
+      const q = sq(c.slot);
+      const r = q ? roles.get(q.id) : undefined;
+      // (A person's squad: its default only until they give an order.)
+      this.roles.set(c.slot, r && (!q!.human || !q!.ordered) ? r : 'attack');
+    }
+  }
+
+  /**
+   * Part 2's rule (before the follow-ups; BOT_OFF=squadDefend): a bot-led squad defends only when it fits in the team's
+   * defenders (a squad of 3 when 3 are wanted) and another squad still attacks; every other squad attacks, its members
+   * with it. Bots in a person's squad attack (they follow the person anyway). Measured (docs/FIRETEAMS_PLAN.md, Part 2).
+   */
+  private fitSquadRoles(bots: readonly Combatant[], n: number, unit: (slot: number) => number | null | undefined): void {
     const squads = new Map<number, Combatant[]>();
     for (const c of bots) {
       const u = unit(c.slot);
@@ -170,10 +237,15 @@ export class CtfBotPlan {
     }
     // The squads best suited to defend first (their best defender's score: the bots come sorted by it).
     const order = [...squads.values()];
-    const roles = ctfSquadRoles(order.map((l) => l.length), n);
+    const roles = fitRoles(order.map((l) => l.length), n);
     order.forEach((list, i) => {
       for (const c of list) this.roles.set(c.slot, roles[i]!);
     });
+  }
+
+  /** Fireteams follow-ups: a squad's CTF role (null: none worked out, as with the variant off). */
+  squadRole(id: number): SquadRole | null {
+    return this.squadRoleOf.get(id) ?? null;
   }
 
   /** A bot's role now (escort while it escorts a carrier). */

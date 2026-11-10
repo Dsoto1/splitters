@@ -967,6 +967,9 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #squad-order b { font: 700 14px var(--font-display); color: var(--orange); }
 #squad-order i { font: 600 11px var(--font-display); font-style: normal; color: var(--text); padding-left: 8px; border-left: 1px solid var(--line); }
 #squad-order i[hidden] { display: none; }
+#squad-order em { font: 700 11px var(--font-display); font-style: normal; color: var(--text); padding-right: 8px; border-right: 1px solid var(--line); }
+#squad-order em[data-role='defend'] { color: var(--accent); }
+#squad-order em[hidden] { display: none; }
 #squad-hud .sq-mates { display: flex; gap: 6px; }
 #squad-hud .sq-mate { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 52px; padding: 4px 4px 5px; background: rgba(11, 15, 26, 0.78); border-top: 2px solid var(--orange); font-family: var(--font-display); }
 #squad-hud .sq-mate img { width: 40px; height: 40px; object-fit: cover; background: radial-gradient(circle at 50% 30%, #2a3a55, #121827); border: 1px solid rgba(255, 179, 71, 0.45); }

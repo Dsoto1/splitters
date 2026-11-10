@@ -51,7 +51,7 @@ const MAP_USERS = {
   training_range: ['physicsfx', 'newplayer'],
   bunker_cross: ['ctf'],
   fort_meadow: ['forts'],
-  twin_spires: ['classes'],
+  twin_spires: ['classes', 'ctf'],
   grid_rings: ['classes'],
   apex_ring: ['traffic'],
   atomic_court: ['hostcontrols'],
@@ -168,6 +168,8 @@ const RULES = [
   [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera|riderPlacement|ownBody)\.ts$/, ['vehicles', 'traffic'], ['client']],
   [/^packages\/client\/src\/roadMeshes\.ts$/, ['traffic'], ['client']],
   [/^packages\/client\/src\/game\/fortsClient\.ts$/, ['forts'], ['client']],
+  // Fireteams' squad HUD (the order line, its CTF role, the squadmates' cards).
+  [/^packages\/client\/src\/game\/squadHud\.ts$/, ['fireteams', 'ctf'], ['client']],
   [/^packages\/client\/src\/game\/rouletteHud\.ts$/, ['roulette', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'breakthrough', 'zombies', 'teams', 'classes', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party'], ['client']],

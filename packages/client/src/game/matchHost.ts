@@ -905,6 +905,7 @@ export class MatchHost {
       skill: bots.skill.id,
       ...(teams?.length ? { teams } : {}),
       players: match.checkpointPlayers(keyOf, successor),
+      ...((squads) => (squads ? { squads } : {}))(match.checkpointSquads()),
       ...((vote) => (vote ? { vote } : {}))(this.voteCheckpoint(match, match.combatants().map((c) => c.slot))),
       ...(this.banned.size ? { banned: [...this.banned].map((k) => (k.startsWith('h:') ? k : handoffKey(`pk:${k}`))) } : {}),
       ...(this.listing ? { listing: { name: this.listing.name } } : {}),

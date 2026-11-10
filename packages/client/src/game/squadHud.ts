@@ -1,9 +1,10 @@
-import { ORDER_LABELS, SPACING_TEXT, readSquad, type SquadView } from '@tiletrigger/shared';
+import { ORDER_LABELS, SPACING_TEXT, SQUAD_ROLE_TEXT, readSquad, type SquadView } from '@tiletrigger/shared';
 import type { MinimapBlip } from './minimap.ts';
 
 /**
  * Fireteams' squad HUD (docs/FIRETEAMS_PLAN.md, Part 2): your squad's portraits, each with its health and name (greyed
- * while down), under a line with the squad's order and spacing ("Squad · Hold here · Spread out"); your squadmates in
+ * while down), under a line with the squad's role in the mode, its order and spacing ("Squad · Attack · Hold here ·
+ * Spread out"; the role, CTF's Defend or Attack, only where the mode gives squads one); your squadmates in
  * the squad's colour on the minimap (a ringed dot, apart from the rest of the team), the order's place there too (a
  * square: H, G or D), and the squad's colour on their markers over their heads.
  *
@@ -75,6 +76,11 @@ export class SquadHud {
     const order = ORDER_LABELS[s.order];
     const spacing = SPACING_TEXT[s.spacing];
     el.querySelector('#squad-order b')!.textContent = order;
+    // (The squad's role in the mode, CTF's Defend / Attack: a steady word, nothing blinks when it changes.)
+    const role = el.querySelector<HTMLElement>('#squad-order em')!;
+    role.textContent = s.role ? SQUAD_ROLE_TEXT[s.role] : '';
+    role.hidden = !s.role;
+    role.dataset.role = s.role ?? '';
     const sp = el.querySelector<HTMLElement>('#squad-order i')!;
     sp.textContent = spacing;
     sp.hidden = !spacing;
@@ -142,7 +148,7 @@ export class SquadHud {
     // (The order line keeps its Part 1 id: `#squad-order b` is the order.)
     const el = document.createElement('div');
     el.id = 'squad-hud';
-    el.innerHTML = '<div id="squad-order"><small>Squad</small><b></b><i hidden></i></div><div class="sq-mates"></div>';
+    el.innerHTML = '<div id="squad-order"><small>Squad</small><em hidden></em><b></b><i hidden></i></div><div class="sq-mates"></div>';
     this.root.append(el);
     this.el = el;
     this.list = el.querySelector('.sq-mates');

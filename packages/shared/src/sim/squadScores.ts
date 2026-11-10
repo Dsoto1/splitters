@@ -42,6 +42,13 @@ export interface SquadLike {
   members: readonly number[];
 }
 
+/** A tally as a checkpoint carries it: [points, kills, assists, objective plays, hill seconds]. */
+export type TallyRow = [points: number, kills: number, assists: number, objectives: number, hill: number];
+export const tallyRow = (t: SquadTally): TallyRow => [t.points, t.kills, t.assists, t.objectives, t.hill];
+export const tallyOf = (r: readonly number[]): SquadTally => ({ points: r[0] ?? 0, kills: r[1] ?? 0, assists: r[2] ?? 0, objectives: r[3] ?? 0, hill: r[4] ?? 0 });
+/** A tally with anything to carry. */
+export const tallied = (t: SquadTally): boolean => t.points > 0 || t.kills > 0 || t.assists > 0 || t.objectives > 0 || t.hill > 0;
+
 const blank = (): SquadTally => ({ points: 0, kills: 0, assists: 0, objectives: 0, hill: 0 });
 
 export class SquadScores {
@@ -125,6 +132,19 @@ export class SquadScores {
     this.seen.delete(slot);
     for (const m of this.hurts.values()) m.delete(slot);
     this.hurts.delete(slot);
+  }
+
+  /**
+   * Host handoff (follow-ups): a tally as the old host had it, carried in the checkpoint (`tallyOf`), put back for a
+   * squad (by its new id) or a player (by their new slot). Objective plays are counted from the player's count as
+   * restored (first seen credits nothing), so nothing is counted twice.
+   */
+  restoreSquad(id: number, t: SquadTally): void {
+    this.squads.set(id, { ...t });
+  }
+
+  restorePlayer(slot: number, t: SquadTally): void {
+    this.players.set(slot, { ...t });
   }
 
   squad(id: number): SquadTally {

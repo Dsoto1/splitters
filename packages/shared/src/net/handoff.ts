@@ -5,6 +5,7 @@ import { isGameMode, type MatchRules } from '../sim/rules.ts';
 import type { VoteOption, VoteWin } from '../sim/mapVote.ts';
 import { sanitizeName } from './clientMessages.ts';
 import { isPartyTag } from './party.ts';
+import type { TallyRow } from '../sim/squadScores.ts';
 
 /**
  * Host handoff (browser hosts): while friends play in a match a browser
@@ -66,6 +67,20 @@ export interface CheckpointPlayer {
   /** Weapons as [id, magazine, reserve], and the one in hand. */
   w?: [string, number, number][];
   cur?: string;
+  /** Fireteams: their own squad points as a tally (sim/squadScores.ts TallyRow: points, kills, assists, objectives, hill s). */
+  sp?: TallyRow;
+}
+
+/**
+ * Fireteams in a checkpoint (follow-ups): a squad as the old host had it, its members by their index in the
+ * checkpoint's `players` (so they follow people to their new slots), its leader's index (-1: none), its tally, and
+ * whether a person led it.
+ */
+export interface CheckpointSquad {
+  m: number[];
+  l: number;
+  t: TallyRow;
+  h?: 1;
 }
 
 /** Everything the successor needs to carry the match on (the map it already has: the welcome brought it). */
@@ -95,6 +110,8 @@ export interface MatchCheckpoint {
   listing?: { name: string };
   /** Between matches: the next-map vote that is open (or just closed), so it carries on with the successor. */
   vote?: CheckpointVote;
+  /** Fireteams: the squads and their points (Match.checkpointSquads), so the successor's squads don't start from zero. */
+  squads?: CheckpointSquad[];
 }
 
 /**
@@ -202,7 +219,39 @@ function parsePlayer(v: unknown): CheckpointPlayer | null {
   }
   const cur = id(o.cur);
   if (cur) p.cur = cur;
+  const sp = parseTally(o.sp);
+  if (sp) p.sp = sp;
   return p;
+}
+
+/** A tally row (points, kills, assists, objectives, hill seconds), bounded, or null. */
+function parseTally(v: unknown): TallyRow | null {
+  if (!Array.isArray(v) || v.length !== 5) return null;
+  const r = v.map((x) => int(x, 0, 1_000_000));
+  return r.every((x) => x !== null) ? (r as TallyRow) : null;
+}
+
+/** A checkpoint's squads, checked (`players`: how many players the checkpoint has): each member once, in one squad. */
+function parseCheckpointSquads(v: unknown, players: number): CheckpointSquad[] | null {
+  if (!Array.isArray(v)) return null;
+  const seen = new Set<number>();
+  const out: CheckpointSquad[] = [];
+  for (const e of v.slice(0, MAX_PLAYER_SLOTS)) {
+    if (typeof e !== 'object' || e === null) continue;
+    const o = e as Record<string, unknown>;
+    const t = parseTally(o.t);
+    if (!t || !Array.isArray(o.m)) continue;
+    const m: number[] = [];
+    for (const i of o.m.slice(0, MAX_PLAYER_SLOTS)) {
+      if (!Number.isInteger(i) || (i as number) < 0 || (i as number) >= players || seen.has(i as number)) continue;
+      seen.add(i as number);
+      m.push(i as number);
+    }
+    if (!m.length) continue;
+    const l = Number.isInteger(o.l) && m.includes(o.l as number) ? (o.l as number) : -1;
+    out.push({ m, l, t, ...(o.h === 1 ? { h: 1 as const } : {}) });
+  }
+  return out.length ? out : null;
 }
 
 /**
@@ -243,6 +292,8 @@ export function parseCheckpoint(raw: unknown): MatchCheckpoint | null {
   if (Array.isArray(o.banned)) cp.banned = o.banned.filter((k): k is string => typeof k === 'string' && KEY_RE.test(k)).slice(0, 256);
   const vote = parseCheckpointVote(o.vote, cp.players.length);
   if (vote) cp.vote = vote;
+  const squads = parseCheckpointSquads(o.squads, cp.players.length);
+  if (squads) cp.squads = squads;
   const l = o.listing as Record<string, unknown> | undefined;
   if (typeof l === 'object' && l !== null && typeof l.name === 'string') {
     // (An older host may still send the listing's ID and secret: they're dropped.)

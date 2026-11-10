@@ -18,6 +18,15 @@ made only on a commit that passed CI on a check branch.
   ones, with the same size, the same cover, the same health when shot apart and the same effect on rounds, so nothing
   about the fight changes. MapMaker's palette offers only the new ones (Crates & Barrels), the prop inspector picks a
   look (Variant), Randomise rolls one, and Replace all suggests the new piece for an old one.
+**Fireteams: CTF squad roles, squad points kept when the host leaves** (Fireteams follow-ups, docs/FIRETEAMS_PLAN.md):
+- Capture the Flag with Fireteams: with 3 or more squads a side the smallest squad defends its flag (holds by its
+  base, returns it when dropped) and the rest attack; with 2 squads both attack. A bot-led squad defends rather than
+  yours when sizes tie, and your squad does what you order: the role is only its default until you give one.
+- Your squad's line on the HUD says its role: "Squad · Attack · Follow me".
+- When the host leaves and a friend takes over, every squad keeps its points and every player theirs (they started
+  from zero before).
+- `pnpm bot-report`: a squad-score line (each squad's points, Best Squad, the MVP) and CTF defence numbers.
+
 **Bots remember, call out, and keep watch like players** (Bot AI Phase D):
 - Bots remember where they saw enemies, where shots came from and what teammates called out, and watch and pre-aim
   those spots; a teammate's sighting reaches the bots nearby.

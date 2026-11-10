@@ -85,7 +85,8 @@ switched on in Match Setup's variants row. There is also a party preset.
 
 ## Part 1: done (2026-11-08, `wip/fireteams`)
 Part 1 was the variant, fixed squads, the order wheel, respawn on the leader and the measures. Part 2 (objective first,
-formations and bounding, the squad HUD) and Part 3 (squad scores, the squad MVP, the party preset) are done (below). The rules as built are in
+formations and bounding, the squad HUD), Part 3 (squad scores, the squad MVP, the party preset) and the follow-ups (CTF
+squad roles, squad points through a host handoff, bot-report's squad scores) are done (below). The rules as built are in
 docs/BOTS.md, "Fireteams"; the code is `sim/fireteams.ts`.
 
 - **The variant:** "Fireteams" in Match setup's Variants row for Team Deathmatch, CTF, King of the Hill, Bomb, Hostage and
@@ -256,8 +257,53 @@ and the preset in `sim/setupVariants.ts`. What changed:
    features as they are: Host online and the invite link bring friends in, `partyTeam` puts them on your side, and each
    person who joins takes over a bot-led squad (Part 1).
 
-**Not in it:** host handoff doesn't carry the squad points yet (a successor starts the squads' points from zero; the
-players' kills and objective plays carry as before). Bot-report has no squad-score line.
+**Not in it (done since, "Follow-ups" below):** host handoff carrying the squad points; bot-report's squad-score line.
 
 **Next: the owner's playtest** (Fireteams Parts 1-3 together).
+
+## Follow-ups: done (2026-11-10, `wip/fireteams-4`; the owner's three decisions)
+The rules as built: docs/BOTS.md, "Fireteams follow-ups". What changed:
+
+1. **CTF squad roles with Fireteams on** (`ctfSquadRoles`, `CtfBotPlan.squadRoles`, `ModeLogic.squadRole`):
+   - 3 or more squads on a side: the **smallest defends** its own flag (holds round the base, returns a dropped flag,
+     chases our flag's carrier); the others attack. 2 squads: both attack.
+   - Ties for smallest go to the **higher squad id**, so a bot-led squad defends rather than a person's when it can.
+   - A **person's squad** keeps its leader's orders: the role is only its default until they give one
+     (`Squad.ordered`); bot-led squads always play their role.
+   - Worked out again at once when squads change (joins, leaves, takeovers, a person's first order), else every 5 s.
+   - The squad HUD's line shows the role: "Squad · Attack · Follow me" (existing tokens; no animation).
+   - `BOT_OFF=squadDefend` plays Part 2's rule (a squad defends only when it fits in the defenders wanted: in practice
+     every squad attacked), for measuring.
+2. **Host handoff carries squad points**: the checkpoint has the squads (members and leader by player index, each
+   squad's tally) and each player's own tally; the successor makes the squads again as they were, with their points.
+3. **bot-report**: a `squad scores:` line per match (every squad's points with its leader and role, Best Squad, the
+   MVP), best-squad and MVP points in the squads table, and a CTF defence table (captures, flag returns and those by
+   defenders, flags defended, defend squad-seconds).
+
+### Follow-ups, measured
+`pnpm bot-report diamond_park obsidian_orb bunker_cross market_town twin_spires --mode=core.ctf --fireteams=5
+--seeds=1,2,3,4 --seconds=180`, bots only (every squad bot-led), before `BOT_OFF=squadDefend` (Part 2's rule, as on
+main) and after (the new rule), same code otherwise. Per match, 4 matches a map. Flags defended: a kill of an enemy
+within 20 m of the killer's own flag base, or of our flag's carrier.
+
+| Map (a side: squads) | captures | flag takes | flag returns | flags defended | kills a minute | best squad pts |
+|---|---|---|---|---|---|---|
+| Diamond Park (12: 3) | 0.8 → **0.3** | 6.3 → 2.3 | 2.3 → 1.3 | 11.8 → 11.3 | 51.8 → 38.2 | 578 → 466 |
+| Obsidian Orb (12: 3) | 2.8 → **0.3** | 5.0 → 0.3 | 1.0 → 0.0 | 46.3 → 35.3 | 63.8 → 55.5 | 690 → 566 |
+| Market Town (12: 3) | 0.5 → **0.3** | 2.0 → 0.5 | 0.3 → 0.0 | 1.8 → 1.3 | 43.6 → 29.0 | 321 → 311 |
+| Bunker Cross (8: 2) | 1.3 → 1.3 | 2.5 → 2.5 | 0.8 → 0.8 | 7.3 → 7.3 | 22.9 → 22.9 | 364 → 364 |
+| Twin Spires (8: 2) | 0.3 → 0.3 | 0.5 → 0.5 | 0.0 → 0.0 | 8.0 → 8.0 | 30.8 → 30.8 | 479 → 479 |
+
+- **It doesn't help the low captures; on the 3-squad maps it costs them**: 16 captures in 12 matches → 3; flag takes
+  53 → 12. A side of 12 with squads of 5 (three of 4) sends a third of its players to its own base, so fewer go for
+  the enemy's flag, and with both sides doing it the enemy base has a whole squad on it. Flags defended didn't rise (fewer
+  pushes reach either base). Returns by defenders: 1 in 12 matches (Diamond Park).
+- On the 2-squad maps (Bunker Cross, Twin Spires) nothing changes (both attack; the rows are identical), as the rule
+  says.
+- Diamond Park's and Obsidian Orb's low captures are not a defence problem: with every squad attacking (before) Obsidian
+  Orb made 2.8 a match. Part 2 measured the same with a squad of 4 holding each base (no captures in 4 matches).
+- Cohesion is a little better (Diamond Park 21.8 → 20.3 m to the leader, Market Town 26.0 → 20.8 m): defenders stay
+  together.
+- The owner's call: keep it as decided, or one of the options in HANDOFF's open questions.
+
 

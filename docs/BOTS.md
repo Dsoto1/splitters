@@ -1193,6 +1193,31 @@ squads by proximity with **fixed squads** made from the roster.
   (4 to 14 a side, 5 to 17, 6 from 18); `partyMapMove` moves to the first of its maps that fits the device when this
   map has no Team Deathmatch or fewer than `FIRETEAMS_SIDE_MIN` (8) a side.
 
+### Fireteams follow-ups: CTF squad roles, squad points through a host handoff (docs/FIRETEAMS_PLAN.md, "Follow-ups")
+- **CTF squad roles** (owner, 2026-11-10; `ctfSquadRoles`, `CtfBotPlan.squadRoles`, `ModeLogic.squadRole`): with 3 or
+  more squads on a side the **smallest defends** its own flag, ties to the **higher squad id** (squads are numbered as
+  they form, a person's usually first, so a bot-led squad defends rather than a person's); with 2 squads (or 1) every
+  squad attacks. Sizes count every member, people too, alive or not. The defenders play `ctfBotGoal`'s defend role: they
+  hold round the base (`DEFEND_RADIUS`, watching the enemy's side), go and touch our dropped flag wherever it lies, chase
+  our flag's carrier and close in on enemies at the flag. Worked out again at once when the line-up changes (who is in
+  which squad, or a person's first order: the plan's line-up key carries both) and every 5 s otherwise.
+  - **A bot-led squad** plays its role (all of it, leader included). **A person's squad** has it only as its default
+    until the person gives an order (`Squad.ordered`: the wheel or the B menu, not the match's own): a person's squad
+    on Defend by default has its bots play the defence (`Match.roleDefault`: `memberGoal` is skipped); after an order
+    they do what they're told and count as attackers.
+  - **The squad HUD's line** names your squad's role: "Squad · Attack · Follow me" (`#squad-order em`, `data-role`;
+    the snapshot's `fs` carries it at index 10, members from 11). A steady word, nothing blinks.
+  - `BOT_OFF=squadDefend` (brain.ts `BOT_SWITCHES`) plays Part 2's rule (a squad defends only when it fits in the
+    defenders wanted), for measuring.
+- **Host handoff carries the squad points**: the checkpoint's `squads` (members and leader by player index, each
+  squad's tally) and each player's `sp`; the successor makes the squads again in their order with their points
+  (`Fireteams.adopt`, `SquadScores.restoreSquad` / `restorePlayer`, `Match.restoreSquads`). Objective plays are counted
+  on from the restored counts, so nothing counts twice.
+- **bot-report**: a `squad scores:` line per match (every squad's points, most first, with its leader and CTF role;
+  Best Squad; the MVP: of the squads' MVPs the most points), best-squad and MVP points in the squads table, and for CTF
+  flags defended (a kill of an enemy within 20 m of the killer's own flag base, or of our flag's carrier), flag
+  returns by defenders and squad-seconds on the defend role (the CTF defence table; `--compare` shows both sides).
+
 ## Snipers (Bot AI Phase B)
 
 The sniper role plays like a sniper (`bots/sniper.ts`; BOT_AI_PLAN.md Phase B item 5; the owner: "camping in tucked

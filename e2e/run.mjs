@@ -5451,7 +5451,7 @@ async function weaponsetsFlow(browser) {
   await ed.context().close();
 }
 
-/** Capture the Flag offline: flags drawn, taking the enemy flag shows on the HUD, bringing it home scores. */
+/** Capture the Flag offline: flags drawn, taking the enemy flag shows on the HUD, bringing it home scores; then Fireteams' CTF squad roles (fireteamsCtfChecks). */
 async function ctfFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
@@ -5539,6 +5539,8 @@ async function ctfFlow(browser) {
   check(caps === '1', `the scoreboard's Caps column counts your capture (${caps})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  // Fireteams follow-ups: CTF squad roles (a page of its own).
+  await fireteamsCtfChecks(browser);
 }
 
 /**
@@ -7717,6 +7719,68 @@ async function environmentFlow(browser) {
       : null;
     check(!!drawn, `the showcase map plays ${env ? 'with the environment renderer (by default)' : 'with its species as props (?env=0)'} (${JSON.stringify(drawn)})`);
   }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * Fireteams follow-ups (docs/FIRETEAMS_PLAN.md, "Follow-ups"): CTF squad roles. Capture the Flag on Twin Spires with
+ * Fireteams (squads of 4, 9 a side: your squad and two bot-led ones, 3 and 2) → the smallest squad (bot-led) defends,
+ * the others attack, as the sim works it out (ctfSquadRoles) → your squad HUD's line names your squad's role
+ * ("Attack") in a steady word (no animation: Reduce flashing).
+ * Screenshot: e2e-artifacts/fireteams-ctf-roles.png. Part of the `ctf` flow (its own function, kept out of fireteamsFlow,
+ * which the MapMaker lane also edits; a flow of its own didn't fit the 16 shards' budget). The defence itself (holding
+ * round the base, returning a dropped flag) is checked headless: shared/test/fireteamsFollowups.test.ts.
+ */
+async function fireteamsCtfChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'twin_spires', mode: 'core.ctf', bots: 17, skill: 'easy', scoreLimit: 0, minutes: 20, scoreAuto: false, timeAuto: false, teams: [9, 9], fireteams: true, squadSize: 4 })));
+  await page.goto(`${CLIENT}/?test=1&god=1`);
+  await page.click('#nav-play');
+  await page.waitForSelector('#arcade-start', { timeout: T(30000) });
+  const setup = await page.evaluate(() => ({ on: document.getElementById('setup-variant-fireteams')?.getAttribute('aria-pressed'), size: document.querySelector('#arcade-squad-size .tab.on')?.textContent ?? null }));
+  check(setup.on === 'true' && setup.size === '4', `Match setup: CTF with Fireteams, squads of 4 (${JSON.stringify(setup)})`);
+  await page.click('#arcade-start');
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+  // (The match opens paused in a headless page: Resume, once it's there.)
+  await page.waitForSelector('#resume', { state: 'visible', timeout: T(10000) }).catch(() => {});
+  await page.click('#resume').catch(() => {});
+  await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
+  // (A headless page without pointer lock plays as touch does, so the pause menu stays down for the HUD's picture.)
+  await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
+  // The roles, as the sim has them: by squad, the smallest of 3+ a side defends (ties to the higher id).
+  const readRoles = (m, me) => {
+      const ft = m.fireteams;
+      const mode = m.mode;
+      if (!ft || !mode?.squadRole) return null;
+      const side = (team) => ft.teamSquads(team).map((s) => ({ id: s.id, size: s.members.length, human: s.human, role: mode.squadRole(s.id), bots: s.members.filter((x) => m.slots[x]?.kind === 'bot').map((x) => mode.botPlan.roles.get(x)) }));
+      const mine = side(me.faction);
+      const theirs = side(m.teams.find((t) => t.id !== me.faction).id);
+      return mine.length >= 3 && mine.every((s) => s.role) ? { mine, theirs, me: ft.squadOf(me.slot)?.id } : null;
+  };
+  const roles = (await simWait(page, readRoles, null, T(20000))) ? await sim(page, readRoles) : null;
+  const byRule = (list) => {
+    const small = list.reduce((a, s) => (!a || s.size < a.size || (s.size === a.size && s.id > a.id) ? s : a), null);
+    return list.every((s) => s.role === (list.length >= 3 && s === small ? 'defend' : 'attack'));
+  };
+  check(!!roles && byRule(roles.mine) && byRule(roles.theirs), `CTF squad roles: the smallest of 3+ squads a side defends, the rest attack (${JSON.stringify(roles)})`);
+  const def = roles?.mine.find((s) => s.role === 'defend');
+  check(!!def && !def.human && def.bots.every((r) => r === 'defend') && roles.mine.filter((s) => s !== def && !s.human).every((s) => s.bots.every((r) => r === 'attack')), `a bot-led squad defends, all of it; the others' bots attack (${JSON.stringify(roles?.mine)})`);
+  // Your squad's line: "Squad · Attack · Follow me", the role a steady word (no animation or transition).
+  const mineRole = roles?.mine.find((s) => s.id === roles.me)?.role;
+  const hud = await page
+    .waitForFunction((want) => {
+      const em = document.querySelector('#squad-order em');
+      return em && !em.hidden && em.textContent === want ? { text: em.textContent, role: em.dataset.role, anim: getComputedStyle(em).animationName, transition: getComputedStyle(em).transitionDuration, order: document.querySelector('#squad-order b')?.textContent } : null;
+    }, mineRole === 'defend' ? 'Defend' : 'Attack', { timeout: T(15000) })
+    .then((h) => h.jsonValue(), () => null);
+  check(!!hud && hud.role === mineRole && hud.anim === 'none' && /^0s(, 0s)*$/.test(hud.transition), `the squad HUD line names your squad's role, steadily (${JSON.stringify(hud)}; sim ${mineRole})`);
+  // (The headless page's pause overlay hidden for the picture only.)
+  await page.evaluate(() => (document.getElementById('pause').style.visibility = 'hidden'));
+  await page.screenshot({ path: `${ARTIFACTS}/fireteams-ctf-roles.png` });
+  await page.evaluate(() => (document.getElementById('pause').style.visibility = ''));
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
