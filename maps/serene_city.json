@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 30,
+  "formatVersion": 34,
   "metadata": {
     "id": "serene_city",
     "name": "Serene City",
@@ -10491,7 +10491,7 @@
         10.1
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -10505,7 +10505,7 @@
         18.91
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

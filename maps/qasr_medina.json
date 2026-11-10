@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 32,
+  "formatVersion": 34,
   "metadata": {
     "id": "qasr_medina",
     "name": "Qasr Medina",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_4mydszgwmmpfbne5",
-      "versionId": "v_go2lf2g3dlkmmk7x",
-      "revision": 1,
-      "contentHash": "sha256:4ba8a90aa632cf0e59f36465779e4f2eb63960c0ec9e9ec0ee780c2c96a01e01",
-      "schemaVersion": 32,
-      "releasedAt": "2026-11-09T07:12:59.702Z"
+      "versionId": "v_7tphnyxxcpjfczar",
+      "revision": 2,
+      "contentHash": "sha256:4f736e7a2cd8e7428d72d455d8bee9b669d15212f33e21672e4e4c8b28b59b7d",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:26:54.313Z"
     }
   },
   "classicStructure": {
@@ -2858,7 +2858,7 @@
         -55
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -2872,7 +2872,7 @@
         -55
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -2886,7 +2886,7 @@
         -55
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -3292,7 +3292,7 @@
         -15
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -3306,7 +3306,7 @@
         -31
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -3320,7 +3320,7 @@
         15
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -3334,7 +3334,7 @@
         28
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -3348,7 +3348,7 @@
         -12.5
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3362,7 +3362,7 @@
         26
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3376,7 +3376,7 @@
         30
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,

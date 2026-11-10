@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 33,
+  "formatVersion": 34,
   "metadata": {
     "id": "iron_maw",
     "name": "Iron Maw",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_3ubh7cr3ni7yi5uy",
-      "revision": 3,
-      "contentHash": "sha256:592433b039055fa5f0e6df2c5afad23088a196ff2ada42e5b5607e2457a698bc",
-      "schemaVersion": 33,
-      "releasedAt": "2026-11-09T20:44:25.491Z"
+      "versionId": "v_pjxirkagldf3j5mr",
+      "revision": 4,
+      "contentHash": "sha256:c26fe786482ec0ae2b4136862ed38d78fb8db835d142219a8658dc6cbaf193aa",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:21:31.884Z"
     }
   },
   "classicStructure": {
@@ -12449,7 +12449,7 @@
         176
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,

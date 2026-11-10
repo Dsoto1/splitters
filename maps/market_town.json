@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 31,
+  "formatVersion": 34,
   "metadata": {
     "id": "market_town",
     "name": "Market Town",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_d3ml2watxrhzzmt6",
-      "versionId": "v_2tusbfos62xoih74",
-      "revision": 5,
-      "contentHash": "sha256:875353cc7d4ad598f10a42dddeac75f4af47c2e3bd19ad6d94d9c51f074de8ab",
-      "schemaVersion": 31,
-      "releasedAt": "2026-11-09T04:21:26.353Z"
+      "versionId": "v_gxsgsyv2bt2w4sw6",
+      "revision": 6,
+      "contentHash": "sha256:144391f9f31e9db05c09c28af9c31f8e9445076dff33d7523190b859e430723d",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:24:15.814Z"
     }
   },
   "classicStructure": {
@@ -2519,7 +2519,7 @@
         9
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2533,7 +2533,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2911,7 +2911,7 @@
         -22
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2925,7 +2925,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.barrel_open",
+      "model": "kit.drum.steel_open",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2939,7 +2939,7 @@
         -37.5
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,

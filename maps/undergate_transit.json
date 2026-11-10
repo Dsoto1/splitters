@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 34,
   "metadata": {
     "id": "undergate_transit",
     "name": "Undergate Transit",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_5lhttjun3ohakisn",
-      "versionId": "v_ktlfptzaixp7g2rf",
-      "revision": 2,
-      "contentHash": "sha256:384ee485cb1e425cdc7548ddf43cf319c971a837b5f99b6d6d57e2710214d0b1",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:10:37.456Z"
+      "versionId": "v_lm4o5expoh6wrsa6",
+      "revision": 3,
+      "contentHash": "sha256:7fda97bde4aa79cb4ebea66fe5d6dc27b1315ec19472ae8645f2ded80d2af218",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:35:39.880Z"
     }
   },
   "classicStructure": {
@@ -17400,7 +17400,7 @@
         -10
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -17414,7 +17414,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": -0.1,
       "scale": 1,
       "solid": true,
@@ -17428,7 +17428,7 @@
         -6
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -17442,7 +17442,7 @@
         6.5
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -17498,7 +17498,7 @@
         14
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -17512,7 +17512,7 @@
         18
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -17540,7 +17540,7 @@
         -4
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -17554,7 +17554,7 @@
         -20
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.1,
       "scale": 1,
       "solid": true,
@@ -17568,7 +17568,7 @@
         20
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -17582,7 +17582,7 @@
         -14
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -17596,7 +17596,7 @@
         -13
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -17772,7 +17772,7 @@
         -46
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -17786,7 +17786,7 @@
         -45
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0.1,
       "scale": 1,
       "solid": true,
@@ -17828,7 +17828,7 @@
         45
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -17842,7 +17842,7 @@
         46
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20414,7 +20414,7 @@
         -45.09
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -20442,7 +20442,7 @@
         -49.5
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20470,7 +20470,7 @@
         -48.95
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 1.4,
       "scale": 1,
       "solid": true,
@@ -20484,7 +20484,7 @@
         -51.03
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0.7795,
       "scale": 1,
       "solid": true,
@@ -20498,7 +20498,7 @@
         -51.03
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": -0.6609,
       "scale": 1,
       "solid": true,
@@ -20526,7 +20526,7 @@
         -22.35
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20540,7 +20540,7 @@
         -22.35
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": -1.2708,
       "scale": 1,
       "solid": true,
@@ -20666,7 +20666,7 @@
         -27.18
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.8065,
       "scale": 1,
       "solid": true,
@@ -20680,7 +20680,7 @@
         19.25
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20694,7 +20694,7 @@
         19.25
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": -1.2708,
       "scale": 1,
       "solid": true,
@@ -20708,7 +20708,7 @@
         5.85
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20722,7 +20722,7 @@
         5.85
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": -1.2708,
       "scale": 1,
       "solid": true,
@@ -20736,7 +20736,7 @@
         10.05
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20750,7 +20750,7 @@
         10.05
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": -1.2708,
       "scale": 1,
       "solid": true,
@@ -20764,7 +20764,7 @@
         26.05
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20778,7 +20778,7 @@
         26.05
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": -1.2708,
       "scale": 1,
       "solid": true,
@@ -20806,7 +20806,7 @@
         15.05
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20820,7 +20820,7 @@
         15.05
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": -1.2708,
       "scale": 1,
       "solid": true,
@@ -20834,7 +20834,7 @@
         13
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -20848,7 +20848,7 @@
         13
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 1.8708,
       "scale": 1,
       "solid": true,
@@ -20862,7 +20862,7 @@
         19.34
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20876,7 +20876,7 @@
         12.65
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20890,7 +20890,7 @@
         12.65
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": -1.2708,
       "scale": 1,
       "solid": true,
@@ -20904,7 +20904,7 @@
         9.12
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -20918,7 +20918,7 @@
         9.12
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": -2.8416,
       "scale": 1,
       "solid": true,
@@ -20932,7 +20932,7 @@
         4.82
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.7164,
       "scale": 1,
       "solid": true,
@@ -20946,7 +20946,7 @@
         27.19
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 2.5178,
       "scale": 1,
       "solid": true,
@@ -21646,7 +21646,7 @@
         45.09
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -21660,7 +21660,7 @@
         50.85
       ],
       "kind": "prop",
-      "model": "prop.metal_crate",
+      "model": "kit.crate.framed",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -23870,6 +23870,6 @@
       7
     ]
   },
-  "dependencies": [],
-  "weaponSet": "scifi"
+  "weaponSet": "scifi",
+  "dependencies": []
 }

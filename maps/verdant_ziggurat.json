@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 34,
   "metadata": {
     "id": "verdant_ziggurat",
     "name": "Verdant Ziggurat",
@@ -1830,7 +1830,7 @@
         -18
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -1844,7 +1844,7 @@
         -17.5
       ],
       "kind": "prop",
-      "model": "prop.crate_small",
+      "model": "kit.crate.wood",
       "yaw": 0.8,
       "scale": 1,
       "solid": true,

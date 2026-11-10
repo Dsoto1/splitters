@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 32,
+  "formatVersion": 34,
   "metadata": {
     "id": "blackout",
     "name": "Blackout",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_ealjjgns5ndqtknz",
-      "versionId": "v_l3gvnu2crhjsjjs3",
-      "revision": 1,
-      "contentHash": "sha256:907bcbf4ce8f3ae855e56a4078f7782de273d786e68ce3bef52be9d18aef5a24",
-      "schemaVersion": 32,
-      "releasedAt": "2026-11-09T07:34:09.459Z"
+      "versionId": "v_um2fhpv4apzgz4bz",
+      "revision": 2,
+      "contentHash": "sha256:b03da796560f4d6f7629abd6f5badc5d48616de76374a0f31eb13fa6757a0844",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:09:05.591Z"
     }
   },
   "classicStructure": {
@@ -785,7 +785,7 @@
         34
       ],
       "kind": "prop",
-      "model": "prop.cargo_crate",
+      "model": "kit.crate.bin",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -799,7 +799,7 @@
         36
       ],
       "kind": "prop",
-      "model": "prop.crate_large",
+      "model": "kit.crate.wood_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -813,7 +813,7 @@
         60
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -827,7 +827,7 @@
         61
       ],
       "kind": "prop",
-      "model": "prop.barrel",
+      "model": "kit.drum.steel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -881,7 +881,7 @@
         18
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0,
       "scale": 1,
       "solid": true,

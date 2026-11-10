@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 34,
   "metadata": {
     "id": "pantry_raid",
     "name": "Pantry Raid",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_vx3sswecmzrnbp7e",
-      "versionId": "v_6feveamjbj7ousn7",
-      "revision": 3,
-      "contentHash": "sha256:dbc746bc1794d30611742eec601988da899fb4c856c426317cd2c1ef9d0ea0fa",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:17:12.734Z"
+      "versionId": "v_a6dagbbdua5gyqxw",
+      "revision": 4,
+      "contentHash": "sha256:b4e05d35ab4a8924e5269392cc7c86c496c37ccd627ac5942d58742d2247579a",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-10T21:25:49.455Z"
     }
   },
   "classicStructure": {
@@ -3765,7 +3765,7 @@
         60
       ],
       "kind": "prop",
-      "model": "prop.cardboard_box",
+      "model": "kit.box.carton",
       "yaw": 0.3,
       "scale": 4,
       "solid": true,
@@ -8743,6 +8743,6 @@
       6
     ]
   },
-  "dependencies": [],
-  "weaponSet": "chaos"
+  "weaponSet": "chaos",
+  "dependencies": []
 }
