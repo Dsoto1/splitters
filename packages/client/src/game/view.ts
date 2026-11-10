@@ -127,6 +127,7 @@ const TURRET_TURN = 2.5;
 import { MapStyler } from '../mapMeshes.ts';
 import { buildRoadMeshes } from '../roadMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
+import { disposeTree } from '../content/disposeTree.ts';
 import { DROP_LIE_HEIGHT, PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
@@ -2159,7 +2160,8 @@ export class GameView {
       if (aura) this.lasting.want(`aura:${p.slot}`, aura, { x: p.x, y: p.y + 0.02, z: p.z }, { size, level: 0.85 });
       // The calm shimmer (and the steady glow everyone sees under the pack's): a soft blue on the body, eased in and out.
       const shieldGlow = shielded ? 1 : 0;
-      a.shieldGlow = ease(a.shieldGlow ?? 0, shieldGlow, dt, 4, 3);
+      // (Out of view it goes straight there: each tenth on the way sets the materials' colour, and nobody sees the fade.)
+      a.shieldGlow = a.culled ? shieldGlow : ease(a.shieldGlow ?? 0, shieldGlow, dt, 4, 3);
       // In tenths, set only when it changes (setting a material's colour costs a shader check).
       const step = Math.round(a.shieldGlow * 10);
       if (step !== (a.shieldStep ?? 0) || (reglow && step)) {
@@ -2723,7 +2725,7 @@ export class GameView {
     a.anim?.dispose();
     a.weaponNode?.dispose();
     this.dropCanopy(a);
-    a.root.dispose(false, true);
+    disposeTree(a.root, true);
   }
 
   /** Characters kept for the next avatar of their look (BODY_POOL_PER_LOOK), by spec key. */
