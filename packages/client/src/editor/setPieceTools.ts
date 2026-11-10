@@ -340,9 +340,9 @@ export class SetPieceTools {
     });
     lookSel.id = 'ed-sp-look';
     el.append(row('Look', lookSel));
-    const turn = button(`Turn (R) · ${this.app.rotation * 90}°`, () => this.app.rotate());
+    const turn = button(`Turn (R) · ${this.app.rotation * 90}°`, () => this.app.edits.rotate());
     turn.id = 'ed-sp-turn';
-    const mirror = button(this.app.pieceMirror ? 'Mirrored (M)' : 'Mirror (M)', () => this.app.mirror());
+    const mirror = button(this.app.pieceMirror ? 'Mirrored (M)' : 'Mirror (M)', () => this.app.edits.mirror());
     mirror.id = 'ed-sp-mirror';
     const why = setPieceMirrorRefusal(def);
     mirror.disabled = !!why;

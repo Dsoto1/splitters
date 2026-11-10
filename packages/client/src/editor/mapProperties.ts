@@ -651,7 +651,7 @@ export class MapProperties {
       el.append(all);
     }
     if (doc.terrain && doc.entities.some((e) => e.kind === 'prop')) {
-      const settle = button('Settle all props on ground', () => this.app.settleProps());
+      const settle = button('Settle all props on ground', () => this.app.edits.settleProps());
       settle.id = 'ed-settle-all';
       el.append(settle, small('Beds every prop standing on the terrain into the slope under it; props on floors and blocks stay put.'));
     }

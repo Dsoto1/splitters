@@ -79,14 +79,14 @@ export class TopBar {
     add('ed-tb-place', 'place', 'Place', 'P', 'Place the last piece you picked from the palette', () => this.app.placeTool(), 'place');
     add('ed-tb-erase', 'erase', 'Erase', 'X', 'Erase: click anything to delete it', () => this.app.setTool({ kind: 'erase' }), 'erase');
     add('ed-tb-paint', 'paint', 'Paint', 'B', 'Paint surfaces', () => this.app.setTool({ kind: 'paint' }), 'paint');
-    add('ed-tb-walls', 'edge', 'Walls', 'O', 'Walls & openings: doors, windows, arches on any side', () => this.app.wallsTool(false), 'edge');
+    add('ed-tb-walls', 'edge', 'Walls', 'O', 'Walls & openings: doors, windows, arches on any side', () => this.app.paint.wallsTool(false), 'edge');
     add('ed-tb-terrain', 'terrain', 'Terrain', 'T', 'Sculpt and paint the terrain', () => this.app.terrain.setTerrainBrush(this.app.terrain.terrainBrush), 'terrain');
     add('ed-tb-measure', 'measure', 'Measure', 'U', 'Measure: distance, height difference and slope between points', () => this.app.setTool({ kind: 'measure' }), 'measure');
     const sep = document.createElement('span');
     sep.className = 'tb-sep';
     bar.append(sep);
-    add('ed-tb-rotate', 'rotate', 'Rotate', 'R', 'Rotate the selection, or the piece you are placing (Shift+R: a finer step)', () => this.app.rotate());
-    add('ed-tb-delete', 'delete', 'Delete', 'Del', 'Delete the selection', () => this.app.deleteSelection());
+    add('ed-tb-rotate', 'rotate', 'Rotate', 'R', 'Rotate the selection, or the piece you are placing (Shift+R: a finer step)', () => this.app.edits.rotate());
+    add('ed-tb-delete', 'delete', 'Delete', 'Del', 'Delete the selection', () => this.app.edits.deleteSelection());
     this.app.keyOverlay.mountButton(bar);
     this.syncToolbar();
   }

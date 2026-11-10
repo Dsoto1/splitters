@@ -100,7 +100,7 @@ export class PaletteBuilder {
     glass.id = 'ed-edge-glass';
     glass.title = 'Glass the Window, Twin windows and Firing slit styles put in: breakable panes shatter when shot, reinforced (bulletproof) panes stop shots and crack. Both stop players; everyone sees through.';
     glass.append(new Option('Glass: none', ''), ...GLASS_KINDS.map((k) => new Option(`Glass: ${GLASS_KIND_LABELS[k].toLowerCase()}`, k)));
-    glass.addEventListener('change', () => (this.app.edgeGlass = (glass.value || null) as GlassKind | null));
+    glass.addEventListener('change', () => (this.app.paint.edgeGlass = (glass.value || null) as GlassKind | null));
     const glassRow = document.createElement('div');
     glassRow.className = 'ed-row';
     glassRow.append(glass);
@@ -498,7 +498,7 @@ export class PaletteBuilder {
       b.dataset.material = def.id;
       b.innerHTML = `<img alt="" src="${materialThumbnail(def)}"><span class="lbl">${escapeHtml(def.displayName)}</span>`;
       b.addEventListener('click', () => {
-        this.app.paintStyle = { ...this.app.paintStyle, material: def.id };
+        this.app.paint.paintStyle = { ...this.app.paint.paintStyle, material: def.id };
         this.app.setTool({ kind: 'paint' });
         this.syncPaintUi();
       });
@@ -522,28 +522,28 @@ export class PaletteBuilder {
     tints.addEventListener('click', (e) => {
       const t = (e.target as HTMLElement).dataset.tint;
       if (t === undefined) return;
-      this.app.paintStyle = { ...this.app.paintStyle, tint: t || null };
+      this.app.paint.paintStyle = { ...this.app.paint.paintStyle, tint: t || null };
       this.app.setTool({ kind: 'paint' });
       this.syncPaintUi();
     });
     $<HTMLInputElement>('ed-tint-custom').addEventListener('input', (e) => {
-      this.app.paintStyle = { ...this.app.paintStyle, tint: (e.target as HTMLInputElement).value.toLowerCase() };
+      this.app.paint.paintStyle = { ...this.app.paint.paintStyle, tint: (e.target as HTMLInputElement).value.toLowerCase() };
       this.app.setTool({ kind: 'paint' });
       this.syncPaintUi();
     });
-    $<HTMLSelectElement>('ed-scope').addEventListener('change', (e) => (this.app.paintScope = (e.target as HTMLSelectElement).value as PaintScope));
+    $<HTMLSelectElement>('ed-scope').addEventListener('change', (e) => (this.app.paint.paintScope = (e.target as HTMLSelectElement).value as PaintScope));
     this.syncPaintUi();
   }
 
   /** Reflect the current brush in the palette. */
   syncPaintUi(): void {
-    for (const b of document.querySelectorAll<HTMLElement>('.mat-btn')) b.classList.toggle('active', b.dataset.material === this.app.paintStyle.material);
-    for (const b of document.querySelectorAll<HTMLElement>('#ed-tints .swatch')) b.classList.toggle('active', (b.dataset.tint || null) === (this.app.paintStyle.tint ?? null));
-    const def = coreMaterials.get(this.app.paintStyle.material);
+    for (const b of document.querySelectorAll<HTMLElement>('.mat-btn')) b.classList.toggle('active', b.dataset.material === this.app.paint.paintStyle.material);
+    for (const b of document.querySelectorAll<HTMLElement>('#ed-tints .swatch')) b.classList.toggle('active', (b.dataset.tint || null) === (this.app.paint.paintStyle.tint ?? null));
+    const def = coreMaterials.get(this.app.paint.paintStyle.material);
     const brush = $<HTMLImageElement>('ed-brush');
-    if (def) brush.src = materialThumbnail(def, this.app.paintStyle.tint ?? null, 40);
-    $('ed-brush-label').textContent = `${def?.displayName ?? this.app.paintStyle.material}${this.app.paintStyle.tint ? ` · ${this.app.paintStyle.tint}` : ''}`;
-    if (this.app.paintStyle.tint) $<HTMLInputElement>('ed-tint-custom').value = this.app.paintStyle.tint;
+    if (def) brush.src = materialThumbnail(def, this.app.paint.paintStyle.tint ?? null, 40);
+    $('ed-brush-label').textContent = `${def?.displayName ?? this.app.paint.paintStyle.material}${this.app.paint.paintStyle.tint ? ` · ${this.app.paint.paintStyle.tint}` : ''}`;
+    if (this.app.paint.paintStyle.tint) $<HTMLInputElement>('ed-tint-custom').value = this.app.paint.paintStyle.tint;
   }
 
   /**

@@ -83,8 +83,8 @@ export class Inspector {
     doc: () => this.app.doc,
     selection: () => this.app.selection,
     run: (label, cmd) => this.app.run(label, cmd),
-    group: () => this.app.group(),
-    ungroup: () => this.app.ungroup(),
+    group: () => this.app.edits.group(),
+    ungroup: () => this.app.edits.ungroup(),
   };
 
   /** The inspector rebuilt, the field being typed in kept as it was (inspectorKeep.ts: a placement's rebuild dropped the first edit). */
@@ -129,9 +129,9 @@ export class Inspector {
     }
     const buttons = document.createElement('div');
     buttons.className = 'buttons';
-    buttons.append(button('Rotate (R)', () => this.app.rotate()));
+    buttons.append(button('Rotate (R)', () => this.app.edits.rotate()));
     if (pieces.length) {
-      const m = button('Mirror (M)', () => this.app.mirror());
+      const m = button('Mirror (M)', () => this.app.edits.mirror());
       m.id = 'ed-insp-mirror';
       const refused = pieces.map((id) => this.app.placementOf(id)).map((p) => p && this.app.pieceDef(p.piece)).find((d) => d && setPieceMirrorRefusal(d));
       if (refused) {
@@ -140,12 +140,12 @@ export class Inspector {
       }
       buttons.append(m);
     }
-    const mirrorMore = button('Mirror… (Shift+M)', () => this.app.mirrorDialog());
+    const mirrorMore = button('Mirror… (Shift+M)', () => this.app.edits.mirrorDialog());
     mirrorMore.id = 'ed-insp-mirror-dialog';
-    buttons.append(button('Duplicate', () => this.app.duplicate()), mirrorMore, button('Delete', () => this.app.deleteSelection()), button('Focus (F)', () => this.app.focusSelection()));
+    buttons.append(button('Duplicate', () => this.app.edits.duplicate()), mirrorMore, button('Delete', () => this.app.edits.deleteSelection()), button('Focus (F)', () => this.app.focusSelection()));
     el.append(buttons);
     if (doc.terrain && entities.some((id) => doc.entities.find((x) => x.id === id)?.kind === 'prop')) {
-      const settle = button('Settle on ground', () => this.app.settleProps(entities));
+      const settle = button('Settle on ground', () => this.app.edits.settleProps(entities));
       settle.id = 'ed-settle';
       settle.title = 'Bed the selected props into the terrain under them (no floating corners on slopes)';
       el.append(settle);
@@ -185,9 +185,9 @@ export class Inspector {
         glass.append(new Option('No glass', ''), ...GLASS_KINDS.map((k) => new Option(GLASS_KIND_LABELS[k], k)));
         glass.value = edgeGlassAt(doc, target) ?? '';
         glass.hidden = !GLASS_EDGES.has(now as never);
-        const apply = () => this.app.setEdge(target, sel.value as EdgeStyle, (glass.value || null) as GlassKind | null);
+        const apply = () => this.app.paint.setEdge(target, sel.value as EdgeStyle, (glass.value || null) as GlassKind | null);
         sel.addEventListener('change', () => {
-          if (GLASS_EDGES.has(sel.value as never) && !edgeGlassAt(this.app.doc, target)) glass.value = this.app.edgeGlass ?? '';
+          if (GLASS_EDGES.has(sel.value as never) && !edgeGlassAt(this.app.doc, target)) glass.value = this.app.paint.edgeGlass ?? '';
           apply();
         });
         glass.addEventListener('change', apply);
@@ -208,9 +208,9 @@ export class Inspector {
     // The Paint tool's own "Apply to", shared: a change here is a change there.
     const scope = document.createElement('select');
     scope.id = 'ed-insp-scope';
-    for (const [v, label] of [['surface', 'This surface'], ['sameType', 'Same piece type'], ['level', 'Whole level'], ['all', 'Whole map']] as const) scope.append(new Option(label, v, false, v === this.app.paintScope));
+    for (const [v, label] of [['surface', 'This surface'], ['sameType', 'Same piece type'], ['level', 'Whole level'], ['all', 'Whole map']] as const) scope.append(new Option(label, v, false, v === this.app.paint.paintScope));
     scope.addEventListener('change', () => {
-      this.app.paintScope = scope.value as PaintScope;
+      this.app.paint.paintScope = scope.value as PaintScope;
       $<HTMLSelectElement>('ed-scope').value = scope.value;
     });
     el.append(row('Apply to', scope));
@@ -475,7 +475,7 @@ export class Inspector {
     tint.value = current?.tint ?? '#ffffff';
     tint.disabled = !current;
     tint.title = 'Tint';
-    const apply = (style: SurfaceStyle | null) => this.app.run(`Paint ${SURFACE_SLOT_LABELS[slot].toLowerCase()}`, paintCommand(this.app.doc, t.id, slot, style, this.app.paintScope));
+    const apply = (style: SurfaceStyle | null) => this.app.run(`Paint ${SURFACE_SLOT_LABELS[slot].toLowerCase()}`, paintCommand(this.app.doc, t.id, slot, style, this.app.paint.paintScope));
     mat.addEventListener('change', () => apply(mat.value ? { material: mat.value, tint: current?.tint ?? null } : null));
     tint.addEventListener('change', () => current && apply({ material: current.material, tint: tint.value.toLowerCase() }));
     const wrap = document.createElement('div');
@@ -485,8 +485,8 @@ export class Inspector {
     brush.type = 'button';
     brush.className = 'ed-use-brush';
     brush.textContent = 'Brush';
-    brush.title = `Paint it with the Paint tool's brush (${coreMaterials.get(this.app.paintStyle.material)?.displayName ?? this.app.paintStyle.material})`;
-    brush.addEventListener('click', () => apply(this.app.paintStyle));
+    brush.title = `Paint it with the Paint tool's brush (${coreMaterials.get(this.app.paint.paintStyle.material)?.displayName ?? this.app.paint.paintStyle.material})`;
+    brush.addEventListener('click', () => apply(this.app.paint.paintStyle));
     wrap.append(text(SURFACE_SLOT_LABELS[slot]), mat, tint, brush);
     return wrap;
   }

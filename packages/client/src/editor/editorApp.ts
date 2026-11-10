@@ -391,6 +391,9 @@ import { EntityInspector } from './entityInspector.ts';
 import { Inspector } from './inspector.ts';
 import { MapChecks } from './mapChecks.ts';
 import { MapSaving } from './mapSaving.ts';
+import { PaintTools } from './paintTools.ts';
+import { Placing } from './placing.ts';
+import { SelectionEdits } from './selectionEdits.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -415,6 +418,12 @@ export interface EditorHost {
  * templates are loaded on purpose from Open….
  */
 export class EditorApp {
+  /** Edits to the selection: turn, nudge, delete, duplicate, group and ungroup, copy and paste, mirror and flip, cut the ground to the floors and settle props on the ground (selectionEdits.ts). */
+  readonly edits: SelectionEdits;
+  /** Placing and erasing: where each kind of thing lands under the pointer (snapped, on the ground, in a doorway, on a surface), what the placing tools' ghosts show, and Erase (placing.ts). */
+  readonly placing: Placing;
+  /** The Paint and Walls tools: painting surfaces and the ground, building a cell side as a wall, door or window with its glass, and picking a style up (paintTools.ts). */
+  readonly paint: PaintTools;
   /** Saving and loading the map: drafts kept while unsaved, Save, Quit, New, Open… and replacing the document being edited (mapSaving.ts). */
   readonly saving: MapSaving;
   /** The map's checks: validation, navigation and the bots' own spots worked out a moment after each edit, coplanar overlaps, and the issues list and status pill (mapChecks.ts). */
@@ -446,7 +455,7 @@ export class EditorApp {
   /** Box select (Select tool, drag on empty ground): the rectangle on screen. */
   private marquee: { x0: number; y0: number; x1: number; y1: number; add: boolean; moved: boolean } | null = null;
   /** Facing for the next prop placed. */
-  private propYaw = 0;
+  propYaw = 0;
   readonly thumbs: ModelThumbnails;
   /** The palette's prebuilt pictures (public/thumbs) and its behaviour (groups, search, favourites, keys). */
   readonly paletteAtlas = new PaletteAtlas();
@@ -454,8 +463,8 @@ export class EditorApp {
   showPane: (pane: string) => void = () => {};
   /** Palette workspace: build, entities or environment. */
   paletteWs = 'build';
-  private spawnYaw = 0;
-  private scenarioYaw = 0;
+  spawnYaw = 0;
+  scenarioYaw = 0;
   readonly logic: LogicPanel;
   /** The Road tool (roads, the track for NPC traffic, routes). */
   readonly paths: PathTool;
@@ -476,9 +485,9 @@ export class EditorApp {
   readonly hints: BotHintTool;
   private lastHint: BotHintKind = 'choke';
   /** The prop tool's placing options: Randomise. */
-  private readonly propOpts: PropPlaceOptions;
+  readonly propOpts: PropPlaceOptions;
   /** What props and the measure tool land on, per document version and view. */
-  private readonly surfaces = new SurfaceBoxes();
+  readonly surfaces = new SurfaceBoxes();
   /** The rotate ring on the selection gizmo: drag to turn (MapMaker overhaul Phase 3 item 9). */
   private readonly ring: RotateRing;
   /** The plan view (K): the level from straight above (MapMaker overhaul Phase 3 item 2). */
@@ -487,31 +496,29 @@ export class EditorApp {
   showAll = false;
   /** The last placing tool, so the toolbar's Place button can pick it up again. */
   private lastPlace: Tool | null = null;
-  /** Style the Walls tool builds with. */
-  private edgeStyle: EdgeStyle = 'window';
   /** Top bar Snap: 'normal' keeps each tool's own step (50 cm, props 25 cm). */
   snapMode: 'fine' | 'normal' | 'coarse' | 'off' = 'normal';
-  private snapStep(normal: number): number {
+  snapStep(normal: number): number {
     if (this.freePlacing()) return 0.01;
     return { fine: 0.25, normal, coarse: 1, off: 0.01 }[this.snapMode];
   }
 
   /** One placement rule for every kind: hold Ctrl (or Shift) to place without snapping. */
-  private freePlacing(): boolean {
+  freePlacing(): boolean {
     return FREE_PLACE_KEYS.some((k) => this.keys.has(k));
   }
   /** Last pointer position over the view, for the hover card. */
   private pointerAt: { x: number; y: number } | null = null;
   /** Pointer ray, for picking what is under the cursor. */
-  private ray: { origin: Vec3; dir: Vec3 } | null = null;
+  ray: { origin: Vec3; dir: Vec3 } | null = null;
   selection: Selection = emptySelection();
-  private hoverPoint: Vec3 | null = null;
+  hoverPoint: Vec3 | null = null;
   /** The hover point is on the terrain (nearer than the level plane). */
-  private hoverOnTerrain = false;
+  hoverOnTerrain = false;
   hoverCell: [number, number, number] | null = null;
   private drag: DragState | null = null;
   looking: { x: number; y: number; moved: boolean; travel: number; button: number } | null = null;
-  private keys = new Set<string>();
+  keys = new Set<string>();
   issues: ValidationIssue[] = [];
   private renderedRevision = -1;
   private renderedLevel = -1;
@@ -519,18 +526,17 @@ export class EditorApp {
   private toastTimer?: number;
   private active = false;
   /** Boxes currently shown (respecting floor isolation), for surface picking. */
-  private visibleBoxes: WorldBox[] = [];
-  private hoverFace: BoxHit | null = null;
+  visibleBoxes: WorldBox[] = [];
+  hoverFace: BoxHit | null = null;
   /** Paint tool: the terrain under the pointer when it, not a surface, is what a click paints. */
-  private paintGround: Vec3 | null = null;
+  paintGround: Vec3 | null = null;
   /** The boxes Paint and Walls can point at: everything drawn but the invisible barriers (map edge, ground fence). */
   private paintable: { from: WorldBox[]; boxes: WorldBox[]; tiles: WorldBox[] } = { from: [], boxes: [], tiles: [] };
-  /** Cell side under the pointer for the wall tool. */
-  private hoverEdge: EdgeTarget | null = null;
-  paintStyle: SurfaceStyle = { material: 'core.red_brick', tint: null };
-  paintScope: PaintScope = 'surface';
 
   constructor(readonly host: EditorHost) {
+    this.edits = new SelectionEdits(this);
+    this.placing = new Placing(this);
+    this.paint = new PaintTools(this);
     this.saving = new MapSaving(this);
     this.checks = new MapChecks(this);
     this.inspector = new Inspector(this);
@@ -552,7 +558,7 @@ export class EditorApp {
       pointer: () => this.pointerAt,
     });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
-    this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor'), world: () => ({ boxes: this.surfaceBoxes(), ground: this.shownGround }) });
+    this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor'), world: () => ({ boxes: this.placing.surfaceBoxes(), ground: this.shownGround }) });
     this.mapTest = new MapTestPanel({ doc: () => this.doc, played: () => {
         const r = loadMap(this.doc);
         return r.ok ? r.map : this.doc;
@@ -595,7 +601,7 @@ export class EditorApp {
       project: (p) => this.view.projectInView(p),
       pointAt: (x, y) => {
         this.updatePointer(x, y);
-        return this.hintPointAtHover();
+        return this.placing.hintPointAtHover();
       },
       focus: (p) => (this.plan.on ? this.plan.centre(p.x, p.z) : this.view.focus(p)),
       tool: () => (this.tool.kind === 'bothint' ? this.tool.hint : null),
@@ -889,7 +895,7 @@ export class EditorApp {
     }
     this.pieces.renderPieceInfo();
     if (PLACING.has(tool.kind)) this.lastPlace = tool;
-    if (tool.kind === 'edge') this.edgeStyle = tool.style;
+    if (tool.kind === 'edge') this.paint.edgeStyle = tool.style;
     const pane: Partial<Record<Tool['kind'], string>> = { paint: 'paint', edge: 'advanced', terrain: 'terrain', envbrush: 'plants' };
     this.paths.setActive(tool.kind === 'path');
     this.routes.setActive(tool.kind === 'route');
@@ -906,7 +912,7 @@ export class EditorApp {
       this.view.setBrushRing(null, 0, 0, 0);
     }
     if (tool.kind !== 'paint' && tool.kind !== 'edge') this.hoverFace = null;
-    if (tool.kind !== 'edge') this.hoverEdge = null;
+    if (tool.kind !== 'edge') this.paint.hoverEdge = null;
     for (const b of document.querySelectorAll<HTMLElement>('[data-tool]')) {
       const t = b.dataset.tool;
       b.classList.toggle(
@@ -961,7 +967,7 @@ export class EditorApp {
   }
 
   /** What a placing tool puts down, for the toolbar and hints. */
-  private toolName(tool: Tool): string {
+  toolName(tool: Tool): string {
     switch (tool.kind) {
       case 'tile':
         return coreCatalog.get(tool.tile)?.displayName ?? tool.tile;
@@ -1126,148 +1132,6 @@ export class EditorApp {
     return top >= this.level * h - 0.5 && bottom < (this.level + 1) * h - 0.1;
   }
 
-  /** Where the pointer is, outside the play area: the scenery zone (building is fine) or past the build limit. */
-  private zoneNote(): string {
-    const p = this.hoverPoint;
-    if (!p) return '';
-    const zone = buildZone(this.doc, p.x, p.z);
-    if (zone === 'scenery') return 'Scenery zone, outside the playable boundary: building here is fine';
-    if (zone === 'beyond') return 'Past the build limit: no tiles can be placed here';
-    return '';
-  }
-
-  private placeAtHover(): void {
-    // Spawns, pickups, props, vehicles and NPCs over nothing or outside the boundary: the ghost is red and says why, and the click places nothing (ghostWhy.ts).
-    if (ghostRefuses(this.entityGhost()?.note)) return;
-    if (this.tool.kind === 'setpiece' && this.hoverCell) {
-      const [x, y, z] = this.hoverCell;
-      this.pieces.placeSetPiece(this.tool.piece, x, y, z);
-    } else if (this.tool.kind === 'tile' && this.hoverCell) {
-      const [x, y, z] = this.hoverCell;
-      const placed = placeTileCommand(this.doc, this.tool.tile, x, y, z, this.rotation);
-      if ('error' in placed) return this.toast(`Can't place: ${placed.error}`, true);
-      if (placed.floorOf) {
-        // A Platform on another piece's empty upper storey: that piece's own floor there (one cell, one piece).
-        const host = coreCatalog.get(placed.floorOf.tile)?.displayName ?? placed.floorOf.tile;
-        if (this.run(`Floor on ${levelName(z)} of ${host}`, placed.command)) this.toast(`${host}: a floor on ${levelName(z)} here (part of the ${host}: untick “Floor on ${levelName(z)}” in its inspector to take it out)`);
-        return;
-      }
-      const name = coreCatalog.get(this.tool.tile)?.displayName ?? this.tool.tile;
-      this.run(`Place ${name}`, placed.command);
-    } else if (this.tool.kind === 'spawn' && this.hoverPoint) {
-      const p = this.placeSpot()!;
-      const { command, id } = addSpawnCommand(p, this.spawnYaw);
-      if (this.run('Place spawn', command)) this.setSelection({ tiles: [], entities: [id] });
-    } else if (this.tool.kind === 'pickup' && this.hoverPoint) {
-      const p = this.placeSpot()!;
-      const id = newId('pickup');
-      const name = getItem(this.tool.item)?.displayName ?? 'pickup';
-      if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'pickup', position: p, item: this.tool.item, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
-    } else if (this.tool.kind === 'prop' && this.hoverPoint) {
-      // Where the ghost shows it: on the surface under the pointer, with Randomise's next turn, size and variant.
-      const { at: p, yaw, scale, variant } = this.propPlacement(this.tool.model);
-      const id = newId('prop');
-      const name = getProp(this.tool.model)?.displayName ?? 'prop';
-      if (!this.env.confirmPlace(this.tool.model, p!, scale, variant)) return;
-      if (this.run(`Place ${name}`, { kind: 'addEntities', entities: [{ id, kind: 'prop', position: p!, model: this.tool.model, yaw, scale, solid: true, tint: null, ...(variant !== undefined ? { variant } : {}) }] })) {
-        this.propOpts.placed();
-        this.setSelection({ tiles: [], entities: [id] });
-      }
-    } else if (this.tool.kind === 'mount' && this.hoverPoint) {
-      const p = this.placeSpot()!;
-      const id = newId('mount');
-      const def = MOUNT_DEFS[this.tool.model];
-      if (this.run(`Place ${def.displayName}`, { kind: 'addEntities', entities: [{ id, kind: 'mount', position: p, model: this.tool.model, yaw: this.propYaw, faction: null, respawnSeconds: null }] })) this.setSelection({ tiles: [], entities: [id] });
-    } else if (this.tool.kind === 'scenario' && this.hoverPoint) {
-      const { p, yaw } = this.scenarioSpot(this.tool.key)!;
-      const placed = newScenarioEntities(this.tool.key, p, yaw, this.doc);
-      const entity = placed[placed.length - 1]!;
-      const label = SCENARIO_PALETTE.find((x) => x.key === (this.tool as { key: string }).key)?.label ?? 'object';
-      if (this.run(`Place ${label}`, { kind: 'addEntities', entities: placed })) this.setSelection({ tiles: [], entities: [entity.id] });
-    } else if (this.tool.kind === 'npc' && this.hoverPoint) {
-      const r = placeNpcCommand(this.doc, this.tool.key, this.placeSpot()!, this.scenarioYaw);
-      if ('error' in r) return this.toast(r.error, true);
-      if (this.run(`Place ${r.label}`, r.command)) this.setSelection({ tiles: [], entities: [r.id] });
-    }
-  }
-
-  /** M: mirror the set piece being placed, or the selected set pieces (one undo step). A piece that can't be says why. */
-  mirror(): void {
-    if (this.tool.kind === 'setpiece') {
-      const def = this.pieceDef(this.tool.piece);
-      if (!def) return;
-      const why = setPieceMirrorRefusal(def);
-      if (why) return this.toast(why, true);
-      this.pieceMirror = !this.pieceMirror;
-      this.toast(`${def.displayName} ${this.pieceMirror ? 'mirrored (east and west swapped)' : 'not mirrored'}`);
-      this.pieces.renderPieceInfo();
-      this.updateHover();
-      return;
-    }
-    const ids = this.selPieces();
-    // A group or any other selection: flipped east ↔ west over its own middle, as one (Shift+M: Mirror… for more).
-    if (this.selCount() && ids.length !== this.selCount()) {
-      const r = flipCommand(this.doc, this.selection, 'eastWest', coreCatalog, this.placeLib);
-      return void this.run('Flip east ↔ west', 'error' in r ? r : r.command);
-    }
-    if (!ids.length) return this.toast('M mirrors a set piece or flips the selection: select something, or pick a piece in the Set pieces tab (Shift+M: Mirror…)', true);
-    let doc = this.doc;
-    const commands: EditCommand[] = [];
-    for (const id of ids) {
-      const p = doc.setPieces?.find((x) => x.id === id);
-      const def = p && this.pieceDef(p.piece);
-      if (!p || !def) continue;
-      const why = setPieceMirrorRefusal(def);
-      if (why) return this.toast(why, true);
-      const cmd = mirrorSetPieceCommand(doc, id);
-      if ('error' in cmd) return this.toast(`Can't mirror: ${cmd.error}`, true);
-      commands.push(cmd);
-      doc = applyCommand(doc, cmd);
-    }
-    this.run(commands.length > 1 ? `Mirror ${commands.length} set pieces` : 'Mirror', { kind: 'batch', commands });
-  }
-
-  /** Where the Scenario tool puts an object, and its facing: on the level's floor, or in the doorway for doors and the like. */
-  private scenarioSpot(key: ScenarioPaletteKey): { p: [number, number, number]; yaw: number } | null {
-    if (!this.hoverPoint) return null;
-    // Game modes' markers stand on the ground under the pointer, like spawns and pickups (a Breakthrough spawn group on a
-    // hill went in at the level's height, under the hill); the rest go on the level being edited.
-    const onGround = this.hoverOnTerrain && /^(spawn:|objective:|sector$|flag$|hill$|bombsite$|hostage$|rescue$)/.test(key);
-    const y = onGround ? Math.round(this.hoverPoint.y * 100) / 100 : this.level * this.doc.classicStructure.levelHeight;
-    if (snapsToDoorway(key)) {
-      const d = snapToDoorway(this.hoverPoint.x, this.hoverPoint.z, this.doc.classicStructure.cellSize);
-      return { p: [d.x, y, d.z], yaw: d.yaw };
-    }
-    return { p: [snap(this.hoverPoint.x, this.snapStep(0.5)), y, snap(this.hoverPoint.z, this.snapStep(0.5))], yaw: this.scenarioYaw };
-  }
-
-  /** What the Scenario or NPC tool would place: made once per object, facing and edit (factions, sizes), then moved with the pointer. */
-  private objectGhostCache: { key: string; at: [number, number, number]; entities: MapEntity[] } | null = null;
-
-  private objectGhost(): { key: string; entities: MapEntity[] } | null {
-    const t = this.tool;
-    const spot = t.kind === 'scenario' ? this.scenarioSpot(t.key) : t.kind === 'npc' && this.hoverPoint ? { p: this.placeSpot()!, yaw: this.scenarioYaw } : null;
-    if (!spot || (t.kind !== 'scenario' && t.kind !== 'npc')) return null;
-    const key = `${t.kind}:${t.key}:${spot.yaw}:${this.history.revision}`;
-    let c = this.objectGhostCache;
-    if (c?.key !== key) {
-      const entities = t.kind === 'scenario' ? newScenarioEntities(t.key, spot.p, spot.yaw, this.doc) : addedEntities(placeNpcCommand(this.doc, t.key, spot.p, spot.yaw));
-      c = this.objectGhostCache = { key, at: spot.p, entities };
-    }
-    const [dx, dy, dz] = [spot.p[0] - c.at[0], spot.p[1] - c.at[1], spot.p[2] - c.at[2]];
-    return { key, entities: c.entities.map((e) => ({ ...e, position: [e.position[0] + dx, e.position[1] + dy, e.position[2] + dz] }) as MapEntity) };
-  }
-
-  /** Erase what's under the pointer, picked the way Select picks it: a whole moving build (Alt: just that piece). */
-  private eraseAtHover(single = false): void {
-    const hit = this.pick();
-    if (!hit) return this.toast(`Nothing to erase here on ${levelName(this.level)}`, true);
-    const group = hit.kind === 'entity' && !single ? moverGroupOf(this.doc, hit.id) : null;
-    const sel: Selection = hit.kind === 'tile' ? { tiles: [hit.id], entities: [] } : hit.kind === 'setpiece' ? { tiles: [], entities: [], setPieces: [hit.id] } : { tiles: [], entities: group ?? [hit.id] };
-    const name = group && group.length > 1 ? 'moving build' : this.targetName(hit);
-    if (this.run(`Erase ${name}`, deleteCommand(this.doc, sel))) this.toast(`Erased ${name} · Ctrl+Z to undo`);
-  }
-
   /**
    * Right-click, one rule for every tool: it takes back what that tool does, where you click.
    * Paint resets the surface, Walls resets the wall, Scatter clears its plants, Road and Paths remove
@@ -1280,9 +1144,9 @@ export class EditorApp {
       case 'select':
         return this.openContextMenu(x, y);
       case 'paint':
-        return this.paintAtHover(true);
+        return this.paint.paintAtHover(true);
       case 'edge':
-        return this.edgeAtHover('auto');
+        return this.paint.edgeAtHover('auto');
       case 'envbrush':
         return this.hoverPoint ? this.env.dab(this.hoverPoint.x, this.hoverPoint.z, true) : undefined;
       case 'path':
@@ -1312,7 +1176,7 @@ export class EditorApp {
             : hit.kind === 'entity');
     if (!hit) return this.toast(`Nothing to remove here on ${levelName(this.level)}`, true);
     if (!mine) return this.toast(`Right-click removes what this tool places; ${this.targetName(hit)} is something else (Erase, X, removes anything)`, true);
-    this.eraseAtHover(alt);
+    this.placing.eraseAtHover(alt);
   }
 
   /** The selection menu (right-click with Select): picks what is under the pointer first if it isn't selected. */
@@ -1356,21 +1220,21 @@ export class EditorApp {
         close();
       }
     };
-    item('Rotate', 'R', () => this.rotate());
-    item('Rotate a little', 'Shift+R', () => this.rotate(true));
-    item(pieces.length && pieces.length === this.selCount() ? 'Mirror' : 'Flip east ↔ west', 'M', () => this.mirror());
-    item('Mirror…', 'Shift+M', () => this.mirrorDialog(), true);
-    item('Duplicate', 'Ctrl+D', () => this.duplicate());
-    item('Copy', 'Ctrl+C', () => this.copy());
-    item('Paste here', 'Ctrl+V', () => this.paste(), !!readClipboard());
+    item('Rotate', 'R', () => this.edits.rotate());
+    item('Rotate a little', 'Shift+R', () => this.edits.rotate(true));
+    item(pieces.length && pieces.length === this.selCount() ? 'Mirror' : 'Flip east ↔ west', 'M', () => this.edits.mirror());
+    item('Mirror…', 'Shift+M', () => this.edits.mirrorDialog(), true);
+    item('Duplicate', 'Ctrl+D', () => this.edits.duplicate());
+    item('Copy', 'Ctrl+C', () => this.edits.copy());
+    item('Paste here', 'Ctrl+V', () => this.edits.paste(), !!readClipboard());
     const grouped = selectionGroup(this.doc, this.selection);
-    item('Group', 'Ctrl+G', () => this.group(), this.selCount() > 1 && !grouped);
-    item(grouped ? `Ungroup “${groupName(grouped)}”` : 'Ungroup', 'Ctrl+Shift+G', () => this.ungroup(), this.selCount() > 0 && [...this.selection.tiles, ...this.selection.entities, ...pieces].some((id) => groupOf(this.doc, id)));
+    item('Group', 'Ctrl+G', () => this.edits.group(), this.selCount() > 1 && !grouped);
+    item(grouped ? `Ungroup “${groupName(grouped)}”` : 'Ungroup', 'Ctrl+Shift+G', () => this.edits.ungroup(), this.selCount() > 0 && [...this.selection.tiles, ...this.selection.entities, ...pieces].some((id) => groupOf(this.doc, id)));
     item('Focus', 'F', () => this.focusSelection());
-    item('Delete', 'Del', () => this.deleteSelection());
+    item('Delete', 'Del', () => this.edits.deleteSelection());
     if (pieces.length === 1 && this.selCount() === 1) item('Explode to tiles', '', () => this.pieces.explode(pieces[0]!));
     item('Save as set piece…', '', () => this.pieces.saveSelectionDialog());
-    if (this.doc.terrain) item('Cut ground to floors', '', () => this.cutGround());
+    if (this.doc.terrain) item('Cut ground to floors', '', () => this.edits.cutGround());
     item('Select none', 'Esc', () => this.setSelection(emptySelection()));
     $('editor').append(menu);
     const r = menu.getBoundingClientRect();
@@ -1394,21 +1258,21 @@ export class EditorApp {
       if (b.at && Math.hypot(p.x - b.at.x, p.z - b.at.z) < this.terrain.brushRadius * 0.5) return;
       b.at = { x: p.x, z: p.z };
       b.key = null;
-      if (!b.invert) this.paintGroundAtHover();
+      if (!b.invert) this.paint.paintGroundAtHover();
       return;
     }
     if (tool.kind === 'paint') {
-      const t = this.paintTarget();
+      const t = this.paint.paintTarget();
       const key = t ? `${t.tile.id}:${t.slot}` : null;
       if (!key || key === b.key) return;
       b.key = key;
-      return this.paintAtHover(b.invert);
+      return this.paint.paintAtHover(b.invert);
     }
     if (tool.kind === 'edge') {
-      const key = this.hoverEdge ? JSON.stringify(this.hoverEdge) : null;
+      const key = this.paint.hoverEdge ? JSON.stringify(this.paint.hoverEdge) : null;
       if (!key || key === b.key) return;
       b.key = key;
-      return this.edgeAtHover(b.invert ? 'auto' : tool.style);
+      return this.paint.edgeAtHover(b.invert ? 'auto' : tool.style);
     }
     if (tool.kind === 'envbrush') return this.env.drag(this.hoverPoint, b.invert || b.alt, first);
     if (tool.kind === 'erase') {
@@ -1416,12 +1280,12 @@ export class EditorApp {
       if (!hit && !first) return;
       if (hit && hit.id === b.key) return;
       b.key = hit?.id ?? null;
-      this.eraseAtHover(b.alt);
+      this.placing.eraseAtHover(b.alt);
     }
   }
 
   /** Display name of a pick target. */
-  private targetName(hit: Hit): string {
+  targetName(hit: Hit): string {
     if (hit.kind === 'setpiece') {
       const p = this.placementOf(hit.id);
       return (p && this.pieceDef(p.piece)?.displayName) ?? 'set piece';
@@ -1435,74 +1299,6 @@ export class EditorApp {
     return e.kind === 'spawn' ? 'Player Spawn' : e.kind === 'pickup' ? (getItem(e.item)?.displayName ?? 'pickup') : entityLabel(this.doc, e);
   }
 
-  /** Tile and surface slot under the cursor in paint mode. */
-  private paintTarget(): { tile: MapDocument['classicStructure']['tiles'][number]; slot: SurfaceSlot } | null {
-    const hit = this.hoverFace;
-    if (!hit) return null;
-    const tile = this.doc.classicStructure.tiles.find((t) => t.id === hit.box.sourceId);
-    return tile ? { tile, slot: faceSlot(hit.box, hit.normal) } : null;
-  }
-
-  /**
-   * The ground Paint lays on the terrain: the terrain layer closest to the brush's material (a style pack's Packed
-   * Snow paints snow, Shingle gravel: terrainMaterialFor), else the Terrain tab's ground. It used to fall back to
-   * the Terrain tab's ground for every pack ground, so painting Packed Snow laid dirt or grass.
-   */
-  private get groundPaint(): TerrainMaterial {
-    return terrainMaterialFor(this.paintStyle.material) ?? this.terrain.terrainMaterial;
-  }
-
-  /** Paint the terrain under the pointer (a brush of the Terrain tab's radius). */
-  private paintGroundAtHover(): void {
-    const t = this.doc.terrain;
-    const p = this.paintGround;
-    if (!t || !p) return;
-    const m = this.groundPaint;
-    const after = applyBrush(t, { brush: 'paint', x: p.x, z: p.z, radius: this.terrain.brushRadius, strength: 1, material: m });
-    if (after.materials.every((v, i) => v === t.materials[i])) return;
-    this.run(`Paint ${TERRAIN_MATERIAL_LABELS[m].toLowerCase()} ground`, { kind: 'setTerrain', before: t, after });
-  }
-
-  private paintAtHover(clear: boolean): void {
-    const target = this.paintTarget();
-    if (!target) return;
-    const scopeLabel: Record<PaintScope, string> = { surface: '', sameType: ' (all of this piece)', level: ' (whole level)', all: ' (whole map)' };
-    const label = `${clear ? 'Reset' : 'Paint'} ${SURFACE_SLOT_LABELS[target.slot].toLowerCase()}${scopeLabel[this.paintScope]}`;
-    this.run(label, paintCommand(this.doc, target.tile.id, target.slot, clear ? null : this.paintStyle, this.paintScope));
-  }
-
-  /** Glass the wall tool puts in windows, twin windows and firing slits (none, breakable or reinforced). */
-  edgeGlass: GlassKind | null = null;
-
-  /** Wall tool: build the hovered cell side in the given style (windows get the chosen glass, or none). */
-  private edgeAtHover(style: EdgeStyle): void {
-    const target = this.hoverEdge;
-    if (!target) return;
-    this.setEdge(target, style, this.edgeGlass);
-  }
-
-  /** Build a side in `style`, with `glass` in its window (the Walls tool and the inspector alike). */
-  setEdge(target: EdgeTarget, style: EdgeStyle, glass: GlassKind | null): void {
-    const cmd = setEdgeCommand(this.doc, target, style);
-    if ('error' in cmd) return this.toast(cmd.error, true);
-    // Glass goes with the window: set (or clear) it in the same undo step.
-    const glazed = GLASS_EDGES.has(style as never) ? glass : null;
-    const glassCmd = setEdgeGlassCommand(applyCommand(this.doc, cmd), target, glazed);
-    const label = style === 'auto' ? 'Reset wall' : `Wall: ${EDGE_STYLE_LABELS[style]}${glazed ? ` (${GLASS_KIND_LABELS[glazed].toLowerCase()} glass)` : ''}`;
-    const had = edgeGlassAt(this.doc, target);
-    this.run(label, 'error' in glassCmd || (!glazed && !had) ? cmd : { kind: 'batch', commands: [cmd, glassCmd] });
-  }
-
-  /** Eyedropper: copy the hovered surface's effective style into the brush. */
-  private pickStyleAtHover(): void {
-    const target = this.paintTarget();
-    if (!target) return;
-    const s = resolveSurface(this.doc, target.tile, target.slot);
-    this.paintStyle = { material: s.material.id, tint: s.tint };
-    this.palettes.syncPaintUi();
-    this.toast(`Picked ${s.material.displayName}${s.tint ? ` tinted ${s.tint}` : ''}`);
-  }
-
   /**
    * What is under the cursor, for Select and Erase. The nearest thing the
    * pointer ray actually hits wins: an entity's drawn model, a free block or
@@ -1510,7 +1306,7 @@ export class EditorApp {
    * entities on it, or standing on the terrain (any level). Failing a hit, an
    * entity near the pointer, then the tile in the hovered cell.
    */
-  private pick(): Hit | null {
+  pick(): Hit | null {
     // The map as drawn: a set piece's parts (tiles and entities of the expansion) pick their placement, as one.
     const view = this.viewDoc;
     const partOf = this.expansion.partOf;
@@ -1552,198 +1348,6 @@ export class EditorApp {
     const held = this.expansion.footprints;
     for (const [id, cells] of held) if (cells.some((c) => c[0] === cell[0] && c[1] === cell[1] && c[2] === this.level)) return { kind: 'setpiece', id };
     return null;
-  }
-
-  /** R turns what you are placing, or the selection, by that kind's step (yawStep); Shift+R by the finer step. */
-  rotate(fine = false): void {
-    if (!this.selCount() && this.tool.kind !== 'tile' && this.tool.kind !== 'setpiece' && this.hints.turnSelected(fine)) return;
-    const deg = (yaw: number) => `Facing ${Math.round((yaw * 180) / Math.PI)}°`;
-    if (this.tool.kind === 'tile' || this.tool.kind === 'setpiece') {
-      if (fine) this.toast(`${this.tool.kind === 'tile' ? 'Tiles' : 'Set pieces'} turn in quarter turns`);
-      this.rotation = ((this.rotation + 1) % 4) as Rotation;
-      this.toast(`${this.toolName(this.tool)} turned to ${this.rotation * 90}°`);
-      this.pieces.renderPieceInfo();
-      this.updateHover();
-    } else if (this.tool.kind === 'spawn') {
-      this.spawnYaw = normalizeYaw(this.spawnYaw + yawStep('spawn', fine));
-      this.toast(deg(this.spawnYaw));
-    } else if (this.tool.kind === 'prop' || this.tool.kind === 'mount') {
-      this.propYaw = normalizeYaw(this.propYaw + yawStep(this.tool.kind, fine));
-      this.toast(deg(this.propYaw));
-    } else if (this.tool.kind === 'npc' || this.tool.kind === 'scenario') {
-      // Doors, traps, pads, ladders, NPCs and the rest: quarter turns, Shift 15°.
-      this.scenarioYaw = normalizeYaw(this.scenarioYaw + yawStep('door', fine));
-      this.toast(deg(this.scenarioYaw));
-    } else if (this.selCount()) {
-      this.run(fine ? 'Rotate a little' : 'Rotate', rotateCommand(this.doc, this.selection, undefined, { fine }));
-    } else {
-      this.toast('R turns the selection, or the piece you are placing (Shift+R: a finer step): select something first', true);
-    }
-  }
-
-  private nudge(dx: number, dy: number, dz: number): void {
-    if (!this.selCount()) return;
-    // Tiles and set pieces move by whole cells (and things with them); things alone by half a metre.
-    if (this.selection.tiles.length || this.selPieces().length || dz !== 0) {
-      this.run('Move', moveCommand(this.doc, this.selection, dx, dy, dz));
-      if (dz) this.setLevel(this.level + dz);
-    } else {
-      this.run('Move', moveEntitiesCommand(this.doc, this.selection.entities, dx * 0.5, 0, dy * 0.5));
-    }
-  }
-
-  deleteSelection(): void {
-    const n = this.selCount();
-    if (!n) return this.toast('Nothing selected: click something with Select (V) first, or use Erase (X)', true);
-    if (this.run(n > 1 ? `Delete ${n} items` : 'Delete', deleteCommand(this.doc, this.selection))) this.setSelection(emptySelection());
-  }
-
-  duplicate(): void {
-    const r = duplicateCommand(this.doc, this.selection);
-    if ('error' in r) return this.toast(`Can't duplicate: ${r.error}`, true);
-    // Copies of a whole group are a group of their own (groups.ts).
-    const g = withCopiedGroups(this.doc, this.selection, r);
-    if (this.run('Duplicate', g.command)) this.setSelection(g.selection);
-  }
-
-  /** Ctrl+G: group the selection (groups.ts): one undo step. */
-  group(): void {
-    const r = groupCommand(this.doc, this.selection);
-    if ('error' in r) return this.toast(`Can't group: ${r.error}`, true);
-    if (this.run('Group', r.command)) {
-      this.inspector.renderInspector();
-      this.toast(`Grouped ${r.group.members.length} things · a click on any picks them all (Alt-click: one) · Ctrl+Shift+G ungroups`);
-    }
-  }
-
-  /** Ctrl+Shift+G: the selected groups go; their things stay selected. */
-  ungroup(): void {
-    const r = ungroupCommand(this.doc, this.selection);
-    if ('error' in r) return this.toast(`Can't ungroup: ${r.error}`, true);
-    if (this.run('Ungroup', r.command)) {
-      this.inspector.renderInspector();
-      this.toast(`Ungrouped ${r.count === 1 ? 'the group' : `${r.count} groups`} · Ctrl+Z to undo`);
-    }
-  }
-
-  /** Ctrl+C: the selection to MapMaker's clipboard in this browser (clipboard.ts), for this map or another. */
-  private copy(): void {
-    const c = copySelection(this.doc, this.selection, coreCatalog, this.placeLib);
-    if ('error' in c) return this.toast(`Can't copy: ${c.error}`, true);
-    if (!writeClipboard(c)) return this.toast("Can't copy: this browser's storage is full or blocked", true);
-    this.toast(`Copied ${clipboardCount(c)} thing${clipboardCount(c) === 1 ? '' : 's'} · Ctrl+V pastes at the pointer, here or in another map`);
-  }
-
-  /** Ctrl+V: the clipboard pasted with new ids, its anchor on the cell under the pointer, on the level being edited. */
-  private paste(): void {
-    const c = readClipboard();
-    if (!c) return this.toast('Nothing to paste: select something and copy it (Ctrl+C) first', true);
-    const cell = this.hoverCell ?? [0, 0];
-    const r = pasteCommand(this.doc, c, [cell[0], cell[1]], this.level, coreCatalog, this.placeLib);
-    if ('error' in r) return this.toast(`Can't paste: ${r.error}`, true);
-    if (this.run('Paste', r.command)) {
-      this.setTool({ kind: 'select' });
-      this.setSelection(r.selection);
-      const note = pasteNote(this.doc, c);
-      this.toast(`Pasted ${clipboardCount(c)} thing${clipboardCount(c) === 1 ? '' : 's'} from ${c.from.mapName}${note ? `, ${note}` : ''} · Ctrl+Z to undo`);
-    }
-  }
-
-  /** The selection menu's Cut ground to floors (groundCut.ts): the ground as made lowered under the selection's floors, however deep. */
-  private cutGround(): void {
-    const r = cutGroundToFloorsCommand(this.doc, this.selection, coreCatalog, this.placeLib);
-    if ('error' in r) return this.toast(`Can't cut the ground: ${r.error}`, true);
-    if (this.run('Cut ground to floors', r.command)) this.toast(`The ground cut down to the floors: ${r.vertices} point${r.vertices === 1 ? '' : 's'}, up to ${r.deepest} m · Ctrl+Z to undo`);
-  }
-
-  /** Shift+M: Mirror… (mirrorDialog.ts), the selection or half the map. */
-  mirrorDialog(): void {
-    const { bounds, terrain } = this.doc;
-    openMirrorDialog({
-      doc: () => this.doc,
-      selection: () => this.selection,
-      middle: () =>
-        bounds ? [(bounds.min[0] + bounds.max[0]) / 2, (bounds.min[1] + bounds.max[1]) / 2] : terrain ? [terrain.origin[0] + ((terrain.cols - 1) * terrain.spacing) / 2, terrain.origin[1] + ((terrain.rows - 1) * terrain.spacing) / 2] : [0, 0],
-      selectionMiddle: () => selectionMiddle(this.doc, this.selection, coreCatalog, this.placeLib),
-      apply: (label, r) => {
-        if (!this.run(label, r.command)) return;
-        this.setTool({ kind: 'select' });
-        this.setSelection(r.selection);
-        this.toast(`${label}${r.swapped ? `: ${r.swapped} team thing${r.swapped === 1 ? '' : 's'} swapped sides` : ''} · Ctrl+Z to undo`);
-      },
-      root: $('editor'),
-    });
-  }
-
-  /**
-   * One placement rule for spawns, pickups, vehicles and NPCs: on the terrain where the pointer
-   * meets it, else on the floor of the level being edited; snapped to the snap setting (Ctrl or
-   * Shift: free).
-   */
-  private placeSpot(step = 0.5): [number, number, number] | null {
-    const h = this.hoverPoint;
-    if (!h) return null;
-    const y = this.hoverOnTerrain ? Math.round(h.y * 100) / 100 : this.level * this.doc.classicStructure.levelHeight;
-    return [snap(h.x, this.snapStep(step)), y, snap(h.z, this.snapStep(step))];
-  }
-
-  /** The prop tool's next placement of `model`: where (propSpot) and, with Randomise, its turn, size and variant. */
-  private propPlacement(model: string): { at: [number, number, number] | null; yaw: number; scale: number; variant?: number } {
-    const roll = this.propOpts.next(model, this.propYaw);
-    return { at: this.propSpot(model, roll.yaw, roll.scale), yaw: roll.yaw, scale: roll.scale, ...(roll.variant !== undefined ? { variant: roll.variant } : {}) };
-  }
-
-  /**
-   * Where a prop of `model` goes under the pointer: on whatever the pointer is over (a tabletop, a roof, a ledge, the
-   * ground: surfaceSnap's propDrop against the map as drawn and the ground as shown), its x and z snapped (Ctrl or
-   * Shift: free). On the ground it is bedded into the document's own ground (the view re-beds it on the ground as
-   * shown). Over nothing, on the level being edited, as before.
-   */
-  private propSpot(model: string, yaw = this.propYaw, scale = 1): [number, number, number] | null {
-    if (!this.hoverPoint) return null;
-    const free = this.freePlacing();
-    const step = this.snapStep(0.25);
-    const snapXZ = (v: number) => (free ? Math.round(v * 100) / 100 : snap(v, step));
-    const ray = this.ray;
-    const def = getProp(model);
-    const drop = ray ? propDrop(ray.origin, ray.dir, this.surfaceBoxes(), this.shownGround, { model, yaw, scale, ...(def ? { size: def.size } : {}) }, snapXZ) : null;
-    // On an upper level, the level's own plane where it is nearer (placing over open air up there, as before).
-    const plane = this.level > 0 && !this.hoverOnTerrain && ray ? Math.hypot(this.hoverPoint.x - ray.origin.x, this.hoverPoint.y - ray.origin.y, this.hoverPoint.z - ray.origin.z) : Infinity;
-    if (drop && drop.hit.distance <= plane) {
-      const p = drop.position;
-      if (drop.on === 'ground' && this.doc.terrain) p[1] = settledPropY(this.doc.terrain, { model, position: p, yaw, scale }) ?? p[1];
-      return p;
-    }
-    const p: [number, number, number] = [snapXZ(this.hoverPoint.x), this.level * this.doc.classicStructure.levelHeight, snapXZ(this.hoverPoint.z)];
-    if (this.hoverOnTerrain && this.doc.terrain) p[1] = settledPropY(this.doc.terrain, { model, position: p, yaw, scale }) ?? p[1];
-    return p;
-  }
-
-  /** What props and the measure tool land on: the map as drawn, with its blocks and solid props. */
-  private surfaceBoxes(): WorldBox[] {
-    return this.surfaces.get(this.viewDoc, this.visibleBoxes, this.level, this.showAll);
-  }
-
-  /** The measure tool's point under the pointer: snapped to the grid, surfaces and objects' tops (Ctrl or Alt: free). */
-  /** Where a bot hint goes under the pointer: the top of what is there (a roof, a ledge, the ground), else the level's plane. */
-  private hintPointAtHover(): Vec3 | null {
-    const ray = this.ray;
-    const hit = ray ? surfaceHit(ray.origin, ray.dir, this.surfaceBoxes(), this.shownGround) : null;
-    const p = hit && hit.on !== 'side' ? hit.point : this.hoverPoint;
-    return p && { x: Math.round(p.x * 100) / 100, y: Math.round(p.y * 100) / 100, z: Math.round(p.z * 100) / 100 };
-  }
-
-  private measurePointAtHover(): MeasurePoint | null {
-    const ray = this.ray;
-    if (!ray) return null;
-    const boxes = this.surfaceBoxes();
-    const hit = surfaceHit(ray.origin, ray.dir, boxes, this.shownGround);
-    const free = FREE_MEASURE_KEYS.some((k) => this.keys.has(k));
-    if (!hit) {
-      const p = this.hoverPoint;
-      return p ? { at: { x: p.x, y: p.y, z: p.z }, snapped: 'free' } : null;
-    }
-    return snapMeasurePoint(hit, boxes, this.shownGround, this.snapStep(0.5), free, (id) => this.surfaces.objects.has(id));
   }
 
   /** Home: the starting overview of the level being edited. */
@@ -1812,7 +1416,7 @@ export class EditorApp {
     }
     this.hoverCell = this.hoverPoint ? [Math.round(this.hoverPoint.x / cellSize), Math.round(this.hoverPoint.z / cellSize), this.level] : null;
     if (this.tool.kind === 'path') this.paths.hover(this.hoverPoint);
-    if (this.tool.kind === 'measure') this.measure.setHover(this.measurePointAtHover());
+    if (this.tool.kind === 'measure') this.measure.setHover(this.placing.measurePointAtHover());
     this.paintGround = null;
     if (this.tool.kind === 'paint' || this.tool.kind === 'edge') {
       const ray = this.view.pointerRay(clientX, clientY);
@@ -1828,12 +1432,12 @@ export class EditorApp {
       this.hoverFace = face && (!ground || face.distance < ground.distance) ? face : null;
       if (this.tool.kind === 'paint' && !this.hoverFace && ground) this.paintGround = ground.at;
     } else this.hoverFace = null;
-    this.hoverEdge = null;
+    this.paint.hoverEdge = null;
     if (this.tool.kind === 'edge' && this.hoverFace) {
       const ray = this.view.pointerRay(clientX, clientY)!;
       const d = this.hoverFace.distance;
       const point: [number, number, number] = [ray.origin.x + ray.dir.x * d, ray.origin.y + ray.dir.y * d, ray.origin.z + ray.dir.z * d];
-      this.hoverEdge = edgeTargetAt(this.doc, point, this.hoverFace.normal);
+      this.paint.hoverEdge = edgeTargetAt(this.doc, point, this.hoverFace.normal);
     }
     this.updateHover();
   }
@@ -1932,15 +1536,15 @@ export class EditorApp {
     const t = this.tool;
     const ghost: { kind: 'prop' | 'mount' | 'spawn' | 'pickup'; model: string; at: [number, number, number] | null; yaw: number; scale?: number; variant?: number } | null =
       this.looking ? null
-      : t.kind === 'prop' ? { kind: 'prop', model: t.model, ...this.propPlacement(t.model) }
-      : t.kind === 'mount' ? { kind: 'mount', model: t.model, at: this.placeSpot(), yaw: this.propYaw }
-      : t.kind === 'spawn' ? { kind: 'spawn', model: 'spawn', at: this.placeSpot(), yaw: this.spawnYaw }
-      : t.kind === 'pickup' ? { kind: 'pickup', model: t.item, at: this.placeSpot(), yaw: 0 }
+      : t.kind === 'prop' ? { kind: 'prop', model: t.model, ...this.placing.propPlacement(t.model) }
+      : t.kind === 'mount' ? { kind: 'mount', model: t.model, at: this.placing.placeSpot(), yaw: this.propYaw }
+      : t.kind === 'spawn' ? { kind: 'spawn', model: 'spawn', at: this.placing.placeSpot(), yaw: this.spawnYaw }
+      : t.kind === 'pickup' ? { kind: 'pickup', model: t.item, at: this.placing.placeSpot(), yaw: 0 }
       : null;
     // Red where the click is refused (over nothing, outside the boundary: ghostWhy.ts).
     const refused = !this.looking && ghostRefuses(this.entityGhost()?.note);
     this.view.setPropGhost(ghost?.model ?? null, ghost?.at ?? null, ghost?.yaw ?? 0, ghost?.kind ?? 'prop', ghost?.scale !== undefined ? { scale: ghost.scale, ...(ghost.variant !== undefined ? { variant: ghost.variant } : {}) } : undefined, refused);
-    const objects = this.looking ? null : this.objectGhost();
+    const objects = this.looking ? null : this.placing.objectGhost();
     this.view.setEntityGhost(this.doc, objects?.key ?? null, objects?.entities ?? [], refused);
     this.pieces.updatePieceGhost();
     if (this.tool.kind === 'select' || this.tool.kind === 'erase') {
@@ -1958,7 +1562,7 @@ export class EditorApp {
       const target = this.drag || this.looking || this.marquee ? null : this.pick();
       const cells = target?.kind === 'setpiece' ? (this.expansion.footprints.get(target.id) ?? []) : [];
       this.view.setPickHighlight(this.doc, target, this.tool.kind === 'erase' ? 'erase' : 'pick', this.history.revision, cells);
-      $('ed-target').textContent = target ? `${this.tool.kind === 'erase' ? 'Erase' : 'Select'}: ${this.targetName(target)}` : this.zoneNote();
+      $('ed-target').textContent = target ? `${this.tool.kind === 'erase' ? 'Erase' : 'Select'}: ${this.targetName(target)}` : this.placing.zoneNote();
       this.view.setFaceHighlight(null, null);
       this.view.setHoverCell(this.doc, null);
       this.view.setGhost(this.doc, null, null, 0, true);
@@ -1994,7 +1598,7 @@ export class EditorApp {
       return;
     }
     if (this.tool.kind === 'edge') {
-      const e = this.hoverEdge;
+      const e = this.paint.hoverEdge;
       if (e) {
         const { cellSize, levelHeight } = this.doc.classicStructure;
         const [gx, gy, gz] = e.cell;
@@ -2016,17 +1620,17 @@ export class EditorApp {
       return;
     }
     // Paint lights only a surface it can paint (a tile's), never a prop or block it would leave as it is.
-    const face = this.tool.kind === 'paint' && !this.paintTarget() ? null : this.hoverFace;
+    const face = this.tool.kind === 'paint' && !this.paint.paintTarget() ? null : this.hoverFace;
     this.view.setFaceHighlight(face?.box ?? null, face?.localNormal ?? null);
     if (this.tool.kind === 'paint') {
-      const target = this.paintTarget();
+      const target = this.paint.paintTarget();
       const g = this.paintGround;
       // On the ground: the ring it paints, as the Terrain tab's Paint brush shows it.
       this.view.setBrushRing(g ? this.shownGround : null, g?.x ?? 0, g?.z ?? 0, this.terrain.brushRadius, '#ffb03b');
       $('ed-target').textContent = target
         ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.doc, target.tile, target.slot).material.displayName}`
         : g
-          ? `Ground · paint ${TERRAIN_MATERIAL_LABELS[this.groundPaint]}${TERRAIN_SURFACES[this.groundPaint] === this.paintStyle.material || !terrainMaterialFor(this.paintStyle.material) ? '' : ` (${coreMaterials.get(this.paintStyle.material)?.displayName ?? 'swatch'})`} · radius ${this.terrain.brushRadius} m`
+          ? `Ground · paint ${TERRAIN_MATERIAL_LABELS[this.paint.groundPaint]}${TERRAIN_SURFACES[this.paint.groundPaint] === this.paint.paintStyle.material || !terrainMaterialFor(this.paint.paintStyle.material) ? '' : ` (${coreMaterials.get(this.paint.paintStyle.material)?.displayName ?? 'swatch'})`} · radius ${this.terrain.brushRadius} m`
           : '';
     } else if (this.tool.kind === 'path') {
       const over = this.paths.hovering;
@@ -2037,7 +1641,7 @@ export class EditorApp {
     } else if (refused) {
       const g = this.entityGhost()!;
       $('ed-target').textContent = `${g.title} can't be placed here: ${g.note.text.charAt(0).toLowerCase()}${g.note.text.slice(1)}`;
-    } else $('ed-target').textContent = this.zoneNote();
+    } else $('ed-target').textContent = this.placing.zoneNote();
     const cell = this.hoverCell ? ([this.hoverCell[0], this.hoverCell[1], this.level] as [number, number, number]) : null;
     this.view.setHoverCell(this.doc, this.tool.kind === 'tile' || this.tool.kind === 'setpiece' || this.tool.kind === 'spawn' || this.tool.kind === 'pickup' || this.tool.kind === 'scenario' || this.tool.kind === 'npc' ? cell : null);
     if (this.tool.kind === 'tile' && cell) {
@@ -2065,25 +1669,25 @@ export class EditorApp {
    * The note beside the pointer for the entity tools (spawns, pickups, props, vehicles, NPCs, objects): nothing under
    * it, outside the boundary, the scenery zone (ghostWhy.ts). Once per spot and document version.
    */
-  private entityGhost(): { title: string; note: GhostNote } | null {
+  entityGhost(): { title: string; note: GhostNote } | null {
     const t = this.tool;
     let kind: GhostEntityKind;
     let at: [number, number, number] | null;
     let title: string;
     let model = '';
-    if (t.kind === 'spawn') [kind, at, title] = ['spawn', this.placeSpot(), 'Spawn point'];
-    else if (t.kind === 'pickup') [kind, at, title] = ['pickup', this.placeSpot(), getItem(t.item)?.displayName ?? 'Pickup'];
-    else if (t.kind === 'prop') [kind, at, title, model] = ['prop', this.propSpot(t.model), getProp(t.model)?.displayName ?? 'Prop', t.model];
-    else if (t.kind === 'mount') [kind, at, title] = ['mount', this.placeSpot(), MOUNT_DEFS[t.model].displayName];
-    else if (t.kind === 'npc') [kind, at, title] = ['npc', this.placeSpot(), NPC_PALETTE.find((x) => x.key === t.key)?.label ?? 'NPC'];
-    else if (t.kind === 'scenario') [kind, at, title] = [t.key.startsWith('spawn:') ? 'spawn' : 'object', this.scenarioSpot(t.key)?.p ?? null, SCENARIO_PALETTE.find((x) => x.key === t.key)?.label ?? 'Object'];
+    if (t.kind === 'spawn') [kind, at, title] = ['spawn', this.placing.placeSpot(), 'Spawn point'];
+    else if (t.kind === 'pickup') [kind, at, title] = ['pickup', this.placing.placeSpot(), getItem(t.item)?.displayName ?? 'Pickup'];
+    else if (t.kind === 'prop') [kind, at, title, model] = ['prop', this.placing.propSpot(t.model), getProp(t.model)?.displayName ?? 'Prop', t.model];
+    else if (t.kind === 'mount') [kind, at, title] = ['mount', this.placing.placeSpot(), MOUNT_DEFS[t.model].displayName];
+    else if (t.kind === 'npc') [kind, at, title] = ['npc', this.placing.placeSpot(), NPC_PALETTE.find((x) => x.key === t.key)?.label ?? 'NPC'];
+    else if (t.kind === 'scenario') [kind, at, title] = [t.key.startsWith('spawn:') ? 'spawn' : 'object', this.placing.scenarioSpot(t.key)?.p ?? null, SCENARIO_PALETTE.find((x) => x.key === t.key)?.label ?? 'Object'];
     else return null;
     if (!at) return null;
     const key = `${t.kind}:${title}:${at.join(',')}:${this.history.revision}:${this.level}:${this.showAll}`;
     if (this.entityGhostAt?.key !== key) {
       // What it would stand on: the map as drawn with its blocks and solid props (surfaceBoxes), the ground as shown, liquids.
       const liquids = this.viewDoc.entities.filter((e) => e.kind === 'water');
-      const note = entityGhostNote(this.doc, kind, at, { boxes: this.surfaceBoxes(), terrain: this.shownGround, liquids }, model);
+      const note = entityGhostNote(this.doc, kind, at, { boxes: this.placing.surfaceBoxes(), terrain: this.shownGround, liquids }, model);
       this.entityGhostAt = { key, value: note && { title, note } };
     }
     return this.entityGhostAt.value;
@@ -2234,7 +1838,7 @@ export class EditorApp {
         return;
       }
       if (e.button !== 0) return;
-      if (this.tool.kind === 'paint' && e.altKey) return this.pickStyleAtHover();
+      if (this.tool.kind === 'paint' && e.altKey) return this.paint.pickStyleAtHover();
       if (this.tool.kind === 'terrain') return this.terrain.startStroke(e.shiftKey);
       // Paint, Walls, Scatter and Erase paint as you drag (one undo step); Shift does the opposite.
       if (this.tool.kind === 'paint' || this.tool.kind === 'edge' || this.tool.kind === 'envbrush' || this.tool.kind === 'erase') {
@@ -2250,8 +1854,8 @@ export class EditorApp {
         return this.updateHover();
       }
       if (this.tool.kind === 'note') return this.notes.place(this.hoverPoint);
-      if (this.tool.kind === 'bothint') return this.hints.place(this.hintPointAtHover());
-      if (this.tool.kind !== 'select') return this.placeAtHover();
+      if (this.tool.kind === 'bothint') return this.hints.place(this.placing.hintPointAtHover());
+      if (this.tool.kind !== 'select') return this.placing.placeAtHover();
       // The rotate ring round the selection: a drag turns it.
       if (this.ring.begin({ x: e.clientX, y: e.clientY })) {
         canvas().setPointerCapture(e.pointerId);
@@ -2367,18 +1971,18 @@ export class EditorApp {
     undo: () => this.undo(),
     redo: () => this.redo(),
     save: () => this.saving.save(),
-    duplicate: () => this.duplicate(),
+    duplicate: () => this.edits.duplicate(),
     togglePalette: () => this.topBar.toggleSidebar('pal'),
     toggleSidePanel: () => this.topBar.toggleSidebar('right'),
-    rotate: () => this.rotate(false),
-    rotateFine: () => this.rotate(true),
-    mirror: () => this.mirror(),
+    rotate: () => this.edits.rotate(false),
+    rotateFine: () => this.edits.rotate(true),
+    mirror: () => this.edits.mirror(),
     // MapMaker overhaul Phase 3 part B: Mirror…, groups, copy and paste, note pins.
-    mirrorDialog: () => this.mirrorDialog(),
-    group: () => this.group(),
-    ungroup: () => this.ungroup(),
-    copy: () => this.copy(),
-    paste: () => this.paste(),
+    mirrorDialog: () => this.edits.mirrorDialog(),
+    group: () => this.edits.group(),
+    ungroup: () => this.edits.ungroup(),
+    copy: () => this.edits.copy(),
+    paste: () => this.edits.paste(),
     notes: () => this.setTool({ kind: 'note' }),
     // MapMaker overhaul Phase 4 item 3: bot hints (the last kind picked).
     botHints: () => this.setTool({ kind: 'bothint', hint: this.lastHint }),
@@ -2390,7 +1994,7 @@ export class EditorApp {
       const i = this.tool.kind === 'terrain' ? (TERRAIN_BRUSHES.indexOf(this.terrain.terrainBrush) + 1) % TERRAIN_BRUSHES.length : TERRAIN_BRUSHES.indexOf(this.terrain.terrainBrush);
       this.terrain.setTerrainBrush(TERRAIN_BRUSHES[i]!);
     },
-    walls: () => this.wallsTool(this.tool.kind === 'edge'),
+    walls: () => this.paint.wallsTool(this.tool.kind === 'edge'),
     erase: () => this.setTool({ kind: 'erase' }),
     // U: the measure tool (MapMaker overhaul Phase 1 item 3).
     measure: () => this.setTool({ kind: 'measure' }),
@@ -2403,7 +2007,7 @@ export class EditorApp {
     envBrush: () => this.setTool({ kind: 'envbrush' }),
     place: () => this.placeTool(),
     pickStyle: () => {
-      if (this.tool.kind === 'paint') this.pickStyleAtHover();
+      if (this.tool.kind === 'paint') this.paint.pickStyleAtHover();
     },
     select: () => this.selectTool(),
     escape: () => {
@@ -2425,23 +2029,23 @@ export class EditorApp {
       if (this.tool.kind === 'path' && this.paths.deleteSelected()) return;
       if (this.tool.kind === 'route' && this.routes.deleteSelected()) return;
       if (!this.selCount() && this.hints.deleteSelected()) return;
-      this.deleteSelection();
+      this.edits.deleteSelection();
     },
     // One meaning per key: PgUp/PgDn change the level (Shift: move the selection a level), [ ] the brush size.
     levelUp: () => this.setLevel(this.level + 1),
     levelDown: () => this.setLevel(this.level - 1),
-    liftSelection: () => this.nudge(0, 0, 1),
-    lowerSelection: () => this.nudge(0, 0, -1),
+    liftSelection: () => this.edits.nudge(0, 0, 1),
+    lowerSelection: () => this.edits.nudge(0, 0, -1),
     brushBigger: () => {
       if (this.tool.kind === 'terrain' || this.tool.kind === 'envbrush') this.terrain.setBrushRadius(this.terrain.brushRadius + 2);
     },
     brushSmaller: () => {
       if (this.tool.kind === 'terrain' || this.tool.kind === 'envbrush') this.terrain.setBrushRadius(this.terrain.brushRadius - 2);
     },
-    nudgeNorth: () => this.nudge(0, 1, 0),
-    nudgeSouth: () => this.nudge(0, -1, 0),
-    nudgeWest: () => this.nudge(-1, 0, 0),
-    nudgeEast: () => this.nudge(1, 0, 0),
+    nudgeNorth: () => this.edits.nudge(0, 1, 0),
+    nudgeSouth: () => this.edits.nudge(0, -1, 0),
+    nudgeWest: () => this.edits.nudge(-1, 0, 0),
+    nudgeEast: () => this.edits.nudge(1, 0, 0),
   };
 
   /** V (and Esc, once nothing else wants it): the Select tool; with Select in hand, select none. */
@@ -2452,16 +2056,6 @@ export class EditorApp {
 
   /** The `?` overlay: every key in the table, grouped (keyOverlay.ts). */
   readonly keyOverlay = new KeyOverlay($('editor'));
-
-  // ---------------------------------------------------------------- UI
-
-  /** Walls & Openings tool; `cycle` moves on to the next style. */
-  wallsTool(cycle: boolean): void {
-    const styles = EDGE_STYLES.filter((x) => x !== 'auto');
-    const now = this.tool.kind === 'edge' ? this.tool.style : this.edgeStyle;
-    const next = cycle ? styles[(styles.indexOf(now as (typeof styles)[number]) + 1) % styles.length]! : now;
-    this.setTool({ kind: 'edge', style: next });
-  }
 
   /** Pick the last placed piece up again, or point at the palette. */
   placeTool(): void {
@@ -2474,12 +2068,6 @@ export class EditorApp {
     this.showAll = on;
     $<HTMLInputElement>('ed-showall').checked = on;
     if (!quiet) this.toast(on ? 'Showing every level (the others ghosted)' : `Showing ${levelName(this.level)} and below`);
-  }
-
-  settleProps(ids?: readonly string[]): void {
-    const cmd = settlePropsCommand(this.doc, ids);
-    if (cmd.kind === 'updateEntities' && cmd.after.length === 0) return this.toast('Already on the ground');
-    if (this.run('Settle props', cmd)) this.toast(`Settled ${cmd.kind === 'updateEntities' ? cmd.after.length : 0} props`);
   }
 
   /**
