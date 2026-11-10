@@ -21,6 +21,7 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const OUT_FILE = join(ROOT, 'packages/shared/src/content/propContacts.generated.ts');
 const TABLE = join(ROOT, 'packages/shared/src/content/props.generated.ts');
+const KIT_TABLE = join(ROOT, 'packages/shared/src/content/kitProps.generated.ts');
 const PUBLIC = join(ROOT, 'packages/client/public');
 /** A triangle lies in a bounding-box plane when all three corners are this close to it (m). */
 const PLANE_TOL = 0.001;
@@ -118,7 +119,10 @@ export async function contactsOf(file) {
 
 function propFiles() {
   const src = readFileSync(TABLE, 'utf8');
-  return [...src.matchAll(/\{id: '([^']+)', file: '([^']+)'/g)].map((m) => ({ id: m[1], file: m[2] }));
+  const packs = [...src.matchAll(/\{id: '([^']+)', file: '([^']+)'/g)].map((m) => ({ id: m[1], file: m[2] }));
+  // The kit families (tools/content/kitprops.mjs): their first variant (every variant fills the same bounds).
+  const kit = existsSync(KIT_TABLE) ? [...readFileSync(KIT_TABLE, 'utf8').matchAll(/\{ id: '(kit\.[^']+)', file: '([^']+)'/g)].map((m) => ({ id: m[1], file: m[2] })) : [];
+  return [...packs, ...kit];
 }
 
 export async function measureAll() {

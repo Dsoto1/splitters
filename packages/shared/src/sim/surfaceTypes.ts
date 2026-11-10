@@ -13,6 +13,7 @@ import type { BallisticMaterial } from './gunplay.ts';
 import { PROP_SURFACES, SURFACE_GUESS, SURFACE_TYPE_IDS, SURFACE_TYPE_LIST } from '../content/surfaceTypes.generated.ts';
 import { CORE_MATERIALS } from '../content/materials.generated.ts';
 import { envSurfaceOf } from '../content/environment.ts';
+import { kitSurfaceOf } from '../content/kitProps.ts';
 
 export { SURFACE_TYPE_IDS };
 export type SurfaceTypeId = (typeof SURFACE_TYPE_IDS)[number];
@@ -39,8 +40,8 @@ export const SURFACE_TYPES: Readonly<Record<SurfaceTypeId, SurfaceTypeDefinition
 
 export const isSurfaceType = (id: string): id is SurfaceTypeId => id in SURFACE_TYPES;
 
-/** The surface a prop model (`prop.<id>`) names in its pack file, or an environment species' (`env.*`), if it does. */
-export const propSurfaceOf = (model: string): SurfaceTypeId | undefined => PROP_SURFACES[model] ?? envSurfaceOf(model);
+/** The surface a prop model (`prop.<id>`) names in its pack file, or an environment species' (`env.*`) or a kit family's (`kit.*`), if it does. */
+export const propSurfaceOf = (model: string): SurfaceTypeId | undefined => PROP_SURFACES[model] ?? envSurfaceOf(model) ?? kitSurfaceOf(model);
 
 const MATERIALS = new Map(CORE_MATERIALS.map((m) => [m.id, m]));
 

@@ -470,7 +470,8 @@ export class PaletteBuilder {
 
   /** Props by theme group (each one atlas), then by their own category; Nature and parked vehicles have their own tabs. */
   buildPropPalette(): void {
-    const byCategory = (cats: readonly string[]) => cats.map((c) => [c, CORE_PROPS.filter((d) => d.category === c)] as const).filter(([, list]) => list.length);
+    // Retired props (RETIRED_PROPS: replaced by our species or kit families) leave the palette; maps placing them still load.
+    const byCategory = (cats: readonly string[]) => cats.map((c) => [c, CORE_PROPS.filter((d) => d.category === c && !RETIRED_PROPS.has(d.id))] as const).filter(([, list]) => list.length);
     PROP_GROUPS.forEach((g, i) => {
       const grid = this.app.palette.group($('ed-props'), `props:${g.id}`, g.label, { open: i === 0 });
       for (const [cat, list] of byCategory(g.categories)) {
@@ -479,7 +480,7 @@ export class PaletteBuilder {
       }
     });
     // Props in a category no theme group lists yet still show, at the end.
-    const other = CORE_PROPS.filter((d) => propGroup(d) === 'other');
+    const other = CORE_PROPS.filter((d) => propGroup(d) === 'other' && !RETIRED_PROPS.has(d.id));
     if (other.length) {
       const grid = this.app.palette.group($('ed-props'), 'props:other', 'More Props', { open: false });
       for (const def of other) this.propButton(grid, def);

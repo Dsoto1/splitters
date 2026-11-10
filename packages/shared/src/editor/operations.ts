@@ -9,6 +9,7 @@ import { newId, type EditCommand } from './commands.ts';
 import { buildLimitReason, buildLimitShort, insideBuildLimit } from './buildArea.ts';
 import { getProp } from '../content/props.ts';
 import { envVariant, getEnvSpecies } from '../content/environment.ts';
+import { getKitFamily } from '../content/kitProps.ts';
 import { DEFAULT_TEAMS, mapTeams } from '../sim/npc.ts';
 import { FLOAT_TOLERANCE, floatingProps, settledPropY, supportBoxes, supportUnder } from '../map/settle.ts';
 import { piecesFor, setPieceCells, setPieceFootprint, setPieceMirrorProblem, type SetPieceLibrary } from '../map/setPieces.ts';
@@ -518,11 +519,11 @@ export function settlePropsCommand(doc: MapDocument, ids?: readonly string[]): E
  */
 export type ReplaceSize = 'height' | 'scale' | 'length';
 
-/** A placeable model: a prop id, or an environment species with an optional variant (`env.<id>#<n>`). */
+/** A placeable model: a prop id, or an environment species or kit family with an optional variant (`env.<id>#<n>`, `kit.<id>#<n>`). */
 export function parseModelChoice(choice: string): { model: string; variant: number | undefined } {
   const [model, v] = choice.split('#') as [string, string | undefined];
   const variant = v === undefined ? undefined : Number(v);
-  return { model, variant: getEnvSpecies(model) && variant ? variant : undefined };
+  return { model, variant: (getEnvSpecies(model) || getKitFamily(model)) && variant ? variant : undefined };
 }
 
 /** A model's size at scale 1 (an environment species: its variant's bounds; a prop: its size). */

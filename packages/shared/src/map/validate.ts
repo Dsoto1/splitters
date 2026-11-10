@@ -25,6 +25,7 @@ import { ziplineShapeIssues } from '../sim/zipline.ts';
 import { GLASS_EDGES } from '../sim/glass.ts';
 import { expandSetPieces, setPieceOverlapIssues, type SetPieceLibrary } from './setPieces.ts';
 import { withTileAliases } from './setPieceAliases.ts';
+import { withPropAliases } from './propAliases.ts';
 import { builtInSetPieces } from './setPieceLibrary.ts';
 import { checkSetPieceDefinition } from './setPieceCheck.ts';
 
@@ -96,7 +97,9 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
   // path or a floor that moves (and the ground under one that goes comes back). As played: set pieces expanded into
   // their parts, on the ground as played (settle.ts withGroundAsPlayed: the paths laid in, the terrain kept under
   // every floor, the set pieces' too, and the props on the ground re-bedded on it), as MapMaker draws it.
-  const map = opts.forEditing ? parsed.data : withGroundAsPlayed(expandSetPieces(doc, library, catalog).map, catalog);
+  // A retired prop plays as the kit family that replaced it (propAliases.ts: the family has its size, so collision is
+  // unchanged), set pieces' props included; MapMaker keeps it as made.
+  const map = opts.forEditing ? parsed.data : withGroundAsPlayed(withPropAliases(expandSetPieces(doc, library, catalog).map), catalog);
   return { ok: true, map, issues, migratedFrom: migrated.fromVersion };
 }
 

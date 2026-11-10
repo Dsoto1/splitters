@@ -4,7 +4,7 @@
  * atlas each piece's preview lives in. Plain data, no Babylon, so the atlas
  * tool (tools/content/palette-items.ts) and the tests read the same rules.
  */
-import { CORE_PROPS, ENV_SPECIES, MOUNT_DEFS, MOUNT_MODELS, builtInSetPieces, coreCatalog, envModelFile, type PropDefinition, type SetPieceDefinition } from '@tiletrigger/shared';
+import { CORE_PROPS, ENV_SPECIES, KIT_ALIASES, MOUNT_DEFS, MOUNT_MODELS, builtInSetPieces, coreCatalog, envModelFile, type PropDefinition, type SetPieceDefinition } from '@tiletrigger/shared';
 
 /** Palette categories: each tab has one, with one colour used on the tab, its headings and a thin accent on its pieces. */
 export const PALETTE_CATEGORIES = {
@@ -85,6 +85,9 @@ export const RETIRED_PROPS: ReadonlySet<string> = new Set([
   ...['pine_tall', 'pine_tall_b', 'pine_round', 'pine_small', 'pine_ground', 'pine', 'pine_crooked', 'palm', 'palm_bent', 'palm_short', 'palm_tall'].map((id) => `prop.${id}`),
   // bushes, hedges, cacti and other plants.
   ...['bush', 'bush_large', 'bush_leafy', 'bush_cone', 'hedge', 'hedge_large', 'hedge_gate', 'cactus', 'cactus_tall', 'corn', 'wheat', 'lily', 'mushrooms', 'mushroom_tall', 'hanging_moss'].map((id) => `prop.${id}`),
+  // Kit props, Phase 6 (docs/PROCEDURAL_ENVIRONMENT.md §11): the Kenney crates, barrels and boxes our generated families
+  // replace (content/kitprops.json `aliases`: as played they already draw the family; Replace all moves a map over).
+  ...KIT_ALIASES.map((a) => a.from),
 ]);
 /** The generated species offered in Nature's prop categories in their place (pictured from their first variant, in the `environment` atlas), by category. */
 export const GROUND_COVER_SPECIES: Readonly<Record<string, readonly string[]>> = {
@@ -145,6 +148,8 @@ export const REPLACEMENTS: Readonly<Record<string, string>> = {
   'prop.bush_cone': 'env.shrub.laurel',
   'prop.hedge': 'env.hedge.privet',
   'prop.hedge_large': 'env.hedge.yew',
+  // Kit props: each retired crate, barrel and box → the family (and variant) its alias plays it as.
+  ...Object.fromEntries(KIT_ALIASES.map((a) => [a.from, a.variant ? `${a.model}#${a.variant}` : a.model])),
 };
 /** Every species GROUND_COVER_SPECIES offers. */
 export const GROUND_COVER_IDS: readonly string[] = Object.values(GROUND_COVER_SPECIES).flat();
@@ -165,11 +170,12 @@ export function propGroup(def: Pick<PropDefinition, 'category'>): string {
  * `tiles-core`, `tiles-desert`), props by the content pack they come from
  * (`props-<pack>`, content/props/<pack>.json: the tools pass it, the client
  * reads the atlas from thumbs/palette.json), vehicles and turrets share one,
- * and so do the generated species (`environment`).
+ * and so do the generated species (`environment`) and the kit families (`kitprops`).
  */
 export function atlasGroup(key: string, propPack?: string): string {
   if (key.startsWith('tile:')) return `tiles-${key.slice(5).split('.')[0]}`;
   if (key.startsWith('prop:env.')) return 'environment';
+  if (key.startsWith('prop:kit.')) return 'kitprops';
   if (key.startsWith('mount:')) return 'vehicles';
   if (key.startsWith('setpiece:')) return 'setpieces';
   return propPack ? `props-${propPack}` : 'other';

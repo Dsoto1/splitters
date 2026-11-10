@@ -85,6 +85,8 @@ export * from './sim/creatures.ts';
 export * from './content/looks.ts';
 export * from './content/botThemes.ts';
 export * from './content/props.ts';
+export * from './content/kitProps.ts';
+export * from './map/propAliases.ts';
 export * from './content/environment.ts';
 export * from './map/environment.ts';
 export * from './protocol.ts';

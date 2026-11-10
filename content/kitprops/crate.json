@@ -1,0 +1,81 @@
+{
+  "$comment": "Crates (tools/content/kit/crate.mjs). Each family fills its size exactly and collides as that box; its variants share the size, collision and surface and differ in structure (from their seed and settings) and look. Sizes are the Kenney props they replace, so aliases keep collision as it was.",
+  "type": "crate",
+  "props": [
+    {
+      "id": "kit.crate.wood",
+      "displayName": "Wooden Crate",
+      "category": "Crates & Barrels",
+      "assetVersion": 1,
+      "notes": { "1": "First version: a board crate the size of the Kenney small crate (0.6 m cube)." },
+      "size": [0.6, 0.6, 0.6],
+      "surface": "thin_wood",
+      "detail": "wood",
+      "breakable": { "health": 30, "debris": "#8a5a32" },
+      "generator": { "kind": "crate", "batten": 0.075, "thick": 0.018, "plank": 0.1, "brace": "diagonal" },
+      "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 40 }],
+      "variants": [
+        { "index": 0, "name": "pine", "seed": 1101, "look": { "wood": "#b08a5e", "batten": "#9a7448", "jitter": 0.1, "grime": 0.3 } },
+        { "index": 1, "name": "x_brace", "seed": 1102, "set": { "brace": "x" }, "look": { "wood": "#a57d52", "batten": "#8c6640", "jitter": 0.12, "grime": 0.35 } },
+        { "index": 2, "name": "weathered", "seed": 1103, "set": { "brace": "none", "plank": 0.085 }, "look": { "wood": "#8f8472", "batten": "#7a6e5c", "jitter": 0.14, "grime": 0.5 } },
+        { "index": 3, "name": "military", "seed": 1104, "look": { "wood": "#5b6440", "paint": "#5b6440", "paintBatten": "#4c5536", "jitter": 0.06, "grime": 0.35 } },
+        { "index": 4, "name": "dark", "seed": 1105, "set": { "brace": "x" }, "look": { "wood": "#6e4e32", "batten": "#5a3e27", "jitter": 0.1, "grime": 0.4 } }
+      ]
+    },
+    {
+      "id": "kit.crate.wood_long",
+      "displayName": "Long Wooden Crate",
+      "category": "Crates & Barrels",
+      "assetVersion": 1,
+      "notes": { "1": "First version: a board crate on skids the size of the Kenney large crate (1.1 × 1.1 × 2.2 m)." },
+      "size": [1.1, 1.1, 2.2],
+      "surface": "thin_wood",
+      "detail": "wood",
+      "breakable": { "health": 60, "debris": "#8a5a32" },
+      "generator": { "kind": "crate", "batten": 0.11, "thick": 0.025, "plank": 0.15, "brace": "diagonal", "skids": 0.08 },
+      "lods": [{ "distance": 0 }, { "distance": 20 }, { "distance": 60 }],
+      "variants": [
+        { "index": 0, "name": "pine", "seed": 1201, "look": { "wood": "#b08a5e", "batten": "#9a7448", "jitter": 0.1, "grime": 0.3 } },
+        { "index": 1, "name": "x_brace", "seed": 1202, "set": { "brace": "x" }, "look": { "wood": "#a57d52", "batten": "#8c6640", "jitter": 0.12, "grime": 0.35 } },
+        { "index": 2, "name": "weathered", "seed": 1203, "set": { "brace": "none", "plank": 0.12 }, "look": { "wood": "#8f8472", "batten": "#7a6e5c", "jitter": 0.14, "grime": 0.5 } },
+        { "index": 3, "name": "military", "seed": 1204, "look": { "wood": "#5b6440", "paint": "#5b6440", "paintBatten": "#4c5536", "jitter": 0.06, "grime": 0.35 } }
+      ]
+    },
+    {
+      "id": "kit.crate.bin",
+      "displayName": "Cargo Bin",
+      "category": "Crates & Barrels",
+      "assetVersion": 1,
+      "notes": { "1": "First version: an open-topped plank bin between tall corner posts, the size of the Kenney cargo crate (1.68 × 1.2 × 2.04 m); collides as its box, as that did." },
+      "size": [1.68, 1.2, 2.04],
+      "surface": "thin_wood",
+      "detail": "wood",
+      "breakable": { "health": 70, "debris": "#8a5a32" },
+      "generator": { "kind": "bin", "post": 0.12, "wallThick": 0.05, "wall": 0.78, "floor": 0.1, "plank": 0.16, "bands": [0.3, 0.82] },
+      "lods": [{ "distance": 0 }, { "distance": 22 }, { "distance": 60 }],
+      "variants": [
+        { "index": 0, "name": "oak", "seed": 1301, "look": { "wood": "#9c7046", "post": "#7e5634", "band": "#3b3836", "jitter": 0.1, "grime": 0.35 } },
+        { "index": 1, "name": "grey", "seed": 1302, "look": { "wood": "#8a8070", "post": "#6e665a", "band": "#34322f", "jitter": 0.14, "grime": 0.45 } },
+        { "index": 2, "name": "red", "seed": 1303, "set": { "bands": [0.5] }, "look": { "wood": "#8a3b2c", "post": "#6a5034", "band": "#2f2c2a", "jitter": 0.08, "grime": 0.35 } }
+      ]
+    },
+    {
+      "id": "kit.crate.framed",
+      "displayName": "Steel-Framed Crate",
+      "category": "Crates & Barrels",
+      "assetVersion": 1,
+      "notes": { "1": "First version: board panels in a square steel tube frame, the size of the Kenney metal crate (1.1 m cube)." },
+      "size": [1.1, 1.1, 1.1],
+      "surface": "thin_wood",
+      "detail": "wood",
+      "generator": { "kind": "framed", "tube": 0.09, "inset": 0.03, "plank": 0.16 },
+      "lods": [{ "distance": 0 }, { "distance": 20 }, { "distance": 55 }],
+      "variants": [
+        { "index": 0, "name": "graphite", "seed": 1401, "look": { "frame": "#3d4248", "wood": "#a8784a", "rust": 0.15, "jitter": 0.1, "grime": 0.3 } },
+        { "index": 1, "name": "olive", "seed": 1402, "look": { "frame": "#4a5236", "wood": "#9a7a52", "rust": 0.2, "jitter": 0.1, "grime": 0.35 } },
+        { "index": 2, "name": "blue", "seed": 1403, "look": { "frame": "#2f4a66", "wood": "#b08a5e", "rust": 0.25, "jitter": 0.1, "grime": 0.3 } },
+        { "index": 3, "name": "orange", "seed": 1404, "look": { "frame": "#b5631f", "wood": "#8f6a44", "rust": 0.3, "jitter": 0.1, "grime": 0.35 } }
+      ]
+    }
+  ]
+}
