@@ -102,6 +102,14 @@ function terrainStyle(material: TerrainMaterial): ResolvedStyle {
   return { material: def, tint: material === 'gravel' ? '#8f877b' : null };
 }
 
+/**
+ * Soft paint borders (buildTerrainBlend): how fast a paint fades past its border (1: over a whole cell each way;
+ * 1.5: over two thirds of one. Owner, 2026-11-10: a whole cell was "a tad too soft"), and how finely a border cell
+ * is cut so the fade can end inside it (BLEND_CUTS / (2 × BLEND_SHARPNESS) must be a whole number of cuts).
+ */
+const BLEND_SHARPNESS = 1.5;
+const BLEND_CUTS = 3;
+
 export class MapStyler {
   private readonly textures: Map<string, RawTexture>;
   private readonly materials: Map<string, StandardMaterial>;
@@ -319,43 +327,70 @@ export class MapStyler {
         }
       }
     }
+    // Each border cell is cut into BLEND_CUTS × BLEND_CUTS, so the fade can end inside it (below).
+    const N = BLEND_CUTS;
+    const side = N + 1;
+    const perCell = side * side;
     for (const [m, list] of quads) {
       const material = TERRAIN_MATERIALS[m] ?? 'grass';
       const style = terrainStyle(material);
       const inv = 1 / style.material.scale;
       const n = list.length / 2;
-      const positions = new Float32Array(n * 12);
-      const normals = new Float32Array(n * 12);
-      const uvs = new Float32Array(n * 8);
-      const colors = new Float32Array(n * 16);
-      const indices = new Uint32Array(n * 6);
+      const positions = new Float32Array(n * perCell * 3);
+      const normals = new Float32Array(n * perCell * 3);
+      const uvs = new Float32Array(n * perCell * 2);
+      const colors = new Float32Array(n * perCell * 4);
+      const indices = new Uint32Array(n * N * N * 6);
       for (let k = 0; k < n; k++) {
         const cc = list[k * 2]!;
         const rr = list[k * 2 + 1]!;
-        for (let q = 0; q < 4; q++) {
-          // Corners 00, 10, 11, 01, as the ground's own.
-          const dvc = cc + (q === 1 || q === 2 ? 1 : 0);
-          const dvr = rr + (q >= 2 ? 1 : 0);
-          const vc = ci[dvc]!;
-          const vr = ri[dvr]!;
-          const vi = vr * cols + vc;
-          const x = t.origin[0] + vc * t.spacing;
-          const z = t.origin[1] + vr * t.spacing;
-          const p = (k * 4 + q) * 3;
-          positions[p] = x;
-          positions[p + 1] = hy[vi]!;
-          positions[p + 2] = z;
-          normals[p] = nrm[vi * 3]!;
-          normals[p + 1] = nrm[vi * 3 + 1]!;
-          normals[p + 2] = nrm[vi * 3 + 2]!;
-          uvs[(k * 4 + q) * 2] = x * inv;
-          uvs[(k * 4 + q) * 2 + 1] = z * inv;
-          const col = (k * 4 + q) * 4;
-          colors[col] = colors[col + 1] = colors[col + 2] = 1;
-          colors[col + 3] = share(m, dvc, dvr);
+        // The cell's corners 00, 10, 01, 11: the ground's own vertices, and the material's share at each.
+        const v00 = ri[rr]! * cols + ci[cc]!;
+        const v10 = ri[rr]! * cols + ci[cc + 1]!;
+        const v01 = ri[rr + 1]! * cols + ci[cc]!;
+        const v11 = ri[rr + 1]! * cols + ci[cc + 1]!;
+        const w00 = share(m, cc, rr);
+        const w10 = share(m, cc + 1, rr);
+        const w01 = share(m, cc, rr + 1);
+        const w11 = share(m, cc + 1, rr + 1);
+        const x0 = t.origin[0] + ci[cc]! * t.spacing;
+        const z0 = t.origin[1] + ri[rr]! * t.spacing;
+        const dx = (ci[cc + 1]! - ci[cc]!) * t.spacing;
+        const dz = (ri[rr + 1]! - ri[rr]!) * t.spacing;
+        const first = k * perCell;
+        for (let b = 0; b <= N; b++) {
+          for (let a = 0; a <= N; a++) {
+            const u = a / N;
+            const v = b / N;
+            const at = first + b * side + a;
+            const bil = (p00: number, p10: number, p01: number, p11: number) => p00 * (1 - u) * (1 - v) + p10 * u * (1 - v) + p01 * (1 - u) * v + p11 * u * v;
+            // On the ground's own two triangles (its diagonal runs 00-11), not the curved sheet between the corners.
+            const y = u >= v ? hy[v00]! + u * (hy[v10]! - hy[v00]!) + v * (hy[v11]! - hy[v10]!) : hy[v00]! + u * (hy[v11]! - hy[v01]!) + v * (hy[v01]! - hy[v00]!);
+            positions[at * 3] = x0 + u * dx;
+            positions[at * 3 + 1] = y;
+            positions[at * 3 + 2] = z0 + v * dz;
+            for (let d = 0; d < 3; d++) normals[at * 3 + d] = bil(nrm[v00 * 3 + d]!, nrm[v10 * 3 + d]!, nrm[v01 * 3 + d]!, nrm[v11 * 3 + d]!);
+            uvs[at * 2] = (x0 + u * dx) * inv;
+            uvs[at * 2 + 1] = (z0 + v * dz) * inv;
+            colors[at * 4] = colors[at * 4 + 1] = colors[at * 4 + 2] = 1;
+            // The share, steepened about a half: the two sides still add up to one on the border, and each paint
+            // is gone 1 / BLEND_SHARPNESS of a cell from it.
+            colors[at * 4 + 3] = Math.max(0, Math.min(1, (bil(w00, w10, w01, w11) - 0.5) * BLEND_SHARPNESS + 0.5));
+          }
         }
-        const base = k * 4;
-        indices.set([base, base + 1, base + 2, base, base + 2, base + 3], k * 6);
+        let o = k * N * N * 6;
+        for (let b = 0; b < N; b++) {
+          for (let a = 0; a < N; a++) {
+            const p = first + b * side + a;
+            // The ground's diagonal and winding in every small square.
+            indices[o++] = p;
+            indices[o++] = p + 1;
+            indices[o++] = p + side + 1;
+            indices[o++] = p;
+            indices[o++] = p + side + 1;
+            indices[o++] = p + side;
+          }
+        }
       }
       const vd = new VertexData();
       vd.positions = positions;
