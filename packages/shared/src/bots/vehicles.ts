@@ -154,9 +154,9 @@ const FIT_HULL_SLACK = 0.15;
  * FIT_STEP m past the first `skip` m (where the vehicle itself stands) the ground is found under the route (a ray down;
  * the route's corners are far apart over open ground, and hills rise between them) and a box that wide (square, so any
  * heading) must be clear from 0.9 to 1.9 m over it. A tank is kept out of passages a person fits through and it
- * doesn't, where it would wedge (Iron Tide's hangar). With `hull` (its height and half length) the box reaches up to
+ * doesn't, where it would wedge (Midnight Keel's hangar). With `hull` (its height and half length) the box reaches up to
  * the hull's top over the highest ground within half its length: a hull rides level, so going up stairs its rear
- * stands as high as its front (Iron Tide's centre stairs, under a beam at 3 m at their foot: a tank stopped on the
+ * stands as high as its front (Midnight Keel's centre stairs, under a beam at 3 m at their foot: a tank stopped on the
  * first step and was left there, in everyone's way).
  */
 export function routeFits(
@@ -330,7 +330,7 @@ function midAngle(a: number, b: number): number {
  * clearance at its `routeHalfWidth` (any heading, its hull's height over the highest ground under it, no ledge it can't
  * climb) and hullFits' sweep of its own footprint along the route's heading (doorways, arches and gaps it would only
  * get through square on). Flyers (no routeHalfWidth) always do. Bot drivers keep to routes their hull fits: before, a
- * Hauler followed the foot route into Iron Tide's 3 m doors, and a Snow Sled into Whiteout Station's hangar doors.
+ * Hauler followed the foot route into Midnight Keel's 3 m doors, and a Snow Sled into Whiteout Station's hangar doors.
  */
 export function vehicleRouteFits(physics: FitPhysics, m: Pick<MountView, 'routeHalfWidth' | 'half'>, path: readonly Vec3[], upTo = Infinity): boolean {
   if (!m.routeHalfWidth || !m.half) return true;

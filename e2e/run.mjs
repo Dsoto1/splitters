@@ -1105,6 +1105,137 @@ async function editoruxFlow(browser) {
   await shot('1280');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await editorInterfaceChecks(browser);
+}
+
+/**
+ * MapMaker overhaul Phase 2 (docs/MAPMAKER_OVERHAUL_PLAN.md): the seven mode tabs and their palettes and inspectors,
+ * the side panel's folding panels (kept per person), the outliner (search, select and frame, editor-only hide and lock,
+ * quick at 4,096 things) and the quick row's mode-first favourites.
+ */
+async function editorInterfaceChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await frames(page, 3);
+  // ---- Mode tabs: each shows its own palette tabs; every pane is in one of them.
+  const modes = { build: ['tiles', 'setpieces', 'advanced'], props: ['props', 'lights'], entities: ['entities', 'npcs', 'vehicles', 'scenario'], environment: ['paint', 'plants', 'terrain', 'sky'], paths: ['paths'], test: ['test'] };
+  const seen = {};
+  for (const ws of Object.keys(modes)) {
+    await page.click(`#ed-modes [data-ws="${ws}"]`);
+    await frames(page, 2);
+    seen[ws] = await page.evaluate(() => [...document.querySelectorAll('#ed-pal-tabs .tab')].filter((b) => !b.hidden).map((b) => b.dataset.pane));
+  }
+  check(Object.entries(modes).every(([ws, panes]) => JSON.stringify(seen[ws]) === JSON.stringify(panes)), `each mode tab shows its own palette tabs (${JSON.stringify(seen)})`);
+  check(await page.evaluate(() => ['Build', 'Props', 'Gameplay', 'Logic', 'Environment', 'Paths', 'Test'].every((l, i) => document.querySelectorAll('#ed-modes .tab')[i]?.textContent.includes(l === 'Gameplay' ? 'Game' : l))), 'the top bar has Build, Props, Gameplay, Logic, Environment, Paths and Test');
+  // Test: its pane plays; its inspector part says whether the map is ready.
+  check(await page.isVisible('#ed-tp-play') && await page.isVisible('#ed-tp-here') && (await page.getAttribute('#ed-mode-section', 'data-ws')) === 'test', 'the Test mode has its pane (play, play from here, bot test, plan) and its own inspector section');
+  await shot('mode-test');
+  await page.click('#ed-modes [data-ws="paths"]');
+  await frames(page, 2);
+  check(await page.isVisible('[data-tool="path"]') && await page.isVisible('[data-tool="path-race"]') && (await page.getAttribute('#ed-mode-section', 'data-ws')) === 'paths', 'the Paths mode holds the paths, the track and the drop routes, and its inspector lists the paths');
+  await shot('mode-paths');
+  await page.click('#ed-modes [data-ws="props"]');
+  await frames(page, 2);
+  check(await page.isVisible('#ed-pal-tabs [data-pane="lights"]') && !(await page.$('#ed-mode-section')), 'the Props mode has props and lights; its inspector is Map properties');
+  // A tool picked from another mode's card (here by key) moves the tabs to its mode.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
+  await frames(page, 2);
+  check(await page.evaluate(() => document.querySelector('#ed-modes .tab.on')?.dataset.ws === 'entities'), 'picking the spawn tool shows the Gameplay mode');
+  await page.keyboard.press('Escape');
+  await page.click('#ed-modes [data-ws="build"]');
+
+  // ---- Folding panels: the heading folds a panel; a reload keeps it folded (this browser only).
+  await page.click('.ed-panel[data-panel="issues"] .ed-panel-head button');
+  check(!(await page.isVisible('#ed-issues')) && (await page.evaluate(() => localStorage.getItem('tiletrigger.editor.panels'))) === '["issues"]', 'the Validation panel folds from its heading, remembered in this browser');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  check(!(await page.isVisible('#ed-issues')) && (await page.isVisible('#ed-inspector')), 'after a reload the folded panel stays folded, the others open');
+  await page.click('.ed-panel[data-panel="issues"] .ed-panel-head button');
+  check(await page.isVisible('#ed-issues'), 'and opens again from its heading');
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+
+  // ---- The outliner: 4,096 things, drawn virtualised, quick to rebuild.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const entities = Array.from({ length: 4096 }, (_, i) => ({ id: `olp${i}`, kind: 'prop', position: [(i % 64) - 32, 0, Math.floor(i / 64) - 32], model: i % 2 ? 'prop.barrel' : 'prop.metal_crate', yaw: 0, scale: 1, solid: true, tint: null }));
+    ed.run('Many props', { kind: 'addEntities', entities });
+  });
+  await page.waitForFunction(() => window.__editor.outliner.entriesFor === window.__editor.doc, null, { timeout: T(20000) });
+  const big = await page.evaluate(() => ({ ms: window.__editor.outliner.lastBuildMs, rows: document.querySelectorAll('#ed-ol-list [data-row]').length, height: document.querySelector('#ed-ol-list .ed-ol-spacer').getBoundingClientRect().height }));
+  check(big.rows > 0 && big.rows < 60 && big.height > 4096 * 22 * 0.9 && big.ms < 400 * (process.env.CI ? 2 : 1), `the outliner lists 4,096 things drawing only the rows in view (${JSON.stringify(big)})`);
+  await page.fill('#ed-ol-search', 'barrel 7');
+  await frames(page, 2);
+  // Every word matches the name, the kind or the id (a barrel whose id holds a 7 counts).
+  const found = await page.$$eval('#ed-ol-list .ed-ol-item', (els) => els.map((e) => ({ n: e.querySelector('.nm').textContent, id: e.dataset.id })));
+  check(found.length > 0 && found.every(({ n, id }) => /barrel/i.test(n) && (n.includes('7') || id.includes('7'))) && found.some(({ n }) => n === 'Barrel 7'), `searching the outliner lists only what matches (${found.slice(0, 4).map((f) => f.n).join(', ')}…)`);
+  await page.fill('#ed-ol-search', '');
+  await page.evaluate(() => window.__editor.history.undo());
+  await page.waitForFunction(() => window.__editor.doc.entities.length < 100, null, { timeout: T(10000) });
+  // A few things to pick, hide and lock.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.run('Two props', { kind: 'addEntities', entities: [{ id: 'olA', kind: 'prop', position: [20, 0, 20], model: 'prop.barrel', yaw: 0, scale: 1, solid: true, tint: null, name: 'Outliner barrel' }, { id: 'olB', kind: 'prop', position: [-20, 0, -20], model: 'prop.barrel', yaw: 0, scale: 1, solid: true, tint: null, name: 'Outliner crate' }] });
+  });
+  await page.fill('#ed-ol-search', 'outliner');
+  await frames(page, 3);
+  const camAt = () => page.evaluate(() => ({ x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z }));
+  const before = await camAt();
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] .nm');
+  await frames(page, 3);
+  const picked = await page.evaluate(() => ({ sel: window.__editor.selection.entities, target: { x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z }, on: document.querySelector('#ed-ol-list .ed-ol-item[data-id="olA"]')?.classList.contains('on') }));
+  check(JSON.stringify(picked.sel) === '["olA"]' && picked.on && Math.hypot(picked.target.x - 20, picked.target.z - 20) < Math.hypot(before.x - 20, before.z - 20), `a click in the outliner selects the thing and frames it (${JSON.stringify(picked)})`);
+  await shot('outliner');
+  // Hide: gone from the view, still in the map; the flag is this browser's, per map, not in the file.
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olB"] [data-act="hide"]');
+  await frames(page, 3);
+  const hid = await page.evaluate(() => ({ shown: window.__editor.view.entityShown('olB'), inDoc: window.__editor.doc.entities.some((e) => e.id === 'olB'), stored: localStorage.getItem(`tiletrigger.editor.outliner.${window.__editor.doc.metadata.id}`), file: JSON.stringify(window.__editor.doc).includes('"hidden"') }));
+  check(!hid.shown && hid.inDoc && JSON.parse(hid.stored ?? '{}').hidden?.includes('olB') && !hid.file, `the eye hides a thing from MapMaker's view only, kept per map in this browser (${JSON.stringify(hid)})`);
+  // Lock: a click on it in the outliner (or the map) doesn't select it.
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] [data-act="lock"]');
+  await frames(page, 2);
+  const lockedSel = await page.evaluate(() => window.__editor.selection.entities);
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] .nm');
+  await frames(page, 2);
+  const after = await page.evaluate(() => ({ sel: window.__editor.selection.entities, toast: document.getElementById('ed-toast').textContent }));
+  check(!lockedSel.includes('olA') && !after.sel.includes('olA') && /locked/.test(after.toast), `a locked thing drops out of the selection and can't be selected (${JSON.stringify(after)})`);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: ['olA'] });
+  });
+  check((await page.evaluate(() => window.__editor.selection.entities)).length === 0, 'selecting a locked thing by any route leaves it out');
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olA"] [data-act="lock"]');
+  await page.click('#ed-ol-list .ed-ol-item[data-id="olB"] [data-act="hide"]');
+  await frames(page, 3);
+  check(await page.evaluate(() => window.__editor.view.entityShown('olB')), 'showing it again draws it again');
+  await page.fill('#ed-ol-search', '');
+
+  // ---- Favourites and recent follow the mode: its own pieces first, then the rest (or only its own).
+  await page.evaluate(() => localStorage.setItem('tt.palette.favs', JSON.stringify(['prop:prop.barrel', 'tile:core.room', 'spawn'])));
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const firstFav = async (ws) => {
+    await page.click(`#ed-modes [data-ws="${ws}"]`);
+    await frames(page, 2);
+    return page.evaluate(() => [...document.querySelectorAll('#ed-pal-quick .ed-quick-row [data-pick]')].map((c) => c.dataset.pick));
+  };
+  const favs = { build: await firstFav('build'), props: await firstFav('props'), entities: await firstFav('entities') };
+  check(favs.build[0] === 'tile:core.room' && favs.props[0] === 'prop:prop.barrel' && favs.entities[0] === 'spawn' && favs.build.length === 3, `each mode's favourites come first in the quick row (${JSON.stringify(favs)})`);
+  await page.click('#ed-pal-quick [data-q="only"]');
+  check(JSON.stringify(await firstFav('props')) === '["prop:prop.barrel"]', 'This mode only shows just the mode\'s own');
+  await shot('favourites');
+  await page.click('#ed-pal-quick [data-q="only"]');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -8377,6 +8508,13 @@ async function wholeBodies(page, frames, upright = []) {
       const checked = new Set();
       const seen = new Set();
       const failed = new Map();
+      // Each upright character's lowest drawn height over the frames, and its full detail's in that pose.
+      const heights = new Map();
+      // Standing short (under 3/4 of its height) is judged on the settled pose, over the frames, not on one frame: a
+      // runner can show one frame's crouch (on CI, Hyena Warrior 1.5 of 2.12 m on the first frame measured, its full
+      // detail as short in that pose, then standing; runs 42563794663, 42567649540), while a body drawn as feet only
+      // (what this checks) is short on every frame.
+      const stood = new Map();
       await new Promise((resolve) => {
         let n = 0;
         const o3 = sc.onAfterRenderObservable.add(() => {
@@ -8390,6 +8528,7 @@ async function wholeBodies(page, frames, upright = []) {
             const dist = Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z);
             if (!lods.length || dist < Math.max(...lods.map((l) => l.distanceOrScreenCoverage)) + 1) continue;
             checked.add(slot);
+            heights.set(slot, heights.get(slot) ?? { look: JSON.parse(a.specKey).look, dist: Math.round(dist), drawn: Infinity, full: 0 });
             let lo = Infinity;
             let hi = -Infinity;
             let bad = 0;
@@ -8415,10 +8554,19 @@ async function wholeBodies(page, frames, upright = []) {
             const height = hi > lo ? hi - lo : 0;
             const want = fullHeight * (spec.size ?? 1);
             const full = hi0 > lo0 ? hi0 - lo0 : 0;
+            const hrow = heights.get(slot);
+            if (hrow && upright.includes(slot) && height < hrow.drawn) Object.assign(hrow, { drawn: +height.toFixed(2), full: +full.toFixed(2) });
             // (`full`: the full-detail mesh in the same pose, for the message: Hyena Warrior's low-detail level is drawn
             // 1.5-1.8 m against its full detail's 2.1 m in the same pose, on CI; see HANDOFF.)
-            if ((off.length || bad || (upright.includes(slot) && height < want * 0.75)) && !failed.has(slot)) {
-              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off });
+            const row = { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off };
+            if ((off.length || bad) && !failed.has(slot)) failed.set(slot, row);
+            if (upright.includes(slot)) {
+              const st = stood.get(slot) ?? stood.set(slot, { frames: 0, short: 0, first: null }).get(slot);
+              st.frames++;
+              if (height < want * 0.75) {
+                st.short++;
+                st.first ??= row;
+              }
             }
           }
           if (++n >= frames) {
@@ -8430,7 +8578,8 @@ async function wholeBodies(page, frames, upright = []) {
       proto.render = render0;
       sc.onBeforeDrawPhaseObservable.remove(o1);
       sc.onAfterDrawPhaseObservable.remove(o2);
-      return { checked: checked.size, seen: seen.size, failed: [...failed.values()] };
+      for (const [slot, st] of stood) if (!failed.has(slot) && st.short >= 2 && st.short * 3 > st.frames) failed.set(slot, { ...st.first, shortFrames: `${st.short} of ${st.frames}` });
+      return { checked: checked.size, seen: seen.size, failed: [...failed.values()], heights: [...heights.values()].filter((h) => h.drawn < Infinity) };
     },
     [frames, 1.8, upright],
   );
@@ -8453,8 +8602,14 @@ async function farBodies(browser) {
   await page.click('#resume').catch(() => {});
   await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot' && c.alive).length >= 20, null, T(30000));
   await holdBots(page);
+  // No end to the round: on a slow CI runner this flow passes Deathmatch's 10 minutes, and the round's end (the
+  // scoreboard, then the next round) left the known looks' check below with nobody to measure.
+  await sim(page, (m) => {
+    m.phaseEndTick = Infinity;
+    m.rules.scoreLimit = 0;
+  });
   // Open ground from where you are: the first way with a clear eye-high sight line 36 m out and ground under the spots.
-  const setup = await sim(page, (m, me) => {
+  const findGround = (m, me) => {
     const p = me.move.pos;
     const ground = (x, z) => {
       const d = m.physics.raycastWorld({ x, y: p.y + 6, z }, { x: 0, y: -1, z: 0 }, 14);
@@ -8490,7 +8645,16 @@ async function farBodies(browser) {
       return { yaw, slots: bots.map((c) => c.slot), from: { x: p.x, y: p.y, z: p.z } };
     }
     return null;
-  });
+  };
+  let setup = await sim(page, findGround);
+  // Not from every spawn (a spawn in a gully): from the next ones you respawn at.
+  for (let i = 0; i < 6 && !setup; i++) {
+    await sim(page, (m, me) => m.kill(me, null, 'core.respawn'));
+    await page.waitForFunction(() => !window.__cs.local.alive, null, { timeout: T(10000) }).catch(() => {});
+    await page.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(30000) }).catch(() => {});
+    await page.click('#resume').catch(() => {});
+    setup = await sim(page, findGround);
+  }
   if (!setup) {
     check(false, 'far bodies: found open ground 36 m out for the crowd');
     await page.context().close();
@@ -8542,10 +8706,37 @@ async function farBodies(browser) {
   await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(60000) }).catch(() => {});
   const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
   const r = await wholeBodies(page, 12, setup.slots);
-  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}${f.shortFrames ? ` (short on ${f.shortFrames} frames)` : ''}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
   // (For a failure: where you are now against where the crowd was set out from, and whether you are alive.)
   if (r.failed.length) broken.push(`you ${await sim(page, (m, me, from) => `${Math.hypot(me.move.pos.x - from.x, me.move.pos.z - from.z).toFixed(1)} m from the setup, ${me.alive ? 'alive' : 'dead'}, ${me.deaths} deaths`, setup.from)}`);
   check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
+  // Then known looks on the same runners (not the deck's draw): Hyena Warrior's far copy was drawn 15-30% short on CI
+  // (HANDOFF, "Flaky e2e checks"), then large, small and animal bodies. Each far copy stands as tall as its full body
+  // in the same pose (the lowest of the frames), and is skinned on the full body's skeleton (one pose for both).
+  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.tortoise', 'core.abe', 'core.panda', 'core.knight', 'core.croakley'];
+  await sim(page, (m, _me, [slots, looks]) => slots.forEach((s, i) => {
+    const c = m.combatants().find((x) => x.slot === s);
+    if (c && looks[i] && c.look !== looks[i]) m.swapLook(c, looks[i]);
+  }), [setup.slots, looks]);
+  const dealt = () => page.evaluate(([slots, looks]) => slots.filter((s, i) => {
+    const a = window.__cs.view.avatars.get(s);
+    return !looks[i] || (!!a?.anim?.ch && JSON.parse(a.specKey).look === looks[i] && a.anim.current === 'run');
+  }).length, [setup.slots, looks]);
+  await until(async () => (await dealt()) >= setup.slots.length, T(120000));
+  // (A few tries: on a slow runner the dealt looks can still be loading, or out of view, the first time.)
+  let r2 = await wholeBodies(page, 12, setup.slots);
+  for (let i = 0; i < 3 && !r2.heights.some((h) => h.look === 'core.hyena'); i++) {
+    await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), setup.yaw);
+    await until(async () => (await dealt()) >= setup.slots.length, T(30000));
+    r2 = await wholeBodies(page, 12, setup.slots);
+  }
+  const shared = await page.evaluate((slots) => slots.flatMap((s) => {
+    const ch = window.__cs.view.avatars.get(s)?.anim?.ch;
+    return (ch?.meshes ?? []).flatMap((m) => (m.getLODLevels?.() ?? []).filter((l) => l.mesh && l.mesh.skeleton !== m.skeleton).map(() => JSON.parse(window.__cs.view.avatars.get(s).specKey).look));
+  }), setup.slots);
+  const drawnHeights = r2.heights.map((h) => `${h.look} ${h.dist} m ${h.drawn}/${h.full} m`).join(', ');
+  const short = r2.heights.filter((h) => h.full > 0 && h.drawn < h.full * 0.9);
+  check(r2.heights.some((h) => h.look === 'core.hyena') && short.length === 0 && r2.failed.length === 0 && shared.length === 0, `far copies stand as tall as their full bodies in the same pose, on the same skeleton, Hyena Warrior's among them (drawn far / full detail, lowest of the frames: ${drawnHeights || 'none measured'}; short: ${short.map((h) => h.look).join(', ') || 'none'}; on a skeleton of their own: ${[...new Set(shared)].join(', ') || 'none'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -8624,19 +8815,19 @@ async function gripsInPlay(browser) {
       if (now !== last) window.__heldTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
     }, 50);
   });
-  await page.evaluate(() => window.__give('core.marksman'));
-  await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.marksman', null, { timeout: T(10000) }).catch(() => {});
-  for (let i = 0; i < 4; i++) {
-    const held = await page.evaluate(() => window.__cs.local.weapon?.id);
-    if (held === 'core.marksman') break;
-    await page.keyboard.press('Digit3');
-    await page.waitForFunction((was) => window.__cs.local.weapon?.id !== was, held, { timeout: T(10000) }).catch(() => {});
+  // On CI the rifle sometimes came back in your hands a few seconds after the give (twice in one run, 2026-11-09:
+  // marksman at 0.1 s, rifle at 0.7 s with no key pressed), and pressing 3 then only asked for the rifle again
+  // ("asked 3", run 42679874806). So the give is repeated until the marksman is held, drawn and raised.
+  const marksmanUp = () => window.__cs.local.weapon?.id === 'core.marksman' && window.__cs.view.viewWeapon === 'core.marksman' && !!window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0;
+  for (let i = 0; i < 6 && !(await page.evaluate(marksmanUp)); i++) {
+    if ((await page.evaluate(() => window.__cs.local.weapon?.id)) !== 'core.marksman') await page.evaluate(() => window.__give('core.marksman'));
+    await page.waitForFunction(marksmanUp, null, { timeout: T(10000) }).catch(() => {});
   }
-  await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.marksman' && window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0, null, { timeout: T(20000) }).catch(() => {});
   await page.evaluate(() => (window.__autoInput = { zoom: true }));
   const scopedIn = await page.waitForFunction(() => window.__cs.view.camera.fov < 0.8, null, { timeout: T(20000) }).then(() => true, () => false);
+  // (Up to a minute: on a loaded machine the sharper copy took over 20 s to load, locally.)
   const swapped = await page.evaluate(
-    () =>
+    (wait) =>
       new Promise((done) => {
         const v = window.__cs.view;
         const def = window.__cs.local.weapon;
@@ -8645,9 +8836,10 @@ async function gripsInPlay(browser) {
         if (!kept || !def.view.held) return done(false);
         v.sharpenViewmodel(def, kept, def.view.held.medium);
         const t0 = performance.now();
-        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > 20000 ? done(false) : setTimeout(poll, 50));
+        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > wait ? done(false) : setTimeout(poll, 50));
         poll();
       }),
+    T(60000),
   );
   await page.evaluate(() => (window.__autoInput = { zoom: false }));
   await page.waitForFunction(() => window.__cs.view.camera.fov > 1.2, null, { timeout: T(20000) }).catch(() => {});
@@ -8732,7 +8924,8 @@ async function gripsInPlay(browser) {
     held.push({ w, ok: !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) } });
   }
   check(held.every((h) => h.ok), `an Imp player holds the gun forward at the chest with a hand on its grip (${JSON.stringify(held)})`);
-  await imp.screenshot({ path: `${ARTIFACTS}/grips-imp-third.png` });
+  // (An artifact for a look: a slow page's screenshot timing out isn't a failed check.)
+  await imp.screenshot({ path: `${ARTIFACTS}/grips-imp-third.png` }).catch(() => {});
   await imp.context().close();
 }
 
@@ -9702,7 +9895,9 @@ async function partyFlow(browser) {
   await pctx.close();
 
   // Online: a hub, a host, a friend by the host's invite link.
-  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9079);
+  // Its own port: dedicatedhost's hub is on 9079, and when a shard ran party just before it, dedicatedhost's hub couldn't
+  // bind and its host listed on party's hub, which has no relay ("relay": false, check/far-copies run 42729978260).
+  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9081);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000)).catch(() => {});
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;

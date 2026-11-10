@@ -8,6 +8,31 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Map line-up (`wip/maps-retire`, 2026-11-09/10; owner's decisions of 2026-11-09; green on `check/maps-retire` at b9365b0, run 42759236295; LANDED; claims released).**
+- **Retired (files deleted; git history keeps them):** fogbound, bottling (Bottling Plant), dune_harbor, no_mans_field,
+  overhang, starhaven: `maps/<id>.json`, their card pictures (`client/public/maps/shots/<id>.jpg`), `inspirations.ts`
+  lines, rotations, tests and current docs. Not added to `RETIRED_MAPS` (that list is for maps whose files stay; the
+  deleted ones of the earlier map review weren't either). No e2e flow, flowMap entry, bot-report/bot-limits default,
+  Quick Play list, playlist, server/host default or `test_coverage` named them.
+- **Rotation replacements** (same mode, not retired): Deathmatch Classics bottling → pump_tower, overhang → razor_edge;
+  Objective Mix (Bomb) dune_harbor → iron_tide, starhaven → runway_nine; Flag Run (CTF) no_mans_field → market_town
+  (not on BOTS.md's "still without a capture" list).
+- **Tests:** `rotation.test.ts`'s stub suite uses razor_edge for overhang; `hoverCeiling.test.ts`'s Dune Harbor doorway
+  (0.9 m sill, lintel at 2.5 m, roof at 3.5 m) is now built in the test's yard (Speeder through, Hauler stops and backs
+  out; passes). Code comments naming the retired maps reworded.
+- **Renamed in the real MapMaker** (Playwright: Import, Map properties' Name, Export; ids kept): iron_tide **Midnight
+  Keel**, ironhold_prison **Cormorant Isle** (also its match-start Logic message, "Cormorant Isle. Lights on: ..."),
+  jungle_steps **Cradle of Idols**. Checked unique first against every map name on origin/main and the unlanded
+  wip/mapmaker-* branches (no shared word, no shared 4-letter start, "of"/"the" ignored). Card pictures show no name
+  (unchanged). Docs, test titles and comments use the new names (CHANGELOG/HANDOFF history keeps the old ones).
+- **Iron Maw:** Players 16-64 in Map properties (was 16-32).
+- Every exported file differs from before only in that field (and the Logic text), `formatVersion` → 33 and the
+  release stamp (semantic diff); the terrain is written a row per line now, so the text diffs are large.
+  validate-map: 0 issues on all four.
+- Locally (box at load 9-22): typecheck, content:check, test:changed (6 timeouts under load; the map ones pass alone);
+  e2e maps/vehicles/hostcontrols/dedicatedhost timed out under load (iron_tide's offline match took 90 s against the
+  flow's 60 s; it starts and plays). CI ran the full suite (deleted card pictures are unmapped paths): green.
+
 **Release 0.9.0 (2026-11-08, owner-approved "wait for the passenger fix, then release together"):** main 4d8f205
 (green on `check/release-090`, run 42502393727; three e2e shards failed first in flows the release doesn't touch,
 arsenal, weaponsets and hostgame, as on other branches that hour, and passed on a re-run of the failed jobs). CI
@@ -104,18 +129,30 @@ report and gunplay pass 3's Riot Junction find).** CHANGELOG "Bot vehicle routin
   clock, now 2.3× as big. Nearer than 3 m nothing changes. The `flashing` flow's fight moment adds an armour pickup 3 m
   off and one at your own chest.
 - **Tutorial:** no score bar (`Hud.showScorebar`); `newplayer` checks it hidden, and shown again in Quick Play.
-- **Far characters' pose (the characters3 flake): found, not landed (`wip/far-copies`).** The import added each Meshy
+- **Far characters' pose (the characters3 flake): landed from `wip/far-copies`.** The import added each Meshy
   character's far copy and then quantized each mesh on its own: the far copy got a skin of its own, the game a second
-  skeleton for it, posed apart from the body's. 74 of 116 Meshy characters were so (locally Honest Abe's far copy was
-  drawn 1.75 of 2.06 m at 27 m). On `wip/far-copies` (from this branch at 70fb51b): the 74 far copies remade on the
-  body's skin (`relod-built.mjs`), `prepare-meshy-characters.mjs` quantizing in one volume (`quantizationVolume:
-  'scene'`), `tools/content/lod-audit.mjs` (every far copy against its body: own skin, unmatched vertices, 6 poses;
-  161 far copies, 0 off) and a characters3 check dealing eight known looks. On CI that check passed (every far copy
-  within 1 cm of its body's height), but characters3 still failed on: Hyena Warrior's whole body (far copy and full
-  detail alike) 1.5 of 2.12 m on the first frame after waking (the wake pose, not the far copy: runs 42563794663,
-  42567649540); bots' hands 13-15 cm off their guns at 160 m (3 of 8; the probe pools every mesh, full and far);
-  the new check measuring nothing on the flow's second attempt. Reverted here so the rest lands; next: the wake
-  frame, the hand probe at a distance, then land `wip/far-copies`.
+  skeleton for it, posed apart from the body's. 74 of 116 Meshy characters were so (before: Hyena Warrior's far copy
+  drawn 1.5-1.8 m against its body's 2.12 m on CI; Honest Abe's 1.75 of 2.06 m at 27 m locally). The 74 far copies are
+  remade on the body's skin (`relod-built.mjs`), `prepare-meshy-characters.mjs` quantizes body and far copy in one
+  volume (`quantizationVolume: 'scene'`), and `tools/content/lod-audit.mjs` checks every far copy against its body
+  (own skin, unmatched vertices, 6 poses): 161 far copies, 0 off. After, drawn far / full detail in the same pose:
+  Hyena Warrior 1.91/1.92 m at 17 m, Honest Abe 1.91/1.91 m at 30 m, every dealt look within 1 cm. characters3's
+  three reds before landing (green on `check/far-copies`, run 42636289055, and again before landing; characters3 locally green 5 runs in a row; run 42679874806 stopped on the known host.test.ts kick-and-ban flake, and its re-run on characters3's scope check: the rifle came back after the marksman's give, now given again until held; run 42729978260 on dedicatedhost's "relay": false, 4 of 4: party and dedicatedhost both put their hub on 9079, and a shard that ran party first left dedicatedhost's host listed on party's hub, which has no relay; party's hub is on 9081 now):
+  - **Bots' hands 13-15 cm off their guns at 160 m:** not the far copies (the probe already measured the level drawn,
+    and the far copy's hands match the body's within 0.5 cm) but the smoothed animation LOD. A first long-gun grip
+    measures the torso's skin (`TorsoSurface.measure`, `skeleton.prepare(true)`) part way through the after-clip work;
+    the skin wrapper recorded that half-done pose as the evaluation's and drew it until the next evaluation (seconds at
+    5 Hz on a 1-2 fps page): the drawn wrist 10-25 cm off the joint the gun follows. Now only the frame's own skinning
+    (`prepare()`) records (characterAnimator.ts; unit test in `smoothedDeath.test.ts`). It showed with the far copies on
+    the body's skeleton because the far copy's own skeleton was never read part way. Free bots in a canyon match
+    (12 bots, turning round): before, every far bot measured off its gun had its drawn wrist 10-28 cm from the joint;
+    after, 2 of 1,657 samples (the rest still off are near bots mid-action, as on main).
+  - **Hyena Warrior 1.5 of 2.12 m on frame 0:** a pose, not a far copy (the full detail was as short in it). Not seen
+    locally (wake, fight then wake, and new bodies at 25-40 m: lowest 1.79 m); on CI it was one frame of a runner. The
+    whole-body check now judges standing height over the frames (short on at least 2 and over a third of them), and
+    still fails at once on vertices that aren't numbers or a level not drawn.
+  - **The known-looks check measuring nothing on the second attempt:** on CI the flow passes Deathmatch's 10 minutes;
+    the round's end left nobody to measure. farBodies now turns the round's clock and score limit off.
 - **Old branches:** `wip/roster-cleanup` (helmets on four looks): dropped, main has model gear with fitted helmets
   (headFit.ts) and those four looks are retired. `wip/host-handoff-uncommitted`: dropped, every change in it is on main
   (pageHeardAt, `linked`, LINKED_WAIT_MS, the 120 s hold, HANDOFF_JOIN_SECONDS 10). `wip/map-review`:
@@ -244,7 +281,7 @@ The workflow is unchanged (CLAUDE.md):
 - give agents their own port ranges (4950-4959, 4970-4979, 4980-4989);
 - tell agents a CI failure in `attest-build-provenance` (a transparency-log 500 or 404) is GitHub's signing service: re-run the failed job.
 
-**Landing now: far copies (`check/far-copies`; this session), please hold code pushes to main.** (Far-copies agent, 2026-11-10; one check run, then a fast-forward.)
+**Landing now: vehicle routing fixes (`check/vehicle-routing`; this session), please hold code pushes to main.** (Vehicle-routing agent, 2026-11-10; one check run, then a fast-forward.)
 
 **Working in tandem (owner, 2026-11-08): two sessions land on main in parallel.** Both follow this.
 - **Claim before you edit shared ground.** Add a line here ("Claimed: <what>, <session>, <date>") before touching
@@ -418,6 +455,30 @@ and 2; waits for Tuesday's train).** docs/MAPMAKER_OVERHAUL_PLAN.md "As built" u
   per line.
 - **Phones:** Low graphics draws fine terrain at half resolution; collision and nav keep every vertex.
 
+**Iron Coast part 3 (`wip/iron-coast-3`, Iron Coast session, 2026-11-09/10; all in MapMaker; LANDED via `check/iron-coast-3`, its claim released).** Details: docs/map-briefs/iron_coast/DECISIONS_AND_DEVIATIONS.md, "Part 3".
+- **Done:** Change grid 1.25 m (Smooth); the cliff leaned back over 5-10 cells with a rounded lip and 43 scree mounds
+  where clear of pieces; every inland drop that gated nothing made a grassy slope (the crest's back bank beside the
+  trenches and bunkers, the east bunker's bank, the west plateau, the B3 knoll's west side, the plaza walls); east and
+  west borders Coast; A1/A2 Capture time 45 s; card picture recaptured. 1.02 MB; validate-map 0 issues; no Kenney
+  foliage; Sea Wall pieces not placed (the brief: no continuous sea wall).
+- **Walkability check:** part 2's vertex flood is misleading on a 1.25 m grid (it walks across steep triangles); part
+  3 floods triangles at 50° (PLAYER.maxSlopeDegrees, Recast's angle) and 55°: same bins as before at both, so no new
+  way up. Nav audit: 0 traps before and after.
+- **Bots** (Breakthrough, seeds 1-3, 1200 s). A / B / C fell at (s):
+  | | 16 v 16 | 24 v 24 |
+  |---|---|---|
+  | main (before) | A 52/69/69, B 155/143/211, C –/351/–; 1 of 3 broke through | A 56/83/59, B 209/226/161, C –; 0 of 3 |
+  | zones 60 s (tried) | A 122/147/125, B 234/237/231; 0 of 3 | – |
+  | final (zones 45 s) | A 94/109/84, B 248/259/248, C 311/–/320; 2 of 3 | A 103/88/109, B 226/151/261, C 263/212/308; 3 of 3 |
+  The beach holds 84-109 s now. The attack breaks through more (the walkable banks behind the crest): owner's call
+  whether B/C want more defence.
+- **Perf** (`pnpm bench 48 60`, Breakthrough, back to back at load ~11): avg tick 2.67 → 2.96 ms, p95 5.4 → 6.5 ms,
+  process CPU 3.67 → 3.83 ms a tick (budget 16.67).
+- **For the MapMaker lane:** the coast border's forest canopy band floated over Iron Coast's eased headlands (its 40 m
+  run past a free end of an inland stretch was held at the end's height). One line in `client/borderVisuals.ts`
+  (`under` samples the coast ground at the band's own u) lays it on the ground; a thin lip of the band can still show
+  over the east headland from the beach. Yours to refine.
+
 **MapMaker: bot hints (`wip/mapmaker-bothints`, map format v33, MapMaker lane, 2026-11-09).** Overhaul Phase 4 item 3,
 Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - **For the session that owns the bots:** the data is ready to read, bots don't use it yet. `MapDocument.botHints`
@@ -432,12 +493,10 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 - **Tests:** unit `shared/test/botHints.test.ts` (v32 → v33, commands and undo, the accessor, the checks, a real
   navmesh); e2e `editorux` → `editorBotHintChecks`.
 
-
 - Claimed: `maps/the_spillway.json` (new map, MAP 02, built in MapMaker; `wip/mapmaker-spillway`), MapMaker lane, 2026-11-09.
 
-- Claimed: the characters' far copies (`packages/client/public/characters/*.glb` LODs, `content/meshy.lock.json`, the e2e `characters3` flow's far-copy checks; `wip/far-copies`), far-copies agent, 2026-11-09.
-
 - Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
+- Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 
 **MapMaker: time of day and weather (`wip/mapmaker-p5`, map format v34, MapMaker lane, 2026-11-09).** Overhaul Phase 5
 (docs/MAPMAKER_OVERHAUL_PLAN.md "As built"), chained after v33 (bot hints). Lands in a train.
@@ -623,7 +682,8 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   (`tools/ci/train.mjs`) on Tuesday 2026-11-10 morning (UTC), ready for the owner's Tuesday-afternoon testing; a
   second train only if something urgent comes up. Until then, MapMaker branches merge `origin/main` only when they
   need something from it.
-- **Started 2026-11-09: Phase 2 and the split of `editorApp.ts`** (`wip/mapmaker-p2`). It takes the editor-code claim. Until it lands, please avoid MapMaker client code. (Earlier note:) The split waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
+- **Landed 2026-11-10: Phase 2** (main 9c99ae7): the split (`editorApp.ts` 6,489 → 949 lines, 16 modules) and the interface (mode tabs, folding panels, the outliner, favourites by mode). The editor-code claim stays with the MapMaker lane. Note for the other session: characters3's far-character check (core.hyena drawn 1.5 of 2.12 m) failed twice on this run's first attempt and once on check/mapmaker-verdant; it passed on re-run, but it looks flaky since far copies.
+- (Was: started 2026-11-09: Phase 2 and the split of `editorApp.ts`) (`wip/mapmaker-p2`). It takes the editor-code claim. Until it lands, please avoid MapMaker client code. (Earlier note:) The split waits until Iron Coast's MapMaker changes (finer terrain grid, Terrain →
   Change grid, a "coast" border side) and the race-mode removal (the race layer reworded to track / NPC traffic) are on
   main. This line will say when it starts. Please say here when those land.
 - **Also in this lane (owner, 2026-11-08, moved from the other session's queue):** set pieces (the 12-piece list,
@@ -991,6 +1051,21 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
   main 3 / 5 / 5 / 4, this branch 9 / 6 / 2 / 2 (17 against 19). Revert with a fix for the lift wait.
 - **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
   screenshots; the skipped maps above; card pictures.
+
+### MapMaker overhaul Phase 2: the split, modes, folding panels, the outliner (`wip/mapmaker-p2`, agents, 2026-11-09/10; MapMaker lane; docs/MAPMAKER_OVERHAUL_PLAN.md "Phase 2", docs/BUILDING_KIT.md "MapMaker's modes, panels and outliner")
+- **The split** (steps 1-12, a3040bf8; main merged in at 2040c580): green on `check/mapmaker-p2`, run 42730322862. It
+  can land on its own. `editorApp.ts` 6,489 → 949 lines; each part is a class taking the `EditorApp` (module map in
+  the plan's "As built"). No behaviour change.
+- **The interface** (after 2040c580; green on `check/mapmaker-p2` at a7f1378e, run 42742986473): seven mode tabs (`editorModes.ts`; Gameplay keeps `data-ws="entities"`), each
+  mode's own inspector part with nothing selected (`modeInspector.ts`), the Paths and Test panes; folding side panels
+  (`panels.ts`, localStorage `tiletrigger.editor.panels`); the outliner (shared `editor/outliner.ts`, client
+  `outlinerPanel.ts`; hide and lock in localStorage `tiletrigger.editor.outliner.<map id>`, never in the map; hidden
+  entities are skipped by `EditorView.setEntities` through `view.outlinerHidden`, tiles by `withoutHidden`); the quick
+  row's mode-first favourites and recent (`palette.ts quickOrder`, "This mode only"). The mode tabs tighten at the top
+  bar's `fit-3` so Export and Import stay at 1400 px. e2e `editorux` → `editorInterfaceChecks`; unit tests
+  `client/test/editorModes.test.ts`, `shared/test/mapmakerOutliner.test.ts`.
+- **Pitfalls:** the Test tab no longer plays at once (F5 and the Test pane do); the side panel now starts with the
+  outliner (200 px), so the inspector sits lower; `mapmaker.png` was regenerated for the new top bar.
 
 ### Sandfall Colosseum follow-ups (`wip/mapmaker-sandfall`, agent, 2026-11-09; the owner's answers of 2026-11-09; CI on `check/mapmaker-sandfall`)
 - **Collision boxes 31,724 → 22,240:** the arcades under the tiers (all sides, gate lines kept) and the east and west
@@ -1638,7 +1713,6 @@ homing, walkers, mines and bots' targets stay on `hostile`. **Tests:** `shared/t
 path for real (rifle, shotgun, rockets, knife, flamethrower and its burn) at a teammate and an enemy with the rule
 off, half and full; Breakthrough; a team kill earns nothing (fails without the fix). e2e `teams`
 (`friendlyFireChecks`): Match setup's rule reaches the match; a teammate takes your rounds with it on and none off.
-
 
 ### Frozen characters in big matches (`wip/frozen-fix`, agent, 2026-11-07; green on `check/frozen-fix` at 63731808, run 42407015946; landed on main 63731808)
 **Root cause:** the figures frozen mid-run (some in the air) were the dead. Performance round 4's pose smoothing
@@ -4209,8 +4283,6 @@ like 2–3 bots protect a flag, and the rest go out there and try to get the oth
   - Also confirm it isn't a free-camera rendering effect. Animation LOD and dormant/culled state use
     `scene.activeCamera`, so free cam should be fine, but check that bots near the free camera animate and move.
 
-
-
 ### Owner's M1 re-record after performance round 3 (2026-11-06, app 463c247; files in session scratchpad perf4/)
 Recorded on the M1 Pro: TDM, 49 players, High, auto render scale, 60 fps cap. Steady state skips each match's first 5 s.
 
@@ -4935,7 +5007,6 @@ Plan: docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10 and "Owner decisions". Status is
   environmentCollision covers both load paths); impact sounds per surface (no sounds yet).
 - **Resume:** `git fetch && git checkout wip/env-phase1`; `node tools/content/environment.mjs --check`.
 
-
 ## Earlier start notes (session of 2026-10-30 afternoon)
 
 **Read CLAUDE.md first.** Workflow: session branch → `check/candidate` → when green, fast-forward `main`.
@@ -5162,7 +5233,6 @@ Owner's request: a CI round in about 8-10 min (run 41851112171 took 36 min: buil
   try 4 shards or a duration-based split. hostcontrols (320 s) is the longest flow (it sets the shard goal of ~6 min).
   The first nightly run will be the first all-parts tour on 16 shards: check its times.
   check/ci-speed-client and check/ci-speed-map are probe branches; delete them, don't merge them.
-
 
 ### Procedural environment, Phase 0: audit and plan (`wip/env-audit`, agent, 2026-11-04; docs only, pushed, not merged)
 The owner's spec for replacing natural assets with an in-house procedural pipeline is `docs/PROCEDURAL_ENVIRONMENT.md`
@@ -7893,7 +7963,6 @@ Start the rest when agent slots free up:
   powerup pickups.
 
 ## Earlier state (2026-10-28)
-
 
 - **Live:** https://trigger.toshiroplay.com, version **0.3.0** (`v0.3.0` tag and
   GitHub release exist). `main` is at or past `ace6276`; all of it went green on

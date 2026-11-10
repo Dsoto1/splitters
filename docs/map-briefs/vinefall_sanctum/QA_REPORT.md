@@ -11,7 +11,7 @@
 | Spawn line of fire, spawn kills at target count | **NOT TESTED** | |
 | CTF flags reachable by both teams | **PASS** | navigation check |
 | Pickup ids resolve | **PASS** | validate-map |
-| Maps that use the earlier Jungle Ruins pieces | **PASS** | `stylePacksJungle.test.ts` loads and validates every map using jungle pieces (Verdant Ziggurat, Erosion, Jungle Steps, Sunken Kingdom and the rest); validate-map OK (0 issues) on jungle_steps, verdant_ziggurat, erosion; e2e `maps` on jungle_steps |
+| Maps that use the earlier Jungle Ruins pieces | **PASS** | `stylePacksJungle.test.ts` loads and validates every map using jungle pieces (Verdant Ziggurat, Erosion, Cradle of Idols, Sunken Kingdom and the rest); validate-map OK (0 issues) on jungle_steps, verdant_ziggurat, erosion; e2e `maps` on jungle_steps |
 | Bot match | **NOT RUN** | the bot audit (`botAudit.test.ts`) was not run on this map |
 | 16–24 players, 96-bot stress | **NOT TESTED** | |
 | Performance | **NOT MEASURED** | 195 tiles, 130 props |

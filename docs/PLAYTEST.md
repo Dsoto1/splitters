@@ -80,7 +80,7 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 - [ ] `skyward`: jump pads throw you up to the next platform and you land on it.
 - [ ] `sky_islands`: see section 4.
 - [ ] `twin_spires`, `lantern_quarter`, `frost_basin`, `felicity_yard`, `jungle_steps`,
-      `reactor`, `gallows_yard`, `bottling`, `step_temple`, `silo_complex`.
+      `reactor`, `gallows_yard`, `step_temple`, `silo_complex`.
 - [ ] Bots move around each map and don't stand stuck against walls.
 
 ## 4. Set pieces (`?offline=sky_islands`)
@@ -94,7 +94,7 @@ props, walls you can see through, spots you get stuck, items you can't reach.
 
 ## 5. Scenery
 
-- [ ] Look past the border on a few maps: a photo sky, ground carrying on, distant scenery fading into haze (mesas on `canyon`/`sandgate`, snowy peaks on `frost_basin`, mountains on `bottling`, a city on `reactor`/`lantern_quarter`, jungle round `step_temple`, a starfield on `skyward`).
+- [ ] Look past the border on a few maps: a photo sky, ground carrying on, distant scenery fading into haze (mesas on `canyon`/`sandgate`, snowy peaks on `frost_basin`, a city on `reactor`/`lantern_quarter`, jungle round `step_temple`, a starfield on `skyward`).
 - [ ] Sunset, dusk and night maps are lit to match (warm and low, or dim and blue).
 - [ ] Grass and flowers grow on the canyon floor; they don't poke through floors, and never hide a crouching player.
 - [ ] Frame rate stays smooth when you look across a grassy field (F3 shows it).

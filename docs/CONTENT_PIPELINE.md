@@ -1098,7 +1098,7 @@ The pass of 2026-11-06 (measured from the built models, before → after):
 | `hh_desk` (Household) | 0.85 → 0.77 m | top 0.84 → 0.76 m |
 | `hh_basin` (Household) | 0.76 → 0.95 m | rim 0.67 → 0.84 m |
 
-The maps followed in MapMaker: 44 Kenney benches at ×2.5, ×2.6 or ×1.5 (Ironhold Prison, Diamond Park,
+The maps followed in MapMaker: 44 Kenney benches at ×2.5, ×2.6 or ×1.5 (Cormorant Isle, Diamond Park,
 Neon Galleria, Riot Junction, Grand Marquee) and St John's 65 dressers at ×0.8 went back to ×1; 7
 monitors and lamps on household desks came down with the desk tops; 27 placements (14 sofas, 6
 armchairs, 6 benches, a basin) moved 0.05–0.32 m clear of the wall, bookcase or plant their new size

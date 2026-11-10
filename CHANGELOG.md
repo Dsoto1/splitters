@@ -18,6 +18,40 @@ made only on a commit that passed CI on a check branch.
   for headroom, so beside Riot Junction's east wall a Buggy put its rider beyond the wall. The rider fell 4 m under the
   street and couldn't get out. The spot now needs nothing solid between it and the vehicle and ground under it (else
   the next side, or the roof).
+**Map line-up** (owner, 2026-11-09):
+- **Six maps retired:** Fogbound, Bottling Plant, Dune Harbor, No Man's Field, Overhang and Starhaven are gone from
+  the game (menus, Quick Play, the map vote, rotations). In the rotations Pump Tower and Razor Edge take their places
+  in Deathmatch Classics, Midnight Keel and Runway Nine in Objective Mix (Bomb), Market Town in Flag Run.
+- **Three maps renamed:** Iron Tide is now **Midnight Keel**, Ironhold Prison **Cormorant Isle** and Jungle Steps
+  **Cradle of Idols** (same maps, same places).
+- **Iron Maw** is for 16-64 players (was 16-32).
+**MapMaker: modes, folding panels and an outliner** (MapMaker overhaul Phase 2):
+- **Seven mode tabs:** Build, Props, Gameplay, Logic, Environment, Paths and Test, each with its own palette tabs and its
+  own part of the side panel. Roads, the track and the drop routes have their own Paths mode; Test gathers Play test,
+  Play from here, the bot test and the plan view.
+- **An outliner:** everything in the map in one list, searchable, grouped by kind and level. Click to select and frame;
+  hide or lock things while you work (MapMaker only, kept per map in your browser, never in the map). Quick with 4,096
+  things.
+- **Folding panels:** the Outliner, Inspector and Validation fold from their headings and stay as you left them.
+- **Favourites and recent follow the mode:** the mode's own pieces first, or only them.
+- Under the hood, MapMaker's 6,500-line controller is split into 16 modules, with no change in behaviour.
+
+**Iron Coast, part 3: natural cliffs and banks, the beach goes on** (owner, 2026-11-08/09; all in MapMaker)
+- **Finer ground**: the terrain is on a 1.25 m grid (Terrain → Change grid, Smooth), so slopes are drawn smoothly.
+- **The cliff** leans back over 6-10 m of rock with a rounded lip and scree at its foot along the stretches clear of
+  the stairs, casemates and cave; it is still too steep to climb, so the seven ways up are still the only ones.
+- **No more sheer drops inland**: the bank behind the crest (12 m to 16 m, beside the trenches and bunkers), the bank
+  by the east bunker, the west plateau's banks, the knoll's west side and the grand stair's plaza walls are grassy
+  slopes you can walk.
+- **The coast carries on**: east and west, the sand and shallows run on past the edge of the map with low headlands
+  and dunes, the woods only inland; the playable area is the same.
+- **Balance**: the beach's two zones take 45 s to capture (were 20): in bot matches the beach now falls in 84-109 s
+  (was 52-69 s at 16 v 16 and 56-83 s at 24 v 24).
+**Far characters** (`wip/far-copies`):
+- Far-off characters are drawn in the same pose as up close: 74 characters' low-detail copies moved onto their body's
+  skeleton (Hyena Warrior was drawn 15-30% short at a distance, Honest Abe 15%).
+- Far characters' hands stay on their guns: a far character's first animation step drew its hands 10-25 cm off the
+  gun until the next one.
 **Gunplay pass 3: the network check and bots' weapon ranges** (owner-approved audit candidates 7 and 8):
 - **Fewer snap-backs and lost shots on a lossy connection.** When a packet was lost and resent, the inputs behind it
   reached the host together, and the host dropped the oldest past 16. You snapped back (up to 1.4 m) and rounds you

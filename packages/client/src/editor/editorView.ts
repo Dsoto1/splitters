@@ -515,6 +515,8 @@ export class EditorView {
 
   /** Map layers switched off in the inspector: 'prop', 'spawn', 'pickup', 'logic'. */
   readonly hiddenLayers = new Set<string>();
+  /** What the outliner hides (editor-only; a set piece's parts with their placement): not drawn, so not picked. */
+  outlinerHidden: (id: string) => boolean = () => false;
   /** Entity kinds not drawn (the card shot: markers a match doesn't show, such as zones and hills). */
   readonly hiddenKinds = new Set<string>();
 
@@ -542,6 +544,7 @@ export class EditorView {
     this.scenario.dynamicBlocks = dynamic;
     for (const e of doc.entities) {
       if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;
+      if (this.outlinerHidden(e.id)) continue;
       seen.add(e.id);
       // Rebuild a marker when the entity changed kind, item or any scenario property.
       const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : JSON.stringify({ ...e, position: null, name: null, color: e.kind === 'encounter' ? factionColor(e.faction) : e.kind === 'flag' ? this.scenario.teamColor(e.team) : null, driven: dynamic.has(e.id) });
