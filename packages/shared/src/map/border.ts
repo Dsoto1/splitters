@@ -1,6 +1,6 @@
 import type { WorldBox } from './geometry.ts';
 import type { MapDocument, MapEntity } from './schema.ts';
-import { terrainHeightAt } from './terrain.ts';
+import { terrainHeightAt, terrainLowest } from './terrain.ts';
 
 /**
  * Borders that blend in (Sprint 6d): what stands just outside the map's
@@ -176,7 +176,7 @@ export function borderGround(map: Pick<MapDocument, 'terrain'>, x: number, z: nu
 export function borderFloor(map: Pick<MapDocument, 'terrain'>, boxes: readonly WorldBox[]): number {
   let floorY = Infinity;
   for (const b of boxes) if (b.kind === 'floor') floorY = Math.min(floorY, b.max[1]);
-  if (map.terrain) floorY = Math.min(floorY, map.terrain.baseY + Math.min(...map.terrain.heights) / 100);
+  if (map.terrain) floorY = Math.min(floorY, terrainLowest(map.terrain));
   return Number.isFinite(floorY) ? floorY : 0;
 }
 
