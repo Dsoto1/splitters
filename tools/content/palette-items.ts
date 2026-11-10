@@ -17,7 +17,7 @@ const PUBLIC = join(resolve(dirname(fileURLToPath(import.meta.url)), '../..'), '
 const MODELS = join(PUBLIC, 'models');
 const sha = (data: string | Buffer) => createHash('sha256').update(data).digest('hex').slice(0, 16);
 // Same rule as the client's model loader: kit folders sit in public/, the rest under public/models/.
-const modelBytes = (file: string) => readFileSync(/^(props|creatures|city|packs|env)\//.test(file) ? join(PUBLIC, file) : join(MODELS, file));
+const modelBytes = (file: string) => readFileSync(/^(props|kit|creatures|city|packs|env)\//.test(file) ? join(PUBLIC, file) : join(MODELS, file));
 /** Prop id (`prop.<id>`) → its content pack (content/props/<pack>.json): the prop's atlas. */
 const packOf = new Map(loadPropManifest().props.map((p: { id: string; pack: string }) => [`prop.${p.id}`, p.pack]));
 const library = builtInSetPieces();

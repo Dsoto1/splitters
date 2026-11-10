@@ -8,6 +8,78 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
+**Kit-prop generators, part 1: crates and barrels (`wip/kit-props`, agent, 2026-11-10; owner-approved Phase 6; docs/PROCEDURAL_ENVIRONMENT.md §11 "Phase 6 status", docs/CONTENT_PIPELINE.md "Kit props"; CHANGELOG "Our own crates, drums and cartons").**
+- **Seven generated families** (`tools/content/kitprops.mjs`, generators in `tools/content/kit/`, content in
+  `content/kitprops.json` and `content/kitprops/*.json`, models in `public/kit/`):
+  - `kit.crate.wood` (5 variants), `kit.crate.wood_long` (4), `kit.crate.bin` (3) and `kit.crate.framed` (4);
+  - `kit.box.carton` (4);
+  - `kit.drum.steel` (5) and `kit.drum.steel_open` (3).
+  - Each has three levels of detail and one material (its surface's detail map, vertex colours).
+- **They are ordinary catalogue props** (`CORE_PROPS` = packs + `KIT_PROPS`; `shared/content/kitProps.ts`). Collision
+  is the box each fills. `PropEntity.variant` only picks the drawn file (`kitModelFile`, client `propVisuals.ts`).
+- **Aliases** (`content/kitprops.json`; `shared/map/propAliases.ts`, run in `loadMap` as played, after set pieces are
+  expanded):
+  - `prop.crate_small` → `kit.crate.wood`, `crate_large` → `wood_long`, `cargo_crate` → `bin`, `metal_crate` →
+    `framed`, `cardboard_box` → `carton`, `barrel` → `drum.steel`, `barrel_open` → `drum.steel_open`; all variant 0,
+    scale 1.
+  - Each family has the old prop's exact size, breakable health and debris, and a surface of the same ballistic class.
+  - `shared/test/kitProps.test.ts` checks every official map: prop collision boxes, breakables and footing are
+    unchanged. **No map's collision changed.**
+  - MapMaker keeps maps as made. The seven are in `RETIRED_PROPS`, out of the Props tab too (the prop groups now skip
+    retired props), and `REPLACEMENTS` suggests the family.
+- **Editor hooks (claimed):**
+  - the prop inspector's Variant row for kit families (`entityInspector.ts`);
+  - Randomise rolls kit variants (`propRandom.ts`);
+  - Replace all reads `kit.<id>#<n>` (`parseModelChoice`);
+  - the palette atlas group `kitprops`.
+- **For the MapMaker lane:**
+  - Replace all of the seven retired props on the official maps, when it suits. As played they already draw the new
+    pieces; Replace all lets the files go later.
+  - 722 placements on 57 maps (bunker_cross 82, iron_tide 54, undergate_transit 44), plus three set pieces
+    (`content/setpieces/sunkenarena.json`, `reactor.json`, `loadingdock.json`; they upgrade as played too).
+  - The old files stay in the build until then.
+  - Please also place one of each kit family in `maps/test_coverage.json` ("one of everything"; its unit test only
+    asks for a prop of every pack in `content/props/`, so it doesn't fail without them).
+- **Budgets** (triangles at levels 0 / 1 / 2, against the Kenney prop replaced):
+  - crate_small 124 → wood 308 / 52 / 10 (levels at 0, 14 and 40 m);
+  - crate_large 124 → wood_long 346 / 68 / 10;
+  - cargo_crate 76 → bin 314 / 66 / 50;
+  - metal_crate 428 → framed 270 / 146 / 10;
+  - cardboard_box 60 → carton 160 / 12 / 10;
+  - barrel 412 → drum 896 / 208 / 24, and barrel_open 380 → open drum 864 / 240 / 24.
+  - Files are 12-37 KB (the Kenney ones 5-40 KB).
+- **Perf** (SwiftShader, medium, load 12-17, main 732d570 against this branch):
+  - client-perf, `PERF_BOTS=16`, one pass each: bunker_cross 726 → 874 draws, 0.80 → 0.74 M triangles, 816 → 791
+    casters. iron_tide 482 → 479 draws, 1.06 → 0.97 M triangles, 378 → 180 casters.
+  - The fps was 0.1-0.3, so each figure is one or two frames and noisy.
+  - Fixed eye-level cameras at each map's busiest crate cluster: active meshes 258 → 255 (bunker_cross), 458 → 449
+    (iron_tide), 451 → 450 (flatpack_depot), 232 → 231 (undergate_transit). Triangles in view 0.30 → 0.31,
+    0.51 → 0.51, 0.41 → 0.42 and 0.18 → 0.22 M (undergate's crates are close, at full detail).
+  - Not measured on a real GPU.
+- **Checks (locally, load 11-17):**
+  - typecheck;
+  - `pnpm content:rebuild` (new `kitprops` palette atlas, provenance, prop contacts) and content:check;
+  - `pnpm test:changed`: 2,632 passed. Three failures were fixed: the surface-type fixture holds the pack props only;
+    stylePacks2's demo maps validate as written (played, a retired prop plays as its family, so the release stamp no
+    longer describes it); and new kit tests. zfight `sandfall_colosseum` and `netLab` timed out under load and pass
+    alone.
+  - e2e `visual` (every baseline within its share: canyon 0.7 %, arena 0.8 %), `coverage` and `setpieces` passed.
+    `offline` failed on the spectator's "follows the next player" once, passed on a re-run, and passed on main.
+  - The other 41 flows CI's plan picks were not run locally.
+  - First landing try (`check/kit-props` at 9a4e32d, run 42823940482): red on `editorux` and `editortools`. Those
+    flows clicked the Props tab's `prop.crate_small` and `prop.barrel`, now retired. They now place `kit.crate.wood`
+    and `kit.drum.steel`, which have the same sizes. The atlas check now expects `kitprops`, and the pack-search check
+    uses `prop.dungeon_barrel` (e2e/run.mjs, 18 lines).
+  - Locally with CI's timeouts (`CI=1`), these passed: `editortools`, `editorpieces`, `editorenv`, and `editorux` (its
+    budget-toggle click timed out twice under load 12, then passed). `editor` failed only on the known local load
+    timeouts: TEST start budget, a random pickup drawn, and the jump-off hint.
+  - Screenshots: session scratchpad `kitprops/` (`shots/<map>-before|after.png` for bunker_cross, iron_tide,
+    flatpack_depot and undergate_transit; `lineup-old/`, `lineup-new/`, `close/`).
+- **Pitfall found:** the prop batches (`client/game/propBatches.ts`) rebuild a model from its vertex data, and
+  normalised byte vertex colours came out grey there; only unbreakable kit props, batched at 8+ copies, showed it. The
+  kit GLBs store colours as floats.
+- **Tools:** `prop-lineup.mjs` takes `ONLY=kit.crate.wood,kit.crate.wood#2`, and `__lineup.show` takes `id#n`.
+  `prop-contacts.mjs` measures kit families too.
 **Fireteams follow-ups: CTF squad roles, handoff carries squad points, bot-report squad scores (`wip/fireteams-4`, agent, 2026-11-10; the owner's three decisions; green on `check/fireteams-4` at 3183b96, run 42841290451; LANDED; landing line removed).** Details and numbers: docs/FIRETEAMS_PLAN.md, "Follow-ups"; docs/BOTS.md, "Fireteams follow-ups". CHANGELOG "Fireteams: CTF squad roles".
 - **CTF squad roles** (`ctfSquadRoles`, `CtfBotPlan.squadRoles`, `ModeLogic.squadRole`): 4+ squads a side (`SQUAD_DEFEND_MIN`; first landed from 3, changed by the lead after the numbers below), the smallest defends (ties to the higher id); 3 or fewer, all attack; a person's squad only by default until their first order (`Squad.ordered`). The squad HUD line shows it (`#squad-order em`); the snapshot's `fs` carries it at index 10 (members from 11). `BOT_OFF=squadDefend` plays the old rule.
 - **Measured: it does not help, it costs captures on 3-squad maps** (Diamond Park 0.8 → 0.3, Obsidian Orb 2.8 → 0.3, Market Town 0.5 → 0.3 a match; takes 53 → 12 in 12 matches); 2-squad maps unchanged. **The lead's fix:** a defender only from 4 squads a side, and the HUD's role word hidden after a person's order; the 3-squad maps then play exactly as before. A 4-squad sample (Glacier Line, Riot Junction, 16 a side, squads of 4): no captures either way, takes 3.5 → 1.5 in 4 matches (FIRETEAMS_PLAN, "Follow-ups, measured").
@@ -704,7 +776,9 @@ The MapMaker lane (other account) is **the main session for the rest of the week
   - Rewind window: 300 ms.
 - **Session memory:** write .control-center/session-summary.json at the end of your sessions.
 
-**Landing now: kit-prop generators part 1 (`check/mapmaker-kit-props`, from `wip/mapmaker-kit-props` = `wip/kit-props` 4aa5e42 + the test fix + origin/main; MapMaker lane, now the main session, 2026-11-10), please hold code pushes to main.** Run 42846096828 was red on one check, `editorenv` "the bot test run goes on in the background": the test read the progress bar at the worker's ready line ("0:00 of 5:00 played", bar 0). It now waits for the first progress report; the flow passes locally. One check run, then a fast-forward; this line goes when it lands or fails.
+**Landed: kit-prop generators part 1** (`wip/mapmaker-kit-props` = `wip/kit-props` 4aa5e42 + one test fix; green on `check/mapmaker-kit-props` at d7b47b6, run 42872729649; MapMaker lane, the main session, 2026-11-10). Run 42846096828 had been red on one check, `editorenv` "the bot test run goes on in the background": the test read the progress bar at the worker's ready line ("0:00 of 5:00 played", bar 0); it now waits for the first progress report. Landing lock released. Left of part 1: MapMaker's "Replace all" for the 722 placements on 57 maps (as played they already draw the new pieces).
+**Next in line to land: throwables (dynamite)** (`check/weapons-throwables`, `wip/weapons-throwables` 3705351: Dynamite wears the Emergency Flare model; content, one model, docs only; weapon and vehicle lane, 2026-11-10).
+**Next in line to land, after throwables: Iron Coast loads again** (`wip/mapmaker-iron-coast-load` 1 commit on main; MapMaker lane, 2026-11-10). Live bug (owner, 2026-11-10): every mode on Iron Coast fell back to the menu, "local match failed: Maximum call stack size exceeded": `Math.min(...terrain.heights)` over its 78,385 heights (1.25 m grid) overflows the stack in the browser's match worker (node's stack hid it from the unit tests). `terrainLowest()` in `map/terrain.ts` replaces the three spreads (`map/geometry.ts` ×2, `map/border.ts`); a test in `terrainGrid.test.ts`. Checked in a browser: Breakthrough plays. Weapon lane: this is a small fix to a broken official map; if your landing isn't about to start, please let it go first (say so here).
 
 **Landed: Fireteams CTF roles fix** (`wip/fireteams-4` at ec8ecfb, in train `check/train-20261110-164310`, main = 37b7f94, green; lead session, 2026-11-10): the smallest squad defends only from 4+ squads a side; the HUD role word hides after a leader's order.
 

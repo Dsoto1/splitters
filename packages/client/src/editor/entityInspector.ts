@@ -21,6 +21,7 @@ import {
   ENV_SPECIES,
   FLOAT,
   getEnvSpecies,
+  getKitFamily,
   getItem,
   getProp,
   GLASS_KIND_LABELS,
@@ -141,13 +142,16 @@ export class EntityInspector {
           for (const s of ENV_SPECIES) group.append(new Option(s.displayName, s.id, false, s.id === e.model));
           model.append(group);
         }
-        // A species' variant is kept only while it stays an environment species.
+        // A species' variant is kept only while it stays an environment species (a kit family's starts at its first).
         model.addEventListener('change', () => update('Change prop', { model: model.value, variant: getEnvSpecies(model.value) ? e.variant : undefined }));
         el.append(row('Model', model));
         if (species) {
           choose('Variant', species.variants.map((v) => [String(v.index), v.name[0]!.toUpperCase() + v.name.slice(1)] as const), String(e.variant ?? 0), (v) => ({ variant: v === '0' ? undefined : Number(v) }));
           el.append(small(`${species.displayName}: ${species.role === 'decorative' ? 'decoration only' : species.nav === 'none' ? 'walk-through cover (conceals)' : 'solid: its trunk or rock stops movement, shots and bots'}.`));
         }
+        // A kit family's variants (content/kitProps.ts): how it is drawn only; size and collision are the family's.
+        const kit = getKitFamily(e.model);
+        if (kit && kit.variants.length > 1) choose('Variant', kit.variants.map((v) => [String(v.index), (v.name[0]!.toUpperCase() + v.name.slice(1)).replace(/_/g, ' ')] as const), String(e.variant ?? 0), (v) => ({ variant: v === '0' ? undefined : Number(v) }));
         number('Scale', e.scale, 0.25, (v) => ({ scale: Math.max(0.25, Math.min(4, v)) }));
         toggle('Solid', e.solid, (v) => ({ solid: v }));
         const tint = document.createElement('input');

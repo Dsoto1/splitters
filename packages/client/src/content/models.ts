@@ -34,7 +34,7 @@ export class ModelLibrary {
 
   constructor(private readonly scene: Scene) {}
 
-  /** `path` is relative to public/models, or to public itself for placeable props, creatures and the city kit ("props/…", "creatures/…", "city/…"). */
+  /** `path` is relative to public/models, or to public itself for placeable props, kit props, creatures and the city kit ("props/…", "kit/…", "creatures/…", "city/…"). */
   load(path: string): Promise<AssetContainer> {
     let p = this.containers.get(path);
     if (!p && path.startsWith('procedural/')) {
@@ -42,10 +42,11 @@ export class ModelLibrary {
       this.containers.set(path, p);
     }
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(/^(props|creatures|city|packs|env)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB).then(async (c) => {
+      p = LoadAssetContainerAsync(versioned(/^(props|kit|creatures|city|packs|env)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB).then(async (c) => {
         this.lods.set(path, takeLods(c));
-        // Kit props carry their surfaces (tools/content/surfaces.mjs): shared detail maps on their materials.
-        if (path.startsWith('props/')) applyPropSurfaces(c, this.scene);
+        // Kit props carry their surfaces (tools/content/surfaces.mjs; the generated kit families, tools/content/kitprops.mjs,
+        // the same material extras): shared detail maps on their materials.
+        if (path.startsWith('props/') || path.startsWith('kit/')) applyPropSurfaces(c, this.scene);
         // Environment species drawn as props (MapMaker, and the game without ?env=1) take the environment's
         // materials: the shared bark, rock and leaf pictures. Loaded on demand, so the menu never carries them.
         if (path.startsWith('env/')) (await import('../environment/envMaterials.ts')).applyEnvMaterials(c, this.scene);

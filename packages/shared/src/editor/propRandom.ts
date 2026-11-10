@@ -1,4 +1,5 @@
 import { getEnvSpecies } from '../content/environment.ts';
+import { getKitFamily } from '../content/kitProps.ts';
 import { createRng } from '../math.ts';
 import { normalizeYaw } from './operations.ts';
 
@@ -13,7 +14,7 @@ export interface PropRandomOptions {
   turn: 'any' | number;
   /** Size: up to this share bigger or smaller (0.1: ±10 %), kept within the prop's allowed scale. 0: no change. */
   size: number;
-  /** A random variant, for props that have them (the environment's species: summer, autumn, snow…). */
+  /** A random variant, for props that have them (the environment's species: summer, autumn, snow…; the kit families). */
   variant: boolean;
 }
 
@@ -57,7 +58,8 @@ export function rollProp(model: string, yaw: number, opts: PropRandomOptions, se
   const [lo, hi] = allowedScale(model);
   const raw = 1 + (b * 2 - 1) * opts.size;
   const scale = Math.round(Math.max(lo, Math.min(hi, raw)) * 100) / 100;
-  const variants = getEnvSpecies(model)?.variants ?? [];
+  // The environment's species (summer, autumn, snow…) and the kit families (content/kitProps.ts) have variants.
+  const variants = (getEnvSpecies(model) ?? getKitFamily(model))?.variants ?? [];
   const pick = opts.variant && variants.length > 1 ? variants[Math.min(variants.length - 1, Math.floor(c * variants.length))]!.index : undefined;
   return { yaw: normalizeYaw(yaw + turn), scale, variant: pick === undefined || pick === variants[0]!.index ? undefined : pick };
 }

@@ -207,7 +207,11 @@ describe('Style Pack 05/06/08 demo maps', () => {
   ])('%s validates with no errors or warnings, and every spawn and pickup is reachable', { timeout: 180_000 }, (id, theme) => {
     const map = load(id);
     expect(map.classicStructure.theme).toBe(theme);
-    expect(validateMap(map).filter((i) => i.severity !== 'suggestion')).toEqual([]);
+    // Validated as written (loadMap's own issues): as played, a retired prop plays as its kit family (map/propAliases.ts),
+    // so the played map is not the exported one its release stamp describes.
+    const loaded = loadMap(readFileSync(new URL(`../../../maps/${id}.json`, import.meta.url), 'utf8'));
+    expect(loaded.issues.filter((i) => i.severity !== 'suggestion')).toEqual([]);
+    expect(validateMap(map).filter((i) => i.severity !== 'suggestion' && i.code !== 'release.changed')).toEqual([]);
     const geometry = buildMapGeometry(map);
     const physics = new PhysicsWorld(geometry, mapTerrainMesh(map));
     const nav = NavWorld.build([...geometry, ...propBoxes(map, true), ...blockBoxes(map, true)], mapTerrainMesh(map), [...navLinks(map.entities, physics), ...liftLinks(map)]);

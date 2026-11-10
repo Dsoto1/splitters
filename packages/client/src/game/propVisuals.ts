@@ -5,7 +5,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import type { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { Material } from '@babylonjs/core/Materials/material';
-import { envModelFile, getProp, groundNormal, propTilts, terrainHeightAt, type PropEntity, type TerrainData } from '@tiletrigger/shared';
+import { envModelFile, getProp, kitModelFile, groundNormal, propTilts, terrainHeightAt, type PropEntity, type TerrainData } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 import type { PropBatches } from './propBatches.ts';
 
@@ -27,8 +27,8 @@ export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity
   if (!def) return root;
   const small = isSmallProp(def.size, !!def.collision, e.scale);
   // Untinted copies of the same prop share one draw call per material (their parts merged); tinted ones need their own materials.
-  // An environment species draws its variant's file (summer, autumn, snow…).
-  const file = envModelFile(e.model, e.variant) ?? def.file;
+  // An environment species draws its variant's file (summer, autumn, snow…), a kit family its variant's (content/kitProps.ts).
+  const file = kitModelFile(e.model, e.variant) ?? envModelFile(e.model, e.variant) ?? def.file;
   // The game's static props (not breakable, not carried): copies in their square's batch (propBatches.ts), tint and all.
   const batched = batches && frozen && !def.breakable ? batches.add(file, root, small, e.tint ?? null) : Promise.resolve(false);
   const model = batched.then((ok) => (ok ? null : instanced && !e.tint ? models.instantiateStatic(file, `${name}_model`) : models.instantiate(file, `${name}_model`, false)));

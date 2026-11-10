@@ -1,0 +1,186 @@
+{
+  "$comment": "Drums and barrels (tools/content/kit/drum.mjs). A variant may change the generator's settings (`set`).",
+  "type": "drum",
+  "props": [
+    {
+      "id": "kit.drum.steel",
+      "displayName": "Steel Drum",
+      "category": "Crates & Barrels",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a 200-litre steel drum the size of the Kenney barrel (0.653 \u00d7 0.95 m)."
+      },
+      "size": [
+        0.653,
+        0.95,
+        0.653
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "drum",
+        "segments": [
+          24,
+          16,
+          8
+        ],
+        "hoops": [
+          0.34,
+          0.66
+        ]
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 15
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 2101,
+          "look": {
+            "paint": "#9c2a1e",
+            "band": "#5f6569",
+            "rust": 0.18,
+            "wear": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "blue",
+          "seed": 2102,
+          "look": {
+            "paint": "#2a4f86",
+            "rust": 0.15,
+            "wear": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "olive",
+          "seed": 2103,
+          "look": {
+            "paint": "#4d5734",
+            "band": "#c9a227",
+            "rust": 0.2,
+            "wear": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "rusty",
+          "seed": 2104,
+          "look": {
+            "paint": "#5f6a6e",
+            "rust": 0.65,
+            "wear": 0.5
+          }
+        },
+        {
+          "index": 4,
+          "name": "yellow",
+          "seed": 2106,
+          "look": {
+            "paint": "#c79a1c",
+            "band": "#2b2b2b",
+            "rust": 0.2,
+            "wear": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.drum.steel_open",
+      "displayName": "Open Steel Drum",
+      "category": "Crates & Barrels",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: an open 200-litre steel drum (no lid, something dark inside) the size of the Kenney open barrel (0.653 \u00d7 0.95 m)."
+      },
+      "size": [
+        0.653,
+        0.95,
+        0.653
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "drum",
+        "segments": [
+          24,
+          16,
+          8
+        ],
+        "hoops": [
+          0.34,
+          0.66
+        ],
+        "open": true
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 15
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 2201,
+          "look": {
+            "paint": "#9c2a1e",
+            "band": "#5f6569",
+            "rust": 0.25,
+            "wear": 0.35,
+            "fill": 0.7
+          }
+        },
+        {
+          "index": 1,
+          "name": "blue",
+          "seed": 2202,
+          "look": {
+            "paint": "#2a4f86",
+            "rust": 0.2,
+            "wear": 0.3,
+            "fill": 0.6,
+            "liquid": "#22313a"
+          }
+        },
+        {
+          "index": 2,
+          "name": "rusty",
+          "seed": 2203,
+          "look": {
+            "paint": "#5f6a6e",
+            "rust": 0.7,
+            "wear": 0.5,
+            "fill": 0.45,
+            "liquid": "#2a1c12"
+          }
+        }
+      ]
+    }
+  ]
+}
