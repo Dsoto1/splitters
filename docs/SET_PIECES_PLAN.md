@@ -517,6 +517,91 @@ Not a format change: no field is added.
 - Free blocks only, on the standard grid, so bays line up; flatten the beach's top under them first. The Iron Coast
   session places them (main hands them over).
 
+## As built: part 6 (swapping the old big pieces on the maps; 2026-11-09)
+The owner (2026-11-08): "fix em all": every old big piece that has a set-piece version is swapped on every map that uses
+one, through MapMaker. Iron Compound stays as it is (its Catwalk Gantry plays as the bridge already).
+- **MapMaker:** every tile's inspector has **Replace all with a set piece…**: pick any piece; every placement of the
+  tile becomes it at the same cell, level and turn, one undo step (`replaceTilesWithSetPieceCommand`; a retired tile
+  offers its replacement first). The old tiles stay in the palette.
+- **New piece: Town Wall Gatehouse** (`setpiece.courtyard_gate_wall`, Courtyard gate family): the Town Gate as a set
+  piece in its place (3 × 1 cells, levels 0-2, medieval): Town Wall tiles either side, a vaulted passage 5 m wide
+  under segmental arches (the Town Gate's 4 m), the guard room over it open by arches onto both wall-walks, a roof behind
+  a parapet up a ladder through a hatch in its north-east corner (as the Town Gate's). The plain Courtyard Gate would
+  have cut the west walk (its stair tower fills level 1 there).
+- **Market Town:** its Town Gate is the gatehouse (Replace all in MapMaker); the map's old roof ladder went (the piece
+  has its own) and its portcullis moved 1.5 m onto the south arch. The exported map validates clean, no coplanar
+  overlaps; the walks, the passage, the guard room and the roof all reach each other both ways (30 of 30 routes).
+  Bot report (CTF, seeds 1-2, 240 s), before → after: stuck 121 → 127 a match, failed searches 0.01 → 0.00 %, two routes
+  or more 75 → 75 % of team trips, busiest route 60 → 54 %, captures 2 → 1 (two matches: noise).
+- **New piece: Bunker** (`setpiece.bunker`, Bunker cluster family; owner: "a 2 × 1 single-bunker set piece that matches
+  the old Bunker tile"): two Rooms open to each other, the Bunker tile's doorways (west, east, south), slits elsewhere,
+  roofed in the look's facade, its centre pillar and sandbag cover as blocks.
+- **The swaps** (owner's answers of 2026-11-09: Bunker → Bunker, Warehouse → Loading Dock, City Crossroads → Crossroads
+  Plaza with the gap filled), all in MapMaker (Replace all, then MapMaker's own commands for the follow-ups):
+  - **Iron Maw:** 2 Warehouses → Loading Dock (the four pickups that stood on the warehouse mezzanine and its floor now
+    stand on the dock floor, 1 m up), 2 Bunkers → Bunker.
+  - **Shingle Point:** 1 Warehouse → Loading Dock (its six lights, 7.1 m up under the warehouse roof, moved to 3.3 m
+    under the dock's), 4 Bunkers → Bunker.
+  - **Neon Spire, Riot Junction, Underdrain:** City Crossroads (4 × 4) → Crossroads Plaza (3 × 3); the one-cell ring it
+    leaves (seven cells) is filled with Platforms (open ground, no walls, as the crossroads was). Riot Junction leaves
+    out the plaza's benches and lamps (the inspector's part ticks), so it stays under its prop-model budget; its pickup on
+    the plaza's corner moved up onto the kerb (0.15 m). Underdrain's two spawns stand on the fill.
+  - Every changed map validates with no issue (beyond "changed since it was exported" in MapMaker before the export) and
+    no coplanar overlap, and every route from the first spawn to every spawn, pickup, hill and flag and back is as before
+    (Iron Maw 320 of 320, Shingle Point 148 of 148, Riot Junction 218 of 218, Underdrain 178 of 178; Neon Spire 110 of 136
+    before and after: its first hill is on a roof).
+  - **Bot reports** (seeds 1-2, 240 s; Iron Maw, Riot Junction and Underdrain CTF, Shingle Point and Neon Spire TDM),
+    before → after: stuck a match Iron Maw 55 → 62, Shingle Point 93 → 101, Neon Spire 41 → 35, Riot Junction 254 → 199,
+    Underdrain 60 → 57; failed searches 0.00 % everywhere; two routes or more 100 % of team trips everywhere. Riot Junction
+    over seeds 3-6: captures 2 → 4, stuck 197 → 362 a match, almost all of it at its old hot spot (cells 19, 14, a
+    block off the plaza: 155 → 695, most in one seed), the plaza's own cells a handful either way.
+- **New piece: City Wall Gatehouse** (`setpiece.city_gate_wall`, Courtyard gate family, desert): the Town Wall
+  Gatehouse with City Wall tiles either side, for the City Gate (`desert.city_gate`).
+- **New piece: Temple Pylon** (`setpiece.temple_pylon`, Courtyard gate family, desert and imperial): the Temple Pylon
+  tile (`egypt.pylon`) in its place, the same cells and levels (3 × 1, levels 0-2): three Platforms for its floor and the
+  tile's own towers, gate lintel, stairs, gilding and reliefs as 54 blocks in their own materials (a relief 2 cm proud is
+  5 cm here: a block is at least 5 cm deep). Through the 3.2 m gate; up either back stair to the terrace 4 m up and over
+  the gate. Explode it to edit the masonry.
+- **The Environment Phase 2 maps** (released to this session 2026-11-09, after origin/main was merged), in MapMaker:
+  - **Blackout:** Warehouse → Loading Dock (the generator, the Set the charges button and the pickup from the warehouse's
+    upper floor onto the dock floor, 1 m up; its six lights to 3.3 m; the dock's own lights left out, the map's stand in
+    the same places), Bunker → Bunker (its encounter point off the centre pillar, 2.5 m east and 1 m south).
+  - **Crossroads:** Warehouse → Loading Dock with the dock's own crates, barrels and lights left out (the map's shelves,
+    containers and boxes on the dock floor, the two hostages and the pickup from the mezzanine onto it, the mezzanine's
+    barrels and crates too; one snack shelf that had no room left deleted; a cargo crate 1.6 m west, clear of the
+    truck), Bunker → Bunker.
+  - **Pharaoh's Reach, Sunken Kingdom:** Temple Pylon → Temple Pylon set piece (1 and 2); the pickups on the terraces
+    stay where they were.
+  - **Qasr Medina:** City Gate → City Wall Gatehouse; the portcullis onto the south arch (it stood across the passage,
+    along it); the yard south of the gate and the rope bridge north of it give the passage's sides to the gatehouse's
+    arches (No wall), as Market Town.
+  - Every one validates with no issue and no coplanar overlap, and every route from the first spawn to every spawn,
+    pickup, hill, flag, hostage, bomb site and button and back is as before (Blackout 36 of 36, Crossroads 96 of 96,
+    Pharaoh's Reach 92 of 92, Qasr Medina 132 of 132, Sunken Kingdom 224 of 224).
+  - **Bot reports** (seeds 1-2, 240 s; Blackout and Crossroads TDM, the others CTF), before → after: stuck a match
+    Blackout 34 → 35, Crossroads 39 → 43, Pharaoh's Reach 103 → 108, Qasr Medina 101 → 92, Sunken Kingdom 121 → 121
+    (no bot goes near its pylons); failed searches 0.00 % everywhere (Qasr Medina 0.03 → 0.02 %); two routes or more
+    100 % of team trips everywhere; captures Pharaoh's Reach 1 → 1, Qasr Medina 2 → 1 (two matches: noise).
+  - **Sunken Kingdom's CTF captures** (botCtf.test, five minutes a match; seeds 1-12, matches with a capture): the
+    tile 9 (seeds 2-4, 7-12), the set piece 6 (2, 4, 7, 10-12), and the tile plus one 1 m block buried out of reach in
+    a corner 5 (3, 6-8, 12). The bots play the set piece as they played the tile:
+    - The set piece's blocks are 'floor' boxes where the tile's masonry was 'solid'. That kind is read only by the
+      ground kept under floors (the played terrain comes out the same), the kill height and the bounds' walls (the
+      map's lowest floor is unchanged), rendering and dressing. No navmesh, bot, sight or cover code reads it.
+    - Around both pylons (2 m grid, ground and terrace, as a match builds them) the navmesh, the routes from the first
+      spawn, the bots' places and the sight between 14,173 pairs of eye points are the same with the tile and the set
+      piece.
+    - The two matches first part at 149 s (seed 3) by a millimetre, for a bot 70 m from either pylon. The buried block
+      makes them part at the second tick. Which seed captures is chaotic, so botCtf's Sunken Kingdom check now wants a
+      capture in one of seeds 2, 3 and 4 (the tile: all three; the set piece: 2 and 4; the buried block: 3).
+    - What does differ: the reliefs, pilasters and gilding were decor on the tile and are blocks here (5-8 cm proud of
+      the face, the gilded band under the lintel 20 cm below it). The masonry stops shots as its material does
+      (`core.pbr_sandstone_blocks` is soil, 5000) where tile structure counts as concrete (7000): the towers are metres
+      thick either way.
+- **Not swapped:** Coldwater Gulch places no Bunker tile (Bunker theme only); Whiteout Station's rebuild handles its
+  hangar; Iron Compound stays as it is (owner). The seven maps with the Bunker theme (`core.bunker`) place no Bunker
+  tile (Bunker Cross, Coldwater Gulch, Concrete Annex, Iron Tide, Ironhold Prison, Pump Tower, Silo Complex).
+
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks
    and validation.

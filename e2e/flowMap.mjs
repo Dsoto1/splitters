@@ -19,9 +19,12 @@ export const MAX_NAMED_MAPS = 6;
 /** The map with one of everything (maps/test_coverage.json; testOnly: no map list or rotation offers it). */
 export const COVERAGE_MAP = 'test_coverage';
 
+/** MapMaker's checks, split by area (they were one `editorux` flow, too long for a retry on CI). */
+export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'editorenv'];
+
 /** Every flow in e2e/run.mjs (run.mjs refuses to start if they differ). */
 export const FLOWS = [
-  'editor', 'editorux', 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
+  'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
   'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
   'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer', 'fireteams',
 ];
@@ -135,13 +138,13 @@ const RULES = [
 
   // The match renderer: every flow that plays a match (all but the MapMaker UI, the host page and the WebGPU
   // menu check, which never load it: main.ts imports the session on demand).
-  [/^packages\/client\/src\/game\/view\.ts$/, FLOWS.filter((f) => !['editorux', 'hostpage', 'webgpu'].includes(f)), ['client']],
+  [/^packages\/client\/src\/game\/view\.ts$/, FLOWS.filter((f) => ![...EDITOR_UX_FLOWS, 'hostpage', 'webgpu'].includes(f)), ['client']],
 
   // The rest of the client, by area.
   // Phones and tablets (on-screen controls, touch detection) and the weapon wheel.
   // (Fireteams' order wheel is the weapon wheel's ring, and has an Orders button on a phone.)
   [/^packages\/client\/src\/(touchDevice|game\/(touchControls|weaponWheel))\.ts$/, ['mobile', 'offline', 'fireteams'], ['client']],
-  [/^packages\/client\/src\/editor\//, ['editor', 'editorux', 'scenery', 'canyon', 'traffic', 'weaponsets', 'visual'], ['client']],
+  [/^packages\/client\/src\/editor\//, ['editor', ...EDITOR_UX_FLOWS, 'scenery', 'canyon', 'traffic', 'weaponsets', 'visual'], ['client']],
   [/^packages\/client\/src\/designer\//, ['designer', ...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/tools\/characterViewer/, [...CHARACTER_FLOWS], ['client']],
   // Your own body and arms in first person, and where hands are drawn on guns (the grip checks).
@@ -167,6 +170,8 @@ const RULES = [
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
   // Reduce flashing (the setting, steady lightning, the hurt vignette): its check, and where else they show.
+  // Weather (map format v34): MapMaker's preview and TEST (editorenv), its moments in the flicker check.
+  [/^packages\/client\/src\/(weatherVisuals|game\/weatherAudio)\.ts$/, ['editorenv', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(reduceFlashing|steadyArcs|hurtVignette)\.ts$/, ['offline', 'physicsfx', 'arsenal', 'visual', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies', ...CHARACTER_FLOWS, 'flashing'], ['client']],
   [/^packages\/client\/src\/(backdrop|borderVisuals|foliage|mapMeshes|playlists)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'visual', 'flashing'], ['client']],

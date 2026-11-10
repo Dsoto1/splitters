@@ -10,6 +10,7 @@ import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, propBoxes, resolveEdge, yawXZ, type WorldBox } from './geometry.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
+import { botHintIssues } from './botHints.ts';
 import { floatingProps, withGroundAsPlayed } from './settle.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
@@ -107,6 +108,8 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
 export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): ValidationIssue[] {
   const issues = validatePieces(map, catalog, library);
   if (map.groups?.length) issues.push(...groupIssues(map));
+  // Bot hints (v33): warnings only (map/botHints.ts; the navmesh's own check is the navigation validator's).
+  if (map.botHints?.length) issues.push(...botHintIssues(map));
   return issues;
 }
 

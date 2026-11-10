@@ -115,6 +115,12 @@ export interface HostRulesPatch {
    * (their HostState.rules has no weaponSet, so the pause menu offers none).
    */
   weaponSet?: string | null;
+  /**
+   * The weather (MatchRules.weather; map/weather.ts WEATHER_CHOICES), null for the map's own: plays from the next
+   * match (the weather is fixed while one plays). Hosts that don't know it ignore it (their HostState.rules has no
+   * weather, so the pause menu offers none).
+   */
+  weather?: string | null;
 }
 
 /** The match's host settings, for the pause menu of whoever runs it. */
@@ -151,6 +157,8 @@ export interface HostState {
   mapCast?: string[];
   /** The map's own default weapon set (MapDocument.weaponSet; standard when it names none). */
   mapWeaponSet?: string;
+  /** The map's own weather, in a few words (map/weather.ts weatherLabel). */
+  mapWeather?: string;
 }
 
 export interface PlayerSnapshot {
@@ -622,6 +630,13 @@ export type ServerMessage =
       hold?: number[];
       /** Team leaders (rules.leaders): each team's leader slot, in team order (-1: none). */
       ld?: number[];
+      /**
+       * Fireteams' squads (sim/fireteams.ts squadSnapshot; the squad HUD, its minimap markers and its colour): per squad
+       * [id, team index, leader slot (-1: none), order (ORDER_KINDS index), spacing (SQUAD_SPACINGS index), formation
+       * (FORMATION_SHAPES index), a person leads it (1/0), the order's place x and z (dm; 0 0 with none, see the order),
+       * ...member slots]. Absent: the variant is off. Sent when it changes.
+       */
+      fs?: number[][];
       /** Roulette with Lunar: the gravity storm, [phase (0 calm, 1 warning, 2 blowing), seconds left in it, gravity now ×100, the storm's gravity ×100]. */
       rl?: [number, number, number, number];
     }

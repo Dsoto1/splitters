@@ -16,8 +16,8 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
-import type { MapDocument, MapEntity, PropEntity, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
-import { DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
+import type { MapDocument, MapEntity, MapWeather, PropEntity, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
+import { mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
@@ -25,6 +25,8 @@ import { MapStyler, boxVertexData } from '../mapMeshes.ts';
 import { buildRoadMeshes, disposeRoadMeshes } from '../roadMeshes.ts';
 import { buildGuideLines, buildPathMeshes, disposePathMeshes } from '../pathMeshes.ts';
 import { BackdropVisuals } from '../backdrop.ts';
+import { WeatherVisuals } from '../weatherVisuals.ts';
+import { loadGraphicsQuality } from '../game/graphicsSettings.ts';
 import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -77,6 +79,9 @@ export class EditorView {
   pitch = -0.9;
   private readonly styler: MapStyler;
   private readonly backdrop: BackdropVisuals;
+  /** The map's weather, previewed as it plays (Map properties; weatherVisuals.ts). */
+  readonly weather: WeatherVisuals;
+  private weatherKey = '';
   /** The border along the boundary (live preview of the Border setting). */
   readonly border: BorderVisuals;
   private readonly foliage: FoliageVisuals;
@@ -151,6 +156,7 @@ export class EditorView {
     this.dimStyler = new MapStyler(this.scene, this.styler);
     this.pieceStyler = new MapStyler(this.scene, this.styler);
     this.backdrop = new BackdropVisuals(this.scene, this.styler);
+    this.weather = new WeatherVisuals(this.scene, loadGraphicsQuality());
     this.models = new ModelLibrary(this.scene);
     this.city = new CityVisuals(this.models, 'edcity');
     this.border = new BorderVisuals(this.scene, this.styler, this.models);
@@ -283,6 +289,26 @@ export class EditorView {
    * every level but the active one is drawn ghosted, so the floor being edited stands out.
    * `all`: the whole map's geometry (buildMapGeometry of `doc`), whose floors the ground is kept under.
    */
+  /** The map's weather over its sky (again whenever the sky and haze were set afresh: the weather adds to the haze). */
+  private showWeather(doc: MapDocument, force = false): void {
+    const key = JSON.stringify([doc.weather ?? null, this.backdrop.revision]);
+    if (key === this.weatherKey && !force) return;
+    this.weatherKey = key;
+    const t = doc.terrain;
+    const ground = t ? t.baseY + [...t.heights].sort((a, b) => a - b)[Math.floor(t.heights.length * 0.2)]! / 100 : 0;
+    this.weather.set(mapWeather(doc), this.backdrop.sky, ground);
+  }
+
+  /**
+   * Map properties' live preview while a slider moves: the sky and light at a time of day (null: the sky's own look,
+   * undefined: the map's own) and/or a weather, without an edit. The next setMap shows the map as it is again.
+   */
+  previewSky(doc: MapDocument, hours: number | null | undefined, weather?: MapWeather): void {
+    if (hours !== undefined) this.backdrop.previewTime(doc, hours);
+    this.showWeather(weather ? { ...doc, weather } : doc, true);
+    this.weatherKey = '';
+  }
+
   setMap(doc: MapDocument, level: number, showAll: boolean, all: readonly WorldBox[] = buildMapGeometry(doc)): WorldBox[] {
     const visibleTiles = showAll ? doc.classicStructure.tiles : doc.classicStructure.tiles.filter((t) => t.z <= level);
     const visible = { ...doc, classicStructure: { ...doc.classicStructure, tiles: visibleTiles } };
@@ -345,6 +371,7 @@ export class EditorView {
       this.guideLines = buildGuideLines(this.scene, doc, this.shownTerrain, 'edguide');
     }
     this.backdrop.build(doc, boxes);
+    this.showWeather(doc);
     this.border.update(doc, boxes);
     void this.city.setMap(visible);
     // Regrow plants only when the ground or what stands on it changed.
@@ -428,7 +455,7 @@ export class EditorView {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
     if (!on) return;
-    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.ring, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes, this.scene.getMeshByName('measureLines') ?? undefined];
+    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.ring, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes, this.scene.getMeshByName('measureLines') ?? undefined, ...this.scene.meshes.filter((m) => m.name.startsWith('edMapTest'))];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
     for (const n of aids) {
       if (!n || !n.isEnabled(false)) continue;
@@ -602,7 +629,7 @@ export class EditorView {
   private entityGhost: { key: string; nodes: TransformNode[] } | null = null;
 
   /** The see-through preview of what an object tool would put down: these entities where they'd go (null hides it). */
-  setEntityGhost(doc: MapDocument, key: string | null, entities: readonly MapEntity[]): void {
+  setEntityGhost(doc: MapDocument, key: string | null, entities: readonly MapEntity[], refused = false): void {
     if (!key) {
       for (const n of this.entityGhost?.nodes ?? []) n.setEnabled(false);
       return;
@@ -623,6 +650,7 @@ export class EditorView {
       node.setEnabled(true);
       if (e.kind === 'spawn') node.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
       else this.placeEntityNode(node, e, doc);
+      setGhostRefused(node, refused);
     });
   }
 
@@ -796,7 +824,7 @@ export class EditorView {
 
   /** A see-through preview of a prop where it would be placed (null hides it). */
   /** The see-through preview of what a placing tool would put down (props, vehicles, spawns, pickups). */
-  setPropGhost(model: string | null, at: [number, number, number] | null, yaw: number, kind: 'prop' | 'mount' | 'spawn' | 'pickup' = 'prop', look: { scale: number; variant?: number } = { scale: 1 }): void {
+  setPropGhost(model: string | null, at: [number, number, number] | null, yaw: number, kind: 'prop' | 'mount' | 'spawn' | 'pickup' = 'prop', look: { scale: number; variant?: number } = { scale: 1 }, refused = false): void {
     if (!model || !at) {
       this.propGhost?.node.setEnabled(false);
       return;
@@ -831,6 +859,7 @@ export class EditorView {
     node.position.set(at[0], (y ?? at[1]) + lift, at[2]);
     node.rotation.y = yaw;
     if (kind === 'prop') node.scaling.setAll(look.scale);
+    setGhostRefused(node, refused);
   }
 
   setGhost(doc: MapDocument, tile: string | null, cell: [number, number, number] | null, rotation: Rotation, ok: boolean): void {
@@ -1119,6 +1148,16 @@ function sameHeights(a: TerrainData, b: TerrainData): boolean {
   return true;
 }
 
+/** Placement previews refused where they are (ghostWhy.ts): seeThrough tints them red. */
+const refusedGhosts = new WeakSet<TransformNode>();
+const REFUSED_RED = Color3.FromHexString('#ff5a4f');
+
+/** Mark a placement preview as refused (red) or not; seeThrough applies it on the next frame. */
+function setGhostRefused(node: TransformNode, refused: boolean): void {
+  if (refused) refusedGhosts.add(node);
+  else refusedGhosts.delete(node);
+}
+
 /** See-through copies of materials that are forced opaque (glTF models), which ignore a mesh's visibility; by source. */
 const ghostMaterials = new WeakMap<Material, Material>();
 
@@ -1139,12 +1178,19 @@ function ghostMaterial(mat: Material): Material {
  */
 function seeThrough(node: TransformNode): void {
   const fade = () => {
+    const refused = refusedGhosts.has(node);
     for (const m of [node, ...node.getChildMeshes()]) {
       if (!('visibility' in m)) continue;
       const mesh = m as Mesh;
       mesh.visibility = 0.55;
       mesh.isPickable = false;
       if (mesh.material && mesh.getClassName() === 'Mesh') mesh.material = ghostMaterial(mesh.material);
+      // Refused here (ghostWhy.ts): tinted red over its own look, as a refused tile's ghost is red.
+      if (mesh.renderOverlay !== refused) {
+        mesh.renderOverlay = refused;
+        mesh.overlayColor = REFUSED_RED;
+        mesh.overlayAlpha = 0.6;
+      }
     }
   };
   fade();

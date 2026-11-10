@@ -11,7 +11,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { CORE_THEMES, PROP_FENCES, SKIES, borderStyleAt, boxBounds, coastHeightAt, coastSides, pathsExtent, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
+import { CORE_THEMES, PROP_FENCES, SKIES, mapTimeOfDay, presetDirection, sunAt, borderStyleAt, boxBounds, coastHeightAt, coastSides, pathsExtent, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { createPropNode } from './game/propVisuals.ts';
 import { EnvScatter, type EnvCopy } from './environment/envScatter.ts';
@@ -51,29 +51,33 @@ export class BackdropVisuals {
   /** How the ground past the border rises, and what stands on it. */
   private profile: BeltProfile = BELTS.none!;
 
-  /** (Re)build for this map; cheap to call again when nothing changed. `dim` darkens the sky (MapMaker). */
-  /** The sky of the last build (its colours and sun drive the mist and light shafts). */
+  /** The sky of the last build (its colours and sun drive the mist and light shafts; with a time of day, the blend). */
   sky: SkyDefinition | null = null;
+  /** The sky's own meshes and materials (the picture, and a second one blended over it at a time of day). */
+  private skyParts: { meshes: Mesh[]; materials: (StandardMaterial | Texture | RawTexture)[] } = { meshes: [], materials: [] };
+  private skyKey = '';
+  private dim = 1;
+  /** Counts the sky and haze being set afresh (anything added to the haze since is gone: weatherVisuals.ts adds again). */
+  revision = 0;
+
+  /**
+   * The sky and light at a time of day, without rebuilding the rest (MapMaker's live preview while the slider moves;
+   * null: the sky's own look). The next build puts the map's own time back.
+   */
+  previewTime(doc: MapDocument, hours: number | null): void {
+    const backdrop = resolveBackdrop(doc);
+    this.applySky(backdrop, { ...doc, timeOfDay: hours ?? undefined }, this.dim);
+  }
 
   build(doc: MapDocument, boxes: readonly WorldBox[], dim = 1): Backdrop {
     const backdrop = resolveBackdrop(doc);
     const area = playArea(doc, boxes);
-    const key = JSON.stringify([backdrop, area, doc.classicStructure.theme, dim]);
+    const key = JSON.stringify([backdrop, area, doc.classicStructure.theme, dim, doc.timeOfDay ?? null]);
     if (key === this.key) return backdrop;
     this.dispose();
     this.key = key;
-    const sky = skyFor(backdrop, doc);
-    this.sky = sky;
-    const horizon = Color3.FromHexString(sky.horizon);
-    this.applyLighting(sky);
-    this.scene.clearColor = new Color4(horizon.r * dim, horizon.g * dim, horizon.b * dim, 1);
-    if (sky.file || sky.id === 'space') this.buildSky(sky, dim);
-    // Haze: thin near the action, thick far out, so distant scenery melts into the horizon.
-    // No haze (space, or a backdrop without it): the fog is still on, at nothing. A smoke cloud or water you step into
-    // thickens it; switching it on there would rebuild every material in view (Babylon's FOG define) in that frame.
-    this.scene.fogMode = 2; // Scene.FOGMODE_EXP2
-    this.scene.fogColor = horizon.scale(dim);
-    this.scene.fogDensity = backdrop.haze > 0 && sky.id !== 'space' ? 0.0002 + backdrop.haze * 0.0014 : 0;
+    this.dim = dim;
+    const sky = this.applySky(backdrop, doc, dim);
     const rand = seeded(doc.metadata.id);
     this.profile = beltProfile(backdrop, doc.classicStructure.theme);
     if (backdrop.ground !== 'none') {
@@ -84,7 +88,47 @@ export class BackdropVisuals {
     return backdrop;
   }
 
+  /** Sky picture(s), light, clear colour and haze for the map's sky at its time of day (or the sky's own look). */
+  private applySky(backdrop: Backdrop, doc: MapDocument, dim: number): SkyDefinition {
+    const base = skyFor(backdrop, doc);
+    const hours = mapTimeOfDay(doc, backdrop.sky);
+    const sun = hours === null ? null : sunAt(hours, backdrop.sky, base.id === 'plain' ? base.horizon : undefined);
+    const sky = sun ? sun.sky : base;
+    this.sky = sky;
+    this.revision++;
+    const horizon = Color3.FromHexString(sky.horizon);
+    this.applyLighting(sky, sun ? sun.direction : presetDirection(sky));
+    this.scene.clearColor = new Color4(horizon.r * dim, horizon.g * dim, horizon.b * dim, 1);
+    // The sky's picture: its own, or at a time of day the key's picture with the next blended over it.
+    const skyKey = JSON.stringify(sun ? [sun.from, sun.to, +sun.mix.toFixed(3), dim] : [base.id, base.file, dim]);
+    if (skyKey !== this.skyKey) {
+      this.disposeSky();
+      this.skyKey = skyKey;
+      if (sun) {
+        const from = SKIES.get(sun.from);
+        const to = SKIES.get(sun.to);
+        if (from?.file && sun.mix < 1) this.buildSky(from, dim, 1, 0);
+        if (to?.file && sun.mix > 0) this.buildSky(to, dim, from?.file && sun.mix < 1 ? sun.mix : 1, 1);
+      } else if (sky.file || sky.id === 'space') this.buildSky(sky, dim, 1, 0);
+    }
+    // Haze: thin near the action, thick far out, so distant scenery melts into the horizon.
+    // No haze (space, or a backdrop without it): the fog is still on, at nothing. A smoke cloud or water you step into
+    // thickens it; switching it on there would rebuild every material in view (Babylon's FOG define) in that frame.
+    this.scene.fogMode = 2; // Scene.FOGMODE_EXP2
+    this.scene.fogColor = horizon.scale(dim);
+    this.scene.fogDensity = backdrop.haze > 0 && sky.id !== 'space' ? 0.0002 + backdrop.haze * 0.0014 : 0;
+    return sky;
+  }
+
+  private disposeSky(): void {
+    for (const m of this.skyParts.meshes) m.dispose();
+    for (const m of this.skyParts.materials) m.dispose();
+    this.skyParts = { meshes: [], materials: [] };
+    this.skyKey = '';
+  }
+
   dispose(): void {
+    this.disposeSky();
     for (const n of this.nodes) n.dispose();
     this.nodes = [];
     for (const sc of this.scatters) sc.dispose();
@@ -96,7 +140,7 @@ export class BackdropVisuals {
     this.key = '';
   }
 
-  private applyLighting(sky: SkyDefinition): void {
+  private applyLighting(sky: SkyDefinition, direction: readonly [number, number, number]): void {
     const hemi = this.scene.getLightByName('hemi') as HemisphericLight | null;
     const sun = this.scene.getLightByName('sun') as DirectionalLight | null;
     // A stronger sun against a softer sky light, so shadows and the sunny sides of things read (tone mapping evens it
@@ -109,13 +153,14 @@ export class BackdropVisuals {
     if (sun) {
       sun.intensity = sky.light.sun * LIGHT_BALANCE.sun;
       sun.diffuse = Color3.FromHexString(sky.light.sunColor);
-      const el = (sky.light.elevation * Math.PI) / 180;
-      sun.direction = new Vector3(-0.8 * Math.cos(el), -Math.max(0.15, Math.sin(el)), 0.6 * Math.cos(el));
+      // The preset's fixed sun (presetDirection, as it always was), or the sun or moon at the map's time of day.
+      sun.direction = new Vector3(direction[0], direction[1], direction[2]);
     }
   }
 
-  private buildSky(sky: SkyDefinition, dim: number): void {
-    const box = CreateBox('backdrop_sky', { size: 1800, sideOrientation: Mesh.BACKSIDE }, this.scene);
+  /** A sky picture on a box at infinity; `alpha` below 1 blends it over the one drawn before it (`order` 0, then 1). */
+  private buildSky(sky: SkyDefinition, dim: number, alpha: number, order: number): void {
+    const box = CreateBox(order ? 'backdrop_sky_blend' : 'backdrop_sky', { size: 1800 - order * 20, sideOrientation: Mesh.BACKSIDE }, this.scene);
     box.infiniteDistance = true;
     box.isPickable = false;
     const mat = new StandardMaterial('backdrop_skyMat', this.scene);
@@ -128,10 +173,14 @@ export class BackdropVisuals {
     tex.coordinatesMode = Texture.FIXED_EQUIRECTANGULAR_MODE;
     mat.reflectionTexture = tex;
     mat.reflectionTexture.level = dim;
+    if (alpha < 1) {
+      mat.alpha = alpha;
+      box.alphaIndex = order;
+    }
     box.material = mat;
     box.applyFog = false;
-    this.meshes.push(box);
-    this.materials.push(mat, tex);
+    this.skyParts.meshes.push(box);
+    this.skyParts.materials.push(mat, tex);
   }
 
   /**
@@ -353,7 +402,103 @@ export class BackdropVisuals {
       case 'ocean':
         this.ridge(area, r0 + 420, 380, base - 1, rand, { height: [0, 45], roughness: 0.3, low: '#4f6648', high: '#6a7d5a', islands: true });
         break;
+      case 'volcano':
+        this.ridge(area, r0 + 60, 380, base, rand, { height: [14, 45], roughness: 0.3, low: '#7d6c4a', high: '#9c8b5f' });
+        this.volcano(area, r0 + 560, base, rand);
+        break;
     }
+  }
+
+  /**
+   * A lone volcano far to the north of the map (beyond the hills): a broad cone scored with gullies, a crater with a
+   * dull ember glow on its floor and a plume of smoke leaning downwind. All of it still: nothing flickers or flashes,
+   * so it needs nothing from Reduce flashing (CLAUDE.md, "Accessibility").
+   */
+  private volcano(area: PlayArea, distance: number, base: number, rand: () => number): void {
+    const cx = area.centre[0] + (rand() - 0.5) * distance * 0.3;
+    const cz = area.centre[1] + distance;
+    const radius = 560;
+    const height = 330;
+    const seg = 96;
+    const phase = rand() * Math.PI * 2;
+    // Profile from the foot to the crater floor: [radius fraction, height fraction, colour].
+    const profile: [number, number, string][] = [
+      [1, 0, '#6e5f45'],
+      [0.72, 0.16, '#5e5040'],
+      [0.48, 0.42, '#4a4038'],
+      [0.28, 0.74, '#3c3532'],
+      [0.15, 0.97, '#34302e'],
+      [0.12, 1, '#2e2a28'],
+      [0.1, 0.93, '#231c19'],
+      [0.05, 0.86, '#1c1512'],
+    ];
+    const positions: number[] = [];
+    const colors: number[] = [];
+    const indices: number[] = [];
+    for (let i = 0; i <= seg; i++) {
+      const a = (i / seg) * Math.PI * 2;
+      // Gullies down the flanks: the radius and height wobble round the cone, more on the steep upper slopes.
+      const gully = Math.sin(a * 11 + phase) * 0.035 + Math.sin(a * 5 - phase) * 0.05;
+      for (const [rf, hf, c] of profile) {
+        const r = radius * rf * (1 + gully * (1 - hf * 0.5));
+        positions.push(cx + Math.sin(a) * r, base + height * hf * (1 + gully * hf * 0.6), cz + Math.cos(a) * r);
+        const col = Color3.FromHexString(c);
+        colors.push(col.r, col.g, col.b, 1);
+      }
+    }
+    const n = profile.length;
+    for (let i = 0; i < seg; i++) for (let r = 0; r < n - 1; r++) {
+      const a = i * n + r;
+      const b = (i + 1) * n + r;
+      indices.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+    this.addMesh('backdrop_volcano', positions, indices, colors);
+    // The crater floor's glow: a steady, dull ember colour (no light, no flicker).
+    const top = base + height * 0.86;
+    const glow: number[] = [cx, top + 0.5, cz];
+    const glowIdx: number[] = [];
+    const glowCol: number[] = [1, 1, 1, 1];
+    for (let i = 0; i <= seg; i++) {
+      const a = (i / seg) * Math.PI * 2;
+      glow.push(cx + Math.sin(a) * radius * 0.055, top + 1, cz + Math.cos(a) * radius * 0.055);
+      glowCol.push(1, 1, 1, 1);
+      if (i > 0) glowIdx.push(0, i, i + 1);
+    }
+    const ember = this.addMesh('backdrop_volcano_glow', glow, glowIdx, glowCol);
+    const emberMat = ember.material as StandardMaterial;
+    emberMat.disableLighting = true;
+    emberMat.emissiveColor = Color3.FromHexString('#b4471c');
+    // The plume: puffs rising from the crater, growing and leaning east with the wind, see-through grey.
+    const puffs: number[] = [];
+    const puffIdx: number[] = [];
+    const puffCol: number[] = [];
+    const lat = 6;
+    const lon = 10;
+    for (let k = 0; k < 9; k++) {
+      const pr = 34 + k * 16 + rand() * 10;
+      const px = cx + k * k * 4.5 + k * 10;
+      const py = base + height * 0.95 + 25 + k * 52;
+      const pz = cz + (rand() - 0.5) * 30;
+      const shade = 0.42 + k * 0.035;
+      const start = puffs.length / 3;
+      for (let i = 0; i <= lat; i++) {
+        const t = (i / lat) * Math.PI;
+        for (let j = 0; j <= lon; j++) {
+          const p = (j / lon) * Math.PI * 2;
+          puffs.push(px + Math.sin(t) * Math.cos(p) * pr, py + Math.cos(t) * pr * 0.7, pz + Math.sin(t) * Math.sin(p) * pr);
+          puffCol.push(shade, shade, shade * 0.98, 1);
+        }
+      }
+      for (let i = 0; i < lat; i++) for (let j = 0; j < lon; j++) {
+        const a = start + i * (lon + 1) + j;
+        const b = a + lon + 1;
+        puffIdx.push(a, b, a + 1, a + 1, b, b + 1);
+      }
+    }
+    const plume = this.addMesh('backdrop_volcano_smoke', puffs, puffIdx, puffCol);
+    const smokeMat = plume.material as StandardMaterial;
+    smokeMat.alpha = 0.62;
+    smokeMat.emissiveColor = new Color3(0.25, 0.24, 0.23);
   }
 
   /** A ring of land round the map: a crest line from layered noise, coloured from its foot up. */
@@ -736,6 +881,8 @@ const BELTS: Record<string, BeltProfile> = {
   dunes: { berm: 6, hills: 9, props: ['rock_flat', 'rock_large', SAGUARO, 'env.palm.leaning', 'debris'], buildings: false, density: 0.35 },
   city: { berm: 0.6, hills: 0, props: ['barrier', 'barrier_high', 'container', 'lightpost', 'trashcan', 'skip'], buildings: true, density: 0.9 },
   ocean: { berm: 0.5, hills: 0, props: ['env.palm.coconut', 'env.palm.leaning', 'rock_large', 'rock_flat'], buildings: false, density: 0.4 },
+  // Rocks only: no trees or bushes from the props (owner, 2026-11-08: our generated foliage only on new maps).
+  volcano: { berm: 5, hills: 12, props: ['rock_large', 'rocks_tall', 'rock_flat', 'rock_large', 'debris'], buildings: false, density: 0.45 },
 };
 /** Themes whose surroundings are their own, whatever the scenery past them. */
 const THEME_BELTS: Record<string, Partial<BeltProfile>> = {

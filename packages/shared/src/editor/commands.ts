@@ -1,7 +1,8 @@
 import type { ScenarioLogic } from '../map/logic.ts';
-import type { BloodSettings, EditorNote, Faction, GlassSettings, MapBotSet, MapPath, MapPhysics, MapBounds, MapDocument, MapEntity, MapGroup, SetPieceDefinition, SetPiecePlacement, TeamSetup, TilePlacement } from '../map/schema.ts';
+import type { BloodSettings, BotHint, EditorNote, Faction, GlassSettings, MapBotSet, MapPath, MapPhysics, MapBounds, MapDocument, MapEntity, MapGroup, SetPieceDefinition, SetPiecePlacement, TeamSetup, TilePlacement } from '../map/schema.ts';
 import type { TerrainData } from '../map/terrain.ts';
 import type { Backdrop } from '../map/backdrop.ts';
+import type { MapWeather } from '../map/weather.ts';
 
 /**
  * Editor mutations as invertible commands (v1 spec §8.9). Commands carry the
@@ -46,6 +47,12 @@ export type EditCommand =
   | { kind: 'setGroups'; before: MapGroup[] | null; after: MapGroup[] | null }
   /** Note pins (v31), replaced as a list: one added, edited, moved or deleted = one undo step (null or empty: none, and no `editorNotes` key). */
   | { kind: 'setNotes'; before: EditorNote[] | null; after: EditorNote[] | null }
+  /** Bot hints (v33), replaced as a list: one added, edited, moved or deleted = one undo step (null or empty: none, and no `botHints` key). */
+  | { kind: 'setBotHints'; before: BotHint[] | null; after: BotHint[] | null }
+  /** The time of day (v34, hours 0-24; null: the sky's own look, and no `timeOfDay` key). */
+  | { kind: 'setTimeOfDay'; before: number | null; after: number | null }
+  /** Weather (v34; null: clear, and no `weather` key). */
+  | { kind: 'setWeather'; before: MapWeather | null; after: MapWeather | null }
   | { kind: 'batch'; commands: EditCommand[] };
 
 export class CommandError extends Error {}
@@ -149,6 +156,18 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       const { editorNotes: _old, ...rest } = doc;
       return cmd.after?.length ? { ...rest, editorNotes: cmd.after } : rest;
     }
+    case 'setTimeOfDay': {
+      const { timeOfDay: _old, ...rest } = doc;
+      return cmd.after === null ? rest : { ...rest, timeOfDay: cmd.after };
+    }
+    case 'setWeather': {
+      const { weather: _old, ...rest } = doc;
+      return cmd.after ? { ...rest, weather: { ...cmd.after } } : rest;
+    }
+    case 'setBotHints': {
+      const { botHints: _old, ...rest } = doc;
+      return cmd.after?.length ? { ...rest, botHints: cmd.after } : rest;
+    }
     case 'batch':
       return cmd.commands.reduce(applyCommand, doc);
   }
@@ -216,6 +235,12 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'setGroups', before: cmd.after, after: cmd.before };
     case 'setNotes':
       return { kind: 'setNotes', before: cmd.after, after: cmd.before };
+    case 'setBotHints':
+      return { kind: 'setBotHints', before: cmd.after, after: cmd.before };
+    case 'setTimeOfDay':
+      return { kind: 'setTimeOfDay', before: cmd.after, after: cmd.before };
+    case 'setWeather':
+      return { kind: 'setWeather', before: cmd.after, after: cmd.before };
     case 'batch':
       return { kind: 'batch', commands: cmd.commands.map(invertCommand).reverse() };
   }
@@ -256,6 +281,9 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'setSetPieceDefs':
     case 'setGroups':
     case 'setNotes':
+    case 'setBotHints':
+    case 'setTimeOfDay':
+    case 'setWeather':
       return JSON.stringify(cmd.before) === JSON.stringify(cmd.after);
     case 'batch':
       return cmd.commands.every(isEmptyCommand);

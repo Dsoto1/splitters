@@ -12,7 +12,7 @@ import { PHOTO_SKIES } from '../content/skies.generated.ts';
 export const SKY_IDS = ['clear', 'cloudy', 'overcast', 'misty', 'sunrise', 'sunset', 'dusk', 'night', 'storm', 'snowy', 'space', 'plain'] as const;
 export type SkyId = (typeof SKY_IDS)[number];
 
-export const SCENERY_IDS = ['none', 'hills', 'mountains', 'peaks', 'mesas', 'dunes', 'forest', 'city', 'ocean'] as const;
+export const SCENERY_IDS = ['none', 'hills', 'mountains', 'peaks', 'mesas', 'dunes', 'forest', 'city', 'ocean', 'volcano'] as const;
 export type SceneryId = (typeof SCENERY_IDS)[number];
 
 /** Ground beyond the border: a terrain material, open water, or nothing (floating in the sky or space). */
@@ -63,6 +63,7 @@ export const SCENERY_LABELS: Record<SceneryId, string> = {
   forest: 'Forest',
   city: 'City skyline',
   ocean: 'Open sea',
+  volcano: 'Hills and a volcano',
 };
 
 const b = (sky: SkyId, scenery: SceneryId, ground: BackdropGround, haze = 0.5): Backdrop => ({ sky, scenery, ground, haze });

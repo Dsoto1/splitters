@@ -1,4 +1,5 @@
 import type { LookHitbox } from '../sim/hitbox.ts';
+import { botBand, ttkEdge } from './weaponBands.ts';
 import { angleDelta, clamp, createRng, distance, horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import { TALL_SIZE, type NavWorld } from '../nav/index.ts';
 import type { Corridor } from '../nav/corridors.ts';
@@ -222,6 +223,12 @@ export interface OrderGoal {
    * above any objective of its own, below a chase or a noise close by (SQUAD_NOTICE).
    */
   squad?: boolean;
+  /**
+   * Fireteams (Part 2): its squad's bounding half while the squad is on the move (the leader 0, its members 1, 0, ...):
+   * in a fight at range on the way, the halves take turns covering and moving (`boundPhase`), whatever the bot's style
+   * but Arena's, rather than by slot.
+   */
+  half?: 0 | 1;
 }
 
 export type BotState = 'roam' | 'advance' | 'engage' | 'cover' | 'chase' | 'investigate' | 'retreat' | 'hold' | 'mount' | 'mounted' | 'dead';
@@ -304,6 +311,8 @@ const GUN_DETOUR = 30;
 /** Bounding (boundPhase): fights this far off or more (m); Mixed-style bots only from BOUND_MIXED. */
 const BOUND_FROM = 12;
 const BOUND_MIXED = 18;
+/** Covering fire (a fireteam's covering half): at most this long (s) after its turn to cover, at an enemy seen this lately. */
+const COVER_FIRE_SECONDS = 2.5;
 /** How far a sniper-role bot goes for a scoped gun (m, plus height). */
 const SCOPE_DETOUR = 70;
 /** A sniper whose target looks straight at it (this or more: within about 25°) a moment is spotted: it moves on. */
@@ -707,6 +716,13 @@ export class BotBrain {
 
   /** Bounding (boundPhase): this half moving from cover to cover, or covering; null when not bounding. */
   private bound: 'move' | 'cover' | null = null;
+  /**
+   * Covering fire (Fireteams Part 2): a squad's covering half keeps firing at where its enemy went out of sight, from
+   * its cover, while the other half moves, until this tick; and the ticks it fired so (measuring).
+   */
+  private coverFireUntil = -1;
+  coverShots = 0;
+
   /** Where its last vantage spot was (a sniper moves on somewhere else, not back the way it came). */
   private prevSpot: Vec3 | null = null;
   /** Snipers: shots held for a better one, and spots left after a shot or two or for being spotted (measuring). */
@@ -1005,12 +1021,16 @@ export class BotBrain {
    * the open shooting when there's none. Null: not bounding.
    */
   private boundPhase(view: BotWorldView, target: CombatantView | undefined, goal: OrderGoal | null | undefined): 'move' | 'cover' | null {
-    if (!target || !goal?.push || goal.run || this.arena || this.berserker || view.self.mounted) return null;
+    // (A fireteam on the move bounds by its halves, a person's squad too: Fireteams Part 2.)
+    const squadHalf = goal?.half;
+    if (!target || !goal || !(goal.push || (squadHalf !== undefined && goal.order)) || goal.run || this.arena || this.berserker || view.self.mounted) return null;
     const dist = horizontalDistance(view.self.pos, target.pos);
     // (A playbook that has everyone bound, Breakthrough's: every style but Arena's from BOUND_FROM.)
     const all = !!view.plan?.job?.bound;
     if (dist < BOUND_FROM || (!this.methodical && !all && dist < BOUND_MIXED)) return null;
     const period = TICK_RATE * (this.methodical ? 3.5 : 4.5);
+    // A squad's halves share one clock (a Tactical member's turn as long as a Mixed one's): one half moves while the other covers.
+    if (squadHalf !== undefined) return (Math.floor(view.tick / (TICK_RATE * 4)) + squadHalf) % 2 === 0 ? 'move' : 'cover';
     return (Math.floor(view.tick / period) + this.slot) % 2 === 0 ? 'move' : 'cover';
   }
 
@@ -1280,6 +1300,8 @@ export class BotBrain {
     const def = this.heldDef(view);
     const base = 4 + (this.profile.rangePreference / 100) * 22;
     if (!def) return base;
+    // How far to stand stays hand-set: measured distances (weaponBands.ts botEdge) kept CTF attackers standing off and
+    // cost Diamond Park its captures (docs/GUNPLAY_AUDIT.md, "G4"). Which gun to hold is measured (weaponScore).
     const [lo, hi] = def.botRange;
     return clamp(base, lo + 1, Math.max(lo + 2, Math.min(hi - 2, hi * 0.7)));
   }
@@ -1326,6 +1348,8 @@ export class BotBrain {
 
     // Cover-to-cover advance (Phase B item 6): on the way to an objective, in a fight at range, by style.
     this.bound = this.boundPhase(view, target, goal);
+    // (A squad's covering half: its enemy ducking out of sight, it keeps their heads down while the others move.)
+    if (this.bound === 'cover' && goal?.half !== undefined) this.coverFireUntil = tick + Math.round(TICK_RATE * COVER_FIRE_SECONDS);
     // Cover: under fire, fighting at range, reloading or hurt, for bots that play tactically.
     const threat = target?.pos ?? (underFire ? this.threatFrom : null);
     // Better bots take cover far more often; arena bots mostly keep moving instead.
@@ -1606,6 +1630,20 @@ export class BotBrain {
             sprint = r.sprint;
             stance = r.stance;
             moveScale = r.moveScale;
+            // Covering fire (a fireteam's covering half, while the other half moves): at where the enemy went out of
+            // sight, only while the rounds reach it (suppress: clearShot), so from a peek, not into its own cover.
+            const lk = this.lastKnown;
+            if (tick < this.coverFireUntil && !sprint && lk && tick - lk.tick < TICK_RATE * COVER_FIRE_SECONDS && horizontalDistance(me.pos, lk.pos) > 6) {
+              const sup = this.suppress(view, lk.pos, ctx);
+              if (sup) {
+                sol = sup;
+                wantFire = true;
+                this.lookAt(view, lk.pos, 1.2);
+                lookDone = true;
+                this.coverShots++;
+                break;
+              }
+            }
           }
           // Hold the angle where they were.
           if (threat && !sprint) this.lookAt(view, threat, 1.2);
@@ -2143,7 +2181,7 @@ export class BotBrain {
     // A sniper on its spot takes only a calculated shot (bots/sniper.ts goodShot): it keeps the target in its scope and
     // waits rather than give the spot away on a poor one.
     const sniping = !!target && !!sol && wantFire && this.sniping(view, def);
-    if (sniping && !goodShot({ dist: sol!.dist, reach: def!.botRange[1], lateral: this.aim.speedAcross(ctx.eye, target!.pos), facing: facingOf(target!, me.pos), settled: this.aim.settledOn(sol!), tracked: this.aim.trackedTicks(tick) / TICK_RATE })) {
+    if (sniping && !goodShot({ dist: sol!.dist, reach: botBand(def!)[1], lateral: this.aim.speedAcross(ctx.eye, target!.pos), facing: facingOf(target!, me.pos), settled: this.aim.settledOn(sol!), tracked: this.aim.trackedTicks(tick) / TICK_RATE })) {
       wantFire = false;
       if (tick % TICK_RATE === 0) this.heldShots++;
       this.aim.trigger(ctx, { yaw: this.yaw + 9, pitch: 0, dist: 1, halfAngle: 0 }, this.yaw, this.pitch, false);
@@ -3556,7 +3594,7 @@ export class BotBrain {
     const live = this.live;
     live.length = 0;
     const held = this.post?.kind === 'sniper' ? this.heldDef(view) : undefined;
-    const sight = held && this.sniping(view, held) ? Math.max(SIGHT_RANGE, Math.min(SCOPE_SIGHT, held.botRange[1])) : SIGHT_RANGE;
+    const sight = held && this.sniping(view, held) ? Math.max(SIGHT_RANGE, Math.min(SCOPE_SIGHT, botBand(held)[1])) : SIGHT_RANGE;
     let armedVsTanks: boolean | undefined;
     // Not whoever shares its vehicle (in a free-for-all a crewmate is nobody's ally): a tank's driver turned to face
     // its own gunner and stood there.
@@ -4415,16 +4453,24 @@ export function barrelReach(alt: AltFire): number {
   return Math.min(alt.range ?? 10, (alt.falloff?.end ?? 16) * 0.45);
 }
 
+/** weaponScore's weight on how much faster than the benchmark guns a gun kills at the distance (weaponBands.ts ttkEdge). */
+const EDGE_WEIGHT = 0.4;
+
 export function weaponScore(w: InventoryView, c: WeaponChoiceContext): number {
   const { def } = w;
   const rounds = w.mag + w.reserve;
   if (def.magazine > 0 && rounds <= 0) return -Infinity;
   const { dist, target, profile } = c;
-  const [lo, reach] = def.botRange;
+  // Its band: where the gun was measured to kill in good time (weaponBands.ts), not a hand-set guess.
+  const [lo, reach] = botBand(def);
   // A melee weapon with a loaded barrel (the Battle Axe) also fights a few steps beyond its reach.
   const barrel = def.kind === 'melee' && def.alt?.kind === 'hitscan' && (w.alt ?? 0) >= def.alt.cost ? def.alt : null;
   const hi = barrel ? Math.max(reach, barrelReach(barrel)) : reach;
   let score = def.botDesirability + (dist >= lo && dist <= hi ? 0.6 : -Math.min(dist < lo ? lo - dist : dist - hi, 20) * 0.03);
+  // And how it kills at this distance against what others carry (measured): a shotgun over a Precision Rifle at arm's
+  // length, though both can kill there.
+  // A switch in a close fight (as below, under 15 m) pays the gun's draw first; further off there is time to draw.
+  score += EDGE_WEIGHT * ttkEdge(def.id, dist, !!c.held || dist >= 15);
   if (def.projectile && dist < def.projectile.splashRadius + 1) score -= 1.5 * (profile.selfPreservation / 100);
   if (profile.tags.includes('EXPLOSIVES_FAN') && def.projectile) score += 0.4;
   if (def.kind === 'melee') score += (profile.meleePreference / 100) * 0.5;

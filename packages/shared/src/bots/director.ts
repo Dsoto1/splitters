@@ -71,6 +71,8 @@ export interface DirectorMember {
   ordered?: boolean;
   mounted?: boolean;
   seen?: Vec3 | null;
+  /** Fireteams (Part 2): a bot-led squad's member takes its leader's job (this slot's), so the squad plays one play. */
+  unit?: number;
 }
 
 /** Squads only in matches this big (players), and only from this many free bots on a side. */
@@ -227,7 +229,7 @@ export class BotDirector {
       plan.regions = regions;
       plan.towards = towards;
       plan.vantage = this.vantage;
-      plan.job = jobs.get(m.slot) ?? null;
+      plan.job = (m.unit !== undefined ? jobs.get(m.unit) : undefined) ?? jobs.get(m.slot) ?? null;
       plan.trips = brain.trips;
     }
     let list = this.clusters.get(side);

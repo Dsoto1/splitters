@@ -11,6 +11,7 @@ import { spawn } from 'node:child_process';
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium, devices } from 'playwright';
 import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
@@ -678,11 +679,11 @@ async function editoruxFlow(browser) {
   await page.click('#ed-tb-rotate');
   await page.click('#ed-tb-rotate');
   await clickAt(8, 0, 0);
-  await clickTool(page, '[data-tool="prop:prop.barrel"]');
-  await clickAt(16, 0, 0);
-  await clickTool(page, '[data-tool="tile:core.corridor"]');
   await clickAt(16, 0, 0);
   check((await page.getAttribute('#ed-tb-place', 'class')).includes('active') && (await page.textContent('#ed-tb-place')).includes('Corridor'), 'Place is lit and names the piece');
+  // A barrel on the second corridor's floor. Placed by command: the prop tool lands a prop on the corridor's roof
+  // under the pointer, and before the corridor is there, over nothing, it is refused (ghostWhy.ts).
+  await page.evaluate(() => window.__editor.history.execute('Place Barrel', { kind: 'addEntities', entities: [{ id: 'prop_e2e_barrel', kind: 'prop', position: [16, 0, 0], model: 'prop.barrel', yaw: 0, scale: 1, solid: true, tint: null }] }));
   await clickTool(page, '[data-tool="pickup:core.health_small"]');
   await clickAt(-2, 0, -2);
   await clickTool(page, '[data-tool="npc:squad"]');
@@ -757,7 +758,10 @@ async function editoruxFlow(browser) {
 
   // A placed prop keeps its look, deselected, once the preview moves on to another model (the preview
   // used to take the model's shared materials and textures down with it, leaving placed copies white).
+  // On a Platform's floor (this map has no ground: over nothing a prop is refused).
   await page.evaluate(() => window.__editor.view.focus({ x: -14, y: 0, z: 10 }));
+  await clickTool(page, '[data-tool="tile:core.platform"]');
+  await clickAt(-16, 0, 8);
   await clickTool(page, '[data-tool="prop:prop.ww_barrel_a"]');
   await clickAt(-14, 0, 10);
   const placedBarrel = (await doc()).entities.find((e) => e.kind === 'prop' && e.model === 'prop.ww_barrel_a');
@@ -785,6 +789,7 @@ async function editoruxFlow(browser) {
     return sum.map((v) => Math.round(v / 25));
   })();
   check(placedBarrel && (await page.evaluate(() => window.__editor.selection.entities.length)) === 0 && Math.max(...barrelPx) < 190, `a placed textured prop draws in its colours, not white, deselected after the preview changed model (rgb ${barrelPx.join(',')})`);
+  await page.keyboard.press('Control+KeyZ');
   await page.keyboard.press('Control+KeyZ');
   await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
 
@@ -952,13 +957,16 @@ async function editoruxFlow(browser) {
   await page.keyboard.press('Escape');
   await page.keyboard.press('PageDown');
 
-  // Terrain: scattered plants and rocks are bedded into the ground, a little below level 0; Erase must still reach them.
+  // Terrain: plants and rocks the Environment brush paints are bedded into the ground, a little below level 0; Erase must
+  // still reach them. (The Scatter Brush sets are retired, owner 2026-11-09: none left in the palette.)
   await page.click('#ed-env-btn');
   check((await page.getAttribute('#ed-env-btn', 'class')).includes('on') && (await page.isVisible('#ed-pal-tabs [data-ws="environment"][data-pane="paint"]')), 'the Environment workspace shows its own sub-tabs');
   await page.click('#ed-pal-tabs [data-ws="environment"][data-pane="terrain"]');
   await page.click('#ed-tr-new');
   await page.evaluate(() => window.__editor.view.focus({ x: 30, y: 0, z: 30 }));
-  await clickTool(page, '[data-tool="scatter:rocks"]');
+  check(!(await page.$('[data-tool^="scatter:"]')), 'the old Scatter Brush sets are gone from the palette');
+  await clickTool(page, '[data-tool="envbrush"]');
+  await page.selectOption('#ed-env-preset', 'alpine');
   await clickAt(30, 0, 30);
   d = await doc();
   const rocks = d.entities.filter((e) => e.kind === 'prop');
@@ -1078,6 +1086,16 @@ async function editoruxFlow(browser) {
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).entities.length === before, 'a stroke undoes in one step');
   await editorPhase1aChecks(page, { doc, at, clickAt, settle, shot });
+  await editorInspectorKeepChecks(page, { doc, clickAt, settle });
+  // At 1400 px the top bar keeps Export and Import (and the owner's Publish) beside the Bot test button.
+  await settle();
+  const bar1400 = await page.evaluate(() => {
+    const t = document.getElementById('ed-top');
+    const shown = (id) => getComputedStyle(document.getElementById(id)).display !== 'none';
+    return { fits: t.scrollWidth <= t.clientWidth + 1, shown: ['ed-export', 'ed-import', 'ed-maptest', 'ed-skill'].filter(shown), cls: t.className, width: innerWidth };
+  });
+  check(bar1400.fits && bar1400.shown.length === 4, `at 1400 px the top bar fits with Export, Import, Bot test and the bots' skill shown (${JSON.stringify(bar1400)})`);
+  await shot('topbar-1400');
   // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.evaluate(() => document.querySelector('#ed-modes [data-ws="build"]').click());
@@ -1087,14 +1105,720 @@ async function editoruxFlow(browser) {
   await shot('1280');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+}
+
+/**
+ * The inspector keeps the first edit after a placement (MapMaker fixes 2, item 7; editor/inspectorKeep.ts). A placement
+ * builds the inspector for the new thing and the map change rebuilds it a frame later: a value typed in before that
+ * frame went with the old field. Here the placement is made as the Place tool makes it (run, then select), a value is
+ * typed into X at once, and three frames pass before Enter: the field still has it and commits it.
+ */
+async function editorInspectorKeepChecks(page, { doc, clickAt, settle }) {
+  await page.keyboard.press('Escape');
+  const r = await page.evaluate(async () => {
+    const ed = window.__editor;
+    const id = 'spawn_keep';
+    const raf = () => new Promise((res) => requestAnimationFrame(() => res()));
+    ed.run('Place spawn', { kind: 'addEntities', entities: [{ id, kind: 'spawn', position: [4, 0, 4], yaw: 0 }] });
+    ed.setSelection({ tiles: [], entities: [id] });
+    const field = (label) => [...document.querySelectorAll('#ed-inspector .row')].find((row) => row.firstChild?.textContent === label)?.querySelector('input');
+    const x = field('X');
+    if (!x) return { error: 'no X field' };
+    x.focus();
+    x.value = '9';
+    x.dispatchEvent(new Event('input', { bubbles: true }));
+    await raf();
+    await raf();
+    await raf();
+    const now = document.activeElement;
+    const kept = { tag: now?.tagName ?? null, value: now?.value ?? null, rebuilt: now !== x };
+    now?.dispatchEvent(new Event('change', { bubbles: true }));
+    await raf();
+    await raf();
+    return { kept, x: ed.doc.entities.find((e) => e.id === id)?.position[0] };
+  });
+  check(!r.error && r.kept.tag === 'INPUT' && r.kept.value === '9' && r.x === 9, `the inspector keeps the first edit after a placement through the rebuild a frame later (${JSON.stringify(r)})`);
+  // The same with the mouse and keyboard: the Spawn tool places one, X is typed at once and Enter commits it.
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
+  await settle();
+  await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
+  await clickAt(10, 0, 4);
+  const placed = (await doc()).entities.filter((e) => e.kind === 'spawn').at(-1);
+  await page.fill('#ed-inspector .row:has(> span:text-is("Z")) input', '-7');
+  await page.keyboard.press('Enter');
+  await settle();
+  const moved = (await doc()).entities.find((e) => e.id === placed?.id);
+  check(moved?.position[2] === -7, `typed into the inspector straight after placing with the mouse, the edit lands (z ${moved?.position[2]})`);
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('Escape');
+}
+
+/**
+ * MapMaker's checks were one flow (`editorux`, 1,337 s on CI run 42671626152: too long for a retry in the 45-minute
+ * job); split by area into four of about 5-6.5 minutes each (MapMaker fixes 2, item 10), every check kept, in the
+ * same order. `editorux`: the palette, tools, placing, levels, the inspector, the status bar and the top bar (one
+ * page). `editorpieces`: set pieces, the ground under floors, measuring. `editortools`: turning, the workflow (Play
+ * from here, the plan view, the card shot), Phase 3 part B (groups, paste, mirror, notes), the terrain grid and bot
+ * hints. `editorenv`: the bot test, the environment tools, and the time of day and weather (Phase 5).
+ */
+async function editorpiecesFlow(browser) {
   await editorSetPieceChecks(browser);
   await editorSetPiecePart5Checks(browser);
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
+}
+
+async function editortoolsFlow(browser) {
   await editorTurnChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
+  await editorBotHintChecks(browser);
+  await editorTileOptionChecks(browser);
+}
+
+/**
+ * Tile options (Sandfall follow-up, owner 2026-11-09): the Vaulted Tunnel's Side walls, a checkbox in the tile
+ * inspector that swaps the tile for its walled twin (one undo step, and for several tunnels at once); the twin is kept
+ * out of the palette.
+ */
+async function editorTileOptionChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 0);
+  const palette = await page.evaluate(() => ({ plain: !!document.querySelector('[data-tool="tile:core.tunnel_vault"]'), twin: !!document.querySelector('[data-tool="tile:core.tunnel_vault_walled"]') }));
+  check(palette.plain && !palette.twin, `the palette has the Vaulted Tunnel, not its side-walled twin (${JSON.stringify(palette)})`);
+  // Two tunnels on level -1 (as the palette would place them), one selected.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Place', { kind: 'addTiles', tiles: [{ id: 'tile_tun_a', tile: 'core.tunnel_vault', x: 2, y: 0, z: -1, rotation: 0 }, { id: 'tile_tun_b', tile: 'core.tunnel_vault', x: 2, y: 1, z: -1, rotation: 0 }] });
+    ed.setSelection({ tiles: ['tile_tun_a'], entities: [] });
+  });
+  await frames(page, 2);
+  const box = await page.$('#ed-tile-opt-sideWalls');
+  check(!!box && !(await box.isChecked()), 'a Vaulted Tunnel\'s inspector has a Side walls option, off');
+  await page.click('#ed-tile-opt-sideWalls');
+  await frames(page, 2);
+  const on = await page.evaluate(() => ({ tiles: window.__editor.doc.classicStructure.tiles.filter((t) => t.id.startsWith('tile_tun')).map((t) => t.tile), undo: window.__editor.history.undoLabel, ticked: document.getElementById('ed-tile-opt-sideWalls')?.checked }));
+  check(on.tiles[0] === 'core.tunnel_vault_walled' && on.tiles[1] === 'core.tunnel_vault' && on.ticked && on.undo === 'Add side walls', `ticking it makes that tunnel side-walled, one undo step (${JSON.stringify(on)})`);
+  await page.evaluate(() => window.__editor.view.focus({ x: 16, y: -4, z: 4 }));
+  await frames(page, 3);
+  await shot('tunnel-side-walls');
+  // Both tunnels selected: the box is half ticked; a click walls both.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: ['tile_tun_a', 'tile_tun_b'], entities: [] }));
+  await frames(page, 2);
+  const half = await page.evaluate(() => ({ ind: document.getElementById('ed-tile-opt-sideWalls')?.indeterminate, label: document.querySelector('.ed-tile-options label span')?.textContent }));
+  check(half.ind === true && half.label === 'Side walls (1 of 2)', `with both selected it shows one of two walled (${JSON.stringify(half)})`);
+  await page.click('#ed-tile-opt-sideWalls');
+  await frames(page, 2);
+  const both = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.filter((t) => t.id.startsWith('tile_tun')).map((t) => t.tile));
+  check(both.every((t) => t === 'core.tunnel_vault_walled'), `a click walls both (${both})`);
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  const undone = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.filter((t) => t.id.startsWith('tile_tun')).map((t) => t.tile));
+  check(undone.every((t) => t === 'core.tunnel_vault'), `two undos take both back to the plain tunnel (${undone})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+async function editorenvFlow(browser) {
+  await editorMapTestChecks(browser);
+  await editorEnvironmentChecks(browser);
+  await editorSkyWeatherChecks(browser);
+}
+
+/**
+ * Time of day and weather (map format v34; MAPMAKER_OVERHAUL_PLAN.md Phase 5): Map properties' Time of day slider
+ * previews live (no edit) and sets the time when let go, its presets set one each, the weather's fall, how hard, wind
+ * and fog banks each make one undo step and show in the view; then TEST starts the match with the map's weather.
+ */
+async function editorSkyWeatherChecks(browser) {
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) });
+  // Medium graphics: Low (the flows' default, phones) draws no rain or snow, only the fog.
+  await context.addInitScript(() => localStorage.setItem('tiletrigger.graphics', 'medium'));
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const sun = () =>
+    page.evaluate(() => {
+      const l = window.__editor.view.scene.getLightByName('sun');
+      return { y: +l.direction.y.toFixed(3), x: +l.direction.x.toFixed(3), color: l.diffuse.toHexString(), doc: window.__editor.doc.timeOfDay ?? null, undo: window.__editor.history.undoLabel ?? null };
+    });
+  const panel = await page.evaluate(() => ['ed-tod-on', 'ed-tod', 'ed-weather-fall', 'ed-weather-amount', 'ed-weather-wind', 'ed-weather-fog'].map((id) => !!document.getElementById(id)));
+  check(panel.every(Boolean) && (await page.locator('.ed-tod-preset').count()) === 6, `Map properties: Time of day (switch, slider, six presets) and Weather (fall, how hard, wind, fog banks) (${JSON.stringify(panel)})`);
+  const before = await sun();
+  // The slider previews as it moves: the sun goes low and red at 18:30, nothing is edited.
+  await page.evaluate(() => {
+    const s = document.getElementById('ed-tod');
+    s.disabled = false;
+    s.value = '18.5';
+    s.dispatchEvent(new Event('input'));
+  });
+  const preview = await sun();
+  check(preview.doc === null && preview.undo === before.undo && preview.y > before.y && preview.color !== before.color, `the time slider previews live without an edit (sun ${JSON.stringify(before)} → ${JSON.stringify(preview)}; label ${await page.textContent('#ed-tod-label')})`);
+  // Let go: one undo step sets it.
+  await page.evaluate(() => document.getElementById('ed-tod').dispatchEvent(new Event('change')));
+  await frames(page, 2);
+  const set = await sun();
+  check(set.doc === 18.5 && /Time of day/.test(set.undo ?? ''), `letting go sets the time (one undo step: ${JSON.stringify(set)})`);
+  // A preset: Noon, the sun high in the south.
+  await page.click('.ed-tod-preset[data-hours="12"]');
+  await frames(page, 2);
+  const noon = await sun();
+  check(noon.doc === 12 && noon.y < -0.85 && Math.abs(noon.x) < 0.01, `the Noon preset puts the sun high in the south (${JSON.stringify(noon)})`);
+  await page.click('.ed-tod-preset[data-hours="22"]');
+  await shot('time-night');
+  // Weather: rain, harder, windy, fog; each one step, drawn in the view.
+  await page.selectOption('#ed-weather-fall', 'rain');
+  const slide = (id, v) =>
+    page.evaluate(([id, v]) => {
+      const s = document.getElementById(id);
+      s.value = String(v);
+      s.dispatchEvent(new Event('input'));
+      s.dispatchEvent(new Event('change'));
+    }, [id, v]);
+  await slide('ed-weather-amount', 100);
+  await slide('ed-weather-wind', 60);
+  await slide('ed-weather-fog', 40);
+  await frames(page, 4);
+  const rain = await page.evaluate(() => ({ weather: window.__editor.doc.weather, stats: { ...window.__editor.view.weather.stats }, note: document.getElementById('ed-weather-note')?.textContent }));
+  check(JSON.stringify(rain.weather) === JSON.stringify({ fall: 'rain', amount: 1, wind: 0.6, fog: 0.4 }) && rain.stats.particles > 0 && rain.stats.fogBanks > 0 && rain.stats.fogDensity > 0, `the weather is set and drawn: rain falling, fog banks, the haze thicker (${JSON.stringify(rain)})`);
+  await shot('weather-rain');
+  await page.keyboard.press('Control+z');
+  const undone = await page.evaluate(() => window.__editor.doc.weather?.fog ?? null);
+  check(undone === 0, `Undo takes back one weather step (fog ${undone})`);
+  await page.keyboard.press('Control+y');
+  // TEST: the match starts with the map's weather (and its time).
+  await page.keyboard.press('F5');
+  const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(90000) }).then(() => true, () => false);
+  check(playing, 'TEST plays the map');
+  if (playing) {
+    await frames(page, 6);
+    const inPlay = await page.evaluate(() => ({ weather: window.__cs.view.weather.current, stats: { ...window.__cs.view.weather.stats }, sun: window.__cs.view.scene.getLightByName('sun')?.diffuse.toHexString().toLowerCase() }));
+    check(inPlay.weather.fall === 'rain' && inPlay.weather.amount === 1 && inPlay.stats.particles > 0 && inPlay.sun === '#9fb8ff', `a match starts with the map's weather and time of day (${JSON.stringify(inPlay)})`);
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * Bot hints in MapMaker (map format v33; MAPMAKER_OVERHAUL_PLAN.md Phase 4 item 3): the Bot hints tool (Y) places a
+ * spot and a jump link, the inspector edits and deletes them (each one undo step), the checks warn of a jump no one
+ * could make and a spot off the navmesh, the plan view shows them, and "What bots know" draws the bots' own spots.
+ */
+async function editorBotHintChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const hints = () => page.evaluate(() => window.__editor.doc.botHints ?? []);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  const clickAt = async (x, y, z) => {
+    const p = await at(x, y, z);
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.click(p.x, p.y);
+  };
+  // A palette card, clicked as a person would (its own click: the Entities tab's thumbnails load and shift the cards).
+  const pickHint = (kind) => page.evaluate((k) => document.querySelector(`[data-tool="bothint:${k}"]`).click(), kind);
+  // The new map's spawn out on the open ground (bots' main area is the ground the spawns route to; the starting room
+  // has no door), then the camera on the middle.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const sp = ed.doc.entities.find((e) => e.kind === 'spawn');
+    ed.history.execute('Move spawn', { kind: 'updateEntities', before: [sp], after: [{ ...sp, position: [10, 0, 18] }] });
+  });
+  await page.evaluate(() => window.__editor.view.focus({ x: 4, y: 0, z: 4 }));
+  await frames(page, 3);
+  // Y: the Bot hints tool (the last kind, a chokepoint first), its cards in the Entities tab.
+  await page.keyboard.press('KeyY');
+  const tool = await page.evaluate(() => ({ tool: window.__editor.tool, lit: document.querySelector('[data-tool="bothint:choke"]')?.classList.contains('active'), hint: document.getElementById('ed-toolhint').textContent }));
+  check(tool.tool.kind === 'bothint' && tool.tool.hint === 'choke' && tool.lit && tool.hint.includes('Bot hints'), `Y picks up the Bot hints tool (${JSON.stringify(tool.tool)})`);
+  await pickHint('sniper');
+  await clickAt(12, 0, 6);
+  let h = await hints();
+  const sniper = h[0];
+  check(h.length === 1 && sniper.kind === 'sniper' && Math.abs(sniper.position[0] - 12) < 0.5 && Math.abs(sniper.position[2] - 6) < 0.5 && sniper.radius === 1.5 && typeof sniper.yaw === 'number', `a click places a sniper spot where it points, facing the way the camera looks (${JSON.stringify(sniper)})`);
+  await frames(page, 2);
+  const shown = await page.evaluate((id) => ({ pin: !!document.querySelector(`.ed-hint-pin[data-hint="${id}"]:not([hidden])`), inspector: document.getElementById('ed-hint-inspector')?.dataset.hint }), sniper?.id);
+  check(shown.pin && shown.inspector === sniper?.id, `the new hint shows as a pin and opens in the inspector (${JSON.stringify(shown)})`);
+  // The inspector: radius, kind, team and facing, each one undo step.
+  await page.fill('#ed-hint-radius', '5');
+  await page.press('#ed-hint-radius', 'Enter');
+  await page.selectOption('#ed-hint-kind', 'camp');
+  const teams = await page.$$eval('#ed-hint-team option', (o) => o.map((x) => x.value));
+  await page.selectOption('#ed-hint-team', teams[1]);
+  await page.fill('#ed-hint-yaw', '90');
+  await page.press('#ed-hint-yaw', 'Enter');
+  h = await hints();
+  check(h.length === 1 && h[0].kind === 'camp' && h[0].radius === 5 && h[0].team === teams[1] && Math.abs(h[0].yaw - Math.PI / 2) < 0.01, `the inspector edits the kind, radius, team and facing (${JSON.stringify(h[0])})`);
+  await page.keyboard.press('Control+KeyZ');
+  h = await hints();
+  const undone = h[0]?.yaw;
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  h = await hints();
+  check(Math.abs(undone - sniper.yaw) < 1e-9 && h[0]?.kind === 'sniper' && h[0].radius === 1.5 && !h[0].team, `undo takes each edit back, one at a time (${JSON.stringify(h[0])})`);
+  for (let i = 0; i < 4; i++) await page.keyboard.press('Control+KeyY');
+  h = await hints();
+  check(h[0]?.kind === 'camp' && h[0].radius === 5, 'redo puts them back');
+  // A jump link: two clicks, its start then its landing; one a player makes, one too far.
+  await pickHint('jump');
+  await clickAt(8, 0, -2);
+  await frames(page, 2);
+  const pending = await page.evaluate(() => !document.querySelector('.ed-hint-pending').hidden);
+  await clickAt(12, 0, -2);
+  await frames(page, 2);
+  h = await hints();
+  const jump = h.find((x) => x.kind === 'jump');
+  const verdict = await page.evaluate(() => document.getElementById('ed-hint-verdict')?.textContent ?? '');
+  check(pending && jump && Math.abs(jump.to[0] - jump.position[0] - 4) < 0.5 && /can make it/.test(verdict), `a jump link from its start to its landing; the inspector says a player can make it (${verdict})`);
+  await clickAt(-4, 0, 10);
+  await clickAt(8, 0, 10);
+  await frames(page, 2);
+  const far = await page.evaluate(() => document.getElementById('ed-hint-verdict')?.textContent ?? '');
+  await page.waitForFunction(() => /couldn't make it/.test(document.getElementById('ed-issues')?.textContent ?? ''), null, { timeout: T(10000) }).catch(() => {});
+  const farIssue = await page.evaluate(() => [...document.querySelectorAll('#ed-issues li')].map((l) => l.textContent).find((t) => /couldn't make it/.test(t)) ?? '');
+  check(/couldn't make it/.test(far) && /across/.test(farIssue), `a jump too far: the inspector and the issues list say a player couldn't make it (${farIssue})`);
+  await shot('bothints');
+  // A spot lifted off the ground: the navigation check warns it is off the navmesh.
+  const camp = (await hints()).find((x) => x.kind === 'camp');
+  await page.click(`.ed-hint-pin[data-hint="${camp.id}"]:not(.landing)`);
+  await frames(page, 2);
+  check((await page.evaluate(() => document.getElementById('ed-hint-inspector')?.dataset.hint)) === camp.id, 'a click on a pin selects that hint for the inspector');
+  await page.fill('#ed-hint-at-y', '9');
+  await page.press('#ed-hint-at-y', 'Enter');
+  const offNav = await page.waitForFunction(() => /off the navmesh/.test(document.getElementById('ed-issues')?.textContent ?? ''), null, { timeout: T(30000) }).then(() => true, () => false);
+  check(offNav, 'a hint off the navmesh is a warning in the issues list');
+  await page.keyboard.press('Control+KeyZ');
+  await shot('bothints-inspector');
+  // Delete (the inspector's button), and undo brings it back.
+  const before = (await hints()).length;
+  await page.click('#ed-hint-delete');
+  const afterDelete = (await hints()).length;
+  await page.keyboard.press('Control+KeyZ');
+  check(afterDelete === before - 1 && (await hints()).length === before && (await hints()).some((x) => x.id === camp.id), `Delete removes the hint, undo brings it back (${before} → ${afterDelete})`);
+  // The plan view shows them too.
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('KeyK');
+  await frames(page, 4);
+  const plan = await page.evaluate(() => [...document.querySelectorAll('.ed-hint-pin')].filter((p) => !p.hidden).length);
+  check(plan >= 4, `the plan view shows the hints' pins (${plan} shown)`);
+  await shot('bothints-plan');
+  await page.keyboard.press('KeyK');
+  await frames(page, 2);
+  // What bots know: the bots' own spots, worked out on the navmesh, read-only; off again clears them.
+  await pickHint('choke');
+  await page.check('#ed-hints-computed');
+  const known = await page.waitForFunction(() => window.__editor.hints.computed, null, { timeout: T(30000) }).then(() => true, () => false);
+  const knownNote = await page.textContent('#ed-hints-computed-note');
+  const spots = await page.evaluate(() => ({ v: window.__editor.hints.computed?.vantage.length ?? -1, p: window.__editor.hints.computed?.parkour.length ?? -1, doc: (window.__editor.doc.botHints ?? []).length }));
+  check(known && spots.v > 0 && /Bots work out \d+ sniper and \d+ camp spots and \d+ parkour links/.test(knownNote), `What bots know shows the bots' own spots (${JSON.stringify(spots)}; ${knownNote})`);
+  await page.evaluate(() => window.__editor.view.focus({ x: 4, y: 0, z: 4 }));
+  await frames(page, 4);
+  await shot('bothints-known');
+  await page.uncheck('#ed-hints-computed');
+  check((await page.evaluate(() => window.__editor.hints.computed)) === null && (await hints()).length === spots.doc, 'turned off, the overlay goes (and the map is untouched)');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker overhaul Phase 4 items 1 and 2 (mapTestPanel.ts): on Skyward, a 30 s bot test run in the background
+ * (MapMaker keeps drawing and taking clicks meanwhile) gives heatmaps, drawn in 3D and in the plan view, and a
+ * summary; Cancel ends a run at once; the spawn check labels every spawn with its exposure, draws the sightlines and
+ * warns about exposed spawns in the validator's list.
+ */
+async function editorMapTestChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: process.env.E2E_SHOTS ? 2 : 1 })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  page.on('dialog', (d) => d.accept());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await page.setInputFiles('#ed-import-file', fileURLToPath(new URL('../maps/skyward.json', import.meta.url)));
+  await page.waitForFunction(() => window.__editor.doc.metadata.id === 'skyward', null, { timeout: T(30000) });
+  await page.click('#ed-maptest');
+  const opened = await page.evaluate(() => ({ shown: !document.getElementById('ed-maptest-panel').hidden, modes: [...document.querySelectorAll('#ed-mt-mode option')].map((o) => o.value), pressed: document.getElementById('ed-maptest').getAttribute('aria-pressed') }));
+  check(opened.shown && opened.pressed === 'true' && opened.modes[0] === 'core.deathmatch' && opened.modes.includes('core.tdm'), `Bot test opens the Test panel with the modes the map plays, its main one first (${JSON.stringify(opened)})`);
+  await page.selectOption('#ed-mt-mode', 'core.deathmatch');
+  await page.fill('#ed-mt-bots', '6');
+  // A 5-minute run: it goes on in the background while MapMaker draws and takes clicks (the match is in its own
+  // worker), then Cancel ends it at once.
+  await page.selectOption('#ed-mt-length', '300');
+  await page.click('#ed-mt-run');
+  await page.waitForFunction(() => /^\d:\d\d of 5:00 played/.test(document.getElementById('ed-mt-status').textContent), null, { timeout: T(60000) }).catch(() => {});
+  // (A click on the page while it runs: the grid toggle, then Cancel at once, before a slow software-drawn frame
+  // lets the match finish.)
+  const during = await page.evaluate(() => {
+    document.getElementById('ed-grid').click();
+    return { running: window.__editor.mapTest.running, grid: document.getElementById('ed-grid').classList.contains('on'), status: document.getElementById('ed-mt-status').textContent, bar: document.getElementById('ed-mt-bar').value };
+  });
+  // (Clicked in the page: a software-drawn frame for Playwright's own click can take seconds, the match not.)
+  await page.evaluate(() => document.getElementById('ed-mt-cancel').click());
+  const cancelled = await page.evaluate(() => ({ running: window.__editor.mapTest.running, progress: !document.getElementById('ed-mt-progress').hidden, result: !!window.__editor.mapTest.result, run: !document.getElementById('ed-mt-run').disabled, frames: window.__editor.mapTest.frames.count }));
+  check(during.running && !during.grid && during.bar > 0, `the bot test run goes on in the background, its progress shown, while MapMaker draws and takes a click (${JSON.stringify(during)}, ${cancelled.frames} frames drawn meanwhile)`);
+  check(!cancelled.running && !cancelled.progress && !cancelled.result && cancelled.run, `Cancel ends the run at once, with no result (${JSON.stringify(cancelled)})`);
+  await page.click('#ed-grid');
+  if (process.env.E2E_SHOTS) {
+    // The picture of a run going: another, cancelled after the shot.
+    await page.click('#ed-mt-run');
+    await page.waitForFunction(() => /^\d:\d\d of 5:00 played/.test(document.getElementById('ed-mt-status').textContent), null, { timeout: T(60000) }).catch(() => {});
+    await shot('bottest-running');
+    await page.evaluate(() => document.getElementById('ed-mt-cancel').click());
+    await page.waitForFunction(() => !window.__editor.mapTest.running, null, { timeout: T(60000) }).catch(() => {});
+    await page.evaluate(() => (window.__editor.mapTest.result = null));
+  }
+  // A 30-second run to the end, with a 50 ms timer on the page's thread measuring how late it fires (the editor's
+  // thread blocked), apart from drawing.
+  await page.evaluate(() => {
+    const probe = (window.__mtProbe = { worst: 0, n: 0, at: performance.now() });
+    probe.timer = setInterval(() => {
+      const now = performance.now();
+      probe.worst = Math.max(probe.worst, now - probe.at - 50);
+      probe.n++;
+      probe.at = now;
+    }, 50);
+  });
+  await page.selectOption('#ed-mt-length', '30');
+  await page.click('#ed-mt-run');
+  await page.waitForFunction(() => !window.__editor.mapTest.running && window.__editor.mapTest.result, null, { timeout: T(180000) }).catch(() => {});
+  const done = await page.evaluate(() => {
+    const ed = window.__editor;
+    const r = ed.mapTest.result;
+    const went = ed.view.scene.getMeshByName('edMapTest_went');
+    return { summary: [...document.querySelectorAll('#ed-mt-summary li')].map((l) => l.textContent), cells: r ? Object.fromEntries(Object.entries(r.layers).map(([k, v]) => [k, v.length])) : null, kills: r?.summary.kills, quads: went ? went.getTotalVertices() / 4 : 0, cost: document.getElementById('ed-mt-cost').textContent, longest: Math.round(ed.mapTest.frames.longest) };
+  });
+  check(done.summary[0] === 'Deathmatch, 6 bots, 0:30 played' && done.summary.some((l) => /^Kills: \d+/.test(l)) && done.summary.some((l) => /^Stuck recoveries: \d+/.test(l)) && done.summary.some((l) => /^Failed route searches: \d+/.test(l)), `the run's summary: kills, stuck recoveries, failed searches (${done.summary.join(' | ')})`);
+  check(done.cells && done.cells.went > 20 && done.quads === done.cells.went && done.cells.died > 0, `heatmaps: where bots went drawn cell by cell, where they died (${JSON.stringify(done.cells)}, ${done.kills} kills)`);
+  const probe = await page.evaluate(() => (clearInterval(window.__mtProbe.timer), { worst: Math.round(window.__mtProbe.worst), n: window.__mtProbe.n }));
+  console.log(`bot test run: the page's 50 ms timer at most ${probe.worst} ms late over ${probe.n} ticks; ${done.cost}`);
+  check(/^In the background: [\d.]+ s for 0:30 of match \([\d.]+ ms of the worker's time a match second\)/.test(done.cost), `the cost is measured: the worker's time and MapMaker's longest frame (${done.cost})`);
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await frames(page, 4);
+  await shot('bottest-heatmap');
+  // A layer goes off and on with its box.
+  await page.click('#ed-mt-layers input[data-layer="went"]');
+  const off = await page.evaluate(() => !window.__editor.view.scene.getMeshByName('edMapTest_went'));
+  await page.click('#ed-mt-layers input[data-layer="went"]');
+  const on = await page.evaluate(() => !!window.__editor.view.scene.getMeshByName('edMapTest_went'));
+  check(off && on, `a heatmap layer turns off and on (${off}, ${on})`);
+  // The plan view shows them too, from above.
+  await page.click('#ed-plan');
+  await frames(page, 4);
+  const plan = await page.evaluate(() => ({ plan: window.__editor.plan.on, went: !!window.__editor.view.scene.getMeshByName('edMapTest_went')?.isEnabled() }));
+  check(plan.plan && plan.went, `the heatmaps show in the plan view (${JSON.stringify(plan)})`);
+  await shot('bottest-plan');
+  await page.click('#ed-plan');
+  // Spawn exposure: a label on every spawn, sightlines, warnings for the exposed ones.
+  await page.click('#ed-mt-exposure');
+  await page.waitForFunction(() => window.__editor.mapTest.exposure, null, { timeout: T(60000) }).catch(() => {});
+  const exp = await page.evaluate(() => {
+    const ed = window.__editor;
+    const x = ed.mapTest.exposure;
+    return {
+      spawns: ed.doc.entities.filter((e) => e.kind === 'spawn').length,
+      labels: [...document.querySelectorAll('#editor > .ed-exposure-label')].map((l) => l.textContent),
+      exposed: x ? x.spawns.filter((s) => s.share >= 0.5).length : -1,
+      warned: ed.allIssues().filter((i) => i.code === 'spawn.exposed').length,
+      lines: !!ed.view.scene.getMeshByName('edMapTest_lines'),
+      list: document.querySelectorAll('#ed-mt-exp li').length,
+    };
+  });
+  check(exp.labels.length === exp.spawns && exp.labels.every((t) => /^\d+%(seen to \d+ m|unseen)$/.test(t)), `every spawn is labelled with its exposure (${exp.labels.length} of ${exp.spawns}: ${exp.labels.slice(0, 3).join(', ')})`);
+  check(exp.exposed > 0 && exp.warned === exp.exposed && exp.lines && exp.list > 0, `exposed spawns are warned in the validator's list and lines of sight drawn (${JSON.stringify(exp)})`);
+  const spawn = await page.evaluate(() => window.__editor.mapTest.exposure.spawns.slice().sort((a, b) => b.share - a.share)[0].pos);
+  await page.evaluate(([x, y, z]) => window.__editor.view.focus({ x, y, z }), [spawn.x, spawn.y, spawn.z]);
+  await frames(page, 4);
+  await shot('exposure');
+  // An edit makes the check stale: its warnings leave the list until it is run again.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const s = ed.doc.entities.find((e) => e.kind === 'spawn');
+    ed.history.execute('Move', { kind: 'updateEntities', before: [s], after: [{ ...s, position: [s.position[0] + 0.5, s.position[1], s.position[2]] }] });
+  });
+  await frames(page, 3);
+  const stale = await page.evaluate(() => window.__editor.allIssues().filter((i) => i.code === 'spawn.exposed').length);
+  check(stale === 0, `after an edit the exposure warnings wait for the next check (${stale})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * Environment Phase 3 (docs/PROCEDURAL_ENVIRONMENT.md §8): the Nature tab's Environment group (species by category,
+ * single placement with a confirmation where a tree would block a spawn), the environment brush (a preset, a stroke =
+ * one undo step, the same seed repaints the same plants, filters, keep-clear, erase), the collision preview, the
+ * round trip through Export and Import, and a big stroke's cost.
+ */
+async function editorEnvironmentChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1, acceptDownloads: true })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-env-${name}.png` }).catch(() => {}) : Promise.resolve());
+  // Dialogs: the next answer is set before each one is expected (accept by default).
+  let answer = true;
+  const asked = [];
+  page.on('dialog', (d) => (asked.push(d.message()), answer ? d.accept() : d.dismiss()));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await newMap(page, 160);
+  // A hillside: flat grass west of x = 0, a 31° stone slope up to a 24 m plateau; a spawn and a route on the flat.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    const xOf = (i) => t.origin[0] + (i % t.cols) * t.spacing;
+    const heights = t.heights.map((h, i) => Math.round(Math.min(24, Math.max(0, xOf(i) * 0.6)) * 100));
+    const materials = t.materials.map((m, i) => (t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing > 0 && t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing < 40 ? 2 : m));
+    ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights, materials } });
+    ed.history.execute('Spawn', { kind: 'addEntities', entities: [{ id: 'spawn_env', kind: 'spawn', position: [-20, 0, 0], yaw: 0, faction: null }] });
+    ed.history.execute('Route', { kind: 'setPaths', before: ed.doc.paths ?? null, after: [{ id: 'route_env', points: [[-45, 0, 12], [-5, 0, 12]], uses: ['route'], style: 'dirt', width: 3, closed: false, lay: false }] });
+  });
+  const envCount = () => page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.')).length);
+  const at = (x, y, z) => page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+  // Over a point, from far enough back that a stroke's ends are in view (between the palette and the side panel).
+  // (Then a few frames, so the view's matrices, which project() reads, follow the camera.)
+  const look = async (x, z, y = 0) => {
+    await page.evaluate(([x, z, y]) => { const v = window.__editor.view; v.yaw = 0; v.focus({ x, y, z }); v.dolly(-30); }, [x, z, y]);
+    await frames(page, 3);
+  };
+  await frames(page, 3);
+  await look(-15, 0);
+
+  // ---- The Environment group: first in the Nature tab, our species by category, the brush card.
+  await clickTool(page, '[data-tool="envbrush"]');
+  const pal = await page.evaluate(() => {
+    const nature = document.getElementById('ed-nature');
+    const sec = nature.querySelector('section[data-group="nature:environment"]');
+    return {
+      first: nature.querySelector('section')?.dataset.group,
+      heads: [...(sec?.querySelectorAll('.tile-cat') ?? [])].map((h) => h.textContent),
+      species: [...(sec?.querySelectorAll('[data-tool^="prop:env."]') ?? [])].length,
+      kenney: [...(sec?.querySelectorAll('[data-tool^="prop:prop."]') ?? [])].length,
+      dupes: [...nature.querySelectorAll('[data-tool="prop:env.broadleaf.oak"]')].length,
+      pane: !!document.getElementById('ed-env-preset') && !!document.getElementById('ed-env-species'),
+    };
+  });
+  check(pal.first === 'nature:environment' && ['Trees', 'Plants', 'Ground cover', 'Rocks', 'Boulders', 'Cliffs'].every((h) => pal.heads.includes(h)) && pal.species >= 19 && !pal.kenney && pal.dupes === 1 && pal.pane, `the Nature tab opens on the Environment group: Trees, Plants, Ground cover, Rocks, Boulders and Cliffs of our species, and the brush (${JSON.stringify(pal)})`);
+  await shot('palette');
+
+  // ---- The brush: the Temperate preset, seed 5, a stroke across the flat = one undo step.
+  await page.selectOption('#ed-env-preset', 'temperate');
+  await page.fill('#ed-env-seed', '5');
+  await page.dispatchEvent('#ed-env-seed', 'change');
+  await page.evaluate(() => window.__editor.setBrushRadius(8));
+  const stroke = async (from, to, shift = false) => {
+    // The hillside's height under a point (as sculpted above).
+    const hy = (x) => Math.min(24, Math.max(0, x * 0.6));
+    const a = await at(from[0], hy(from[0]), from[1]);
+    const b = await at(to[0], hy(to[0]), to[1]);
+    // Both ends on the 3D view (not under the palette or the side panel), and no stroke report left from before.
+    const inView = await page.evaluate(([a, b]) => {
+      const l = document.getElementById('ed-palette').getBoundingClientRect().right;
+      const r = document.getElementById('ed-right').getBoundingClientRect().left;
+      window.__envStroke = null;
+      return [a, b].every((p) => p.x > l + 4 && p.x < r - 4 && p.y > 80 && p.y < innerHeight - 40);
+    }, [a, b]);
+    if (!inView) check(false, `the stroke ${JSON.stringify(from)} → ${JSON.stringify(to)} is on the 3D view (${JSON.stringify([a, b])})`);
+    await page.mouse.move(a.x, a.y);
+    // (Let the palette's hover card go and the pointer's ground be found first.)
+    await frames(page, 3);
+    if (shift) await page.keyboard.down('Shift');
+    await page.mouse.down();
+    await page.mouse.move(b.x, b.y, { steps: 12 });
+    await page.mouse.up();
+    if (shift) await page.keyboard.up('Shift');
+    await frames(page, 2);
+  };
+  const plants = () => page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.')).map((e) => `${e.model}#${e.variant ?? 0}@${e.position.join(',')}/${e.yaw}/${e.scale}`).sort());
+  const undoLabel0 = await page.evaluate(() => window.__editor.history.undoLabel);
+  await stroke([-30, -8], [-10, 4]);
+  const painted = await plants();
+  const s1 = await page.evaluate(() => window.__envStroke);
+  const label = await page.evaluate(() => window.__editor.history.undoLabel);
+  check(painted.length > 20 && s1?.dabs >= 2 && label === 'Paint Temperate woods' && painted.some((p) => p.startsWith('env.broadleaf.')) && painted.some((p) => p.startsWith('env.grass.')), `a stroke of the Temperate brush paints trees, shrubs and ground cover (${painted.length} plants in ${s1?.dabs} dabs, step "${label}")`);
+  // Trunks, boulders and hiding bushes keep off the spawn and the route; ground cover may go on them.
+  const clear = await page.evaluate(() => {
+    const blocking = /env\.(broadleaf|conifer|palm|cactus|rock\.boulder|cliff|hedge|shrub)/;
+    const ps = window.__editor.doc.entities.filter((e) => e.kind === 'prop' && blocking.test(e.model));
+    return { onSpawn: ps.filter((e) => Math.hypot(e.position[0] + 20, e.position[2]) < 3).length, onRoute: ps.filter((e) => e.position[0] > -45 && e.position[0] < -5 && Math.abs(e.position[2] - 12) < 2.5).length };
+  });
+  check(s1.keptClear > 0 && clear.onSpawn === 0 && clear.onRoute === 0, `nothing that blocks play lands on the spawn or the route (${s1.keptClear} kept clear; ${JSON.stringify(clear)})`);
+  await shot('brush');
+  await page.keyboard.press('Control+KeyZ');
+  const undone = await envCount();
+  await page.keyboard.press('Control+KeyY');
+  const redone = await envCount();
+  check(undone === 0 && redone === painted.length && (await page.evaluate(() => window.__editor.history.undoLabel)) === 'Paint Temperate woods', `the whole stroke is one undo step (undo ${undone}, redo ${redone} of ${painted.length}; before it "${undoLabel0}")`);
+  // Undo, then the same stroke with the same seed: the same plants (turns, sizes, variants and all).
+  await page.keyboard.press('Control+KeyZ');
+  await stroke([-30, -8], [-10, 4]);
+  const again = await plants();
+  check(again.length === painted.length && again.every((p, i) => p === painted[i]), `the same seed and stroke paint the same plants (${again.length} of ${painted.length} the same)`);
+
+  // ---- Filters: on the 31° slope, oaks and maples (30° at most) stay off; the slope filter at 10° keeps everything off.
+  await look(20, 0, 12);
+  await page.fill('#ed-env-slope-max', '10');
+  await page.dispatchEvent('#ed-env-slope-max', 'change');
+  const beforeSlope = await envCount();
+  await stroke([12, -6], [28, 6]);
+  const s2 = await page.evaluate(() => window.__envStroke);
+  check((await envCount()) === beforeSlope, `the slope filter (at most 10°) paints nothing on the hillside (${(await envCount()) - beforeSlope} painted)`);
+  await page.fill('#ed-env-slope-max', '60');
+  await page.dispatchEvent('#ed-env-slope-max', 'change');
+  // Only stone: the brush paints the slope (pebbles, boulders and grass), never a broadleaf tree there.
+  await page.evaluate(() => {
+    if (!document.getElementById('ed-env-mat-stone').checked) document.getElementById('ed-env-mat-stone').click();
+    for (const m of ['grass', 'dirt', 'sand', 'gravel', 'snow', 'moss', 'mud']) { const i = document.getElementById(`ed-env-mat-${m}`); if (i.checked) i.click(); }
+  });
+  await stroke([12, -6], [28, 6]);
+  const slope = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.') && e.position[0] > 2 && e.position[0] < 38).map((e) => e.model));
+  check(s2?.filtered > 0 && slope.length > 0 && !slope.some((m) => m.startsWith('env.broadleaf.')), `on the stone slope: ${slope.length} plants, no broadleaf trees (their 30° limit) (${[...new Set(slope)].join(', ')}; the 10° stroke: ${JSON.stringify(s2)})`);
+  await page.selectOption('#ed-env-preset', 'alpine');
+  await page.evaluate(() => { for (const m of ['grass', 'dirt', 'sand', 'gravel', 'snow', 'moss', 'mud']) { const i = document.getElementById(`ed-env-mat-${m}`); if (i && !i.checked) i.click(); } });
+  await look(52, 0, 24);
+  await stroke([44, -8], [60, 6]);
+  await look(30, 0, 24);
+  await frames(page, 4);
+  await shot('hillside-top');
+  if (shots) {
+    // For the record (screenshots only): the whole hillside painted Alpine, seen at eye level from its foot.
+    await page.fill('#ed-env-slope-max', '40');
+    await page.dispatchEvent('#ed-env-slope-max', 'change');
+    await page.evaluate(() => window.__editor.setBrushRadius(14));
+    for (const z of [-24, -6, 12]) {
+      await look(20, z, 12);
+      await stroke([4, z], [36, z + 6]);
+    }
+    await page.evaluate(() => {
+      const v = window.__editor.view;
+      // From the flat south-west of the hill, looking up it (north-east), clear of the starter room.
+      v.camera.position.set(-6, 1.7, -42);
+      v.yaw = 0.6;
+      v.pitch = 0.08;
+      v.applyCamera();
+    });
+    await frames(page, 30);
+    await page.evaluate(() => document.getElementById('ed-pal-toggle')?.click());
+    await frames(page, 10);
+    await shot('hillside-eye');
+    await page.evaluate(() => document.getElementById('ed-pal-toggle')?.click());
+    await page.evaluate(() => document.getElementById('ed-env-slope-max').scrollIntoView());
+    await shot('filters');
+  }
+
+  // ---- Collision and nav preview: what blocks movement (red), shots (orange) and sight (blue), the zones (yellow).
+  await page.check('#ed-env-blockers');
+  await frames(page, 3);
+  const overlay = await page.evaluate(() => { const m = window.__editor.view.scene.getMeshByName('envBlockers'); return m ? m.getTotalVertices() : 0; });
+  check(overlay > 100, `Show what blocks draws the plants' collision footprints and the keep-clear zones (${overlay} vertices)`);
+  await look(-15, 0);
+  await frames(page, 3);
+  await shot('blockers');
+  await page.uncheck('#ed-env-blockers');
+
+  // ---- One tree, placed with the prop tool: on the spawn it asks first (No: nothing placed; Yes: placed).
+  await clickTool(page, '[data-tool="prop:env.broadleaf.oak"]');
+  const onSpawn = await at(-20, 0, 0.5);
+  await page.mouse.move(onSpawn.x, onSpawn.y);
+  await frames(page, 2);
+  const n0 = await envCount();
+  answer = false;
+  asked.length = 0;
+  await page.mouse.click(onSpawn.x, onSpawn.y);
+  await frames(page, 2);
+  const refused = (await envCount()) === n0 && asked.some((m) => /Player Spawn/.test(m));
+  answer = true;
+  await page.mouse.click(onSpawn.x, onSpawn.y);
+  await frames(page, 2);
+  const placed = (await envCount()) === n0 + 1;
+  const away = await at(-12, 0, -20);
+  const askedOnSpawn = [...asked];
+  const awayOk = await page.evaluate((p) => { const l = document.getElementById('ed-palette').getBoundingClientRect().right; const r = document.getElementById('ed-right').getBoundingClientRect().left; return p.x > l && p.x < r; }, away);
+  asked.length = 0;
+  await page.mouse.move(away.x, away.y);
+  await page.mouse.click(away.x, away.y);
+  await frames(page, 2);
+  check(refused && placed && (await envCount()) === n0 + 2 && !asked.length, `a tree on the spawn asks first (No keeps it off, Yes places it); elsewhere it just places (${JSON.stringify({ refused, placed, askedOnSpawn, askedAway: asked, count: (await envCount()) - n0, awayOk })})`);
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+
+  // ---- Erase: Shift-drag with the brush takes the brush's species under it, in one undo step.
+  await clickTool(page, '[data-tool="envbrush"]');
+  await page.selectOption('#ed-env-preset', 'temperate');
+  const n1 = await envCount();
+  await stroke([-30, -8], [-10, 4], true);
+  const n2 = await envCount();
+  check(n2 < n1 && (await page.evaluate(() => window.__editor.history.undoLabel)) === 'Erase plants', `Shift-drag erases the brush's species (${n1} → ${n2})`);
+  if (shots) {
+    await page.click('#ed-env-mode-erase');
+    const p = await at(-20, 0, -2);
+    await page.mouse.move(p.x, p.y);
+    await frames(page, 3);
+    await shot('erase');
+    await page.click('#ed-env-mode-paint');
+  }
+  await page.keyboard.press('Control+KeyZ');
+  check((await envCount()) === n1, 'undo brings the erased stroke back');
+
+  // ---- Round trip: Export, then Import the file: every plant exactly as it was.
+  // (Compared key by key: the order of an object's keys is not part of the map.)
+  const canon = () => page.evaluate(() => JSON.stringify(window.__editor.doc.entities.filter((e) => e.kind === 'prop').map((e) => Object.fromEntries(Object.entries(e).sort(([a], [b]) => (a < b ? -1 : 1))))));
+  const before = await canon();
+  // Export's own click, in the page: when the top bar is crowded its compact layout (fit-4) hides the File group's
+  // later buttons, Export among them, and Playwright's click would wait for it to show.
+  const [download] = await Promise.all([page.waitForEvent('download'), page.evaluate(() => document.getElementById('ed-export').click())]);
+  const text = readFileSync(await download.path(), 'utf8');
+  await page.setInputFiles('#ed-import-file', { name: 'env.cmap.json', mimeType: 'application/json', buffer: Buffer.from(text) });
+  await page.waitForFunction((n) => window.__editor.doc.entities.length === n && window.__editor.history.revision > 0, JSON.parse(before).length, { timeout: T(10000) }).catch(() => {});
+  const after = await canon();
+  const firstDiff = JSON.parse(after).findIndex((e, i) => JSON.stringify(e) !== JSON.stringify(JSON.parse(before)[i]));
+  check(after === before, `Export then Import keeps every plant exactly (${JSON.parse(after).length} of ${JSON.parse(before).length} entities, ${after === before ? 'identical' : `first difference: ${JSON.stringify(JSON.parse(before)[firstDiff])} → ${JSON.stringify(JSON.parse(after)[firstDiff])}`})`);
+
+  // ---- A big stroke (radius 40 m, dense) stays cheap: each dab's own work, and the frames while painting.
+  await page.evaluate(() => window.__editor.setBrushRadius(40));
+  await page.fill('#ed-env-density', '20');
+  await page.dispatchEvent('#ed-env-density', 'change');
+  await page.evaluate(() => { const v = window.__editor.view; v.focus({ x: -40, y: 0, z: 0 }); v.dolly(-90); });
+  await frames(page, 2);
+  // Twice: the first stroke also loads the species' models; the second (after an undo) is the brush and the redraw alone.
+  const timed = async () => {
+    await page.evaluate(() => {
+      window.__envFrames = [];
+      let last = performance.now();
+      const tick = (t) => { window.__envFrames.push(t - last); last = t; if (window.__envFrames.length < 600) requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+    });
+    await stroke([-55, -20], [-25, 20]);
+    await frames(page, 5);
+    return page.evaluate(() => { const f = window.__envFrames.slice(1).sort((a, b) => a - b); return { stroke: window.__envStroke, worst: f[f.length - 1], median: f[f.length >> 1], frames: f.length, count: window.__editor.doc.entities.length }; });
+  };
+  // The frames with nothing happening, for comparison (this machine's software renderer is slow with hundreds of trees in view).
+  const idle = await page.evaluate(async () => { const f = []; let last = performance.now(); for (let i = 0; i < 20; i++) { const t = await new Promise(requestAnimationFrame); f.push(t - last); last = t; } f.sort((a, b) => a - b); return f[10]; });
+  const cold = await timed();
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 3);
+  const big = await timed();
+  check(big.stroke?.added > 150 && big.stroke.ms < T(400), `a 40 m stroke: ${big.stroke?.added} plants in ${big.stroke?.dabs} dabs, the slowest dab ${big.stroke?.ms.toFixed(0)} ms of brush work; frames while painting: median ${big.median.toFixed(0)} ms, slowest ${big.worst.toFixed(0)} ms (idle median ${idle.toFixed(0)} ms) (the first time, loading the models: ${cold.worst.toFixed(0)} ms) (${big.count} entities)`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -1237,7 +1961,7 @@ async function editorMeasureChecks(browser) {
   const [a, b] = m1.points;
   const dist = a && b ? Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) : 0;
   check(a && b && a.x === -2 && a.y === 0 && a.z === 2.5 && b.x === 0 && b.y === 0.8 && b.z === 1, `measure points snap to the grid on the floor and to the table top's middle (${JSON.stringify(m1.points)})`);
-  check(m1.labels.length === 1 && m1.labels[0].startsWith(`${dist.toFixed(2)} m`) && /up 80 cm/.test(m1.labels[0]) && /jumpable/.test(m1.labels[0]) && /step jumpable/.test(m1.status), `two points show the distance, the height difference, the slope and whether it's jumpable (${m1.labels.join(' | ')})`);
+  check(m1.labels.length === 1 && m1.labels[0].startsWith(`${dist.toFixed(2)} m`) && /up 80 cm/.test(m1.labels[0]) && /jumpable/.test(m1.labels[0]) && /step 80 cm jumpable/.test(m1.status), `two points show the distance, the height difference, the slope and whether it's jumpable (${m1.labels.join(' | ')})`);
   await clickAt(2, 0, 2.5);
   const m2 = await page.evaluate(() => ({ n: window.__editor.measure.points.length, labels: [...document.querySelectorAll('.ed-measure-label:not(.live)')].map((l) => l.textContent), total: window.__editor.measure.measurement.total }));
   check(m2.n === 3 && m2.labels.length === 3 && m2.labels.at(-1) === `Total ${m2.total.toFixed(2)} m`, `a third click chains the path and shows its total (${m2.labels.join(' | ')})`);
@@ -1299,8 +2023,54 @@ async function editorMeasureChecks(browser) {
   await page.mouse.move(700, 790);
   await frames(page, 10);
   await shot('randomise');
+  await page.click('#ed-prop-random');
+  await measureRampCheck(page, { focus, clickAt, frames: (n) => frames(page, n), shot });
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+}
+
+/**
+ * The jump hint samples the ground along the line (owner, 2026-11-08): a 30° ramp of ground climbs 4.6 m over 8 m, which
+ * its two ends alone call too high, but walking it there is no step: the measure tool says walkable.
+ */
+async function measureRampCheck(page, { focus, clickAt, frames, shot }) {
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const before = ed.doc.terrain;
+    const after = { ...before, heights: before.heights.slice() };
+    for (let r = 0; r < after.rows; r++) {
+      const z = after.origin[1] + r * after.spacing;
+      if (z < -40 || z > -20) continue;
+      for (let c = 0; c < after.cols; c++) {
+        const x = after.origin[0] + c * after.spacing;
+        if (x >= 28) after.heights[r * after.cols + c] = Math.round(Math.min(Math.max(x - 28, 0), 12) * Math.tan(Math.PI / 6) * 100);
+      }
+    }
+    ed.history.execute('Ramp', { kind: 'setTerrain', before, after });
+  });
+  const ground = (x, z) =>
+    page.evaluate(([x, z]) => {
+      const t = window.__editor.doc.terrain;
+      const y = (c, r) => t.baseY + (t.heights[r * t.cols + c] ?? 0) / 100;
+      const fx = (x - t.origin[0]) / t.spacing;
+      const fz = (z - t.origin[1]) / t.spacing;
+      const c = Math.floor(fx);
+      const r = Math.floor(fz);
+      const u = fx - c;
+      const v = fz - r;
+      return v >= u ? y(c, r) + (y(c + 1, r + 1) - y(c, r + 1)) * u + (y(c, r + 1) - y(c, r)) * v : y(c, r) + (y(c + 1, r) - y(c, r)) * u + (y(c + 1, r + 1) - y(c + 1, r)) * v;
+    }, [x, z]);
+  await focus(34, 3, -30);
+  await page.keyboard.press('KeyU');
+  await clickAt(30, await ground(30, -30), -30);
+  await clickAt(38, await ground(38, -30), -30);
+  const m = await page.evaluate(() => ({ points: window.__editor.measure.points.map((p) => p.at), label: document.querySelector('.ed-measure-label:not(.live)')?.textContent ?? '', status: document.getElementById('ed-target').textContent }));
+  const rise = m.points.length === 2 ? m.points[1].y - m.points[0].y : 0;
+  check(rise > 4 && /walkable/.test(m.label) && /step walkable · no gap/.test(m.status), `a 30° ramp of ground reads walkable, sampled along the line, though its ends are ${rise.toFixed(2)} m apart in height (${m.label}; ${m.status})`);
+  await page.mouse.move(700, 790);
+  await frames(5);
+  await shot('measure-ramp');
+  await page.keyboard.press('Escape');
 }
 
 /**
@@ -1338,6 +2108,15 @@ async function editorTurnChecks(browser) {
     await frames(page, 3);
     return page.evaluate(() => window.__editor.selection.entities[0]);
   };
+  // On Platforms (the blank map has no ground there: over nothing they'd be refused).
+  await clickTool(page, '[data-tool="tile:core.platform"]');
+  for (const z of [0, 8]) {
+    const p = await at(16, 0, z);
+    await page.mouse.move(p.x, p.y);
+    await frames(page, 3);
+    await page.mouse.click(p.x, p.y);
+    await frames(page, 3);
+  }
   const barrel = await place('[data-tool="prop:prop.barrel"]', 12, 0);
   const spawn = await place('[data-tool="spawn"]', 12, 8);
   // A point on the ring of the selected thing at `centre`, facing `a` (radians; 0 is +Z, a quarter turn +X).
@@ -1611,7 +2390,8 @@ async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
     return c.ok ? '' : c.short;
   });
   check(limit === 'Past the build limit (16 levels up or down)', `the ghost names the build limit (${limit})`);
-  // A spawn over nothing (up on Level 1, the ground 4 m below): a warning, not a refusal.
+  // A spawn over nothing (up on Level 1, the ground 4 m below): refused (owner, 2026-11-08). The ghost goes red with
+  // its reason, and the click places nothing.
   await page.evaluate(() => {
     window.__editor.setTool({ kind: 'spawn' });
     window.__editor.setLevel(1);
@@ -1620,20 +2400,74 @@ async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
   const off = await at(32, 4, -16);
   await page.mouse.move(off.x, off.y);
   await settle();
-  const spawnWhy = await page.evaluate(() => ({ text: document.getElementById('ed-tip').textContent, shown: !document.getElementById('ed-tip').hidden, onTerrain: window.__editor.hoverOnTerrain }));
-  check(!spawnWhy.onTerrain && spawnWhy.shown && spawnWhy.text.includes('No floor under it'), `a spawn over nothing says "No floor under it" (${JSON.stringify(spawnWhy)})`);
+  // A ghost's meshes (a prop's model loads in after its node is made) and whether they're all tinted red.
+  const ghostState = async (name, red = false) => {
+    const read = (name) => {
+      const n = window.__editor.view.scene.getNodeByName(name);
+      const meshes = n ? [n, ...n.getChildMeshes()].filter((m) => 'renderOverlay' in m && m.getTotalVertices?.() > 0) : [];
+      return { shown: !!n?.isEnabled(), meshes: meshes.length, red: meshes.length > 0 && meshes.every((m) => m.renderOverlay) };
+    };
+    await page.waitForFunction((name) => {
+      const n = window.__editor.view.scene.getNodeByName(name);
+      return !!n && n.getChildMeshes().concat([n]).some((m) => m.getTotalVertices?.() > 0);
+    }, name, { timeout: T(15000) }).catch(() => {});
+    // The tint follows on the next frame drawn (EditorView seeThrough).
+    await page.waitForFunction(([name, red]) => {
+      const n = window.__editor.view.scene.getNodeByName(name);
+      const meshes = n ? [n, ...n.getChildMeshes()].filter((m) => 'renderOverlay' in m && m.getTotalVertices?.() > 0) : [];
+      return meshes.length > 0 && meshes.every((m) => m.renderOverlay === red);
+    }, [name, red], { timeout: T(5000) }).catch(() => {});
+    await frames(page, 3);
+    return page.evaluate(read, name);
+  };
+  const spawnWhy = await page.evaluate(() => ({ cls: document.getElementById('ed-tip').className, text: document.getElementById('ed-tip').textContent, shown: !document.getElementById('ed-tip').hidden, onTerrain: window.__editor.hoverOnTerrain, status: document.getElementById('ed-target').textContent }));
+  const spawnGhost = await ghostState('spawn_ghost', true);
+  check(!spawnWhy.onTerrain && spawnWhy.shown && /tone-bad/.test(spawnWhy.cls) && spawnWhy.text.includes('✗ No floor under it') && spawnWhy.text.includes("Can't be placed here") && /^Spawn point can't be placed here: no floor under it/.test(spawnWhy.status) && spawnGhost.shown && spawnGhost.red, `a spawn over nothing is refused: a red ghost, "No floor under it" beside the pointer and on the status line (${JSON.stringify(spawnWhy)}; ghost ${JSON.stringify(spawnGhost)})`);
   await shot('spawn-why');
+  const spawnsBefore = (await doc()).entities.filter((e) => e.kind === 'spawn').length;
+  const revBefore = await page.evaluate(() => window.__editor.history.revision);
+  await page.mouse.click(off.x, off.y);
+  await settle();
+  const spawnsAfter = (await doc()).entities.filter((e) => e.kind === 'spawn').length;
+  check(spawnsAfter === spawnsBefore && (await page.evaluate(() => window.__editor.history.revision)) === revBefore, `the click over nothing places no spawn (${spawnsBefore} → ${spawnsAfter})`);
+  // A prop over nothing the same way; over the ground on Ground its ghost is its own colour again.
   await page.evaluate(() => {
-    window.__editor.setTool({ kind: 'select' });
-    window.__editor.setLevel(0);
+    window.__editor.setTool({ kind: 'prop', model: 'prop.barrel' });
+    window.__editor.setLevel(1);
   });
+  await settle();
+  // Nearer the middle of the view (the spawn's spot can be under the right-hand panel).
+  const offProp = await at(6, 4, -20);
+  await page.mouse.move(off.x, off.y);
+  await settle();
+  await page.mouse.move(offProp.x, offProp.y);
+  await settle();
+  const propGhost = await ghostState('propGhost', true);
+  const propWhy = await page.evaluate((p) => ({ under: document.elementFromPoint(p.x, p.y)?.id, level: window.__editor.level, tip: document.getElementById('ed-tip').textContent, status: document.getElementById('ed-target').textContent }), offProp);
+  const propsBefore = (await doc()).entities.filter((e) => e.kind === 'prop').length;
+  await page.mouse.click(offProp.x, offProp.y);
+  await settle();
+  const propsAfter = (await doc()).entities.filter((e) => e.kind === 'prop').length;
+  check(propGhost.shown && propGhost.red && propsAfter === propsBefore, `a prop over nothing: a red ghost and no placement (${JSON.stringify(propGhost)}; ${JSON.stringify(propWhy)}; props ${propsBefore} → ${propsAfter})`);
+  await shot('prop-refused');
+  await page.evaluate(() => window.__editor.setLevel(0));
+  await settle();
+  const onFloor = await at(0, 0, -16);
+  await page.mouse.move(onFloor.x, onFloor.y);
+  await settle();
+  const okGhost = await ghostState('propGhost');
+  check(okGhost.shown && !okGhost.red, `over a floor the ghost is its own colour again (${JSON.stringify(okGhost)})`);
+  await page.evaluate(() => window.__editor.setTool({ kind: 'select' }));
 
   // The live budget bar: Props goes up by one with a prop and back with undo.
   const bar = () =>
     page.evaluate(() => {
       const el = document.getElementById('ed-budget');
       const row = (id) => document.querySelector(`#ed-budget-rows [data-budget="${id}"]`)?.closest('.ed-budget-row');
-      return { level: el?.dataset.level, sum: el?.querySelector('.ed-budget-sum')?.textContent ?? '', props: row('props')?.querySelector('.ed-budget-amt')?.textContent ?? '', lights: row('lights')?.querySelector('.ed-budget-amt')?.textContent ?? '', lightsWord: row('lights')?.querySelector('.ed-budget-word')?.textContent ?? '' };
+      const r = el?.getBoundingClientRect();
+      const bottom = document.getElementById('ed-bottom').getBoundingClientRect();
+      const inBar = el?.parentElement?.id === 'ed-bottom' && !!r && r.top >= bottom.top - 0.5 && r.bottom <= bottom.bottom + 0.5 && r.height <= 28;
+      return { inBar, level: el?.dataset.level, sum: el?.querySelector('.ed-budget-sum')?.textContent ?? '', props: row('props')?.querySelector('.ed-budget-amt')?.textContent ?? '', lights: row('lights')?.querySelector('.ed-budget-amt')?.textContent ?? '', lightsWord: row('lights')?.querySelector('.ed-budget-word')?.textContent ?? '' };
     });
   const b0 = await bar();
   await clickTool(page, '[data-tool="prop:prop.barrel"]');
@@ -1646,6 +2480,7 @@ async function editorPhase1aChecks(page, { doc, at, clickAt, settle, shot }) {
   const b2 = await bar();
   const n = (t) => Number(t.split('/')[0].replace(/[^0-9]/g, ''));
   check(n(b1.props) === n(b0.props) + 1 && b2.props === b0.props && /Budget OK/i.test(b0.sum), `the budget bar counts a placed prop and its undo (${b0.props} → ${b1.props} → ${b2.props}; ${b0.sum})`);
+  check(b0.inBar, 'the budget bar sits in the bottom status bar, compact (owner, 2026-11-08)');
   // Near a budget: 220 of 256 lights goes amber, names Lights, and clicking the name selects them.
   await page.evaluate(() => {
     const ed = window.__editor;
@@ -2748,7 +3583,7 @@ async function sceneryFlow(browser) {
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   const space = await page.evaluate(() => window.__cs.view.scene.meshes.filter((m) => m.name.startsWith('backdrop_')).map((m) => m.name));
   check(space.includes('backdrop_sky') && !space.includes('backdrop_ground'), `Skyward floats in a starfield with no ground (${space.join(', ')})`);
-  // MapMaker: pick a backdrop, paint plants, scatter a forest.
+  // MapMaker: pick a backdrop, paint plants, brush a wood (the Environment brush).
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
@@ -2791,16 +3626,20 @@ async function sceneryFlow(browser) {
   await page.mouse.up();
   const lush = await page.evaluate(() => window.__editor.doc.terrain.foliage.filter((v) => v === 4).length);
   check(lush > 5, `the plants brush paints overgrown cells (${lush})`);
-  await clickTool(page, '[data-tool="scatter:forest"]');
+  // N takes up the Environment brush (the Scatter Brush it replaced is retired).
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press('KeyN');
+  check(await page.evaluate(() => window.__editor.tool?.kind === 'envbrush'), 'N takes up the Environment brush');
+  await page.selectOption('#ed-env-preset', 'temperate');
   p = await at(20, 20);
   await page.mouse.move(p.x, p.y);
   await page.mouse.click(p.x, p.y);
   const trees = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop').length);
-  check(trees >= 3, `the scatter brush plants a patch of forest (${trees} trees)`);
+  check(trees >= 3, `the Environment brush plants a patch of woods (${trees} plants)`);
   await page.keyboard.press('Control+z');
   const undone = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop').length);
   check(undone === 0, 'one undo takes the whole patch back');
-  // Props stay on sloping ground: raise a hill, scatter rocks on its side, nothing floats.
+  // Props stay on sloping ground: raise a hill, brush rocks and plants on its side, nothing floats.
   await clickTool(page, '[data-tool="terrain:raise"]');
   p = await at(20, 20);
   await page.mouse.move(p.x, p.y);
@@ -2808,7 +3647,8 @@ async function sceneryFlow(browser) {
   // Hold until the hill stands at least 1.5 m tall (headless frame rates vary), at most 8 s.
   await page.waitForFunction(() => Math.max(...window.__editor.doc.terrain.heights) > 150 || window.__editor.stroke?.now && Math.max(...window.__editor.stroke.now.heights) > 150, null, { timeout: T(8000) }).catch(() => {});
   await page.mouse.up();
-  await clickTool(page, '[data-tool="scatter:rocks"]');
+  await clickTool(page, '[data-tool="envbrush"]');
+  await page.selectOption('#ed-env-preset', 'alpine');
   // Bring the hillside to the middle of the view, clear of the tool bar over its top edge.
   await page.evaluate(() => window.__editor.view.focus({ x: 18, y: 0, z: 18 }));
   p = await at(18, 18);
@@ -2826,7 +3666,7 @@ async function sceneryFlow(browser) {
     };
     return { n: props.length, worst: Math.max(...props.map((e) => e.position[1] - h(e.position[0], e.position[2]))) };
   });
-  check(rocks.n > 0 && rocks.worst < 0.02, `scattered rocks sit on the hillside (${rocks.n}, worst gap ${rocks.worst.toFixed(2)} m)`);
+  check(rocks.n > 0 && rocks.worst < 0.02, `brushed rocks and plants sit on the hillside (${rocks.n}, worst gap ${rocks.worst.toFixed(2)} m)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -5949,7 +6789,7 @@ async function trafficFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  // MapMaker: the Paths tool lays the race track (a path used as a race): three clicks, drag a point, undo, set the laps, delete a point.
+  // MapMaker: the Paths tool lays the track (a path used as a track, NPC traffic): three clicks, drag a point, undo, set its NPC cars, delete a point.
   await page.goto(`${CLIENT}/?mode=editor`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
@@ -5985,13 +6825,23 @@ async function trafficFlow(browser) {
   t = raceOf(await doc());
   check(t && Math.hypot(t.points[1][0] - 16, t.points[1][2] + 6) < 1, 'undo puts it back');
   // The pane is rebuilt after the undo; if the edit hit the old input, set it again on the new one.
-  let laps;
-  for (let tries = 0; tries < 3 && laps !== 5; tries++) {
-    await page.fill('#ed-path-laps', '5');
-    await page.dispatchEvent('#ed-path-laps', 'change');
-    laps = await page.waitForFunction(() => window.__editor.doc.paths?.find((p) => p.uses.includes('race'))?.race?.laps === 5, null, { timeout: T(2000) }).then(() => 5, async () => raceOf(await doc())?.race?.laps);
+  // Race mode is gone: the track's pane offers its NPC cars (and their vehicle, curbs, start and pit lane), not laps,
+  // a start grid, a race vehicle or combat.
+  let cars;
+  for (let tries = 0; tries < 3 && cars !== 5; tries++) {
+    await page.fill('#ed-path-ambient', '5');
+    await page.dispatchEvent('#ed-path-ambient', 'change');
+    cars = await page.waitForFunction(() => window.__editor.doc.paths?.find((p) => p.uses.includes('race'))?.race?.ambient === 5, null, { timeout: T(2000) }).then(() => 5, async () => raceOf(await doc())?.race?.ambient);
   }
-  check(laps === 5, `the Paths pane sets the race laps (${laps})`);
+  check(cars === 5, `the Paths pane sets the track's NPC cars (${cars})`);
+  // (The pane is rebuilt after the edit, now with the NPC car's vehicle.)
+  await page.waitForSelector('#ed-path-ambient-vehicle', { state: 'attached', timeout: T(3000) }).catch(() => {});
+  const pane = await page.evaluate(() => ({
+    gone: ['ed-path-laps', 'ed-path-grid', 'ed-path-vehicle', 'ed-path-combat'].filter((id) => document.getElementById(id)),
+    kept: ['ed-path-ambient', 'ed-path-ambient-vehicle', 'ed-path-pit', 'ed-path-curbs'].filter((id) => !document.getElementById(id)),
+    race: /\brace\b/i.test(document.getElementById('ed-paths')?.textContent ?? ''),
+  }));
+  check(!pane.gone.length && !pane.kept.length && !pane.race, `the track pane says track / NPC traffic: no laps, grid, vehicle or combat, NPC cars and the pit lane kept (${JSON.stringify(pane)})`);
   await page.waitForFunction(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0), null, { timeout: T(5000) }).catch(() => {});
   check(await page.evaluate(() => window.__editor.view.scene.meshes.some((m) => m.name === 'edroad_surface' && m.getTotalVertices() > 0)), 'MapMaker draws the road ribbon');
   const del = await at(13, 4);
@@ -6000,6 +6850,17 @@ async function trafficFlow(browser) {
   t = raceOf(await doc());
   check(t?.points.length === 2, `right-click deletes a road point (${t?.points.length})`);
   await page.keyboard.press('Escape');
+  // Map properties: Race is no longer a mode. It isn't offered, and a map that still lists it can drop it (undo puts it back).
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => window.__editor.run('Old modes', { kind: 'setMetadata', before: { supportedModes: window.__editor.doc.metadata.supportedModes }, after: { supportedModes: ['core.race', 'core.tdm'] } }));
+  await page.waitForSelector('#ed-prop-drop-race', { state: 'attached', timeout: T(5000) });
+  const raceOffered = await page.evaluate(() => !!document.querySelector('option[value="core.race"]'));
+  await page.evaluate(() => document.getElementById('ed-prop-drop-race').click());
+  const dropped = await page.evaluate(() => window.__editor.doc.metadata.supportedModes.join(','));
+  check(!raceOffered && dropped === 'core.tdm', `Map properties doesn't offer Race and drops it from an old map's modes (offered ${raceOffered}, now ${dropped})`);
+  await page.keyboard.press('Control+KeyZ');
+  const undone = await page.evaluate(() => window.__editor.doc.metadata.supportedModes.join(','));
+  check(undone === 'core.race,core.tdm', `undo brings Race back to the list (${undone})`);
 
   // Team Deathmatch on Apex Ring: its track's NPC cars lap as traffic while the teams fight (Race mode is gone).
   await page.goto(`${CLIENT}/?offline=apex_ring&gamemode=core.tdm&test=1`);
@@ -6312,11 +7173,17 @@ async function editorPartBChecks(browser) {
   await page.keyboard.press('Control+KeyZ');
   await frames(page, 2);
   check((await doc()).classicStructure.tiles.length === 1, 'one undo takes the paste back');
-  await page.evaluate(() => window.__editor.run('Theme', { kind: 'setTheme', before: window.__editor.doc.classicStructure.theme, after: 'core.industrial' }));
+  // Into a map of another theme (owner, 2026-11-09: allowed): the pieces wear its theme, their own paint kept.
+  await page.evaluate(() => window.__editor.run('Theme', { kind: 'setTheme', before: window.__editor.doc.classicStructure.theme, after: 'core.factory' }));
   await page.keyboard.press('Control+KeyV');
-  await frames(page, 1);
-  check(/Can't paste: copied from .*another theme/.test(await toast()), `into a map of another theme it is refused, saying why (${await toast()})`);
+  await frames(page, 2);
+  const themed = await doc();
+  check(themed.classicStructure.theme === 'core.factory' && themed.classicStructure.tiles.length === 2 && /Pasted 3 things .*the pieces wear this map's .* theme, their own paint kept/.test(await toast()), `into a map of another theme it pastes, and says the pieces wear its theme (${await toast()})`);
+  await shot('paste-theme');
   await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await doc()).classicStructure.theme !== 'core.factory' && (await doc()).classicStructure.tiles.length === 1, 'two undos take the paste and the theme back');
 
   // ---- Mirror…: a red spawn and flag on the west, mirrored east (Shift+M): the copy is blue's.
   await page.evaluate(() => window.__editor.run('Team things', { kind: 'addEntities', entities: [{ id: 'sp_red', kind: 'spawn', position: [-28, 0, 4], yaw: 1.571, faction: 'embers' }, { id: 'flag_red', kind: 'flag', position: [-32, 0, 0], yaw: 0, team: 'embers' }] }));
@@ -6407,6 +7274,50 @@ async function editorPartBChecks(browser) {
   await frames(page, 4);
   await shot('template-ctf');
   check(!/error/i.test(issues), `the template validates clean (${issues.slice(0, 120)})`);
+
+  // ---- Mirror half the map with its bot hints and, ticked, its terrain and paths (owner, 2026-11-09).
+  await newMap(page, 96);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = structuredClone(ed.doc.terrain);
+    // A mound on the west half (x -20, z 6) and stone paint round it.
+    for (let r = 0; r < t.rows; r++) for (let c = 0; c < t.cols; c++) {
+      const x = t.origin[0] + c * t.spacing;
+      const z = t.origin[1] + r * t.spacing;
+      const d = Math.hypot(x + 20, z - 6);
+      if (d < 10) t.heights[r * t.cols + c] = Math.round(400 * (1 - d / 10));
+    }
+    ed.run('Mound', { kind: 'setTerrain', before: ed.doc.terrain, after: t });
+    ed.run('Hint', { kind: 'setBotHints', before: ed.doc.botHints ?? null, after: [{ id: 'hint_stage', kind: 'staging', position: [-24, 0, -10], radius: 6, team: 'embers' }] });
+    ed.run('Road', { kind: 'setPaths', before: ed.doc.paths ?? null, after: [{ id: 'road_w', points: [[-30, 0, -20], [-12, 0, 20]], closed: false, uses: ['road'], width: 3, style: 'dirt', lay: true }] });
+    ed.setSelection({ tiles: [], entities: [] });
+  });
+  await page.keyboard.press('Shift+KeyM');
+  await page.waitForSelector('#ed-mirror-dialog[open]', { timeout: T(5000) });
+  await page.selectOption('#ed-mirror-across', 'eastWest');
+  await page.fill('#ed-mirror-x', '0');
+  await page.dispatchEvent('#ed-mirror-x', 'input');
+  await page.selectOption('#ed-mirror-half', 'west');
+  const plainWhy = await page.textContent('#ed-mirror-why');
+  await page.check('#ed-mirror-ground');
+  const groundWhy = await page.textContent('#ed-mirror-why');
+  check(/1 bot hint/.test(plainWhy) && !/terrain/.test(plainWhy) && /1 bot hint, 1 path, the terrain/.test(groundWhy), `half the map brings its bot hint; ticked, its terrain and path too (${plainWhy} | ${groundWhy})`);
+  await shot('mirror-ground-dialog');
+  await page.click('#ed-mirror-go');
+  await frames(page, 3);
+  const mirrored = await page.evaluate(() => {
+    const doc = window.__editor.doc;
+    const t = doc.terrain;
+    const h = (x, z) => t.heights[Math.round((z - t.origin[1]) / t.spacing) * t.cols + Math.round((x - t.origin[0]) / t.spacing)];
+    return { west: h(-20, 6), east: h(20, 6), hint: doc.botHints?.find((x) => x.id !== 'hint_stage'), road: doc.paths?.find((x) => x.id !== 'road_w')?.points };
+  });
+  check(mirrored.west === 400 && mirrored.east === 400 && mirrored.hint?.team === 'tide' && mirrored.hint.position[0] === 24 && JSON.stringify(mirrored.road) === '[[30,0,-20],[12,0,20]]', `the east half is the west's mirror image: the mound, the staging spot (now the other team's) and the road (${JSON.stringify(mirrored)})`);
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await frames(page, 4);
+  await shot('mirror-ground');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check(await page.evaluate(() => !window.__editor.doc.botHints?.some((x) => x.team === 'tide') && window.__editor.doc.paths?.length === 1), 'one undo takes the whole mirror back');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   livePages.delete(page);
   await page.context().close();
@@ -6497,10 +7408,11 @@ async function environmentFlow(browser) {
 }
 
 /**
- * Fireteams (docs/FIRETEAMS_PLAN.md, Part 1): the variant on in Match setup (its squad size beside the score) → you
- * lead a squad of bots (the HUD's order line) → hold B: the order wheel (a tap of B is still the quick-message menu) →
- * pick Hold here → a bot answers, and the squad holds there while you go off. Screenshot of the wheel:
- * e2e-artifacts/fireteams-wheel-desktop.png. (The phone's Orders button: packages/client/test/inputWheel.test.ts; a
+ * Fireteams (docs/FIRETEAMS_PLAN.md, Parts 1 and 2): the variant on in Match setup (its squad size beside the score) →
+ * you lead a squad of bots (the HUD's order line) → hold B: the order wheel (a tap of B is still the quick-message menu)
+ * → pick Hold here → a bot answers; the squad HUD shows a card per squadmate → Spread out from the wheel (the squad
+ * keeps its order, the HUD says so) → the squad holds there while you go off. Screenshots:
+ * e2e-artifacts/fireteams-wheel-desktop.png, fireteams-hud-desktop.png. (The phone's Orders button: packages/client/test/inputWheel.test.ts; a
  * second match on a phone here would cost another minute and a half of the shards' budget.)
  */
 async function fireteamsFlow(browser) {
@@ -6532,16 +7444,18 @@ async function fireteamsFlow(browser) {
   await page.keyboard.press('KeyB');
   await page.waitForFunction(() => document.getElementById('msg-menu')?.hidden !== false, null, { timeout: T(5000) }).catch(() => {});
   check(menu, 'a tap of B opens the quick-message menu, not the order wheel');
-  // Hold B: the order wheel, six orders, your squad's current one ringed.
+  // Hold B: the order wheel, seven orders (Part 2's Spread out / Stay tight last), your squad's current one ringed.
   const at = await sim(page, (m, me) => ({ x: me.move.pos.x, z: me.move.pos.z }));
   await page.keyboard.down('KeyB');
-  const opened = await page.waitForFunction(() => !document.getElementById('order-wheel').hidden && document.querySelectorAll('#order-wheel .ww-item').length === 6, null, { timeout: T(5000) }).then(() => true, () => false);
+  const opened = await page.waitForFunction(() => !document.getElementById('order-wheel').hidden && document.querySelectorAll('#order-wheel .ww-item').length === 7, null, { timeout: T(5000) }).then(() => true, () => false);
   const items = await page.$$eval('#order-wheel .ww-item', (is) => is.map((i) => ({ name: i.querySelector('b').textContent, held: i.classList.contains('held'), dim: i.classList.contains('empty') })));
-  check(opened && items.map((i) => i.name).join('|') === 'Follow me|Hold here|Go there|Attack that|Defend the objective|Regroup', `holding B opens the order wheel (${items.map((i) => i.name).join(', ')})`);
+  check(opened && items.map((i) => i.name).join('|') === 'Follow me|Hold here|Go there|Attack that|Defend the objective|Regroup|Spread out', `holding B opens the order wheel (${items.map((i) => i.name).join(', ')})`);
   check(items[0]?.held && items[4]?.dim, `the wheel rings your squad's order (Follow me) and dims Defend the objective in Team Deathmatch (${JSON.stringify(items)})`);
+  // (The wheel's items go clockwise from the top: item i of n at i / n of a turn.)
+  const towards = (i) => [Math.sin((i / 7) * Math.PI * 2), -Math.cos((i / 7) * Math.PI * 2)];
   const box = await page.locator('#order-wheel .ww-item[data-code="2"]').boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.evaluate(() => window.__cs.input.aimWheel(0.87, -0.5));
+  await page.evaluate(([x, y]) => window.__cs.input.aimWheel(x, y), towards(1));
   await page.waitForFunction(() => document.querySelector('#order-wheel .ww-item.on b')?.textContent === 'Hold here', null, { timeout: T(5000) }).catch(() => {});
   await page.screenshot({ path: `${ARTIFACTS}/fireteams-wheel-desktop.png` });
   // Let go of B on Hold here: the order goes, a bot answers, the HUD says Hold here.
@@ -6550,6 +7464,23 @@ async function fireteamsFlow(browser) {
   const ack = await page.waitForFunction(() => [...document.querySelectorAll('#feed .say, .say')].some((l) => /Holding here!/.test(l.textContent)) && document.querySelector('#squad-order b')?.textContent === 'Hold here', null, { timeout: T(10000) }).then(() => true, () => false);
   check(held, 'letting go of B on Hold here gives your squad the order (checked by the match)');
   check(ack, 'a squadmate answers "Holding here!" and the HUD shows Hold here');
+  // The squad HUD (Part 2): a card for each squadmate (portrait, name, health), the order's place on the minimap.
+  const cards = await page.waitForFunction(() => {
+    const hud = window.__cs.squad().hud;
+    const list = [...document.querySelectorAll('#squad-hud .sq-mate')];
+    return hud && hud.place && list.length === hud.members.length - 1 && list.every((c) => c.querySelector('.sq-name')?.textContent && c.querySelector('.sq-hp i')) ? list.map((c) => ({ name: c.querySelector('.sq-name').textContent, hp: c.querySelector('.sq-hp i').style.width, down: c.classList.contains('down') })) : null;
+  }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
+  check(!!cards && cards.length === 4 && cards.every((c) => c.down || parseInt(c.hp, 10) > 0), `the squad HUD shows your 4 squadmates' cards with their health (${JSON.stringify(cards)})`);
+  await page.screenshot({ path: `${ARTIFACTS}/fireteams-hud-desktop.png` });
+  // Spread out (Part 2): the wheel's last entry; the squad keeps its order, spreads its ring, and the HUD says so.
+  await page.keyboard.down('KeyB');
+  await page.waitForFunction(() => !document.getElementById('order-wheel').hidden, null, { timeout: T(5000) }).catch(() => {});
+  await page.evaluate(([x, y]) => window.__cs.input.aimWheel(x, y), towards(6));
+  await page.waitForFunction(() => document.querySelector('#order-wheel .ww-item.on b')?.textContent === 'Spread out', null, { timeout: T(5000) }).catch(() => {});
+  await page.keyboard.up('KeyB');
+  const spread = await simWait(page, (m, me) => m.fireteams?.squadOf(me.slot)?.spacing === 'spread' && m.fireteams.squadOf(me.slot).order.kind === 'hold', null, T(10000));
+  const spreadHud = await page.waitForFunction(() => document.querySelector('#squad-order i')?.textContent === 'Spread out' && [...document.querySelectorAll('#feed .say, .say')].some((l) => /Spreading out!/.test(l.textContent)), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(spread && spreadHud, 'Spread out from the wheel: the squad spreads (keeping Hold here), a squadmate answers "Spreading out!", the HUD says Spread out');
   const spot = await sim(page, (m, me) => m.fireteams.squadOf(me.slot).order.pos);
   // You go off (to a teammate of another squad, out of sight of the spot); the squad stays where you told it.
   const away = await sim(page, (m, me, p) => {
@@ -6838,7 +7769,8 @@ async function frameStrip(frames, every = 4, cols = 5) {
  * blinking four times a second, an Arc Turret and an electric fence. In play, the brightest moments are recorded
  * frame by frame at 30 frames a second of the page's own time (e2e/frameClock.mjs: however slowly this machine draws,
  * a recorded second is a second of play): an arc fight up close, the fence zapping bots in front of you, four
- * grenade blasts in front of the camera, a machine gun firing at a wall in the dark, the alarm light. With the setting
+ * grenade blasts in front of the camera, a machine gun firing at a wall in the dark, heavy rain and a blizzard at
+ * night, the alarm light. With the setting
  * on each moment must stay under the thresholds; the same moments with it off are measured and reported as numbers
  * only. Frame strips (every 4th frame) and the numbers go to e2e-artifacts/ (flashing-<moment>-<on|off>.png,
  * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
@@ -7013,6 +7945,29 @@ async function flashingFlow(browser) {
         44: () => page.evaluate(() => window.__cs.view.playGameplayFx('pickup.armor', { x: 0, y: 1.2, z: 8 }, { size: window.__cs.view.farSize({ x: 0, y: 1.2, z: 8 }) })),
       },
     },
+    // Weather (map format v34; weatherVisuals.ts): a downpour and a blizzard with a gale at night, out in the open (the
+    // brightest contrast: pale drops and flakes against the dark), drawn as High graphics draws them (the most drops;
+    // the flow plays on Low, which draws none). No lightning: nothing in them may flash.
+    {
+      name: 'rain',
+      label: 'heavy rain in a gale at night, out in the open, looking up into it',
+      weapon: 'core.arc_caster',
+      me: [-10, 0, 0],
+      look: aim([-10, 0, 0], [0, 5, 6]),
+      bots: [],
+      before: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'rain', amount: 1, wind: 0.7, fog: 0.3 }, 'high')),
+      after: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'none', amount: 0, wind: 0, fog: 0 })),
+    },
+    {
+      name: 'snow',
+      label: 'a blizzard at night, out in the open',
+      weapon: 'core.arc_caster',
+      me: [-10, 0, 0],
+      look: aim([-10, 0, 0], [0, 1.4, 6]),
+      bots: [],
+      before: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'snow', amount: 1, wind: 0.85, fog: 0.45 }, 'high')),
+      after: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'none', amount: 0, wind: 0, fog: 0 })),
+    },
     {
       name: 'alarm',
       label: 'the red alarm light blinking 4 times a second, in its dark room',
@@ -7063,6 +8018,7 @@ async function flashingFlow(browser) {
       if (strip) writeFileSync(`${ARTIFACTS}/flashing-${mo.name}-${on ? 'on' : 'off'}.png`, strip);
       console.log(`flashing ${mo.name} ${on ? 'on ' : 'off'}: ${flickerSummary(r)}; screen brightness ${Math.min(...r.meanL).toFixed(3)}-${Math.max(...r.meanL).toFixed(3)}`);
     }
+    await mo.after?.();
     const { on, off } = runs;
     report.moments[mo.name] = Object.fromEntries(
       Object.entries(runs).map(([k, r]) => [k, { pass: r.pass, reasons: r.reasons, transitionsPerSecond: r.perSecond, flashesPerSecond: r.flashesPerSecond, fieldTransitionsPerSecond: r.fieldPerSecond, transitions: r.transitions.length, maxStep: +r.maxStep.toFixed(4), redTransitionsPerSecond: r.red.perSecond, redFlashes: r.red.onsets.length, maxRedArea: +r.red.maxArea.toFixed(4), activity: +r.activity.toFixed(4), meanL: r.meanL.map((x) => +x.toFixed(4)), change: r.change.map((x) => +x.toFixed(4)) }]),
@@ -7421,6 +8377,13 @@ async function wholeBodies(page, frames, upright = []) {
       const checked = new Set();
       const seen = new Set();
       const failed = new Map();
+      // Each upright character's lowest drawn height over the frames, and its full detail's in that pose.
+      const heights = new Map();
+      // Standing short (under 3/4 of its height) is judged on the settled pose, over the frames, not on one frame: a
+      // runner can show one frame's crouch (on CI, Hyena Warrior 1.5 of 2.12 m on the first frame measured, its full
+      // detail as short in that pose, then standing; runs 42563794663, 42567649540), while a body drawn as feet only
+      // (what this checks) is short on every frame.
+      const stood = new Map();
       await new Promise((resolve) => {
         let n = 0;
         const o3 = sc.onAfterRenderObservable.add(() => {
@@ -7434,6 +8397,7 @@ async function wholeBodies(page, frames, upright = []) {
             const dist = Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z);
             if (!lods.length || dist < Math.max(...lods.map((l) => l.distanceOrScreenCoverage)) + 1) continue;
             checked.add(slot);
+            heights.set(slot, heights.get(slot) ?? { look: JSON.parse(a.specKey).look, dist: Math.round(dist), drawn: Infinity, full: 0 });
             let lo = Infinity;
             let hi = -Infinity;
             let bad = 0;
@@ -7459,10 +8423,19 @@ async function wholeBodies(page, frames, upright = []) {
             const height = hi > lo ? hi - lo : 0;
             const want = fullHeight * (spec.size ?? 1);
             const full = hi0 > lo0 ? hi0 - lo0 : 0;
+            const hrow = heights.get(slot);
+            if (hrow && upright.includes(slot) && height < hrow.drawn) Object.assign(hrow, { drawn: +height.toFixed(2), full: +full.toFixed(2) });
             // (`full`: the full-detail mesh in the same pose, for the message: Hyena Warrior's low-detail level is drawn
             // 1.5-1.8 m against its full detail's 2.1 m in the same pose, on CI; see HANDOFF.)
-            if ((off.length || bad || (upright.includes(slot) && height < want * 0.75)) && !failed.has(slot)) {
-              failed.set(slot, { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off });
+            const row = { slot, look: spec.look, dist: Math.round(dist), frame: n, height: +height.toFixed(2), want: +want.toFixed(2), full: +full.toFixed(2), nonNumbers: bad, off };
+            if ((off.length || bad) && !failed.has(slot)) failed.set(slot, row);
+            if (upright.includes(slot)) {
+              const st = stood.get(slot) ?? stood.set(slot, { frames: 0, short: 0, first: null }).get(slot);
+              st.frames++;
+              if (height < want * 0.75) {
+                st.short++;
+                st.first ??= row;
+              }
             }
           }
           if (++n >= frames) {
@@ -7474,7 +8447,8 @@ async function wholeBodies(page, frames, upright = []) {
       proto.render = render0;
       sc.onBeforeDrawPhaseObservable.remove(o1);
       sc.onAfterDrawPhaseObservable.remove(o2);
-      return { checked: checked.size, seen: seen.size, failed: [...failed.values()] };
+      for (const [slot, st] of stood) if (!failed.has(slot) && st.short >= 2 && st.short * 3 > st.frames) failed.set(slot, { ...st.first, shortFrames: `${st.short} of ${st.frames}` });
+      return { checked: checked.size, seen: seen.size, failed: [...failed.values()], heights: [...heights.values()].filter((h) => h.drawn < Infinity) };
     },
     [frames, 1.8, upright],
   );
@@ -7497,8 +8471,14 @@ async function farBodies(browser) {
   await page.click('#resume').catch(() => {});
   await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot' && c.alive).length >= 20, null, T(30000));
   await holdBots(page);
+  // No end to the round: on a slow CI runner this flow passes Deathmatch's 10 minutes, and the round's end (the
+  // scoreboard, then the next round) left the known looks' check below with nobody to measure.
+  await sim(page, (m) => {
+    m.phaseEndTick = Infinity;
+    m.rules.scoreLimit = 0;
+  });
   // Open ground from where you are: the first way with a clear eye-high sight line 36 m out and ground under the spots.
-  const setup = await sim(page, (m, me) => {
+  const findGround = (m, me) => {
     const p = me.move.pos;
     const ground = (x, z) => {
       const d = m.physics.raycastWorld({ x, y: p.y + 6, z }, { x: 0, y: -1, z: 0 }, 14);
@@ -7534,7 +8514,16 @@ async function farBodies(browser) {
       return { yaw, slots: bots.map((c) => c.slot), from: { x: p.x, y: p.y, z: p.z } };
     }
     return null;
-  });
+  };
+  let setup = await sim(page, findGround);
+  // Not from every spawn (a spawn in a gully): from the next ones you respawn at.
+  for (let i = 0; i < 6 && !setup; i++) {
+    await sim(page, (m, me) => m.kill(me, null, 'core.respawn'));
+    await page.waitForFunction(() => !window.__cs.local.alive, null, { timeout: T(10000) }).catch(() => {});
+    await page.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(30000) }).catch(() => {});
+    await page.click('#resume').catch(() => {});
+    setup = await sim(page, findGround);
+  }
   if (!setup) {
     check(false, 'far bodies: found open ground 36 m out for the crowd');
     await page.context().close();
@@ -7586,10 +8575,37 @@ async function farBodies(browser) {
   await page.waitForFunction((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length >= 8, setup.slots, { timeout: T(60000) }).catch(() => {});
   const back = await page.evaluate((slots) => slots.filter((s) => window.__cs.view.avatars.get(s)?.culled === false).length, setup.slots);
   const r = await wholeBodies(page, 12, setup.slots);
-  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
+  const broken = r.failed.map((f) => `${f.look} at ${f.dist} m, frame ${f.frame}${f.shortFrames ? ` (short on ${f.shortFrames} frames)` : ''}: ${f.height} of ${f.want} m drawn (full detail in that pose: ${f.full} m)${f.nonNumbers ? `, ${f.nonNumbers} vertices not numbers` : ''}${f.off.length ? `, ${f.off.join(', ')}` : ''}`);
   // (For a failure: where you are now against where the crowd was set out from, and whether you are alive.)
   if (r.failed.length) broken.push(`you ${await sim(page, (m, me, from) => `${Math.hypot(me.move.pos.x - from.x, me.move.pos.z - from.z).toFixed(1)} m from the setup, ${me.alive ? 'alive' : 'dead'}, ${me.deaths} deaths`, setup.from)}`);
   check(slept >= 8 && back >= 8 && r.checked >= 6 && r.failed.length === 0, `far characters draw their whole bodies after a fight, asleep out of view and awake again (${slept} slept, ${back} back in view, ${r.checked} checked past the low-detail switch of ${r.seen} seen; broken: ${broken.join('; ') || 'none'})`);
+  // Then known looks on the same runners (not the deck's draw): Hyena Warrior's far copy was drawn 15-30% short on CI
+  // (HANDOFF, "Flaky e2e checks"), then large, small and animal bodies. Each far copy stands as tall as its full body
+  // in the same pose (the lowest of the frames), and is skinned on the full body's skeleton (one pose for both).
+  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.tortoise', 'core.abe', 'core.panda', 'core.knight', 'core.croakley'];
+  await sim(page, (m, _me, [slots, looks]) => slots.forEach((s, i) => {
+    const c = m.combatants().find((x) => x.slot === s);
+    if (c && looks[i] && c.look !== looks[i]) m.swapLook(c, looks[i]);
+  }), [setup.slots, looks]);
+  const dealt = () => page.evaluate(([slots, looks]) => slots.filter((s, i) => {
+    const a = window.__cs.view.avatars.get(s);
+    return !looks[i] || (!!a?.anim?.ch && JSON.parse(a.specKey).look === looks[i] && a.anim.current === 'run');
+  }).length, [setup.slots, looks]);
+  await until(async () => (await dealt()) >= setup.slots.length, T(120000));
+  // (A few tries: on a slow runner the dealt looks can still be loading, or out of view, the first time.)
+  let r2 = await wholeBodies(page, 12, setup.slots);
+  for (let i = 0; i < 3 && !r2.heights.some((h) => h.look === 'core.hyena'); i++) {
+    await page.evaluate((yaw) => (window.__cs.input.yaw = yaw), setup.yaw);
+    await until(async () => (await dealt()) >= setup.slots.length, T(30000));
+    r2 = await wholeBodies(page, 12, setup.slots);
+  }
+  const shared = await page.evaluate((slots) => slots.flatMap((s) => {
+    const ch = window.__cs.view.avatars.get(s)?.anim?.ch;
+    return (ch?.meshes ?? []).flatMap((m) => (m.getLODLevels?.() ?? []).filter((l) => l.mesh && l.mesh.skeleton !== m.skeleton).map(() => JSON.parse(window.__cs.view.avatars.get(s).specKey).look));
+  }), setup.slots);
+  const drawnHeights = r2.heights.map((h) => `${h.look} ${h.dist} m ${h.drawn}/${h.full} m`).join(', ');
+  const short = r2.heights.filter((h) => h.full > 0 && h.drawn < h.full * 0.9);
+  check(r2.heights.some((h) => h.look === 'core.hyena') && short.length === 0 && r2.failed.length === 0 && shared.length === 0, `far copies stand as tall as their full bodies in the same pose, on the same skeleton, Hyena Warrior's among them (drawn far / full detail, lowest of the frames: ${drawnHeights || 'none measured'}; short: ${short.map((h) => h.look).join(', ') || 'none'}; on a skeleton of their own: ${[...new Set(shared)].join(', ') || 'none'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -7668,19 +8684,19 @@ async function gripsInPlay(browser) {
       if (now !== last) window.__heldTrace.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${(last = now)}`);
     }, 50);
   });
-  await page.evaluate(() => window.__give('core.marksman'));
-  await page.waitForFunction(() => window.__cs.local.weapon?.id === 'core.marksman', null, { timeout: T(10000) }).catch(() => {});
-  for (let i = 0; i < 4; i++) {
-    const held = await page.evaluate(() => window.__cs.local.weapon?.id);
-    if (held === 'core.marksman') break;
-    await page.keyboard.press('Digit3');
-    await page.waitForFunction((was) => window.__cs.local.weapon?.id !== was, held, { timeout: T(10000) }).catch(() => {});
+  // On CI the rifle sometimes came back in your hands a few seconds after the give (twice in one run, 2026-11-09:
+  // marksman at 0.1 s, rifle at 0.7 s with no key pressed), and pressing 3 then only asked for the rifle again
+  // ("asked 3", run 42679874806). So the give is repeated until the marksman is held, drawn and raised.
+  const marksmanUp = () => window.__cs.local.weapon?.id === 'core.marksman' && window.__cs.view.viewWeapon === 'core.marksman' && !!window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0;
+  for (let i = 0; i < 6 && !(await page.evaluate(marksmanUp)); i++) {
+    if ((await page.evaluate(() => window.__cs.local.weapon?.id)) !== 'core.marksman') await page.evaluate(() => window.__give('core.marksman'));
+    await page.waitForFunction(marksmanUp, null, { timeout: T(10000) }).catch(() => {});
   }
-  await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.marksman' && window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0, null, { timeout: T(20000) }).catch(() => {});
   await page.evaluate(() => (window.__autoInput = { zoom: true }));
   const scopedIn = await page.waitForFunction(() => window.__cs.view.camera.fov < 0.8, null, { timeout: T(20000) }).then(() => true, () => false);
+  // (Up to a minute: on a loaded machine the sharper copy took over 20 s to load, locally.)
   const swapped = await page.evaluate(
-    () =>
+    (wait) =>
       new Promise((done) => {
         const v = window.__cs.view;
         const def = window.__cs.local.weapon;
@@ -7689,9 +8705,10 @@ async function gripsInPlay(browser) {
         if (!kept || !def.view.held) return done(false);
         v.sharpenViewmodel(def, kept, def.view.held.medium);
         const t0 = performance.now();
-        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > 20000 ? done(false) : setTimeout(poll, 50));
+        const poll = () => (kept.node !== was ? done(true) : performance.now() - t0 > wait ? done(false) : setTimeout(poll, 50));
         poll();
       }),
+    T(60000),
   );
   await page.evaluate(() => (window.__autoInput = { zoom: false }));
   await page.waitForFunction(() => window.__cs.view.camera.fov > 1.2, null, { timeout: T(20000) }).catch(() => {});
@@ -7776,7 +8793,8 @@ async function gripsInPlay(browser) {
     held.push({ w, ok: !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) } });
   }
   check(held.every((h) => h.ok), `an Imp player holds the gun forward at the chest with a hand on its grip (${JSON.stringify(held)})`);
-  await imp.screenshot({ path: `${ARTIFACTS}/grips-imp-third.png` });
+  // (An artifact for a look: a slow page's screenshot timing out isn't a failed check.)
+  await imp.screenshot({ path: `${ARTIFACTS}/grips-imp-third.png` }).catch(() => {});
   await imp.context().close();
 }
 
@@ -8746,7 +9764,9 @@ async function partyFlow(browser) {
   await pctx.close();
 
   // Online: a hub, a host, a friend by the host's invite link.
-  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9079);
+  // Its own port: dedicatedhost's hub is on 9079, and when a shard ran party just before it, dedicatedhost's hub couldn't
+  // bind and its host listed on party's hub, which has no relay ("relay": false, check/far-copies run 42729978260).
+  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9081);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000)).catch(() => {});
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;
@@ -9054,7 +10074,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

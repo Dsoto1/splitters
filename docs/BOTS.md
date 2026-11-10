@@ -825,6 +825,42 @@ on top of the spread-out samples, and a sniper spot there is worth 0.45 more (`b
 on ten big maps together (measured at load 11 on 4 cores; Qasr Medina, with its 280 drop candidates off flat roofs, the
 most: a second or so).
 
+## Bot hints (map data)
+Map format v33 (BOT_AI_PLAN.md Phase D item 5; MapMaker overhaul Phase 4 item 3): places the map's maker marks for bots
+in MapMaker (the Bot hints tool, Y). They are **map data on top of what bots work out themselves**: the computed spots
+(vantage spots, parkour links) stay the default, and a map with no hints plays as before. **Bots don't read them yet**:
+this is the data, its placement, checks and display; the bot side is the bots session's to build.
+
+**The format** (`MapDocument.botHints`, `map/schema.ts` `BotHint`; absent: none; at most 256 a map):
+
+| Field | What |
+|---|---|
+| `id` | a stable id (`hint_…`) |
+| `kind` | `choke` (a chokepoint: a doorway, a bridge, a gap between buildings, worth holding or pushing through), `sniper` (a long-sight spot to hold), `camp` (a tucked-in spot to hold), `staging` (where a side gathers before a push), `jump` (a jump a player can make) |
+| `position` | `[x, y, z]` world metres, on the ground or a floor (a jump link's start) |
+| `to` | a jump link's landing `[x, y, z]`, on the ground; only jump links have it, and they always do |
+| `yaw` | radians, as a spawn's (0 north, +z; `viewDirection`): the way through (choke), to watch (sniper, camp), to push (staging); absent: no particular way (jump links never have one: they run from `position` to `to`) |
+| `radius` | metres, 0.5-40: how far round the spot counts (new ones: choke 4, sniper and camp 1.5, staging 6, jump 1) |
+| `team` | a faction id, as a spawn's (`mapTeams`): only that team's bots use it; absent: every side's |
+
+**Reading them** (read-only, `map/botHints.ts`, exported from the shared index): `mapBotHints(map, kind?, team?)` (a
+team gets its own and every side's), `hintAt(h)` and `hintTo(h)` as `Vec3`, `BOT_HINT_SPECS` (labels, default radii,
+whether the facing means something), `hintJumpReach(rise, gravity)` and `jumpTrouble(h, physics)` (the movement numbers'
+verdict on a jump link). They are in the content hash: changing them changes the map.
+
+**Checks** (warnings only; the hints are advice, bots do without): validateMap (`botHintIssues`): a spot or end outside
+the map's boundary (`bothint.outside`), a jump link a player couldn't make by the movement numbers (`bothint.jump`: a
+running jump at the map's gravity, the legs tucked for a ledge over the jump's own height, as parkour's jumps up; a metre's
+slack for the two points; a drop that hurts with fall damage on), two of a kind and team within a metre (both ends, for
+jump links: `bothint.duplicate`). The navigation validator (`validateMapNavigation`, MapMaker's and validate-map's):
+a spot or end off the navmesh (`bothint.offNav`, more than 1.2 m across or 1.6 m up or down from it). Not "out of
+reach": a jump link's landing is often ground only that jump gets to.
+
+**What bots already know** (MapMaker's "What bots know", read-only): `validateMapNavigation(map, official, { computed:
+true })` also returns `computed` (`ComputedBotSpots`): the vantage spots (`vantageFor` on the main area's places and the
+parkour places, as the match works them out before the trips' lanes reweigh them) and the parkour links. Bots work out
+no chokepoints or staging spots of their own today.
+
 ## Ground that goes (Bot AI Phase C item 2)
 The navmesh is fixed for the match and has breakable props and free blocks that crumble, break, hide or show, and
 movers' blocks, as they start (a mover's at its first point). Doors and walls that block paths were openings already
@@ -975,7 +1011,7 @@ squads by proximity with **fixed squads** made from the roster.
   leaving (or away) hands their squad to its best bot leader (`leadAbility`: loyalty, tactical sense, cowards last).
   Player caps don't change: squads only group the players there are (more people than squads of the size: every
   person still leads one, the bots spread among them).
-- **What members do** (`memberGoal`, through `Match.botGoal` ahead of every other goal but a carrier's): follow the
+- **What members do** (Part 1; Part 2 changed bot-led squads, below) (`memberGoal`, through `Match.botGoal` ahead of every other goal but a carrier's): follow the
   leader (the squad's `anchor`, the leader's position moved on every 3 m, so routes aren't asked afresh every think),
   or the squad's order. A person's order is `OrderGoal.order` (ORDER_WEIGHT 2.4 in the scored choice: above noises and
   chases, below cover and a gun; bots fight what they see); keeping with a bot leader is `OrderGoal.squad`
@@ -998,7 +1034,7 @@ squads by proximity with **fixed squads** made from the roster.
 - **Ending orders** (`Fireteams.step`, 10 times a second): Attack that ends when the target is down (or after 45 s),
   Regroup when half the squad is within 8 m (or after 20 s): both turn back into Follow me. An order is **carried out**
   (`FireteamOrder.done`, measured) when half the squad's living members are within its radius (+2 m).
-- **The leader down**: the squad holds and fights where each member stood (a Hold here, Go there or Defend the
+- **The leader down** (a person's squad; a bot-led one is led on by a member since Part 2): the squad holds and fights where each member stood (a Hold here, Go there or Defend the
   objective stays in force). Back, they form up on them (Regroup), a place order staying.
 - **Respawn on the leader** (`Match.fireteamSpawn`): a squadmate respawns beside its leader when it's safe there
   (`spawns.ts leaderSpotSafe`: no enemy within 20 m, no fresh deaths, out of sight of the nearest enemies, by the spawn
@@ -1008,8 +1044,48 @@ squads by proximity with **fixed squads** made from the roster.
   once a second), the share of members alive, and orders carried out and in how long (`--orders`: every squad's leader
   gets an order every 30 s in turn). With the variant off, the same squads are worked out alongside and measured, for
   comparison. Numbers: docs/FIRETEAMS_PLAN.md, "Part 1".
-- **Hooks for Parts 2 and 3**: a squad's `id`, `members`, `order` and `anchor` (formations, bounding, the squad HUD,
-  scores and MVP read them); the 'squad' events carry the squad id.
+- **Hooks for Part 3**: a squad's `id`, `members`, `order` and `anchor` (scores and MVP read them); the 'squad' events
+  carry the squad id.
+
+### Fireteams Part 2: objective first, formations, bounding, the squad HUD (docs/FIRETEAMS_PLAN.md, "Part 2")
+- **Objective first (bot-led squads).** A bot-led squad on Follow me plays one play: its members play the mode's
+  objective themselves (`memberGoal` returns null for them), each with its **leader's team-brain job** (the same group,
+  corridor and staging spot: `DirectorMember.unit`, `BotDirector.update`), and the mode's **role for the whole squad**
+  (`ModeLogic.botUnits`; CTF `CtfBotPlan.squadRoles` / `ctfSquadRoles`: a squad defends only when it fits in the
+  defenders wanted, so with squads of 4-6 every squad attacks and a flag in trouble is answered by whoever is near). A
+  member more than `CATCH_UP` (25 m) from its leader catches up first (at a run). In Team Deathmatch the director's
+  fixed clusters keep giving them the squad's goal, route and regroups as before.
+  - **The leader falls:** a bot-led squad is led on by its best member alive (`Fireteams.step`, a handover that keeps
+    the squad's order); the fallen one comes back as a member (beside the new leader when that's safe). A person's
+    squad still holds for them (Part 1; a place order stays, Follow me / Attack that regroup on their return).
+  - **A carrier leads:** a bot-led squad's member carrying the objective (a flag, the bomb: `blocksVehicle`) takes the
+    lead, so the squad's catch-up and respawns go to it.
+  - Tried and measured worse (FIRETEAMS_PLAN.md, Part 2): members keeping formation spots round a bot leader (at its
+    pace, or round where its route goes next), the leader easing off for laggers, members playing the leader's own
+    goal only near it, a whole squad of 4 holding a CTF base, CTF defenders picked singly out of squads.
+- **Formations (a person's squad).** On Follow me and Regroup each member has a spot round its leader (`layFormation`,
+  `Squad.spots`), laid again each time the leader has moved `ANCHOR_MOVE` (3 m): the shape by the free width across
+  the leader's way (two sight lines at chest height, 12 m each side): under `FILE_WIDTH` (7 m) single file along the
+  leader's own trail (its last anchors), over `OPEN_WIDTH` (18 m) an open wedge, a wedge between. Each spot is kept 0.8 m
+  short of a wall between it and the leader and put on the walkable ground under it (`nav.closestPoint`, a step up or
+  down; none: the leader's spot). On Hold here, Go there and Defend the objective (any squad) the members stand on a
+  ring round the place (2.5, 3 and 5 m), not on one spot.
+- **Spread out / Stay tight** (`spacing`, the wheel's seventh entry, `PlayerInput.say` 116): one entry that toggles
+  the squad's spacing (`normal` → `spread` → `tight` → `spread`; its label says what it will do). Spread scales every
+  offset and ring 1.6 and opens a wedge; tight 0.6 and closes an open wedge; single file stays single file. It keeps
+  the squad's order. A bot answers "Spreading out!" / "Tightening up!".
+- **Bounding.** While a squad is on the move (its anchor moved in the last 3 s) every member has a half
+  (`squadHalf`: the leader 0, its members 1, 0, 1, ...; `OrderGoal.half`): in a fight at range on the way, the halves
+  take turns (4 s each) covering and moving cover to cover (`BotBrain.boundPhase`, Phase B's advance), by style as
+  before (Tactical from 12 m, Mixed from 18, Arena never). A person's squad on Follow me bounds too. **Covering fire:**
+  a member of the covering half whose enemy ducks out of sight keeps firing at where it went (`suppress`, only while
+  the rounds reach it, so from a peek) for 2.5 s (`coverShots`: bot ticks spent so, measured).
+- **Alerts:** a bot leader in a fight tells its members within 45 m not in one where its enemy is (once a second).
+- **The squad HUD** (`client/game/squadHud.ts`; the snapshot's `fs`, `squadSnapshot`): your squadmates' cards
+  (portrait, name, health; greyed "Down"), the order line ("Squad · Hold here · Spread out"), your squadmates as ringed
+  dots in the squad's orange on the minimap and the order's place (H, G, D), and the orange marker over their heads.
+- **Measured** (`squadMeasures.ts`): besides Part 1's, squad-seconds in each shape, the members' distance to their
+  spots, covering-fire rounds.
 
 ## Snipers (Bot AI Phase B)
 
@@ -1079,6 +1155,10 @@ coverage a minute and spread; spawn deaths (within 3 s of spawning); kills a min
 match's bot pipeline, wall clock); and per mode: CTF takes, captures and returns; King of the Hill time held (one
 team alone on the hill) and contested; Bomb plants and defuses; Hostage rescues; Elimination (and Bomb and Hostage)
 round times; Fort Wars pieces built.
+
+Stuck recoveries and failed searches are read through `bots/botTrace.ts` (`BotTrace.look`, the counts since the last
+look), which MapMaker's bot test run (`editor/mapTest.ts`, overhaul Phase 4) shares: its heatmaps of where bots got
+stuck and where routes failed count exactly what the scorecard counts.
 
 - `--suite=<mode>` plays the maps that list the mode (ctf, koth, bomb, hostage, elim, forts, tdm); `--suite=all`
   every scorecard mode on its maps.
@@ -1214,3 +1294,20 @@ added so the sets' oddballs get used:
 - **The oil slicker**: puddles round the target, then its igniter (the second trigger) about every three seconds of
   the fight; its bot value went from 0.3 to 0.45 now that it kills (Chaos on Atomic Court, a probe with everyone
   carrying it: 29 slicks laid, 22 lit, 8 kills in 120 s).
+
+## Weapon choice from the measurements (gunplay G4, November 2026)
+
+Which gun a bot holds (`weaponScore`) no longer comes from the hand-set `botRange`. It comes from each gun's time to
+kill as bots fire it, measured in the shared sim by `pnpm gun-report` (`shared/src/bots/weaponBands.ts`, data in
+`weaponBands.generated.ts`).
+- **Band** (`botBand`): where the gun kills within 1.6 times its quickest kill (or 0.5 s more, at most 2.5 s).
+- **Edge at the distance** (`ttkEdge`): the gun's TTK there against the benchmark guns' median. Under 15 m, a gun
+  not in hand pays its measured draw first. So a shotgun beats a Precision Rifle at arm's length, though both are in
+  band, and a bot keeps a loaded SMG at 6 m rather than draw a shotgun.
+
+**Not measured yet: how far a bot stands.** `preferredRange` keeps `botRange`. The measured version (`botEdge`) kept
+CTF attackers standing off: Diamond Park captured in 2 of seeds 1-6 against 6 (docs/GUNPLAY_AUDIT.md, "G4").
+
+Guns without a measurement keep `botRange`. After a weapon change, run
+`pnpm gun-report --json=docs/gunplay-audit.json --bands`, then `pnpm bot-report --check`. bot-report prints each
+gun's rounds, hit rate and hit distance (`weapon use`), and `--compare` shows the spread of weapon use.

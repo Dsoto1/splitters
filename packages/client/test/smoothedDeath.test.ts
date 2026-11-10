@@ -72,19 +72,24 @@ function rig() {
   let now = 1000;
   let frame = 0;
   const alive = { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false };
-  /** One frame as GameView runs it: stepped (unless `stepped` is false: a dead body is not), animated, skinned. */
-  const tick = (stepped = true) => {
+  /**
+   * One frame as GameView runs it: stepped (unless `stepped` is false: a dead body is not), animated, skinned (as the
+   * scene skins it: prepare() once in the frame's render). Returns whether the clips were evaluated.
+   */
+  const tick = (stepped = true): boolean => {
     now += 1000 / 60;
     frame++;
-    if (stepped && anim.stepAt(now, SMOOTHED, frame, 0)) anim.update(1 / 20, alive);
+    const evaluated = stepped && anim.stepAt(now, SMOOTHED, frame, 0);
+    if (evaluated) anim.update(1 / 20, alive);
     scene.animate();
     scene.incrementRenderId();
-    sk.prepare(true);
+    sk.prepare();
+    return evaluated;
   };
   /** The thigh's skin matrix as drawn (its bones rest at the identity: the joint's rotation). */
   const drawnThigh = () => Quaternion.FromRotationMatrix(Matrix.FromArray((sk as unknown as { _transformMatrices: Float32Array })._transformMatrices, 16 * 2));
   const near = (a: Quaternion, b: Quaternion) => Math.abs(Quaternion.Dot(a, b)) > 0.9999;
-  return { scene, anim, thigh, tick, drawnThigh, near };
+  return { scene, anim, sk, thigh, tick, drawnThigh, near };
 }
 
 describe('a body that dies while smoothed (frozen characters, 2026-11-07)', () => {
@@ -151,6 +156,33 @@ describe('a body that dies while smoothed (frozen characters, 2026-11-07)', () =
       expect(Math.abs(drawn.y) + Math.abs(drawn.z)).toBeLessThan(1e-4);
     }
     expect(anim.smoothing).toBe(true);
+    scene.dispose();
+  });
+
+  it("a read of the skin part way through an evaluation isn't drawn as that evaluation's pose", () => {
+    // Far bots' hands off their guns (characters3): a first long-gun grip measures the torso's skin (TorsoSurface,
+    // prepare(true)) before the arms and the gun are placed; that half-done pose was recorded as the evaluation's and
+    // drawn until the next one, the hands 10-25 cm off the gun.
+    const { scene, anim, sk, thigh, tick, drawnThigh, near } = rig();
+    for (let i = 0; i < 20; i++) tick();
+    expect(anim.smoothing).toBe(true);
+    const placed = Quaternion.RotationYawPitchRoll(0.3, 0.2, 0.1);
+    let armed = true;
+    let done = false;
+    scene.onAfterAnimationsObservable.add(() => {
+      if (!armed || (anim as unknown as { gate: { skip: boolean } }).gate.skip) return;
+      armed = false;
+      sk.prepare(true);
+      thigh.rotationQuaternion = placed.clone();
+      done = true;
+    });
+    for (let i = 0; i < 20 && !done; i++) tick();
+    expect(done).toBe(true);
+    // Drawn one step behind: the next evaluation shows the pose this one finished with.
+    let next = false;
+    for (let i = 0; i < 20 && !next; i++) next = tick();
+    expect(next).toBe(true);
+    expect(near(drawnThigh(), placed)).toBe(true);
     scene.dispose();
   });
 });

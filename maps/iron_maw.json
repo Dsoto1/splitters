@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 29,
+  "formatVersion": 31,
   "metadata": {
     "id": "iron_maw",
     "name": "Iron Maw",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_rruhi4tdvbp62o3x",
-      "revision": 1,
-      "contentHash": "sha256:b30807b1f6ff6bab4df51128d19b04c64a598491f14b65abb59a59f968197a5d",
-      "schemaVersion": 29,
-      "releasedAt": "2026-11-08T05:18:17.685Z"
+      "versionId": "v_ance5jzzpvzlg4gc",
+      "revision": 2,
+      "contentHash": "sha256:c0e8854061d7c2e3ced8100c8cb7a38e5af981389462b09296e7d5de3a094275",
+      "schemaVersion": 31,
+      "releasedAt": "2026-11-09T04:43:37.632Z"
     }
   },
   "classicStructure": {
@@ -35,36 +35,6 @@
     "levelHeight": 4,
     "theme": "core.factory",
     "tiles": [
-      {
-        "id": "mill_a",
-        "tile": "core.warehouse",
-        "x": -9,
-        "y": 19,
-        "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:S": "wide",
-          "2,0,0:S": "wide",
-          "0,1,0:W": "door",
-          "2,0,0:E": "door",
-          "1,1,1:N": "door"
-        }
-      },
-      {
-        "id": "mill_b",
-        "tile": "core.warehouse",
-        "x": 4,
-        "y": 19,
-        "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:S": "wide",
-          "2,0,0:S": "wide",
-          "0,1,0:W": "door",
-          "2,0,0:E": "door",
-          "1,1,1:N": "door"
-        }
-      },
       {
         "id": "nw_shed_1",
         "tile": "military.vehicle_shed",
@@ -113,19 +83,6 @@
           "0,0,0:S": "door",
           "1,0,0:N": "door",
           "1,0,0:E": "door"
-        }
-      },
-      {
-        "id": "nw_hq",
-        "tile": "core.bunker",
-        "x": -16,
-        "y": 15,
-        "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:W": "door",
-          "1,0,0:E": "door",
-          "0,0,0:S": "door"
         }
       },
       {
@@ -229,19 +186,6 @@
         "y": 15,
         "z": 0,
         "rotation": 0
-      },
-      {
-        "id": "ne_hq",
-        "tile": "core.bunker",
-        "x": 22,
-        "y": 13,
-        "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:W": "door",
-          "1,0,0:E": "door",
-          "0,0,0:S": "door"
-        }
       },
       {
         "id": "ne_tower",
@@ -15992,7 +15936,7 @@
       "id": "pickup_023",
       "position": [
         -62.5,
-        0.05,
+        1,
         158
       ],
       "kind": "pickup",
@@ -16003,7 +15947,7 @@
       "id": "pickup_024",
       "position": [
         41.5,
-        0.05,
+        1,
         158
       ],
       "kind": "pickup",
@@ -16014,7 +15958,7 @@
       "id": "pickup_025",
       "position": [
         -60,
-        4.05,
+        1,
         161
       ],
       "kind": "pickup",
@@ -16025,7 +15969,7 @@
       "id": "pickup_026",
       "position": [
         44,
-        4.05,
+        1,
         161
       ],
       "kind": "pickup",
@@ -16628,23 +16572,23 @@
     },
     {
       "id": "pickup_ekrqxstr16",
-      "kind": "pickup",
       "position": [
         -88,
         0,
         84
       ],
+      "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
     },
     {
       "id": "pickup_3n235pv1oz",
-      "kind": "pickup",
       "position": [
         88,
         0,
         84
       ],
+      "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
     }
@@ -69556,5 +69500,43 @@
       16
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "setPieces": [
+    {
+      "id": "mill_a",
+      "piece": "setpiece.loading_dock",
+      "x": -9,
+      "y": 19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "mill_b",
+      "piece": "setpiece.loading_dock",
+      "x": 4,
+      "y": 19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "nw_hq",
+      "piece": "setpiece.bunker",
+      "x": -16,
+      "y": 15,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "ne_hq",
+      "piece": "setpiece.bunker",
+      "x": 22,
+      "y": 13,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    }
+  ]
 }

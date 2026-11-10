@@ -1,0 +1,362 @@
+{
+  "generated": "2026-11-09T12:55:01.445Z",
+  "clients": 8,
+  "seconds": 30,
+  "weapon": "core.rifle",
+  "results": [
+    {
+      "condition": {
+        "rttMs": 0,
+        "jitterMs": 0,
+        "loss": 0
+      },
+      "clients": 8,
+      "seconds": 30,
+      "weapon": "core.rifle",
+      "rtt": {
+        "p50": 3,
+        "p95": 7
+      },
+      "shots": 400,
+      "screenHits": 368,
+      "confirmed": 353,
+      "missDead": 10,
+      "missClamped": 0,
+      "missOther": 5,
+      "phantomHits": 1,
+      "unfiredDead": 2,
+      "unfired": 0,
+      "droppedInputs": 0,
+      "lagCompCm": {
+        "p50": 1,
+        "p95": 5,
+        "max": 12
+      },
+      "lagCompAheadCm": {
+        "p95": 1,
+        "shots": 2
+      },
+      "clampedShots": 0,
+      "confirmMs": {
+        "p50": 27,
+        "p95": 42
+      },
+      "correctionsPerMin": 0,
+      "correctionCm": {
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "hitCorrectionsPerMin": 50.8,
+      "hitCorrectionCm": 7,
+      "killsPerMin": 128,
+      "downKBps": 2.9,
+      "upKBps": 8,
+      "snapshotGapMs": {
+        "p95": 43,
+        "max": 148
+      },
+      "lostPackets": 0,
+      "labStallMs": {
+        "p99": 19,
+        "max": 126
+      },
+      "hostTickMs": 0.4
+    },
+    {
+      "condition": {
+        "rttMs": 50,
+        "jitterMs": 10,
+        "loss": 0.01
+      },
+      "clients": 8,
+      "seconds": 30,
+      "weapon": "core.rifle",
+      "rtt": {
+        "p50": 62,
+        "p95": 130
+      },
+      "shots": 422,
+      "screenHits": 368,
+      "confirmed": 347,
+      "missDead": 15,
+      "missClamped": 0,
+      "missOther": 6,
+      "phantomHits": 6,
+      "unfiredDead": 20,
+      "unfired": 0,
+      "droppedInputs": 0,
+      "lagCompCm": {
+        "p50": 2,
+        "p95": 9,
+        "max": 164
+      },
+      "lagCompAheadCm": {
+        "p95": 37,
+        "shots": 10
+      },
+      "clampedShots": 0,
+      "confirmMs": {
+        "p50": 85,
+        "p95": 180
+      },
+      "correctionsPerMin": 0,
+      "correctionCm": {
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "hitCorrectionsPerMin": 69.5,
+      "hitCorrectionCm": 14,
+      "killsPerMin": 124,
+      "downKBps": 2.9,
+      "upKBps": 8,
+      "snapshotGapMs": {
+        "p95": 45,
+        "max": 344
+      },
+      "lostPackets": 236,
+      "labStallMs": {
+        "p99": 19,
+        "max": 132
+      },
+      "hostTickMs": 0.34
+    },
+    {
+      "condition": {
+        "rttMs": 100,
+        "jitterMs": 20,
+        "loss": 0.02
+      },
+      "clients": 8,
+      "seconds": 30,
+      "weapon": "core.rifle",
+      "rtt": {
+        "p50": 126,
+        "p95": 315
+      },
+      "shots": 433,
+      "screenHits": 363,
+      "confirmed": 318,
+      "missDead": 27,
+      "missClamped": 14,
+      "missOther": 4,
+      "phantomHits": 5,
+      "unfiredDead": 36,
+      "unfired": 0,
+      "droppedInputs": 0,
+      "lagCompCm": {
+        "p50": 2,
+        "p95": 8,
+        "max": 13
+      },
+      "lagCompAheadCm": {
+        "p95": 46,
+        "shots": 13
+      },
+      "clampedShots": 81,
+      "confirmMs": {
+        "p50": 153,
+        "p95": 328
+      },
+      "correctionsPerMin": 0,
+      "correctionCm": {
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "hitCorrectionsPerMin": 63,
+      "hitCorrectionCm": 23,
+      "killsPerMin": 118,
+      "downKBps": 2.9,
+      "upKBps": 8.1,
+      "snapshotGapMs": {
+        "p95": 54,
+        "max": 442
+      },
+      "lostPackets": 395,
+      "labStallMs": {
+        "p99": 18,
+        "max": 274
+      },
+      "hostTickMs": 0.3
+    },
+    {
+      "condition": {
+        "rttMs": 150,
+        "jitterMs": 30,
+        "loss": 0.03
+      },
+      "clients": 8,
+      "seconds": 30,
+      "weapon": "core.rifle",
+      "rtt": {
+        "p50": 206,
+        "p95": 532
+      },
+      "shots": 501,
+      "screenHits": 389,
+      "confirmed": 261,
+      "missDead": 46,
+      "missClamped": 82,
+      "missOther": 0,
+      "phantomHits": 7,
+      "unfiredDead": 54,
+      "unfired": 0,
+      "droppedInputs": 0,
+      "lagCompCm": {
+        "p50": 2,
+        "p95": 9,
+        "max": 23
+      },
+      "lagCompAheadCm": {
+        "p95": 11,
+        "shots": 1
+      },
+      "clampedShots": 277,
+      "confirmMs": {
+        "p50": 223,
+        "p95": 451
+      },
+      "correctionsPerMin": 0,
+      "correctionCm": {
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "hitCorrectionsPerMin": 57,
+      "hitCorrectionCm": 37,
+      "killsPerMin": 98,
+      "downKBps": 2.9,
+      "upKBps": 8.3,
+      "snapshotGapMs": {
+        "p95": 67,
+        "max": 612
+      },
+      "lostPackets": 673,
+      "labStallMs": {
+        "p99": 17,
+        "max": 157
+      },
+      "hostTickMs": 0.34
+    },
+    {
+      "condition": {
+        "rttMs": 150,
+        "jitterMs": 30,
+        "loss": 0.05
+      },
+      "clients": 8,
+      "seconds": 30,
+      "weapon": "core.rifle",
+      "rtt": {
+        "p50": 310,
+        "p95": 630
+      },
+      "shots": 547,
+      "screenHits": 408,
+      "confirmed": 246,
+      "missDead": 37,
+      "missClamped": 124,
+      "missOther": 1,
+      "phantomHits": 6,
+      "unfiredDead": 57,
+      "unfired": 0,
+      "droppedInputs": 4,
+      "lagCompCm": {
+        "p50": 2,
+        "p95": 10,
+        "max": 25
+      },
+      "lagCompAheadCm": {
+        "p95": 0,
+        "shots": 0
+      },
+      "clampedShots": 407,
+      "confirmMs": {
+        "p50": 343,
+        "p95": 622
+      },
+      "correctionsPerMin": 0.5,
+      "correctionCm": {
+        "p50": 19,
+        "p95": 26,
+        "max": 26
+      },
+      "hitCorrectionsPerMin": 57.5,
+      "hitCorrectionCm": 46,
+      "killsPerMin": 86,
+      "downKBps": 2.8,
+      "upKBps": 8.4,
+      "snapshotGapMs": {
+        "p95": 274,
+        "max": 837
+      },
+      "lostPackets": 1107,
+      "labStallMs": {
+        "p99": 22,
+        "max": 279
+      },
+      "hostTickMs": 0.42
+    },
+    {
+      "condition": {
+        "rttMs": 250,
+        "jitterMs": 30,
+        "loss": 0.02
+      },
+      "clients": 8,
+      "seconds": 30,
+      "weapon": "core.rifle",
+      "rtt": {
+        "p50": 304,
+        "p95": 639
+      },
+      "shots": 579,
+      "screenHits": 473,
+      "confirmed": 193,
+      "missDead": 44,
+      "missClamped": 236,
+      "missOther": 0,
+      "phantomHits": 4,
+      "unfiredDead": 46,
+      "unfired": 8,
+      "droppedInputs": 23,
+      "lagCompCm": {
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "lagCompAheadCm": {
+        "p95": 0,
+        "shots": 0
+      },
+      "clampedShots": 525,
+      "confirmMs": {
+        "p50": 324,
+        "p95": 680
+      },
+      "correctionsPerMin": 2,
+      "correctionCm": {
+        "p50": 37,
+        "p95": 64,
+        "max": 64
+      },
+      "hitCorrectionsPerMin": 51,
+      "hitCorrectionCm": 43,
+      "killsPerMin": 68,
+      "downKBps": 3.2,
+      "upKBps": 8.6,
+      "snapshotGapMs": {
+        "p95": 59,
+        "max": 537
+      },
+      "lostPackets": 392,
+      "labStallMs": {
+        "p99": 14,
+        "max": 148
+      },
+      "hostTickMs": 0.33
+    }
+  ]
+}

@@ -19,6 +19,185 @@ made only on a commit that passed CI on a check branch.
   and dunes, the woods only inland; the playable area is the same.
 - **Balance**: the beach's two zones take 45 s to capture (were 20): in bot matches the beach now falls in 84-109 s
   (was 52-69 s at 16 v 16 and 56-83 s at 24 v 24).
+**Far characters** (`wip/far-copies`):
+- Far-off characters are drawn in the same pose as up close: 74 characters' low-detail copies moved onto their body's
+  skeleton (Hyena Warrior was drawn 15-30% short at a distance, Honest Abe 15%).
+- Far characters' hands stay on their guns: a far character's first animation step drew its hands 10-25 cm off the
+  gun until the next one.
+**Gunplay pass 3: the network check and bots' weapon ranges** (owner-approved audit candidates 7 and 8):
+- **Fewer snap-backs and lost shots on a lossy connection.** When a packet was lost and resent, the inputs behind it
+  reached the host together, and the host dropped the oldest past 16. You snapped back (up to 1.4 m) and rounds you
+  saw leave were never fired. The host now holds 32 inputs. At 150 ms and 5 % loss, snap-backs fell from 2.7 to 0.3
+  a minute; at 250 ms, inputs dropped fell from 717 to 7 in 25 s.
+- **Bots draw the gun that wins at the distance, as measured.** Which gun a bot holds now comes from each gun's time
+  to kill measured in the game's own simulation (`pnpm gun-report`), not a hand-set range. A shotgun comes out at arm's
+  length, a Precision Rifle far off, and bots' hit rates rose for most guns. How far bots stand is unchanged.
+- **`pnpm net-report`** (for developers): a real host with 8 players over links with latency, jitter and packet loss.
+  It measures hit registration, lag-compensation error, time to the hit marker, rubber-banding and bandwidth
+  (docs/GUNPLAY_AUDIT.md, "G3").
+- **`pnpm bot-report`** lists each weapon's rounds, hit rate and hit distance, and how evenly bots use their guns.
+**MapMaker fixes** (the owner's answers, 2026-11-09, and bugs found building The Spillway):
+- **Paste into a map of another theme:** the pieces take the new map's theme and keep their own paint; the toast says
+  so.
+- **Mirror half the map** brings its bot hints, and team hints (a staging spot, a camp) swap sides like spawns. A new
+  **Terrain and paths too** box mirrors the terrain (heights, ground paint and plant cover) and copies the paths on
+  that half.
+- **Plants on a fine terrain grid** (finer than 2 m, Terrain → Change grid) grow as many to the square metre as a
+  2.5 m grid.
+- **The Scatter Brush sets are retired** (Pine forest, Leafy woods and the rest): the Environment brush and its
+  presets replace them, and N now takes up the Environment brush. Plants already placed stay as they are.
+- **The bot test runs up to 64 bots.**
+- **The inspector keeps the first edit after a placement** (it was lost when the inspector redrew a frame later), and
+  a field you are typing in survives any redraw.
+- **Stairs from the ground:** the ground at the foot of a flight (or any step) comes up to just under its first step,
+  worked out as the map loads and in MapMaker (the map file keeps its own ground), so bots and players climb it as a
+  step, not a 0.4 m lip. Bot test (Sunken Kingdom, Glacier Line and Fogbound, TDM, 2 seeds of 120 s): stuck recoveries
+  42 → 25 a match (Glacier Line 75 → 27).
+- **Cut ground to floors** (the selection menu): lowers the ground under the selected floors however deep, one undo
+  step, for a tunnel's cut or a sunken yard. The automatic lowering still stops 3 m above a floor (deeper, it would
+  open Sandfall's hypogeum rooms and the tops of flights cut into terraces on shipped maps; docs/BUILDING_KIT.md).
+- **The top bar** fits Export, Import and Publish again at 1400 px.
+
+**Time of day and weather** (MapMaker overhaul Phase 5; map format v34):
+- **Time of day:** Map properties → Time of day sets the hour (a slider, or Dawn, Morning, Noon, Afternoon, Dusk,
+  Night). The sun crosses the sky (east at dawn, high in the south at noon, west at dusk; the moon by night), and its
+  light, the haze and the sky picture blend between the sky presets: night, dusk, sunrise, the map's own sky by day,
+  sunset. The slider previews live; the time is fixed for the match. Maps without a time look exactly as before.
+- **Weather:** rain or snow (how hard), wind and fog banks, with rain and wind sounds (our own synthesiser). Fog is
+  its one effect on play: everyone sees less far. Under a roof the rain fades out and is heard on it. Low graphics
+  (phones) draw no rain or snow, only the fog. No lightning, nothing that flashes; the flicker check has heavy rain
+  and a blizzard at night among its moments.
+- **The host may play another weather** (Match setup's Advanced rules, the pause menu's Host tab: Clear, Rain, Heavy
+  rain, Snow, Blizzard, Fog); from the Host tab it plays from the next match.
+- MapMaker: the boulder and cliff face species show their pictures in the palette, not text cards.
+
+**Whiteout Station, the owner's follow-ups** (2026-11-09, in MapMaker): King of the Hill on three hills (the yard, the
+radar ridge and the ice cave); three snow sleds to drive at the south road's west end (the two
+parked snowmobiles on the garage apron are gone); Tide's spawns a cell nearer the yard, so Team Deathmatch comes out even.
+
+**Fireteams, part 2** (owner-approved 2026-11-08):
+- **Bot squads play the objective first.** A bot-led squad goes for the flag, the hill or the bomb site together, on
+  one route and push of the team's plan, rather than trailing its leader; when its leader falls, the next best member
+  leads on, and whoever carries the flag leads the squad home. Kills are back to the variant-off levels in Team
+  Deathmatch and the hill is held as long; CTF captures are partly back (docs/FIRETEAMS_PLAN.md, "Part 2").
+- **Your squad forms up round you:** single file through corridors and doorways, a wedge, spread out on open ground;
+  Hold here, Go there and Defend the objective put them on a ring round the place.
+- **Spread out / Stay tight** on the order wheel (its seventh entry).
+- **Bounding:** in a fight on the move, half the squad covers (firing where the enemy ducked) while the other half
+  moves up cover to cover.
+- **The squad HUD:** your squadmates' portraits with their health and the squad's order, your squad on the minimap
+  (and where you sent it), and your squad's orange marker over their heads. On a phone it sits beside your health.
+**MapMaker follow-ups** (the owner's answers, 2026-11-08):
+- **The measure tool's jump hint looks at the ground along the line**, not only at its two ends: a slope you can walk
+  up reads walkable, a ledge reads a step (with its height), and a pit you couldn't climb out of reads a gap (with its
+  width, jumpable or too far). A ditch you can climb out of is a drop and a step.
+- **Nothing is placed over nothing:** spawns, pickups, props, vehicles and NPCs with no floor, ground or water under
+  them are refused; the ghost goes red and says why, and the click does nothing. Spawns, pickups, vehicles and NPCs
+  outside the playable boundary are refused the same way. Props outside it are scenery, as before.
+- **The budget bar sits in the bottom status bar**, compact: its colour, its word and the budget it names; the name
+  still selects what it counts and the arrow still lists every budget.
+
+**MapMaker: bot hints** (map format v33; MapMaker overhaul Phase 4 item 3, Bot AI Phase D item 5): mark chokepoints,
+sniper, camp and staging spots and jump links for bots (the Bot hints tool, Y; the Entities tab). Pins with their
+radius, facing and jump arcs in the 3D view and the plan view, edited in the inspector, one undo step each; warnings for
+a hint outside the boundary or off the navmesh, a jump a player couldn't make and duplicates. "What bots know" shows
+the bots' own computed spots (vantage spots, parkour links), read-only. Bots don't use the hints yet (the data is
+documented in docs/BOTS.md, "Bot hints (map data)").
+
+**MapMaker: a bot test run and spawn exposure** (MapMaker overhaul Phase 4, items 1 and 2):
+- **Bot test** in the top bar opens the Test panel. **Run bots** plays a bot match on the map you're editing in the
+  background (pick the mode, bots a team or in all, and 30 seconds to 5 minutes), with progress and Cancel; you can
+  keep building meanwhile.
+- **Afterwards, heatmaps** over the map, in 3D and in the plan view, each on its own switch: where bots went, where
+  they got stuck, where they died and where their routes failed. A short summary says the kills, stuck recoveries,
+  failed route searches and when the objective's moments first happened.
+- **Check spawns** labels every spawn with how much of the map can see it and from how far, draws its longest lines
+  of sight and the map's long sightlines (50 m and more), and warns about spawns half the map can see in the list of
+  problems (until the map changes).
+- Nothing is saved in the map.
+
+**MapMaker says track / NPC traffic:** the Race Track card, the Paths pane, the key list (Shift+G) and the Vehicles
+  tab call it the track (NPC traffic). The track's pane keeps its NPC cars, their vehicle, the curbs, where the cars
+  start and the pit lane, and no longer shows Laps, Start grid, Vehicle or Combat (nothing reads them now). Map
+  properties no longer offers Race as a mode, and a map that still lists it gets a **Drop Race** button (undo brings
+  it back); picking a main mode drops it too.
+
+**MapMaker: paint our trees and plants (Environment Phase 3):**
+- **The Nature tab opens on Environment:** our species by Trees, Plants, Ground cover, Rocks, Boulders and Cliffs.
+  Click one to place it like a prop (it lands on what's under the pointer, R turns it, Randomise varies it).
+- **The Environment brush** paints or erases a mix in strokes (one undo step each): Temperate, Jungle, Alpine and
+  Arid presets (mix any species you like), density, brush size, seed (the same seed repaints the same plants), size
+  and turn variation, a weight and variant per species, and where it grows: slope, height and ground material, never
+  inside buildings.
+- **Keeps play clear:** trees, boulders, cliffs, hedges and the bushes you hide in stay off spawns, routes,
+  objectives, vehicles and pickups unless you say otherwise; placing one there by hand asks first. **Show what
+  blocks** draws what stops movement, shots and sight.
+- The brush stops at the map's environment budget, and painted plants export and import exactly as placed.
+
+**Fireteams, part 2** (owner-approved 2026-11-08):
+- **Bot squads play the objective first.** A bot-led squad goes for the flag, the hill or the bomb site together, on
+  one route and push of the team's plan, rather than trailing its leader; when its leader falls, the next best member
+  leads on, and whoever carries the flag leads the squad home. Kills are back to the variant-off levels in Team
+  Deathmatch and the hill is held as long; CTF captures are partly back (docs/FIRETEAMS_PLAN.md, "Part 2").
+- **Your squad forms up round you:** single file through corridors and doorways, a wedge, spread out on open ground;
+  Hold here, Go there and Defend the objective put them on a ring round the place.
+- **Spread out / Stay tight** on the order wheel (its seventh entry).
+- **Bounding:** in a fight on the move, half the squad covers (firing where the enemy ducked) while the other half
+  moves up cover to cover.
+- **The squad HUD:** your squadmates' portraits with their health and the squad's order, your squad on the minimap
+  (and where you sent it), and your squad's orange marker over their heads. On a phone it sits beside your health.
+**Set pieces, part 6: swapping the old big pieces** (docs/SET_PIECES_PLAN.md, "As built: part 6"):
+- **Replace all with a set piece…** in every tile's inspector in MapMaker: every placement of a tile becomes a set piece
+  where it stands, one undo step.
+- **Town Wall Gatehouse**, a new set piece: Market Town's gate is now one (the walks through its guard room, its roof up
+  a ladder).
+- **Bunker**, a new set piece the size of the Bunker tile: Iron Maw and Shingle Point's bunkers are now Bunkers, their
+  warehouses Loading Docks; Neon Spire, Riot Junction and Underdrain's 4 × 4 crossroads are the Crossroads Plaza.
+- **City Wall Gatehouse** and **Temple Pylon**, new set pieces: Qasr Medina's gate is now the gatehouse, Pharaoh's
+  Reach and Sunken Kingdom's pylons the Temple Pylon set piece; Blackout and Crossroads' warehouses are Loading Docks,
+  their bunkers Bunkers.
+- Shingle Point's card picture is taken from a few metres further back, so the cliff-top buildings show.
+
+**Sandfall Colosseum, rebuilt** (the owner's Flavius Rule board, built in MapMaker; docs/map-briefs/sandfall_colosseum/):
+- **The arena** is the board at 4 m a square: 52 m of sand (7 × 7 cells) with its twelve pillars, five medallions
+  (King of the Hill's hills), four hatches down to the hypogeum and the beast pit's spikes and fire jets in the middle.
+- **The stands** rise seven storeys on all four sides (28 bays of podium, two upper tiers with vomitoria, the
+  arcaded facade and the attic walk at 28 m); the **emperor's box** is back at the centre of the north side, facing
+  the main entrance; **gates 1-4** at the corners; a stair tower in each corner court climbs to the top.
+- **The hypogeum** runs round under the podium: hatch halls, beast cages north, south and east, the gladiators'
+  cells west, and stairs up into the corner courts and out to the village on all four sides.
+- **The Roman village** round it: sixteen insulae and the main square (triumphal arch, forum, temple, colonnades)
+  leading north to the arena; a volcano smokes far off behind the emperor's box.
+- Team Deathmatch, Capture the Flag (gates 3/4 against gates 1/2) and King of the Hill; 12 v 12; the Medieval set.
+
+**Sandfall Colosseum, the owner's follow-ups** (2026-11-09, in MapMaker):
+- **Lighter to load:** the arcades under the tiers (all four sides; the gate passages kept) and the east and west
+  stands' outer arcades are gone, solid limestone in their place: 31,724 collision boxes → 22,240. From the sand
+  it looks the same: the podium, the tiers, the vomitoria and the attic walk are all there.
+- **The portcullis gates are back:** each of gates 1-4 has a portcullis in its opening onto the sand, worked by a
+  winch in the passage and a chain on the sand (press either to raise or drop it, with the buzzer). They start raised.
+- **Deathmatch** is offered again, beside Team Deathmatch, Capture the Flag and King of the Hill.
+- The vaulted tunnels at the four ways out have side walls (below), so the ground beside them meets masonry.
+- The hatch ladders now let you off onto the sand at the top (they let you off over the open hatch, and bots fell
+  back in): bots no longer queue at them.
+
+**MapMaker: tunnels with side walls.** Select a Vaulted Tunnel (or its Bend, Junction or Crossing; one or several) and
+tick **Side walls** in the inspector's Options: its masonry rises to a kerb at ground level and the ground round it
+stays up there, instead of banking down to the passage as earth. One undo step; paint and walls are kept.
+
+**Backdrop: Hills and a volcano** (Map properties → Environment → Sky → Scenery): dry hills round the map and a lone
+volcano far to the north, a steady ember glow in its crater and a still plume of smoke. Nothing in it moves or
+flickers, so it is the same with Reduce flashing on.
+
+**MapMaker:** exploding or deleting the last placement of a map's own set piece (one saved from a selection) takes its
+definition out of the map too; it stays in your library, and one undo brings both back.
+
+**Whiteout Station rebuilt (MAP 03 Frostbite Station, made in MapMaker)**:
+- A compact arctic research station in a snowbound hollow, for 8-16 players: an offset central yard with a tunnel
+  under it, the two-storey main lab and its server vault, a two-storey lab wing round a glowing core, the comms
+  annex under its mast, the snow vehicle garage, the fuel tanks, the radar shelter up on its ridge (the long look over
+  the station) and an ice cave in the rocks; three outdoor flanks and a sunken service trench.
+- Deathmatch and Team Deathmatch (Elimination with it); the old map's flags and hills are gone. Military weapons.
 
 **Tests**:
 - The e2e `teams` flow's friendly fire and team kill checks no longer fail at random: every bot holds fire while your

@@ -36,7 +36,7 @@ function before(code: string, shift: boolean, mod: boolean): KeyAction | null {
     KeyX: 'erase',
     KeyU: 'measure',
     KeyG: shift ? 'raceTrack' : 'paths',
-    KeyN: 'scatter',
+    KeyN: 'envBrush',
     KeyP: 'place',
     KeyI: 'pickStyle',
     KeyV: 'select',
@@ -84,7 +84,10 @@ describe('MapMaker key table and the ? overlay (Phase 1, item 5)', () => {
                         ? 'mirrorDialog'
                         : code === 'KeyJ' && !mod
                           ? 'notes'
-                          : null;
+                          : // Phase 4 item 3: Y bot hints.
+                            code === 'KeyY' && !mod
+                            ? 'botHints'
+                            : null;
           const want = added ?? (code === 'Slash' && shift && !mod ? 'keys' : before(code, shift, mod));
           expect(now, `${mod ? 'Ctrl+' : ''}${shift ? 'Shift+' : ''}${code}`).toBe(want);
           // ⌘ on a Mac is Ctrl.
