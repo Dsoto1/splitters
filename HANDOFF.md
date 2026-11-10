@@ -38,6 +38,8 @@ jump ahead, or something the owner explicitly bumps.
   - 722 placements on 57 maps (bunker_cross 82, iron_tide 54, undergate_transit 44), plus three set pieces
     (`content/setpieces/sunkenarena.json`, `reactor.json`, `loadingdock.json`; they upgrade as played too).
   - The old files stay in the build until then.
+  - Please also place one of each kit family in `maps/test_coverage.json` ("one of everything"; its unit test only
+    asks for a prop of every pack in `content/props/`, so it doesn't fail without them).
 - **Budgets** (triangles at levels 0 / 1 / 2, against the Kenney prop replaced):
   - crate_small 124 → wood 308 / 52 / 10 (levels at 0, 14 and 40 m);
   - crate_large 124 → wood_long 346 / 68 / 10;
