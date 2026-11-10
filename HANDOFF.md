@@ -949,6 +949,21 @@ gets overloaded above that: local e2e times out and flakes). Prune landed worktr
 - **Next:** the MapMaker lane may start Environment Phase 3's tools (line in the tandem section). Owner's look at the
   screenshots; the skipped maps above; card pictures.
 
+### MapMaker overhaul Phase 2: the split, modes, folding panels, the outliner (`wip/mapmaker-p2`, agents, 2026-11-09/10; MapMaker lane; docs/MAPMAKER_OVERHAUL_PLAN.md "Phase 2", docs/BUILDING_KIT.md "MapMaker's modes, panels and outliner")
+- **The split** (steps 1-12, a3040bf8; main merged in at 2040c580): green on `check/mapmaker-p2`, run 42730322862. It
+  can land on its own. `editorApp.ts` 6,489 → 949 lines; each part is a class taking the `EditorApp` (module map in
+  the plan's "As built"). No behaviour change.
+- **The interface** (after 2040c580): seven mode tabs (`editorModes.ts`; Gameplay keeps `data-ws="entities"`), each
+  mode's own inspector part with nothing selected (`modeInspector.ts`), the Paths and Test panes; folding side panels
+  (`panels.ts`, localStorage `tiletrigger.editor.panels`); the outliner (shared `editor/outliner.ts`, client
+  `outlinerPanel.ts`; hide and lock in localStorage `tiletrigger.editor.outliner.<map id>`, never in the map; hidden
+  entities are skipped by `EditorView.setEntities` through `view.outlinerHidden`, tiles by `withoutHidden`); the quick
+  row's mode-first favourites and recent (`palette.ts quickOrder`, "This mode only"). The mode tabs tighten at the top
+  bar's `fit-3` so Export and Import stay at 1400 px. e2e `editorux` → `editorInterfaceChecks`; unit tests
+  `client/test/editorModes.test.ts`, `shared/test/mapmakerOutliner.test.ts`.
+- **Pitfalls:** the Test tab no longer plays at once (F5 and the Test pane do); the side panel now starts with the
+  outliner (200 px), so the inspector sits lower; `mapmaker.png` was regenerated for the new top bar.
+
 ### Sandfall Colosseum follow-ups (`wip/mapmaker-sandfall`, agent, 2026-11-09; the owner's answers of 2026-11-09; CI on `check/mapmaker-sandfall`)
 - **Collision boxes 31,724 → 22,240:** the arcades under the tiers (all sides, gate lines kept) and the east and west
   facades deleted in MapMaker, limestone "Stand fill" Sky Blocks in their place. The look from the sand is the same.

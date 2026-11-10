@@ -830,3 +830,4 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-mode-status.ok { color: var(--success); }
 #ed-test-pane .ed-tp-col { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; }
 .ed-quick-tabs button.ed-quick-only { flex: 0 0 auto; }
+.ed-mode-section > small { display: block; margin: 2px 0; }
