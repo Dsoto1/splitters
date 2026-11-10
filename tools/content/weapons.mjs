@@ -97,7 +97,7 @@ export function schemas(root = ROOT, families = []) {
     'falloff?': falloff, botDesirability: num, botRange: tup(2), view, 'notes?': notes,
   });
   const family = obj({ ballistic: nullable(obj(ballistic)), accuracy: obj(accuracy), kick: obj(kick), falloff, head: num, legs: num, 'notes?': notes });
-  const throwableView = obj({ model: str, 'fallback?': str, 'looks?': obj({ 'military?': str, 'scifi?': str }) });
+  const throwableView = obj({ model: str, 'fallback?': str, 'cover?': str, 'looks?': obj({ 'military?': str, 'scifi?': str }) });
   const throwable = obj({ kind: str, code: int, displayName: str, max: int, throwIntervalTicks: int, projectile, 'view?': throwableView, 'notes?': notes });
   return { weapon, family, throwable, projectile };
 }
@@ -259,7 +259,7 @@ export function build(content, root = ROOT) {
     for (const [i, t] of (content.throwables.throwables ?? []).entries()) {
       const where = `content/throwables.json: throwables[${i}]`;
       problems.push(...check(t, S.throwable, where));
-      for (const m of [t?.view?.model, t?.view?.fallback, ...Object.values(t?.view?.looks ?? {})]) if (m && !modelExists(m)) problems.push(`${where}: model ${m} not found under packages/client/public/models`);
+      for (const m of [t?.view?.model, t?.view?.fallback, t?.view?.cover, ...Object.values(t?.view?.looks ?? {})]) if (m && !modelExists(m)) problems.push(`${where}: model ${m} not found under packages/client/public/models`);
       if (t && typeof t === 'object') throwables.push({ code: t.code, kind: t.kind, notes: t.notes, def: strip(t), where });
     }
     codes('throwables', throwables.map((t) => ({ id: t.kind, code: t.code, where: t.where })), 0);

@@ -464,6 +464,8 @@ export interface ThrowableView {
   model: string;
   /** Drawn instead when `model` fails to load. */
   fallback?: string;
+  /** The deployed cover wall's model (sandbags: sized to the cover's box). */
+  cover?: string;
   /** Another model in a weapon set (the frag's realistic one in Military, the smoke canister in Sci-fi). */
   looks?: Partial<Record<ThrowableLookSet, string>>;
 }

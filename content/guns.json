@@ -927,6 +927,32 @@
       "pbr": true
     },
     {
+      "out": "guns/sandbags.glb",
+      "pack": "meshy-community-drive-1110",
+      "glb": "Meshy_AI_mur_de_sacs_12_1110164725_texture.glb",
+      "label": "mur de sacs 12 (Meshy Community download, 2026-11-10): the Sandbags, small, in hand and in flight",
+      "forward": "+z",
+      "height": 0.13,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/sandbag_wall.glb",
+      "pack": "meshy-community-drive-1110",
+      "glb": "Meshy_AI_mur_de_sacs_12_1110164725_texture.glb",
+      "label": "mur de sacs 12 (Meshy Community download, 2026-11-10): the deployed Sandbags cover wall",
+      "forward": "+z",
+      "height": 0.64,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
       "out": "guns/sunburst_grenade.glb",
       "pack": "meshy-community-drive-1106c",
       "glb": "Meshy_AI_Sunburst_Grenade_1106213842_texture.glb",
