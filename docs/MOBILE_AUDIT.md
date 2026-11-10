@@ -14,6 +14,20 @@ can't be reproduced here.
 The screenshots are in the agent session's scratchpad, not in the repo. The e2e `mobile` flow saves
 `mobile-characters.png` with its artifacts. The owner's two screenshots are annotated as A1 and A2.
 
+Screenshots (annotated A1-A7; folder `/tmp/claude-0/-home-user/99559628-4a1b-594f-bb6f-7638c8757e80/scratchpad/mobile/`):
+
+| File | What it shows |
+|---|---|
+| `A1-owner-flak.png` | The owner's Flatpack Depot shot: the Flak Cannon, the terrazzo, the right-hand buttons, the ammo panel. |
+| `A2-owner-darkblock.png` | The owner's Bottling Plant shot: the dark block. |
+| `A3-hud-s9-before.png` / `hud-s9-after.png` | The HUD on a Galaxy S9+, before and after. |
+| `A4-chars-s9-before.png` / `s9-characters-after.png` | Character Select on the S9+, before and after. |
+| `px-characters-before2.png` / `px-characters-after.png` | Character Select on the Pixel 7, before and after. |
+| `A5-setup-px.png` / `desk-setup.png` | Match Setup on the phone and on desktop. |
+| `A6-options-px.png` | Options on the phone. |
+| `A7-pause-px-before.png` | The pause menu on the phone. |
+| `flak-before-after.png` | The Flak Cannon on the phone, before and after. |
+
 ## Fixed in this job (`wip/mobile-audit`)
 
 | What | Before → after | Check |
