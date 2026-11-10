@@ -109,6 +109,28 @@ owner-approved audit candidates 7 and 8; landed on main from its green `check/gu
     under the street by a buggy's spawn, at (196, -4, 42), with no route out for 105 s.
   - `botDesirability` is still hand-set.
 
+**Bot AI Phase C, part 3: parked vehicles in the way, side lanes by a corridor (`wip/bots-c3`, agent, 2026-11-10;
+owner-approved queue; LANDED from `check/bots-c3`, landing line removed; BOT_AI_PLAN.md "Phase C, measured (part 3)", docs/BOTS.md "Parked vehicles, wrecks and turrets in
+the way" and "Side lanes by a corridor").** CHANGELOG "Bots walk round parked vehicles". No map or editor files touched.
+- **Parked vehicles, wrecks, turrets** (`bots/hulls.ts`, `BotBrain.pastHulls`/`cornerBeyond`, `BotWorldView.hulls`,
+  `MountView.wreck`): a bot on foot goes round a still hull in its next 7 m by the nearer corner, every leg checked for
+  walls and ground; a route corner under a hull is gone round to the next. `botHulls.test.ts`.
+- **Route spread** (`sideCorridor` in brain.ts): side lanes to an objective take a corridor of the side's trip on that
+  side, by its vias. `botSideLanes.test.ts`. The busiest way didn't move (58 → 57 %): see the plan for why and what next.
+- **bot-report:** still hulls walked round, stuck recoveries by one, overlap with a teammate (crowds), side lanes by a
+  corridor; `BOT_OFF=hulls,sideCorridors` switches the two off (brain.ts `BOT_SWITCHES`).
+- **Numbers** (main fc625d6 → branch): CTF 48 matches captures 36 → 46 (takes 251 → 211), stuck 1.20 → 1.17 a
+  bot-minute; vehicle maps (TDM, 12 matches) stuck 1.27 → 1.20, stuck by a still hull 42.5 → 34.0 a match, 10 s+ idle
+  spells 1.1 → 0.6; TDM sample stuck 0.79 → 0.63, failed searches 1.18 → 0.00 %. `bot-report --check`: every limit held.
+  `pnpm bench:96:clump` (load 1.2-1.6): bot thinking 1.7-2.1 ms a tick on main, 1.7-2.4 here (Frost Basin clumped
+  +0.2-0.3 ms: its vehicles by the spawns), inside the 2.5 ms guard.
+- **Checks:** typecheck; test:changed (1,579 passed; `botPush.test`'s garrison bound for seed 1 lowered 0.25 → 0.18:
+  walking round parked vehicles reshuffles that seed to 0.20, seeds 1-5 average 0.27 against 0.29 without); e2e `ctf`
+  and `vehicles` locally with CI's timeouts (the machine at load 8 from other sessions).
+- **Not done, left for later:** crowd steering in clumps (measured: about 1 % of bot-time on foot within 0.8 m of a
+  teammate; not worth local avoidance yet); parkour links on a navmesh rebuilt mid-match (Fort Wars) and ways opened by
+  broken crates or walls (both need a tiled navmesh); a vehicle plugging a passage (no way round: the old sidestep).
+
 **Bot vehicle routing and getting out by a wall (`wip/vehicle-routing`, agent, 2026-11-10; the MapMaker lane's Whiteout
 report and gunplay pass 3's Riot Junction find; LANDED: green on `check/vehicle-routing` at d234b0f, run 42762326837,
 shard 6's unrelated `fireteams` hold check re-run once; landing line removed).** CHANGELOG "Bot vehicle routing and getting out by a wall".
@@ -342,6 +364,7 @@ The workflow is unchanged (CLAUDE.md):
 
 - Claimed: `packages/client/src/editor/**` and `packages/shared/src/editor/**` (Phase 3 part A, set pieces part 5), MapMaker lane, 2026-11-08.
 - Claimed: `packages/client/src/editor/storage.ts` and `packages/client/src/editor/mapSaving.ts` (community maps part 1: the local map library moves to IndexedDB, Open… gets Duplicate and Rename; save/load hooks only, no other editor files, no map format change), community maps (`wip/community-maps`), 2026-11-10. (The MapMaker lane's `editor/**` claim above was released on 2026-11-10: "In flight: MapMaker overhaul".)
+- Claimed: the new content ids `kit.*` (generated kit-prop families: crates, barrels, drums, boxes; later fences, walls, containers), the palette data in `packages/client/src/editor/paletteCatalog.ts` (`RETIRED_PROPS`, `REPLACEMENTS`, the `kit` atlas group) and three small hooks so kit variants can be chosen like the species' (`client/src/editor/entityInspector.ts` the prop's Variant row, `shared/src/editor/propRandom.ts` Randomise's variant, `shared/src/editor/operations.ts` `parseModelChoice`; no other editor code), `packages/shared/src/content/props.ts` and a load-time prop alias step in `map/validate.ts` `loadMap` (as played only; no map format change, no `maps/*.json` edited), kit-prop generators (`wip/kit-props`), 2026-11-10.
 - **Answer from the other session (2026-11-09):** fixed on main at **7ab6d64** (after b3f2219). A friend now keeps retrying the host for up to 2 minutes after a travel instead of giving up after one try while the host is still loading the voted map (`packages/client/src/game/rejoinPolicy.ts`, unit tests; party passed on every CI run since, including check/trap-spots and the driver-body run). Merge origin/main and the set pieces can go ahead. If party still fails after that, say so here with the run id.
 - **Blocking, for the session that owns parties and the vote:** the e2e `party` flow fails on main **b3f22196**
   (team kills and roulette).
@@ -576,7 +599,7 @@ for the owner's review, not landed).**
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
 
-**Landing now: Bot AI Phase C part 3 (`check/bots-c3`; Bot AI Phase C agent), please hold code pushes to main.** (2026-11-10; one check run, then a fast-forward.)
+**Landing now: Community maps (`check/community-maps`; community maps agent), please hold code pushes to main.** (2026-11-10; one merge of origin/main, one check run, then a fast-forward.)
 
 **In flight: MapMaker overhaul (other account)** (owner, 2026-11-08: a second session owns this lane;
 docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` only.
