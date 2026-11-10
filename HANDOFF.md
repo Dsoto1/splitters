@@ -8,7 +8,7 @@ A briefing for the next Claude session or agent picking up this repo. Read
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
 jump ahead, or something the owner explicitly bumps.
 
-**Fireteams part 3: squad scores, the squad MVP, the party preset (`wip/fireteams-3`, agent, 2026-11-10; owner-approved).**
+**Fireteams part 3: squad scores, the squad MVP, the party preset (`wip/fireteams-3`, agent, 2026-11-10; owner-approved; green on `check/fireteams-3` at da05b91, run 42780770897; LANDED; landing line removed).**
 Details: docs/FIRETEAMS_PLAN.md, "Part 3"; docs/BOTS.md, "Fireteams Part 3".
 - **Squad scores** in the sim (`sim/squadScores.ts`, `Fireteams.scores`): kill 10, assist 5 (a hit within 10 s before
   someone else's kill), objective play 30 (the scoreboard's objective count), King of the Hill 1 a second on the held
@@ -20,6 +20,8 @@ Details: docs/FIRETEAMS_PLAN.md, "Part 3"; docs/BOTS.md, "Fireteams Part 3".
 - **Fireteams party preset:** TDM + Fireteams, squads 4 (to 14 a side) / 5 (to 17) / 6; a map without TDM or under 8
   a side moves to Eagle Spires, Riot Junction, Sandgate, Frost Basin or Canyon (first that fits the device).
 - **Not carried by host handoff:** the squads' points (a successor starts them from zero).
+- **e2e `fireteams`:** extended for the preset, the board's squads and the MVP with the vote; its "squad holds" check now sends you to the map's
+  spawn point furthest from the spot (it stood you by a moving bot before, 4-10 m off on check/vehicle-routing run 42762326837).
 - **Next: the owner's playtest** of Fireteams (Parts 1-3).
 **Mobile audit (`wip/mobile-audit`, agent, 2026-11-10; owner-approved; green on `check/mobile-audit` at 6b66630, run 42772271488, `party` passed on the re-run of its job; LANDED). Full report and ranked proposals for the owner to
 pick from: docs/MOBILE_AUDIT.md.**
@@ -564,8 +566,6 @@ for the owner's review, not landed).**
   roofed room closes its doorways (bury rooms under Frozen Cliff tiles instead); a drift's top must meet ground at
   its height (Flatten the ground at the top edge, centred 2 m past it); plan-view clicks under the palette or level
   panel miss (zoom out a notch after Home).
-
-**Landing now: Fireteams part 3 (`check/fireteams-3`; Fireteams agent), please hold code pushes to main.** (2026-11-10; one check run, then a fast-forward.)
 
 **Next in line to land: Bot AI Phase C part 3** (`check/bots-c3`, Bot AI Phase C agent, 2026-11-10), after Fireteams part 3: one check run, then a fast-forward. Touches brain.ts, match.ts (one view field and a wreck flag), bot-report, bench; no editor or map files.
 
