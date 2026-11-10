@@ -9764,7 +9764,9 @@ async function partyFlow(browser) {
   await pctx.close();
 
   // Online: a hub, a host, a friend by the host's invite link.
-  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9079);
+  // Its own port: dedicatedhost's hub is on 9079, and when a shard ran party just before it, dedicatedhost's hub couldn't
+  // bind and its host listed on party's hub, which has no relay ("relay": false, check/far-copies run 42729978260).
+  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9081);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000)).catch(() => {});
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;
