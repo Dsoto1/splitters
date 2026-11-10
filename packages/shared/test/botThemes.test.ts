@@ -132,6 +132,17 @@ describe('bot names: what a bot is called', () => {
     const scamp = list.find((c) => c.look === 'core.scamp');
     if (scamp) expect(scamp.name).not.toBe('Scamp');
   });
+
+  it('Roulette: bots take general names (every life wears another look, so no name is after one)', () => {
+    const match = new Match(yard(), { ...DEFAULT_RULES['core.roulette'] }, 1);
+    const bots = new BotFiller(match);
+    bots.join('Player', 'core.ranger', 40);
+    const list = botsOf(match);
+    expect(list.length).toBeGreaterThan(30);
+    const names = match.combatants().map((c) => c.name.toLowerCase());
+    expect(new Set(names).size).toBe(names.length);
+    for (const c of list) expect(BOT_NAMES.some((n) => c.name === n || c.name.startsWith(`${n} `)), c.name).toBe(true);
+  });
 });
 
 describe('bot characters: soldiers only', () => {
