@@ -56,13 +56,13 @@ import {
 } from '@tiletrigger/shared';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
-import { cardShotSection,type CardShotHost } from './cardShot.ts';
+import { cardShotSection, type CardShotHost } from './cardShot.ts';
 import type { EditorApp } from './editorApp.ts';
-import { button,escapeHtml,h2,numberInput,row,small,text } from './editorDom.ts';
-import { CARD_HIDDEN_KINDS,dressable,SHIPPED_IDS } from './editorParts.ts';
-import { thumbnailSection,type ThumbHost } from './makerThumb.ts';
+import { button, escapeHtml, h2, numberInput, row, small, text } from './editorDom.ts';
+import { CARD_HIDDEN_KINDS, dressable, SHIPPED_IDS } from './editorParts.ts';
+import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { removedModesRow } from './removedModes.ts';
-import { skyWeatherSection,type SkyWeatherHost } from './skyWeatherSection.ts';
+import { skyWeatherSection, type SkyWeatherHost } from './skyWeatherSection.ts';
 
 /** Map properties, the inspector with nothing selected: name, theme, players, modes, teams, weapons, bots, time and weather, layers, blood, physics, the boundary, and Environment → Sky's backdrop (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class MapProperties {
@@ -645,7 +645,7 @@ export class MapProperties {
     this.renderBloodPanel(el);
     this.renderPhysicsPanel(el);
     if (doc.classicStructure.tiles.some((t) => dressable(coreCatalog.get(t.tile)))) {
-      const all = button('Dress all bare rooms', () => this.app.dressAllRooms());
+      const all = button('Dress all bare rooms', () => this.app.inspector.dressAllRooms());
       all.id = 'ed-dress-all';
       all.title = 'Furnish every room with no props in it, as a room type guessed from its size and the theme (undo takes it back)';
       el.append(all);

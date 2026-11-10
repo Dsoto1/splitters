@@ -32,9 +32,9 @@ import {
 } from '@tiletrigger/shared';
 import { materialThumbnail } from '../materials/patterns.ts';
 import type { EditorApp } from './editorApp.ts';
-import { $,escapeHtml,small } from './editorDom.ts';
-import { edgeIcon,itemIcon,npcIcon,SCENARIO_ICONS } from './editorParts.ts';
-import { DEFAULT_HEIGHT_GRID_SMOOTHING,HEIGHT_GRID_SMOOTHING,MAX_HEIGHT_GRID_BYTES,parseAsciiGrid,terrainFromHeightGrid } from './heightGrid.ts';
+import { $, escapeHtml, small } from './editorDom.ts';
+import { edgeIcon, itemIcon, npcIcon, SCENARIO_ICONS } from './editorParts.ts';
+import { DEFAULT_HEIGHT_GRID_SMOOTHING, HEIGHT_GRID_SMOOTHING, MAX_HEIGHT_GRID_BYTES, parseAsciiGrid, terrainFromHeightGrid } from './heightGrid.ts';
 import { Palette } from './palette.ts';
 import {
   NATURE_PROP_CATEGORIES,

@@ -40,8 +40,8 @@ import {
   type WorldBox
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
-import { $,button,h2,numberInput,row,small,text } from './editorDom.ts';
-import { PIECE_PART_KINDS,ROLE_LABELS,rolesUsed } from './editorParts.ts';
+import { $, button, h2, numberInput, row, small, text } from './editorDom.ts';
+import { PIECE_PART_KINDS, ROLE_LABELS, rolesUsed } from './editorParts.ts';
 import { type PieceOutline } from './editorView.ts';
 import {
   setPieceFamilyLabel,
@@ -544,7 +544,7 @@ export class SetPieceTools {
       row('Y', numberInput(p.y, 1, (v) => update('Move set piece', { ...p, y: v }))),
       row('Level', numberInput(p.z, 1, (v) => update('Move set piece', { ...p, z: v }))),
       row('Rotation', text(`${p.rotation * 90}° (R turns it)`)),
-      this.app.quickFacings({ tiles: [], entities: [], setPieces: [p.id] }, (p.rotation * Math.PI) / 2),
+      this.app.inspector.quickFacings({ tiles: [], entities: [], setPieces: [p.id] }, (p.rotation * Math.PI) / 2),
     );
     // Ports: where it meets what's round it; one a wall stands in is a warning (and red on its outline).
     const states = setPiecePortStates(p, def, this.app.mapBoxes());
