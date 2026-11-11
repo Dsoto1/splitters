@@ -11,9 +11,12 @@
 | Quality gates | **Reports** | spawn points for its players (48 for up to 64): reported, since the map is Experimental |
 | Seen in a browser | **Partly** | MapMaker views of every step; not yet walked in a match by a person |
 
-## Objective modes (bot runs after landing, 48 bots, 150 s, seed 1)
-- **King of the Hill: lopsided.** Embers 59, Tide 1; the hill held 61 s, never contested. Embers' base (the west bench, z −36..12) is much nearer the crest and the toe terrace than Tide's (the south-east bench, z −80..−92). No route 0, spawn deaths 0.
-- **Capture the Flag: no flag taken.** 257 kills, nobody reached a flag (0 takes); the teams meet on the river's floor and the flag run is about 260 m. No route 0, spawn deaths 1.
-- Team Deathmatch (above) is fine. For the owner: where the bases stand (a question in HANDOFF).
+## The bases moved (owner: "one team in valley other up on dam"), bot runs of 48 bots, 150 s, seed 1
+With both bases low (as first landed) King of the Hill ran Embers 59, Tide 1 and nobody took a flag. With Embers on the crest and Tide in the valley:
+- **Team Deathmatch**: Embers 32, Tide 62; 95 kills; spawn deaths 0; idle 12.5 %; stuck recoveries 48 (loops 0); no route 0.
+- **King of the Hill**: Embers 25, Tide 38; the hill held 65 s, moved; 131 kills; spawn deaths 1; no route 0.
+- **Capture the Flag**: still no flag taken in 150 s (178 kills; the run is the valley's length plus a stair tower). Bots spend 49 % of goal time going for it; a longer run or a person may get there. No route 0.
+- validate-map: OK (1 note, the spawn count).
+Tide leads both scored modes in one seed each: not a balance verdict. The stair towers are the only way up the face and the recoveries rose (31 to 48 in Team Deathmatch).
 
 Not checked: a perf bench with the vegetation; the flicker check (no new effect).

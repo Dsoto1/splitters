@@ -91,9 +91,9 @@ The owner tried the first build and didn't land it: bland without vegetation, th
 map, the lake didn't read as held by the dam, the dam too low. The map was built again from an empty terrain, in
 MapMaker throughout (driven by a script working its tools, as before; the script isn't kept in the repo).
 - **The dam 28 m** (owner at the checkpoint: "go taller"), the lake at 25 m, the south end a gorge mouth.
-- **Both teams start low** (the session's choice, for the owner's review): Embers on the west bench, Tide on a bench in
-  the south-east. The east bench under the abutment is too small for a team; it is contested high ground now, with the
-  crest.
+- **One team in the valley, the other up on the dam** (owner, 2026-11-11, after bot runs showed the first layout,
+  both teams low, lopsided in King of the Hill): Tide on the south-east bench, Embers on the crest; Embers' flag on the
+  west abutment; the crest's hill moved to the east bench, off Embers' base.
 - **Stair towers from core tiles**, not the Stair Tower set piece: two Stairwell columns side by side, flights
   alternating, a Corridor as the lobby with a Door on its south side, a Bridge deck and a concrete slab onto the crest.
 - **The boundary stays the terrain's edge** (±156 m): the lake is inside it, as in the first build.

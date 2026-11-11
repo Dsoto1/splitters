@@ -24,12 +24,14 @@
   the river's floor, the yards and the spawns kept clear.
 
 ## Spawns
-- Embers (24): the west bench, x −124..−96 × z 4 and 10 (16), x −124..−112 × z −28 and −33 (8); facing east.
+One team in the valley, the other up on the dam (owner, 2026-11-11).
+- Embers (24): the dam's crest, two rows on its back half (x −66..66 × z 62 and 67, at 28 m), out of sight from the
+  valley; facing south.
 - Tide (24): the south-east bench, x 84..116 × z −80, −86, −92; facing north.
 
 ## Objectives
-- CTF: Embers' flag (−104, 16) on the west bench; Tide's (104, −98) on the south-east bench.
-- King of the Hill: the crest's middle (0, 28, 62); the toe terrace (−22, 30); the river ford (0, −40).
+- CTF: Embers' flag (−74, 28, 57) on the west abutment; Tide's (104, −98) on the south-east bench.
+- King of the Hill: the east bench (116, 20, 14); the toe terrace (−22, 30); the river ford (0, −40).
 
 ## Pickups
 Small health at both stair towers' feet and on both river banks; large health on the east bench; the sniper rifle and
