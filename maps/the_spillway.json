@@ -27,11 +27,11 @@
     },
     "release": {
       "mapId": "m_fxtilvssrdvznevx",
-      "versionId": "v_ye6m7g2gq72573sb",
-      "revision": 138,
-      "contentHash": "sha256:0d555d1db70f76095af3bdc2fbd5d75806596da692cd7e4b0758b80c81164309",
+      "versionId": "v_hy5fb5lsigsxfm5t",
+      "revision": 141,
+      "contentHash": "sha256:89c5a79ee1afc5f8a29ab08db1edebbf11d06f05be4eea52638476ef6914c0f2",
       "schemaVersion": 34,
-      "releasedAt": "2026-11-11T11:42:44.922Z"
+      "releasedAt": "2026-11-11T11:44:26.565Z"
     }
   },
   "classicStructure": {
@@ -796,5 +796,34 @@
     ]
   },
   "weaponSet": "military",
-  "dependencies": []
+  "dependencies": [],
+  "setPieces": [
+    {
+      "id": "setpiece_cnhk47z46f",
+      "piece": "setpiece.power_core_hall",
+      "x": -1,
+      "y": 3,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_8sp4ume9wm",
+      "piece": "setpiece.loading_dock",
+      "x": -15,
+      "y": -2,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_mbk3br4qjh",
+      "piece": "setpiece.bunker",
+      "x": 14,
+      "y": 3,
+      "z": 5,
+      "rotation": 0,
+      "mirror": false
+    }
+  ]
 }
