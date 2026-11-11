@@ -92,6 +92,16 @@
       "meshy": true,
       "glb": true
     },
+    "meshy-community-drive-1111": {
+      "title": "Meshy community models (the Troop Truck, textured GLB download from the owner's Drive, 2026-11-11)",
+      "creator": "Meshy community (author not recorded; CC0 per the owner's rule of 2026-11-06)",
+      "url": "https://www.meshy.ai (community post URL pending from the owner)",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/meshy-community/License.txt",
+      "retrieved": "2026-11-11",
+      "meshy": true,
+      "glb": true
+    },
     "meshy-community-arsenal": {
       "title": "Meshy community models (weapons, turrets, the medkit, the WWII tank, the buggy and its tire; textured GLB downloads)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -1132,6 +1142,32 @@
         {"name": "wheel_fr", "box": [[-1.45, -1.0, 0.95], [-0.84, 0.12, 2.15]], "pivot": [-1.14, -0.44, 1.55]},
         {"name": "wheel_rl", "box": [[0.84, -1.0, -2.05], [1.45, 0.12, -0.85]], "pivot": [1.14, -0.44, -1.45]},
         {"name": "wheel_rr", "box": [[-1.45, -1.0, -2.05], [-0.84, 0.12, -0.85]], "pivot": [-1.14, -0.44, -1.45]}
+      ]
+    },
+    {
+      "out": "vehicles/troop_truck.glb",
+      "pack": "meshy-community-drive-1111",
+      "glb": "Meshy_AI_Ironclad_Vanguard_1111000212_texture.glb",
+      "label": "Ironclad Vanguard, the Troop Truck (Meshy Community download, owner's Drive, 2026-11-11)",
+      "forward": "-x",
+      "length": 5.6,
+      "triangles": 20000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024,
+      "parts": [
+        {"name": "wheel_fl", "box": [[0.72, -1.28, 0.85], [1.25, -0.04, 1.95]], "pivot": [0.98, -0.67, 1.4]},
+        {"name": "wheel_fr", "box": [[-1.25, -1.28, 0.85], [-0.72, -0.04, 1.95]], "pivot": [-0.98, -0.67, 1.4]},
+        {"name": "wheel_ml", "box": [[0.72, -1.28, -1.27], [1.25, -0.04, -0.17]], "pivot": [0.98, -0.67, -0.72]},
+        {"name": "wheel_mr", "box": [[-1.25, -1.28, -1.27], [-0.72, -0.04, -0.17]], "pivot": [-0.98, -0.67, -0.72]},
+        {"name": "wheel_rl", "box": [[0.72, -1.28, -2.37], [1.25, -0.04, -1.27]], "pivot": [0.98, -0.67, -1.82]},
+        {"name": "wheel_rr", "box": [[-1.25, -1.28, -2.37], [-0.72, -0.04, -1.27]], "pivot": [-0.98, -0.67, -1.82]}
       ]
     }
   ]

@@ -25,6 +25,7 @@ Spaceships and Tank Pack (all CC0).
 | Hover Bike | 1 rider | Hover: the fastest thing on the map (31 m/s), fragile (170 health), no gun |
 | Gunship | 3 (pilot, left and right door guns) | Flying, on the dropship's flight model: the pilot fires blasters ahead, each door gunner covers ±70° off their own side (950 health) |
 | Ice Cream Truck | 4 (driver, 3 riders) | Wheeled light, the fun one: no gun, but the three riders shoot their own weapons out of the windows |
+| Troop Truck | 6 (driver, cab passenger, 4 on the bed) | Wheeled heavy, no gun: a six-wheeled army truck (700 health); the cab passenger sits, the four on the flatbed stand, and all five shoot their own weapons |
 | Snow Sled | 2 (driver, passenger) | A snowmobile with hover handling: quick and slidey, sits on the snow instead of floating; both riders sit astride the saddle |
 
 - **Driving.** W/S throttle and reverse, A/D steer (harder the faster you
@@ -83,6 +84,11 @@ Spaceships and Tank Pack (all CC0).
   below). The suspension's contact points and hub height are the old tires' (`vehicle.suspension.wheels`, `hub`),
   so it drives as before. The Tactical Off-Road Beast it replaced, on its separate Rugged Off-Road Tires, is its
   `fallback`.
+  The **troop truck** (2026-11-11) is Ironclad Vanguard (Meshy Community CC0, the owner's Drive,
+  `Meshy_AI_Ironclad_Vanguard_1111000212_texture.glb`; `vehicles/troop_truck.glb`, 20k triangles plus a quarter LOD):
+  a three-axle army truck, a closed cab ahead of an open flatbed where four riders stand. Its six tires are `wheel_*`
+  parts on six suspension points; its box is the whole truck, tires included (2.8 × 2.54 × 5.6 m). Not placed on
+  any real map yet (the coverage map has one).
 - **Shooting from a seat.** Gunners fire the seat's gun (heat, no
   reloading) within its arc; side door guns (the gunship's) have arcs centred
   on their own side (`facing` on the seat). Passengers use their own weapons. Drivers can't
@@ -205,7 +211,7 @@ one by adding an entry.
 
 ## Suspension (the Warthog feel)
 
-The buggy and the gun jeep ride on **raycast suspension** in the simulation
+The buggy, the gun jeep and the troop truck ride on **raycast suspension** in the simulation
 (`shared/src/sim/suspension.ts`, tuning in `MOUNT_DEFS[…].vehicle.suspension`):
 one ray straight down per wheel each tick finds the ground under it, and a
 spring and damper per wheel push on a sprung body above the chassis. The four
@@ -226,6 +232,7 @@ and the handbrake (Space) still breaks grip for a proper slide.
 |---|---|---|---|---|---|---|---|
 | Buggy | 1.5 Hz, 0.32 (soft, bouncy) | 0.20 / 0.16 m | 0.004 · 0.0045 | 1.4 rad/s² | 0.5 | 0.55 | 0.5 rad |
 | Gun Jeep | 1.8 Hz, 0.38 (a pickup: firmer) | 0.16 / 0.13 m | 0.0028 · 0.0038 | 1.2 rad/s² | 0.45 | 0.4 | 0.45 rad |
+| Troop Truck (six wheels) | 1.9 Hz, 0.45 (a truck: stiff) | 0.14 / 0.11 m | 0.002 · 0.0025 | 0.8 rad/s² | 0.4 | 0.15 | 0.4 rad |
 
 Tank and armored rover stay heavy and planted, and the kart, ice cream truck,
 hovercraft and flyers are unchanged: their bodies are drawn settling to the
@@ -249,7 +256,7 @@ own tuning (top speed, acceleration, turn rate, grip, weight, health, blast):
 | Class | How it drives | Vehicles |
 |---|---|---|
 | Wheeled light | Grippy, quick to turn, ramps launch it, hard landings dent it (buggy and gun jeep: on raycast suspension, loose at speed) | Go-Kart, Buggy, Gun Jeep, Ice Cream Truck |
-| Wheeled heavy | Slow to speed up, high grip and weight: shrugs off pushes, loses little in crashes | Armored Rover |
+| Wheeled heavy | Slow to speed up, high grip and weight: shrugs off pushes, loses little in crashes | Armored Rover (14 m/s, accel 7, turn 1.25 rad/s, grip 0.38, 3.6 t, 900 health), Troop Truck (16 m/s, accel 8.5, turn 1.4 rad/s, grip 0.36, 3 t, 700 health; on raycast suspension) |
 | Tracked | Slowest, heaviest, turns on the spot | Tank |
 | Hover | Low grip, drifts, floats over bumps, no landing damage | Speeder, Hauler, Hover Bike, Snow Sled |
 | Flying | Hover handling plus climb (jump) and dive (crouch) up to a ceiling | Skyfighter, Dropship, Gunship |

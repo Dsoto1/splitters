@@ -31,6 +31,7 @@ const LINEUP: [MountModel, 'wheeled' | 'hover' | 'flying'][] = [
   ['gunship', 'flying'],
   ['ice_cream_truck', 'wheeled'],
   ['snow_sled', 'hover'],
+  ['troop_truck', 'wheeled'],
 ];
 
 /** An open yard 40 × 32 m (x -4..36, z -4..28) with one vehicle at (4, 4) facing +x. */

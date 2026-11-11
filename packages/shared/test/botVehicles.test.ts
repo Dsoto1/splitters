@@ -313,7 +313,8 @@ describe('bot drivers on loose, sprung vehicles', () => {
     const map = makeMap(tiles, [[0, 0, 0]]);
     return { ...map, entities: [...map.entities, { id: 'mount_0', kind: 'mount' as const, position: [20, 0, 20], model: model as 'buggy', yaw: 0, faction: null, respawnSeconds: null }] };
   }
-  for (const model of ['buggy', 'gun_jeep'] as const) {
+  // The Troop Truck too: six wheels on stiff springs, heavy (owner, 2026-11-11).
+  for (const model of ['buggy', 'gun_jeep', 'troop_truck'] as const) {
     it(`${model}: round the course without spinning out`, () => {
       const match = new Match(field(model), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 1);
       const c = match.addHuman('driver')!;
