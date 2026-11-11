@@ -111,6 +111,26 @@
         460,
         90,
         10
+      ],
+      "roundtable": [
+        360,
+        80,
+        10
+      ],
+      "officechair": [
+        380,
+        120,
+        20
+      ],
+      "bed": [
+        320,
+        220,
+        60
+      ],
+      "cornersofa": [
+        240,
+        100,
+        30
       ]
     }
   },
@@ -322,6 +342,31 @@
     },
     "prop.washer": {
       "model": "kit.appliance.washer",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.office_chair": {
+      "model": "kit.seat.office",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.bunk_bed": {
+      "model": "kit.bed.bunk",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.bed": {
+      "model": "kit.bed.double",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.table_round": {
+      "model": "kit.table.round",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.sofa_long": {
+      "model": "kit.sofa.corner",
       "variant": 0,
       "scale": 1
     }

@@ -9,9 +9,14 @@
 //
 // Level 1 keeps the outline (top, legs, back, shelves as blocks); level 2 is the bounds in the wood's colour.
 // (Part 5 adds the cushioned chair: a seat's `look.back` pads its back.)
+//
+// Part 6 adds two pieces with finer collision, as the pieces they replace had: the pedestal table (`roundtable`: a
+// six-sided or oval top on a turned column; it collides as its base, its column and its top as two crossing slabs,
+// open under the top) and the office chair (`officechair`: a five-star base on castors, a gas column, a padded seat
+// and back, arms; it collides as its base, the block under its seat, the seat, each arm and the back).
 
 import { rng } from '../env/rng.mjs';
-import { Mesh, box, hex, quadN, scale3, standIn } from './geom.mjs';
+import { Mesh, box, groundShade, hex, ovalDisc, ovalShell, pad, quadN, scale3, standIn } from './geom.mjs';
 import { woodTone } from './crate.mjs';
 
 const lerp = (p, q, t) => p + (q - p) * t;
@@ -267,6 +272,194 @@ export function bookcaseMesh(seed, size, g, look, level) {
         if (r.next() < 0.08) x += r.range(0.03, 0.09);
       }
     }
+  }
+  return m;
+}
+
+/**
+ * A pedestal table: a six-sided or oval top the size of the bounds, on a column and a base. Settings `g`: `sides` (6:
+ * a hexagon, its points at ±z; else the oval's sides at level 0), `top` (top thickness, m), `apron` (depth of the
+ * drum under the top, 0 for none), `apronK` (the drum's size as a part of the top's), `foot` ('round': a turned base;
+ * 'cross': four feet), and its collision, the same for every variant: `base` (the base's width), `baseH` (its
+ * height), `column` (the column's width), `under` (the underside of the top's two slabs), `long` (half the width of
+ * the slab that runs the whole depth), `wide` (half the depth of the slab that runs the whole width). `look`: `wood`,
+ * `top` (hex, default the wood), `cloth` (hex: a cloth over the top, hanging a hand down), `jitter`, `grime`.
+ */
+export function roundTableMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const wood = hex(look.wood);
+  const topC = hex(look.top ?? look.wood);
+  const cloth = look.cloth ? hex(look.cloth) : null;
+  if (level >= 2) return standIn(size, cloth ?? topC, scale3(wood, 0.8));
+  const r = rng(seed);
+  const m = new Mesh();
+  const tone = (c, k) => woodTone(c, r, look, seed + k);
+  const six = g.sides === 6;
+  const seg = six ? 6 : level === 0 ? (g.sides ?? 20) : 12;
+  // A hexagon's flat sides are the bounds' ±x, its points the bounds' ±z.
+  const outline = { rx: six ? w / 2 / Math.cos(Math.PI / 6) : w / 2, rz: d / 2, phase: six ? Math.PI / 2 : 0, smooth: !six };
+  const R = g.base / 2;
+  const c = g.column / 2;
+  // Solid: the base, the column, and the top as two crossing slabs (you can shoot under the top, either side of the column).
+  m.boxes = [
+    [-R, 0, -R, R, g.baseH, R],
+    [-c, g.baseH, -c, c, h, c],
+    [-g.long, g.under, -d / 2, g.long, h, d / 2],
+    [-w / 2, g.under, -g.wide, w / 2, h, g.wide],
+  ];
+  const y0 = h - g.top;
+  // Under a cloth the top sits a hair inside the bounds: the cloth is the outside.
+  const lap = cloth && level === 0 ? 0.003 : 0;
+  const k = 1 - lap / (d / 2);
+  const bev = level === 0 ? 0.012 : 0;
+  const kb = k - bev / (d / 2);
+  const face = cloth && level > 0 ? cloth : null;
+  const topTone = face ?? tone(topC, 20);
+  const rim = face ? scale3(face, 0.85) : tone(scale3(topC, 0.9), 21);
+  ovalShell(m, bev ? [[k, y0], [k, h - lap - bev], [kb, h - lap]] : [[k, y0], [k, h]], seg, rim, outline);
+  ovalDisc(m, outline.rx * kb, outline.rz * kb, h - lap, seg, topTone, outline);
+  ovalDisc(m, outline.rx * k, outline.rz * k, y0, seg, tone(scale3(wood, 0.7), 22), { ...outline, down: true });
+  if (cloth && level === 0) {
+    ovalDisc(m, outline.rx, outline.rz, h, seg, cloth, outline);
+    ovalShell(m, [[1, h - 0.15], [1, h]], seg, (p) => scale3(cloth, p[1] > h - 0.01 ? 0.92 : 0.78), outline);
+  }
+  if (level >= 1) {
+    // The column and the base as blocks.
+    box(m, [-c * 0.75, g.baseH * 0.5, -c * 0.75], [c * 0.75, y0, c * 0.75], tone(scale3(wood, 0.9), 1), ['ny', 'py']);
+    box(m, [-R * 0.85, 0, -R * 0.85], [R * 0.85, g.baseH * 0.5, R * 0.85], tone(scale3(wood, 0.85), 2), ['ny']);
+    return m;
+  }
+  const ap = g.apron ?? 0;
+  if (ap > 0) {
+    const ka = g.apronK ?? 0.86;
+    ovalShell(m, [[ka, y0 - ap], [ka, y0]], seg, tone(scale3(wood, 0.88), 3), outline);
+  }
+  // The pedestal: turned (six-sided under a hexagon) on a round base, or on four feet.
+  const turned = { phase: outline.phase, smooth: !six };
+  const sides = six ? 6 : 8;
+  const col = tone(scale3(wood, 0.92), 1);
+  const cross = g.foot === 'cross';
+  const yb = cross ? 0.08 : 0;
+  if (cross) {
+    const f = 0.04;
+    const feet = tone(scale3(wood, 0.85), 2);
+    box(m, [-R, 0, -f], [R, yb, f], feet, ['ny']);
+    box(m, [-f, 0, -R], [f, yb, -f], feet, ['ny', 'pz']);
+    box(m, [-f, 0, f], [f, yb, R], feet, ['ny', 'nz']);
+  }
+  const foot = cross ? [[c * 1.15, yb], [c * 1.15, yb + 0.05], [c * 0.75, g.baseH + 0.03]] : [[R, 0], [R, 0.035], [R * 0.8, 0.06], [c * 1.1, g.baseH * 0.75], [c * 0.75, g.baseH + 0.03]];
+  ovalShell(m, [...foot, [c * 0.62, h * 0.52], [c * 0.85, y0 - ap * 0.5], [c, y0]], sides, col, turned);
+  return m;
+}
+
+/** Fabric, plastic and paint on a chair: lighter on top, darker underneath, at the sides and towards the floor. */
+const shaded = (c, grime) => (p, n) => scale3(c, groundShade(p[1], 0.25, 1 - grime * 0.5) * (n[1] > 0.5 ? 1.1 : n[1] < -0.5 ? 0.7 : Math.abs(n[0]) > 0.5 ? 0.88 : n[2] < -0.5 ? 0.82 : 1));
+
+/**
+ * An office chair: a five-star base on castors (one arm forward), a gas column, a padded seat on its pan, a padded
+ * back on a spine, an arm rest each side on a bracket. Its front is +z. Settings `g`: `seat` (the cushion's top, m),
+ * `hub` (z of the column), `headrest` (true: a shorter back under a head rest), and its collision, the same for every
+ * variant: `base` [half width, height] and `baseZ` [in from the rear, in from the front] (the star), `stem` (half the
+ * width of the block under the seat, which reaches the front), `pan` and `seatTop` (the seat's slab, from under its
+ * mechanism), `seatRear` (how far the seat starts in front of the rear), `back` (the back's depth; it stands from
+ * `seatTop` up), `arm` (an arm's width), `armY` [from, to], `armZ` [in from the rear, in from the front]. `look`:
+ * `fabric`, `frame` (hex: base, pan, shells and brackets), `metal` (hex: the column), `pad` (hex: the arm rests),
+ * `grime`.
+ */
+export function officeChairMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const grime = look.grime ?? 0.15;
+  const fabric = hex(look.fabric);
+  const frame = hex(look.frame ?? '#2b2d30');
+  const seat = g.seat;
+  const zs = -d / 2 + g.seatRear;
+  if (level >= 2) {
+    // The back and the block under the seat: a chair's outline, not its bounds.
+    const m = new Mesh();
+    box(m, [-w / 2 + g.arm, seat, -d / 2], [w / 2 - g.arm, h, -d / 2 + g.back * 0.5], scale3(fabric, 0.85), ['ny']);
+    box(m, [-w / 2 + g.arm, 0, zs], [w / 2 - g.arm, seat, d / 2], scale3(frame, 1.2), ['ny']);
+    return m;
+  }
+  const r = rng(seed);
+  const m = new Mesh();
+  const [bw, bh] = g.base;
+  // Solid: the star, the block under the seat, the seat, the arms, the back.
+  m.boxes = [
+    [-bw, 0, -d / 2 + g.baseZ[0], bw, bh, d / 2 - g.baseZ[1]],
+    [-g.stem, 0, -g.stem, g.stem, seat, d / 2],
+    [-w / 2, g.pan, zs, w / 2, g.seatTop, d / 2],
+    [w / 2 - g.arm, g.armY[0], -d / 2 + g.armZ[0], w / 2, g.armY[1], d / 2 - g.armZ[1]],
+    [-w / 2, g.armY[0], -d / 2 + g.armZ[0], -w / 2 + g.arm, g.armY[1], d / 2 - g.armZ[1]],
+    [-w / 2, g.seatTop, -d / 2, w / 2, h, -d / 2 + g.back],
+  ];
+  const tint = (c, k = 1) => shaded(scale3(c, k * (1 + r.jitter(0.03))), grime);
+  const cz = g.hub ?? 0;
+  const R = bw - 0.008;
+  const base = tint(frame);
+  const dark = scale3(frame, 0.6);
+  // The star: five tapered arms, one forward, a castor under each tip.
+  for (let k = 0; k < 5; k++) {
+    const a = Math.PI / 2 + (k * Math.PI * 2) / 5;
+    const dir = [Math.cos(a), 0, Math.sin(a)];
+    const side = [-dir[2], 0, dir[0]];
+    const at = (t, s, y) => [dir[0] * t + side[0] * s, y, cz + dir[2] * t + side[2] * s];
+    const y1 = level === 0 ? 0.045 : 0;
+    const hub = [at(0.03, -0.03, bh), at(0.03, 0.03, bh), at(0.03, 0.03, y1), at(0.03, -0.03, y1)];
+    const tip = [at(R, -0.02, bh * 0.7), at(R, 0.02, bh * 0.7), at(R, 0.02, y1), at(R, -0.02, y1)];
+    quadN(m, hub[0], hub[1], tip[1], tip[0], [0, 1, 0], base);
+    quadN(m, hub[1], hub[2], tip[2], tip[1], side, base);
+    quadN(m, hub[0], hub[3], tip[3], tip[0], [-side[0], 0, -side[2]], base);
+    if (level === 0) {
+      quadN(m, tip[0], tip[1], tip[2], tip[3], dir, base);
+      const [x, , z] = at(R - 0.026, 0, 0);
+      box(m, [x - 0.025, 0, z - 0.025], [x + 0.025, 0.048, z + 0.025], dark, ['ny']);
+    }
+  }
+  const panY = seat - 0.085;
+  const metal = tint(hex(look.metal ?? '#8b8d8f'));
+  if (level === 0) {
+    // The hub, the gas column (its sleeve, then the piston), the mechanism under the pan.
+    ovalShell(m, [[0.05, 0.045], [0.05, bh + 0.008], [0.034, bh + 0.008], [0.034, bh + 0.17], [0.021, bh + 0.17], [0.021, panY - 0.03]], 8, (p, n, row) => (row < 2 ? base(p, n) : metal(p, n)), { cz });
+    box(m, [-0.09, panY - 0.04, cz - 0.1], [0.09, panY, cz + 0.1], dark, ['py']);
+  } else box(m, [-0.03, bh, cz - 0.03], [0.03, panY, cz + 0.03], metal, ['ny', 'py']);
+  // The seat: a pan to the front of the bounds, the cushion on it.
+  const sw = w / 2 - g.arm;
+  const cushion = tint(fabric);
+  if (level === 0) {
+    box(m, [-sw, panY, zs], [sw, panY + 0.03, d / 2], base, ['py']);
+    pad(m, [-sw + 0.004, panY + 0.03, zs + 0.004], [sw - 0.004, seat, d / 2 - 0.004], 0.022, cushion);
+  } else box(m, [-sw, panY, zs], [sw, seat, d / 2], cushion);
+  // The back: a shell at the rear of the bounds, its cushion in front, on a spine from under the seat.
+  const xb = w / 2 - 0.07;
+  const by0 = seat + 0.14;
+  const by1 = g.headrest ? h - 0.25 : h;
+  const zr = -d / 2;
+  const padC = tint(fabric, 1.04);
+  if (level === 0) {
+    box(m, [-xb, by0, zr], [xb, by1, zr + 0.03], base, ['pz']);
+    box(m, [-xb + 0.008, by0 + 0.008, zr + 0.03], [xb - 0.008, by1 - 0.008, zr + 0.075], padC, ['nz']);
+    box(m, [-0.035, panY - 0.03, zr + 0.003], [0.035, by0, zr + 0.027], dark, ['py']);
+    box(m, [-0.035, panY - 0.03, zr + 0.027], [0.035, panY, zs + 0.06], dark, ['nz', 'pz']);
+    if (g.headrest) {
+      box(m, [-0.03, by1, zr + 0.003], [0.03, h - 0.17, zr + 0.027], dark, ['ny', 'py']);
+      box(m, [-0.15, h - 0.17, zr], [0.15, h, zr + 0.03], base, ['pz']);
+      box(m, [-0.142, h - 0.162, zr + 0.03], [0.142, h - 0.008, zr + 0.07], padC, ['nz']);
+    }
+  } else box(m, [-xb, by0, zr], [xb, h, zr + 0.07], padC);
+  // The arms: a rest out to the side of the bounds, on an upright from a bracket under the pan.
+  const rest = tint(hex(look.pad ?? look.frame ?? '#2b2d30'), 1.15);
+  const top = g.armY[1] - 0.04;
+  const za = -d / 2 + g.armZ[0] + 0.1;
+  const zb = d / 2 - g.armZ[1] - 0.07;
+  for (const sx of [-1, 1]) {
+    const bx = (x0, y0, z0, x1, y1, z1, colour, skip = []) => {
+      const flip = { px: 'nx', nx: 'px' };
+      if (sx > 0) box(m, [x0, y0, z0], [x1, y1, z1], colour, skip);
+      else box(m, [-x1, y0, z0], [-x0, y1, z1], colour, skip.map((f) => flip[f] ?? f));
+    };
+    bx(w / 2 - g.arm + 0.012, top - 0.04, za, w / 2, top, zb, rest, level === 0 ? [] : ['ny']);
+    bx(w / 2 - 0.045, panY, -0.025, w / 2 - 0.012, top - 0.04, 0.025, base, ['ny', 'py']);
+    if (level === 0) bx(sw - 0.05, panY - 0.025, -0.025, w / 2 - 0.012, panY, 0.025, base, ['nx']);
   }
   return m;
 }

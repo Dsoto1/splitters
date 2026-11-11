@@ -1,5 +1,5 @@
 {
-  "$comment": "Chairs and benches (tools/content/kit/furniture.mjs): each the size of the Kenney piece it replaces; a seat collides as its back and the block under its seat.",
+  "$comment": "Chairs and benches (tools/content/kit/furniture.mjs): each the size of the Kenney piece it replaces; a seat collides as its back and the block under its seat; the office chair (part 6) as its star, the block under its seat, the seat, each arm and the back.",
   "type": "seat",
   "props": [
     {
@@ -327,6 +327,129 @@
             "grime": 0.25,
             "seat": "#b8ad92",
             "back": "#b8ad92"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.seat.office",
+      "displayName": "Office Chair",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a swivel chair on a five-star base with castors, a gas column, a padded seat and back and arm rests, the size of the Kenney desk chair (0.695 \u00d7 1.26 \u00d7 0.652 m); six collision boxes, as it had."
+      },
+      "size": [
+        0.695,
+        1.26,
+        0.652
+      ],
+      "surface": "wood",
+      "detail": "fabric",
+      "breakable": {
+        "health": 20,
+        "debris": "#3a3a3a"
+      },
+      "generator": {
+        "kind": "officechair",
+        "seat": 0.484,
+        "hub": 0.02,
+        "base": [
+          0.298,
+          0.1
+        ],
+        "baseZ": [
+          0.065,
+          0.176
+        ],
+        "stem": 0.15,
+        "pan": 0.3,
+        "seatTop": 0.5,
+        "seatRear": 0.076,
+        "back": 0.176,
+        "arm": 0.0975,
+        "armY": [
+          0.4,
+          0.8
+        ],
+        "armZ": [
+          0.012,
+          0.052
+        ]
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9501,
+          "look": {
+            "grime": 0.15,
+            "fabric": "#5a5d63",
+            "frame": "#2b2d30",
+            "metal": "#8b8d8f"
+          }
+        },
+        {
+          "index": 1,
+          "name": "black",
+          "seed": 9502,
+          "set": {
+            "headrest": true
+          },
+          "look": {
+            "grime": 0.15,
+            "fabric": "#26272a",
+            "frame": "#1c1d1f",
+            "metal": "#b8babd"
+          }
+        },
+        {
+          "index": 2,
+          "name": "blue",
+          "seed": 9503,
+          "look": {
+            "grime": 0.15,
+            "fabric": "#3f5f8a",
+            "frame": "#2b2d30",
+            "metal": "#8b8d8f"
+          }
+        },
+        {
+          "index": 3,
+          "name": "red",
+          "seed": 9504,
+          "set": {
+            "headrest": true
+          },
+          "look": {
+            "grime": 0.15,
+            "fabric": "#8a2f2b",
+            "frame": "#3a3c40",
+            "metal": "#b8babd",
+            "pad": "#1c1d1f"
+          }
+        },
+        {
+          "index": 4,
+          "name": "tan",
+          "seed": 9505,
+          "look": {
+            "grime": 0.15,
+            "fabric": "#a8875c",
+            "frame": "#cfc9bb",
+            "metal": "#b8babd",
+            "pad": "#6e4a34"
           }
         }
       ]

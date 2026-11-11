@@ -1,5 +1,5 @@
 {
-  "$comment": "Tables and desks (tools/content/kit/furniture.mjs): each the size of the Kenney piece it replaces, colliding as its box.",
+  "$comment": "Tables and desks (tools/content/kit/furniture.mjs): each the size of the Kenney piece it replaces, colliding as its box; the pedestal table (part 6) as its base, its column and its top in two crossing slabs.",
   "type": "table",
   "props": [
     {
@@ -304,6 +304,118 @@
             "jitter": 0.08,
             "grime": 0.25,
             "top": "#a67c4e"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.table.round",
+      "displayName": "Round Table",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a pedestal table, its top six-sided like the Kenney round table's or oval, the size of that table (1.511 \u00d7 0.8 \u00d7 1.745 m); four collision boxes, as it had."
+      },
+      "size": [
+        1.511,
+        0.8,
+        1.745
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "roundtable",
+        "sides": 6,
+        "top": 0.07,
+        "apron": 0.1,
+        "apronK": 0.86,
+        "foot": "round",
+        "base": 0.48,
+        "baseH": 0.2,
+        "column": 0.2,
+        "under": 0.6,
+        "long": 0.3,
+        "wide": 0.7
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 9511,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "walnut",
+          "seed": 9512,
+          "set": {
+            "sides": 20
+          },
+          "look": {
+            "wood": "#6b4a30",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "pine",
+          "seed": 9513,
+          "set": {
+            "sides": 20,
+            "foot": "cross"
+          },
+          "look": {
+            "wood": "#c09a66",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "painted",
+          "seed": 9514,
+          "set": {
+            "foot": "cross"
+          },
+          "look": {
+            "wood": "#d9d4c6",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "top": "#a67c4e"
+          }
+        },
+        {
+          "index": 4,
+          "name": "cloth",
+          "seed": 9515,
+          "set": {
+            "sides": 20
+          },
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "cloth": "#b9b2a0"
           }
         }
       ]
