@@ -519,7 +519,7 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   const out: WorldBox[] = [];
   // Props riding a mover are drawn only (its blocks collide).
   const carried = new Set(map.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
-  const everything = !!map.metadata.destruction;
+  const everything = !!map.metadata?.destruction;
   for (const e of map.entities) {
     // Breakable props are not static: the scenario runtime owns their colliders (ask for them with `breakable`).
     if (e.kind !== 'prop' || !e.solid || isBreakableProp(e, everything) !== breakable || carried.has(e.id)) continue;

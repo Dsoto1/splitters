@@ -11,7 +11,7 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
 const EAST = Math.PI / 2;
 type Prop = Extract<MapEntity, { kind: 'prop' }>;
-const prop = (id: string, model: string, x: number, extra: Partial<Prop> = {}): MapEntity => ({ id, kind: 'prop', model, position: [x, 0, 0], yaw: 0, scale: 1, solid: true, ...extra });
+const prop = (id: string, model: string, x: number, extra: Partial<Prop> = {}): MapEntity => ({ id, kind: 'prop', model, position: [x, 0, 0], yaw: 0, scale: 1, solid: true, tint: null, ...extra });
 
 function room(entities: MapEntity[], destruction = false): MapDocument {
   const map = makeMap([{ id: 'room_a', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }], [[-3, 0, 0]]);

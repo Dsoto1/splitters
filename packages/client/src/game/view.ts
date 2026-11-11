@@ -96,6 +96,7 @@ import {
   type Stance,
   type MapWeather,
   type SkyDefinition,
+  isBreakableProp,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
