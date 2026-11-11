@@ -7,19 +7,43 @@
       "displayName": "Wooden Fence",
       "category": "Medieval",
       "assetVersion": 1,
-      "notes": { "1": "First version: a post-and-rail fence panel the size of the Kenney wooden fence (1.159 × 1.2 × 0.099 m), with plank and picket variants." },
+      "notes": { "1": "First version: a post-and-rail fence panel the size of the Kenney wooden fence (1.159 × 1.2 × 0.099 m). It collides as its two posts and three rails, so rounds pass between the rails as they did through that piece's." },
       "size": [1.159, 1.2, 0.099],
       "surface": "thin_wood",
       "detail": "wood",
       "breakable": { "health": 40, "debris": "#8a5a32" },
       "generator": { "kind": "fence", "style": "rail", "posts": 2, "post": 0.09, "rails": 3, "rail": 0.1, "board": 0.13, "lean": 0.02 },
-      "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 45 }],
+      "lods": [
+        { "distance": 0 },
+        { "distance": 14 },
+        { "distance": 45 }
+      ],
       "variants": [
         { "index": 0, "name": "rail", "seed": 4101, "look": { "wood": "#8a6a45", "post": "#765735", "jitter": 0.1, "grime": 0.35 } },
         { "index": 1, "name": "weathered", "seed": 4102, "look": { "wood": "#8d877a", "post": "#77726a", "jitter": 0.12, "grime": 0.4, "moss": "#5d6b3a" } },
-        { "index": 2, "name": "planks", "seed": 4103, "set": { "style": "plank", "post": 0.08 }, "look": { "wood": "#80603c", "post": "#6b4f30", "jitter": 0.12, "grime": 0.35 } },
-        { "index": 3, "name": "pickets", "seed": 4104, "set": { "style": "picket", "post": 0.07, "board": 0.085 }, "look": { "wood": "#8a6a45", "paint": "#d9d5c8", "post": "#cfcabb", "jitter": 0.05, "grime": 0.3 } },
-        { "index": 4, "name": "dark", "seed": 4105, "set": { "rails": 2 }, "look": { "wood": "#4f3a26", "post": "#42301f", "jitter": 0.1, "grime": 0.3 } }
+        { "index": 2, "name": "dark", "seed": 4105, "look": { "wood": "#4f3a26", "post": "#42301f", "jitter": 0.1, "grime": 0.3 } }
+      ]
+    },
+    {
+      "id": "kit.fence.board",
+      "displayName": "Board Fence",
+      "category": "Medieval",
+      "assetVersion": 1,
+      "notes": { "1": "First version: a fence panel of upright boards or pickets on two rails, the size of the wooden fence panel (1.159 × 1.2 × 0.099 m). Solid: it collides as its bounds." },
+      "size": [1.159, 1.2, 0.099],
+      "surface": "thin_wood",
+      "detail": "wood",
+      "breakable": { "health": 40, "debris": "#8a5a32" },
+      "generator": { "kind": "fence", "style": "plank", "posts": 2, "post": 0.08, "rails": 3, "rail": 0.1, "board": 0.13, "lean": 0.02 },
+      "lods": [
+        { "distance": 0 },
+        { "distance": 14 },
+        { "distance": 45 }
+      ],
+      "variants": [
+        { "index": 0, "name": "planks", "seed": 4103, "look": { "wood": "#80603c", "post": "#6b4f30", "jitter": 0.12, "grime": 0.35 } },
+        { "index": 1, "name": "pickets", "seed": 4104, "set": { "style": "picket", "board": 0.085 }, "look": { "wood": "#8a6a45", "paint": "#d9d5c8", "post": "#cfcabb", "jitter": 0.05, "grime": 0.3 } },
+        { "index": 2, "name": "dark", "seed": 4106, "look": { "wood": "#4f3a26", "post": "#42301f", "jitter": 0.1, "grime": 0.3 } }
       ]
     },
     {
@@ -27,13 +51,17 @@
       "displayName": "Palisade",
       "category": "Medieval",
       "assetVersion": 1,
-      "notes": { "1": "First version: a wall of pointed stakes the size of the Kenney palisade (1.739 × 1.8 × 0.184 m)." },
+      "notes": { "1": "First version: a wall of pointed stakes the size of the Kenney palisade (1.739 × 1.8 × 0.184 m). It stops rounds as that piece did (the catalogue played it as structural cover, the surface type `concrete`), so maps keep their cover; its wood is only how it is drawn." },
       "size": [1.739, 1.8, 0.184],
-      "surface": "wood",
+      "surface": "concrete",
       "detail": "wood",
       "breakable": { "health": 100, "debris": "#8a5a32" },
       "generator": { "kind": "fence", "style": "palisade", "post": 0.18, "rail": 0.07, "board": 0.2, "lean": 0.09 },
-      "lods": [{ "distance": 0 }, { "distance": 18 }, { "distance": 55 }],
+      "lods": [
+        { "distance": 0 },
+        { "distance": 18 },
+        { "distance": 55 }
+      ],
       "variants": [
         { "index": 0, "name": "logs", "seed": 4201, "look": { "wood": "#7d5f3f", "post": "#5e4630", "jitter": 0.13, "grime": 0.4 } },
         { "index": 1, "name": "weathered", "seed": 4202, "look": { "wood": "#847c6d", "post": "#6a6357", "jitter": 0.13, "grime": 0.45, "moss": "#586636" } },
@@ -50,11 +78,14 @@
       "surface": "thin_wood",
       "detail": "wood",
       "generator": { "kind": "fence", "style": "plank", "posts": 3, "post": 0.14, "rails": 2, "rail": 0.09, "board": 0.16, "lean": 0.03, "postHeight": 1 },
-      "lods": [{ "distance": 0 }, { "distance": 16 }, { "distance": 50 }],
+      "lods": [
+        { "distance": 0 },
+        { "distance": 16 },
+        { "distance": 50 }
+      ],
       "variants": [
         { "index": 0, "name": "planks", "seed": 4301, "look": { "wood": "#86663f", "post": "#6d5232", "jitter": 0.12, "grime": 0.35 } },
-        { "index": 1, "name": "pickets", "seed": 4302, "set": { "style": "picket", "board": 0.1 }, "look": { "wood": "#86663f", "paint": "#d6d1c2", "post": "#c9c4b4", "jitter": 0.05, "grime": 0.3 } },
-        { "index": 2, "name": "rails", "seed": 4303, "set": { "style": "rail", "rails": 3, "rail": 0.11 }, "look": { "wood": "#7a5c3a", "post": "#64492d", "jitter": 0.12, "grime": 0.4 } }
+        { "index": 1, "name": "pickets", "seed": 4302, "set": { "style": "picket", "board": 0.1 }, "look": { "wood": "#86663f", "paint": "#d6d1c2", "post": "#c9c4b4", "jitter": 0.05, "grime": 0.3 } }
       ]
     },
     {
@@ -62,12 +93,16 @@
       "displayName": "Iron Fence",
       "category": "Gothic",
       "assetVersion": 1,
-      "notes": { "1": "First version: spear-pointed iron railings on a stone kerb, the size of the Kenney iron fence (1.82 × 1.6 × 0.2 m)." },
+      "notes": { "1": "First version: spear-pointed iron railings on a stone kerb, the size of the Kenney iron fence (1.82 × 1.6 × 0.2 m). It collides as its kerb, posts, rails and each bar." },
       "size": [1.82, 1.6, 0.2],
-      "surface": "metal",
+      "surface": "sheet_metal",
       "detail": "metal",
       "generator": { "kind": "railing", "bar": 0.022, "pitch": 0.13, "post": 0.07, "kerb": 0.16 },
-      "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 40 }],
+      "lods": [
+        { "distance": 0 },
+        { "distance": 14 },
+        { "distance": 40 }
+      ],
       "variants": [
         { "index": 0, "name": "black", "seed": 4401, "look": { "iron": "#26282b", "rust": "#5f3a26", "stone": "#7b786f", "rusty": 0.2 } },
         { "index": 1, "name": "rusty", "seed": 4402, "look": { "iron": "#33302c", "rust": "#7a4526", "stone": "#77736a", "rusty": 0.7 } },
@@ -79,13 +114,17 @@
       "displayName": "Broken Iron Fence",
       "category": "Gothic",
       "assetVersion": 1,
-      "notes": { "1": "First version: the iron railings with one end torn open, bars bent out of line and one on the ground, the size of the Kenney broken iron fence (1.817 × 1.6 × 0.59 m)." },
+      "notes": { "1": "First version: the iron railings with one end torn open, bars bent out of line and two on the ground, the size of the Kenney broken iron fence (1.817 × 1.6 × 0.59 m). It collides as what still stands: nothing stops you or a round in the gap above the low rail." },
       "size": [1.817, 1.6, 0.59],
-      "surface": "metal",
+      "surface": "sheet_metal",
       "detail": "metal",
       "breakable": { "health": 60, "debris": "#3a3a3a" },
       "generator": { "kind": "railing", "bar": 0.022, "pitch": 0.13, "post": 0.07, "kerb": 0.16, "broken": 0.45 },
-      "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 40 }],
+      "lods": [
+        { "distance": 0 },
+        { "distance": 14 },
+        { "distance": 40 }
+      ],
       "variants": [
         { "index": 0, "name": "black", "seed": 4501, "look": { "iron": "#26282b", "rust": "#5f3a26", "stone": "#7b786f", "rusty": 0.35 } },
         { "index": 1, "name": "rusty", "seed": 4502, "look": { "iron": "#33302c", "rust": "#7a4526", "stone": "#77736a", "rusty": 0.8 } }

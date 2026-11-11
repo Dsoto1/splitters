@@ -30,7 +30,18 @@ function frame(size) {
   const D = (u, y, v) => (alongZ ? [v, y, u] : [u, y, v]);
   /** The box faces at the two ends of the run (to leave out where they butt against a post). */
   const ends = alongZ ? ['nz', 'pz'] : ['nx', 'px'];
-  return { L, T, h, P, D, bx, ends };
+  /**
+   * The piece's finer collision (docs/CONTENT_PIPELINE.md, "Kit props": a see-through fence collides as its posts and
+   * rails, not as its bounds): `solid` adds a box in the piece's axes. Only what every variant of the family shares
+   * goes in (nothing drawn from the seed), so the family has one collision.
+   */
+  const solids = [];
+  const solid = (u0, y0, v0, u1, y1, v1) => {
+    const lo = P(Math.min(u0, u1), Math.min(y0, y1), Math.min(v0, v1));
+    const hi = P(Math.max(u0, u1), Math.max(y0, y1), Math.max(v0, v1));
+    solids.push([...lo, ...hi]);
+  };
+  return { L, T, h, P, D, bx, ends, solid, solids };
 }
 
 /** A four-sided point on top of a square post or bar: base centre (u, v) at height y, half-width a, rising r. */
@@ -114,12 +125,20 @@ export function fenceMesh(seed, size, g, look, level) {
     }
   }
   const rails = level >= 2 ? Math.min(2, g.rails ?? 2) : Math.max(1, g.rails ?? 2);
+  // Where each rail sits (the drawn one is a centimetre off, by the seed).
+  const railY = (k, n) => h * (0.28 + (0.56 * k) / Math.max(1, n - 1));
+  if (style === 'rail') {
+    m.boxes = f.solids;
+    for (const u of us) f.solid(u - pw / 2, 0, -pd, u + pw / 2, h, pd);
+    const all = Math.max(1, g.rails ?? 2);
+    for (let k = 0; k < all; k++) f.solid(-L / 2 + pw * 0.5, railY(k, all) - g.rail / 2, pd - Math.min(0.035, T * 0.4), L / 2 - pw * 0.5, railY(k, all) + g.rail / 2, pd);
+  }
   const rh = g.rail;
   const rt = Math.min(0.035, T * 0.4);
   if (style === 'rail') {
     // Rails between the posts, on the front of them, each sagging or tilted a little.
     for (let k = 0; k < rails; k++) {
-      const y = h * (0.28 + (0.56 * k) / Math.max(1, rails - 1)) + (level === 0 ? r.jitter(0.012) : 0);
+      const y = railY(k, rails) + (level === 0 ? r.jitter(0.012) : 0);
       const col = tone(wood, 20 + k);
       // Between the posts, set into their front (from the first lighter level on, without the ends hidden in them).
       f.bx(m, -L / 2 + pw * 0.5, y - rh / 2, pd - rt, L / 2 - pw * 0.5, y + rh / 2, pd, col, level > 0 ? f.ends : []);
@@ -192,10 +211,25 @@ export function railingMesh(seed, size, g, look, level) {
   const railT = g.bar * 1.3;
   const yLow = kerb + (h - kerb) * 0.1;
   const yHigh = h * 0.8;
+  // Collision: the kerb, the posts, the rails and each standing bar (rounds pass between the bars; you don't).
+  m.boxes = f.solids;
+  if (kerb > 0) f.solid(-L / 2, 0, -kd, L / 2, kerb, kd);
+  for (const s of [-1, 1]) f.solid(s * (L / 2 - pw), kerb, -pw / 2, (s * L) / 2, h, pw / 2);
   // Where the fence is broken the top rail stops short of one end.
   const gapFrom = broken > 0 ? L / 2 - pw - (L - pw * 2) * Math.min(0.5, broken) : L / 2 - pw;
   if (level < 2) f.bx(m, -L / 2 + pw, yLow - railT / 2, -railT / 2, L / 2 - pw, yLow + railT / 2, railT / 2, metal);
   f.bx(m, -L / 2 + pw, yHigh - railT / 2, -railT / 2, gapFrom, yHigh + railT / 2, railT / 2, metal);
+  f.solid(-L / 2 + pw, yLow - railT / 2, -railT / 2, L / 2 - pw, yLow + railT / 2, railT / 2);
+  f.solid(-L / 2 + pw, yHigh - railT / 2, -railT / 2, gapFrom, yHigh + railT / 2, railT / 2);
+  {
+    const span = L - pw * 2;
+    const count = Math.max(3, Math.round(span / g.pitch));
+    for (let i = 0; i < count; i++) {
+      const u = -L / 2 + pw + (span * (i + 0.5)) / count;
+      // (Past the gap the bars are gone or bent, differently in each variant: nothing to stop a round there.)
+      if (u <= gapFrom) f.solid(u - g.bar / 2, yLow, -g.bar / 2, u + g.bar / 2, h - g.bar * 3, g.bar / 2);
+    }
+  }
   if (broken > 0) {
     // Bars torn off, lying on the ground either side of the gap (out to the piece's bounds, front and back).
     const u = gapFrom + (L / 2 - pw - gapFrom) * 0.5;
@@ -262,6 +296,15 @@ export function stoneWallMesh(seed, size, g, look, level) {
   };
   // How high the wall stands at u: whole, or falling away towards +u when broken.
   const heightAt = (u) => (broken > 0 ? h * (1 - broken * clamp01((u + L * 0.12) / (L * 0.5))) : h);
+  if (broken > 0) {
+    // Collision: the wall as it stands, in four steps down to its low end.
+    m.boxes = f.solids;
+    for (let i = 0; i < 4; i++) {
+      const u0 = -L / 2 + (L * i) / 4;
+      const u1 = u0 + L / 4;
+      f.solid(u0, 0, -T / 2, u1, Math.max((h - g.cap) / g.courses, Math.round(heightAt((u0 + u1) / 2) * 100) / 100), T / 2);
+    }
+  }
   if (level >= 2) {
     const steps = broken > 0 ? 3 : 1;
     for (let i = 0; i < steps; i++) {
@@ -355,12 +398,13 @@ export function barrierMesh(seed, size, g, look, level) {
   const b = look.stripeB ? hex(look.stripeB) : null;
   // Half the profile, bottom to top: [half-width, height].
   const prof = level >= 1 ? [[T / 2, 0], [g.waist / 2, g.toe], [g.stem / 2, h]] : [[T / 2, 0], [T / 2, g.foot], [g.waist / 2, g.toe], [g.stem / 2, h]];
+  // (The farthest level is bare concrete: the stripes are a metre wide and gone by then.)
   const bays = level === 0 && a ? Math.max(2, g.bays ?? 6) : 1;
   const from = h * (look.stripeFrom ?? 0.45);
   for (let i = 0; i < bays; i++) {
     const u0 = -L / 2 + (L * i) / bays;
     const u1 = u0 + L / bays;
-    const paint = a ? (i % 2 ? (b ?? concrete) : a) : null;
+    const paint = a && level < 2 ? (i % 2 ? (b ?? concrete) : a) : null;
     for (let k = 0; k + 1 < prof.length; k++) {
       const [w0, y0] = prof[k];
       const [w1, y1] = prof[k + 1];

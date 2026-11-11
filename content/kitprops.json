@@ -42,11 +42,6 @@
         420,
         60
       ],
-      "railing": [
-        900,
-        420,
-        80
-      ],
       "stonewall": [
         800,
         360,
@@ -56,6 +51,11 @@
         400,
         60,
         30
+      ],
+      "railing": [
+        900,
+        420,
+        80
       ]
     }
   },
@@ -95,11 +95,6 @@
       "variant": 0,
       "scale": 1
     },
-    "prop.fence": {
-      "model": "kit.fence.rail",
-      "variant": 0,
-      "scale": 1
-    },
     "prop.palisade": {
       "model": "kit.fence.palisade",
       "variant": 0,
@@ -107,6 +102,26 @@
     },
     "prop.town_fence": {
       "model": "kit.fence.town",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.stone_wall": {
+      "model": "kit.wall.stone",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.jersey_barrier": {
+      "model": "kit.barrier.concrete",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.jersey_barrier_striped": {
+      "model": "kit.barrier.concrete",
+      "variant": 1,
+      "scale": 1
+    },
+    "prop.fence": {
+      "model": "kit.fence.rail",
       "variant": 0,
       "scale": 1
     },
@@ -120,24 +135,9 @@
       "variant": 0,
       "scale": 1
     },
-    "prop.stone_wall": {
-      "model": "kit.wall.stone",
-      "variant": 0,
-      "scale": 1
-    },
     "prop.stone_wall_damaged": {
       "model": "kit.wall.stone_broken",
       "variant": 0,
-      "scale": 1
-    },
-    "prop.jersey_barrier": {
-      "model": "kit.barrier.concrete",
-      "variant": 0,
-      "scale": 1
-    },
-    "prop.jersey_barrier_striped": {
-      "model": "kit.barrier.concrete",
-      "variant": 1,
       "scale": 1
     }
   }
