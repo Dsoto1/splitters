@@ -120,6 +120,16 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.tortoise', name: 'Shellback', body: 'male', head: '', parts: ['meshy_tortoise'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_tortoise_fparms', grip: { gripLong: [-0.045, 0.02, -0.03], supportPistol: [-0.01, 0.03, -0.03] } }, group: 'animals', nameTheme: 'critter' },
   { id: 'core.trex', name: 'Cool Hands Rex', body: 'male', head: '', parts: ['meshy_trex'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_trex_fparms' }, group: 'creatures', nameTheme: 'gangster' },
   { id: 'core.fishyfred', name: 'Fishy Fred', body: 'male', head: '', parts: ['meshy_fishyfred'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'meshy_fishyfred_fparms', grip: { gripLong: [-0.045, 0.02, -0.03], rollR: 0.3 } }, group: 'animals', nameTheme: 'critter' },
+  { id: 'core.octobuddy', name: 'Octo Buddy', body: 'male', head: '', parts: ['meshy_octobuddy'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_octobuddy_fparms' }, group: 'creatures', tier: 'experimental', nameTheme: 'critter' },
+  { id: 'core.sugarskull', name: 'Sugar Skull', body: 'male', head: '', parts: ['meshy_sugarskull'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_sugarskull_fparms' }, group: 'horror', tier: 'experimental', nameTheme: 'undead' },
+  { id: 'core.inspector', name: 'Inspector Bigotes', body: 'male', head: '', parts: ['meshy_inspector'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_inspector_fparms' }, group: 'folk', tier: 'experimental', nameTheme: 'townsfolk' },
+  { id: 'core.steelguardian', name: 'Steel Guardian', body: 'male', head: '', parts: ['meshy_steelguardian'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_steelguardian_fparms' }, group: 'legends', tier: 'experimental', nameTheme: 'robot' },
+  { id: 'core.shadowenforcer', name: 'Shadow Enforcer', body: 'male', head: '', parts: ['meshy_shadowenforcer'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_shadowenforcer_fparms' }, group: 'soldiers', tier: 'experimental', nameTheme: 'soldier' },
+  { id: 'core.steampunkwarrior', name: 'Steampunk Warrior', body: 'male', head: '', parts: ['meshy_steampunkwarrior'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_steampunkwarrior_fparms' }, group: 'legends', tier: 'experimental', nameTheme: 'knight' },
+  { id: 'core.greensentinel', name: 'Sentinel in Green', body: 'male', head: '', parts: ['meshy_greensentinel'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_greensentinel_fparms' }, group: 'soldiers', tier: 'experimental', nameTheme: 'soldier' },
+  { id: 'core.goblingunslinger', name: 'Goblin Gunslinger', body: 'male', head: '', parts: ['meshy_goblingunslinger'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_goblingunslinger_fparms' }, group: 'creatures', tier: 'experimental', nameTheme: 'goblin' },
+  { id: 'core.purplehero', name: 'The Purple Comet', body: 'male', head: '', parts: ['meshy_purplehero'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_purplehero_fparms' }, group: 'legends', tier: 'experimental', nameTheme: 'myth' },
+  { id: 'core.elephantwarrior', name: 'Elephant Warrior', body: 'male', head: '', parts: ['meshy_elephantwarrior'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_elephantwarrior_fparms' }, group: 'animals', tier: 'experimental', nameTheme: 'barbarian' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -243,4 +253,14 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.tortoise': 'Slow to anger, slower to move, and nobody has ever knocked him over.',
   'core.trex': 'Shades on, collar up, and the steadiest trigger claw since the Cretaceous.',
   'core.fishyfred': 'Walked out of the river in his best red sneakers. Nobody has told him about the smell.',
+  'core.octobuddy': 'Eight arms, one grudge. He only brought two of them to the fight.',
+  'core.sugarskull': 'Dressed for the festival, stayed for the firefight.',
+  'core.inspector': 'On the case since breakfast. The moustache does most of the detecting.',
+  'core.steelguardian': 'Stood watch so long the gate rusted first.',
+  'core.shadowenforcer': 'You don\'t see him arrive. You do see the paperwork after.',
+  'core.steampunkwarrior': 'Runs on coal, brass and spite. Mostly spite.',
+  'core.greensentinel': 'Holds the line and blends into the hedge behind it.',
+  'core.goblingunslinger': 'Fastest draw under four feet tall.',
+  'core.purplehero': 'Purple suit, gold trim, no powers to speak of. Shows up anyway.',
+  'core.elephantwarrior': 'Never forgets a face. Especially one that shot at him.',
 };

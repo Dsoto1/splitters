@@ -1,0 +1,39 @@
+{
+  "id": "meshy_inspector",
+  "kind": "character",
+  "use": "player",
+  "order": 121,
+  "name": "Inspector Bigotes",
+  "look": "core.inspector",
+  "group": "folk",
+  "tier": "experimental",
+  "nameTheme": "townsfolk",
+  "bio": "On the case since breakfast. The moustache does most of the detecting.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-11 (\"inspector gadget version of a Mexican\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner has looked at it in game (new characters start there, like maps). Name and bio are ours (the owner, 2026-11-11: \"his own character, just based on some idea\": named for himself, no reference to the cartoon the download's title mentions). Licence: Meshy Community, CC0 per the owner (2026-11-11: \"new character models to my drive from the meshy community (CC0 license)\").",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "inspector gadget version of a Mexican"
+    },
+    "date": "2026-11-11",
+    "url": null,
+    "file": "^Meshy_AI_inspector_gadget_version_of_a_Mexican_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

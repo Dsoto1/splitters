@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Ten new characters** (Meshy Community, CC0), under Experimental in Character Select until they have been looked over in game: Octo Buddy, Sugar Skull, Inspector Bigotes, Steel Guardian, Shadow Enforcer, Steampunk Warrior, Sentinel in Green, Goblin Gunslinger, The Purple Comet and Elephant Warrior.
 - **The Hauler is the Ironbound Voyager** (Meshy Community, CC0): an armoured hover freighter with six engines. The pilot sits in the nose, the rocket gunner stands on the deck and the four passengers sit along its edges; handling, health and the rockets are as before.
 - **The Troop Truck is on Iron Maw and Sunstone Crag:** one for each team at its base.
 - **The Tank's turret turns all the way round** for a gunner in the cannon seat, at its own pace (a half turn in about two and a half seconds); the cannon fires as the barrel reaches where you are looking, so a shell always goes where you aim. A driver alone still fires only ahead (about 34 degrees either side).
