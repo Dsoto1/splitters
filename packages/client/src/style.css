@@ -376,10 +376,6 @@ button.cta:hover { background: #ffc46e; }
 .setup-title h3 { overflow: hidden; text-overflow: ellipsis; }
 #arcade-map { display: none; max-width: 100%; margin: 4px 0; padding: 4px 6px; }
 /* The modes the map can't play, in one line (each one's reason on hover or focus). */
-.mode-off { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; white-space: nowrap; color: var(--muted); font: 600 11px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
-.mode-off > span:first-child { flex: none; }
-.mode-tag-off { flex: none; padding: 1px 6px; border: 1px dashed var(--line); color: rgba(142, 162, 192, 0.6); cursor: help; text-decoration: line-through; text-decoration-color: rgba(142, 162, 192, 0.4); }
-.mode-tag-off:hover, .mode-tag-off:focus-visible { color: var(--text); border-color: var(--muted); outline: none; }
 .setup-hint { margin: 0; color: var(--muted); font: 500 13px/1.35 var(--font-body); }
 .cap-note { margin: 0; padding: 5px 8px; color: var(--warning); border-left: 2px solid var(--warning); background: rgba(241, 196, 15, 0.08); font: 500 13px/1.35 var(--font-body); }
 .setup select { max-width: 100%; min-width: 0; }
@@ -501,7 +497,7 @@ html.touch .setup .seg-opt { min-height: 36px; }
    Breakthrough. */
 html.touch .mode-pick { grid-template-columns: repeat(auto-fill, minmax(126px, 1fr)); }
 html.touch .mode-chip b, html.touch .mode-chip b.long { font-size: 12px; letter-spacing: 0; }
-html.touch :is(.variant-label, .variant-chip, .field-label, .mode-off, .fit-chip, .saved-pop h4, .size-chip b) { font-size: 12px; letter-spacing: 0.02em; }
+html.touch :is(.variant-label, .variant-chip, .field-label, .fit-chip, .saved-pop h4, .size-chip b) { font-size: 12px; letter-spacing: 0.02em; }
 html.touch .fact-time { font-size: 12px; }
 .info { display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(142, 162, 192, 0.6); color: var(--muted); font: italic 700 11px/1 Georgia, serif; text-transform: none; letter-spacing: 0; cursor: help; }
 .info:hover, .info:focus-visible { color: var(--deep-space); background: var(--cyan); border-color: var(--cyan); outline: none; }

@@ -1291,17 +1291,8 @@ export class FrontEnd {
       }),
     );
     const modeLine = el('p', { class: 'setup-hint mode-line', textContent: MODE_LINES[s.mode] });
-    const off = options.filter((o) => !o.ok);
-    // One line: a tag per mode (its reason on hover or focus), every reason on the line's own hover.
-    const offTags = off.map((o) => {
-      const t = el('span', { class: 'mode-tag-off', tabIndex: 0, textContent: MODE_LABEL[o.mode] });
-      t.dataset.tip = o.reason ?? '';
-      t.dataset.mode = o.mode;
-      t.setAttribute('aria-label', `${MODE_LABEL[o.mode]}: ${o.reason}`);
-      return t;
-    });
-    const unavailable = off.length ? [el('div', { class: 'mode-off' }, el('span', { textContent: 'Not on this map:' }), ...offTags)] : [];
-    unavailable[0]?.setAttribute('data-tip', off.map((o) => `${MODE_LABEL[o.mode]}: ${o.reason}`).join('\n'));
+    // Only the modes this map plays are shown (owner, 2026-11-11: "don't show the map modes a map can't play": a map
+    // not built for a mode needs no line saying so).
     // Variants: on/off chips drawn from SETUP_VARIANTS (a new variant is data there, not UI here).
     const states = variantStates(s, map, current.modes);
     const variants = states.length
@@ -1350,7 +1341,7 @@ export class FrontEnd {
       );
     }
     const limitsLine = coop ? [] : this.limitsLine(s.mode, lim, { score: true, time: !forts }, team && sizes.length <= 4 ? sizes.join('v') : `${players} players`);
-    const essentials = el('section', { class: 'setup-essentials', id: 'setup-essentials' }, modeChips, modeLine, ...unavailable, ...variants, el('div', { class: 'field-grid', id: 'setup-win' }, ...win), ...limitsLine);
+    const essentials = el('section', { class: 'setup-essentials', id: 'setup-essentials' }, modeChips, modeLine, ...variants, el('div', { class: 'field-grid', id: 'setup-win' }, ...win), ...limitsLine);
 
     // ---- presets: sizes worked out for this map and device (any change makes it Custom), then the party bundles
     const presets = sizePresets(s.mode, map, { teams: team ? sizes.length : undefined, deviceMax: dev.max, device: dev.name, pickPlayers });

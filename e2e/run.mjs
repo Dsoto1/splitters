@@ -5894,10 +5894,11 @@ async function breakthroughFlow(browser) {
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.evaluate(() => document.getElementById('nav-play').click());
   await page.waitForSelector('#arcade-map', { state: 'attached', timeout: T(30000) });
-  // (The map loads behind the panel: its unavailable modes show once it has.)
-  await page.waitForSelector('.mode-tag-off[data-mode="core.breakthrough"]', { timeout: T(30000) }).catch(() => {});
-  const off = await page.evaluate(() => document.querySelector('.mode-tag-off[data-mode="core.breakthrough"]')?.dataset.tip ?? null);
-  check(/sectors/.test(off ?? ''), `Match Setup greys Breakthrough out on a map without sectors, saying why (${off})`);
+  // A mode the map was not built for is not shown at all (owner, 2026-11-11): no Breakthrough tile on a map without
+  // sectors, and no line listing what it can't play. (The mode tiles show once the map has loaded behind the panel.)
+  await page.waitForSelector('#arcade-mode-tdm, #arcade-mode-deathmatch', { timeout: T(30000) }).catch(() => {});
+  const shown = await page.evaluate(() => ({ tiles: [...document.querySelectorAll('[id^="arcade-mode-"]')].map((b) => b.id.replace('arcade-mode-', '')), off: document.querySelectorAll('.mode-off, .mode-tag-off').length, text: /not on this map/i.test(document.getElementById('setup-essentials')?.textContent ?? '') }));
+  check(shown.tiles.length > 0 && !shown.tiles.includes('breakthrough') && shown.off === 0 && !shown.text, `Match Setup shows only the modes the map plays: no Breakthrough on a map without sectors, nothing listed as unavailable (${JSON.stringify(shown)})`);
   // With ?testmap= the Range joins Match Setup's map list, by its name.
   const listed = await page.evaluate(() => [...document.getElementById('arcade-map').options].find((o) => o.value === 'test_breakthrough')?.textContent ?? null);
   check(/Breakthrough Range/.test(listed ?? ''), `with ?testmap= Match Setup lists the Breakthrough Range (${listed})`);
