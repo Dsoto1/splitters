@@ -96,6 +96,21 @@
         80,
         60,
         10
+      ],
+      "sofa": [
+        220,
+        60,
+        20
+      ],
+      "cabinet": [
+        260,
+        40,
+        10
+      ],
+      "appliance": [
+        460,
+        90,
+        10
       ]
     }
   },
@@ -267,6 +282,46 @@
     },
     "prop.trashcan": {
       "model": "kit.bin.waste",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.chair_cushion": {
+      "model": "kit.seat.chair_cushion",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.armchair": {
+      "model": "kit.sofa.armchair",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.sofa": {
+      "model": "kit.sofa.two_seat",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.kitchen_cabinet": {
+      "model": "kit.cabinet.kitchen",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.tv_cabinet": {
+      "model": "kit.cabinet.media",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.fridge": {
+      "model": "kit.appliance.fridge",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.stove": {
+      "model": "kit.appliance.stove",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.washer": {
+      "model": "kit.appliance.washer",
       "variant": 0,
       "scale": 1
     }

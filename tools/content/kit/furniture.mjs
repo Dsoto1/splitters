@@ -8,6 +8,7 @@
 // and the block under its seat (a generator's `boxes`: tools/content/kitprops.mjs).
 //
 // Level 1 keeps the outline (top, legs, back, shelves as blocks); level 2 is the bounds in the wood's colour.
+// (Part 5 adds the cushioned chair: a seat's `look.back` pads its back.)
 
 import { rng } from '../env/rng.mjs';
 import { Mesh, box, hex, quadN, scale3, standIn } from './geom.mjs';
@@ -105,8 +106,8 @@ export function tableMesh(seed, size, g, look, level) {
 /**
  * A chair or bench. Settings `g`: `seat` (seat height, m), `seatT` (seat thickness), `leg` (leg width), `back` (how
  * deep the back's collision is from the rear, m), `slats` (upright slats in the back; 0 for rails across), `rails`
- * (rails across the back when there are no slats). `look`: `wood`, `seat` (hex: a cushion or a painted seat),
- * `jitter`, `grime`.
+ * (rails across the back when there are no slats). `look`: `wood`, `seat` (hex: a cushion or a painted seat), `back`
+ * (hex: a padded panel in the back instead of slats or rails), `jitter`, `grime`.
  */
 export function seatMesh(seed, size, g, look, level) {
   const [w, h, d] = size;
@@ -148,7 +149,11 @@ export function seatMesh(seed, size, g, look, level) {
   box(m, [bx0, top, bz0], [bx1, h, bz1], tone(wood, 3), ['nx', 'px']);
   if (level === 0) {
     const slats = g.slats ?? 0;
-    if (slats > 0) {
+    if (look.back) {
+      // A padded panel between the posts, a little proud of the rail it hangs under.
+      const pad = hex(look.back);
+      box(m, [bx0 + 0.004, ySeat + (h - ySeat) * 0.24, bz0], [bx1 - 0.004, top, bz1 + 0.01], (p, n) => scale3(pad, n[1] < -0.5 ? 0.7 : n[2] < -0.5 ? 0.8 : 1), ['py']);
+    } else if (slats > 0) {
       const low = ySeat + (h - ySeat) * 0.22;
       box(m, [bx0, low, bz0], [bx1, low + leg, bz1], tone(wood, 4), ['nx', 'px']);
       const sw = Math.min(0.045, ((bx1 - bx0) / slats) * 0.5);
@@ -172,7 +177,7 @@ export function seatMesh(seed, size, g, look, level) {
     }
   } else {
     // One panel for the back.
-    box(m, [bx0, ySeat + (h - ySeat) * 0.25, bz0], [bx1, top, bz1], tone(wood, 4), ['nx', 'px', 'py']);
+    box(m, [bx0, ySeat + (h - ySeat) * 0.25, bz0], [bx1, top, bz1], look.back ? scale3(hex(look.back), 0.92) : tone(wood, 4), ['nx', 'px', 'py']);
   }
   return m;
 }

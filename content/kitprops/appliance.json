@@ -1,0 +1,283 @@
+{
+  "$comment": "Kitchen and laundry appliances (tools/content/kit/cabinet.mjs): a fridge, a stove and a washing machine, each the size of the Kenney piece it replaces, colliding as its box.",
+  "type": "appliance",
+  "props": [
+    {
+      "id": "kit.appliance.fridge",
+      "displayName": "Fridge",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a two-door fridge with bar handles, the size of the Kenney large fridge (1.017 \u00d7 1.8 \u00d7 0.793 m)."
+      },
+      "size": [
+        1.017,
+        1.8,
+        0.793
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 100,
+        "debris": "#c8c8d0"
+      },
+      "generator": {
+        "kind": "appliance",
+        "style": "fridge",
+        "foot": 0.06,
+        "proud": 0.06,
+        "split": "side"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "white",
+          "seed": 9401,
+          "look": {
+            "paint": "#e4e7e4",
+            "grime": 0.2,
+            "trim": "#93a3a3"
+          }
+        },
+        {
+          "index": 1,
+          "name": "steel",
+          "seed": 9402,
+          "set": {
+            "dispenser": true
+          },
+          "look": {
+            "paint": "#8f9498",
+            "grime": 0.2,
+            "door": "#a4a9ad",
+            "trim": "#5c6064"
+          }
+        },
+        {
+          "index": 2,
+          "name": "cream",
+          "seed": 9403,
+          "set": {
+            "split": "stack",
+            "freezer": 0.3
+          },
+          "look": {
+            "paint": "#d8cfae",
+            "grime": 0.2,
+            "trim": "#a8adb0"
+          }
+        },
+        {
+          "index": 3,
+          "name": "black",
+          "seed": 9404,
+          "set": {
+            "split": "stack",
+            "freezer": 0.34
+          },
+          "look": {
+            "paint": "#2f3033",
+            "grime": 0.2,
+            "trim": "#8b8d8f"
+          }
+        },
+        {
+          "index": 4,
+          "name": "mint",
+          "seed": 9405,
+          "look": {
+            "paint": "#9cc2b0",
+            "grime": 0.3,
+            "trim": "#c9c2b0"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.appliance.stove",
+      "displayName": "Stove",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a cooker with four hob rings, a row of knobs and an oven door, the size of the Kenney stove (0.908 \u00d7 0.95 \u00d7 0.95 m)."
+      },
+      "size": [
+        0.908,
+        0.95,
+        0.95
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 90,
+        "debris": "#7a8088"
+      },
+      "generator": {
+        "kind": "appliance",
+        "style": "stove",
+        "foot": 0.05,
+        "proud": 0.04,
+        "knobs": 5
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "white",
+          "seed": 9411,
+          "look": {
+            "paint": "#e0e3e1",
+            "grime": 0.2,
+            "trim": "#96a3a3",
+            "panel": "#c9cfce"
+          }
+        },
+        {
+          "index": 1,
+          "name": "steel",
+          "seed": 9412,
+          "look": {
+            "paint": "#8f9498",
+            "grime": 0.2,
+            "trim": "#5c6064",
+            "panel": "#3c3d40",
+            "glow": "#e0522a"
+          }
+        },
+        {
+          "index": 2,
+          "name": "black",
+          "seed": 9413,
+          "set": {
+            "knobs": 4
+          },
+          "look": {
+            "paint": "#2f3033",
+            "grime": 0.2,
+            "trim": "#8b8d8f",
+            "panel": "#3c3d40"
+          }
+        },
+        {
+          "index": 3,
+          "name": "cream",
+          "seed": 9414,
+          "set": {
+            "knobs": 6
+          },
+          "look": {
+            "paint": "#d8cfae",
+            "grime": 0.3,
+            "trim": "#3c3d40",
+            "panel": "#b9ae8a",
+            "ring": "#a8adb0"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.appliance.washer",
+      "displayName": "Washing Machine",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a front-loading washing machine, a round door under a control strip, the size of the Kenney washer (0.747 \u00d7 0.9 \u00d7 0.747 m)."
+      },
+      "size": [
+        0.747,
+        0.9,
+        0.747
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 90,
+        "debris": "#c8c8d0"
+      },
+      "generator": {
+        "kind": "appliance",
+        "style": "washer",
+        "foot": 0.05,
+        "proud": 0.035
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "white",
+          "seed": 9421,
+          "look": {
+            "paint": "#e4e7e4",
+            "grime": 0.2,
+            "trim": "#a3b0b0",
+            "panel": "#d3d8d6"
+          }
+        },
+        {
+          "index": 1,
+          "name": "graphite",
+          "seed": 9422,
+          "look": {
+            "paint": "#55585c",
+            "grime": 0.2,
+            "trim": "#a8adb0",
+            "panel": "#3c3d40"
+          }
+        },
+        {
+          "index": 2,
+          "name": "cream",
+          "seed": 9423,
+          "look": {
+            "paint": "#d8cfae",
+            "grime": 0.35,
+            "trim": "#8b8d8f",
+            "panel": "#c2b78f"
+          }
+        },
+        {
+          "index": 3,
+          "name": "blue",
+          "seed": 9424,
+          "look": {
+            "paint": "#dfe3e6",
+            "grime": 0.2,
+            "trim": "#35608f",
+            "panel": "#c3cad1"
+          }
+        }
+      ]
+    }
+  ]
+}
