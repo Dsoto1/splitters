@@ -27907,7 +27907,7 @@
         10
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 1.571,
       "scale": 1,
       "solid": true,
@@ -27921,7 +27921,7 @@
         -10
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 1.571,
       "scale": 1,
       "solid": true,
@@ -27935,7 +27935,7 @@
         10
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 1.571,
       "scale": 1,
       "solid": true,
@@ -27949,7 +27949,7 @@
         -10
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 1.571,
       "scale": 1,
       "solid": true,

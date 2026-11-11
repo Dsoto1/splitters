@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 34,
   "metadata": {
     "id": "mercy_ward",
     "name": "Mercy Ward",
@@ -13176,7 +13176,7 @@
         -19
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13190,7 +13190,7 @@
         -19
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13204,7 +13204,7 @@
         -19
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -14633,7 +14633,6 @@
     "style": "invisible",
     "height": 8
   },
-  "track": null,
   "backdrop": {
     "sky": "night",
     "scenery": "city",

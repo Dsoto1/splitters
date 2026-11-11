@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_avupmkddw4sadpi2",
-      "versionId": "v_4ttycrtaiynw4hez",
-      "revision": 2,
-      "contentHash": "sha256:31af43d948ccffd8a44df720ad70205e91a1150e17fbbf7d7ca866f7511b33b9",
+      "versionId": "v_nlsys6umimtwj2rt",
+      "revision": 3,
+      "contentHash": "sha256:46160b490066973bacdcf1da0bb66c1c077b76f7e052c767976f0509046b7c9f",
       "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:23:30.782Z"
+      "releasedAt": "2026-11-11T02:40:23.581Z"
     }
   },
   "classicStructure": {
@@ -1205,7 +1205,7 @@
         28
       ],
       "kind": "prop",
-      "model": "prop.stone_wall_damaged",
+      "model": "kit.wall.stone_broken",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -1219,7 +1219,7 @@
         52
       ],
       "kind": "prop",
-      "model": "prop.stone_wall_damaged",
+      "model": "kit.wall.stone_broken",
       "yaw": 3.141592653589793,
       "scale": 1.2,
       "solid": true,
@@ -1373,7 +1373,7 @@
         33
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "kit.wall.stone",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -1387,7 +1387,7 @@
         47
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "kit.wall.stone",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,

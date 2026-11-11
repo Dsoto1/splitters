@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_pdfp7ts5t32gemes",
-      "versionId": "v_s5er6zo3ltoo7afj",
-      "revision": 4,
-      "contentHash": "sha256:c1fd7fc641b1e8aceefd8a954d6dceeaefdbc2b3f801bd89c065c06bc98ee92b",
+      "versionId": "v_hslr4ju4faub772g",
+      "revision": 5,
+      "contentHash": "sha256:cdc316301a73aeac6197b23568302209549ccf74b37d14fe01e450824467e1ae",
       "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:33:52.780Z"
+      "releasedAt": "2026-11-11T02:41:41.679Z"
     }
   },
   "classicStructure": {
@@ -6070,7 +6070,7 @@
         -53
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6084,7 +6084,7 @@
         -59
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,

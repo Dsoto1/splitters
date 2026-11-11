@@ -7419,11 +7419,12 @@
         -14
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_338",
@@ -8496,7 +8497,7 @@
         -8
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8510,11 +8511,12 @@
         -8
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_412",

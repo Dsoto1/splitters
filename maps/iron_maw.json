@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_pjxirkagldf3j5mr",
-      "revision": 4,
-      "contentHash": "sha256:c26fe786482ec0ae2b4136862ed38d78fb8db835d142219a8658dc6cbaf193aa",
+      "versionId": "v_ektkllmhzy2ritb5",
+      "revision": 5,
+      "contentHash": "sha256:d470459b1593e9b7aced1b14722f3b80df59275d613f4ebb9e6535e062f53cb3",
       "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:21:31.884Z"
+      "releasedAt": "2026-11-11T02:52:56.746Z"
     }
   },
   "classicStructure": {
@@ -4326,7 +4326,7 @@
         41.63
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": -4.111,
       "scale": 1,
       "solid": true,
@@ -4410,11 +4410,12 @@
         -113.32
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "kit.barrier.concrete",
       "yaw": 0.712,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_151",
@@ -4508,7 +4509,7 @@
         -44.88
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 1.432,
       "scale": 1,
       "solid": true,
@@ -4592,11 +4593,12 @@
         -70.54
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "kit.barrier.concrete",
       "yaw": -1.011,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_164",
@@ -4690,7 +4692,7 @@
         -79.28
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": -0.087,
       "scale": 1,
       "solid": true,
@@ -12351,11 +12353,12 @@
         150
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_green",
+      "model": "kit.container.shipping",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 2
     },
     {
       "id": "prop_234",
@@ -12365,7 +12368,7 @@
         138
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_red",
+      "model": "kit.container.shipping",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12379,11 +12382,12 @@
         150
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_blue",
+      "model": "kit.container.shipping",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_236",
@@ -12463,7 +12467,7 @@
         128
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12477,7 +12481,7 @@
         128
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12491,7 +12495,7 @@
         128
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12505,7 +12509,7 @@
         128
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12967,11 +12971,12 @@
         116
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_278",
@@ -12981,11 +12986,12 @@
         116
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_279",
@@ -13233,11 +13239,12 @@
         116
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_297",
@@ -13247,11 +13254,12 @@
         116
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_298",
@@ -13317,7 +13325,7 @@
         4
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_red",
+      "model": "kit.container.shipping",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13331,11 +13339,12 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_blue",
+      "model": "kit.container.shipping",
       "yaw": 1.57,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_304",
@@ -13387,7 +13396,7 @@
         72
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0.5,
       "scale": 1,
       "solid": true,
@@ -13499,7 +13508,7 @@
         -40
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_red",
+      "model": "kit.container.shipping",
       "yaw": 1.57,
       "scale": 1,
       "solid": true,
@@ -13527,7 +13536,7 @@
         86
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13978,11 +13987,12 @@
         -140
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_blue",
+      "model": "kit.container.shipping",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_336",
@@ -14374,7 +14384,7 @@
         -20
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -14388,7 +14398,7 @@
         -18
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": -2,
       "scale": 1,
       "solid": true,
