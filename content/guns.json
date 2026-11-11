@@ -82,6 +82,16 @@
       "meshy": true,
       "glb": true
     },
+    "meshy-community-drive-1108": {
+      "title": "Meshy community models (vehicles, textured GLB downloads from the owner's Drive, 2026-11-08)",
+      "creator": "Meshy community (authors not recorded; CC0 per the owner's rule of 2026-11-06)",
+      "url": "https://www.meshy.ai (community post URLs pending from the owner)",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/meshy-community/License.txt",
+      "retrieved": "2026-11-08",
+      "meshy": true,
+      "glb": true
+    },
     "meshy-community-arsenal": {
       "title": "Meshy community models (weapons, turrets, the medkit, the WWII tank, the buggy and its tire; textured GLB downloads)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -1021,6 +1031,108 @@
       "normalSize": 256,
       "surface": "rebake",
       "pbr": true
+    },
+    {
+      "out": "vehicles/recon_jeep.glb",
+      "pack": "meshy-community-drive-1108",
+      "glb": "Meshy_AI_Recon_Trike_1108120608_image-to-3d-texture.glb",
+      "label": "Recon Trike, the Gun Jeep (Meshy Community download, owner's Drive, 2026-11-08)",
+      "forward": "-x",
+      "length": 4.4,
+      "triangles": 20000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024,
+      "parts": [
+        {"name": "wheel_fl", "box": [[0.88, -1.23, 0.95], [1.46, -0.05, 2.19]], "pivot": [1.17, -0.64, 1.57]},
+        {"name": "wheel_rl", "box": [[0.88, -1.23, -2.24], [1.46, -0.05, -1.0]], "pivot": [1.17, -0.64, -1.62]},
+        {"name": "wheel_fr", "box": [[-1.46, -1.23, 0.95], [-0.88, -0.05, 2.19]], "pivot": [-1.17, -0.64, 1.57]},
+        {"name": "wheel_rr", "box": [[-1.46, -1.23, -2.24], [-0.88, -0.05, -1.0]], "pivot": [-1.17, -0.64, -1.62]}
+      ]
+    },
+    {
+      "out": "vehicles/tnr_hover_bike.glb",
+      "pack": "meshy-community-drive-1108",
+      "glb": "Meshy_AI_TNR_1017_1108121200_texture.glb",
+      "label": "TNR 1017, the Hover Bike (Meshy Community download, owner's Drive, 2026-11-08)",
+      "forward": "-x",
+      "length": 3.0,
+      "triangles": 14000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 1024,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024
+    },
+    {
+      "out": "vehicles/cyber_fang.glb",
+      "pack": "meshy-community-drive-1108",
+      "glb": "Meshy_AI_Cyber_Fang_Mk_III_Ass_1108121118_texture.glb",
+      "label": "Cyber Fang Mk III, the Speeder (Meshy Community download, owner's Drive, 2026-11-08)",
+      "forward": "-x",
+      "length": 4.0,
+      "triangles": 16000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024
+    },
+    {
+      "out": "vehicles/dust_runner.glb",
+      "pack": "meshy-community-drive-1108",
+      "glb": "Meshy_AI_Dust_Runner_1108120725_texture.glb",
+      "label": "Dust Runner, the Armored Rover (Meshy Community download, owner's Drive, 2026-11-08)",
+      "forward": "-x",
+      "length": 5.3,
+      "triangles": 20000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024
+    },
+    {
+      "out": "vehicles/sixer_buggy.glb",
+      "pack": "meshy-community-drive-1108",
+      "glb": "Meshy_AI__1108120754_texture.glb",
+      "label": "Untitled sci-fi buggy (Meshy_AI__1108120754), the Buggy (Meshy Community download, owner's Drive, 2026-11-08)",
+      "forward": "-x",
+      "length": 4.4,
+      "triangles": 20000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024,
+      "parts": [
+        {"name": "wheel_fl", "box": [[0.84, -1.0, 0.95], [1.45, 0.12, 2.15]], "pivot": [1.14, -0.44, 1.55]},
+        {"name": "wheel_fr", "box": [[-1.45, -1.0, 0.95], [-0.84, 0.12, 2.15]], "pivot": [-1.14, -0.44, 1.55]},
+        {"name": "wheel_rl", "box": [[0.84, -1.0, -2.05], [1.45, 0.12, -0.85]], "pivot": [1.14, -0.44, -1.45]},
+        {"name": "wheel_rr", "box": [[-1.45, -1.0, -2.05], [-0.84, 0.12, -0.85]], "pivot": [-1.14, -0.44, -1.45]}
+      ]
     }
   ]
 }

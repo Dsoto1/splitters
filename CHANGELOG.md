@@ -7,6 +7,8 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **The Buggy seats six and has a new model** (Meshy Community, CC0): a sci-fi tube-frame buggy. A driver and a front passenger sit in the cage; four more stand on the open deck behind it, and all five riders shoot their own weapons. Its tires spin, steer and bounce, and the driver's cockpit (wheel, gauges, cage) is refitted to it. Handling, health and the rest unchanged.
+- **Four vehicles get new models** (Meshy Community, CC0): the Gun Jeep is a Warthog-style buggy with a pintle gun (its own tires spin, steer and bounce), the Hover Bike a winged one-seater, the Speeder a heavy armoured hover bike and the Armored Rover a closed off-roader. Seats sit on the new models; handling, guns and health are unchanged.
 - Throwables: the sheep walks with its own model and walk; the Flare Gun has a real model, and the airstrike marker is fired from it as a fizzing, smoking flare.
 
 - **Painted ground blends.** A painted path or patch fades into the ground beside it instead of ending in hard square edges (Medium and High graphics). Nothing changes underfoot.

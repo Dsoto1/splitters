@@ -1,4 +1,5 @@
 import type { Scene } from '@babylonjs/core/scene';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
@@ -34,19 +35,22 @@ export function createMountNode(scene: Scene, models: ModelLibrary, model: strin
       if (tint) paint(m, tint);
       else if (def.glow) glowsOf(root).push(...energise(m, def.glow));
     }
-    // A model with wheels of its own (Kenney Car Kit: meshes named wheel-front-left and so on) on a vehicle with
+    // A model with wheels of its own (meshes named wheel-front-left and so on, or Meshy models' wheel_* parts) on a vehicle with
     // suspension: each wheel goes on a pivot at its centre, so it can spin, steer and ride its spring.
     if (!def.wheels && suspensionOf(def)) {
       body.computeWorldMatrix(true);
       const toBody = Matrix.Invert(body.getWorldMatrix());
+      // A wheel's lower levels of detail (attachLods) ride its pivot with it, not pivots of their own.
+      const lods = new Set<unknown>(node.getChildMeshes().flatMap((m) => (m instanceof Mesh ? m.getLODLevels().map((l) => l.mesh) : [])));
       for (const mesh of node.getChildMeshes()) {
-        if (!/wheel/i.test(mesh.name)) continue;
+        if (!/wheel/i.test(mesh.name) || lods.has(mesh)) continue;
         mesh.computeWorldMatrix(true);
         const c = Vector3.TransformCoordinates(mesh.getBoundingInfo().boundingBox.centerWorld, toBody);
         const pivot = new TransformNode(`${name}_pivot_${mesh.name}`, scene);
         pivot.parent = body;
         pivot.position.copyFrom(c);
         mesh.setParent(pivot);
+        if (mesh instanceof Mesh) for (const l of mesh.getLODLevels()) l.mesh?.setParent(pivot);
         wheelsOf(root).push({ pivot, rest: c.y, front: c.z > 0, slot: nearestWheel(def, c.x, c.z) });
       }
     }
