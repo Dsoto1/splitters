@@ -8,6 +8,7 @@ import {
   EDGE_STYLES,
   ENV_SPECIES,
   envModelFile,
+  kitModelFile,
   FACADE_LABELS,
   getProp,
   getStylePack,
@@ -624,7 +625,7 @@ export class PaletteBuilder {
     const doc: MapDocument = { ...base, terrain: null, classicStructure: { ...base.classicStructure, theme, tiles }, entities: entities.filter((e) => e.kind === 'block') };
     const models = entities.flatMap((e) => {
       if (e.kind !== 'prop') return [];
-      const file = envModelFile(e.model, e.variant) ?? getProp(e.model)?.file;
+      const file = kitModelFile(e.model, e.variant) ?? envModelFile(e.model, e.variant) ?? getProp(e.model)?.file;
       return file ? [{ file, position: e.position, yaw: e.yaw, scale: e.scale }] : [];
     });
     return { doc, models };

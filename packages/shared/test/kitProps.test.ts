@@ -168,13 +168,29 @@ describe('kit aliases', () => {
   });
 
   // The whole suite: as played, every map's prop collision (static and breakable boxes, footing) is what it was with
-  // the retired props. Maps that never placed one are untouched.
+  // the retired props. The maps and the set pieces name the families themselves now, so each placement of a family
+  // variant that replaces a retired prop is put back to that prop first (the file as it was made); maps that place
+  // none are untouched.
+  const retiredOf = new Map(KIT_ALIASES.map((a) => [`${a.model}#${a.variant}`, a.from]));
+  const asMade = (m: MapDocument): MapDocument => ({
+    ...m,
+    entities: m.entities.map((e) => {
+      const from = e.kind === 'prop' ? retiredOf.get(`${e.model}#${e.variant ?? 0}`) : undefined;
+      if (e.kind !== 'prop' || !from) return e;
+      const { variant: _variant, ...rest } = e;
+      return { ...rest, model: from };
+    }),
+  });
+  let mapsWithRetired = 0;
   it.each(mapIds)('leave %s\'s prop collision as it was', (id) => {
     const made = loadMap(readFileSync(new URL(`${id}.json`, MAPS), 'utf8'), coreCatalog, { forEditing: true, openWithErrors: true });
     if (!made.ok) return;
     const library = builtInSetPieces();
-    const expanded = expandSetPieces(withTileAliases(made.map), library, coreCatalog).map;
+    const expanded = asMade(expandSetPieces(withTileAliases(made.map), library, coreCatalog).map);
     if (!expanded.entities.some((e) => e.kind === 'prop' && propAlias(e.model))) return;
+    mapsWithRetired++;
+    // Putting the retired props back and upgrading them again gives the map as it is played.
+    expect(withPropAliases(expanded).entities.some((e) => e.kind === 'prop' && propAlias(e.model))).toBe(false);
     const before = withGroundAsPlayed(expanded, coreCatalog);
     const after = withGroundAsPlayed(withPropAliases(expanded), coreCatalog);
     const strip = (m: MapDocument) => m.entities.map((e) => (e.kind === 'prop' ? { id: e.id, position: e.position, yaw: e.yaw } : { id: e.id }));
@@ -187,5 +203,8 @@ describe('kit aliases', () => {
     // (A reshaped placement that collided still does; one placed as decoration, not solid, still doesn't.)
     const count = (m: MapDocument, id: string) => propBoxes(m).filter((b) => b.sourceId === id).length + propBoxes(m, true).filter((b) => b.sourceId === id).length;
     for (const id of reshaped) expect(count(after, id) > 0, id).toBe(count(before, id) > 0);
+  });
+  it('checks collision on maps that do place the replaced props', () => {
+    expect(mapsWithRetired).toBeGreaterThan(10);
   });
 });
