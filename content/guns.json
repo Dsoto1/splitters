@@ -665,6 +665,23 @@
       "length": 0.2
     },
     {
+      "out": "guns/flare_gun.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "download": "Flare_Gun",
+      "file": "FlareGun.fbx",
+      "label": "Flare Gun (3DModelsCC0 Guns & Explosives): the Flare Gun",
+      "maps": {
+        "base": "FlareGun_Base_Color.png",
+        "normal": "FlareGun_Normal_DirectX.png",
+        "metallic": "FlareGun_Metallic.png",
+        "roughness": "FlareGun_Roughness.png"
+      },
+      "pbr": true,
+      "held": true,
+      "forward": "-z",
+      "length": 0.24
+    },
+    {
       "out": "guns/grease_gun.glb",
       "pack": "3dmodelscc0-guns-explosives",
       "file": "GreaseGun/Grease_Gun.fbx",

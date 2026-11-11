@@ -97,7 +97,7 @@ export function schemas(root = ROOT, families = []) {
     'falloff?': falloff, botDesirability: num, botRange: tup(2), view, 'notes?': notes,
   });
   const family = obj({ ballistic: nullable(obj(ballistic)), accuracy: obj(accuracy), kick: obj(kick), falloff, head: num, legs: num, 'notes?': notes });
-  const throwableView = obj({ model: str, 'fallback?': str, 'cover?': str, 'fit?': num, 'looks?': obj({ 'military?': str, 'scifi?': str }) });
+  const throwableView = obj({ model: str, 'fallback?': str, 'cover?': str, 'fit?': num, 'handOnly?': bool, 'looks?': obj({ 'military?': str, 'scifi?': str }) });
   const throwable = obj({ kind: str, code: int, displayName: str, max: int, throwIntervalTicks: int, projectile, 'view?': throwableView, 'notes?': notes });
   return { weapon, family, throwable, projectile };
 }

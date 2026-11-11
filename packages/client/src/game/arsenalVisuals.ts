@@ -49,7 +49,7 @@ function mat(scene: Scene, hex: string, emissive = 0, alpha = 1): StandardMateri
 /** How far a sheep's body sits above its position: its legs (0.24 m, centred 0.28 below the fleece) end at the ground. */
 export const SHEEP_LIFT = 0.4;
 
-export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite']);
+export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'flareShot']);
 
 export function createArsenalProjectile(scene: Scene, id: number, look: ProjectileVisual): TransformNode {
   const node = new TransformNode(`proj_${id}`, scene);
@@ -102,6 +102,12 @@ export function createArsenalProjectile(scene: Scene, id: number, look: Projecti
     case 'flare':
       add(CreateSphere(`flare_${id}`, { diameter: 0.16, segments: 6 }, scene)).material = mat(scene, '#ff4a2a', 1.2);
       add(CreateSphere(`flareHalo_${id}`, { diameter: 0.5, segments: 6 }, scene)).material = mat(scene, '#ff7a3a', 0.8, 0.3);
+      break;
+    case 'flareShot':
+      // The Airstrike Flare's round: a hot core in a soft red halo, steady (Reduce flashing: it never pulses); the
+      // pack's flame and smoke (view.ts, `fire.flare` and `smoke.flare`) and a few sparks come with it.
+      add(CreateSphere(`flareShot_${id}`, { diameter: 0.12, segments: 6 }, scene)).material = mat(scene, '#fff1c8', 1.4);
+      add(CreateSphere(`flareShotHalo_${id}`, { diameter: 0.55, segments: 6 }, scene)).material = mat(scene, '#ff3a1e', 0.9, 0.28);
       break;
     case 'swarm': {
       const body = add(CreateCylinder(`swarm_${id}`, { diameter: 0.08, height: 0.32, tessellation: 8 }, scene));

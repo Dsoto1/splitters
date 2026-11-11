@@ -168,7 +168,7 @@ const OWN_FLASH_AHEAD = 0.05;
  * incendiary, vortex, cluster and smoke grenades), by look: the throwable whose model it is (its model as the match's
  * weapon set shows it: throwableModel). The mine keeps its own drawing (it blinks once armed).
  */
-const THROWN_KINDS: ReadonlyMap<string, ThrowableKind> = new Map(Object.values(THROWABLE_DEFS).flatMap((t) => (t.view && t.kind !== 'mine' ? [[t.projectile.visual, t.kind]] : [])));
+const THROWN_KINDS: ReadonlyMap<string, ThrowableKind> = new Map(Object.values(THROWABLE_DEFS).flatMap((t) => (t.view && !t.view.handOnly && t.kind !== 'mine' ? [[t.projectile.visual, t.kind]] : [])));
 /** How a throwable lies in your hands while you line up a throw: held like a pistol's grip, the support hand round it. */
 const THROW_HOLD: WeaponHold = { style: 'pistol', grip: [0, -0.012, -0.012], support: [-0.03, -0.022, 0], rake: 0 };
 /** Where that hold sits in your view (right, up, forward of the eye): low and a little right, as a pistol is held. */
@@ -411,7 +411,7 @@ export class GameView {
   private readonly pickups = new Map<string, PickupVisual>();
   /** Weapons the fallen dropped (snapshot `dw`), by drop ID: drawn lying where they fell. */
   private readonly drops = new Map<number, { root: TransformNode; item: string }>();
-  private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number }>();
+  private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number }>();
   /** Placed props by entity index (breakable ones disappear when broken). */
   private readonly props = new Map<number, TransformNode>();
   private effects: Fx[] = [];
@@ -2884,6 +2884,7 @@ export class GameView {
       const look = PROJECTILE_VISUALS[p.look];
       // A flare burns in flight and where it sticks (Flame FX, map.lasting `fire.flare`).
       if (look === 'flare') this.lasting.want(`proj:${id}`, 'fire.flare', { x: pos[0], y: pos[1], z: pos[2] });
+      else if (look === 'flareShot') this.flareShotFx(id, p, pos, now);
       if (look && ARSENAL_LOOKS.has(look)) animateArsenalProjectile(p.node, look, now, p.node.position.subtract(prev), p.born);
       // Grenades tumble while they fly and lie still where they stop.
       else if (look === 'grenade' || look === 'frag' || look === 'vortexNade' || look === 'smoke') {
@@ -2908,6 +2909,22 @@ export class GameView {
         p.node.dispose();
         this.projectiles.delete(id);
       }
+    }
+  }
+
+  /**
+   * The Airstrike Flare's shot, in flight and where it lands to mark the strike: the pack's flame as a steady point of
+   * light, a thin column of its smoke rising off it, and a few sparks fizzing (Reduce flashing: a steady glow; the sparks
+   * fewer and slower, never a flash).
+   */
+  private flareShotFx(id: number, p: { node: TransformNode; born: number; spark?: number }, pos: readonly number[], now: number): void {
+    const at = { x: pos[0]!, y: pos[1]!, z: pos[2]! };
+    this.lasting.want(`proj:${id}`, 'fire.flare', at);
+    this.lasting.want(`smoke:${id}`, 'smoke.flare', at);
+    const every = reduceFlashing() ? 420 : 140;
+    if (now - (p.spark ?? 0) >= every) {
+      p.spark = now;
+      this.impacts.sparkBurst(at, reduceFlashing() ? 1 : 2, 1.6);
     }
   }
 

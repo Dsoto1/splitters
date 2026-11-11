@@ -490,6 +490,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
   },
   // group: The extended arsenal: every one fires differently. 2: sidearms.
+  // model: The 3DModelsCC0 Flare Gun (CC0; content/guns.json, from its own download folder: the pack's colour, normal, metal and roughness maps), replacing the kit pistol, now the fallback. The Airstrike Flare is this gun's shot too (content/throwables.json): the same gun in your hands while you line it up.
   'core.flare_gun': {
     id: 'core.flare_gun',
     displayName: 'Flare Gun',
@@ -526,10 +527,13 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     spread: 0,
     range: 120,
     view: {
-      model: 'weapons/flare_gun.glb',
+      model: 'guns/flare_gun.glb',
+      held: { medium: 'guns/flare_gun.medium.glb', high: 'guns/flare_gun.high.glb' },
+      fallback: 'weapons/flare_gun.glb',
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#ff7a3a',
-      hold: { style: 'pistol', grip: [0, -0.043, -0.068], support: [-0.02, -0.053, -0.058], rake: 34 },
+      hold: { style: 'pistol', grip: [0, -0.03, -0.075], support: [-0.02, -0.04, -0.065], rake: 14 },
+      muzzleAt: [0, 0.05, 0.12],
       sound: 'fire.flare',
     },
   },
@@ -2083,7 +2087,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
     view: { model: 'guns/sheep.glb', fit: 0.7 },
   },
   // group: Worms-style special.
-  // design: A flare that marks the spot: two seconds later five bombs fall in a line along the way you threw it.
+  // design: A flare-gun shot that marks the spot (the flare gun in your hands, a fizzing, smoking light that lands and burns steady): two seconds later five bombs fall in a line along the way you threw it.
   airstrike: {
     kind: 'airstrike',
     displayName: 'Airstrike Flare',
@@ -2097,7 +2101,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       splashDamage: 0,
       splashEdgeDamage: 0,
       selfDamageScale: 0,
-      visual: 'flare',
+      visual: 'flareShot',
       bounce: 0.3,
       airstrike: {
         count: 5,
@@ -2115,6 +2119,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
         },
       },
     },
+    view: { model: 'guns/flare_gun.glb', handOnly: true },
   },
   // group: Worms-style special.
   // design: Tossed a few metres ahead; where it lands it becomes a waist-high wall facing you.
