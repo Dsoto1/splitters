@@ -643,6 +643,15 @@ export class MapProperties {
     const testRow = row('Test map', testOnly);
     testRow.title = 'A map for the automated tests: hidden from the map lists, templates, rotations and the host picker';
     el.append(testRow);
+    // Destructible environment (v36): every solid prop can be shot apart (natural rocks stay; a prop marked Unbreakable stays).
+    const destruction = document.createElement('input');
+    destruction.type = 'checkbox';
+    destruction.id = 'ed-prop-destruction';
+    destruction.checked = !!doc.metadata.destruction;
+    destruction.addEventListener('change', () => this.app.run(destruction.checked ? 'Everything breaks' : 'Only breakable pieces break', { kind: 'setMetadata', before: { destruction: doc.metadata.destruction }, after: { destruction: destruction.checked || undefined } }));
+    const destructionRow = row('Everything breaks', destruction);
+    destructionRow.title = 'Every solid prop can be shot apart, not only crates, barrels and the like. Natural rocks, walls, floors, terrain and doors stay; mark a prop Unbreakable to keep it. Broken pieces come back at the next round.';
+    el.append(destructionRow);
     // The map's ID (its file name in maps/: `iron_coast` is maps/iron_coast.json), for a new official or test map.
     const mapId = document.createElement('input');
     mapId.type = 'text';

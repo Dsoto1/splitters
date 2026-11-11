@@ -96,6 +96,7 @@ import {
   type Stance,
   type MapWeather,
   type SkyDefinition,
+  isBreakableProp,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
@@ -659,7 +660,8 @@ export class GameView {
     for (const e of doc.entities) if (e.kind === 'prop' && !drawnAsEnv.has(e.id) && !carried.has(e.id)) copies.set(modelKey(e), (copies.get(modelKey(e)) ?? 0) + 1);
     doc.entities.forEach((e, i) => {
       if (e.kind !== 'prop' || drawnAsEnv.has(e.id)) return;
-      const batch = batches && (copies.get(modelKey(e)) ?? 0) >= PROP_BATCH_MIN ? batches : null;
+      // (A prop that can break is its own node, switched off when it goes: the placement's own health, or the map's destruction.)
+      const batch = batches && (copies.get(modelKey(e)) ?? 0) >= PROP_BATCH_MIN && !isBreakableProp(e, !!doc.metadata.destruction) ? batches : null;
       const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain, batch);
       // A chandelier (and other hung props) is drawn with its top against the ceiling over it.
       if (!carried.has(e.id)) node.position.y += hungPropLift(boxes, e);

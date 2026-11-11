@@ -1,4 +1,5 @@
 import { getProp } from '../content/props.ts';
+import { propMaterial } from './gunplay.ts';
 import { boxQuat, dynamicBlockIds, isBreakableProp, type Rot } from '../map/geometry.ts';
 import type RAPIER from '@dimforge/rapier3d-compat';
 import type { DestructibleModel, MapDocument, MapEntity, TrapKind } from '../map/schema.ts';
@@ -198,12 +199,35 @@ export function blockOBox(e: Extract<MapEntity, { kind: 'block' }>): OBox {
   return { center: { x: e.position[0], y: e.position[1] + h / 2, z: e.position[2] }, half: { x: w / 2, y: h / 2, z: d / 2 }, yaw: e.yaw, ...(e.pitch || e.roll ? { rot: boxQuat(e.yaw, e.pitch, e.roll) } : {}) };
 }
 
+/** Health a metre cube of each ballistic class takes before it breaks (a prop the catalogue gives none, on a map where everything breaks). */
+const CLASS_HEALTH: Readonly<Record<string, number>> = { glass: 10, foliage: 30, drywall: 60, thin_wood: 60, wood: 120, heavy_wood: 250, thin_metal: 150, soil: 300, brick: 400, metal: 500, stone: 700, concrete: 700, armor: 2000 };
+
+/**
+ * The health of a prop the catalogue gives none (`metadata.destruction` maps): by what it is made of and how big it
+ * is (its collision box's volume, between a quarter and eight cubic metres' worth), rounded to 5.
+ */
+export function propHealth(model: string, collision: readonly [number, number, number], scale: number): number {
+  const volume = collision[0] * collision[1] * collision[2] * scale ** 3;
+  const size = Math.min(8, Math.max(0.25, volume)) ** (2 / 3);
+  return Math.max(5, Math.round(((CLASS_HEALTH[propMaterial(model)] ?? 200) * size) / 5) * 5);
+}
+
+/** Debris colour of a broken prop the catalogue gives none, by what it is made of. */
+const CLASS_DEBRIS: Readonly<Record<string, string>> = { glass: '#bfe6f5', foliage: '#4f6b3a', drywall: '#cfc9bd', thin_wood: '#8a5d33', wood: '#8a5a32', heavy_wood: '#6e4a2a', thin_metal: '#7d8388', soil: '#6b5a44', brick: '#9a5a44', metal: '#5a6066', stone: '#8d8c86', concrete: '#9a9892', armor: '#4a4f54' };
+
+/** How a broken prop looks and sounds: its catalogue debris colour, else its material's; masonry breaks like a wall. */
+export function propBreakLook(model: string, debris?: string): { debris: string; sound: 'break.crate' | 'break.wall' | 'break.glass' } {
+  const c = propMaterial(model);
+  const sound = c === 'glass' ? 'break.glass' : c === 'brick' || c === 'stone' || c === 'concrete' || c === 'soil' ? 'break.wall' : 'break.crate';
+  return { debris: debris ?? CLASS_DEBRIS[c] ?? '#8a5a32', sound };
+}
+
 /**
  * Anything the scenario turns on and off: destructibles, breakable props and
  * dynamic blocks. `dynamic` (dynamicBlockIds) adds the solid blocks logic
  * drives or movers carry; they can't be shot away.
  */
-export function breakableOf(e: MapEntity, dynamic?: ReadonlySet<string>): Breakable | null {
+export function breakableOf(e: MapEntity, dynamic?: ReadonlySet<string>, everything = false): Breakable | null {
   if (isGlassBlock(e)) return glassBreakable({ box: blockOBox(e), kind: e.glass });
   if (e.kind === 'block' && e.behaviour === 'solid' && dynamic?.has(e.id)) {
     return { box: blockOBox(e), health: 1, explosiveOnly: false, blocksPaths: false, shootable: false };
@@ -215,15 +239,15 @@ export function breakableOf(e: MapEntity, dynamic?: ReadonlySet<string>): Breaka
   if (e.kind === 'block' && e.behaviour !== 'solid') {
     return { box: blockOBox(e), health: e.health, explosiveOnly: false, blocksPaths: false, shootable: e.behaviour === 'breakable' };
   }
-  if (e.kind === 'prop' && isBreakableProp(e)) {
+  if (e.kind === 'prop' && isBreakableProp(e, everything)) {
     const def = getProp(e.model)!;
     const [w, h, d] = def.collision!.map((v) => (v * e.scale) / 2) as [number, number, number];
     return {
       box: { center: { x: e.position[0], y: e.position[1] + h, z: e.position[2] }, half: { x: w, y: h, z: d }, yaw: e.yaw },
       ...(def.boxes ? { parts: propParts(e, def.boxes) } : {}),
-      health: def.breakable!.health * e.scale,
+      health: e.health ?? (def.breakable ? def.breakable.health * e.scale : propHealth(e.model, def.collision!, e.scale)),
       explosiveOnly: false,
-      ...(def.breakable!.blast ? { blast: def.breakable!.blast } : {}),
+      ...(def.breakable?.blast ? { blast: def.breakable.blast } : {}),
       blocksPaths: false,
     };
   }
@@ -374,7 +398,7 @@ export class ScenarioBodies {
         for (const c of leaves) this.byHandle.set(c.handle, i);
         this.setDoorOpen(i, e.startOpen ? 1 : 0);
       } else {
-        const b = breakableOf(e, dynamic);
+        const b = breakableOf(e, dynamic, !!map.metadata.destruction);
         if (!b) return;
         const cs = (b.parts ?? [b.box]).map((box) => (isGlassBlock(e) ? physics.createGlassBox(box.center, box.half, box.yaw, e.glass === 'reinforced', box.rot) : physics.createBox(box.center, box.half, box.yaw, box.rot, e.kind === 'block' && !!e.field)));
         this.solids.set(i, cs);

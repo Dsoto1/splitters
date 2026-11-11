@@ -87,6 +87,9 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v34 -> v35: optional `metadata.tier` (`core` or `experimental`: the map's place on the roster). Absent = core, as
   // every map offered before: v34 data is valid as is.
   [34, (doc) => ({ ...doc })],
+  // v35 -> v36: optional `metadata.destruction` (every solid prop can break) and a prop's own `health` and
+  // `unbreakable`. Absent = as before: v35 data is valid as is.
+  [35, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */
