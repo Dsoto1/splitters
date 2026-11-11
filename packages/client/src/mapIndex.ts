@@ -11,7 +11,7 @@ import { publishedMapJson } from './publishedMaps.ts';
  */
 
 /** What a map card shows before the map itself has loaded. */
-export type MapMeta = Pick<MapDocument['metadata'], 'id' | 'name' | 'description' | 'author' | 'recommendedPlayers' | 'thumbnail'>;
+export type MapMeta = Pick<MapDocument['metadata'], 'id' | 'name' | 'description' | 'author' | 'recommendedPlayers' | 'thumbnail' | 'tier'>;
 
 export interface MapIndexEntry {
   /** The file name without .json. */

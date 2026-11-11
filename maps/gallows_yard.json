@@ -1188,7 +1188,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "kit.wall.stone",
       "yaw": 1.5707963267948966,
       "scale": 2,
       "solid": true,
@@ -1202,7 +1202,7 @@
         20
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "kit.wall.stone",
       "yaw": 4.71238898038469,
       "scale": 2,
       "solid": true,

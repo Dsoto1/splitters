@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 29,
+  "formatVersion": 34,
   "metadata": {
     "id": "iron_compound",
     "name": "Iron Compound",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_j5cjrurgoxoyqwtv",
-      "versionId": "v_qofydgutz2p5efx5",
-      "revision": 1,
-      "contentHash": "sha256:8364e0244de9a5a970fc1b3347f5ffb14fb06737c268a7def4c03497da26f43b",
-      "schemaVersion": 29,
-      "releasedAt": "2026-11-08T21:08:14.898Z"
+      "versionId": "v_cex3ztdjhmtjxsr7",
+      "revision": 2,
+      "contentHash": "sha256:eba69165989d53e4483d5858b8cad9db764f890fc82baac84896c79a6f61ef0e",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-11T02:52:24.752Z"
     }
   },
   "classicStructure": {
@@ -1511,7 +1511,7 @@
         9
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1525,11 +1525,12 @@
         9
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_160",
@@ -1539,7 +1540,7 @@
         28
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -1749,7 +1750,7 @@
         24
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_red",
+      "model": "kit.container.shipping",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -1763,11 +1764,12 @@
         20.8
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_green",
+      "model": "kit.container.shipping",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 2
     },
     {
       "id": "prop_178",
@@ -1777,11 +1779,12 @@
         22.4
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_blue",
+      "model": "kit.container.shipping",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_179",

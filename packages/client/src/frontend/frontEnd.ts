@@ -139,7 +139,7 @@ function inspired(key: string): HTMLElement[] {
 /** A built-in map the Arcade offers. */
 /** A map card's picture (on top) and plan (beside the name): built-in maps have an automatic picture, your own MapMaker maps don't. */
 function cardThumbs(m: ArcadeMap): MapThumbs {
-  const t = mapThumbs(m, !m.group);
+  const t = mapThumbs(m, isBuiltInEntry(m));
   t.pic.classList.add('card-pic');
   t.plan.classList.add('card-plan');
   return t;
@@ -241,6 +241,14 @@ function lazyPlans(root: HTMLElement): (card: Element, draw: () => void) => void
 
 /** The map list's group for Community Picks (main.ts): shown in their own tab, not under All maps. */
 export const PICK_GROUP = 'Community Pick';
+/**
+ * Our own maps on the experimental tier (the map's `metadata.tier`, set in MapMaker; owner, 2026-11-11): listed under
+ * this heading after the core maps, and never Quick Play's, a playlist's, a rotation's or the featured map (those
+ * take maps with no group).
+ */
+export const EXPERIMENTAL_GROUP = 'Experimental';
+/** One of our own maps (it has a built-in card picture), core or experimental. */
+const isBuiltInEntry = (m: ArcadeMap): boolean => !m.group || m.group === EXPERIMENTAL_GROUP;
 
 export interface ArcadeMap {
   key: string;
@@ -697,7 +705,7 @@ export class FrontEnd {
       nav.append(b);
     });
     const featured = this.maps.find((m) => m.key === FEATURED_MAPS[0]) ?? this.maps[0]!;
-    const featuredPic = mapThumbs(featured, !featured.group);
+    const featuredPic = mapThumbs(featured, isBuiltInEntry(featured));
     featuredPic.pic.classList.add('featured-pic');
     featuredPic.plan.classList.add('card-plan');
     const card = el(
@@ -1198,7 +1206,7 @@ export class FrontEnd {
       foldEl({ id, title, badge, open: this.folds.has(id), onToggle: (open) => (open ? this.folds.add(id) : this.folds.delete(id)) }, ...children);
 
     // ---- header: the map's picture with its top-down plan, name, what it is, who plays and how long, the fit
-    const thumbs = mapThumbs(map, !current.group);
+    const thumbs = mapThumbs(map, isBuiltInEntry(current));
     requestAnimationFrame(thumbs.draw);
     // The list is hidden on small screens: there, this picks the map.
     const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.maps.map((m) => el('option', { value: m.key, textContent: `${m.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
