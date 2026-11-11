@@ -505,7 +505,7 @@ function splitParts(doc, holder, parts) {
 /**
  * `animated: true` (a skinned, animated Meshy GLB: the sheep): kept as the download made it, rig and clips included
  * (a rebake would drop the skin), with its colour map shrunk to a JPEG (`textureSize`, default 512), its other maps
- * dropped for a matte finish, and the mesh simplified to about `triangles` (meshoptimizer, joints and weights kept).
+ * dropped for a matte finish (and no glow), and the mesh simplified to about `triangles` (meshoptimizer, joints and weights kept).
  * The game sizes it when it draws it (`view.fit` in content/throwables.json), as it does a creature.
  */
 async function buildAnimated(src, entry) {
@@ -514,6 +514,9 @@ async function buildAnimated(src, entry) {
   const before = countTriangles(doc).triangles;
   for (const mat of doc.getRoot().listMaterials()) {
     mat.setMetallicFactor(0).setRoughnessFactor(entry.roughness ?? 0.85).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null).setNormalTexture(null);
+    // With its emissive map dropped, an emissive factor left on would light the whole model up evenly (the sheep's
+    // download carries [1, 1, 1]: it drew pure white): no glow.
+    mat.setEmissiveFactor([0, 0, 0]);
     for (const ext of mat.listExtensions()) ext.dispose();
     const baseMap = mat.getBaseColorTexture();
     if (baseMap) await shrink(baseMap, entry.textureSize ?? 512, 'image/jpeg');
