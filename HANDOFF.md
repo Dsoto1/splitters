@@ -778,6 +778,8 @@ The MapMaker lane (other account) is **the main session for the rest of the week
   - Rewind window: 300 ms.
 - **Session memory:** write .control-center/session-summary.json at the end of your sessions.
 
+**Landing now: throwables part 2 (sheep, flare gun, airstrike flare shot)** (`check/weapons-throwables`; lead session, 2026-11-11), please hold code pushes to main. One check run, then a fast-forward.
+
 **Next in line to land: throwables part 2 (sheep first, then the flare gun and airstrike flare shot)** (`check/weapons-throwables`, `wip/weapons-throwables`; weapon and vehicle lane, 2026-11-11). No lock is held by this lane yet; the vehicle refresh (`wip/vehicles-refresh`) is its own landing.
 
 **Landed: kit-prop generators part 1** (`wip/mapmaker-kit-props` = `wip/kit-props` 4aa5e42 + one test fix; green on `check/mapmaker-kit-props` at d7b47b6, run 42872729649; MapMaker lane, the main session, 2026-11-10). Run 42846096828 had been red on one check, `editorenv` "the bot test run goes on in the background": the test read the progress bar at the worker's ready line ("0:00 of 5:00 played", bar 0); it now waits for the first progress report. Landing lock released. Left of part 1: MapMaker's "Replace all" for the 722 placements on 57 maps (as played they already draw the new pieces).
