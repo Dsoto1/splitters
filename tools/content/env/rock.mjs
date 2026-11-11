@@ -8,6 +8,17 @@
 // top-facing surfaces away from edges, broad hue patches. The rock picture comes on top in the renderer (tri-planar
 // in world space, envMaterials.ts). Levels of detail by meshoptimizer. Collision: the hull (≤ 32 points), stone.
 //
+// Rounded boulder (`round` on a boulder): the subdivided hull is relaxed (every vertex toward its neighbours, which
+// only ever moves a convex shape inward) until edges and corners are gone, then fitted to `fit`; its collision is the
+// hull of that rounded form, thinned to `maxPoints` (the points that matter most kept), before the surface detail.
+//
+// Slab (kind slab): a low bed of rock: an uneven outline as three rings (foot, waist, a flat top a little tilted),
+// their convex hull; the top is one flat face you can stand on, the sides weather like the boulder's.
+//
+// Outcrop (kind outcrop): two or three boulder masses of their own size, place and turn, fused where they overlap,
+// fitted together to `fit`. One surface each (the same bedding and noise right through, so it reads as one rock);
+// faces buried in a neighbour are dropped. Collision: one hull per mass (so the notches between them stay open).
+//
 // Cliff face (env.cliff.*): a displaced grid panel. Its left and right edge profiles are a function of height only
 // (from the family seed), and the panel's own detail fades to nothing at both edges, so any two panels side by side
 // meet vertex for vertex (and normal for normal). Ledges are a stepped noise in height shared by the family, so
@@ -321,6 +332,26 @@ function simplify(P, I, target) {
 export function boulderSurface(seed, g, hull) {
   const tag = hull.cutFace;
   const { pts, faces } = subdivide(hull.points, hull.faces, g.subdivide, tag);
+  let collision = null;
+  if (g.round) {
+    // A rounded boulder: relax every vertex toward its neighbours (inward only, the shape being convex), fit it to
+    // its size, and take the collision hull from that rounded form (before any surface detail).
+    const ring = pts.map(() => new Set());
+    for (const { v } of faces) for (let k = 0; k < 3; k++) {
+      ring[v[k]].add(v[(k + 1) % 3]);
+      ring[v[k]].add(v[(k + 2) % 3]);
+    }
+    for (let pass = 0; pass < g.round.passes; pass++) {
+      const old = pts.map((p) => [...p]);
+      pts.forEach((p, i) => {
+        const ns = [...ring[i]];
+        const avg = ns.reduce((s, j) => add(s, old[j]), [0, 0, 0]).map((x) => x / ns.length);
+        pts[i] = add(old[i], mul(sub(avg, old[i]), g.round.amount));
+      });
+    }
+    if (g.fit) fitPoints([pts], g.fit);
+    collision = thinHull(pts, g.maxPoints);
+  }
   // Vertex normals from the hull faces round each vertex; which vertices only touch cut faces.
   const vn = pts.map(() => [0, 0, 0]);
   const cutOnly = pts.map(() => true);
@@ -404,7 +435,7 @@ export function boulderSurface(seed, g, hull) {
     });
   }
   const I = faces.flatMap((f) => f.v);
-  return { P, I, curv: curvature(P, I), bedN };
+  return { P, I, curv: curvature(P, I), bedN, ...(collision ? { collision } : {}) };
 }
 
 /** One level of the boulder: { rock: Mesh }. */
@@ -422,6 +453,157 @@ export function boulderMesh(seed, g, surface, target, look) {
 /** Gameplay shape: the hull before displacement, a little inside it (the worn edges sit inside the hull). */
 export function boulderShapes(hull) {
   return [{ kind: 'hull', points: hull.points, blocks: 'all', surface: 'rock' }];
+}
+
+// ---------------------------------------------------------------- rounded boulder, slab, outcrop
+
+/**
+ * Move and scale point lists together (in place) so their bounds are `fit` = [width x, height, depth z]: centred on
+ * the placement across and deep, the top at the height (a null height leaves heights alone).
+ */
+function fitPoints(lists, fit) {
+  const all = lists.flat();
+  const lo = [0, 1, 2].map((k) => Math.min(...all.map((p) => p[k])));
+  const hi = [0, 1, 2].map((k) => Math.max(...all.map((p) => p[k])));
+  for (const list of lists)
+    list.forEach((p, i) => {
+      list[i] = [((p[0] - (lo[0] + hi[0]) / 2) * fit[0]) / (hi[0] - lo[0]), fit[1] === null ? p[1] : (p[1] * fit[1]) / hi[1], ((p[2] - (lo[2] + hi[2]) / 2) * fit[2]) / (hi[2] - lo[2])];
+    });
+}
+
+/**
+ * At most `max` points whose hull stays as close as it can to the hull of `pts`: the six furthest each way first,
+ * then, one at a time, the point furthest outside the hull so far. Deterministic. Always inside the hull of `pts`.
+ */
+function thinHull(pts, max) {
+  const own = hullVerts(convexHull(pts)).map((i) => pts[i]);
+  if (own.length <= max) return own;
+  const chosen = [];
+  for (const k of [0, 1, 2]) for (const s of [-1, 1]) {
+    const p = own.reduce((a, q) => (q[k] * s > a[k] * s ? q : a));
+    if (!chosen.includes(p)) chosen.push(p);
+  }
+  while (chosen.length < max) {
+    const faces = convexHull(chosen);
+    const planes = faces.map((f) => {
+      const n = norm(cross(sub(chosen[f[1]], chosen[f[0]]), sub(chosen[f[2]], chosen[f[0]])));
+      return [n, dot(n, chosen[f[0]])];
+    });
+    let best = null;
+    let far = 1e-6;
+    for (const p of own) {
+      const d = Math.max(...planes.map(([n, c]) => dot(n, p) - c));
+      if (d > far) {
+        far = d;
+        best = p;
+      }
+    }
+    if (!best) break;
+    chosen.push(best);
+  }
+  return hullVerts(convexHull(chosen)).map((i) => chosen[i]);
+}
+
+/** Gameplay shape of a rock made by `boulderSurface`: the rounded form's hull when it has one, else the hull. */
+export function rockShapes(hull, surface) {
+  return boulderShapes(surface.collision ? { points: surface.collision } : hull);
+}
+
+/**
+ * The slab's convex shape, as `boulderHull` gives it ({ points, faces, cutFace, centre }): `sides` points round an
+ * uneven outline, as a foot ring under the ground, a waist (the widest) and the top ring, all of the top on one plane
+ * that drops `tilt` metres from one side to the other. The top faces are marked as cut (flat, hardly weathered).
+ */
+export function slabHull(seed, g) {
+  const r = rng(seed);
+  const [W, Hh, D] = g.size;
+  const n = g.sides;
+  const lean = r.next() * Math.PI * 2;
+  const rings = [[], [], []];
+  for (let k = 0; k < n; k++) {
+    const a = ((k + r.jitter(0.3)) / n) * Math.PI * 2;
+    const out = 1 + r.jitter(g.uneven ?? 0.14);
+    const at = (f) => [(Math.cos(a) * out * f * W) / 2, (Math.sin(a) * out * f * D) / 2];
+    const foot = at(r.range(0.86, 0.94));
+    const waist = at(1);
+    const top = at(r.range(g.inset?.[0] ?? 0.82, g.inset?.[1] ?? 0.92));
+    rings[0].push([foot[0], -0.12, foot[1]]);
+    rings[1].push([waist[0], Hh * r.range(0.3, 0.55), waist[1]]);
+    rings[2].push([top[0], 0, top[1]]);
+  }
+  fitPoints(rings, [W, null, D]);
+  // The top plane drops `tilt` across the slab; its highest corner is at the slab's height.
+  const drop = (p) => (g.tilt ?? 0) * (0.5 + (0.5 * ((p[0] * Math.cos(lean)) / (W / 2) + (p[2] * Math.sin(lean)) / (D / 2))) / 1.42);
+  const lift = Math.min(...rings[2].map(drop));
+  const topY = (p) => Hh - drop(p) + lift;
+  rings[1] = rings[1].map((p) => [p[0], Math.min(p[1], topY(p) - 0.08), p[2]]);
+  rings[2] = rings[2].map((p) => [p[0], topY(p), p[2]]);
+  let pts = rings.flat();
+  let faces = convexHull(pts);
+  pts = hullVerts(faces).map((i) => pts[i]);
+  faces = convexHull(pts);
+  const onTop = (p) => Math.abs(p[1] - topY(p)) < 1e-9;
+  return { points: pts, faces, cutFace: faces.map((f) => f.every((i) => onTop(pts[i]))), centre: [0, Hh * 0.45, 0] };
+}
+
+/**
+ * The outcrop: `g.masses` = [{ size, at: [x, z], yaw (degrees), sink? }], each a boulder hull of its own (at most
+ * `maxPoints` points), turned and put in its place, then all fitted to `fit` together. Returns { masses: [{ hull,
+ * surface, weight }] }: every mass has the detailed surface of a boulder, from the same seed (one bedding plane and
+ * one noise field through the whole rock).
+ */
+export function outcropStructure(seed, g) {
+  const hulls = g.masses.map((m, i) => {
+    const h = boulderHull(seed + 101 * (i + 1), { ...g, size: m.size });
+    const c = Math.cos((m.yaw * Math.PI) / 180);
+    const s = Math.sin((m.yaw * Math.PI) / 180);
+    const put = (p) => [p[0] * c - p[2] * s + m.at[0], p[1] - (m.sink ?? 0), p[0] * s + p[2] * c + m.at[1]];
+    return { ...h, points: h.points.map(put), centre: put(h.centre) };
+  });
+  fitPoints(hulls.map((h) => h.points), g.fit);
+  return {
+    masses: hulls.map((hull, i) => {
+      const size = g.masses[i].size;
+      return { hull, surface: boulderSurface(seed, { ...g, size }, hull), weight: size[0] * size[1] + size[1] * size[2] + size[0] * size[2] };
+    }),
+  };
+}
+
+/** One level of the outcrop: { rock: Mesh }. Each mass gets its share of `target` triangles; faces buried in another mass are left out. */
+export function outcropMesh(seed, g, structure, target, look) {
+  const { masses } = structure;
+  const total = masses.reduce((s, m) => s + m.weight, 0);
+  // Each mass as planes (outward normal, offset), to tell what lies well inside it (deeper than its chips and grooves).
+  const planes = masses.map(({ hull }) =>
+    hull.faces.map((f) => {
+      const n = norm(cross(sub(hull.points[f[1]], hull.points[f[0]]), sub(hull.points[f[2]], hull.points[f[0]])));
+      return [n, dot(n, hull.points[f[0]])];
+    }),
+  );
+  const deep = g.buried ?? 0.15;
+  const inside = (p, k) => planes[k].every(([n, c]) => dot(n, p) - c < -deep);
+  const P = [];
+  const I = [];
+  const curv = [];
+  masses.forEach(({ surface, weight }, k) => {
+    const o = P.length;
+    const idx = simplify(surface.P, surface.I, Math.round((target * weight) / total));
+    for (let t = 0; t < idx.length; t += 3) {
+      const tri = [idx[t], idx[t + 1], idx[t + 2]];
+      if (masses.some((_, j) => j !== k && tri.every((i) => inside(surface.P[i], j)))) continue;
+      I.push(o + tri[0], o + tri[1], o + tri[2]);
+    }
+    P.push(...surface.P);
+    curv.push(...surface.curv);
+  });
+  const bedN = masses[0].surface.bedN;
+  const colour = rockColour(seed, look, g.fit[1], { curv: (v) => curv[v] ?? 0, ...(bedN ? { bedding: (p) => dot(p, bedN) } : {}) });
+  return { rock: creasedMesh(P, I, colour, g.uvScale, [0, 0], g.crease ?? 55) };
+}
+
+/** Gameplay shapes of the outcrop: each mass's hull (before any surface detail), stone. */
+export function outcropShapes(structure) {
+  return structure.masses.map(({ hull }) => ({ kind: 'hull', points: hull.points, blocks: 'all', surface: 'rock' }));
 }
 
 // ---------------------------------------------------------------- pebbles

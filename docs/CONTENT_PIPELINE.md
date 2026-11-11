@@ -623,7 +623,7 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
   seed, levels of detail, the far stand-in, material variants with their colours).
 - **Build:** `pnpm content:environment` (`node tools/content/environment.mjs`; `content:rebuild` and `content:check`
   run it). Code in `tools/content/env/`: `rng.mjs` (the only randomness: seeded; `Math.random` is banned by the test),
-  `noise.mjs`, `textures.mjs` (bark, rock, leaves atlas), `tree.mjs`, `conifer.mjs`, `plants.mjs`, `rock.mjs`,
+  `noise.mjs`, `textures.mjs` (bark, rock, leaves atlas), `tree.mjs`, `conifer.mjs`, `plants.mjs`, `rock.mjs`, `deadwood.mjs`,
   `branches.mjs`, `impostor.mjs` (software rasteriser for the far cards), `mesh.mjs` (GLB writer).
 - **Outputs:** `packages/client/public/env/<family>.<species>.<variant>.glb` (level 0 plain; lighter levels with glTF
   extras `{ lod, distance }`, the crossed-card stand-in `{ crossed }`), `env/bark.webp`, `bark_n.webp`, `rock.webp`,
@@ -693,6 +693,21 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
   its own with bigger squares): the forest border's undergrowth, front and far rows, the backdrop belt's plants and the
   scenery forest's far trees (stand-ins only). In matches the environment renderer is on by default (`?env=0` draws
   species as prop nodes); MapMaker draws them as prop nodes.
+- **Rocks and deadwood for Rockfall Canyon (2026-11-11):** counterparts of the Kenney pieces the map places, near
+  their sizes, two variants each (bare, moss), all solid nav obstacles:
+  - `env.rock.boulder_round` (2.0 × 1.4 × 2.2 m; for `prop.rock_large`): the boulder generator with `round` (the
+    subdivided hull relaxed until edges and corners are gone) and `fit` (its size); collision is the rounded form's
+    hull, thinned to 32 points;
+  - `env.rock.slab` (3.7 × 0.4 × 3.0 m; `prop.rock_flat`; generator kind `slab`): a flat top that falls 8 cm across,
+    to stand and walk on; one hull. `nav: obstacle`, so navigation gets its footprint and its top as a surface;
+  - `env.rock.outcrop` (4.2 × 2.4 × 4.2 m; `prop.rocks_tall`; kind `outcrop`): three fused masses, role blocking;
+    one hull per mass (20 points each), so the notches between them stay open; faces buried in a neighbour are dropped;
+  - `env.deadwood.log` (0.53 × 0.57 × 2.2 m along z; `prop.log`; family `deadwood`, category `deadwood`,
+    `tools/content/env/deadwood.mjs`): a tapered trunk with a sawn butt showing rings, a broken end and two branch
+    stubs; bark and, for the cut faces, vertex-coloured wood (material `env.grass`); one hull, surface `bark`. Not
+    breakable (species carry no breakable data; `prop.log` has 60 health).
+  They are in MapMaker's Environment group (Boulders, Deadwood) but not in the brush presets (a new species in a
+  preset's mix changes what a seed paints). Their palette pictures come with the next `pnpm content:rebuild`.
 - **Rock:** boulders are a convex hull cut by 8–12 fracture planes (the collision hull), then, on the visual surface
   only and only inward of the hull: bedding grooves, corner chips (never at the six corners that set the bounds) and a
   little edge wear; vertex colour from strata, curvature (cavities dark, worn edges pale), patchy moss and hue patches.
