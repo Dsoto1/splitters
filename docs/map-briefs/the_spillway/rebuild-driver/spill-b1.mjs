@@ -11,16 +11,17 @@ async function tile(id, cx, cy, level, rot) {
   if ((await page.evaluate(() => window.__editor.rotation)) !== rot) throw new Error('rotation');
   const wx = cx * 8, wz = cy * 8, wy = level * 4;
   await look(wx, wz, wy + 70);
-  const p = await project(page, wx, wy, wz);
+  let p = await project(page, wx, wy, wz);
+  for (let i = 0; i < 8 && (p.x < 400 || p.x > 1000 || p.y < 200 || p.y > 700); i++) { await page.waitForTimeout(500); await look(wx, wz, wy + 70); p = await project(page, wx, wy, wz); }
   await page.mouse.move(p.x - 3, p.y - 3); await page.waitForTimeout(250);
   await page.mouse.move(p.x, p.y); await page.waitForTimeout(450);
   await page.mouse.down(); await page.waitForTimeout(120); await page.mouse.up(); await page.waitForTimeout(600);
   const ok = (await tiles()).some((t) => t[0] === id && t[1] === cx && t[2] === cy && t[3] === level && t[4] === rot);
   const toast = await page.evaluate(() => document.querySelector('.ed-toast, #ed-toast')?.textContent ?? '');
-  if (!ok) throw new Error(`no ${id} at ${cx},${cy},${level} r${rot}: ${toast}`);
+  if (!ok) throw new Error(`no ${id} at ${cx},${cy},${level} r${rot}: ${toast} :: ${JSON.stringify(await tiles())} level ${await page.evaluate(() => window.__editor.level)} tool ${await page.evaluate(() => JSON.stringify(window.__editor.tool))} p ${JSON.stringify(p)}`);
   console.log('tile', id, cx, cy, level, rot);
 }
-for (const cx of [-5, 5]) {
+for (const cx of process.env.SLABS_ONLY ? [] : [-5, 5]) {
   await tile('core.corridor', cx, 5, 1, 0);
   for (const l of [1, 3, 5]) await tile('core.stairwell', cx, 6, l, 3);
   for (const l of [2, 4, 6]) await tile('core.stairwell', cx, 5, l, 1);
@@ -31,7 +32,7 @@ await page.evaluate(() => window.__editor.setLevel(0, true));
 for (const cx of [-5, 5]) {
   await pickTool(page, 'scenario:block:solid');
   const id = await placeAt(page, cx * 8, 40 - 12);
-  await setFields(page, id, [['Width (X)', 3.2, 'e.size[0]'], ['Thickness', 0.5, 'e.size[1]'], ['Depth (Z)', 2.4, 'e.size[2]'], ['X', cx * 8, 'e.position[0]'], ['Z', 53, 'e.position[2]'], ['Height', 27.5, 'e.position[1]'], ['Material', 'concrete', 'e.material']]);
+  await setFields(page, id, [['Width (X)', 3.2, 'e.size[0]'], ['Thickness', 0.5, 'e.size[1]'], ['Depth (Z)', 2.4, 'e.size[2]'], ['X', cx * 8, 'e.position[0]'], ['Z', 53, 'e.position[2]'], ['Height', 27.5, 'e.position[1]'], ['Material', 'core.pbr_concrete', 'e.material']]);
   console.log('slab', id);
 }
 await exportTo(page, out);
