@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 36,
   "metadata": {
     "id": "razor_edge",
     "name": "Razor Edge",
@@ -3699,7 +3699,7 @@
         -19
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1,
       "solid": true,

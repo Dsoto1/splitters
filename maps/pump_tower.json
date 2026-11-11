@@ -1245,7 +1245,7 @@
         5.2
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1411,7 +1411,7 @@
         27
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1425,7 +1425,7 @@
         -3.3
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 0,
       "scale": 1,
       "solid": true,

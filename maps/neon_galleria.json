@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_uy54jdpkmne5vzsk",
-      "versionId": "v_z4q5gsguxbsyt2fx",
-      "revision": 6,
-      "contentHash": "sha256:49b9725c6a6b5c4b42ad7d9235176d1e13b19a5b13a06714e0ffb81c128b67cd",
+      "versionId": "v_gjl5kevcs4f2zzfc",
+      "revision": 7,
+      "contentHash": "sha256:f7e5fbaa58d7bc45ccb19005ca684de88767a8e3e896175cf087b08705684fd0",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T17:09:39.738Z"
+      "releasedAt": "2026-11-11T21:39:43.751Z"
     }
   },
   "classicStructure": {
@@ -18351,7 +18351,7 @@
         18.07
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -18365,7 +18365,7 @@
         18.85
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -18393,7 +18393,7 @@
         -18.03
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -18407,7 +18407,7 @@
         -17.43
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -19513,7 +19513,7 @@
         -3.48
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -19541,7 +19541,7 @@
         10.85
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -19569,7 +19569,7 @@
         3.12
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20101,7 +20101,7 @@
         -3.68
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20283,7 +20283,7 @@
         -10.85
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20297,7 +20297,7 @@
         -10.85
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20311,7 +20311,7 @@
         10.85
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -20325,7 +20325,7 @@
         10.85
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

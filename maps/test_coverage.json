@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_2ss7acmehpzlephr",
-      "revision": 16,
-      "contentHash": "sha256:e010209606749b17c10bf23f66296c3154e3a5c0444e196c9fad19db9a4c759d",
+      "versionId": "v_ypyhekp4dirjaer2",
+      "revision": 18,
+      "contentHash": "sha256:ca44fb994fd9074a8d591d819512e663975275538112dabc176ca6d2501fee52",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T17:23:25.848Z"
+      "releasedAt": "2026-11-11T21:59:01.308Z"
     },
     "testOnly": true
   },
@@ -4105,7 +4105,7 @@
         112
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4891,13 +4891,27 @@
     },
     {
       "id": "prop_pg6tf9ha06",
-      "kind": "prop",
       "position": [
         -28,
         -0.18,
         112
       ],
+      "kind": "prop",
       "model": "prop.tv",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_oxqvkjyiqb",
+      "kind": "prop",
+      "position": [
+        -26,
+        -0.18,
+        112
+      ],
+      "model": "prop.cone",
       "yaw": 0,
       "scale": 1,
       "solid": true,

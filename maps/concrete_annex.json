@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 36,
   "metadata": {
     "id": "concrete_annex",
     "name": "Concrete Annex",
@@ -2765,7 +2765,7 @@
         -3.1
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2779,7 +2779,7 @@
         43.1
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -2793,7 +2793,7 @@
         11
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2807,7 +2807,7 @@
         29
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,

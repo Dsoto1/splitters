@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_wtaygxmgpnk3xung",
-      "versionId": "v_vqgqhmmfhpx24rbd",
-      "revision": 4,
-      "contentHash": "sha256:e302f1dbdbfabb9ff8ce0e29bd86d02c6de55e2cb8d7e72c9b6917112f1074c5",
+      "versionId": "v_imm7oc5zhrwubief",
+      "revision": 5,
+      "contentHash": "sha256:2887dc2f4f49429ca58354256fc77e4444a68611fb925e9a786d70ec4686de61",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T17:20:28.946Z"
+      "releasedAt": "2026-11-11T21:54:13.772Z"
     }
   },
   "classicStructure": {
@@ -19578,7 +19578,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -21006,7 +21006,7 @@
         -16.2
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 0,
       "scale": 0.8,
       "solid": true,
@@ -21062,7 +21062,7 @@
         10
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -21146,7 +21146,7 @@
         -4.6
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -21160,7 +21160,7 @@
         6.1
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -21258,7 +21258,7 @@
         -13.4
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -21272,7 +21272,7 @@
         -32.6
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 0,
       "scale": 1,
       "solid": true,
