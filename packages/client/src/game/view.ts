@@ -2993,9 +2993,10 @@ export class GameView {
         if (node.isDisposed()) return m.dispose();
         // A model drawn at a size no throwable has (a rig whose units were read wrong: the sheep once drew 7 mm tall)
         // is dropped, and the shapes drawn in code stay.
+        // (By its longest side: a stick of dynamite is 3 cm tall.)
         const size = m.getHierarchyBoundingVectors(true);
-        const tall = size.max.y - size.min.y;
-        if (!(tall > 0.03 && tall < 5)) return m.dispose();
+        const longest = Math.max(size.max.x - size.min.x, size.max.y - size.min.y, size.max.z - size.min.z);
+        if (!(longest > 0.05 && longest < 5)) return m.dispose();
         m.parent = node;
         // A sheep's position is on the ground (arsenalVisuals SHEEP_LIFT): its model, centred on its bounds, is raised.
         if (look === 'sheep') m.position.y = (THROWABLE_DEFS.sheep.view?.fit ?? 0) / 2;
