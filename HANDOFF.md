@@ -706,6 +706,26 @@ for the owner's review, not landed).**
 - **One agent at a time** unless the owner asks for more. Short reports.
 - All the usual merge rules still apply: claims, one "Landing now" lock, "Next in line" turns, one merge of origin/main, fast-forward only to green.
 
+### Weapon and vehicle lane: status (lead session on this account, 2026-11-11)
+- **Done and landed:**
+  - Throwables: dynamite, holy bomb, sandbags, the sheep (plus the invisible-sheep fix, 47e2247), the flare gun and the airstrike flare shot.
+  - Vehicle re-skins: Gun Jeep = Recon Trike, Hover Bike = TNR 1017, Speeder = Cyber Fang, Armored Rover = Dust Runner.
+  - The 6-seat Buggy (453877f).
+  - The new **Troop Truck** (`troop_truck`, Ironclad Vanguard, 74a3f939). It's on `test_coverage` only; place it on real maps through MapMaker when wanted.
+- **Open:**
+  - **The Hauler** keeps its model. The owner is looking for a hover model. The Sky Cruiser (`Meshy_AI_Sky_Cruiser_1108121108_texture.glb`) is the only unused hover model.
+  - **Owner to check in game:**
+    - the flare-gun hold, the sheep size and the flare smoke tint;
+    - the vehicle cockpits (the Armored Rover's is the roughest);
+    - the Gun Jeep and Buggy tires, which sit 0.3–0.4 m outside their collision boxes;
+    - the Buggy deck riders, who stand off-centre.
+  - **Flakes to watch** (each re-run once):
+    - perf budget "frost_basin medium starting explosion";
+    - `server/test/netLab.test.ts` (0.848 vs 0.85);
+    - the vehicles e2e buggy-rider hip height (0.35 vs 0.3).
+- **Hand-off:** the next session on this account takes over from here. No branches are in flight, no claims or locks are held, and nothing is running.
+- **Downloading big Drive files:** the Drive connector caps downloads at 10 MB. Link-shared files download at any size from `https://drive.usercontent.google.com/download?id=<id>&export=download&confirm=t`, a host this environment allows.
+
 ### Hand-off to the MapMaker lane (owner, 2026-11-10)
 The MapMaker lane (other account) is **the main session for the rest of the week** (owner, 2026-11-10) and owns this whole queue, except the **weapon and vehicle lane** (items 3 and 4: throwables + flare gun, vehicle refreshes), which stays with this account on `wip/weapons-*` / `wip/vehicles-*` branches, claimed here first; if that lane says here that it has stopped, the work is yours. Same rules for both: claims, one "Landing now" lock at a time with "Next in line" turns, merge origin/main once, one check/ push, fast-forward only to green, re-run only a known flake and only once, no rebases or force-pushes of pushed work, no PRs, no unattended push loops. Queue, owner decisions and open threads:
 
