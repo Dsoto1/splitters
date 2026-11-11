@@ -170,6 +170,7 @@ export interface DressOptions {
 // ---------------------------------------------------------------- recipes
 
 interface Part {
+  /** Catalogue id (`prop.*`, `kit.*`). */
   model: string;
   x: number;
   z: number;
@@ -208,8 +209,10 @@ export interface DressItem {
 }
 
 const PROP_FALLBACK = [0.5, 0.5, 0.5] as const;
-const size = (model: string) => getProp(`prop.${model}`)?.size ?? PROP_FALLBACK;
-const collides = (model: string) => !!getProp(`prop.${model}`)?.collision;
+/** A recipe's model as a catalogue id: a kit family is named in full (`kit.table.desk`), a pack prop by its short name (`hm_oven`). */
+const full = (model: string) => (model.includes('.') ? model : `prop.${model}`);
+const size = (model: string) => getProp(full(model))?.size ?? PROP_FALLBACK;
+const collides = (model: string) => !!getProp(full(model))?.collision;
 
 /** Half extents of a w × d footprint turned by `yaw`. */
 function turnedHalf(w: number, d: number, yaw: number): [number, number] {
@@ -220,7 +223,7 @@ function turnedHalf(w: number, d: number, yaw: number): [number, number] {
 
 function part(model: string, x = 0, z = 0, o: { yaw?: number; y?: number; solid?: boolean; flat?: boolean } = {}): Part {
   const flat = o.flat ?? size(model)[1] < 0.05;
-  return { model, x, z, y: o.y ?? 0, yaw: o.yaw ?? 0, solid: o.solid ?? (collides(model) && !flat), flat };
+  return { model: full(model), x, z, y: o.y ?? 0, yaw: o.yaw ?? 0, solid: o.solid ?? (collides(model) && !flat), flat };
 }
 
 /** Centre the parts standing on the floor on the origin and measure them. */
@@ -366,37 +369,38 @@ const ones = (models: string[]) => models.map((m) => one(m));
 
 /**
  * The recipes, most important piece first (placing stops at a room's budget).
- * Model IDs are props without their `prop.` prefix.
+ * A model is a pack prop without its `prop.` prefix, or a kit family's full id (`kit.<type>.<name>`); never a retired
+ * prop a family replaces (content/kitprops.json `aliases`: test/retiredProps.test.ts).
  */
 export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
   kitchen: [
-    wall([run(['hm_kitchen_counter_long', 'hm_oven', 'hm_kitchen_sink', 'hm_kitchen_counter_long', 'hm_kitchen_counter_long']), run(['kitchen_cabinet', 'stove', 'kitchen_cabinet', 'kitchen_cabinet']), run(['hh_cupboard_double', 'hh_oven', 'hh_cupboard_sink', 'hh_dishwasher', 'hh_cupboard_drawers'])], 1, 2, { min: 1, place: 'mid' }),
-    wall([one('hm_fridge'), one('fridge'), one('hh_fridge_freezer'), one('hh_fridge')], 0.8, 1, { min: 1 }),
-    centre([seated('dg_table_small', 'hm_stool'), seated('table', 'chair'), seated('hh_table', 'hh_chair')], 0.8, 1, { face: 'axis' }),
+    wall([run(['hm_kitchen_counter_long', 'hm_oven', 'hm_kitchen_sink', 'hm_kitchen_counter_long', 'hm_kitchen_counter_long']), run(['kit.cabinet.kitchen', 'kit.appliance.stove', 'kit.cabinet.kitchen', 'kit.cabinet.kitchen']), run(['hh_cupboard_double', 'hh_oven', 'hh_cupboard_sink', 'hh_dishwasher', 'hh_cupboard_drawers'])], 1, 2, { min: 1, place: 'mid' }),
+    wall([one('hm_fridge'), one('kit.appliance.fridge'), one('hh_fridge_freezer'), one('hh_fridge')], 0.8, 1, { min: 1 }),
+    centre([seated('dg_table_small', 'hm_stool'), seated('kit.table.dining', 'kit.seat.chair'), seated('hh_table', 'hh_chair')], 0.8, 1, { face: 'axis' }),
     wall([one('hm_kitchen_cabinet'), one('hm_shelf_large'), onTop('hh_cupboard', 'hh_microwave')], 0.6, 2),
-    wall([one('washer'), one('hm_washer'), one('hh_washing_machine')], 0.3, 1),
-    corner(ones(['hm_bin_large', 'trashcan', 'hm_houseplant_tall', 'hh_bin']), 1, 2),
+    wall([one('kit.appliance.washer'), one('hm_washer'), one('hh_washing_machine')], 0.3, 1),
+    corner(ones(['hm_bin_large', 'kit.bin.waste', 'hm_houseplant_tall', 'hh_bin']), 1, 2),
     decor([one('hm_wall_shelf')], 1, 2, 1.6),
   ],
   dining: [
-    centre([seated('dg_table_long', 'hm_chair_wood', { above: 'hm_chandelier' }), seated('table', 'chair_cushion', { ends: true }), seated('hm_table_round', 'hm_chair_wood'), seated('hh_table', 'hh_chair', { ends: true }), seated('hh_round_table', 'hh_chair')], 0.9, 2, { min: 1, face: 'axis', gap: 0.7 }),
-    wall(ones(['hm_dresser', 'kitchen_cabinet', 'hm_chest_drawers', 'hh_chest_drawers']), 0.8, 2, { place: 'mid' }),
+    centre([seated('dg_table_long', 'hm_chair_wood', { above: 'hm_chandelier' }), seated('kit.table.dining', 'kit.seat.chair_cushion', { ends: true }), seated('hm_table_round', 'hm_chair_wood'), seated('hh_table', 'hh_chair', { ends: true }), seated('hh_round_table', 'hh_chair')], 0.9, 2, { min: 1, face: 'axis', gap: 0.7 }),
+    wall(ones(['hm_dresser', 'kit.cabinet.kitchen', 'hm_chest_drawers', 'hh_chest_drawers']), 0.8, 2, { place: 'mid' }),
     wall([one('hm_fireplace')], 0.4, 1, { place: 'far' }),
     corner(ones(['hm_houseplant_tall', 'hm_floor_lamp', 'rn_urn']), 1.5, 4),
     decor([one('hm_wall_shelf')], 0.6, 2, 1.6),
   ],
   living: [
-    centre([lounge('hm_couch', 'hm_side_table', 'hm_armchair', 'hm_rug'), lounge('sofa', 'side_table', 'armchair', 'rug'), lounge('hh_sofa', 'hh_coffee_table', 'hh_armchair', 'hh_rug')], 0.8, 1, { min: 1, face: 'axis', gap: 0.5 }),
-    wall([onTop('tv_cabinet', 'tv'), one('hm_fireplace'), onTop('hh_chest_drawers', 'hh_tv')], 0.8, 1, { place: 'mid' }),
-    wall(ones(['hm_bookshelf', 'bookcase', 'hm_shelf_large', 'hh_bookcase', 'hh_bookcase_wide']), 1.2, 3),
-    wall(ones(['hm_couch_large', 'sofa', 'hh_corner_sofa', 'hh_sofa_small']), 0.4, 1),
+    centre([lounge('hm_couch', 'hm_side_table', 'hm_armchair', 'hm_rug'), lounge('kit.sofa.two_seat', 'kit.table.console', 'kit.sofa.armchair', 'rug'), lounge('hh_sofa', 'hh_coffee_table', 'hh_armchair', 'hh_rug')], 0.8, 1, { min: 1, face: 'axis', gap: 0.5 }),
+    wall([onTop('kit.cabinet.media', 'tv'), one('hm_fireplace'), onTop('hh_chest_drawers', 'hh_tv')], 0.8, 1, { place: 'mid' }),
+    wall(ones(['hm_bookshelf', 'kit.bookcase.tall', 'hm_shelf_large', 'hh_bookcase', 'hh_bookcase_wide']), 1.2, 3),
+    wall(ones(['hm_couch_large', 'kit.sofa.two_seat', 'hh_corner_sofa', 'hh_sofa_small']), 0.4, 1),
     corner(ones(['hm_floor_lamp', 'hm_houseplant_tall', 'hm_potted_palm', 'floor_lamp', 'hh_floor_lamp', 'hh_plant']), 2, 4),
     decor([one('hm_wall_shelf'), one('hh_wall_shelf')], 0.6, 2, 1.6),
   ],
   bedroom: [
-    wall([flanked('hm_bed_king', 'hm_nightstand'), flanked('hm_bed_single', 'hm_nightstand', 1), flanked('bed', 'side_table', 1), flanked('hh_bed_double', 'hh_bedside'), flanked('hh_bed_single', 'hh_bedside', 1)], 0.9, 2, { min: 1, place: 'far' }),
-    wall(ones(['hm_dresser', 'hm_shelf_large', 'bookcase', 'hh_chest_drawers']), 0.8, 2),
-    wall([seatInFront('desk', 'hm_chair_wood', { top: 'hm_desk_lamp' }), seatInFront('hh_desk', 'hh_chair', { top: 'hh_desk_lamp' })], 0.3, 1),
+    wall([flanked('hm_bed_king', 'hm_nightstand'), flanked('hm_bed_single', 'hm_nightstand', 1), flanked('kit.bed.double', 'kit.table.console', 1), flanked('hh_bed_double', 'hh_bedside'), flanked('hh_bed_single', 'hh_bedside', 1)], 0.9, 2, { min: 1, place: 'far' }),
+    wall(ones(['hm_dresser', 'hm_shelf_large', 'kit.bookcase.tall', 'hh_chest_drawers']), 0.8, 2),
+    wall([seatInFront('kit.table.desk', 'hm_chair_wood', { top: 'hm_desk_lamp' }), seatInFront('hh_desk', 'hh_chair', { top: 'hh_desk_lamp' })], 0.3, 1),
     centre(ones(['hm_rug', 'rug', 'hh_rug_small']), 0.5, 1, { face: 'axis', gap: 0.2 }),
     corner(ones(['hm_floor_lamp', 'hm_houseplant', 'coat_rack', 'hh_floor_lamp']), 1.2, 3),
     decor([one('hm_wall_shelf')], 0.6, 2, 1.5),
@@ -405,46 +409,46 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
     wall([one('hm_bathtub', Q), one('hm_shower'), one('bathtub'), one('hh_bath'), one('hh_shower')], 0.9, 1, { min: 1, place: 'far' }),
     wall(ones(['hm_toilet', 'toilet', 'hh_toilet']), 1, 2, { min: 1 }),
     wall([one('hm_bathroom_sink'), one('hh_basin')], 1, 2, { min: 1 }),
-    wall(ones(['hm_washer', 'washer', 'hh_washing_machine']), 0.4, 1),
-    corner(ones(['hm_bin_large', 'trashcan', 'plant_small', 'hh_bin']), 0.8, 2),
+    wall(ones(['hm_washer', 'kit.appliance.washer', 'hh_washing_machine']), 0.4, 1),
+    corner(ones(['hm_bin_large', 'kit.bin.waste', 'plant_small', 'hh_bin']), 0.8, 2),
     centre([one('hm_rug')], 0.3, 1, { face: 'axis', gap: 0.2 }),
   ],
   office: [
-    centre([seatBehind('desk', 'hm_chair_office', { top: 'hm_desk_lamp' }), seatBehind('desk', 'office_chair'), seatBehind('hh_desk', 'hh_office_chair', { top: 'hh_monitor' })], 1.4, 6, { min: 1, face: 'axis', gap: 0.8 }),
-    wall(ones(['bookcase', 'bookcase_wide', 'hm_shelf_large', 'hm_bookshelf', 'hh_bookcase_wide']), 1.2, 4),
-    wall([seatInFront('desk', 'hm_chair_office')], 0.5, 2),
-    wall([one('sf_computer'), one('shelf_boxes')], 0.3, 1),
-    corner(ones(['potted_plant', 'hm_houseplant_tall', 'trashcan', 'hm_floor_lamp', 'coat_rack']), 2, 4),
+    centre([seatBehind('kit.table.desk', 'hm_chair_office', { top: 'hm_desk_lamp' }), seatBehind('kit.table.desk', 'kit.seat.office'), seatBehind('hh_desk', 'hh_office_chair', { top: 'hh_monitor' })], 1.4, 6, { min: 1, face: 'axis', gap: 0.8 }),
+    wall(ones(['kit.bookcase.tall', 'kit.bookcase.wide', 'hm_shelf_large', 'hm_bookshelf', 'hh_bookcase_wide']), 1.2, 4),
+    wall([seatInFront('kit.table.desk', 'hm_chair_office')], 0.5, 2),
+    wall([one('sf_computer'), one('kit.shelf.gondola')], 0.3, 1),
+    corner(ones(['potted_plant', 'hm_houseplant_tall', 'kit.bin.waste', 'hm_floor_lamp', 'coat_rack']), 2, 4),
     decor([one('hm_wall_shelf')], 0.5, 2, 1.6),
   ],
   classroom: [
-    wall([seatInFront('desk', 'hm_chair_office', { top: 'hm_desk_lamp' })], 1, 1, { min: 1, place: 'front' }),
-    centre([seatBehind('desk', 'hm_chair_wood', { seats: 2 })], 3, 12, { min: 2, face: 'front', gap: 0.5 }),
-    wall(ones(['bookcase', 'hm_bookshelf', 'hm_shelf_large']), 1, 3),
-    corner(ones(['potted_plant', 'trashcan', 'coat_rack']), 1, 2),
+    wall([seatInFront('kit.table.desk', 'hm_chair_office', { top: 'hm_desk_lamp' })], 1, 1, { min: 1, place: 'front' }),
+    centre([seatBehind('kit.table.desk', 'hm_chair_wood', { seats: 2 })], 3, 12, { min: 2, face: 'front', gap: 0.5 }),
+    wall(ones(['kit.bookcase.tall', 'hm_bookshelf', 'hm_shelf_large']), 1, 3),
+    corner(ones(['potted_plant', 'kit.bin.waste', 'coat_rack']), 1, 2),
     decor([one('hm_wall_shelf')], 0.6, 3, 1.6),
   ],
   library: [
-    wall(ones(['rn_bookcase', 'hm_bookshelf', 'bookcase_wide', 'bookcase']), 3, 10, { min: 2 }),
-    centre([seated('dg_table_long', 'hm_chair_wood', { top: 'hm_desk_lamp' }), seated('table', 'chair', { top: 'hm_desk_lamp' })], 0.8, 2, { min: 1, face: 'axis', gap: 0.7 }),
+    wall(ones(['rn_bookcase', 'hm_bookshelf', 'kit.bookcase.wide', 'kit.bookcase.tall']), 3, 10, { min: 2 }),
+    centre([seated('dg_table_long', 'hm_chair_wood', { top: 'hm_desk_lamp' }), seated('kit.table.dining', 'kit.seat.chair', { top: 'hm_desk_lamp' })], 0.8, 2, { min: 1, face: 'axis', gap: 0.7 }),
     centre([nook()], 0.4, 1, { face: 'axis' }),
     corner(ones(['hm_floor_lamp', 'hm_armchair', 'hm_houseplant_tall']), 1.5, 4),
   ],
   storage: [
-    wall([one('shelf_boxes'), one('shelf_bags'), one('crate_large', Q), one('metal_crate'), stack('crate_large', 'crate_small', { turn: Q })], 2.5, 8, { min: 1 }),
-    centre([stack('crate_large', 'crate_small'), cluster(['barrel', 'barrel', 'barrel_open']), cluster(['crate_small', 'crate_open', 'crate_small']), stack('metal_crate', 'cardboard_box')], 1, 3, { face: 'any', gap: 0.9 }),
-    corner(ones(['barrel', 'cardboard_box', 'crate_small', 'container']), 2, 4),
+    wall([one('kit.shelf.gondola'), one('kit.shelf.gondola_snack'), one('kit.crate.wood_long', Q), one('kit.crate.framed'), stack('kit.crate.wood_long', 'kit.crate.wood', { turn: Q })], 2.5, 8, { min: 1 }),
+    centre([stack('kit.crate.wood_long', 'kit.crate.wood'), cluster(['kit.drum.steel', 'kit.drum.steel', 'kit.drum.steel_open']), cluster(['kit.crate.wood', 'crate_open', 'kit.crate.wood']), stack('kit.crate.framed', 'kit.box.carton')], 1, 3, { face: 'any', gap: 0.9 }),
+    corner(ones(['kit.drum.steel', 'kit.box.carton', 'kit.crate.wood', 'container']), 2, 4),
   ],
   warehouse: [
-    wall([one('shelf_boxes'), one('shelf_bags'), one('cargo_crate'), one('container_tall'), stack('crate_large', 'crate_small', { turn: Q })], 2.5, 12, { min: 2 }),
-    centre([one('factory_box'), stack('cargo_crate', 'crate_small'), backToBack('shelf_boxes', 'shelf_bags'), cluster(['barrel', 'barrel', 'barrel', 'barrel_open']), one('skip')], 1.2, 6, { min: 1, face: 'axis', gap: 1.1 }),
-    corner(ones(['barrel', 'cardboard_box', 'container', 'cone']), 2, 4),
+    wall([one('kit.shelf.gondola'), one('kit.shelf.gondola_snack'), one('kit.crate.bin'), one('container_tall'), stack('kit.crate.wood_long', 'kit.crate.wood', { turn: Q })], 2.5, 12, { min: 2 }),
+    centre([one('factory_box'), stack('kit.crate.bin', 'kit.crate.wood'), backToBack('kit.shelf.gondola', 'kit.shelf.gondola_snack'), cluster(['kit.drum.steel', 'kit.drum.steel', 'kit.drum.steel', 'kit.drum.steel_open']), one('skip')], 1.2, 6, { min: 1, face: 'axis', gap: 1.1 }),
+    corner(ones(['kit.drum.steel', 'kit.box.carton', 'container', 'cone']), 2, 4),
   ],
   barracks: [
-    wall([flanked('bunk_bed', 'metal_crate', 1), flanked('hm_bunk_bed', 'sf_chest', 1), one('bunk_bed'), flanked('hh_bunk_bed', 'hh_bedside', 1)], 2.5, 8, { min: 2 }),
-    wall(ones(['shelf_bags', 'metal_crate', 'sf_chest']), 0.8, 2),
-    centre([seated('dg_table_small', 'dungeon_chair'), seated('table', 'chair')], 0.5, 1, { face: 'axis', gap: 0.7 }),
-    corner(ones(['barrel', 'sv_backpack', 'crate_small', 'sv_trashcan_metal']), 1.2, 3),
+    wall([flanked('kit.bed.bunk', 'kit.crate.framed', 1), flanked('hm_bunk_bed', 'sf_chest', 1), one('kit.bed.bunk'), flanked('hh_bunk_bed', 'hh_bedside', 1)], 2.5, 8, { min: 2 }),
+    wall(ones(['kit.shelf.gondola_snack', 'kit.crate.framed', 'sf_chest']), 0.8, 2),
+    centre([seated('dg_table_small', 'dungeon_chair'), seated('kit.table.dining', 'kit.seat.chair')], 0.5, 1, { face: 'axis', gap: 0.7 }),
+    corner(ones(['kit.drum.steel', 'sv_backpack', 'kit.crate.wood', 'sv_trashcan_metal']), 1.2, 3),
   ],
   lab: [
     wall(ones(['computer_wide', 'sf_computer', 'screen_panel', 'machine_window']), 2, 5, { min: 1 }),
@@ -454,38 +458,38 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
   ],
   bar: [
     wall([piece([...run(['hm_kitchen_counter_long', 'hm_kitchen_counter_long', 'hm_kitchen_sink', 'hm_kitchen_counter_long', 'hm_kitchen_counter_long']).parts, ...[-1.2, -0.4, 0.4, 1.2].map((x) => part('bar_stool', x, 0.85, { yaw: Math.PI }))])], 1, 1, { min: 1, place: 'far' }),
-    centre([seated('table_round', 'chair'), seated('hm_table_round', 'hm_chair_wood'), seated('dg_table_small', 'dungeon_chair')], 1.5, 5, { min: 1, face: 'any', gap: 0.7 }),
-    wall(ones(['crate_bottles', 'barrel', 'dungeon_barrel', 'kitchen_cabinet']), 1, 3),
-    corner(ones(['speaker', 'potted_plant', 'barrel']), 1.5, 4),
+    centre([seated('kit.table.round', 'kit.seat.chair'), seated('hm_table_round', 'hm_chair_wood'), seated('dg_table_small', 'dungeon_chair')], 1.5, 5, { min: 1, face: 'any', gap: 0.7 }),
+    wall(ones(['crate_bottles', 'kit.drum.steel', 'dungeon_barrel', 'kit.cabinet.kitchen']), 1, 3),
+    corner(ones(['speaker', 'potted_plant', 'kit.drum.steel']), 1.5, 4),
   ],
   shop: [
-    wall(ones(['shelf_boxes', 'shelf_bags', 'freezers_upright', 'bottle_return', 'bread_display']), 2.5, 8, { min: 2 }),
+    wall(ones(['kit.shelf.gondola', 'kit.shelf.gondola_snack', 'freezers_upright', 'bottle_return', 'bread_display']), 2.5, 8, { min: 2 }),
     centre([one('checkout')], 0.5, 1, { min: 1, face: 'axis', gap: 0.9 }),
-    centre([backToBack('shelf_end', 'shelf_end'), backToBack('shelf_boxes', 'shelf_bags'), one('fruit_display'), one('freezer')], 1, 4, { face: 'axis', gap: 1.0 }),
-    corner(ones(['shopping_cart', 'cardboard_box', 'potted_plant']), 1, 3),
+    centre([backToBack('kit.shelf.end', 'kit.shelf.end'), backToBack('kit.shelf.gondola', 'kit.shelf.gondola_snack'), one('fruit_display'), one('freezer')], 1, 4, { face: 'axis', gap: 1.0 }),
+    corner(ones(['shopping_cart', 'kit.box.carton', 'potted_plant']), 1, 3),
   ],
   workshop: [
-    wall(ones(['workbench', 'shelf_boxes', 'metal_crate', 'machine', 'pipe_valve']), 2, 6, { min: 1 }),
-    centre([piece([part('workbench', -0.6), part('workbench', 0.6)]), cluster(['sv_propane', 'barrel']), one('factory_box_long')], 0.7, 2, { face: 'axis', gap: 0.9 }),
-    corner(ones(['sv_gas_can', 'sv_propane', 'barrel', 'cone', 'sv_trashcan_metal']), 2, 4),
+    wall(ones(['workbench', 'kit.shelf.gondola', 'kit.crate.framed', 'machine', 'pipe_valve']), 2, 6, { min: 1 }),
+    centre([piece([part('workbench', -0.6), part('workbench', 0.6)]), cluster(['sv_propane', 'kit.drum.steel']), one('factory_box_long')], 0.7, 2, { face: 'axis', gap: 0.9 }),
+    corner(ones(['sv_gas_can', 'sv_propane', 'kit.drum.steel', 'cone', 'sv_trashcan_metal']), 2, 4),
   ],
   chapel: [
     wall([piece([part('altar'), part('candles', -0.6, 0, { y: size('altar')[1] }), part('candles', 0.6, 0, { y: size('altar')[1] })])], 1, 1, { min: 1, place: 'front' }),
-    centre([pew('stall_bench'), pew('graveyard_bench')], 3, 10, { min: 2, face: 'front', gap: 0.5 }),
+    centre([pew('kit.stall.counter'), pew('graveyard_bench')], 3, 10, { min: 2, face: 'front', gap: 0.5 }),
     wall(ones(['rn_statue_fox', 'rn_statue_stag', 'urn']), 0.4, 2),
     corner(ones(['rn_urn', 'candles', 'rn_candles', 'pillar']), 2, 4),
     decor([one('dg_banner')], 1, 4, 1.2),
   ],
   cell: [
-    wall(ones(['hm_bed_single', 'bed']), 1, 1, { min: 1, place: 'far' }),
+    wall(ones(['hm_bed_single', 'kit.bed.double']), 1, 1, { min: 1, place: 'far' }),
     wall(ones(['hm_toilet', 'toilet']), 1, 1, { min: 1 }),
     corner(ones(['dg_bucket', 'bucket']), 1, 1),
     corner(ones(['dg_skull', 'debris']), 0.5, 1),
   ],
   armoury: [
-    wall(ones(['shelf_bags', 'sf_chest', 'dg_chest', 'metal_crate', 'crate_large']), 2, 6, { min: 1 }),
-    centre([one('dg_table_long'), one('workbench'), stack('crate_large', 'sv_medkit_case')], 0.6, 1, { face: 'axis', gap: 0.9 }),
-    corner(ones(['powder_keg', 'barrel', 'sv_gas_can', 'dg_barrel']), 1.5, 4),
+    wall(ones(['kit.shelf.gondola_snack', 'sf_chest', 'dg_chest', 'kit.crate.framed', 'kit.crate.wood_long']), 2, 6, { min: 1 }),
+    centre([one('dg_table_long'), one('workbench'), stack('kit.crate.wood_long', 'sv_medkit_case')], 0.6, 1, { face: 'axis', gap: 0.9 }),
+    corner(ones(['powder_keg', 'kit.drum.steel', 'sv_gas_can', 'dg_barrel']), 1.5, 4),
     decor(ones(['dg_sword_mount', 'shield']), 1.5, 4, 1.4),
   ],
   server: [
@@ -494,15 +498,15 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
     corner(ones(['sf_barrel', 'sf_crate']), 1, 3),
   ],
   lobby: [
-    wall([seatBehind('desk_corner', 'hm_chair_office'), seatBehind('desk', 'hm_chair_office', { top: 'hm_desk_lamp' })], 1, 1, { min: 1, place: 'far' }),
-    wall(ones(['hm_couch_large', 'sofa_long', 'sofa']), 1, 3),
+    wall([seatBehind('desk_corner', 'hm_chair_office'), seatBehind('kit.table.desk', 'hm_chair_office', { top: 'hm_desk_lamp' })], 1, 1, { min: 1, place: 'far' }),
+    wall(ones(['hm_couch_large', 'kit.sofa.corner', 'kit.sofa.two_seat']), 1, 3),
     centre([nook()], 0.5, 1, { face: 'axis' }),
     corner(ones(['hm_potted_palm', 'hm_houseplant_tall', 'coat_rack', 'potted_plant']), 2.5, 4),
   ],
   conference: [
-    centre([seated('dg_table_long', 'hm_chair_office', { ends: true }), seated('space_table', 'space_chair'), seated('table', 'office_chair', { ends: true })], 0.9, 1, { min: 1, face: 'axis', gap: 0.6 }),
-    wall([onTop('tv_cabinet', 'tv')], 1, 1, { place: 'front' }),
-    wall(ones(['hm_shelf_large', 'bookcase']), 0.6, 2),
+    centre([seated('dg_table_long', 'hm_chair_office', { ends: true }), seated('space_table', 'space_chair'), seated('kit.table.dining', 'kit.seat.office', { ends: true })], 0.9, 1, { min: 1, face: 'axis', gap: 0.6 }),
+    wall([onTop('kit.cabinet.media', 'tv')], 1, 1, { place: 'front' }),
+    wall(ones(['hm_shelf_large', 'kit.bookcase.tall']), 0.6, 2),
     corner(ones(['potted_plant', 'hm_houseplant_tall', 'speaker']), 1.5, 4),
   ],
   parlour: [
@@ -530,10 +534,10 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
   ],
 };
 
-/** Every prop a room type's recipe can place (`prop.` ids). */
+/** Every prop a room type's recipe can place (catalogue ids). */
 export function recipeModels(type: RoomType): string[] {
   const out = new Set<string>();
-  for (const item of DRESS_RECIPES[type]) for (const p of item.pieces) for (const q of p.parts) out.add(`prop.${q.model}`);
+  for (const item of DRESS_RECIPES[type]) for (const p of item.pieces) for (const q of p.parts) out.add(q.model);
   return [...out];
 }
 
@@ -820,12 +824,12 @@ export function dressRoom(space: DressSpace, type: RoomType, o: DressOptions = {
   const commit = (ps: Placed[]) => {
     for (const p of ps) {
       out.push(p);
-      used.add(`prop.${p.model}`);
+      used.add(p.model);
     }
   };
   /** Whether a piece may go in without breaking the model budget. */
   const affordable = (pc: DressPiece) => {
-    const fresh = new Set(pc.parts.map((p) => `prop.${p.model}`).filter((m) => !used.has(m)));
+    const fresh = new Set(pc.parts.map((p) => p.model).filter((m) => !used.has(m)));
     return used.size + fresh.size <= limit;
   };
 
@@ -949,7 +953,7 @@ export function dressRoom(space: DressSpace, type: RoomType, o: DressOptions = {
     return xs;
   }
 
-  return out.map((p) => ({ kind: 'prop', model: `prop.${p.model}`, position: [round(p.x), round(p.y), round(p.z)], yaw: round(normalise(p.yaw), 4), scale: 1, solid: p.solid, tint: null }));
+  return out.map((p) => ({ kind: 'prop', model: p.model, position: [round(p.x), round(p.y), round(p.z)], yaw: round(normalise(p.yaw), 4), scale: 1, solid: p.solid, tint: null }));
 }
 
 const normalise = (a: number) => {
