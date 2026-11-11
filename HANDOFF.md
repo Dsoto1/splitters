@@ -758,6 +758,7 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 9. **Desert City dome kit.**
 10. **Binbun FX, the rest.**
 11. **Destructible environment:** audit what breaks today, then per-piece destruction on one opt-in map through MapMaker.
+    - **Audit done (2026-11-11) and the owner's decisions ("1a 2a 3a"):** first step is props and blocks only (a map switch in Map properties; per-placement health and "unbreakable" in the inspector; any solid prop or block can break on that map; building walls, terrain and doors stay solid); broken pieces come back only at the next round, as today; the test map is a new small experimental map built for it. Facts the audit found: one runtime for all breakables (`breakableOf`, `sim/scenarioDefs.ts`; `Scenario.destructibles`), colliders toggled, never rebuilt; props have only `solid` in the schema; breakable props are not batched on the client and not counted in budgets; one snapshot entry a breakable; 14 nav opening bits. Claimed for it: `MAP_FORMAT_VERSION` 36 (`metadata.destruction`, a prop's `health` / `unbreakable`), branch `wip/mapmaker-destruction`.
 12. **Map pass, one map at a time** (after Environment Phase 2, the MapMaker work and the new and rebuilt maps; check whether each map really needs it).
 13. Possibly: packed inputs to cut upload bandwidth.
 
