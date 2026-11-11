@@ -33,7 +33,10 @@ export function containerMesh(seed, size, g, look, level) {
   const rusty = look.rusty ?? 0.2;
   const grime = look.grime ?? 0.3;
   const frame = hex(look.frame ?? look.paint);
-  const tone = (c, k = 1) => (p) => {
+  // (The painted-metal detail map darkens what it lies on: the paint is laid on brighter to come out as its hex.)
+  const GAIN = 1.4;
+  const tone = (c, k0 = 1) => (p) => {
+    const k = k0 * GAIN;
     // Rust gathers low down, along the bottom rail and in blotches; grime darkens towards the ground.
     const blot = clamp01(n(p[0] * 0.9, p[1] * 0.9, p[2] * 0.9) * 0.5 + 0.5);
     const low = clamp01(1 - p[1] / (h * 0.3));

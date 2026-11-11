@@ -14,12 +14,12 @@
       "generator": { "kind": "container", "post": 0.14, "rail": 0.16, "pitch": 0.28, "deep": 0.035, "casting": 0.12, "bars": 2 },
       "lods": [{ "distance": 0 }, { "distance": 30 }, { "distance": 90 }],
       "variants": [
-        { "index": 0, "name": "red", "seed": 7101, "look": { "paint": "#8f2f25", "rust": "#6e3f24", "rusty": 0.25, "grime": 0.3 } },
-        { "index": 1, "name": "blue", "seed": 7102, "look": { "paint": "#2b4f7a", "rust": "#6e3f24", "rusty": 0.25, "grime": 0.3 } },
-        { "index": 2, "name": "green", "seed": 7103, "look": { "paint": "#35613f", "rust": "#6e3f24", "rusty": 0.25, "grime": 0.3 } },
-        { "index": 3, "name": "rusty", "seed": 7104, "look": { "paint": "#7d5a3c", "rust": "#5e3520", "rusty": 0.8, "grime": 0.45 } },
-        { "index": 4, "name": "white", "seed": 7105, "look": { "paint": "#c9c6bc", "frame": "#a9a69c", "rust": "#7a4a2c", "rusty": 0.3, "grime": 0.35, "band": "#2b4f7a" } },
-        { "index": 5, "name": "yellow", "seed": 7106, "look": { "paint": "#c79a23", "rust": "#6e3f24", "rusty": 0.3, "grime": 0.3 } }
+        { "index": 0, "name": "red", "seed": 7101, "look": { "paint": "#b04033", "rust": "#6e3f24", "rusty": 0.25, "grime": 0.3 } },
+        { "index": 1, "name": "blue", "seed": 7102, "look": { "paint": "#3a6ea8", "rust": "#6e3f24", "rusty": 0.25, "grime": 0.3 } },
+        { "index": 2, "name": "green", "seed": 7103, "look": { "paint": "#468554", "rust": "#6e3f24", "rusty": 0.25, "grime": 0.3 } },
+        { "index": 3, "name": "rusty", "seed": 7104, "look": { "paint": "#96704a", "rust": "#5e3520", "rusty": 0.8, "grime": 0.45 } },
+        { "index": 4, "name": "white", "seed": 7105, "look": { "paint": "#d6d3c9", "frame": "#a9a69c", "rust": "#7a4a2c", "rusty": 0.3, "grime": 0.35, "band": "#3a6ea8" } },
+        { "index": 5, "name": "yellow", "seed": 7106, "look": { "paint": "#dcae2e", "rust": "#6e3f24", "rusty": 0.3, "grime": 0.3 } }
       ]
     }
   ]
