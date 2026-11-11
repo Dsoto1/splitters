@@ -1003,6 +1003,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
   - **Landing now: generated rocks and a fallen log** (`check/mapmaker-canyon-env`, MapMaker lane, 2026-11-11; no map files).
+  - **Next in line to land: the weapon and vehicle lane's third batch** (session branch `claude/inspiring-sagan-mjnled`, to go to `check/vehicles-fit-3`; this account, 2026-11-11): ten new characters (experimental tier) with three re-handed, Zombies (a bigger horde, 16 players at the most, zombie skins only, bodies stay), Match Setup shows only the modes a map plays. No map files (Iron Maw's proposal is reverted on the branch). It touches `packages/shared/test/characterTiers.test.ts` and `botThemes.test.ts` (they assumed no experimental character existed) and `tools/content/test/hitboxes.test.mjs` (one look's own cover).
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
