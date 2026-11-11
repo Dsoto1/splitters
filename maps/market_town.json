@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "market_town",
     "name": "Market Town",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_d3ml2watxrhzzmt6",
-      "versionId": "v_gxsgsyv2bt2w4sw6",
-      "revision": 6,
-      "contentHash": "sha256:144391f9f31e9db05c09c28af9c31f8e9445076dff33d7523190b859e430723d",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:24:15.814Z"
+      "versionId": "v_3vqjmorwaedjmczs",
+      "revision": 7,
+      "contentHash": "sha256:337b62eca87d143d3302aeea24df159e40f8083223d402b748e948b48f9e1109",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T09:54:37.727Z"
     }
   },
   "classicStructure": {
@@ -2421,7 +2421,7 @@
         -1
       ],
       "kind": "prop",
-      "model": "prop.stall",
+      "model": "kit.stall.market",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -2435,11 +2435,12 @@
         9
       ],
       "kind": "prop",
-      "model": "prop.stall_green",
+      "model": "kit.stall.market",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_065",
@@ -2477,7 +2478,7 @@
         -2
       ],
       "kind": "prop",
-      "model": "prop.stall_bench",
+      "model": "kit.stall.counter",
       "yaw": 0,
       "scale": 1,
       "solid": true,

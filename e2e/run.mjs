@@ -2202,9 +2202,9 @@ async function editorMeasureChecks(browser) {
   await focus(0, 0, 0);
 
   // A table in the start room, then a crate dropped onto its top (0.8 m), not the floor under it.
-  await clickTool(page, '[data-tool="prop:prop.table"]');
+  await clickTool(page, '[data-tool="prop:kit.table.dining"]');
   await clickAt(0, 0, 1);
-  const table = (await props()).find((e) => e.model === 'prop.table');
+  const table = (await props()).find((e) => e.model === 'kit.table.dining');
   check(table && table.position[1] === 0, `a table placed on the room's floor (${JSON.stringify(table?.position)})`);
   await clickTool(page, '[data-tool="prop:kit.crate.wood"]');
   await hoverAt(0.3, 0.8, 1.2);
@@ -6390,6 +6390,18 @@ async function arsenalFlow(browser) {
   const spearStuck = spearOut && await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'spear' && p.stuck), null, T(10000));
   const spearDrawn = await page.waitForFunction(() => window.__cs.view.spearModelsDrawn() > 0, null, { timeout: T(20000) }).then(() => true, () => false);
   check(spearHeld && spearOut && spearStuck && spearDrawn, `the Spear is held as its model, and thrown it flies and sticks as that model (held ${spearHeld}, thrown ${spearOut}, stuck ${spearStuck}, drawn ${spearDrawn})`);
+  // A thrown sheep is drawn as its skinned model at its size (content/throwables.json, fit 0.7 m in its bind pose; its
+  // walk clip crouches it to about 0.42), not 7 mm tall (a 0.01 armature, once sized as if its scale were not drawn).
+  await sim(page, (m, me) => {
+    me.throwable = { kind: 'sheep', count: 3 };
+    me.throwCooldown = 0;
+  });
+  await page.evaluate(() => (window.__autoInput = { buttons: 64 }));
+  const sheepOut = await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'sheep'), null, T(10000));
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const sheepDrawn = sheepOut && await page.waitForFunction(() => window.__cs.view.thrownModelSizes().some((s) => s.look === 'sheep'), null, { timeout: T(20000) }).then(() => true, () => false);
+  const sheepSize = await page.evaluate(() => window.__cs.view.thrownModelSizes().filter((s) => s.look === 'sheep').map((s) => s.tall));
+  check(sheepOut && sheepDrawn && sheepSize.length > 0 && sheepSize.every((t) => t > 0.3 && t < 1), `a thrown sheep is drawn as its model, 0.3-1 m tall (0.7 in its bind pose, lower in its walk) (thrown ${sheepOut}, drawn ${sheepDrawn}, ${sheepSize.join(', ')} m)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await thirdPersonShot(browser);
@@ -6726,7 +6738,8 @@ async function vehiclesFlow(browser) {
     const me = window.__match.slots[window.__cs.slot];
     const m = me.mount ? window.__cs.mounts.mounts.get(window.__match.mounts[me.mount.index].index) : null;
     const root = m && window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
-    const pivots = root ? root.getChildTransformNodes().filter((n) => /_pivot\d$/.test(n.name)) : [];
+    // The buggy's own tires (its model's wheel parts) on pivots at their hubs (mountVisuals.ts).
+    const pivots = root ? root.getChildTransformNodes().filter((n) => /_pivot(\d$|_.*wheel)/.test(n.name)) : [];
     return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, tires: pivots.filter((p) => p.getChildren().length).length, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
   });
   check(sprung.susp && sprung.wheels === 4 && sprung.pivots === 4 && sprung.tires === 4 && sprung.rolled, `the buggy rides the sim's suspension, its tires on hub pivots rolling (${JSON.stringify(sprung)})`);
@@ -6810,8 +6823,9 @@ async function vehiclesFlow(browser) {
   }
   await page.evaluate(() => (window.__cs.input.pitch = 0));
   check(roll < 1, `after leaving the buggy and a blast nearby, the view and gun stay level as you turn (${roll.toFixed(2)}° roll)`);
-  // Passengers: three bots take the driver's and two passenger seats (E fills the next free seat), you take the last;
-  // everyone sits, and you shoot your own gun out of the side without hitting the buggy. A fifth can't get in.
+  // Passengers: five bots take the driver's, the front passenger's and three deck places (E fills the next free seat),
+  // you take the last place on the deck; the front two sit, the deck riders stand, and you shoot your own gun out of
+  // the side without hitting the buggy. A seventh can't get in.
   const ride = await page.evaluate(() => {
     const match = window.__match;
     const me = match.slots[window.__cs.slot];
@@ -6826,16 +6840,16 @@ async function vehiclesFlow(browser) {
     m.yaw = m.home.yaw;
     if ('speed' in m) m.speed = 0;
     // Bots drawn as characters (a creature has no seated pose).
-    const bots = match.slots.filter((c) => c?.bot && c.alive && !c.mount && 'sit' in (window.__cs.view.avatars.get(c.slot)?.anim ?? {})).slice(0, 4);
+    const bots = match.slots.filter((c) => c?.bot && c.alive && !c.mount && 'sit' in (window.__cs.view.avatars.get(c.slot)?.anim ?? {})).slice(0, 6);
     const seats = [];
-    for (const b of bots.slice(0, 3)) {
+    for (const b of bots.slice(0, 5)) {
       b.move = { pos: { x: m.pos.x, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: true };
       match.enterMount(b);
       seats.push(b.mount?.seat ?? -1);
     }
     me.move = { pos: { x: m.pos.x + 2.4, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: false };
     window.__autoInput = { buttons: 0 };
-    return { index: m.index, seats, fifth: bots[3]?.slot, riders: bots.slice(0, 3).map((b) => b.slot) };
+    return { index: m.index, seats, fifth: bots[5]?.slot, riders: bots.slice(0, 2).map((b) => b.slot), standing: bots.slice(2, 5).map((b) => b.slot) };
   });
   for (let i = 0; i < 4; i++) {
     if (await page.evaluate(() => !!window.__match.slots[window.__cs.slot].mount)) break;
@@ -6866,14 +6880,16 @@ async function vehiclesFlow(browser) {
       stance: me.move.stance,
       view: window.__cs.rideView(),
       sit: ride.riders.map((s) => +(window.__cs.view.avatars.get(s)?.anim?.sit ?? 0).toFixed(2)),
+      stand: ride.standing.map((s) => +(window.__cs.view.avatars.get(s)?.anim?.sit ?? 0).toFixed(2)),
       hips,
       fifth,
       health: m.health,
     };
   }, ride);
-  check(ride.seats.join() === '0,1,2' && seated.mine === 3 && seated.role === 'passenger' && seated.stance === 1 && seated.view === 'seat', `three riders and you fill the buggy's four seats in order, you in the back as a seated passenger (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
+  check(ride.seats.join() === '0,1,2,3,4' && seated.mine === 5 && seated.role === 'passenger' && seated.stance === undefined && seated.view === 'seat', `five riders and you fill the buggy's six places in order, you standing on its deck (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
   check(seated.sit.every((v) => v > 0.95) && seated.hips.every((h) => h !== null && h > 0 && h < 0.3), `riders are drawn sitting on their seats (sit ${seated.sit.join(', ')}; hips ${seated.hips.join(', ')} m over the cushions)`);
-  check(seated.fifth === false, 'a fifth player can\'t get into a full buggy');
+  check(seated.stand.length === 3 && seated.stand.every((v) => v < 0.05), `riders on the deck are drawn standing (sit ${seated.stand.join(', ')})`);
+  check(seated.fifth === false, 'a seventh player can\'t get into a full buggy');
   // Fire out of the right side, aiming down a little: your own gun, and the rounds leave through the buggy.
   const shot = await page.evaluate((index) => {
     const match = window.__match;
@@ -6893,7 +6909,7 @@ async function vehiclesFlow(browser) {
     const m = window.__match.mounts.find((x) => x.index === index);
     return { mag: me.weapons.get(window.__shotStart.weapon)?.mag, health: m.health, seat: me.mount?.seat };
   }, ride.index);
-  check(fired.mag < shot.mag && fired.health === shot.health && fired.seat === 3, `a seated passenger fires their own gun out of the side and the rounds don't hit their own buggy (${JSON.stringify({ weapon: shot.weapon, mag: [shot.mag, fired.mag], health: [shot.health, fired.health] })})`);
+  check(fired.mag < shot.mag && fired.health === shot.health && fired.seat === 5, `a rider on the deck fires their own gun out of the side and the rounds don't hit their own buggy (${JSON.stringify({ weapon: shot.weapon, mag: [shot.mag, fired.mag], health: [shot.health, fired.health] })})`);
   for (let i = 0; i < 4; i++) {
     if (await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount)) break;
     await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
@@ -6921,6 +6937,7 @@ async function vehiclesFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await arcTurretChecks(browser);
+  await troopTruckChecks(browser);
   await tankChecks(browser);
   await passengerChecks(browser);
 }
@@ -7152,6 +7169,98 @@ async function tankChecks(browser) {
     check(blast.tankLost > 0 && blast.meLost === 0 && blast.alive, `aboard, a blast beside you hurts the tank, not you (${JSON.stringify(blast)})`);
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * The Troop Truck (MOUNT_DEFS.troop_truck, 2026-11-11): placed from MapMaker's Vehicles palette (six places), then in
+ * TEST play you get in at the wheel and see from the cab, drive off on its six tires (on hub pivots, rolling), and H
+ * gives a chase camera outside it. Its seats (six, the bed's four standing) are unit-tested (mounts.test.ts).
+ */
+async function troopTruckChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await page.evaluate(() => window.__editor.view.focus({ x: -20, y: 0, z: 20 }));
+  const title = await page.evaluate(() => document.querySelector('[data-tool="mount:troop_truck"]')?.textContent ?? null);
+  check(/Troop Truck · 6/.test(title ?? ''), `MapMaker's Vehicles palette offers the Troop Truck with six places (${title})`);
+  await clickTool(page, '[data-tool="mount:troop_truck"]');
+  const p = await page.evaluate(() => window.__editor.view.project({ x: -20, y: 0, z: 20 }));
+  await page.mouse.move(p.x, p.y);
+  await page.mouse.click(p.x, p.y);
+  await page.keyboard.press('Escape');
+  const truck = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'mount' && e.model === 'troop_truck'));
+  check(!!truck, `it places a Troop Truck (${JSON.stringify(truck?.position)})`);
+  await page.keyboard.press('F5');
+  await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) });
+  await holdBots(page);
+  const at = await sim(page, (m, me) => {
+    for (const c of m.combatants()) if (c.bot) { c.bot.nextMountTick = Number.MAX_SAFE_INTEGER; c.move = { pos: { x: c.move.pos.x + 60, y: 0.5, z: c.move.pos.z + 60 }, velY: 0, grounded: false }; }
+    const t = m.mounts.find((x) => x.def.id === 'troop_truck');
+    if (!t) return null;
+    me.maxHealth = me.health = 5000;
+    me.move = { pos: { x: t.pos.x + Math.cos(t.yaw) * 2.6, y: t.pos.y + 0.3, z: t.pos.z - Math.sin(t.yaw) * 2.6 }, velY: 0, grounded: false };
+    return { at: m.mounts.indexOf(t), index: t.index };
+  }).catch(() => null);
+  if (at) {
+    for (let i = 0; i < 4; i++) {
+      if (await sim(page, (m, me) => !!me.mount).catch(() => false)) break;
+      await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
+      await simWait(page, (m, me) => !!me.mount, null, T(8000));
+    }
+  }
+  const role = await sim(page, (m, me) => (me.mount ? m.mounts[me.mount.index].def.seats[me.mount.seat].role : null)).catch(() => null);
+  check(role === 'driver', `you get in at the wheel (${role})`);
+  // The cockpit eye: in the cab, inside the truck's box.
+  const cam = () => page.evaluate(() => {
+    const cs = window.__cs;
+    const m = [...cs.mounts.mounts.values()].find((x) => x.def.id === 'troop_truck');
+    const c = cs.view.camera.position;
+    if (!m) return { view: cs.rideView() };
+    const d = { x: c.x - m.shown.pos.x, y: c.y - m.shown.pos.y, z: c.z - m.shown.pos.z };
+    const s = Math.sin(m.shown.yaw);
+    const k = Math.cos(m.shown.yaw);
+    const local = [d.x * k - d.z * s, d.y, d.x * s + d.z * k];
+    const half = m.def.half;
+    return { view: cs.rideView(), local: local.map((v) => +v.toFixed(2)), inBox: Math.abs(local[0]) < half[0] && local[1] > 0 && local[1] < half[1] * 2 && Math.abs(local[2]) < half[2] };
+  });
+  await page.waitForFunction(() => window.__cs.rideView() === 'cockpit', null, { timeout: T(10000) }).catch(() => {});
+  const cockpit = await cam();
+  check(cockpit.view === 'cockpit' && cockpit.inBox && cockpit.local[2] > 0.5, `in the cockpit the eye is in the cab (${JSON.stringify(cockpit)})`);
+  if (process.env.E2E_SHOTS) await page.addStyleTag({ content: '#pause, #message { display: none !important; }' });
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/vehicles-truck-cockpit.png`, timeout: T(60000) }).catch(() => {});
+  // Drive off: the six tires on pivots at their hubs, rolling.
+  const start = await sim(page, (m, me) => ({ ...me.move.pos })).catch(() => null);
+  await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
+  await simWait(page, (m, me, s) => Math.hypot(me.move.pos.x - s.x, me.move.pos.z - s.z) > 6, start, T(15000));
+  // The drawn truck trails the match by a frame or more on a slow page: wait (still driving) for the tires to roll.
+  await page.waitForFunction(() => {
+    const m = [...window.__cs.mounts.mounts.values()].find((x) => x.def.id === 'troop_truck');
+    const root = m && window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
+    return !!root && root.getChildTransformNodes().some((n) => /_pivot_.*wheel/.test(n.name) && Math.abs(n.rotation.x) > 1e-3);
+  }, null, { timeout: T(15000) }).catch(() => {});
+  const wheels = await page.evaluate(() => {
+    const m = [...window.__cs.mounts.mounts.values()].find((x) => x.def.id === 'troop_truck');
+    const root = m && window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
+    const pivots = root ? root.getChildTransformNodes().filter((n) => /_pivot_.*wheel/.test(n.name)) : [];
+    return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
+  });
+  const moved = await sim(page, (m, me, s) => +Math.hypot(me.move.pos.x - s.x, me.move.pos.z - s.z).toFixed(1), start).catch(() => 0);
+  check(moved > 6 && wheels.susp && wheels.wheels === 6 && wheels.pivots === 6 && wheels.rolled, `it drives off (${moved} m) on six sprung tires, rolling (${JSON.stringify(wheels)})`);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await page.keyboard.press('KeyH');
+  await page.waitForFunction(() => window.__cs.rideView() === 'chase', null, { timeout: T(8000) }).catch(() => {});
+  await frames(page, 10);
+  const chase = await cam();
+  check(chase.view === 'chase' && !chase.inBox, `H gives a chase camera outside the truck (${JSON.stringify(chase)})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/vehicles-truck-chase.png`, timeout: T(60000) }).catch(() => {});
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
   await page.context().close();
 }
 

@@ -4,7 +4,8 @@ Place them from MapMaker's Entities → Vehicles tab. Players walk
 up and press **E** to get in (driver first, then gunner, then passengers) and
 **E** again to get out. The definitions are data in
 `packages/shared/src/sim/mounts.ts`. Models come from Kenney Space Kit
-and Car Kit, a Meshy Community snowmobile, Quaternius' Ultimate Spaceships and Tank Pack (all CC0).
+and Car Kit, Meshy Community models (the snowmobile, the buggy, and the four of the vehicle refresh), Quaternius' Ultimate
+Spaceships and Tank Pack (all CC0).
 
 | Mount | Seats | What it does |
 |---|---|---|
@@ -14,7 +15,7 @@ and Car Kit, a Meshy Community snowmobile, Quaternius' Ultimate Spaceships and T
 | Arc Turret | none | An auto-turret like the Sentry Gun, with a tell: it winds up (0.75 s, a growing charge ball and a warning sound) on an enemy it can see within 22 m, then locks an energy arc on that hits 5 every 0.1 s and jumps to one enemy within 6 m of them (half damage). Breaking its line of sight or leaving its reach drops the lock and the charge; a 2 s lock ends in a 1.25 s vent. 240 health. Drawn on the Rocket Turret's cannon in its own violet energy colour (`MountDef.glow`). MapMaker warns (`mount.arc_spawn`) when one stands within 12 m of a spawn it would shoot at. See "Arc Turret" below |
 | Go-Kart | 1 driver | Very quick, no gun: run people over |
 | Speeder | 2 (pilot, passenger) | Hovering; the pilot fires twin blasters ahead, the passenger shoots their own weapon |
-| Buggy | 4 (driver, 3 passengers) | Everyone but the driver sits and shoots their own weapon, all round; the roof gun is scenery |
+| Buggy | 6 (driver, front passenger, 4 on the deck) | Everyone but the driver shoots their own weapon, all round: the front passenger sits, the four in the back stand on the open deck behind the cage |
 | Hauler | 6 (pilot, gunner, 4 passengers) | A slow hovering transport with a rocket gunner |
 | Skyfighter | 1 pilot | Flies: the pilot climbs (Space) and dives (Ctrl/crouch), up to 30 m above where it was parked, firing twin blasters ahead |
 | Dropship | 6 (pilot, gunner, 4 passengers) | A flying troop carrier with an all-round door gun; riders stand on the deck |
@@ -24,6 +25,7 @@ and Car Kit, a Meshy Community snowmobile, Quaternius' Ultimate Spaceships and T
 | Hover Bike | 1 rider | Hover: the fastest thing on the map (31 m/s), fragile (170 health), no gun |
 | Gunship | 3 (pilot, left and right door guns) | Flying, on the dropship's flight model: the pilot fires blasters ahead, each door gunner covers ±70° off their own side (950 health) |
 | Ice Cream Truck | 4 (driver, 3 riders) | Wheeled light, the fun one: no gun, but the three riders shoot their own weapons out of the windows |
+| Troop Truck | 6 (driver, cab passenger, 4 on the bed) | Wheeled heavy, no gun: a six-wheeled army truck (700 health); the cab passenger sits, the four on the flatbed stand, and all five shoot their own weapons |
 | Snow Sled | 2 (driver, passenger) | A snowmobile with hover handling: quick and slidey, sits on the snow instead of floating; both riders sit astride the saddle |
 
 - **Driving.** W/S throttle and reverse, A/D steer (harder the faster you
@@ -56,24 +58,37 @@ and Car Kit, a Meshy Community snowmobile, Quaternius' Ultimate Spaceships and T
   climb on jump and dive on crouch; let go and they hold their height. Left
   without a pilot they sink gently to the ground. Bots fly them at ground
   level.
-- **Models.** The gun jeep (pickup truck), armored rover (delivery truck) and
-  ice cream truck (van) are Kenney Car Kit models recoloured at build time;
-  the hover bike (speeder A), gunship (cargo craft B) and transport plane
-  (cargo craft A) are from Kenney Space Kit. The snow sled is "Snowmobile" by
+- **Models.** The vehicle refresh (2026-11-11; Meshy Community CC0 from the owner's Drive, built by
+  `prepare-guns.mjs` from `content/guns.json`: about 14-20k triangles plus a quarter-size level from 40 m,
+  1-2k colour and 1k normal maps, 1.5-2.1 MB each): the **gun jeep** is the Recon Trike
+  (`vehicles/recon_jeep.glb`, a Warthog-style four-wheeler with a pintle gun on the cage; its tires are cut out as
+  parts, `wheel_*`, so they spin, steer and ride the springs), the **hover bike** TNR 1017
+  (`vehicles/tnr_hover_bike.glb`), the **speeder** Cyber Fang Mk III (`vehicles/cyber_fang.glb`) and the **armored
+  rover** Dust Runner (`vehicles/dust_runner.glb`, a closed off-roader). Re-skins only: each keeps its box,
+  handling, guns and health; the seats were moved onto the new models (measured on them, notes in
+  `content/vehicles/<id>.json`) and the models they replaced are their `fallback`. The ice cream truck (van) is a
+  Kenney Car Kit model recoloured at build time; the gunship (cargo craft B) and transport plane (cargo craft A) are
+  from Kenney Space Kit. The snow sled is "Snowmobile" by
   roygbpjyt (Meshy Community, CC0; `content/guns.json`, built by
   `prepare-guns.mjs`: 20k triangles plus a 5k one from 40 m, 2048 px colour
   and 1024 px normal map, 1.42 MB, 3.0 m long), replacing Kenney Holiday Kit's
-  long sled on 2026-11-04; its riders sit astride (`straddle` on the seats). The tank is Quaternius' Tank Pack (CC0) desert tank. The speeder (Striker), hauler (Dispatcher), skyfighter
+  long sled on 2026-11-04; its riders sit astride (`straddle` on the seats). The tank is Quaternius' Tank Pack (CC0) desert tank. The hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
   Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
-  The buggy is a Meshy Community model (Tactical Off-Road Beast, CC0 per the owner;
-  `content/guns.json`, built by `prepare-guns.mjs`, 6.8k triangles, 768 px map):
-  a long tube-frame buggy with a roof gun whose hubs are bare, so the Meshy Community
-  Rugged Off-Road Tire (`vehicles/offroad_tire.glb`, 676 triangles) is drawn at
-  each hub from the def's `wheels` (`mountVisuals.ts`), and the body rides
-  0.24 m up (`rideHeight`) on them. The tires roll with the buggy's speed,
-  the front pair steers, and each rides its own spring (see Suspension below);
-  the gun jeep's own wheels (the Car Kit model's wheel meshes) do the same.
+  The buggy (vehicle refresh part 2, 2026-11-11) is a Meshy Community sci-fi buggy (`Meshy_AI__1108120754`, CC0;
+  `vehicles/sixer_buggy.glb`, 20k triangles plus a quarter LOD, 2048 px colour map): a tube-frame four-wheeler with
+  a cage over two seats and an open deck behind, where four riders stand (the owner's layout: driver, a seated
+  front passenger, four standing). Its tires, like the gun jeep's, are cut out of the body as parts (`parts` in
+  `content/guns.json`, nodes `wheel_*`): `mountVisuals.ts` puts each on a pivot at its hub (its lower level of detail
+  with it), so they roll with the speed, the front pair steers, and each rides its own spring (see Suspension
+  below). The suspension's contact points and hub height are the old tires' (`vehicle.suspension.wheels`, `hub`),
+  so it drives as before. The Tactical Off-Road Beast it replaced, on its separate Rugged Off-Road Tires, is its
+  `fallback`.
+  The **troop truck** (2026-11-11) is Ironclad Vanguard (Meshy Community CC0, the owner's Drive,
+  `Meshy_AI_Ironclad_Vanguard_1111000212_texture.glb`; `vehicles/troop_truck.glb`, 20k triangles plus a quarter LOD):
+  a three-axle army truck, a closed cab ahead of an open flatbed where four riders stand. Its six tires are `wheel_*`
+  parts on six suspension points; its box is the whole truck, tires included (2.8 × 2.54 × 5.6 m). Not placed on
+  any real map yet (the coverage map has one).
 - **Shooting from a seat.** Gunners fire the seat's gun (heat, no
   reloading) within its arc; side door guns (the gunship's) have arcs centred
   on their own side (`facing` on the seat). Passengers use their own weapons. Drivers can't
@@ -185,18 +200,18 @@ small generated roughness grain. Everyone else, and your chase camera, see the
 body alone (`game/cockpitInterior.ts` adds the parts under your vehicle's body
 node, so they ride its springs and tilt).
 
-The buggy's was measured on its model (slices of the triangles): the roof
-frame at 1.47 m on rails 0.46 m either side from the rear hoop (z -1.0) to the
-front bar with its lamps (z 0.6), a hoop behind the front seats (z 0.05),
-A-pillars and a centre brace falling to the hood, three rows of seats, the
-wheel on the left at z 0.78 and a sand cowl over the dash so the road shows
-past the hood. About 17k triangles in 9 draws (4 surfaces static, 2 for the
+The buggy's was measured on its model (slices of the triangles; refitted to the
+sci-fi buggy on 2026-11-11): the roof frame at 1.65 m on rails 0.58 m either side
+from the hoop behind the cabin (z -0.6, where the deck starts) to the front bar
+with its lamps (z 0.4), a hoop behind the seats (z -0.15), A-pillars and a centre
+brace falling to the hood, one row of seats (the deck riders stand), the wheel on
+the left at z 0.58 and a cowl over the dash so the road shows past the hood. About 17k triangles in 9 draws (4 surfaces static, 2 for the
 wheel, one per needle), built once on first use. The gun jeep and kart can get
 one by adding an entry.
 
 ## Suspension (the Warthog feel)
 
-The buggy and the gun jeep ride on **raycast suspension** in the simulation
+The buggy, the gun jeep and the troop truck ride on **raycast suspension** in the simulation
 (`shared/src/sim/suspension.ts`, tuning in `MOUNT_DEFS[…].vehicle.suspension`):
 one ray straight down per wheel each tick finds the ground under it, and a
 spring and damper per wheel push on a sprung body above the chassis. The four
@@ -217,6 +232,7 @@ and the handbrake (Space) still breaks grip for a proper slide.
 |---|---|---|---|---|---|---|---|
 | Buggy | 1.5 Hz, 0.32 (soft, bouncy) | 0.20 / 0.16 m | 0.004 · 0.0045 | 1.4 rad/s² | 0.5 | 0.55 | 0.5 rad |
 | Gun Jeep | 1.8 Hz, 0.38 (a pickup: firmer) | 0.16 / 0.13 m | 0.0028 · 0.0038 | 1.2 rad/s² | 0.45 | 0.4 | 0.45 rad |
+| Troop Truck (six wheels) | 1.9 Hz, 0.45 (a truck: stiff) | 0.14 / 0.11 m | 0.002 · 0.0025 | 0.8 rad/s² | 0.4 | 0.15 | 0.4 rad |
 
 Tank and armored rover stay heavy and planted, and the kart, ice cream truck,
 hovercraft and flyers are unchanged: their bodies are drawn settling to the
@@ -240,7 +256,7 @@ own tuning (top speed, acceleration, turn rate, grip, weight, health, blast):
 | Class | How it drives | Vehicles |
 |---|---|---|
 | Wheeled light | Grippy, quick to turn, ramps launch it, hard landings dent it (buggy and gun jeep: on raycast suspension, loose at speed) | Go-Kart, Buggy, Gun Jeep, Ice Cream Truck |
-| Wheeled heavy | Slow to speed up, high grip and weight: shrugs off pushes, loses little in crashes | Armored Rover |
+| Wheeled heavy | Slow to speed up, high grip and weight: shrugs off pushes, loses little in crashes | Armored Rover (14 m/s, accel 7, turn 1.25 rad/s, grip 0.38, 3.6 t, 900 health), Troop Truck (16 m/s, accel 8.5, turn 1.4 rad/s, grip 0.36, 3 t, 700 health; on raycast suspension) |
 | Tracked | Slowest, heaviest, turns on the spot | Tank |
 | Hover | Low grip, drifts, floats over bumps, no landing damage | Speeder, Hauler, Hover Bike, Snow Sled |
 | Flying | Hover handling plus climb (jump) and dive (crouch) up to a ceiling | Skyfighter, Dropship, Gunship |

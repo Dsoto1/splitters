@@ -82,6 +82,26 @@
       "meshy": true,
       "glb": true
     },
+    "meshy-community-drive-1108": {
+      "title": "Meshy community models (vehicles, textured GLB downloads from the owner's Drive, 2026-11-08)",
+      "creator": "Meshy community (authors not recorded; CC0 per the owner's rule of 2026-11-06)",
+      "url": "https://www.meshy.ai (community post URLs pending from the owner)",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/meshy-community/License.txt",
+      "retrieved": "2026-11-08",
+      "meshy": true,
+      "glb": true
+    },
+    "meshy-community-drive-1111": {
+      "title": "Meshy community models (the Troop Truck, textured GLB download from the owner's Drive, 2026-11-11)",
+      "creator": "Meshy community (author not recorded; CC0 per the owner's rule of 2026-11-06)",
+      "url": "https://www.meshy.ai (community post URL pending from the owner)",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/meshy-community/License.txt",
+      "retrieved": "2026-11-11",
+      "meshy": true,
+      "glb": true
+    },
     "meshy-community-arsenal": {
       "title": "Meshy community models (weapons, turrets, the medkit, the WWII tank, the buggy and its tire; textured GLB downloads)",
       "creator": "Meshy community, CC0 (per owner)",
@@ -106,6 +126,10 @@
         "maxTriangles": 45000,
         "maxBytes": 4500000,
         "maxLodTriangles": 12000
+      },
+      "animated": {
+        "maxTriangles": 10000,
+        "maxBytes": 1500000
       },
       "cockpit": {
         "maxTriangles": 36000,
@@ -661,6 +685,23 @@
       "length": 0.2
     },
     {
+      "out": "guns/flare_gun.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "download": "Flare_Gun",
+      "file": "FlareGun.fbx",
+      "label": "Flare Gun (3DModelsCC0 Guns & Explosives): the Flare Gun",
+      "maps": {
+        "base": "FlareGun_Base_Color.png",
+        "normal": "FlareGun_Normal_DirectX.png",
+        "metallic": "FlareGun_Metallic.png",
+        "roughness": "FlareGun_Roughness.png"
+      },
+      "pbr": true,
+      "held": true,
+      "forward": "-z",
+      "length": 0.24
+    },
+    {
       "out": "guns/grease_gun.glb",
       "pack": "3dmodelscc0-guns-explosives",
       "file": "GreaseGun/Grease_Gun.fbx",
@@ -927,6 +968,42 @@
       "pbr": true
     },
     {
+      "out": "guns/sandbags.glb",
+      "pack": "meshy-community-drive-1110",
+      "glb": "Meshy_AI_mur_de_sacs_12_1110164725_texture.glb",
+      "label": "mur de sacs 12 (Meshy Community download, 2026-11-10): the Sandbags, small, in hand and in flight",
+      "forward": "+z",
+      "height": 0.13,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/sandbag_wall.glb",
+      "pack": "meshy-community-drive-1110",
+      "glb": "Meshy_AI_mur_de_sacs_12_1110164725_texture.glb",
+      "label": "mur de sacs 12 (Meshy Community download, 2026-11-10): the deployed Sandbags cover wall",
+      "forward": "+z",
+      "height": 0.64,
+      "triangles": 3000,
+      "maxError": 0.03,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/sheep.glb",
+      "pack": "meshy-community-drive-1110",
+      "glb": "sheep_walking.glb",
+      "label": "Sheep (Meshy Community download, 2026-11-10; file sheep_walking.glb, rigged, with its walk clip): the Sheep",
+      "animated": true,
+      "triangles": 9000,
+      "textureSize": 512,
+      "budget": "animated"
+    },
+    {
       "out": "guns/sunburst_grenade.glb",
       "pack": "meshy-community-drive-1106c",
       "glb": "Meshy_AI_Sunburst_Grenade_1106213842_texture.glb",
@@ -964,6 +1041,134 @@
       "normalSize": 256,
       "surface": "rebake",
       "pbr": true
+    },
+    {
+      "out": "vehicles/recon_jeep.glb",
+      "pack": "meshy-community-drive-1108",
+      "glb": "Meshy_AI_Recon_Trike_1108120608_image-to-3d-texture.glb",
+      "label": "Recon Trike, the Gun Jeep (Meshy Community download, owner's Drive, 2026-11-08)",
+      "forward": "-x",
+      "length": 4.4,
+      "triangles": 20000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024,
+      "parts": [
+        {"name": "wheel_fl", "box": [[0.88, -1.23, 0.95], [1.46, -0.05, 2.19]], "pivot": [1.17, -0.64, 1.57]},
+        {"name": "wheel_rl", "box": [[0.88, -1.23, -2.24], [1.46, -0.05, -1.0]], "pivot": [1.17, -0.64, -1.62]},
+        {"name": "wheel_fr", "box": [[-1.46, -1.23, 0.95], [-0.88, -0.05, 2.19]], "pivot": [-1.17, -0.64, 1.57]},
+        {"name": "wheel_rr", "box": [[-1.46, -1.23, -2.24], [-0.88, -0.05, -1.0]], "pivot": [-1.17, -0.64, -1.62]}
+      ]
+    },
+    {
+      "out": "vehicles/tnr_hover_bike.glb",
+      "pack": "meshy-community-drive-1108",
+      "glb": "Meshy_AI_TNR_1017_1108121200_texture.glb",
+      "label": "TNR 1017, the Hover Bike (Meshy Community download, owner's Drive, 2026-11-08)",
+      "forward": "-x",
+      "length": 3.0,
+      "triangles": 14000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 1024,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024
+    },
+    {
+      "out": "vehicles/cyber_fang.glb",
+      "pack": "meshy-community-drive-1108",
+      "glb": "Meshy_AI_Cyber_Fang_Mk_III_Ass_1108121118_texture.glb",
+      "label": "Cyber Fang Mk III, the Speeder (Meshy Community download, owner's Drive, 2026-11-08)",
+      "forward": "-x",
+      "length": 4.0,
+      "triangles": 16000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024
+    },
+    {
+      "out": "vehicles/dust_runner.glb",
+      "pack": "meshy-community-drive-1108",
+      "glb": "Meshy_AI_Dust_Runner_1108120725_texture.glb",
+      "label": "Dust Runner, the Armored Rover (Meshy Community download, owner's Drive, 2026-11-08)",
+      "forward": "-x",
+      "length": 5.3,
+      "triangles": 20000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024
+    },
+    {
+      "out": "vehicles/sixer_buggy.glb",
+      "pack": "meshy-community-drive-1108",
+      "glb": "Meshy_AI__1108120754_texture.glb",
+      "label": "Untitled sci-fi buggy (Meshy_AI__1108120754), the Buggy (Meshy Community download, owner's Drive, 2026-11-08)",
+      "forward": "-x",
+      "length": 4.4,
+      "triangles": 20000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024,
+      "parts": [
+        {"name": "wheel_fl", "box": [[0.84, -1.0, 0.95], [1.45, 0.12, 2.15]], "pivot": [1.14, -0.44, 1.55]},
+        {"name": "wheel_fr", "box": [[-1.45, -1.0, 0.95], [-0.84, 0.12, 2.15]], "pivot": [-1.14, -0.44, 1.55]},
+        {"name": "wheel_rl", "box": [[0.84, -1.0, -2.05], [1.45, 0.12, -0.85]], "pivot": [1.14, -0.44, -1.45]},
+        {"name": "wheel_rr", "box": [[-1.45, -1.0, -2.05], [-0.84, 0.12, -0.85]], "pivot": [-1.14, -0.44, -1.45]}
+      ]
+    },
+    {
+      "out": "vehicles/troop_truck.glb",
+      "pack": "meshy-community-drive-1111",
+      "glb": "Meshy_AI_Ironclad_Vanguard_1111000212_texture.glb",
+      "label": "Ironclad Vanguard, the Troop Truck (Meshy Community download, owner's Drive, 2026-11-11)",
+      "forward": "-x",
+      "length": 5.6,
+      "triangles": 20000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024,
+      "parts": [
+        {"name": "wheel_fl", "box": [[0.72, -1.28, 0.85], [1.25, -0.04, 1.95]], "pivot": [0.98, -0.67, 1.4]},
+        {"name": "wheel_fr", "box": [[-1.25, -1.28, 0.85], [-0.72, -0.04, 1.95]], "pivot": [-0.98, -0.67, 1.4]},
+        {"name": "wheel_ml", "box": [[0.72, -1.28, -1.27], [1.25, -0.04, -0.17]], "pivot": [0.98, -0.67, -0.72]},
+        {"name": "wheel_mr", "box": [[-1.25, -1.28, -1.27], [-0.72, -0.04, -0.17]], "pivot": [-0.98, -0.67, -0.72]},
+        {"name": "wheel_rl", "box": [[0.72, -1.28, -2.37], [1.25, -0.04, -1.27]], "pivot": [0.98, -0.67, -1.82]},
+        {"name": "wheel_rr", "box": [[-1.25, -1.28, -2.37], [-0.72, -0.04, -1.27]], "pivot": [-0.98, -0.67, -1.82]}
+      ]
     }
   ]
 }

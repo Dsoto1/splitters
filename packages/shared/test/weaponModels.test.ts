@@ -13,7 +13,7 @@ const exists = (path: string) => path.startsWith('procedural/') || existsSync(jo
 const lock = JSON.parse(readFileSync(join(__dirname, '../../../content/guns.lock.json'), 'utf8')) as { files: { file: string; triangles: number; tier?: string; heldOf?: string; bytes: number }[] };
 const locked = new Map(lock.files.map((f) => [f.file, f]));
 /** Throwables drawn in code (arsenalVisuals.ts): no model for them in the intake. */
-const DRAWN_IN_CODE = new Set(['sheep', 'airstrike', 'sandbag']);
+const DRAWN_IN_CODE = new Set(['airstrike']);
 
 describe('weapon models', () => {
   it('every weapon has its model, its fallback and its held copies on disk', () => {

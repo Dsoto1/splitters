@@ -24,6 +24,10 @@ import { writeKitModel } from './kit/glb.mjs';
 import { binMesh, crateMesh, framedCrateMesh } from './kit/crate.mjs';
 import { drumMesh } from './kit/drum.mjs';
 import { cartonMesh } from './kit/carton.mjs';
+import { barrierMesh, fenceMesh, railingMesh, stoneWallMesh } from './kit/fence.mjs';
+import { containerMesh } from './kit/container.mjs';
+import { bookcaseMesh, seatMesh, tableMesh } from './kit/furniture.mjs';
+import { counterMesh, shelfMesh, stallMesh, wasteBinMesh } from './kit/shop.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = 'content/kitprops.json';
@@ -33,7 +37,7 @@ const OUT = 'packages/client/public/kit';
 const SHARED = 'packages/shared/src/content/kitProps.generated.ts';
 
 /** Generator kinds and what makes each. */
-export const KINDS = { crate: crateMesh, framed: framedCrateMesh, bin: binMesh, drum: drumMesh, carton: cartonMesh };
+export const KINDS = { crate: crateMesh, framed: framedCrateMesh, bin: binMesh, drum: drumMesh, carton: cartonMesh, fence: fenceMesh, railing: railingMesh, stonewall: stoneWallMesh, barrier: barrierMesh, container: containerMesh, table: tableMesh, seat: seatMesh, bookcase: bookcaseMesh, shelf: shelfMesh, stall: stallMesh, counter: counterMesh, wastebin: wasteBinMesh };
 const { num, int, str, en, tup, arr, obj, map } = shape;
 const ID = /^kit\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
 const mm = (v) => Math.round(v * 1000) / 1000;
@@ -117,10 +121,17 @@ export async function build(content, families) {
     const [, type, name] = f.id.split('.');
     const variants = [];
     let tris = null;
+    // Finer collision (a generator's `boxes` on its mesh: a fence's posts and rails): the family's own, so every
+    // variant must give the same, inside the family's bounds.
+    let boxes;
     for (const v of f.variants) {
       const g = { ...f.generator, ...(v.set ?? {}) };
       const levels = f.lods.map((l, i) => ({ distance: l.distance, mesh: make(v.seed, f.size, g, v.look, i) }));
       const t = levels.map((l) => l.mesh.triangles);
+      const own = levels[0].mesh.boxes?.length ? levels[0].mesh.boxes.map((b) => b.map(mm)) : null;
+      if (v === f.variants[0]) boxes = own;
+      else if (JSON.stringify(own) !== JSON.stringify(boxes)) throw new Error(`${f.id}#${v.name}: its collision boxes differ from the first variant's (a family has one collision: structure that changes it belongs in another family)`);
+      for (const b of own ?? []) if (b.some((c, k) => Math.abs(c) > f.size[k % 3] / (k % 3 === 1 ? 1 : 2) + 0.001 || (k === 1 && c < 0))) throw new Error(`${f.id}#${v.name}: a collision box ${JSON.stringify(b)} lies outside the family's size`);
       tris ??= t.map(() => 0);
       t.forEach((n, i) => (tris[i] = Math.max(tris[i], n)));
       const file = `kit/${type}.${name}.${v.name}.glb`;
@@ -131,7 +142,7 @@ export async function build(content, families) {
       report.push(`${f.id}#${v.name}: ${t.join(' / ')} triangles, ${glb.length} B`);
     }
     const size = f.size.map(mm);
-    props.push({ id: f.id, file: variants[0].file, displayName: f.displayName, category: f.category, size, collision: size, ...(f.breakable ? { breakable: { health: f.breakable.health, debris: f.breakable.debris } } : {}) });
+    props.push({ id: f.id, file: variants[0].file, displayName: f.displayName, category: f.category, size, collision: size, ...(boxes ? { boxes } : {}), ...(f.breakable ? { breakable: { health: f.breakable.health, debris: f.breakable.debris } } : {}) });
     render.push({ id: f.id, kind: f.generator.kind, assetVersion: f.assetVersion, surface: f.surface, lods: f.lods.map((l) => l.distance), triangles: tris, variants });
   }
   lockFiles.sort((a, b) => (a.file < b.file ? -1 : 1));

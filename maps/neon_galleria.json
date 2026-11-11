@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "neon_galleria",
     "name": "Neon Galleria",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_uy54jdpkmne5vzsk",
-      "versionId": "v_inwwaodsdhhedhx3",
-      "revision": 3,
-      "contentHash": "sha256:9fad56b1a18ea074b34843efda06d07cd047006b69e2edfe4e000a768f026e7e",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:24:52.091Z"
+      "versionId": "v_7h6krmcw6ujsnmxt",
+      "revision": 4,
+      "contentHash": "sha256:4ec72125a8436d342145ea36e490d4c33f36365e18b594cbb4ec3146df89d585",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T10:00:21.170Z"
     }
   },
   "classicStructure": {
@@ -17581,7 +17581,7 @@
         18.1
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -17595,7 +17595,7 @@
         17.1
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -17609,7 +17609,7 @@
         14.63
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -17623,7 +17623,7 @@
         14.12
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -17637,7 +17637,7 @@
         14.12
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -17651,7 +17651,7 @@
         15.15
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -17665,7 +17665,7 @@
         15.15
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -17819,7 +17819,7 @@
         17.98
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -17833,7 +17833,7 @@
         18.78
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -17861,7 +17861,7 @@
         16.5
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -17875,7 +17875,7 @@
         14.63
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -17889,7 +17889,7 @@
         14.12
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -17903,7 +17903,7 @@
         14.12
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -17917,7 +17917,7 @@
         15.15
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -17931,7 +17931,7 @@
         15.15
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -18127,7 +18127,7 @@
         17.59
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -18435,7 +18435,7 @@
         -16.71
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -18449,7 +18449,7 @@
         -18.51
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -18519,7 +18519,7 @@
         -19.23
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": -0.6149,
       "scale": 1,
       "solid": true,
@@ -18533,7 +18533,7 @@
         -15.69
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -18967,7 +18967,7 @@
         -18.64
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -18995,7 +18995,7 @@
         -18.64
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19037,7 +19037,7 @@
         -18.46
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19149,7 +19149,7 @@
         -15.75
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -19191,7 +19191,7 @@
         -19.14
       ],
       "kind": "prop",
-      "model": "prop.bookcase_wide",
+      "model": "kit.bookcase.wide",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19205,7 +19205,7 @@
         -19.23
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": -0.6732,
       "scale": 1,
       "solid": true,
@@ -19219,7 +19219,7 @@
         -18.65
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19233,7 +19233,7 @@
         -18.65
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19359,7 +19359,7 @@
         21.1
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19765,7 +19765,7 @@
         -2.82
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -19779,7 +19779,7 @@
         -2.82
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -19793,7 +19793,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -19807,7 +19807,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -19821,7 +19821,7 @@
         2.82
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -19835,7 +19835,7 @@
         2.82
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -19849,7 +19849,7 @@
         18.29
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -19947,7 +19947,7 @@
         -18.65
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20087,7 +20087,7 @@
         10.65
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -20157,7 +20157,7 @@
         -10.64
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20185,7 +20185,7 @@
         -1.59
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20199,7 +20199,7 @@
         -1.59
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20227,7 +20227,7 @@
         1.59
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20241,7 +20241,7 @@
         1.59
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20255,7 +20255,7 @@
         -7.96
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20269,7 +20269,7 @@
         -7.96
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20353,7 +20353,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20367,7 +20367,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20381,7 +20381,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20395,7 +20395,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20409,7 +20409,7 @@
         -2.82
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20423,7 +20423,7 @@
         -2.82
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20437,7 +20437,7 @@
         -2.82
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20451,7 +20451,7 @@
         -2.82
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20549,7 +20549,7 @@
         -14.91
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20577,7 +20577,7 @@
         -18.64
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20619,7 +20619,7 @@
         -18.64
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20689,7 +20689,7 @@
         -9.5
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -20717,7 +20717,7 @@
         -9.5
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20731,7 +20731,7 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -20759,7 +20759,7 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20773,7 +20773,7 @@
         -9.5
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -20801,7 +20801,7 @@
         -9.5
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20815,7 +20815,7 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -20843,7 +20843,7 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20857,7 +20857,7 @@
         -9.5
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -20885,7 +20885,7 @@
         -9.5
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20899,7 +20899,7 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -20927,7 +20927,7 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20941,7 +20941,7 @@
         -9.5
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -20969,7 +20969,7 @@
         -9.5
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20983,7 +20983,7 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21011,7 +21011,7 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 0,
       "scale": 1,
       "solid": true,

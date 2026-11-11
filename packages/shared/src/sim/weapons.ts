@@ -22,12 +22,13 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
 
 /**
  * How a projectile looks on the client (index sent in snapshots: new ones go last). `vortexNade` is the Vortex
- * Grenade's own look (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade.
+ * Grenade's own look (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade; `flareShot` the Airstrike
+ * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`).
  */
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
-  'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'vortexNade', 'smoke',
+  'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'vortexNade', 'smoke', 'flareShot',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
@@ -464,6 +465,12 @@ export interface ThrowableView {
   model: string;
   /** Drawn instead when `model` fails to load. */
   fallback?: string;
+  /** The deployed cover wall's model (sandbags: sized to the cover's box). */
+  cover?: string;
+  /** A skinned, animated model (the sheep): drawn this many metres tall, centred, whatever size its download is in. */
+  fit?: number;
+  /** Shown in your hands only (the Airstrike Flare: the flare gun you line the shot up with); in flight and where it lies the projectile keeps its own look. */
+  handOnly?: boolean;
   /** Another model in a weapon set (the frag's realistic one in Military, the smoke canister in Sci-fi). */
   looks?: Partial<Record<ThrowableLookSet, string>>;
 }

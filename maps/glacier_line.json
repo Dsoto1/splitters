@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "glacier_line",
     "name": "Glacier Line",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_6jrvegnpqp5udvrt",
-      "versionId": "v_aioe3yzbos7uarry",
-      "revision": 2,
-      "contentHash": "sha256:e44e7420afefe7843a95c1e0f9357e7ca844ae4304322859d57f8165cc91f424",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:17:02.036Z"
+      "versionId": "v_hyikvshnlombtc55",
+      "revision": 4,
+      "contentHash": "sha256:db9a242ca678a8e7b0955de11e7f7c6e7a9c212c83ae38170e5703c1a7c67ed2",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T09:25:53.153Z"
     }
   },
   "classicStructure": {
@@ -2057,7 +2057,7 @@
         100
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5781,10 +5781,11 @@
         -128
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_blue",
+      "model": "kit.container.shipping",
       "yaw": 0,
       "scale": 1,
       "solid": true,
+      "variant": 1,
       "tint": null
     },
     {
@@ -5795,7 +5796,7 @@
         -128
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_red",
+      "model": "kit.container.shipping",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -7480,7 +7481,7 @@
         10
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": -0.4,
       "scale": 1,
       "solid": true,

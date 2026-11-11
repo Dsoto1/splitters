@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "jungle_steps",
     "name": "Cradle of Idols",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_avupmkddw4sadpi2",
-      "versionId": "v_4ttycrtaiynw4hez",
-      "revision": 2,
-      "contentHash": "sha256:31af43d948ccffd8a44df720ad70205e91a1150e17fbbf7d7ca866f7511b33b9",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:23:30.782Z"
+      "versionId": "v_huqo73acruw7eeez",
+      "revision": 4,
+      "contentHash": "sha256:b99c4740a7d7858208da9cd55ce840ee6c484975be709f6dfc8ea7a75981b816",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T09:49:17.808Z"
     }
   },
   "classicStructure": {
@@ -1205,7 +1205,7 @@
         28
       ],
       "kind": "prop",
-      "model": "prop.stone_wall_damaged",
+      "model": "kit.wall.stone_broken",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -1219,7 +1219,7 @@
         52
       ],
       "kind": "prop",
-      "model": "prop.stone_wall_damaged",
+      "model": "kit.wall.stone_broken",
       "yaw": 3.141592653589793,
       "scale": 1.2,
       "solid": true,
@@ -1373,7 +1373,7 @@
         33
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "kit.wall.stone",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -1387,7 +1387,7 @@
         47
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "kit.wall.stone",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3725,7 +3725,7 @@
         21.1
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3753,7 +3753,7 @@
         27.294
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -3781,7 +3781,7 @@
         52.83
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3795,11 +3795,12 @@
         53.58
       ],
       "kind": "prop",
-      "model": "prop.table_cloth",
+      "model": "kit.table.dining",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_304",

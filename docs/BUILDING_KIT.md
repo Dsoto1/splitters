@@ -1332,6 +1332,16 @@ template automatically.
   Breakthrough objectives, hostages and rescue zones, with their letters) and pickups. PgUp / PgDn change the level;
   select, move and place as in 3D; the wheel zooms about the pointer, a right or middle drag (or WASD) pans, Home
   fits the map, F centres the selection. **Export PNG** downloads the plan with a scale bar, a north arrow and a key.
+- **Tier (Map properties → Tier; map format v35, `map/qualityGates.ts`).** A map is **Core** or **Experimental**
+  (owner, 2026-11-11). Experimental maps are listed under "Experimental maps" in the menus and are never Quick Play's
+  pick, the featured map or on the next-map ballot (a host can still put one in a rotation by hand). A new map starts
+  experimental; a file without the field is core (every map offered before the tiers). Choosing Core is refused, with
+  the reasons, while a quality gate fails: problems in the validation list, spawn points for as many players as the
+  map recommends at most, nothing over its budgets, a card shot that isn't looking at something solid within 6 m.
+  `pnpm quality-gates [map ids] [--json=file] [--seconds=n]` runs those plus the navigation audit and a bots-only
+  match for every offered map, and exits 1 when a core map fails one (an experimental map's only report); a test
+  (`shared/test/qualityGates.test.ts`) holds every core map of `maps/` to the gates that need only the map.
+  Characters' tiers are not built yet.
 - **The card shot (Map properties → Card shot).** Set card shot… shows the menu card's frame (16:9) with the card
   picture's own lens; Eye level (on by default) keeps the camera 1.7 m over what's under it as you fly. Enter saves
   the camera in the map (`metadata.cardCamera`), Esc cancels; Preview shows the saved shot in the frame; Clear goes

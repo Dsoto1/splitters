@@ -14,7 +14,7 @@ import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSe
 import type { EditorApp, TestRequest } from './editor/editorApp.ts';
 import { FramePacer } from './game/framePacer.ts';
 import type { CharacterDesigner } from './designer/characterDesigner.ts';
-import { FrontEnd, PICK_GROUP, type ArcadeMap } from './frontend/frontEnd.ts';
+import { EXPERIMENTAL_GROUP, FrontEnd, PICK_GROUP, type ArcadeMap } from './frontend/frontEnd.ts';
 import { MenuScene } from './frontend/menuScene.ts';
 import { ModelThumbnails } from './frontend/modelThumbs.ts';
 import { setWeaponIconSource } from './frontend/weaponIcons.ts';
@@ -185,7 +185,7 @@ function arcadeMaps(): ArcadeMap[] {
     // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata;
     // arena, vault and outpost are retired (RETIRED_MAPS) and stay reachable only by ?offline= for tests.
     ...MAP_INDEX.filter((e) => !isOfflineMap(e.key) && !isRetiredMap(e.key))
-      .map((e) => builtInEntry(e.key, e, { blurb: blurbOf(e.metadata.description), modes: e.modes, bots: botsFor(e.metadata.recommendedPlayers) }))
+      .map((e) => builtInEntry(e.key, e, { blurb: blurbOf(e.metadata.description), modes: e.modes, bots: botsFor(e.metadata.recommendedPlayers), ...(e.metadata.tier === 'experimental' ? { group: EXPERIMENTAL_GROUP } : {}) }))
       .sort(byName),
   ];
 }
@@ -547,7 +547,8 @@ class App {
     pool: (mode) =>
       MAP_INDEX.flatMap((e) => {
         const i = e.modes.indexOf(mode);
-        return i >= 0 && inSuite(e.key) && !isRetiredMap(e.key) ? [{ map: e.key, mode, name: e.metadata.name, max: e.caps?.[i] ?? e.metadata.recommendedPlayers.max }] : [];
+        // (Experimental maps are never on the ballot: a host can still put one in the rotation by hand.)
+        return i >= 0 && inSuite(e.key) && !isRetiredMap(e.key) && e.metadata.tier !== 'experimental' ? [{ map: e.key, mode, name: e.metadata.name, max: e.caps?.[i] ?? e.metadata.recommendedPlayers.max }] : [];
       }),
     vote: { get: () => mapVoteOn(), set: (on) => saveMapVote(on) },
   });

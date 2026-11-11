@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "serene_city",
     "name": "Serene City",
@@ -7112,7 +7112,7 @@
         -1.6
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -7419,10 +7419,11 @@
         -14
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
+      "variant": 1,
       "tint": null
     },
     {
@@ -8496,7 +8497,7 @@
         -8
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8510,10 +8511,11 @@
         -8
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier_striped",
+      "model": "kit.barrier.concrete",
       "yaw": 0,
       "scale": 1,
       "solid": true,
+      "variant": 1,
       "tint": null
     },
     {
@@ -9875,7 +9877,7 @@
         56.98
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -9973,7 +9975,7 @@
         63.02
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -10141,7 +10143,7 @@
         -19.04
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -10169,7 +10171,7 @@
         -19.04
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -10197,7 +10199,7 @@
         -21.57
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -10225,7 +10227,7 @@
         -16.51
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -10253,7 +10255,7 @@
         -19.85
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -10295,7 +10297,7 @@
         -21.34
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -10323,7 +10325,7 @@
         -27.23
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": -0.6579,
       "scale": 1,
       "solid": true,
@@ -10337,7 +10339,7 @@
         -12.77
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 2.5308,
       "scale": 1,
       "solid": true,
@@ -10351,7 +10353,7 @@
         -12.77
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": -2.3204,
       "scale": 1,
       "solid": true,

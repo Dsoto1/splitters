@@ -124,7 +124,7 @@ describe('time of day: the sun', () => {
 
 describe('map format v34', () => {
   it('a v33 map migrates unchanged and loads at its own look; time and weather save, load and count in the content hash', () => {
-    expect(MAP_FORMAT_VERSION).toBe(34);
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(34);
     const v33 = { ...JSON.parse(readFileSync(new URL('./fixtures/iron_compound_v26.json', import.meta.url), 'utf8')), formatVersion: 33 };
     const { doc, fromVersion } = migrateMapDocument(structuredClone(v33));
     expect(fromVersion).toBe(33);

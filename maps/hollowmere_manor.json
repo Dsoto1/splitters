@@ -9460,7 +9460,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence_damaged",
+      "model": "kit.fence.iron_broken",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9474,7 +9474,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9488,7 +9488,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence_damaged",
+      "model": "kit.fence.iron_broken",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9502,7 +9502,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9516,7 +9516,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9530,7 +9530,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence_damaged",
+      "model": "kit.fence.iron_broken",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9544,7 +9544,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence_damaged",
+      "model": "kit.fence.iron_broken",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9558,7 +9558,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence_damaged",
+      "model": "kit.fence.iron_broken",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9572,7 +9572,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9586,7 +9586,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9600,7 +9600,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9614,7 +9614,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9628,7 +9628,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9642,7 +9642,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9656,7 +9656,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9670,7 +9670,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9684,7 +9684,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9698,7 +9698,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9712,7 +9712,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9726,7 +9726,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9740,7 +9740,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9754,7 +9754,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9768,7 +9768,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9782,7 +9782,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9796,7 +9796,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9810,7 +9810,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9824,7 +9824,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9838,7 +9838,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9852,7 +9852,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence_damaged",
+      "model": "kit.fence.iron_broken",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9866,7 +9866,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence",
+      "model": "kit.fence.iron",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9880,7 +9880,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence_damaged",
+      "model": "kit.fence.iron_broken",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9894,7 +9894,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence_damaged",
+      "model": "kit.fence.iron_broken",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9908,7 +9908,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence_damaged",
+      "model": "kit.fence.iron_broken",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9922,7 +9922,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.iron_fence_damaged",
+      "model": "kit.fence.iron_broken",
       "yaw": 0,
       "scale": 1,
       "solid": true,

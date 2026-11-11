@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "blackout",
     "name": "Blackout",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_ealjjgns5ndqtknz",
-      "versionId": "v_um2fhpv4apzgz4bz",
-      "revision": 2,
-      "contentHash": "sha256:b03da796560f4d6f7629abd6f5badc5d48616de76374a0f31eb13fa6757a0844",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:09:05.591Z"
+      "versionId": "v_g6zouxaszi3y4c3p",
+      "revision": 3,
+      "contentHash": "sha256:80eec31e2c1d0a7f2472544896da5d8fe21e484ed22a99873f5cccbfef1cd17b",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T08:47:29.192Z"
     }
   },
   "classicStructure": {
@@ -867,7 +867,7 @@
         18
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 0,
       "scale": 1,
       "solid": true,

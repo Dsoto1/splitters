@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "backwoods",
     "name": "Backwoods Lodge",
@@ -2968,7 +2968,7 @@
         42.5
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3121,7 +3121,7 @@
         51.1
       ],
       "kind": "prop",
-      "model": "prop.bookcase_wide",
+      "model": "kit.bookcase.wide",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3317,7 +3317,7 @@
         50
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3387,7 +3387,7 @@
         46.6
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3401,7 +3401,7 @@
         46.6
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3415,7 +3415,7 @@
         46.6
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3429,11 +3429,12 @@
         40
       ],
       "kind": "prop",
-      "model": "prop.table_cloth",
+      "model": "kit.table.dining",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_205",
@@ -3443,7 +3444,7 @@
         39
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3457,7 +3458,7 @@
         41
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3471,7 +3472,7 @@
         29
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3485,7 +3486,7 @@
         30.2
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -3499,7 +3500,7 @@
         33
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3527,7 +3528,7 @@
         33.5
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3541,7 +3542,7 @@
         32.5
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3555,7 +3556,7 @@
         32.5
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3597,7 +3598,7 @@
         44
       ],
       "kind": "prop",
-      "model": "prop.side_table",
+      "model": "kit.table.console",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3611,7 +3612,7 @@
         51.1
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -3639,7 +3640,7 @@
         29
       ],
       "kind": "prop",
-      "model": "prop.side_table",
+      "model": "kit.table.console",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3723,7 +3724,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3849,7 +3850,7 @@
         21.5
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -3863,7 +3864,7 @@
         21.8
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -4339,7 +4340,7 @@
         -24
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "kit.wall.stone",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4353,7 +4354,7 @@
         -24
       ],
       "kind": "prop",
-      "model": "prop.stone_wall_damaged",
+      "model": "kit.wall.stone_broken",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4367,7 +4368,7 @@
         -24
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "kit.wall.stone",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4381,7 +4382,7 @@
         -24
       ],
       "kind": "prop",
-      "model": "prop.stone_wall",
+      "model": "kit.wall.stone",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5067,7 +5068,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5081,7 +5082,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5095,7 +5096,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5109,7 +5110,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5123,7 +5124,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5137,7 +5138,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5151,7 +5152,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5165,7 +5166,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5179,7 +5180,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5193,7 +5194,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5207,7 +5208,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5221,7 +5222,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5235,7 +5236,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5249,7 +5250,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5263,7 +5264,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5277,7 +5278,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5291,7 +5292,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5305,7 +5306,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5319,7 +5320,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5333,7 +5334,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5347,7 +5348,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5361,7 +5362,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5375,7 +5376,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5389,7 +5390,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5403,7 +5404,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5417,7 +5418,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5431,7 +5432,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5445,7 +5446,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5459,7 +5460,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5473,7 +5474,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5487,7 +5488,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5501,7 +5502,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5515,7 +5516,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5529,7 +5530,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5543,7 +5544,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5557,7 +5558,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5571,7 +5572,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5585,7 +5586,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5599,7 +5600,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5613,7 +5614,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5627,7 +5628,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5641,7 +5642,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5655,7 +5656,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5669,7 +5670,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5683,7 +5684,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5697,7 +5698,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5711,7 +5712,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5725,7 +5726,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5739,7 +5740,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5753,7 +5754,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5767,7 +5768,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5781,7 +5782,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5795,7 +5796,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5809,7 +5810,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5823,7 +5824,7 @@
         -33.42
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5837,7 +5838,7 @@
         -32.27
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5851,7 +5852,7 @@
         -31.13
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5865,7 +5866,7 @@
         -29.98
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5879,7 +5880,7 @@
         -28.82
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5893,7 +5894,7 @@
         -27.67
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5907,7 +5908,7 @@
         -26.52
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5921,7 +5922,7 @@
         -25.38
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5935,7 +5936,7 @@
         -24.22
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5949,7 +5950,7 @@
         -23.07
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5963,7 +5964,7 @@
         -21.92
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5977,7 +5978,7 @@
         -20.77
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5991,7 +5992,7 @@
         -19.63
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6005,7 +6006,7 @@
         -18.47
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6019,7 +6020,7 @@
         -17.32
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6033,7 +6034,7 @@
         -16.17
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6047,7 +6048,7 @@
         -9.28
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6061,7 +6062,7 @@
         -8.13
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6075,7 +6076,7 @@
         -6.98
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6089,7 +6090,7 @@
         -5.83
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6103,7 +6104,7 @@
         -4.68
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6117,7 +6118,7 @@
         -3.53
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6131,7 +6132,7 @@
         -2.38
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6145,7 +6146,7 @@
         -1.23
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6159,7 +6160,7 @@
         -0.08
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6173,7 +6174,7 @@
         1.07
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6187,7 +6188,7 @@
         2.22
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6201,7 +6202,7 @@
         3.37
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6215,7 +6216,7 @@
         4.52
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6229,7 +6230,7 @@
         5.67
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6243,7 +6244,7 @@
         6.82
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6257,7 +6258,7 @@
         7.97
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6271,7 +6272,7 @@
         9.12
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6285,7 +6286,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6299,7 +6300,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6313,7 +6314,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6327,7 +6328,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6341,7 +6342,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6355,7 +6356,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6369,7 +6370,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6383,7 +6384,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6397,7 +6398,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6411,7 +6412,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6425,7 +6426,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6439,7 +6440,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6453,7 +6454,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6467,7 +6468,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6481,7 +6482,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6495,7 +6496,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6509,7 +6510,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6523,7 +6524,7 @@
         -36
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6537,7 +6538,7 @@
         -23.43
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6551,7 +6552,7 @@
         -22.27
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6565,7 +6566,7 @@
         -21.13
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6579,7 +6580,7 @@
         -19.98
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6593,7 +6594,7 @@
         -18.82
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6607,7 +6608,7 @@
         -17.67
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6621,7 +6622,7 @@
         -16.52
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6635,7 +6636,7 @@
         -15.37
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6649,7 +6650,7 @@
         -14.22
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6663,7 +6664,7 @@
         -13.07
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6677,7 +6678,7 @@
         -11.92
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6691,7 +6692,7 @@
         -10.77
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6705,7 +6706,7 @@
         -1.58
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6719,7 +6720,7 @@
         -0.43
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6733,7 +6734,7 @@
         0.72
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6747,7 +6748,7 @@
         1.87
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6761,7 +6762,7 @@
         3.02
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6775,7 +6776,7 @@
         4.17
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6789,7 +6790,7 @@
         5.32
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6803,7 +6804,7 @@
         6.47
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6817,7 +6818,7 @@
         7.62
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6831,7 +6832,7 @@
         8.77
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6845,7 +6846,7 @@
         9.92
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6859,7 +6860,7 @@
         11.07
       ],
       "kind": "prop",
-      "model": "prop.fence",
+      "model": "kit.fence.rail",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -13240,7 +13241,7 @@
         34.42
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -13268,7 +13269,7 @@
         37
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -13338,7 +13339,7 @@
         43.28
       ],
       "kind": "prop",
-      "model": "prop.side_table",
+      "model": "kit.table.console",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -13408,7 +13409,7 @@
         42.42
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -13436,7 +13437,7 @@
         37
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -13506,7 +13507,7 @@
         35.28
       ],
       "kind": "prop",
-      "model": "prop.side_table",
+      "model": "kit.table.console",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -13576,7 +13577,7 @@
         42.42
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -13604,7 +13605,7 @@
         45
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -13674,7 +13675,7 @@
         43.28
       ],
       "kind": "prop",
-      "model": "prop.side_table",
+      "model": "kit.table.console",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

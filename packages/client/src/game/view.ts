@@ -168,7 +168,7 @@ const OWN_FLASH_AHEAD = 0.05;
  * incendiary, vortex, cluster and smoke grenades), by look: the throwable whose model it is (its model as the match's
  * weapon set shows it: throwableModel). The mine keeps its own drawing (it blinks once armed).
  */
-const THROWN_KINDS: ReadonlyMap<string, ThrowableKind> = new Map(Object.values(THROWABLE_DEFS).flatMap((t) => (t.view && t.kind !== 'mine' ? [[t.projectile.visual, t.kind]] : [])));
+const THROWN_KINDS: ReadonlyMap<string, ThrowableKind> = new Map(Object.values(THROWABLE_DEFS).flatMap((t) => (t.view && !t.view.handOnly && t.kind !== 'mine' ? [[t.projectile.visual, t.kind]] : [])));
 /** How a throwable lies in your hands while you line up a throw: held like a pistol's grip, the support hand round it. */
 const THROW_HOLD: WeaponHold = { style: 'pistol', grip: [0, -0.012, -0.012], support: [-0.03, -0.022, 0], rake: 0 };
 /** Where that hold sits in your view (right, up, forward of the eye): low and a little right, as a pistol is held. */
@@ -411,7 +411,7 @@ export class GameView {
   private readonly pickups = new Map<string, PickupVisual>();
   /** Weapons the fallen dropped (snapshot `dw`), by drop ID: drawn lying where they fell. */
   private readonly drops = new Map<number, { root: TransformNode; item: string }>();
-  private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number }>();
+  private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number }>();
   /** Placed props by entity index (breakable ones disappear when broken). */
   private readonly props = new Map<number, TransformNode>();
   private effects: Fx[] = [];
@@ -592,6 +592,8 @@ export class GameView {
     const styler = new MapStyler(this.scene);
     // A terrain finer than 2 m is drawn at half its resolution on Low graphics (phones); it collides at full.
     styler.terrainDrawStep = loadGraphicsQuality() === 'low' ? 2 : 1;
+    // Soft paint borders are a second, see-through layer over the border cells: not on Low.
+    styler.terrainBlend = loadGraphicsQuality() !== 'low';
     styler.build(doc, boxes);
     // The level's per-style meshes merged across styles over array textures (levelMerge.ts; WebGL2): the loading gate
     // (prewarm) waits for it, so its shader is built before play.
@@ -2882,6 +2884,7 @@ export class GameView {
       const look = PROJECTILE_VISUALS[p.look];
       // A flare burns in flight and where it sticks (Flame FX, map.lasting `fire.flare`).
       if (look === 'flare') this.lasting.want(`proj:${id}`, 'fire.flare', { x: pos[0], y: pos[1], z: pos[2] });
+      else if (look === 'flareShot') this.flareShotFx(id, p, pos, now);
       if (look && ARSENAL_LOOKS.has(look)) animateArsenalProjectile(p.node, look, now, p.node.position.subtract(prev), p.born);
       // Grenades tumble while they fly and lie still where they stop.
       else if (look === 'grenade' || look === 'frag' || look === 'vortexNade' || look === 'smoke') {
@@ -2906,6 +2909,22 @@ export class GameView {
         p.node.dispose();
         this.projectiles.delete(id);
       }
+    }
+  }
+
+  /**
+   * The Airstrike Flare's shot, in flight and where it lands to mark the strike: the pack's flame as a steady point of
+   * light, a thin column of its smoke rising off it, and a few sparks fizzing (Reduce flashing: a steady glow; the sparks
+   * fewer and slower, never a flash).
+   */
+  private flareShotFx(id: number, p: { node: TransformNode; born: number; spark?: number }, pos: readonly number[], now: number): void {
+    const at = { x: pos[0]!, y: pos[1]!, z: pos[2]! };
+    this.lasting.want(`proj:${id}`, 'fire.flare', at);
+    this.lasting.want(`smoke:${id}`, 'smoke.flare', at);
+    const every = reduceFlashing() ? 420 : 140;
+    if (now - (p.spark ?? 0) >= every) {
+      p.spark = now;
+      this.impacts.sparkBurst(at, reduceFlashing() ? 1 : 2, 1.6);
     }
   }
 
@@ -2972,7 +2991,15 @@ export class GameView {
     void this.models.instantiate(model, `thrown_${id}`, true).then(
       (m) => {
         if (node.isDisposed()) return m.dispose();
+        // A model drawn at a size no throwable has (a rig whose units were read wrong: the sheep once drew 7 mm tall)
+        // is dropped, and the shapes drawn in code stay.
+        // (By its longest side: a stick of dynamite is 3 cm tall.)
+        const size = m.getHierarchyBoundingVectors(true);
+        const longest = Math.max(size.max.x - size.min.x, size.max.y - size.min.y, size.max.z - size.min.z);
+        if (!(longest > 0.05 && longest < 5)) return m.dispose();
         m.parent = node;
+        // A sheep's position is on the ground (arsenalVisuals SHEEP_LIFT): its model, centred on its bounds, is raised.
+        if (look === 'sheep') m.position.y = (THROWABLE_DEFS.sheep.view?.fit ?? 0) / 2;
         for (const s of shapes) s.setEnabled(false);
         // The sticky grenade's light sits on the model's top (models are built centred on their bounds).
         const light = node.getChildMeshes().find((c) => c.name.endsWith('_light'));
@@ -2992,6 +3019,19 @@ export class GameView {
     let n = 0;
     for (const p of this.projectiles.values()) if (p.node.getChildren((c) => c.name.startsWith('thrown_'), true).length) n++;
     return n;
+  }
+
+  /** How tall (m) each grenade in flight or lying is drawn by its throwable's model, by its look (tests). */
+  thrownModelSizes(): { look: string; tall: number }[] {
+    const out: { look: string; tall: number }[] = [];
+    for (const p of this.projectiles.values()) {
+      const m = p.node.getChildren((c) => c.name.startsWith('thrown_'), true)[0] as TransformNode | undefined;
+      if (!m) continue;
+      for (const c of m.getChildMeshes()) if (c.skeleton) c.refreshBoundingInfo({ applySkeleton: true, applyMorph: false });
+      const b = m.getHierarchyBoundingVectors(true);
+      out.push({ look: PROJECTILE_VISUALS[p.look] ?? '?', tall: +(b.max.y - b.min.y).toFixed(3) });
+    }
+    return out;
   }
 
   /**

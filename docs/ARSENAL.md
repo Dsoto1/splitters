@@ -169,13 +169,15 @@ Grenades (the owner's picks, 2026-11-06), one model each in the hand, in flight 
 | "just a grenade" (`guns/vortex_grenade.glb`, its own projectile look `vortexNade`: the Singularity Cannon keeps `vortex`) | Vortex | shapes in code |
 | Emergency Flare (`guns/dynamite.glb`; Meshy Community CC0, Drive file `Meshy_AI_Emergency_Flare_1110164645_texture.glb`, 2026-11-10; red stick with a fuse) | Dynamite (hand, flight and pickup; mechanics unchanged) | shapes in code |
 | Gold and silver toned orb (`guns/holy_bomb.glb`; Meshy Community CC0, Drive file `Meshy_AI__Gold_Silver_Toned_Hi_1110164632_texture.glb`, 2026-11-10; an ornate gold grenade with a cross gem) | Holy Bomb (hand, flight and pickup; mechanics unchanged) | shapes in code |
+| mur de sacs 12 (`guns/sandbags.glb` small, for hand, flight and pickup; `guns/sandbag_wall.glb` the deployed 1.9 x 0.64 x 1 m wall; Meshy Community CC0, Drive file `Meshy_AI_mur_de_sacs_12_1110164725_texture.glb`, 2026-11-10) | Sandbags (`view.cover` is the wall's model, `CoverState`) | stacked capsules in code |
+| Sheep (`guns/sheep.glb`, rigged and animated; Meshy Community CC0, Drive file `sheep_walking.glb` with the walk clip `Armature|Unreal Take|baselayer`, 2026-11-10; `view.fit` 0.7 m tall) | Sheep (flight and walking: the clip plays while it moves, paused while it is still; mechanics unchanged) | a bobbing shape in code |
 | Sunburst Grenade (`guns/sunburst_grenade.glb`) | Cluster Bomb (its bomblets stay small shapes) | shapes in code |
 | Toxic Splash (`guns/toxic_splash.glb`) | Gas | shapes in code |
 | 3DModelsCC0 Molotov (`guns/molotov.glb`) | Incendiary | shapes in code |
 | 3DModelsCC0 smoke grenade (`guns/smoke_m18.glb`) | **Smoke Grenade** (new, below); the Meshy sci-fi canister (`guns/smoke_scifi.glb`) is its Sci-fi set look | — |
 | 3DModelsCC0 anti-tank mine (as before) | Proximity Mine (now also its pickup) | coloured discs on the pickup |
 
-Still drawn in code (no model fits yet): sheep, airstrike flare and sandbags. Spare, kept out of the game: the pack's Luger, C4, claymore,
+Still drawn in code (no model fits yet): the airstrike flare. Spare, kept out of the game: the pack's Luger, C4, claymore,
 pipe bomb and M24 (docs/IMPORT_LIST.md). Not imported: the nuclear bomb and the flare gun (the owner), the flashbang
 (dropped over seizure risk: nothing in the game flashes the whole screen white).
 

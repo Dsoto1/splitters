@@ -179,6 +179,7 @@ Each family includes collision, surface types, LODs, budgets and tests, like the
   dynamite and powder-keg crates, the fuel drum, sci-fi crates and barrels, the dungeon and Wild West barrels, and the
   fish and tarp crates.
 - **Next:** part 2, fences and walls; then part 3, containers.
+- **Part 4, furniture and shop pieces: built, not landed** (`wip/mapmaker-kit-props-4`, 2026-11-11): tables, desks, side tables, chairs, benches, bookcases (`tools/content/kit/furniture.mjs`), shop shelving, market stalls and counters, waste bins (`shop.mjs`). Chairs, benches, shelving and stalls collide as finer boxes, as the pieces they replace did. Still to do in part 4: pipes and scaffolding, signs, rubble.
 
 Do not scale to dozens of generated species before the first vertical slice looks good at eye level and passes performance/collision checks.
 
