@@ -172,6 +172,8 @@ describe('kit aliases', () => {
     const same = (boxes: ReturnType<typeof propBoxes>) => boxes.filter((b) => !reshaped.has(b.sourceId));
     expect(same(propBoxes(after))).toEqual(same(propBoxes(before)));
     expect(same(propBoxes(after, true))).toEqual(same(propBoxes(before, true)));
-    for (const id of reshaped) expect(propBoxes(after).filter((b) => b.sourceId === id).length + propBoxes(after, true).filter((b) => b.sourceId === id).length, id).toBeGreaterThan(0);
+    // (A reshaped placement that collided still does; one placed as decoration, not solid, still doesn't.)
+    const count = (m: MapDocument, id: string) => propBoxes(m).filter((b) => b.sourceId === id).length + propBoxes(m, true).filter((b) => b.sourceId === id).length;
+    for (const id of reshaped) expect(count(after, id) > 0, id).toBe(count(before, id) > 0);
   });
 });
