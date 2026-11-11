@@ -441,7 +441,7 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
   ],
   warehouse: [
     wall([one('kit.shelf.gondola'), one('kit.shelf.gondola_snack'), one('kit.crate.bin'), one('container_tall'), stack('kit.crate.wood_long', 'kit.crate.wood', { turn: Q })], 2.5, 12, { min: 2 }),
-    centre([one('factory_box'), stack('kit.crate.bin', 'kit.crate.wood'), backToBack('kit.shelf.gondola', 'kit.shelf.gondola_snack'), cluster(['kit.drum.steel', 'kit.drum.steel', 'kit.drum.steel', 'kit.drum.steel_open']), one('skip')], 1.2, 6, { min: 1, face: 'axis', gap: 1.1 }),
+    centre([one('kit.crate.factory'), stack('kit.crate.bin', 'kit.crate.wood'), backToBack('kit.shelf.gondola', 'kit.shelf.gondola_snack'), cluster(['kit.drum.steel', 'kit.drum.steel', 'kit.drum.steel', 'kit.drum.steel_open']), one('skip')], 1.2, 6, { min: 1, face: 'axis', gap: 1.1 }),
     corner(ones(['kit.drum.steel', 'kit.box.carton', 'container', 'cone']), 2, 4),
   ],
   barracks: [
@@ -463,14 +463,14 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
     corner(ones(['speaker', 'potted_plant', 'kit.drum.steel']), 1.5, 4),
   ],
   shop: [
-    wall(ones(['kit.shelf.gondola', 'kit.shelf.gondola_snack', 'freezers_upright', 'bottle_return', 'bread_display']), 2.5, 8, { min: 2 }),
+    wall(ones(['kit.shelf.gondola', 'kit.shelf.gondola_snack', 'kit.appliance.freezer_upright', 'bottle_return', 'bread_display']), 2.5, 8, { min: 2 }),
     centre([one('checkout')], 0.5, 1, { min: 1, face: 'axis', gap: 0.9 }),
     centre([backToBack('kit.shelf.end', 'kit.shelf.end'), backToBack('kit.shelf.gondola', 'kit.shelf.gondola_snack'), one('fruit_display'), one('freezer')], 1, 4, { face: 'axis', gap: 1.0 }),
     corner(ones(['shopping_cart', 'kit.box.carton', 'potted_plant']), 1, 3),
   ],
   workshop: [
     wall(ones(['workbench', 'kit.shelf.gondola', 'kit.crate.framed', 'machine', 'pipe_valve']), 2, 6, { min: 1 }),
-    centre([piece([part('workbench', -0.6), part('workbench', 0.6)]), cluster(['sv_propane', 'kit.drum.steel']), one('factory_box_long')], 0.7, 2, { face: 'axis', gap: 0.9 }),
+    centre([piece([part('workbench', -0.6), part('workbench', 0.6)]), cluster(['sv_propane', 'kit.drum.steel']), one('kit.crate.factory_long')], 0.7, 2, { face: 'axis', gap: 0.9 }),
     corner(ones(['sv_gas_can', 'sv_propane', 'kit.drum.steel', 'cone', 'sv_trashcan_metal']), 2, 4),
   ],
   chapel: [

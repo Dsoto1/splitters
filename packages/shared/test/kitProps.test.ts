@@ -86,6 +86,9 @@ const REMATERIALLED = new Map<string, string>([
   // Part 6, by the same rule: the beds and the long sofa (concrete by the guess) are wooden frames under bedding and
   // upholstery. (The office chair and the round table were wood already.)
   ['prop.bed', 'wood'], ['prop.bunk_bed', 'wood'], ['prop.sofa_long', 'wood'],
+  // Part 8, by the same rule: the warning sign and the shop freezers (concrete by the guess) are sheet steel. (The
+  // factory crates were wood already and stay wood; the conveyor stays concrete, solid cover as it was.)
+  ['prop.warning_sign', 'thin_metal'], ['prop.freezers_upright', 'thin_metal'],
 ]);
 
 describe('kit aliases', () => {

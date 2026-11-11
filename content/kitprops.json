@@ -131,6 +131,26 @@
         240,
         100,
         30
+      ],
+      "yokecrate": [
+        500,
+        70,
+        10
+      ],
+      "sign": [
+        220,
+        100,
+        24
+      ],
+      "conveyor": [
+        760,
+        190,
+        10
+      ],
+      "freezer": [
+        760,
+        120,
+        10
       ]
     }
   },
@@ -367,6 +387,31 @@
     },
     "prop.sofa_long": {
       "model": "kit.sofa.corner",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.factory_box": {
+      "model": "kit.crate.factory",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.factory_box_long": {
+      "model": "kit.crate.factory_long",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.warning_sign": {
+      "model": "kit.sign.warning",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.conveyor": {
+      "model": "kit.conveyor.belt",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.freezers_upright": {
+      "model": "kit.appliance.freezer_upright",
       "variant": 0,
       "scale": 1
     }
