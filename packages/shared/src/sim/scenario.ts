@@ -281,7 +281,7 @@ export class Scenario {
           break;
         case 'destructible':
         case 'prop': {
-          const b = breakableOf(e);
+          const b = breakableOf(e, undefined, !!this.map.metadata.destruction);
           if (!b) break;
           this.destructibles.set(i, { i, id: e.id, b, health: b.health, max: b.health, alive: true });
           this.bodies.setSolid(i, true);
