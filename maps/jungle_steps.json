@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "jungle_steps",
     "name": "Cradle of Idols",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_avupmkddw4sadpi2",
-      "versionId": "v_nlsys6umimtwj2rt",
-      "revision": 3,
-      "contentHash": "sha256:46160b490066973bacdcf1da0bb66c1c077b76f7e052c767976f0509046b7c9f",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-11T02:40:23.581Z"
+      "versionId": "v_huqo73acruw7eeez",
+      "revision": 4,
+      "contentHash": "sha256:b99c4740a7d7858208da9cd55ce840ee6c484975be709f6dfc8ea7a75981b816",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T09:49:17.808Z"
     }
   },
   "classicStructure": {
@@ -3725,7 +3725,7 @@
         21.1
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3753,7 +3753,7 @@
         27.294
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -3781,7 +3781,7 @@
         52.83
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3795,11 +3795,12 @@
         53.58
       ],
       "kind": "prop",
-      "model": "prop.table_cloth",
+      "model": "kit.table.dining",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_304",

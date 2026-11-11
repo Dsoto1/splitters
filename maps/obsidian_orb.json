@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "obsidian_orb",
     "name": "Obsidian Orb",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_oyvr2rvdsjvrhwut",
-      "versionId": "v_yjsvaxxeqtpdlbvs",
-      "revision": 3,
-      "contentHash": "sha256:3d456ee094afa7163e743c4720ab89aa5dc1089864d691bec9cb76426b51d488",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:25:40.491Z"
+      "versionId": "v_tsif43jylsij4j6j",
+      "revision": 4,
+      "contentHash": "sha256:e62088ef4e5102418a2000925f0ae9cde5f4d4c21912369e30e39bffc74e251c",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T10:03:45.276Z"
     }
   },
   "classicStructure": {
@@ -6446,7 +6446,7 @@
         21.48
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -6460,7 +6460,7 @@
         21.68
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -6502,7 +6502,7 @@
         -18.65
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": 0,
       "scale": 1,
       "solid": true,

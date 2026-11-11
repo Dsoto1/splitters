@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "serpent_gorge",
     "name": "Serpent Gorge",
@@ -5674,7 +5674,7 @@
         8.5
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -7004,7 +7004,7 @@
         70.28
       ],
       "kind": "prop",
-      "model": "prop.stall_bench",
+      "model": "kit.stall.counter",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -7242,7 +7242,7 @@
         80
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -7256,7 +7256,7 @@
         79.2
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -7270,7 +7270,7 @@
         80.8
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -7284,7 +7284,7 @@
         79.2
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -7298,7 +7298,7 @@
         80.8
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -7340,7 +7340,7 @@
         10.65
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -7354,7 +7354,7 @@
         10.65
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -7396,7 +7396,7 @@
         7.7
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -7438,7 +7438,7 @@
         4.76
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 0.9605,
       "scale": 1,
       "solid": true,

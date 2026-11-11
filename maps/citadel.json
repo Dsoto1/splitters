@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "citadel",
     "name": "Citadel",
@@ -643,11 +643,12 @@
         15
       ],
       "kind": "prop",
-      "model": "prop.table_cloth",
+      "model": "kit.table.dining",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_051",
@@ -657,7 +658,7 @@
         14
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -671,7 +672,7 @@
         16
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -685,7 +686,7 @@
         22
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -699,7 +700,7 @@
         26
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -975,7 +976,7 @@
         26.5
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1,
       "solid": true,

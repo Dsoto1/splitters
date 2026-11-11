@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "backwoods",
     "name": "Backwoods Lodge",
@@ -2968,7 +2968,7 @@
         42.5
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3121,7 +3121,7 @@
         51.1
       ],
       "kind": "prop",
-      "model": "prop.bookcase_wide",
+      "model": "kit.bookcase.wide",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3317,7 +3317,7 @@
         50
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3387,7 +3387,7 @@
         46.6
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3401,7 +3401,7 @@
         46.6
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3415,7 +3415,7 @@
         46.6
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3429,11 +3429,12 @@
         40
       ],
       "kind": "prop",
-      "model": "prop.table_cloth",
+      "model": "kit.table.dining",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_205",
@@ -3443,7 +3444,7 @@
         39
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3457,7 +3458,7 @@
         41
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3471,7 +3472,7 @@
         29
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3485,7 +3486,7 @@
         30.2
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -3499,7 +3500,7 @@
         33
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3527,7 +3528,7 @@
         33.5
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3541,7 +3542,7 @@
         32.5
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3555,7 +3556,7 @@
         32.5
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3597,7 +3598,7 @@
         44
       ],
       "kind": "prop",
-      "model": "prop.side_table",
+      "model": "kit.table.console",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3611,7 +3612,7 @@
         51.1
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -3639,7 +3640,7 @@
         29
       ],
       "kind": "prop",
-      "model": "prop.side_table",
+      "model": "kit.table.console",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3723,7 +3724,7 @@
         49
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3849,7 +3850,7 @@
         21.5
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -3863,7 +3864,7 @@
         21.8
       ],
       "kind": "prop",
-      "model": "prop.chair",
+      "model": "kit.seat.chair",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -13240,7 +13241,7 @@
         34.42
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -13268,7 +13269,7 @@
         37
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -13338,7 +13339,7 @@
         43.28
       ],
       "kind": "prop",
-      "model": "prop.side_table",
+      "model": "kit.table.console",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -13408,7 +13409,7 @@
         42.42
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -13436,7 +13437,7 @@
         37
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -13506,7 +13507,7 @@
         35.28
       ],
       "kind": "prop",
-      "model": "prop.side_table",
+      "model": "kit.table.console",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -13576,7 +13577,7 @@
         42.42
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -13604,7 +13605,7 @@
         45
       ],
       "kind": "prop",
-      "model": "prop.bookcase",
+      "model": "kit.bookcase.tall",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -13674,7 +13675,7 @@
         43.28
       ],
       "kind": "prop",
-      "model": "prop.side_table",
+      "model": "kit.table.console",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

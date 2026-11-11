@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "underdrain",
     "name": "Underdrain",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_wtaygxmgpnk3xung",
-      "versionId": "v_qhhjmkbfzpvoxfsm",
-      "revision": 2,
-      "contentHash": "sha256:dbaeb4f02d2e580814a87351132335c0f3965d377a25776241d60ec02cce1c38",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:35:14.987Z"
+      "versionId": "v_7hxvxq4oixxk6yxg",
+      "revision": 3,
+      "contentHash": "sha256:4ab6d8e7de0136cb0374a15f3359cd692be6b0f84b653ff6d033f39e8700b649",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T10:41:18.015Z"
     }
   },
   "classicStructure": {
@@ -19774,7 +19774,7 @@
         -14
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -19788,7 +19788,7 @@
         -10
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,

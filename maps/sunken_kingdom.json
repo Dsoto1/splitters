@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "sunken_kingdom",
     "name": "Sunken Kingdom",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_e53hofcotjne4zfg",
-      "versionId": "v_dnvpgub7jz7unb77",
-      "revision": 2,
-      "contentHash": "sha256:28b0efd2c0b29b29810f7f3fb9d6ff1b30f6f67b6ad2a66ad02c531895089810",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:32:52.213Z"
+      "versionId": "v_fpdfyl47tmvy3l6p",
+      "revision": 3,
+      "contentHash": "sha256:159ca03c748c054850305dd0815dfc47574f4fb7e9c740dda979087064a809c6",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T10:38:50.205Z"
     }
   },
   "classicStructure": {
@@ -4372,7 +4372,7 @@
         59
       ],
       "kind": "prop",
-      "model": "prop.stall",
+      "model": "kit.stall.market",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -4386,11 +4386,12 @@
         59
       ],
       "kind": "prop",
-      "model": "prop.stall_green",
+      "model": "kit.stall.market",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_0316",
@@ -4400,7 +4401,7 @@
         59
       ],
       "kind": "prop",
-      "model": "prop.stall",
+      "model": "kit.stall.market",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -4414,11 +4415,12 @@
         53
       ],
       "kind": "prop",
-      "model": "prop.stall_green",
+      "model": "kit.stall.market",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_0318",
@@ -4428,7 +4430,7 @@
         53
       ],
       "kind": "prop",
-      "model": "prop.stall",
+      "model": "kit.stall.market",
       "yaw": 0,
       "scale": 1,
       "solid": true,

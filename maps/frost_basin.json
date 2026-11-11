@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "frost_basin",
     "name": "Frost Basin",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_wm4ypl2enajhiaqu",
-      "versionId": "v_uk6h5t7bgdej2d75",
-      "revision": 3,
-      "contentHash": "sha256:4e325e3eb53beb82ccf91a87d326ea0e521d5656f790068ed3e64ed20a59e0fa",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:15:59.590Z"
+      "versionId": "v_wnosqrd6f3fgbxb7",
+      "revision": 4,
+      "contentHash": "sha256:4c03111f29f6317d32bb3ed7b386a34ffd594ca8e4ee108267b22a737d7fab29",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T09:23:12.146Z"
     }
   },
   "classicStructure": {
@@ -5107,7 +5107,7 @@
         2.52
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -5121,7 +5121,7 @@
         -2.9
       ],
       "kind": "prop",
-      "model": "prop.table",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5149,7 +5149,7 @@
         2.63
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -5219,7 +5219,7 @@
         2.52
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,

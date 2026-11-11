@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "apex_ring",
     "name": "Apex Ring",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_snj2ivjohajuozh5",
-      "versionId": "v_65zilvbyrhqfigeq",
-      "revision": 2,
-      "contentHash": "sha256:e6a61c07343b16d2a580f84f06ad9400cff39825ab689ad5fc34505c6d522401",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:07:44.474Z"
+      "versionId": "v_mhjhcxnxxkzf2gzf",
+      "revision": 3,
+      "contentHash": "sha256:79f46a8d6f025b3ea22ca441c5a227dc0c0c8dabd51864f90d3918df8998edf1",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T08:40:16.290Z"
     }
   },
   "classicStructure": {
@@ -15499,7 +15499,7 @@
         -73.6
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -15764,7 +15764,7 @@
         -73.6
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -16029,7 +16029,7 @@
         -73.6
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -16294,7 +16294,7 @@
         -73.6
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -16559,7 +16559,7 @@
         -73.6
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -16824,7 +16824,7 @@
         -73.6
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -17089,7 +17089,7 @@
         -73.6
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -17354,7 +17354,7 @@
         -73.6
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -17619,7 +17619,7 @@
         -73.6
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -17884,7 +17884,7 @@
         -73.6
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -20619,7 +20619,7 @@
         -86.6
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -26623,7 +26623,7 @@
         -140.9
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -26679,7 +26679,7 @@
         -140.9
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -26735,7 +26735,7 @@
         -140.9
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -26791,7 +26791,7 @@
         -140.9
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -26847,7 +26847,7 @@
         -140.9
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -35315,11 +35315,12 @@
         -71
       ],
       "kind": "prop",
-      "model": "prop.table_cloth",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1657",
@@ -35329,11 +35330,12 @@
         -71
       ],
       "kind": "prop",
-      "model": "prop.table_cloth",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1658",
@@ -38937,11 +38939,12 @@
         45
       ],
       "kind": "prop",
-      "model": "prop.table_cloth",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1826",
@@ -38951,11 +38954,12 @@
         45
       ],
       "kind": "prop",
-      "model": "prop.table_cloth",
+      "model": "kit.table.dining",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_1827",
@@ -41425,7 +41429,7 @@
         -7
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -42747,7 +42751,7 @@
         -168
       ],
       "kind": "prop",
-      "model": "prop.stall",
+      "model": "kit.stall.market",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -42761,11 +42765,12 @@
         -178
       ],
       "kind": "prop",
-      "model": "prop.stall_green",
+      "model": "kit.stall.market",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_2010",
@@ -42775,7 +42780,7 @@
         -186
       ],
       "kind": "prop",
-      "model": "prop.stall",
+      "model": "kit.stall.market",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -42789,11 +42794,12 @@
         -186
       ],
       "kind": "prop",
-      "model": "prop.stall_green",
+      "model": "kit.stall.market",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_2012",
@@ -42803,7 +42809,7 @@
         -186
       ],
       "kind": "prop",
-      "model": "prop.stall",
+      "model": "kit.stall.market",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -42817,11 +42823,12 @@
         -186
       ],
       "kind": "prop",
-      "model": "prop.stall_green",
+      "model": "kit.stall.market",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_2014",
@@ -42831,7 +42838,7 @@
         -168
       ],
       "kind": "prop",
-      "model": "prop.stall",
+      "model": "kit.stall.market",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -42845,11 +42852,12 @@
         -178
       ],
       "kind": "prop",
-      "model": "prop.stall_green",
+      "model": "kit.stall.market",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_2016",

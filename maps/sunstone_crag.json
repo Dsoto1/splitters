@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "sunstone_crag",
     "name": "Sunstone Crag",
@@ -12914,7 +12914,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.stall",
+      "model": "kit.stall.market",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -13426,7 +13426,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.stall",
+      "model": "kit.stall.market",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
