@@ -6937,8 +6937,8 @@ async function vehiclesFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await arcTurretChecks(browser);
-  await tankChecks(browser);
   await troopTruckChecks(browser);
+  await tankChecks(browser);
   await passengerChecks(browser);
 }
 
