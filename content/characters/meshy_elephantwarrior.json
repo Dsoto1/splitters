@@ -34,6 +34,23 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "hands": {
+      "r": {
+        "scale": 0.72
+      }
+    },
+    "hold": {
+      "forward": 0.14,
+      "down": 0.14,
+      "out": 0.06
+    },
+    "grip": {
+      "supportLong": [
+        0,
+        0.04,
+        0.03
+      ]
+    }
   }
 }

@@ -34,6 +34,21 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "hands": {
+      "curl": 1
+    },
+    "grip": {
+      "gripLong": [
+        -0.03,
+        0.03,
+        -0.03
+      ],
+      "supportLong": [
+        0,
+        0.05,
+        0.04
+      ]
+    }
   }
 }
