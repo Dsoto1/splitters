@@ -118,7 +118,7 @@
         0.8,
         0.816
       ],
-      "surface": "concrete",
+      "surface": "wood",
       "detail": "wood",
       "breakable": {
         "health": 50,

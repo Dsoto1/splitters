@@ -73,8 +73,13 @@ describe('kit families', () => {
   });
 });
 
-/** Retired props whose family is another ballistic class on purpose (owner's finer-collision decision, 2026-11-10: the iron fences are iron). */
-const REMATERIALLED = new Set(['prop.iron_fence', 'prop.iron_fence_damaged']);
+/** Retired props whose family is another ballistic class on purpose (owner, 2026-11-10: the iron fences are iron), and the class it has. */
+const REMATERIALLED = new Map<string, string>([
+  ['prop.iron_fence', 'thin_metal'], ['prop.iron_fence_damaged', 'thin_metal'],
+  // Wooden furniture that played as concrete by an accident of its name (owner, 2026-11-11: make it wood; the bin thin metal).
+  ['prop.desk', 'wood'], ['prop.bench', 'wood'], ['prop.bookcase', 'wood'], ['prop.bookcase_wide', 'wood'],
+  ['prop.stall', 'wood'], ['prop.stall_green', 'wood'], ['prop.stall_bench', 'wood'], ['prop.trashcan', 'thin_metal'],
+]);
 
 describe('kit aliases', () => {
   it('name catalogue props, families and variants that exist', () => {
@@ -112,7 +117,7 @@ describe('kit aliases', () => {
       // What rounds do (gunplay's ballistic class); the impact's sound family too.
       // (The Kenney iron fences played as thin wood, by their name; ours are thin metal: REMATERIALLED.)
       if (!REMATERIALLED.has(a.from)) expect(propMaterial(a.model), a.from).toBe(propMaterial(a.from));
-      else expect(propMaterial(a.model), a.from).toBe('thin_metal');
+      else expect(propMaterial(a.model), a.from).toBe(REMATERIALLED.get(a.from));
       expect(propSurface(a.model), a.from).toBeDefined();
     }
   });
