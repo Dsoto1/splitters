@@ -1,0 +1,266 @@
+{
+  "$comment": "Cabinets (tools/content/kit/cabinet.mjs): a kitchen unit under its worktop and a low media unit, each the size of the Kenney piece it replaces, colliding as its box.",
+  "type": "cabinet",
+  "props": [
+    {
+      "id": "kit.cabinet.kitchen",
+      "displayName": "Kitchen Cabinet",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a kitchen base unit, doors under a drawer each and a worktop, the size of the Kenney kitchen cabinet (0.908 \u00d7 0.95 \u00d7 0.95 m)."
+      },
+      "size": [
+        0.908,
+        0.95,
+        0.95
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": {
+        "health": 50,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "cabinet",
+        "side": 0.02,
+        "top": 0.04,
+        "plinth": 0.1,
+        "kick": 0.05,
+        "over": 0.022,
+        "bays": 2,
+        "drawerRow": 0.16
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 9301,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.06,
+            "grime": 0.25,
+            "top": "#b4bcbe",
+            "metal": "#8b8d8f"
+          }
+        },
+        {
+          "index": 1,
+          "name": "white",
+          "seed": 9302,
+          "look": {
+            "wood": "#d9d6cc",
+            "jitter": 0.06,
+            "grime": 0.25,
+            "top": "#6b5a48",
+            "metal": "#8b8d8f"
+          }
+        },
+        {
+          "index": 2,
+          "name": "green",
+          "seed": 9303,
+          "set": {
+            "drawerRow": 0
+          },
+          "look": {
+            "wood": "#55684a",
+            "jitter": 0.06,
+            "grime": 0.25,
+            "top": "#c9c2b0",
+            "metal": "#b08d4a"
+          }
+        },
+        {
+          "index": 3,
+          "name": "walnut",
+          "seed": 9304,
+          "set": {
+            "stack": [
+              1
+            ],
+            "drawers": 3
+          },
+          "look": {
+            "wood": "#6b4a30",
+            "jitter": 0.06,
+            "grime": 0.25,
+            "top": "#3a3b3e",
+            "metal": "#a8adb0"
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 9305,
+          "set": {
+            "bays": 3,
+            "stack": [
+              1
+            ],
+            "drawers": 4
+          },
+          "look": {
+            "wood": "#4c6178",
+            "jitter": 0.06,
+            "grime": 0.25,
+            "top": "#c09a66",
+            "metal": "#c9c2b0"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.cabinet.media",
+      "displayName": "TV Cabinet",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a low, wide media unit with an open shelf bay between doors, the size of the Kenney TV cabinet (1.548 \u00d7 0.6 \u00d7 0.484 m)."
+      },
+      "size": [
+        1.548,
+        0.6,
+        0.484
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": {
+        "health": 40,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "cabinet",
+        "side": 0.022,
+        "top": 0.03,
+        "plinth": 0.06,
+        "kick": 0.03,
+        "over": 0.02,
+        "bays": 3,
+        "open": [
+          1
+        ],
+        "device": true
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 9311,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.06,
+            "grime": 0.25,
+            "metal": "#8b8d8f"
+          }
+        },
+        {
+          "index": 1,
+          "name": "walnut",
+          "seed": 9312,
+          "set": {
+            "open": [
+              0,
+              1
+            ],
+            "stack": [
+              2
+            ],
+            "drawers": 2
+          },
+          "look": {
+            "wood": "#6b4a30",
+            "jitter": 0.06,
+            "grime": 0.25,
+            "metal": "#b08d4a"
+          }
+        },
+        {
+          "index": 2,
+          "name": "white",
+          "seed": 9313,
+          "set": {
+            "open": [
+              1,
+              2
+            ],
+            "stack": [
+              0
+            ],
+            "drawers": 3
+          },
+          "look": {
+            "wood": "#d9d6cc",
+            "jitter": 0.06,
+            "grime": 0.25,
+            "top": "#a67c4e",
+            "back": "#a67c4e",
+            "metal": "#3c3d40"
+          }
+        },
+        {
+          "index": 3,
+          "name": "black",
+          "seed": 9314,
+          "set": {
+            "bays": 4,
+            "open": [
+              1,
+              2
+            ]
+          },
+          "look": {
+            "wood": "#34322f",
+            "jitter": 0.06,
+            "grime": 0.25,
+            "metal": "#a8adb0"
+          }
+        },
+        {
+          "index": 4,
+          "name": "pine",
+          "seed": 9315,
+          "set": {
+            "bays": 2,
+            "open": [
+              0
+            ],
+            "stack": [
+              1
+            ],
+            "drawers": 2
+          },
+          "look": {
+            "wood": "#c09a66",
+            "jitter": 0.06,
+            "grime": 0.25,
+            "door": "#8a9a8c",
+            "metal": "#6f7377"
+          }
+        }
+      ]
+    }
+  ]
+}

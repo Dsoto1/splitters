@@ -14874,7 +14874,7 @@
         -82.98
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -14888,7 +14888,7 @@
         -82.98
       ],
       "kind": "prop",
-      "model": "prop.stove",
+      "model": "kit.appliance.stove",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -14902,7 +14902,7 @@
         -82.98
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -14916,7 +14916,7 @@
         -82.98
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -14930,7 +14930,7 @@
         -76.98
       ],
       "kind": "prop",
-      "model": "prop.fridge",
+      "model": "kit.appliance.fridge",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -15140,7 +15140,7 @@
         -84.92
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -15154,7 +15154,7 @@
         -90.54
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,

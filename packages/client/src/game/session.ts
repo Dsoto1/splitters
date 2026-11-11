@@ -1,3 +1,4 @@
+import { targetLabel } from './targetLabel.ts';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
   BUILT_MOUNT_BASE,
@@ -41,6 +42,7 @@ import {
   type MatchAward,
   type GameEvent,
   rouletteOn,
+  builtInLook,
   cockpitEye,
   mountToWorld,
   firingSeat,
@@ -135,6 +137,7 @@ import {
   VOTE_RESULT_SECONDS,
   type VoteCandidate,
   type VoteState,
+  propBreakLook,
 } from '@tiletrigger/shared';
 import { MapVoteHud } from './mapVoteHud.ts';
 import { myParty } from './party.ts';
@@ -356,13 +359,20 @@ export class GameSession {
   /** The view angles sent last tick (turning while watching counts as activity). */
   private sentLook = { yaw: NaN, pitch: NaN };
 
+  /** The name shown for whoever you just hit (targetLabel: in Roulette, with the character they wear this life). */
+  private targetLabel(target: number): string {
+    const name = this.hud.name(target);
+    if (target >= NPC_ID_BASE) return name;
+    return targetLabel(name, builtInLook(this.looks.get(target))?.name, !!this.rules && rouletteOn(this.rules));
+  }
+
   /** Hit confirmation on the crosshair for your shot: head, armor or body, told apart by shape (and by sound, in SessionAudio). */
   private hitFeedback(hits: readonly (number | null)[], zones: readonly number[] | undefined, armor: boolean): void {
     const target = hits.find((h): h is number => h !== null && h !== undefined);
     if (target === undefined) return;
     const head = zones?.some((z, i) => z === 1 && hits[i] !== null && hits[i] !== undefined) ?? false;
     this.hud.hit(head ? 'head' : armor ? 'armor' : 'body');
-    this.hud.showTarget(this.hud.name(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'));
+    this.hud.showTarget(this.targetLabel(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'));
   }
   private outcome: 'victory' | 'defeat' | null = null;
   /** Role and faction of each NPC seen, for names and looks. */
@@ -2271,7 +2281,7 @@ export class GameSession {
             } else if (e?.kind === 'prop') {
               const def = getProp(e.model);
               this.view.breakProp(ev.i);
-              if (def) this.view.debris({ x: e.position[0], y: e.position[1] + (def.size[1] * e.scale) / 2, z: e.position[2] }, def.breakable?.debris ?? '#8a5a32', Math.max(0.3, Math.min(1.2, (Math.max(...def.size) * e.scale) / 2)));
+              if (def) this.view.debris({ x: e.position[0], y: e.position[1] + (def.size[1] * e.scale) / 2, z: e.position[2] }, propBreakLook(e.model, def.breakable?.debris).debris, Math.max(0.3, Math.min(1.2, (Math.max(...def.size) * e.scale) / 2)));
             }
           } else if (ev.e === 'leader') {
             const team = this.hud.teamById(ev.team);

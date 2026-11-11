@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 35,
   "metadata": {
     "id": "express_lobby",
     "name": "Express Lobby",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_h7c6ifkxig5oxqr6",
-      "versionId": "v_x5il56u4433vfv6u",
-      "revision": 1,
-      "contentHash": "sha256:3443e6f92604d18e86fcdfd1041e0f4b9badad4fed90bb78f20d1ddb4a9ff881",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:08:50.124Z"
+      "versionId": "v_h2zplpt57db6sjp6",
+      "revision": 2,
+      "contentHash": "sha256:57dd2eef5b919b2706eec99892c9766277a0be80c7384bb53589cd00b157ea56",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T15:01:38.453Z"
     }
   },
   "classicStructure": {
@@ -5511,7 +5511,7 @@
         -8.799999999999999
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5525,7 +5525,7 @@
         -8.799999999999999
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8120,6 +8120,6 @@
       8
     ]
   },
-  "dependencies": [],
-  "weaponSet": "scifi"
+  "weaponSet": "scifi",
+  "dependencies": []
 }

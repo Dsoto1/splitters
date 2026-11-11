@@ -180,6 +180,7 @@ Each family includes collision, surface types, LODs, budgets and tests, like the
   fish and tarp crates.
 - **Next:** part 2, fences and walls; then part 3, containers.
 - **Part 4, furniture and shop pieces: built, not landed** (`wip/mapmaker-kit-props-4`, 2026-11-11): tables, desks, side tables, chairs, benches, bookcases (`tools/content/kit/furniture.mjs`), shop shelving, market stalls and counters, waste bins (`shop.mjs`). Chairs, benches, shelving and stalls collide as finer boxes, as the pieces they replace did. Still to do in part 4: pipes and scaffolding, signs, rubble.
+- **Part 5, soft seats, cabinets and appliances: built, not landed** (`wip/mapmaker-kit-props-5`, 2026-11-11): the cushioned chair (the `seat` generator, a padded seat and back), armchairs and sofas (`tools/content/kit/sofa.mjs`), kitchen and media cabinets and the fridge, stove and washing machine (`cabinet.mjs`). All but the chair collide as their box, as the pieces they replace did. By the owner's rule of 2026-11-11 the sofa and the cabinets play as wood and the appliances as thin metal (the sofa, fridge, stove and washer were concrete by the guess, the cabinets thin metal by their name; the armchair and the chair were wood already). The maps still name the retired props until MapMaker's Replace all moves them.
 
 Do not scale to dozens of generated species before the first vertical slice looks good at eye level and passes performance/collision checks.
 

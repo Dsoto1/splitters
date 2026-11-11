@@ -647,8 +647,8 @@
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_051",
@@ -714,7 +714,7 @@
         26.2
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,

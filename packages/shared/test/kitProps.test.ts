@@ -79,6 +79,10 @@ const REMATERIALLED = new Map<string, string>([
   // Wooden furniture that played as concrete by an accident of its name (owner, 2026-11-11: make it wood; the bin thin metal).
   ['prop.desk', 'wood'], ['prop.bench', 'wood'], ['prop.bookcase', 'wood'], ['prop.bookcase_wide', 'wood'],
   ['prop.stall', 'wood'], ['prop.stall_green', 'wood'], ['prop.stall_bench', 'wood'], ['prop.trashcan', 'thin_metal'],
+  // Part 5, by the same rule: the sofa (concrete by the guess) is upholstery over a wooden frame, like the armchair
+  // (wood already); the cabinets (thin metal, by the word "cabinet") are wooden; the white goods (concrete) are sheet steel.
+  ['prop.sofa', 'wood'], ['prop.kitchen_cabinet', 'wood'], ['prop.tv_cabinet', 'wood'],
+  ['prop.fridge', 'thin_metal'], ['prop.stove', 'thin_metal'], ['prop.washer', 'thin_metal'],
 ]);
 
 describe('kit aliases', () => {

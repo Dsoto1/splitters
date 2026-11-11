@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt } from '@tiletrigger/shared';
+import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt, propBreakLook } from '@tiletrigger/shared';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
 import type { LocalPlayer } from './prediction.ts';
 import type { RemotePose } from './interpolation.ts';
@@ -508,7 +508,7 @@ export class SessionAudio {
           break;
         }
         if (e?.kind === 'prop') {
-          if (!getProp(e.model)?.breakable?.blast) this.audio.play('break.crate', { at: this.entityAt(ev.i, 0.6) });
+          if (!getProp(e.model)?.breakable?.blast) this.audio.play(getProp(e.model)?.breakable ? 'break.crate' : propBreakLook(e.model).sound, { at: this.entityAt(ev.i, 0.6) });
           break;
         }
         // Barrels, gas and generators are heard as their explosions.

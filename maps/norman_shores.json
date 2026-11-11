@@ -20111,7 +20111,7 @@
         -83.22
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -21973,7 +21973,7 @@
         76.78
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -22225,7 +22225,7 @@
         68.78
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -22911,7 +22911,7 @@
         -76.78
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

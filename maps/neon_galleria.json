@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_uy54jdpkmne5vzsk",
-      "versionId": "v_7h6krmcw6ujsnmxt",
-      "revision": 4,
-      "contentHash": "sha256:4ec72125a8436d342145ea36e490d4c33f36365e18b594cbb4ec3146df89d585",
+      "versionId": "v_fl2k3om3rpq3ct77",
+      "revision": 5,
+      "contentHash": "sha256:a41282d91523dccf5e8c15d6129d7476fbd84dbba8ff84853fdd77666524f27c",
       "schemaVersion": 35,
-      "releasedAt": "2026-11-11T10:00:21.170Z"
+      "releasedAt": "2026-11-11T15:20:34.769Z"
     }
   },
   "classicStructure": {
@@ -18911,7 +18911,7 @@
         -18.6
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -19373,7 +19373,7 @@
         20.3
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -19387,7 +19387,7 @@
         21.91
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -19401,7 +19401,7 @@
         20.3
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -19415,7 +19415,7 @@
         21.91
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -19429,7 +19429,7 @@
         21.1
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -19443,7 +19443,7 @@
         21.1
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -19471,7 +19471,7 @@
         17.3
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,

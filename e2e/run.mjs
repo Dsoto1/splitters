@@ -4718,6 +4718,46 @@ async function physicsfxFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await glassChecks(browser);
+  await destructionChecks(browser);
+}
+
+/**
+ * The destructible environment (map format v36; maps/breakyard.json, "Everything breaks" on): a prop the catalogue
+ * calls solid for good (a shipping container) takes damage and breaks, its model gone and debris thrown; the one marked
+ * Unbreakable in MapMaker isn't a breakable at all; a crate given 500 health in the inspector has it.
+ */
+async function destructionChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=breakyard&test=1&god=1`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
+  await holdBots(page);
+  const state = await page.evaluate(() => {
+    const m = window.__match, sc = m.scenario, ents = m.map.entities;
+    const of = (i) => [...sc.destructibles.values()].find((d) => d.i === i);
+    const containers = ents.map((e, i) => [e, i]).filter(([e]) => e.kind === 'prop' && e.model === 'kit.container.shipping');
+    const kept = containers.find(([e]) => e.unbreakable);
+    const breaks = containers.find(([e]) => !e.unbreakable);
+    const tough = ents.findIndex((e) => e.kind === 'prop' && e.health === 500);
+    window.__container = of(breaks[1]);
+    window.__containerIndex = breaks[1];
+    window.__debrisBefore = window.__cs.view.debrisBodies.length;
+    return { on: !!m.map.metadata.destruction, breakable: !!window.__container, health: window.__container?.health, kept: !!kept && !of(kept[1]), tough: of(tough)?.health, drawn: window.__cs.view.props.get(breaks[1])?.isEnabled() };
+  });
+  check(state.on && state.breakable && state.health > 100 && state.drawn, `on a map where everything breaks, a shipping container is a breakable with health by its steel and size (${JSON.stringify(state)})`);
+  check(state.kept, 'the container marked Unbreakable in MapMaker is not a breakable');
+  check(state.tough === 500, `a crate given 500 health in the inspector has it (${state.tough})`);
+  await page.evaluate(() => window.__match.scenario.damageDestructible(window.__container, window.__container.health * 0.5, true, null));
+  const half = await page.evaluate(() => ({ alive: window.__container.alive, drawn: window.__cs.view.props.get(window.__containerIndex)?.isEnabled() }));
+  check(half.alive && half.drawn, `half its health gone, the container still stands (${JSON.stringify(half)})`);
+  await page.evaluate(() => window.__match.scenario.damageDestructible(window.__container, 1e6, true, null));
+  await page.waitForFunction(() => window.__cs.view.props.get(window.__containerIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
+  const broken = await page.evaluate(() => ({ alive: window.__container.alive, drawn: window.__cs.view.props.get(window.__containerIndex)?.isEnabled(), debris: window.__cs.view.debrisBodies.length - window.__debrisBefore }));
+  check(!broken.alive && broken.drawn === false && broken.debris > 0, `broken, the container is gone from the yard and its debris flies (${JSON.stringify(broken)})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/destruction-broken.png` });
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /** Glass on the Training Range: one instanced material, bulletproof glass cracks where it is shot, glass shatters into shards. */
@@ -6824,7 +6864,7 @@ async function vehiclesFlow(browser) {
   await page.evaluate(() => (window.__cs.input.pitch = 0));
   check(roll < 1, `after leaving the buggy and a blast nearby, the view and gun stay level as you turn (${roll.toFixed(2)}° roll)`);
   // Passengers: five bots take the driver's, the front passenger's and three deck places (E fills the next free seat),
-  // you take the last place on the deck; the front two sit, the deck riders stand, and you shoot your own gun out of
+  // you take the last place on the deck; all sit (the deck riders on its edges, facing out), and you shoot your own gun out of
   // the side without hitting the buggy. A seventh can't get in.
   const ride = await page.evaluate(() => {
     const match = window.__match;
@@ -6858,8 +6898,26 @@ async function vehiclesFlow(browser) {
     if (aboard) break;
   }
   // Seated riders: the bots' characters ease into the seated pose.
+  // ...and come to rest on the cushions: the buggy was put back at its spawn above, so its drawn body (and the riders
+  // on it) is still settling on its springs for a moment (hips read 0.35 m over a cushion mid-bounce, 0.3 the limit).
   await page
-    .waitForFunction((slots) => slots.every((s) => (window.__cs.view.avatars.get(s)?.anim?.sit ?? 0) > 0.95), ride.riders, { timeout: T(8000) })
+    .waitForFunction(
+      (ride) => {
+        const match = window.__match;
+        const m = match.mounts.find((x) => x.index === ride.index);
+        if (!ride.standing.every((s) => (window.__cs.view.avatars.get(s)?.anim?.sit ?? 0) > 0.95)) return false;
+        return ride.riders.every((s) => {
+          const a = window.__cs.view.avatars.get(s);
+          const thigh = a?.anim?.ch.joints.get('thigh_l');
+          const seat = match.slots[s].mount && m.def.seats[match.slots[s].mount.seat];
+          if (!thigh || !seat || !((a.anim.sit ?? 0) > 0.95)) return false;
+          const hip = thigh.getAbsolutePosition().y - (m.pos.y + seat.offset[1]);
+          return hip > 0 && hip < 0.28;
+        });
+      },
+      ride,
+      { timeout: T(8000) },
+    )
     .catch(() => {});
   const seated = await page.evaluate((ride) => {
     const match = window.__match;
@@ -6886,9 +6944,9 @@ async function vehiclesFlow(browser) {
       health: m.health,
     };
   }, ride);
-  check(ride.seats.join() === '0,1,2,3,4' && seated.mine === 5 && seated.role === 'passenger' && seated.stance === undefined && seated.view === 'seat', `five riders and you fill the buggy's six places in order, you standing on its deck (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
+  check(ride.seats.join() === '0,1,2,3,4' && seated.mine === 5 && seated.role === 'passenger' && seated.stance === 1 && seated.view === 'seat', `five riders and you fill the buggy's six places in order, you sitting on the edge of its deck (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
   check(seated.sit.every((v) => v > 0.95) && seated.hips.every((h) => h !== null && h > 0 && h < 0.3), `riders are drawn sitting on their seats (sit ${seated.sit.join(', ')}; hips ${seated.hips.join(', ')} m over the cushions)`);
-  check(seated.stand.length === 3 && seated.stand.every((v) => v < 0.05), `riders on the deck are drawn standing (sit ${seated.stand.join(', ')})`);
+  check(seated.stand.length === 3 && seated.stand.every((v) => v > 0.95), `riders on the deck are drawn sitting on its edges (sit ${seated.stand.join(', ')})`);
   check(seated.fifth === false, 'a seventh player can\'t get into a full buggy');
   // Fire out of the right side, aiming down a little: your own gun, and the rounds leave through the buggy.
   const shot = await page.evaluate((index) => {

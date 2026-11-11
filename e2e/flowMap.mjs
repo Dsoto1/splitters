@@ -49,6 +49,7 @@ const MAP_USERS = {
   skyward: ['scenery'],
   sky_islands: ['setpieces'],
   training_range: ['physicsfx', 'newplayer'],
+  breakyard: ['physicsfx'],
   bunker_cross: ['ctf'],
   fort_meadow: ['forts'],
   twin_spires: ['classes', 'ctf'],

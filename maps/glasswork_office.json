@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_eu7kdm7dnuvylmjv",
-      "versionId": "v_bwm7gftxicm6n3be",
-      "revision": 4,
-      "contentHash": "sha256:e77fa5c067fe354612faabe83be633b584545027297c84579a1f6bf9b136a7de",
+      "versionId": "v_voi3otug36il4slz",
+      "revision": 5,
+      "contentHash": "sha256:a271ece5a99af988a591d34ca2a9024a80a1c6e1d50ae223e70802bfd68c8de2",
       "schemaVersion": 35,
-      "releasedAt": "2026-11-11T09:29:48.188Z"
+      "releasedAt": "2026-11-11T15:07:08.099Z"
     }
   },
   "classicStructure": {
@@ -5717,7 +5717,7 @@
         51.22
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -5745,7 +5745,7 @@
         51.22
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -5913,7 +5913,7 @@
         60.92
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5927,7 +5927,7 @@
         66.26
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -5997,7 +5997,7 @@
         63.46
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
