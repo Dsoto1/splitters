@@ -423,6 +423,8 @@ export interface Combatant {
   reload: ReloadRun | null;
   /** Horizontal speed over the last tick (m/s), for movement spread. */
   moveSpeed: number;
+  /** Riding in a standing place (a flatbed, a roof gun), ducked down: the crouch button, read each tick (seatMove). */
+  rideCrouch?: boolean;
   /** Skipped this tick's move (Match.relaxedMove): the next one covers two ticks. */
   moveOwed?: boolean;
   /** Status effects (ticks left; chill builds 0..1 into a freeze), and who caused them (kill credit). */
@@ -3015,6 +3017,9 @@ export class Match {
       if (seat) {
         // In a turret or vehicle: no walking. Drivers steer; gunners' aim stays within the gun's arc.
         const m = this.mounts[c.mount!.index]!;
+        // Standing places (a flatbed, a roof gun: not a real seat, not the wheel, where crouch is "down"): crouch
+        // ducks you down where you stand (owner, 2026-11-11), a smaller target with a lower eye, as on foot.
+        c.rideCrouch = seat.role !== 'driver' && !seat.seated && !m.def.airplane && !!(input.buttons & BUTTON_CROUCH);
         // The plane: jump (or E, below) jumps out.
         if (m.def.airplane && input.buttons & BUTTON_JUMP && !(input.buttons & BUTTON_USE)) {
           if (this.mayJumpOut(c, m)) {
@@ -4482,10 +4487,13 @@ export class Match {
     return mountToWorld(m.pos, m.yaw, m.def.seats[seat]!.offset);
   }
 
-  /** A rider's movement state in a seat: on the seat point; sitting (a real seat) takes the crouching eye and height. */
-  private seatMove(m: MountRt, seat: number): MoveState {
+  /**
+   * A rider's movement state in a seat: on the seat point; sitting (a real seat) takes the crouching eye and height,
+   * and so does a rider in a standing place who ducks (`crouch`: Combatant.rideCrouch).
+   */
+  private seatMove(m: MountRt, seat: number, crouch = false): MoveState {
     const pos = this.seatFeet(m, seat);
-    return m.def.seats[seat]!.seated ? { pos, velY: 0, grounded: true, stance: 1 } : { pos, velY: 0, grounded: true };
+    return m.def.seats[seat]!.seated || crouch ? { pos, velY: 0, grounded: true, stance: 1 } : { pos, velY: 0, grounded: true };
   }
 
   /** Climb into the nearest turret or vehicle in reach with a free seat (driver first, then gunner, then passengers). */
@@ -4526,6 +4534,7 @@ export class Match {
     const m = this.mounts[c.mount.index];
     const seat = c.mount.seat;
     c.mount = undefined;
+    c.rideCrouch = false;
     if (!m) return;
     m.seats[seat] = null;
     if (m.def.seats[seat]?.role === 'driver') m.drive = { forward: 0, right: 0 };
@@ -4825,7 +4834,7 @@ export class Match {
       m.seats.forEach((slot, seat) => {
         const c = slot === null ? undefined : this.actor(slot);
         if (!c?.alive) return;
-        c.move = this.seatMove(m, seat);
+        c.move = this.seatMove(m, seat, c.rideCrouch);
         c.moveSpeed = Math.abs(m.speed);
       });
     }

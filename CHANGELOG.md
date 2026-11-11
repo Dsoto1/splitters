@@ -7,6 +7,8 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Duck down in standing places.** Riding where you stand (the Troop Truck's flatbed, the roof guns of the Gun Jeep and the Armored Rover, the Hauler, Gunship and Dropship places, a turret), crouch ducks you down: a lower eye and a smaller target, as on foot. Not at the wheel, where crouch is "down".
+- **A hit keeps your hands on your gun** in first person (they hung off it for half a second each time you were shot).
 - **Hands stay on the pistol when you move.** In first person the shooting hand jumped about 10 cm off the grip for a frame, several times a second, while walking or running (never standing still). The walk and run animations leave the fingers alone, and the grip was reading its own last pose back; the fingers are now put back as the hold left them before each frame's grip.
 - **Riders sit where the vehicle has a seat.** The Kart's driver sits inside its pod, the Hover Bike's and the Speeder's riders sit astride their saddles, the Skyfighter's pilot sits in the cockpit, the Ice Cream Truck's four sit inside (their heads no longer come out through the roof) and the Tank's crew ride in their hatches, head and shoulders out. The Buggy's four deck riders sit on the edges of the deck facing out instead of standing.
 - **Roulette: who you hit.** A bot keeps one name for the whole match, so its score is easy to follow; the name over the health bar of whoever you hit now adds the character they are wearing this life ("Mildred · The Dapper").

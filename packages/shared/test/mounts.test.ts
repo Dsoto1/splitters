@@ -113,6 +113,18 @@ describe('turrets, sentries and vehicles', () => {
     const ev = d.run(10, () => d.input(players[4]!, { yaw: Math.PI / 2, pitch: -0.45, buttons: BUTTON_FIRE }));
     expect(ev.some((e) => e.e === 'shot' && e.s === players[4]!.slot && !e.w.startsWith('core.mount_'))).toBe(true);
     expect(truck.health).toBe(health);
+    // Crouch ducks a rider on the bed down where they stand (the crouching eye and height), and they stand again when
+    // it is let go; the driver's crouch is not a duck (it is "down" for a flyer), and a seated rider is as before.
+    d.run(3, () => {
+      d.input(players[4]!, { buttons: BUTTON_CROUCH });
+      d.input(players[0]!, { buttons: BUTTON_CROUCH });
+    });
+    expect(players[4]!.move.stance).toBe(1);
+    expect(players[5]!.move.stance).toBeUndefined();
+    expect(players[0]!.move.stance).toBe(1);
+    expect(players[0]!.rideCrouch).toBe(false);
+    d.run(3, () => d.input(players[4]!, {}));
+    expect(players[4]!.move.stance).toBeUndefined();
   });
 
   it("the gun jeep's roof gunner fires the mounted MG", () => {

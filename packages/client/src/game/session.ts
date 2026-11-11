@@ -114,6 +114,7 @@ import {
   type ServerStats,
   type MatchRules,
   PLAYER,
+  STANCES,
   getProp,
   mapTerrainMesh,
   environmentShapes,
@@ -3137,8 +3138,11 @@ export class GameSession {
             tilt: this.view.mountTilt(ride.index),
             cockpitEye: this.view.mountPoint(ride.index, cockpitEye(ride.def, seatIndex)) ?? mountToWorld(ride.shown.pos, ride.shown.yaw, cockpitEye(ride.def, seatIndex)),
             levelEye: mountToWorld(ride.shown.pos, ride.shown.yaw, cockpitEye(ride.def, seatIndex)),
-            // A real seat: a seated head height over the cushion (the sim's crouching eye); otherwise standing.
-            seatEye: seatDef.seated ? mountToWorld(ride.shown.pos, ride.shown.yaw, cockpitEye(ride.def, seatIndex)) : { x: feet.x, y: feet.y + PLAYER.eyeHeight, z: feet.z },
+            // A real seat: a seated head height over the cushion (the sim's crouching eye); otherwise standing, or
+            // ducked down where you stand (crouch in a standing place that isn't the wheel: Match's rideCrouch).
+            seatEye: seatDef.seated
+              ? mountToWorld(ride.shown.pos, ride.shown.yaw, cockpitEye(ride.def, seatIndex))
+              : { x: feet.x, y: feet.y + (this.input.crouchOn && seatDef.role !== 'driver' && !ride.def.airplane ? STANCES[1].eye : PLAYER.eyeHeight), z: feet.z },
           },
           this.input,
           cast,
