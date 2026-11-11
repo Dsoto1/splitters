@@ -15,7 +15,7 @@ Spaceships and Tank Pack (all CC0).
 | Arc Turret | none | An auto-turret like the Sentry Gun, with a tell: it winds up (0.75 s, a growing charge ball and a warning sound) on an enemy it can see within 22 m, then locks an energy arc on that hits 5 every 0.1 s and jumps to one enemy within 6 m of them (half damage). Breaking its line of sight or leaving its reach drops the lock and the charge; a 2 s lock ends in a 1.25 s vent. 240 health. Drawn on the Rocket Turret's cannon in its own violet energy colour (`MountDef.glow`). MapMaker warns (`mount.arc_spawn`) when one stands within 12 m of a spawn it would shoot at. See "Arc Turret" below |
 | Go-Kart | 1 driver | Very quick, no gun: run people over |
 | Speeder | 2 (pilot, passenger) | Hovering; the pilot fires twin blasters ahead, the passenger shoots their own weapon |
-| Buggy | 4 (driver, 3 passengers) | Everyone but the driver sits and shoots their own weapon, all round; the roof gun is scenery |
+| Buggy | 6 (driver, front passenger, 4 on the deck) | Everyone but the driver shoots their own weapon, all round: the front passenger sits, the four in the back stand on the open deck behind the cage |
 | Hauler | 6 (pilot, gunner, 4 passengers) | A slow hovering transport with a rocket gunner |
 | Skyfighter | 1 pilot | Flies: the pilot climbs (Space) and dives (Ctrl/crouch), up to 30 m above where it was parked, firing twin blasters ahead |
 | Dropship | 6 (pilot, gunner, 4 passengers) | A flying troop carrier with an all-round door gun; riders stand on the deck |
@@ -74,14 +74,15 @@ Spaceships and Tank Pack (all CC0).
   long sled on 2026-11-04; its riders sit astride (`straddle` on the seats). The tank is Quaternius' Tank Pack (CC0) desert tank. The hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
   Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
-  The buggy is a Meshy Community model (Tactical Off-Road Beast, CC0 per the owner;
-  `content/guns.json`, built by `prepare-guns.mjs`, 6.8k triangles, 768 px map):
-  a long tube-frame buggy with a roof gun whose hubs are bare, so the Meshy Community
-  Rugged Off-Road Tire (`vehicles/offroad_tire.glb`, 676 triangles) is drawn at
-  each hub from the def's `wheels` (`mountVisuals.ts`), and the body rides
-  0.24 m up (`rideHeight`) on them. The tires roll with the buggy's speed,
-  the front pair steers, and each rides its own spring (see Suspension below);
-  the gun jeep's own wheels (the Car Kit model's wheel meshes) do the same.
+  The buggy (vehicle refresh part 2, 2026-11-11) is a Meshy Community sci-fi buggy (`Meshy_AI__1108120754`, CC0;
+  `vehicles/sixer_buggy.glb`, 20k triangles plus a quarter LOD, 2048 px colour map): a tube-frame four-wheeler with
+  a cage over two seats and an open deck behind, where four riders stand (the owner's layout: driver, a seated
+  front passenger, four standing). Its tires, like the gun jeep's, are cut out of the body as parts (`parts` in
+  `content/guns.json`, nodes `wheel_*`): `mountVisuals.ts` puts each on a pivot at its hub (its lower level of detail
+  with it), so they roll with the speed, the front pair steers, and each rides its own spring (see Suspension
+  below). The suspension's contact points and hub height are the old tires' (`vehicle.suspension.wheels`, `hub`),
+  so it drives as before. The Tactical Off-Road Beast it replaced, on its separate Rugged Off-Road Tires, is its
+  `fallback`.
 - **Shooting from a seat.** Gunners fire the seat's gun (heat, no
   reloading) within its arc; side door guns (the gunship's) have arcs centred
   on their own side (`facing` on the seat). Passengers use their own weapons. Drivers can't
@@ -193,12 +194,12 @@ small generated roughness grain. Everyone else, and your chase camera, see the
 body alone (`game/cockpitInterior.ts` adds the parts under your vehicle's body
 node, so they ride its springs and tilt).
 
-The buggy's was measured on its model (slices of the triangles): the roof
-frame at 1.47 m on rails 0.46 m either side from the rear hoop (z -1.0) to the
-front bar with its lamps (z 0.6), a hoop behind the front seats (z 0.05),
-A-pillars and a centre brace falling to the hood, three rows of seats, the
-wheel on the left at z 0.78 and a sand cowl over the dash so the road shows
-past the hood. About 17k triangles in 9 draws (4 surfaces static, 2 for the
+The buggy's was measured on its model (slices of the triangles; refitted to the
+sci-fi buggy on 2026-11-11): the roof frame at 1.65 m on rails 0.58 m either side
+from the hoop behind the cabin (z -0.6, where the deck starts) to the front bar
+with its lamps (z 0.4), a hoop behind the seats (z -0.15), A-pillars and a centre
+brace falling to the hood, one row of seats (the deck riders stand), the wheel on
+the left at z 0.58 and a cowl over the dash so the road shows past the hood. About 17k triangles in 9 draws (4 surfaces static, 2 for the
 wheel, one per needle), built once on first use. The gun jeep and kart can get
 one by adding an entry.
 
