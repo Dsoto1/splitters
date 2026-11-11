@@ -902,7 +902,7 @@
         42
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -916,7 +916,7 @@
         40.5
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,

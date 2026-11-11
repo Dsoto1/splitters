@@ -229,6 +229,107 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.seat.chair_cushion",
+      "displayName": "Cushioned Chair",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a wooden chair with a padded seat and back, the size of the Kenney cushioned chair (0.413 \u00d7 0.95 \u00d7 0.413 m)."
+      },
+      "size": [
+        0.413,
+        0.95,
+        0.413
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": {
+        "health": 20,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "seat",
+        "seat": 0.5,
+        "seatT": 0.06,
+        "leg": 0.04,
+        "back": 0.157,
+        "slats": 0
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "rose",
+          "seed": 9101,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "seat": "#b9706a",
+            "back": "#b9706a"
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 9102,
+          "look": {
+            "wood": "#6b4a30",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "seat": "#4f6b4a",
+            "back": "#4f6b4a"
+          }
+        },
+        {
+          "index": 2,
+          "name": "blue",
+          "seed": 9103,
+          "look": {
+            "wood": "#c09a66",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "seat": "#46607c",
+            "back": "#46607c"
+          }
+        },
+        {
+          "index": 3,
+          "name": "leather",
+          "seed": 9104,
+          "look": {
+            "wood": "#4e382a",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "seat": "#6e4a34",
+            "back": "#6e4a34"
+          }
+        },
+        {
+          "index": 4,
+          "name": "cream",
+          "seed": 9105,
+          "look": {
+            "wood": "#d9d4c6",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "seat": "#b8ad92",
+            "back": "#b8ad92"
+          }
+        }
+      ]
     }
   ]
 }

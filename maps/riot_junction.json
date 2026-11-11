@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_ruc3fnxenmg4ganz",
-      "versionId": "v_wtbfczie55qy3kry",
-      "revision": 5,
-      "contentHash": "sha256:25ec818d164eb4704f91a7eb10dcc0f7bc5a00e6269a9e3d4d363a8d5adfd177",
+      "versionId": "v_ivdkiimhrvxxrkyd",
+      "revision": 6,
+      "contentHash": "sha256:32202b558052f4df30f050a65de5bcbb6f7ea2ac21acbb4c4e3909923aafb7b5",
       "schemaVersion": 35,
-      "releasedAt": "2026-11-11T10:21:38.905Z"
+      "releasedAt": "2026-11-11T15:26:59.481Z"
     }
   },
   "classicStructure": {
@@ -18392,7 +18392,7 @@
         146.67
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -18490,7 +18490,7 @@
         155.02
       ],
       "kind": "prop",
-      "model": "prop.fridge",
+      "model": "kit.appliance.fridge",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -18574,7 +18574,7 @@
         148.91
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -18994,7 +18994,7 @@
         155.08
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -19106,7 +19106,7 @@
         141.52
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -19750,7 +19750,7 @@
         154.12
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -19764,7 +19764,7 @@
         153.02
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -19778,7 +19778,7 @@
         153.02
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -19932,7 +19932,7 @@
         45.58
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19946,7 +19946,7 @@
         46.68
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -19960,7 +19960,7 @@
         46.68
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -19974,7 +19974,7 @@
         45.32
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20198,7 +20198,7 @@
         55.22
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -20212,7 +20212,7 @@
         54.12
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20226,7 +20226,7 @@
         54.12
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20464,7 +20464,7 @@
         56.78
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20478,7 +20478,7 @@
         57.88
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20492,7 +20492,7 @@
         57.88
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20506,7 +20506,7 @@
         58.67
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20898,7 +20898,7 @@
         141.32
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -21192,7 +21192,7 @@
         147.22
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -21360,7 +21360,7 @@
         134.48
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -21374,7 +21374,7 @@
         135.58
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -21388,7 +21388,7 @@
         135.58
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -21402,7 +21402,7 @@
         133.72
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -22060,7 +22060,7 @@
         142.48
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -22074,7 +22074,7 @@
         143.58
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -22088,7 +22088,7 @@
         143.58
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -22774,7 +22774,7 @@
         124.52
       ],
       "kind": "prop",
-      "model": "prop.fridge",
+      "model": "kit.appliance.fridge",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -22788,7 +22788,7 @@
         121.92
       ],
       "kind": "prop",
-      "model": "prop.fridge",
+      "model": "kit.appliance.fridge",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -22956,7 +22956,7 @@
         131.09
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

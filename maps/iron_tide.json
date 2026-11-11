@@ -34,11 +34,11 @@
     },
     "release": {
       "mapId": "m_vfevdrgwi6zn7cfg",
-      "versionId": "v_ghltwuys267krxvc",
-      "revision": 5,
-      "contentHash": "sha256:2d76b2a026ee29bd28a3e37e4181df74435a66d47d1deee0da5383b6e13012ef",
+      "versionId": "v_fjtt53d72px2bjtr",
+      "revision": 6,
+      "contentHash": "sha256:7980b2196a85c519df97bc42e9a10357479dc77b84dd83917f520c99bff28967",
       "schemaVersion": 35,
-      "releasedAt": "2026-11-11T09:39:34.618Z"
+      "releasedAt": "2026-11-11T15:13:08.331Z"
     }
   },
   "classicStructure": {
@@ -13286,7 +13286,7 @@
         44.8
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -13300,7 +13300,7 @@
         43.2
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -13314,7 +13314,7 @@
         44.8
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -13328,7 +13328,7 @@
         43.2
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -13342,7 +13342,7 @@
         44
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -13356,7 +13356,7 @@
         44
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -13762,7 +13762,7 @@
         56.6
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -13776,7 +13776,7 @@
         57.51
       ],
       "kind": "prop",
-      "model": "prop.stove",
+      "model": "kit.appliance.stove",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -13790,7 +13790,7 @@
         58.42
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -13804,7 +13804,7 @@
         59.33
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -13818,7 +13818,7 @@
         64.48
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -13832,7 +13832,7 @@
         63.57
       ],
       "kind": "prop",
-      "model": "prop.stove",
+      "model": "kit.appliance.stove",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -13846,7 +13846,7 @@
         62.66
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -13860,7 +13860,7 @@
         61.75
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -13874,7 +13874,7 @@
         53.02
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13888,7 +13888,7 @@
         53.02
       ],
       "kind": "prop",
-      "model": "prop.stove",
+      "model": "kit.appliance.stove",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13902,7 +13902,7 @@
         53.02
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13916,7 +13916,7 @@
         53.02
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13930,7 +13930,7 @@
         60.66
       ],
       "kind": "prop",
-      "model": "prop.fridge",
+      "model": "kit.appliance.fridge",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -14140,7 +14140,7 @@
         60.32
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -14154,7 +14154,7 @@
         54.92
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -15666,7 +15666,7 @@
         4.07
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,

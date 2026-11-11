@@ -1,4 +1,6 @@
 import {
+  isBreakableProp,
+  propHealth,
   AIR_CRAFT_LABELS,
   AIR_CRAFTS,
   AIRDROP_MODES,
@@ -154,6 +156,22 @@ export class EntityInspector {
         if (kit && kit.variants.length > 1) choose('Variant', kit.variants.map((v) => [String(v.index), (v.name[0]!.toUpperCase() + v.name.slice(1)).replace(/_/g, ' ')] as const), String(e.variant ?? 0), (v) => ({ variant: v === '0' ? undefined : Number(v) }));
         number('Scale', e.scale, 0.25, (v) => ({ scale: Math.max(0.25, Math.min(4, v)) }));
         toggle('Solid', e.solid, (v) => ({ solid: v }));
+        {
+          // Breaking (v36): the catalogue's breakable props, any prop given its own health, every solid prop on a map
+          // where everything breaks; Unbreakable keeps a piece whatever else says.
+          const def = getProp(e.model);
+          const everything = !!this.app.viewDoc.metadata.destruction;
+          if (def?.collision && e.solid && !species) {
+            const usual = def.breakable ? def.breakable.health * e.scale : propHealth(e.model, def.collision, e.scale);
+            const breaks = isBreakableProp({ ...e, unbreakable: undefined }, everything);
+            toggle('Unbreakable', !!e.unbreakable, (v) => ({ unbreakable: v || undefined }));
+            if (!e.unbreakable) {
+              // 0: the usual (the catalogue's, or its size and material's); on a map where not everything breaks, giving a health makes the piece breakable.
+              number('Health', e.health ?? (breaks ? Math.round(usual) : 0), 10, (v) => ({ health: v <= 0 || (breaks && e.health === undefined && Math.round(v) === Math.round(usual)) ? undefined : clamp(v, 1, 100000) }));
+              el.append(small(breaks ? `Breaks at ${Math.round(e.health ?? usual)} damage${e.health === undefined ? '' : ' (its own; 0 for the usual)'}; comes back at the next round.` : 'Does not break. Give it a health to make it breakable, or turn on Everything breaks in Map properties.'));
+            } else el.append(small('Never breaks.'));
+          }
+        }
         const tint = document.createElement('input');
         tint.type = 'color';
         tint.value = e.tint ?? '#ffffff';

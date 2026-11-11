@@ -137,6 +137,7 @@ import {
   VOTE_RESULT_SECONDS,
   type VoteCandidate,
   type VoteState,
+  propBreakLook,
 } from '@tiletrigger/shared';
 import { MapVoteHud } from './mapVoteHud.ts';
 import { myParty } from './party.ts';
@@ -2280,7 +2281,7 @@ export class GameSession {
             } else if (e?.kind === 'prop') {
               const def = getProp(e.model);
               this.view.breakProp(ev.i);
-              if (def) this.view.debris({ x: e.position[0], y: e.position[1] + (def.size[1] * e.scale) / 2, z: e.position[2] }, def.breakable?.debris ?? '#8a5a32', Math.max(0.3, Math.min(1.2, (Math.max(...def.size) * e.scale) / 2)));
+              if (def) this.view.debris({ x: e.position[0], y: e.position[1] + (def.size[1] * e.scale) / 2, z: e.position[2] }, propBreakLook(e.model, def.breakable?.debris).debris, Math.max(0.3, Math.min(1.2, (Math.max(...def.size) * e.scale) / 2)));
             }
           } else if (ev.e === 'leader') {
             const team = this.hud.teamById(ev.team);

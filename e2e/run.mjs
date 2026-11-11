@@ -4718,6 +4718,46 @@ async function physicsfxFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await glassChecks(browser);
+  await destructionChecks(browser);
+}
+
+/**
+ * The destructible environment (map format v36; maps/breakyard.json, "Everything breaks" on): a prop the catalogue
+ * calls solid for good (a shipping container) takes damage and breaks, its model gone and debris thrown; the one marked
+ * Unbreakable in MapMaker isn't a breakable at all; a crate given 500 health in the inspector has it.
+ */
+async function destructionChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=breakyard&test=1&god=1`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown' && window.__match, null, { timeout: T(60000) });
+  await holdBots(page);
+  const state = await page.evaluate(() => {
+    const m = window.__match, sc = m.scenario, ents = m.map.entities;
+    const of = (i) => [...sc.destructibles.values()].find((d) => d.i === i);
+    const containers = ents.map((e, i) => [e, i]).filter(([e]) => e.kind === 'prop' && e.model === 'kit.container.shipping');
+    const kept = containers.find(([e]) => e.unbreakable);
+    const breaks = containers.find(([e]) => !e.unbreakable);
+    const tough = ents.findIndex((e) => e.kind === 'prop' && e.health === 500);
+    window.__container = of(breaks[1]);
+    window.__containerIndex = breaks[1];
+    window.__debrisBefore = window.__cs.view.debrisBodies.length;
+    return { on: !!m.map.metadata.destruction, breakable: !!window.__container, health: window.__container?.health, kept: !!kept && !of(kept[1]), tough: of(tough)?.health, drawn: window.__cs.view.props.get(breaks[1])?.isEnabled() };
+  });
+  check(state.on && state.breakable && state.health > 100 && state.drawn, `on a map where everything breaks, a shipping container is a breakable with health by its steel and size (${JSON.stringify(state)})`);
+  check(state.kept, 'the container marked Unbreakable in MapMaker is not a breakable');
+  check(state.tough === 500, `a crate given 500 health in the inspector has it (${state.tough})`);
+  await page.evaluate(() => window.__match.scenario.damageDestructible(window.__container, window.__container.health * 0.5, true, null));
+  const half = await page.evaluate(() => ({ alive: window.__container.alive, drawn: window.__cs.view.props.get(window.__containerIndex)?.isEnabled() }));
+  check(half.alive && half.drawn, `half its health gone, the container still stands (${JSON.stringify(half)})`);
+  await page.evaluate(() => window.__match.scenario.damageDestructible(window.__container, 1e6, true, null));
+  await page.waitForFunction(() => window.__cs.view.props.get(window.__containerIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
+  const broken = await page.evaluate(() => ({ alive: window.__container.alive, drawn: window.__cs.view.props.get(window.__containerIndex)?.isEnabled(), debris: window.__cs.view.debrisBodies.length - window.__debrisBefore }));
+  check(!broken.alive && broken.drawn === false && broken.debris > 0, `broken, the container is gone from the yard and its debris flies (${JSON.stringify(broken)})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/destruction-broken.png` });
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /** Glass on the Training Range: one instanced material, bulletproof glass cracks where it is shot, glass shatters into shards. */

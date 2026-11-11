@@ -49,7 +49,7 @@ export function validateScenario(map: MapDocument): ValidationIssue[] {
     if (kind === 'variable' || kind === 'timer' || kind === 'objective') return lists[kind].has(id);
     const e = entities.get(id);
     if (!e) return false;
-    return entityFitsTarget(e.kind, kind, isBreakableProp(e));
+    return entityFitsTarget(e.kind, kind, isBreakableProp(e, !!map.metadata.destruction));
   };
   const checkTarget = (ruleId: string, ruleName: string, where: string, target: string | null, kind: TargetKind | null): void => {
     if (!kind) return;

@@ -127,6 +127,12 @@ export const MapMetadata = z.object({
    * starts experimental.
    */
   tier: z.enum(['core', 'experimental']).optional(),
+  /**
+   * Destructible environment (v36), set in MapMaker's Map properties: every solid prop can be shot apart, not only the
+   * ones the catalogue makes breakable (natural rocks stay; a prop marked `unbreakable` stays). Blocks break by their
+   * own `behaviour`; walls, floors, terrain and doors never do. Absent: off.
+   */
+  destruction: z.boolean().optional(),
 });
 
 /** A material from the library plus an optional tint, applied to one surface slot. */
@@ -454,6 +460,10 @@ export const PropEntity = EntityBase.extend({
   scale: z.number().min(0.25).max(4).default(1),
   /** Collides with players, shots and bots (if the prop has a collision box at all). */
   solid: z.boolean().default(true),
+  /** Its own health (v36): it can be shot apart at this much damage, whatever the catalogue says. Absent: the catalogue's, or its size and material's on a map with `metadata.destruction`. */
+  health: z.number().min(1).max(100000).optional(),
+  /** Never breaks (v36), whatever the catalogue or the map's `destruction` says: cover the author wants kept. */
+  unbreakable: z.boolean().optional(),
   /**
    * An environment species' variant (`model: 'env.…'`, content/environment.ts): its index (material variants
    * such as summer, autumn, snow share the species' shapes). Absent: the species' first. Other props ignore it.

@@ -321,7 +321,7 @@ export class LogicPanel {
     else if (kind === 'objective') for (const o of logic.objectives) options.push([o.id, o.text]);
     else {
       for (const e of doc.entities) {
-        const ok = entityFitsTarget(e.kind, kind, isBreakableProp(e));
+        const ok = entityFitsTarget(e.kind, kind, isBreakableProp(e, !!doc.metadata.destruction));
         if (ok) options.push([e.id, entityLabel(doc, e)]);
       }
     }

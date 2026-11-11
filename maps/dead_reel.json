@@ -1817,8 +1817,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_080",
@@ -1870,7 +1870,7 @@
         10.6
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -1884,7 +1884,7 @@
         10.6
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,

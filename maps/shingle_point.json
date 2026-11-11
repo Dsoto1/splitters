@@ -29,11 +29,11 @@
     },
     "release": {
       "mapId": "m_vql6e6ixmth3q6cb",
-      "versionId": "v_ccucnkqqm3bxgeoo",
-      "revision": 7,
-      "contentHash": "sha256:aa607e7180a52024bd5fb82d9a7ed34cd616a9915eaa732fc0276eb7fefe2c06",
+      "versionId": "v_x4opjxoz3alel56u",
+      "revision": 8,
+      "contentHash": "sha256:9f02d5d5192110fe8860e59bd22f56d19cf129008aababc2e1ff5eaec18cb38f",
       "schemaVersion": 35,
-      "releasedAt": "2026-11-11T10:32:35.339Z"
+      "releasedAt": "2026-11-11T15:31:46.159Z"
     }
   },
   "classicStructure": {
@@ -8579,7 +8579,7 @@
         68.99
       ],
       "kind": "prop",
-      "model": "prop.fridge",
+      "model": "kit.appliance.fridge",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8593,7 +8593,7 @@
         69
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -8607,7 +8607,7 @@
         74.97
       ],
       "kind": "prop",
-      "model": "prop.stove",
+      "model": "kit.appliance.stove",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -8635,7 +8635,7 @@
         68.93
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8663,7 +8663,7 @@
         75.07
       ],
       "kind": "prop",
-      "model": "prop.armchair",
+      "model": "kit.sofa.armchair",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -8677,7 +8677,7 @@
         74.68
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,

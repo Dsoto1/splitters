@@ -500,11 +500,15 @@ export function buildMapDecor(map: MapDocument, catalog: TileCatalog = coreCatal
   return buildBoxes(map, catalog, true);
 }
 
-/** A solid prop that can be shot apart (its catalogue entry has health). */
-export function isBreakableProp(e: MapEntity): boolean {
-  if (e.kind !== 'prop' || !e.solid) return false;
+/**
+ * A solid prop that can be shot apart: its catalogue entry has health, or the placement its own; with `everything`
+ * (the map's `metadata.destruction`) any solid prop but a natural rock. Never one marked `unbreakable`.
+ */
+export function isBreakableProp(e: MapEntity, everything = false): boolean {
+  if (e.kind !== 'prop' || !e.solid || e.unbreakable) return false;
   const def = getProp(e.model);
-  return !!def?.breakable && !!def.collision;
+  if (!def?.collision) return false;
+  return !!def.breakable || e.health !== undefined || (everything && !isRock(def));
 }
 
 /** Collision of solid props: the prop's box, scaled and turned (as its axis-aligned bounds). */
@@ -515,9 +519,10 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   const out: WorldBox[] = [];
   // Props riding a mover are drawn only (its blocks collide).
   const carried = new Set(map.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
+  const everything = !!map.metadata?.destruction;
   for (const e of map.entities) {
     // Breakable props are not static: the scenario runtime owns their colliders (ask for them with `breakable`).
-    if (e.kind !== 'prop' || !e.solid || isBreakableProp(e) !== breakable || carried.has(e.id)) continue;
+    if (e.kind !== 'prop' || !e.solid || isBreakableProp(e, everything) !== breakable || carried.has(e.id)) continue;
     const def = getProp(e.model);
     if (!def?.collision) continue;
     const [x, y, z] = e.position;
