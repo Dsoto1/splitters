@@ -31,11 +31,17 @@
     "ignites": true
   },
   "view": {
-    "model": "weapons/flare_gun.glb",
+    "model": "guns/flare_gun.glb",
+    "held": { "medium": "guns/flare_gun.medium.glb", "high": "guns/flare_gun.high.glb" },
+    "fallback": "weapons/flare_gun.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ff7a3a",
-    "hold": { "style": "pistol", "grip": [0, -0.043, -0.068], "support": [-0.02, -0.053, -0.058], "rake": 34 },
+    "hold": { "style": "pistol", "grip": [0, -0.03, -0.075], "support": [-0.02, -0.04, -0.065], "rake": 14 },
+    "muzzleAt": [0, 0.05, 0.12],
     "sound": "fire.flare"
   },
-  "notes": { "group": "The extended arsenal: every one fires differently. 2: sidearms." }
+  "notes": {
+    "group": "The extended arsenal: every one fires differently. 2: sidearms.",
+    "model": "The 3DModelsCC0 Flare Gun (CC0; content/guns.json, from its own download folder: the pack's colour, normal, metal and roughness maps), replacing the kit pistol, now the fallback. The Airstrike Flare is this gun's shot too (content/throwables.json): the same gun in your hands while you line it up."
+  }
 }

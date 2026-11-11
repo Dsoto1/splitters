@@ -42,9 +42,10 @@ describe('kit families', () => {
       expect(isKitModel(p.id), p.id).toBe(true);
       expect(CORE_PROPS).toContain(p);
       expect(getProp(p.id)).toBe(p);
-      // Every variant fills the family's bounds (tools/content/kitprops.mjs checks the models): the box is the shape.
+      // Every variant fills the family's bounds (tools/content/kitprops.mjs checks the models): the box is the shape,
+      // or, for a piece you can see through (a rail fence, railings, a wall fallen away), its own finer boxes inside it.
       expect(p.collision).toEqual(p.size);
-      expect(p.boxes).toBeUndefined();
+      for (const b of p.boxes ?? []) for (let k = 0; k < 3; k++) expect(b[k + 3]!, p.id).toBeGreaterThan(b[k]!);
       expect(getKitFamily(p.id)?.variants[0]?.file).toBe(p.file);
     }
   });
@@ -72,6 +73,9 @@ describe('kit families', () => {
   });
 });
 
+/** Retired props whose family is another ballistic class on purpose (owner's finer-collision decision, 2026-11-10: the iron fences are iron). */
+const REMATERIALLED = new Set(['prop.iron_fence', 'prop.iron_fence_damaged']);
+
 describe('kit aliases', () => {
   it('name catalogue props, families and variants that exist', () => {
     expect(KIT_ALIASES.length).toBeGreaterThan(0);
@@ -92,13 +96,23 @@ describe('kit aliases', () => {
       const now = getProp(a.model)!;
       expect(now.size.map((v) => v * a.scale), a.from).toEqual(was.size);
       expect(now.collision!.map((v) => v * a.scale), a.from).toEqual(was.collision);
-      expect(was.boxes, `${a.from} had finer boxes: its alias changes collision`).toBeUndefined();
+      // A piece that collided as finer boxes (a fence's posts and rails) is replaced by a family with its own finer
+      // boxes (owner, 2026-11-10: kit pieces collide as their own posts and rails; the gaps differ a little from the
+      // Kenney ones'), inside the same bounds; a piece that was one box stays one box.
+      expect(!!now.boxes, `${a.from}: one box stays one box, finer boxes stay finer`).toBe(!!was.boxes);
+      for (const b of now.boxes ?? []) for (let k = 0; k < 3; k++) {
+        const half = k === 1 ? now.size[1] : now.size[k]! / 2;
+        expect(b[k]!, a.model).toBeGreaterThanOrEqual(k === 1 ? 0 : -half - 0.001);
+        expect(b[k + 3]!, a.model).toBeLessThanOrEqual(half + 0.001);
+      }
       expect(now.breakable?.health, a.from).toBe(was.breakable?.health);
       expect(now.breakable?.blast, a.from).toBe(was.breakable?.blast);
       expect(now.breakable?.debris, a.from).toBe(was.breakable?.debris);
       expect(now.conceals, a.from).toBe(was.conceals);
       // What rounds do (gunplay's ballistic class); the impact's sound family too.
-      expect(propMaterial(a.model), a.from).toBe(propMaterial(a.from));
+      // (The Kenney iron fences played as thin wood, by their name; ours are thin metal: REMATERIALLED.)
+      if (!REMATERIALLED.has(a.from)) expect(propMaterial(a.model), a.from).toBe(propMaterial(a.from));
+      else expect(propMaterial(a.model), a.from).toBe('thin_metal');
       expect(propSurface(a.model), a.from).toBeDefined();
     }
   });
@@ -111,7 +125,9 @@ describe('kit aliases', () => {
       // Breakable data: the same box and health as the retired prop's.
       const before = breakableOf({ ...e, solid: true });
       const after = breakableOf({ ...out, solid: true });
-      expect(after).toEqual(before);
+      // (Its parts are the family's own finer boxes when the retired prop had finer ones.)
+      const whole = <T>(b: T): T => (getProp(a.from)!.boxes && b ? ({ ...b, parts: undefined } as T) : b);
+      expect(whole(after)).toEqual(whole(before));
     }
     const other = prop({ model: 'prop.sandbag_wall' });
     expect(aliasedProp(other)).toBe(other);
@@ -151,7 +167,11 @@ describe('kit aliases', () => {
     const after = withGroundAsPlayed(withPropAliases(expanded), coreCatalog);
     const strip = (m: MapDocument) => m.entities.map((e) => (e.kind === 'prop' ? { id: e.id, position: e.position, yaw: e.yaw } : { id: e.id }));
     expect(strip(after)).toEqual(strip(before));
-    expect(propBoxes(after)).toEqual(propBoxes(before));
-    expect(propBoxes(after, true)).toEqual(propBoxes(before, true));
+    // (Placements of a prop that collided as finer boxes take the family's own, inside the same bounds: left out here.)
+    const reshaped = new Set(expanded.entities.filter((e) => e.kind === 'prop' && getProp(e.model)?.boxes && propAlias(e.model)).map((e) => e.id));
+    const same = (boxes: ReturnType<typeof propBoxes>) => boxes.filter((b) => !reshaped.has(b.sourceId));
+    expect(same(propBoxes(after))).toEqual(same(propBoxes(before)));
+    expect(same(propBoxes(after, true))).toEqual(same(propBoxes(before, true)));
+    for (const id of reshaped) expect(propBoxes(after).filter((b) => b.sourceId === id).length + propBoxes(after, true).filter((b) => b.sourceId === id).length, id).toBeGreaterThan(0);
   });
 });

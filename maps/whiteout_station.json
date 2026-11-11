@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 33,
+  "formatVersion": 34,
   "metadata": {
     "id": "whiteout_station",
     "name": "Whiteout Station",
@@ -28,11 +28,11 @@
     },
     "release": {
       "mapId": "m_ldufdn43f3lmrdmn",
-      "versionId": "v_wssb6j2h35hptlrl",
-      "revision": 19,
-      "contentHash": "sha256:ce67f0f54fce66b946f97a2fe0828ca89b0085c4887f85413eaa0858201c7f5a",
-      "schemaVersion": 33,
-      "releasedAt": "2026-11-09T22:10:52.255Z"
+      "versionId": "v_2n2gztvcxeiqi4qh",
+      "revision": 20,
+      "contentHash": "sha256:152a9cd67d882cb349f4822c4c550a1ad955615ea2ed8d28cb4ab0367f41cc94",
+      "schemaVersion": 34,
+      "releasedAt": "2026-11-11T02:41:58.421Z"
     }
   },
   "classicStructure": {
@@ -935,7 +935,7 @@
         -34
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 1.587,
       "scale": 1,
       "solid": true,
@@ -1145,7 +1145,7 @@
         32
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": 1.607,
       "scale": 1,
       "solid": true,

@@ -18,7 +18,7 @@ describe('kit-prop generator', () => {
 
   it('the content is valid', () => {
     expect(problems).toEqual([]);
-    expect(families.map((f) => f.id).sort()).toEqual(['kit.box.carton', 'kit.crate.bin', 'kit.crate.framed', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.drum.steel', 'kit.drum.steel_open']);
+    expect(families.map((f) => f.id).sort()).toEqual(['kit.barrier.concrete', 'kit.box.carton', 'kit.container.shipping', 'kit.crate.bin', 'kit.crate.framed', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.fence.board', 'kit.fence.iron', 'kit.fence.iron_broken', 'kit.fence.palisade', 'kit.fence.rail', 'kit.fence.town', 'kit.wall.stone', 'kit.wall.stone_broken']);
   });
 
   it('builds byte-identical output twice, the same as is shipped and locked', async () => {

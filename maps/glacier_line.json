@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_6jrvegnpqp5udvrt",
-      "versionId": "v_aioe3yzbos7uarry",
-      "revision": 2,
-      "contentHash": "sha256:e44e7420afefe7843a95c1e0f9357e7ca844ae4304322859d57f8165cc91f424",
+      "versionId": "v_yjqjk7cyc5lkt6iz",
+      "revision": 3,
+      "contentHash": "sha256:b8f987e2c7866355505d3a81cc0d4e4774bad5b069adfcb9594cff0c42f670fd",
       "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:17:02.036Z"
+      "releasedAt": "2026-11-11T02:52:06.914Z"
     }
   },
   "classicStructure": {
@@ -5781,11 +5781,12 @@
         -128
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_blue",
+      "model": "kit.container.shipping",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_218",
@@ -5795,7 +5796,7 @@
         -128
       ],
       "kind": "prop",
-      "model": "prop.shipping_container_red",
+      "model": "kit.container.shipping",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -7480,7 +7481,7 @@
         10
       ],
       "kind": "prop",
-      "model": "prop.jersey_barrier",
+      "model": "kit.barrier.concrete",
       "yaw": -0.4,
       "scale": 1,
       "solid": true,

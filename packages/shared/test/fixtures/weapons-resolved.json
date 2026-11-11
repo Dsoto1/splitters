@@ -1366,7 +1366,12 @@
     "spread": 0,
     "range": 120,
     "view": {
-     "model": "weapons/flare_gun.glb",
+     "model": "guns/flare_gun.glb",
+     "held": {
+      "medium": "guns/flare_gun.medium.glb",
+      "high": "guns/flare_gun.high.glb"
+     },
+     "fallback": "weapons/flare_gun.glb",
      "viewOffset": [
       0.2,
       -0.18,
@@ -1377,16 +1382,21 @@
       "style": "pistol",
       "grip": [
        0,
-       -0.043,
-       -0.068
+       -0.03,
+       -0.075
       ],
       "support": [
        -0.02,
-       -0.053,
-       -0.058
+       -0.04,
+       -0.065
       ],
-      "rake": 34
+      "rake": 14
      },
+     "muzzleAt": [
+      0,
+      0.05,
+      0.12
+     ],
      "sound": "fire.flare"
     }
    },
@@ -4978,6 +4988,10 @@
       "speed": 3.2
      },
      "knockback": 10
+    },
+    "view": {
+     "model": "guns/sheep.glb",
+     "fit": 0.7
     }
    }
   },
@@ -4998,7 +5012,7 @@
      "splashDamage": 0,
      "splashEdgeDamage": 0,
      "selfDamageScale": 0,
-     "visual": "flare",
+     "visual": "flareShot",
      "bounce": 0.3,
      "airstrike": {
       "count": 5,
@@ -5015,6 +5029,10 @@
        "visual": "bomb"
       }
      }
+    },
+    "view": {
+     "model": "guns/flare_gun.glb",
+     "handOnly": true
     }
    }
   },

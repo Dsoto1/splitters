@@ -59,7 +59,8 @@ import {
   type Selection,
   type SurfaceSlot,
   type SurfaceStyle,
-  type TilePlacement
+  type TilePlacement,
+  getKitFamily,
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
 import { modeSection } from './modeInspector.ts';
@@ -251,7 +252,14 @@ export class Inspector {
     for (const category of PROP_CATEGORIES) {
       const group = document.createElement('optgroup');
       group.label = category;
-      for (const def of CORE_PROPS.filter((d) => d.category === category && d.id !== model && !RETIRED_PROPS.has(d.id))) group.append(new Option(def.displayName, def.id, false, def.id === suggested));
+      for (const def of CORE_PROPS.filter((d) => d.category === category && d.id !== model && !RETIRED_PROPS.has(d.id))) {
+        group.append(new Option(def.displayName, def.id, false, def.id === suggested));
+        // A kit family's other looks (content/kitProps.ts), each its own choice: a retired piece's replacement can
+        // be one of them (the striped barrier, the blue container).
+        for (const v of getKitFamily(def.id)?.variants ?? []) {
+          if (v.index) group.append(new Option(`${def.displayName} (${v.name.replace(/_/g, ' ')})`, `${def.id}#${v.index}`, false, `${def.id}#${v.index}` === suggested));
+        }
+      }
       if (group.children.length) target.append(group);
     }
     el.append(row('With', target));
