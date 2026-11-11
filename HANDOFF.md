@@ -983,8 +983,8 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - heatmaps stay in memory.
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
-  - **Next in line to land, after kit props part 6: the weapon and vehicle lane's second batch** (the Tank's full-circle turret, riders ducking in standing places, first-person hands kept on the gun through a hit; session branch `claude/inspiring-sagan-mjnled`, to go to `check/vehicles-fit-2`; this account, 2026-11-11). No map files. Looked at in a match: the turret slews, bots duck on the truck bed, hands stay on under fire.
-  - **Next in line to land, after the weapon and vehicle lane's second batch: The Spillway's bases** (`wip/mapmaker-spillway-3`, to go to `check/mapmaker-spillway-3`; MapMaker lane, 2026-11-11; one map file and its docs). Kit props part 6 has landed: the slot is the weapon and vehicle lane's now.
+  - **Landing now: the weapon and vehicle lane's second batch** (`check/vehicles-fit-2` at 87fa343e = `claude/inspiring-sagan-mjnled` with main 6cf6f157 merged in; this account, 2026-11-11 19:15 UTC): the Tank's full-circle turret, riders ducking in standing places (bots too), first-person hands kept on the gun through a hit, a Troop Truck at each base on `maps/iron_maw.json` and `maps/sunstone_crag.json` (through MapMaker), and the Hauler's new model (Ironbound Voyager: `content/vehicles/hauler.json`, `content/guns.json`, provenance, the vehicles palette atlas, `HAULER` in `client/src/content/cockpits.ts`). Hold code pushes to main until this line is gone.
+  - **Next in line to land: The Spillway's bases** (`wip/mapmaker-spillway-3`, to go to `check/mapmaker-spillway-3`; MapMaker lane, 2026-11-11; one map file and its docs). Kit props part 6 has landed: the slot is the weapon and vehicle lane's now.
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
