@@ -298,7 +298,7 @@
     "fallback": "vehicles/offroad_buggy.glb",
     "health": 450,
     "half": [
-     1.05,
+     1.45,
      0.8,
      2.2
     ],
@@ -882,7 +882,7 @@
     "fallback": "vehicles/gun_jeep.glb",
     "health": 380,
     "half": [
-     1.1,
+     1.45,
      0.95,
      2.2
     ],

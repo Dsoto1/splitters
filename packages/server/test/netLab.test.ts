@@ -49,8 +49,10 @@ describe('net lab smoke (a real host, players over a 100 ms, 2 % loss link)', ()
     expect(r.rtt.p50).toBeGreaterThan(90);
     expect(r.shots).toBeGreaterThan(20);
     expect(r.screenHits).toBeGreaterThan(10);
-    // Hits lost to the network itself (not a target already dead on the host): few.
-    expect(r.confirmed / (r.screenHits - r.missDead)).toBeGreaterThan(0.85);
+    // Hits lost to the network itself (not a target already dead on the host): few. A smoke check, on about 30 hits
+    // in real time: one hit is 3 points, and eight runs here gave 0.87 to 1.0 (CI once 0.848 against the old 0.85).
+    // The measured figure is net-report's (`pnpm net-report`); this catches confirmation breaking, not drifting.
+    expect(r.confirmed / (r.screenHits - r.missDead)).toBeGreaterThan(0.75);
     expect(r.unfired).toBeLessThanOrEqual(2);
     expect(r.downKBps).toBeGreaterThan(0);
   }, 40_000);

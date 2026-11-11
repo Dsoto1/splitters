@@ -6858,8 +6858,25 @@ async function vehiclesFlow(browser) {
     if (aboard) break;
   }
   // Seated riders: the bots' characters ease into the seated pose.
+  // ...and come to rest on the cushions: the buggy was put back at its spawn above, so its drawn body (and the riders
+  // on it) is still settling on its springs for a moment (hips read 0.35 m over a cushion mid-bounce, 0.3 the limit).
   await page
-    .waitForFunction((slots) => slots.every((s) => (window.__cs.view.avatars.get(s)?.anim?.sit ?? 0) > 0.95), ride.riders, { timeout: T(8000) })
+    .waitForFunction(
+      (ride) => {
+        const match = window.__match;
+        const m = match.mounts.find((x) => x.index === ride.index);
+        return ride.riders.every((s) => {
+          const a = window.__cs.view.avatars.get(s);
+          const thigh = a?.anim?.ch.joints.get('thigh_l');
+          const seat = match.slots[s].mount && m.def.seats[match.slots[s].mount.seat];
+          if (!thigh || !seat || !((a.anim.sit ?? 0) > 0.95)) return false;
+          const hip = thigh.getAbsolutePosition().y - (m.pos.y + seat.offset[1]);
+          return hip > 0 && hip < 0.28;
+        });
+      },
+      ride,
+      { timeout: T(8000) },
+    )
     .catch(() => {});
   const seated = await page.evaluate((ride) => {
     const match = window.__match;
