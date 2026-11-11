@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **New map: The Spillway** (experimental; MAP 02, rebuilt in MapMaker after the owner's review): a 28 m concrete dam across a mountain gorge, the lake behind it and the river running out below, for big team battles (24 v 24). Two stair towers climb the dam's face from the powerhouse terrace to the crest, a hillside stair reaches the east bench, and woods cover the valley's sides. Team Deathmatch, Capture the Flag and King of the Hill; the Military weapon set. Listed under Experimental until the owner promotes it.
 - **New vehicle: the Troop Truck** (Meshy Community, CC0), in MapMaker's Vehicles palette: a six-wheeled army truck for six. A driver and a passenger sit in the cab, four ride standing on the flatbed, and every rider shoots their own weapon. Wheeled heavy: a little quicker than the Armored Rover, slower than the Gun Jeep, 700 health; its six tires spin, steer and bounce.
 - **Core and experimental maps.** A map's tier is set in MapMaker's Map properties and saved in its file. Experimental maps are listed under their own "Experimental maps" heading and are never Quick Play's pick, the featured map or on the next-map ballot; a host can still put one in a rotation. Every map offered today is core; a new map starts experimental and goes to core only when its quality gates pass (spawn points for its players, budgets, a card shot that isn't a wall; `pnpm quality-gates` adds the navigation audit and a bots-only match). Map format v35.
 - **Our own furniture and shop pieces** (kit-prop generators, Phase 6 part 4): tables (one with a runner), desks with a drawer pedestal, side tables, chairs (slatted, ladder-back, cushioned), benches, bookcases and wide cabinets full of books, shop shelving stocked with boxes, bags, tins or bottles, market stalls under striped canopies, market counters and waste bins, each in several looks. They replace the Kenney toy pieces at the same size, so collision is as it was. Desks, benches, bookcases, stalls and counters now take rounds as wood (they stopped them like concrete), and bins as thin metal. All 1,184 placements on 43 maps were swapped with MapMaker's Replace all.
@@ -343,12 +344,6 @@ definition out of the map too; it stays in your library, and one undo brings bot
   the station) and an ice cave in the rocks; three outdoor flanks and a sunken service trench.
 - Deathmatch and Team Deathmatch (Elimination with it); the old map's flags and hills are gone. Military weapons.
 
-**New map: The Spillway** (MAP 02, built in MapMaker; waits for the owner's review):
-- A hydroelectric dam across a mountain gorge, for big team battles (24 v 24, room for 32 v 32). Fight along the dam
-  crest high over the gorge, through the powerhouse's generator halls at its foot, and across the rocky basin where
-  the tailrace runs out; the west maintenance yard steps down its terraces, and in the east the switchyard sits on its
-  ledge over a service tunnel through the rock.
-- Team Deathmatch, Capture the Flag and King of the Hill; the Military weapon set by default.
 **Tests**:
 - The e2e `teams` flow's friendly fire and team kill checks no longer fail at random: every bot holds fire while your
   rounds are tested, the teammate's spawn shield is cleared, and its damage is counted by who dealt it.

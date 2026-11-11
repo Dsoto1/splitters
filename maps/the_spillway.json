@@ -1,11 +1,11 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "the_spillway",
     "name": "The Spillway",
     "author": "",
-    "description": "A hydroelectric dam across a mountain gorge. Fight along the dam crest high over the gorge, through the generator halls of the powerhouse at its foot, and across the rocky basin where the tailrace runs out. The west maintenance yard steps down its terraces; in the east the switchyard hums on its ledge and a service tunnel runs through the rock.",
+    "description": "A hydroelectric dam across a mountain gorge. Fight along the crest 28 m over the valley, up and down the two stair towers on the dam's face, round the powerhouse at its foot, and across the river running out below. Embers hold the west bench by the loading dock, Tide the south-east bench; the east bench and its bunker look down on both.",
     "createdAt": "2026-11-09T10:58:00.529Z",
     "updatedAt": "2026-11-09T10:58:00.529Z",
     "parentId": null,
@@ -18,21 +18,22 @@
     ],
     "cardCamera": {
       "position": [
-        -40,
-        1.55,
-        -30
+        14,
+        2.67,
+        -72
       ],
-      "yaw": 0.45,
-      "pitch": 0.12
+      "yaw": -0.12,
+      "pitch": 0.14
     },
     "release": {
       "mapId": "m_fxtilvssrdvznevx",
-      "versionId": "v_vpykryugyl7svdlx",
-      "revision": 159,
-      "contentHash": "sha256:92f753ec6225771651541ab0a6dae3b8f68ce0a2b74f296422f0badbd471a9f5",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-11T13:34:09.570Z"
-    }
+      "versionId": "v_2rbhclurjrehms7e",
+      "revision": 161,
+      "contentHash": "sha256:e557586b1f38ea1d80800052b9d32601d0e17719322fc1c5c1bd89387728f4d0",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T13:45:01.045Z"
+    },
+    "tier": "experimental"
   },
   "classicStructure": {
     "cellSize": 8,

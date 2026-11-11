@@ -85,3 +85,17 @@ owner moved map builds into the MapMaker lane on 2026-11-08 and approved this br
 - The Flatten brush levels at a steady rate a frame: on a busy machine hold each dab (300 ms or more), or the ground
   stops short of the height; two flattened areas side by side leave a ditch between them unless they overlap.
 - The inspector sometimes drops the first edit after a placement (it redraws): check each field and set it again.
+
+## The rebuild (2026-11-11)
+The owner tried the first build and didn't land it: bland without vegetation, the mountain border didn't meet the
+map, the lake didn't read as held by the dam, the dam too low. The map was built again from an empty terrain, in
+MapMaker throughout (driven by a script working its tools, as before; the script isn't kept in the repo).
+- **The dam 28 m** (owner at the checkpoint: "go taller"), the lake at 25 m, the south end a gorge mouth.
+- **Both teams start low** (the session's choice, for the owner's review): Embers on the west bench, Tide on a bench in
+  the south-east. The east bench under the abutment is too small for a team; it is contested high ground now, with the
+  crest.
+- **Stair towers from core tiles**, not the Stair Tower set piece: two Stairwell columns side by side, flights
+  alternating, a Corridor as the lobby with a Door on its south side, a Bridge deck and a concrete slab onto the crest.
+- **The boundary stays the terrain's edge** (±156 m): the lake is inside it, as in the first build.
+- **Experimental tier**: the map lands for play under the Experimental heading; the pieces left (MANIFEST, "Left for
+  later") come before a promotion to core.
