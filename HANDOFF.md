@@ -967,6 +967,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - heatmaps stay in memory.
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
+  - **Landing now: destructible environment, step 1, and its test map Breakyard** (`check/mapmaker-destruction`, MapMaker lane, 2026-11-11; map format v36).
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
