@@ -27,11 +27,11 @@
     },
     "release": {
       "mapId": "m_fxtilvssrdvznevx",
-      "versionId": "v_2rbhclurjrehms7e",
-      "revision": 161,
-      "contentHash": "sha256:e557586b1f38ea1d80800052b9d32601d0e17719322fc1c5c1bd89387728f4d0",
+      "versionId": "v_tv5q537s4hxzeotd",
+      "revision": 166,
+      "contentHash": "sha256:c9698599eb91a76d82b5bf181b7c9652a37b33ce8c17d75735ea3dcc1cab5e09",
       "schemaVersion": 35,
-      "releasedAt": "2026-11-11T13:45:01.045Z"
+      "releasedAt": "2026-11-11T18:23:56.297Z"
     },
     "tier": "experimental"
   },
@@ -426,265 +426,265 @@
     {
       "id": "spawn_qry4drzams",
       "position": [
-        -124,
-        8.03,
-        4
+        -66,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_k53s1cun97",
       "position": [
-        -120,
-        8,
-        4
+        -54,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_fbj95gg8g6",
       "position": [
-        -116,
-        7.97,
-        4
+        -42,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_75chsw2wgx",
       "position": [
-        -112,
-        7.93,
-        4
+        -30,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_4e53xlmjbn",
       "position": [
-        -108,
-        7.89,
-        4
+        -18,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_skhajlog6r",
       "position": [
-        -100,
-        7.94,
-        4
+        -6,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_b3pwih75e1",
       "position": [
-        -100,
-        7.94,
-        4
+        6,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_6t3bd9x174",
       "position": [
-        -92,
-        7.57,
-        4
+        18,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_26x4qoviq1",
       "position": [
-        -124,
-        8.31,
-        10
+        30,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_7e0zdq4l6h",
       "position": [
-        -120,
-        8.56,
-        10
+        42,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_xjmdeew2lc",
       "position": [
-        -116,
-        8.38,
-        10
+        54,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_d66ow9pa1u",
       "position": [
-        -108,
-        8.13,
-        10
+        66,
+        28,
+        62
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_6t1e1dshl2",
       "position": [
-        -108,
-        8.13,
-        10
+        -66,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_9mej7g38tz",
       "position": [
-        -100,
-        8.09,
-        10
+        -54,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_od9gz7ktem",
       "position": [
-        -96,
-        8,
-        10
+        -42,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_bzn07vwee5",
       "position": [
-        -92,
-        7.92,
-        10
+        -30,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_jf6pyfxori",
       "position": [
-        -124,
-        7.97,
-        -28
+        -18,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_xtum9sxn6x",
       "position": [
-        -116,
-        7.95,
-        -28
+        -6,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_96zclrulgd",
       "position": [
-        -112,
-        7.79,
-        -28
+        6,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_jtk7kuo70s",
       "position": [
-        -108,
-        7.61,
-        -28
+        18,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_7lfymg1hwm",
       "position": [
-        -136,
-        8.09,
-        -38
+        30,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_frw35u9ebo",
       "position": [
-        -120,
-        7.97,
-        -33
+        42,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_udzpl3jb01",
       "position": [
-        -112,
-        7.82,
-        -33
+        54,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
       "id": "spawn_zqz3tbo8ud",
       "position": [
-        -108,
-        7.86,
-        -33
+        66,
+        28,
+        67
       ],
       "kind": "spawn",
-      "yaw": 1.571,
+      "yaw": 3.142,
       "faction": "embers"
     },
     {
@@ -954,9 +954,9 @@
     {
       "id": "flag_1iwczxcfy0",
       "position": [
-        -104,
-        6.63,
-        16
+        -74,
+        28,
+        57
       ],
       "kind": "flag",
       "yaw": 0,
@@ -976,9 +976,9 @@
     {
       "id": "hill_jfsm58ashi",
       "position": [
-        0,
-        28,
-        62
+        116,
+        20,
+        14
       ],
       "kind": "hill",
       "radius": 5

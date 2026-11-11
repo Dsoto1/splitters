@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_nrfxczl6m2zcqbew",
-      "versionId": "v_fthmlgqwze722mjw",
-      "revision": 6,
-      "contentHash": "sha256:7648313cffcced57665161755f2769ed60b1543016506494c0016cc19d607ed7",
+      "versionId": "v_l6l3g7y7gjnjq5gt",
+      "revision": 7,
+      "contentHash": "sha256:dd3fd8c46927e8c0c039d5b195af6c73ababd8d6d9a61b229ec237200db35ca5",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T17:01:05.834Z"
+      "releasedAt": "2026-11-11T21:32:58.690Z"
     }
   },
   "classicStructure": {
@@ -20006,7 +20006,7 @@
         8.17
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20020,7 +20020,7 @@
         24.72
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20048,7 +20048,7 @@
         20.52
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20062,7 +20062,7 @@
         5.15
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20076,7 +20076,7 @@
         5.15
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20482,7 +20482,7 @@
         45.87
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20496,7 +20496,7 @@
         48.27
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20720,7 +20720,7 @@
         8
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -20748,7 +20748,7 @@
         14.4
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -20762,7 +20762,7 @@
         17.6
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -20790,7 +20790,7 @@
         24
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -20804,7 +20804,7 @@
         32
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -20832,7 +20832,7 @@
         38.4
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -20846,7 +20846,7 @@
         41.6
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -20874,7 +20874,7 @@
         48
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -20888,7 +20888,7 @@
         8
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -20916,7 +20916,7 @@
         14.4
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -20930,7 +20930,7 @@
         17.6
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -20958,7 +20958,7 @@
         24
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -20972,7 +20972,7 @@
         32
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -21000,7 +21000,7 @@
         38.4
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -21014,7 +21014,7 @@
         41.6
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -21042,7 +21042,7 @@
         48
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -21056,7 +21056,7 @@
         8
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -21084,7 +21084,7 @@
         14.4
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -21098,7 +21098,7 @@
         17.6
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -21126,7 +21126,7 @@
         24
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -21140,7 +21140,7 @@
         32
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -21168,7 +21168,7 @@
         38.4
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -21182,7 +21182,7 @@
         41.6
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -21210,7 +21210,7 @@
         48
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -21224,7 +21224,7 @@
         8
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -21252,7 +21252,7 @@
         14.4
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -21266,7 +21266,7 @@
         17.6
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -21294,7 +21294,7 @@
         24
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -21308,7 +21308,7 @@
         32
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -21336,7 +21336,7 @@
         38.4
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 1.5707963267948966,
       "scale": 1.2,
       "solid": true,
@@ -21350,7 +21350,7 @@
         41.6
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -21378,7 +21378,7 @@
         48
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,

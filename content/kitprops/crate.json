@@ -76,6 +76,46 @@
         { "index": 2, "name": "blue", "seed": 1403, "look": { "frame": "#2f4a66", "wood": "#b08a5e", "rust": 0.25, "jitter": 0.1, "grime": 0.3 } },
         { "index": 3, "name": "orange", "seed": 1404, "look": { "frame": "#b5631f", "wood": "#8f6a44", "rust": 0.3, "jitter": 0.1, "grime": 0.35 } }
       ]
+    },
+    {
+      "id": "kit.crate.factory",
+      "displayName": "Shipping Crate",
+      "category": "Crates & Barrels",
+      "assetVersion": 1,
+      "notes": { "1": "First version: a big board crate under a lifting saddle, the size of the Kenney factory shipping box (2.4 × 1.2 × 2.182 m); collides as two boxes, its body and the saddle, the same two that box had." },
+      "size": [2.4, 1.2, 2.182],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": { "health": 60, "debris": "#c8a070" },
+      "generator": { "kind": "yokecrate", "batten": 0.13, "thick": 0.03, "plank": 0.17, "brace": "diagonal", "yoke": [0.1, 0.1, 0.5, 0.3] },
+      "lods": [{ "distance": 0 }, { "distance": 22 }, { "distance": 60 }],
+      "variants": [
+        { "index": 0, "name": "pale", "seed": 9601, "look": { "wood": "#c8a070", "batten": "#b08a5e", "yoke": "#9a7448", "jitter": 0.08, "grime": 0.25 } },
+        { "index": 1, "name": "x_brace", "seed": 9602, "set": { "brace": "x" }, "look": { "wood": "#b08a5e", "batten": "#9a7448", "yoke": "#8c6640", "jitter": 0.1, "grime": 0.35 } },
+        { "index": 2, "name": "steel_saddle", "seed": 9603, "set": { "brace": "none" }, "look": { "wood": "#b89668", "batten": "#a07c50", "yoke": "#c9a227", "yokeSteel": true, "jitter": 0.1, "grime": 0.3 } },
+        { "index": 3, "name": "weathered", "seed": 9604, "set": { "plank": 0.14 }, "look": { "wood": "#8f8472", "batten": "#7a6e5c", "yoke": "#6e665a", "jitter": 0.14, "grime": 0.5 } },
+        { "index": 4, "name": "export_blue", "seed": 9605, "set": { "brace": "x" }, "look": { "wood": "#4f6f8a", "paint": "#4f6f8a", "paintBatten": "#3f5a72", "yoke": "#3a3d42", "yokeSteel": true, "jitter": 0.06, "grime": 0.35 } }
+      ]
+    },
+    {
+      "id": "kit.crate.factory_long",
+      "displayName": "Long Shipping Crate",
+      "category": "Crates & Barrels",
+      "assetVersion": 1,
+      "notes": { "1": "First version: a long, low board crate on skids, the size of the Kenney long factory shipping box (1.8 × 0.9 × 0.818 m)." },
+      "size": [1.8, 0.9, 0.818],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": { "health": 50, "debris": "#c8a070" },
+      "generator": { "kind": "crate", "batten": 0.09, "thick": 0.022, "plank": 0.13, "brace": "none", "skids": 0.07 },
+      "lods": [{ "distance": 0 }, { "distance": 18 }, { "distance": 50 }],
+      "variants": [
+        { "index": 0, "name": "pale", "seed": 9611, "look": { "wood": "#c8a070", "batten": "#b08a5e", "jitter": 0.08, "grime": 0.25 } },
+        { "index": 1, "name": "braced", "seed": 9612, "set": { "brace": "diagonal" }, "look": { "wood": "#b08a5e", "batten": "#9a7448", "jitter": 0.1, "grime": 0.35 } },
+        { "index": 2, "name": "weathered", "seed": 9613, "set": { "plank": 0.1 }, "look": { "wood": "#8f8472", "batten": "#7a6e5c", "jitter": 0.14, "grime": 0.5 } },
+        { "index": 3, "name": "export_blue", "seed": 9614, "set": { "brace": "x" }, "look": { "wood": "#4f6f8a", "paint": "#4f6f8a", "paintBatten": "#3f5a72", "jitter": 0.06, "grime": 0.35 } },
+        { "index": 4, "name": "red_oxide", "seed": 9615, "set": { "brace": "diagonal" }, "look": { "wood": "#8a3b2c", "paint": "#8a3b2c", "paintBatten": "#6e2f24", "jitter": 0.07, "grime": 0.4 } }
+      ]
     }
   ]
 }

@@ -3770,7 +3770,7 @@
         57
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3784,7 +3784,7 @@
         54.6
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0.1,
       "scale": 1,
       "solid": true,
@@ -3798,7 +3798,7 @@
         55.8
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0.05,
       "scale": 1,
       "solid": true,
@@ -3812,7 +3812,7 @@
         32.5
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4232,7 +4232,7 @@
         26
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
@@ -4372,7 +4372,7 @@
         5
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 0,
       "scale": 1,
       "solid": true,

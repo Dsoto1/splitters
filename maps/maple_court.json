@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_tqonszbqjn5i6g6u",
-      "versionId": "v_7e7hmvzubywjvaai",
-      "revision": 5,
-      "contentHash": "sha256:6bddbbd14ba9185677eed0e4e23fcb4e4429d38fbdc633576536eb74198d6189",
+      "versionId": "v_outceggg3hrppsis",
+      "revision": 6,
+      "contentHash": "sha256:4e57576ae5043f91a2001b6c539f7401e4f51d8a17aa96d4090be8611b16ac61",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T17:08:47.605Z"
+      "releasedAt": "2026-11-11T21:38:50.368Z"
     }
   },
   "classicStructure": {
@@ -13155,7 +13155,7 @@
         106.51
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

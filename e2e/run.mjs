@@ -654,6 +654,9 @@ async function editoruxFlow(browser) {
   await page.press('#ed-search', 'Escape');
   check(await page.evaluate(() => document.getElementById('ed-pal-results').hidden && !!document.querySelector('#ed-pal-quick .ed-quick-row [data-pick]')), 'Escape clears the search; the favourite is in the quick row');
   // Hover card names the piece under the pointer (the grid view shows pictures only).
+  // (The pointer leaves the palette first: when the scroll below brings the card under a pointer that is already
+  // there, no pointerover fires and the scroll has hidden the card, as it should.)
+  await page.mouse.move(700, 400);
   await page.evaluate(() => document.querySelector('[data-tool="scenario:pad"]').scrollIntoView({ block: 'center' }));
   await frames(page, 2);
   await page.hover('[data-tool="scenario:pad"]');
@@ -683,7 +686,7 @@ async function editoruxFlow(browser) {
   check((await page.getAttribute('#ed-tb-place', 'class')).includes('active') && (await page.textContent('#ed-tb-place')).includes('Corridor'), 'Place is lit and names the piece');
   // A barrel on the second corridor's floor. Placed by command: the prop tool lands a prop on the corridor's roof
   // under the pointer, and before the corridor is there, over nothing, it is refused (ghostWhy.ts).
-  await page.evaluate(() => window.__editor.history.execute('Place Barrel', { kind: 'addEntities', entities: [{ id: 'prop_e2e_barrel', kind: 'prop', position: [16, 0, 0], model: 'prop.barrel', yaw: 0, scale: 1, solid: true, tint: null }] }));
+  await page.evaluate(() => window.__editor.history.execute('Place Barrel', { kind: 'addEntities', entities: [{ id: 'prop_e2e_barrel', kind: 'prop', position: [16, 0, 0], model: 'kit.drum.steel', yaw: 0, scale: 1, solid: true, tint: null }] }));
   await clickTool(page, '[data-tool="pickup:core.health_small"]');
   await clickAt(-2, 0, -2);
   await clickTool(page, '[data-tool="npc:squad"]');
@@ -740,7 +743,7 @@ async function editoruxFlow(browser) {
   const barrel = await at(16, 0.6, 0);
   await page.mouse.move(barrel.x, barrel.y);
   await settle();
-  check((await page.textContent('#ed-target')).includes('Barrel'), `hovering the barrel marks it for erasing (${await page.textContent('#ed-target')})`);
+  check((await page.textContent('#ed-target')).includes('Steel Drum'), `hovering the barrel marks it for erasing (${await page.textContent('#ed-target')})`);
   await shot('erase-hover');
   await page.mouse.click(barrel.x, barrel.y);
   d = await doc();
@@ -820,7 +823,7 @@ async function editoruxFlow(browser) {
   await page.click('#ed-dress');
   const dressed = async () => (await doc()).entities.filter((e) => e.kind === 'prop' && e.id.startsWith('dr_'));
   const first = await dressed();
-  check(first.length >= 3 && first.some((e) => /^prop\.(hh_)?desk$/.test(e.model)), `Dress room furnishes it as an office (${first.length} props)`);
+  check(first.length >= 3 && first.some((e) => /^(kit\.table\.desk|prop\.hh_desk)$/.test(e.model)), `Dress room furnishes it as an office (${first.length} props)`);
   await settle();
   await page.click('#ed-dress-reroll');
   const second = await dressed();
@@ -1298,24 +1301,24 @@ async function editorInterfaceChecks(browser) {
   // ---- The outliner: 4,096 things, drawn virtualised, quick to rebuild.
   await page.evaluate(() => {
     const ed = window.__editor;
-    const entities = Array.from({ length: 4096 }, (_, i) => ({ id: `olp${i}`, kind: 'prop', position: [(i % 64) - 32, 0, Math.floor(i / 64) - 32], model: i % 2 ? 'prop.barrel' : 'prop.metal_crate', yaw: 0, scale: 1, solid: true, tint: null }));
+    const entities = Array.from({ length: 4096 }, (_, i) => ({ id: `olp${i}`, kind: 'prop', position: [(i % 64) - 32, 0, Math.floor(i / 64) - 32], model: i % 2 ? 'kit.drum.steel' : 'kit.crate.framed', yaw: 0, scale: 1, solid: true, tint: null }));
     ed.run('Many props', { kind: 'addEntities', entities });
   });
   await page.waitForFunction(() => window.__editor.outliner.entriesFor === window.__editor.doc, null, { timeout: T(20000) });
   const big = await page.evaluate(() => ({ ms: window.__editor.outliner.lastBuildMs, rows: document.querySelectorAll('#ed-ol-list [data-row]').length, height: document.querySelector('#ed-ol-list .ed-ol-spacer').getBoundingClientRect().height }));
   check(big.rows > 0 && big.rows < 60 && big.height > 4096 * 22 * 0.9 && big.ms < 400 * (process.env.CI ? 2 : 1), `the outliner lists 4,096 things drawing only the rows in view (${JSON.stringify(big)})`);
-  await page.fill('#ed-ol-search', 'barrel 7');
+  await page.fill('#ed-ol-search', 'drum 7');
   await frames(page, 2);
-  // Every word matches the name, the kind or the id (a barrel whose id holds a 7 counts).
+  // Every word matches the name, the kind or the id (a drum whose id holds a 7 counts).
   const found = await page.$$eval('#ed-ol-list .ed-ol-item', (els) => els.map((e) => ({ n: e.querySelector('.nm').textContent, id: e.dataset.id })));
-  check(found.length > 0 && found.every(({ n, id }) => /barrel/i.test(n) && (n.includes('7') || id.includes('7'))) && found.some(({ n }) => n === 'Barrel 7'), `searching the outliner lists only what matches (${found.slice(0, 4).map((f) => f.n).join(', ')}…)`);
+  check(found.length > 0 && found.every(({ n, id }) => /drum/i.test(n) && (n.includes('7') || id.includes('7'))) && found.some(({ n }) => n === 'Steel Drum 7'), `searching the outliner lists only what matches (${found.slice(0, 4).map((f) => f.n).join(', ')}…)`);
   await page.fill('#ed-ol-search', '');
   await page.evaluate(() => window.__editor.history.undo());
   await page.waitForFunction(() => window.__editor.doc.entities.length < 100, null, { timeout: T(10000) });
   // A few things to pick, hide and lock.
   await page.evaluate(() => {
     const ed = window.__editor;
-    ed.run('Two props', { kind: 'addEntities', entities: [{ id: 'olA', kind: 'prop', position: [20, 0, 20], model: 'prop.barrel', yaw: 0, scale: 1, solid: true, tint: null, name: 'Outliner barrel' }, { id: 'olB', kind: 'prop', position: [-20, 0, -20], model: 'prop.barrel', yaw: 0, scale: 1, solid: true, tint: null, name: 'Outliner crate' }] });
+    ed.run('Two props', { kind: 'addEntities', entities: [{ id: 'olA', kind: 'prop', position: [20, 0, 20], model: 'kit.drum.steel', yaw: 0, scale: 1, solid: true, tint: null, name: 'Outliner barrel' }, { id: 'olB', kind: 'prop', position: [-20, 0, -20], model: 'kit.drum.steel', yaw: 0, scale: 1, solid: true, tint: null, name: 'Outliner crate' }] });
   });
   await page.fill('#ed-ol-search', 'outliner');
   await frames(page, 3);

@@ -24,7 +24,7 @@ export interface StylePack {
   themes: readonly string[];
   /** Tile IDs, the pack's own first, then core tiles that suit it. */
   tiles: readonly string[];
-  /** Prop IDs (`prop.*`), the pack's own first. */
+  /** Prop IDs (`prop.*`, kit families `kit.*`), the pack's own first. */
   props: readonly string[];
   /** Library materials made for the pack (full IDs). */
   materials: readonly string[];
@@ -41,8 +41,12 @@ export interface StylePack {
   demo: string;
 }
 
-/** Prop IDs from their short names (pure: the menu, which imports the shared barrel, leaves STYLE_PACKS out of its bundle). */
-const props = (...ids: string[]) => ids.map((id) => `prop.${id}`);
+/**
+ * Prop IDs: a pack prop by its short name (`sandbag_wall`), a kit family by its full id (`kit.crate.wood`). Never a
+ * retired prop a family replaces (content/kitprops.json `aliases`): MapMaker's palette doesn't offer those.
+ * (Pure: the menu, which imports the shared barrel, leaves STYLE_PACKS out of its bundle.)
+ */
+const props = (...ids: string[]) => ids.map((id) => (id.includes('.') ? id : `prop.${id}`));
 
 export const STYLE_PACKS: readonly StylePack[] = [
   {
@@ -68,11 +72,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'lcvp_beached',
       // The owner's Meshy barriers and parked vehicles (Drive, 2026-10-31).
       'jersey_barrier_hazard', 'hazard_block_barrier', 'plastic_road_barrier', 'vehicle_raider_buggy', 'vehicle_armored_truck',
-      'jersey_barrier', 'jersey_barrier_striped', 'jersey_barrier_broken', 'road_barrier', 'concrete_block', 'brick_rubble',
+      'kit.barrier.concrete', 'jersey_barrier_broken', 'road_barrier', 'concrete_block', 'brick_rubble',
       'ammo_crate', 'ammo_stack', 'ww2_ammo_crate', 'fuel_drum', 'fuel_tank', 'storage_tank', 'steel_water_tower',
-      'shipping_container_red', 'shipping_container_blue', 'shipping_container_green', 'container', 'container_tall', 'metal_crate',
+      'kit.container.shipping', 'container', 'container_tall', 'kit.crate.framed',
       'floodlight', 'yard_lamp', 'pallet', 'supply_truck', 'flatbed_truck', 'dumpster',
-      'sv_tent', 'sv_radio', 'sv_gas_can', 'warning_sign', 'cone', 'bunk_bed',
+      'sv_tent', 'sv_radio', 'sv_gas_can', 'kit.sign.warning', 'cone', 'kit.bed.bunk',
     ),
     materials: ['core.pbr_bunker_panels', 'core.pbr_olive_corrugated', 'core.pbr_grey_corrugated', 'core.pbr_burlap'],
     facades: ['concrete', 'corrugated'],
@@ -97,8 +101,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'mine_cart', 'ore_cart', 'dynamite_crate', 'dynamite_bundle', 'powder_keg', 'mine_frame', 'mine_rails', 'rail_buffer',
       'locomotive', 'locomotive_red', 'passenger_car', 'ore_wagon', 'hopper_wagon', 'timber_wagon', 'flatbed_wagon', 'coal_car', 'lumber_car', 'railroad', 'railroad_broken',
       'hitching_post', 'water_trough', 'wagon_wheel', 'wanted_board', 'outhouse', 'tumbleweed', 'covered_wagon', 'wind_pump', 'rustic_market_stall',
-      'barrel', 'barrel_open', 'crate_small', 'crate_large', 'hay_bale', 'cart', 'woodpile', 'planks_stack', 'signpost', 'bucket',
-      'cactus', 'cactus_tall', 'nt_saguaro', 'nt_cactus_round', 'coffin', 'gravestone_cross', 'bar_stool', 'table', 'chair', 'dg_coin_pile', 'dg_coin_bag',
+      'kit.drum.steel', 'kit.drum.steel_open', 'kit.crate.wood', 'kit.crate.wood_long', 'hay_bale', 'cart', 'woodpile', 'planks_stack', 'signpost', 'bucket',
+      'cactus', 'cactus_tall', 'nt_saguaro', 'nt_cactus_round', 'coffin', 'gravestone_cross', 'bar_stool', 'kit.table.dining', 'kit.seat.chair', 'dg_coin_pile', 'dg_coin_bag',
       // loafbrr's Mines and Caves set (CC0).
       'mc_cart', 'mc_cart_empty', 'mc_cart_tipper', 'mc_rail', 'mc_rail_curve', 'mc_rail_end', 'mc_ladder', 'mc_support_frame', 'mc_support_post', 'mc_beam',
       'mc_mine_wall', 'mc_mine_entrance', 'mc_mine_tunnel', 'mc_cave_wall', 'mc_cave_entrance', 'mc_cave_rock_wall', 'mc_cave_rocks_a', 'mc_cave_rocks_b',
@@ -203,7 +207,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'ge_bookcase_tall', 'ge_chandelier', 'ge_candelabra', 'ge_grandfather_clock', 'ge_wingback_chair', 'ge_grand_piano', 'ge_portrait', 'ge_suit_of_armour', 'ge_four_poster_bed', 'ge_writing_desk',
       'ge_sarcophagus', 'ge_angel_statue', 'ge_headstone_tall', 'ge_iron_fence', 'ge_iron_gate', 'ge_hedge_wall', 'ge_hedge_arch', 'ge_topiary', 'ge_gas_lamp',
       // Already in the game: graveyard, house interior, ruins and dungeon pieces.
-      'gravestone_cross', 'gravestone_round', 'gravestone_broken', 'grave', 'coffin', 'coffin_old', 'crypt', 'iron_fence', 'iron_fence_damaged', 'lightpost', 'lantern', 'candles', 'urn', 'pumpkin',
+      'gravestone_cross', 'gravestone_round', 'gravestone_broken', 'grave', 'coffin', 'coffin_old', 'crypt', 'kit.fence.iron', 'kit.fence.iron_broken', 'lightpost', 'lantern', 'candles', 'urn', 'pumpkin',
       'rn_candles', 'rn_arch_gothic', 'rn_door_gothic', 'rn_dead_tree', 'nt_dead_tree', 'hm_fireplace', 'hm_chandelier', 'hm_bed_king', 'hm_dresser', 'hm_armchair', 'hedge', 'hedge_large', 'hedge_gate', 'fountain', 'dg_skull',
     ),
     materials: ['core.wallpaper_damask', 'core.pbr_slate_roof', 'core.pbr_mossy_cobble'],
@@ -255,7 +259,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       // Already in the game: ruins, rocks, jungle plants and an expedition camp.
       'rn_column_round', 'rn_column_broken', 'rn_wall_arch_ivy', 'rn_wall_broken', 'rn_stairs', 'rn_urn', 'rn_urn_broken', 'hanging_moss', 'fern', 'bush_leafy', 'lily', 'mushrooms',
       'palm', 'palm_bent', 'nt_palm_curved', 'nt_palm_tall', 'nt_boulder_moss', 'nt_rock_moss', 'nt_log_moss', 'nt_stump_moss', 'cliff', 'cliff_corner', 'cliff_steps',
-      'sv_tent', 'sv_backpack', 'sv_radio', 'campfire', 'dg_skull', 'dg_coin_pile', 'crate_small', 'crate_large', 'barrel',
+      'sv_tent', 'sv_backpack', 'sv_radio', 'campfire', 'dg_skull', 'dg_coin_pile', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.drum.steel',
     ),
     materials: [
       'core.pbr_jungle_rock', 'core.pbr_mossy_cobble',
@@ -339,8 +343,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'sb_microwave', 'sb_fridge', 'sb_bbq_grill', 'sb_propane_tank', 'sb_washing_machine', 'sb_tv_flat', 'sb_mailbox', 'sb_wheelie_bin', 'sb_lawnmower', 'sb_garden_gnome',
       'sb_picket_fence', 'sb_swing_set', 'sb_slide', 'sb_trampoline', 'sb_basketball_hoop', 'sb_gas_pump', 'sb_sedan', 'sb_patio_set', 'sb_sun_lounger', 'sb_fire_hydrant',
       // Already in the game: furniture, shop fittings, garden and street pieces.
-      'hm_couch', 'hm_armchair', 'hm_kitchen_counter', 'hm_oven', 'hm_bed_king', 'hm_bathtub', 'hm_toilet', 'hm_houseplant_tall', 'tv', 'washer', 'sv_propane',
-      'shelf_boxes', 'checkout', 'freezer', 'shopping_cart', 'cardboard_box', 'trashcan', 'dumpster', 'cone', 'parasol', 'bush', 'hedge', 'tree_round', 'potted_plant',
+      'hm_couch', 'hm_armchair', 'hm_kitchen_counter', 'hm_oven', 'hm_bed_king', 'hm_bathtub', 'hm_toilet', 'hm_houseplant_tall', 'tv', 'kit.appliance.washer', 'sv_propane',
+      'kit.shelf.gondola', 'checkout', 'freezer', 'shopping_cart', 'kit.box.carton', 'kit.bin.waste', 'dumpster', 'cone', 'parasol', 'bush', 'hedge', 'tree_round', 'potted_plant',
     ),
     materials: ['core.pbr_clapboard', 'core.pbr_slate_roof', 'core.pbr_pool_tiles'],
     facades: ['clapboard', 'suburban_brick'],
@@ -388,8 +392,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
       // The owner's Meshy pieces (the market stall, well and crane above are the owner's too): a stall, temple statues, fountains.
       'rustic_market_stall', 'temple_spear_statue', 'temple_monk_statue', 'eagle_fountain', 'lion_head_fountain', 'town_fountain',
       // Already in the game: crates, barrels, sandbags, palms, lanterns, pots, carts, ladders and water troughs.
-      'crate_small', 'crate_large', 'barrel', 'barrel_open', 'sandbag_wall', 'sandbag_wall_low', 'palm', 'palm_tall', 'nt_palm_curved', 'lantern', 'ww_lantern', 'pot', 'urn',
-      'cart', 'rn_cart', 'ww_ladder', 'water_trough', 'im_velarium', 'stall', 'awning', 'rug', 'hm_potted_palm',
+      'kit.crate.wood', 'kit.crate.wood_long', 'kit.drum.steel', 'kit.drum.steel_open', 'sandbag_wall', 'sandbag_wall_low', 'palm', 'palm_tall', 'nt_palm_curved', 'lantern', 'ww_lantern', 'pot', 'urn',
+      'cart', 'rn_cart', 'ww_ladder', 'water_trough', 'im_velarium', 'kit.stall.market', 'awning', 'rug', 'hm_potted_palm',
       // Sands of Egypt (the pack this one replaced).
       'eg_obelisk', 'eg_sphinx', 'eg_statue_pharaoh', 'eg_anubis', 'eg_sarcophagus', 'eg_canopic_jars', 'eg_column_papyrus', 'eg_felucca', 'eg_reed_boat',
       'eg_palm', 'eg_papyrus', 'eg_torch', 'eg_chest', 'eg_stele', 'eg_cat_statue', 'eg_pyramidion',
@@ -450,9 +454,9 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'tiled_well', 'smithy_workbench',
       // Already in the game: castle and siege pieces, the market, carts and barrels, banners, lanterns, fences and trees.
       'castle_gate', 'castle_tower', 'castle_tower_round', 'castle_wall', 'castle_wall_door', 'castle_wall_corner', 'castle_stairs', 'siege_tower', 'portcullis',
-      'stall', 'stall_green', 'stall_bench', 'cart', 'cart_high', 'hay_bale', 'anvil', 'barrel', 'barrel_open', 'crate_small', 'crate_large', 'woodpile', 'log_stack', 'bucket',
+      'kit.stall.market', 'kit.stall.counter', 'cart', 'cart_high', 'hay_bale', 'anvil', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.crate.wood', 'kit.crate.wood_long', 'woodpile', 'log_stack', 'bucket',
       'fountain', 'fountain_square', 'lantern', 'lantern_post', 'banner', 'banner_red', 'banner_green', 'banner_long', 'pennant', 'signpost', 'awning', 'water_wheel',
-      'lf_wooden_fence_closed', 'lf_wooden_fence_open', 'lf_drystone_wall', 'nt_common_tree', 'nt_common_tree_2', 'bench', 'sv_tent', 'dg_woodfire',
+      'lf_wooden_fence_closed', 'lf_wooden_fence_open', 'lf_drystone_wall', 'nt_common_tree', 'nt_common_tree_2', 'kit.seat.bench', 'sv_tent', 'dg_woodfire',
     ),
     materials: ['core.cobblestones', 'core.road_setts', 'core.market_tiles', 'core.roof_tiles_red', 'core.timber_frame', 'core.wattle', 'core.packed_dirt', 'core.whitewash', 'core.oak_beam'],
     facades: ['timber_frame', 'village_plaster'],
@@ -499,8 +503,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'rustic_market_stall', 'eagle_fountain', 'lion_head_fountain', 'town_fountain',
       // Already in the game: boats and masts, cargo and crates, barrels, the gantry crane, lamps and rocks.
       'rowboat', 'dory', 'eg_felucca', 'mast', 'flag', 'cargo_gantry_crane', 'cargo_container_rusty_blue', 'cargo_container_rusty_red', 'cargo_container_old_rusty', 'cargo_ibc_tank',
-      'cargo_wooden_crate', 'cargo_crate_stack', 'cargo_crate', 'crate_small', 'crate_large', 'pallet', 'barrel', 'barrel_open', 'street_barrel', 'street_rusty_barrel', 'fuel_drum',
-      'mv_sacks', 'mv_tarp_crates', 'planks_stack', 'woodpile', 'lantern', 'lantern_post', 'lightpost', 'yard_lamp', 'bench',
+      'cargo_wooden_crate', 'cargo_crate_stack', 'kit.crate.bin', 'kit.crate.wood', 'kit.crate.wood_long', 'pallet', 'kit.drum.steel', 'kit.drum.steel_open', 'street_barrel', 'street_rusty_barrel', 'fuel_drum',
+      'mv_sacks', 'mv_tarp_crates', 'planks_stack', 'woodpile', 'lantern', 'lantern_post', 'lightpost', 'yard_lamp', 'kit.seat.bench',
       'rock_large', 'rock_medium', 'rock_pile', 'boulder_jagged', 'boulder_flat', 'cliff', 'cliff_steps',
     ),
     materials: ['core.pier_decking', 'core.quay_granite', 'core.harbour_setts', 'core.shingle', 'core.sea_bed', 'core.rusty_corrugated', 'core.blue_corrugated', 'core.tarred_boards', 'core.harbour_render', 'core.lighthouse_bands', 'core.harbour_paint', 'core.lamp_glow'],
@@ -537,10 +541,10 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'so_chainlink_fence', 'so_snow_fence', 'so_pipe_run', 'so_drums', 'so_radio_console', 'so_ski_rack', 'so_supply_sled', 'so_snow_pile',
       // Already in the game: snowy trees and rocks, sandbags and barriers, containers, crates, barrels and tanks, lights.
       'nt_pine_snow_tall', 'nt_birch_snow', 'nt_common_tree_snow', 'nt_bush_snow', 'nt_boulder_snow', 'nt_rock_snow', 'nt_log_snow',
-      'sandbag_wall', 'sandbag_wall_low', 'sandbag_corner', 'sandbag_nest', 'hesco_wall', 'hedgehog', 'razor_wire', 'camo_net', 'jersey_barrier',
+      'sandbag_wall', 'sandbag_wall_low', 'sandbag_corner', 'sandbag_nest', 'hesco_wall', 'hedgehog', 'razor_wire', 'camo_net', 'kit.barrier.concrete',
       'ammo_crate', 'ammo_stack', 'fuel_drum', 'fuel_tank', 'storage_tank', 'cargo_container', 'cargo_container_red', 'cargo_army_crate', 'cargo_crate_stack',
-      'shipping_container_blue', 'metal_crate', 'floodlight', 'yard_lamp', 'pallet', 'supply_truck', 'street_barrel', 'street_rusty_barrel', 'sv_radio', 'sv_propane',
-      'bunk_bed', 'os_satellite_dish', 'lf_wooden_fence_closed',
+      'kit.container.shipping', 'kit.crate.framed', 'floodlight', 'yard_lamp', 'pallet', 'supply_truck', 'street_barrel', 'street_rusty_barrel', 'sv_radio', 'sv_propane',
+      'kit.bed.bunk', 'os_satellite_dish', 'lf_wooden_fence_closed',
     ),
     materials: ['core.packed_snow', 'core.drift_snow', 'core.lake_ice', 'core.glacier_ice', 'core.prefab_red', 'core.prefab_white', 'core.snowy_concrete', 'core.frozen_rock', 'core.steel_grating', 'core.beacon_red'],
     facades: ['prefab', 'snow_bunker'],

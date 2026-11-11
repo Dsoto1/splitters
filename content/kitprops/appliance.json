@@ -1,5 +1,5 @@
 {
-  "$comment": "Kitchen and laundry appliances (tools/content/kit/cabinet.mjs): a fridge, a stove and a washing machine, each the size of the Kenney piece it replaces, colliding as its box.",
+  "$comment": "Kitchen and laundry appliances (tools/content/kit/cabinet.mjs): a fridge, a stove and a washing machine, each the size of the Kenney piece it replaces, colliding as its box; and a bank of upright shop freezers (glass doors over shelves of goods), the size of the Kenney mini-market one.",
   "type": "appliance",
   "props": [
     {
@@ -8,7 +8,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: a two-door fridge with bar handles, the size of the Kenney large fridge (1.017 \u00d7 1.8 \u00d7 0.793 m)."
+        "1": "First version: a two-door fridge with bar handles, the size of the Kenney large fridge (1.017 × 1.8 × 0.793 m)."
       },
       "size": [
         1.017,
@@ -110,7 +110,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: a cooker with four hob rings, a row of knobs and an oven door, the size of the Kenney stove (0.908 \u00d7 0.95 \u00d7 0.95 m)."
+        "1": "First version: a cooker with four hob rings, a row of knobs and an oven door, the size of the Kenney stove (0.908 × 0.95 × 0.95 m)."
       },
       "size": [
         0.908,
@@ -202,7 +202,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: a front-loading washing machine, a round door under a control strip, the size of the Kenney washer (0.747 \u00d7 0.9 \u00d7 0.747 m)."
+        "1": "First version: a front-loading washing machine, a round door under a control strip, the size of the Kenney washer (0.747 × 0.9 × 0.747 m)."
       },
       "size": [
         0.747,
@@ -275,6 +275,109 @@
             "grime": 0.2,
             "trim": "#35608f",
             "panel": "#c3cad1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.appliance.freezer_upright",
+      "displayName": "Shop Freezers",
+      "category": "Shop",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a bank of upright shop freezers, glass doors over shelves of goods under a header, the size of the Kenney standing freezers (2.444 × 2.2 × 1.222 m); plays as thin metal (those were concrete by the guess)."
+      },
+      "size": [
+        2.444,
+        2.2,
+        1.222
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "freezer",
+        "doors": 4,
+        "shelves": 3,
+        "foot": 0.1,
+        "header": 0.24,
+        "proud": 0.05,
+        "depth": 0.42,
+        "goods": "drinks"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "white",
+          "seed": 9641,
+          "look": {
+            "paint": "#e4e7e4",
+            "trim": "#3c3d40",
+            "handle": "#a8adb0",
+            "header": "#2f6fb0",
+            "inside": "#c3d0d6",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "steel",
+          "seed": 9642,
+          "set": {
+            "doors": 3,
+            "goods": "dairy"
+          },
+          "look": {
+            "paint": "#8f9498",
+            "trim": "#5c6064",
+            "handle": "#c9cdd0",
+            "header": "#3c3d40",
+            "inside": "#b9c6cc",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "black",
+          "seed": 9643,
+          "set": {
+            "goods": "frozen",
+            "gaps": 0.15
+          },
+          "look": {
+            "paint": "#2f3033",
+            "trim": "#1e2022",
+            "handle": "#8b8d8f",
+            "header": "#b8322a",
+            "inside": "#aebbc2",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "green",
+          "seed": 9644,
+          "set": {
+            "doors": 5,
+            "goods": "frozen"
+          },
+          "look": {
+            "paint": "#d8dcd6",
+            "trim": "#46584c",
+            "handle": "#a8adb0",
+            "header": "#3c8f4f",
+            "inside": "#c3d0d6",
+            "grime": 0.25
           }
         }
       ]

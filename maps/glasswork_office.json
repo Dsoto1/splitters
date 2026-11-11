@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_eu7kdm7dnuvylmjv",
-      "versionId": "v_yretu36yumvjists",
-      "revision": 6,
-      "contentHash": "sha256:2c58b5ae4be012a33a89a845666cf0d3f7007d512ca368d754722d3c028d2de3",
+      "versionId": "v_dxhh74gxhkedkt23",
+      "revision": 7,
+      "contentHash": "sha256:b6c04044136c5051ab065e87e8b822fb46525b26f59514dc1291c861f8fcd630",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T17:03:15.129Z"
+      "releasedAt": "2026-11-11T21:33:45.054Z"
     }
   },
   "classicStructure": {
@@ -4766,7 +4766,7 @@
         53.15
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4780,7 +4780,7 @@
         53.15
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 0,
       "scale": 1,
       "solid": true,

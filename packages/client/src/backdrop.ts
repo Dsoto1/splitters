@@ -337,7 +337,7 @@ export class BackdropVisuals {
             copies.push({ model: m, x: px, y: y - 0.1, z: pz, yaw: rand() * Math.PI * 2, scale: (0.85 + rand() * 0.5) * Math.min(1.6, far) });
             continue;
           }
-          const e: PropEntity = { id: `belt_${i}_${d0}_${c}`, kind: 'prop', model: `prop.${m}`, position: [px, y - 0.1, pz], yaw: rand() * Math.PI * 2, scale: (1 + rand() * 0.7) * far * (/^(rock|rocks|cliff)/.test(m) ? 1.5 : 1.2), solid: false, tint: null };
+          const e: PropEntity = { id: `belt_${i}_${d0}_${c}`, kind: 'prop', model: beltModel(m), position: [px, y - 0.1, pz], yaw: rand() * Math.PI * 2, scale: (1 + rand() * 0.7) * far * (/^(rock|rocks|cliff)/.test(m) ? 1.5 : 1.2), solid: false, tint: null };
           this.nodes.push(createPropNode(this.scene, this.models, e, `backdrop_belt_${this.nodes.length}`, true, true, null));
         }
       }
@@ -860,10 +860,12 @@ interface BeltProfile {
 }
 
 /**
- * What dresses the belt: prop ids without their `prop.` (rocks, logs, ruins, city clutter) and, for the plants, our
- * species by full id (`env.…`, `#variant`; Environment Phase 2: they were Kenney trees, bushes, cacti and palms),
- * drawn through an EnvScatter with their levels of detail and far stand-ins.
+ * What dresses the belt: prop ids without their `prop.` (rocks, logs, ruins, city clutter), our kit families by full
+ * id (`kit.…`: the walls, fences and bins that were Kenney pieces; never a retired prop a family replaces) and, for the
+ * plants, our species by full id (`env.…`, `#variant`; Environment Phase 2: they were Kenney trees, bushes, cacti and
+ * palms), drawn through an EnvScatter with their levels of detail and far stand-ins.
  */
+const beltModel = (m: string): string => (m.includes('.') ? m : `prop.${m}`);
 const OAK = 'env.broadleaf.oak';
 const MAPLE = 'env.broadleaf.maple';
 const PINE = 'env.conifer.pine_tall';
@@ -879,20 +881,25 @@ const BELTS: Record<string, BeltProfile> = {
   peaks: { berm: 7, hills: 18, props: [SPRUCE, PINE, 'rock_large', 'rocks_tall', 'cliff', 'cliff_corner'], buildings: false, density: 0.7 },
   mesas: { berm: 5, hills: 10, props: ['rock_large', 'rocks_tall', 'rock_spire_tall', 'rock_flat', SAGUARO, `${SAGUARO}#1`, 'debris'], buildings: false, density: 0.6 },
   dunes: { berm: 6, hills: 9, props: ['rock_flat', 'rock_large', SAGUARO, 'env.palm.leaning', 'debris'], buildings: false, density: 0.35 },
-  city: { berm: 0.6, hills: 0, props: ['barrier', 'barrier_high', 'container', 'lightpost', 'trashcan', 'skip'], buildings: true, density: 0.9 },
+  city: { berm: 0.6, hills: 0, props: ['barrier', 'barrier_high', 'container', 'lightpost', 'kit.bin.waste', 'skip'], buildings: true, density: 0.9 },
   ocean: { berm: 0.5, hills: 0, props: ['env.palm.coconut', 'env.palm.leaning', 'rock_large', 'rock_flat'], buildings: false, density: 0.4 },
   // Rocks only: no trees or bushes from the props (owner, 2026-11-08: our generated foliage only on new maps).
   volcano: { berm: 5, hills: 12, props: ['rock_large', 'rocks_tall', 'rock_flat', 'rock_large', 'debris'], buildings: false, density: 0.45 },
 };
 /** Themes whose surroundings are their own, whatever the scenery past them. */
 const THEME_BELTS: Record<string, Partial<BeltProfile>> = {
-  'core.factory': { props: ['container', 'container_wide', 'container_tall', 'barrier_high', 'tank_car', 'factory_box_long', 'skip', 'cone'], buildings: true },
-  'core.castle': { props: [PINE, OAK, SPRUCE, MAPLE, 'rock_large', 'stone_wall_damaged', LAUREL, OAK] },
-  'core.ruins': { props: ['stone_wall_damaged', 'pillar', 'rocks_tall', OAK, MAPLE, LAUREL] },
-  'core.manor': { props: ['iron_fence', 'iron_fence_damaged', PINE, 'gravestone_round', OAK, 'env.hedge.yew'] },
-  'core.saloon': { props: [SAGUARO, `${SAGUARO}#1`, 'rock_large', 'cart', 'town_fence', 'rocks_tall'] },
+  'core.factory': { props: ['container', 'container_wide', 'container_tall', 'barrier_high', 'tank_car', 'kit.crate.factory_long', 'skip', 'cone'], buildings: true },
+  'core.castle': { props: [PINE, OAK, SPRUCE, MAPLE, 'rock_large', 'kit.wall.stone_broken', LAUREL, OAK] },
+  'core.ruins': { props: ['kit.wall.stone_broken', 'pillar', 'rocks_tall', OAK, MAPLE, LAUREL] },
+  'core.manor': { props: ['kit.fence.iron', 'kit.fence.iron_broken', PINE, 'gravestone_round', OAK, 'env.hedge.yew'] },
+  'core.saloon': { props: [SAGUARO, `${SAGUARO}#1`, 'rock_large', 'cart', 'kit.fence.town', 'rocks_tall'] },
   'core.arctic': { props: [`${PINE}#1`, `${SPRUCE}#1`, 'rock_large', 'rocks_tall'] },
 };
+
+/** Every catalogue model the belts name (props and kit families by id; the plants as written, `env.…`). */
+export function beltModels(): string[] {
+  return [...new Set([...Object.values(BELTS), ...Object.values(THEME_BELTS)].flatMap((b) => b.props ?? []).map(beltModel))];
+}
 
 function beltProfile(backdrop: Backdrop, theme: string): BeltProfile {
   const base = BELTS[backdrop.scenery] ?? BELTS.none!;

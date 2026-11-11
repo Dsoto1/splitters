@@ -1,0 +1,116 @@
+{
+  "$comment": "Free-standing warning signs (tools/content/kit/factory.mjs): a hazard board on a post and a weighted base, a folding A-frame floor sign, a banded post marker. One family the size of the Kenney warning post it replaces, colliding as its box. Paint on sheet steel: nothing glows or blinks.",
+  "type": "sign",
+  "props": [
+    {
+      "id": "kit.sign.warning",
+      "displayName": "Warning Sign",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a hazard-striped board on a post and a weighted base, the size of the Kenney warning post (0.284 × 1.1 × 0.284 m); plays as thin metal (that post was concrete by the guess)."
+      },
+      "size": [
+        0.284,
+        1.1,
+        0.284
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 25,
+        "debris": "#e8b520"
+      },
+      "generator": {
+        "kind": "sign",
+        "style": "panel",
+        "base": 0.07,
+        "board": 0.4,
+        "mark": "stripes",
+        "pitch": 0.07
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 30
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "striped",
+          "seed": 9621,
+          "look": {
+            "a": "#e8b520",
+            "b": "#1c1d20",
+            "base": "#26272a",
+            "post": "#8b8d8f",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "wet_floor",
+          "seed": 9622,
+          "set": {
+            "style": "aframe",
+            "mark": "triangle"
+          },
+          "look": {
+            "a": "#e8c22a",
+            "b": "#1c1d20",
+            "ink": "#1c1d20",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "red_white",
+          "seed": 9623,
+          "look": {
+            "a": "#b8322a",
+            "b": "#e6e3da",
+            "base": "#26272a",
+            "post": "#8b8d8f",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "marker",
+          "seed": 9624,
+          "set": {
+            "style": "post"
+          },
+          "look": {
+            "a": "#d9661f",
+            "b": "#e6e3da",
+            "base": "#26272a",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "triangle",
+          "seed": 9625,
+          "set": {
+            "mark": "triangle"
+          },
+          "look": {
+            "a": "#e8b520",
+            "b": "#e6e3da",
+            "ink": "#1c1d20",
+            "base": "#26272a",
+            "post": "#8b8d8f",
+            "grime": 0.25
+          }
+        }
+      ]
+    }
+  ]
+}

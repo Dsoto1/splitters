@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_cz2zu3ctolnayno6",
-      "versionId": "v_spcv4pkbn2feqhwl",
-      "revision": 4,
-      "contentHash": "sha256:0b6363290ef7d82fde180cdd031ce8c8da2afe6e53b4c6ea89df46e3e8d83f79",
+      "versionId": "v_rbhtkyoiokaanhpu",
+      "revision": 5,
+      "contentHash": "sha256:4548a465ba11a0ee6bbc9578f26587158d66551d45d8d71d499bc74f2180ff20",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T16:53:56.693Z"
+      "releasedAt": "2026-11-11T21:26:31.844Z"
     }
   },
   "classicStructure": {
@@ -5443,7 +5443,7 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5457,7 +5457,7 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5793,7 +5793,7 @@
         -21.6
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 0,
       "scale": 0.7,
       "solid": true,
@@ -5807,7 +5807,7 @@
         -21.6
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 0,
       "scale": 0.7,
       "solid": true,
@@ -6095,7 +6095,7 @@
         -6
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6109,7 +6109,7 @@
         -6
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1,
       "solid": true,

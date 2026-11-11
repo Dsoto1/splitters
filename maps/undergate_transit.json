@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_5lhttjun3ohakisn",
-      "versionId": "v_e5xmavg7suw352xg",
-      "revision": 5,
-      "contentHash": "sha256:d177a721cf0b34ef53752e17e0ca53227fb3334b4977426ab7c77c40cb94d580",
+      "versionId": "v_tnwhfrceccrgi7ei",
+      "revision": 6,
+      "contentHash": "sha256:8a0b6c4a7daaa8a0abbe8bdb133aba79b817f24ee3bd9509585115c6111ec4d2",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T17:21:49.117Z"
+      "releasedAt": "2026-11-11T21:56:34.226Z"
     }
   },
   "classicStructure": {
@@ -9492,7 +9492,7 @@
         -6
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -9506,7 +9506,7 @@
         6
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -17456,7 +17456,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.factory_box_long",
+      "model": "kit.crate.factory_long",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -17526,7 +17526,7 @@
         4
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -17730,7 +17730,7 @@
         44
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -17814,7 +17814,7 @@
         46
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0,
       "scale": 1,
       "solid": true,

@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_qyng33h4u3u37xoc",
-      "versionId": "v_ycl4axzl44w2l2iv",
-      "revision": 4,
-      "contentHash": "sha256:c2e03f9193ff18c351c5d87e6b3fc02a0c6d5e13ef4ddd8f16469786d2c68271",
+      "versionId": "v_pgomft226tu2kjtx",
+      "revision": 5,
+      "contentHash": "sha256:440df33ca47669e63ccd7466a5c84425f3c65e5a89aa72b0ac3ec90d433613a5",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T16:51:28.589Z"
+      "releasedAt": "2026-11-11T21:23:26.442Z"
     }
   },
   "classicStructure": {
@@ -9302,7 +9302,7 @@
         10.6
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0.15,
       "scale": 1,
       "solid": true,
@@ -9370,7 +9370,7 @@
         12.8
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": false,
@@ -9384,7 +9384,7 @@
         -12.8
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": false,
@@ -9810,7 +9810,7 @@
         -10.6
       ],
       "kind": "prop",
-      "model": "prop.factory_box",
+      "model": "kit.crate.factory",
       "yaw": 0.15,
       "scale": 1,
       "solid": true,
@@ -9878,7 +9878,7 @@
         12.8
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": false,
@@ -9892,7 +9892,7 @@
         -12.8
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": false,
@@ -10364,7 +10364,7 @@
         3.4
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 0,
       "scale": 1,
       "solid": false,

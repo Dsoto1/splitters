@@ -23105,7 +23105,7 @@
         -53.28
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
