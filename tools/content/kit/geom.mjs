@@ -180,3 +180,71 @@ export function standIn(size, top, sides) {
   box(m, [-w / 2, 0, -d / 2], [w / 2, h, d / 2], (p, n) => (n[1] > 0.5 ? top : scale3(sides, groundShade(p[1], 0.3, 0.8))), ['ny']);
   return m;
 }
+
+/**
+ * An oval (or many-sided) shell: the profile [[k, y], …] from bottom to top, each row the outline `rx` × `rz` (its
+ * half widths) scaled by `k`, swept round (`cx`, `cz`) in `seg` sides. Smooth round the outline when `smooth`, flat
+ * sides otherwise (a hexagon's); always creased between profile rows. Faces outward. `colour(p, n, row)`.
+ */
+export function ovalShell(m, profile, seg, colour, { rx = 1, rz = 1, cx = 0, cz = 0, phase = 0, smooth = true } = {}) {
+  const col = typeof colour === 'function' ? colour : () => colour;
+  const at = (a, k, y) => [cx + Math.cos(a) * rx * k, y, cz + Math.sin(a) * rz * k];
+  for (let r = 0; r < profile.length - 1; r++) {
+    const [k0, y0] = profile[r];
+    const [k1, y1] = profile[r + 1];
+    // The band's slope in (radius, y), taken on the mean half width.
+    const dr = ((k1 - k0) * (rx + rz)) / 2;
+    const dy = y1 - y0;
+    const L = Math.hypot(dr, dy) || 1;
+    const nr = dy / L;
+    const ny = -dr / L;
+    const normal = (a) => {
+      const ex = Math.cos(a) / rx;
+      const ez = Math.sin(a) / rz;
+      const e = Math.hypot(ex, ez) || 1;
+      return norm([(ex / e) * nr, ny, (ez / e) * nr]);
+    };
+    for (let s = 0; s < seg; s++) {
+      const a0 = phase + (s / seg) * Math.PI * 2;
+      const a1 = phase + ((s + 1) / seg) * Math.PI * 2;
+      const n0 = smooth ? normal(a0) : normal((a0 + a1) / 2);
+      const n1 = smooth ? normal(a1) : n0;
+      const p = [at(a0, k0, y0), at(a0, k1, y1), at(a1, k1, y1), at(a1, k0, y0)];
+      const ns = [n0, n0, n1, n1];
+      const i = p.map((q, j) => m.vertex(q, ns[j], [0, 0], col(q, ns[j], r)));
+      m.quad(i[0], i[1], i[2], i[3]);
+    }
+  }
+  return m;
+}
+
+/** A flat oval (or many-sided) face at height y, half widths `rx` × `rz` round (`cx`, `cz`), facing up (or down). */
+export function ovalDisc(m, rx, rz, y, seg, colour, { down = false, cx = 0, cz = 0, phase = 0 } = {}) {
+  const n = down ? [0, -1, 0] : [0, 1, 0];
+  const col = typeof colour === 'function' ? colour : () => colour;
+  const c = m.vertex([cx, y, cz], n, [0, 0], col([cx, y, cz], n));
+  const ids = [];
+  for (let s = 0; s < seg; s++) {
+    const a = phase + (s / seg) * Math.PI * 2;
+    const p = [cx + Math.cos(a) * rx, y, cz + Math.sin(a) * rz];
+    ids.push(m.vertex(p, n, [0, 0], col(p, n)));
+  }
+  for (let s = 0; s < seg; s++) {
+    const a = ids[s];
+    const b = ids[(s + 1) % seg];
+    if (down) m.tri(c, a, b);
+    else m.tri(c, b, a);
+  }
+}
+
+/**
+ * A cushion or pillow lying flat: the box `lo`–`hi` with its top face drawn in by `inset` on every side (sloped
+ * sides, no underside).
+ */
+export function pad(m, lo, hi, inset, colour) {
+  const a = [[lo[0], lo[1], lo[2]], [hi[0], lo[1], lo[2]], [hi[0], lo[1], hi[2]], [lo[0], lo[1], hi[2]]];
+  const b = [[lo[0] + inset, hi[1], lo[2] + inset], [hi[0] - inset, hi[1], lo[2] + inset], [hi[0] - inset, hi[1], hi[2] - inset], [lo[0] + inset, hi[1], hi[2] - inset]];
+  quadN(m, b[0], b[1], b[2], b[3], [0, 1, 0], colour);
+  const out = [[0, 0.3, -1], [1, 0.3, 0], [0, 0.3, 1], [-1, 0.3, 0]];
+  for (let k = 0; k < 4; k++) quadN(m, a[k], a[(k + 1) % 4], b[(k + 1) % 4], b[k], out[k], colour);
+}

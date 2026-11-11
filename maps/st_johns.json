@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
@@ -57466,7 +57466,7 @@
         -42.521
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": -1.54637,
       "scale": 1,
       "solid": true,

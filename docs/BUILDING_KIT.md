@@ -1341,7 +1341,7 @@ template automatically.
   `pnpm quality-gates [map ids] [--json=file] [--seconds=n]` runs those plus the navigation audit and a bots-only
   match for every offered map, and exits 1 when a core map fails one (an experimental map's only report); a test
   (`shared/test/qualityGates.test.ts`) holds every core map of `maps/` to the gates that need only the map.
-  Characters' tiers are not built yet.
+  Characters have the same two tiers and their own headless gates, printed after the maps': docs/CHARACTERS.md, "Tier".
 - **Everything breaks (Map properties → Everything breaks; map format v36, `map/geometry.ts` `isBreakableProp`).** Off,
   only the catalogue's breakable props break (crates, barrels, furniture…). On, every solid prop can be shot apart;
   natural rocks, walls, floors, terrain and doors stay. A prop the catalogue gives no health takes one from what it is

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "primeval_park",
     "name": "Primeval Park",
@@ -15182,7 +15182,7 @@
         -87.19
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "reactor",
     "name": "Reactor",
@@ -1183,7 +1183,7 @@
         17
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,

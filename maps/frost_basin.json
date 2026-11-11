@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "frost_basin",
     "name": "Frost Basin",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_wm4ypl2enajhiaqu",
-      "versionId": "v_wnosqrd6f3fgbxb7",
-      "revision": 4,
-      "contentHash": "sha256:4c03111f29f6317d32bb3ed7b386a34ffd594ca8e4ee108267b22a737d7fab29",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T09:23:12.146Z"
+      "versionId": "v_es46z5wyoyaij653",
+      "revision": 5,
+      "contentHash": "sha256:62860fd4d1894390aaa76eba84a144aaa6234be19cb53bcc58b5829f6c0c5ea9",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:01:54.288Z"
     }
   },
   "classicStructure": {
@@ -5065,7 +5065,7 @@
         -2.36
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5093,7 +5093,7 @@
         2.36
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -5177,7 +5177,7 @@
         -2.36
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5205,7 +5205,7 @@
         2.36
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

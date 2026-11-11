@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "apex_ring",
     "name": "Apex Ring",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_snj2ivjohajuozh5",
-      "versionId": "v_wo6xrf2lfzczfots",
-      "revision": 4,
-      "contentHash": "sha256:56c09dae103adecc1799b95a0569d954324a8dcee246b6061f13505e28c8ae08",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T14:45:42.572Z"
+      "versionId": "v_x7kuozs7r3nlan4t",
+      "revision": 5,
+      "contentHash": "sha256:11a82309f2ac3189a39c09f7c0beb48a403f243ace934050e3b3b6462cc850f1",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T16:47:53.544Z"
     }
   },
   "classicStructure": {
@@ -20605,7 +20605,7 @@
         -85.4
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -26637,7 +26637,7 @@
         -142
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -26693,7 +26693,7 @@
         -142
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -26749,7 +26749,7 @@
         -142
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -26805,7 +26805,7 @@
         -142
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -26861,7 +26861,7 @@
         -142
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -31571,7 +31571,7 @@
         134
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -31613,7 +31613,7 @@
         134
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -31655,7 +31655,7 @@
         150
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -31697,7 +31697,7 @@
         150
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -35273,7 +35273,7 @@
         -63.6
       ],
       "kind": "prop",
-      "model": "prop.sofa_long",
+      "model": "kit.sofa.corner",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -35287,7 +35287,7 @@
         -73
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -38897,7 +38897,7 @@
         52.4
       ],
       "kind": "prop",
-      "model": "prop.sofa_long",
+      "model": "kit.sofa.corner",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -38911,7 +38911,7 @@
         43
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -42881,7 +42881,7 @@
         -166
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -42909,7 +42909,7 @@
         -172
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -42937,7 +42937,7 @@
         -164
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -42965,7 +42965,7 @@
         -164
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -42993,7 +42993,7 @@
         -172
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -43021,7 +43021,7 @@
         -166
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -43049,7 +43049,7 @@
         -180
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -43077,7 +43077,7 @@
         -180
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "diamond_park",
     "name": "Diamond Park",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_gkegta35ah54zd5g",
-      "versionId": "v_4nwgxtl7prnwgyvb",
-      "revision": 4,
-      "contentHash": "sha256:6f78ee0516edf1a75a76744f69047897258bcaa897ac709f086ec3896fdd4770",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T14:58:53.096Z"
+      "versionId": "v_eguhqip4x7xckuhk",
+      "revision": 5,
+      "contentHash": "sha256:6069f34d9333c89686411259313c6dca2d2a9ea8c4ae4f6678d65e0d89a66001",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T16:58:27.063Z"
     }
   },
   "classicStructure": {
@@ -28991,7 +28991,7 @@
         -63
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -29019,7 +29019,7 @@
         -63
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -29752,7 +29752,7 @@
         10
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -29780,7 +29780,7 @@
         40
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -33290,7 +33290,7 @@
         -50
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -33416,7 +33416,7 @@
         -49.7
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -33444,7 +33444,7 @@
         -49.7
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -33472,7 +33472,7 @@
         -34.8
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 4.7124,
       "scale": 1,
       "solid": true,
@@ -33500,7 +33500,7 @@
         -29.2
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 4.7124,
       "scale": 1,
       "solid": true,
@@ -33528,7 +33528,7 @@
         -48
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -33570,7 +33570,7 @@
         -48.5
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -33612,7 +33612,7 @@
         -48.5
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -33654,7 +33654,7 @@
         -40
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -33696,7 +33696,7 @@
         -32
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -33976,7 +33976,7 @@
         -46.1
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -34004,7 +34004,7 @@
         -46.1
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -34032,7 +34032,7 @@
         -46.1
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -34060,7 +34060,7 @@
         -46.1
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": true,

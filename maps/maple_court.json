@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "maple_court",
     "name": "Maple Court",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_tqonszbqjn5i6g6u",
-      "versionId": "v_ahghxdzfe7bf4grq",
-      "revision": 4,
-      "contentHash": "sha256:9a7441c18b9c519fa5094045c29b84eaf02cfb7e60aab0343090f31385978f13",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T15:19:10.349Z"
+      "versionId": "v_7e7hmvzubywjvaai",
+      "revision": 5,
+      "contentHash": "sha256:6bddbbd14ba9185677eed0e4e23fcb4e4429d38fbdc633576536eb74198d6189",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:08:47.605Z"
     }
   },
   "classicStructure": {
@@ -10903,7 +10903,7 @@
         14
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -10931,7 +10931,7 @@
         18
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -10959,7 +10959,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,

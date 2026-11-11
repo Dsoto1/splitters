@@ -5,7 +5,7 @@
  * keep its random bots to some groups and/or themes (MapDocument.botCast), and the host can change it
  * (MatchRules.botCast).
  */
-import { CHARACTER_GROUPS, CORE_LOOKS, RETIRED_LOOKS, type CharacterGroup, type CharacterLook } from './looks.ts';
+import { CHARACTER_GROUPS, CORE_LOOKS, PICKABLE_LOOKS, RETIRED_LOOKS, pickableLooks, type CharacterGroup, type CharacterLook } from './looks.ts';
 
 /**
  * Every name theme's id and label, by kind of creature. IDs never change (maps and server rules name them); never
@@ -68,8 +68,10 @@ export function lookTheme(id: string | undefined): string | null {
   if (id?.startsWith('npc:')) return NPC_SKIN_THEMES[id.slice(4)] ?? null;
   const l = builtInLook(id);
   if (!l) return null;
-  return (l.nameTheme && THEMES_BY_ID.has(l.nameTheme) ? l.nameTheme : undefined) ?? (l.group ? GROUP_THEMES[l.group] : undefined) ?? null;
+  return themeOf(l);
 }
+/** A built-in look's name theme: its own, else its group's. */
+const themeOf = (l: Pick<CharacterLook, 'nameTheme' | 'group'>): string | null => (l.nameTheme && THEMES_BY_ID.has(l.nameTheme) ? l.nameTheme : undefined) ?? (l.group ? GROUP_THEMES[l.group] : undefined) ?? null;
 
 // ---------------------------------------------------------------- bot characters (which looks random bots wear)
 
@@ -103,9 +105,15 @@ export function castAllows(cast: BotCast | undefined, look: string): boolean {
 
 /** The looks random bots wear under a bot-characters setting, in roster order; every look when none fits. */
 export function castLooks(cast: BotCast | undefined): readonly CharacterLook[] {
-  if (!cast?.length) return CORE_LOOKS;
-  const out = CORE_LOOKS.filter((l) => castAllows(cast, l.id));
-  return out.length ? out : CORE_LOOKS;
+  return castLooksFrom(PICKABLE_LOOKS, cast);
+}
+
+/** castLooks over a roster: its core tier only (an experimental character is never a random bot's), every core look when none fits. */
+export function castLooksFrom(roster: readonly CharacterLook[], cast: BotCast | undefined): readonly CharacterLook[] {
+  const pool = pickableLooks(roster);
+  if (!cast?.length) return pool;
+  const out = pool.filter((l) => cast.some((x) => x === (l.group ?? null) || x === themeOf(l)));
+  return out.length ? out : pool;
 }
 
 /** The choices a menu offers, groups first: { id, label }. */

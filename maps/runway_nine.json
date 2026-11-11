@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "runway_nine",
     "name": "Runway Nine",
@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_5x4zlanrxgtdua3l",
-      "versionId": "v_7cebpsq35o25cdif",
-      "revision": 6,
-      "contentHash": "sha256:769bedcfadaf5bb5723353266743f46c7b5fbf5dfd230ed9a8fb04f118bf09ba",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T10:24:39.547Z"
+      "versionId": "v_fbxdntin47k2ekhe",
+      "revision": 7,
+      "contentHash": "sha256:a0f8ce51049c290d857f080168e32a68aced9fd4f5e4cffc3236c0be362d0a14",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:15:35.908Z"
     }
   },
   "classicStructure": {
@@ -7235,7 +7235,7 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -8848,7 +8848,7 @@
         0.81
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,

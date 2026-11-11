@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "capitol_mall",
     "name": "Capitol Mall",
@@ -25107,7 +25107,7 @@
         -4.59
       ],
       "kind": "prop",
-      "model": "prop.sofa_long",
+      "model": "kit.sofa.corner",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -25135,7 +25135,7 @@
         -4.34
       ],
       "kind": "prop",
-      "model": "prop.sofa_long",
+      "model": "kit.sofa.corner",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -25275,7 +25275,7 @@
         32.46
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -25303,7 +25303,7 @@
         29.92
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -25401,7 +25401,7 @@
         -31.54
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -25429,7 +25429,7 @@
         -29.01
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -26339,7 +26339,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -26451,7 +26451,7 @@
         2.63
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -26479,7 +26479,7 @@
         -5.26
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -26801,7 +26801,7 @@
         -2.63
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,

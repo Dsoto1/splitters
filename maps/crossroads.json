@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "crossroads",
     "name": "Crossroads",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_oiei2uugkwd3jwdq",
-      "versionId": "v_gujjtwkijxtr6tjz",
-      "revision": 4,
-      "contentHash": "sha256:bd12188a49a589e04cb3d94f383719d360aa75b534b1a5ea83b24acafbe90959",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T14:54:26.887Z"
+      "versionId": "v_ghajtv5xayc5tquk",
+      "revision": 5,
+      "contentHash": "sha256:82414a4c8915813301427ecff4ad7109f12030cdc9ea211db331dbe3f4ed3322",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T16:57:03.074Z"
     }
   },
   "classicStructure": {
@@ -3517,7 +3517,7 @@
         67.41
       ],
       "kind": "prop",
-      "model": "prop.bed",
+      "model": "kit.bed.double",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,

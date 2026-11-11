@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "flatpack_depot",
     "name": "Flatpack Depot",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_nrfxczl6m2zcqbew",
-      "versionId": "v_ltnil2gwqcrvzmit",
-      "revision": 5,
-      "contentHash": "sha256:df6298d29189a86856337f5ca4fe9497b0b5b92761e9c56e1b15fb897be5f35f",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T15:05:48.671Z"
+      "versionId": "v_fthmlgqwze722mjw",
+      "revision": 6,
+      "contentHash": "sha256:7648313cffcced57665161755f2769ed60b1543016506494c0016cc19d607ed7",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:01:05.834Z"
     }
   },
   "classicStructure": {
@@ -16534,7 +16534,7 @@
         5.63
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -16898,7 +16898,7 @@
         8.46
       ],
       "kind": "prop",
-      "model": "prop.bed",
+      "model": "kit.bed.double",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -17010,7 +17010,7 @@
         16.07
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -17024,7 +17024,7 @@
         14.36
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -17038,7 +17038,7 @@
         16.07
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -17052,7 +17052,7 @@
         14.36
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -17066,7 +17066,7 @@
         15.21
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -17080,7 +17080,7 @@
         15.21
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -17332,7 +17332,7 @@
         15.54
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -17542,7 +17542,7 @@
         26.36
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -17570,7 +17570,7 @@
         26.36
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -17920,7 +17920,7 @@
         21.92
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -18928,7 +18928,7 @@
         39.54
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -19236,7 +19236,7 @@
         -0.68
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -19264,7 +19264,7 @@
         -2.37
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,

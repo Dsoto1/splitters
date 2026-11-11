@@ -1,12 +1,13 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, TICK_RATE, initPhysics, isRetiredMap, loadMap, mapGates, mapTier, rulesForMap, type MapDocument, type MapTier } from '@tiletrigger/shared';
+import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, REPORT_ONLY_CHARACTER_GATES, TICK_RATE, characterGateReports, initPhysics, isRetiredMap, loadMap, mapGates, mapTier, rulesForMap, type MapDocument, type MapTier } from '@tiletrigger/shared';
 import { Match, initNavigation, validateMapNavigation } from '@tiletrigger/shared/match';
+import { characterFacts } from './characterFacts.ts';
 
 /**
- * Quality gates for maps (HANDOFF, "Quality tiers": the checks a map must pass to be on the core roster; for an
- * experimental one they only report). One line a gate, per map:
+ * Quality gates for maps and characters (HANDOFF, "Quality tiers": the checks a map or a character must pass to be on
+ * the core roster; for an experimental one they only report). One line a gate, per map:
  *
  * - `loads`: the file loads and validates with no errors;
  * - `navigation`: the navigation audit as for an official map (no traps, every spawn, objective and pickup reachable);
@@ -17,18 +18,28 @@ import { Match, initNavigation, validateMapNavigation } from '@tiletrigger/share
  *   bots get somewhere (moved more than a few metres in the time).
  *
  * Usage (from the repo root):
- *   pnpm quality-gates                      every map of maps/ that is offered (retired ones left out)
- *   pnpm quality-gates iron_coast citadel   those maps
- *   pnpm quality-gates --json=gates.json    the results as a file too
+ *   pnpm quality-gates                      every map of maps/ that is offered (retired ones left out), then every character
+ *   pnpm quality-gates iron_coast citadel   those maps (no characters)
+ *   pnpm quality-gates --characters         the characters only
+ *   pnpm quality-gates --maps               the maps only
+ *   pnpm quality-gates --json=gates.json    the maps' results as a file too (--characters-json=… for the characters')
  *   pnpm quality-gates --seconds=30         a longer bots-only match (default 15)
- * Exits 1 when a core map fails a gate (an experimental map's gates only report). Characters' gates (grips, portraits, faces) need the game's renderer: not here yet.
+ * Exits 1 when a core map or a core character fails a gate (an experimental one's gates only report).
+ *
+ * Characters, after the maps (content/characterGates.ts; docs/CHARACTERS.md, "Tier"), from what the content build
+ * recorded: `triangles` (within the character budget), `lod` (a far copy), `hands` (measured, the body's and its
+ * first-person arms'), `clips` (its clip set whole), `hitbox` (a measured hit shape), `portrait` (one shipped). The
+ * first three are for whole-body characters; a look built from the shared parts has no file of its own. How the
+ * hands sit on a gun, the face and first-person clipping need the game's renderer: not here yet.
  */
 const MAPS = fileURLToPath(new URL('../../../../maps/', import.meta.url));
 const args = process.argv.slice(2);
 const opt = (name: string) => args.find((a) => a.startsWith(`--${name}=`))?.split('=')[1];
 const seconds = Number(opt('seconds') ?? 15);
 const named = args.filter((a) => !a.startsWith('--'));
-const ids = (named.length ? named : readdirSync(MAPS).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !isRetiredMap(id) && !id.startsWith('test_'))).sort();
+const doMaps = named.length > 0 || !args.includes('--characters');
+const doCharacters = !named.length && !args.includes('--maps');
+const ids = !doMaps ? [] : (named.length ? named : readdirSync(MAPS).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => !isRetiredMap(id) && !id.startsWith('test_'))).sort();
 
 type Gate = 'loads' | 'navigation' | 'spawns' | 'budgets' | 'card' | 'plays';
 interface Result {
@@ -102,7 +113,26 @@ for (const id of ids) {
 }
 const failing = results.filter((r) => r.tier === 'core' && Object.values(r.gates).some((g) => g && !g.pass));
 const core = results.filter((r) => r.tier === 'core').length;
-console.log(`\n${core - failing.length} of ${core} core maps pass every gate (${results.length - core} experimental: reported only)`);
+if (doMaps) console.log(`\n${core - failing.length} of ${core} core maps pass every gate (${results.length - core} experimental: reported only)`);
+
+// Characters: every look on the roster, from what the content build recorded (no renderer).
+const characters = doCharacters ? characterGateReports(characterFacts()) : [];
+if (doCharacters) {
+  console.log('\nCharacters');
+  for (const r of characters) {
+    const failed = r.gates.filter((g) => !g.ok);
+    if (!failed.length) continue; // a line for each one that has something to say; the count below covers the rest
+    const notes = failed.map((g) => `${g.id}${g.blocking ? '' : ' (report only)'}: ${g.note}`).join(' | ');
+    console.log(`${r.failing.length ? 'FAIL' : 'note'}  ${r.look.padEnd(24)} ${r.tier === 'core' ? '' : '(experimental) '}${notes}`);
+  }
+  for (const [id, why] of Object.entries(REPORT_ONLY_CHARACTER_GATES)) console.log(`TODO  ${id} only reports for now: ${why}`);
+  const coreCharacters = characters.filter((r) => r.tier === 'core');
+  const bad = coreCharacters.filter((r) => r.failing.length).length;
+  console.log(`${coreCharacters.length - bad} of ${coreCharacters.length} core characters pass every blocking gate (${characters.length - coreCharacters.length} experimental: reported only)`);
+}
+const failingCharacters = characters.filter((r) => r.failing.length);
 const json = opt('json');
 if (json) writeFileSync(resolve(process.env.INIT_CWD ?? process.cwd(), json), JSON.stringify(results, null, 1));
-process.exit(failing.length ? 1 : 0);
+const charactersJson = opt('characters-json');
+if (charactersJson) writeFileSync(resolve(process.env.INIT_CWD ?? process.cwd(), charactersJson), JSON.stringify(characters, null, 1));
+process.exit(failing.length || failingCharacters.length ? 1 : 0);

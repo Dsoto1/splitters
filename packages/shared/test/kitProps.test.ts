@@ -83,6 +83,9 @@ const REMATERIALLED = new Map<string, string>([
   // (wood already); the cabinets (thin metal, by the word "cabinet") are wooden; the white goods (concrete) are sheet steel.
   ['prop.sofa', 'wood'], ['prop.kitchen_cabinet', 'wood'], ['prop.tv_cabinet', 'wood'],
   ['prop.fridge', 'thin_metal'], ['prop.stove', 'thin_metal'], ['prop.washer', 'thin_metal'],
+  // Part 6, by the same rule: the beds and the long sofa (concrete by the guess) are wooden frames under bedding and
+  // upholstery. (The office chair and the round table were wood already.)
+  ['prop.bed', 'wood'], ['prop.bunk_bed', 'wood'], ['prop.sofa_long', 'wood'],
 ]);
 
 describe('kit aliases', () => {

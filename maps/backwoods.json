@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "backwoods",
     "name": "Backwoods Lodge",
@@ -3275,7 +3275,7 @@
         49.5
       ],
       "kind": "prop",
-      "model": "prop.sofa_long",
+      "model": "kit.sofa.corner",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -3626,7 +3626,7 @@
         30.5
       ],
       "kind": "prop",
-      "model": "prop.bed",
+      "model": "kit.bed.double",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3654,7 +3654,7 @@
         31
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3668,7 +3668,7 @@
         30.5
       ],
       "kind": "prop",
-      "model": "prop.bed",
+      "model": "kit.bed.double",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3710,7 +3710,7 @@
         41
       ],
       "kind": "prop",
-      "model": "prop.bed",
+      "model": "kit.bed.double",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3738,7 +3738,7 @@
         50
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13311,7 +13311,7 @@
         37.52
       ],
       "kind": "prop",
-      "model": "prop.bed",
+      "model": "kit.bed.double",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13479,7 +13479,7 @@
         29.52
       ],
       "kind": "prop",
-      "model": "prop.bed",
+      "model": "kit.bed.double",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13647,7 +13647,7 @@
         37.52
       ],
       "kind": "prop",
-      "model": "prop.bed",
+      "model": "kit.bed.double",
       "yaw": 0,
       "scale": 1,
       "solid": true,

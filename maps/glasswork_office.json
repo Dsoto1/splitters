@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "glasswork_office",
     "name": "Glasswork Office",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_eu7kdm7dnuvylmjv",
-      "versionId": "v_voi3otug36il4slz",
-      "revision": 5,
-      "contentHash": "sha256:a271ece5a99af988a591d34ca2a9024a80a1c6e1d50ae223e70802bfd68c8de2",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T15:07:08.099Z"
+      "versionId": "v_yretu36yumvjists",
+      "revision": 6,
+      "contentHash": "sha256:2c58b5ae4be012a33a89a845666cf0d3f7007d512ca368d754722d3c028d2de3",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:03:15.129Z"
     }
   },
   "classicStructure": {
@@ -4948,7 +4948,7 @@
         41.36
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -5004,7 +5004,7 @@
         46.64
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5060,7 +5060,7 @@
         41.36
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -5116,7 +5116,7 @@
         46.64
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5633,7 +5633,7 @@
         43.48
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -5647,7 +5647,7 @@
         43.48
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -5661,7 +5661,7 @@
         44.52
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -5675,7 +5675,7 @@
         44.52
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -5689,7 +5689,7 @@
         42.66
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -5703,7 +5703,7 @@
         45.34
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -5983,7 +5983,7 @@
         61.66
       ],
       "kind": "prop",
-      "model": "prop.sofa_long",
+      "model": "kit.sofa.corner",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -7019,7 +7019,7 @@
         62.28
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -7047,7 +7047,7 @@
         62.28
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -7145,7 +7145,7 @@
         23.54
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -7173,7 +7173,7 @@
         26.08
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -7285,7 +7285,7 @@
         24.46
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -7313,7 +7313,7 @@
         24.46
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -7453,7 +7453,7 @@
         24.46
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -7481,7 +7481,7 @@
         21.92
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -8195,7 +8195,7 @@
         26.05
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -8293,7 +8293,7 @@
         25.72
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -8321,7 +8321,7 @@
         22.47
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,

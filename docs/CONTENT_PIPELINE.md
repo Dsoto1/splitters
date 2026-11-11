@@ -724,7 +724,9 @@ barrels and boxes first; fences and walls, then containers, come next.
   rolling hoops, a lid with bungs or open with something inside; paint worn bare at the hoops, rust from seeded noise),
   `carton.mjs` (a taped carton with softened corners and bowed sides, a label or a second tape), `furniture.mjs`
   (tables, chairs and benches, bookcases), `shop.mjs` (shelving, stalls, counters, bins), `sofa.mjs` (armchairs and
-  sofas: a frame on feet or a skirt, seat and leaning back cushions, piping, a throw or a scatter cushion),
+  sofas: a frame on feet or a skirt, seat and leaning back cushions, piping, a throw or a scatter cushion; the corner
+  sofa with its chaise), `bed.mjs` (the double bed and the bunk bed), `furniture.mjs` again for the office chair and
+  the pedestal table (these five collide as finer boxes set by their generator settings, as the props they replace did),
   `cabinet.mjs` (cabinets: a carcass on a recessed plinth, doors, drawers and open bays under a top; appliances: a
   fridge's doors, a stove's hob rings, knobs and oven door, a washing machine's round door; handles and knobs stand
   inside the box, the case set back for them), `glb.mjs` (the writer).
@@ -751,7 +753,7 @@ barrels and boxes first; fences and walls, then containers, come next.
   family has the retired prop's exact size and a surface of the same ballistic class, so an alias changes no
   collision box, breakable health, ballistic class or footing (`packages/shared/test/kitProps.test.ts` checks every
   official map; the pieces whose class is changed on purpose are its `REMATERIALLED` list: the iron fences, the wooden
-  furniture and cabinets, the sofa, the bin and the white goods). The retired props' files stay in the build until no official map places them (MapMaker's Replace all)
+  furniture and cabinets, the sofas, the beds, the bin and the white goods). The retired props' files stay in the build until no official map places them (MapMaker's Replace all)
   and no alias needs them.
 - **Adding a family:** an entry in its type file (or a new type file and generator kind in `KINDS`), a budget for its
   kind, run the build, add it to the content test's family list, look at it in the lineup

@@ -13,6 +13,20 @@ export type BodyType = 'male' | 'female';
 /** Where an outfit part goes. A look uses at most one part per slot. */
 export type PartSlot = 'arms' | 'torso' | 'legs' | 'feet' | 'hood' | 'pauldron';
 
+/**
+ * Tiers for characters, the same rules as for maps (owner, 2026-11-11; map/qualityGates.ts): a character is `core`
+ * (the roster the game is judged by: bots, random characters and Roulette draw from it) or `experimental` (offered
+ * under its own heading in Character Select and left out of every automatic pick; a person can still choose one, for
+ * themselves or for a bot). To be core a character passes every blocking gate (content/characterGates.ts); for an
+ * experimental one the gates only report. Absent = core, as every character offered before the tiers.
+ */
+export type CharacterTier = 'core' | 'experimental';
+export const CHARACTER_TIERS: readonly CharacterTier[] = ['core', 'experimental'];
+export const CHARACTER_TIER_LABELS: Record<CharacterTier, string> = { core: 'Core', experimental: 'Experimental' };
+export const characterTier = (look: { tier?: CharacterTier | undefined }): CharacterTier => look.tier ?? 'core';
+/** The looks of a roster an automatic pick may draw (a bot's, a random character's, Roulette's): its core tier, in order. */
+export const pickableLooks = <T extends { tier?: CharacterTier | undefined }>(roster: readonly T[]): T[] => roster.filter((l) => characterTier(l) === 'core');
+
 export interface CharacterLook {
   id: string;
   name: string;
@@ -65,6 +79,8 @@ export interface CharacterLook {
   whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false; hold?: { forward?: number; down?: number; out?: number }; grip?: GripTune };
   /** What the character is (Character Select's tabs): set on every built-in look; a design of yours has none. */
   group?: CharacterGroup;
+  /** Its tier (`tier` in its manifest; characterTier below): absent = core, as every character offered before the tiers. */
+  tier?: CharacterTier;
   /** What kind of creature it is, for its bots' names (NAME_THEMES in botNames.ts); absent: its group's. */
   nameTheme?: string;
   /** Its own character stats (sim/characterStats.ts; `stats` in its manifest): each left out is its size class's. */
@@ -110,6 +126,20 @@ export const CHARACTER_GROUPS = [
 export type CharacterGroup = (typeof CHARACTER_GROUPS)[number]['id'];
 export const CHARACTER_GROUP_LABELS = Object.fromEntries(CHARACTER_GROUPS.map((g) => [g.id, g.label])) as Record<CharacterGroup, string>;
 export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_GROUPS.some((g) => g.id === x);
+
+/** Character Select's section for the experimental tier (after the groups, before Yours), and Yours (your designs). */
+export const EXPERIMENTAL_SECTION = 'experimental';
+export const MINE_SECTION = 'mine';
+/**
+ * Character Select's sections for a roster whose entries say which section they sit in (`group`: a CHARACTER_GROUPS
+ * id, EXPERIMENTAL_SECTION or MINE_SECTION): each group anyone is in (listed by name), then Experimental when there
+ * is anyone in it, then Yours (always, in the order given: it holds "Design new").
+ */
+export function characterSections<T extends { name: string; group: string }>(roster: readonly T[]): { id: string; label: string; looks: T[] }[] {
+  const byName = (id: string) => roster.filter((c) => c.group === id).sort((a, b) => a.name.localeCompare(b.name));
+  const groups = [...CHARACTER_GROUPS.map((g) => ({ id: g.id as string, label: g.label as string, looks: byName(g.id) })), { id: EXPERIMENTAL_SECTION, label: CHARACTER_TIER_LABELS.experimental, looks: byName(EXPERIMENTAL_SECTION) }].filter((s) => s.looks.length);
+  return [...groups, { id: MINE_SECTION, label: 'Yours', looks: roster.filter((c) => c.group === MINE_SECTION) }];
+}
 
 /** Where a piece of gear goes; one per slot. */
 export type GearSlot = 'hat' | 'face' | 'chest' | 'back';
@@ -318,10 +348,16 @@ export function clipSetOf(look: Pick<CharacterLook, 'clips' | 'locomotion'>): st
   return look.clips ?? DEFAULT_CLIP_SET;
 }
 
-/** The looks on offer (Character Select, bots, presets): every preset not retired. */
+/**
+ * The looks on offer (Character Select, the bot manager's list, presets): every preset not retired, of either tier
+ * ("core" in the name is the `core.` id prefix, not the tier).
+ */
 export const CORE_LOOKS: readonly CharacterLook[] = ALL_LOOKS.filter((l) => !(l.id in RETIRED_LOOKS));
 
-export const DEFAULT_LOOK = CORE_LOOKS[0]!.id;
+/** The looks an automatic pick draws from (the default look, random bots, random characters, Roulette): the core tier of the roster. */
+export const PICKABLE_LOOKS: readonly CharacterLook[] = pickableLooks(CORE_LOOKS);
+
+export const DEFAULT_LOOK = PICKABLE_LOOKS[0]!.id;
 
 /** One-line bios for the presets (character select). */
 export const LOOK_BIOS: Readonly<Record<string, string>> = {
@@ -496,12 +532,26 @@ export function decodeLook(id: string): CharacterLook | null {
 export const getLook = (id: string | undefined): CharacterLook => {
   const npc = id && NPC_KEPT_LOOKS.has(id) ? ALL_LOOKS.find((l) => l.id === id) : undefined;
   if (npc) return npc;
-  const key = (id && RETIRED_LOOKS[id]) || id;
-  return CORE_LOOKS.find((l) => l.id === key) ?? (key ? decodeLook(key) : null) ?? CORE_LOOKS[0]!;
+  return lookIn(CORE_LOOKS, id);
 };
 
-/** A stable look for a Player Bot, spread across the roster. */
-export const lookForBot = (index: number): string => CORE_LOOKS[(index + 1) % CORE_LOOKS.length]!.id;
+/**
+ * getLook over a roster. By id a look resolves whatever its tier (a saved choice of an experimental character keeps
+ * working, and a bot set's hand pick); only the fallback is a pick: the roster's first core look.
+ */
+export function lookIn(roster: readonly CharacterLook[], id: string | undefined): CharacterLook {
+  const key = (id && RETIRED_LOOKS[id]) || id;
+  return roster.find((l) => l.id === key) ?? (key ? decodeLook(key) : null) ?? roster.find((l) => characterTier(l) === 'core')!;
+}
+
+/** A stable look for the `index`-th bot, spread across a roster's core tier (never an experimental character). */
+export function botLookFrom(roster: readonly Pick<CharacterLook, 'id' | 'tier'>[], index: number): string {
+  const pool = pickableLooks(roster);
+  return pool[(index + 1) % pool.length]!.id;
+}
+
+/** A stable look for a Player Bot, spread across the core roster. */
+export const lookForBot = (index: number): string => botLookFrom(PICKABLE_LOOKS, index);
 
 /** Material families that take a shared texture, by material-name prefix. */
 const FAMILIES: readonly [RegExp, string][] = [

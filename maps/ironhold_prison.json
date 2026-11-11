@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "ironhold_prison",
     "name": "Cormorant Isle",
@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_hec75nt4d7ttj6ub",
-      "versionId": "v_sbk4tts77j2st4ub",
-      "revision": 7,
-      "contentHash": "sha256:f405f620805a168d911055e0d676bfffec0b6d76ea163cdbb6f01fb1cd9a346d",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T15:16:17.582Z"
+      "versionId": "v_iralbtwbyp4vy2pt",
+      "revision": 8,
+      "contentHash": "sha256:48eeab24ff41f09a414d3746661557976aec1e947ec099986ea4639409a38c6b",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:08:02.539Z"
     }
   },
   "classicStructure": {
@@ -18753,7 +18753,7 @@
         32.4
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -18893,7 +18893,7 @@
         49.8
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19999,7 +19999,7 @@
         -2.6
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20433,7 +20433,7 @@
         -1.5
       ],
       "kind": "prop",
-      "model": "prop.bed",
+      "model": "kit.bed.double",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20461,7 +20461,7 @@
         -1.5
       ],
       "kind": "prop",
-      "model": "prop.bed",
+      "model": "kit.bed.double",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20517,7 +20517,7 @@
         4.5
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20531,7 +20531,7 @@
         8.5
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20545,7 +20545,7 @@
         -2.4
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20559,7 +20559,7 @@
         1.6
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,

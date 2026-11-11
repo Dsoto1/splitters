@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "cinder_foundry",
     "name": "Cinder Foundry",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_cz2zu3ctolnayno6",
-      "versionId": "v_klki2a3weyp7ztfz",
-      "revision": 3,
-      "contentHash": "sha256:696d2114323c5ca0f7b20b75030dadea7d248cbad24bc9151478a8d63aefdf94",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T08:55:47.687Z"
+      "versionId": "v_spcv4pkbn2feqhwl",
+      "revision": 4,
+      "contentHash": "sha256:0b6363290ef7d82fde180cdd031ce8c8da2afe6e53b4c6ea89df46e3e8d83f79",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T16:53:56.693Z"
     }
   },
   "classicStructure": {
@@ -5625,7 +5625,7 @@
         17.2
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0.6,
       "scale": 1,
       "solid": false,
@@ -5639,7 +5639,7 @@
         17.2
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": -0.6,
       "scale": 1,
       "solid": false,

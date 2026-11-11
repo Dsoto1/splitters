@@ -1,0 +1,243 @@
+{
+  "$comment": "Beds (tools/content/kit/bed.mjs): each the size of the Kenney piece it replaces, colliding as finer boxes as it did: the double bed as its deck and its headboard, the bunk bed as its posts, slabs, heads, foot rails and side rails.",
+  "type": "bed",
+  "props": [
+    {
+      "id": "kit.bed.double",
+      "displayName": "Double Bed",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a double bed, a frame on short legs with a headboard, a mattress, pillows and a blanket turned back, the size of the Kenney double bed (1.657 \u00d7 0.65 \u00d7 1.95 m); two collision boxes, as it had."
+      },
+      "size": [
+        1.657,
+        0.65,
+        1.95
+      ],
+      "surface": "wood",
+      "detail": "fabric",
+      "breakable": {
+        "health": 70,
+        "debris": "#7a6a8a"
+      },
+      "generator": {
+        "kind": "bed",
+        "style": "double",
+        "legs": 0.09,
+        "rail": 0.28,
+        "mattress": 0.46,
+        "board": 0.06,
+        "headboard": "cap",
+        "pillows": 2,
+        "deck": 0.5,
+        "head": 0.175
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "plum",
+          "seed": 9521,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "blanket": "#7a6a8a"
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 9522,
+          "look": {
+            "wood": "#6b4a30",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "blanket": "#4f6b4a",
+            "runner": "#c9b98a"
+          }
+        },
+        {
+          "index": 2,
+          "name": "blue",
+          "seed": 9523,
+          "set": {
+            "pillows": 3
+          },
+          "look": {
+            "wood": "#d9d4c6",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "blanket": "#46607c",
+            "fold": "#e3dccb"
+          }
+        },
+        {
+          "index": 3,
+          "name": "padded",
+          "seed": 9524,
+          "look": {
+            "wood": "#4e382a",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "blanket": "#93959a",
+            "head": "#7d7f84",
+            "runner": "#a8432f"
+          }
+        },
+        {
+          "index": 4,
+          "name": "red",
+          "seed": 9525,
+          "set": {
+            "headboard": "plain"
+          },
+          "look": {
+            "wood": "#c09a66",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "blanket": "#a8432f",
+            "fold": "#d8cfb8"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.bed.bunk",
+      "displayName": "Bunk Bed",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: two bunks between four broad posts, head and foot boards, a rail along one side and a ladder at the foot, the size of the Kenney bunk bed (1.142 \u00d7 1.7 \u00d7 2.19 m); twelve collision boxes, as it had."
+      },
+      "size": [
+        1.142,
+        1.7,
+        2.19
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": {
+        "health": 70,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "bed",
+        "style": "bunk",
+        "low": 0.1,
+        "high": 1.2,
+        "slab": 0.4,
+        "post": [
+          0.165,
+          0.095
+        ],
+        "rail": 0.065,
+        "lowRail": [
+          0.5,
+          0.6
+        ],
+        "topRail": [
+          1.5,
+          1.7
+        ],
+        "headLow": [
+          0.557,
+          0.395
+        ],
+        "headHigh": [
+          1.7,
+          0.195
+        ],
+        "footRail": 0.1,
+        "ladder": 0.4,
+        "rungs": 5
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "pine",
+          "seed": 9531,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "blanket": "#7a6a8a"
+          }
+        },
+        {
+          "index": 1,
+          "name": "walnut",
+          "seed": 9532,
+          "look": {
+            "wood": "#6b4a30",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "blanket": "#4f6b4a",
+            "blanket2": "#8a7a5c"
+          }
+        },
+        {
+          "index": 2,
+          "name": "painted",
+          "seed": 9533,
+          "look": {
+            "wood": "#d9d4c6",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "blanket": "#46607c",
+            "blanket2": "#a8432f"
+          }
+        },
+        {
+          "index": 3,
+          "name": "barracks",
+          "seed": 9534,
+          "set": {
+            "rungs": 4
+          },
+          "look": {
+            "wood": "#55684a",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "blanket": "#6e6f66",
+            "fold": "#8a8b80",
+            "sheet": "#c9c2b0"
+          }
+        },
+        {
+          "index": 4,
+          "name": "bare",
+          "seed": 9535,
+          "look": {
+            "wood": "#8d8474",
+            "jitter": 0.14,
+            "grime": 0.5,
+            "sheet": "#b8ad92"
+          }
+        }
+      ]
+    }
+  ]
+}

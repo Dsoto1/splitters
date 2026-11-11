@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "pump_tower",
     "name": "Pump Tower",
@@ -1602,7 +1602,7 @@
         -1.8
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -1700,7 +1700,7 @@
         25.8
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1756,7 +1756,7 @@
         16
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -2471,7 +2471,7 @@
         -2.37
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3157,7 +3157,7 @@
         24.72
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -3185,7 +3185,7 @@
         23.32
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,

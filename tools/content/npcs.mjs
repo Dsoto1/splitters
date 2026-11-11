@@ -6,7 +6,7 @@
 //
 // Reads content/npcs.json (every role: health, weapon, speed, size, damage, the creature / melee flags, the character
 // look it is drawn as, its bot profile's changes from NPC_PROFILE, and design notes). Checks the schema (unknown fields
-// are errors) and the references (weapons exist and are carried ones, slot 1-9; looks are character looks in
+// are errors) and the references (weapons exist and are carried ones, slot 1-9; looks are core-tier character looks in
 // content/characters; creature roles have a body in sim/creatures.ts; bot tags are ones the brain reads; codes unique,
 // never changed, never reused, running 0, 1, 2...), then writes packages/shared/src/content/npcRoles.generated.ts and
 // the npcRoles section of content/codes.lock.json. Behaviour and looks logic stay in code (sim/npc.ts: NPC_PROFILE,
@@ -69,7 +69,14 @@ export function build(content, root = ROOT) {
     slots.set(w.id, w.slot);
   }
   const looks = new Set();
-  for (const f of readdirSync(join(root, 'content/characters'))) if (f.endsWith('.json')) looks.add(readJson(root, `content/characters/${f}`).look);
+  // Experimental characters, by their manifests' tier (`content.experimentalLooks`: more of them, for a test).
+  const experimental = new Set(content.experimentalLooks ?? []);
+  for (const f of readdirSync(join(root, 'content/characters'))) {
+    if (!f.endsWith('.json')) continue;
+    const c = readJson(root, `content/characters/${f}`);
+    looks.add(c.look);
+    if (c.tier === 'experimental') experimental.add(c.look);
+  }
   const creatureSrc = readFileSync(join(root, 'packages/shared/src/sim/creatures.ts'), 'utf8');
   const specs = creatureSrc.slice(creatureSrc.indexOf('export const CREATURE_SPECS'));
   const creatureBodies = new Set([...specs.matchAll(/^\s{2}(\w+): \{ model:/gm)].map((m) => m[1]));
@@ -88,6 +95,7 @@ export function build(content, root = ROOT) {
     if (!slots.has(r.weapon)) problems.push(`${where}: weapon ${r.weapon} doesn't exist (content/weapons)`);
     else if (!(slots.get(r.weapon) >= 1)) problems.push(`${where}: weapon ${r.weapon} is a mounted one (slot 0); an NPC carries a slot 1-9 weapon`);
     if (r.look !== undefined && !looks.has(r.look)) problems.push(`${where}: look ${r.look} is not a character look (content/characters/*.json)`);
+    if (r.look !== undefined && experimental.has(r.look)) problems.push(`${where}: look ${r.look} is an experimental character (tier in its manifest): an NPC role is drawn as a core one (docs/CHARACTERS.md, "Tier")`);
     if (r.look !== undefined && r.creature) problems.push(`${where}: a creature is drawn with its own body, not a look`);
     if (r.creature && !creatureBodies.has(r.role)) problems.push(`${where}: a creature role needs its body in sim/creatures.ts CREATURE_SPECS (code first)`);
     if (r.health <= 0 || r.speed <= 0 || r.scale <= 0) problems.push(`${where}: health, speed and scale must be above 0`);
