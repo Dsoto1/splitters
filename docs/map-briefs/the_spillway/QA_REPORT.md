@@ -11,4 +11,9 @@
 | Quality gates | **Reports** | spawn points for its players (48 for up to 64): reported, since the map is Experimental |
 | Seen in a browser | **Partly** | MapMaker views of every step; not yet walked in a match by a person |
 
-Not checked: a perf bench with the vegetation; CTF and King of the Hill bot runs; the flicker check (no new effect).
+## Objective modes (bot runs after landing, 48 bots, 150 s, seed 1)
+- **King of the Hill: lopsided.** Embers 59, Tide 1; the hill held 61 s, never contested. Embers' base (the west bench, z −36..12) is much nearer the crest and the toe terrace than Tide's (the south-east bench, z −80..−92). No route 0, spawn deaths 0.
+- **Capture the Flag: no flag taken.** 257 kills, nobody reached a flag (0 takes); the teams meet on the river's floor and the flag run is about 260 m. No route 0, spawn deaths 1.
+- Team Deathmatch (above) is fine. For the owner: where the bases stand (a question in HANDOFF).
+
+Not checked: a perf bench with the vegetation; the flicker check (no new effect).
