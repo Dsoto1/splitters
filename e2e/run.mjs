@@ -7232,6 +7232,7 @@ async function troopTruckChecks(browser) {
   await page.waitForFunction(() => window.__cs.rideView() === 'cockpit', null, { timeout: T(10000) }).catch(() => {});
   const cockpit = await cam();
   check(cockpit.view === 'cockpit' && cockpit.inBox && cockpit.local[2] > 0.5, `in the cockpit the eye is in the cab (${JSON.stringify(cockpit)})`);
+  if (process.env.E2E_SHOTS) await page.addStyleTag({ content: '#pause, #message { display: none !important; }' });
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/vehicles-truck-cockpit.png`, timeout: T(60000) }).catch(() => {});
   // Drive off: the six tires on pivots at their hubs, rolling.
   const start = await sim(page, (m, me) => ({ ...me.move.pos })).catch(() => null);
