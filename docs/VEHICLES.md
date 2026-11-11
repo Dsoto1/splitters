@@ -4,7 +4,8 @@ Place them from MapMaker's Entities → Vehicles tab. Players walk
 up and press **E** to get in (driver first, then gunner, then passengers) and
 **E** again to get out. The definitions are data in
 `packages/shared/src/sim/mounts.ts`. Models come from Kenney Space Kit
-and Car Kit, a Meshy Community snowmobile, Quaternius' Ultimate Spaceships and Tank Pack (all CC0).
+and Car Kit, Meshy Community models (the snowmobile, the buggy, and the four of the vehicle refresh), Quaternius' Ultimate
+Spaceships and Tank Pack (all CC0).
 
 | Mount | Seats | What it does |
 |---|---|---|
@@ -56,14 +57,21 @@ and Car Kit, a Meshy Community snowmobile, Quaternius' Ultimate Spaceships and T
   climb on jump and dive on crouch; let go and they hold their height. Left
   without a pilot they sink gently to the ground. Bots fly them at ground
   level.
-- **Models.** The gun jeep (pickup truck), armored rover (delivery truck) and
-  ice cream truck (van) are Kenney Car Kit models recoloured at build time;
-  the hover bike (speeder A), gunship (cargo craft B) and transport plane
-  (cargo craft A) are from Kenney Space Kit. The snow sled is "Snowmobile" by
+- **Models.** The vehicle refresh (2026-11-11; Meshy Community CC0 from the owner's Drive, built by
+  `prepare-guns.mjs` from `content/guns.json`: about 14-20k triangles plus a quarter-size level from 40 m,
+  1-2k colour and 1k normal maps, 1.5-2.1 MB each): the **gun jeep** is the Recon Trike
+  (`vehicles/recon_jeep.glb`, a Warthog-style four-wheeler with a pintle gun on the cage; its tires are cut out as
+  parts, `wheel_*`, so they spin, steer and ride the springs), the **hover bike** TNR 1017
+  (`vehicles/tnr_hover_bike.glb`), the **speeder** Cyber Fang Mk III (`vehicles/cyber_fang.glb`) and the **armored
+  rover** Dust Runner (`vehicles/dust_runner.glb`, a closed off-roader). Re-skins only: each keeps its box,
+  handling, guns and health; the seats were moved onto the new models (measured on them, notes in
+  `content/vehicles/<id>.json`) and the models they replaced are their `fallback`. The ice cream truck (van) is a
+  Kenney Car Kit model recoloured at build time; the gunship (cargo craft B) and transport plane (cargo craft A) are
+  from Kenney Space Kit. The snow sled is "Snowmobile" by
   roygbpjyt (Meshy Community, CC0; `content/guns.json`, built by
   `prepare-guns.mjs`: 20k triangles plus a 5k one from 40 m, 2048 px colour
   and 1024 px normal map, 1.42 MB, 3.0 m long), replacing Kenney Holiday Kit's
-  long sled on 2026-11-04; its riders sit astride (`straddle` on the seats). The tank is Quaternius' Tank Pack (CC0) desert tank. The speeder (Striker), hauler (Dispatcher), skyfighter
+  long sled on 2026-11-04; its riders sit astride (`straddle` on the seats). The tank is Quaternius' Tank Pack (CC0) desert tank. The hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
   Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
   The buggy is a Meshy Community model (Tactical Off-Road Beast, CC0 per the owner;
