@@ -126,6 +126,10 @@ describe('hitbox audit: shapes match each model (posed as the game draws it stan
   const HEAD = 0.1;
   const COVER = 0.85;
   const CREATURE_COVER = 0.7;
+  // A look whose model carries a lot outside any fair hit shape, held to its own cover (measured, with why). Inspector
+  // Bigotes (2026-11-11): 60% inside, the rest of it a sombrero some 0.9 m across and its coat's gear; a head sphere
+  // wide enough for the brim would be three times anyone else's. Its shapes' top, bottom and head centre pass as measured.
+  const OWN_COVER = { 'core.inspector': 0.55 };
   it('every look and creature', { timeout: 240_000 }, async () => {
     const bad = [];
     const report = [];
@@ -168,7 +172,7 @@ describe('hitbox audit: shapes match each model (posed as the game draws it stan
       // Below the ground nothing can be hit: shapes reaching under the feet are not counted.
       bottom = Math.max(bottom, Math.min(lo, 0));
       // Creatures (aliens with spines and tentacles) are held to a looser cover.
-      if (top - hi > TOP || hi - top > TOP_SHORT || bottom - lo > BOTTOM || headOff > HEAD || inside < (sub.creature ? CREATURE_COVER : COVER)) bad.push(line);
+      if (top - hi > TOP || hi - top > TOP_SHORT || bottom - lo > BOTTOM || headOff > HEAD || inside < (OWN_COVER[sub.key] ?? (sub.creature ? CREATURE_COVER : COVER))) bad.push(line);
     }
     if (process.env.HITBOX_AUDIT) console.log(report.join('\n'));
     expect(bad).toEqual([]);

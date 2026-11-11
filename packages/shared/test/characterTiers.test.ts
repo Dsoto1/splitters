@@ -30,6 +30,9 @@ import { CLIP_SET_CLIPS as TOOL_CLIPS, TIERS } from '../../../tools/content/char
 // in for one (no real manifest carries a tier yet): the roster with it added is what a build with one would give.
 const trial: CharacterLook = { id: 'core.trialbot', name: 'Trial Bot', body: 'male', head: '', parts: ['meshy_trialbot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_trialbot_fparms' }, group: 'creatures', nameTheme: 'robot', tier: 'experimental' };
 const ROSTER: readonly CharacterLook[] = [trial, ...CORE_LOOKS];
+// The roster's own tiers (since 2026-11-11 it has experimental characters of its own: the ten of that day's intake).
+const CORE_TIER = CORE_LOOKS.filter((l) => characterTier(l) === 'core');
+const EXPERIMENTAL = CORE_LOOKS.filter((l) => characterTier(l) === 'experimental');
 
 describe('character tiers', () => {
   it('absent = core; the manifest checker knows the same tiers', () => {
@@ -37,18 +40,23 @@ describe('character tiers', () => {
     expect(Object.keys(CHARACTER_TIER_LABELS)).toEqual([...CHARACTER_TIERS]);
     expect(characterTier({})).toBe('core');
     expect(characterTier(trial)).toBe('experimental');
-    // Every character that exists today stays core, so today the automatic picks draw from the whole roster.
-    expect(CORE_LOOKS.filter((l) => characterTier(l) !== 'core').map((l) => l.id)).toEqual([]);
-    expect(PICKABLE_LOOKS).toEqual(CORE_LOOKS);
-    expect(DEFAULT_LOOK).toBe(CORE_LOOKS[0]!.id);
+    // Every look is one tier or the other, and the automatic picks draw from the core ones alone.
+    expect(CORE_TIER.length + EXPERIMENTAL.length).toBe(CORE_LOOKS.length);
+    expect(CORE_TIER.length).toBeGreaterThan(100);
+    expect(PICKABLE_LOOKS).toEqual(CORE_TIER);
+    expect(DEFAULT_LOOK).toBe(CORE_TIER[0]!.id);
   });
 
   it('no automatic pick draws an experimental character', () => {
     const pool = pickableLooks(ROSTER);
-    expect(pool).toEqual(CORE_LOOKS);
+    expect(pool).toEqual(CORE_TIER);
+    for (const l of EXPERIMENTAL) expect(pool).not.toContain(l);
     // Random bots: across more slots than the roster, with and without a bot-characters setting.
     for (let i = 0; i < ROSTER.length * 2; i++) expect(botLookFrom(ROSTER, i)).not.toBe(trial.id);
-    for (let i = 0; i < CORE_LOOKS.length; i++) expect(botLookFrom(ROSTER, i)).toBe(lookForBot(i));
+    for (let i = 0; i < CORE_LOOKS.length; i++) {
+      expect(botLookFrom(ROSTER, i)).toBe(lookForBot(i));
+      expect(characterTier(getLook(lookForBot(i)))).toBe('core');
+    }
     expect(castLooksFrom(ROSTER, [])).toEqual(pool);
     // Its own group and its own name theme: still not offered (the others of them are).
     for (const cast of [['creatures'], ['robot'], ['creatures', 'robot']]) {
@@ -79,14 +87,15 @@ describe('character tiers', () => {
   it('Character Select: an Experimental section before Yours, only when someone is in it', () => {
     const entry = (l: CharacterLook) => ({ id: l.id, name: l.name, group: characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : l.group! });
     const mine = { id: 'm1', name: 'Mine', group: 'mine' };
-    const without = characterSections([...CORE_LOOKS.map(entry), mine]);
+    const without = characterSections([...CORE_TIER.map(entry), mine]);
     expect(without.map((s) => s.id)).not.toContain(EXPERIMENTAL_SECTION);
     expect(without.at(-1)!.id).toBe('mine');
     const withOne = characterSections([...ROSTER.map(entry), mine]);
     expect(withOne.map((s) => s.id)).toEqual([...without.map((s) => s.id).slice(0, -1), EXPERIMENTAL_SECTION, 'mine']);
     const exp = withOne.find((s) => s.id === EXPERIMENTAL_SECTION)!;
     expect(exp.label).toBe('Experimental');
-    expect(exp.looks.map((l) => l.id)).toEqual([trial.id]);
+    // (A section lists its looks by name.)
+    expect(exp.looks.map((l) => l.id).sort()).toEqual([trial.id, ...EXPERIMENTAL.map((l) => l.id)].sort());
     // It left its group's section.
     expect(withOne.find((s) => s.id === 'creatures')!.looks.map((l) => l.id)).not.toContain(trial.id);
     // Yours is there even when empty (it holds "Design new").

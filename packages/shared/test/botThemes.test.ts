@@ -4,6 +4,7 @@ import {
   BOT_NAME_MAX,
   CHARACTER_GROUPS,
   CORE_LOOKS,
+  PICKABLE_LOOKS,
   DEFAULT_RULES,
   NPC_LOOKS,
   SERVER_RULES,
@@ -40,7 +41,8 @@ const yard = (cast?: string[]): MapDocument => {
   return cast ? { ...map, botCast: cast } : map;
 };
 const botsOf = (m: Match): Combatant[] => m.combatants().filter((c) => c.kind === 'bot');
-const soldierLooks = CORE_LOOKS.filter((l) => l.group === 'soldiers').map((l) => l.id);
+// (Bots draw from the core tier only: an experimental soldier is never a random bot's.)
+const soldierLooks = PICKABLE_LOOKS.filter((l) => l.group === 'soldiers').map((l) => l.id);
 
 describe('bot name themes: the lists', () => {
   it(`every list has at least ${BOT_THEME_MIN} names, each unique, short enough, without digits`, () => {
@@ -195,7 +197,7 @@ describe('bot characters: soldiers only', () => {
   it('settings: validated, kept on a map change, from match setup, server rules, the wire', () => {
     expect(validBotCast(['soldiers', 'nope', 'pirate', 'soldiers', 7])).toEqual(['soldiers', 'pirate']);
     expect(validBotCast('soldiers')).toEqual([]);
-    expect(castLooks(['nope']).length).toBe(CORE_LOOKS.length);
+    expect(castLooks(['nope']).length).toBe(PICKABLE_LOOKS.length);
     expect(castAllows(['soldiers'], 'core.astronaut')).toBe(true);
     expect(castAllows(['soldiers'], 'core.scamp')).toBe(false);
     expect(castAllows(['monkey'], 'core.bigbab')).toBe(true);
