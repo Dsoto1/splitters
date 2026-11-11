@@ -23287,7 +23287,7 @@
         -43.5
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -23301,7 +23301,7 @@
         -43.5
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -23315,7 +23315,7 @@
         -44.53
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -23329,7 +23329,7 @@
         -44.53
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -23343,7 +23343,7 @@
         -42.73
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -23357,7 +23357,7 @@
         -45.3
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -23385,7 +23385,7 @@
         -55.46
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -23399,7 +23399,7 @@
         -55.46
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -23413,7 +23413,7 @@
         -56.49
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -23427,7 +23427,7 @@
         -56.49
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": -1.5708,
       "scale": 1,
       "solid": false,
@@ -23441,7 +23441,7 @@
         -54.69
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -23455,7 +23455,7 @@
         -57.26
       ],
       "kind": "prop",
-      "model": "prop.chair_cushion",
+      "model": "kit.seat.chair_cushion",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -23469,7 +23469,7 @@
         -58.4
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -23483,7 +23483,7 @@
         -43.85
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -25807,7 +25807,7 @@
         35.22
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

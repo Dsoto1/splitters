@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_snj2ivjohajuozh5",
-      "versionId": "v_mhjhcxnxxkzf2gzf",
-      "revision": 3,
-      "contentHash": "sha256:79f46a8d6f025b3ea22ca441c5a227dc0c0c8dabd51864f90d3918df8998edf1",
+      "versionId": "v_wo6xrf2lfzczfots",
+      "revision": 4,
+      "contentHash": "sha256:56c09dae103adecc1799b95a0569d954324a8dcee246b6061f13505e28c8ae08",
       "schemaVersion": 35,
-      "releasedAt": "2026-11-11T08:40:16.290Z"
+      "releasedAt": "2026-11-11T14:45:42.572Z"
     }
   },
   "classicStructure": {
@@ -31557,7 +31557,7 @@
         134
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -31599,7 +31599,7 @@
         134
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -31641,7 +31641,7 @@
         150
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -31683,7 +31683,7 @@
         150
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -35319,8 +35319,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1657",
@@ -35334,8 +35334,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1658",
@@ -38943,8 +38943,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1826",
@@ -38958,8 +38958,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_1827",
@@ -42769,8 +42769,8 @@
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_2010",
@@ -42798,8 +42798,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_2012",
@@ -42827,8 +42827,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_2014",
@@ -42856,8 +42856,8 @@
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_2016",

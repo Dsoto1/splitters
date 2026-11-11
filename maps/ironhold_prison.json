@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_hec75nt4d7ttj6ub",
-      "versionId": "v_h2rmdpy5duftlvef",
-      "revision": 6,
-      "contentHash": "sha256:9a8ac0247abc89ad38c7cc908e1966b4d95216a147f1482205128646fb398c32",
+      "versionId": "v_sbk4tts77j2st4ub",
+      "revision": 7,
+      "contentHash": "sha256:f405f620805a168d911055e0d676bfffec0b6d76ea163cdbb6f01fb1cd9a346d",
       "schemaVersion": 35,
-      "releasedAt": "2026-11-11T09:46:47.857Z"
+      "releasedAt": "2026-11-11T15:16:17.582Z"
     }
   },
   "classicStructure": {
@@ -19061,7 +19061,7 @@
         91.25
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19075,7 +19075,7 @@
         91.25
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19089,7 +19089,7 @@
         91.25
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19103,7 +19103,7 @@
         91.25
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19117,7 +19117,7 @@
         91.25
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19131,7 +19131,7 @@
         91.25
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19145,7 +19145,7 @@
         91.25
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19159,7 +19159,7 @@
         91.25
       ],
       "kind": "prop",
-      "model": "prop.washer",
+      "model": "kit.appliance.washer",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19593,7 +19593,7 @@
         91.3
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19607,7 +19607,7 @@
         91.3
       ],
       "kind": "prop",
-      "model": "prop.stove",
+      "model": "kit.appliance.stove",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19621,7 +19621,7 @@
         91.3
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19635,7 +19635,7 @@
         91.3
       ],
       "kind": "prop",
-      "model": "prop.stove",
+      "model": "kit.appliance.stove",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19649,7 +19649,7 @@
         91.3
       ],
       "kind": "prop",
-      "model": "prop.kitchen_cabinet",
+      "model": "kit.cabinet.kitchen",
       "yaw": 3.14,
       "scale": 1,
       "solid": true,
@@ -19719,7 +19719,7 @@
         86
       ],
       "kind": "prop",
-      "model": "prop.fridge",
+      "model": "kit.appliance.fridge",
       "yaw": 1.57,
       "scale": 1,
       "solid": true,
@@ -20139,7 +20139,7 @@
         4.85
       ],
       "kind": "prop",
-      "model": "prop.sofa",
+      "model": "kit.sofa.two_seat",
       "yaw": 0,
       "scale": 1,
       "solid": true,

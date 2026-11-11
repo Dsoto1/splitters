@@ -60486,7 +60486,7 @@
         -144.339
       ],
       "kind": "prop",
-      "model": "prop.tv_cabinet",
+      "model": "kit.cabinet.media",
       "yaw": 1.58713,
       "scale": 1,
       "solid": true,
