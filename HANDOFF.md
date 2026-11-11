@@ -980,6 +980,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     until it's gone (docs are fine).
   - **Landing now: quality tiers for characters** (`check/mapmaker-character-tiers`, MapMaker lane, 2026-11-11).
   - **Next in line to land: kit props part 6** (`wip/mapmaker-kit-props-6`, to go to `check/mapmaker-kit-props-6`; MapMaker lane, 2026-11-11; 31 maps change).
+  - **Next in line to land, after kit props part 6: the weapon and vehicle lane's second batch** (the Tank's full-circle turret, riders ducking in standing places, first-person hands kept on the gun through a hit; session branch `claude/inspiring-sagan-mjnled`, to go to `check/vehicles-fit-2`; this account, 2026-11-11). No map files. Looked at in a match: the turret slews, bots duck on the truck bed, hands stay on under fire.
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
