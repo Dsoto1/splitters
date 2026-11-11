@@ -84,17 +84,22 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     vehicle: { maxSpeed: 20, reverseSpeed: 7, accel: 16, turnRate: 2.6, idleBrake: 16, grip: 0.32, mass: 0.4 },
     blurb: 'One seat, very quick, no gun: run them over',
   },
+  // model: Cyber Fang Mk III (Meshy Community, CC0; content/guns.json vehicles/cyber_fang.glb, 2026-11-10): a heavy hover bike, 4.0 m long, 2.2 m wide and 2.2 m tall over its front fairing. The Quaternius Striker it replaced is the fallback (vehicles/speeder.glb).
+  // seats: Measured on the model: the saddle at z -0.7 to -0.9, 1.6-1.7 m up, behind the fairing (2.0-2.2 m); the passenger on the tail hump behind it (z -1.3, 1.9 m). Roles, the pilot's blasters and their arc unchanged.
+  // cockpitEye: Over the fairing, so the pilot sees the way ahead.
   speeder: {
     id: 'speeder',
     displayName: 'Speeder',
     kind: 'vehicle',
-    model: 'vehicles/speeder.glb',
+    model: 'vehicles/cyber_fang.glb',
+    fallback: 'vehicles/speeder.glb',
     health: 300,
     half: [1.2, 0.65, 2.1],
     seats: [
-      { role: 'driver', label: 'Pilot', offset: [0, 0.95, 0.5], weapon: 'core.speeder_guns', arc: 0.35 },
-      { role: 'passenger', label: 'Passenger', offset: [0, 1, -0.8] },
+      { role: 'driver', label: 'Pilot', offset: [0, 0.95, -0.75], weapon: 'core.speeder_guns', arc: 0.35 },
+      { role: 'passenger', label: 'Passenger', offset: [0, 1.1, -1.35] },
     ],
+    cockpitEye: [0, 2.45, -0.55],
     enterRadius: 3,
     respawnSeconds: 40,
     blast: { radius: 4, damage: 80 },
@@ -278,24 +283,27 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     turret: { seat: 1, pitch: [-0.17, 0.35] },
     blurb: 'A heavy tank for three: a driver, a cannon gunner firing explosive shells ahead, and a roof machine gun',
   },
-  // half: The model is 2.24 m wide, 1.94 m tall and 4.4 m long.
-  // seats: Measured on the model: the cab (roof 1.94 m, floor 0.25 m) has no seats of its own, so the two cab riders sit on cushions 0.7 m up, just ahead of its back wall; the bed floor is about 1.0 m up and its side rails 1.3 m. The roof gunner stands in the bed at the gun; two more ride sitting on the side rails behind it, legs over the side.
-  // vehicle: Its own wheels (the model's wheel meshes, measured on it) on stiffer springs than the buggy's: a pickup.
+  // model: Recon Trike (Meshy Community, CC0; content/guns.json vehicles/recon_jeep.glb, 2026-11-10): a Warthog-style four-wheeler with a pintle machine gun on the roll cage over the cab and an open bed behind. Its tires are cut out as parts (wheel_*), so they spin, steer and ride the springs like the Car Kit truck's wheel meshes did. The Car Kit pickup it replaced is the fallback (vehicles/gun_jeep.glb).
+  // half: The box is unchanged (the re-skin keeps handling): the model is 4.4 m long and 2.44 m tall at the gun; its body is about 2.2 m wide and its tires stand out to 2.88 m.
+  // seats: Measured on the model (slices of its triangles): two cab seats with cushions 0.92 m up at z -0.05 (backrests at z -0.3, the floor 0.7 m up under the dash); the gun's ring on the cage roof at z 0.3, 2.3 m up, so the gunner stands behind its breech on the console between the cab and the bed (feet 1.05 m), shoulders out of the roof like a hatch gunner; the bed (floor 0.7 m) runs from z -1.2 to -2.0 between walls 1.1 m high at x ±0.9, where the two rail riders sit facing out. Roles, weapon and arcs unchanged.
+  // cockpitEye: A seated head height over the driver's cushion, under the cage roof (2.0 m).
+  // vehicle: Its own wheels (the model's tires, cut out as parts) on stiffer springs than the buggy's: a pickup. The suspension's contact points are unchanged.
   gun_jeep: {
     id: 'gun_jeep',
     displayName: 'Gun Jeep',
     kind: 'vehicle',
-    model: 'vehicles/gun_jeep.glb',
+    model: 'vehicles/recon_jeep.glb',
+    fallback: 'vehicles/gun_jeep.glb',
     health: 380,
     half: [1.1, 0.95, 2.2],
     seats: [
-      { role: 'driver', label: 'Driver', offset: [-0.4, 0.7, 0.15], seated: true },
-      { role: 'gunner', label: 'Roof gun', offset: [0, 1.25, -1.1], weapon: 'core.mount_mg' },
-      { role: 'passenger', label: 'Passenger', offset: [0.4, 0.7, 0.15], seated: true },
+      { role: 'driver', label: 'Driver', offset: [-0.4, 0.92, -0.05], seated: true, legDrop: 0.25 },
+      { role: 'gunner', label: 'Roof gun', offset: [0, 1.05, -0.45], weapon: 'core.mount_mg' },
+      { role: 'passenger', label: 'Passenger', offset: [0.4, 0.92, -0.05], seated: true, legDrop: 0.25 },
       {
         role: 'passenger',
         label: 'Left rail',
-        offset: [-0.78, 1.3, -1.65],
+        offset: [-0.88, 1.12, -1.6],
         seated: true,
         facing: -1.5707963267948966,
         legDrop: 0.7,
@@ -303,12 +311,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       {
         role: 'passenger',
         label: 'Right rail',
-        offset: [0.78, 1.3, -1.65],
+        offset: [0.88, 1.12, -1.6],
         seated: true,
         facing: 1.5707963267948966,
         legDrop: 0.7,
       },
     ],
+    cockpitEye: [-0.4, 1.72, 0.1],
     enterRadius: 3.2,
     respawnSeconds: 40,
     blast: { radius: 4.5, damage: 85 },
@@ -338,20 +347,24 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     },
     blurb: 'A light pickup with a machine gun on the back: a driver, a gunner who fires all round and three passengers with their own weapons',
   },
+  // model: Dust Runner (Meshy Community, CC0; content/guns.json vehicles/dust_runner.glb, 2026-11-10): a closed two-door off-roader with a roof rack, 5.3 m long, 2.56 m wide and 2.57 m tall, fitted to the box. The Car Kit delivery truck it replaced is the fallback (vehicles/armored_rover.glb).
+  // seats: Measured on the model: the cab floor 0.7 m up from z 0.4 back to the tailgate, the windscreen at z 0.6-0.9, the roof and its rack 2.4-2.5 m up from z 0.6 to -2.2. The driver moves back from the old truck's cab (z 1.5, now the hood) to the front seat (z 0.05); the gunners stand on the rack at its front and back ends. Roles, weapons and arcs unchanged.
+  // cockpitEye: A seated head height in the driver's seat, under the roof, behind the windscreen.
   armored_rover: {
     id: 'armored_rover',
     displayName: 'Armored Rover',
     kind: 'vehicle',
-    model: 'vehicles/armored_rover.glb',
+    model: 'vehicles/dust_runner.glb',
+    fallback: 'vehicles/armored_rover.glb',
     health: 900,
     half: [1.25, 1.2, 2.65],
     seats: [
-      { role: 'driver', label: 'Driver', offset: [-0.5, 1.1, 1.5] },
-      { role: 'gunner', label: 'Front gun', offset: [0.4, 2.75, 0.9], weapon: 'core.mount_mg', arc: 1.3 },
+      { role: 'driver', label: 'Driver', offset: [-0.45, 1.1, 0.05] },
+      { role: 'gunner', label: 'Front gun', offset: [0.4, 2.55, 0.35], weapon: 'core.mount_mg', arc: 1.3 },
       {
         role: 'gunner',
         label: 'Rear gun',
-        offset: [0, 2.75, -1.7],
+        offset: [0, 2.55, -1.9],
         weapon: 'core.mount_mg',
         arc: 1.6,
         facing: 3.141592653589793,
@@ -359,18 +372,21 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       { role: 'passenger', label: 'Left bench', offset: [-0.6, 1.2, -0.8] },
       { role: 'passenger', label: 'Right bench', offset: [0.6, 1.2, -0.8] },
     ],
+    cockpitEye: [-0.45, 1.85, 0.2],
     enterRadius: 3.8,
     respawnSeconds: 60,
     blast: { radius: 5.5, damage: 110 },
     vehicle: { maxSpeed: 14, reverseSpeed: 6, accel: 7, turnRate: 1.25, idleBrake: 10, grip: 0.38, mass: 3.6 },
     blurb: 'A heavy armoured truck for five: a driver, a front and a rear machine gunner and two riders in the back',
   },
-  // seats: Astride the canopy, ahead of the middle: the nose (+Z) leads and the twin exhausts trail.
+  // model: TNR 1017 (Meshy Community, CC0; content/guns.json vehicles/tnr_hover_bike.glb, 2026-11-10): a one-seat hover bike with handlebars, stub wings and twin thrusters, 3.0 m long. Its wings stand 0.16 m out of the box either side (not solid). The Space Kit speeder it replaced is the fallback (vehicles/hover_bike.glb).
+  // seats: In the saddle (measured on the model: the saddle dips to 1.0-1.1 m at z 0.1-0.5, the tank ahead of it 1.4 m): the nose (+Z) leads and the twin thrusters trail.
   hover_bike: {
     id: 'hover_bike',
     displayName: 'Hover Bike',
     kind: 'vehicle',
-    model: 'vehicles/hover_bike.glb',
+    model: 'vehicles/tnr_hover_bike.glb',
+    fallback: 'vehicles/hover_bike.glb',
     health: 170,
     half: [0.9, 0.5, 1.5],
     seats: [{ role: 'driver', label: 'Rider', offset: [0, 0.95, 0.25] }],

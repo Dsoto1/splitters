@@ -3,17 +3,18 @@
   "order": 11,
   "displayName": "Gun Jeep",
   "kind": "vehicle",
-  "model": "vehicles/gun_jeep.glb",
+  "model": "vehicles/recon_jeep.glb",
+  "fallback": "vehicles/gun_jeep.glb",
   "health": 380,
   "half": [1.1, 0.95, 2.2],
   "seats": [
-    { "role": "driver", "label": "Driver", "offset": [-0.4, 0.7, 0.15], "seated": true },
-    { "role": "gunner", "label": "Roof gun", "offset": [0, 1.25, -1.1], "weapon": "core.mount_mg" },
-    { "role": "passenger", "label": "Passenger", "offset": [0.4, 0.7, 0.15], "seated": true },
+    { "role": "driver", "label": "Driver", "offset": [-0.4, 0.92, -0.05], "seated": true, "legDrop": 0.25 },
+    { "role": "gunner", "label": "Roof gun", "offset": [0, 1.05, -0.45], "weapon": "core.mount_mg" },
+    { "role": "passenger", "label": "Passenger", "offset": [0.4, 0.92, -0.05], "seated": true, "legDrop": 0.25 },
     {
       "role": "passenger",
       "label": "Left rail",
-      "offset": [-0.78, 1.3, -1.65],
+      "offset": [-0.88, 1.12, -1.6],
       "seated": true,
       "facing": -1.5707963267948966,
       "legDrop": 0.7
@@ -21,12 +22,13 @@
     {
       "role": "passenger",
       "label": "Right rail",
-      "offset": [0.78, 1.3, -1.65],
+      "offset": [0.88, 1.12, -1.6],
       "seated": true,
       "facing": 1.5707963267948966,
       "legDrop": 0.7
     }
   ],
+  "cockpitEye": [-0.4, 1.72, 0.1],
   "enterRadius": 3.2,
   "respawnSeconds": 40,
   "blast": { "radius": 4.5, "damage": 85 },
@@ -56,8 +58,10 @@
   },
   "blurb": "A light pickup with a machine gun on the back: a driver, a gunner who fires all round and three passengers with their own weapons",
   "notes": {
-    "half": "The model is 2.24 m wide, 1.94 m tall and 4.4 m long.",
-    "seats": "Measured on the model: the cab (roof 1.94 m, floor 0.25 m) has no seats of its own, so the two cab riders sit on cushions 0.7 m up, just ahead of its back wall; the bed floor is about 1.0 m up and its side rails 1.3 m. The roof gunner stands in the bed at the gun; two more ride sitting on the side rails behind it, legs over the side.",
-    "vehicle": "Its own wheels (the model's wheel meshes, measured on it) on stiffer springs than the buggy's: a pickup."
+    "model": "Recon Trike (Meshy Community, CC0; content/guns.json vehicles/recon_jeep.glb, 2026-11-10): a Warthog-style four-wheeler with a pintle machine gun on the roll cage over the cab and an open bed behind. Its tires are cut out as parts (wheel_*), so they spin, steer and ride the springs like the Car Kit truck's wheel meshes did. The Car Kit pickup it replaced is the fallback (vehicles/gun_jeep.glb).",
+    "half": "The box is unchanged (the re-skin keeps handling): the model is 4.4 m long and 2.44 m tall at the gun; its body is about 2.2 m wide and its tires stand out to 2.88 m.",
+    "seats": "Measured on the model (slices of its triangles): two cab seats with cushions 0.92 m up at z -0.05 (backrests at z -0.3, the floor 0.7 m up under the dash); the gun's ring on the cage roof at z 0.3, 2.3 m up, so the gunner stands behind its breech on the console between the cab and the bed (feet 1.05 m), shoulders out of the roof like a hatch gunner; the bed (floor 0.7 m) runs from z -1.2 to -2.0 between walls 1.1 m high at x ±0.9, where the two rail riders sit facing out. Roles, weapon and arcs unchanged.",
+    "cockpitEye": "A seated head height over the driver's cushion, under the cage roof (2.0 m).",
+    "vehicle": "Its own wheels (the model's tires, cut out as parts) on stiffer springs than the buggy's: a pickup. The suspension's contact points are unchanged."
   }
 }
