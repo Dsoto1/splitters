@@ -20,6 +20,7 @@ import {
   getWeapon,
   initPhysics,
   lookAngles,
+  rulesForMode,
   weaponCode,
   type GameEvent,
   type MapDocument,
@@ -442,6 +443,37 @@ describe('the turret (owner, 2026-11-11)', () => {
     pad.run(TICK_RATE * 3, () => pad.input(driver, { yaw: tank.yaw + 2, pitch: 0.2 }));
     expect(off(aimOf(match), tank.yaw + 0.6)).toBeLessThan(0.02);
     expect(match.privateState(driver.slot)).toBeTruthy();
+  });
+});
+
+describe('bots duck in standing places (owner, 2026-11-11)', () => {
+  it('a bot on the bed of the Troop Truck ducks when it is hit, and stands again once it has been quiet', () => {
+    const map = yard([mount('troop_truck', 12, 6)]);
+    const match = new Match(map, { ...rulesForMode(map, 'core.tdm'), scoreLimit: 0, timeLimitSeconds: 0 }, 3);
+    const pad = new Pad(match);
+    const bot = match.addBot('rider', CORE_BOT_PROFILES[0]!, BOT_DIFFICULTIES.normal, true)!;
+    pad.run(2);
+    const truck = internals(match).mounts[0]!;
+    // A teammate at the wheel and one beside them (a rider stays aboard while a teammate drives): the bot gets a
+    // place on the bed.
+    for (const name of ['driver', 'mate']) {
+      const h = match.addHuman(name)!;
+      h.faction = bot.faction;
+      place(h, truck.pos.x + 2, truck.pos.z);
+      expect(internals(match).enterMount(h)).toBe(true);
+    }
+    place(bot, truck.pos.x + 2, truck.pos.z);
+    expect(internals(match).enterMount(bot)).toBe(true);
+    expect(MOUNT_DEFS.troop_truck.seats[bot.mount!.seat]!.seated).toBeFalsy();
+    pad.run(TICK_RATE * 3);
+    expect(bot.mount).toBeTruthy();
+    expect(bot.move.stance).toBeUndefined();
+    bot.health -= 5;
+    pad.run(10);
+    expect(bot.move.stance).toBe(1);
+    pad.run(TICK_RATE * 3);
+    expect(bot.mount).toBeTruthy();
+    expect(bot.move.stance).toBeUndefined();
   });
 });
 

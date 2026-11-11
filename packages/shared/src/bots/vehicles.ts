@@ -355,6 +355,8 @@ export interface SeatView {
   facing?: number;
   heat: number;
   overheated: boolean;
+  /** A standing place where crouch ducks the rider down (Match's rideCrouch: not a real seat, not the wheel, not the plane). */
+  ducks?: boolean;
   /** Limited ammunition (SeatDef.ammo: the Tank's shells): rounds aboard, of `maxShells`. Absent: it never runs dry. */
   shells?: number;
   maxShells?: number;

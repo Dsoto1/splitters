@@ -352,6 +352,9 @@ const SHIELDED_TARGET_SCALE = 6;
 /** A bot under spawn protection holds its fire until this long before the shield runs out (s; content/match-play.json botFireBefore), unless an unshielded enemy is within SHIELD_HOLD_INSIDE m. */
 const SHIELD_FIRE_BEFORE: number = MATCH_PLAY.botFireBefore;
 const SHIELD_HOLD_INSIDE = 2;
+/** A bot riding in a standing place ducks this long (ticks) after a round comes in or hits it, and stays up this long after its own shot. */
+const RIDE_DUCK = TICK_RATE * 1.5;
+const RIDE_DUCK_UP = TICK_RATE * 0.4;
 /** A vehicle whose route to the goal doesn't fit it (routeFits) is left alone this long (s) before it is looked at again. */
 const NO_FIT_SECONDS = 20;
 /** At the wheel, the route ahead is checked for fit (routeFits) this far (m) on each new route. */
@@ -687,6 +690,8 @@ export class BotBrain {
   private speed = 0;
   private lastHealth = 100;
   private hurtTick = -Infinity;
+  /** When it last fired from a seat (thinkMounted: a rider who ducks stays up while shooting). */
+  private rideFiredTick = -Infinity;
   private underFireTick = -Infinity;
   private threatFrom: Vec3 | null = null;
   // Cover and peeking.
@@ -3609,6 +3614,11 @@ export class BotBrain {
     if (leave && !slowing && tick - this.mountedSince > TICK_RATE && !this.useLatch) buttons |= BUTTON_USE;
     this.useLatch = (buttons & BUTTON_USE) !== 0;
     if (leave) this.nextMountTick = tick + TICK_RATE * 10;
+    // In a standing place (a flatbed, a roof gun): duck while rounds are coming in, up again to shoot (the tick it
+    // fires, and RIDE_DUCK_UP after, so a gunner on a target keeps firing) and once it has been quiet for RIDE_DUCK.
+    if (buttons & BUTTON_FIRE) this.rideFiredTick = tick;
+    const incoming = tick - Math.max(this.underFireTick, this.hurtTick) < RIDE_DUCK;
+    if (seat.ducks && incoming && tick - this.rideFiredTick > RIDE_DUCK_UP && !(buttons & BUTTON_USE)) buttons |= BUTTON_CROUCH;
     return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons };
   }
 

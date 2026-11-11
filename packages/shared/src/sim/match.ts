@@ -2589,7 +2589,7 @@ export class Match {
     // (A driver working the seat's gun has their own arc there: SeatDef.driverArc.)
     const arc = gs !== null && gs !== c.mount!.seat ? (aim.driverArc ?? aim.arc) : aim.arc;
     const ammo = gs === null ? undefined : m.def.seats[gs]!.ammo;
-    return { mount: m.index, seat: c.mount!.seat, role: seat.role, ...(gun ? { weapon: gun.def } : {}), ...(arc !== undefined ? { arc } : {}), ...(aim.facing ? { facing: aim.facing } : {}), heat: gun?.heat ?? 0, overheated: gun?.overheated ?? false, ...(gun?.shells !== undefined && ammo ? { shells: gun.shells, maxShells: ammo.max, ...(ammo.pickups ? { refills: ammo.pickups } : {}) } : {}) };
+    return { mount: m.index, seat: c.mount!.seat, role: seat.role, ...(seat.role !== 'driver' && !seat.seated && !m.def.airplane ? { ducks: true } : {}), ...(gun ? { weapon: gun.def } : {}), ...(arc !== undefined ? { arc } : {}), ...(aim.facing ? { facing: aim.facing } : {}), heat: gun?.heat ?? 0, overheated: gun?.overheated ?? false, ...(gun?.shells !== undefined && ammo ? { shells: gun.shells, maxShells: ammo.max, ...(ammo.pickups ? { refills: ammo.pickups } : {}) } : {}) };
   }
 
   /**
