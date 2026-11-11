@@ -978,6 +978,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - heatmaps stay in memory.
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
+  - **Landing now: quality tiers for characters** (`check/mapmaker-character-tiers`, MapMaker lane, 2026-11-11).
   - **Next in line to land: vehicle fit fixes, the seating pass, the Roulette hit label and the first-person grip flicker fix** (session branch `claude/inspiring-sagan-mjnled`, to go to `check/vehicles-fit`; weapon and vehicle lane, this account, 2026-11-11). No map files. It merges main and pushes to check/ once the line above is gone.
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
