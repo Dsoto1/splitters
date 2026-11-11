@@ -7,10 +7,11 @@ const fbm = (x, z) => vnoise(x, z) * 0.55 + vnoise(x * 2.1 + 7, z * 2.1 - 3) * 0
 // Piecewise-smooth through (z, value) knots.
 function knots(z, ks) { if (z <= ks[0][0]) return ks[0][1]; for (let i = 1; i < ks.length; i++) if (z <= ks[i][0]) return lerp(ks[i - 1][1], ks[i][1], sm((z - ks[i - 1][0]) / (ks[i][0] - ks[i - 1][0]))); return ks.at(-1)[1]; }
 const KNOLLS = [[-52, -98, 6.5, 24], [58, -44, 5, 19], [-70, -20, 4, 16], [36, -118, 4.5, 20], [84, -96, 3.5, 15]];
-export const DAM = { z0: 54, z1: 70, crest: 20, water: 17 };
+// (Owner, 2026-11-11: "go taller": the crest from 20 m to 28 m, the lake with it.)
+export const DAM = { z0: 54, z1: 70, crest: 28, water: 25 };
 /** The valley's centre line and the half-width of its floor. */
 export const centre = (z) => 9 * Math.sin((z + 30) / 62) + 62 * sm((z - 96) / 64);
-export const halfWidth = (z) => knots(z, [[-160, 118], [-60, 104], [20, 84], [54, 66], [70, 66], [100, 84], [130, 62], [160, 44]]);
+export const halfWidth = (z) => knots(z, [[-160, 30], [-138, 58], [-112, 96], [-60, 104], [20, 84], [54, 66], [70, 66], [100, 84], [130, 62], [160, 44]]);
 /** The river: from the tailrace at the powerhouse, winding south-west out of the map. */
 export const riverX = (z) => centre(z) + 26 * Math.sin((z - 20) / 34) * sm((20 - z) / 40) - 30 * sm((-70 - z) / 80);
 // A band along z that fades in and out over `edge` metres.
@@ -28,8 +29,8 @@ export function height(x, z) {
   // Benches cut into the walls (the yards' pads are levelled exactly later).
   let bench = 0, benchWide = 0;
   const add = (w, h, wide) => { if (w > 0.001) { bench = lerp(bench, h, w); benchWide = lerp(benchWide, wide, w); } };
-  if (side < 0) { add(band(z, -56, 30), 8, 50); add(band(z, 40, 78, 8), 20, 34); }
-  else { add(band(z, 2, 50), 16, 42); add(band(z, 50, 78, 8), 20, 30); add(band(z, -110, -70), 4, 36); }
+  if (side < 0) { add(band(z, -56, 30), 8, 50); add(band(z, 40, 78, 8), DAM.crest, 34); }
+  else { add(band(z, 2, 46), 20, 42); add(band(z, 48, 78, 8), DAM.crest, 30); add(band(z, -110, -70), 4, 36); }
   let h = floor;
   if (d > 0) {
     const up = lerp(floor, Math.max(floor, bench), sm(d / 7)); // the bank up to the bench
