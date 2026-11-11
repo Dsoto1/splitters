@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **New vehicle: the Troop Truck** (Meshy Community, CC0), in MapMaker's Vehicles palette: a six-wheeled army truck for six. A driver and a passenger sit in the cab, four ride standing on the flatbed, and every rider shoots their own weapon. Wheeled heavy: a little quicker than the Armored Rover, slower than the Gun Jeep, 700 health; its six tires spin, steer and bounce.
 - **Thrown sheep show again.** The sheep's model was drawn about 7 mm tall (and pure white), so a thrown sheep looked like nothing; it is now its 0.7 m woolly self, and a throwable whose model loads at a size no throwable has keeps its plain shapes instead.
 - **The Buggy seats six and has a new model** (Meshy Community, CC0): a sci-fi tube-frame buggy. A driver and a front passenger sit in the cage; four more stand on the open deck behind it, and all five riders shoot their own weapons. Its tires spin, steer and bounce, and the driver's cockpit (wheel, gauges, cage) is refitted to it. Handling, health and the rest unchanged.
 - **Four vehicles get new models** (Meshy Community, CC0): the Gun Jeep is a Warthog-style buggy with a pintle gun (its own tires spin, steer and bounce), the Hover Bike a winged one-seater, the Speeder a heavy armoured hover bike and the Armored Rover a closed off-roader. Seats sit on the new models; handling, guns and health are unchanged.

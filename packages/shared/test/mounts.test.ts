@@ -92,6 +92,30 @@ describe('turrets, sentries and vehicles', () => {
     expect(players[6]!.mount?.seat).toBe(1);
   });
 
+  it('a troop truck seats six (a driver and a passenger sitting in the cab, four standing on the bed); a seventh cannot get in', () => {
+    const def = MOUNT_DEFS.troop_truck;
+    expect(def.seats.map((s) => s.role)).toEqual(['driver', 'passenger', 'passenger', 'passenger', 'passenger', 'passenger']);
+    expect(def.seats.map((s) => !!s.seated)).toEqual([true, true, false, false, false, false]);
+    expect(def.seats.every((s) => !s.weapon)).toBe(true);
+    // Every place inside its box, the box the whole truck (tires included).
+    for (const s of def.seats) expect(Math.abs(s.offset[0]) < def.half[0] && Math.abs(s.offset[2]) < def.half[2] && s.offset[1] < def.half[1] * 2).toBe(true);
+    const match = new Match(yard([{ position: [10, 0, 10], model: 'troop_truck', yaw: 0, faction: null, respawnSeconds: null }]), rules);
+    const d = new Driver(match);
+    const players = [0, 1, 2, 3, 4, 5, 6].map((i) => match.addHuman(`p${i}`)!);
+    d.run(2);
+    players.forEach((p, i) => place(p, 8.8 + i * 0.4, 6.6));
+    for (const p of players) use(d, p);
+    expect(players.map((p) => p.mount?.seat ?? -1)).toEqual([0, 1, 2, 3, 4, 5, -1]);
+    for (const p of players.slice(0, 2)) expect(p.move.stance).toBe(1);
+    for (const p of players.slice(2, 6)) expect(p.move.stance).toBeUndefined();
+    // A rider on the bed shoots their own weapon, and the rounds don't hit the truck.
+    const truck = (match as unknown as { mounts: { health: number }[] }).mounts[0]!;
+    const health = truck.health;
+    const ev = d.run(10, () => d.input(players[4]!, { yaw: Math.PI / 2, pitch: -0.45, buttons: BUTTON_FIRE }));
+    expect(ev.some((e) => e.e === 'shot' && e.s === players[4]!.slot && !e.w.startsWith('core.mount_'))).toBe(true);
+    expect(truck.health).toBe(health);
+  });
+
   it("the gun jeep's roof gunner fires the mounted MG", () => {
     const match = new Match(yard([{ position: [10, 0, 10], model: 'gun_jeep', yaw: 0, faction: null, respawnSeconds: null }]), rules);
     const d = new Driver(match);
