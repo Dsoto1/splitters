@@ -6726,7 +6726,8 @@ async function vehiclesFlow(browser) {
     const me = window.__match.slots[window.__cs.slot];
     const m = me.mount ? window.__cs.mounts.mounts.get(window.__match.mounts[me.mount.index].index) : null;
     const root = m && window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
-    const pivots = root ? root.getChildTransformNodes().filter((n) => /_pivot\d$/.test(n.name)) : [];
+    // The buggy's own tires (its model's wheel parts) on pivots at their hubs (mountVisuals.ts).
+    const pivots = root ? root.getChildTransformNodes().filter((n) => /_pivot(\d$|_.*wheel)/.test(n.name)) : [];
     return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, tires: pivots.filter((p) => p.getChildren().length).length, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
   });
   check(sprung.susp && sprung.wheels === 4 && sprung.pivots === 4 && sprung.tires === 4 && sprung.rolled, `the buggy rides the sim's suspension, its tires on hub pivots rolling (${JSON.stringify(sprung)})`);
@@ -6810,8 +6811,9 @@ async function vehiclesFlow(browser) {
   }
   await page.evaluate(() => (window.__cs.input.pitch = 0));
   check(roll < 1, `after leaving the buggy and a blast nearby, the view and gun stay level as you turn (${roll.toFixed(2)}° roll)`);
-  // Passengers: three bots take the driver's and two passenger seats (E fills the next free seat), you take the last;
-  // everyone sits, and you shoot your own gun out of the side without hitting the buggy. A fifth can't get in.
+  // Passengers: five bots take the driver's, the front passenger's and three deck places (E fills the next free seat),
+  // you take the last place on the deck; the front two sit, the deck riders stand, and you shoot your own gun out of
+  // the side without hitting the buggy. A seventh can't get in.
   const ride = await page.evaluate(() => {
     const match = window.__match;
     const me = match.slots[window.__cs.slot];
@@ -6826,16 +6828,16 @@ async function vehiclesFlow(browser) {
     m.yaw = m.home.yaw;
     if ('speed' in m) m.speed = 0;
     // Bots drawn as characters (a creature has no seated pose).
-    const bots = match.slots.filter((c) => c?.bot && c.alive && !c.mount && 'sit' in (window.__cs.view.avatars.get(c.slot)?.anim ?? {})).slice(0, 4);
+    const bots = match.slots.filter((c) => c?.bot && c.alive && !c.mount && 'sit' in (window.__cs.view.avatars.get(c.slot)?.anim ?? {})).slice(0, 6);
     const seats = [];
-    for (const b of bots.slice(0, 3)) {
+    for (const b of bots.slice(0, 5)) {
       b.move = { pos: { x: m.pos.x, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: true };
       match.enterMount(b);
       seats.push(b.mount?.seat ?? -1);
     }
     me.move = { pos: { x: m.pos.x + 2.4, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: false };
     window.__autoInput = { buttons: 0 };
-    return { index: m.index, seats, fifth: bots[3]?.slot, riders: bots.slice(0, 3).map((b) => b.slot) };
+    return { index: m.index, seats, fifth: bots[5]?.slot, riders: bots.slice(0, 2).map((b) => b.slot), standing: bots.slice(2, 5).map((b) => b.slot) };
   });
   for (let i = 0; i < 4; i++) {
     if (await page.evaluate(() => !!window.__match.slots[window.__cs.slot].mount)) break;
@@ -6866,14 +6868,16 @@ async function vehiclesFlow(browser) {
       stance: me.move.stance,
       view: window.__cs.rideView(),
       sit: ride.riders.map((s) => +(window.__cs.view.avatars.get(s)?.anim?.sit ?? 0).toFixed(2)),
+      stand: ride.standing.map((s) => +(window.__cs.view.avatars.get(s)?.anim?.sit ?? 0).toFixed(2)),
       hips,
       fifth,
       health: m.health,
     };
   }, ride);
-  check(ride.seats.join() === '0,1,2' && seated.mine === 3 && seated.role === 'passenger' && seated.stance === 1 && seated.view === 'seat', `three riders and you fill the buggy's four seats in order, you in the back as a seated passenger (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
+  check(ride.seats.join() === '0,1,2,3,4' && seated.mine === 5 && seated.role === 'passenger' && seated.stance === undefined && seated.view === 'seat', `five riders and you fill the buggy's six places in order, you standing on its deck (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
   check(seated.sit.every((v) => v > 0.95) && seated.hips.every((h) => h !== null && h > 0 && h < 0.3), `riders are drawn sitting on their seats (sit ${seated.sit.join(', ')}; hips ${seated.hips.join(', ')} m over the cushions)`);
-  check(seated.fifth === false, 'a fifth player can\'t get into a full buggy');
+  check(seated.stand.length === 3 && seated.stand.every((v) => v < 0.05), `riders on the deck are drawn standing (sit ${seated.stand.join(', ')})`);
+  check(seated.fifth === false, 'a seventh player can\'t get into a full buggy');
   // Fire out of the right side, aiming down a little: your own gun, and the rounds leave through the buggy.
   const shot = await page.evaluate((index) => {
     const match = window.__match;
@@ -6893,7 +6897,7 @@ async function vehiclesFlow(browser) {
     const m = window.__match.mounts.find((x) => x.index === index);
     return { mag: me.weapons.get(window.__shotStart.weapon)?.mag, health: m.health, seat: me.mount?.seat };
   }, ride.index);
-  check(fired.mag < shot.mag && fired.health === shot.health && fired.seat === 3, `a seated passenger fires their own gun out of the side and the rounds don't hit their own buggy (${JSON.stringify({ weapon: shot.weapon, mag: [shot.mag, fired.mag], health: [shot.health, fired.health] })})`);
+  check(fired.mag < shot.mag && fired.health === shot.health && fired.seat === 5, `a rider on the deck fires their own gun out of the side and the rounds don't hit their own buggy (${JSON.stringify({ weapon: shot.weapon, mag: [shot.mag, fired.mag], health: [shot.health, fired.health] })})`);
   for (let i = 0; i < 4; i++) {
     if (await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount)) break;
     await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));

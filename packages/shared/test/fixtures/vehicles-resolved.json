@@ -293,33 +293,8 @@
     "id": "buggy",
     "displayName": "Buggy",
     "kind": "vehicle",
-    "model": "vehicles/offroad_buggy.glb",
-    "rideHeight": 0.24,
-    "wheels": {
-     "model": "vehicles/offroad_tire.glb",
-     "at": [
-      [
-       -1,
-       0.42,
-       1.74
-      ],
-      [
-       1,
-       0.42,
-       1.74
-      ],
-      [
-       -1,
-       0.42,
-       -1.86
-      ],
-      [
-       1,
-       0.42,
-       -1.86
-      ]
-     ]
-    },
+    "model": "vehicles/sixer_buggy.glb",
+    "fallback": "vehicles/offroad_buggy.glb",
     "health": 450,
     "half": [
      1.05,
@@ -331,51 +306,65 @@
       "role": "driver",
       "label": "Driver",
       "offset": [
-       -0.32,
-       0.8,
-       0.3
+       -0.4,
+       0.82,
+       0.08
       ],
       "seated": true,
-      "legDrop": 0.18
+      "legDrop": 0.2
      },
      {
       "role": "passenger",
       "label": "Front passenger",
       "offset": [
-       0.32,
-       0.8,
-       0.3
+       0.4,
+       0.82,
+       0.08
       ],
       "seated": true,
-      "legDrop": 0.18
+      "legDrop": 0.2
      },
      {
       "role": "passenger",
-      "label": "Back left",
+      "label": "Deck, front left",
       "offset": [
-       -0.32,
-       0.8,
-       -0.45
-      ],
-      "seated": true,
-      "legDrop": 0.28
+       0,
+       1.7,
+       -0.7
+      ]
      },
      {
       "role": "passenger",
-      "label": "Back right",
+      "label": "Deck, front right",
       "offset": [
-       0.32,
-       0.8,
-       -0.45
-      ],
-      "seated": true,
-      "legDrop": 0.28
+       0.5,
+       1.7,
+       -0.7
+      ]
+     },
+     {
+      "role": "passenger",
+      "label": "Deck, back left",
+      "offset": [
+       0,
+       1.7,
+       -1.3
+      ]
+     },
+     {
+      "role": "passenger",
+      "label": "Deck, back right",
+      "offset": [
+       0.5,
+       1.7,
+       -1.3
+      ]
      }
     ],
     "cockpitEye": [
-     -0.32,
-     1.36,
-     0.32
+     -0.4,
+     1.5,
+     0.12
     ],
     "enterRadius": 3.2,
     "respawnSeconds": 45,
@@ -393,6 +382,25 @@
      "mass": 1.4,
      "drift": 0.55,
      "suspension": {
+      "wheels": [
+       [
+        -1,
+        1.74
+       ],
+       [
+        1,
+        1.74
+       ],
+       [
+        -1,
+        -1.86
+       ],
+       [
+        1,
+        -1.86
+       ]
+      ],
+      "hub": 0.42,
       "travel": 0.2,
       "bump": 0.16,
       "freq": 1.5,
@@ -405,29 +413,39 @@
       "steer": 0.5
      }
     },
-    "blurb": "Four seats: a driver and three passengers who shoot their own weapons"
+    "blurb": "Six aboard: a driver, a front passenger and four riders standing on the back deck, all five shooting their own weapons"
    },
    "mass": 1.4,
    "eyes": [
     [
-     -0.32,
-     1.36,
-     0.32
+     -0.4,
+     1.5,
+     0.12
     ],
     [
-     0.32,
-     1.8,
-     0.44999999999999996
+     0.4,
+     1.8199999999999998,
+     0.22999999999999998
     ],
     [
-     -0.32,
-     1.8,
-     -0.30000000000000004
+     0,
+     2.7,
+     -0.5499999999999999
     ],
     [
-     0.32,
-     1.8,
-     -0.30000000000000004
+     0.5,
+     2.7,
+     -0.5499999999999999
+    ],
+    [
+     0,
+     2.7,
+     -1.1500000000000001
+    ],
+    [
+     0.5,
+     2.7,
+     -1.1500000000000001
     ]
    ]
   },

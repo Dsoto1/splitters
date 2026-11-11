@@ -48,26 +48,28 @@ describe('turrets, sentries and vehicles', () => {
     expect(match.snapshot([]).mt).toHaveLength(1);
   });
 
-  it('a buggy seats four (a driver and three seated passengers); a fifth player cannot get in', () => {
-    expect(MOUNT_DEFS.buggy.seats.map((s) => s.role)).toEqual(['driver', 'passenger', 'passenger', 'passenger']);
-    expect(MOUNT_DEFS.buggy.seats.every((s) => s.seated && !s.weapon)).toBe(true);
+  it('a buggy seats six (a driver, a seated front passenger and four standing on the deck); a seventh player cannot get in', () => {
+    expect(MOUNT_DEFS.buggy.seats.map((s) => s.role)).toEqual(['driver', 'passenger', 'passenger', 'passenger', 'passenger', 'passenger']);
+    expect(MOUNT_DEFS.buggy.seats.map((s) => !!s.seated)).toEqual([true, true, false, false, false, false]);
+    expect(MOUNT_DEFS.buggy.seats.every((s) => !s.weapon)).toBe(true);
     expect(MOUNT_DEFS.hauler.seats).toHaveLength(6);
     const match = new Match(yard([{ position: [10, 0, 10], model: 'buggy', yaw: 0, faction: null, respawnSeconds: null }]), rules);
     const d = new Driver(match);
-    const players = [0, 1, 2, 3, 4].map((i) => match.addHuman(`p${i}`)!);
+    const players = [0, 1, 2, 3, 4, 5, 6].map((i) => match.addHuman(`p${i}`)!);
     d.run(2);
-    players.forEach((p, i) => place(p, 9 + i * 0.4, 7.5));
+    players.forEach((p, i) => place(p, 8.8 + i * 0.4, 7.5));
     // E fills the next free seat: the wheel first, then the passenger seats in order.
     for (const p of players) use(d, p);
-    expect(players.map((p) => p.mount?.seat ?? -1)).toEqual([0, 1, 2, 3, -1]);
-    // Seated: on the cushion with the crouching eye, not standing on it.
-    for (const p of players.slice(0, 4)) expect(p.move.stance).toBe(1);
+    expect(players.map((p) => p.mount?.seat ?? -1)).toEqual([0, 1, 2, 3, 4, 5, -1]);
+    // Seated in front: on the cushion with the crouching eye, not standing on it; the four on the deck stand.
+    for (const p of players.slice(0, 2)) expect(p.move.stance).toBe(1);
+    for (const p of players.slice(2, 6)) expect(p.move.stance).toBeUndefined();
     // The driver can't shoot; every passenger fires their own weapon, aiming wherever they look (no arc), and
     // their rounds leave through the buggy (aimed down past its side, they don't hit it).
     const buggy = (match as unknown as { mounts: { health: number }[] }).mounts[0]!;
     const health = buggy.health;
-    const aims = [Math.PI, -Math.PI / 2, Math.PI / 2, 0];
-    players.slice(0, 4).forEach((p, i) => {
+    const aims = [Math.PI, -Math.PI / 2, Math.PI / 2, 0, Math.PI, -Math.PI / 2];
+    players.slice(0, 6).forEach((p, i) => {
       const yaw = aims[i]!;
       const ev = d.run(10, () => d.input(p, { yaw, pitch: -0.45, buttons: BUTTON_FIRE }));
       const shots = ev.filter((e) => e.e === 'shot' && e.s === p.slot);
@@ -85,9 +87,9 @@ describe('turrets, sentries and vehicles', () => {
     use(d, players[1]!);
     expect(players[1]!.mount).toBeUndefined();
     expect(players[1]!.move.stance).toBeUndefined();
-    // Now the fifth gets the free seat.
-    use(d, players[4]!);
-    expect(players[4]!.mount?.seat).toBe(1);
+    // Now the seventh gets the free seat.
+    use(d, players[6]!);
+    expect(players[6]!.mount?.seat).toBe(1);
   });
 
   it("the gun jeep's roof gunner fires the mounted MG", () => {
