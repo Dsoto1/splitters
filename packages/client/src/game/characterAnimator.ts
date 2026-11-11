@@ -1198,7 +1198,9 @@ export class CharacterAnimator {
     g.weight = OVERLAY_WEIGHT;
     const seconds = (g.to - g.from) / 60 / speed;
     this.overlay = { clip: g, until: performance.now() + Math.max(0.15, seconds) * 1000, kept };
-    this.handsOff = HANDS_OFF.has(action);
+    // From your own eyes a hit keeps your hands on the gun (the view's gun doesn't flinch with your body: taken off
+    // for the hit clip, the hands hung 20-50 cm off it for half a second each time you were shot).
+    this.handsOff = HANDS_OFF.has(action) && !(this.fp && (action === 'hit' || action === 'hit_head'));
   }
 
   /** The overlay is done: a kept clip pauses at weight 0 (ready for the next shot), others stop. */
