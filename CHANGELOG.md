@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **The Troop Truck is on Iron Maw and Sunstone Crag:** one for each team at its base.
 - **The Tank's turret turns all the way round** for a gunner in the cannon seat, at its own pace (a half turn in about two and a half seconds); the cannon fires as the barrel reaches where you are looking, so a shell always goes where you aim. A driver alone still fires only ahead (about 34 degrees either side).
 - **Duck down in standing places.** Riding where you stand (the Troop Truck's flatbed, the roof guns of the Gun Jeep and the Armored Rover, the Hauler, Gunship and Dropship places, a turret), crouch ducks you down: a lower eye and a smaller target, as on foot. Not at the wheel, where crouch is "down". Bots riding there duck when rounds come in and come up to shoot.
 - **A hit keeps your hands on your gun** in first person (they hung off it for half a second each time you were shot).

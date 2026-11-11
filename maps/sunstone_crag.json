@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "sunstone_crag",
     "name": "Sunstone Crag",
@@ -19,7 +19,15 @@
       "core.tdm",
       "core.deathmatch",
       "core.elim"
-    ]
+    ],
+    "release": {
+      "mapId": "m_d7xyzfbdralwsq6a",
+      "versionId": "v_57ly372k3yb2huid",
+      "revision": 1,
+      "contentHash": "sha256:cb999c2813877b1db80bdd2fa03912f71c31d978773842205073a0bf3722309a",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T18:27:57.407Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -20198,6 +20206,32 @@
       "kind": "spawn",
       "yaw": -1.5707963267948966,
       "faction": "tide"
+    },
+    {
+      "id": "mount_jcajgo28b0",
+      "kind": "mount",
+      "position": [
+        -98,
+        2.39,
+        25.5
+      ],
+      "model": "troop_truck",
+      "yaw": 1.571,
+      "faction": "embers",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_4x0k24d5ww",
+      "kind": "mount",
+      "position": [
+        98,
+        2.35,
+        -25.5
+      ],
+      "model": "troop_truck",
+      "yaw": -1.571,
+      "faction": "tide",
+      "respawnSeconds": null
     }
   ],
   "factions": [],

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 36,
   "metadata": {
     "id": "iron_maw",
     "name": "Iron Maw",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_ektkllmhzy2ritb5",
-      "revision": 5,
-      "contentHash": "sha256:d470459b1593e9b7aced1b14722f3b80df59275d613f4ebb9e6535e062f53cb3",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-11T02:52:56.746Z"
+      "versionId": "v_p57ucmkvd4zldp3l",
+      "revision": 6,
+      "contentHash": "sha256:772b4061a61ba6443c9b892ce236f5b5ad8d4da259026fe6ca1ac4cc51917d67",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T18:29:38.439Z"
     }
   },
   "classicStructure": {
@@ -4414,8 +4414,8 @@
       "yaw": 0.712,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_151",
@@ -4597,8 +4597,8 @@
       "yaw": -1.011,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_164",
@@ -12357,8 +12357,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_234",
@@ -12386,8 +12386,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_236",
@@ -12975,8 +12975,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_278",
@@ -12990,8 +12990,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_279",
@@ -13243,8 +13243,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_297",
@@ -13258,8 +13258,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_298",
@@ -13343,8 +13343,8 @@
       "yaw": 1.57,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_304",
@@ -13991,8 +13991,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_336",
@@ -16600,6 +16600,32 @@
       ],
       "kind": "pickup",
       "item": "core.ammo",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_37re5rd2nn",
+      "kind": "mount",
+      "position": [
+        -145,
+        0,
+        104
+      ],
+      "model": "troop_truck",
+      "yaw": 3.142,
+      "faction": "embers",
+      "respawnSeconds": null
+    },
+    {
+      "id": "mount_w41byxb03r",
+      "kind": "mount",
+      "position": [
+        145,
+        0,
+        104
+      ],
+      "model": "troop_truck",
+      "yaw": 3.142,
+      "faction": "tide",
       "respawnSeconds": null
     }
   ],
