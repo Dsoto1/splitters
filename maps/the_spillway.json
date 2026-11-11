@@ -27,18 +27,193 @@
     },
     "release": {
       "mapId": "m_fxtilvssrdvznevx",
-      "versionId": "v_2rp3ibzlrrtltdql",
-      "revision": 133,
-      "contentHash": "sha256:ebeed4c853a0b96990588593d115a77deca9ca934f584af647c03d4950b6db94",
+      "versionId": "v_ye6m7g2gq72573sb",
+      "revision": 138,
+      "contentHash": "sha256:0d555d1db70f76095af3bdc2fbd5d75806596da692cd7e4b0758b80c81164309",
       "schemaVersion": 34,
-      "releasedAt": "2026-11-11T08:24:02.750Z"
+      "releasedAt": "2026-11-11T11:42:44.922Z"
     }
   },
   "classicStructure": {
     "cellSize": 8,
     "levelHeight": 4,
     "theme": "core.military",
-    "tiles": []
+    "tiles": [
+      {
+        "id": "tile_cu6zps1qka",
+        "tile": "core.corridor",
+        "x": -5,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "door"
+        }
+      },
+      {
+        "id": "tile_jq8h0htq82",
+        "tile": "core.stairwell",
+        "x": -5,
+        "y": 6,
+        "z": 1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_jvqgrb31xh",
+        "tile": "core.stairwell",
+        "x": -5,
+        "y": 6,
+        "z": 3,
+        "rotation": 3
+      },
+      {
+        "id": "tile_3ij4ubh7ox",
+        "tile": "core.stairwell",
+        "x": -5,
+        "y": 6,
+        "z": 5,
+        "rotation": 3
+      },
+      {
+        "id": "tile_0i7xm86bdn",
+        "tile": "core.stairwell",
+        "x": -5,
+        "y": 5,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_4pwgi7rqnr",
+        "tile": "core.stairwell",
+        "x": -5,
+        "y": 5,
+        "z": 4,
+        "rotation": 1
+      },
+      {
+        "id": "tile_or43xcfdnu",
+        "tile": "core.stairwell",
+        "x": -5,
+        "y": 5,
+        "z": 6,
+        "rotation": 1
+      },
+      {
+        "id": "tile_sqtbdfzcyk",
+        "tile": "core.bridge",
+        "x": -5,
+        "y": 6,
+        "z": 7,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ln1zxpc8e4",
+        "tile": "core.corridor",
+        "x": 5,
+        "y": 5,
+        "z": 1,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:S": "door"
+        }
+      },
+      {
+        "id": "tile_0y2sonw09n",
+        "tile": "core.stairwell",
+        "x": 5,
+        "y": 6,
+        "z": 1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_yzbakptdbg",
+        "tile": "core.stairwell",
+        "x": 5,
+        "y": 6,
+        "z": 3,
+        "rotation": 3
+      },
+      {
+        "id": "tile_xaem9q2p8f",
+        "tile": "core.stairwell",
+        "x": 5,
+        "y": 6,
+        "z": 5,
+        "rotation": 3
+      },
+      {
+        "id": "tile_w60z8qhm7d",
+        "tile": "core.stairwell",
+        "x": 5,
+        "y": 5,
+        "z": 2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_j6rwnk1bas",
+        "tile": "core.stairwell",
+        "x": 5,
+        "y": 5,
+        "z": 4,
+        "rotation": 1
+      },
+      {
+        "id": "tile_9jakugn4tm",
+        "tile": "core.stairwell",
+        "x": 5,
+        "y": 5,
+        "z": 6,
+        "rotation": 1
+      },
+      {
+        "id": "tile_vesptnrzjb",
+        "tile": "core.bridge",
+        "x": 5,
+        "y": 6,
+        "z": 7,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7dq524kgsa",
+        "tile": "core.stairs_open",
+        "x": 8,
+        "y": 2,
+        "z": 1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ponzcy4nhw",
+        "tile": "core.stairs_open",
+        "x": 9,
+        "y": 2,
+        "z": 2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_gwyal1sjaq",
+        "tile": "core.stairs_open",
+        "x": 10,
+        "y": 2,
+        "z": 3,
+        "rotation": 0
+      },
+      {
+        "id": "tile_1nrqh2x48l",
+        "tile": "core.stairs_open",
+        "x": 11,
+        "y": 2,
+        "z": 4,
+        "rotation": 0
+      },
+      {
+        "id": "tile_dq8fqz7znp",
+        "tile": "core.platform",
+        "x": 12,
+        "y": 2,
+        "z": 5,
+        "rotation": 0
+      }
+    ]
   },
   "entities": [
     {
@@ -193,6 +368,50 @@
         9,
         30,
         9
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_oebd1okffe",
+      "position": [
+        -40,
+        27.5,
+        53
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        2.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_cn2eh2cz9k",
+      "position": [
+        40,
+        27.5,
+        53
+      ],
+      "kind": "block",
+      "size": [
+        3.2,
+        0.5,
+        2.4
       ],
       "yaw": 0,
       "material": "core.pbr_concrete",
