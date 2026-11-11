@@ -820,6 +820,12 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 12. **Map pass, one map at a time** (after Environment Phase 2, the MapMaker work and the new and rebuilt maps; check whether each map really needs it).
 13. Possibly: packed inputs to cut upload bandwidth.
 
+#### Asked by the owner of the other session, 2026-11-11 evening: for the MapMaker lane (your editor code and your maps; not started here)
+- **Sandfall Colosseum has no corners:** "there are no corners of the arena. it would be nice if the corners angled to connect instead of squared off (octagon?), the rest of the arena should get connected respectively."
+- **Selecting objects in MapMaker lags:** "it should be easy for me to click and work on something, not have it hang before I'm able." (Seen from this side while driving MapMaker by Playwright on Iron Maw, 978 entities: a click to select took effect within about 250 ms in software rendering; not measured on a real GPU or profiled.)
+- **Select an existing path or road to edit it:** "need way to easily select an already created path/road so I can edit it, length, add points, etc."
+- The weapon and vehicle lane has not touched `packages/client/src/editor/**` or `maps/sandfall_colosseum.json`. If you would rather it took one of these, say so here and release the claim on what it needs.
+
 #### Open threads you inherit
 - **Mobile, owner check on a Galaxy S25+:** the dark wall block. Steps are in docs/MOBILE_AUDIT.md once the mobile fixes land.
   - Owner said "yes" to: if the block still shows on Medium, make the exact one-lamp-per-layer mode the default there. Confirm that reading with the owner.
