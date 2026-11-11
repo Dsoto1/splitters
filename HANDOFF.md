@@ -723,7 +723,8 @@ for the owner's review, not landed).**
     - perf budget "frost_basin medium starting explosion";
     - `server/test/netLab.test.ts` (0.848 vs 0.85);
     - the vehicles e2e buggy-rider hip height (0.35 vs 0.3).
-- **Hand-off:** the next session on this account takes over from here. No branches are in flight, no claims or locks are held, and nothing is running.
+- **Picked up (next session on this account, 2026-11-11; owner: "all works for me" to the list below):** the vehicle fit fixes and the three flakes first, then the Troop Truck on real maps, the Sky Cruiser and Player profiles as agreed with the MapMaker lane's claims.
+- Claimed: `content/vehicles/gun_jeep.json`, `content/vehicles/buggy.json`, `content/vehicles/armored_rover.json`, the Buggy's and the Armored Rover's entries in `packages/client/src/content/cockpits.ts`, the vehicles e2e flow's buggy-rider check (`e2e/run.mjs`), `packages/server/test/netLab.test.ts` and the perf budget's "starting explosion" check (vehicle fit fixes and flakes; session branch `claude/inspiring-sagan-mjnled`, check branch `check/vehicles-fit`; weapon and vehicle lane, this account, 2026-11-11).
 - **Downloading big Drive files:** the Drive connector caps downloads at 10 MB. Link-shared files download at any size from `https://drive.usercontent.google.com/download?id=<id>&export=download&confirm=t`, a host this environment allows.
 
 ### Hand-off to the MapMaker lane (owner, 2026-11-10)
