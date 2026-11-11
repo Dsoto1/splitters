@@ -6824,7 +6824,7 @@ async function vehiclesFlow(browser) {
   await page.evaluate(() => (window.__cs.input.pitch = 0));
   check(roll < 1, `after leaving the buggy and a blast nearby, the view and gun stay level as you turn (${roll.toFixed(2)}° roll)`);
   // Passengers: five bots take the driver's, the front passenger's and three deck places (E fills the next free seat),
-  // you take the last place on the deck; the front two sit, the deck riders stand, and you shoot your own gun out of
+  // you take the last place on the deck; all sit (the deck riders on its edges, facing out), and you shoot your own gun out of
   // the side without hitting the buggy. A seventh can't get in.
   const ride = await page.evaluate(() => {
     const match = window.__match;
@@ -6865,6 +6865,7 @@ async function vehiclesFlow(browser) {
       (ride) => {
         const match = window.__match;
         const m = match.mounts.find((x) => x.index === ride.index);
+        if (!ride.standing.every((s) => (window.__cs.view.avatars.get(s)?.anim?.sit ?? 0) > 0.95)) return false;
         return ride.riders.every((s) => {
           const a = window.__cs.view.avatars.get(s);
           const thigh = a?.anim?.ch.joints.get('thigh_l');
@@ -6903,9 +6904,9 @@ async function vehiclesFlow(browser) {
       health: m.health,
     };
   }, ride);
-  check(ride.seats.join() === '0,1,2,3,4' && seated.mine === 5 && seated.role === 'passenger' && seated.stance === undefined && seated.view === 'seat', `five riders and you fill the buggy's six places in order, you standing on its deck (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
+  check(ride.seats.join() === '0,1,2,3,4' && seated.mine === 5 && seated.role === 'passenger' && seated.stance === 1 && seated.view === 'seat', `five riders and you fill the buggy's six places in order, you sitting on the edge of its deck (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
   check(seated.sit.every((v) => v > 0.95) && seated.hips.every((h) => h !== null && h > 0 && h < 0.3), `riders are drawn sitting on their seats (sit ${seated.sit.join(', ')}; hips ${seated.hips.join(', ')} m over the cushions)`);
-  check(seated.stand.length === 3 && seated.stand.every((v) => v < 0.05), `riders on the deck are drawn standing (sit ${seated.stand.join(', ')})`);
+  check(seated.stand.length === 3 && seated.stand.every((v) => v > 0.95), `riders on the deck are drawn sitting on its edges (sit ${seated.stand.join(', ')})`);
   check(seated.fifth === false, 'a seventh player can\'t get into a full buggy');
   // Fire out of the right side, aiming down a little: your own gun, and the rounds leave through the buggy.
   const shot = await page.evaluate((index) => {

@@ -6,10 +6,23 @@
   "model": "vehicles/kart.glb",
   "health": 220,
   "half": [0.7, 0.45, 1],
-  "seats": [{ "role": "driver", "label": "Driver", "offset": [0, 0.35, -0.1] }],
+  "seats": [
+    { "role": "driver", "label": "Driver", "offset": [0, 0.6, -0.1], "seated": true, "legDrop": 0.25 }
+  ],
   "enterRadius": 2.6,
   "respawnSeconds": 30,
   "blast": { "radius": 3.5, "damage": 70 },
-  "vehicle": { "maxSpeed": 20, "reverseSpeed": 7, "accel": 16, "turnRate": 2.6, "idleBrake": 16, "grip": 0.32, "mass": 0.4 },
-  "blurb": "One seat, very quick, no gun: run them over"
+  "vehicle": {
+    "maxSpeed": 20,
+    "reverseSpeed": 7,
+    "accel": 16,
+    "turnRate": 2.6,
+    "idleBrake": 16,
+    "grip": 0.32,
+    "mass": 0.4
+  },
+  "blurb": "One seat, very quick, no gun: run them over",
+  "notes": {
+    "seats": "The driver sits in the pod (2026-11-11: standing, they stood up through its dome): the cushion 0.6 m up."
+  }
 }

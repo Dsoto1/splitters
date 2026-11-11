@@ -70,6 +70,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     glow: '#8f7bff',
     blurb: 'Winds up on an enemy it can see, then locks an energy arc onto them that jumps to one more. Break its line of sight to shake it off',
   },
+  // seats: The driver sits in the pod (2026-11-11: standing, they stood up through its dome): the cushion 0.6 m up.
   kart: {
     id: 'kart',
     displayName: 'Go-Kart',
@@ -77,7 +78,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     model: 'vehicles/kart.glb',
     health: 220,
     half: [0.7, 0.45, 1],
-    seats: [{ role: 'driver', label: 'Driver', offset: [0, 0.35, -0.1] }],
+    seats: [{ role: 'driver', label: 'Driver', offset: [0, 0.6, -0.1], seated: true, legDrop: 0.25 }],
     enterRadius: 2.6,
     respawnSeconds: 30,
     blast: { radius: 3.5, damage: 70 },
@@ -85,7 +86,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     blurb: 'One seat, very quick, no gun: run them over',
   },
   // model: Cyber Fang Mk III (Meshy Community, CC0; content/guns.json vehicles/cyber_fang.glb, 2026-11-10): a heavy hover bike, 4.0 m long, 2.2 m wide and 2.2 m tall over its front fairing. The Quaternius Striker it replaced is the fallback (vehicles/speeder.glb).
-  // seats: Measured on the model: the saddle at z -0.7 to -0.9, 1.6-1.7 m up, behind the fairing (2.0-2.2 m); the passenger on the tail hump behind it (z -1.3, 1.9 m). Roles, the pilot's blasters and their arc unchanged.
+  // seats: Measured on the model: the saddle at z -0.7 to -0.9, 1.6-1.7 m up, behind the fairing (2.0-2.2 m); the passenger on the tail hump behind it (z -1.3, 1.9 m). Roles, the pilot's blasters and their arc unchanged. Both sit astride (2026-11-11: they stood knee-deep in the saddle): the pilot on the saddle 1.65 m up, the passenger on the tail hump 1.9 m up.
   // cockpitEye: Over the fairing, so the pilot sees the way ahead.
   speeder: {
     id: 'speeder',
@@ -96,8 +97,17 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     health: 300,
     half: [1.2, 0.65, 2.1],
     seats: [
-      { role: 'driver', label: 'Pilot', offset: [0, 0.95, -0.75], weapon: 'core.speeder_guns', arc: 0.35 },
-      { role: 'passenger', label: 'Passenger', offset: [0, 1.1, -1.35] },
+      {
+        role: 'driver',
+        label: 'Pilot',
+        offset: [0, 1.65, -0.8],
+        weapon: 'core.speeder_guns',
+        arc: 0.35,
+        seated: true,
+        legDrop: 0.45,
+        straddle: 0.3,
+      },
+      { role: 'passenger', label: 'Passenger', offset: [0, 1.9, -1.3], seated: true, legDrop: 0.5, straddle: 0.3 },
     ],
     cockpitEye: [0, 2.45, -0.55],
     enterRadius: 3,
@@ -108,7 +118,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   },
   // model: A Meshy Community sci-fi buggy (Meshy_AI__1108120754, CC0; content/guns.json vehicles/sixer_buggy.glb, 2026-11-11): a tube-frame four-wheeler with a cage over the cabin and an open deck behind it. Its tires are cut out as parts (wheel_*), so they spin, steer and ride the springs. The Tactical Off-Road Beast (on its separate tires) it replaced is the fallback (vehicles/offroad_buggy.glb).
   // half: Fitted across the tires (2026-11-11, as the Troop Truck's): 2.9 m wide, so walls stop the tires where they are drawn and rounds that hit a tire hit the buggy. Length and height unchanged: the model is 4.4 m long and 1.98 m tall; its body is about 1.8 m wide and its tires stand out to 2.86 m.
-  // seats: Measured on the model (slices of its triangles): two front seats, cushions 0.82 m up at z 0.08 and 0.4 m either side (the floor 0.6 m up, the wheel on the left); behind the cabin's hoop (z -0.6) an open deck 1.7 m up, clear overhead, from x -0.25 to 0.75 (a rack box stands on its left side, x -0.7 to -0.3, 2.0 m) and z -0.6 to -1.45. The four standing riders stand on it two by two (x -0.15 and 0.45, z -0.7 and -1.3: as near the buggy's middle as the rack lets the left pair's feet go, 0.1 m nearer than at first), like the Gun Jeep's standing gunner. The owner's layout, 2026-11-11: a driver, a seated front passenger and four standing in the back.
+  // seats: Measured on the model (slices of its triangles): two front seats, cushions 0.82 m up at z 0.08 and 0.4 m either side (the floor 0.6 m up, the wheel on the left); behind the cabin's hoop (z -0.6) an open deck 1.7 m up, clear overhead, from x -0.25 to 0.75 (a rack box stands on its left side, x -0.7 to -0.3, 2.0 m) and z -0.6 to -1.45. The four standing riders stand on it two by two (x -0.15 and 0.45, z -0.7 and -1.3: as near the buggy's middle as the rack lets the left pair's feet go, 0.1 m nearer than at first), like the Gun Jeep's standing gunner. The owner's layout, 2026-11-11: a driver, a seated front passenger and four standing in the back. Owner, 2026-11-11 ("if what I asked for doesn't look normal, normalize"): four standing on the small deck looked top-heavy, so the four ride sitting on its edges facing out, like the Gun Jeep's rail riders: the right pair on the deck's edge (1.7 m), the left pair on the rack box (2.0 m), legs over the side.
   // cockpitEye: A seated head height (1.5 m), under the cage's front bar (1.6 m at z 0.4), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts), refitted to this body.
   // vehicle: The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides. The suspension's contact points and hub height are the old drawn tires' (unchanged handling).
   buggy: {
@@ -122,10 +132,38 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     seats: [
       { role: 'driver', label: 'Driver', offset: [-0.4, 0.82, 0.08], seated: true, legDrop: 0.2 },
       { role: 'passenger', label: 'Front passenger', offset: [0.4, 0.82, 0.08], seated: true, legDrop: 0.2 },
-      { role: 'passenger', label: 'Deck, front left', offset: [-0.15, 1.7, -0.7] },
-      { role: 'passenger', label: 'Deck, front right', offset: [0.45, 1.7, -0.7] },
-      { role: 'passenger', label: 'Deck, back left', offset: [-0.15, 1.7, -1.3] },
-      { role: 'passenger', label: 'Deck, back right', offset: [0.45, 1.7, -1.3] },
+      {
+        role: 'passenger',
+        label: 'Deck, left front',
+        offset: [-0.55, 2, -0.7],
+        seated: true,
+        facing: -1.5707963267948966,
+        legDrop: 0.6,
+      },
+      {
+        role: 'passenger',
+        label: 'Deck, right front',
+        offset: [0.72, 1.7, -0.7],
+        seated: true,
+        facing: 1.5707963267948966,
+        legDrop: 0.55,
+      },
+      {
+        role: 'passenger',
+        label: 'Deck, left back',
+        offset: [-0.55, 2, -1.3],
+        seated: true,
+        facing: -1.5707963267948966,
+        legDrop: 0.6,
+      },
+      {
+        role: 'passenger',
+        label: 'Deck, right back',
+        offset: [0.72, 1.7, -1.3],
+        seated: true,
+        facing: 1.5707963267948966,
+        legDrop: 0.55,
+      },
     ],
     cockpitEye: [-0.4, 1.5, 0.12],
     enterRadius: 3.2,
@@ -155,7 +193,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
         steer: 0.5,
       },
     },
-    blurb: 'Six aboard: a driver, a front passenger and four riders standing on the back deck, all five shooting their own weapons',
+    blurb: 'Six aboard: a driver, a front passenger and four riders sitting on the back deck\'s edges, all five shooting their own weapons',
   },
   // cockpitEye: The Dispatcher's canopy sits behind its long nose prongs.
   hauler: {
@@ -180,6 +218,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     cockpitEye: [0, 1.95, -0.8],
     blurb: 'A slow hovering transport for six: a pilot, a rocket gunner and four passengers',
   },
+  // seats: The pilot sits in the cockpit (2026-11-11: they stood on the fuselage).
   skyfighter: {
     id: 'skyfighter',
     displayName: 'Skyfighter',
@@ -187,7 +226,17 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     model: 'vehicles/skyfighter.glb',
     health: 280,
     half: [1.6, 0.8, 2.2],
-    seats: [{ role: 'driver', label: 'Pilot', offset: [0, 1.4, 0.3], weapon: 'core.speeder_guns', arc: 0.3 }],
+    seats: [
+      {
+        role: 'driver',
+        label: 'Pilot',
+        offset: [0, 1.25, 0.3],
+        weapon: 'core.speeder_guns',
+        arc: 0.3,
+        seated: true,
+        legDrop: 0.15,
+      },
+    ],
     enterRadius: 3.2,
     respawnSeconds: 50,
     blast: { radius: 5, damage: 90 },
@@ -238,7 +287,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     blurb: 'A flying troop carrier for six: a pilot, a door gunner and four riding on the deck',
   },
   // model: The owner's WWII tank (Meshy, owned; content/guns.json vehicles/tank_wwii.glb, 2026-11-05): hull 6.12 m long, 2.93 m wide, deck 2.0 m and turret roof 3.05 m up; the barrel reaches 1.15 m past the box's front (not solid, as before). The box (half [1.47, 1, 3.06], 2026-11-05) is fitted to the hull: 2.94 m wide over the tracks (was 4.2 m, about 0.6 m of it each side beside the tracks, where shots and bodies stopped on air), 6.12 m long (was 6 m) and up to the deck (2 m); the turret (1.84 m wide, inside the hull's footprint) sits on top of it, not solid, as before (one box: raised to the turret roof it would put an invisible roof over the whole deck). The Quaternius tank it replaced is the fallback (vehicles/tank.glb).
-  // seats: Moved onto the new model, roles, weapons and arcs unchanged: the driver from the deck under the new turret to the front left of the deck (feet 1.95 m); both gunners up 0.15 m onto the turret roof, the roof gun from beside the roof (x 0.9) onto it.
+  // seats: Moved onto the new model, roles, weapons and arcs unchanged: the driver from the deck under the new turret to the front left of the deck (feet 1.95 m); both gunners up 0.15 m onto the turret roof, the roof gun from beside the roof (x 0.9) onto it. The crew ride in their hatches (2026-11-11: they stood on the deck and the turret roof, whole): each sits with the hips 0.4-0.45 m under the plate, head and shoulders out.
   // cockpitEye: The driver's hatch, front left of the deck, over the glacis (was the commander's hatch on the old turret).
   // armour: Tanks (owner, 2026-11-07): armour plate (surface armor: rounds stop on it and spark, nothing goes through), bullets do a tenth of their damage (the roof MG's 11 a round does 1.1: about 70 s of fire alone to kill it), blasts and shells 1.25 times theirs (rocket 40 + 120: about 6 rockets; the cannon's 60 + 150: 5 shells; a frag grenade 100: 10), melee nothing. Sealed: the crew can't be shot, blasted or struck from outside; when it is destroyed everyone still inside dies with it.
   // ammo: The cannon carries 10 shells (5 kill another tank), one back every 15 s (empty to full in 150 s), all back when the crewed tank drives over an Ammo Box (`ammo.pickups`: the general core.ammo only, owner 2026-11-08; Light, Rifle, Shells and Sniper rounds and the rest no longer refill it; refill over time owner-approved, 2026-11-07). With the cannon seat empty the driver fires it (driverFires): a crew of one can fight (owner kept it, 2026-11-08). The roof gun runs on heat, as every mounted gun.
@@ -254,17 +303,26 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     health: 1200,
     half: [1.47, 1, 3.06],
     seats: [
-      { role: 'driver', label: 'Driver', offset: [-0.6, 1.95, 1.8] },
+      { role: 'driver', label: 'Driver', offset: [-0.6, 1.55, 1.8], seated: true, legDrop: 0.4 },
       {
         role: 'gunner',
         label: 'Cannon',
-        offset: [-0.3, 3.05, -0.3],
+        offset: [-0.3, 2.6, -0.3],
         weapon: 'core.tank_cannon',
         arc: 0.6,
         ammo: { max: 10, refillSeconds: 15, pickups: ['core.ammo'] },
         driverFires: true,
+        seated: true,
+        legDrop: 0.4,
       },
-      { role: 'gunner', label: 'Roof gun', offset: [0.4, 3.05, 0.1], weapon: 'core.mount_mg' },
+      {
+        role: 'gunner',
+        label: 'Roof gun',
+        offset: [0.4, 2.6, 0.1],
+        weapon: 'core.mount_mg',
+        seated: true,
+        legDrop: 0.4,
+      },
     ],
     enterRadius: 4,
     respawnSeconds: 75,
@@ -383,7 +441,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     blurb: 'A heavy armoured truck for five: a driver, a front and a rear machine gunner and two riders in the back',
   },
   // model: TNR 1017 (Meshy Community, CC0; content/guns.json vehicles/tnr_hover_bike.glb, 2026-11-10): a one-seat hover bike with handlebars, stub wings and twin thrusters, 3.0 m long. Its wings stand 0.16 m out of the box either side (not solid). The Space Kit speeder it replaced is the fallback (vehicles/hover_bike.glb).
-  // seats: In the saddle (measured on the model: the saddle dips to 1.0-1.1 m at z 0.1-0.5, the tank ahead of it 1.4 m): the nose (+Z) leads and the twin thrusters trail.
+  // seats: In the saddle (measured on the model: the saddle dips to 1.0-1.1 m at z 0.1-0.5, the tank ahead of it 1.4 m): the nose (+Z) leads and the twin thrusters trail. The rider sits astride the saddle (2026-11-11: they stood on it), thighs turned out either side.
   // cockpitEye: A seated head height over the saddle, so the nose shows below the view (the default stood a head higher).
   hover_bike: {
     id: 'hover_bike',
@@ -393,7 +451,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     fallback: 'vehicles/hover_bike.glb',
     health: 170,
     half: [0.9, 0.5, 1.5],
-    seats: [{ role: 'driver', label: 'Rider', offset: [0, 0.95, 0.25] }],
+    seats: [{ role: 'driver', label: 'Rider', offset: [0, 1.05, 0.25], seated: true, legDrop: 0.4, straddle: 0.28 }],
     cockpitEye: [0, 1.75, 0.3],
     enterRadius: 2.6,
     respawnSeconds: 30,
@@ -445,6 +503,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     cockpitEye: [0, 2.9, 2.8],
     blurb: 'A flying gunship (the dropship\'s flight model): the pilot fires blasters ahead, two door gunners cover the sides',
   },
+  // seats: All four sit (2026-11-11: standing on the floor, their heads came out through the roof, 2.2 m): cushions 1.1 m up.
   ice_cream_truck: {
     id: 'ice_cream_truck',
     displayName: 'Ice Cream Truck',
@@ -453,10 +512,10 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     health: 520,
     half: [1.2, 1.1, 2.4],
     seats: [
-      { role: 'driver', label: 'Driver', offset: [-0.45, 0.9, 1.2] },
-      { role: 'passenger', label: 'Serving hatch', offset: [0.5, 0.9, 0] },
-      { role: 'passenger', label: 'Back left', offset: [-0.5, 0.9, -1.2] },
-      { role: 'passenger', label: 'Back right', offset: [0.5, 0.9, -1.2] },
+      { role: 'driver', label: 'Driver', offset: [-0.45, 1.1, 1.2], seated: true, legDrop: 0.4 },
+      { role: 'passenger', label: 'Serving hatch', offset: [0.5, 1.1, 0], seated: true, legDrop: 0.4 },
+      { role: 'passenger', label: 'Back left', offset: [-0.5, 1.1, -1.2], seated: true, legDrop: 0.4 },
+      { role: 'passenger', label: 'Back right', offset: [0.5, 1.1, -1.2], seated: true, legDrop: 0.4 },
     ],
     enterRadius: 3.4,
     respawnSeconds: 45,

@@ -7,14 +7,25 @@
   "health": 520,
   "half": [1.2, 1.1, 2.4],
   "seats": [
-    { "role": "driver", "label": "Driver", "offset": [-0.45, 0.9, 1.2] },
-    { "role": "passenger", "label": "Serving hatch", "offset": [0.5, 0.9, 0] },
-    { "role": "passenger", "label": "Back left", "offset": [-0.5, 0.9, -1.2] },
-    { "role": "passenger", "label": "Back right", "offset": [0.5, 0.9, -1.2] }
+    { "role": "driver", "label": "Driver", "offset": [-0.45, 1.1, 1.2], "seated": true, "legDrop": 0.4 },
+    { "role": "passenger", "label": "Serving hatch", "offset": [0.5, 1.1, 0], "seated": true, "legDrop": 0.4 },
+    { "role": "passenger", "label": "Back left", "offset": [-0.5, 1.1, -1.2], "seated": true, "legDrop": 0.4 },
+    { "role": "passenger", "label": "Back right", "offset": [0.5, 1.1, -1.2], "seated": true, "legDrop": 0.4 }
   ],
   "enterRadius": 3.4,
   "respawnSeconds": 45,
   "blast": { "radius": 5, "damage": 95 },
-  "vehicle": { "maxSpeed": 16, "reverseSpeed": 6, "accel": 8, "turnRate": 1.5, "idleBrake": 10, "grip": 0.24, "mass": 1.9 },
-  "blurb": "A pastel van for four: no gun, but the three riders shoot out of the windows"
+  "vehicle": {
+    "maxSpeed": 16,
+    "reverseSpeed": 6,
+    "accel": 8,
+    "turnRate": 1.5,
+    "idleBrake": 10,
+    "grip": 0.24,
+    "mass": 1.9
+  },
+  "blurb": "A pastel van for four: no gun, but the three riders shoot out of the windows",
+  "notes": {
+    "seats": "All four sit (2026-11-11: standing on the floor, their heads came out through the roof, 2.2 m): cushions 1.1 m up."
+  }
 }
