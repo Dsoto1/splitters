@@ -3,7 +3,7 @@ import { BUTTON_FIRE, initPhysics, loadMap, type MapDocument, type MapEntity } f
 import { Match, initNavigation } from '../src/match.ts';
 import { isBreakableProp, propBoxes } from '../src/map/geometry.ts';
 import { resourceBudgetIssues } from '../src/map/budgets.ts';
-import { propHealth } from '../src/sim/scenarioDefs.ts';
+import { propBreakLook, propHealth } from '../src/sim/scenarioDefs.ts';
 import { getProp } from '../src/content/props.ts';
 import { makeMap } from './helpers.ts';
 
@@ -100,5 +100,13 @@ describe('destructible environment (map format v36)', () => {
     if (!loaded.ok) return;
     expect(loaded.map.metadata.destruction).toBeUndefined();
     expect(loaded.map.entities.find((e) => e.id === 'tub_1')).not.toHaveProperty('health');
+  });
+});
+
+describe('how a broken prop looks and sounds', () => {
+  it('keeps a catalogue debris colour and picks one by material otherwise', () => {
+    expect(propBreakLook('prop.crate', '#123456').debris).toBe('#123456');
+    expect(propBreakLook('prop.crate').debris).toMatch(/^#[0-9a-f]{6}$/);
+    expect(['break.crate', 'break.wall', 'break.glass']).toContain(propBreakLook('prop.crate').sound);
   });
 });

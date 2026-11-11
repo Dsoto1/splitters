@@ -212,6 +212,16 @@ export function propHealth(model: string, collision: readonly [number, number, n
   return Math.max(5, Math.round(((CLASS_HEALTH[propMaterial(model)] ?? 200) * size) / 5) * 5);
 }
 
+/** Debris colour of a broken prop the catalogue gives none, by what it is made of. */
+const CLASS_DEBRIS: Readonly<Record<string, string>> = { glass: '#bfe6f5', foliage: '#4f6b3a', drywall: '#cfc9bd', thin_wood: '#8a5d33', wood: '#8a5a32', heavy_wood: '#6e4a2a', thin_metal: '#7d8388', soil: '#6b5a44', brick: '#9a5a44', metal: '#5a6066', stone: '#8d8c86', concrete: '#9a9892', armor: '#4a4f54' };
+
+/** How a broken prop looks and sounds: its catalogue debris colour, else its material's; masonry breaks like a wall. */
+export function propBreakLook(model: string, debris?: string): { debris: string; sound: 'break.crate' | 'break.wall' | 'break.glass' } {
+  const c = propMaterial(model);
+  const sound = c === 'glass' ? 'break.glass' : c === 'brick' || c === 'stone' || c === 'concrete' || c === 'soil' ? 'break.wall' : 'break.crate';
+  return { debris: debris ?? CLASS_DEBRIS[c] ?? '#8a5a32', sound };
+}
+
 /**
  * Anything the scenario turns on and off: destructibles, breakable props and
  * dynamic blocks. `dynamic` (dynamicBlockIds) adds the solid blocks logic
