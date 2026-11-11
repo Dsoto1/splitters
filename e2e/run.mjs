@@ -7238,6 +7238,12 @@ async function troopTruckChecks(browser) {
   const start = await sim(page, (m, me) => ({ ...me.move.pos })).catch(() => null);
   await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
   await simWait(page, (m, me, s) => Math.hypot(me.move.pos.x - s.x, me.move.pos.z - s.z) > 6, start, T(15000));
+  // The drawn truck trails the match by a frame or more on a slow page: wait (still driving) for the tires to roll.
+  await page.waitForFunction(() => {
+    const m = [...window.__cs.mounts.mounts.values()].find((x) => x.def.id === 'troop_truck');
+    const root = m && window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
+    return !!root && root.getChildTransformNodes().some((n) => /_pivot_.*wheel/.test(n.name) && Math.abs(n.rotation.x) > 1e-3);
+  }, null, { timeout: T(15000) }).catch(() => {});
   const wheels = await page.evaluate(() => {
     const m = [...window.__cs.mounts.mounts.values()].find((x) => x.def.id === 'troop_truck');
     const root = m && window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
