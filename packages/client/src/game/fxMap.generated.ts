@@ -457,6 +457,12 @@ export const FX_MAP = {
       "effect": "vfx_basic_fire_01",
       "scale": 0.3
     },
+    "smoke.flare": {
+      "pack": "smoke_fx",
+      "effect": "smoke_thin_vfx_01",
+      "scale": 0.2,
+      "tint": "#ff6a48"
+    },
     "fire.trap": {
       "pack": "flame_fx",
       "effect": "vfx_basic_fire_02",

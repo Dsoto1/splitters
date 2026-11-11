@@ -3,10 +3,12 @@
   "order": 13,
   "displayName": "Hover Bike",
   "kind": "vehicle",
-  "model": "vehicles/hover_bike.glb",
+  "model": "vehicles/tnr_hover_bike.glb",
+  "fallback": "vehicles/hover_bike.glb",
   "health": 170,
   "half": [0.9, 0.5, 1.5],
   "seats": [{ "role": "driver", "label": "Rider", "offset": [0, 0.95, 0.25] }],
+  "cockpitEye": [0, 1.75, 0.3],
   "enterRadius": 2.6,
   "respawnSeconds": 30,
   "blast": { "radius": 3.5, "damage": 70 },
@@ -22,6 +24,8 @@
   },
   "blurb": "The fastest thing on the map: one rider, no gun, drifts like a hovercraft",
   "notes": {
-    "seats": "Astride the canopy, ahead of the middle: the nose (+Z) leads and the twin exhausts trail."
+    "model": "TNR 1017 (Meshy Community, CC0; content/guns.json vehicles/tnr_hover_bike.glb, 2026-11-10): a one-seat hover bike with handlebars, stub wings and twin thrusters, 3.0 m long. Its wings stand 0.16 m out of the box either side (not solid). The Space Kit speeder it replaced is the fallback (vehicles/hover_bike.glb).",
+    "seats": "In the saddle (measured on the model: the saddle dips to 1.0-1.1 m at z 0.1-0.5, the tank ahead of it 1.4 m): the nose (+Z) leads and the twin thrusters trail.",
+    "cockpitEye": "A seated head height over the saddle, so the nose shows below the view (the default stood a head higher)."
   }
 }

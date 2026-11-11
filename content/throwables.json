@@ -194,6 +194,7 @@
         "walker": { "speed": 3.2 },
         "knockback": 10
       },
+      "view": { "model": "guns/sheep.glb", "fit": 0.7 },
       "notes": {
         "group": "Worms-style special.",
         "design": "Lands, waddles off the way it was thrown, hops over low things, and goes off on the first enemy it bumps into."
@@ -213,7 +214,7 @@
         "splashDamage": 0,
         "splashEdgeDamage": 0,
         "selfDamageScale": 0,
-        "visual": "flare",
+        "visual": "flareShot",
         "bounce": 0.3,
         "airstrike": {
           "count": 5,
@@ -231,9 +232,10 @@
           }
         }
       },
+      "view": { "model": "guns/flare_gun.glb", "handOnly": true },
       "notes": {
         "group": "Worms-style special.",
-        "design": "A flare that marks the spot: two seconds later five bombs fall in a line along the way you threw it."
+        "design": "A flare-gun shot that marks the spot (the flare gun in your hands, a fizzing, smoking light that lands and burns steady): two seconds later five bombs fall in a line along the way you threw it."
       }
     },
     {

@@ -3,45 +3,19 @@
   "order": 6,
   "displayName": "Buggy",
   "kind": "vehicle",
-  "model": "vehicles/offroad_buggy.glb",
-  "rideHeight": 0.24,
-  "wheels": {
-    "model": "vehicles/offroad_tire.glb",
-    "at": [[-1, 0.42, 1.74], [1, 0.42, 1.74], [-1, 0.42, -1.86], [1, 0.42, -1.86]]
-  },
+  "model": "vehicles/sixer_buggy.glb",
+  "fallback": "vehicles/offroad_buggy.glb",
   "health": 450,
   "half": [1.05, 0.8, 2.2],
   "seats": [
-    {
-      "role": "driver",
-      "label": "Driver",
-      "offset": [-0.32, 0.8, 0.3],
-      "seated": true,
-      "legDrop": 0.18
-    },
-    {
-      "role": "passenger",
-      "label": "Front passenger",
-      "offset": [0.32, 0.8, 0.3],
-      "seated": true,
-      "legDrop": 0.18
-    },
-    {
-      "role": "passenger",
-      "label": "Back left",
-      "offset": [-0.32, 0.8, -0.45],
-      "seated": true,
-      "legDrop": 0.28
-    },
-    {
-      "role": "passenger",
-      "label": "Back right",
-      "offset": [0.32, 0.8, -0.45],
-      "seated": true,
-      "legDrop": 0.28
-    }
+    { "role": "driver", "label": "Driver", "offset": [-0.4, 0.82, 0.08], "seated": true, "legDrop": 0.2 },
+    { "role": "passenger", "label": "Front passenger", "offset": [0.4, 0.82, 0.08], "seated": true, "legDrop": 0.2 },
+    { "role": "passenger", "label": "Deck, front left", "offset": [0, 1.7, -0.7] },
+    { "role": "passenger", "label": "Deck, front right", "offset": [0.5, 1.7, -0.7] },
+    { "role": "passenger", "label": "Deck, back left", "offset": [0, 1.7, -1.3] },
+    { "role": "passenger", "label": "Deck, back right", "offset": [0.5, 1.7, -1.3] }
   ],
-  "cockpitEye": [-0.32, 1.36, 0.32],
+  "cockpitEye": [-0.4, 1.5, 0.12],
   "enterRadius": 3.2,
   "respawnSeconds": 45,
   "blast": { "radius": 4.5, "damage": 90 },
@@ -55,6 +29,8 @@
     "mass": 1.4,
     "drift": 0.55,
     "suspension": {
+      "wheels": [[-1, 1.74], [1, 1.74], [-1, -1.86], [1, -1.86]],
+      "hub": 0.42,
       "travel": 0.2,
       "bump": 0.16,
       "freq": 1.5,
@@ -67,12 +43,12 @@
       "steer": 0.5
     }
   },
-  "blurb": "Four seats: a driver and three passengers who shoot their own weapons",
+  "blurb": "Six aboard: a driver, a front passenger and four riders standing on the back deck, all five shooting their own weapons",
   "notes": {
-    "model": "The owner's Tactical Off-Road Beast and its Rugged Off-Road Tire (Meshy, owned; content/guns.json): a long tube-frame buggy with a roof gun, its hubs bare, so the tires go on at its hubs and it rides on them.",
-    "half": "The body is 1.74 m wide and 1.44 m tall on 0.24 m of ride height, 4.4 m long; the tires stand out to 2.2 m.",
-    "seats": "On the model's seats (measured on the model): two rows of cushions 0.8 m up, 0.32 m either side of the middle, the hips just ahead of each backrest (front row z 0.3, back row z -0.45); the steering wheel is on the left, at z 0.75. The front footwell floor is only 0.18 m under the cushion (legs stretched out under the dash), the back one 0.36 m (feet under the front seats). The roof gun over the back row is not manned (the owner's ask: a driver and three passengers who all shoot their own weapons).",
-    "cockpitEye": "A seated head height, under the front roof bar (1.6 m at z 0.55), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts).",
-    "vehicle": "The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides."
+    "model": "A Meshy Community sci-fi buggy (Meshy_AI__1108120754, CC0; content/guns.json vehicles/sixer_buggy.glb, 2026-11-11): a tube-frame four-wheeler with a cage over the cabin and an open deck behind it. Its tires are cut out as parts (wheel_*), so they spin, steer and ride the springs. The Tactical Off-Road Beast (on its separate tires) it replaced is the fallback (vehicles/offroad_buggy.glb).",
+    "half": "The box is unchanged (the re-skin keeps handling): the model is 4.4 m long and 1.98 m tall; its body is about 1.8 m wide and its tires stand out to 2.86 m.",
+    "seats": "Measured on the model (slices of its triangles): two front seats, cushions 0.82 m up at z 0.08 and 0.4 m either side (the floor 0.6 m up, the wheel on the left); behind the cabin's hoop (z -0.6) an open deck 1.7 m up, clear overhead, from x -0.25 to 0.75 (a rack box stands on its left side, x -0.7 to -0.3, 2.0 m) and z -0.6 to -1.45. The four standing riders stand on it two by two (x 0 and 0.5, z -0.7 and -1.3), like the Gun Jeep's standing gunner. The owner's layout, 2026-11-11: a driver, a seated front passenger and four standing in the back.",
+    "cockpitEye": "A seated head height (1.5 m), under the cage's front bar (1.6 m at z 0.4), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts), refitted to this body.",
+    "vehicle": "The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides. The suspension's contact points and hub height are the old drawn tires' (unchanged handling)."
   }
 }
