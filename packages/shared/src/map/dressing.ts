@@ -370,7 +370,7 @@ const ones = (models: string[]) => models.map((m) => one(m));
 /**
  * The recipes, most important piece first (placing stops at a room's budget).
  * A model is a pack prop without its `prop.` prefix, or a kit family's full id (`kit.<type>.<name>`); never a retired
- * prop a family replaces (content/kitprops.json `aliases`: test/retiredProps.test.ts).
+ * prop a family replaces (content/kitprops.json `aliases`: packages/client/test/retiredProps.test.ts).
  */
 export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
   kitchen: [
