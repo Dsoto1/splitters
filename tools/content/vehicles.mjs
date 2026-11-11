@@ -34,7 +34,7 @@ const { num, int, str, bool, en, tup, arr, obj, vec3, notes } = shape;
 export function schemas() {
   const seat = obj({
     role: en(['driver', 'gunner', 'passenger']), label: str, offset: vec3, 'weapon?': str, 'arc?': num, 'facing?': num, 'seated?': bool, 'legDrop?': num, 'straddle?': num,
-    'ammo?': obj({ max: int, 'start?': int, refillSeconds: num, 'pickups?': arr(str, 1) }), 'driverFires?': bool,
+    'ammo?': obj({ max: int, 'start?': int, refillSeconds: num, 'pickups?': arr(str, 1) }), 'driverFires?': bool, 'driverArc?': num,
   });
   const armour = obj({ 'surface?': str, 'sealed?': bool, 'bullets?': num, 'blasts?': num, 'melee?': num });
   const suspension = obj({
@@ -49,7 +49,7 @@ export function schemas() {
   const mount = obj({
     id: str, 'order?': int, displayName: str, kind: en(['turret', 'sentry', 'vehicle']), model: str, health: num, half: vec3, seats: arr(seat),
     enterRadius: num, respawnSeconds: num, blast: obj({ radius: num, damage: num }), 'vehicle?': vehicle, 'sentry?': sentry, 'glow?': str,
-    'airplane?': bool, 'rideHeight?': num, 'wheels?': obj({ model: str, at: arr(vec3, 1) }), 'cockpitEye?': vec3, 'turret?': obj({ seat: int, 'pitch?': tup(2) }), 'fallback?': str, 'armour?': armour, 'bailHealth?': num, blurb: str, 'notes?': notes,
+    'airplane?': bool, 'rideHeight?': num, 'wheels?': obj({ model: str, at: arr(vec3, 1) }), 'cockpitEye?': vec3, 'turret?': obj({ seat: int, 'pitch?': tup(2), 'traverse?': num }), 'fallback?': str, 'armour?': armour, 'bailHealth?': num, blurb: str, 'notes?': notes,
   });
   return { mount, seat };
 }

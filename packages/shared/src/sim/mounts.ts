@@ -96,6 +96,12 @@ export interface SeatDef {
    * seat's arc): a tank with a crew of one can still fight. The seat's gunner takes it back on getting in.
    */
   driverFires?: boolean;
+  /**
+   * With `driverFires`: how far either side of the seat's facing the DRIVER may aim its gun (radians), while the
+   * seat's own gunner has `arc` (or all round). The Tank: a gunner turns the turret the full circle, a driver
+   * alone only 0.6 rad either side of the hull (they steer by where they look). Absent: the seat's `arc`.
+   */
+  driverArc?: number;
 }
 
 /** A mounted gun's limited ammunition (SeatDef.ammo). */
@@ -205,7 +211,12 @@ export interface MountDef {
    * the aim's own range). The vehicle's `aimYaw` / `aimPitch` are that seat's alone (other gunners don't turn it).
    * Built by content/guns.json `parts`.
    */
-  turret?: { seat: number; pitch?: [number, number] };
+  /**
+   * `traverse` (rad/s): the turret is a real one in the match, turning toward its gunner's aim at this rate (the
+   * vehicle's `aimYaw` follows it, so every screen draws the same turret), and its gun holds its shot until the
+   * barrel is on the aim (TURRET_ON_AIM). Absent: the aim is the gunner's look at once, as before.
+   */
+  turret?: { seat: number; pitch?: [number, number]; traverse?: number };
   /** A model drawn instead when `model` fails to load (the one it replaced: the Tank's Quaternius model). */
   fallback?: string;
   /** Armour: its surface, damage shares by kind and a sealed crew (MountArmour). Absent: metal, full damage, riders exposed. */

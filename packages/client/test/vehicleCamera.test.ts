@@ -99,8 +99,13 @@ describe('cockpit view', () => {
     expect(pose.mode).toBe('seat');
     expect(pose.pos).toEqual(r.seatEye);
     expect(pose.roll).toBe(0);
-    // The cannon covers 0.6 rad either side of the nose.
-    expect(look.yaw).toBeCloseTo(0.6);
+    // The Tank's cannon gunner looks all round (its turret turns the full circle, 2026-11-11)...
+    expect(look.yaw).toBeCloseTo(1.5);
+    // ...a gun with an arc holds the look within it: the Armored Rover's front gun, 1.3 rad either side of the nose.
+    const front = new VehicleCamera();
+    const held = { yaw: 1.5, pitch: 0 };
+    front.update(1 / 60, ride(MOUNT_DEFS.armored_rover, { seat: 1 }), held, noWalls, FOV);
+    expect(held.yaw).toBeCloseTo(1.3);
     const roof = new VehicleCamera();
     const free = { yaw: 2.5, pitch: 0 };
     roof.update(1 / 60, ride(tank, { seat: 2 }), free, noWalls, FOV);

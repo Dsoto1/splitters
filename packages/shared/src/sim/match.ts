@@ -154,6 +154,8 @@ const RAM_MIN_SPEED = 5;
 const DEFAULT_IDLE_BRAKE = 10;
 /** A rider steps out of a vehicle on the ground only where there is ground within this far (m) under the spot (leaveMount, exitReachable). */
 const EXIT_STEP_DOWN = 2;
+/** A turret with a traverse rate fires once its barrel is within this of its gunner's aim (rad: about 3 degrees). */
+const TURRET_ON_AIM = 0.05;
 /** The share of a vehicle's half width a bot's route must be clear for (MountView.routeHalfWidth) without `vehicle.routeFit`: its probe's (0.95). */
 const ROUTE_FIT = 0.95;
 const RAM_DAMAGE = 8;
@@ -2584,8 +2586,10 @@ export class Match {
     const gs = this.gunSeatOf(c);
     const gun = gs === null ? null : m.guns[gs];
     const aim = gs === null ? seat : m.def.seats[gs]!;
+    // (A driver working the seat's gun has their own arc there: SeatDef.driverArc.)
+    const arc = gs !== null && gs !== c.mount!.seat ? (aim.driverArc ?? aim.arc) : aim.arc;
     const ammo = gs === null ? undefined : m.def.seats[gs]!.ammo;
-    return { mount: m.index, seat: c.mount!.seat, role: seat.role, ...(gun ? { weapon: gun.def } : {}), ...(aim.arc !== undefined ? { arc: aim.arc } : {}), ...(aim.facing ? { facing: aim.facing } : {}), heat: gun?.heat ?? 0, overheated: gun?.overheated ?? false, ...(gun?.shells !== undefined && ammo ? { shells: gun.shells, maxShells: ammo.max, ...(ammo.pickups ? { refills: ammo.pickups } : {}) } : {}) };
+    return { mount: m.index, seat: c.mount!.seat, role: seat.role, ...(gun ? { weapon: gun.def } : {}), ...(arc !== undefined ? { arc } : {}), ...(aim.facing ? { facing: aim.facing } : {}), heat: gun?.heat ?? 0, overheated: gun?.overheated ?? false, ...(gun?.shells !== undefined && ammo ? { shells: gun.shells, maxShells: ammo.max, ...(ammo.pickups ? { refills: ammo.pickups } : {}) } : {}) };
   }
 
   /**
@@ -3049,7 +3053,14 @@ export class Match {
         // or by the driver while they work that seat's gun (driverFires), turned as far as its arc lets it.
         const gunSeat = this.gunSeatOf(c);
         if (gunSeat !== null && (m.def.turret === undefined || m.def.turret.seat === gunSeat)) {
-          m.aimYaw = gunSeat === c.mount!.seat ? c.yaw : this.arcYaw(m, gunSeat, c.yaw);
+          const want = gunSeat === c.mount!.seat ? c.yaw : this.arcYaw(m, gunSeat, c.yaw, true);
+          const traverse = m.def.turret?.traverse;
+          if (traverse) {
+            // A real turret: it turns toward the aim at its own rate, the short way round.
+            const d = Math.atan2(Math.sin(want - m.aimYaw), Math.cos(want - m.aimYaw));
+            const step = traverse * TICK_DT;
+            m.aimYaw += Math.max(-step, Math.min(step, d));
+          } else m.aimYaw = want;
           m.aimPitch = c.pitch;
         }
       } else {
@@ -3150,7 +3161,7 @@ export class Match {
         const shoot = (fireDown && !c.semiLatch && roundsReady(held) > 0) || (input.buttons & BUTTON_ALT && !fireDown && def.alt?.reload && held.alt >= def.alt.cost);
         if (swing || shoot) this.cancelReload(c);
       }
-      const ready = c.fireCooldown === 0 && (gun ? true : c.raiseTicks === 0) && c.reloadTicks === 0 && !frozen && !unarmed;
+      const ready = c.fireCooldown === 0 && (gun ? this.turretOnAim(c) : c.raiseTicks === 0) && c.reloadTicks === 0 && !frozen && !unarmed;
       // Spin-up and charge: the trigger has to be held this long first.
       if (def.windupTicks) {
         const able = fireDown && c.raiseTicks === 0 && c.reloadTicks === 0 && !frozen && !held.overheated && (def.magazine === 0 || roundsReady(held) > 0);
@@ -3339,7 +3350,7 @@ export class Match {
     const ride = shooter.mount ? this.mounts[shooter.mount.index] : undefined;
     const gunSeat = ride ? this.gunSeatOf(shooter) : null;
     const lookYaw = shooter.yaw;
-    if (ride && gunSeat !== null && gunSeat !== shooter.mount!.seat) shooter.yaw = this.arcYaw(ride, gunSeat, lookYaw);
+    if (ride && gunSeat !== null && gunSeat !== shooter.mount!.seat) shooter.yaw = this.arcYaw(ride, gunSeat, lookYaw, true);
     try {
       if (!simProfile.on) return this.fireNow(shooter, def, viewTick);
       const t0 = performance.now();
@@ -4473,13 +4484,32 @@ export class Match {
     return m ? firingSeat(m.def, c.mount.seat, (i) => m.seats[i] !== null) : null;
   }
 
-  /** `yaw` kept within seat `seat`'s arc on mount `m` (all round: unchanged). */
-  private arcYaw(m: MountRt, seat: number, yaw: number): number {
+  /**
+   * `yaw` kept within seat `seat`'s arc on mount `m` (all round: unchanged). `driver`: for a driver working the
+   * seat's gun (driverFires), whose arc may be narrower (SeatDef.driverArc).
+   */
+  private arcYaw(m: MountRt, seat: number, yaw: number, driver = false): number {
     const s = m.def.seats[seat];
-    if (s?.arc === undefined) return yaw;
+    const arc = driver ? (s?.driverArc ?? s?.arc) : s?.arc;
+    if (!s || arc === undefined) return yaw;
     const centre = m.yaw + (s.facing ?? 0);
     const d = Math.atan2(Math.sin(yaw - centre), Math.cos(yaw - centre));
-    return centre + Math.max(-s.arc, Math.min(s.arc, d));
+    return centre + Math.max(-arc, Math.min(arc, d));
+  }
+
+  /**
+   * A turret with a traverse rate (MountDef.turret.traverse): is its barrel on the aim of `c`, who works its gun?
+   * True for every other gun. The gun holds its shot until it is (the trigger held, it fires as the barrel arrives),
+   * so a round always goes where its gunner is looking.
+   */
+  private turretOnAim(c: Combatant): boolean {
+    const m = c.mount ? this.mounts[c.mount.index] : undefined;
+    const t = m?.def.turret;
+    if (!m || !t?.traverse) return true;
+    const gunSeat = this.gunSeatOf(c);
+    if (gunSeat !== t.seat) return true;
+    const want = gunSeat === c.mount!.seat ? c.yaw : this.arcYaw(m, gunSeat, c.yaw, true);
+    return Math.abs(Math.atan2(Math.sin(want - m.aimYaw), Math.cos(want - m.aimYaw))) <= TURRET_ON_AIM;
   }
 
   /** Where a seat's occupant stands right now. */

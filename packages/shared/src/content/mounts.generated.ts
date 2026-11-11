@@ -293,7 +293,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // ammo: The cannon carries 10 shells (5 kill another tank), one back every 15 s (empty to full in 150 s), all back when the crewed tank drives over an Ammo Box (`ammo.pickups`: the general core.ammo only, owner 2026-11-08; Light, Rifle, Shells and Sniper rounds and the rest no longer refill it; refill over time owner-approved, 2026-11-07). With the cannon seat empty the driver fires it (driverFires): a crew of one can fight (owner kept it, 2026-11-08). The roof gun runs on heat, as every mounted gun.
   // pivot: Tracks (2026-11-07): it turns on the spot at 0.8 rad/s (a half turn in 4 s), fading out by 5 m/s: out of a dead end without a three-point turn, and a crew holding still can swing the gun onto a target.
   // bailHealth: Bots get out under a quarter of its health (300 of 1200: under two rockets left), not the 0.3 of other vehicles: inside is safe until it blows. It catches fire under 0.15 and blows 5 s later.
-  // turret: The cannon gunner's aim turns the turret (within the seat's 0.6 rad arc) and pitches the barrel (drawn within -0.17..0.35 rad); the roof gun no longer turns it. Shots still leave from the gunner's eye, as for every mounted weapon.
+  // turret: Owner, 2026-11-11: with a gunner in the cannon seat the turret turns the full circle, at 1.2 rad/s (a half turn in 2.6 s, a quarter in 1.3: faster than the hull pivots, 0.8, slow enough that someone on foot can get round behind it), the short way round, and the cannon holds its shot until the barrel is within 3 degrees of the gunner's aim (trigger held, it fires as the barrel arrives), so a shell always goes where the gunner looks. A driver alone working the cannon (driverFires) keeps 0.6 rad either side of the hull (`driverArc`): they steer by where they look, and one player does not get the whole tank. The barrel pitches with the aim (drawn within -0.17..0.35 rad); the roof gun does not turn the turret. Shots leave from the gunner's eye, as for every mounted weapon.
   tank: {
     id: 'tank',
     displayName: 'Tank',
@@ -309,9 +309,9 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
         label: 'Cannon',
         offset: [-0.3, 2.6, -0.3],
         weapon: 'core.tank_cannon',
-        arc: 0.6,
         ammo: { max: 10, refillSeconds: 15, pickups: ['core.ammo'] },
         driverFires: true,
+        driverArc: 0.6,
         seated: true,
         legDrop: 0.4,
       },
@@ -341,8 +341,8 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       routeFit: 0.8,
     },
     cockpitEye: [-0.6, 3.35, 1.95],
-    turret: { seat: 1, pitch: [-0.17, 0.35] },
-    blurb: 'A heavy tank for three: a driver, a cannon gunner firing explosive shells ahead, and a roof machine gun',
+    turret: { seat: 1, pitch: [-0.17, 0.35], traverse: 1.2 },
+    blurb: 'A heavy tank for three: a driver, a cannon gunner whose turret turns all the way round, and a roof machine gun',
   },
   // model: Recon Trike (Meshy Community, CC0; content/guns.json vehicles/recon_jeep.glb, 2026-11-10): a Warthog-style four-wheeler with a pintle machine gun on the roll cage over the cab and an open bed behind. Its tires are cut out as parts (wheel_*), so they spin, steer and ride the springs like the Car Kit truck's wheel meshes did. The Car Kit pickup it replaced is the fallback (vehicles/gun_jeep.glb).
   // half: Fitted across the tires (2026-11-11, as the Troop Truck's): 2.9 m wide, so walls stop the tires where they are drawn and rounds that hit a tire hit the jeep. Length and height unchanged: the model is 4.4 m long and 2.44 m tall at the gun; its body is about 2.2 m wide and its tires stand out to 2.88 m.

@@ -3348,8 +3348,11 @@ export class GameView {
     if (!parts) return;
     const spec = m.def.turret!;
     const seat = m.def.seats[spec.seat];
-    const manned = (m.seats[spec.seat] ?? -1) >= 0;
-    const arc = seat?.arc ?? Math.PI;
+    const gunner = (m.seats[spec.seat] ?? -1) >= 0;
+    // A driver alone works the gun of a driverFires seat, within their own arc there.
+    const byDriver = !gunner && !!seat?.driverFires && m.def.seats.some((s, i) => s.role === 'driver' && (m.seats[i] ?? -1) >= 0);
+    const manned = gunner || byDriver;
+    const arc = (byDriver ? (seat?.driverArc ?? seat?.arc) : seat?.arc) ?? Math.PI;
     const rel = Math.atan2(Math.sin(m.shown.aimYaw - m.shown.yaw - (seat?.facing ?? 0)), Math.cos(m.shown.aimYaw - m.shown.yaw - (seat?.facing ?? 0)));
     const [lo, hi] = spec.pitch ?? [-0.5, 0.75];
     const want = manned ? { yaw: (seat?.facing ?? 0) + Math.max(-arc, Math.min(arc, rel)), pitch: Math.max(lo, Math.min(hi, m.shown.aimPitch)) } : { yaw: 0, pitch: 0 };
@@ -3359,7 +3362,9 @@ export class GameView {
     const dt = Math.min(0.1, (now - (this.turretAt.get(m.index) ?? now)) / 1000);
     this.turretAt.set(m.index, now);
     const step = TURRET_TURN * dt;
-    aim.yaw += Math.max(-step, Math.min(step, want.yaw - aim.yaw));
+    // The short way round (a turret that turns the full circle crosses straight behind).
+    const turn = Math.atan2(Math.sin(want.yaw - aim.yaw), Math.cos(want.yaw - aim.yaw));
+    aim.yaw += Math.max(-step, Math.min(step, turn));
     aim.pitch += Math.max(-step, Math.min(step, want.pitch - aim.pitch));
     // The parts sit inside the glTF import's mirrored root (x flipped): a turn about the upright reads the other way
     // round there, a pitch about x the same way; + pitch (up) is a turn of the barrel's nose up, -x in Babylon's frame.

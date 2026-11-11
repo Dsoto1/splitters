@@ -1774,6 +1774,15 @@ shells wear it down (about 6 rockets, 5 shells), small arms barely mark it. Its 
 blade from outside reaches them; they die with the tank. Readability (§2.4): a hit on the hull sparks like armour.
 Numbers and how to change them: docs/CONTENT_PIPELINE.md, "Tanks and armour".
 
+The turret (owner, 2026-11-11). With a gunner in the cannon seat the turret turns the full circle, at a traverse rate
+from the vehicle's data (`turret.traverse`, 1.2 rad/s: a half turn in 2.6 s, faster than the hull pivots, slow enough
+to get round behind on foot); the match turns it (`aimYaw`), so every screen draws the same turret. The cannon holds
+its shot until the barrel is within 3 degrees of the gunner's aim and fires as it arrives (trigger held): a shell
+always goes where its gunner is looking (responsiveness over simulation: no shot off the crosshair), and the
+traverse is the cost of a target behind. A driver alone working the cannon keeps 0.6 rad either side of the hull
+(`driverArc` on the seat): a crew of one can fight ahead, a crew of two covers every direction. The roof gun is
+unchanged.
+
 Balance pass (owner, 2026-11-08: no tank was destroyed in 36 bot-minutes). Rockets hurt vehicles more: a weapon's
 `vehicleDamage` (data, content/weapons) multiplies what it does to vehicles only, never to players; the five rocket
 weapons (Rocket Launcher, Guided Rocket, Swarm Launcher, Blast Rockets, Mounted Rockets) are 2, so a Rocket Launcher

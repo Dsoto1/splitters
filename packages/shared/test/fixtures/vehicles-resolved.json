@@ -818,7 +818,6 @@
        -0.3
       ],
       "weapon": "core.tank_cannon",
-      "arc": 0.6,
       "ammo": {
        "max": 10,
        "refillSeconds": 15,
@@ -827,6 +826,7 @@
        ]
       },
       "driverFires": true,
+      "driverArc": 0.6,
       "seated": true,
       "legDrop": 0.4
      },
@@ -878,9 +878,10 @@
      "pitch": [
       -0.17,
       0.35
-     ]
+     ],
+     "traverse": 1.2
     },
-    "blurb": "A heavy tank for three: a driver, a cannon gunner firing explosive shells ahead, and a roof machine gun"
+    "blurb": "A heavy tank for three: a driver, a cannon gunner whose turret turns all the way round, and a roof machine gun"
    },
    "mass": 6,
    "eyes": [

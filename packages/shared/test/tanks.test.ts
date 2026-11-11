@@ -388,6 +388,63 @@ describe('the cannon: limited shells, refills and the ammo pickup', () => {
   });
 });
 
+describe('the turret (owner, 2026-11-11)', () => {
+  const aimOf = (match: Match) => (internals(match).mounts[0] as unknown as { aimYaw: number }).aimYaw;
+  const off = (a: number, b: number) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
+
+  it('the data: a gunner aims all round, a driver alone 0.6 rad either side, the turret turns at 1.2 rad/s', () => {
+    expect(TANK.seats[CANNON]!.arc).toBeUndefined();
+    expect(TANK.seats[CANNON]!.driverArc).toBe(0.6);
+    expect(TANK.turret).toMatchObject({ seat: CANNON, traverse: 1.2 });
+  });
+
+  it('with a gunner it turns the full circle at its own rate, and the cannon holds its shot until the barrel is on the aim', () => {
+    const match = new Match(yard([mount('tank', 12, 6)]), rules, 3);
+    const pad = new Pad(match);
+    const driver = match.addHuman('driver')!;
+    const gunner = match.addHuman('gunner')!;
+    pad.run(2);
+    place(driver, 14, 6);
+    internals(match).enterMount(driver);
+    place(gunner, 14, 6);
+    internals(match).enterMount(gunner);
+    expect(gunner.mount!.seat).toBe(CANNON);
+    // Settled ahead; then the gunner looks straight behind and holds the trigger.
+    pad.run(TICK_RATE, () => pad.input(gunner, { yaw: 0, pitch: 0.2 }));
+    expect(off(aimOf(match), 0)).toBeLessThan(0.01);
+    const behind = Math.PI * 0.95;
+    const before = internals(match).projectiles.length;
+    // Half a second: the gunner's look is not held back, the turret has turned 0.6 rad of it, no shell yet.
+    pad.run(TICK_RATE / 2, () => pad.input(gunner, { yaw: behind, pitch: 0.2, buttons: BUTTON_FIRE }));
+    expect(off(gunner.yaw, behind)).toBeLessThan(0.01);
+    expect(off(aimOf(match), 0)).toBeGreaterThan(0.5);
+    expect(off(aimOf(match), 0)).toBeLessThan(0.7);
+    expect(internals(match).projectiles.length).toBe(before);
+    // It gets there (2.98 rad at 1.2 rad/s: 2.5 s) and fires as it arrives, the shell going where the gunner looks.
+    let firedAt = -1;
+    for (let k = 0; k < TICK_RATE * 3 && firedAt < 0; k++) {
+      pad.run(1, () => pad.input(gunner, { yaw: behind, pitch: 0.2, buttons: BUTTON_FIRE }));
+      if (internals(match).projectiles.length > before) firedAt = k;
+    }
+    expect(firedAt).toBeGreaterThan(TICK_RATE * 1.6);
+    expect(firedAt).toBeLessThan(TICK_RATE * 2.3);
+    expect(off(aimOf(match), behind)).toBeLessThan(0.06);
+  });
+
+  it('a driver alone turns it only 0.6 rad either side of the hull', () => {
+    const match = new Match(yard([mount('tank', 12, 6)]), rules, 3);
+    const pad = new Pad(match);
+    const driver = match.addHuman('driver')!;
+    pad.run(2);
+    place(driver, 14, 6);
+    internals(match).enterMount(driver);
+    const tank = internals(match).mounts[0]!;
+    pad.run(TICK_RATE * 3, () => pad.input(driver, { yaw: tank.yaw + 2, pitch: 0.2 }));
+    expect(off(aimOf(match), tank.yaw + 0.6)).toBeLessThan(0.02);
+    expect(match.privateState(driver.slot)).toBeTruthy();
+  });
+});
+
 describe('tracks', () => {
   it('a tank turns on the spot; a buggy standing still does not', () => {
     const match = new Match(yard([mount('tank', 12, 12), mount('buggy', 28, 12)]), rules, 3);
