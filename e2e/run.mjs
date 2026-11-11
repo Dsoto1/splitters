@@ -6390,8 +6390,8 @@ async function arsenalFlow(browser) {
   const spearStuck = spearOut && await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'spear' && p.stuck), null, T(10000));
   const spearDrawn = await page.waitForFunction(() => window.__cs.view.spearModelsDrawn() > 0, null, { timeout: T(20000) }).then(() => true, () => false);
   check(spearHeld && spearOut && spearStuck && spearDrawn, `the Spear is held as its model, and thrown it flies and sticks as that model (held ${spearHeld}, thrown ${spearOut}, stuck ${spearStuck}, drawn ${spearDrawn})`);
-  // A thrown sheep is drawn as its skinned model at its size (content/throwables.json, fit 0.7 m), not 7 mm tall (a
-  // rig in centimetres under a 0.01 armature, once sized as if its node's scale were not drawn).
+  // A thrown sheep is drawn as its skinned model at its size (content/throwables.json, fit 0.7 m in its bind pose; its
+  // walk clip crouches it to about 0.42), not 7 mm tall (a 0.01 armature, once sized as if its scale were not drawn).
   await sim(page, (m, me) => {
     me.throwable = { kind: 'sheep', count: 3 };
     me.throwCooldown = 0;
@@ -6401,7 +6401,7 @@ async function arsenalFlow(browser) {
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   const sheepDrawn = sheepOut && await page.waitForFunction(() => window.__cs.view.thrownModelSizes().some((s) => s.look === 'sheep'), null, { timeout: T(20000) }).then(() => true, () => false);
   const sheepSize = await page.evaluate(() => window.__cs.view.thrownModelSizes().filter((s) => s.look === 'sheep').map((s) => s.tall));
-  check(sheepOut && sheepDrawn && sheepSize.length > 0 && sheepSize.every((t) => t > 0.5 && t < 1), `a thrown sheep is drawn as its model, about 0.7 m tall (thrown ${sheepOut}, drawn ${sheepDrawn}, ${sheepSize.join(', ')} m)`);
+  check(sheepOut && sheepDrawn && sheepSize.length > 0 && sheepSize.every((t) => t > 0.3 && t < 1), `a thrown sheep is drawn as its model, 0.3-1 m tall (0.7 in its bind pose, lower in its walk) (thrown ${sheepOut}, drawn ${sheepDrawn}, ${sheepSize.join(', ')} m)`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await thirdPersonShot(browser);
