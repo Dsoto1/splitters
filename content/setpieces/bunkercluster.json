@@ -34,7 +34,7 @@
         {"kind":"prop","model":"prop.sandbag_corner","position":[10.4,0,10.4],"yaw":1.570796,"scale":1},
         {"kind":"prop","model":"prop.ammo_stack","position":[-2.5,0,10.6],"yaw":0,"scale":1},
         {"kind":"prop","model":"prop.ammo_stack","position":[18.5,0,10.6],"yaw":0,"scale":1},
-        {"kind":"prop","model":"prop.table","position":[8,0,18],"yaw":0,"scale":1},
+        {"kind":"prop","model":"kit.table.dining","position":[8,0,18],"yaw":0,"scale":1},
         {"kind":"light","position":[0,3,8],"fixture":"bulb","color":"#ffd9a0","intensity":0.9,"range":8},
         {"kind":"light","position":[16,3,8],"fixture":"bulb","color":"#ffd9a0","intensity":0.9,"range":8},
         {"kind":"light","position":[8,3,16],"fixture":"bulb","color":"#ffd9a0","intensity":0.9,"range":8}
