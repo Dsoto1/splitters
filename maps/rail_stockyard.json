@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "rail_stockyard",
     "name": "Rail Stockyard",
@@ -3379,7 +3379,7 @@
         48.6
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": false,

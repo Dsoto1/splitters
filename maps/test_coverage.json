@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_5xebowsxxckcyqya",
-      "revision": 15,
-      "contentHash": "sha256:17a8588fcff4617f9e2b0922f060653feff9e41dc9cdd2b40cf57e1a2b801fb5",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T11:28:05.306Z"
+      "versionId": "v_2ss7acmehpzlephr",
+      "revision": 16,
+      "contentHash": "sha256:e010209606749b17c10bf23f66296c3154e3a5c0444e196c9fad19db9a4c759d",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:23:25.848Z"
     },
     "testOnly": true
   },
@@ -4888,6 +4888,20 @@
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
+    },
+    {
+      "id": "prop_pg6tf9ha06",
+      "kind": "prop",
+      "position": [
+        -28,
+        -0.18,
+        112
+      ],
+      "model": "prop.tv",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],

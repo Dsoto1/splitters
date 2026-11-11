@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "underdrain",
     "name": "Underdrain",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_wtaygxmgpnk3xung",
-      "versionId": "v_7hxvxq4oixxk6yxg",
-      "revision": 3,
-      "contentHash": "sha256:4ab6d8e7de0136cb0374a15f3359cd692be6b0f84b653ff6d033f39e8700b649",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T10:41:18.015Z"
+      "versionId": "v_vqgqhmmfhpx24rbd",
+      "revision": 4,
+      "contentHash": "sha256:e302f1dbdbfabb9ff8ce0e29bd86d02c6de55e2cb8d7e72c9b6917112f1074c5",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:20:28.946Z"
     }
   },
   "classicStructure": {
@@ -19802,7 +19802,7 @@
         25
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -21132,7 +21132,7 @@
         0.6
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": false,

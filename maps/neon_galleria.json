@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "neon_galleria",
     "name": "Neon Galleria",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_uy54jdpkmne5vzsk",
-      "versionId": "v_fl2k3om3rpq3ct77",
-      "revision": 5,
-      "contentHash": "sha256:a41282d91523dccf5e8c15d6129d7476fbd84dbba8ff84853fdd77666524f27c",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T15:20:34.769Z"
+      "versionId": "v_z4q5gsguxbsyt2fx",
+      "revision": 6,
+      "contentHash": "sha256:49b9725c6a6b5c4b42ad7d9235176d1e13b19a5b13a06714e0ffb81c128b67cd",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:09:39.738Z"
     }
   },
   "classicStructure": {
@@ -18575,7 +18575,7 @@
         -17.54
       ],
       "kind": "prop",
-      "model": "prop.sofa_long",
+      "model": "kit.sofa.corner",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "iron_tide",
     "name": "Midnight Keel",
@@ -34,11 +34,11 @@
     },
     "release": {
       "mapId": "m_vfevdrgwi6zn7cfg",
-      "versionId": "v_fjtt53d72px2bjtr",
-      "revision": 6,
-      "contentHash": "sha256:7980b2196a85c519df97bc42e9a10357479dc77b84dd83917f520c99bff28967",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T15:13:08.331Z"
+      "versionId": "v_oj7vdf54blkvrw4f",
+      "revision": 7,
+      "contentHash": "sha256:963f546ea06454cdfb91859c2157f07d2aecf7106192f0677101b119734de18a",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:05:57.738Z"
     }
   },
   "classicStructure": {
@@ -12236,7 +12236,7 @@
         42.37
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -12376,7 +12376,7 @@
         42.37
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -12390,7 +12390,7 @@
         42.37
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -12432,7 +12432,7 @@
         29.64
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -15316,7 +15316,7 @@
         37.92
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "norman_shores",
     "name": "Norman Shores",
@@ -12537,7 +12537,7 @@
         -17
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12593,7 +12593,7 @@
         -8
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12649,7 +12649,7 @@
         -17
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12705,7 +12705,7 @@
         -7
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12761,7 +12761,7 @@
         -7
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20027,7 +20027,7 @@
         -89.37
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20867,7 +20867,7 @@
         -80.46
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21889,7 +21889,7 @@
         70.63
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -22813,7 +22813,7 @@
         -89.37
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -23331,7 +23331,7 @@
         -88.46
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -24227,7 +24227,7 @@
         16.46
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -25025,7 +25025,7 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -25095,7 +25095,7 @@
         -9.25
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -25165,7 +25165,7 @@
         -14.75
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -25235,7 +25235,7 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -25305,7 +25305,7 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -25375,7 +25375,7 @@
         -6.51
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -25445,7 +25445,7 @@
         -17.49
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -25515,7 +25515,7 @@
         -6.51
       ],
       "kind": "prop",
-      "model": "prop.table_round",
+      "model": "kit.table.round",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

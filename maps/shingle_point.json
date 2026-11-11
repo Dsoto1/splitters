@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "shingle_point",
     "name": "Shingle Point",
@@ -29,11 +29,11 @@
     },
     "release": {
       "mapId": "m_vql6e6ixmth3q6cb",
-      "versionId": "v_x4opjxoz3alel56u",
-      "revision": 8,
-      "contentHash": "sha256:9f02d5d5192110fe8860e59bd22f56d19cf129008aababc2e1ff5eaec18cb38f",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T15:31:46.159Z"
+      "versionId": "v_kv3yt7rqdatvefmd",
+      "revision": 9,
+      "contentHash": "sha256:5380e5621c66a9510d147b347fce70323613a2908dbe3644b71c0e0679681c33",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:17:44.210Z"
     }
   },
   "classicStructure": {
@@ -8691,7 +8691,7 @@
         13.64
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8719,7 +8719,7 @@
         18.36
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

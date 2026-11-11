@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "grand_marquee",
     "name": "Grand Marquee",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_e6dqdikseiiwt3s5",
-      "versionId": "v_tsyl4xibjcvdtvvg",
-      "revision": 6,
-      "contentHash": "sha256:b6231723f03562ef58af8719bb3d65a2ce7efbb41ae8db213f3b925cd417e868",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T15:09:33.962Z"
+      "versionId": "v_ncqbyne5vvkxiahn",
+      "revision": 7,
+      "contentHash": "sha256:5ff18b9012e15c717900a03944e590fdd392b1ddb282f3423855a9b3ce4e7920",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:04:32.861Z"
     }
   },
   "classicStructure": {
@@ -14144,7 +14144,7 @@
         63.54
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -14200,7 +14200,7 @@
         66.48
       ],
       "kind": "prop",
-      "model": "prop.bed",
+      "model": "kit.bed.double",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

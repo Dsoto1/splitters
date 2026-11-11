@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "citadel",
     "name": "Citadel",
@@ -962,7 +962,7 @@
         13.5
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -990,7 +990,7 @@
         25.3
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -1018,7 +1018,7 @@
         13.5
       ],
       "kind": "prop",
-      "model": "prop.bunk_bed",
+      "model": "kit.bed.bunk",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,

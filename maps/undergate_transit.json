@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "undergate_transit",
     "name": "Undergate Transit",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_5lhttjun3ohakisn",
-      "versionId": "v_rytw5e5biytgzyw4",
-      "revision": 4,
-      "contentHash": "sha256:02fa2e7349b0faed6c1726d1a9b6ce5659d132e39c70678aa92039897df0ed1b",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T10:43:42.379Z"
+      "versionId": "v_e5xmavg7suw352xg",
+      "revision": 5,
+      "contentHash": "sha256:d177a721cf0b34ef53752e17e0ca53227fb3334b4977426ab7c77c40cb94d580",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-11T17:21:49.117Z"
     }
   },
   "classicStructure": {
@@ -19448,7 +19448,7 @@
         -46.29
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -19784,7 +19784,7 @@
         -50.7
       ],
       "kind": "prop",
-      "model": "prop.sofa_long",
+      "model": "kit.sofa.corner",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19798,7 +19798,7 @@
         -45.3
       ],
       "kind": "prop",
-      "model": "prop.sofa_long",
+      "model": "kit.sofa.corner",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -20064,7 +20064,7 @@
         39.54
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -20092,7 +20092,7 @@
         42.08
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21170,7 +21170,7 @@
         7.1
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -21198,7 +21198,7 @@
         7.1
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
@@ -21226,7 +21226,7 @@
         7.1
       ],
       "kind": "prop",
-      "model": "prop.office_chair",
+      "model": "kit.seat.office",
       "yaw": 3.1416,
       "scale": 1,
       "solid": false,
