@@ -651,6 +651,7 @@ Bot AI Phase D item 5's MapMaker part. Lands in the Tuesday train.
 
 - Claimed: `maps/verdant_protocol.json` (new map, MAP 04, built in MapMaker; `wip/mapmaker-verdant`), MapMaker lane, 2026-11-09.
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
+- Claimed: map format v35 (`metadata.tier`: quality tiers for maps, `wip/mapmaker-quality-gates`), MapMaker lane, 2026-11-11.
 
 **MapMaker: time of day and weather (`wip/mapmaker-p5`, map format v34, MapMaker lane, 2026-11-09).** Overhaul Phase 5
 (docs/MAPMAKER_OVERHAUL_PLAN.md "As built"), chained after v33 (bot hints). Lands in a train.
@@ -784,6 +785,9 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 **Landed: throwables part 2** (main = 9fe6692, green on check/weapons-throwables run 42931628016; lead session, 2026-11-11): the sheep (walk clip from `sheep_walking.glb`), the flare gun model (3DModelsCC0 Guns & Explosives, CC0) on the Flare Gun weapon, and the airstrike flare as a flare-gun shot (gun in hand during the throw hold; a steady red glow, flame, red smoke, a few sparks, calmer with Reduce flashing). **Unchecked by eye, owner to look:** the flare-gun hold (`content/weapons/flare_gun.json` grip/support/rake/muzzleAt), the sheep size (`view.fit` 0.7), the red smoke tint (`smoke.flare`).
 
 **Landed: kit-prop generators part 1** (`wip/mapmaker-kit-props` = `wip/kit-props` 4aa5e42 + one test fix; green on `check/mapmaker-kit-props` at d7b47b6, run 42872729649; MapMaker lane, the main session, 2026-11-10). Run 42846096828 had been red on one check, `editorenv` "the bot test run goes on in the background": the test read the progress bar at the worker's ready line ("0:00 of 5:00 played", bar 0); it now waits for the first progress report. Landing lock released. Left of part 1: MapMaker's "Replace all" for the 722 placements on 57 maps (as played they already draw the new pieces).
+**Landing now: kit props parts 2 and 3 with their maps (`check/mapmaker-kit-fences`; MapMaker lane, the main session, 2026-11-11), please hold code pushes to main.** One check run, then a fast-forward; this line goes when it lands or fails. Generated fences, iron railings, drystone walls, concrete barriers and a shipping container (`tools/content/kit/fence.mjs`, `container.mjs`), finer collision for see-through families (`PropDefinition.boxes` from the generator), MapMaker's Replace all on 14 maps (247 placements; its picker now offers a family's other looks).
+**Next in line to land: quality tiers for maps** (`wip/mapmaker-quality-gates`, map format v35, claimed above; MapMaker lane, 2026-11-11), after kit props.
+
 **Landed: terrain paint blending** (green on `check/mapmaker-terrain-blend` at 255cc88, run 42923674730; MapMaker lane, the main session, 2026-11-10). Landing lock released. `MapStyler.buildTerrainBlend` (`client/src/mapMeshes.ts`): over each border cell every neighbouring paint is drawn again, see-through, fading from its share of the cells round each corner (`BLEND_SHARPNESS` 1.5, `BLEND_CUTS` 3: gone two thirds of a cell from the border); drawing only; off on Low. The `visual` flow passes on its old baselines.
 
 **In flight (MapMaker lane, 2026-11-11), nothing of it on main:**
