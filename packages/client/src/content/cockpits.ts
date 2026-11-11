@@ -227,5 +227,81 @@ const TROOP_TRUCK: CockpitDef = {
   switches: [],
 };
 
+/**
+ * The Armored Rover (MOUNT_DEFS.armored_rover, Dust Runner, 2026-11-11). The model is a closed shell with nothing
+ * inside it, so from the driver's seat its walls, pillars and screen frame showed as loose shards of their inside
+ * faces. Measured on the model (slices of its triangles): the cab's walls 1.05 m either side, the floor 0.6 m up, the
+ * roof's underside 2.2 m, the screen's header at z 0.6 falling to the hood's back edge (z 1.0, 1.6 m up; the hood
+ * runs on to z 2.5). In your own cockpit view the shell's front half is left out below the roof and this cab is
+ * drawn in it: doors to the belt line (1.5 m), pillars, a header, a headliner, a dash under the screen, two seats and
+ * the wheel.
+ */
+const ARMORED_ROVER: CockpitDef = {
+  hide: [
+    [
+      [-1.15, 0.45, -1.0],
+      [1.15, 2.1, 1.02],
+    ],
+  ],
+  palette: {
+    trim: [0.15, 0.16, 0.14],
+    door: [0.3, 0.29, 0.22],
+    dash: [0.11, 0.115, 0.11],
+    pad: [0.2, 0.2, 0.18],
+    floor: [0.2, 0.21, 0.2],
+    seat: [0.12, 0.12, 0.11],
+    bolster: [0.18, 0.18, 0.16],
+    shell: [0.2, 0.2, 0.19],
+    strap: [0.5, 0.42, 0.2],
+    buckle: [0.72, 0.72, 0.74],
+    rubber: [0.05, 0.05, 0.05],
+    steel: [0.5, 0.5, 0.52],
+  },
+  tubes: [
+    // A-pillars from the belt line up to the header, the header, B-pillars, the roof's side rails.
+    { path: [[-1.02, 1.5, 0.98], [-0.97, 2.12, 0.62]], r: 0.05, color: 'trim', surface: 'paint', mirror: true },
+    { path: [[-0.97, 2.12, 0.62], [0.97, 2.12, 0.62]], r: 0.045, color: 'trim', surface: 'paint' },
+    { path: [[-1.04, 1.5, -0.55], [-1.0, 2.14, -0.55]], r: 0.05, color: 'trim', surface: 'paint', mirror: true },
+    { path: [[-0.97, 2.13, 0.62], [-1.0, 2.15, -1.0]], r: 0.04, color: 'trim', surface: 'paint', mirror: true },
+    // Grab handles: on the passenger's side of the dash, and over each door.
+    { path: [[0.25, 1.5, 0.72], [0.27, 1.56, 0.66], [0.68, 1.56, 0.66], [0.7, 1.5, 0.72]], r: 0.014, bend: 0.04, color: 'steel', surface: 'metal' },
+    { path: [[-0.93, 2.08, 0.25], [-0.9, 2.03, 0.22], [-0.9, 2.03, -0.08], [-0.93, 2.08, -0.11]], r: 0.012, bend: 0.03, color: 'steel', surface: 'metal', mirror: true },
+  ],
+  boxes: [
+    // Floor, and the tunnel between the seats.
+    { at: [0, 0.6, 0], size: [2.1, 0.04, 2.0], round: 0.015, color: 'floor', surface: 'metal' },
+    { at: [0, 0.74, -0.1], size: [0.3, 0.26, 1.4], round: 0.04, color: 'pad', surface: 'plastic' },
+    // The headliner under the roof (the shell's roof has no underside: the rack and the gunners' feet showed through),
+    // and the cowl over the seam where the cut meets the hood.
+    { at: [0, 2.16, -0.2], size: [2.04, 0.03, 1.7], round: 0.012, color: 'pad', surface: 'fabric' },
+    { at: [0, 1.57, 1.04], size: [2.1, 0.07, 0.14], round: 0.03, color: 'trim', surface: 'paint' },
+    // Doors up to the belt line, a padded rail on top of each, and a bulkhead behind the bench up to the roof (the
+    // shell's back half is not cut: past it, its inside faces would show as shards again).
+    { at: [-1.06, 1.05, 0], size: [0.06, 0.9, 2.0], round: 0.02, color: 'door', surface: 'paint', mirror: true },
+    { at: [-1.03, 1.5, 0], size: [0.1, 0.06, 2.0], round: 0.025, color: 'pad', surface: 'plastic', mirror: true },
+    { at: [0, 1.38, -1.0], size: [2.1, 1.56, 0.05], round: 0.02, color: 'door', surface: 'paint' },
+    // The bench behind the front seats, against the back panel: a cushion and a backrest.
+    { at: [0, 0.94, -0.72], size: [1.9, 0.14, 0.44], round: 0.04, color: 'seat', surface: 'fabric' },
+    { at: [0, 1.28, -0.93], size: [1.9, 0.56, 0.08], rot: [-0.12, 0, 0], round: 0.035, color: 'seat', surface: 'fabric' },
+    // Dash: a deep shelf under the screen at the hood's height, its face toward the seats, the gauge hood.
+    { at: [0, 1.53, 0.86], size: [2.06, 0.05, 0.34], rot: [0.08, 0, 0], round: 0.02, color: 'dash', surface: 'plastic' },
+    { at: [0, 1.36, 0.72], size: [2.06, 0.32, 0.06], rot: [0.3, 0, 0], round: 0.025, color: 'dash', surface: 'plastic' },
+    { at: [-0.45, 1.5, 0.68], size: [0.44, 0.13, 0.08], rot: [0.3, 0, 0], round: 0.03, color: 'pad', surface: 'plastic' },
+    // The switch plate in the middle, a radio box under it, pedals.
+    { at: [0.05, 1.4, 0.69], size: [0.26, 0.1, 0.03], rot: [0.3, 0, 0], round: 0.01, color: 'shell', surface: 'plastic' },
+    { at: [0.05, 1.24, 0.72], size: [0.3, 0.12, 0.1], round: 0.015, color: 'shell', surface: 'metal' },
+    { at: [-0.56, 0.78, 0.66], size: [0.07, 0.11, 0.02], rot: [-0.5, 0, 0], round: 0.008, color: 'steel', surface: 'metal' },
+    { at: [-0.36, 0.78, 0.66], size: [0.08, 0.09, 0.02], rot: [-0.5, 0, 0], round: 0.008, color: 'steel', surface: 'metal' },
+  ],
+  discs: [],
+  seats: [{ at: [-0.45, 1.02, -0.15], recline: 0.2, width: 0.5, harness: true, mirror: true }],
+  wheel: { at: [-0.45, 1.42, 0.5], toward: [0, 0.4, -0.92], r: 0.2, grip: 0.02, spokes: [-Math.PI / 2, Math.PI / 2, Math.PI], column: 0.3, lock: 1.6 },
+  gauges: [
+    { at: [-0.54, 1.5, 0.635], face: [0, 0.3, -0.95], r: 0.05, needle: 'speed', max: 16 },
+    { at: [-0.36, 1.5, 0.635], face: [0, 0.3, -0.95], r: 0.05, needle: 'revs' },
+  ],
+  switches: [{ at: [0.05, 1.4, 0.67], face: [0, 0.3, -0.95], count: 5, gap: 0.045 }],
+};
+
 /** In-house cockpits by mount id. */
-export const COCKPITS: Readonly<Record<string, CockpitDef>> = { buggy: BUGGY, troop_truck: TROOP_TRUCK };
+export const COCKPITS: Readonly<Record<string, CockpitDef>> = { buggy: BUGGY, troop_truck: TROOP_TRUCK, armored_rover: ARMORED_ROVER };

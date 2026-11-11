@@ -108,7 +108,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   },
   // model: A Meshy Community sci-fi buggy (Meshy_AI__1108120754, CC0; content/guns.json vehicles/sixer_buggy.glb, 2026-11-11): a tube-frame four-wheeler with a cage over the cabin and an open deck behind it. Its tires are cut out as parts (wheel_*), so they spin, steer and ride the springs. The Tactical Off-Road Beast (on its separate tires) it replaced is the fallback (vehicles/offroad_buggy.glb).
   // half: Fitted across the tires (2026-11-11, as the Troop Truck's): 2.9 m wide, so walls stop the tires where they are drawn and rounds that hit a tire hit the buggy. Length and height unchanged: the model is 4.4 m long and 1.98 m tall; its body is about 1.8 m wide and its tires stand out to 2.86 m.
-  // seats: Measured on the model (slices of its triangles): two front seats, cushions 0.82 m up at z 0.08 and 0.4 m either side (the floor 0.6 m up, the wheel on the left); behind the cabin's hoop (z -0.6) an open deck 1.7 m up, clear overhead, from x -0.25 to 0.75 (a rack box stands on its left side, x -0.7 to -0.3, 2.0 m) and z -0.6 to -1.45. The four standing riders stand on it two by two (x 0 and 0.5, z -0.7 and -1.3), like the Gun Jeep's standing gunner. The owner's layout, 2026-11-11: a driver, a seated front passenger and four standing in the back.
+  // seats: Measured on the model (slices of its triangles): two front seats, cushions 0.82 m up at z 0.08 and 0.4 m either side (the floor 0.6 m up, the wheel on the left); behind the cabin's hoop (z -0.6) an open deck 1.7 m up, clear overhead, from x -0.25 to 0.75 (a rack box stands on its left side, x -0.7 to -0.3, 2.0 m) and z -0.6 to -1.45. The four standing riders stand on it two by two (x -0.15 and 0.45, z -0.7 and -1.3: as near the buggy's middle as the rack lets the left pair's feet go, 0.1 m nearer than at first), like the Gun Jeep's standing gunner. The owner's layout, 2026-11-11: a driver, a seated front passenger and four standing in the back.
   // cockpitEye: A seated head height (1.5 m), under the cage's front bar (1.6 m at z 0.4), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts), refitted to this body.
   // vehicle: The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides. The suspension's contact points and hub height are the old drawn tires' (unchanged handling).
   buggy: {
@@ -122,10 +122,10 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     seats: [
       { role: 'driver', label: 'Driver', offset: [-0.4, 0.82, 0.08], seated: true, legDrop: 0.2 },
       { role: 'passenger', label: 'Front passenger', offset: [0.4, 0.82, 0.08], seated: true, legDrop: 0.2 },
-      { role: 'passenger', label: 'Deck, front left', offset: [0, 1.7, -0.7] },
-      { role: 'passenger', label: 'Deck, front right', offset: [0.5, 1.7, -0.7] },
-      { role: 'passenger', label: 'Deck, back left', offset: [0, 1.7, -1.3] },
-      { role: 'passenger', label: 'Deck, back right', offset: [0.5, 1.7, -1.3] },
+      { role: 'passenger', label: 'Deck, front left', offset: [-0.15, 1.7, -0.7] },
+      { role: 'passenger', label: 'Deck, front right', offset: [0.45, 1.7, -0.7] },
+      { role: 'passenger', label: 'Deck, back left', offset: [-0.15, 1.7, -1.3] },
+      { role: 'passenger', label: 'Deck, back right', offset: [0.45, 1.7, -1.3] },
     ],
     cockpitEye: [-0.4, 1.5, 0.12],
     enterRadius: 3.2,
@@ -351,7 +351,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     blurb: 'A light pickup with a machine gun on the back: a driver, a gunner who fires all round and three passengers with their own weapons',
   },
   // model: Dust Runner (Meshy Community, CC0; content/guns.json vehicles/dust_runner.glb, 2026-11-10): a closed two-door off-roader with a roof rack, 5.3 m long, 2.56 m wide and 2.57 m tall, fitted to the box. The Car Kit delivery truck it replaced is the fallback (vehicles/armored_rover.glb).
-  // seats: Measured on the model: the cab floor 0.7 m up from z 0.4 back to the tailgate, the windscreen at z 0.6-0.9, the roof and its rack 2.4-2.5 m up from z 0.6 to -2.2. The driver moves back from the old truck's cab (z 1.5, now the hood) to the front seat (z 0.05); the gunners stand on the rack at its front and back ends. Roles, weapons and arcs unchanged.
+  // seats: Measured on the model: the cab floor 0.7 m up from z 0.4 back to the tailgate, the windscreen at z 0.6-0.9, the roof and its rack 2.4-2.5 m up from z 0.6 to -2.2. The driver moves back from the old truck's cab (z 1.5, now the hood) to the front seat (z 0.05); the gunners stand on the rack at its front and back ends. Roles, weapons and arcs unchanged. The three inside sit (2026-11-11: standing on the floor their heads came out through the roof, 2.5 m): cushions 1.02 m up, the driver on the left front seat, the two passengers on a bench against the panel behind the front seats (the in-house cockpit draws the seats and the bench, client content/cockpits.ts).
   // cockpitEye: A seated head height in the driver's seat, under the roof, behind the windscreen.
   armored_rover: {
     id: 'armored_rover',
@@ -362,7 +362,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     health: 900,
     half: [1.25, 1.2, 2.65],
     seats: [
-      { role: 'driver', label: 'Driver', offset: [-0.45, 1.1, 0.05] },
+      { role: 'driver', label: 'Driver', offset: [-0.45, 1.02, 0.05], seated: true, legDrop: 0.3 },
       { role: 'gunner', label: 'Front gun', offset: [0.4, 2.55, 0.35], weapon: 'core.mount_mg', arc: 1.3 },
       {
         role: 'gunner',
@@ -372,8 +372,8 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
         arc: 1.6,
         facing: 3.141592653589793,
       },
-      { role: 'passenger', label: 'Left bench', offset: [-0.6, 1.2, -0.8] },
-      { role: 'passenger', label: 'Right bench', offset: [0.6, 1.2, -0.8] },
+      { role: 'passenger', label: 'Left bench', offset: [-0.6, 1.02, -0.72], seated: true, legDrop: 0.3 },
+      { role: 'passenger', label: 'Right bench', offset: [0.6, 1.02, -0.72], seated: true, legDrop: 0.3 },
     ],
     cockpitEye: [-0.45, 1.85, 0.2],
     enterRadius: 3.8,
