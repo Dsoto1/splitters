@@ -27,11 +27,11 @@
     },
     "release": {
       "mapId": "m_fxtilvssrdvznevx",
-      "versionId": "v_jxhz7ogynrt3i2nl",
-      "revision": 148,
-      "contentHash": "sha256:d6fdc80be2f43c159328abd15776e6f0adc71acdada0dbe7f4759873ca1f0232",
+      "versionId": "v_cuumi3owlly3lsm4",
+      "revision": 151,
+      "contentHash": "sha256:b2b45dbf4208c0119fca3141ee03fd4669a29a3fe90fbd7ba908aa047d5bbfba",
       "schemaVersion": 34,
-      "releasedAt": "2026-11-11T12:27:00.272Z"
+      "releasedAt": "2026-11-11T12:30:09.317Z"
     }
   },
   "classicStructure": {
@@ -941,14 +941,198 @@
     },
     {
       "id": "spawn_00u85lyb5b",
-      "kind": "spawn",
       "position": [
         84,
         5.17,
         -86
       ],
+      "kind": "spawn",
       "yaw": 0,
       "faction": "tide"
+    },
+    {
+      "id": "flag_1iwczxcfy0",
+      "kind": "flag",
+      "position": [
+        -104,
+        6.63,
+        16
+      ],
+      "yaw": 0,
+      "team": "embers"
+    },
+    {
+      "id": "flag_w2hvo6ibic",
+      "kind": "flag",
+      "position": [
+        104,
+        4.5,
+        -98
+      ],
+      "yaw": 0,
+      "team": "tide"
+    },
+    {
+      "id": "hill_jfsm58ashi",
+      "kind": "hill",
+      "position": [
+        0,
+        28,
+        62
+      ],
+      "radius": 5
+    },
+    {
+      "id": "hill_5g59dmysb9",
+      "kind": "hill",
+      "position": [
+        -22,
+        3.95,
+        30
+      ],
+      "radius": 5
+    },
+    {
+      "id": "hill_zso39f7jg4",
+      "kind": "hill",
+      "position": [
+        0,
+        0.19,
+        -40
+      ],
+      "radius": 5
+    },
+    {
+      "id": "pickup_n7bo2dbr5c",
+      "kind": "pickup",
+      "position": [
+        -40,
+        4.03,
+        30
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_vzva9l4ust",
+      "kind": "pickup",
+      "position": [
+        40,
+        3.92,
+        30
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_b3d1ak2q57",
+      "kind": "pickup",
+      "position": [
+        -30,
+        0,
+        -60
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_oeim2k10sq",
+      "kind": "pickup",
+      "position": [
+        30,
+        1.78,
+        -60
+      ],
+      "item": "core.health_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_gyf2gfray5",
+      "kind": "pickup",
+      "position": [
+        106,
+        19.4,
+        15
+      ],
+      "item": "core.health_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_dhf8gg2orz",
+      "kind": "pickup",
+      "position": [
+        -60,
+        28,
+        62
+      ],
+      "item": "core.weapon_sniper",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_ybkq0ig4p2",
+      "kind": "pickup",
+      "position": [
+        60,
+        28,
+        62
+      ],
+      "item": "core.weapon_rockets",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_7dj9472tp2",
+      "kind": "pickup",
+      "position": [
+        -80,
+        27.63,
+        56
+      ],
+      "item": "core.armor_large",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_gnxjlpqby1",
+      "kind": "pickup",
+      "position": [
+        22,
+        4.46,
+        16
+      ],
+      "item": "core.armor_small",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_0iemut4j6x",
+      "kind": "pickup",
+      "position": [
+        -24,
+        3.86,
+        42
+      ],
+      "item": "core.weapon_shotgun",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_pm7xztympn",
+      "kind": "pickup",
+      "position": [
+        24,
+        3.9,
+        42
+      ],
+      "item": "core.weapon_rifle",
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_5mz8tvtpxx",
+      "kind": "pickup",
+      "position": [
+        0,
+        0.59,
+        -90
+      ],
+      "item": "core.ammo",
+      "respawnSeconds": null
     }
   ],
   "factions": [],
