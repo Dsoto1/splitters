@@ -1,13 +1,14 @@
 /**
  * Random characters (MatchRules.randomCharacters, default off): everyone, people and bots, plays a random look each
- * life. Only looks on the roster (CORE_LOOKS: playable, not retired; NPC-only bodies and NPC skins are not on it).
+ * life. Only core looks on the roster (PICKABLE_LOOKS: playable, not retired, not experimental; NPC-only bodies and
+ * NPC skins are not on it).
  * The pick is a hash of the match seed, the slot and the life, so a match replays the same and host and clients
  * agree; the look travels in the `spawn` event (and the roster for anyone joining later).
  */
-import { CORE_LOOKS } from '../content/looks.ts';
+import { PICKABLE_LOOKS } from '../content/looks.ts';
 
-/** The looks a random character may be: every look on the roster. */
-export const RANDOM_LOOK_POOL: readonly string[] = CORE_LOOKS.map((l) => l.id);
+/** The looks a random character may be: every core look on the roster (never an experimental one). */
+export const RANDOM_LOOK_POOL: readonly string[] = PICKABLE_LOOKS.map((l) => l.id);
 
 /** A 32-bit mix of the inputs (the same everywhere: integer arithmetic only; Roulette's decks and rolls use it too). */
 export function lookMix(a: number, b: number, c: number): number {
@@ -21,8 +22,7 @@ export function lookMix(a: number, b: number, c: number): number {
 }
 
 /** The look `slot` plays in its `life`-th life (from 1) of a match seeded `seed`; never `avoid` when there is a choice. */
-export function randomLook(seed: number, slot: number, life: number, avoid?: string): string {
-  const pool = RANDOM_LOOK_POOL;
+export function randomLook(seed: number, slot: number, life: number, avoid?: string, pool: readonly string[] = RANDOM_LOOK_POOL): string {
   const i = lookMix(seed | 0, slot | 0, life | 0) % pool.length;
   const pick = pool[i]!;
   // A new life shows a new face: not the look just played.

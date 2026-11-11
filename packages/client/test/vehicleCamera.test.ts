@@ -212,8 +212,9 @@ describe('geometry', () => {
       expect(Math.abs(x), def.id).toBeLessThan(def.half[0]);
       expect(Math.abs(z), def.id).toBeLessThan(def.half[2]);
       expect(y, def.id).toBeGreaterThan(0.8);
-      // Up to a head out of a hatch (the tank's commander) above the seat.
-      expect(y, def.id).toBeLessThan(def.seats[seat]!.offset[1] + 1.6);
+      // Up to a head out of a hatch (the tank's commander) above the seat; the tank's driver sits down in the hull
+      // (the cushion 0.4 m under the deck) and keeps the commander's view from the turret's height.
+      expect(y, def.id).toBeLessThan(def.seats[seat]!.offset[1] + 1.9);
     }
   });
 });

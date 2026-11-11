@@ -11,11 +11,21 @@
     {
       "role": "driver",
       "label": "Pilot",
-      "offset": [0, 0.95, -0.75],
+      "offset": [0, 1.65, -0.8],
       "weapon": "core.speeder_guns",
-      "arc": 0.35
+      "arc": 0.35,
+      "seated": true,
+      "legDrop": 0.45,
+      "straddle": 0.3
     },
-    { "role": "passenger", "label": "Passenger", "offset": [0, 1.1, -1.35] }
+    {
+      "role": "passenger",
+      "label": "Passenger",
+      "offset": [0, 1.9, -1.3],
+      "seated": true,
+      "legDrop": 0.5,
+      "straddle": 0.3
+    }
   ],
   "cockpitEye": [0, 2.45, -0.55],
   "enterRadius": 3,
@@ -34,7 +44,7 @@
   "blurb": "A hovering two-seater: the pilot fires twin blasters ahead, the passenger shoots their own gun",
   "notes": {
     "model": "Cyber Fang Mk III (Meshy Community, CC0; content/guns.json vehicles/cyber_fang.glb, 2026-11-10): a heavy hover bike, 4.0 m long, 2.2 m wide and 2.2 m tall over its front fairing. The Quaternius Striker it replaced is the fallback (vehicles/speeder.glb).",
-    "seats": "Measured on the model: the saddle at z -0.7 to -0.9, 1.6-1.7 m up, behind the fairing (2.0-2.2 m); the passenger on the tail hump behind it (z -1.3, 1.9 m). Roles, the pilot's blasters and their arc unchanged.",
+    "seats": "Measured on the model: the saddle at z -0.7 to -0.9, 1.6-1.7 m up, behind the fairing (2.0-2.2 m); the passenger on the tail hump behind it (z -1.3, 1.9 m). Roles, the pilot's blasters and their arc unchanged. Both sit astride (2026-11-11: they stood knee-deep in the saddle): the pilot on the saddle 1.65 m up, the passenger on the tail hump 1.9 m up.",
     "cockpitEye": "Over the fairing, so the pilot sees the way ahead."
   }
 }

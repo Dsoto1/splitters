@@ -499,10 +499,19 @@ for (const id of maps) {
             const at = ray.origin.add(ray.direction.scale(6));
             const p = { x: at.x, y: at.y, z: at.z };
             const times = {};
+            // Three starts of each, the median kept, as for the flashes below: one start is under a millisecond when
+            // the page has the core and 26-44 ms when it loses a time slice or collects garbage mid-call (CI,
+            // frost_basin medium "starting explosion": 0.6, 1, 26 and 44 ms on the same code). The first start is
+            // logged beside it, so a cost paid only once (something built on first use) still shows.
+            const firsts = {};
             const time = (k, f) => {
-              const t0 = performance.now();
-              f();
-              times[k] = Math.round((performance.now() - t0) * 10) / 10;
+              const ms = [0, 1, 2].map(() => {
+                const t0 = performance.now();
+                f();
+                return Math.round((performance.now() - t0) * 10) / 10;
+              });
+              firsts[k] = ms[0];
+              times[k] = ms.slice().sort((x, y) => x - y)[1];
             };
             time('explosion', () => v.explosion(p, 4));
             time('hit heavy', () => v.hitFx(p, 'heavy'));
@@ -527,14 +536,16 @@ for (const id of maps) {
               });
               times[`flash ${id}`] = Math.round(ms.sort((x, y) => x - y)[1] * 10) / 10;
             }
-            return times;
+            return { times, firsts };
           });
+          row.fxFirst = row.fx.firsts;
+          row.fx = row.fx.times;
           row.shaderBuilds = await page.evaluate(() => window.__shaderBuilds);
           const names = {};
           for (const b of row.shaderBuilds) names[b.name] = (names[b.name] ?? 0) + 1;
           console.log(`  shaders built after the loading gate (mid-match, effect starts included): ${row.shaderBuilds.length} ${JSON.stringify(names)}`);
           const slowest = Object.entries(row.fx).sort((a, b) => b[1] - a[1])[0];
-          console.log(`  effects: slowest start ${slowest ? `${slowest[0]} ${slowest[1]} ms` : '-'} (${JSON.stringify(row.fx)})`);
+          console.log(`  effects: slowest start ${slowest ? `${slowest[0]} ${slowest[1]} ms` : '-'} (${JSON.stringify(row.fx)}; first starts ${JSON.stringify(row.fxFirst)})`);
           if (errors.length) console.log(`  page errors: ${errors.slice(0, 3).join('; ')}`);
           results.push(row);
         })(),

@@ -50,7 +50,8 @@ describe('the Tank collision box', () => {
     for (const s of MOUNT_DEFS.tank!.seats) {
       expect(Math.abs(s.offset[0])).toBeLessThan(hx);
       expect(Math.abs(s.offset[2])).toBeLessThan(hz);
-      expect(s.offset[1]).toBeGreaterThan(hy * 2 - 0.1);
+      // The crew sit in their hatches: a cushion is up to half a metre under the plate it is cut in.
+      expect(s.offset[1] + (s.seated ? 0.5 : 0)).toBeGreaterThan(hy * 2 - 0.1);
     }
   });
 

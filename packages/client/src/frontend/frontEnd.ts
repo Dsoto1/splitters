@@ -2,10 +2,12 @@ import { roomLightsOn, saveRoomLights } from '../game/roomLights.ts';
 import {
   BREAKTHROUGH_POOL_MAX,
   breakthroughSectors,
-  CHARACTER_GROUPS,
   CHARACTER_GROUP_LABELS,
   CHARACTER_PROFILES,
   CORE_LOOKS,
+  EXPERIMENTAL_SECTION,
+  characterSections,
+  characterTier,
   botCastLabel,
   botSetLabel,
   getWeaponSet,
@@ -1845,16 +1847,16 @@ export class FrontEnd {
   /** Everyone on Character Select: the built-in looks (roster order), the NPC skins offered to players, then your designs. */
   private roster(): { id: string; name: string; group: string }[] {
     return [
-      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
+      // An experimental character sits under Experimental, not with its group (the same rule as an experimental map).
+      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine') })),
       ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
       ...listCustomLooks().map((s) => ({ id: s.id, name: s.name, group: 'mine' })),
     ];
   }
 
-  /** Character Select's sections, in CHARACTER_GROUPS order: each group anyone is in (listed by name), then Yours (your designs). */
+  /** Character Select's sections, in CHARACTER_GROUPS order: each group anyone is in (listed by name), Experimental when anyone is, then Yours (your designs). */
   private charSections(roster = this.roster()): { id: string; label: string; looks: { id: string; name: string }[] }[] {
-    const groups = CHARACTER_GROUPS.map((g) => ({ id: g.id as string, label: g.label as string, looks: roster.filter((c) => c.group === g.id).sort((a, b) => a.name.localeCompare(b.name)) })).filter((s) => s.looks.length);
-    return [...groups, { id: 'mine', label: 'Yours', looks: roster.filter((c) => c.group === 'mine') }];
+    return characterSections(roster);
   }
 
   /**

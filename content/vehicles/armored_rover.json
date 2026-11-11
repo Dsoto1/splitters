@@ -8,7 +8,7 @@
   "health": 900,
   "half": [1.25, 1.2, 2.65],
   "seats": [
-    { "role": "driver", "label": "Driver", "offset": [-0.45, 1.1, 0.05] },
+    { "role": "driver", "label": "Driver", "offset": [-0.45, 1.02, 0.05], "seated": true, "legDrop": 0.3 },
     {
       "role": "gunner",
       "label": "Front gun",
@@ -24,8 +24,8 @@
       "arc": 1.6,
       "facing": 3.141592653589793
     },
-    { "role": "passenger", "label": "Left bench", "offset": [-0.6, 1.2, -0.8] },
-    { "role": "passenger", "label": "Right bench", "offset": [0.6, 1.2, -0.8] }
+    { "role": "passenger", "label": "Left bench", "offset": [-0.6, 1.02, -0.72], "seated": true, "legDrop": 0.3 },
+    { "role": "passenger", "label": "Right bench", "offset": [0.6, 1.02, -0.72], "seated": true, "legDrop": 0.3 }
   ],
   "cockpitEye": [-0.45, 1.85, 0.2],
   "enterRadius": 3.8,
@@ -35,7 +35,7 @@
   "blurb": "A heavy armoured truck for five: a driver, a front and a rear machine gunner and two riders in the back",
   "notes": {
     "model": "Dust Runner (Meshy Community, CC0; content/guns.json vehicles/dust_runner.glb, 2026-11-10): a closed two-door off-roader with a roof rack, 5.3 m long, 2.56 m wide and 2.57 m tall, fitted to the box. The Car Kit delivery truck it replaced is the fallback (vehicles/armored_rover.glb).",
-    "seats": "Measured on the model: the cab floor 0.7 m up from z 0.4 back to the tailgate, the windscreen at z 0.6-0.9, the roof and its rack 2.4-2.5 m up from z 0.6 to -2.2. The driver moves back from the old truck's cab (z 1.5, now the hood) to the front seat (z 0.05); the gunners stand on the rack at its front and back ends. Roles, weapons and arcs unchanged.",
+    "seats": "Measured on the model: the cab floor 0.7 m up from z 0.4 back to the tailgate, the windscreen at z 0.6-0.9, the roof and its rack 2.4-2.5 m up from z 0.6 to -2.2. The driver moves back from the old truck's cab (z 1.5, now the hood) to the front seat (z 0.05); the gunners stand on the rack at its front and back ends. Roles, weapons and arcs unchanged. The three inside sit (2026-11-11: standing on the floor their heads came out through the roof, 2.5 m): cushions 1.02 m up, the driver on the left front seat, the two passengers on a bench against the panel behind the front seats (the in-house cockpit draws the seats and the bench, client content/cockpits.ts).",
     "cockpitEye": "A seated head height in the driver's seat, under the roof, behind the windscreen."
   }
 }

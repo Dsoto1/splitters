@@ -1817,6 +1817,42 @@ export class CharacterAnimator {
     this.fingerPose.set(arm, { grip: this.grip, weight, rots });
   }
 
+  /** Each finger and thumb joint's rotation as a clip last left it (settleHand). */
+  private readonly handRest = new Map<TransformNode, Quaternion>();
+  /** The joints each clip drives, worked out once a clip. */
+  private readonly clipJoints = new WeakMap<AnimationGroup, Set<unknown>>();
+
+  /**
+   * A hand's finger and thumb joints put back as a clip last left them, when no clip playing now drives them. The
+   * hold clips (aim_idle, shoot, reload) pose every finger each frame; the gaits (walk, run, sprint, the jumps)
+   * drive the wrist and a few knuckles only, and from your own eyes they play alone. The grip then read the pose it
+   * had itself written the frame before (a pistol is set on its grip by the knuckle line and the thumb), so the
+   * hand's place crept and snapped back every five or six frames: the owner's "grips flicker when moving"
+   * (2026-11-11; measured at 60 frames a second, the shooting hand 10 cm off for a frame, eleven times a second).
+   */
+  private settleHand(arm: Arm): void {
+    const live: Set<unknown>[] = [];
+    const add = (g: AnimationGroup | null | undefined): void => {
+      if (!g || !g.isPlaying || g.weight === 0) return;
+      let joints = this.clipJoints.get(g);
+      if (!joints) this.clipJoints.set(g, (joints = new Set(g.targetedAnimations.map((t) => t.target as unknown))));
+      live.push(joints);
+    };
+    for (const g of this.ch.clips.values()) add(g);
+    add(this.aimUpper);
+    const settle = (joint: TransformNode): void => {
+      const q = joint.rotationQuaternion;
+      if (!q) return;
+      const rest = this.handRest.get(joint);
+      if (live.some((set) => set.has(joint)) || !rest) {
+        if (rest) rest.copyFrom(q);
+        else this.handRest.set(joint, q.clone());
+      } else q.copyFrom(rest);
+    };
+    for (const chain of arm.fingers) for (const joint of chain) settle(joint);
+    for (const joint of arm.thumbs) settle(joint);
+  }
+
   /**
    * Hands onto a weapon placed elsewhere (the first-person viewmodel): palms to its grip and support points,
    * fingers closed. The shoulders are set from the view, not from the character's own build (a hunched cat's
@@ -1826,6 +1862,8 @@ export class CharacterAnimator {
    * still out of reach then slides back along the handguard toward the grip.
    */
   private gripPlaced(weapon: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace, scale: number): void {
+    this.settleHand(arms.r);
+    this.settleHand(arms.l);
     weapon.computeWorldMatrix(true);
     const world = weapon.getWorldMatrix();
     const point = (p: ModelPoint) => Vector3.TransformCoordinates(new Vector3(p[0], p[1], p[2]), world);

@@ -56,6 +56,16 @@ describe('in-house cockpits', () => {
     expect(built.needles.map((n) => n.drive).sort()).toEqual(['revs', 'speed']);
   });
 
+  it('every cockpit names a colour for each part: none falls back to the missing-colour magenta', () => {
+    for (const [id, def] of Object.entries(COCKPITS)) {
+      const b = buildCockpit(def);
+      const groups = [...Object.values(b.groups), ...Object.values(b.wheel?.groups ?? {}), ...b.needles.flatMap((n) => Object.values(n.groups))];
+      let magenta = 0;
+      for (const g of groups) for (let i = 0; i < g.colors.length; i += 4) if (g.colors[i] === 1 && g.colors[i + 1] === 0 && g.colors[i + 2] === 1) magenta++;
+      expect(magenta, id).toBe(0);
+    }
+  });
+
   it('stays within its triangle budget', () => {
     const all = triangleCount(built.groups) + triangleCount(built.wheel!.groups) + built.needles.reduce((n, x) => n + triangleCount(x.groups), 0);
     expect(all).toBeGreaterThan(5000);
