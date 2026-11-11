@@ -110,3 +110,18 @@ describe('how a broken prop looks and sounds', () => {
     expect(['break.crate', 'break.wall', 'break.glass']).toContain(propBreakLook('prop.crate').sound);
   });
 });
+
+describe('Breakyard, the test map (maps/breakyard.json)', () => {
+  it('everything solid in the yard breaks, but the container marked unbreakable', async () => {
+    const { readFileSync } = await import('node:fs');
+    const r = loadMap(JSON.parse(readFileSync(new URL('../../../maps/breakyard.json', import.meta.url), 'utf8')));
+    if (!r.ok) throw new Error(JSON.stringify(r.issues));
+    const map = r.map;
+    expect(map.metadata.destruction).toBe(true);
+    const solid = map.entities.filter((e) => e.kind === 'prop' && e.solid && getProp(e.model)?.collision);
+    const kept = solid.filter((e) => !isBreakableProp(e, true));
+    expect(solid.length).toBeGreaterThan(40);
+    expect(kept.map((e) => (e.kind === 'prop' ? [e.model, e.unbreakable] : null))).toEqual([['kit.container.shipping', true]]);
+    expect(solid.some((e) => e.kind === 'prop' && e.health === 500)).toBe(true);
+  });
+});
