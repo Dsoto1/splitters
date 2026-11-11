@@ -466,6 +466,8 @@ export interface ThrowableView {
   fallback?: string;
   /** The deployed cover wall's model (sandbags: sized to the cover's box). */
   cover?: string;
+  /** A skinned, animated model (the sheep): drawn this many metres tall, centred, whatever size its download is in. */
+  fit?: number;
   /** Another model in a weapon set (the frag's realistic one in Military, the smoke canister in Sci-fi). */
   looks?: Partial<Record<ThrowableLookSet, string>>;
 }

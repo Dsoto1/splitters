@@ -107,6 +107,10 @@
         "maxBytes": 4500000,
         "maxLodTriangles": 12000
       },
+      "animated": {
+        "maxTriangles": 10000,
+        "maxBytes": 1500000
+      },
       "cockpit": {
         "maxTriangles": 36000,
         "maxBytes": 5000000
@@ -951,6 +955,16 @@
       "normalSize": 256,
       "surface": "rebake",
       "pbr": true
+    },
+    {
+      "out": "guns/sheep.glb",
+      "pack": "meshy-community-drive-1110",
+      "glb": "sheep_walking.glb",
+      "label": "Sheep (Meshy Community download, 2026-11-10; file sheep_walking.glb, rigged, with its walk clip): the Sheep",
+      "animated": true,
+      "triangles": 9000,
+      "textureSize": 512,
+      "budget": "animated"
     },
     {
       "out": "guns/sunburst_grenade.glb",

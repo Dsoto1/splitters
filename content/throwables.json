@@ -194,6 +194,7 @@
         "walker": { "speed": 3.2 },
         "knockback": 10
       },
+      "view": { "model": "guns/sheep.glb", "fit": 0.7 },
       "notes": {
         "group": "Worms-style special.",
         "design": "Lands, waddles off the way it was thrown, hops over low things, and goes off on the first enemy it bumps into."

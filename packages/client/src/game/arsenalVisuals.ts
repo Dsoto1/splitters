@@ -1,3 +1,4 @@
+import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import type { Scene } from '@babylonjs/core/scene';
 import type { LastingFx } from './lastingFx.ts';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
@@ -263,8 +264,13 @@ export function animateArsenalProjectile(node: TransformNode, look: ProjectileVi
       break;
     case 'sheep':
       // Faces the way it walks, with a bob in its step.
-      if (moved.x * moved.x + moved.z * moved.z > 1e-6) node.rotation.y = Math.atan2(moved.x, moved.z);
-      node.rotation.z = Math.sin(now * 0.03) * 0.12;
+      const walking = moved.x * moved.x + moved.z * moved.z > 1e-6;
+      if (walking) node.rotation.y = Math.atan2(moved.x, moved.z);
+      // The sheep's own model plays its walk clip while it moves (models.ts keeps the clips on the model's root).
+      const clips = node.getChildren((c) => !!(c.metadata as { clips?: unknown } | null)?.clips, true)[0]?.metadata?.clips as AnimationGroup[] | undefined;
+      if (clips) {
+        for (const g of clips) if (walking && !g.isPlaying) g.start(true); else if (!walking && g.isPlaying) g.pause();
+      } else node.rotation.z = Math.sin(now * 0.03) * 0.12;
       break;
     default:
       break;

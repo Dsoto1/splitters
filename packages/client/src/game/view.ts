@@ -2973,6 +2973,8 @@ export class GameView {
       (m) => {
         if (node.isDisposed()) return m.dispose();
         m.parent = node;
+        // A sheep's position is on the ground (arsenalVisuals SHEEP_LIFT): its model, centred on its bounds, is raised.
+        if (look === 'sheep') m.position.y = (THROWABLE_DEFS.sheep.view?.fit ?? 0) / 2;
         for (const s of shapes) s.setEnabled(false);
         // The sticky grenade's light sits on the model's top (models are built centred on their bounds).
         const light = node.getChildMeshes().find((c) => c.name.endsWith('_light'));

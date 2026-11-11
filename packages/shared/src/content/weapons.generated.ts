@@ -2080,6 +2080,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       walker: { speed: 3.2 },
       knockback: 10,
     },
+    view: { model: 'guns/sheep.glb', fit: 0.7 },
   },
   // group: Worms-style special.
   // design: A flare that marks the spot: two seconds later five bombs fall in a line along the way you threw it.
