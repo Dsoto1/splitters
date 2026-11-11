@@ -1,0 +1,234 @@
+{
+  "$comment": "Chairs and benches (tools/content/kit/furniture.mjs): each the size of the Kenney piece it replaces; a seat collides as its back and the block under its seat.",
+  "type": "seat",
+  "props": [
+    {
+      "id": "kit.seat.chair",
+      "displayName": "Chair",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a wooden chair with a slatted or ladder back, the size of the Kenney chair (0.404 \u00d7 0.95 \u00d7 0.404 m)."
+      },
+      "size": [
+        0.404,
+        0.95,
+        0.404
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": {
+        "health": 20,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "seat",
+        "seat": 0.485,
+        "seatT": 0.035,
+        "leg": 0.04,
+        "back": 0.15,
+        "slats": 3
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 8201,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "ladder",
+          "seed": 8202,
+          "set": {
+            "slats": 0,
+            "rails": 3
+          },
+          "look": {
+            "wood": "#c09a66",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "walnut",
+          "seed": 8203,
+          "set": {
+            "slats": 4
+          },
+          "look": {
+            "wood": "#6b4a30",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "cushion",
+          "seed": 8204,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "seat": "#7c2f2b"
+          }
+        },
+        {
+          "index": 4,
+          "name": "painted",
+          "seed": 8205,
+          "set": {
+            "slats": 0,
+            "rails": 2
+          },
+          "look": {
+            "wood": "#d9d4c6",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 5,
+          "name": "blue",
+          "seed": 8206,
+          "look": {
+            "wood": "#4c6178",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 6,
+          "name": "dark",
+          "seed": 8207,
+          "set": {
+            "slats": 2
+          },
+          "look": {
+            "wood": "#4e382a",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "seat": "#3f5f3a"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.seat.bench",
+      "displayName": "Bench",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a bench with a back, the size of the Kenney bench (0.783 \u00d7 0.92 \u00d7 0.391 m)."
+      },
+      "size": [
+        0.783,
+        0.92,
+        0.391
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": {
+        "health": 30,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "seat",
+        "seat": 0.47,
+        "seatT": 0.04,
+        "leg": 0.045,
+        "back": 0.1,
+        "slats": 0,
+        "rails": 2
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 8211,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "slatted",
+          "seed": 8212,
+          "set": {
+            "slats": 6
+          },
+          "look": {
+            "wood": "#c09a66",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "walnut",
+          "seed": 8213,
+          "set": {
+            "rails": 3
+          },
+          "look": {
+            "wood": "#6b4a30",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "weathered",
+          "seed": 8214,
+          "look": {
+            "wood": "#8d8474",
+            "jitter": 0.14,
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 4,
+          "name": "green",
+          "seed": 8215,
+          "set": {
+            "slats": 5
+          },
+          "look": {
+            "wood": "#55684a",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        }
+      ]
+    }
+  ]
+}

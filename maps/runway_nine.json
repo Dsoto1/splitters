@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "runway_nine",
     "name": "Runway Nine",
@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_5x4zlanrxgtdua3l",
-      "versionId": "v_z56sgysegd2n3ubq",
-      "revision": 5,
-      "contentHash": "sha256:ef822666fc088cc81272c4bb2bc501569b5a3e59216873a74ed9e98d66cabfbc",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:29:51.906Z"
+      "versionId": "v_7cebpsq35o25cdif",
+      "revision": 6,
+      "contentHash": "sha256:769bedcfadaf5bb5723353266743f46c7b5fbf5dfd230ed9a8fb04f118bf09ba",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T10:24:39.547Z"
     }
   },
   "classicStructure": {
@@ -7193,7 +7193,7 @@
         -20
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -7207,7 +7207,7 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -8400,7 +8400,7 @@
         58.31
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -8596,7 +8596,7 @@
         48.08
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -8610,7 +8610,7 @@
         48.88
       ],
       "kind": "prop",
-      "model": "prop.shelf_end",
+      "model": "kit.shelf.end",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8624,7 +8624,7 @@
         47.68
       ],
       "kind": "prop",
-      "model": "prop.shelf_bags",
+      "model": "kit.shelf.gondola_snack",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -8820,7 +8820,7 @@
         50.29
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -8834,7 +8834,7 @@
         1.57
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8862,7 +8862,7 @@
         2.16
       ],
       "kind": "prop",
-      "model": "prop.bookcase_wide",
+      "model": "kit.bookcase.wide",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -8876,7 +8876,7 @@
         -3.05
       ],
       "kind": "prop",
-      "model": "prop.desk",
+      "model": "kit.table.desk",
       "yaw": 0,
       "scale": 1,
       "solid": true,

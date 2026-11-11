@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "gallows_yard",
     "name": "Gallows Yard",
@@ -2574,7 +2574,7 @@
         11.294
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -2602,11 +2602,12 @@
         21.58
       ],
       "kind": "prop",
-      "model": "prop.table_cloth",
+      "model": "kit.table.dining",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_215",
@@ -2644,7 +2645,7 @@
         20.97
       ],
       "kind": "prop",
-      "model": "prop.side_table",
+      "model": "kit.table.console",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -2700,7 +2701,7 @@
         11.294
       ],
       "kind": "prop",
-      "model": "prop.bench",
+      "model": "kit.seat.bench",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

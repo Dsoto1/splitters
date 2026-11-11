@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "cinder_foundry",
     "name": "Cinder Foundry",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_cz2zu3ctolnayno6",
-      "versionId": "v_cdif3bz463bkfozi",
-      "revision": 2,
-      "contentHash": "sha256:ada3e097f3971939315ae6ea75d084d23470eae016fc26070787b571c9b3050f",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:11:07.607Z"
+      "versionId": "v_klki2a3weyp7ztfz",
+      "revision": 3,
+      "contentHash": "sha256:696d2114323c5ca0f7b20b75030dadea7d248cbad24bc9151478a8d63aefdf94",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T08:55:47.687Z"
     }
   },
   "classicStructure": {
@@ -6011,7 +6011,7 @@
         -10.5
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -6025,7 +6025,7 @@
         -10.5
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,

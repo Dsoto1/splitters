@@ -1,0 +1,106 @@
+{
+  "$comment": "Waste bins (tools/content/kit/shop.mjs): the size of the Kenney bin, colliding as its box.",
+  "type": "bin",
+  "props": [
+    {
+      "id": "kit.bin.waste",
+      "displayName": "Bin",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a tapered waste bin under a rim, the size of the Kenney bin (0.291 \u00d7 0.6 \u00d7 0.328 m)."
+      },
+      "size": [
+        0.291,
+        0.6,
+        0.328
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 15,
+        "debris": "#7a8088"
+      },
+      "generator": {
+        "kind": "wastebin",
+        "taper": 0.78,
+        "rim": 0.035
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "steel",
+          "seed": 8601,
+          "look": {
+            "paint": "#8b8f93",
+            "rim": "#6f7377",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 8602,
+          "look": {
+            "paint": "#3f6a48",
+            "rim": "#2f4f36",
+            "band": "#d9d2bf",
+            "grime": 0.35
+          }
+        },
+        {
+          "index": 2,
+          "name": "black",
+          "seed": 8603,
+          "look": {
+            "paint": "#2e2f31",
+            "rim": "#3c3d40",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "blue",
+          "seed": 8604,
+          "look": {
+            "paint": "#35608f",
+            "rim": "#274a70",
+            "band": "#d9d2bf",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "red",
+          "seed": 8605,
+          "look": {
+            "paint": "#9a3329",
+            "rim": "#77261f",
+            "grime": 0.35
+          }
+        },
+        {
+          "index": 5,
+          "name": "rusty",
+          "seed": 8606,
+          "look": {
+            "paint": "#7a5a40",
+            "rim": "#5e4430",
+            "grime": 0.6
+          }
+        }
+      ]
+    }
+  ]
+}

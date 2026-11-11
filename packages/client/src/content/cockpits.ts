@@ -206,5 +206,26 @@ const BUGGY: CockpitDef = {
   switches: [{ at: [0, 1.03, 0.725], face: [0, 0.34, -0.94], count: 4, gap: 0.045 }],
 };
 
+/**
+ * The Troop Truck (MOUNT_DEFS.troop_truck, Ironclad Vanguard, 2026-11-11): no parts of its own, only a cut. Its cab's
+ * front is an armoured screen of louvres over the windscreen (measured on the model: z 2.1 to 2.6, 1.6 to 2.45 m up),
+ * solid from inside; in your own cockpit view those triangles are left out so you see the road over the hood.
+ */
+const TROOP_TRUCK: CockpitDef = {
+  hide: [
+    [
+      [-1.2, 1.55, 2.05],
+      [1.2, 2.48, 2.7],
+    ],
+  ],
+  palette: {},
+  tubes: [],
+  boxes: [],
+  discs: [],
+  seats: [],
+  gauges: [],
+  switches: [],
+};
+
 /** In-house cockpits by mount id. */
-export const COCKPITS: Readonly<Record<string, CockpitDef>> = { buggy: BUGGY };
+export const COCKPITS: Readonly<Record<string, CockpitDef>> = { buggy: BUGGY, troop_truck: TROOP_TRUCK };

@@ -1,5 +1,5 @@
 {
-  "$comment": "Kit props (docs/PROCEDURAL_ENVIRONMENT.md §11 Phase 6; docs/CONTENT_PIPELINE.md, \"Kit props\"): simple man-made props generated in code from seeds, families in content/kitprops/<type>.json, built by tools/content/kitprops.mjs. Budgets: bytes per file and triangles per level of detail by generator kind. Aliases: a retired catalogue prop and the family and variant that take its place as played (map/validate.ts loadMap; MapMaker keeps the map as made and offers Replace all); `scale` multiplies the placement's own.",
+  "$comment": "Kit props (docs/PROCEDURAL_ENVIRONMENT.md \u00a711 Phase 6; docs/CONTENT_PIPELINE.md, \"Kit props\"): simple man-made props generated in code from seeds, families in content/kitprops/<type>.json, built by tools/content/kitprops.mjs. Budgets: bytes per file and triangles per level of detail by generator kind. Aliases: a retired catalogue prop and the family and variant that take its place as played (map/validate.ts loadMap; MapMaker keeps the map as made and offers Replace all); `scale` multiplies the placement's own.",
   "generatorVersion": 1,
   "pack": {
     "id": "tiletrigger-kitprops",
@@ -61,6 +61,41 @@
         2600,
         400,
         12
+      ],
+      "table": [
+        420,
+        120,
+        10
+      ],
+      "seat": [
+        420,
+        120,
+        20
+      ],
+      "bookcase": [
+        1500,
+        320,
+        10
+      ],
+      "shelf": [
+        1500,
+        360,
+        10
+      ],
+      "stall": [
+        400,
+        180,
+        60
+      ],
+      "counter": [
+        200,
+        60,
+        10
+      ],
+      "wastebin": [
+        80,
+        60,
+        10
       ]
     }
   },
@@ -158,6 +193,81 @@
     "prop.shipping_container_green": {
       "model": "kit.container.shipping",
       "variant": 2,
+      "scale": 1
+    },
+    "prop.table": {
+      "model": "kit.table.dining",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.table_cloth": {
+      "model": "kit.table.dining",
+      "variant": 1,
+      "scale": 1
+    },
+    "prop.desk": {
+      "model": "kit.table.desk",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.side_table": {
+      "model": "kit.table.console",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.chair": {
+      "model": "kit.seat.chair",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.bench": {
+      "model": "kit.seat.bench",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.bookcase": {
+      "model": "kit.bookcase.tall",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.bookcase_wide": {
+      "model": "kit.bookcase.wide",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.shelf_boxes": {
+      "model": "kit.shelf.gondola",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.shelf_bags": {
+      "model": "kit.shelf.gondola_snack",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.shelf_end": {
+      "model": "kit.shelf.end",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.stall": {
+      "model": "kit.stall.market",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.stall_green": {
+      "model": "kit.stall.market",
+      "variant": 1,
+      "scale": 1
+    },
+    "prop.stall_bench": {
+      "model": "kit.stall.counter",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.trashcan": {
+      "model": "kit.bin.waste",
+      "variant": 0,
       "scale": 1
     }
   }

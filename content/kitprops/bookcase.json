@@ -1,0 +1,232 @@
+{
+  "$comment": "Bookcases (tools/content/kit/furniture.mjs): each the size of the Kenney piece it replaces, colliding as its box.",
+  "type": "bookcase",
+  "props": [
+    {
+      "id": "kit.bookcase.tall",
+      "displayName": "Bookcase",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a bookcase of five shelves with rows of books, the size of the Kenney bookcase (0.909 \u00d7 2 \u00d7 0.568 m)."
+      },
+      "size": [
+        0.909,
+        2,
+        0.568
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "bookcase",
+        "side": 0.03,
+        "plinth": 0.08,
+        "shelves": 5,
+        "bays": 1,
+        "doors": 0,
+        "fill": 0.8
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 8301,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "books": 0.85
+          }
+        },
+        {
+          "index": 1,
+          "name": "walnut",
+          "seed": 8302,
+          "look": {
+            "wood": "#6b4a30",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "books": 0.7
+          }
+        },
+        {
+          "index": 2,
+          "name": "ledgers",
+          "seed": 8303,
+          "set": {
+            "fill": 0.9
+          },
+          "look": {
+            "wood": "#c09a66",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "books": 0.1
+          }
+        },
+        {
+          "index": 3,
+          "name": "sparse",
+          "seed": 8304,
+          "set": {
+            "fill": 0.4,
+            "shelves": 4
+          },
+          "look": {
+            "wood": "#8d8474",
+            "jitter": 0.08,
+            "grime": 0.45,
+            "books": 0.6
+          }
+        },
+        {
+          "index": 4,
+          "name": "painted",
+          "seed": 8305,
+          "look": {
+            "wood": "#d9d4c6",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "books": 0.9
+          }
+        },
+        {
+          "index": 5,
+          "name": "cupboard",
+          "seed": 8306,
+          "set": {
+            "doors": 2
+          },
+          "look": {
+            "wood": "#4e382a",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "books": 0.6,
+            "metal": "#b59a55"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.bookcase.wide",
+      "displayName": "Wide Cabinet",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a wide cabinet, shelves of books over doors, the size of the Kenney wide cabinet (2.025 \u00d7 2 \u00d7 0.633 m)."
+      },
+      "size": [
+        2.025,
+        2,
+        0.633
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": {
+        "health": 70,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "bookcase",
+        "side": 0.035,
+        "plinth": 0.1,
+        "shelves": 5,
+        "bays": 2,
+        "doors": 2,
+        "fill": 0.7
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 8311,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "books": 0.8
+          }
+        },
+        {
+          "index": 1,
+          "name": "walnut",
+          "seed": 8312,
+          "look": {
+            "wood": "#6b4a30",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "books": 0.7,
+            "metal": "#b59a55"
+          }
+        },
+        {
+          "index": 2,
+          "name": "library",
+          "seed": 8313,
+          "set": {
+            "doors": 0,
+            "bays": 3,
+            "fill": 0.75
+          },
+          "look": {
+            "wood": "#4e382a",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "books": 0.8
+          }
+        },
+        {
+          "index": 3,
+          "name": "archive",
+          "seed": 8314,
+          "set": {
+            "doors": 1,
+            "fill": 0.8
+          },
+          "look": {
+            "wood": "#c09a66",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "books": 0.1
+          }
+        },
+        {
+          "index": 4,
+          "name": "painted",
+          "seed": 8315,
+          "look": {
+            "wood": "#d9d4c6",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "books": 0.85
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+{
+  "$comment": "Market stalls and counters (tools/content/kit/shop.mjs): each the size of the Kenney piece it replaces. A stall collides as its table, legs, poles and canopy; a counter as its box.",
+  "type": "stall",
+  "props": [
+    {
+      "id": "kit.stall.market",
+      "displayName": "Market Stall",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a trestle table of goods under a striped canopy on two poles, the size of the Kenney market stall (2.264 \u00d7 2.8 \u00d7 2.264 m)."
+      },
+      "size": [
+        2.264,
+        2.8,
+        2.264
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "stall",
+        "table": [
+          0.736,
+          0.9,
+          0.08
+        ],
+        "leg": 0.09,
+        "pole": 0.1,
+        "eaves": 1.75,
+        "stripes": 6
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 8501,
+          "look": {
+            "wood": "#a67c4e",
+            "canvas": "#d9d2bf",
+            "jitter": 0.08,
+            "grime": 0.3,
+            "goods": 0.7,
+            "stripe": "#a8382d"
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 8502,
+          "look": {
+            "wood": "#a67c4e",
+            "canvas": "#d9d2bf",
+            "jitter": 0.08,
+            "grime": 0.3,
+            "goods": 0.7,
+            "stripe": "#4a7a44"
+          }
+        },
+        {
+          "index": 2,
+          "name": "blue",
+          "seed": 8503,
+          "look": {
+            "wood": "#8f6a42",
+            "canvas": "#d9d2bf",
+            "jitter": 0.08,
+            "grime": 0.3,
+            "goods": 0.7,
+            "stripe": "#3f6490"
+          }
+        },
+        {
+          "index": 3,
+          "name": "canvas",
+          "seed": 8504,
+          "look": {
+            "wood": "#8d8474",
+            "canvas": "#b8ab8c",
+            "jitter": 0.08,
+            "grime": 0.45,
+            "goods": 0.7
+          }
+        },
+        {
+          "index": 4,
+          "name": "yellow",
+          "seed": 8505,
+          "look": {
+            "wood": "#a67c4e",
+            "canvas": "#d9d2bf",
+            "jitter": 0.08,
+            "grime": 0.3,
+            "goods": 0.7,
+            "stripe": "#d2a02c"
+          }
+        },
+        {
+          "index": 5,
+          "name": "bare",
+          "seed": 8506,
+          "look": {
+            "wood": "#6b4a30",
+            "canvas": "#8a7d66",
+            "jitter": 0.08,
+            "grime": 0.55,
+            "goods": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.stall.counter",
+      "displayName": "Stall Bench",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a long plank counter, panelled or draped, the size of the Kenney stall bench (0.922 \u00d7 0.8 \u00d7 3.335 m)."
+      },
+      "size": [
+        0.922,
+        0.8,
+        3.335
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "counter",
+        "top": 0.05,
+        "over": 0.04,
+        "posts": 5
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 8511,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.1,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "walnut",
+          "seed": 8512,
+          "look": {
+            "wood": "#6b4a30",
+            "jitter": 0.1,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "red_cloth",
+          "seed": 8513,
+          "look": {
+            "wood": "#a67c4e",
+            "cloth": "#a8382d",
+            "jitter": 0.1,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "blue_cloth",
+          "seed": 8514,
+          "look": {
+            "wood": "#a67c4e",
+            "cloth": "#3f6490",
+            "jitter": 0.1,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "weathered",
+          "seed": 8515,
+          "look": {
+            "wood": "#8d8474",
+            "jitter": 0.14,
+            "grime": 0.5
+          }
+        }
+      ]
+    }
+  ]
+}

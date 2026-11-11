@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 35,
   "metadata": {
     "id": "glacier_line",
     "name": "Glacier Line",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_6jrvegnpqp5udvrt",
-      "versionId": "v_yjqjk7cyc5lkt6iz",
-      "revision": 3,
-      "contentHash": "sha256:b8f987e2c7866355505d3a81cc0d4e4774bad5b069adfcb9594cff0c42f670fd",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-11T02:52:06.914Z"
+      "versionId": "v_hyikvshnlombtc55",
+      "revision": 4,
+      "contentHash": "sha256:db9a242ca678a8e7b0955de11e7f7c6e7a9c212c83ae38170e5703c1a7c67ed2",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T09:25:53.153Z"
     }
   },
   "classicStructure": {
@@ -2057,7 +2057,7 @@
         100
       ],
       "kind": "prop",
-      "model": "prop.shelf_boxes",
+      "model": "kit.shelf.gondola",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5785,8 +5785,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_218",

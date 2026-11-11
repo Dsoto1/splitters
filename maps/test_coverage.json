@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 33,
+  "formatVersion": 35,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_nrb2xkti3l5baizt",
-      "revision": 13,
-      "contentHash": "sha256:7edc41d64c84fab85d76bd747d2ab431d57cd1b61d5bd664fa383277f4f9037d",
-      "schemaVersion": 33,
-      "releasedAt": "2026-11-09T22:07:05.684Z"
+      "versionId": "v_5xebowsxxckcyqya",
+      "revision": 15,
+      "contentHash": "sha256:17a8588fcff4617f9e2b0922f060653feff9e41dc9cdd2b40cf57e1a2b801fb5",
+      "schemaVersion": 35,
+      "releasedAt": "2026-11-11T11:28:05.306Z"
     },
     "testOnly": true
   },
@@ -4133,7 +4133,7 @@
         112
       ],
       "kind": "prop",
-      "model": "prop.trashcan",
+      "model": "kit.bin.waste",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4875,6 +4875,19 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "mount_wi4ho8ca33",
+      "position": [
+        108,
+        0,
+        -7
+      ],
+      "kind": "mount",
+      "model": "troop_truck",
+      "yaw": 0,
+      "faction": null,
+      "respawnSeconds": null
     }
   ],
   "factions": [],
