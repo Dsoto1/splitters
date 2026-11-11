@@ -744,7 +744,9 @@ barrels and boxes first; fences and walls, then containers, come next.
   the pedestal table (these five collide as finer boxes set by their generator settings, as the props they replace did),
   `cabinet.mjs` (cabinets: a carcass on a recessed plinth, doors, drawers and open bays under a top; appliances: a
   fridge's doors, a stove's hob rings, knobs and oven door, a washing machine's round door; handles and knobs stand
-  inside the box, the case set back for them), `glb.mjs` (the writer).
+  inside the box, the case set back for them; the bank of upright shop freezers: framed glass doors over shelves of
+  goods), `factory.mjs` (the shipping crate under a lifting saddle, the warning signs, the belt conveyor), `glb.mjs`
+  (the writer).
   Randomness only from `env/rng.mjs` streams.
 - **Outputs:** `packages/client/public/kit/<type>.<name>.<variant>.glb`: one material (the family's surface: roughness,
   metalness and material extras `{ surface, tile, uv, detail }` that `client/content/propSurfaces.ts` turns into the
@@ -768,7 +770,7 @@ barrels and boxes first; fences and walls, then containers, come next.
   family has the retired prop's exact size and a surface of the same ballistic class, so an alias changes no
   collision box, breakable health, ballistic class or footing (`packages/shared/test/kitProps.test.ts` checks every
   official map; the pieces whose class is changed on purpose are its `REMATERIALLED` list: the iron fences, the wooden
-  furniture and cabinets, the sofas, the beds, the bin and the white goods). The retired props' files stay in the build until no official map places them (MapMaker's Replace all)
+  furniture and cabinets, the sofas, the beds, the bin, the white goods, the warning sign and the shop freezers). The retired props' files stay in the build until no official map places them (MapMaker's Replace all)
   and no alias needs them.
 - **Adding a family:** an entry in its type file (or a new type file and generator kind in `KINDS`), a budget for its
   kind, run the build, add it to the content test's family list, look at it in the lineup

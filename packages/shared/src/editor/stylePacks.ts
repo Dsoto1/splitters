@@ -76,7 +76,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'ammo_crate', 'ammo_stack', 'ww2_ammo_crate', 'fuel_drum', 'fuel_tank', 'storage_tank', 'steel_water_tower',
       'kit.container.shipping', 'container', 'container_tall', 'kit.crate.framed',
       'floodlight', 'yard_lamp', 'pallet', 'supply_truck', 'flatbed_truck', 'dumpster',
-      'sv_tent', 'sv_radio', 'sv_gas_can', 'warning_sign', 'cone', 'kit.bed.bunk',
+      'sv_tent', 'sv_radio', 'sv_gas_can', 'kit.sign.warning', 'cone', 'kit.bed.bunk',
     ),
     materials: ['core.pbr_bunker_panels', 'core.pbr_olive_corrugated', 'core.pbr_grey_corrugated', 'core.pbr_burlap'],
     facades: ['concrete', 'corrugated'],

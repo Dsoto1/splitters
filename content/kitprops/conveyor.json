@@ -1,0 +1,112 @@
+{
+  "$comment": "Belt conveyors (tools/content/kit/factory.mjs): a section of belt conveyor, side frames on legs over a panelled base, a dark belt round its end drums, low guide rails. One family the size of the Kenney long conveyor it replaces, colliding as its box (solid cover, as that was).",
+  "type": "conveyor",
+  "props": [
+    {
+      "id": "kit.conveyor.belt",
+      "displayName": "Conveyor",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a belt conveyor section with guide rails, the size of the Kenney long conveyor (5 × 1 × 2.5 m); plays as concrete, as that did."
+      },
+      "size": [
+        5,
+        1,
+        2.5
+      ],
+      "surface": "concrete",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "conveyor",
+        "belt": 0.78,
+        "drum": 0.09,
+        "frame": 0.08,
+        "legs": 3,
+        "guides": "both",
+        "idlers": 0.42,
+        "posts": 0.8
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 22
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "bare",
+          "seed": 9631,
+          "look": {
+            "paint": "#6f7a86",
+            "leg": "#4a5058",
+            "skirt": "#3a3d42",
+            "belt": "#1c1d20",
+            "guide": "#8b8d8f",
+            "box": "#c9a227",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "cartons",
+          "seed": 9632,
+          "set": {
+            "cartons": 3
+          },
+          "look": {
+            "paint": "#6f7a86",
+            "leg": "#4a5058",
+            "skirt": "#3a3d42",
+            "belt": "#1c1d20",
+            "guide": "#8b8d8f",
+            "box": "#c9a227",
+            "carton": "#b08a5e",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "safety_yellow",
+          "seed": 9633,
+          "look": {
+            "paint": "#4a5058",
+            "leg": "#3a3d42",
+            "skirt": "#2e3136",
+            "belt": "#1c1d20",
+            "guide": "#d9a81e",
+            "box": "#d9a81e",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "worn",
+          "seed": 9634,
+          "set": {
+            "guides": "back",
+            "cartons": 1
+          },
+          "look": {
+            "paint": "#5d7a66",
+            "leg": "#46584c",
+            "skirt": "#3a3d3a",
+            "belt": "#26272a",
+            "guide": "#7a7d80",
+            "box": "#8a8f94",
+            "carton": "#a8926e",
+            "scuff": 0.6,
+            "rust": 0.55,
+            "grime": 0.6
+          }
+        }
+      ]
+    }
+  ]
+}

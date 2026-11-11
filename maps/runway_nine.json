@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_5x4zlanrxgtdua3l",
-      "versionId": "v_fbxdntin47k2ekhe",
-      "revision": 7,
-      "contentHash": "sha256:a0f8ce51049c290d857f080168e32a68aced9fd4f5e4cffc3236c0be362d0a14",
+      "versionId": "v_mzl77sn43qkja36m",
+      "revision": 8,
+      "contentHash": "sha256:37e73e8dc473d1642e1e6023b71eeafdf231aab1861c67e7cedc754c094682ee",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T17:15:35.908Z"
+      "releasedAt": "2026-11-11T21:50:57.721Z"
     }
   },
   "classicStructure": {
@@ -5893,7 +5893,7 @@
         30
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5907,7 +5907,7 @@
         30
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8582,7 +8582,7 @@
         47.97
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -8638,7 +8638,7 @@
         50.85
       ],
       "kind": "prop",
-      "model": "prop.freezers_upright",
+      "model": "kit.appliance.freezer_upright",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -9552,7 +9552,7 @@
         42
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9566,7 +9566,7 @@
         42
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9580,7 +9580,7 @@
         42
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9594,7 +9594,7 @@
         42
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9608,7 +9608,7 @@
         42
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9622,7 +9622,7 @@
         42
       ],
       "kind": "prop",
-      "model": "prop.conveyor",
+      "model": "kit.conveyor.belt",
       "yaw": 0,
       "scale": 1,
       "solid": true,

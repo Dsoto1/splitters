@@ -9,6 +9,8 @@
 // They collide as their box, as the pieces they replace did.
 //
 // Level 1 keeps the outline (the case, the top, each front as one flat panel); level 2 is the bounds.
+//
+// Part 8 adds the bank of upright shop freezers (`freezer`): a case with a cavity behind a row of framed glass doors.
 
 import { rng } from '../env/rng.mjs';
 import { Mesh, box, clamp01, groundShade, hex, mix3, quadN, scale3, standIn, triN } from './geom.mjs';
@@ -301,5 +303,119 @@ export function applianceMesh(seed, size, g, look, level) {
   band(m, 'z', dc, [0, zs + 0.022], [0.036, zs + 0.022], 10, 'axis', scale3(trim, 1.15));
   box(m, [-0.02, ym - 0.022, zs], [0.1, ym + 0.022, zs + 0.003], glass(ym - 0.022, ym + 0.05), ['nz']);
   for (let i = 0; i < 3; i++) box(m, [0.125 + i * 0.034, ym - 0.011, zs], [0.147 + i * 0.034, ym + 0.011, zs + 0.006], scale3(trim, 1), ['nz']);
+  return m;
+}
+
+/** What stands on a shop freezer's shelves, by `goods`: packaging colours (hex). */
+const GOODS = {
+  drinks: ['#c8372d', '#2f6fb0', '#e0a526', '#3c8f4f', '#e6e3da', '#6a3d8a'],
+  frozen: ['#2f6fb0', '#e6e3da', '#c8372d', '#4aa3a8', '#e0a526'],
+  dairy: ['#e6e3da', '#dfe9f0', '#e0a526', '#7fb3d8', '#c8372d'],
+};
+
+/**
+ * A bank of upright shop freezers (part 8): one enamelled steel case on a dark kick under a header, its front a row of
+ * glass doors (a frame and a bar handle each; the glass itself is not drawn), shelves of goods in the lit-looking
+ * cavity behind them. Its front is +z; the handles' faces are the box's front. Settings `g`: `doors`, `shelves`,
+ * `foot` (the kick's height, m), `header` (the header's height), `proud` (how far doors and handles stand out of the
+ * case), `depth` (the cavity's), `goods` ('drinks', 'frozen' or 'dairy'), `gaps` (0–1: how many places are sold out).
+ * `look`: `paint` (the case), `trim` (hex: the door frames), `handle`, `header` (hex: the header's band), `inside`
+ * (hex: the cavity), `dark`, `grime`. Nothing glows: the cavity is light paint.
+ */
+export function freezerMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const paint = hex(look.paint);
+  const inside = hex(look.inside ?? '#b9c6cc');
+  if (level >= 2) return standIn(size, paint, scale3(mix3(paint, inside, 0.35), 0.85));
+  const r = rng(seed);
+  const m = new Mesh();
+  const fine = level === 0;
+  const grime = look.grime ?? 0.2;
+  const enamel = (c, k = 1) => {
+    const b = scale3(c, k * (1 + r.jitter(0.02)));
+    return (p, n) => scale3(b, groundShade(p[1], 0.25, 1 - grime * 0.5) * (n[1] > 0.5 ? 1.05 : Math.abs(n[0]) > 0.5 ? 0.88 : n[2] < -0.5 ? 0.8 : 1));
+  };
+  const dark = hex(look.dark ?? '#1e2022');
+  const trim = hex(look.trim ?? '#3c3d40');
+  const handleC = hex(look.handle ?? '#a8adb0');
+  const headC = hex(look.header ?? look.paint);
+  const foot = g.foot ?? 0.1;
+  const proud = g.proud ?? 0.05;
+  const head = g.header ?? 0.24;
+  const doors = Math.max(2, g.doors ?? 4);
+  const shelves = Math.max(1, g.shelves ?? 3);
+  const zb = d / 2 - proud;
+  const zd = zb + proud * 0.5;
+  const wall = 0.04;
+  const ya = foot + 0.06;
+  const yt = h - head;
+  const zc = zb - (g.depth ?? 0.42);
+  const xi = w / 2 - wall;
+  const palette = (GOODS[g.goods] ?? GOODS.drinks).map(hex);
+  // The cavity looks lit from above: lighter towards its top (paint only).
+  const lit = (k = 1) => (p) => scale3(inside, k * lerp(0.62, 1.05, clamp01((p[1] - ya) / (yt - ya))));
+  // The kick, set back at the front; the case (its front left open at level 0, for the cavity).
+  box(m, [-w / 2, 0, -d / 2], [w / 2, foot, zb - 0.04], scale3(dark, 0.9), ['ny', 'py']);
+  box(m, [-w / 2, foot, -d / 2], [w / 2, h, zb], enamel(paint), fine ? ['pz'] : ['ny']);
+  const face = (xa, y0, xb, y1, z, c) => quadN(m, [xa, y0, z], [xb, y0, z], [xb, y1, z], [xa, y1, z], [0, 0, 1], c);
+  // The levels goods stand on: the cavity's floor and each shelf.
+  const levels = [];
+  for (let k = 0; k <= shelves; k++) levels.push([lerp(ya, yt, k / (shelves + 1)), lerp(ya, yt, (k + 1) / (shelves + 1)) - (k < shelves ? 0.012 : 0)]);
+  if (fine) {
+    const front = enamel(paint);
+    face(-w / 2, yt, w / 2, h, zb, front);
+    face(-w / 2, foot, w / 2, ya, zb, front);
+    face(-w / 2, ya, -xi, yt, zb, front);
+    face(xi, ya, w / 2, yt, zb, front);
+    face(-xi, ya, xi, yt, zc, lit());
+    quadN(m, [-xi, ya, zc], [xi, ya, zc], [xi, ya, zb], [-xi, ya, zb], [0, 1, 0], lit(0.9));
+    quadN(m, [-xi, yt, zc], [xi, yt, zc], [xi, yt, zb], [-xi, yt, zb], [0, -1, 0], lit(1.1));
+    for (const s of [-1, 1]) quadN(m, [s * xi, ya, zc], [s * xi, ya, zb], [s * xi, yt, zb], [s * xi, yt, zc], [-s, 0, 0], lit(0.85));
+    for (let k = 1; k <= shelves; k++) box(m, [-xi, levels[k][0] - 0.012, zc], [xi, levels[k][0], zb - 0.03], scale3(trim, 1.6), ['nx', 'px', 'nz']);
+  }
+  // The header's band.
+  if (fine) {
+    box(m, [-w / 2 + 0.04, yt + 0.05, zb], [w / 2 - 0.04, h - 0.05, zb + 0.012], enamel(headC), ['nz']);
+    face(-w / 2 + 0.1, yt + 0.08, w / 2 - 0.1, yt + 0.1, zb + 0.014, scale3(mix3(headC, [1, 1, 1], 0.6), 1));
+  } else face(-w / 2 + 0.04, yt + 0.05, w / 2 - 0.04, h - 0.05, zb + 0.004, enamel(headC));
+  // The doors: a frame each (stiles and rails), a bar handle at the edge it opens at; the goods seen through it.
+  const fw = 0.055;
+  const y0 = foot + 0.02;
+  const y1 = yt + 0.03;
+  for (let i = 0; i < doors; i++) {
+    const xa = lerp(-w / 2 + 0.01, w / 2 - 0.01, i / doors) + 0.003;
+    const xb = lerp(-w / 2 + 0.01, w / 2 - 0.01, (i + 1) / doors) - 0.003;
+    const frame = (p, n) => scale3(trim, n[2] > 0.5 ? 1 : 0.7);
+    const hx = i % 2 === 0 ? xb - fw / 2 : xa + fw / 2;
+    const ym = lerp(y0, y1, 0.5);
+    const pick = (k, j) => {
+      const q = rng(seed * 131 + i * 53 + k * 7 + j);
+      return [q, scale3(palette[q.int(0, palette.length - 1)], 1 + q.jitter(0.12))];
+    };
+    if (!fine) {
+      box(m, [xa, y0, zb], [xb, y1, zd], frame, ['nz', 'ny', 'py']);
+      face(xa + fw, y0 + fw, xb - fw, y1 - fw, zd + 0.002, lit(0.8));
+      levels.forEach(([lo, hi], k) => face(xa + fw + 0.01, Math.max(lo, y0 + fw), xb - fw - 0.01, lerp(lo, hi, 0.7), zd + 0.004, scale3(pick(k, 0)[1], 0.9)));
+      face(hx - 0.013, ym - 0.3, hx + 0.013, ym + 0.3, d / 2, handleC);
+      continue;
+    }
+    box(m, [xa, y0, zb], [xa + fw, y1, zd], frame, ['nz']);
+    box(m, [xb - fw, y0, zb], [xb, y1, zd], frame, ['nz']);
+    box(m, [xa + fw, y0, zb], [xb - fw, y0 + fw, zd], frame, ['nz', 'nx', 'px']);
+    box(m, [xa + fw, y1 - fw, zb], [xb - fw, y1, zd], frame, ['nz', 'nx', 'px']);
+    handle(m, [hx - 0.013, ym - 0.3, lerp(zd, d / 2, 0.5)], [hx + 0.013, ym + 0.3, d / 2], zd, handleC);
+    const ga = xa + fw + 0.01;
+    const gb = xb - fw - 0.01;
+    const n = gb - ga < 0.36 ? 2 : 3;
+    levels.forEach(([lo, hi], k) => {
+      for (let j = 0; j < n; j++) {
+        const [q, c] = pick(k, j);
+        const top = lo + (hi - lo - 0.03) * q.range(0.55, 0.92);
+        const zf = zb - 0.035 - q.next() * 0.03;
+        if (q.next() < (g.gaps ?? 0.06)) continue;
+        box(m, [lerp(ga, gb, j / n) + 0.006, lo, zc + 0.02], [lerp(ga, gb, (j + 1) / n) - 0.006, top, zf], (p, nn) => scale3(c, nn[1] > 0.5 ? 0.85 : nn[2] > 0.5 ? 1 : 0.65), ['ny', 'nz']);
+      }
+    });
+  }
   return m;
 }

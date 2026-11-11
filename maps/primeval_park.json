@@ -5676,7 +5676,7 @@
         38.6
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -5690,7 +5690,7 @@
         38.6
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -5704,7 +5704,7 @@
         -30
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5718,7 +5718,7 @@
         -18
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5732,7 +5732,7 @@
         -50
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5746,7 +5746,7 @@
         -38
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -5760,7 +5760,7 @@
         42
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -5774,7 +5774,7 @@
         42
       ],
       "kind": "prop",
-      "model": "prop.warning_sign",
+      "model": "kit.sign.warning",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
