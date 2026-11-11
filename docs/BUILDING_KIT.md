@@ -1337,6 +1337,13 @@ template automatically.
   match for every offered map, and exits 1 when a core map fails one (an experimental map's only report); a test
   (`shared/test/qualityGates.test.ts`) holds every core map of `maps/` to the gates that need only the map.
   Characters' tiers are not built yet.
+- **Everything breaks (Map properties → Everything breaks; map format v36, `map/geometry.ts` `isBreakableProp`).** Off,
+  only the catalogue's breakable props break (crates, barrels, furniture…). On, every solid prop can be shot apart;
+  natural rocks, walls, floors, terrain and doors stay. A prop the catalogue gives no health takes one from what it is
+  made of and how big it is (`propHealth`, `sim/scenarioDefs.ts`). In a prop's inspector: **Unbreakable** keeps a piece
+  whatever else says; **Health** gives it its own (on any map, which also makes it breakable; 0 for the usual). Blocks
+  break by their own Behaviour. Broken pieces come back at the next round. A map with the switch on draws its props one
+  by one (no batching) and counts them in the breakable budget (1024), so keep it small.
 - **The card shot (Map properties → Card shot).** Set card shot… shows the menu card's frame (16:9) with the card
   picture's own lens; Eye level (on by default) keeps the camera 1.7 m over what's under it as you fly. Enter saves
   the camera in the map (`metadata.cardCamera`), Esc cancels; Preview shows the saved shot in the frame; Clear goes
