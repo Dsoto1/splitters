@@ -2202,9 +2202,9 @@ async function editorMeasureChecks(browser) {
   await focus(0, 0, 0);
 
   // A table in the start room, then a crate dropped onto its top (0.8 m), not the floor under it.
-  await clickTool(page, '[data-tool="prop:prop.table"]');
+  await clickTool(page, '[data-tool="prop:kit.table.dining"]');
   await clickAt(0, 0, 1);
-  const table = (await props()).find((e) => e.model === 'prop.table');
+  const table = (await props()).find((e) => e.model === 'kit.table.dining');
   check(table && table.position[1] === 0, `a table placed on the room's floor (${JSON.stringify(table?.position)})`);
   await clickTool(page, '[data-tool="prop:kit.crate.wood"]');
   await hoverAt(0.3, 0.8, 1.2);
