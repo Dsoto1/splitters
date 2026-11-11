@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { CLIP_SETS_DIR, MANIFEST_DIR, QUEUE_FILE, armsOf, buildSpec, clipSetProblems, looksProblems, looksSource, manifestProblems, readClipSets, readManifests, stubFromQueue } from '../character-manifests.mjs';
+import * as npcs from '../npcs.mjs';
+import * as roulette from '../roulette.mjs';
+import { CLIP_SETS_DIR, MANIFEST_DIR, QUEUE_FILE, TIERS, armsOf, buildSpec, clipSetProblems, looksProblems, looksSource, manifestProblems, readClipSets, readManifests, stubFromQueue } from '../character-manifests.mjs';
 
 describe('character manifests', () => {
   const list = readManifests();
@@ -144,5 +146,30 @@ describe('character manifests', () => {
     const stub = stubFromQueue(queue[0]);
     expect(looksSource([...list, stub])).toBe(looksSource(list));
     expect(manifestProblems({ ...stub, status: undefined }, `${stub.id}.json`).length).toBeGreaterThan(0);
+  });
+
+  it('carry a tier: experimental reaches the generated look, core and left out do not, anything else is a problem', () => {
+    const good = JSON.parse(readFileSync(join(MANIFEST_DIR, 'meshy_cat.json'), 'utf8'));
+    expect(TIERS).toEqual(['core', 'experimental']);
+    // Every character that exists today is core: none names a tier.
+    expect(list.filter((m) => m.tier !== undefined).map((m) => m.id)).toEqual([]);
+    for (const tier of TIERS) expect(manifestProblems({ ...good, tier }, 'meshy_cat.json')).toEqual([]);
+    for (const tier of ['beta', 'Experimental', '', null, true]) expect(manifestProblems({ ...good, tier }, 'meshy_cat.json').join('\n')).toMatch(/tier: core or experimental/);
+    const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`id: '${m.look}'`));
+    expect(line({ ...good, tier: 'experimental' })).toMatch(/group: 'animals', tier: 'experimental'/);
+    // Absent = core: an explicit core writes the same look as none.
+    expect(line({ ...good, tier: 'core' })).toBe(line(good));
+    expect(line(good)).not.toMatch(/tier:/);
+  });
+
+  it('an experimental character named by an NPC role or by Roulette is a problem', () => {
+    const n = npcs.load();
+    const role = n.npcs.roles.find((r) => r.look);
+    expect(npcs.build(n).problems).toEqual([]);
+    expect(npcs.build({ ...n, experimentalLooks: [role.look] }).problems.join('\n')).toMatch(new RegExp(`look ${role.look.replace('.', '\\.')} is an experimental character`));
+    const r = roulette.load();
+    const look = Object.keys(r.data.characters)[0];
+    expect(roulette.build(r).problems).toEqual([]);
+    expect(roulette.build({ ...r, looks: { ...r.looks, experimental: new Set([look]) } }).problems.join('\n')).toMatch(/is an experimental character .* Roulette never deals one/);
   });
 });

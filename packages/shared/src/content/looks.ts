@@ -532,10 +532,17 @@ export function decodeLook(id: string): CharacterLook | null {
 export const getLook = (id: string | undefined): CharacterLook => {
   const npc = id && NPC_KEPT_LOOKS.has(id) ? ALL_LOOKS.find((l) => l.id === id) : undefined;
   if (npc) return npc;
-  const key = (id && RETIRED_LOOKS[id]) || id;
-  // By id an experimental look resolves too (a saved choice, a bot set's hand pick); only the fallback is a pick.
-  return CORE_LOOKS.find((l) => l.id === key) ?? (key ? decodeLook(key) : null) ?? PICKABLE_LOOKS[0]!;
+  return lookIn(CORE_LOOKS, id);
 };
+
+/**
+ * getLook over a roster. By id a look resolves whatever its tier (a saved choice of an experimental character keeps
+ * working, and a bot set's hand pick); only the fallback is a pick: the roster's first core look.
+ */
+export function lookIn(roster: readonly CharacterLook[], id: string | undefined): CharacterLook {
+  const key = (id && RETIRED_LOOKS[id]) || id;
+  return roster.find((l) => l.id === key) ?? (key ? decodeLook(key) : null) ?? roster.find((l) => characterTier(l) === 'core')!;
+}
 
 /** A stable look for the `index`-th bot, spread across a roster's core tier (never an experimental character). */
 export function botLookFrom(roster: readonly Pick<CharacterLook, 'id' | 'tier'>[], index: number): string {

@@ -123,6 +123,43 @@ leaves your character as it was. Your current one wears a **Chosen** badge.
 Character Select opens from Profile (the main menu's Profile entry → **Change
 character**) or Online; Back and Choose return there.
 
+### Tier
+
+A character is **Core** or **Experimental** (owner, 2026-11-11: the same rules as for maps, docs/BUILDING_KIT.md,
+"Tier"). `tier` in its manifest (`core` or `experimental`; left out = core, as every character offered before the
+tiers; anything else fails `pnpm content:check`) is copied into its look (`tier` on `CharacterLook`,
+`characterTier(look)` in looks.ts). The Workbench's **Characters** collection edits and filters by it.
+
+- **Offered under its own heading.** Character Select lists experimental characters in an **Experimental** section
+  after the groups and before Yours (they leave their group's section); no section while there are none
+  (`characterSections`). A person can still choose one, for themselves or for a bot in the bot manager (`BOT_LOOKS`),
+  and a saved choice keeps working (`getLook` resolves any roster look by id).
+- **Left out of automatic picks.** `PICKABLE_LOOKS` (the core tier of `CORE_LOOKS`; "core" in `CORE_LOOKS` is the id
+  prefix, not the tier) is what the default look, random bots (`lookForBot`, `castLooks` under a bot-characters
+  setting), Random characters and Roulette (`RANDOM_LOOK_POOL`) draw from. `content/npcs.json` and
+  `content/roulette.json` may not name an experimental character (`pnpm content:check` says which).
+- **Gates.** To be core a character passes every blocking gate; for an experimental one they only report.
+  `pnpm quality-gates` prints the characters after the maps and exits 1 on a failing core character
+  (`--characters`: only them; `content/characterGates.ts`, facts read by `packages/server/src/tools/characterFacts.ts`;
+  `packages/server/test/characterGates.test.ts` holds the core roster to them). The headless gates, from what the
+  content build already recorded:
+
+  | Gate | Passes when | From |
+  |---|---|---|
+  | `triangles` | the model is within the character budget (20 000 triangles); the note tells what its cut asked for (`fixes.triangles`) | `content/meshy.lock.json`, `content/models.json` `characterBudgets` |
+  | `lod` | a far copy was built, lighter than the model | `content/meshy.lock.json` `lodTriangles` |
+  | `hands` | the hands were measured, the body's and its own first-person arms' | `content/meshy.lock.json` `hands` |
+  | `clips` | its clip set holds all five clips (a rolling body, or one that keeps the rig's gait, has none to hold) | `content/clip-sets.lock.json`, a character's own `<id>_clips` |
+  | `hitbox` | a hit shape was measured from its model | `MEASURED_HITBOXES` |
+  | `portrait` | a portrait ships with the site | `portraitIndex.ts` |
+
+  `triangles`, `lod` and `hands` are for whole-body characters; a look built from the shared parts has no file of its
+  own (its parts are budgeted in `pnpm content:check`). A gate the core roster fails would be listed in
+  `REPORT_ONLY_CHARACTER_GATES` (reports for every tier, with a TODO in the output) rather than weaken the roster:
+  none today. Not gated yet, because they need the game's renderer: how the hands sit on each gun (the grip sheet),
+  the face and the portrait's picture, clipping in first person. A new experimental character has no shipped portrait
+  until the next capture (the menu draws it live), so `portrait` reports until then.
+
 ## Character Designer
 
 Character Select → **Design new** (D / controller X), or **Customise** on a part-built look (or `?mode=designer`).
@@ -634,6 +671,7 @@ repo; they live in a downloads dir outside it.
 | `status` | `queued` for a stub that isn't ready: it is checked only for the queue's fields and not built. Drop it once the rest is filled in. |
 | `order` | Roster position among the whole-body characters (unique). |
 | `group` | What the character is, for Character Select's tabs: `soldiers`, `legends`, `folk`, `horror`, `animals` or `creatures` (see Looks, Character Select's groups). Needed on a player look; the checker's list (`GROUPS`) matches `CHARACTER_GROUPS`. |
+| `tier` | `core` or `experimental` (left out: core): an experimental character sits under its own heading in Character Select and is never a bot's, a random character's or Roulette's pick (see Looks, Tier). |
 | `nameTheme` | What kind of creature it is, for its bots' names (`shared/content/botNames.ts`): `soldier`, `monkey`, `bear`, `wolf`, `dog`, `cat`, `raccoon`, `critter`, `frog`, `pirate`, `knight`, `ninja`, `wizard`, `barbarian`, `undead`, `spooky`, `robot`, `alien`, `goblin`, `cowboy`, `gangster`, `townsfolk` or `myth`. The first bot wearing the character takes its `name`, the rest the theme's names ("Sgt. Dunmore"). Left out: its group's (soldiers → soldier, legends → knight, folk → townsfolk, horror → spooky; animals and creatures → the general names). Every character on the roster has one (a test checks); the checker's list (`NAME_THEMES`) matches botNames.ts. |
 | `name`, `look`, `bio` | The look's display name, its ID (`core.<name>`, never changed once shipped: saved looks and bots use it) and its one-line bio. |
 | `body`, `size` | `male` or `female` proportions (clips and hip height); `small` / `large` body size, or left out. |
@@ -1105,7 +1143,7 @@ and stamina reach the predicting client in the private state (`bs`).
 
 The match setting **Random characters** (Off by default on every map; `MatchRules.randomCharacters`, setup
 `randomChars`, host rule `randomchars`): everyone, people and bots, plays a random look each life, any on the roster
-(`CORE_LOOKS`: playable, not retired; never NPC-only bodies or NPC skins). The pick hashes the match seed, the slot
+(`PICKABLE_LOOKS`: playable, not retired, core tier; never NPC-only bodies, NPC skins or experimental characters). The pick hashes the match seed, the slot
 and the life (`sim/randomLooks.ts`: the same every replay, never the look just played); the look travels in the
 `spawn` event (and the roster for anyone joining later), and its size, stats and hit shapes go with it. Off again,
 each plays their own choice from their next life. It works with Character stats on or off.

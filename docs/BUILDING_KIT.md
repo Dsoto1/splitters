@@ -1341,7 +1341,7 @@ template automatically.
   `pnpm quality-gates [map ids] [--json=file] [--seconds=n]` runs those plus the navigation audit and a bots-only
   match for every offered map, and exits 1 when a core map fails one (an experimental map's only report); a test
   (`shared/test/qualityGates.test.ts`) holds every core map of `maps/` to the gates that need only the map.
-  Characters' tiers are not built yet.
+  Characters have the same two tiers and their own headless gates, printed after the maps': docs/CHARACTERS.md, "Tier".
 - **The card shot (Map properties → Card shot).** Set card shot… shows the menu card's frame (16:9) with the card
   picture's own lens; Eye level (on by default) keeps the camera 1.7 m over what's under it as you fly. Enter saves
   the camera in the map (`metadata.cardCamera`), Esc cancels; Preview shows the saved shot in the frame; Clear goes

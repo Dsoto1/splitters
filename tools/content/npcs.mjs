@@ -69,7 +69,8 @@ export function build(content, root = ROOT) {
     slots.set(w.id, w.slot);
   }
   const looks = new Set();
-  const experimental = new Set();
+  // Experimental characters, by their manifests' tier (`content.experimentalLooks`: more of them, for a test).
+  const experimental = new Set(content.experimentalLooks ?? []);
   for (const f of readdirSync(join(root, 'content/characters'))) {
     if (!f.endsWith('.json')) continue;
     const c = readJson(root, `content/characters/${f}`);
