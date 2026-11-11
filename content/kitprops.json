@@ -76,6 +76,26 @@
         1500,
         320,
         10
+      ],
+      "shelf": [
+        1500,
+        360,
+        10
+      ],
+      "stall": [
+        400,
+        180,
+        60
+      ],
+      "counter": [
+        200,
+        60,
+        10
+      ],
+      "wastebin": [
+        80,
+        60,
+        10
       ]
     }
   },
@@ -212,6 +232,41 @@
     },
     "prop.bookcase_wide": {
       "model": "kit.bookcase.wide",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.shelf_boxes": {
+      "model": "kit.shelf.gondola",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.shelf_bags": {
+      "model": "kit.shelf.gondola_snack",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.shelf_end": {
+      "model": "kit.shelf.end",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.stall": {
+      "model": "kit.stall.market",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.stall_green": {
+      "model": "kit.stall.market",
+      "variant": 1,
+      "scale": 1
+    },
+    "prop.stall_bench": {
+      "model": "kit.stall.counter",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.trashcan": {
+      "model": "kit.bin.waste",
       "variant": 0,
       "scale": 1
     }
