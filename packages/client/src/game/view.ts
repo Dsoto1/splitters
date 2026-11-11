@@ -289,6 +289,8 @@ export function bodiesPreference(): BodiesSetting {
 }
 /** Bodies kept at once (the oldest goes when another falls). */
 const MAX_CORPSES = 32;
+/** ...and in a mode where the bodies stay whatever the setting (Zombies: the field fills with them; `View.keepBodies`). */
+const MAX_CORPSES_KEPT = 96;
 /** Time (ms) a frame may spend starting dead bodies before further fresh deaths wait for the next frame (at least one starts). */
 const DEATH_START_MS = 4;
 /**
@@ -873,6 +875,8 @@ export class GameView {
   /** Players whose body is lying as a corpse and who haven't respawned yet. */
   private readonly lyingDead = new Set<number>();
   bodies: BodiesSetting = bodiesPreference();
+  /** Bodies stay where they fall whatever the Bodies setting, and more of them (owner, 2026-11-11: Zombies' dead remain). The session sets it by mode. */
+  keepBodies = false;
 
   /** Remember a push on a player (from a hit or a blast) so their ragdoll flies the right way if it kills them. */
   pushPlayer(slot: number, v: Vec3, max = 3.5): void {
@@ -1137,7 +1141,7 @@ export class GameView {
     a.flash?.setEnabled(false);
     a.flashRig?.hide();
     this.corpses.push({ a, slot, born: performance.now() });
-    while (this.corpses.length > MAX_CORPSES) this.disposeAvatar(this.corpses.shift()!.a);
+    while (this.corpses.length > (this.keepBodies ? MAX_CORPSES_KEPT : MAX_CORPSES)) this.disposeAvatar(this.corpses.shift()!.a);
   }
 
   /** Ray test against the level's static shapes (null before the map is built). */
@@ -1401,7 +1405,7 @@ export class GameView {
         // Crowds: bodies past the shadow reach cast none, like the living.
         if (this.crowd && Math.hypot(c.a.root.position.x - eye.x, c.a.root.position.z - eye.z) > CROWD_SHADOW_REACH) this.atmosphere.shadowless.add(c.a.root);
         else this.atmosphere.shadowless.delete(c.a.root);
-        if (this.bodies !== 'fade') return true;
+        if (this.bodies !== 'fade' || this.keepBodies) return true;
         const age = (now - c.born) / 1000 - CORPSE_STAY;
         if (age <= 0) return true;
         if (age >= CORPSE_SINK) {

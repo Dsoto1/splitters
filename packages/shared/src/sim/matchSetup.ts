@@ -1,5 +1,6 @@
 import type { MapDocument, SpawnEntity } from '../map/schema.ts';
 import { BROWSER_MAX_PLAYERS, MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
+import { ZOMBIES_MAX_PLAYERS } from './zombies.ts';
 import { MAX_TEAMS, mapTeams } from './npc.ts';
 import { BREAKTHROUGH_POOL, BREAKTHROUGH_POOL_MAX, BREAKTHROUGH_SECTOR_SECONDS, DEFAULT_RULES, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, isTwoTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from './spawns.ts';
@@ -376,8 +377,10 @@ export interface PlayerCap {
 }
 
 /** The cap on players for a mode on a map, given what this device runs (`deviceMax`, you and bots). */
-export function playerCap(_mode: GameMode, _map: MapDocument, deviceMax: number): PlayerCap {
-  return { max: clampInt(deviceMax, 2, BROWSER_MAX_PLAYERS), by: 'device' };
+export function playerCap(mode: GameMode, _map: MapDocument, deviceMax: number): PlayerCap {
+  // Zombies takes 16 at the most for now (owner, 2026-11-11: fewer players, a bigger horde).
+  const most = mode === 'core.zombies' ? Math.min(BROWSER_MAX_PLAYERS, ZOMBIES_MAX_PLAYERS) : BROWSER_MAX_PLAYERS;
+  return { max: clampInt(deviceMax, 2, most), by: 'device' };
 }
 
 /**
@@ -564,7 +567,8 @@ export function sizePresets(mode: GameMode, map: MapDocument, o: PresetOptions):
       add('small', 'Duo', Math.min(2, room), 'You and one bot squadmate.');
       add('pick', "Map's pick", Math.min(pick, room), `The squad the map is made for (up to ${room}).`);
       add('big', 'Big squad', Math.min(pick * 2, room), "Twice the map's own squad, as far as the map is made for.");
-      add('max', 'Max', room, room < squadRoom(map, BROWSER_MAX_PLAYERS) ? `The most ${device} runs: ${room}.` : `The most the map is made for: ${most}.`);
+      const zombiesMost = mode === 'core.zombies' && room === ZOMBIES_MAX_PLAYERS && room < squadRoom(map, BROWSER_MAX_PLAYERS);
+      add('max', 'Max', room, zombiesMost ? `Zombies takes up to ${room} for now.` : room < squadRoom(map, BROWSER_MAX_PLAYERS) ? `The most ${device} runs: ${room}.` : `The most the map is made for: ${most}.`);
     } else {
       add('duel', 'Duel', 2, 'One on one: you against a bot (or a friend who joins).');
       add('small', 'Small', Math.min(Math.max(4, Math.min(rec.min, pick - 2)), pick - 1), `A small match: the fewest this map is made for (${rec.min}).`);

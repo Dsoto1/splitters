@@ -60,6 +60,12 @@ export const CREATURE_SPECS: Record<CreatureModel, CreatureSpec> = {
 
 /** Which zombies get the Quaternius body: two in three; the rest shamble on the soldiers' rig. */
 export const zombieHasCreatureBody = (id: number): boolean => id % 3 !== 0;
+/**
+ * The looks the other zombies wear (owner, 2026-11-11: zombie skins only, no mannequins; they were the soldiers'
+ * plain rig tinted green): the roster's own zombie characters, by NPC id.
+ */
+export const ZOMBIE_LOOKS = ['core.groaner', 'core.lurcher', 'core.rotter', 'core.shambler', 'core.zombiesoldier1', 'core.zombiesoldier2'] as const;
+export const zombieLook = (id: number): string => ZOMBIE_LOOKS[Math.floor(id / 3) % ZOMBIE_LOOKS.length]!;
 
 export const isCreature = (role: string): role is CreatureKind => (CREATURE_ROLES as readonly string[]).includes(role);
 

@@ -38,23 +38,28 @@ const SPAWN_CLEAR = 16;
 /** ...nor so far away that they take ages to arrive. */
 const SPAWN_REACH = 70;
 
+/** The most players (people and Player Bots) a Zombies match takes (owner, 2026-11-11: 16 for now, and a bigger horde). */
+export const ZOMBIES_MAX_PLAYERS = 16;
+
 /**
  * Zombies in wave `n` (1-based) for this many players. Humans count as one
- * each and Player Bots as a third (see `zombieHeadcount`), so a full bot squad
- * doesn't triple the horde.
+ * each and Player Bots as a half (see `zombieHeadcount`), so the horde grows
+ * with the squad, bots included, without a full bot squad doubling it.
+ * Owner, 2026-11-11: a bigger horde (it was (4 + 3n) a wave, bots a third,
+ * 32 up at once): a full squad of 16 people meets 85 in wave 1 and 255 by wave 10.
  */
 export function zombiesInWave(n: number, players: number): number {
-  return Math.round((4 + 3 * n) * (1 + 0.5 * Math.max(0, players - 1)));
+  return Math.round((6 + 4 * n) * (1 + 0.5 * Math.max(0, players - 1)));
 }
 
-/** Players for wave sizes: humans count as one, Player Bots as a third, never less than one. */
+/** Players for wave sizes: humans count as one, Player Bots as a half, never less than one. */
 export function zombieHeadcount(players: readonly { bot: boolean }[]): number {
-  return Math.max(1, players.reduce((n, p) => n + (p.bot ? 1 / 3 : 1), 0));
+  return Math.max(1, players.reduce((n, p) => n + (p.bot ? 1 / 2 : 1), 0));
 }
 
-/** How many may be up at once: the rest wait their turn. */
+/** How many may be up at once: the rest wait their turn (64 at the most: with 16 players, 80 bodies fighting). */
 export function zombieCap(n: number, players: number): number {
-  return Math.min(32, Math.round(6 + 2 * n + 2 * Math.max(0, players - 1)));
+  return Math.min(64, Math.round(10 + 3 * n + 3 * Math.max(0, players - 1)));
 }
 
 /** Health multiple (on the zombie's own) and walking-speed multiple in wave `n`. */

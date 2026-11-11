@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Zombies: a bigger horde, zombie skins only, and the dead stay.** Waves are larger and grow with the squad, bots included (a bot counts as half a person, it was a third), with up to 64 zombies up at once (it was 32). A Zombies match takes 16 players at the most for now. Every zombie wears a zombie body or one of the zombie characters' skins (a third of them used to be plain mannequins tinted green), and bodies stay where they fall for the whole match, up to 96 of them, whatever the Bodies setting.
 - **Ten new characters** (Meshy Community, CC0), under Experimental in Character Select until they have been looked over in game: Octo Buddy, Sugar Skull, Inspector Bigotes, Steel Guardian, Shadow Enforcer, Steampunk Warrior, Sentinel in Green, Goblin Gunslinger, The Purple Comet and Elephant Warrior.
 - **The Hauler is the Ironbound Voyager** (Meshy Community, CC0): an armoured hover freighter with six engines. The pilot sits in the nose, the rocket gunner stands on the deck and the four passengers sit along its edges; handling, health and the rockets are as before.
 - **The Troop Truck is on Iron Maw and Sunstone Crag:** one for each team at its base.

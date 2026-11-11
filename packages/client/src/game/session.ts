@@ -72,6 +72,7 @@ import {
   NPC_ROLE_SPECS,
   isCreature,
   zombieHasCreatureBody,
+  zombieLook,
   STREAK_REWARDS,
   matchPhysics,
   matchTeams,
@@ -1868,6 +1869,7 @@ export class GameSession {
         this.hud.setBoardMode(msg.rules.mode);
         this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : rouletteOn(msg.rules) && msg.rules.mode !== 'core.roulette' ? `Roulette: ${MODE_LABELS[msg.rules.mode]}` : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
         this.hud.waitLabel = msg.rules.mode === 'core.zombies' ? 'Down: back at the next wave' : 'Respawning…';
+        this.view.keepBodies = msg.rules.mode === 'core.zombies';
         // Classes: the class screen opens as you join (and whenever you're down).
         this.classesOn = classesInPlay(msg.rules);
         this.input.classCount = this.classesOn ? CLASS_IDS.length : 0;
@@ -2337,6 +2339,7 @@ export class GameSession {
         if (this.rules && msg.rules.mode === this.rules.mode) {
           const before = this.map ? weaponSetInPlay(this.rules, this.map)?.id : undefined;
           this.rules = msg.rules;
+          this.view.keepBodies = msg.rules.mode === 'core.zombies';
           // Another weapon set: its guns load now, before a pickup or your next life shows one mid-fight, and grenades
           // wear its looks from now on.
           if (this.map && weaponSetInPlay(msg.rules, this.map)?.id !== before) {
@@ -2524,8 +2527,9 @@ export class GameSession {
     if (!info || !this.map) return undefined;
     const faction = mapFactions(this.map)[info.faction];
     const role = NPC_ROLES[info.role] ?? 'trooper';
-    // Most zombies wear Quaternius' zombie body (its own walk, run and bite); the rest shamble on the soldiers' rig.
-    if (role === 'zombie') return { color: '#76866a', scale: info.size, size: info.size, label: 'Zombie', zombie: true, ...(zombieHasCreatureBody(id) ? { creature: 'zombie' as const } : {}) };
+    // Most zombies wear Quaternius' zombie body (its own walk, run and bite); the rest wear the roster's zombie
+    // characters and shamble on the soldiers' rig (never the plain mannequin).
+    if (role === 'zombie') return { color: '#76866a', scale: info.size, size: info.size, label: 'Zombie', zombie: true, ...(zombieHasCreatureBody(id) ? { creature: 'zombie' as const } : { look: zombieLook(id) }) };
     const spec = NPC_ROLE_SPECS[role];
     // The creature originals wear their own character look.
     return { color: faction?.color ?? '#d04a3a', scale: spec.scale * info.size, size: info.size, label: `${faction?.name ?? 'Enemy'} ${spec.label}`, ...(isCreature(role) ? { creature: role } : {}), ...(spec.look ? { look: spec.look } : {}) };
