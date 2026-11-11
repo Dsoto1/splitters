@@ -117,6 +117,10 @@
         "maxBytes": 4500000,
         "maxLodTriangles": 12000
       },
+      "animated": {
+        "maxTriangles": 10000,
+        "maxBytes": 1500000
+      },
       "cockpit": {
         "maxTriangles": 36000,
         "maxBytes": 5000000
@@ -671,6 +675,23 @@
       "length": 0.2
     },
     {
+      "out": "guns/flare_gun.glb",
+      "pack": "3dmodelscc0-guns-explosives",
+      "download": "Flare_Gun",
+      "file": "FlareGun.fbx",
+      "label": "Flare Gun (3DModelsCC0 Guns & Explosives): the Flare Gun",
+      "maps": {
+        "base": "FlareGun_Base_Color.png",
+        "normal": "FlareGun_Normal_DirectX.png",
+        "metallic": "FlareGun_Metallic.png",
+        "roughness": "FlareGun_Roughness.png"
+      },
+      "pbr": true,
+      "held": true,
+      "forward": "-z",
+      "length": 0.24
+    },
+    {
       "out": "guns/grease_gun.glb",
       "pack": "3dmodelscc0-guns-explosives",
       "file": "GreaseGun/Grease_Gun.fbx",
@@ -961,6 +982,16 @@
       "normalSize": 256,
       "surface": "rebake",
       "pbr": true
+    },
+    {
+      "out": "guns/sheep.glb",
+      "pack": "meshy-community-drive-1110",
+      "glb": "sheep_walking.glb",
+      "label": "Sheep (Meshy Community download, 2026-11-10; file sheep_walking.glb, rigged, with its walk clip): the Sheep",
+      "animated": true,
+      "triangles": 9000,
+      "textureSize": 512,
+      "budget": "animated"
     },
     {
       "out": "guns/sunburst_grenade.glb",

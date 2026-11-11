@@ -7,7 +7,9 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- Throwables: the sheep walks with its own model and walk; the Flare Gun has a real model, and the airstrike marker is fired from it as a fizzing, smoking flare.
 
+- **Painted ground blends.** A painted path or patch fades into the ground beside it instead of ending in hard square edges (Medium and High graphics). Nothing changes underfoot.
 - **The team leader's gold marker no longer stays over their body** after they die.
 - **MapMaker: Show all levels** is a button at the top of the level list (it was a small checkbox under it), lit when on, and stays as you left it. H still switches it.
 - **The official maps name our own crates, drums and cartons** (MapMaker's Replace all: 722 placements on 57 maps). Nothing changes in play: they already drew them.

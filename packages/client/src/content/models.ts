@@ -14,7 +14,8 @@ import '@babylonjs/core/Meshes/instancedMesh';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 // Side-effect import: registers the glTF 2.0 loader plugin.
 import './gltf.ts';
-import { MODEL_FALLBACKS, MOUNT_DEFS } from '@tiletrigger/shared';
+import { MODEL_FALLBACKS, MOUNT_DEFS, THROWABLE_DEFS } from '@tiletrigger/shared';
+import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import { GLB, versioned } from '../assetUrl.ts';
 import { applyPropSurfaces } from './propSurfaces.ts';
 
@@ -22,6 +23,9 @@ import { applyPropSurfaces } from './propSurfaces.ts';
 const MOUNT_MODEL_FALLBACKS: Readonly<Record<string, string>> = Object.fromEntries(Object.values(MOUNT_DEFS).flatMap((d) => (d.fallback ? [[d.model, d.fallback]] : [])));
 
 /** Base URL of built content (packages/client/public/models). */
+/** Skinned throwable models drawn at a set height (content/throwables.json `view.fit`), by path. */
+const FIT_HEIGHTS = new Map<string, number>(Object.values(THROWABLE_DEFS).flatMap((t) => (t.view?.fit ? [[t.view.model, t.view.fit] as const] : [])));
+
 export const MODEL_BASE = `${import.meta.env.BASE_URL}models/`;
 
 /**
@@ -322,14 +326,43 @@ export class ModelLibrary {
    */
   async instantiate(path: string, name: string, instanced = false): Promise<TransformNode> {
     const container = await this.load(path);
-    if (instanced) this.instanceLods(path, container);
-    const entries = container.instantiateModelsToScene((n) => `${name}_${n}`, false, { doNotInstantiate: !instanced });
+    // A skinned model is its own copy (a skeleton to move), never a GPU instance.
+    const skinned = container.skeletons.length > 0;
+    if (instanced && !skinned) this.instanceLods(path, container);
+    const entries = container.instantiateModelsToScene((n) => `${name}_${n}`, false, { doNotInstantiate: !instanced || skinned });
     const root = new TransformNode(name, this.scene);
-    for (const node of entries.rootNodes) node.parent = root;
+    const fit = FIT_HEIGHTS.get(path);
+    const holder = skinned && fit ? new TransformNode(`${name}_fit`, this.scene) : null;
+    if (holder) holder.parent = root;
+    for (const node of entries.rootNodes) node.parent = holder ?? root;
     // The glTF loader's __root__ is an empty mesh (it turns the model into Babylon's handedness): a plain node
     // does the same without being one more mesh the scene checks for drawing every frame (a map's props had a thousand).
     for (const node of entries.rootNodes) if (node instanceof Mesh && !node.isAnInstance && !node.getTotalVertices() && !node.skeleton && !node.hasThinInstances) asNode(node);
     for (const m of root.getChildMeshes()) m.isPickable = false;
+    if (skinned) {
+      // Clips wait for whoever draws it to play one (`ModelClips`); its skeleton goes with it.
+      for (const g of entries.animationGroups) g.stop();
+      for (const m of root.getChildMeshes()) m.alwaysSelectAsActiveMesh = true;
+      root.metadata = { ...root.metadata, clips: entries.animationGroups as AnimationGroup[] };
+      root.onDisposeObservable.add(() => {
+        for (const g of entries.animationGroups) g.dispose();
+        for (const sk of entries.skeletons) sk.dispose();
+      });
+      if (holder && fit) {
+        // Sized by its bind pose: `fit` metres tall, centred on its bounds like the other throwables' models.
+        root.computeWorldMatrix(true);
+        // A skinned mesh is drawn at its raw vertices' size, but Babylon bounds them through the mesh node's own scale
+        // (a rig exported in centimetres sits under a 0.01 armature): undo that to size what is drawn.
+        for (const m of root.getChildMeshes()) if (m.skeleton) m.refreshBoundingInfo({ applySkeleton: true, applyMorph: false });
+        const { min, max } = holder.getHierarchyBoundingVectors(true);
+        const mesh = root.getChildMeshes().find((m) => m.skeleton);
+        mesh?.computeWorldMatrix(true);
+        const own = mesh ? Math.abs(mesh.absoluteScaling.y) || 1 : 1;
+        const k = fit / Math.max(1e-6, (max.y - min.y) / own);
+        holder.scaling.setAll(k);
+        holder.position.set(-((min.x + max.x) / 2 / own) * k, -((min.y + max.y) / 2 / own) * k, -((min.z + max.z) / 2 / own) * k);
+      }
+    }
     return root;
   }
 }

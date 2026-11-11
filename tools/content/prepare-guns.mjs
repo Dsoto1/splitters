@@ -73,7 +73,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Logger, NodeIO, getBounds } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { clearNodeTransform, cloneDocument, compactPrimitive, dedup, flatten, join as joinPrimitives, prune, quantize, weld } from '@gltf-transform/functions';
+import { clearNodeTransform, cloneDocument, compactPrimitive, dedup, flatten, join as joinPrimitives, prune, quantize, simplify, weld } from '@gltf-transform/functions';
+import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
 import { MESHY_QUANTIZE, addLod, markings, meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
@@ -501,7 +502,30 @@ function splitParts(doc, holder, parts) {
  * Build one model. `place` (a body's placement, returned by its own build) puts an `interior` in exactly the body's
  * frame: the same yaw, scale, centring and base shift, so the two line up to the vertex. Returns the placement used.
  */
+/**
+ * `animated: true` (a skinned, animated Meshy GLB: the sheep): kept as the download made it, rig and clips included
+ * (a rebake would drop the skin), with its colour map shrunk to a JPEG (`textureSize`, default 512), its other maps
+ * dropped for a matte finish, and the mesh simplified to about `triangles` (meshoptimizer, joints and weights kept).
+ * The game sizes it when it draws it (`view.fit` in content/throwables.json), as it does a creature.
+ */
+async function buildAnimated(src, entry) {
+  const doc = await io.read(src);
+  doc.setLogger(new Logger(Logger.Verbosity.WARN));
+  const before = countTriangles(doc).triangles;
+  for (const mat of doc.getRoot().listMaterials()) {
+    mat.setMetallicFactor(0).setRoughnessFactor(entry.roughness ?? 0.85).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null).setNormalTexture(null);
+    for (const ext of mat.listExtensions()) ext.dispose();
+    const baseMap = mat.getBaseColorTexture();
+    if (baseMap) await shrink(baseMap, entry.textureSize ?? 512, 'image/jpeg');
+  }
+  await doc.transform(weld(), simplify({ simplifier: MeshoptSimplifier, ratio: Math.min(1, (entry.triangles ?? before) / before), error: entry.maxError ?? 0.02 }), dedup(), prune());
+  for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) compactPrimitive(prim);
+  doc.getRoot().getAsset().generator = 'tiletrigger content build';
+  return { glb: Buffer.from(await io.writeBinary(doc)), ...countTriangles(doc), normalMap: false, place: {} };
+}
+
 async function build(src, entry, pack, place = null) {
+  if (entry.animated) return buildAnimated(src, entry);
   let meshy = null;
   if (pack.meshy) {
     const paint = entry.paintOut ? async (img) => console.log(`  painted out ${await paintOut(img, markings(entry.paintOut), { grow: entry.grow ?? 2, holes: entry.holes ?? 0 })} px of markings`) : null;
