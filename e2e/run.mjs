@@ -654,6 +654,9 @@ async function editoruxFlow(browser) {
   await page.press('#ed-search', 'Escape');
   check(await page.evaluate(() => document.getElementById('ed-pal-results').hidden && !!document.querySelector('#ed-pal-quick .ed-quick-row [data-pick]')), 'Escape clears the search; the favourite is in the quick row');
   // Hover card names the piece under the pointer (the grid view shows pictures only).
+  // (The pointer leaves the palette first: when the scroll below brings the card under a pointer that is already
+  // there, no pointerover fires and the scroll has hidden the card, as it should.)
+  await page.mouse.move(700, 400);
   await page.evaluate(() => document.querySelector('[data-tool="scenario:pad"]').scrollIntoView({ block: 'center' }));
   await frames(page, 2);
   await page.hover('[data-tool="scenario:pad"]');
