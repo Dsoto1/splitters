@@ -93,7 +93,7 @@
       "glb": true
     },
     "meshy-community-drive-1111": {
-      "title": "Meshy community models (the Troop Truck, textured GLB download from the owner's Drive, 2026-11-11)",
+      "title": "Meshy community models (the Troop Truck and the Hauler, textured GLB downloads from the owner's Drive, 2026-11-11)",
       "creator": "Meshy community (author not recorded; CC0 per the owner's rule of 2026-11-06)",
       "url": "https://www.meshy.ai (community post URL pending from the owner)",
       "license": "CC0-1.0",
@@ -1169,6 +1169,24 @@
         {"name": "wheel_rl", "box": [[0.72, -1.28, -2.37], [1.25, -0.04, -1.27]], "pivot": [0.98, -0.67, -1.82]},
         {"name": "wheel_rr", "box": [[-1.25, -1.28, -2.37], [-0.72, -0.04, -1.27]], "pivot": [-0.98, -0.67, -1.82]}
       ]
+    },
+    {
+      "out": "vehicles/ironbound_hauler.glb",
+      "pack": "meshy-community-drive-1111",
+      "glb": "Meshy_AI_Ironbound_Voyager_1110213418_texture.glb",
+      "label": "Ironbound Voyager, the Hauler (Meshy Community download, owner's Drive, 2026-11-11)",
+      "forward": "-x",
+      "length": 6.8,
+      "triangles": 20000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024
     }
   ]
 }

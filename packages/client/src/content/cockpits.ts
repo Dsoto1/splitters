@@ -303,5 +303,26 @@ const ARMORED_ROVER: CockpitDef = {
   switches: [{ at: [0.05, 1.4, 0.67], face: [0, 0.3, -0.95], count: 5, gap: 0.045 }],
 };
 
+/**
+ * The Hauler (MOUNT_DEFS.hauler, Ironbound Voyager, 2026-11-11): no parts of its own, only a cut. The pilot sits in
+ * the closed nose (measured on the model: the hull a tube 1.8 m wide and 2.2 m tall, its nose tapering from z 1.9 to
+ * 3.4); in your own cockpit view the nose's shell is left out, so you see ahead instead of its inside faces.
+ */
+const HAULER: CockpitDef = {
+  hide: [
+    [
+      [-1.1, 0.4, 1.3],
+      [1.1, 2.7, 3.6],
+    ],
+  ],
+  palette: {},
+  tubes: [],
+  boxes: [],
+  discs: [],
+  seats: [],
+  gauges: [],
+  switches: [],
+};
+
 /** In-house cockpits by mount id. */
-export const COCKPITS: Readonly<Record<string, CockpitDef>> = { buggy: BUGGY, troop_truck: TROOP_TRUCK, armored_rover: ARMORED_ROVER };
+export const COCKPITS: Readonly<Record<string, CockpitDef>> = { buggy: BUGGY, troop_truck: TROOP_TRUCK, armored_rover: ARMORED_ROVER, hauler: HAULER };

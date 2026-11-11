@@ -475,7 +475,8 @@
     "id": "hauler",
     "displayName": "Hauler",
     "kind": "vehicle",
-    "model": "vehicles/hauler.glb",
+    "model": "vehicles/ironbound_hauler.glb",
+    "fallback": "vehicles/hauler.glb",
     "health": 700,
     "half": [
      1.6,
@@ -488,55 +489,69 @@
       "label": "Pilot",
       "offset": [
        0,
-       1.7,
-       2.2
-      ]
+       1,
+       2.3
+      ],
+      "seated": true,
+      "legDrop": 0.4
      },
      {
       "role": "gunner",
       "label": "Gunner",
       "offset": [
        0,
-       2.4,
-       -0.4
+       2.47,
+       -0.9
       ],
       "weapon": "core.mount_rockets"
      },
      {
       "role": "passenger",
-      "label": "Left front",
+      "label": "Deck, left front",
       "offset": [
-       -0.9,
-       1.7,
-       0.8
-      ]
+       -0.72,
+       2.47,
+       -0.2
+      ],
+      "seated": true,
+      "facing": -1.5707963267948966,
+      "legDrop": 0.55
      },
      {
       "role": "passenger",
-      "label": "Right front",
+      "label": "Deck, right front",
       "offset": [
-       0.9,
-       1.7,
-       0.8
-      ]
+       0.72,
+       2.47,
+       -0.2
+      ],
+      "seated": true,
+      "facing": 1.5707963267948966,
+      "legDrop": 0.55
      },
      {
       "role": "passenger",
-      "label": "Left back",
+      "label": "Deck, left back",
       "offset": [
-       -0.9,
-       1.7,
-       -1.6
-      ]
+       -0.72,
+       2.47,
+       -1.7
+      ],
+      "seated": true,
+      "facing": -1.5707963267948966,
+      "legDrop": 0.55
      },
      {
       "role": "passenger",
-      "label": "Right back",
+      "label": "Deck, right back",
       "offset": [
-       0.9,
-       1.7,
-       -1.6
-      ]
+       0.72,
+       2.47,
+       -1.7
+      ],
+      "seated": true,
+      "facing": 1.5707963267948966,
+      "legDrop": 0.55
      }
     ],
     "enterRadius": 4,
@@ -557,8 +572,8 @@
     },
     "cockpitEye": [
      0,
-     1.95,
-     -0.8
+     1.85,
+     2.45
     ],
     "blurb": "A slow hovering transport for six: a pilot, a rocket gunner and four passengers"
    },
@@ -566,33 +581,33 @@
    "eyes": [
     [
      0,
-     1.95,
-     -0.8
+     1.85,
+     2.45
     ],
     [
      0,
-     3.4,
-     -0.25
+     3.47,
+     -0.75
     ],
     [
-     -0.9,
-     2.7,
-     0.9500000000000001
+     -0.72,
+     3.47,
+     -0.05000000000000002
     ],
     [
-     0.9,
-     2.7,
-     0.9500000000000001
+     0.72,
+     3.47,
+     -0.05000000000000002
     ],
     [
-     -0.9,
-     2.7,
-     -1.4500000000000002
+     -0.72,
+     3.47,
+     -1.55
     ],
     [
-     0.9,
-     2.7,
-     -1.4500000000000002
+     0.72,
+     3.47,
+     -1.55
     ]
    ]
   },
