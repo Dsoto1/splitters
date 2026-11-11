@@ -486,6 +486,7 @@ The workflow is unchanged (CLAUDE.md):
   shield is cleared, and its damage is logged by attacker (`hurt` = your rounds; friendly fire off also needs nothing
   lost). Merge origin/main and the teams flow should hold.
 - Claimed: throwables part 2 (`wip/weapons-throwables`, weapon and vehicle lane, this account, 2026-11-11): the Sheep's model (`guns/sheep.glb`, animated: `tools/content/prepare-guns.mjs` `animated`, `ModelLibrary.instantiate` skinned path, `arsenalVisuals.ts` sheep case, `view.fit` in `throwables.json`/`weapons.ts`/`tools/content/weapons.mjs`), then the Flare Gun's model (pistol slot) and the airstrike flare as a flare-gun shot (`content/throwables.json` airstrike, `content/guns.json` entries, throwing preview and flare FX in `packages/client/src/game/`; the airstrike's damage and timing unchanged), `docs/ARSENAL.md` Grenades table, `content/guns.lock.json`, `content/provenance.json`, `packages/shared/test/fixtures/weapons-resolved.json`, `packages/shared/test/weaponModels.test.ts`. No map, editor or vehicle files.
+- Claimed: vehicle fit fixes and flakes (weapon and vehicle lane, this account, 2026-11-11): the files are listed under "Weapon and vehicle lane: status" below.
 - Claimed: `maps/training_range.json` (the Battle Rifle on a rack, through MapMaker), and the new content ids `core.battle_rifle` (weapon code 49) and `core.weapon_battle_rifle` (pickup), gunplay pass 2 (`wip/gunplay-2`), 2026-11-08.
 - **Moved to the MapMaker lane (owner's rule: MapMaker work goes there; 2026-11-08):** the editor half of the Iron
   Coast job, since the lane holds the editor claim: (1) a finer terrain grid (raise the 161-vertices-a-side cap to 321,
@@ -738,8 +739,17 @@ for the owner's review, not landed).**
     - perf budget "frost_basin medium starting explosion";
     - `server/test/netLab.test.ts` (0.848 vs 0.85);
     - the vehicles e2e buggy-rider hip height (0.35 vs 0.3).
-- **Picked up (next session on this account, 2026-11-11; owner: "all works for me" to the list below):** the vehicle fit fixes and the three flakes first, then the Troop Truck on real maps, the Sky Cruiser and Player profiles as agreed with the MapMaker lane's claims.
-- Claimed: `content/vehicles/gun_jeep.json`, `content/vehicles/buggy.json`, `content/vehicles/armored_rover.json`, the Buggy's and the Armored Rover's entries in `packages/client/src/content/cockpits.ts`, the vehicles e2e flow's buggy-rider check (`e2e/run.mjs`), `packages/server/test/netLab.test.ts` and the perf budget's "starting explosion" check (vehicle fit fixes and flakes; session branch `claude/inspiring-sagan-mjnled`, check branch `check/vehicles-fit`; weapon and vehicle lane, this account, 2026-11-11).
+- **In flight (next session on this account, 2026-11-11; owner: "all works for me"): vehicle fit fixes and the three flakes.** Session branch `claude/inspiring-sagan-mjnled` (pushed, fbc9eea on main c0c63f7); it will go to `check/vehicles-fit`, then main, under a "Landing now" line. Nothing of it is on main yet.
+  - **Done on the branch:**
+    - Gun Jeep and Buggy boxes fitted across their tires (`half` x 1.1 / 1.05 to 1.45, as the Troop Truck's): `content/vehicles/gun_jeep.json`, `buggy.json`, `packages/shared/src/content/mounts.generated.ts`, `packages/shared/test/fixtures/vehicles-resolved.json`. Both are 2.9 m wide to walls, rounds and bots' routes now (they were 2.2 and 2.1): a map with a gap or garage fitted to the old width may need a look.
+    - `packages/shared/test/botPush.test.ts`: the looping bound 0.1 to 0.12 (seed 1 moved with the boxes; twelve seeds measured, no trend; the note is in the test).
+    - `packages/server/test/netLab.test.ts`: the smoke check's confirmed share 0.85 to 0.75 (it is on about 30 hits).
+    - `tools/perf/perf96.mjs`: each effect start timed three times, the median kept, first starts logged.
+    - `e2e/run.mjs`, `vehiclesFlow` only (the buggy's seated riders, about line 6860): waits for them to settle.
+  - **Still to do on it:** the Buggy's deck riders (off-centre) and the Armored Rover's cockpit: `content/vehicles/buggy.json`, `armored_rover.json`, `packages/client/src/content/cockpits.ts`, maybe `content/guns.json` (the buggy's entry) and `vehicles/sixer_buggy.glb`.
+  - **No map files, no editor code, no map format change.** `wip/mapmaker-fix-fireteams-test` also edits `e2e/run.mjs` (the fireteams flow, another part of the file).
+  - **After it, in this order, each claimed here first:** the Troop Truck on real maps (through MapMaker; which maps is for the MapMaker lane to agree, nothing started), the Sky Cruiser (waits on the owner: it is also the only Hauler candidate), Player profiles (queue item 5: not started; the MapMaker lane says here if it wants it kept).
+- Claimed: `content/vehicles/gun_jeep.json`, `content/vehicles/buggy.json`, `content/vehicles/armored_rover.json`, the Buggy's and the Armored Rover's entries in `packages/client/src/content/cockpits.ts`, the buggy's entry in `content/guns.json`, `vehiclesFlow` in `e2e/run.mjs`, `packages/server/test/netLab.test.ts`, `packages/shared/test/botPush.test.ts`, `tools/perf/perf96.mjs` (vehicle fit fixes and flakes; `claude/inspiring-sagan-mjnled`, `check/vehicles-fit`; weapon and vehicle lane, this account, 2026-11-11).
 - **Downloading big Drive files:** the Drive connector caps downloads at 10 MB. Link-shared files download at any size from `https://drive.usercontent.google.com/download?id=<id>&export=download&confirm=t`, a host this environment allows.
 
 ### Hand-off to the MapMaker lane (owner, 2026-11-10)
@@ -956,6 +966,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - heatmaps stay in memory.
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
+  - **Landing now: The Spillway, rebuilt, as an experimental map** (`check/mapmaker-spillway-2`, MapMaker lane, 2026-11-11; a new map file, its card picture and docs).
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
