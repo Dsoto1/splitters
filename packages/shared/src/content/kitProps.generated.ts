@@ -9,6 +9,7 @@ export const KIT_GENERATOR_VERSION = 1;
 export const KIT_PROPS: readonly PropDefinition[] = [
   { id: 'kit.barrier.concrete', file: 'kit/barrier.concrete.plain.glb', displayName: 'Concrete Barrier', category: 'Military', size: [2, 1, 0.75], collision: [2, 1, 0.75], breakable: { health: 400, debris: '#9c9a94' } },
   { id: 'kit.box.carton', file: 'kit/box.carton.kraft.glb', displayName: 'Cardboard Carton', category: 'Crates & Barrels', size: [0.378, 0.5, 0.378], collision: [0.378, 0.5, 0.378], breakable: { health: 10, debris: '#c8a070' } },
+  { id: 'kit.container.shipping', file: 'kit/container.shipping.red.glb', displayName: 'Shipping Container', category: 'Industrial', size: [2.783, 2.6, 6.144], collision: [2.783, 2.6, 6.144], boxes: [[-1.391, 0, -3.072, 1.392, 2.6, 3.072]] },
   { id: 'kit.crate.wood', file: 'kit/crate.wood.pine.glb', displayName: 'Wooden Crate', category: 'Crates & Barrels', size: [0.6, 0.6, 0.6], collision: [0.6, 0.6, 0.6], breakable: { health: 30, debris: '#8a5a32' } },
   { id: 'kit.crate.wood_long', file: 'kit/crate.wood_long.pine.glb', displayName: 'Long Wooden Crate', category: 'Crates & Barrels', size: [1.1, 1.1, 2.2], collision: [1.1, 1.1, 2.2], breakable: { health: 60, debris: '#8a5a32' } },
   { id: 'kit.crate.bin', file: 'kit/crate.bin.oak.glb', displayName: 'Cargo Bin', category: 'Crates & Barrels', size: [1.68, 1.2, 2.04], collision: [1.68, 1.2, 2.04], breakable: { health: 70, debris: '#8a5a32' } },
@@ -29,6 +30,7 @@ export const KIT_PROPS: readonly PropDefinition[] = [
 export const KIT_FAMILIES: readonly KitFamilyData[] = [
   { id: 'kit.barrier.concrete', kind: 'barrier', assetVersion: 1, surface: 'concrete', lods: [0, 20, 60], triangles: [128, 22, 18], variants: [{ index: 0, name: 'plain', file: 'kit/barrier.concrete.plain.glb' }, { index: 1, name: 'striped', file: 'kit/barrier.concrete.striped.glb' }, { index: 2, name: 'hazard', file: 'kit/barrier.concrete.hazard.glb' }, { index: 3, name: 'worn', file: 'kit/barrier.concrete.worn.glb' }] },
   { id: 'kit.box.carton', kind: 'carton', assetVersion: 1, surface: 'thin_wood', lods: [0, 10, 30], triangles: [224, 12, 10], variants: [{ index: 0, name: 'kraft', file: 'kit/box.carton.kraft.glb' }, { index: 1, name: 'label', file: 'kit/box.carton.label.glb' }, { index: 2, name: 'cross', file: 'kit/box.carton.cross.glb' }, { index: 3, name: 'white', file: 'kit/box.carton.white.glb' }] },
+  { id: 'kit.container.shipping', kind: 'container', assetVersion: 1, surface: 'sheet_metal', lods: [0, 30, 90], triangles: [1668, 152, 10], variants: [{ index: 0, name: 'red', file: 'kit/container.shipping.red.glb' }, { index: 1, name: 'blue', file: 'kit/container.shipping.blue.glb' }, { index: 2, name: 'green', file: 'kit/container.shipping.green.glb' }, { index: 3, name: 'rusty', file: 'kit/container.shipping.rusty.glb' }, { index: 4, name: 'white', file: 'kit/container.shipping.white.glb' }, { index: 5, name: 'yellow', file: 'kit/container.shipping.yellow.glb' }] },
   { id: 'kit.crate.wood', kind: 'crate', assetVersion: 1, surface: 'thin_wood', lods: [0, 14, 40], triangles: [324, 52, 10], variants: [{ index: 0, name: 'pine', file: 'kit/crate.wood.pine.glb' }, { index: 1, name: 'x_brace', file: 'kit/crate.wood.x_brace.glb' }, { index: 2, name: 'weathered', file: 'kit/crate.wood.weathered.glb' }, { index: 3, name: 'military', file: 'kit/crate.wood.military.glb' }, { index: 4, name: 'dark', file: 'kit/crate.wood.dark.glb' }] },
   { id: 'kit.crate.wood_long', kind: 'crate', assetVersion: 1, surface: 'thin_wood', lods: [0, 20, 60], triangles: [376, 68, 10], variants: [{ index: 0, name: 'pine', file: 'kit/crate.wood_long.pine.glb' }, { index: 1, name: 'x_brace', file: 'kit/crate.wood_long.x_brace.glb' }, { index: 2, name: 'weathered', file: 'kit/crate.wood_long.weathered.glb' }, { index: 3, name: 'military', file: 'kit/crate.wood_long.military.glb' }] },
   { id: 'kit.crate.bin', kind: 'bin', assetVersion: 1, surface: 'thin_wood', lods: [0, 22, 60], triangles: [314, 66, 50], variants: [{ index: 0, name: 'oak', file: 'kit/crate.bin.oak.glb' }, { index: 1, name: 'grey', file: 'kit/crate.bin.grey.glb' }, { index: 2, name: 'red', file: 'kit/crate.bin.red.glb' }] },
@@ -60,6 +62,9 @@ export const KIT_ALIASES: readonly KitAlias[] = [
   { from: 'prop.jersey_barrier_striped', model: 'kit.barrier.concrete', variant: 1, scale: 1 },
   { from: 'prop.metal_crate', model: 'kit.crate.framed', variant: 0, scale: 1 },
   { from: 'prop.palisade', model: 'kit.fence.palisade', variant: 0, scale: 1 },
+  { from: 'prop.shipping_container_blue', model: 'kit.container.shipping', variant: 1, scale: 1 },
+  { from: 'prop.shipping_container_green', model: 'kit.container.shipping', variant: 2, scale: 1 },
+  { from: 'prop.shipping_container_red', model: 'kit.container.shipping', variant: 0, scale: 1 },
   { from: 'prop.stone_wall', model: 'kit.wall.stone', variant: 0, scale: 1 },
   { from: 'prop.stone_wall_damaged', model: 'kit.wall.stone_broken', variant: 0, scale: 1 },
   { from: 'prop.town_fence', model: 'kit.fence.town', variant: 0, scale: 1 },

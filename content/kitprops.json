@@ -10,7 +10,7 @@
     "licenseFile": "assets-src/tiletrigger-kitprops/License.txt"
   },
   "budgets": {
-    "maxBytes": 120000,
+    "maxBytes": 140000,
     "triangles": {
       "crate": [
         700,
@@ -56,6 +56,11 @@
         900,
         420,
         80
+      ],
+      "container": [
+        2600,
+        400,
+        12
       ]
     }
   },
@@ -138,6 +143,21 @@
     "prop.stone_wall_damaged": {
       "model": "kit.wall.stone_broken",
       "variant": 0,
+      "scale": 1
+    },
+    "prop.shipping_container_red": {
+      "model": "kit.container.shipping",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.shipping_container_blue": {
+      "model": "kit.container.shipping",
+      "variant": 1,
+      "scale": 1
+    },
+    "prop.shipping_container_green": {
+      "model": "kit.container.shipping",
+      "variant": 2,
       "scale": 1
     }
   }
