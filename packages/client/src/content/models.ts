@@ -350,17 +350,22 @@ export class ModelLibrary {
       });
       if (holder && fit) {
         // Sized by its bind pose: `fit` metres tall, centred on its bounds like the other throwables' models.
+        // Babylon draws a skinned mesh as world matrix x bone matrices x vertices, the mesh node's own scale included
+        // (the sheep's rig: centimetre vertices, bones that scale them up, a 0.01 armature above the mesh), so its
+        // skinned bounds in world space are what is drawn: size by those as they are (dividing the node's scale back
+        // out, as this once did, drew the sheep 7 mm tall).
         root.computeWorldMatrix(true);
-        // A skinned mesh is drawn at its raw vertices' size, but Babylon bounds them through the mesh node's own scale
-        // (a rig exported in centimetres sits under a 0.01 armature): undo that to size what is drawn.
-        for (const m of root.getChildMeshes()) if (m.skeleton) m.refreshBoundingInfo({ applySkeleton: true, applyMorph: false });
+        for (const sk of entries.skeletons) sk.prepare(true);
+        for (const m of root.getChildMeshes()) {
+          m.computeWorldMatrix(true);
+          if (m.skeleton) m.refreshBoundingInfo({ applySkeleton: true, applyMorph: false });
+        }
         const { min, max } = holder.getHierarchyBoundingVectors(true);
-        const mesh = root.getChildMeshes().find((m) => m.skeleton);
-        mesh?.computeWorldMatrix(true);
-        const own = mesh ? Math.abs(mesh.absoluteScaling.y) || 1 : 1;
-        const k = fit / Math.max(1e-6, (max.y - min.y) / own);
+        const k = fit / Math.max(1e-6, max.y - min.y);
         holder.scaling.setAll(k);
-        holder.position.set(-((min.x + max.x) / 2 / own) * k, -((min.y + max.y) / 2 / own) * k, -((min.z + max.z) / 2 / own) * k);
+        holder.position.set(-((min.x + max.x) / 2) * k, -((min.y + max.y) / 2) * k, -((min.z + max.z) / 2) * k);
+        // Bounds as drawn from here (the fitted size; a culling or picking check reads them).
+        for (const m of root.getChildMeshes()) m.computeWorldMatrix(true);
       }
     }
     return root;

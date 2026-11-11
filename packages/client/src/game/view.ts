@@ -2991,6 +2991,11 @@ export class GameView {
     void this.models.instantiate(model, `thrown_${id}`, true).then(
       (m) => {
         if (node.isDisposed()) return m.dispose();
+        // A model drawn at a size no throwable has (a rig whose units were read wrong: the sheep once drew 7 mm tall)
+        // is dropped, and the shapes drawn in code stay.
+        const size = m.getHierarchyBoundingVectors(true);
+        const tall = size.max.y - size.min.y;
+        if (!(tall > 0.03 && tall < 5)) return m.dispose();
         m.parent = node;
         // A sheep's position is on the ground (arsenalVisuals SHEEP_LIFT): its model, centred on its bounds, is raised.
         if (look === 'sheep') m.position.y = (THROWABLE_DEFS.sheep.view?.fit ?? 0) / 2;
@@ -3013,6 +3018,19 @@ export class GameView {
     let n = 0;
     for (const p of this.projectiles.values()) if (p.node.getChildren((c) => c.name.startsWith('thrown_'), true).length) n++;
     return n;
+  }
+
+  /** How tall (m) each grenade in flight or lying is drawn by its throwable's model, by its look (tests). */
+  thrownModelSizes(): { look: string; tall: number }[] {
+    const out: { look: string; tall: number }[] = [];
+    for (const p of this.projectiles.values()) {
+      const m = p.node.getChildren((c) => c.name.startsWith('thrown_'), true)[0] as TransformNode | undefined;
+      if (!m) continue;
+      for (const c of m.getChildMeshes()) if (c.skeleton) c.refreshBoundingInfo({ applySkeleton: true, applyMorph: false });
+      const b = m.getHierarchyBoundingVectors(true);
+      out.push({ look: PROJECTILE_VISUALS[p.look] ?? '?', tall: +(b.max.y - b.min.y).toFixed(3) });
+    }
+    return out;
   }
 
   /**
