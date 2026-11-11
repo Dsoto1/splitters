@@ -6,7 +6,7 @@
 // Reads content/roulette.json and content/weapons/*.json. Checks the schema (unknown fields are errors) and the
 // references: every signature and jackpot weapon exists and is one a pickup can hold (a category, a hand slot: never a
 // tool, a mode-only weapon or a mounted gun); every character named is a look on the roster (looks.ts and the
-// characters' manifests; never a retired one); every group is one of Character Select's; the odds are shares. Then
+// characters' manifests; never a retired or an experimental one); every group is one of Character Select's; the odds are shares. Then
 // writes packages/shared/src/content/roulette.generated.ts. Behaviour stays in code (sim/roulette.ts).
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -26,16 +26,18 @@ const readJson = (root, rel) => JSON.parse(readFileSync(join(root, rel), 'utf8')
 /** Look ids the game knows: the part-built presets (looks.ts) and the whole-body characters (their manifests), less the retired. */
 function lookIds(root) {
   const ids = new Set();
+  const experimental = new Set();
   const looks = readFileSync(join(root, 'packages/shared/src/content/looks.ts'), 'utf8');
   for (const m of looks.matchAll(/\{ id: '(core\.[a-z0-9_]+)'/g)) ids.add(m[1]);
   for (const f of readdirSync(join(root, 'content/characters'))) {
     if (!f.endsWith('.json')) continue;
     const c = readJson(root, `content/characters/${f}`);
     if (typeof c.look === 'string') ids.add(c.look);
+    if (typeof c.look === 'string' && c.tier === 'experimental') experimental.add(c.look);
   }
   const retired = looks.match(/export const RETIRED_LOOKS[^=]*=\s*\{([\s\S]*?)\n\};/);
   const gone = new Set(retired ? [...retired[1].matchAll(/'(core\.[a-z0-9_]+)':/g)].map((m) => m[1]) : []);
-  return { ids, gone };
+  return { ids, gone, experimental };
 }
 
 export function load(root = ROOT) {
@@ -63,6 +65,7 @@ export function build(content) {
   for (const [look, w] of Object.entries(d.characters)) {
     if (content.looks.gone.has(look)) problems.push(`${FILE}: characters.${look} is a retired look (RETIRED_LOOKS): list the look it plays instead`);
     else if (!content.looks.ids.has(look)) problems.push(`${FILE}: characters.${look} isn't a look on the roster`);
+    else if (content.looks.experimental?.has(look)) problems.push(`${FILE}: characters.${look} is an experimental character (tier in its manifest): Roulette never deals one, so it takes no signature (docs/CHARACTERS.md, "Tier")`);
     weapon(w, `${FILE}: characters.${look}`);
   }
   for (const g of GROUPS) if (!d.groups[g]) problems.push(`${FILE}: groups.${g} is missing (every group needs a fallback)`);
