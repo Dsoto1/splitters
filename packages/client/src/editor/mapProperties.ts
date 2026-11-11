@@ -1,4 +1,9 @@
 import {
+  MAP_TIERS,
+  MAP_TIER_LABELS,
+  mapGates,
+  mapTier,
+  type MapTier,
   autoPlayerCaps,
   BACKDROP_GROUNDS,
   blockBoxes,
@@ -608,6 +613,27 @@ export class MapProperties {
     desc.placeholder = 'Description';
     desc.addEventListener('change', () => this.app.run('Edit description', { kind: 'setMetadata', before: { description: doc.metadata.description }, after: { description: desc.value.slice(0, 2000) } }));
     el.append(desc);
+    // The map's tier (map/qualityGates.ts; owner, 2026-11-11): experimental maps are listed under their own heading and
+    // left out of Quick Play, playlists and official rotations; a map goes to core only when its gates pass.
+    const tier = document.createElement('select');
+    tier.id = 'ed-prop-tier';
+    for (const t of MAP_TIERS) tier.append(new Option(MAP_TIER_LABELS[t], t, false, mapTier(doc.metadata) === t));
+    const gates = [
+      { id: 'loads', label: 'No problems to fix', pass: !this.app.issues.some((i) => i.severity === 'error'), note: `${this.app.issues.filter((i) => i.severity === 'error').length} problem(s) in the list` },
+      ...mapGates(doc),
+    ];
+    const failed = gates.filter((g) => !g.pass);
+    tier.addEventListener('change', () => {
+      const to = tier.value as MapTier;
+      if (to === 'core' && failed.length) {
+        tier.value = 'experimental';
+        return this.app.toast(`Not core yet: ${failed.map((g) => `${g.label.toLowerCase()} (${g.note})`).join('; ')}`, true);
+      }
+      this.app.run(to === 'core' ? 'Promote to core' : 'Make experimental', { kind: 'setMetadata', before: { tier: doc.metadata.tier }, after: { tier: to === 'core' ? undefined : to } });
+    });
+    const tierRow = row('Tier', tier);
+    tierRow.title = 'Experimental: listed under its own heading, left out of Quick Play, playlists and official rotations. Core: every quality gate must pass';
+    el.append(tierRow, small(failed.length ? `Quality gates: ${failed.map((g) => `${g.label.toLowerCase()}: ${g.note}`).join('; ')}. (The navigation audit and a bots-only match are run by pnpm quality-gates.)` : 'Quality gates: these pass. The navigation audit and a bots-only match are run by pnpm quality-gates.'));
     // A map for the tests (maps/test_coverage.json): no map list, template list, rotation or host picker offers it.
     const testOnly = document.createElement('input');
     testOnly.type = 'checkbox';

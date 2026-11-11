@@ -107,6 +107,7 @@ export * from './editor/setPieceEdit.ts';
 export * from './editor/buildArea.ts';
 export * from './editor/ghostWhy.ts';
 export * from './editor/budgetCounters.ts';
+export * from './map/qualityGates.ts';
 export * from './editor/keymap.ts';
 export * from './editor/stylePacks.ts';
 export * from './editor/scatter.ts';

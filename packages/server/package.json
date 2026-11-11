@@ -17,6 +17,7 @@
     "start": "tsx src/main.ts",
     "bench": "tsx src/tools/bench.ts",
     "validate-map": "tsx src/tools/validate-map.ts",
+    "quality-gates": "tsx src/tools/quality-gates.ts",
     "spawn-points": "tsx src/tools/spawn-points.ts",
     "bot-report": "tsx src/tools/bot-report.ts",
     "gun-report": "tsx src/tools/gun-report.ts",

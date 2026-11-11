@@ -442,6 +442,8 @@ export function newMapDocument(name = 'Untitled Map', now: Date = new Date()): M
       parentId: null,
       recommendedPlayers: { min: 2, max: 8 },
       supportedModes: ['core.deathmatch'],
+      // A new map starts experimental (owner, 2026-11-11): promoted to core in Map properties once its gates pass.
+      tier: 'experimental',
     },
     classicStructure: { cellSize: 8, levelHeight: 4, theme: 'core.prototype', tiles: [{ id: newId('tile'), tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }] },
     entities: [{ id: newId('spawn'), kind: 'spawn', position: [0, 0, 0], yaw: 0, faction: null }],

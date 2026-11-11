@@ -98,7 +98,8 @@ export function suitePool(mapsDir: string): {
       if (isMapId(id) && !isRetiredMap(id) && existsSync(file)) {
         try {
           const m = JSON.parse(readFileSync(file, 'utf8')) as MapDocument;
-          if (m?.metadata && Array.isArray(m.entities) && !m.metadata.testOnly) info = { name: String(m.metadata.name ?? id), caps: new Map(playableModes(m).map((mode) => [mode, mapPlayerCaps(m, mode).max])) };
+          // (The vote's ballot is the core roster: an experimental map is played when the host puts it in the rotation.)
+          if (m?.metadata && Array.isArray(m.entities) && !m.metadata.testOnly && m.metadata.tier !== 'experimental') info = { name: String(m.metadata.name ?? id), caps: new Map(playableModes(m).map((mode) => [mode, mapPlayerCaps(m, mode).max])) };
         } catch {
           info = null;
         }

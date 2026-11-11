@@ -120,6 +120,13 @@ export const MapMetadata = z.object({
    * template list, rotation or host picker offers it; `?offline=<id>` and MapMaker's Import still open it.
    */
   testOnly: z.boolean().optional(),
+  /**
+   * The map's tier (v35; owner, 2026-11-11), set in MapMaker's Map properties. `experimental`: shown under an
+   * "Experimental" heading and left out of Quick Play, playlists and official rotations, and its quality gates
+   * (map/qualityGates.ts) only report. Absent or `core`: on the core roster, where every gate must pass. A new map
+   * starts experimental.
+   */
+  tier: z.enum(['core', 'experimental']).optional(),
 });
 
 /** A material from the library plus an optional tint, applied to one surface slot. */

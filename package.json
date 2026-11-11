@@ -20,6 +20,7 @@
     "net-report": "pnpm --silent --filter @tiletrigger/server net-report",
     "bench:96:clump": "pnpm --filter @tiletrigger/server bench 96 30 maps/norman_shores.json maps/frost_basin.json maps/riot_junction.json --mode=core.tdm --warmup=10 --variants=spread,clump",
     "validate-map": "pnpm --filter @tiletrigger/server validate-map",
+    "quality-gates": "pnpm --silent --filter @tiletrigger/server quality-gates",
     "e2e": "node e2e/run.mjs",
     "e2e:changed": "node tools/ci/select.mjs --run",
     "e2e:baselines": "E2E_UPDATE_BASELINES=1 E2E_ONLY=visual node e2e/run.mjs",
