@@ -317,7 +317,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
         legDrop: 0.7,
       },
     ],
-    cockpitEye: [-0.4, 1.72, 0.1],
+    cockpitEye: [-0.4, 1.82, 0.2],
     enterRadius: 3.2,
     respawnSeconds: 40,
     blast: { radius: 4.5, damage: 85 },
@@ -381,6 +381,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   },
   // model: TNR 1017 (Meshy Community, CC0; content/guns.json vehicles/tnr_hover_bike.glb, 2026-11-10): a one-seat hover bike with handlebars, stub wings and twin thrusters, 3.0 m long. Its wings stand 0.16 m out of the box either side (not solid). The Space Kit speeder it replaced is the fallback (vehicles/hover_bike.glb).
   // seats: In the saddle (measured on the model: the saddle dips to 1.0-1.1 m at z 0.1-0.5, the tank ahead of it 1.4 m): the nose (+Z) leads and the twin thrusters trail.
+  // cockpitEye: A seated head height over the saddle, so the nose shows below the view (the default stood a head higher).
   hover_bike: {
     id: 'hover_bike',
     displayName: 'Hover Bike',
@@ -390,6 +391,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     health: 170,
     half: [0.9, 0.5, 1.5],
     seats: [{ role: 'driver', label: 'Rider', offset: [0, 0.95, 0.25] }],
+    cockpitEye: [0, 1.75, 0.3],
     enterRadius: 2.6,
     respawnSeconds: 30,
     blast: { radius: 3.5, damage: 70 },

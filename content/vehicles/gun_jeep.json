@@ -28,7 +28,7 @@
       "legDrop": 0.7
     }
   ],
-  "cockpitEye": [-0.4, 1.72, 0.1],
+  "cockpitEye": [-0.4, 1.82, 0.2],
   "enterRadius": 3.2,
   "respawnSeconds": 40,
   "blast": { "radius": 4.5, "damage": 85 },
