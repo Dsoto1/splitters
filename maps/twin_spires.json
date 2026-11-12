@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 36,
   "metadata": {
     "id": "twin_spires",
     "name": "Twin Spires",
@@ -33,11 +33,11 @@
     },
     "release": {
       "mapId": "m_i2jy7vkt55pclgvj",
-      "versionId": "v_xdx56e7bcoehdd7l",
-      "revision": 2,
-      "contentHash": "sha256:a49e479d7adbf863427e344a526d0f3f0d853a2b44d5cab8cee454568e643e7f",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:34:10.024Z"
+      "versionId": "v_v2r77fwfyixvdd3l",
+      "revision": 3,
+      "contentHash": "sha256:34a6a7ebeaae124596c4fe70a284027a3a85dca85c71442de2e0a64135bd2c3a",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-12T09:46:11.153Z"
     }
   },
   "classicStructure": {
@@ -1360,7 +1360,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -1486,7 +1486,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,

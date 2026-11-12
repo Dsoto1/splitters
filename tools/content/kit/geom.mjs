@@ -248,3 +248,108 @@ export function pad(m, lo, hi, inset, colour) {
   const out = [[0, 0.3, -1], [1, 0.3, 0], [0, 0.3, 1], [-1, 0.3, 0]];
   for (let k = 0; k < 4; k++) quadN(m, a[k], a[(k + 1) % 4], b[(k + 1) % 4], b[k], out[k], colour);
 }
+
+// ---------------------------------------------------------------- bars, wire and turned parts along any axis (part 9)
+
+const lerp3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+
+/**
+ * A square bar `t` across from `p` to `q` (any direction): its four sides, and its ends when asked. `up` picks how
+ * its section is turned (a side faces it as nearly as it can).
+ */
+export function bar(m, p, q, t, colour, { ends = false, up = [0, 1, 0] } = {}) {
+  const dir = norm(sub(q, p));
+  let side = cross(up, dir);
+  if (Math.hypot(side[0], side[1], side[2]) < 1e-6) side = cross([1, 0, 0], dir);
+  side = norm(side);
+  const top = norm(cross(dir, side));
+  const hh = t / 2;
+  const at = (o, s, u) => [o[0] + (side[0] * s + top[0] * u) * hh, o[1] + (side[1] * s + top[1] * u) * hh, o[2] + (side[2] * s + top[2] * u) * hh];
+  const ring = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+  for (let k = 0; k < 4; k++) {
+    const [s0, u0] = ring[k];
+    const [s1, u1] = ring[(k + 1) % 4];
+    const out = [side[0] * (s0 + s1) + top[0] * (u0 + u1), side[1] * (s0 + s1) + top[1] * (u0 + u1), side[2] * (s0 + s1) + top[2] * (u0 + u1)];
+    quadN(m, at(p, s0, u0), at(p, s1, u1), at(q, s1, u1), at(q, s0, u0), out, colour);
+  }
+  if (ends) {
+    quadN(m, at(p, -1, -1), at(p, 1, -1), at(p, 1, 1), at(p, -1, 1), [-dir[0], -dir[1], -dir[2]], colour);
+    quadN(m, at(q, -1, -1), at(q, 1, -1), at(q, 1, 1), at(q, -1, 1), dir, colour);
+  }
+}
+
+/** A flat strip `wd` wide across `side` from `p` to `q`, drawn on both faces (a wire seen from either side). */
+export function ribbon(m, p, q, side, wd, colour) {
+  const s = [side[0] * wd / 2, side[1] * wd / 2, side[2] * wd / 2];
+  const a = [p[0] - s[0], p[1] - s[1], p[2] - s[2]];
+  const b = [p[0] + s[0], p[1] + s[1], p[2] + s[2]];
+  const c = [q[0] + s[0], q[1] + s[1], q[2] + s[2]];
+  const d = [q[0] - s[0], q[1] - s[1], q[2] - s[2]];
+  quad(m, a, b, c, d, colour);
+  quad(m, d, c, b, a, colour);
+}
+
+/**
+ * A wire panel between the bottom edge `b0`–`b1` and the top edge `t0`–`t1`: `nu` wires from bottom to top between
+ * the ends, `nv` across between the edges, each `wd` wide, seen from both sides.
+ */
+export function wirePanel(m, b0, b1, t0, t1, nu, nv, wd, colour) {
+  const across = norm(sub(b1, b0));
+  const upward = norm(sub(t0, b0));
+  for (let i = 1; i <= nu; i++) ribbon(m, lerp3(b0, b1, i / (nu + 1)), lerp3(t0, t1, i / (nu + 1)), across, wd, colour);
+  for (let j = 1; j <= nv; j++) ribbon(m, lerp3(b0, t0, j / (nv + 1)), lerp3(b1, t1, j / (nv + 1)), upward, wd, colour);
+}
+
+/** The two axes across `axis` (0 x, 1 y, 2 z), in the order that keeps (u, v, axis) right-handed. */
+const across = (axis) => (axis === 0 ? [1, 2] : axis === 1 ? [2, 0] : [0, 1]);
+
+/**
+ * A cylinder along `axis` (0 x, 1 y, 2 z) through (`a`, `b`) on the two other axes (y and z for x; z and x for y; x
+ * and y for z), from `t0` to `t1`, radius `r`, in `seg` flat sides. `caps`: '0', '1' or '01' (the ends closed).
+ * `inside`: faces inward (a bore). With `seg` a multiple of four it reaches ±r on both axes exactly.
+ */
+export function cyl(m, axis, a, b, t0, t1, r, seg, colour, { caps = '', inside = false } = {}) {
+  const [u, v] = across(axis);
+  const P = (ang, t, rad) => {
+    const p = [0, 0, 0];
+    p[axis] = t;
+    p[u] = a + Math.cos(ang) * rad;
+    p[v] = b + Math.sin(ang) * rad;
+    return p;
+  };
+  const ax = (s) => {
+    const n = [0, 0, 0];
+    n[axis] = s;
+    return n;
+  };
+  for (let k = 0; k < seg; k++) {
+    const a0 = (k / seg) * Math.PI * 2;
+    const a1 = ((k + 1) / seg) * Math.PI * 2;
+    const mid = (a0 + a1) / 2;
+    const out = [0, 0, 0];
+    out[u] = Math.cos(mid) * (inside ? -1 : 1);
+    out[v] = Math.sin(mid) * (inside ? -1 : 1);
+    quadN(m, P(a0, t0, r), P(a1, t0, r), P(a1, t1, r), P(a0, t1, r), out, colour);
+    if (caps.includes('0')) triN(m, P(0, t0, 0), P(a0, t0, r), P(a1, t0, r), ax(t0 < t1 ? -1 : 1), colour);
+    if (caps.includes('1')) triN(m, P(0, t1, 0), P(a0, t1, r), P(a1, t1, r), ax(t0 < t1 ? 1 : -1), colour);
+  }
+}
+
+/** A flat ring across `axis` at `t`, from radius `r0` to `r1` round (`a`, `b`), in `seg` sides, facing `dir` (±1) along the axis. */
+export function annulus(m, axis, a, b, t, r0, r1, seg, dir, colour) {
+  const [u, v] = across(axis);
+  const P = (ang, rad) => {
+    const p = [0, 0, 0];
+    p[axis] = t;
+    p[u] = a + Math.cos(ang) * rad;
+    p[v] = b + Math.sin(ang) * rad;
+    return p;
+  };
+  const n = [0, 0, 0];
+  n[axis] = dir;
+  for (let k = 0; k < seg; k++) {
+    const a0 = (k / seg) * Math.PI * 2;
+    const a1 = ((k + 1) / seg) * Math.PI * 2;
+    quadN(m, P(a0, r0), P(a1, r0), P(a1, r1), P(a0, r1), n, colour);
+  }
+}

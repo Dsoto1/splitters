@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_snj2ivjohajuozh5",
-      "versionId": "v_x7kuozs7r3nlan4t",
-      "revision": 5,
-      "contentHash": "sha256:11a82309f2ac3189a39c09f7c0beb48a403f243ace934050e3b3b6462cc850f1",
+      "versionId": "v_eg66nkzpvhe6ddw2",
+      "revision": 6,
+      "contentHash": "sha256:b0399c135ba9044a74736591024f4136ada7145d1ea3968332490c376d2e7b8b",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T16:47:53.544Z"
+      "releasedAt": "2026-11-12T09:04:45.770Z"
     }
   },
   "classicStructure": {
@@ -11345,7 +11345,7 @@
         -101.3
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 3.141592653589793,
       "scale": 0.8,
       "solid": false,
@@ -11425,7 +11425,7 @@
         -101.3
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 3.141592653589793,
       "scale": 0.8,
       "solid": false,
@@ -11505,7 +11505,7 @@
         -101.3
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 3.141592653589793,
       "scale": 0.8,
       "solid": false,
@@ -11585,7 +11585,7 @@
         -101.3
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 3.141592653589793,
       "scale": 0.8,
       "solid": false,

@@ -1,0 +1,123 @@
+{
+  "$comment": "Pipe pieces (tools/content/kit/plant.mjs): the size of the Kenney factory piece it replaces, its pipe on the same axis, colliding as finer boxes that leave the bore open as that piece's did.",
+  "type": "pipe",
+  "props": [
+    {
+      "id": "kit.pipe.valve",
+      "displayName": "Pipe Valve",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a section of large pipe along x, open through both ends, a bolted flange on a foot at each end, a valve body round its middle with a hand wheel at −z and a blind boss at +z, the size of the Kenney large pipe valve (1.6 × 1.6 × 1.625 m), its axis where that one's was; collides as sixteen boxes for its twenty-five, the bore open from end to end as it was; explodes as it did."
+      },
+      "size": [
+        1.6,
+        1.6,
+        1.625
+      ],
+      "surface": "metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 60,
+        "debris": "#7a8088",
+        "blast": {
+          "radius": 3.5,
+          "damage": 70,
+          "edge": 10
+        }
+      },
+      "generator": {
+        "kind": "valve",
+        "pipe": 0.64,
+        "bore": 0.5,
+        "flange": 0.16,
+        "bolts": 8,
+        "spokes": 2
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 22
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9771,
+          "look": {
+            "pipe": "#7a8088",
+            "flange": "#6a7078",
+            "body": "#8b9197",
+            "wheel": "#a8261e",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 9772,
+          "set": {
+            "bolts": 12
+          },
+          "look": {
+            "pipe": "#4f6b52",
+            "flange": "#44604a",
+            "body": "#5a7a5e",
+            "wheel": "#c9a227",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "rust",
+          "seed": 9773,
+          "set": {
+            "spokes": 3
+          },
+          "look": {
+            "pipe": "#7a4a32",
+            "flange": "#6b3a22",
+            "body": "#84523a",
+            "wheel": "#3a3d42",
+            "bolt": "#5a4a40",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 3,
+          "name": "blue",
+          "seed": 9774,
+          "set": {
+            "bolts": 6,
+            "spokes": 3
+          },
+          "look": {
+            "pipe": "#2f5f8a",
+            "flange": "#8b9094",
+            "body": "#3a6a96",
+            "wheel": "#a8261e",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 4,
+          "name": "yellow",
+          "seed": 9775,
+          "look": {
+            "pipe": "#c9a227",
+            "flange": "#b08c1f",
+            "body": "#3a3d42",
+            "wheel": "#1e2124",
+            "grime": 0.3
+          }
+        }
+      ]
+    }
+  ]
+}

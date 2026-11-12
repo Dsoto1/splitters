@@ -50321,7 +50321,7 @@
         -124.27
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": -1.55137,
       "scale": 1,
       "solid": true,

@@ -4578,7 +4578,7 @@
         -18
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 0,
       "scale": 0.8,
       "solid": true,

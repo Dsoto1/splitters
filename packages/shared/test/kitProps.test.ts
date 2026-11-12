@@ -89,6 +89,11 @@ const REMATERIALLED = new Map<string, string>([
   // Part 8, by the same rule: the warning sign and the shop freezers (concrete by the guess) are sheet steel. (The
   // factory crates were wood already and stay wood; the conveyor stays concrete, solid cover as it was.)
   ['prop.warning_sign', 'thin_metal'], ['prop.freezers_upright', 'thin_metal'],
+  // Part 9, by the same rule: the bakery and produce stands and the checkout (concrete by the guess) are wood (boards,
+  // or laminate on board); the chest freezer and the bottle-return machine (concrete by the guess) and the control
+  // console (glass, by the word "screen") are sheet steel. (The cart was thin metal already; the pipe valve stays metal.)
+  ['prop.bread_display', 'wood'], ['prop.fruit_display', 'wood'], ['prop.checkout', 'wood'],
+  ['prop.freezer', 'thin_metal'], ['prop.bottle_return', 'thin_metal'], ['prop.screen_panel', 'thin_metal'],
 ]);
 
 describe('kit aliases', () => {
@@ -121,7 +126,7 @@ describe('kit aliases', () => {
         expect(b[k + 3]!, a.model).toBeLessThanOrEqual(half + 0.001);
       }
       expect(now.breakable?.health, a.from).toBe(was.breakable?.health);
-      expect(now.breakable?.blast, a.from).toBe(was.breakable?.blast);
+      expect(now.breakable?.blast, a.from).toEqual(was.breakable?.blast);
       expect(now.breakable?.debris, a.from).toBe(was.breakable?.debris);
       expect(now.conceals, a.from).toBe(was.conceals);
       // What rounds do (gunplay's ballistic class); the impact's sound family too.
