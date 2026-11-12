@@ -231,7 +231,7 @@ type SetupTab = 'match' | 'bots' | 'rules' | 'presets';
 const SETUP_TABS: readonly (readonly [SetupTab, string, string])[] = [['match', 'Match setup', GLYPHS.gamepad], ['bots', 'Bots & AI', GLYPHS.bot], ['rules', 'Rules', GLYPHS.rules], ['presets', 'Presets', GLYPHS.layers]];
 
 /** The Match Setup tab's rows that stay one line until opened (one open at a time on small screens). */
-const SETUP_ROWS = ['setup-variants-row', 'setup-party-row'] as const;
+const SETUP_ROWS = ['setup-variants-row'] as const;
 
 /**
  * Small screens and phones open one of the setup's rows at a time (the stylesheet's narrow and short layouts start
@@ -1478,7 +1478,7 @@ export class FrontEnd {
     const sizeRow = sizeChips(presets, onPreset, team ? sizes.join('v') : `${players} ${unit}`, (p) => this.applyLayout(presetPatch(p)), 'setup-sizes');
     // The party cards are drawn twice: in the Match Setup tab's row (with their ids) and in the Presets tab.
     const partyOnNow: { name: string | null } = { name: null };
-    const partyCards = (ids: boolean) => el('div', { class: 'party-chips', ...(ids ? { id: 'setup-party' } : {}), role: 'group' }, ...PARTY_PRESETS.map((p) => {
+    const partyCards = () => el('div', { class: 'party-chips', id: 'setup-party', role: 'group' }, ...PARTY_PRESETS.map((p) => {
       // A preset with maps of its own (Fireteams) moves to one when this map can't play it or doesn't suit it.
       const move = partyMapMove(p, map, current.modes, dev.max, this.maps.map((m) => ({ key: m.key, modes: m.modes, recommendedMax: m.metadata.recommendedPlayers.max, official: !m.group })));
       const moveTo = move ? this.maps.find((m) => m.key === move) : undefined;
@@ -1486,7 +1486,7 @@ export class FrontEnd {
       const on = !offWhy && !moveTo && partyOn(p, s, map, current.modes);
       const mode = moveTo ? (p.mode.teams ?? p.mode.ffa ?? null) : partyMode(p, map, current.modes);
       if (on) partyOnNow.name = p.label;
-      const b = el('button', { type: 'button', class: `party-chip${on ? ' on' : ''}`, ...(ids ? { id: `setup-party-${p.id}` } : {}) }, el('b', { textContent: p.label }), el('small', { textContent: p.line }));
+      const b = el('button', { type: 'button', class: `party-chip${on ? ' on' : ''}`, id: `setup-party-${p.id}` }, el('b', { textContent: p.label }), el('small', { textContent: p.line }));
       b.dataset.party = p.id;
       const squads = p.squadSize ? ' · squads to fit the teams' : '';
       b.dataset.tip = `${mode ? MODE_LABEL[mode] : ''}${p.variants.map((id) => ` · ${getVariant(id)?.label ?? id}`).join('')} · ${moveTo ? `on ${moveTo.metadata.name}` : "the map's own team layout"}${squads}${p.squadSize ? '. Invite links bring friends onto your side, each leading a squad.' : ''}`;
@@ -1503,12 +1503,10 @@ export class FrontEnd {
       });
       return b;
     }));
-    const party = partyCards(true);
+    // Party presets (one-click bundles of a mode and variants) are in the Presets tab only (owner, 2026-11-12: beside
+    // Variants they read as the same thing twice).
+    const party = partyCards();
     party.setAttribute('aria-label', 'Party presets');
-    const partyRow = numberedRow(
-      { n: 5, id: 'setup-party-row', title: 'Party presets', icon: GLYPHS.layers, summary: partyOnNow.name ?? 'Custom', lit: !!partyOnNow.name, open: this.folds.has('setup-party-row'), onToggle: () => this.toggleRow('setup-party-row') },
-      party,
-    );
 
     // ---- Players & teams: who plays (people apart from bots), the teams or the count
     const assign = s.assign ?? 'balanced';
@@ -1671,7 +1669,7 @@ export class FrontEnd {
 
     // ---- the four tabs: every pane is in the page, the open one showing (ids stay findable; a redraw keeps the keyboard's place)
     const panes: Record<SetupTab, HTMLElement[]> = {
-      match: [essentials, settings, teamsSec, variantRow, partyRow],
+      match: [essentials, settings, teamsSec, variantRow],
       bots: [
         el('p', { class: 'pane-sum', id: 'setup-bots-sum', textContent: botsSummary }),
         settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => this.change((x) => (x.skill = v as ArcadeSetup['skill'])), 'arcade-skill')),
@@ -1680,7 +1678,7 @@ export class FrontEnd {
         ...perTeam,
       ],
       rules: [el('p', { class: 'pane-sum', id: 'setup-advanced-sum', textContent: advSummary }), ...advanced],
-      presets: [...this.savedList(), el('h4', { class: 'pane-title', textContent: 'Party presets' }), partyCards(false)],
+      presets: [...this.savedList(), el('h4', { class: 'pane-title', textContent: 'Party presets' }), party],
     };
     const paneIds: Record<SetupTab, string> = { match: 'setup-match', bots: 'setup-bots', rules: 'setup-advanced', presets: 'setup-presets' };
     const tabBar = el('div', { class: 'setup-tabs', id: 'setup-tabs', role: 'tablist' }, ...SETUP_TABS.map(([t, label, icon]) => {
