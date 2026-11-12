@@ -7,7 +7,7 @@
       "displayName": "Catwalk Bridge (Up)",
       "category": "Bridges",
       "blurb": "Open steel stairs up to a railed catwalk 4 m up on legs, meeting the level above at its north end (1 × 2 cells; the Catwalk Gantry's footprint, levels and ways in).",
-      "packs": ["military", "orbital", "neon", "snow", "harbor", "suburban"],
+      "packs": ["military", "orbital", "neon", "snow", "harbor", "suburban", "industrial"],
       "footprint": { "cells": [[0,0],[0,1]], "levels": [0,1] },
       "mirror": "none",
       "ports": [
@@ -32,7 +32,7 @@
       "displayName": "Catwalk Bridge (3 cells)",
       "category": "Bridges",
       "blurb": "A railed catwalk 4 m up on legs with open steel stairs down at both ends, 3 cells long: walk under it or over it.",
-      "packs": ["military", "orbital", "neon", "snow", "harbor", "suburban"],
+      "packs": ["military", "orbital", "neon", "snow", "harbor", "suburban", "industrial"],
       "footprint": { "cells": [[0,0],[0,1],[0,2]], "levels": [0,1] },
       "mirror": "none",
       "ports": [
@@ -58,7 +58,7 @@
       "displayName": "Catwalk Bridge (4 cells)",
       "category": "Bridges",
       "blurb": "A railed catwalk 4 m up on legs with open steel stairs down at both ends, 4 cells long: walk under it or over it.",
-      "packs": ["military", "orbital", "neon", "snow", "harbor", "suburban"],
+      "packs": ["military", "orbital", "neon", "snow", "harbor", "suburban", "industrial"],
       "footprint": { "cells": [[0,0],[0,1],[0,2],[0,3]], "levels": [0,1] },
       "mirror": "none",
       "ports": [

@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_uy54jdpkmne5vzsk",
-      "versionId": "v_gjl5kevcs4f2zzfc",
-      "revision": 7,
-      "contentHash": "sha256:f7e5fbaa58d7bc45ccb19005ca684de88767a8e3e896175cf087b08705684fd0",
+      "versionId": "v_56rdfjnz7mz7j73b",
+      "revision": 8,
+      "contentHash": "sha256:569da5e6061728fe0e32d4d3ef10bbebedededefbff81aed01dc5060b5228a9d",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T21:39:43.751Z"
+      "releasedAt": "2026-11-12T09:32:43.558Z"
     }
   },
   "classicStructure": {
@@ -17805,7 +17805,7 @@
         16.77
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -18113,7 +18113,7 @@
         15.17
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -18253,7 +18253,7 @@
         18.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -18267,7 +18267,7 @@
         19.02
       ],
       "kind": "prop",
-      "model": "prop.bottle_return",
+      "model": "kit.shop.bottle_return",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -18281,7 +18281,7 @@
         16.86
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -18463,7 +18463,7 @@
         -18.7
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0.9118,
       "scale": 1,
       "solid": true,
@@ -18925,7 +18925,7 @@
         -16.93
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -18939,7 +18939,7 @@
         -18.64
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -18981,7 +18981,7 @@
         -16.73
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -19527,7 +19527,7 @@
         -10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19555,7 +19555,7 @@
         10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -19583,7 +19583,7 @@
         -10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19597,7 +19597,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -19611,7 +19611,7 @@
         -3.01
       ],
       "kind": "prop",
-      "model": "prop.freezer",
+      "model": "kit.appliance.freezer_chest",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -19625,7 +19625,7 @@
         3.01
       ],
       "kind": "prop",
-      "model": "prop.freezer",
+      "model": "kit.appliance.freezer_chest",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -19639,7 +19639,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.freezer",
+      "model": "kit.appliance.freezer_chest",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -19653,7 +19653,7 @@
         3.01
       ],
       "kind": "prop",
-      "model": "prop.freezer",
+      "model": "kit.appliance.freezer_chest",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -19667,7 +19667,7 @@
         10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -19681,7 +19681,7 @@
         10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -19695,7 +19695,7 @@
         -10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19709,7 +19709,7 @@
         -10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19723,7 +19723,7 @@
         -10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19737,7 +19737,7 @@
         -10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19751,7 +19751,7 @@
         2.92
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20059,7 +20059,7 @@
         -11.02
       ],
       "kind": "prop",
-      "model": "prop.bottle_return",
+      "model": "kit.shop.bottle_return",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20073,7 +20073,7 @@
         3.62
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20115,7 +20115,7 @@
         10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -20129,7 +20129,7 @@
         -10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20143,7 +20143,7 @@
         10.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -20171,7 +20171,7 @@
         0
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20213,7 +20213,7 @@
         -1.59
       ],
       "kind": "prop",
-      "model": "prop.fruit_display",
+      "model": "kit.shop.produce_stand",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -20339,7 +20339,7 @@
         -2.92
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

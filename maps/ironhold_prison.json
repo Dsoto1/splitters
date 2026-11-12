@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_hec75nt4d7ttj6ub",
-      "versionId": "v_cnuxiijy24kzakzh",
-      "revision": 9,
-      "contentHash": "sha256:253352f6164cfd1e0cdcb5252a083fecf572269b4e639362244f52286ad880e9",
+      "versionId": "v_lxv26vq54ju7lpxo",
+      "revision": 10,
+      "contentHash": "sha256:24871d17e08ca3ab08d7386e0bdbd86d3f5c2310922b82d1d6d357942fdcebd9",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T21:38:03.941Z"
+      "releasedAt": "2026-11-12T09:28:22.146Z"
     }
   },
   "classicStructure": {
@@ -18767,7 +18767,7 @@
         34
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 1.57,
       "scale": 1,
       "solid": true,
@@ -18991,7 +18991,7 @@
         70.5
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19691,7 +19691,7 @@
         90.4
       ],
       "kind": "prop",
-      "model": "prop.freezer",
+      "model": "kit.appliance.freezer_chest",
       "yaw": -1.57,
       "scale": 1,
       "solid": true,
@@ -20405,7 +20405,7 @@
         1
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": -1.57,
       "scale": 1,
       "solid": true,
@@ -21119,7 +21119,7 @@
         50.8
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -21147,7 +21147,7 @@
         64
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": -1.57,
       "scale": 1,
       "solid": true,
@@ -21161,7 +21161,7 @@
         32
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": -1.57,
       "scale": 1,
       "solid": true,
@@ -21175,7 +21175,7 @@
         74.9
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": -1.57,
       "scale": 1,
       "solid": true,

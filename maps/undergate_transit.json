@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_5lhttjun3ohakisn",
-      "versionId": "v_tnwhfrceccrgi7ei",
-      "revision": 6,
-      "contentHash": "sha256:8a0b6c4a7daaa8a0abbe8bdb133aba79b817f24ee3bd9509585115c6111ec4d2",
+      "versionId": "v_immb4cxyhsj3asue",
+      "revision": 7,
+      "contentHash": "sha256:10c9d219832f39bc19ae097e27103f0226d4e8e170e712f005752b88de7fe092",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T21:56:34.226Z"
+      "releasedAt": "2026-11-12T09:49:18.546Z"
     }
   },
   "classicStructure": {
@@ -9366,7 +9366,7 @@
         -17
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -9394,7 +9394,7 @@
         17
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -21408,7 +21408,7 @@
         -3.93
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -21436,7 +21436,7 @@
         -10.93
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -21450,7 +21450,7 @@
         3.87
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,

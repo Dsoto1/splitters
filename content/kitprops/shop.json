@@ -1,0 +1,464 @@
+{
+  "$comment": "Shop fittings (tools/content/kit/market.mjs): each the size of the Kenney mini-market piece it replaces, colliding as finer boxes that close and leave open what that piece's did. Its variants share the size, collision and surface and differ in structure (from their seed and settings) and look.",
+  "type": "shop",
+  "props": [
+    {
+      "id": "kit.shop.cart",
+      "displayName": "Shopping Cart",
+      "category": "Shop",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a wire shopping cart (a tapered wire basket, a child seat's flap, a tray between four castors, a handle with a grip), the size of the Kenney shopping cart (0.768 × 1 × 1.226 m); collides as seven boxes, the eight that had less one inside the others: you still see and shoot through the basket from above and under it."
+      },
+      "size": [
+        0.768,
+        1,
+        1.226
+      ],
+      "surface": "sheet_metal",
+      "detail": "metal",
+      "generator": {
+        "kind": "cart",
+        "seat": "up",
+        "tray": "wire",
+        "wires": 11
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "chrome_red",
+          "seed": 9701,
+          "look": {
+            "wire": "#b4b8bd",
+            "trim": "#b3261e",
+            "rust": 0.08,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "blue",
+          "seed": 9702,
+          "set": {
+            "seat": "folded"
+          },
+          "look": {
+            "wire": "#b9bdc2",
+            "trim": "#1f4f9a",
+            "rust": 0.1,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "green_tray",
+          "seed": 9703,
+          "set": {
+            "tray": "sheet",
+            "wires": 9
+          },
+          "look": {
+            "wire": "#aeb2b6",
+            "trim": "#2f7a4a",
+            "tray": "#2f7a4a",
+            "rust": 0.12,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "worn",
+          "seed": 9704,
+          "set": {
+            "seat": "folded",
+            "wires": 8
+          },
+          "look": {
+            "wire": "#8f8f8a",
+            "trim": "#6a6e72",
+            "rust": 0.6,
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 4,
+          "name": "orange",
+          "seed": 9705,
+          "set": {
+            "tray": "sheet"
+          },
+          "look": {
+            "wire": "#c2c6ca",
+            "trim": "#d0661a",
+            "tray": "#3a3d42",
+            "rust": 0.05,
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.shop.bakery_stand",
+      "displayName": "Bakery Stand",
+      "category": "Shop",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a wooden base under an open rack of loaf baskets (a slanted shelf, a step behind it), baskets on the rack's top, a roll bin and two baskets of baguettes in front, a back board with a painted header between two end pillars, the size of the Kenney bread display (2.24 × 1.6 × 1.92 m); collides as ten boxes for its thirteen (the hand-wide slot between the two heaps of bread is closed); plays as wood (that was concrete by the guess)."
+      },
+      "size": [
+        2.24,
+        1.6,
+        1.92
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "bakery",
+        "fill": 0.9,
+        "posts": true
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 22
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 9711,
+          "look": {
+            "wood": "#a8794a",
+            "panel": "#9a6c40",
+            "header": "#2f5d3a",
+            "basket": "#a07a45",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "white",
+          "seed": 9712,
+          "set": {
+            "posts": false
+          },
+          "look": {
+            "wood": "#b08a5e",
+            "panel": "#d8d2c2",
+            "header": "#8a2f2a",
+            "basket": "#a07a45",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "dark",
+          "seed": 9713,
+          "set": {
+            "fill": 0.7
+          },
+          "look": {
+            "wood": "#5a3e27",
+            "panel": "#4a3222",
+            "header": "#c9a227",
+            "basket": "#b58d55",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "blue",
+          "seed": 9714,
+          "look": {
+            "wood": "#b89668",
+            "panel": "#3f5f7a",
+            "header": "#e3dccb",
+            "basket": "#9a7440",
+            "grime": 0.25
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.shop.checkout",
+      "displayName": "Checkout",
+      "category": "Shop",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a belt counter (belt, scanner plate, bagging plate) beside a till cabinet under a ledge, a till and a screen on it (dark paint, still lines), the size of the Kenney cash register (1.715 × 1.2 × 1.715 m); collides as the same five boxes, the cashier's corner open; plays as wood, laminate on board (that was concrete by the guess)."
+      },
+      "size": [
+        1.715,
+        1.2,
+        1.715
+      ],
+      "surface": "wood",
+      "detail": "painted_wood",
+      "generator": {
+        "kind": "checkout",
+        "screen": "box"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 20
+        },
+        {
+          "distance": 55
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9721,
+          "look": {
+            "body": "#8a9096",
+            "top": "#c9c4b8",
+            "trim": "#3a3d42",
+            "till": "#26282b",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "red",
+          "seed": 9722,
+          "set": {
+            "screen": "flat"
+          },
+          "look": {
+            "body": "#a8322a",
+            "top": "#d8d4c8",
+            "trim": "#2b2d30",
+            "till": "#1e2022",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "blue",
+          "seed": 9723,
+          "look": {
+            "body": "#2f5f8a",
+            "top": "#d8d4c8",
+            "trim": "#26282b",
+            "till": "#26282b",
+            "bar": "#b3261e",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 3,
+          "name": "wood",
+          "seed": 9724,
+          "set": {
+            "screen": "flat"
+          },
+          "look": {
+            "body": "#a07a4a",
+            "top": "#3a3d42",
+            "trim": "#5a3e27",
+            "till": "#2b2d30",
+            "grime": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.shop.bottle_return",
+      "displayName": "Bottle Return",
+      "category": "Shop",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a bottle-return machine (a crate slot at its foot, a round intake, a small screen of dark paint, a receipt slot, a kick plate; a housing and a sign box on top), the size of the Kenney bottle return (0.824 × 2 × 0.881 m); collides as eight boxes, the crate slot open and the top stepped as that was; plays as thin metal (that was concrete by the guess)."
+      },
+      "size": [
+        0.824,
+        2,
+        0.881
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "bottlereturn",
+        "hole": 0.13,
+        "vents": 4
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 50
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "green",
+          "seed": 9741,
+          "look": {
+            "paint": "#c9cdd0",
+            "accent": "#2f7a4a",
+            "plate": "#8b9094",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "blue",
+          "seed": 9742,
+          "set": {
+            "hole": 0.11,
+            "vents": 5
+          },
+          "look": {
+            "paint": "#d8d8d2",
+            "accent": "#1f4f9a",
+            "plate": "#9aa0a4",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "dark",
+          "seed": 9743,
+          "set": {
+            "vents": 3
+          },
+          "look": {
+            "paint": "#3a3d42",
+            "accent": "#c9a227",
+            "plate": "#6a6e72",
+            "ink": "#b8862a",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "red",
+          "seed": 9744,
+          "set": {
+            "hole": 0.15
+          },
+          "look": {
+            "paint": "#b9bdc0",
+            "accent": "#a8261e",
+            "plate": "#8b9094",
+            "grime": 0.25
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.shop.produce_stand",
+      "displayName": "Produce Stand",
+      "category": "Shop",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a slatted plinth under a tray of fruit with a heap in its middle, a crate on a bracket under a price board against two sides, a long tray on a panel against the other two, the size of the Kenney fruit display (1.395 × 1.2 × 1.395 m); collides as six boxes for its eight, the corners and the space under the crates open as they were; plays as wood (that was concrete by the guess)."
+      },
+      "size": [
+        1.395,
+        1.2,
+        1.395
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "produce",
+        "goods": "mixed",
+        "fill": 0.92
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 50
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "mixed",
+          "seed": 9751,
+          "look": {
+            "wood": "#a8794a",
+            "crate": "#c9a26a",
+            "board": "#23262a",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "fruit",
+          "seed": 9752,
+          "set": {
+            "goods": "fruit"
+          },
+          "look": {
+            "wood": "#8a5f3a",
+            "crate": "#b08a5e",
+            "board": "#23262a",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "veg",
+          "seed": 9753,
+          "set": {
+            "goods": "veg"
+          },
+          "look": {
+            "wood": "#5f6e4a",
+            "crate": "#a8794a",
+            "board": "#2f3a2a",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "sparse",
+          "seed": 9754,
+          "set": {
+            "fill": 0.6
+          },
+          "look": {
+            "wood": "#8f8472",
+            "crate": "#9a8a6a",
+            "board": "#2b2d30",
+            "grime": 0.45
+          }
+        }
+      ]
+    }
+  ]
+}

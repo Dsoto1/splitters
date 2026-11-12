@@ -161,10 +161,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
     number: '04',
     displayName: 'Orbital Station',
     style: 'Clean sci-fi',
-    blurb: 'White panel corridors, labs, a hangar bay, airlocks and control rooms with glowing trim, grated floors and viewports onto space. Force fields, low-gravity zones and auto doors.',
+    blurb: 'White panel corridors, labs, a hangar bay, airlocks and control rooms with glowing trim, grated floors and viewports onto space; and a planetside research base: lab modules, airlock and sky tubes, a landing pad, a comms array, a greenhouse, a rover bay and a hab dome. Force fields, low-gravity zones and auto doors.',
     themes: ['core.orbital'],
     tiles: [
       'orbital.hangar', 'orbital.reactor_hall',
+      'orbital.lab_module', 'orbital.airlock_tube', 'orbital.landing_pad', 'orbital.comms_array', 'orbital.greenhouse', 'orbital.sky_tube', 'orbital.rover_bay', 'orbital.hab_dome',
       'core.corridor_clear', 'core.corridor_windows', 'core.corner', 'core.junction_t', 'core.junction_x', 'core.corridor_curve',
       'core.room', 'core.room_long', 'core.room_large', 'core.atrium', 'core.stairwell', 'core.catwalk', 'core.bridge',
     ],
@@ -344,7 +345,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'sb_picket_fence', 'sb_swing_set', 'sb_slide', 'sb_trampoline', 'sb_basketball_hoop', 'sb_gas_pump', 'sb_sedan', 'sb_patio_set', 'sb_sun_lounger', 'sb_fire_hydrant',
       // Already in the game: furniture, shop fittings, garden and street pieces.
       'hm_couch', 'hm_armchair', 'hm_kitchen_counter', 'hm_oven', 'hm_bed_king', 'hm_bathtub', 'hm_toilet', 'hm_houseplant_tall', 'tv', 'kit.appliance.washer', 'sv_propane',
-      'kit.shelf.gondola', 'checkout', 'freezer', 'shopping_cart', 'kit.box.carton', 'kit.bin.waste', 'dumpster', 'cone', 'parasol', 'bush', 'hedge', 'tree_round', 'potted_plant',
+      'kit.shelf.gondola', 'kit.shop.checkout', 'kit.appliance.freezer_chest', 'kit.shop.cart', 'kit.box.carton', 'kit.bin.waste', 'dumpster', 'cone', 'parasol', 'bush', 'hedge', 'tree_round', 'potted_plant',
     ),
     materials: ['core.pbr_clapboard', 'core.pbr_slate_roof', 'core.pbr_pool_tiles'],
     facades: ['clapboard', 'suburban_brick'],
@@ -563,6 +564,43 @@ export const STYLE_PACKS: readonly StylePack[] = [
     mounts: ['snow_sled', 'buggy', 'gun_jeep', 'turret_mg', 'tank'],
     pickups: ['core.weapon_sniper', 'core.weapon_marksman', 'core.weapon_rifle', 'core.weapon_lmg', 'core.weapon_smg', 'core.weapon_shotgun', 'core.weapon_rockets', 'core.weapon_flamethrower', 'core.grenades', 'core.mines', 'core.armor_small', 'core.armor_large', 'core.health_small', 'core.health_large'],
     demo: 'whiteout_station',
+  },
+  {
+    id: 'industrial',
+    number: '13',
+    displayName: 'Industrial Factory',
+    style: 'Working factory',
+    blurb: 'A factory at work, built from our own pieces: a steel-framed hall with a mezzanine and a roll-up door, pipe racks to fight under, catwalks and a crossing over the floor, conveyor lines for cover, a loading bay with a dock and a ramp, a silo with a stair round it and a control room on legs. Crates, drums, containers, machines and valves; crushers, alarm lights and a generator to blow.',
+    themes: ['core.industrial'],
+    tiles: [
+      'industrial.factory_hall', 'industrial.pipe_rack', 'industrial.catwalk_cross', 'industrial.conveyor_line', 'industrial.loading_bay', 'industrial.silo', 'industrial.control_room',
+      'core.warehouse', 'core.catwalk', 'core.bridge', 'core.stairs_open', 'core.platform_rail', 'core.yard', 'core.yard_crates', 'military.gantry', 'snow.catwalk', 'snow.metal_stair', 'snow.fuel_depot',
+    ],
+    props: /* @__PURE__ */ props(
+      // Our kit families first: the belt, crates, drums, containers, the valve and the console.
+      'kit.conveyor.belt', 'kit.crate.factory', 'kit.crate.factory_long', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.crate.bin', 'kit.crate.framed', 'kit.drum.steel', 'kit.drum.steel_open',
+      'kit.container.shipping', 'kit.barrier.concrete', 'kit.sign.warning', 'kit.console.panel', 'kit.pipe.valve', 'kit.fence.iron', 'kit.shelf.gondola', 'kit.shelf.end', 'kit.box.carton', 'kit.bin.waste', 'kit.table.desk', 'kit.seat.office',
+      // Already in the game: machines, pipes, tanks, the gantry crane, yard pieces.
+      'machine', 'machine_window', 'hopper', 'hopper_tall', 'piston', 'scanner', 'lever', 'cog', 'big_pipe', 'workbench', 'mp_control_cabinet', 'sf_pipe_rack', 'so_pipe_run',
+      'fuel_tank', 'storage_tank', 'steel_water_tower', 'cargo_ibc_tank', 'cargo_gantry_crane', 'cargo_crate_stack', 'so_generator', 'so_chainlink_fence',
+      'cone', 'fuel_drum', 'pallet', 'floodlight', 'yard_lamp', 'dumpster', 'street_rusty_barrel', 'street_fuel_can', 'sv_propane',
+    ),
+    materials: ['core.steel_grating', 'core.pbr_tread_plate', 'core.pbr_rusted_plate', 'core.hazard', 'core.pbr_grey_corrugated', 'core.rusty_corrugated', 'core.pbr_concrete', 'core.pbr_concrete_dark', 'core.pbr_steel'],
+    facades: ['corrugated', 'concrete', 'brick'],
+    gameplay: ['mover:rollup_door', 'mover:lift', 'mover:slider', 'door:blast', 'door', 'button', 'ladder', 'light:alarm', 'light:wall', 'light:ceiling', 'block:barrier', 'block:fence', 'crate', 'barrel', 'gas', 'generator', 'trap:crusher', 'trap:flames', 'trap:shock', 'zone', 'glass'],
+    gameplayNotes: {
+      'mover:rollup_door': 'Roll-up door: the Factory Hall\'s and the Loading Bay\'s steel shutter, rolled up by a button and a rule (Send mover)',
+      'mover:lift': 'Goods lift: from the floor up to a catwalk or the mezzanine',
+      'mover:slider': 'Sliding platform: a pallet riding along the line (the conveyor itself does not move)',
+      'trap:crusher': 'Crusher: a press on the line',
+      'trap:flames': 'Flames: a furnace vent or a burst pipe',
+      'light:alarm': 'Alarm light: the shift alarm (logic)',
+      generator: 'Generator: blow it to cut the lights (logic)',
+      gas: 'Gas: a leak by the pipe rack or the silo',
+    },
+    mounts: ['hauler', 'buggy', 'troop_truck', 'turret_mg', 'sentry'],
+    pickups: ['core.weapon_rifle', 'core.weapon_smg', 'core.weapon_shotgun', 'core.weapon_marksman', 'core.weapon_lmg', 'core.weapon_rockets', 'core.weapon_flamethrower', 'core.grenades', 'core.mines', 'core.armor_small', 'core.armor_large', 'core.health_small', 'core.health_large'],
+    demo: 'ironworks',
   },
 ];
 

@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_oiei2uugkwd3jwdq",
-      "versionId": "v_i5ybwppzjdahhqkt",
-      "revision": 6,
-      "contentHash": "sha256:1aae4def188e7a85bb924b93548120190960f57a0cef35de9f98655ceef31ad9",
+      "versionId": "v_cr5f7zykrogjck3t",
+      "revision": 7,
+      "contentHash": "sha256:06b5f1b17bf37f287ea5e08af4493602746c727cf8c5b20ae68d80b1307f652e",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T21:29:10.620Z"
+      "releasedAt": "2026-11-12T09:13:26.952Z"
     }
   },
   "classicStructure": {
@@ -2287,7 +2287,7 @@
         2
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,

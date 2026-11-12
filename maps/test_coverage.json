@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_ypyhekp4dirjaer2",
-      "revision": 18,
-      "contentHash": "sha256:ca44fb994fd9074a8d591d819512e663975275538112dabc176ca6d2501fee52",
+      "versionId": "v_tpnnj6iu2eaxhdop",
+      "revision": 20,
+      "contentHash": "sha256:097297d8e8f4615591f9f8353cdbe765e463bdc41c0c5b07d03972e083a1ebb1",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T21:59:01.308Z"
+      "releasedAt": "2026-11-12T11:08:24.671Z"
     },
     "testOnly": true
   },
@@ -883,6 +883,22 @@
         "tile": "core.tunnel_vault_cross_walled",
         "x": 15,
         "y": -20,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_y75xv8ka7q",
+        "tile": "orbital.lab_module",
+        "x": -18,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2oig4d8etl",
+        "tile": "industrial.pipe_rack",
+        "x": 0,
+        "y": 2,
         "z": 0,
         "rotation": 0
       }
@@ -4175,7 +4191,7 @@
         112
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4905,12 +4921,12 @@
     },
     {
       "id": "prop_oxqvkjyiqb",
-      "kind": "prop",
       "position": [
         -26,
         -0.18,
         112
       ],
+      "kind": "prop",
       "model": "prop.cone",
       "yaw": 0,
       "scale": 1,

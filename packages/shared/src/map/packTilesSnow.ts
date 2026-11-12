@@ -36,11 +36,11 @@ const drift = (box: Box) => paint(box, DRIFT);
 const flatRoof = (x0: number, z0: number, x1: number, z1: number, y0: number): Box[] => [steel(b(x0, y0, z0, x1, y0 + 0.15, z1)), drift(b(x0, y0 + 0.15, z0, x1, y0 + 0.25, z1))];
 
 /** A round-ish disc of radius `r` (four slabs turned 45° apart), y0..y1: dome tiers, tank ends. */
-const disc = (r: number, y0: number, y1: number, material: string, tint?: string): Box[] =>
+export const disc = (r: number, y0: number, y1: number, material: string, tint?: string): Box[] =>
   [0, 1, 2, 3].map((k) => ({ ...paint(b(-r, y0, -r * 0.42, r, y1, r * 0.42), material, tint), ...(k ? { yaw: (k * Math.PI) / 4 } : {}) }));
 
 /** An eight-sided tank or pipe of diameter `d` along x from x0 to x1, its axis at (y, z): a box and the same box rolled 45°. */
-const tank = (x0: number, x1: number, y: number, z: number, d: number, material: string, tint?: string): Box[] =>
+export const tank = (x0: number, x1: number, y: number, z: number, d: number, material: string, tint?: string): Box[] =>
   [0, Math.PI / 4].map((pitch) => paint(tilted((x0 + x1) / 2, y, z, [x1 - x0, d * 0.83, d * 0.83], pitch ? { pitch } : {}), material, tint));
 
 /**
@@ -213,9 +213,8 @@ function watchtower(): Box[] {
   ];
 }
 
-/** Radar dome: an eight-sided panel drum (a door south, consoles inside) under a white dome 7.4 m high. */
-function radarDome(): Box[] {
-  const R = 3.5;
+/** An eight-sided drum of walls 3.5 m high and 0.3 m thick, `R` to the middle of each, in `material`, a doorway in the south one. */
+export function drum(R: number, material: string): Box[] {
   const t = 0.3;
   const len = 2 * (R + t / 2) * Math.tan(Math.PI / 8) + 0.04;
   const out: Box[] = [];
@@ -223,10 +222,17 @@ function radarDome(): Box[] {
     const a = (k * Math.PI) / 4;
     if (k === 6) continue;
     const [px, pz] = [R * Math.cos(a), R * Math.sin(a)];
-    out.push({ ...paint(b(px - len / 2, 0, pz - t / 2, px + len / 2, 3.5, pz + t / 2, 'wall'), WHITE), yaw: -(a + Math.PI / 2) });
+    out.push({ ...paint(b(px - len / 2, 0, pz - t / 2, px + len / 2, 3.5, pz + t / 2, 'wall'), material), yaw: -(a + Math.PI / 2) });
   }
   // The south side (k = 6) with its doorway.
-  out.push(...wall('x', -R, -len / 2, len / 2, [door(0, 2.2, 2.6)], 0, 3.5, WHITE, t));
+  out.push(...wall('x', -R, -len / 2, len / 2, [door(0, 2.2, 2.6)], 0, 3.5, material, t));
+  return out;
+}
+
+/** Radar dome: an eight-sided panel drum (a door south, consoles inside) under a white dome 7.4 m high. */
+function radarDome(): Box[] {
+  const R = 3.5;
+  const out = drum(R, WHITE);
   for (let i = 0; i < 7; i++) {
     const y = 3.5 + i * 0.55;
     out.push(...disc(Math.sqrt(R * R - (i * 0.55 + 0.1) ** 2) + 0.1, y, y + 0.55, WHITE, i % 2 ? '#e8ecf0' : '#f4f6f8'));
@@ -236,13 +242,13 @@ function radarDome(): Box[] {
   return out;
 }
 
-/** A lattice mast `h` high on four legs from a square of half-width `w` at (x, y, z) to `top` at the top, with cross braces every 3 m, a red beacon on top. */
-function mast(x: number, y: number, z: number, w: number, top: number, h: number): Box[] {
+/** A lattice mast `h` high on four legs (painted `tint`) from a square of half-width `w` at (x, y, z) to `top` at the top, with cross braces every 3 m, a red beacon on top. */
+export function mast(x: number, y: number, z: number, w: number, top: number, h: number, tint = '#c84a3a'): Box[] {
   const out: Box[] = [];
   const lean = Math.atan2(w - top, h);
   for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]] as const) {
     const c = (w + top) / 2;
-    out.push(paint(tilted(x + sx * c, y + h / 2, z + sz * c, [0.14, h / Math.cos(lean), 0.14], { pitch: sz * lean, roll: sx * lean }), STEEL, '#c84a3a'));
+    out.push(paint(tilted(x + sx * c, y + h / 2, z + sz * c, [0.14, h / Math.cos(lean), 0.14], { pitch: sz * lean, roll: sx * lean }), STEEL, tint));
   }
   for (let yy = 3; yy < h - 1; yy += 3) {
     const r = w - ((w - top) * yy) / h;

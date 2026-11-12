@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_nrfxczl6m2zcqbew",
-      "versionId": "v_l6l3g7y7gjnjq5gt",
-      "revision": 7,
-      "contentHash": "sha256:dd3fd8c46927e8c0c039d5b195af6c73ababd8d6d9a61b229ec237200db35ca5",
+      "versionId": "v_4422dsjubyiz3r6x",
+      "revision": 8,
+      "contentHash": "sha256:03f42cd324da1e3b9e90021bd3561478681709bcb4f3d4d0bad05bc26c096cf8",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T21:32:58.690Z"
+      "releasedAt": "2026-11-12T09:18:55.001Z"
     }
   },
   "classicStructure": {
@@ -20090,7 +20090,7 @@
         9.76
       ],
       "kind": "prop",
-      "model": "prop.bottle_return",
+      "model": "kit.shop.bottle_return",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20104,7 +20104,7 @@
         16.25
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20118,7 +20118,7 @@
         16.25
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20510,7 +20510,7 @@
         49.86
       ],
       "kind": "prop",
-      "model": "prop.bottle_return",
+      "model": "kit.shop.bottle_return",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -20524,7 +20524,7 @@
         39.92
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -21462,7 +21462,7 @@
         -24
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21476,7 +21476,7 @@
         -22.8
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21490,7 +21490,7 @@
         -21.6
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21504,7 +21504,7 @@
         -20.4
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21518,7 +21518,7 @@
         -24
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21532,7 +21532,7 @@
         -22.8
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21546,7 +21546,7 @@
         -21.6
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21560,7 +21560,7 @@
         -20.4
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21574,7 +21574,7 @@
         -24
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21588,7 +21588,7 @@
         -22.8
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21602,7 +21602,7 @@
         -21.6
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21616,7 +21616,7 @@
         -20.4
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21630,7 +21630,7 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0.6,
       "scale": 1,
       "solid": true,
@@ -21644,7 +21644,7 @@
         -22
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 2.1,
       "scale": 1,
       "solid": true,
@@ -21658,7 +21658,7 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": -1,
       "scale": 1,
       "solid": true,
@@ -21672,7 +21672,7 @@
         -22
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 2.8,
       "scale": 1,
       "solid": true,
@@ -21686,7 +21686,7 @@
         -30
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 1.4,
       "scale": 1,
       "solid": true,
@@ -21700,7 +21700,7 @@
         -31
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": -0.4,
       "scale": 1,
       "solid": true,
@@ -21714,7 +21714,7 @@
         -7
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -21784,7 +21784,7 @@
         -0.5
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -21798,7 +21798,7 @@
         -0.5
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -21812,7 +21812,7 @@
         -0.5
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -21826,7 +21826,7 @@
         -2
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0.3,
       "scale": 1,
       "solid": true,
@@ -21840,7 +21840,7 @@
         -2.5
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,

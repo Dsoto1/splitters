@@ -3559,7 +3559,7 @@
         9
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3727,7 +3727,7 @@
         27
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3741,7 +3741,7 @@
         -27
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,

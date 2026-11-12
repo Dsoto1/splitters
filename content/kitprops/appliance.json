@@ -381,6 +381,98 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.appliance.freezer_chest",
+      "displayName": "Chest Freezer",
+      "category": "Shop",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a chest freezer island, an enamelled tub on a recessed plinth with a bumper rail round it, sliding lids' frames over packs of goods, the size of the Kenney freezer (2.286 × 1 × 1.714 m); collides as the same two boxes (the plinth and the top in from the ends, the tub out to the bounds); plays as thin metal (that was concrete by the guess)."
+      },
+      "size": [
+        2.286,
+        1,
+        1.714
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "chestfreezer",
+        "lids": 3,
+        "rows": 3,
+        "gaps": 0.1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 22
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "white",
+          "seed": 9731,
+          "look": {
+            "paint": "#e4e6e3",
+            "bumper": "#2b2d30",
+            "trim": "#8b9094",
+            "inside": "#c3d0d6",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "blue_rail",
+          "seed": 9732,
+          "set": {
+            "lids": 4
+          },
+          "look": {
+            "paint": "#e0e2e0",
+            "bumper": "#1f4f9a",
+            "trim": "#9aa0a4",
+            "inside": "#c3d0d6",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "steel",
+          "seed": 9733,
+          "set": {
+            "rows": 4
+          },
+          "look": {
+            "paint": "#9aa0a4",
+            "bumper": "#3a3d42",
+            "trim": "#5a5e62",
+            "inside": "#b4c0c6",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "red_rail",
+          "seed": 9734,
+          "set": {
+            "gaps": 0.35
+          },
+          "look": {
+            "paint": "#d8d4c8",
+            "bumper": "#a8261e",
+            "trim": "#8b9094",
+            "inside": "#c9d2d4",
+            "grime": 0.3
+          }
+        }
+      ]
     }
   ]
 }
