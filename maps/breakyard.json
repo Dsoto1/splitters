@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_cy6mo7tdgrj4ihqi",
-      "versionId": "v_fjdysanr44vawpgz",
-      "revision": 5,
-      "contentHash": "sha256:35f125b19fb10a3bea3ef0ba960201bb60bae6ac8b89d18716facd40346ff919",
+      "versionId": "v_z32n7yvrofrvt24j",
+      "revision": 6,
+      "contentHash": "sha256:cae89e57654a3969f2d17a46898df4587b313a95289f81d28817b6f52d70dd01",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T14:04:31.081Z"
+      "releasedAt": "2026-11-12T01:45:49.286Z"
     },
     "tier": "experimental",
     "destruction": true
@@ -1030,6 +1030,35 @@
       "kind": "pickup",
       "item": "core.ammo",
       "respawnSeconds": null
+    },
+    {
+      "id": "prop_9flbct0mi6",
+      "kind": "prop",
+      "position": [
+        -10,
+        0,
+        3
+      ],
+      "model": "env.deadwood.log",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "health": 60
+    },
+    {
+      "id": "prop_uvzxr5oh01",
+      "kind": "prop",
+      "position": [
+        10,
+        0,
+        -3
+      ],
+      "model": "env.deadwood.log",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],

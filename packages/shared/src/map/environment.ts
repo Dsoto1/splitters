@@ -6,7 +6,7 @@
  */
 import { envVariant, getEnvSpecies, isEnvModel, type EnvBlocks, type EnvShape, type EnvSpeciesData } from '../content/environment.ts';
 import type { SurfaceTypeId } from '../sim/surfaceTypes.ts';
-import { yawXZ } from './geometry.ts';
+import { isBreakableProp, yawXZ } from './geometry.ts';
 import type { MapDocument, PropEntity } from './schema.ts';
 
 type V3 = [number, number, number];
@@ -26,32 +26,36 @@ export type EnvWorldShape =
   | (ShapeBase & { readonly kind: 'hull'; readonly points: readonly number[] })
   | (ShapeBase & { readonly kind: 'mesh'; readonly positions: readonly number[]; readonly indices: readonly number[] });
 
-/** The environment placements of a map that collide: solid, an env species, not riding a mover. */
-export function environmentPlacements(map: MapDocument): { e: PropEntity; species: EnvSpeciesData }[] {
+/**
+ * The environment placements of a map that collide: solid, an env species, not riding a mover. A log given its own
+ * health (geometry.ts `isBreakableProp`) is not static: the scenario owns its colliders (ask for those with `breakable`).
+ */
+export function environmentPlacements(map: MapDocument, breakable = false): { e: PropEntity; species: EnvSpeciesData }[] {
   const carried = new Set(map.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
   const out: { e: PropEntity; species: EnvSpeciesData }[] = [];
   for (const e of map.entities) {
-    if (e.kind !== 'prop' || !isEnvModel(e.model) || !e.solid || carried.has(e.id)) continue;
+    if (e.kind !== 'prop' || !isEnvModel(e.model) || !e.solid || carried.has(e.id) || isBreakableProp(e) !== breakable) continue;
     const species = getEnvSpecies(e.model);
     if (species) out.push({ e, species });
   }
   return out;
 }
 
-/** Every environment collision shape of a map, in world space. */
-export function environmentShapes(map: MapDocument): EnvWorldShape[] {
-  const out: EnvWorldShape[] = [];
-  for (const { e, species } of environmentPlacements(map)) {
-    const v = envVariant(species, e.variant);
-    const [px, py, pz] = e.position;
-    const s = e.scale;
-    const at = (x: number, y: number, z: number): V3 => {
-      const [rx, rz] = yawXZ(x * s, z * s, e.yaw);
-      return [px + rx, py + y * s, pz + rz];
-    };
-    for (const sh of v.shapes) out.push(placeShape(sh, at, s, e.id, species.nav !== 'none'));
-  }
-  return out;
+/** Every static environment collision shape of a map, in world space (`breakable`: those of its breakable logs instead). */
+export function environmentShapes(map: MapDocument, breakable = false): EnvWorldShape[] {
+  return environmentPlacements(map, breakable).flatMap(({ e, species }) => placementShapes(e, species));
+}
+
+/** One placement's collision shapes in world space. */
+export function placementShapes(e: PropEntity, species: EnvSpeciesData): EnvWorldShape[] {
+  const v = envVariant(species, e.variant);
+  const [px, py, pz] = e.position;
+  const s = e.scale;
+  const at = (x: number, y: number, z: number): V3 => {
+    const [rx, rz] = yawXZ(x * s, z * s, e.yaw);
+    return [px + rx, py + y * s, pz + rz];
+  };
+  return v.shapes.map((sh) => placeShape(sh, at, s, e.id, species.nav !== 'none'));
 }
 
 function placeShape(sh: EnvShape, at: (x: number, y: number, z: number) => V3, s: number, sourceId: string, navOk: boolean): EnvWorldShape {

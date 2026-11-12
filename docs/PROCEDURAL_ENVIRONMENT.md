@@ -73,6 +73,15 @@ Produce a brief audit report and proposed migration mapping before deleting anyt
 | Small decorative stone | Usually no collider | None |
 | Boulder | Solid; stone impact FX | Solid obstacle |
 | Cliff/rock wall | Solid, close visual/collision match | Solid static geometry/nav boundary |
+| Fallen log (`env.deadwood.log`) | Solid (its hull); bark impact FX | Solid obstacle |
+
+**A log breaks only when the map maker says so** (the owner, 2026-11-12). A placed log is solid cover, also on a map
+where everything breaks. Given its own **Health** in the inspector it becomes a breakable (`isBreakableProp`; the only
+species that can: `envCanBreak`, content/environment.ts): it leaves the static shapes (`environmentShapes(map)`; ask
+for it with `environmentShapes(map, true)`), the scenario owns its hull (`ScenarioBodies`, switched off when it breaks,
+back at the next round), navigation takes its bounds with the other breakable solids (`propBoxes(map, true)`), and the
+client draws it as an ordinary prop node, not in the environment renderer's batches, so it can be hidden. Rocks,
+boulders, cliffs, trees and plants never break.
 
 Both hitscan and projectile paths must use authoritative queries. Support impact surface tags (`wood`, `stone`, etc.) so clients render appropriate splinters, dust, decals and audio. Optional penetration can be added later as a shared weapon/material rule, not hardcoded per render mesh. Define consistent bot visibility/occlusion semantics for bushes; graphics quality cannot change authoritative cover or gameplay visibility.
 

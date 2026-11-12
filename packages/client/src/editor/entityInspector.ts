@@ -22,6 +22,8 @@ import {
   entityLabel,
   ENV_SPECIES,
   FLOAT,
+  envCanBreak,
+  envVariant,
   getEnvSpecies,
   getKitFamily,
   getItem,
@@ -170,6 +172,11 @@ export class EntityInspector {
               number('Health', e.health ?? (breaks ? Math.round(usual) : 0), 10, (v) => ({ health: v <= 0 || (breaks && e.health === undefined && Math.round(v) === Math.round(usual)) ? undefined : clamp(v, 1, 100000) }));
               el.append(small(breaks ? `Breaks at ${Math.round(e.health ?? usual)} damage${e.health === undefined ? '' : ' (its own; 0 for the usual)'}; comes back at the next round.` : 'Does not break. Give it a health to make it breakable, or turn on Everything breaks in Map properties.'));
             } else el.append(small('Never breaks.'));
+          } else if (species && e.solid && envCanBreak(e.model)) {
+            // A fallen log (the generated environment): solid cover unless the map maker gives it health, whatever the map's switch says.
+            const usual = propHealth(e.model, envVariant(species, e.variant).size, e.scale);
+            number('Health', e.health ?? 0, 10, (v) => ({ health: v <= 0 ? undefined : clamp(v, 1, 100000) }));
+            el.append(small(e.health ? `Breaks at ${Math.round(e.health)} damage; comes back at the next round. 0: cannot be broken.` : `A log is solid cover unless it has health here (about ${usual} for its size).`));
           }
         }
         const tint = document.createElement('input');

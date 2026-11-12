@@ -1,6 +1,8 @@
 import { getProp } from '../content/props.ts';
 import { propMaterial } from './gunplay.ts';
-import { boxQuat, dynamicBlockIds, isBreakableProp, type Rot } from '../map/geometry.ts';
+import { boxQuat, dynamicBlockIds, envHalfSize, isBreakableProp, type Rot } from '../map/geometry.ts';
+import { placementShapes, type EnvWorldShape } from '../map/environment.ts';
+import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import type RAPIER from '@dimforge/rapier3d-compat';
 import type { DestructibleModel, MapDocument, MapEntity, TrapKind } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
@@ -171,6 +173,8 @@ export interface Breakable {
    * it, what stands on it and how paths go round it.
    */
   parts?: readonly OBox[];
+  /** Its colliders when they are the generated environment's own shapes (a breakable log's hull); `box` is its bounds. */
+  shapes?: readonly EnvWorldShape[];
   health: number;
   explosiveOnly: boolean;
   blast?: { radius: number; damage: number; edge: number };
@@ -238,6 +242,18 @@ export function breakableOf(e: MapEntity, dynamic?: ReadonlySet<string>, everyth
   }
   if (e.kind === 'block' && e.behaviour !== 'solid') {
     return { box: blockOBox(e), health: e.health, explosiveOnly: false, blocksPaths: false, shootable: e.behaviour === 'breakable' };
+  }
+  if (e.kind === 'prop' && isEnvModel(e.model)) {
+    // A fallen log the map maker gave health (isBreakableProp): its bounds as it lies, its own hull colliding.
+    const half = isBreakableProp(e, everything) ? envHalfSize(e) : null;
+    if (!half) return null;
+    return {
+      box: { center: { x: e.position[0], y: e.position[1] + half[1], z: e.position[2] }, half: { x: half[0], y: half[1], z: half[2] }, yaw: e.yaw },
+      shapes: placementShapes(e, getEnvSpecies(e.model)!),
+      health: e.health!,
+      explosiveOnly: false,
+      blocksPaths: false,
+    };
   }
   if (e.kind === 'prop' && isBreakableProp(e, everything)) {
     const def = getProp(e.model)!;
@@ -400,7 +416,8 @@ export class ScenarioBodies {
       } else {
         const b = breakableOf(e, dynamic, !!map.metadata.destruction);
         if (!b) return;
-        const cs = (b.parts ?? [b.box]).map((box) => (isGlassBlock(e) ? physics.createGlassBox(box.center, box.half, box.yaw, e.glass === 'reinforced', box.rot) : physics.createBox(box.center, box.half, box.yaw, box.rot, e.kind === 'block' && !!e.field)));
+        const hulls = b.shapes?.map((sh) => physics.createShape(sh)).filter((c): c is RAPIER.Collider => !!c);
+        const cs = hulls?.length ? hulls : (b.parts ?? [b.box]).map((box) => (isGlassBlock(e) ? physics.createGlassBox(box.center, box.half, box.yaw, e.glass === 'reinforced', box.rot) : physics.createBox(box.center, box.half, box.yaw, box.rot, e.kind === 'block' && !!e.field)));
         this.solids.set(i, cs);
         for (const c of cs) {
           this.byHandle.set(c.handle, i);

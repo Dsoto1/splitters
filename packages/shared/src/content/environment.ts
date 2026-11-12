@@ -73,6 +73,12 @@ export function envVariant(species: EnvSpeciesData, index: number | undefined): 
   return (index !== undefined && species.variants.find((v) => v.index === index)) || species.variants[0]!;
 }
 
+/**
+ * Species a map maker can make breakable by giving a placement its own health (the owner, 2026-11-12: "logs not
+ * breakable unless toggled as such"): deadwood only. Rocks, trees and plants never break. The one place that says which.
+ */
+export const envCanBreak = (model: string): boolean => getEnvSpecies(model)?.category === 'deadwood';
+
 /** The surface a species is made of (env ids only). */
 export const envSurfaceOf = (model: string): SurfaceTypeId | undefined => (isEnvModel(model) ? getEnvSpecies(model)?.surface : undefined);
 

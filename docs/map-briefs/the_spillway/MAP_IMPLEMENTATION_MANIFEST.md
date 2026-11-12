@@ -18,6 +18,8 @@
 - **Ways up**: two concrete stair towers against the dam's face (x −40 and 40), a door from the toe terrace, six
   flights, a deck and a slab onto the crest; an open hillside stair of four flights from the terrace to the east bench;
   the abutments are walked onto from the crest; the west bench is walked onto from the terrace.
+  A third way since 2026-11-12: **the long stair**, six open flights in one line up the dam's face (x 24, from the
+  toe terrace's edge at z 4 to the crest), between the powerhouse and the east tower; exposed all the way.
 - **Buildings** (set pieces): the powerhouse (Power Core Hall) on the toe terrace between the towers; a loading dock
   on the west bench; a bunker on the east bench.
 - **Vegetation**: Temperate woods painted with the environment brush on the valley's grass (about 2,240 plants);

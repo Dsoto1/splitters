@@ -4172,13 +4172,27 @@ async function physicsfxFlow(browser) {
   // The bots stand where they spawn, firing nothing: left to play, they drove vehicles onto the open ground the bodies
   // are thrown on, and shot you off your mark (the checks below place them where they need them).
   await holdBots(page);
-  await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model') && n.rotationQuaternion && Math.abs(n.rotationQuaternion.x) + Math.abs(n.rotationQuaternion.z) > 0.01), null, { timeout: T(15000) }).catch(() => {});
-  // Rocks, logs and plants lean with the slope; trees stay upright; nothing floats.
-  const props = await page.evaluate(() => {
-    const roots = window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model'));
-    const leaning = roots.filter((n) => n.rotationQuaternion && Math.abs(n.rotationQuaternion.x) + Math.abs(n.rotationQuaternion.z) > 0.01).length;
-    return { roots: roots.length, leaning };
-  });
+  // Rocks, logs and plants lean with the slope; trees stay upright; nothing floats. The canyon's are generated species
+  // since its refresh: drawn as thin instances (their up axis read from each copy's matrix), not as prop nodes.
+  const leanCount = () => {
+    const scene = window.__cs.view.scene;
+    const roots = scene.transformNodes.filter((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model'));
+    let copies = 0, leaning = roots.filter((n) => n.rotationQuaternion && Math.abs(n.rotationQuaternion.x) + Math.abs(n.rotationQuaternion.z) > 0.01).length;
+    // Each copy sits in the batch of the level of detail it is drawn at just now.
+    for (const m of scene.meshes.filter((m) => /^env_(rock|deadwood|shrub)/.test(m.name) && !m.name.startsWith('env_tpl') && m.isEnabled() && m.thinInstanceCount > 0)) {
+      const d = m._thinInstanceDataStorage?.matrixData;
+      if (!d) continue;
+      for (let i = 0; i < m.thinInstanceCount; i++) {
+        const ux = d[i * 16 + 4], uy = d[i * 16 + 5], uz = d[i * 16 + 6], len = Math.hypot(ux, uy, uz);
+        if (!len) continue;
+        copies++;
+        if (Math.hypot(ux, uz) / len > 0.02) leaning++;
+      }
+    }
+    return { roots: roots.length + copies, leaning };
+  };
+  await page.waitForFunction(`(${leanCount})().leaning > 0`, null, { timeout: T(15000) }).catch(() => {});
+  const props = await page.evaluate(leanCount);
   check(props.leaning > 0, `natural props lean with the canyon's slopes (${props.leaning} of ${props.roots})`);
   /**
    * Open ground for the ragdoll checks, the same place on every run (bodies dropped or thrown by cover, or into a rock,
@@ -4775,6 +4789,23 @@ async function destructionChecks(browser) {
   await page.waitForFunction(() => window.__cs.view.props.get(window.__containerIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
   const broken = await page.evaluate(() => ({ alive: window.__container.alive, drawn: window.__cs.view.props.get(window.__containerIndex)?.isEnabled(), debris: window.__cs.view.debrisBodies.length - window.__debrisBefore }));
   check(!broken.alive && broken.drawn === false && broken.debris > 0, `broken, the container is gone from the yard and its debris flies (${JSON.stringify(broken)})`);
+  // Fallen logs (owner: "not breakable unless toggled as such"): the one given Health in MapMaker breaks, its node gone
+  // and wood debris thrown; the other is no breakable, even on this map where everything else is.
+  const logs = await page.evaluate(() => {
+    const m = window.__match, sc = m.scenario, ents = m.map.entities;
+    const of = (i) => [...sc.destructibles.values()].find((d) => d.i === i);
+    const all = ents.map((e, i) => [e, i]).filter(([e]) => e.kind === 'prop' && e.model === 'env.deadwood.log');
+    const tog = all.find(([e]) => e.health > 0), plain = all.find(([e]) => !(e.health > 0));
+    window.__log = tog && of(tog[1]);
+    window.__logIndex = tog?.[1];
+    window.__debrisBefore = window.__cs.view.debrisBodies.length;
+    return { placed: all.length, breakable: !!window.__log, health: window.__log?.health, plain: !!plain && !of(plain[1]), drawn: window.__cs.view.props.get(tog?.[1])?.isEnabled() };
+  });
+  check(logs.placed === 2 && logs.breakable && logs.health === 60 && logs.drawn && logs.plain, `a log given health in MapMaker is a breakable with that health; a plain log is not, even where everything breaks (${JSON.stringify(logs)})`);
+  await page.evaluate(() => window.__match.scenario.damageDestructible(window.__log, 1e6, true, null));
+  await page.waitForFunction(() => window.__cs.view.props.get(window.__logIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
+  const logBroken = await page.evaluate(() => ({ alive: window.__log.alive, drawn: window.__cs.view.props.get(window.__logIndex)?.isEnabled(), debris: window.__cs.view.debrisBodies.length - window.__debrisBefore }));
+  check(!logBroken.alive && logBroken.drawn === false && logBroken.debris > 0, `broken, the log is gone and its debris flies (${JSON.stringify(logBroken)})`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/destruction-broken.png` });
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();

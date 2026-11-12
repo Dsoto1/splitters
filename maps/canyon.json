@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 36,
   "metadata": {
     "id": "canyon",
     "name": "Rockfall Canyon",
@@ -246,9 +246,9 @@
         30.51
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 5.409,
-      "scale": 3.1,
+      "scale": 3.12,
       "solid": true,
       "tint": null
     },
@@ -260,9 +260,9 @@
         -32.25
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 1.104,
-      "scale": 3.46,
+      "scale": 3.48,
       "solid": true,
       "tint": null
     },
@@ -274,9 +274,9 @@
         52.52
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 1.606,
-      "scale": 2.04,
+      "scale": 2.05,
       "solid": true,
       "tint": null
     },
@@ -288,9 +288,9 @@
         55.44
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 3.569,
-      "scale": 2.33,
+      "scale": 2.35,
       "solid": true,
       "tint": null
     },
@@ -302,9 +302,9 @@
         44.75
       ],
       "kind": "prop",
-      "model": "prop.rock_medium",
+      "model": "env.rock.boulder_angular",
       "yaw": 5.966,
-      "scale": 2.22,
+      "scale": 1.5,
       "solid": true,
       "tint": null
     },
@@ -312,13 +312,13 @@
       "id": "prop_028",
       "position": [
         33.11,
-        0.19,
+        0.18,
         20.59
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 4.392,
-      "scale": 2.35,
+      "scale": 2.37,
       "solid": true,
       "tint": null
     },
@@ -330,9 +330,9 @@
         -37.73
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 5.819,
-      "scale": 2.05,
+      "scale": 2.06,
       "solid": true,
       "tint": null
     },
@@ -340,13 +340,13 @@
       "id": "prop_030",
       "position": [
         -32.5,
-        0.43,
+        0.48,
         -55.46
       ],
       "kind": "prop",
-      "model": "prop.rock_medium",
+      "model": "env.rock.boulder_angular",
       "yaw": 2.657,
-      "scale": 2.96,
+      "scale": 2,
       "solid": true,
       "tint": null
     },
@@ -358,9 +358,9 @@
         22.58
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 3.148,
-      "scale": 2.16,
+      "scale": 2.17,
       "solid": true,
       "tint": null
     },
@@ -368,13 +368,13 @@
       "id": "prop_032",
       "position": [
         -35.84,
-        0.43,
+        0.41,
         -45.01
       ],
       "kind": "prop",
-      "model": "prop.rock_medium",
+      "model": "env.rock.boulder_angular",
       "yaw": 4.12,
-      "scale": 3.43,
+      "scale": 2.32,
       "solid": true,
       "tint": null
     },
@@ -386,9 +386,9 @@
         -18.59
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 1.747,
-      "scale": 2.66,
+      "scale": 2.68,
       "solid": true,
       "tint": null
     },
@@ -400,9 +400,9 @@
         -55.29
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 3.114,
-      "scale": 2.84,
+      "scale": 2.86,
       "solid": true,
       "tint": null
     },
@@ -414,9 +414,9 @@
         54.12
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 2.401,
-      "scale": 2.44,
+      "scale": 2.46,
       "solid": true,
       "tint": null
     },
@@ -428,9 +428,9 @@
         -18.54
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 1.646,
-      "scale": 3.25,
+      "scale": 3.27,
       "solid": true,
       "tint": null
     },
@@ -438,13 +438,13 @@
       "id": "prop_037",
       "position": [
         11.56,
-        0.66,
+        0.64,
         -27.43
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 1.019,
-      "scale": 2.38,
+      "scale": 2.4,
       "solid": true,
       "tint": null
     },
@@ -456,9 +456,9 @@
         -26.03
       ],
       "kind": "prop",
-      "model": "prop.rock_medium",
+      "model": "env.rock.boulder_angular",
       "yaw": 3.726,
-      "scale": 2,
+      "scale": 1.35,
       "solid": true,
       "tint": null
     },
@@ -470,9 +470,9 @@
         -35.16
       ],
       "kind": "prop",
-      "model": "prop.rock_medium",
+      "model": "env.rock.boulder_angular",
       "yaw": 0.983,
-      "scale": 1.8,
+      "scale": 1.22,
       "solid": true,
       "tint": null
     },
@@ -480,13 +480,13 @@
       "id": "prop_040",
       "position": [
         5.95,
-        1.25,
+        1.24,
         23.47
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 3.061,
-      "scale": 2.52,
+      "scale": 2.54,
       "solid": true,
       "tint": null
     },
@@ -498,9 +498,9 @@
         39.81
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 1.933,
-      "scale": 2.4,
+      "scale": 2.42,
       "solid": true,
       "tint": null
     },
@@ -512,9 +512,9 @@
         44.13
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 0.43,
-      "scale": 2.1,
+      "scale": 2.11,
       "solid": true,
       "tint": null
     },
@@ -522,13 +522,13 @@
       "id": "prop_043",
       "position": [
         31.66,
-        0.75,
+        0.74,
         33.1
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 4.306,
-      "scale": 1.96,
+      "scale": 1.97,
       "solid": true,
       "tint": null
     },
@@ -540,9 +540,9 @@
         54.46
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 6.064,
-      "scale": 2.18,
+      "scale": 2.19,
       "solid": true,
       "tint": null
     },
@@ -550,13 +550,13 @@
       "id": "prop_045",
       "position": [
         -3.15,
-        1.53,
+        1.71,
         29.4
       ],
       "kind": "prop",
-      "model": "prop.rock_medium",
+      "model": "env.rock.boulder_angular",
       "yaw": 3.488,
-      "scale": 3.19,
+      "scale": 2.16,
       "solid": true,
       "tint": null
     },
@@ -568,9 +568,9 @@
         -27.28
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 3.205,
-      "scale": 3.56,
+      "scale": 3.58,
       "solid": true,
       "tint": null
     },
@@ -582,9 +582,9 @@
         22.34
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 2.861,
-      "scale": 1.94,
+      "scale": 1.95,
       "solid": true,
       "tint": null
     },
@@ -596,9 +596,9 @@
         -51.74
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 4.863,
-      "scale": 2.81,
+      "scale": 2.83,
       "solid": true,
       "tint": null
     },
@@ -610,9 +610,9 @@
         -45.43
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 4.667,
-      "scale": 2.03,
+      "scale": 2.04,
       "solid": true,
       "tint": null
     },
@@ -620,13 +620,13 @@
       "id": "prop_050",
       "position": [
         -4.1,
-        0.14,
+        0.23,
         39.61
       ],
       "kind": "prop",
-      "model": "prop.rock_medium",
+      "model": "env.rock.boulder_angular",
       "yaw": 1.804,
-      "scale": 2.6,
+      "scale": 1.76,
       "solid": true,
       "tint": null
     },
@@ -638,9 +638,9 @@
         -42.31
       ],
       "kind": "prop",
-      "model": "prop.rock_medium",
+      "model": "env.rock.boulder_angular",
       "yaw": 5.603,
-      "scale": 2.63,
+      "scale": 1.78,
       "solid": true,
       "tint": null
     },
@@ -648,13 +648,13 @@
       "id": "prop_052",
       "position": [
         -13.34,
-        2.13,
+        2.11,
         22.08
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 3.357,
-      "scale": 3.13,
+      "scale": 3.15,
       "solid": true,
       "tint": null
     },
@@ -666,9 +666,9 @@
         71.34
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "env.rock.outcrop",
       "yaw": 4.553,
-      "scale": 2.3,
+      "scale": 2.34,
       "solid": true,
       "tint": null
     },
@@ -680,9 +680,9 @@
         84.44
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "env.rock.outcrop",
       "yaw": 5.017,
-      "scale": 2.39,
+      "scale": 2.43,
       "solid": true,
       "tint": null
     },
@@ -694,9 +694,9 @@
         -18.12
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "env.rock.outcrop",
       "yaw": 4.566,
-      "scale": 1.44,
+      "scale": 1.46,
       "solid": true,
       "tint": null
     },
@@ -708,9 +708,9 @@
         -63.65
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "env.rock.outcrop",
       "yaw": 5.422,
-      "scale": 1.65,
+      "scale": 1.68,
       "solid": true,
       "tint": null
     },
@@ -834,9 +834,9 @@
         47.37
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "env.deadwood.log",
       "yaw": 3.126,
-      "scale": 1,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -844,15 +844,16 @@
       "id": "prop_066",
       "position": [
         -0.3,
-        3.57,
+        3.55,
         13.55
       ],
       "kind": "prop",
-      "model": "prop.rock_small",
+      "model": "env.rock.boulder_round",
       "yaw": 3.249,
-      "scale": 1.5,
+      "scale": 0.75,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_067",
@@ -862,7 +863,7 @@
         55.38
       ],
       "kind": "prop",
-      "model": "prop.rock_flat",
+      "model": "env.rock.slab",
       "yaw": 5.438,
       "scale": 1.5,
       "solid": true,
@@ -876,9 +877,9 @@
         48.57
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "env.deadwood.log",
       "yaw": 6.091,
-      "scale": 1,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -890,11 +891,12 @@
         24.27
       ],
       "kind": "prop",
-      "model": "prop.rock_small",
+      "model": "env.rock.boulder_round",
       "yaw": 0.708,
-      "scale": 1.5,
+      "scale": 0.75,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_070",
@@ -904,9 +906,9 @@
         2.73
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "env.deadwood.log",
       "yaw": 2.666,
-      "scale": 1,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -918,9 +920,9 @@
         16.14
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "env.deadwood.log",
       "yaw": 1.422,
-      "scale": 1,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -932,7 +934,7 @@
         8.74
       ],
       "kind": "prop",
-      "model": "prop.rock_flat",
+      "model": "env.rock.slab",
       "yaw": 3.62,
       "scale": 1.5,
       "solid": true,
@@ -946,7 +948,7 @@
         -34.02
       ],
       "kind": "prop",
-      "model": "prop.rock_flat",
+      "model": "env.rock.slab",
       "yaw": 4.499,
       "scale": 1.5,
       "solid": true,
@@ -960,7 +962,7 @@
         55.57
       ],
       "kind": "prop",
-      "model": "prop.rock_flat",
+      "model": "env.rock.slab",
       "yaw": 4.808,
       "scale": 1.5,
       "solid": true,
@@ -974,11 +976,12 @@
         -46.89
       ],
       "kind": "prop",
-      "model": "prop.rock_small",
+      "model": "env.rock.boulder_round",
       "yaw": 1.508,
-      "scale": 1.5,
+      "scale": 0.75,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_076",
@@ -988,11 +991,12 @@
         18.9
       ],
       "kind": "prop",
-      "model": "prop.rock_small",
+      "model": "env.rock.boulder_round",
       "yaw": 3.144,
-      "scale": 1.5,
+      "scale": 0.75,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_077",
@@ -1002,9 +1006,9 @@
         8.4
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "env.deadwood.log",
       "yaw": 5.88,
-      "scale": 1,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -1016,7 +1020,7 @@
         14.39
       ],
       "kind": "prop",
-      "model": "prop.rock_flat",
+      "model": "env.rock.slab",
       "yaw": 2.35,
       "scale": 1.5,
       "solid": true,
@@ -1030,9 +1034,9 @@
         -25.05
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "env.deadwood.log",
       "yaw": 4.071,
-      "scale": 1,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -1044,9 +1048,9 @@
         -3.06
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "env.deadwood.log",
       "yaw": 4.53,
-      "scale": 1,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -1058,9 +1062,9 @@
         16.26
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "env.deadwood.log",
       "yaw": 5.124,
-      "scale": 1,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -1072,9 +1076,9 @@
         35.28
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "env.deadwood.log",
       "yaw": 0.648,
-      "scale": 1,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -1086,9 +1090,9 @@
         6.84
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "env.deadwood.log",
       "yaw": 3.987,
-      "scale": 1,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -1100,9 +1104,9 @@
         -35.77
       ],
       "kind": "prop",
-      "model": "prop.log",
+      "model": "env.deadwood.log",
       "yaw": 5.404,
-      "scale": 1,
+      "scale": 0.97,
       "solid": true,
       "tint": null
     },
@@ -1958,9 +1962,9 @@
         -40.81
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.broadleaf",
       "yaw": 4.162,
-      "scale": 1.15,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -2000,9 +2004,9 @@
         42.48
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.broadleaf",
       "yaw": 4.238,
-      "scale": 1.15,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -2024,13 +2028,13 @@
       "id": "prop_162",
       "position": [
         -28.91,
-        1.45,
+        1.39,
         -46.92
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.967,
-      "scale": 1.05,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -2052,13 +2056,13 @@
       "id": "prop_164",
       "position": [
         -28.95,
-        1.22,
+        1.18,
         -48.52
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 5.41,
-      "scale": 1.25,
+      "scale": 0.74,
       "solid": false,
       "tint": null
     },
@@ -2066,13 +2070,13 @@
       "id": "prop_165",
       "position": [
         28.91,
-        0.7,
+        0.63,
         46.92
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.broadleaf",
       "yaw": 3.99,
-      "scale": 1.05,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -2094,13 +2098,13 @@
       "id": "prop_167",
       "position": [
         28.87,
-        1.05,
+        1,
         45.32
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 2.796,
-      "scale": 1.25,
+      "scale": 0.74,
       "solid": false,
       "tint": null
     },
@@ -2122,13 +2126,13 @@
       "id": "prop_169",
       "position": [
         -11.42,
-        0.75,
+        0.73,
         42.6
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 5.553,
-      "scale": 1.15,
+      "scale": 0.68,
       "solid": false,
       "tint": null
     },
@@ -2168,9 +2172,9 @@
         -40.93
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 4.671,
-      "scale": 1.15,
+      "scale": 0.68,
       "solid": false,
       "tint": null
     },
@@ -2192,13 +2196,13 @@
       "id": "prop_174",
       "position": [
         15.71,
-        -0.14,
+        -0.15,
         -31.27
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 3.682,
-      "scale": 1.05,
+      "scale": 0.62,
       "solid": false,
       "tint": null
     },
@@ -2224,9 +2228,9 @@
         -32.87
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.282,
-      "scale": 1.25,
+      "scale": 0.94,
       "solid": false,
       "tint": null
     },
@@ -2234,13 +2238,13 @@
       "id": "prop_177",
       "position": [
         -15.71,
-        1.37,
+        1.35,
         31.27
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 1.394,
-      "scale": 1.05,
+      "scale": 0.62,
       "solid": false,
       "tint": null
     },
@@ -2262,13 +2266,13 @@
       "id": "prop_179",
       "position": [
         -15.75,
-        1.47,
+        1.44,
         29.68
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.broadleaf",
       "yaw": 2.81,
-      "scale": 1.25,
+      "scale": 0.94,
       "solid": false,
       "tint": null
     },
@@ -2290,13 +2294,13 @@
       "id": "prop_181",
       "position": [
         -9.07,
-        3.79,
+        3.72,
         15.39
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.broadleaf",
       "yaw": 2.999,
-      "scale": 1.15,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -2332,13 +2336,13 @@
       "id": "prop_184",
       "position": [
         6.34,
-        2.75,
+        2.68,
         -13.72
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.193,
-      "scale": 1.15,
+      "scale": 0.86,
       "solid": false,
       "tint": null
     },
@@ -2360,13 +2364,13 @@
       "id": "prop_186",
       "position": [
         -19.79,
-        1.19,
+        1.11,
         -41.71
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.212,
-      "scale": 1.05,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -2388,13 +2392,13 @@
       "id": "prop_188",
       "position": [
         -19.83,
-        1.32,
+        1.26,
         -43.31
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 4.668,
-      "scale": 1.25,
+      "scale": 0.74,
       "solid": false,
       "tint": null
     },
@@ -2402,13 +2406,13 @@
       "id": "prop_189",
       "position": [
         19.79,
-        0.08,
+        0.05,
         41.71
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.broadleaf",
       "yaw": 5.147,
-      "scale": 1.05,
+      "scale": 0.79,
       "solid": false,
       "tint": null
     },
@@ -2430,13 +2434,13 @@
       "id": "prop_191",
       "position": [
         19.75,
-        0.1,
+        0.05,
         40.11
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 5.394,
-      "scale": 1.25,
+      "scale": 0.74,
       "solid": false,
       "tint": null
     },
@@ -2458,13 +2462,13 @@
       "id": "prop_193",
       "position": [
         5.4,
-        0.6,
+        0.57,
         31.04
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 3.389,
-      "scale": 1.15,
+      "scale": 0.68,
       "solid": false,
       "tint": null
     },
@@ -2504,9 +2508,9 @@
         -29.37
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 5.588,
-      "scale": 1.15,
+      "scale": 0.68,
       "solid": false,
       "tint": null
     },
@@ -2532,9 +2536,9 @@
         -28.78
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 3.602,
-      "scale": 1.11,
+      "scale": 0.91,
       "solid": true,
       "tint": null
     },
@@ -2546,9 +2550,9 @@
         26.21
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "env.broadleaf.maple",
       "yaw": 1.677,
-      "scale": 0.95,
+      "scale": 1.09,
       "solid": true,
       "tint": null
     },
@@ -2560,9 +2564,9 @@
         15.54
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_small",
+      "model": "env.conifer.spruce",
       "yaw": 4.282,
-      "scale": 0.88,
+      "scale": 0.59,
       "solid": true,
       "tint": null
     },
@@ -2574,9 +2578,9 @@
         46.43
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree_2",
+      "model": "env.broadleaf.oak",
       "yaw": 2.903,
-      "scale": 0.94,
+      "scale": 0.7,
       "solid": true,
       "tint": null
     },
@@ -2588,9 +2592,9 @@
         -23.65
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 2.482,
-      "scale": 0.92,
+      "scale": 0.76,
       "solid": true,
       "tint": null
     },
@@ -2598,13 +2602,13 @@
       "id": "prop_203",
       "position": [
         32.87,
-        1.67,
+        1.65,
         38.56
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "env.broadleaf.maple",
       "yaw": 1.215,
-      "scale": 0.87,
+      "scale": 1,
       "solid": true,
       "tint": null
     },
@@ -2616,9 +2620,9 @@
         31.33
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_small",
+      "model": "env.conifer.spruce",
       "yaw": 2.735,
-      "scale": 0.89,
+      "scale": 0.6,
       "solid": true,
       "tint": null
     }
