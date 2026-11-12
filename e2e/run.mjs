@@ -3363,10 +3363,27 @@ async function offlineFlow(browser) {
   // The list's mode tabs and search narrow it; every card stays the same height.
   const heights = await page.$$eval('#map-cards .map-card', (cs) => new Set(cs.map((c) => Math.round(c.getBoundingClientRect().height))).size);
   check(heights === 1, `every map card is the same height (${heights} different heights)`);
-  await page.click('#map-tabs [data-mode="core.ctf"]');
+  // Filter maps: a window with a tick per game mode; the list shows the maps that play any ticked mode.
+  await page.click('#map-filter');
+  await page.waitForSelector('#map-filter-dialog[open]', { timeout: T(10000) });
+  await page.check('#map-filter-dialog input[data-mode="core.ctf"]');
   const ctf = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
-  check(ctf > 0 && ctf < all.length, `the Capture the Flag tab lists only its maps (${ctf} of ${all.length})`);
-  await page.click('#map-tabs [data-mode="all"]');
+  const filter = await page.evaluate(() => ({ done: document.getElementById('mf-done')?.textContent, badge: document.querySelector('.map-filter-n')?.textContent, modes: document.querySelectorAll('#map-filter-dialog .mf-mode').length }));
+  check(ctf > 0 && ctf < all.length && filter.done === `Show ${ctf} maps` && filter.badge === '1' && filter.modes >= 6, `Filter maps, Capture the Flag ticked, lists only its maps (${ctf} of ${all.length}; ${JSON.stringify(filter)})`);
+  // Escape closes the window, not Match Setup under it; Clear all lists every map again.
+  await page.keyboard.press('Escape');
+  const still = await page.evaluate(() => ({ dialog: !!document.querySelector('#map-filter-dialog[open]'), setup: !!document.getElementById('match-setup') }));
+  check(!still.dialog && still.setup, `Escape closes the Filter maps window and leaves Match Setup open (${JSON.stringify(still)})`);
+  await page.click('#map-filter');
+  await page.click('#mf-clear');
+  await page.click('#mf-done');
+  const cleared = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
+  const tabs = await page.$$eval('#map-tabs .map-tab', (t) => t.map((x) => x.dataset.tab));
+  check(cleared === all.length && ['all', 'featured', 'recent', 'favs'].every((t) => tabs.includes(t)), `Clear all lists every map again; the tabs are which maps, not which mode (${cleared}; ${tabs.join(', ')})`);
+  await page.click('#map-tabs [data-tab="featured"]');
+  const feat = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
+  check(feat > 0 && feat < all.length, `the Featured tab lists the featured maps (${feat})`);
+  await page.click('#map-tabs [data-tab="all"]');
   await page.fill('#map-search', 'sandg');
   const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
   check(found.includes('sandgate') && found.length < 4, `searching finds the map by name (${found.join(', ')})`);
@@ -9768,7 +9785,7 @@ async function communityFlow(browser) {
       await host.waitForFunction(() => !document.getElementById('boot'), null, { timeout: T(30000) }).catch(() => {});
       await host.screenshot({ path: `${process.env.E2E_SHOTS}/community-picks-tab.png` });
     }
-    await host.evaluate(() => document.querySelector('#map-tabs .map-tab[data-mode="all"]').click());
+    await host.evaluate(() => document.querySelector('#map-tabs .map-tab[data-tab="all"]').click());
   } else check(false, 'the map list has a Community Picks tab');
   const allShown = await host.evaluate(() => [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.title));
   check(!allShown.includes('E2E Pick Yard'), 'All maps leaves the picks to their tab');

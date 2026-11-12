@@ -188,16 +188,28 @@ interface MapBrowsePrefs {
   sort: 'featured' | 'name' | 'size' | 'favs';
   view: 'grid' | 'list';
   favs: string[];
+  /** The Filter maps window's ticks: only maps that play one of these modes are listed (none ticked: every map). */
+  modes: GameMode[];
+  /** The maps played last, newest first (the Recent tab). */
+  recent: string[];
 }
+/** The map list's tabs (Match Setup redesign, part 1; the owner's mock-up of 2026-11-11). */
+type MapTab = 'all' | 'mine' | 'featured' | 'recent' | 'favs' | 'picks';
+const MAP_TABS: readonly (readonly [MapTab, string])[] = [['all', 'All maps'], ['mine', 'My maps'], ['featured', 'Featured'], ['recent', 'Recent'], ['favs', 'Favorites'], ['picks', 'Community Picks']];
+/** The group main.ts gives the player's own maps. */
+const OWN_GROUP = 'Your';
+const RECENT_MAPS = 12;
 const BROWSE_KEY = 'tiletrigger.mapBrowse';
 function loadBrowsePrefs(): MapBrowsePrefs {
-  const d: MapBrowsePrefs = { sort: 'featured', view: 'grid', favs: [] };
+  const d: MapBrowsePrefs = { sort: 'featured', view: 'grid', favs: [], modes: [], recent: [] };
   try {
     const p = JSON.parse(localStorage.getItem(BROWSE_KEY) ?? '{}') as Partial<MapBrowsePrefs>;
     return {
       sort: (['featured', 'name', 'size', 'favs'] as const).find((s) => s === p.sort) ?? d.sort,
       view: p.view === 'list' ? 'list' : 'grid',
       favs: Array.isArray(p.favs) ? p.favs.filter((x): x is string => typeof x === 'string').slice(0, 200) : [],
+      modes: Array.isArray(p.modes) ? GAME_MODES.filter((g) => (p.modes as unknown[]).includes(g)) : [],
+      recent: Array.isArray(p.recent) ? p.recent.filter((x): x is string => typeof x === 'string').slice(0, RECENT_MAPS) : [],
     };
   } catch {
     return d;
@@ -925,8 +937,8 @@ export class FrontEnd {
   /** The saved setup loaded last (its name), to show whether the setup still matches it. */
   private setupName: string | null = lastSetup();
   /** The map list's mode tab and search (this visit) and its sort, view and favourites (kept). */
-  /** The map list's tab: all maps, one mode's, or the Community Picks (docs/COMMUNITY_MAPS.md). */
-  private mapFilter: GameMode | 'all' | 'picks' = 'all';
+  /** The map list's tab: all maps, your own, the featured, the ones played last, your favourites, or the Community Picks (docs/COMMUNITY_MAPS.md). */
+  private mapTab: MapTab = 'all';
   private mapQuery = '';
   private readonly browse = loadBrowsePrefs();
   /** Even teams: a bot added or taken away changes every team alike (shown on while the teams are the same size). */
@@ -1057,20 +1069,23 @@ export class FrontEnd {
     cards.addEventListener('scroll', () => (this.mapScroll = cards.scrollTop), { passive: true });
     requestAnimationFrame(() => (cards.scrollTop = this.mapScroll));
 
-    // ---- the list's controls: a tab per mode, search, sort, grid or list
+    // ---- the list's controls: tabs for which maps, the Filter maps window (which modes), search, sort, grid or list
     const used = GAME_MODES.filter((g) => this.maps.some((m) => m.group !== PICK_GROUP && m.modes.includes(g)));
     // The Community Picks tab: when the hub has any (players' maps that earned it by being played).
     const picks = this.maps.some((m) => m.group === PICK_GROUP);
-    if (this.mapFilter === 'picks' ? !picks : this.mapFilter !== 'all' && !used.includes(this.mapFilter)) this.mapFilter = 'all';
+    const mine = this.maps.some((m) => m.group === OWN_GROUP);
+    if ((this.mapTab === 'picks' && !picks) || (this.mapTab === 'mine' && !mine)) this.mapTab = 'all';
+    // (A mode no map here plays any more can't stay ticked.)
+    this.browse.modes = this.browse.modes.filter((g) => used.includes(g));
     const tabs = el('div', { class: 'map-tabs', id: 'map-tabs', role: 'tablist' });
     const drawTabs = () =>
       tabs.replaceChildren(
-        ...(['all', ...(picks ? (['picks'] as const) : []), ...used] as const).map((f) => {
-          const b = el('button', { type: 'button', class: `map-tab${f === this.mapFilter ? ' on' : ''}${f === 'picks' ? ' picks' : ''}`, textContent: f === 'all' ? 'All maps' : f === 'picks' ? 'Community Picks' : MODE_LABEL[f], role: 'tab' });
-          b.setAttribute('aria-selected', String(f === this.mapFilter));
-          b.dataset.mode = f;
+        ...MAP_TABS.filter(([t]) => (t !== 'picks' || picks) && (t !== 'mine' || mine)).map(([t, label]) => {
+          const b = el('button', { type: 'button', class: `map-tab${t === this.mapTab ? ' on' : ''}${t === 'picks' ? ' picks' : ''}`, textContent: label, role: 'tab' });
+          b.setAttribute('aria-selected', String(t === this.mapTab));
+          b.dataset.tab = t;
           b.addEventListener('click', () => {
-            this.mapFilter = f;
+            this.mapTab = t;
             this.mapScroll = 0;
             drawTabs();
             drawCards();
@@ -1078,6 +1093,64 @@ export class FrontEnd {
           return b;
         }),
       );
+    // Filter maps: one button, a window of its own with a tick per game mode (the owner, 2026-11-11: "something I could
+    // open in a larger window to check off only the game modes of maps I'm interested in seeing").
+    const filterCount = el('b', { class: 'map-filter-n' });
+    const filterBtn = el('button', { type: 'button', class: 'map-filter', id: 'map-filter', title: 'Choose which game modes to list maps for' }, el('span', { textContent: 'Filter maps' }), filterCount);
+    const drawFilter = () => {
+      const n = this.browse.modes.length;
+      filterBtn.classList.toggle('on', n > 0);
+      filterCount.textContent = n ? String(n) : '';
+      filterCount.hidden = !n;
+      filterBtn.setAttribute('aria-label', n ? `Filter maps: ${n} game mode${n === 1 ? '' : 's'} ticked` : 'Filter maps');
+    };
+    const playsTicked = (m: { modes: readonly GameMode[] }) => !this.browse.modes.length || this.browse.modes.some((g) => m.modes.includes(g));
+    filterBtn.addEventListener('click', () => {
+      const count = (g: GameMode) => this.maps.filter((m) => m.group !== PICK_GROUP && m.modes.includes(g)).length;
+      const boxes = used.map((g) => {
+        const box = el('input', { type: 'checkbox', checked: this.browse.modes.includes(g) });
+        box.dataset.mode = g;
+        box.addEventListener('change', () => {
+          this.browse.modes = used.filter((x) => (x === g ? box.checked : this.browse.modes.includes(x)));
+          saveBrowsePrefs(this.browse);
+          this.mapScroll = 0;
+          drawFilter();
+          drawCards();
+          drawFoot();
+        });
+        return el('label', { class: 'mf-mode' }, box, modeIcon(g), el('b', { textContent: MODE_LABEL[g] }), el('i', { textContent: `${count(g)} map${count(g) === 1 ? '' : 's'}` }));
+      });
+      const done = el('button', { type: 'button', class: 'primary', id: 'mf-done' });
+      const clear = el('button', { type: 'button', id: 'mf-clear', textContent: 'Clear all' });
+      const drawFoot = () => {
+        const n = this.maps.filter((m) => m.group !== PICK_GROUP && playsTicked(m)).length;
+        done.textContent = this.browse.modes.length ? `Show ${n} map${n === 1 ? '' : 's'}` : 'Show every map';
+        clear.disabled = !this.browse.modes.length;
+      };
+      const dlg = el(
+        'dialog',
+        { class: 'map-filter-dialog panel', id: 'map-filter-dialog' },
+        el('h3', { textContent: 'Filter maps' }),
+        el('p', { class: 'setup-hint', textContent: 'Tick the game modes you want to play: the list shows the maps that play any of them. With none ticked, every map is listed.' }),
+        el('div', { class: 'mf-modes' }, ...boxes),
+        el('div', { class: 'mf-foot' }, clear, done),
+      );
+      clear.addEventListener('click', () => {
+        this.browse.modes = [];
+        saveBrowsePrefs(this.browse);
+        for (const l of boxes) (l.querySelector('input') as HTMLInputElement).checked = false;
+        drawFilter();
+        drawCards();
+        drawFoot();
+      });
+      done.addEventListener('click', () => dlg.close());
+      // A click on the backdrop closes it, like Escape.
+      dlg.addEventListener('click', (e) => e.target === dlg && dlg.close());
+      dlg.addEventListener('close', () => dlg.remove());
+      drawFoot();
+      document.body.append(dlg);
+      dlg.showModal();
+    });
     const search = el('input', { type: 'search', id: 'map-search', placeholder: 'Search maps…', value: this.mapQuery, maxLength: 40, autocomplete: 'off' });
     search.setAttribute('aria-label', 'Search maps');
     search.addEventListener('input', () => {
@@ -1102,7 +1175,7 @@ export class FrontEnd {
       });
       return b;
     };
-    const tools = el('div', { class: 'map-tools' }, search, sort, el('div', { class: 'view-pick' }, viewBtn('grid', '▦', 'Grid'), viewBtn('list', '☰', 'List')));
+    const tools = el('div', { class: 'map-tools' }, filterBtn, search, sort, el('div', { class: 'view-pick' }, viewBtn('grid', '▦', 'Grid'), viewBtn('list', '☰', 'List')));
 
     const drawCards = () => {
       const current = this.currentMap();
@@ -1110,8 +1183,11 @@ export class FrontEnd {
       const q = this.mapQuery.trim().toLowerCase();
       const favs = new Set(this.browse.favs);
       const built = this.maps.map((m, i) => ({ m, i }));
-      const tab = this.mapFilter;
-      const shown = built.filter(({ m }) => (tab === 'picks' ? m.group === PICK_GROUP : m.group !== PICK_GROUP && (tab === 'all' || m.modes.includes(tab))) && (!q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q))));
+      const tab = this.mapTab;
+      const recent = this.browse.recent;
+      const inTab = (m: (typeof this.maps)[number]) =>
+        tab === 'picks' ? m.group === PICK_GROUP : m.group !== PICK_GROUP && (tab === 'all' || (tab === 'mine' ? m.group === OWN_GROUP : tab === 'featured' ? !m.group && FEATURED_MAPS.includes(m.key) : tab === 'recent' ? recent.includes(m.key) : favs.has(m.key)));
+      const shown = built.filter(({ m }) => inTab(m) && playsTicked(m) && (!q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q))));
       const rank = (key: string) => {
         const f = FEATURED_MAPS.indexOf(key);
         return f < 0 ? FEATURED_MAPS.length : f;
@@ -1119,6 +1195,8 @@ export class FrontEnd {
       const by = this.browse.sort;
       // Your own maps stay under their heading after the built-in ones, whatever the sort.
       shown.sort((a, b) =>
+        // Recent: newest first, whatever the sort.
+        (tab === 'recent' ? recent.indexOf(a.m.key) - recent.indexOf(b.m.key) : 0) ||
         (a.m.group ?? '').localeCompare(b.m.group ?? '') ||
         (by === 'favs' ? Number(favs.has(b.m.key)) - Number(favs.has(a.m.key)) : 0) ||
         (by === 'featured' || by === 'favs' ? rank(a.m.key) - rank(b.m.key) : 0) ||
@@ -1148,16 +1226,29 @@ export class FrontEnd {
           cards.querySelectorAll('.map-card.on').forEach((c) => c.classList.remove('on'));
           card.classList.add('on');
           this.setupScroll = 0;
-          // A filtered list already picked a mode the map has: that one.
-          if (tab !== 'all' && tab !== 'picks' && m.modes.includes(tab) && this.setup.mode !== tab) this.setMode(tab);
+          // A list filtered to one mode already picked it: that one, when the map plays it.
+          const only = this.browse.modes.length === 1 ? this.browse.modes[0]! : null;
+          if (only && m.modes.includes(only) && this.setup.mode !== only) this.setMode(only);
           this.refreshSetup();
         });
         cards.append(card);
         lazy(card, draw);
       }
-      if (!shown.length) cards.append(el('p', { class: 'map-empty', textContent: q ? `No maps match "${this.mapQuery.trim()}".` : tab === 'picks' ? 'No Community Picks yet.' : 'No maps for this mode.' }));
+      const none = q
+        ? `No maps match "${this.mapQuery.trim()}".`
+        : tab === 'picks'
+          ? 'No Community Picks yet.'
+          : tab === 'recent' && !recent.length
+            ? 'No maps played yet: the ones you play show here, newest first.'
+            : tab === 'favs' && !favs.size
+              ? 'No favourites yet: the star on a map card keeps it here.'
+              : this.browse.modes.length
+                ? 'No maps here play the game modes ticked in Filter maps.'
+                : 'No maps here.';
+      if (!shown.length) cards.append(el('p', { class: 'map-empty', textContent: none }));
     };
     drawTabs();
+    drawFilter();
     drawCards();
     const panel = el('div', { class: 'setup panel', id: 'match-setup' });
     this.setupPanel = panel;
@@ -1761,6 +1852,9 @@ export class FrontEnd {
     const m = this.currentMap();
     if (!m.map) return void m.load().then(() => this.currentMap() === m && this.start(o), () => this.setStatus(`${m.metadata.name} failed to load`));
     this.saveSetup();
+    // The Recent tab: this map first.
+    this.browse.recent = [m.key, ...this.browse.recent.filter((k) => k !== m.key)].slice(0, RECENT_MAPS);
+    saveBrowsePrefs(this.browse);
     // What fits here: this device's limit (a setup saved on a bigger computer plays smaller on a phone).
     const { rules, fill } = rulesFromSetup(this.setup, m.map, playerCap(this.setup.mode, m.map, deviceMaxPlayers()).max);
     const playlist = this.setup.mode === 'core.coop' && !!this.setup.playlist && PLAYLISTS.some((p) => p.id === this.setup.playlist);
@@ -2726,6 +2820,8 @@ export class FrontEnd {
 
   private onKey(e: KeyboardEvent): void {
     if (this.root.hidden || (e.target instanceof HTMLInputElement && e.key !== 'Escape')) return;
+    // A window open over the menu (Filter maps) takes the keys: Escape closes it, not the screen under it.
+    if (document.querySelector('dialog[open]')) return;
     if (e.key === 'Escape') {
       // One level per press, and never a press the browser used (leaving fullscreen, a held Esc repeating).
       if (browserTookEscape(e)) return;

@@ -168,10 +168,27 @@ button.cta:hover { background: #ffc46e; }
 .map-browse { display: flex; flex-direction: column; gap: 12px; min-height: 0; min-width: 0; }
 /* The list's controls: a tab per mode (scrolls sideways when they don't fit), then search, sort and grid/list. */
 .map-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-.map-tabs { flex: 1 1 420px; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }
+.map-tabs { flex: 0 1 auto; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }
 .map-tab { flex: none; padding: 9px 14px; font: 700 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface-1); white-space: nowrap; }
 .map-tab.on { background: var(--cyan); color: #04121a; border-color: var(--cyan); }
 .map-tools { flex: 0 1 auto; display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.map-filter { flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; font: 700 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface-1); white-space: nowrap; }
+.map-filter::before { content: ''; width: 13px; height: 12px; background: currentColor; clip-path: polygon(0 0, 100% 0, 60% 50%, 60% 100%, 40% 86%, 40% 50%); }
+.map-filter.on { color: var(--cyan); border-color: var(--cyan); background: rgba(0, 209, 255, 0.12); }
+.map-filter-n { min-width: 18px; padding: 1px 5px; border-radius: 9px; background: var(--cyan); color: #04121a; font: 700 11px var(--font-display); text-align: center; }
+.map-filter-dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 22px 24px; color: var(--text); overflow: auto; }
+.map-filter-dialog::backdrop { background: rgba(3, 8, 16, 0.72); }
+.map-filter-dialog h3 { margin: 0 0 6px; font: 700 22px var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
+.mf-modes { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 16px 0 18px; }
+.mf-mode { display: grid; grid-template-columns: auto 22px 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); background: var(--surface-1); cursor: pointer; }
+.mf-mode input { grid-row: 1 / span 2; width: 20px; height: 20px; accent-color: var(--cyan); }
+.mf-mode svg { grid-row: 1 / span 2; width: 22px; height: 22px; }
+.mf-mode b { font: 700 14px var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
+.mf-mode i { font-style: normal; font-size: 12px; color: var(--muted); }
+.mf-mode:has(input:checked) { border-color: var(--cyan); background: rgba(0, 209, 255, 0.1); }
+.mf-mode:has(input:focus-visible) { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.mf-foot { display: flex; justify-content: space-between; gap: 10px; }
+.mf-foot button { padding: 11px 18px; font: 700 13px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
 #map-search { width: 190px; min-width: 0; padding: 8px 10px 8px 30px; background: var(--surface-1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238ea2c0' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") no-repeat 9px center / 15px; }
 #map-sort { padding: 8px 10px; }
 .view-pick { display: flex; gap: 4px; }
