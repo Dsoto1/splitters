@@ -366,9 +366,10 @@ function cap(m, D, P, level) {
 /**
  * One bay of the drum, centred on angle `c`, `half` wide each side: 'arch' (a doorway to the floor), 'window' or
  * 'solid' (a blind arch sunk in paint). `ends`: [first, last] closes that end (a segment's own). Level 0 has the
- * arch's curve and its frame; level 1 a pointed head and no frame.
+ * arch's curve and its frame; level 1 a flat head, no frame and no frieze. `lean`: a whole dome's (one face for the
+ * wall's top).
  */
-function bay(m, D, P, c, half, kind, level, { ends = [false, false], frames = true, index = 0, lean = false } = {}) {
+function bay(m, D, P, c, half, kind, level, { ends = [false, false], frames = true, lean = false } = {}) {
   const win = kind === 'window';
   const hw = win ? D.winHalf : D.doorHalf;
   const sill = win ? D.winSill : 0;
@@ -380,7 +381,7 @@ function bay(m, D, P, c, half, kind, level, { ends = [false, false], frames = tr
   const inn = neg(out);
   const up = [0, 1, 0];
   // The frieze: its two colours in turn, the piers one and the opening's head the other.
-  const [fz, fz2] = index % 2 ? [P.frieze[1], P.frieze[0]] : P.frieze;
+  const [fz, fz2] = P.frieze;
   // The opening's column is flat (a chord): a point at `u` (−1 to 1 across it), height y, on the face of radius r.
   const ch = (u, y, r, push = 0) => {
     const p = lerp3(pt(oL, r, y), pt(oR, r, y), (u + 1) / 2);
