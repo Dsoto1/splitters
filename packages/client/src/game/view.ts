@@ -643,7 +643,8 @@ export class GameView {
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
     const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
     // Environment species (`env.*`) with the environment renderer (on unless ?env=0): chunked thin instances, not a node each.
-    const env = envBatchedOn() ? doc.entities.filter((e): e is PropEntity => e.kind === 'prop' && !carried.has(e.id) && EnvironmentVisuals.draws(e)) : [];
+    // (A log given health breaks: it is drawn as an ordinary prop node below, as ?env=0 draws every species, so breakProp can switch it off.)
+    const env = envBatchedOn() ? doc.entities.filter((e): e is PropEntity => e.kind === 'prop' && !carried.has(e.id) && EnvironmentVisuals.draws(e) && !isBreakableProp(e)) : [];
     if (env.length) {
       this.environment ??= new EnvironmentVisuals(this.scene, loadGraphicsQuality());
       void this.environment.setPlacements(env, doc.terrain);

@@ -1347,7 +1347,9 @@ template automatically.
   natural rocks, walls, floors, terrain and doors stay. A prop the catalogue gives no health takes one from what it is
   made of and how big it is (`propHealth`, `sim/scenarioDefs.ts`). In a prop's inspector: **Unbreakable** keeps a piece
   whatever else says; **Health** gives it its own (on any map, which also makes it breakable; 0 for the usual). Blocks
-  break by their own Behaviour. Broken pieces come back at the next round. A map with the switch on draws its props one
+  break by their own Behaviour. Broken pieces come back at the next round. The generated environment stays whatever
+  the switch says; only a fallen log (`env.deadwood.log`) can break, and only with a **Health** of its own in its
+  inspector (0, the default: solid cover), on any map. A map with the switch on draws its props one
   by one (no batching) and counts them in the breakable budget (1024), so keep it small.
 - **The card shot (Map properties → Card shot).** Set card shot… shows the menu card's frame (16:9) with the card
   picture's own lens; Eye level (on by default) keeps the camera 1.7 m over what's under it as you fly. Enter saves

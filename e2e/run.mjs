@@ -4758,6 +4758,23 @@ async function destructionChecks(browser) {
   await page.waitForFunction(() => window.__cs.view.props.get(window.__containerIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
   const broken = await page.evaluate(() => ({ alive: window.__container.alive, drawn: window.__cs.view.props.get(window.__containerIndex)?.isEnabled(), debris: window.__cs.view.debrisBodies.length - window.__debrisBefore }));
   check(!broken.alive && broken.drawn === false && broken.debris > 0, `broken, the container is gone from the yard and its debris flies (${JSON.stringify(broken)})`);
+  // Fallen logs (owner: "not breakable unless toggled as such"): the one given Health in MapMaker breaks, its node gone
+  // and wood debris thrown; the other is no breakable, even on this map where everything else is.
+  const logs = await page.evaluate(() => {
+    const m = window.__match, sc = m.scenario, ents = m.map.entities;
+    const of = (i) => [...sc.destructibles.values()].find((d) => d.i === i);
+    const all = ents.map((e, i) => [e, i]).filter(([e]) => e.kind === 'prop' && e.model === 'env.deadwood.log');
+    const tog = all.find(([e]) => e.health > 0), plain = all.find(([e]) => !(e.health > 0));
+    window.__log = tog && of(tog[1]);
+    window.__logIndex = tog?.[1];
+    window.__debrisBefore = window.__cs.view.debrisBodies.length;
+    return { placed: all.length, breakable: !!window.__log, health: window.__log?.health, plain: !!plain && !of(plain[1]), drawn: window.__cs.view.props.get(tog?.[1])?.isEnabled() };
+  });
+  check(logs.placed === 2 && logs.breakable && logs.health === 60 && logs.drawn && logs.plain, `a log given health in MapMaker is a breakable with that health; a plain log is not, even where everything breaks (${JSON.stringify(logs)})`);
+  await page.evaluate(() => window.__match.scenario.damageDestructible(window.__log, 1e6, true, null));
+  await page.waitForFunction(() => window.__cs.view.props.get(window.__logIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
+  const logBroken = await page.evaluate(() => ({ alive: window.__log.alive, drawn: window.__cs.view.props.get(window.__logIndex)?.isEnabled(), debris: window.__cs.view.debrisBodies.length - window.__debrisBefore }));
+  check(!logBroken.alive && logBroken.drawn === false && logBroken.debris > 0, `broken, the log is gone and its debris flies (${JSON.stringify(logBroken)})`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/destruction-broken.png` });
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();

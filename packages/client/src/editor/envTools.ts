@@ -488,7 +488,7 @@ export function buildBlockerOverlay(scene: Scene, doc: MapDocument, ground: Terr
     lines.push(line);
     colors.push(line.map(() => color));
   };
-  for (const sh of environmentShapes(doc)) {
+  for (const sh of [...environmentShapes(doc), ...environmentShapes(doc, true)]) {
     const color = sh.blocks === 'all' ? RED : ORANGE;
     if (sh.kind === 'capsule') {
       const base = Math.min(sh.a[1], sh.b[1]);

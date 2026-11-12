@@ -1,5 +1,6 @@
 import type { MapDocument } from './schema.ts';
 import { isBreakableProp } from './geometry.ts';
+import { isEnvModel } from '../content/environment.ts';
 import type { EventType, LogicAction, LogicRule } from './logic.ts';
 
 /**
@@ -69,8 +70,8 @@ export function resourceBudgetIssues(map: MapDocument): BudgetIssue[] {
   const count = (pred: (e: MapDocument['entities'][number]) => boolean) => map.entities.filter(pred).length;
   const vehicles = count((e) => e.kind === 'mount' || e.kind === 'airplane');
   if (vehicles > RESOURCE_BUDGETS.vehicles) out.push({ severity: 'error', code: 'budget.vehicles', message: `${vehicles} vehicles and mounted guns: at most ${RESOURCE_BUDGETS.vehicles} per map` });
-  // (On a map where everything breaks, its props count too: each is one more piece of state every player is sent.)
-  const breakables = count((e) => e.kind === 'destructible' || (e.kind === 'block' && (e.behaviour !== 'solid' || !!e.glass)) || (!!map.metadata.destruction && isBreakableProp(e, true)));
+  // (On a map where everything breaks, its props count too: each is one more piece of state every player is sent. A log given health counts on any map.)
+  const breakables = count((e) => e.kind === 'destructible' || (e.kind === 'block' && (e.behaviour !== 'solid' || !!e.glass)) || (!!map.metadata.destruction && isBreakableProp(e, true)) || (e.kind === 'prop' && isEnvModel(e.model) && isBreakableProp(e)));
   if (breakables > RESOURCE_BUDGETS.destructibles) out.push({ severity: 'error', code: 'budget.destructibles', message: `${breakables} destructibles and breakable blocks: at most ${RESOURCE_BUDGETS.destructibles} per map` });
   const npcCap = map.entities.reduce((n, e) => n + (e.kind === 'encounter' ? e.activeCap : 0), 0);
   if (npcCap > RESOURCE_BUDGETS.activeNpcs) {
