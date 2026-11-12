@@ -630,8 +630,9 @@ What the tiles force (the plan's office and stair bays were 1 × 2 cells on one 
 - **A second straight flight cannot go over the first.** A three-floor hall has the office bay on its lower two
   floors, Dorm Bays over it, and its end stairs to every floor; the plan's `hall_centre` (step 3) gives a centre block
   a cell deeper, where straight flights can alternate.
-- **The Stairwell's upper landing covers 5.5 m of the 8 m:** a floor block closes the open corner (it is at the
-  hall's mouth on the three-floor bay's top floor) and a rail block stands over the flight below.
+- **The Stairwell's upper landing covers 5.5 m of the 8 m:** a floor block (terrazzo over a plaster ceiling) closes
+  the open corner (it is at the hall's mouth on the three-floor bay's top floor) and a rail block stands over the
+  flight below.
 
 New for these pieces, usable by any map:
 - Wall styles **Sash window** (`window_sash`), **Twin sash windows** (`windows_sash`) and **Room doorway**
@@ -653,8 +654,8 @@ and sent to players, and a hall has hundreds.
 |---|---|---|---|---|---|---|---|---|---|
 | Dorm Bay | 2 | 16 | 28 (6) | 1 | 0 | 110 | 130 | 4 | 8 |
 | Dorm Bay (two rooms shut) | 2 | 16 | 20 (8) | 1 | 0 | 102 | 130 | 4 | 8 |
-| Stair End Bay | 3 | 8 | 2 (2) | 2 | 0 | 54 | 215 | 4 | 12 |
-| Stair End Bay (3 floors) | 4 | 12 | 2 (2) | 3 | 0 | 84 | 272 | 5 | 12 |
+| Stair End Bay | 3 | 9 | 2 (2) | 2 | 0 | 55 | 215 | 4 | 12 |
+| Stair End Bay (3 floors) | 4 | 14 | 2 (2) | 3 | 0 | 86 | 272 | 5 | 12 |
 | Dorm Office Bay | 11 | 40 | 50 (14) | 8 | 0 | 262 | 584 | 18 | 11 |
 
 A Dorm Bay's 110 collision boxes are 34 of structure (the walls round the windows, slabs, roofs, 16 partitions) and
