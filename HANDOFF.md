@@ -874,7 +874,7 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 
 **Claimed: kit props part 11, the anvil and the two station pipes** (`wip/mapmaker-kit-props-11`, branched from `wip/mapmaker-kit-props-10`, lands after it; MapMaker lane, the main session, 2026-11-12): families for `prop.anvil`, `os_coolant_pipe` and `os_pipe_junction` in the same files as part 10; Replace all in MapMaker follows.
 
-**Next in line to land: kit props part 10** (`wip/mapmaker-kit-props-10`, ready and locally checked; MapMaker lane, the main session, 2026-11-12), after the weapon and vehicle lane's sixth batch. It swaps props on 30 maps through MapMaker's Replace all: a map changed on main after this line means that map's swap is redone in MapMaker before the push.
+**Landing now: kit props part 10** (`check/mapmaker-kit-props-10`; MapMaker lane, the main session, 2026-11-12). Hold code pushes to main until this line comes down.
 
 **Claimed: kit props part 10, the last factory pieces** (`wip/mapmaker-kit-props-10`, from main; MapMaker lane, the main session, 2026-11-12): generators and families for the larger factory machines, the big pipes, the workbench and the traffic cone (`tools/content/kit/`, `content/kitprops/`, `content/kitprops.json`, `tools/content/kitprops.mjs`, `packages/shared/test/kitProps.test.ts`, the generated tables and palette pictures); Replace all on the maps that place them follows in MapMaker.
 
