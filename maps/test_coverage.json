@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_cd4od5tp5itdemyh",
-      "revision": 19,
-      "contentHash": "sha256:eefa315b25c60bc72a8b430911b2c9c2e96dd559bdc1b9031c331659ac186592",
+      "versionId": "v_tpnnj6iu2eaxhdop",
+      "revision": 20,
+      "contentHash": "sha256:097297d8e8f4615591f9f8353cdbe765e463bdc41c0c5b07d03972e083a1ebb1",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:52:34.655Z"
+      "releasedAt": "2026-11-12T11:08:24.671Z"
     },
     "testOnly": true
   },
@@ -883,6 +883,22 @@
         "tile": "core.tunnel_vault_cross_walled",
         "x": 15,
         "y": -20,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_y75xv8ka7q",
+        "tile": "orbital.lab_module",
+        "x": -18,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2oig4d8etl",
+        "tile": "industrial.pipe_rack",
+        "x": 0,
+        "y": 2,
         "z": 0,
         "rotation": 0
       }
