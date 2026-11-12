@@ -1,6 +1,6 @@
 # St. John's: the owner's brief for a rework (2026-11-12)
 
-The owner knows the real campus. This is what they said and what their fourteen reference photos show. Nothing is built
+The owner knows the real campus. This is what they said and what their sixteen reference photos show. Nothing is built
 from it yet; more references are coming ("I'll add reference more after this"). The photos are not in the repository
 (they are the school's own pictures, not ours to ship or commit): ask the owner for them, or look in the session
 scratchpad `stjohns-refs/` while that session lives. Use them as reference only: nothing from them goes into a texture.
@@ -64,6 +64,29 @@ floors."
 So a dorm floor is: a hall down the middle, rooms both sides, and at its middle an office on the right with the
 bathrooms and the middle stairway across the hall from it. And the building that is two floors for part of its
 length is three floors throughout.
+
+### Third set (the same day): two more photos, the structure as a whole
+
+The owner: "You can see the full structure behind the trees. We have most of this built, they are just not put
+together in this way. You can also see what this building (the one that is half 2 floors half 3) is actually looking
+like. It had a larger center (on each floor there is a door to a TAC officer's family living space by the middle
+stairwell). They should be half-turn stairwells on either ends, but a straight run for the middle ones."
+
+15. **The clock tower and the arch.** A three-storey limestone hall with rows of square windows trimmed in red
+    stone, a square crenellated clock tower rising from its corner (a round clock face under paired arched belfry
+    openings), and joined to it at the upper floors a second wing that crosses the path on a wide, low segmental
+    stone arch: you walk under the building, with a parapet wall and benches beyond. Tall conifers and young trees on
+    a lawn in front. (This is the joined-up structure the map has in pieces.)
+16. **The three-floor hall from its lawn.** A long, symmetrical limestone building, three floors of evenly spaced
+    square windows (four each side of the centre on every floor), a crenellated parapet along the whole roof, and a
+    centre block that stands forward and a little taller: a broad round-arched entrance at the ground, a band of small
+    windows over it, a wide bay window on the top floor, its own higher crenellated parapet. A small door near the
+    right end, a conical-roofed turret behind the right corner, two tall spruces either side of the entrance.
+
+So that building is three floors along its whole length with a larger centre block: the middle stairwell is in it,
+with a door on each floor to a TAC officer's family quarters beside the stair. The stairwells at the two ends are
+half-turn (switchback) stairs; the middle ones are straight runs. And the halls, the clock tower and the arched
+link are to be joined into one structure as in photo 15, from the pieces the map already has.
 
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
