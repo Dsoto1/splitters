@@ -191,6 +191,66 @@
         1000,
         360,
         40
+      ],
+      "machine": [
+        300,
+        130,
+        40
+      ],
+      "windowmachine": [
+        280,
+        140,
+        30
+      ],
+      "hopper": [
+        720,
+        60,
+        30
+      ],
+      "tallhopper": [
+        300,
+        50,
+        30
+      ],
+      "piston": [
+        760,
+        240,
+        30
+      ],
+      "scanner": [
+        240,
+        80,
+        40
+      ],
+      "lever": [
+        220,
+        90,
+        30
+      ],
+      "cog": [
+        380,
+        140,
+        30
+      ],
+      "glasspipe": [
+        680,
+        150,
+        40
+      ],
+      "pipestub": [
+        320,
+        100,
+        20
+      ],
+      "workbench": [
+        180,
+        120,
+        30
+      ],
+      "cone": [
+        240,
+        60,
+        10
       ]
     }
   },
@@ -492,6 +552,71 @@
     },
     "prop.pipe_valve": {
       "model": "kit.pipe.valve",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.machine": {
+      "model": "kit.machine.heavy",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.machine_window": {
+      "model": "kit.machine.window",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.hopper": {
+      "model": "kit.hopper.round",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.hopper_tall": {
+      "model": "kit.hopper.tall",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.piston": {
+      "model": "kit.machine.piston",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.scanner": {
+      "model": "kit.machine.scanner",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.lever": {
+      "model": "kit.machine.lever",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.cog": {
+      "model": "kit.machine.cog",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.pipe_glass": {
+      "model": "kit.pipe.glass",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.big_pipe": {
+      "model": "kit.pipe.riser",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.workbench": {
+      "model": "kit.table.workbench",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.cone": {
+      "model": "kit.sign.cone",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.nc_cone": {
+      "model": "kit.sign.cone_slim",
       "variant": 0,
       "scale": 1
     }

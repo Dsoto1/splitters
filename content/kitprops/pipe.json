@@ -1,5 +1,5 @@
 {
-  "$comment": "Pipe pieces (tools/content/kit/plant.mjs): the size of the Kenney factory piece it replaces, its pipe on the same axis, colliding as finer boxes that leave the bore open as that piece's did.",
+  "$comment": "Pipe pieces (tools/content/kit/plant.mjs, yard.mjs): each the size of the Kenney piece it replaces, a pipe on the same axis, colliding as finer boxes: the valve and the glass pipe leave the bore open as those pieces' did; the riser (a wide pipe standing out of the ground) is capped and solid.",
   "type": "pipe",
   "props": [
     {
@@ -115,6 +115,200 @@
             "body": "#3a3d42",
             "wheel": "#1e2124",
             "grime": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.pipe.glass",
+      "displayName": "Glass Pipe",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a section of glass pipe along x between two bolted flanges, open through both ends, the size of the Kenney large glass pipe (1.6 × 1.6 × 1.6 m), its axis where that one's was; collides as sixteen boxes for its twenty-four, the bore open from end to end as it was; plays as glass, as that did; its glass is pale paint, nothing lit."
+      },
+      "size": [
+        1.6,
+        1.6,
+        1.6
+      ],
+      "surface": "glass",
+      "detail": "glass",
+      "breakable": {
+        "health": 20,
+        "debris": "#b8e0f0"
+      },
+      "generator": {
+        "kind": "glasspipe",
+        "rods": 4,
+        "hoops": 0,
+        "bolts": 8,
+        "fill": 0
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 22
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "clear",
+          "seed": 9881,
+          "look": {
+            "glass": "#a9cdd6",
+            "flange": "#7a8088",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "coolant",
+          "seed": 9882,
+          "set": {
+            "fill": 0.6,
+            "hoops": 1
+          },
+          "look": {
+            "glass": "#a9cdb8",
+            "liquid": "#3f8a5a",
+            "flange": "#6a7078",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "oil",
+          "seed": 9883,
+          "set": {
+            "fill": 0.45,
+            "rods": 6
+          },
+          "look": {
+            "glass": "#cfc6a4",
+            "liquid": "#8a5a1c",
+            "flange": "#5a4a40",
+            "rod": "#6a5a4c",
+            "bolt": "#5a4a40",
+            "grime": 0.4
+          }
+        },
+        {
+          "index": 3,
+          "name": "water",
+          "seed": 9884,
+          "set": {
+            "fill": 0.8,
+            "hoops": 2,
+            "rods": 3,
+            "bolts": 6
+          },
+          "look": {
+            "glass": "#a4c4dc",
+            "liquid": "#2f6f9a",
+            "flange": "#8b9094",
+            "grime": 0.2
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.pipe.riser",
+      "displayName": "Big Pipe",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a wide pipe standing out of the ground under a taller collar, capped a little below its rim, the size of the Kenney pipe (2.127 × 1.2 × 2.127 m); collides as six boxes for its twenty-two, solid across (that bore was a pit); plays as metal, as that did."
+      },
+      "size": [
+        2.127,
+        1.2,
+        2.127
+      ],
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "pipestub",
+        "top": "grate",
+        "lugs": 4,
+        "band": 0.12
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 22
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9891,
+          "look": {
+            "paint": "#7a8088",
+            "collar": "#6a7078",
+            "band": "#c9a227",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 9892,
+          "set": {
+            "top": "lid",
+            "lugs": 6
+          },
+          "look": {
+            "paint": "#4f6b52",
+            "collar": "#5a7a5e",
+            "band": "#44604a",
+            "cap": "#5a7a5e",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "rust",
+          "seed": 9893,
+          "set": {
+            "top": "water",
+            "band": 0,
+            "lugs": 3
+          },
+          "look": {
+            "paint": "#7a4a32",
+            "collar": "#6b3a22",
+            "trim": "#5a4a40",
+            "grime": 0.55
+          }
+        },
+        {
+          "index": 3,
+          "name": "blue",
+          "seed": 9894,
+          "set": {
+            "top": "lid",
+            "lugs": 8,
+            "band": 0.2
+          },
+          "look": {
+            "paint": "#2f5f8a",
+            "collar": "#3a6a96",
+            "band": "#d8d4c8",
+            "cap": "#8b9094",
+            "grime": 0.25
           }
         }
       ]

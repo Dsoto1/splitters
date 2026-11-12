@@ -1,0 +1,206 @@
+{
+  "$comment": "Hoppers (tools/content/kit/machines.mjs): a round hopper on a plinth and a tall square hopper on a column. Each is the size of the Kenney factory piece it replaces and collides as a few boxes for that piece's many; you still pass under the tall hopper's bin. A bin is loaded or lidded to its rim and solid (the retired pieces' bins were pits nobody could climb out of).",
+  "type": "hopper",
+  "props": [
+    {
+      "id": "kit.hopper.round",
+      "displayName": "Hopper",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a round hopper, a square plinth, a cone widening up from it, a hooped drum loaded or lidded to its rim, the size of the Kenney round hopper (3.355 × 3 × 3.355 m); collides as seven boxes for its forty-one, solid to the rim (that bin was a pit); explodes as it did; plays as concrete, as that did."
+      },
+      "size": [
+        3.355,
+        3,
+        3.355
+      ],
+      "surface": "concrete",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 200,
+        "debris": "#7a8088",
+        "blast": {
+          "radius": 4,
+          "damage": 80,
+          "edge": 10
+        }
+      },
+      "generator": {
+        "kind": "hopper",
+        "hoops": 3,
+        "seams": 4,
+        "top": "ore"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 30
+        },
+        {
+          "distance": 80
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9821,
+          "look": {
+            "paint": "#7a8088",
+            "hoop": "#6a7078",
+            "base": "#2a2d31",
+            "load": "#5a4a3c",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 9822,
+          "set": {
+            "hoops": 2,
+            "seams": 8,
+            "top": "lid"
+          },
+          "look": {
+            "paint": "#4f6b52",
+            "hoop": "#44604a",
+            "base": "#26292b",
+            "lid": "#5a7a5e",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "rust",
+          "seed": 9823,
+          "set": {
+            "hoops": 4,
+            "seams": 0,
+            "top": "grate"
+          },
+          "look": {
+            "paint": "#7a4a32",
+            "hoop": "#6b3a22",
+            "base": "#2a2420",
+            "trim": "#5a4a40",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 3,
+          "name": "blue",
+          "seed": 9824,
+          "set": {
+            "seams": 6
+          },
+          "look": {
+            "paint": "#2f5f8a",
+            "hoop": "#8b9094",
+            "base": "#2a2d31",
+            "load": "#26272a",
+            "grime": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.hopper.tall",
+      "displayName": "Tall Hopper",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a tall square hopper, a panelled column, a funnel widening up from it, a square bin with a ring beam and ribs, loaded or lidded to its rim, the size of the Kenney high square hopper (2.979 × 4 × 2.979 m); collides as six boxes for its thirty-seven, open under the funnel and the bin as it was, solid to the rim (that bin was a pit); plays as concrete, as that did."
+      },
+      "size": [
+        2.979,
+        4,
+        2.979
+      ],
+      "surface": "concrete",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "tallhopper",
+        "ribs": 3,
+        "top": "ore",
+        "door": true
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 30
+        },
+        {
+          "distance": 80
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9831,
+          "look": {
+            "paint": "#7a8088",
+            "beam": "#6a7078",
+            "base": "#3a3d42",
+            "load": "#5a4a3c",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "yellow",
+          "seed": 9832,
+          "set": {
+            "ribs": 2,
+            "top": "lid"
+          },
+          "look": {
+            "paint": "#c9a227",
+            "beam": "#3a3d42",
+            "base": "#3a3d42",
+            "lid": "#b08c1f",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "rust",
+          "seed": 9833,
+          "set": {
+            "ribs": 4,
+            "top": "grate",
+            "door": false
+          },
+          "look": {
+            "paint": "#7a4a32",
+            "beam": "#6b3a22",
+            "base": "#3a302a",
+            "trim": "#5a4a40",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 3,
+          "name": "green",
+          "seed": 9834,
+          "set": {
+            "ribs": 5
+          },
+          "look": {
+            "paint": "#4f6b52",
+            "beam": "#44604a",
+            "base": "#34383a",
+            "load": "#26272a",
+            "grime": 0.3
+          }
+        }
+      ]
+    }
+  ]
+}

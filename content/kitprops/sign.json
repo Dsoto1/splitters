@@ -1,5 +1,5 @@
 {
-  "$comment": "Free-standing warning signs (tools/content/kit/factory.mjs): a hazard board on a post and a weighted base, a folding A-frame floor sign, a banded post marker. One family the size of the Kenney warning post it replaces, colliding as its box. Paint on sheet steel: nothing glows or blinks.",
+  "$comment": "Free-standing warning signs (tools/content/kit/factory.mjs): a hazard board on a post and a weighted base, a folding A-frame floor sign, a banded post marker. One family the size of the Kenney warning post it replaces, colliding as its box. Paint on sheet steel: nothing glows or blinks. The traffic cones (tools/content/kit/yard.mjs) are the sizes of the two Kenney cones they replace and, like them, have no collision (`collide: \"none\"`).",
   "type": "sign",
   "props": [
     {
@@ -108,6 +108,190 @@
             "base": "#26272a",
             "post": "#8b8d8f",
             "grime": 0.25
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sign.cone",
+      "displayName": "Traffic Cone",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a traffic cone on a square or eight-sided foot, painted bands, the size of the Kenney factory cone (0.685 × 0.7 × 0.685 m); no collision, as that had none."
+      },
+      "size": [
+        0.685,
+        0.7,
+        0.685
+      ],
+      "collide": "none",
+      "surface": "plastic",
+      "detail": "plastic",
+      "generator": {
+        "kind": "cone",
+        "foot": "square",
+        "bands": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 36
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "orange",
+          "seed": 9911,
+          "look": {
+            "body": "#d8571a",
+            "band": "#e8e6de",
+            "foot": "#1e1f22",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "banded",
+          "seed": 9912,
+          "set": {
+            "bands": 2,
+            "foot": "octagon"
+          },
+          "look": {
+            "body": "#d8571a",
+            "band": "#e8e6de",
+            "foot": "#d8571a",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "yellow",
+          "seed": 9913,
+          "look": {
+            "body": "#d8b020",
+            "band": "#1c1d20",
+            "foot": "#1e1f22",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 3,
+          "name": "lime",
+          "seed": 9914,
+          "set": {
+            "foot": "octagon"
+          },
+          "look": {
+            "body": "#9ac02a",
+            "band": "#e8e6de",
+            "foot": "#9ac02a",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 4,
+          "name": "worn",
+          "seed": 9915,
+          "set": {
+            "bands": 0
+          },
+          "look": {
+            "body": "#b0623a",
+            "foot": "#3a3632",
+            "grime": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sign.cone_slim",
+      "displayName": "Traffic Cone (Slim)",
+      "category": "Neon Megacity",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a slimmer traffic cone, the size of the Kenney roads cone (0.56 × 0.7 × 0.56 m); no collision, as that had none."
+      },
+      "size": [
+        0.56,
+        0.7,
+        0.56
+      ],
+      "collide": "none",
+      "surface": "plastic",
+      "detail": "plastic",
+      "generator": {
+        "kind": "cone",
+        "foot": "square",
+        "bands": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 36
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "orange",
+          "seed": 9921,
+          "look": {
+            "body": "#d8571a",
+            "band": "#e8e6de",
+            "foot": "#1e1f22",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "banded",
+          "seed": 9922,
+          "set": {
+            "bands": 2,
+            "foot": "octagon"
+          },
+          "look": {
+            "body": "#d8571a",
+            "band": "#e8e6de",
+            "foot": "#d8571a",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "yellow",
+          "seed": 9923,
+          "look": {
+            "body": "#d8b020",
+            "band": "#1c1d20",
+            "foot": "#1e1f22",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 3,
+          "name": "worn",
+          "seed": 9924,
+          "set": {
+            "bands": 0
+          },
+          "look": {
+            "body": "#b0623a",
+            "foot": "#3a3632",
+            "grime": 0.5
           }
         }
       ]

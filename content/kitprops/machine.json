@@ -1,0 +1,626 @@
+{
+  "$comment": "Factory machines (tools/content/kit/machines.mjs): a heavy press, a chamber machine with a port in each end, a hydraulic piston, a scanner gate, a two-lever floor panel, a giant cog. Each is the size of the Kenney factory piece it replaces and collides as a few boxes for that piece's many, leaving open what it left open (the press's working gap, under the chamber machine's guards, the scanner's gate, the cog's bore). Paint on steel: nothing glows or blinks.",
+  "type": "machine",
+  "props": [
+    {
+      "id": "kit.machine.heavy",
+      "displayName": "Heavy Machine",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a heavy press, two housings joined by a bridge and a top plate over an open working gap, a guard hanging each side of it, the size of the Kenney fortified machine (1.955 × 2.2 × 2.606 m); collides as thirteen boxes for its twenty-two, the gap open from side to side as it was; explodes as it did; plays as metal, as that did."
+      },
+      "size": [
+        1.955,
+        2.2,
+        2.606
+      ],
+      "surface": "metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 250,
+        "debris": "#7a8088",
+        "blast": {
+          "radius": 4,
+          "damage": 80,
+          "edge": 10
+        }
+      },
+      "generator": {
+        "kind": "machine",
+        "pipes": 1,
+        "vents": 5,
+        "stripes": "guards",
+        "panel": "dials"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 24
+        },
+        {
+          "distance": 64
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9801,
+          "look": {
+            "paint": "#7a8088",
+            "base": "#2a2d31",
+            "accent": "#c9a227",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 9802,
+          "set": {
+            "pipes": 2,
+            "stripes": "both"
+          },
+          "look": {
+            "paint": "#4f6b52",
+            "base": "#26292b",
+            "accent": "#c9a227",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "blue",
+          "seed": 9803,
+          "set": {
+            "panel": "buttons",
+            "vents": 7,
+            "stripes": "bed"
+          },
+          "look": {
+            "paint": "#2f5f8a",
+            "base": "#2a2d31",
+            "accent": "#d8d4c8",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "rust",
+          "seed": 9804,
+          "set": {
+            "pipes": 0,
+            "stripes": "none",
+            "vents": 3
+          },
+          "look": {
+            "paint": "#7a4a32",
+            "base": "#2a2420",
+            "accent": "#8a6a2c",
+            "pipe": "#5a4a40",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 4,
+          "name": "yellow",
+          "seed": 9805,
+          "set": {
+            "pipes": 2,
+            "panel": "buttons"
+          },
+          "look": {
+            "paint": "#c9a227",
+            "base": "#26282b",
+            "accent": "#e8e6de",
+            "grime": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.machine.window",
+      "displayName": "Machine (Window)",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a chamber machine on four posts, a block and a framed port at each end, a roof with a cap, a guard hanging each side over the open chamber, the size of the Kenney window machine (1.861 × 2 × 2.326 m); collides as fourteen boxes for its twenty-two, the chamber open from side to side under the guards as it was; explodes as it did; plays as metal (that piece was glass, by the word \"window\")."
+      },
+      "size": [
+        1.861,
+        2,
+        2.326
+      ],
+      "surface": "metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 220,
+        "debris": "#7a8088",
+        "blast": {
+          "radius": 4,
+          "damage": 80,
+          "edge": 10
+        }
+      },
+      "generator": {
+        "kind": "windowmachine",
+        "port": "glass",
+        "guard": "ribs"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 24
+        },
+        {
+          "distance": 64
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9811,
+          "look": {
+            "paint": "#7a8088",
+            "base": "#2a2d31",
+            "accent": "#c9a227",
+            "glass": "#16242c",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "teal",
+          "seed": 9812,
+          "set": {
+            "port": "grille",
+            "guard": "stripes"
+          },
+          "look": {
+            "paint": "#3f6f6a",
+            "base": "#26292b",
+            "accent": "#c9a227",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "orange",
+          "seed": 9813,
+          "set": {
+            "port": "door",
+            "guard": "plain"
+          },
+          "look": {
+            "paint": "#b5651d",
+            "base": "#2a2d31",
+            "accent": "#d8d4c8",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "rust",
+          "seed": 9814,
+          "set": {
+            "guard": "plain"
+          },
+          "look": {
+            "paint": "#7a4a32",
+            "base": "#2a2420",
+            "accent": "#8a6a2c",
+            "glass": "#1c1a16",
+            "grime": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.machine.piston",
+      "displayName": "Piston",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a hydraulic piston standing on end, a flanged cylinder, a bright rod, a head as wide as the flanges, the size of the Kenney round piston (2.2 × 2.2 × 2.2 m); collides as five boxes for its thirteen; plays as concrete, as that did."
+      },
+      "size": [
+        2.2,
+        2.2,
+        2.2
+      ],
+      "surface": "concrete",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "piston",
+        "rod": 0.6,
+        "bolts": 8,
+        "head": "plate"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 24
+        },
+        {
+          "distance": 64
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9841,
+          "look": {
+            "paint": "#7a8088",
+            "flange": "#6a7078",
+            "head": "#8b9197",
+            "band": "#c9a227",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "red",
+          "seed": 9842,
+          "set": {
+            "head": "cap"
+          },
+          "look": {
+            "paint": "#8a2f28",
+            "flange": "#3a3d42",
+            "head": "#3a3d42",
+            "band": "#8a2f28",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "blue",
+          "seed": 9843,
+          "set": {
+            "bolts": 12,
+            "rod": 0.5
+          },
+          "look": {
+            "paint": "#2f5f8a",
+            "flange": "#8b9094",
+            "head": "#2f5f8a",
+            "band": "#d8d4c8",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "rust",
+          "seed": 9844,
+          "set": {
+            "bolts": 6,
+            "head": "cap"
+          },
+          "look": {
+            "paint": "#7a4a32",
+            "flange": "#6b3a22",
+            "head": "#84523a",
+            "band": "#5a4a40",
+            "rod": "#9a8f84",
+            "bolt": "#5a4a40",
+            "grime": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.machine.scanner",
+      "displayName": "Scanner Gate",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a scanner gate, a cabinet foot each end, a post on each, a lintel across and a scanner head hanging each side of the way through, the size of the Kenney high scanner (1.143 × 3 × 4.191 m); collides as seven boxes, as that did, the way through open; its lenses and strips are paint, nothing lit; plays as concrete, as that did."
+      },
+      "size": [
+        1.143,
+        3,
+        4.191
+      ],
+      "surface": "concrete",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "scanner",
+        "strip": "dots",
+        "sign": "stripes"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 24
+        },
+        {
+          "distance": 64
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9851,
+          "look": {
+            "paint": "#8b9197",
+            "foot": "#6a7078",
+            "head": "#2a2d31",
+            "accent": "#c9a227",
+            "ink": "#5a8a9a",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "white",
+          "seed": 9852,
+          "set": {
+            "strip": "bars",
+            "sign": "band"
+          },
+          "look": {
+            "paint": "#d8d4c8",
+            "foot": "#b9b6ac",
+            "head": "#2f5f8a",
+            "accent": "#2f5f8a",
+            "ink": "#b9bdc0",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "dark",
+          "seed": 9853,
+          "set": {
+            "strip": "slot",
+            "sign": "none"
+          },
+          "look": {
+            "paint": "#3a3d42",
+            "foot": "#2a2d31",
+            "head": "#1e2124",
+            "accent": "#8a2f28",
+            "ink": "#9a4a3a",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "yellow",
+          "seed": 9854,
+          "set": {
+            "strip": "bars"
+          },
+          "look": {
+            "paint": "#c9a227",
+            "foot": "#3a3d42",
+            "head": "#26282b",
+            "accent": "#e8e6de",
+            "ink": "#4f8a5a",
+            "grime": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.machine.lever",
+      "displayName": "Lever Panel",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a two-lever floor panel, a floor plate, a pedestal, a quadrant housing and a lever each side, the size of the Kenney double lever (1.728 × 1.2 × 1.728 m); collides as four boxes for its five; plays as thin metal (that piece was concrete by the guess)."
+      },
+      "size": [
+        1.728,
+        1.2,
+        1.728
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 40,
+        "debris": "#7a8088"
+      },
+      "generator": {
+        "kind": "lever",
+        "a": 0.08,
+        "b": -0.08,
+        "edge": "stripes"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 50
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9861,
+          "look": {
+            "plate": "#3a3d42",
+            "paint": "#7a8088",
+            "housing": "#6a7078",
+            "grip_a": "#a8261e",
+            "grip_b": "#1e2124",
+            "accent": "#c9a227",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 9862,
+          "set": {
+            "a": -0.09,
+            "b": -0.02,
+            "edge": "plain"
+          },
+          "look": {
+            "plate": "#34383a",
+            "paint": "#4f6b52",
+            "housing": "#44604a",
+            "grip_a": "#1e2124",
+            "grip_b": "#1e2124",
+            "accent": "#d8d4c8",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "red",
+          "seed": 9863,
+          "set": {
+            "a": 0.02,
+            "b": 0.09
+          },
+          "look": {
+            "plate": "#2a2d31",
+            "paint": "#8a2f28",
+            "housing": "#3a3d42",
+            "grip_a": "#c9a227",
+            "grip_b": "#c9a227",
+            "accent": "#c9a227",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "worn",
+          "seed": 9864,
+          "set": {
+            "a": -0.06,
+            "b": 0.07,
+            "edge": "plain"
+          },
+          "look": {
+            "plate": "#4a4640",
+            "paint": "#7a6a58",
+            "housing": "#5a5148",
+            "lever": "#6a625a",
+            "grip_a": "#6b3a22",
+            "grip_b": "#3a3632",
+            "accent": "#8a7a4c",
+            "grime": 0.55
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.machine.cog",
+      "displayName": "Giant Cog",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a giant cog lying flat, eight broad teeth round a rim, a sunk web, a hub round an open bore, the size of the Kenney cog (8.889 × 2 × 8.889 m); collides as twelve boxes for its thirty-seven, flat on top, the bore open from top to bottom as it was; plays as concrete, as that did."
+      },
+      "size": [
+        8.889,
+        2,
+        8.889
+      ],
+      "surface": "concrete",
+      "detail": "metal",
+      "generator": {
+        "kind": "cog",
+        "pockets": 6,
+        "bolts": 8,
+        "web": 0.1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 36
+        },
+        {
+          "distance": 90
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "steel",
+          "seed": 9871,
+          "look": {
+            "paint": "#6a7078",
+            "worn": "#a4a8ac",
+            "web": "#5a6068",
+            "hub": "#7a8088",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "rust",
+          "seed": 9872,
+          "set": {
+            "pockets": 4,
+            "bolts": 6,
+            "web": 0.14
+          },
+          "look": {
+            "paint": "#6b4a38",
+            "worn": "#8a6a52",
+            "web": "#5a3a2a",
+            "hub": "#74523e",
+            "bolt": "#4a3a30",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 2,
+          "name": "bronze",
+          "seed": 9873,
+          "set": {
+            "pockets": 8,
+            "bolts": 12
+          },
+          "look": {
+            "paint": "#8a6a2c",
+            "worn": "#b89a52",
+            "web": "#74581f",
+            "hub": "#96762f",
+            "bolt": "#5a4a28",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "yellow",
+          "seed": 9874,
+          "set": {
+            "pockets": 0,
+            "web": 0.06
+          },
+          "look": {
+            "paint": "#b8962a",
+            "worn": "#9a9ea2",
+            "web": "#a08220",
+            "hub": "#3a3d42",
+            "grime": 0.35
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "$comment": "Tables and desks (tools/content/kit/furniture.mjs): each the size of the Kenney piece it replaces, colliding as its box; the pedestal table (part 6) as its base, its column and its top in two crossing slabs.",
+  "$comment": "Tables and desks (tools/content/kit/furniture.mjs): each the size of the Kenney piece it replaces, colliding as its box; the pedestal table (part 6) as its base, its column and its top in two crossing slabs. The workbench (tools/content/kit/yard.mjs) is the size of the Kenney workbench and collides as three boxes: its cabinet, its top, the vice and what lies on the top.",
   "type": "table",
   "props": [
     {
@@ -416,6 +416,104 @@
             "jitter": 0.08,
             "grime": 0.25,
             "cloth": "#b9b2a0"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.table.workbench",
+      "displayName": "Workbench",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a workbench, a cabinet under a thick top that overhangs it, a vice on one end, things left on the top, the size of the Kenney workbench (1.136 \u00d7 1 \u00d7 1.032 m); collides as three boxes for its four; plays as wood (that piece was concrete by the guess)."
+      },
+      "size": [
+        1.136,
+        1,
+        1.032
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": {
+        "health": 60,
+        "debris": "#8a5a32"
+      },
+      "generator": {
+        "kind": "workbench",
+        "front": "drawers",
+        "drawers": 3,
+        "kit": "toolbox"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 50
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 9901,
+          "look": {
+            "wood": "#8a5f3a",
+            "cabinet": "#6f4a2c",
+            "vice": "#3d5a78",
+            "tool": "#a8261e",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "pine",
+          "seed": 9902,
+          "set": {
+            "front": "doors",
+            "kit": "cans"
+          },
+          "look": {
+            "wood": "#b08a56",
+            "cabinet": "#9a7444",
+            "vice": "#3a3d42",
+            "tool": "#4f6b52",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "dark",
+          "seed": 9903,
+          "set": {
+            "kit": "board",
+            "drawers": 2
+          },
+          "look": {
+            "wood": "#5a3f2a",
+            "cabinet": "#3f2c1e",
+            "vice": "#7a2a26",
+            "tool": "#c9a227",
+            "grime": 0.4
+          }
+        },
+        {
+          "index": 3,
+          "name": "green",
+          "seed": 9904,
+          "set": {
+            "drawers": 4
+          },
+          "look": {
+            "wood": "#9a7444",
+            "cabinet": "#4f6b52",
+            "vice": "#3a3d42",
+            "tool": "#2f5f8a",
+            "grime": 0.3
           }
         }
       ]
