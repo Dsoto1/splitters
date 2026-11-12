@@ -4155,13 +4155,27 @@ async function physicsfxFlow(browser) {
   // The bots stand where they spawn, firing nothing: left to play, they drove vehicles onto the open ground the bodies
   // are thrown on, and shot you off your mark (the checks below place them where they need them).
   await holdBots(page);
-  await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model') && n.rotationQuaternion && Math.abs(n.rotationQuaternion.x) + Math.abs(n.rotationQuaternion.z) > 0.01), null, { timeout: T(15000) }).catch(() => {});
-  // Rocks, logs and plants lean with the slope; trees stay upright; nothing floats.
-  const props = await page.evaluate(() => {
-    const roots = window.__cs.view.scene.transformNodes.filter((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model'));
-    const leaning = roots.filter((n) => n.rotationQuaternion && Math.abs(n.rotationQuaternion.x) + Math.abs(n.rotationQuaternion.z) > 0.01).length;
-    return { roots: roots.length, leaning };
-  });
+  // Rocks, logs and plants lean with the slope; trees stay upright; nothing floats. The canyon's are generated species
+  // since its refresh: drawn as thin instances (their up axis read from each copy's matrix), not as prop nodes.
+  const leanCount = () => {
+    const scene = window.__cs.view.scene;
+    const roots = scene.transformNodes.filter((n) => n.name.startsWith('prop_') && !n.name.endsWith('_model'));
+    let copies = 0, leaning = roots.filter((n) => n.rotationQuaternion && Math.abs(n.rotationQuaternion.x) + Math.abs(n.rotationQuaternion.z) > 0.01).length;
+    // Each copy sits in the batch of the level of detail it is drawn at just now.
+    for (const m of scene.meshes.filter((m) => /^env_(rock|deadwood|shrub)/.test(m.name) && !m.name.startsWith('env_tpl') && m.isEnabled() && m.thinInstanceCount > 0)) {
+      const d = m._thinInstanceDataStorage?.matrixData;
+      if (!d) continue;
+      for (let i = 0; i < m.thinInstanceCount; i++) {
+        const ux = d[i * 16 + 4], uy = d[i * 16 + 5], uz = d[i * 16 + 6], len = Math.hypot(ux, uy, uz);
+        if (!len) continue;
+        copies++;
+        if (Math.hypot(ux, uz) / len > 0.02) leaning++;
+      }
+    }
+    return { roots: roots.length + copies, leaning };
+  };
+  await page.waitForFunction(`(${leanCount})().leaning > 0`, null, { timeout: T(15000) }).catch(() => {});
+  const props = await page.evaluate(leanCount);
   check(props.leaning > 0, `natural props lean with the canyon's slopes (${props.leaning} of ${props.roots})`);
   /**
    * Open ground for the ragdoll checks, the same place on every run (bodies dropped or thrown by cover, or into a rock,
