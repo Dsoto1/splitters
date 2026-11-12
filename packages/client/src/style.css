@@ -165,7 +165,7 @@ button.cta:hover { background: #ffc46e; }
 
 /* Arcade (Play) */
 /* Match Setup (the owner's mock-up of 2026-11-11): the title over the map list, the setup panel the screen's whole height beside them. */
-#menu .screen.play { display: grid; grid-template-columns: minmax(0, 1fr) clamp(420px, 38vw, 630px); grid-template-rows: auto minmax(0, 1fr); gap: 14px 18px; padding: 22px 22px 70px; }
+#menu .screen.play { display: grid; grid-template-columns: minmax(0, 1fr) clamp(420px, 42vw, 630px); grid-template-rows: auto minmax(0, 1fr); gap: 14px 18px; padding: 22px 22px 70px; }
 .screen.play .arcade { display: contents; }
 .screen.play .screen-head { grid-column: 1; grid-row: 1; }
 .screen.play .map-browse { grid-column: 1; grid-row: 2; }
@@ -488,7 +488,7 @@ button.cta:hover { background: #ffc46e; }
 .setup-pane[hidden], .num-body[hidden] { display: none; }
 /* A numbered section: its badge, icon and title, then its settings. */
 .setup-num { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 7px 12px 8px; border: 1px solid var(--line); border-radius: 4px; background: rgba(18, 24, 39, 0.62); }
-.num-head { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.num-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 9px; min-width: 0; }
 .num-badge { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid var(--cyan); border-radius: 50%; color: var(--text); font: 700 12px/1 var(--font-display); }
 .num-head .glyph { color: var(--cyan); }
 .setup-body .num-head h4 { flex: none; font-size: 14px; letter-spacing: 0.08em; }
@@ -501,7 +501,7 @@ button.cta:hover { background: #ffc46e; }
 .num-head .mode-line { flex: 1; min-width: 0; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: right; }
 /* Variants and Party presets: one row saying what's on, until opened. */
 .setup-num.fold-row { padding: 0; gap: 0; }
-.num-toggle { width: 100%; padding: 8px 12px; border: 0; border-radius: 4px; background: none; color: var(--text); text-align: left; text-transform: none; letter-spacing: 0; }
+.num-toggle { flex-wrap: nowrap; width: 100%; padding: 8px 12px; border: 0; border-radius: 4px; background: none; color: var(--text); text-align: left; text-transform: none; letter-spacing: 0; }
 .num-toggle:hover { background: rgba(0, 209, 255, 0.06); }
 .num-toggle:focus-visible { outline: 1px solid var(--cyan); outline-offset: -1px; }
 .num-note { flex: none; color: var(--muted); font: 500 13px var(--font-body); }
@@ -600,12 +600,17 @@ button.cta:hover { background: #ffc46e; }
   .setup-num .mode-pick.rows2 .mode-chip { min-height: 52px; }
   .setup-tab { padding: 8px 6px; }
 }
-/* Narrower windows: the list's controls take two rows; the setup's tabs lose their icons. */
+/* Narrower windows (the panel under its full width): the list's controls take two rows; the setup's tabs lose their icons, Save preset its words, the team count its name. */
 @media (max-width: 1500px) {
   .map-bar { flex-wrap: wrap; }
+  .setup-tab .glyph { display: none; }
+  .team-count .row-label { display: none; }
+  .num-head .more-layouts { flex-basis: 96px; }
+  .foot-bar .saved-menu > summary > span { display: none; }
+  .setup .foot-bar .go.spectate { padding: 0 11px; }
+  .setup .foot-bar .go.primary { flex-basis: 150px; font-size: 18px; }
 }
 @media (max-width: 1250px) {
-  .setup-tab .glyph { display: none; }
   .setup-tab { font-size: 12px; letter-spacing: 0.03em; }
 }
 /* Narrow windows: the setup takes the whole width and the map is picked from its own list. */
@@ -626,6 +631,7 @@ button.cta:hover { background: #ffc46e; }
   .setup-head h3 { font-size: 18px; margin: 0; }
   .setup-title { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 14px; padding-right: 0; }
   .setup-facts, #arcade-map { margin: 0; }
+  #arcade-map { flex: 1 1 130px; min-width: 0; }
   .setup-facts { font-size: 12px; }
   .setup-facts > span { padding: 0 8px; }
   .setup-head small, .setup-head .inspired, .setup-blurb { display: none; }
@@ -642,8 +648,8 @@ button.cta:hover { background: #ffc46e; }
   .num-body { padding: 0 10px 8px; }
   .num-badge { width: 19px; height: 19px; font-size: 11px; }
   .setup-body .num-head h4 { font-size: 12px; }
-  .num-head .mode-line { display: none; }
-  .setup-num .mode-pick { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 4px; }
+  .num-head .mode-line, .setup-facts > .fact-weapons { display: none; }
+  .setup-num .mode-pick, html.touch .setup-num .mode-pick { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 4px; }
   .setup-num .mode-pick .mode-chip, .setup-num .mode-pick.rows2 .mode-chip { flex-direction: row; justify-content: flex-start; gap: 6px; min-height: 32px; padding: 3px 7px; text-align: left; }
   .setup-num .mode-pick .mode-chip .mode-icon, .setup-num .mode-pick.rows2 .mode-chip .mode-icon { width: 16px; height: 16px; margin: 0; }
   .setup-num .mode-pick .mode-chip b, .setup-num .mode-pick.rows2 .mode-chip b { font-size: 12px; letter-spacing: 0.02em; }
@@ -668,6 +674,10 @@ button.cta:hover { background: #ffc46e; }
   .setup .foot-bar .go.spectate { padding: 0 10px; font-size: 12px; }
   .setup .foot-bar .go.primary { flex-basis: 150px; padding: 7px; font-size: 15px; }
   .foot-note { font-size: 11px; }
+}
+/* The narrowest (640 × 360): the header keeps to one row (the caps are in the fit check's details). */
+@media (max-width: 700px) {
+  .setup-facts > .fact-caps { display: none; }
 }
 /* A phone has no bottom bar off the main menu: the setup takes that room too. */
 html.touch #menu .screen.play { padding-bottom: 10px; }

@@ -1789,6 +1789,7 @@ export class FrontEnd {
     menu.open = this.folds.has('setup-saved');
     menu.addEventListener('toggle', () => (menu.open ? this.folds.add('setup-saved') : this.folds.delete('setup-saved')));
     const badge = this.setupName ? `${this.setupName}${same ? '' : ' (changed)'}` : saved.length ? `${saved.length} saved` : '';
+    menu.setAttribute('aria-label', 'Save preset: saved setups');
     menu.append(
       el('summary', { title: `Saved setups: save this one by name, or load one${badge ? ` (${badge})` : ''}` }, glyph(GLYPHS.save), el('span', { textContent: 'Save preset' })),
       el('div', { class: 'saved-pop', role: 'dialog' }, el('h4', {}, 'Saved setups', ...(badge ? [el('small', { textContent: badge })] : [])), el('div', { class: 'saved-row' }, nameIn, save), el('div', { class: 'saved-row' }, pick, del)),
