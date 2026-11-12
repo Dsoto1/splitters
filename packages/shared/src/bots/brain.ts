@@ -4206,14 +4206,18 @@ export class BotBrain {
       // there. The nearest place on it first, level or below, straight there (before, it asked for routes that couldn't
       // start, and stood).
       const onto = backedOff || me.grounded === false || me.climbing ? null : view.nav.wayOnto(me.pos, this.walkClear(view));
+      // Off it with something in the straight way to every place on it (a trench behind a ladder's backing plate, Iron
+      // Maw's pit slope: the bot stood there for the rest of the match): round in two legs.
+      const round = !onto && !backedOff && me.grounded !== false && !me.climbing && !view.nav.nearestPoly(me.pos) ? this.wayRound(view) : null;
       // A goal no route reaches from here (a flag on a ledge or a roof, a pickup on a crate, a carrier in the air): as
       // near it as a route does get instead, no search for the goal itself. Known per component of routes and goal for
       // the match (NavWorld.standIn: a lookup, the second time).
-      const si = backedOff || onto ? null : view.nav.standIn(me.pos, goal);
+      const si = backedOff || onto || round ? null : view.nav.standIn(me.pos, goal);
       this.standIn = si && !si.exact && (horizontalDistance(si.pos, goal) > 0.5 || Math.abs(si.pos.y - goal.y) > 1.5) ? si.pos : null;
       const to = this.standIn ?? goal;
       let found: Vec3[] | null = null;
       if (onto) found = [{ ...me.pos }, onto];
+      else if (round) found = [{ ...me.pos }, ...round];
       else if (!backedOff) {
         // Flankers, recon, snipers and Arena bots take parkour's ways (roofs, jumps) as readily as walking (nav/parkour.ts).
         const agile = this.agile(view);
@@ -4232,7 +4236,7 @@ export class BotBrain {
           this.lowRoute = tall && !!found && view.nav.lastLow;
         }
       }
-      if (!backedOff && !onto) {
+      if (!backedOff && !onto && !round) {
         this.pathFails = found ? 0 : Math.min(this.pathFails + 1, 6);
         this.pathSearches++;
         if (this.standIn) this.standIns++;
@@ -4249,7 +4253,7 @@ export class BotBrain {
       // Then off it first. Else as near the goal as a route gets (the stand-in), rather than standing.
       // (Not while falling or under a canopy: no route starts in the air, and it lands soon enough.)
       if (found && !this.standIn) this.escape = null;
-      else if (!onto && horizontalDistance(me.pos, goal) > 1.5 && (me.grounded !== false || me.climbing)) {
+      else if (!onto && !round && horizontalDistance(me.pos, goal) > 1.5 && (me.grounded !== false || me.climbing)) {
         this.planEscape(view, goal);
         if (this.escape) this.standIn = null;
       } else if (this.escape && view.tick <= this.escape.until) {
@@ -4419,6 +4423,36 @@ export class BotBrain {
       for (const h of [0.5, 1.2]) if (!view.physics.lineOfSight({ x: a.x, y: top + h, z: a.z }, { x: b.x, y: top + h, z: b.z })) return false;
       return true;
     };
+  }
+
+  /**
+   * Off the navmesh with no straight way onto it: a spot on the ground a few metres off (any side, level, up or down a
+   * walkable slope) that it walks straight to and from which a way on is clear; that spot and the place on the navmesh,
+   * shortest first. Null when there is none. A dozen or two rays, only then.
+   */
+  private wayRound(view: BotWorldView): Vec3[] | null {
+    const me = view.self.pos;
+    const clear = this.walkClear(view);
+    let best: { via: Vec3; onto: Vec3 | null; d: number } | null = null;
+    for (const r of [3, 6, 9]) {
+      for (let k = 0; k < 12; k++) {
+        const a = (k * Math.PI) / 6;
+        const x = me.x + Math.sin(a) * r;
+        const z = me.z + Math.cos(a) * r;
+        const drop = view.physics.raycastWorld({ x, y: me.y + 4, z }, { x: 0, y: -1, z: 0 }, 8);
+        if (drop === null || drop < 1.9) continue;
+        const via = { x, y: me.y + 4 - drop, z };
+        // No steeper than legs climb (about 40°), and nothing in the way.
+        if (via.y - me.y > r * 0.85 || !clear(me, via)) continue;
+        const on = view.nav.nearestPoly(via, { x: 0.5, y: 1, z: 0.5 });
+        const onto = on ? null : view.nav.wayOnto(via, clear);
+        if (!on && !onto) continue;
+        const d = r + (onto ? horizontalDistance(via, onto) : 0);
+        if (!best || d < best.d) best = { via, onto, d };
+      }
+      if (best) break;
+    }
+    return best ? (best.onto ? [best.via, best.onto] : [best.via]) : null;
   }
 
   /** Flankers, recon, snipers and Arena bots: parkour links cost them no more than walking (NavWorld.findPath `agile`). */
