@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
-import { MODEL_FACADES, PhysicsWorld, SCENARIO_PALETTE, STYLE_PACKS, blockBoxes, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreMaterials, coreThemes, getItem, getProp, getStylePack, initPhysics, liftLinks, loadMap, mapTerrainMesh, navLinks, newScenarioEntities, propBoxes, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
+import { KIT_PROPS, MODEL_FACADES, PhysicsWorld, SCENARIO_PALETTE, STYLE_PACKS, blockBoxes, buildFacades, buildMapDecor, buildMapGeometry, coreCatalog, coreMaterials, coreThemes, getItem, getProp, getStylePack, initPhysics, liftLinks, loadMap, mapTerrainMesh, navLinks, newScenarioEntities, propBoxes, validateMap, type MapDocument, type Rotation } from '../src/index.ts';
 import { NavWorld, initNavigation, validateNavigation } from '../src/match.ts';
 import { makeMap, propManifest } from './helpers.ts';
 
@@ -22,9 +22,14 @@ describe('Style Pack 09 Desert City (in Sands of Egypt\'s place)', () => {
     expect(coreThemes.get('core.desert_city')).toBeDefined();
     expect(getStylePack('egypt')).toBeUndefined();
     expect(STYLE_PACKS.filter((p) => p.number === '09')).toHaveLength(1);
-    const own = pack.props.filter((p) => getProp(p)?.category === 'Desert City').length + pack.tiles.filter((x) => x.startsWith('desert.')).length;
+    // The dome kit (kit.dome.*: one dome in parts, each in six looks) is counted by itself: the pack's own pieces are the rest.
+    const own = pack.props.filter((p) => getProp(p)?.category === 'Desert City' && !p.startsWith('kit.dome.')).length + pack.tiles.filter((x) => x.startsWith('desert.')).length;
     expect(own).toBeGreaterThanOrEqual(25);
     expect(own).toBeLessThanOrEqual(40);
+    const domeKit = KIT_PROPS.filter((p) => p.id.startsWith('kit.dome.')).map((p) => p.id);
+    expect(domeKit.length).toBe(29);
+    expect(pack.props.filter((p) => p.startsWith('kit.dome.'))).toEqual(domeKit);
+    for (const id of domeKit) expect(getProp(id)?.category, id).toBe('Desert City');
     for (const p of pack.props) expect(getProp(p), p).toBeDefined();
     for (const id of pack.tiles) expect(coreCatalog.get(id), id).toBeDefined();
     for (const m of pack.materials) expect(coreMaterials.get(m), m).toBeDefined();
