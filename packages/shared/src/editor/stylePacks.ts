@@ -161,10 +161,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
     number: '04',
     displayName: 'Orbital Station',
     style: 'Clean sci-fi',
-    blurb: 'White panel corridors, labs, a hangar bay, airlocks and control rooms with glowing trim, grated floors and viewports onto space. Force fields, low-gravity zones and auto doors.',
+    blurb: 'White panel corridors, labs, a hangar bay, airlocks and control rooms with glowing trim, grated floors and viewports onto space; and a planetside research base: lab modules, airlock and sky tubes, a landing pad, a comms array, a greenhouse, a rover bay and a hab dome. Force fields, low-gravity zones and auto doors.',
     themes: ['core.orbital'],
     tiles: [
       'orbital.hangar', 'orbital.reactor_hall',
+      'orbital.lab_module', 'orbital.airlock_tube', 'orbital.landing_pad', 'orbital.comms_array', 'orbital.greenhouse', 'orbital.sky_tube', 'orbital.rover_bay', 'orbital.hab_dome',
       'core.corridor_clear', 'core.corridor_windows', 'core.corner', 'core.junction_t', 'core.junction_x', 'core.corridor_curve',
       'core.room', 'core.room_long', 'core.room_large', 'core.atrium', 'core.stairwell', 'core.catwalk', 'core.bridge',
     ],

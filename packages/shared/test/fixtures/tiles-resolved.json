@@ -275,7 +275,15 @@
   "industrial.conveyor_line",
   "industrial.loading_bay",
   "industrial.silo",
-  "industrial.control_room"
+  "industrial.control_room",
+  "orbital.lab_module",
+  "orbital.airlock_tube",
+  "orbital.landing_pad",
+  "orbital.comms_array",
+  "orbital.greenhouse",
+  "orbital.sky_tube",
+  "orbital.rover_bay",
+  "orbital.hab_dome"
  ],
  "kit": [
   {

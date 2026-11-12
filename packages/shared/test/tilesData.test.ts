@@ -48,6 +48,7 @@ import { junglePackTiles } from '../src/map/packTilesJungle.ts';
 import { medievalPackTiles } from '../src/map/packTilesMedieval.ts';
 import { snowPackTiles } from '../src/map/packTilesSnow.ts';
 import { industrialPackTiles } from '../src/map/packTilesIndustrial.ts';
+import { orbitalPackTiles } from '../src/map/packTilesOrbital.ts';
 import { KIT_TILES } from '../src/content/kitTiles.generated.ts';
 import { makeMap } from './helpers.ts';
 
@@ -60,7 +61,7 @@ const norm = (v: unknown): unknown => JSON.parse(JSON.stringify(v, (_k, x) => (O
 const hash = (v: unknown): string => createHash('sha256').update(JSON.stringify(v, (_k, x) => (Object.is(x, -0) ? '-0' : x))).digest('hex').slice(0, 24);
 
 /** The Style Pack tiles drawn by code (packTiles*.ts): not part of the kit's data, only of the catalog order. */
-const PACK_IDS = new Set([boxPackTiles, boxPackTiles2, ancientPackTiles, medievalPackTiles, harborPackTiles, snowPackTiles, desertPackTiles, junglePackTiles, industrialPackTiles].flatMap((f) => f().map((t) => t.id)));
+const PACK_IDS = new Set([boxPackTiles, boxPackTiles2, ancientPackTiles, medievalPackTiles, harborPackTiles, snowPackTiles, desertPackTiles, junglePackTiles, industrialPackTiles, orbitalPackTiles].flatMap((f) => f().map((t) => t.id)));
 
 /** Wall sizes the edge styles are measured at: [half a cell side, level height]. */
 const SIZES: [number, number][] = [[4, 4], [4, 3], [4, 8], [4, 2.5], [5, 4.5], [3, 3.6]];

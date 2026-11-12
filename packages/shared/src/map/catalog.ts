@@ -20,6 +20,7 @@ import { medievalPackTiles } from './packTilesMedieval.ts';
 import { harborPackTiles } from './packTilesHarbor.ts';
 import { snowPackTiles } from './packTilesSnow.ts';
 import { industrialPackTiles } from './packTilesIndustrial.ts';
+import { orbitalPackTiles } from './packTilesOrbital.ts';
 import { desertPackTiles } from './packTilesDesert.ts';
 import { junglePackTiles } from './packTilesJungle.ts';
 
@@ -607,6 +608,8 @@ export const CORE_TILES: readonly TileDefinition[] = /* @__PURE__ */ (() => [
   ...junglePackTiles(),
   // Style Pack pieces (13 Industrial Factory): see packTilesIndustrial.ts.
   ...industrialPackTiles(),
+  // Style Pack pieces (04 Orbital Station's research base; its Hangar Bay and Reactor Hall are kit tiles in content/tiles/core.json): see packTilesOrbital.ts.
+  ...orbitalPackTiles(),
 ])();
 
 // ---------------------------------------------------------------- buildings
