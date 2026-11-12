@@ -1046,7 +1046,12 @@ PORTS.glow_fresnel = {
 };
 
 // ---- Loot VFX (Binbun VFX Vol. 1): the glow round a pickup waiting to be taken
+// The pack leans on Godot's bright colours and glow pass: its flare is 20 % opaque at most and its rings are thin.
+// Drawn here with no glow pass they could not be seen, even at night, so the flare and the rings are lifted
+// (LOOT_LIFT) and the flare adds its light like the rest (the pack lays it over the scene). Still a faint light: on a
+// dark floor a ring and soft streaks in the pickup's colour, on a sunlit pale one little more than a tint.
 const LOOT_HELPERS = `
+const float LOOT_LIFT = 3.0;
 vec2 toPolar(vec2 uv) {
   vec2 d = uv - 0.5;
   return vec2(atan(d.y, d.x) / 6.2831853, length(d) * 2.0);
@@ -1063,7 +1068,7 @@ PORTS.billboard_flare = {
   uniforms: { primary_color: [1, 1, 1], secondary_color: [0.5, 0.5, 1], emission: 2, hue_variation: 0.05, flare_streaks: 20, flare_ring: 0.6, flare_amount: 1, edge_hardness: 0 },
   samplers: ['noise_texture'],
   helpers: LOOT_HELPERS,
-  blend: 'mix',
+  blend: 'add',
   billboardUniform: true,
   fragment: `
       vec2 pu = toPolar(vUV);
@@ -1080,7 +1085,7 @@ PORTS.billboard_flare = {
       vec3 col = mix(u_secondary_color, u_primary_color, value);
       col = shiftHue(col, (texture2D(noise_texture, vUV).r * 2.0 - 1.0) * u_hue_variation);
       outColor = col * u_emission;
-      outAlpha = value * 0.2;`,
+      outAlpha = value * 0.2 * LOOT_LIFT;`,
 };
 /** The glowing heart: a fresnel ball, bobbing. */
 PORTS.glow_core = {
@@ -1123,7 +1128,7 @@ PORTS.glow_tube = {
       float noise = texture2D(noise_texture, vUV).r;
       glow = overlay(glow, noise);
       vec3 col = shiftHue(mix(u_secondary_color, u_primary_color, fr), (noise * 2.0 - 1.0) * u_hue_variation);
-      outColor = col * (u_emission / 2.0);
+      outColor = col * (u_emission / 2.0) * LOOT_LIFT;
       outAlpha = clamp(glow, 0.0, 1.0) * vExtra.w;`,
 };
 /** Sparkles drifting up round it. */
@@ -1803,6 +1808,11 @@ export interface VfxOptions extends VfxPlace {
   fadeIn?: number;
   /** Recolour it (#rrggbb): its secondary and tertiary colours, the ones Binbun's effect controllers set, and a pale wash of it on its core (content/vfx.json `tint`). */
   tint?: string;
+  /**
+   * Held still (Reduce flashing's steady glow): its shaders' clock stays at zero, so nothing in it scrolls, bobs or
+   * twinkles, and its particles are left out. Materials of its own (cached like a tint's).
+   */
+  steady?: boolean;
 }
 
 /** A lasting effect playing (GodotVfx.start): move it, fade it, stop it. */
@@ -1843,6 +1853,8 @@ function rootMatrix(at: Vector3, place: VfxPlace): Matrix {
 export class GodotVfx {
   private playing: Playing[] = [];
   private readonly materials = new Map<string, ShaderMaterial>();
+  /** Materials of steady plays (VfxOptions.steady): their clock is never advanced. */
+  private readonly still = new Set<ShaderMaterial>();
   private readonly meshes = new Map<string, Mesh>();
   private serial = 0;
   private sun = { dir: new Vector3(-0.4, -1, 0.3).normalize(), color: new Color3(1, 0.97, 0.9), ambient: new Color3(0.45, 0.45, 0.5) };
@@ -1936,7 +1948,7 @@ export class GodotVfx {
     const id = this.serial++;
     const wanted = (name: string) => (!opts.only || opts.only.includes(name)) && !opts.skip?.includes(name);
     // A tinted play draws with materials of its own (cached by tint).
-    const tk = opts.tint ? `#t${opts.tint}` : '';
+    const tk = `${opts.tint ? `#t${opts.tint}` : ''}${opts.steady ? '#still' : ''}`;
     const byName = new Map(fx.nodes.map((n) => [String(n.name), n]));
     // A node's place in the effect: its own transform under its parents' (Godot nests them).
     const placeOf = (node: Json): Matrix => {
@@ -1957,6 +1969,7 @@ export class GodotVfx {
       const name = String(node.name);
       if (!wanted(name) || node.visible === false) continue;
       if (node.type === 'GPUParticles3D') {
+        if (opts.steady) continue;
         const meshSpec = node.draw_pass_1 as Json | undefined;
         const matSpec = node.material_override as Json | undefined;
         if (!meshSpec || !matSpec) continue;
@@ -1987,6 +2000,7 @@ export class GodotVfx {
         if (!meshSpec || !matSpec) continue;
         const material = materialFor(this.scene, matSpec, fx.root, fx.set, false, `${pack}/${effect}/${name}${tk}`, this.materials, 1, opts.tint);
         if (!material) continue;
+        if (opts.steady) this.still.add(material);
         const mesh = pieceOf(this.baseMesh(`${pack}/${effect}/${name}`, meshSpec), `gv_${name}_${id}`);
         mesh.metadata = EFFECT;
         mesh.material = material;
@@ -2043,7 +2057,7 @@ export class GodotVfx {
     const wall = Math.min(0.05, dtMs / 1000);
     const now = performance.now() / 1000;
     for (const m of this.materials.values()) {
-      m.setFloat('u_time', now % 1000);
+      m.setFloat('u_time', this.still.has(m) ? 0 : now % 1000);
       m.setVector3('u_sunDir', this.sun.dir);
       m.setColor3('u_sunColor', this.sun.color);
       m.setColor3('u_ambient', this.sun.ambient);

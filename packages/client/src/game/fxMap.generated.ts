@@ -501,6 +501,51 @@ export const FX_MAP = {
       "effect": "vfx_basic_bonfire",
       "scale": 1,
       "decor": true
+    },
+    "loot.weapon": {
+      "pack": "loot_fx",
+      "effect": "ground_loot_vfx_legendary",
+      "scale": 1.25,
+      "decor": true,
+      "skip": [
+        "Ring_02",
+        "Flare2",
+        "Pillar_01",
+        "Pillar_02",
+        "ShapeParticles"
+      ]
+    },
+    "loot.health": {
+      "pack": "loot_fx",
+      "effect": "ground_loot_vfx_uncommon",
+      "scale": 1.25,
+      "decor": true,
+      "skip": [
+        "Ring_02",
+        "Pillar_01"
+      ]
+    },
+    "loot.armor": {
+      "pack": "loot_fx",
+      "effect": "ground_loot_vfx_rare",
+      "scale": 1.25,
+      "decor": true,
+      "tint": "#3c8dff",
+      "skip": [
+        "Ring_02",
+        "Flare2",
+        "Pillar_01",
+        "Pillar_02"
+      ]
+    },
+    "loot.ammo": {
+      "pack": "loot_fx",
+      "effect": "ground_loot_vfx_common",
+      "scale": 1.25,
+      "decor": true,
+      "skip": [
+        "Pillar_01"
+      ]
     }
   }
 } as const;

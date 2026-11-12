@@ -16,6 +16,8 @@ export interface FxRef {
   readonly decor?: boolean;
   /** Recolour it (#rrggbb): godotVfx.ts VfxOptions.tint. */
   readonly tint?: string;
+  /** Lasting effects: parts of it left out (node names; godotVfx.ts VfxOptions.skip). */
+  readonly skip?: readonly string[];
 }
 
 /** What a surface is made of (content/surface-types.json), the same list the server's ballistic classes come from. */

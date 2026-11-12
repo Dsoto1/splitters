@@ -134,6 +134,7 @@ What flickered, and what the setting does to each:
 | Small blinking indicators (a mine's light, a thrown mine, a sticky grenade, the bomb, a laser trap's warning) | blink 1-12 times a second | a gentle pulse at most once a second; the laser warning shows its beams faint and steady |
 | The hurt vignette (HUD) | saturated red edge, snapping on with each hit | a duller red (not a saturated red by WCAG's test), reaching less far in, eased in over 0.15 s, held steady under fire, gone over 0.8 s (`hurtVignette.ts`) |
 | Diving into water or another liquid | the haze snaps on and off at the surface | eased over a third of a second |
+| Pickups' floor glows (`lootGlow.ts`, Binbun's Loot VFX) | streaks turning slowly, a slow bob, sparkles drifting up; eased in over a second | held still, no sparkles, 0.5 of its strength instead of 0.8, eased in over two seconds |
 
 Not changed (nothing flashes there): smoke grenades' haze (already eased), status tints (CSS transitions), the sky (no
 storm lightning exists; a storm flash would have to be capped and eased the same way), the health bar (no low-health
@@ -150,6 +151,7 @@ with the HUD's hurt tint drawn over it, at 160 × 90:
 - the electric fence (three bots against it 2-4 m in front of you, zapped twice a second each);
 - four grenade blasts 3-5 m in front of the camera in 0.8 s;
 - a machine gun firing at a wall 3.5 m off in the dark room;
+- six pickups' floor glows coming up 2-4 m in front of you at night, as High graphics draws them;
 - the alarm light in its dark room.
 
 The measure is WCAG 2.3.1 ("Three Flashes or Below Threshold"), the way photosensitivity analysers apply it:

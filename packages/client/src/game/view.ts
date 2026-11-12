@@ -130,6 +130,7 @@ import { buildRoadMeshes } from '../roadMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { disposeTree } from '../content/disposeTree.ts';
 import { DROP_LIE_HEIGHT, PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
+import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel } from './lootGlow.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
 import { CityVisuals } from './cityVisuals.ts';
@@ -386,6 +387,9 @@ interface PickupVisual {
   /** The item drawn (a random pickup's roll, from the snapshot), and the one placed in the map. */
   item: string;
   placed: string;
+  /** Its floor glow (lootGlow.ts): the lasting effect it asks for (none for some kinds) and its level now. */
+  glowKey: string | null;
+  glow: number;
 }
 
 /** First-person match scene: map, viewmodel, remote avatars, pickups, projectiles and effects. */
@@ -412,6 +416,8 @@ export class GameView {
   /** updateAvatars calls so far: the animation LOD's frame count (animLod.ts). */
   private avatarFrame = 0;
   private readonly pickups = new Map<string, PickupVisual>();
+  /** When pickups were last updated (ms; their glows ease by the time since). */
+  private pickupsAt = 0;
   /** Weapons the fallen dropped (snapshot `dw`), by drop ID: drawn lying where they fell. */
   private readonly drops = new Map<number, { root: TransformNode; item: string }>();
   private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number }>();
@@ -2792,7 +2798,14 @@ export class GameView {
     const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true, false, this.setLook);
     const baseY = e.position[1] + PICKUP_HOVER;
     root.position.set(e.position[0], baseY, e.position[2]);
-    this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2), item, placed: e.item });
+    this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2), item, placed: e.item, glowKey: lootGlowKey(item), glow: 0 });
+  }
+
+  /** How many pickups' floor glows are drawn now (tests). */
+  pickupGlows(): number {
+    let n = 0;
+    for (const id of this.pickups.keys()) if (this.lasting.drawn(`loot:${id}`)) n++;
+    return n;
   }
 
   /** The item a pickup is drawn as now (tests: a random pickup shows its roll). */
@@ -2805,6 +2818,10 @@ export class GameView {
    * what was placed (the snapshot's `pw`); a pickup whose item changed is drawn again as the new one.
    */
   updatePickups(taken: ReadonlySet<string>, now: number, items?: ReadonlyMap<string, string>): void {
+    const dt = Math.min(0.1, Math.max(0, (now - this.pickupsAt) / 1000));
+    this.pickupsAt = now;
+    const cam = this.camera.globalPosition;
+    const calm = reduceFlashing();
     for (const [id, p] of this.pickups) {
       const want = items?.get(id) ?? p.placed;
       if (want !== p.item) {
@@ -2815,8 +2832,16 @@ export class GameView {
         p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true, false, this.setLook);
         p.root.position.copyFrom(at);
         p.item = want;
+        p.glowKey = lootGlowKey(want);
       }
       p.root.setEnabled(!taken.has(id));
+      // The glow on the floor under it while it waits (the nearest few; the rest look as they always did).
+      const pos = p.root.position;
+      const glowId = `loot:${id}`;
+      if (p.glowKey && !taken.has(id) && (pos.x - cam.x) ** 2 + (p.baseY - cam.y) ** 2 + (pos.z - cam.z) ** 2 < LOOT_GLOW_RANGE ** 2) {
+        p.glow = lootGlowLevel(p.glow, this.lasting.drawn(glowId), dt, calm);
+        this.lasting.want(glowId, p.glowKey, { x: pos.x, y: p.baseY - PICKUP_HOVER + 0.02, z: pos.z }, { level: p.glow, steady: calm });
+      } else p.glow = 0;
       p.root.rotation.y = now * 0.0015 + p.phase;
       p.root.position.y = p.baseY + Math.sin(now * 0.003 + p.phase) * 0.08;
     }

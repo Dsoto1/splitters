@@ -8695,7 +8695,7 @@ async function frameStrip(frames, every = 4, cols = 5) {
  * frame by frame at 30 frames a second of the page's own time (e2e/frameClock.mjs: however slowly this machine draws,
  * a recorded second is a second of play): an arc fight up close, the fence zapping bots in front of you, four
  * grenade blasts in front of the camera, a machine gun firing at a wall in the dark, heavy rain and a blizzard at
- * night, the alarm light. With the setting
+ * night, pickups' floor glows coming up, the alarm light. With the setting
  * on each moment must stay under the thresholds; the same moments with it off are measured and reported as numbers
  * only. Frame strips (every 4th frame) and the numbers go to e2e-artifacts/ (flashing-<moment>-<on|off>.png,
  * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
@@ -8732,13 +8732,15 @@ async function flashingFlow(browser) {
       { id: 'alarm_light', kind: 'light', position: [24, 3.1, -24], yaw: 0, color: '#ff3020', intensity: 1.6, range: 12, fixture: 'ceiling', blink: 4 },
       { id: 'arc_turret', kind: 'mount', model: 'sentry_arc', position: [-24, 0, 24], yaw: 0, faction: null, respawnSeconds: null },
       { id: 'live_fence', kind: 'trap', trap: 'shock', position: [24, 0, 24], yaw: 0, activation: 'always', onSeconds: 2, offSeconds: 2, offsetSeconds: 0, startEnabled: true, damage: null, length: 12 },
+      // Pickups out in the dark, a metre apart (the `loot` moment: their floor glows).
+      ...[['weapon_rifle', -25.3, -24], ['health_small', -24.4, -24.7], ['armor_small', -23.5, -24], ['ammo', -24.4, -23.2], ['weapon_shotgun', -26.2, -23], ['health_large', -22.6, -23]].map(([item, x, z], i) => ({ id: `glow_pickup_${i}`, kind: 'pickup', item: `core.${item}`, position: [x, 0, z], respawnSeconds: null })),
     ];
     const before = ed.doc.backdrop ?? null;
     const after = { scenery: 'hills', ground: 'grass', ...(before ?? {}), sky: 'night', haze: 0 };
     const ok = ed.run('Flicker check scene', { kind: 'batch', commands: [{ kind: 'setBackdrop', before, after }, { kind: 'addEntities', entities }] });
     return { ok, entities: ed.doc.entities.length, sky: ed.doc.backdrop?.sky };
   });
-  check(made.ok && made.sky === 'night', `MapMaker makes the check's night scene: two dark rooms (one with a red alarm light blinking 4 times a second), an Arc Turret and an electric fence (${JSON.stringify(made)})`);
+  check(made.ok && made.sky === 'night', `MapMaker makes the check's night scene: two dark rooms (one with a red alarm light blinking 4 times a second), an Arc Turret, an electric fence and six pickups (${JSON.stringify(made)})`);
   await page.keyboard.press('F5');
   const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(60000) }).then(() => true, () => false);
   check(playing, 'the scene plays (MapMaker TEST)');
@@ -8893,6 +8895,22 @@ async function flashingFlow(browser) {
       before: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'snow', amount: 1, wind: 0.85, fog: 0.45 }, 'high')),
       after: () => page.evaluate(() => window.__cs.view.setWeather({ fall: 'none', amount: 0, wind: 0, fog: 0 })),
     },
+    // Pickups' floor glows (Binbun's Loot VFX; game/lootGlow.ts), as High graphics draws them (the most at once: 8),
+    // 2.5 m in front of you at night, where they show most. They are dropped as the recording starts, so it holds
+    // them coming up: with the setting on eased in over two seconds, held still, dimmer, no sparkles.
+    {
+      name: 'loot',
+      label: "six pickups' floor glows coming up 2-4 m in front of you at night (weapons, health, armor, ammo)",
+      weapon: 'core.arc_caster',
+      me: [-24.4, 0, -21],
+      look: aim([-24.4, 0, -21], [-24.4, 0.2, -24]),
+      bots: [],
+      before: () => page.evaluate(() => (window.__cs.view.vfx.quality = 'high')),
+      at: { 2: () => page.evaluate(() => window.__cs.view.lasting.dispose()) },
+      seen: () => page.evaluate(() => ({ glows: window.__cs.view.pickupGlows(), steady: window.__cs.view.scene.meshes.filter((m) => /^gv_(Ring_01|Flare|GlowCore)_/.test(m.name) && m.isEnabled() && /#still$/.test(m.material?.name ?? '')).length })),
+      sees: (on, s) => s.glows >= 4 && (on ? s.steady >= 12 : s.steady === 0),
+      after: () => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality)),
+    },
     {
       name: 'alarm',
       label: 'the red alarm light blinking 4 times a second, in its dark room',
@@ -8927,6 +8945,11 @@ async function flashingFlow(browser) {
       }
       await page.evaluate(() => (window.__flick.on = false));
       if (mo.fire) await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+      // What the moment must have shown by its end (a moment's own check: `seen` reads the page, `sees` judges it).
+      if (mo.seen) {
+        const s = await mo.seen();
+        check(mo.sees(on, s), `${mo.name}, Reduce flashing ${on ? 'on' : 'off'}: the moment showed what it records (${JSON.stringify(s)})`);
+      }
       const { frames, errors: grabErrors } = await takeFrames(page, W, H);
       clockErrors.push(...grabErrors);
       const r = analyseFrames(frames, FPS);

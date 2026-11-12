@@ -182,6 +182,8 @@ const RULES = [
   // Weather (map format v34): MapMaker's preview and TEST (editorenv), its moments in the flicker check.
   [/^packages\/client\/src\/(weatherVisuals|game\/weatherAudio)\.ts$/, ['editorenv', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(reduceFlashing|steadyArcs|hurtVignette)\.ts$/, ['offline', 'physicsfx', 'arsenal', 'visual', 'flashing'], ['client']],
+  // Pickups' floor glows (Binbun's Loot VFX): the flicker check records them; the flows that walk over pickups.
+  [/^packages\/client\/src\/game\/lootGlow\.ts$/, ['offline', 'physicsfx', 'visual', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies', ...CHARACTER_FLOWS, 'flashing'], ['client']],
   [/^packages\/client\/src\/(backdrop|borderVisuals|foliage|mapMeshes|playlists)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'visual', 'flashing'], ['client']],
 
