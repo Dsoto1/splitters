@@ -1,0 +1,28 @@
+{
+  "$comment": "Deadwood (tools/content/env/deadwood.mjs). Fallen log: lying along z on the ground, the butt (sawn, with rings) at -z, the broken end at +z. radius: [butt, top end]; bow, sink, lump (unevenness of the cross-section), jag (how ragged the broken end is), stubs (count) with their length and radius. lods: sides round the trunk, segments along it, rings (fractions of the radius on the sawn face), stubs (sides of a branch stub, 0 = none). Collision: one hull along the trunk (bark: heavy wood, as the Kenney log was). See broadleaf.json for the fields.",
+  "family": "deadwood",
+  "species": [
+    {
+      "id": "env.deadwood.log",
+      "displayName": "Fallen Log",
+      "category": "deadwood",
+      "assetVersion": 1,
+      "notes": { "1": "First version (2026-11-11): a fallen trunk the size of the Kenney Log (prop.log), lying along z as it does: low cover. Collision: one hull along the trunk (24 points, bark); the branch stubs do not collide. Not breakable (species have no breakable data; the Kenney log had 60 health)." },
+      "nominalHeight": 0.6,
+      "surface": "bark",
+      "nav": "obstacle",
+      "role": "cover",
+      "placement": { "maxSlopeDegrees": 30, "minSpacing": 2.5, "scale": [0.7, 3] },
+      "generator": { "kind": "log", "seed": 61, "length": 2.04, "radius": [0.258, 0.222], "flare": 0.006, "bow": 0.012, "sink": 0.01, "lump": 0.05, "cutTilt": 0.06, "jag": 0.1, "stubs": [2, 2], "stubLength": [0.05, 0.085], "stubRadius": [0.04, 0.055] },
+      "lods": [
+        { "distance": 0, "sides": 12, "segments": 8, "rings": [0.22, 0.48, 0.74, 0.93, 1], "stubs": 6 },
+        { "distance": 25, "sides": 8, "segments": 3, "rings": [0.5, 1], "stubs": 4 },
+        { "distance": 70, "sides": 6, "segments": 1, "rings": [1], "stubs": 0 }
+      ],
+      "variants": [
+        { "index": 0, "name": "bare", "look": { "bark": "#6b5a48", "bare": "#8d8676", "heart": "#8a6a44", "sap": "#c9ae80" } },
+        { "index": 1, "name": "moss", "look": { "bark": "#665846", "bare": "#857f70", "heart": "#86683f", "sap": "#c2a878", "cover": "#4f6a30", "coverFrom": 0.45 } }
+      ]
+    }
+  ]
+}

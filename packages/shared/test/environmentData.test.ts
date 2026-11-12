@@ -30,14 +30,14 @@ function shapePoints(sh: EnvShape): [number, number, number][] {
 
 describe('environment data', () => {
   it('every species matches the schema', () => {
-    expect(ENV_SPECIES.length).toBe(19);
+    expect(ENV_SPECIES.length).toBe(23);
     for (const s of ENV_SPECIES) expect(() => EnvironmentSpeciesSchema.parse(s), s.id).not.toThrow();
   });
 
   it('the Phase 1 species, the plants brush flowers, fern, pebbles and eelgrass and the Phase 2 trees, bushes and hedges, each with material variants', () => {
     expect(ENV_SPECIES.map((s) => s.id).sort()).toEqual([
-      'env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump',
-      'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.pebbles', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass',
+      'env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.deadwood.log', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump',
+      'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass',
     ]);
     for (const s of ENV_SPECIES) {
       expect(s.variants.length, s.id).toBeGreaterThanOrEqual(2);
@@ -105,6 +105,29 @@ describe('environment data', () => {
     expect(getEnvSpecies('env.hedge.yew')!.variants[0]!.size[1]).toBeCloseTo(2.2, 0);
     expect(envVariant(getEnvSpecies('env.shrub.laurel')!, 0).shapes).toEqual([]);
     expect(envTilts('env.shrub.laurel')).toBe(true);
+    // The rocks Rockfall Canyon needs, near the size of the Kenney pieces they stand in for (prop.rock_large,
+    // rock_flat, rocks_tall): the round boulder and the slab one hull each, the outcrop one hull per mass (its notches
+    // stay open), all stone, all solid nav obstacles. The slab's top is flat enough to walk on (a 0.1 m fall at most).
+    for (const [id, hulls, role, like] of [['env.rock.boulder_round', 1, 'cover', 'prop.rock_large'], ['env.rock.slab', 1, 'cover', 'prop.rock_flat'], ['env.rock.outcrop', 3, 'blocking', 'prop.rocks_tall']] as const) {
+      const s = getEnvSpecies(id)!;
+      const shapes = envVariant(s, 0).shapes;
+      expect([shapes.length, s.nav, s.role, s.surface, propMaterial(id)], id).toEqual([hulls, 'obstacle', role, 'rock', 'stone']);
+      expect(shapes.every((sh) => sh.kind === 'hull' && sh.blocks === 'all' && sh.points.length <= 32), id).toBe(true);
+      const want = getProp(like)!.size;
+      s.variants[0]!.size.forEach((v, k) => expect(Math.abs(v - want[k]!), `${id} axis ${k}`).toBeLessThan(0.3));
+    }
+    const slabTop = (envVariant(getEnvSpecies('env.rock.slab')!, 0).shapes[0] as Extract<EnvShape, { kind: 'hull' }>).points.map((p) => p[1]).filter((y) => y > 0.28);
+    expect(slabTop.length).toBeGreaterThanOrEqual(5);
+    expect(Math.max(...slabTop)).toBeCloseTo(0.4, 2);
+    expect(Math.max(...slabTop) - Math.min(...slabTop)).toBeLessThanOrEqual(0.1);
+    // The fallen log: one hull along z the size of the Kenney log's box (the stubs do not collide), bark (heavy
+    // wood, as prop.log is), a solid nav obstacle. Not breakable: species carry no breakable data.
+    const log = getEnvSpecies('env.deadwood.log')!;
+    const logHull = envVariant(log, 0).shapes;
+    expect([logHull.length, logHull[0]!.kind, logHull[0]!.blocks, log.nav, log.role, log.category, log.surface, propMaterial('env.deadwood.log'), propMaterial('prop.log')]).toEqual([1, 'hull', 'all', 'obstacle', 'cover', 'deadwood', 'bark', 'heavy_wood', 'heavy_wood']);
+    log.variants[0]!.size.forEach((v, k) => expect(Math.abs(v - getProp('prop.log')!.size[k]!), `log axis ${k}`).toBeLessThan(0.08));
+    expect(getProp('env.deadwood.log')!.breakable).toBeUndefined();
+    expect(envTilts('env.deadwood.log')).toBe(false);
   });
 
   it('every shape lies inside the species\' visual bounds', () => {

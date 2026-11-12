@@ -12,8 +12,8 @@ import { ENV_GENERATOR_VERSION, ENV_SPECIES } from './environment.generated.ts';
 import type { SurfaceTypeId } from '../sim/surfaceTypes.ts';
 import type { PropDefinition } from './props.ts';
 
-/** MapMaker's Environment groups: Trees, Plants, Ground Cover, Rocks, Boulders, Cliffs. */
-export const ENV_CATEGORIES = ['tree', 'plant', 'groundcover', 'rock', 'boulder', 'cliff'] as const;
+/** MapMaker's Environment groups: Trees, Plants, Ground Cover, Rocks, Boulders, Cliffs, Deadwood. */
+export const ENV_CATEGORIES = ['tree', 'plant', 'groundcover', 'rock', 'boulder', 'cliff', 'deadwood'] as const;
 export type EnvCategory = (typeof ENV_CATEGORIES)[number];
 
 export type EnvVec3 = readonly [number, number, number];
@@ -84,7 +84,7 @@ export function envModelFile(model: string, variant?: number): string | undefine
 }
 
 /** Legacy prop categories a species shows under where code still reads them (settling, palette search). */
-const LEGACY_CATEGORY: Record<EnvCategory, string> = { tree: 'Trees', plant: 'Plants & Flowers', groundcover: 'Plants & Flowers', rock: 'Rocks & Wood', boulder: 'Rocks & Wood', cliff: 'Rocks & Wood' };
+const LEGACY_CATEGORY: Record<EnvCategory, string> = { tree: 'Trees', plant: 'Plants & Flowers', groundcover: 'Plants & Flowers', rock: 'Rocks & Wood', boulder: 'Rocks & Wood', cliff: 'Rocks & Wood', deadwood: 'Rocks & Wood' };
 
 let views: Map<string, PropDefinition> | undefined;
 /**

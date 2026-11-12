@@ -64,7 +64,7 @@ export interface EnvHost {
   register(el: HTMLElement, key: string, name: string, tags: string): void;
 }
 
-export const ENV_CATEGORY_LABELS: Record<EnvCategory, string> = { tree: 'Trees', plant: 'Plants', groundcover: 'Ground cover', rock: 'Rocks', boulder: 'Boulders', cliff: 'Cliffs' };
+export const ENV_CATEGORY_LABELS: Record<EnvCategory, string> = { tree: 'Trees', plant: 'Plants', groundcover: 'Ground cover', rock: 'Rocks', boulder: 'Boulders', cliff: 'Cliffs', deadwood: 'Deadwood' };
 const TURNS: readonly [number, string][] = [[180, 'Any way'], [90, '±90°'], [45, '±45°'], [15, '±15°'], [0, 'No turn']];
 
 export class EnvTools {

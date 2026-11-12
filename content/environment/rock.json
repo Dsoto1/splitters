@@ -1,5 +1,5 @@
 {
-  "$comment": "Boulders and pebbles (tools/content/env/rock.mjs). Pebbles (category rock): a cluster of small rounded stones, decoration only (no collision, no concealment), grown by the terrain's plants brush on stone, gravel, snow and sand (packages/client/src/foliage.ts) and placeable as a prop; one level of detail. Boulder lods: triangle targets for meshoptimizer from the detailed surface. Collision: the hull before displacement (stone). See broadleaf.json for the fields.",
+  "$comment": "Boulders, a slab, an outcrop and pebbles (tools/content/env/rock.mjs). Round boulder: `round` relaxes the subdivided hull and `fit` sets its size; its collision is the rounded form's hull. Slab (kind slab): an outline of `sides` points, a flat top that drops `tilt` metres across. Outcrop (kind outcrop): `masses` (size, place, turn in degrees), fitted together to `fit`; one hull per mass. Pebbles (category rock): a cluster of small rounded stones, decoration only (no collision, no concealment), grown by the terrain's plants brush on stone, gravel, snow and sand (packages/client/src/foliage.ts) and placeable as a prop; one level of detail. Boulder lods: triangle targets for meshoptimizer from the detailed surface. Collision: the hull before displacement (stone). See broadleaf.json for the fields.",
   "family": "rock",
   "species": [
     {
@@ -21,6 +21,69 @@
       "variants": [
         { "index": 0, "name": "bare", "look": { "rock": "#7c776e", "band": "#a39b8c", "strataFreq": 12, "hue": 0.1 } },
         { "index": 1, "name": "moss", "look": { "rock": "#7a766f", "band": "#9d9688", "strataFreq": 12, "hue": 0.08, "cover": "#4f5e33", "coverFrom": 0.4 } }
+      ]
+    },
+    {
+      "id": "env.rock.boulder_round",
+      "displayName": "Round Boulder",
+      "category": "boulder",
+      "assetVersion": 1,
+      "notes": { "1": "First version (2026-11-11): a rounded, weathered boulder the size of the Kenney Boulder (prop.rock_large), so a field of rocks is not the angular one repeated. Collision: the hull of the rounded form before surface detail (<= 32 points, stone)." },
+      "nominalHeight": 1.4,
+      "nav": "obstacle",
+      "role": "cover",
+      "placement": { "maxSlopeDegrees": 40, "minSpacing": 2.5, "scale": [0.6, 1.6] },
+      "generator": { "kind": "boulder", "seed": 31, "size": [2.1, 1.5, 2.3], "fit": [2.0, 1.4, 2.2], "points": 30, "cuts": [2, 3], "cutDepth": [0.8, 0.94], "maxPoints": 32, "subdivide": 3, "round": { "passes": 9, "amount": 0.5 }, "crease": 70, "displace": 0.012, "freq": 1.1, "wear": 0, "wearAmount": 0.4, "strata": { "spacing": 0.5, "depth": 0.012, "tilt": 0.18 }, "uvScale": 2.5 },
+      "lods": [
+        { "distance": 0, "triangles": 700 },
+        { "distance": 30, "triangles": 220 },
+        { "distance": 80, "triangles": 60 }
+      ],
+      "variants": [
+        { "index": 0, "name": "bare", "look": { "rock": "#7f7a70", "band": "#9c9587", "strataFreq": 8, "hue": 0.1 } },
+        { "index": 1, "name": "moss", "look": { "rock": "#7b776f", "band": "#989184", "strataFreq": 8, "hue": 0.08, "cover": "#4f5e33", "coverFrom": 0.35 } }
+      ]
+    },
+    {
+      "id": "env.rock.slab",
+      "displayName": "Rock Slab",
+      "category": "boulder",
+      "assetVersion": 1,
+      "notes": { "1": "First version (2026-11-11): a low flat bed of rock the size of the Kenney Flat Rock (prop.rock_flat). Its top is one flat face, a little tilted, to stand and walk on. Collision: its hull (<= 32 points, stone). nav obstacle: navigation gets its footprint and its top as a surface, as it does a boulder's (nav none would leave bots walking into its edge)." },
+      "nominalHeight": 0.4,
+      "nav": "obstacle",
+      "role": "cover",
+      "placement": { "maxSlopeDegrees": 25, "minSpacing": 4, "scale": [0.6, 3] },
+      "generator": { "kind": "slab", "seed": 41, "size": [3.7, 0.4, 3.0], "sides": 9, "uneven": 0.14, "inset": [0.82, 0.92], "tilt": 0.08, "subdivide": 3, "crease": 38, "displace": 0.004, "freq": 1.3, "wear": 1, "wearAmount": 0.3, "strata": { "spacing": 0.17, "depth": 0.022, "tilt": 0.06 }, "chips": [3, 6], "chipDepth": [0.03, 0.07], "uvScale": 2.5 },
+      "lods": [
+        { "distance": 0, "triangles": 700 },
+        { "distance": 30, "triangles": 220 },
+        { "distance": 80, "triangles": 60 }
+      ],
+      "variants": [
+        { "index": 0, "name": "bare", "look": { "rock": "#7c776e", "band": "#a39b8c", "strataFreq": 24, "hue": 0.1 } },
+        { "index": 1, "name": "moss", "look": { "rock": "#7a766f", "band": "#9d9688", "strataFreq": 24, "hue": 0.08, "cover": "#4f5e33", "coverFrom": 0.5 } }
+      ]
+    },
+    {
+      "id": "env.rock.outcrop",
+      "displayName": "Rock Outcrop",
+      "category": "boulder",
+      "assetVersion": 1,
+      "notes": { "1": "First version (2026-11-11): a tall outcrop of three fused masses the size of the Kenney Rock Spire (prop.rocks_tall): a landmark and hard cover. Collision: one hull per mass (three, <= 20 points each, stone), so the notches between the masses stay open." },
+      "nominalHeight": 2.4,
+      "nav": "obstacle",
+      "role": "blocking",
+      "placement": { "maxSlopeDegrees": 30, "minSpacing": 6, "scale": [0.6, 3] },
+      "generator": { "kind": "outcrop", "seed": 51, "fit": [4.2, 2.4, 4.2], "masses": [{ "size": [2.9, 2.7, 2.7], "at": [0.2, 0.45], "yaw": 20 }, { "size": [2.7, 1.9, 2.3], "at": [-0.75, -0.5], "yaw": 70 }, { "size": [2.3, 1.3, 2.1], "at": [0.8, -0.7], "yaw": 140 }], "points": 20, "cuts": [7, 10], "cutDepth": [0.6, 0.9], "maxPoints": 20, "subdivide": 3, "crease": 38, "displace": 0.012, "freq": 1.2, "wear": 1, "wearAmount": 0.4, "strata": { "spacing": 0.42, "depth": 0.04, "tilt": 0.22 }, "chips": [4, 7], "chipDepth": [0.05, 0.12], "buried": 0.15, "uvScale": 2.5 },
+      "lods": [
+        { "distance": 0, "triangles": 740 },
+        { "distance": 40, "triangles": 230 },
+        { "distance": 100, "triangles": 66 }
+      ],
+      "variants": [
+        { "index": 0, "name": "bare", "look": { "rock": "#7c776e", "band": "#a39b8c", "strataFreq": 10, "hue": 0.1 } },
+        { "index": 1, "name": "moss", "look": { "rock": "#7a766f", "band": "#9d9688", "strataFreq": 10, "hue": 0.08, "cover": "#4f5e33", "coverFrom": 0.3 } }
       ]
     },
     {
