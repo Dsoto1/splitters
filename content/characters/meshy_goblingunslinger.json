@@ -6,7 +6,6 @@
   "name": "Goblin Gunslinger",
   "look": "core.goblingunslinger",
   "group": "creatures",
-  "tier": "experimental",
   "nameTheme": "goblin",
   "bio": "Fastest draw under four feet tall.",
   "body": "male",
