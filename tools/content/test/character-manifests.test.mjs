@@ -151,11 +151,9 @@ describe('character manifests', () => {
   it('carry a tier: experimental reaches the generated look, core and left out do not, anything else is a problem', () => {
     const good = JSON.parse(readFileSync(join(MANIFEST_DIR, 'meshy_cat.json'), 'utf8'));
     expect(TIERS).toEqual(['core', 'experimental']);
-    // A manifest names a tier only to say experimental (core is the one left out): today, the ten characters that
-    // came in on 2026-11-11, until each has had its grip audit.
-    const tiered = list.filter((m) => m.tier !== undefined);
-    expect(tiered.map((m) => m.tier).filter((t) => t !== 'experimental')).toEqual([]);
-    expect(tiered.map((m) => m.id).sort()).toEqual(['meshy_elephantwarrior', 'meshy_goblingunslinger', 'meshy_greensentinel', 'meshy_inspector', 'meshy_octobuddy', 'meshy_purplehero', 'meshy_shadowenforcer', 'meshy_steampunkwarrior', 'meshy_steelguardian', 'meshy_sugarskull']);
+    // A manifest names a tier only to say experimental (core is the one left out); the ten of 2026-11-11 were promoted
+    // by the owner on 2026-11-12, so today none does.
+    expect(list.filter((m) => m.tier !== undefined && m.tier !== 'experimental').map((m) => m.id)).toEqual([]);
     for (const tier of TIERS) expect(manifestProblems({ ...good, tier }, 'meshy_cat.json')).toEqual([]);
     for (const tier of ['beta', 'Experimental', '', null, true]) expect(manifestProblems({ ...good, tier }, 'meshy_cat.json').join('\n')).toMatch(/tier: core or experimental/);
     const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`id: '${m.look}'`));
