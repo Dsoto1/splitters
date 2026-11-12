@@ -88,6 +88,13 @@ with a door on each floor to a TAC officer's family quarters beside the stair. T
 half-turn (switchback) stairs; the middle ones are straight runs. And the halls, the clock tower and the arched
 link are to be joined into one structure as in photo 15, from the pieces the map already has.
 
+### The library (the owner, the same day)
+
+"Red coned roof is the library, we already have a red building for it, but it needs improvement to give those
+details." So photo 14's low stone building with the tall red conical roof over a round-arched entrance is the
+library; the map's red building is to be reworked to show it (stone walls, the cone, the arched entrance), not
+replaced with a new place.
+
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
 - A dorm room as a piece: door, sink, desk with shelves, bunk, window, two slim closets either side of the door; and
