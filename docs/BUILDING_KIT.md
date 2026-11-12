@@ -379,7 +379,7 @@ of the repo).
   are exactly our own. Stack rooms with the same facade for taller buildings.
   Downtown (`maps/downtown.json`) shows all of it.
 
-## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`, `map/packTilesHarbor.ts`, `map/packTilesSnow.ts`, `map/packTilesDesert.ts`, `map/packTilesJungle.ts`, `map/packTilesIndustrial.ts`)
+## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`, `map/packTilesHarbor.ts`, `map/packTilesSnow.ts`, `map/packTilesDesert.ts`, `map/packTilesJungle.ts`, `map/packTilesIndustrial.ts`, `map/packTilesOrbital.ts`)
 
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
@@ -458,7 +458,7 @@ vault (or work the combination) to open it.
 
 | Pack | Theme | Room options | Own tiles | Own props | Demo map |
 |---|---|---|---|---|---|
-| 04 Orbital Station (clean sci-fi) | `core.orbital`: grated floors, white Station Panels, white panel cover, Glow Trim | Facade **Station hull (viewports)**, roof | Hangar Bay, Reactor Hall | 25 (category *Orbital Station*) | Halcyon Station |
+| 04 Orbital Station (clean sci-fi) | `core.orbital`: grated floors, white Station Panels, white panel cover, Glow Trim | Facade **Station hull (viewports)**, roof | Hangar Bay, Reactor Hall (kit tiles); the research base's eight (`map/packTilesOrbital.ts`, below) | 25 (category *Orbital Station*) | Halcyon Station |
 | 07 Neon Megacity (futuristic city) | `core.neon_megacity`: Wet Asphalt, dark concrete, glass, Neon Tube trim | Facades **Glass tower** and **Neon block**, roof | Glass Tower, Spire Tower, Stepped Tower, Twin-Block Tower, Corner Shop Block, Apartment Block | 23 (category *Neon Megacity*) | Neon Spire |
 
 Orbital Station also lists the Modular SciFi MegaKit and Space Station Kit
@@ -480,6 +480,34 @@ module, coolant pipes, consoles and terminals, canister rack, floor cables,
 station columns and wall sections. The **Station hull** facade dresses a
 room's outside in white panels with round viewports, a glowing trim line,
 cornices and lit corner columns.
+
+**Orbital Station: the research base** (owner, 2026-11-12: "Sci-Fi Research" extends pack 04, it is not a pack
+of its own). Eight more tiles for a planetside base, drawn in code in `map/packTilesOrbital.ts` (box helpers from
+packTilesMedieval.ts; `disc`, `drum` and `mast` from packTilesSnow.ts) in the pack's existing materials (White
+Panel, Station Panels, Dark Tech, Light Panel, Glow Trim, steel, tread plate): no new theme, material or texture.
+Hangar Bay and Reactor Hall stay kit tiles in `content/tiles/core.json`; both sources share the `orbital.` prefix
+in one catalog, and the palette groups a pack's tiles by that prefix or the pack's `tiles` list, so they sit
+together. Lights are steady strips and trim lines (nothing blinks; no large lit surface).
+
+| Tile | Cells | Ports | What it is |
+|---|---|---|---|
+| `orbital.lab_module` Lab Module | 1 × 1 | N, S | a white-panel room 3.4 m high, doors N and S, a Dark Tech workbench along the west wall, a sample table, an open window band E |
+| `orbital.airlock_tube` Airlock Tube | 1 × 1 | N, S | an enclosed corridor 3 m wide N–S, its upper corners cut at 45° (an eight-sided section), four steel ribs round it, a light strip down the floor; open at both ends (put doors there for an airlock) |
+| `orbital.landing_pad` Landing Pad | 2 × 2 | perimeter at level 0 | a deck 11 m square and 1 m up, a ramp 4 m wide S and N, light strips along its edges, a painted eight-sided ring |
+| `orbital.comms_array` Comms Array | 1 × 1 (4 levels) | all sides at level 0 | an equipment hut (doors S and N, a console) with a 9 m lattice mast and an upturned dish on its roof (15 m in all; the roof is not reachable); the east 2.6 m stays clear |
+| `orbital.greenhouse` Greenhouse | 2 × 1 | perimeter at level 0 | a hall of open window bands between steel posts over a 0.9 m sill, two doors S and N and one at each end, roof ribs and a ridge, five planter beds 0.7 m high as cover |
+| `orbital.sky_tube` Sky Tube | 1 × 1 (2 levels) | all sides at level 0; N, S at level 1 | the Airlock Tube's section 4 m up on four legs, three windows each side; meets `snow.catwalk`, `snow.metal_stair` and upper floors; walk under it |
+| `orbital.rover_bay` Rover Bay | 1 × 2 | S (cell 0), N (cell 1) | a garage 3.5 m high, its south end open 6.4 m wide over a ramp sill onto a floor 0.25 m up, a service pit cover (a plate, no hole), a bench, a door N (one step down) |
+| `orbital.hab_dome` Hab Dome | 2 × 2 (2 levels) | S (both cells) | an eight-sided drum 14 m across (one door S, on the seam of the two south cells) under a stepped dome 7.1 m high, a column and two benches inside |
+
+Simplified: window bands are open (glass comes from edge styles); the greenhouse roof is a solid slab in the
+glass-facade paint under its ribs; the dish is a stack of eight-sided tiers pointing straight up; the tube's ribs
+are eight-sided only over the top (walls, cut corners, roof); the dome is solid tiers over a flat ceiling 3.5 m up;
+the pit cover and the pad's ring are drawn only. `test/stylePacksOrbital.test.ts` walks bots into or onto every
+tile in all four rotations (the pad by each ramp, the sky tube from a metal stair and on to a catwalk, the rover
+bay by its sill and its north door) and checks each tile draws no two faces in one plane. The coverage map
+(`maps/test_coverage.json`) still needs one of these tiles placed in MapMaker (`coverageMap.test.ts` asks for a
+code tile of every pack that has any).
 
 **Neon Megacity pieces.** Towers from Kenney's City Kit (Commercial) fitted
 to whole cells (solid, their street face local north, roofs walkable at the
