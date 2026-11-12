@@ -8,7 +8,8 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **Zombies are your zombies.** Every zombie in Zombies mode (and in co-op squads) now wears one of the roster's six zombie characters: the Groaner, Lurcher, Rotter, Shambler and the two Zombie Soldiers. Two in three used to wear a stock zombie body that had no ragdoll, so it tipped over flat like a box when it died; now every zombie falls as a ragdoll, thrown by the shot or blast that killed it, the same as a player.
-- **The Auto Shotgun has a proper model.** It was a thin, near-black shape that barely showed on a pickup (only the glow did). It is now a textured steel-and-wood shotgun, in the hand and on the ground.
+- **Guns show on their pickups again.** Fifteen of the older gun models (the Auto Shotgun, Sawed-Off, SMG, LMG, Revolver, Hand Cannon, Marksman and Sniper rifles, Burst Rifle, Machine Pistol and more) drew nothing on a pickup or when dropped: only the glowing ring showed. They were stored in a form the pickup's drawing code dropped. Every gun now shows on its pickup and on the ground.
+- **The Auto Shotgun has a proper model:** a textured steel-and-wood shotgun in place of the thin near-black shape.
 - **Sandgate's doorways are clear.** A facade's plinth ran straight across its doorway, a low bar sticking out of the floor in the entrance. The plinth now stops at each side of a door, on all twelve facade styles.
 - **Calmer Desert City plaster.** The plaster walls had hard, dark-rimmed patches of bare stone. It is now worn thin in a few small, soft places.
 - **Sandfall Colosseum is now Flavius Rule,** after the owner's board game of the same theme and layout.

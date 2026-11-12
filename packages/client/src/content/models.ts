@@ -161,6 +161,13 @@ export class ModelLibrary {
     if (sources.length === 1) return sources[0]!;
     if (new Set(sources.map((m) => m.sideOrientation)).size > 1) return null;
     const datas = sources.map((m) => VertexData.ExtractFromMesh(m, true, true));
+    // A part drawn without an index list (some converted guns: the Sawed-Off, the old Auto Shotgun) gets a plain
+    // one: merged without it, the whole model had no triangles to draw and its pickup showed only the ring
+    // (owner, 2026-11-12: "I only see the yellow glow").
+    for (const d of datas) {
+      const n = (d.positions?.length ?? 0) / 3;
+      if (!d.indices?.length && n > 0) d.indices = Array.from({ length: n }, (_, i) => i);
+    }
     // Each part's size, before the merge (it merges into the first part's data).
     const sizes = datas.map((d) => [(d.positions?.length ?? 0) / 3, d.indices?.length ?? 0] as const);
     const total = sizes.reduce((n, [v]) => n + v, 0);
