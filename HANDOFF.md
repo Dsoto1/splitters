@@ -1047,6 +1047,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - heatmaps stay in memory.
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
+  - **Landing now: the weapon and vehicle lane's eighth batch** (2026-11-12 20:25 UTC; to `check/vehicles-b8`; please hold code pushes to main until this line comes down: this batch has been re-merged three times): the Gunship as the Sky Cruiser, the separate tire on the Buggy, Gun Jeep, Troop Truck and Armored Rover, the Steampunk Warrior's arms and fingers, the whole-map view on M, the jump pads' arrows turned the right way.
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
