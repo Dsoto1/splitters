@@ -1021,6 +1021,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - heatmaps stay in memory.
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
+  - **Landing now: the weapon and vehicle lane's sixth batch** (`check/vehicles-chars` at 021b8592, pushed 2026-11-12 13:55 UTC; this account): the ten characters of 2026-11-11 promoted to core (their manifests, `characters.generated.ts`, the manifest tier test, the Character Select sections check). `pnpm prepush` passed on that commit with main cae1e07d merged.
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
