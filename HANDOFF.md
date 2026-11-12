@@ -1008,6 +1008,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     until it's gone (docs are fine).
   - **Landing now: the weapon and vehicle lane's third batch** (commit `daf63d9b` of session branch `claude/inspiring-sagan-mjnled` merged with main, on `check/vehicles-fit-3` since 2026-11-12 01:30 UTC; this account): ten new characters (experimental tier) with three re-handed, Zombies (a bigger horde, 16 players at the most, zombie skins only, bodies stay), Match Setup shows only the modes a map plays. No map files (Iron Maw's proposal is reverted on the branch). It touches `packages/shared/test/characterTiers.test.ts` and `botThemes.test.ts` (they assumed no experimental character existed) and `tools/content/test/hitboxes.test.mjs` (one look's own cover).
   - **Next in line to land: Rockfall Canyon's refresh** (`wip/mapmaker-canyon`, to go to `check/mapmaker-canyon`; MapMaker lane, 2026-11-12; one map file and its card picture). The generated rocks and the fallen log have landed: the slot is the weapon and vehicle lane's now.
+  - **Next in line to land, after Rockfall Canyon's refresh: a placed log can be made breakable** (`wip/mapmaker-log-break`, to go to `check/mapmaker-log-break`; MapMaker lane, 2026-11-12; `maps/breakyard.json` gains two logs). The two may go as one train.
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
