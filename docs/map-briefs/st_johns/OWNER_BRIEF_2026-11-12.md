@@ -195,6 +195,13 @@ slightly recessed (tall ceilings), has classrooms above in same layout of hallwa
 A crest and school emblems as the owner describes them are the school's own marks: use a crest of our own design in
 their place (no real logo goes into the game).
 
+### Scope (the owner, the same day)
+
+"Keep it to the main campus for now." So: the blocks between St. John's Road and Exeter Street, from the Field of
+Flags and Scott Johnston / Hazelwood Hall in the west to Genesee Street and the main gate in the east. Out for now:
+the athletics west of Spanjer Street (stadium, baseball fields, track, rappelling tower), everything south of Exeter
+Street (tennis courts, Mouso Hall, the infirmary, shops, barns), and the blocks north of St. John's Road.
+
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
 - A dorm room as a piece: door, sink, desk with shelves, bunk, window, two slim closets either side of the door; and
