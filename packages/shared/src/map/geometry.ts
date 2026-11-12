@@ -379,6 +379,8 @@ export interface SideTrim {
   tilt?: number;
   /** On the wall's inner face: how far it stands off it (v1 - v0, as the style gives it). */
   depth?: number;
+  /** A library material of its own (the style's `surface`), instead of the tile's trim surface. */
+  surface?: { material: string; tint: string | null };
 }
 
 /** How thick a segmental arch's soffit is (from the curve up into the wall: it covers the stepped collision above it). */
@@ -431,7 +433,8 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
   const shape = shapeOf(style);
   const from = shape?.trimFrom ?? TILE_DIMENSIONS.wallThickness;
   const out: SideTrim[] = [];
-  const at = (u0: number, u1: number, y0: number, y1: number, depth: number) => out.push({ u0, u1, y0, y1, v0: from, v1: from + depth, depth });
+  const own = (p: { surface?: { material: string; tint?: string } }) => (p.surface ? { surface: { material: p.surface.material, tint: p.surface.tint ?? null } } : {});
+  const at = (u0: number, u1: number, y0: number, y1: number, depth: number, surface: Pick<SideTrim, 'surface'> = {}) => out.push({ u0, u1, y0, y1, v0: from, v1: from + depth, depth, ...surface });
   const v = (x: EdgeValue) => edgeValue(x, half, height);
   for (const p of shape?.trim ?? []) {
     if ('base' in p) at(v(p.base[0]), v(p.base[1]), 0, 0.16, 0.04);
@@ -440,9 +443,9 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
     } else if ('frame' in p) {
       const { half: d, top: h } = p.frame;
       if (height > h + 0.2) {
-        at(-d - 0.16, -d, 0, h, 0.06);
-        at(d, d + 0.16, 0, h, 0.06);
-        at(-d - 0.16, d + 0.16, h, h + 0.16, 0.06);
+        at(-d - 0.16, -d, 0, h, 0.06, own(p));
+        at(d, d + 0.16, 0, h, 0.06, own(p));
+        at(-d - 0.16, d + 0.16, h, h + 0.16, 0.06, own(p));
       }
     } else if ('window' in p) {
       const [u0, u1] = p.window.u;
@@ -454,6 +457,9 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
     } else if ('arch' in p) {
       out.push(...archTrim(p.arch, from, false, Math.min(from, TILE_DIMENSIONS.wallThickness)));
       if (outer && p.outside) out.push(...archTrim(p.arch, 0, true, 0));
+    } else if ('v' in p) {
+      // Set in the wall itself (a sash's bars by the glass): no face to stand off, so no `depth`.
+      out.push({ u0: v(p.u[0]), u1: v(p.u[1]), y0: v(p.y[0]), y1: v(p.y[1]), v0: p.v[0], v1: p.v[1], ...own(p) });
     } else {
       const pieces: [number, number][] = [];
       if (p.repeat) {
@@ -461,8 +467,8 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
         repeatAlong(p.repeat, half, height, (u) => pieces.push([u + o0, u + o1]));
       } else pieces.push([v(p.u[0]), v(p.u[1])]);
       for (const [u0, u1] of pieces) {
-        at(u0, u1, v(p.y[0]), v(p.y[1]), p.depth);
-        if (outer && p.outside) out.push({ u0, u1, y0: v(p.y[0]), y1: v(p.y[1]), v0: -p.depth, v1: 0 });
+        at(u0, u1, v(p.y[0]), v(p.y[1]), p.depth, own(p));
+        if (outer && p.outside) out.push({ u0, u1, y0: v(p.y[0]), y1: v(p.y[1]), v0: -p.depth, v1: 0, ...own(p) });
       }
     }
   }
@@ -1118,7 +1124,7 @@ function sideBox(side: Side, cx: number, cz: number, half: number, u0: number, u
 
 /** A trim box on one side of a cell (edgeTrimBoxes): tilted in the wall's plane, it is rolled on a north or south side (u runs along x) and pitched on an east or west one (u along z). */
 function sideTrimBox(side: Side, cx: number, cz: number, half: number, baseY: number, p: SideTrim, sourceId: string): WorldBox {
-  const b = sideBox(side, cx, cz, half, p.u0, p.u1, baseY + p.y0, baseY + p.y1, p.v0, p.v1, sourceId, 'trim');
+  const b: WorldBox = { ...sideBox(side, cx, cz, half, p.u0, p.u1, baseY + p.y0, baseY + p.y1, p.v0, p.v1, sourceId, 'trim'), ...(p.surface ? { surface: p.surface } : {}) };
   if (!p.tilt) return b;
   return side === 'N' || side === 'S' ? { ...b, roll: p.tilt } : { ...b, pitch: p.tilt };
 }
