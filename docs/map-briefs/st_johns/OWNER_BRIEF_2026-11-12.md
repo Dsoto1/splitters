@@ -202,6 +202,10 @@ Flags and Scott Johnston / Hazelwood Hall in the west to Genesee Street and the 
 the athletics west of Spanjer Street (stadium, baseball fields, track, rappelling tower), everything south of Exeter
 Street (tennis courts, Mouso Hall, the infirmary, shops, barns), and the blocks north of St. John's Road.
 
+The owner, after: "Leave the houses around St. John's and structures south of Exeter that we have there already."
+So what the map already has outside the main campus (the houses round it, the structures south of Exeter Street)
+stays exactly as it is: not reworked, not removed. The rework touches the main campus only.
+
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
 - A dorm room as a piece: door, sink, desk with shelves, bunk, window, two slim closets either side of the door; and
