@@ -379,13 +379,14 @@ of the repo).
   are exactly our own. Stack rooms with the same facade for taller buildings.
   Downtown (`maps/downtown.json`) shows all of it.
 
-## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`, `map/packTilesHarbor.ts`, `map/packTilesSnow.ts`, `map/packTilesDesert.ts`, `map/packTilesJungle.ts`)
+## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`, `map/packTilesHarbor.ts`, `map/packTilesSnow.ts`, `map/packTilesDesert.ts`, `map/packTilesJungle.ts`, `map/packTilesIndustrial.ts`, `map/packTilesOrbital.ts`)
 
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
 alongside the set), then from the owner's tileset sheets 10 Medieval Village,
-11 Coastal Harbor and 12 Snow Outpost; 09 is now **Desert City**, which
+11 Coastal Harbor and 12 Snow Outpost, then 13 Industrial Factory (owner, 2026-11-12: a pack of our own pieces);
+09 is now **Desert City**, which
 replaced Sands of Egypt (owner, 2026-10-31) and still carries all its pieces,
 and 06 Jungle Ruins was refreshed from the Jungle Ruins sheet with the Ancient
 Temple sheet folded in. One registry (`STYLE_PACKS`, in pack-number order). A Style
@@ -457,7 +458,7 @@ vault (or work the combination) to open it.
 
 | Pack | Theme | Room options | Own tiles | Own props | Demo map |
 |---|---|---|---|---|---|
-| 04 Orbital Station (clean sci-fi) | `core.orbital`: grated floors, white Station Panels, white panel cover, Glow Trim | Facade **Station hull (viewports)**, roof | Hangar Bay, Reactor Hall | 25 (category *Orbital Station*) | Halcyon Station |
+| 04 Orbital Station (clean sci-fi) | `core.orbital`: grated floors, white Station Panels, white panel cover, Glow Trim | Facade **Station hull (viewports)**, roof | Hangar Bay, Reactor Hall (kit tiles); the research base's eight (`map/packTilesOrbital.ts`, below) | 25 (category *Orbital Station*) | Halcyon Station |
 | 07 Neon Megacity (futuristic city) | `core.neon_megacity`: Wet Asphalt, dark concrete, glass, Neon Tube trim | Facades **Glass tower** and **Neon block**, roof | Glass Tower, Spire Tower, Stepped Tower, Twin-Block Tower, Corner Shop Block, Apartment Block | 23 (category *Neon Megacity*) | Neon Spire |
 
 Orbital Station also lists the Modular SciFi MegaKit and Space Station Kit
@@ -479,6 +480,34 @@ module, coolant pipes, consoles and terminals, canister rack, floor cables,
 station columns and wall sections. The **Station hull** facade dresses a
 room's outside in white panels with round viewports, a glowing trim line,
 cornices and lit corner columns.
+
+**Orbital Station: the research base** (owner, 2026-11-12: "Sci-Fi Research" extends pack 04, it is not a pack
+of its own). Eight more tiles for a planetside base, drawn in code in `map/packTilesOrbital.ts` (box helpers from
+packTilesMedieval.ts; `disc`, `drum` and `mast` from packTilesSnow.ts) in the pack's existing materials (White
+Panel, Station Panels, Dark Tech, Light Panel, Glow Trim, steel, tread plate): no new theme, material or texture.
+Hangar Bay and Reactor Hall stay kit tiles in `content/tiles/core.json`; both sources share the `orbital.` prefix
+in one catalog, and the palette groups a pack's tiles by that prefix or the pack's `tiles` list, so they sit
+together. Lights are steady strips and trim lines (nothing blinks; no large lit surface).
+
+| Tile | Cells | Ports | What it is |
+|---|---|---|---|
+| `orbital.lab_module` Lab Module | 1 × 1 | N, S | a white-panel room 3.4 m high, doors N and S, a Dark Tech workbench along the west wall, a sample table, an open window band E |
+| `orbital.airlock_tube` Airlock Tube | 1 × 1 | N, S | an enclosed corridor 3 m wide N–S, its upper corners cut at 45° (an eight-sided section), four steel ribs round it, a light strip down the floor; open at both ends (put doors there for an airlock) |
+| `orbital.landing_pad` Landing Pad | 2 × 2 | perimeter at level 0 | a deck 11 m square and 1 m up, a ramp 4 m wide S and N, light strips along its edges, a painted eight-sided ring |
+| `orbital.comms_array` Comms Array | 1 × 1 (4 levels) | all sides at level 0 | an equipment hut (doors S and N, a console) with a 9 m lattice mast and an upturned dish on its roof (15 m in all; the roof is not reachable); the east 2.6 m stays clear |
+| `orbital.greenhouse` Greenhouse | 2 × 1 | perimeter at level 0 | a hall of open window bands between steel posts over a 0.9 m sill, two doors S and N and one at each end, roof ribs and a ridge, five planter beds 0.7 m high as cover |
+| `orbital.sky_tube` Sky Tube | 1 × 1 (2 levels) | all sides at level 0; N, S at level 1 | the Airlock Tube's section 4 m up on four legs, three windows each side; meets `snow.catwalk`, `snow.metal_stair` and upper floors; walk under it |
+| `orbital.rover_bay` Rover Bay | 1 × 2 | S (cell 0), N (cell 1) | a garage 3.5 m high, its south end open 6.4 m wide over a ramp sill onto a floor 0.25 m up, a service pit cover (a plate, no hole), a bench, a door N (one step down) |
+| `orbital.hab_dome` Hab Dome | 2 × 2 (2 levels) | S (both cells) | an eight-sided drum 14 m across (one door S, on the seam of the two south cells) under a stepped dome 7.1 m high, a column and two benches inside |
+
+Simplified: window bands are open (glass comes from edge styles); the greenhouse roof is a solid slab in the
+glass-facade paint under its ribs; the dish is a stack of eight-sided tiers pointing straight up; the tube's ribs
+are eight-sided only over the top (walls, cut corners, roof); the dome is solid tiers over a flat ceiling 3.5 m up;
+the pit cover and the pad's ring are drawn only. `test/stylePacksOrbital.test.ts` walks bots into or onto every
+tile in all four rotations (the pad by each ramp, the sky tube from a metal stair and on to a catwalk, the rover
+bay by its sill and its north door) and checks each tile draws no two faces in one plane. The coverage map
+(`maps/test_coverage.json`) still needs one of these tiles placed in MapMaker (`coverageMap.test.ts` asks for a
+code tile of every pack that has any).
 
 **Neon Megacity pieces.** Towers from Kenney's City Kit (Commercial) fitted
 to whole cells (solid, their street face local north, roofs walkable at the
@@ -936,6 +965,48 @@ storey a repeat), Snowy Concrete, Frozen Rock (strata rimed with frost), Steel G
 down), *Ice Block* (breakable cover, back after 30 s), *Thin Ice* (4 × 4 m, gives way 0.7 s after you step
 on it, back after 12 s), with blast doors, ladders, alarm lights, water, mines and the generator.
 Not in the game yet: falling snow (the `snowy` sky has no precipitation) and slippery ice.
+
+### 13 Industrial Factory (working factory)
+
+Owner, 2026-11-12: a new pack with its own theme (not a refresh of 01 Military Compound), built from our own
+pieces: factory floor, pipes, catwalks, conveyors, crates. Theme `core.industrial` (dark concrete floors, grey
+sheet walls, rusted plate solids, steel undersides, safety-yellow steel trim; existing materials only; `core.factory`
+is unchanged), backdrop: overcast sky, city skyline, gravel; the scenery belt is containers, long factory crates,
+concrete barriers, drums and valves (kit families). Demo map `maps/ironworks.json`: still to be made in MapMaker.
+Tiles in `map/packTilesIndustrial.ts` (box helpers from packTilesMedieval.ts; `tank` and `disc` from packTilesSnow.ts):
+
+| Tile | Cells | Ports | What it is |
+|---|---|---|---|
+| `industrial.factory_hall` Factory Hall | 2 × 2 (3 levels) | perimeter at level 0; N at level 1 (both cells) | sheet walls 7.5 m high on a steel frame, an open window band 5 m up, a 6 × 4.6 m doorway S (hang a Roll-up Door), doors on every side, a grating mezzanine 4 m up along N (stair up the east side) with a doorway at each north cell onto a catwalk outside |
+| `industrial.pipe_rack` Pipe Rack | 1 × 1 (2 levels) | all sides | three eight-sided pipes E–W on two steel bents 3 m up; walk and drive under, lay them in a row |
+| `industrial.catwalk_cross` Catwalk Crossing | 1 × 1 (2 levels) | all sides at level 0 and at level 1 | grating decks 4 m up to all four edges, railed, on four legs (meets `snow.catwalk`, `snow.metal_stair`) |
+| `industrial.conveyor_line` Conveyor Line | 1 × 1 | all sides | a belt 1.05 m high and 6.4 m long N–S on a steel bed, a 1.5 m guard rail along its east side: cover (it does not move; a Sliding platform can ride along it) |
+| `industrial.loading_bay` Loading Bay | 2 × 1 (2 levels) | perimeter at level 0 | a concrete dock 1.25 m high south of a sheet wall, a ramp up its west end, a canopy on posts; a 6 × 4.6 m doorway in the wall at dock height (Roll-up Door) with steps down behind it to the north; the west 1.5 m stays clear at ground level |
+| `industrial.silo` Silo | 1 × 1 (3 levels) | all sides at level 0; S at levels 1 and 2 | an eight-sided tank 2.8 m across, an open grating stair 2.4 m wide round it (landings N at 2 m and 6 m, S at 4 m and 8 m, the south ones to the edge for a catwalk) to a railed deck 8 m up |
+| `industrial.control_room` Control Room | 1 × 1 (2 levels) | all sides at level 0; N at level 1 | a panel cabin on legs 4 m up, an open window band on three sides, a door N onto a railed balcony at the north edge (a gap in the rail for a catwalk), an open stair up the east side from the south; walk under it |
+
+Window bands are open (no glass: you shoot through them); rails are the solid 1 m rail the other packs use; the
+silo's corner posts and the hall's frame are drawn only. Navmesh notes (on top of Snow's): the bots' navmesh keeps
+0.8 m off every wall and edge, so a stair or deck needs 2.4 m of width (a 2.2 m stair round the silo lost its
+strip in two of four rotations, a 1.5 m one had none); steps need a run of 0.42 m or more (at 0.38 m the mesh
+drops them as a ledge); a switchback whose steps run to the cell's very edge drops off the mesh (the silo's stops
+0.1 m short, with sills at the south landings); and a doorway beside a 1 m stair landing connects nothing (the
+control room's door faces its balcony instead). `test/stylePacksIndustrial.test.ts` walks bots onto the
+mezzanine, the crossing, the dock, both silo landings and its deck, the cabin, and off the hall, silo and
+control room onto a catwalk, in all four rotations, and checks each tile draws no two faces in one plane.
+
+**Props**: none of its own. It lists our kit families (conveyor belt, factory, wooden and framed crates, steel
+drums, shipping container, concrete barrier, warning sign, console panel, pipe valve, iron fence, shelves) and
+pieces already in the game (machines, hoppers, piston, cog, pipes and pipe racks, tanks, the gantry crane, the
+generator, cones, pallets, lamps). So the earlier packs' "25–40 props of its own category" rule does not apply to
+it: the test asks for seven tiles of its own and 25 or more pieces in all.
+
+**Materials**: no new ones (Steel Grating, tread plate, rusted plate, hazard stripes, grey and rusty corrugated
+sheet, concrete, steel). **Facades**: *Corrugated sheet*, *Bunker concrete*, *City brick*. **Set pieces**: role pack
+`industrial` (sheet walls, yellow steel trim, dark concrete, crate wood, rusted plate; blast doors, reinforced
+glass) on the Loading Dock, Power Core Hall, Reactor Room, Server Vault, Catwalk Bridges, Skybridges and Stair
+Towers. **Gameplay pieces**: the Roll-up Door, goods lift, sliding platform, blast door, ladder, alarm light,
+barrier, fence, crates and barrels, gas, the generator, crusher, flames and shock traps.
 
 ### 06 Jungle Ruins refresh (Ancient Temple folded in)
 

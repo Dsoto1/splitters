@@ -105,6 +105,7 @@ export const THEME_BACKDROPS: Record<string, Backdrop> = {
   'core.coastal': b('overcast', 'ocean', 'water', 0.5),
   'core.desert_city': b('clear', 'mesas', 'sand', 0.5),
   'core.ancient_temple': b('clear', 'forest', 'moss', 0.55),
+  'core.industrial': b('overcast', 'city', 'gravel', 0.6),
 };
 
 /** The backdrop a map is drawn with: its own, or its theme's (the ground carrying on in the terrain's commonest edge material). */

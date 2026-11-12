@@ -7,7 +7,7 @@
       "displayName": "Power Core Hall",
       "category": "Industrial",
       "blurb": "A hall 24 m square and two storeys high round a glowing power core: eight columns, a railed gallery all round at 4 m with two stairs up, doors on all four sides and onto the gallery east and west.",
-      "packs": ["orbital", "military", "neon", "snow", "harbor"],
+      "packs": ["orbital", "military", "neon", "snow", "harbor", "industrial"],
       "footprint": { "cells": [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2],[2,2]], "levels": [0,1] },
       "mirror": "free",
       "roles": {"glass":"reinforced"},
