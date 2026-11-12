@@ -8,7 +8,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: a table on four legs and an apron, the size of the Kenney table (2.06 \u00d7 0.8 \u00d7 1.095 m); one look has a runner."
+        "1": "First version: a table on four legs and an apron, the size of the Kenney table (2.06 × 0.8 × 1.095 m); one look has a runner."
       },
       "size": [
         2.06,
@@ -111,7 +111,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: a desk with a drawer pedestal, a panel leg and a modesty panel, the size of the Kenney desk (1.529 \u00d7 0.8 \u00d7 0.816 m)."
+        "1": "First version: a desk with a drawer pedestal, a panel leg and a modesty panel, the size of the Kenney desk (1.529 × 0.8 × 0.816 m)."
       },
       "size": [
         1.529,
@@ -222,7 +222,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: a narrow table with a low shelf, the size of the Kenney side table (0.834 \u00d7 0.6 \u00d7 0.347 m)."
+        "1": "First version: a narrow table with a low shelf, the size of the Kenney side table (0.834 × 0.6 × 0.347 m)."
       },
       "size": [
         0.834,
@@ -314,7 +314,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: a pedestal table, its top six-sided like the Kenney round table's or oval, the size of that table (1.511 \u00d7 0.8 \u00d7 1.745 m); four collision boxes, as it had."
+        "1": "First version: a pedestal table, its top six-sided like the Kenney round table's or oval, the size of that table (1.511 × 0.8 × 1.745 m); four collision boxes, as it had."
       },
       "size": [
         1.511,
@@ -426,7 +426,7 @@
       "category": "Industrial",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: a workbench, a cabinet under a thick top that overhangs it, a vice on one end, things left on the top, the size of the Kenney workbench (1.136 \u00d7 1 \u00d7 1.032 m); collides as three boxes for its four; plays as wood (that piece was concrete by the guess)."
+        "1": "First version: a workbench, a cabinet under a thick top that overhangs it, a vice on one end, things left on the top, the size of the Kenney workbench (1.136 × 1 × 1.032 m); collides as three boxes for its four; plays as wood (that piece was concrete by the guess)."
       },
       "size": [
         1.136,
@@ -513,6 +513,99 @@
             "cabinet": "#4f6b52",
             "vice": "#3a3d42",
             "tool": "#2f5f8a",
+            "grime": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.table.desk_hutch",
+      "displayName": "Desk with Hutch",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a pedestal desk 1.4 m wide with a hutch of two shelves along its back to 1.7 m, books on them, pigeonholes over the desk top (a dormitory desk: docs/map-briefs/st_johns). Collides as two boxes: the desk, and the hutch on the back of it; open over the desk top in front of the hutch."
+      },
+      "size": [
+        1.4,
+        1.7,
+        0.65
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "deskhutch",
+        "desk": 0.76,
+        "hutch": 0.3,
+        "drawers": 3,
+        "shelves": 2,
+        "books": 0.7
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 9991,
+          "look": {
+            "wood": "#a67c4e",
+            "back": "#8a6540",
+            "metal": "#3a3c40",
+            "jitter": 0.07,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "walnut",
+          "seed": 9992,
+          "set": {
+            "books": 0.45
+          },
+          "look": {
+            "wood": "#6b4a30",
+            "metal": "#b59a55",
+            "jitter": 0.07,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "pine",
+          "seed": 9993,
+          "set": {
+            "books": 0.9,
+            "drawers": 2
+          },
+          "look": {
+            "wood": "#c09a66",
+            "back": "#a88456",
+            "metal": "#3a3c40",
+            "jitter": 0.07,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "bare",
+          "seed": 9994,
+          "set": {
+            "books": 0.12
+          },
+          "look": {
+            "wood": "#9a744a",
+            "metal": "#3a3c40",
+            "jitter": 0.07,
             "grime": 0.3
           }
         }

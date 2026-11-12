@@ -1,0 +1,277 @@
+{
+  "$comment": "Doors as still props (tools/content/kit/academy.mjs; docs/map-briefs/st_johns): a thick oak door in its frame, made for the Room doorway (content/tiles/edges.json door_room, 2 m × 2.6 m) and for a 2 m gap in a partition. Nothing moves in play, so a hall of them costs nothing each tick. One family is one collision, so each swing is a family: shut and ajar collide as the frame's slab (a closed room), open has no collision (the doorway stays clear). The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. The open door's centre is 0.92 m inside the room from the wall's middle (its box is the frame and the leaf standing out from it).",
+  "type": "door",
+  "props": [
+    {
+      "id": "kit.door.oak",
+      "displayName": "Oak Door (shut)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: an oak door shut in its frame, 2 × 2.6 × 0.16 m: boards under three iron strap hinges with studs, a ring handle each side, ledges on the room side; variants a half-glazed leaf (reeded glass behind glazing bars), a diamond-panelled leaf and a dark plank leaf. Collides as its box: a closed room."
+      },
+      "size": [
+        2,
+        2.6,
+        0.16
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "door",
+        "swing": 0,
+        "leaf": "plank"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 9961,
+          "look": {
+            "wood": "#7a5232",
+            "frame": "#5e3f27",
+            "iron": "#24262a",
+            "jitter": 0.07,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "glazed",
+          "seed": 9962,
+          "look": {
+            "wood": "#80552f",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "glass": "#aebfc0",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "glazed"
+          }
+        },
+        {
+          "index": 2,
+          "name": "diamond",
+          "seed": 9963,
+          "look": {
+            "wood": "#8a4f2c",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "panel"
+          }
+        },
+        {
+          "index": 3,
+          "name": "dark",
+          "seed": 9964,
+          "look": {
+            "wood": "#4e3524",
+            "frame": "#3a281c",
+            "iron": "#1c1e21",
+            "jitter": 0.07,
+            "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.oak_ajar",
+      "displayName": "Oak Door (ajar)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the Oak Door standing 25° open into the room (+z), the same four leaves. Collides as the frame's slab in the doorway, as the shut door does (still a closed room: nobody squeezes through the gap); the leaf itself reaches 0.8 m into the room and does not collide."
+      },
+      "size": [
+        2,
+        2.6,
+        1.8
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "door",
+        "swing": 25,
+        "leaf": "plank"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 9971,
+          "look": {
+            "wood": "#7a5232",
+            "frame": "#5e3f27",
+            "iron": "#24262a",
+            "jitter": 0.07,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "glazed",
+          "seed": 9972,
+          "look": {
+            "wood": "#80552f",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "glass": "#aebfc0",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "glazed"
+          }
+        },
+        {
+          "index": 2,
+          "name": "diamond",
+          "seed": 9973,
+          "look": {
+            "wood": "#8a4f2c",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "panel"
+          }
+        },
+        {
+          "index": 3,
+          "name": "dark",
+          "seed": 9974,
+          "look": {
+            "wood": "#4e3524",
+            "frame": "#3a281c",
+            "iron": "#1c1e21",
+            "jitter": 0.07,
+            "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.oak_open",
+      "displayName": "Oak Door (open)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the Oak Door standing open at 90° into the room (+z) on its +x jamb, the same four leaves. No collision: the doorway is clear for players, bots (who need its full 2 m) and shots. Its frame stands 0.92 m behind the prop's centre (the box is the frame and the leaf): place it that far inside the room from the middle of the wall."
+      },
+      "size": [
+        2,
+        2.6,
+        2
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "door",
+        "swing": 90,
+        "leaf": "plank",
+        "back": 0.92
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 9981,
+          "look": {
+            "wood": "#7a5232",
+            "frame": "#5e3f27",
+            "iron": "#24262a",
+            "jitter": 0.07,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "glazed",
+          "seed": 9982,
+          "look": {
+            "wood": "#80552f",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "glass": "#aebfc0",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "glazed"
+          }
+        },
+        {
+          "index": 2,
+          "name": "diamond",
+          "seed": 9983,
+          "look": {
+            "wood": "#8a4f2c",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "panel"
+          }
+        },
+        {
+          "index": 3,
+          "name": "dark",
+          "seed": 9984,
+          "look": {
+            "wood": "#4e3524",
+            "frame": "#3a281c",
+            "iron": "#1c1e21",
+            "jitter": 0.07,
+            "grime": 0.35
+          }
+        }
+      ]
+    }
+  ]
+}

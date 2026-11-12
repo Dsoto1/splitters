@@ -72,16 +72,23 @@ export interface EdgeArch {
 }
 /**
  * Trim on a side's inner face: a baseboard, a cornice (levels 3 m or more), a door frame (when the level is 0.2 m
- * over its top), a window surround, an arch's voussoirs and soffit, or a box standing `depth` off the wall.
+ * over its top), a window surround, an arch's voussoirs and soffit, a box standing `depth` off the wall, or a box
+ * set in the wall itself (`v`: from and to, in from the cell's boundary: a sash's bars in the opening, by its glass).
  * `outside`: drawn on the wall's outer face too, where nothing is built beyond the side (an arch seen from the street).
  */
 export type EdgeTrim =
   | { base: readonly [EdgeValue, EdgeValue] }
   | { cornice: readonly [EdgeValue, EdgeValue] }
-  | { frame: { half: number; top: number } }
+  | { frame: { half: number; top: number }; surface?: EdgeTrimSurface }
   | { window: { u: readonly [number, number]; y: readonly [number, number] } }
   | { arch: EdgeArch; outside?: boolean }
-  | { u: readonly [EdgeValue, EdgeValue]; y: readonly [EdgeValue, EdgeValue]; depth: number; repeat?: EdgeRepeat; outside?: boolean };
+  | { u: readonly [EdgeValue, EdgeValue]; y: readonly [EdgeValue, EdgeValue]; depth: number; repeat?: EdgeRepeat; outside?: boolean; surface?: EdgeTrimSurface }
+  | { u: readonly [EdgeValue, EdgeValue]; y: readonly [EdgeValue, EdgeValue]; v: readonly [number, number]; surface?: EdgeTrimSurface };
+/** A library material of its own for a trim piece (a door's oak frame, a sash's painted bars), instead of the tile's trim surface. */
+export interface EdgeTrimSurface {
+  material: string;
+  tint?: string;
+}
 /** What a built edge style is made of (content/tiles/edges.json). */
 export interface EdgeShape {
   segments: readonly EdgeSegment[];

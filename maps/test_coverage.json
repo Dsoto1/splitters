@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_rbau6um53slvaio3",
-      "revision": 21,
-      "contentHash": "sha256:3cff97b57b48aa38791328f9bbc765ef7776368566492b67e19d88bab135ff57",
+      "versionId": "v_aupshbcamycnf4ds",
+      "revision": 22,
+      "contentHash": "sha256:de9425c181622ce0a93bc66583a305356b47d583ded9ae959822e5d8574dcb20",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T13:27:23.364Z"
+      "releasedAt": "2026-11-12T18:47:23.577Z"
     },
     "testOnly": true
   },
@@ -899,6 +899,31 @@
         "tile": "industrial.pipe_rack",
         "x": 0,
         "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_30vxpf9a5x",
+        "tile": "core.room",
+        "x": -6,
+        "y": -51,
+        "z": 0,
+        "rotation": 0,
+        "glass": {
+          "0,0,0:N": "breakable",
+          "0,0,0:E": "reinforced"
+        },
+        "edges": {
+          "0,0,0:N": "window_sash",
+          "0,0,0:E": "windows_sash",
+          "0,0,0:S": "door_room"
+        }
+      },
+      {
+        "id": "tile_jhpaq7fvzb",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -51,
         "z": 0,
         "rotation": 0
       }
@@ -4932,6 +4957,78 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "prop_6cxnfalctm",
+      "kind": "prop",
+      "position": [
+        -48,
+        0,
+        -411.75
+      ],
+      "model": "kit.door.oak",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0oq8h6gd1r",
+      "kind": "prop",
+      "position": [
+        -38.5,
+        0,
+        -409
+      ],
+      "model": "kit.door.oak_ajar",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 1
+    },
+    {
+      "id": "prop_8jjhk1gerb",
+      "kind": "prop",
+      "position": [
+        -41.5,
+        0,
+        -407
+      ],
+      "model": "kit.door.oak_open",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 2
+    },
+    {
+      "id": "prop_3h0sqhvq27",
+      "kind": "prop",
+      "position": [
+        -46.4,
+        0,
+        -406
+      ],
+      "model": "kit.table.desk_hutch",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_lh5drt3v6j",
+      "kind": "prop",
+      "position": [
+        -50,
+        0,
+        -405
+      ],
+      "model": "kit.cabinet.closet",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -6064,6 +6161,86 @@
       "z": 0,
       "rotation": 0,
       "mirror": false
+    },
+    {
+      "id": "setpiece_tnfowf5qby",
+      "piece": "setpiece.stair_end_bay",
+      "x": -18,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_z90kcythx2",
+      "piece": "setpiece.dorm_bay",
+      "x": -17,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_wecckxjpuw",
+      "piece": "setpiece.dorm_bay",
+      "x": -17,
+      "y": -51,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_3fai89yi9l",
+      "piece": "setpiece.dorm_office_bay",
+      "x": -16,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_wx68e90fpn",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -13,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_teh85v3v8t",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -13,
+      "y": -51,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_568q9ezup3",
+      "piece": "setpiece.stair_end_bay",
+      "x": -12,
+      "y": -50,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_fkb6bs3lkb",
+      "piece": "setpiece.stair_end_bay_3",
+      "x": -9,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
     }
   ]
 }

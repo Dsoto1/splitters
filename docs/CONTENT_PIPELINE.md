@@ -756,7 +756,9 @@ barrels and boxes first; fences and walls, then containers, come next.
   the lever panel, the giant cog), `yard.mjs` (the glass pipe, the capped pipe riser, the workbench, the traffic
   cone, the anvil on its timber block; all but the cone collide as finer boxes written in their generators),
   `pipes.mjs` (the station's coolant pipe and its pipe junction: pipes along z, the bore open from end to end),
-  `dome.mjs` (the Desert City dome kit: "The dome kit" below), `glb.mjs` (the writer).
+  `dome.mjs` (the Desert City dome kit: "The dome kit" below), `academy.mjs` (the dormitory pieces: the Oak Door
+  in its frame, shut, ajar and open as three families, since a family has one collision; the desk with a hutch; the
+  slim closet: "Doors as props" below), `glb.mjs` (the writer).
   `geom.mjs` also has square bars between any two points, wire panels (flat strips seen from both sides), and
   cylinders and rings along any axis.
   Randomness only from `env/rng.mjs` streams.
@@ -789,6 +791,23 @@ barrels and boxes first; fences and walls, then containers, come next.
   kind, run the build, add it to the content test's family list, look at it in the lineup
   (`node tools/content/prop-lineup.mjs` with `ONLY=`, or `window.__lineup.show(['kit.crate.wood#2'], 'eye')`). A change
   to a family's size, collision or surface bumps its `assetVersion` with a note: it is a gameplay change.
+
+#### Doors as props (the dormitory's Oak Door)
+
+A door that never opens is a prop, not a door entity: no logic, nothing each tick, so a hall of 140 rooms costs what
+140 props cost (docs/map-briefs/st_johns). `content/kitprops/door.json` has three families from one generator
+(`kit/academy.mjs` `doorMesh`), because a family has one collision:
+
+| Family | Collision | Where its centre goes |
+|---|---|---|
+| `kit.door.oak` Oak Door (shut) | its box, 2 × 2.6 × 0.16 m: a closed room | the middle of the wall, in the doorway |
+| `kit.door.oak_ajar` (ajar, 25°) | the same slab in the doorway (`bounds: "within"`: the leaf reaches 0.8 m into the room and does not collide) | the same |
+| `kit.door.oak_open` (open, 90°) | none (`collide: "none"`): the doorway stays clear for players, bots (who need its full 2 m) and shots | 0.92 m inside the room from the wall's middle: its box is the frame and the leaf, no more, so a set piece can stand one in a wall at its footprint's edge |
+
+The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. Variants are leaves: `oak`
+(boards under three iron strap hinges, a ring handle each side), `glazed` (a half-glazed office door), `diamond` (a
+diamond of mouldings on each panel), `dark`. They fit the wall style `door_room` (Room doorway, 2 × 2.6 m, an oak
+frame of its own) and a 2 m gap in a partition of blocks (0.12 m: the frame stands 2 cm proud each side).
 
 #### The dome kit
 
@@ -858,7 +877,7 @@ stay there and follow the kit in the catalog.
 | File | Holds |
 |---|---|
 | `content/tiles/core.json` `tiles` | every kit tile in palette order: `id`, `displayName`, `category` (palette group: `TILE_CATEGORIES`), `blurb`, `cells` or `footprint` ([w, d] or [w, d, levels]), `floors` (levels with a slab), `ports` (`{side, level, cell}`, or `{allSides: level}`, or `{perimeter: [w, d], levels}`), `open`, `edgeDefault`, `edgeDefaults` (`"dx,dy,dz:S"`: style), `configurable` (room options), `model` (`file`, `lift`), `solids` and `extraFloors` (parts), `notes` |
-| `content/tiles/edges.json` `edges` | every edge style in MapMaker's order: `id`, `label`; `auto` and `open` are `rule`s in code; the rest give `segments` (collide: `u` along the side, `y` up, `t` thick, or a `repeat`), `trim` (`base`, `cornice`, `frame`, `window`, `arch` (a segmental arch's voussoirs, keystone and soffit: `u`, `y` springing and crown, `count`, `band`, `key`) or a box with `depth`; `outside`: on the wall's outer face too where nothing is built beyond the side), `trimFrom`, `openings` ([u0, u1, y0, y1]: framed under a facade, glazed when `glass`), `corner`, `facade`, `street`, `openDefault`, `dressing` (`door` / `window` with `span`, or `see-through`), `notes` |
+| `content/tiles/edges.json` `edges` | every edge style in MapMaker's order: `id`, `label`; `auto` and `open` are `rule`s in code; the rest give `segments` (collide: `u` along the side, `y` up, `t` thick, or a `repeat`), `trim` (`base`, `cornice`, `frame`, `window`, `arch` (a segmental arch's voussoirs, keystone and soffit: `u`, `y` springing and crown, `count`, `band`, `key`), a box with `depth`, or a box set in the wall itself with `v` ([from, to] in from the cell's boundary: a sash's bars by the glass, which sits at 0.25); `outside`: on the wall's outer face too where nothing is built beyond the side; `surface` on a frame or a box: a library material of its own (`material`, `tint`) instead of the tile's trim surface: an oak door frame, painted sash bars), `trimFrom`, `openings` ([u0, u1, y0, y1]: framed under a facade, glazed when `glass`), `corner`, `facade`, `street`, `openDefault`, `dressing` (`door` / `window` with `span`, or `see-through`), `notes` |
 
 A part names one builder and its numbers (local metres: x east, y up, z north from the first cell's centre and
 floor): `box` [x0, y0, z0, x1, y1, z1] (with `yaw`), `flight` (steps of 0.25 m: `axis`, `dir`, `from`,
@@ -954,7 +973,8 @@ selection in MapMaker), so it plays anywhere.
 3. **Generate and check:** `node tools/content/setpieces.mjs` checks the files' shape (an unknown field is an error),
    the packs' materials, facades, door styles, themes and Style Packs, ids, families and the pieces and packs maps
    name; then, with the game's own code (`tools/content/setpieces-check.ts`), each piece against the map schema and
-   `map/setPieceCheck.ts` (tiles, props and materials exist, the footprint covers every part, ports face out of it,
+   `map/setPieceCheck.ts` (tiles, props and materials exist, the footprint covers every part (a block's and a prop's
+   own box as it stands turned, so furniture can stand against a wall at the footprint's edge), ports face out of it,
    markers name its parts, `mirror: "free"` only when every tile mirrors onto itself), and placed in a map in each
    turn, mirrored and not, in each of its packs and in a theme with none: `validateMap` must find no error in what it
    expands into. It writes the generated file; `--check` (in `pnpm content:check`) only verifies it is up to date.
@@ -962,8 +982,8 @@ selection in MapMaker), so it plays anywhere.
 4. **Test:** `packages/shared/test/setPieceExpand.test.ts` (every turn × mirror × pack; determinism; ids),
    `setPiecePlay.test.ts` (collision, trim and nav from the expansion equal the exploded map's; the z-fighting audit
    over every piece; shots, players and bots through its arches and doorways: a piece whose ports are not all walled
-   doorways or arches, such as a trench, a stand or a tunnel, goes in its `OPEN_SIDED` list and is proved by a test of
-   its own, as in `setPieces3.test.ts`) and `setPieceEdit.test.ts` (placement checks, commands, budgets) pick a new
+   doorways or arches, such as a trench, a stand, a tunnel or a dormitory bay, goes in its `OPEN_SIDED` list and is
+   proved by a test of its own, as in `setPieces3.test.ts` and `setPiecesAcademy.test.ts`) and `setPieceEdit.test.ts` (placement checks, commands, budgets) pick a new
    piece up; add a case for what is new about it. Look at it in the game (MapMaker
    → TEST): nothing floating, upside down, flickering or blocking an opening.
 
