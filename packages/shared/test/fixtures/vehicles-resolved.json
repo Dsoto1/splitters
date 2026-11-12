@@ -1257,11 +1257,11 @@
     "id": "gunship",
     "displayName": "Gunship",
     "kind": "vehicle",
-    "model": "vehicles/gunship.glb",
+    "model": "vehicles/sky_cruiser.glb",
     "health": 950,
     "half": [
-     2.4,
-     1.2,
+     2.1,
+     1.5,
      4.3
     ],
     "seats": [
@@ -1270,35 +1270,41 @@
       "label": "Pilot",
       "offset": [
        0,
-       3.1,
-       2.4
+       1.55,
+       1.9
       ],
       "weapon": "core.speeder_guns",
-      "arc": 0.3
+      "arc": 0.3,
+      "seated": true,
+      "legDrop": 0.35
      },
      {
       "role": "gunner",
       "label": "Left door gun",
       "offset": [
-       -2,
-       2.4,
-       -0.4
+       -1.7,
+       1.26,
+       -0.27
       ],
       "weapon": "core.mount_mg",
       "arc": 1.25,
-      "facing": -1.5707963267948966
+      "facing": -1.5707963267948966,
+      "seated": true,
+      "legDrop": 0.33
      },
      {
       "role": "gunner",
       "label": "Right door gun",
       "offset": [
-       2,
-       2.4,
-       -0.4
+       1.7,
+       1.26,
+       -0.27
       ],
       "weapon": "core.mount_mg",
       "arc": 1.25,
-      "facing": 1.5707963267948966
+      "facing": 1.5707963267948966,
+      "seated": true,
+      "legDrop": 0.33
      }
     ],
     "enterRadius": 4.5,
@@ -1323,8 +1329,8 @@
     },
     "cockpitEye": [
      0,
-     2.9,
-     2.8
+     2.35,
+     2.3
     ],
     "blurb": "A flying gunship (the dropship's flight model): the pilot fires blasters ahead, two door gunners cover the sides"
    },
@@ -1332,18 +1338,18 @@
    "eyes": [
     [
      0,
-     2.9,
-     2.8
+     2.35,
+     2.3
     ],
     [
-     -2,
-     3.4,
-     -0.25
+     -1.7,
+     2.26,
+     -0.12000000000000002
     ],
     [
-     2,
-     3.4,
-     -0.25
+     1.7,
+     2.26,
+     -0.12000000000000002
     ]
    ]
   },

@@ -491,31 +491,46 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     vehicle: { maxSpeed: 31, reverseSpeed: 8, accel: 18, turnRate: 2.4, idleBrake: 22, hover: true, grip: 0.1, mass: 0.35 },
     blurb: 'The fastest thing on the map: one rider, no gun, drifts like a hovercraft',
   },
-  // cockpitEye: In the cockpit between its frames, not on the roof.
+  // model: Sky Cruiser (Meshy Community, CC0; the owner's Drive, Meshy_AI_Sky_Cruiser_1108121108_texture.glb; content/guns.json vehicles/sky_cruiser.glb, 2026-11-12): a red and white hover craft, 8.6 m long, with a blunt nose (a scooped hood over a bumper), a closed cab behind it, a door standing open on each side over a wide step board, and a caged engine deck at the tail. One closed shell: the cab has no inside, and each door opening is an alcove 0.8 m deep with a bench painted on its back wall. It replaced the Space Kit cargo craft (vehicles/gunship.glb), which this vehicle no longer names.
+  // half: Fitted to the hull (2026-11-12; measured on the model, slices of its triangles; the mount's frame is the model's plus the 0.35 m it hovers): the hull is 4.2 m wide at its sills and front pods (the box was 4.8 m), the cab's roof 2.9-3.0 m up (the box was 2.4 m), 8.6 m long (unchanged). The step boards under the doors reach 3.0 m either side and the tail's cage 3.45 m up, outside the box: not solid, like the Hauler's fins. It hovers the class's 0.35 m, like the Speeder and the Hauler. The chase camera's distance and height come from this box (11.6 m back, was 11.3).
+  // seats: Measured on the model: the cab's shell runs from z 1.2 to 3.0, its bottom 1.2 m up and its roof 2.6-2.65 m, 2.4 m wide; each door alcove from z -1.16 (the engine pod) to 0.93 (the open door), its sill 1.26 m up from x 1.2 to 1.8, its back wall at x 0.95, the roof's overhang 2.87 m up (1.6 m of headroom: a standing rider's head would go through it), the step board 0.93 m up from x 1.9 to 3.0. The pilot sits in the cab (cushion 1.55 m, z 1.9), out of sight in the closed shell like the Hauler's. Each door gunner sits on the sill's edge facing out (x 1.7, the alcove's middle), feet on the step board 0.33 m below, head 0.6 m under the overhang; at their eye's height (2.26 m) the open door and the engine pod stand clear of the gun's whole arc (the door's lower half shows beside the view at the arc's forward edge). Roles, guns and arcs unchanged. They stood on the old model's roof; seated, they no longer duck, and like every seated rider their rounds pass through their own craft.
+  // cockpitEye: A seated head height in the cab (0.2 m under its roof, the windscreen 0.8 m ahead). The shell around the eye is not drawn in the cockpit view (its faces look away from it), so the pilot sees ahead over the hood's scoop and its two fins, low in the view; no cut needed in client content/cockpits.ts.
   gunship: {
     id: 'gunship',
     displayName: 'Gunship',
     kind: 'vehicle',
     model: 'vehicles/sky_cruiser.glb',
     health: 950,
-    half: [2.4, 1.2, 4.3],
+    half: [2.1, 1.5, 4.3],
     seats: [
-      { role: 'driver', label: 'Pilot', offset: [0, 3.1, 2.4], weapon: 'core.speeder_guns', arc: 0.3 },
+      {
+        role: 'driver',
+        label: 'Pilot',
+        offset: [0, 1.55, 1.9],
+        weapon: 'core.speeder_guns',
+        arc: 0.3,
+        seated: true,
+        legDrop: 0.35,
+      },
       {
         role: 'gunner',
         label: 'Left door gun',
-        offset: [-2, 2.4, -0.4],
+        offset: [-1.7, 1.26, -0.27],
         weapon: 'core.mount_mg',
         arc: 1.25,
         facing: -1.5707963267948966,
+        seated: true,
+        legDrop: 0.33,
       },
       {
         role: 'gunner',
         label: 'Right door gun',
-        offset: [2, 2.4, -0.4],
+        offset: [1.7, 1.26, -0.27],
         weapon: 'core.mount_mg',
         arc: 1.25,
         facing: 1.5707963267948966,
+        seated: true,
+        legDrop: 0.33,
       },
     ],
     enterRadius: 4.5,
@@ -532,7 +547,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       mass: 3,
       fly: { climb: 5, ceiling: 30 },
     },
-    cockpitEye: [0, 2.9, 2.8],
+    cockpitEye: [0, 2.35, 2.3],
     blurb: 'A flying gunship (the dropship\'s flight model): the pilot fires blasters ahead, two door gunners cover the sides',
   },
   // seats: All four sit (2026-11-11: standing on the floor, their heads came out through the roof, 2.2 m): cushions 1.1 m up.
