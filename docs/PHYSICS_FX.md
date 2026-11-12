@@ -153,7 +153,9 @@ new machine, never committed); `node tools/content/vfx-map.mjs` after editing th
   and no bob, and no sparkles), at 0.5 of its strength instead of 0.8, eased in over two seconds. The pack counts
   on Godot's glow pass; without one its flare (20 % opaque at most) and thin rings could not be seen, so they are
   lifted three times and the flare adds its light (`LOOT_LIFT`). It is light added to the scene: clear on dark and
-  mid floors, little more than a tint on a sunlit pale floor (the Range's).
+  mid floors, fainter on a sunlit pale one (the Range's). Cost: four draws a glow (three held still), so at most
+  8 / 20 / 32 draws on low / medium / high; not measured with `pnpm perf:budget`. The e2e flow `flashing` records
+  six of them coming up at night (moment `loot`).
 - Map entries may `skip` parts of an effect (node names) and lasting effects may be held `steady`
   (`VfxOptions.steady`, `LastingPlace.steady`; changing it starts the effect again).
 - Every effect piece has its own geometry: thin-instance buffers live on the geometry, so pieces sharing one
