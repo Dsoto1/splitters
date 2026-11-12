@@ -72,6 +72,7 @@ import {
   NPC_ROLE_SPECS,
   isCreature,
   zombieLook,
+  ZOMBIE_LOOKS,
   STREAK_REWARDS,
   matchPhysics,
   matchTeams,
@@ -2379,7 +2380,10 @@ export class GameSession {
     // Roulette: the cards everyone is dealt next as well (the spawn events name them), so the first lives load with the map.
     for (const look of new Set([...this.looks.values(), ...this.rlUpcoming])) jobs.push(this.view.characters.preload({ look }));
     jobs.push(this.view.characters.preload({ npc: { color: '#888888', scale: 1, female: true } }));
-    if (rules.mode === 'core.zombies' || map.entities.some((e) => e.kind === 'encounter' && (e.roster?.zombie ?? 0) > 0)) this.view.creatures.preload('zombie');
+    // The zombies' six characters, loaded before the first wave: a zombie whose model was still on its way was a
+    // capsule, and one shot in that state dropped like a box (owner, 2026-11-12).
+    const zombies = rules.mode === 'core.zombies' || map.entities.some((e) => e.kind === 'encounter' && (e.roster?.zombie ?? 0) > 0);
+    if (zombies) for (const look of ZOMBIE_LOOKS) jobs.push(this.view.characters.preload({ look }));
     // NPCs drawn as a creature original's look (goblins, boglurkers…) in this map's encounters.
     for (const role of NPC_ROLES) {
       const look = NPC_ROLE_SPECS[role].look;
@@ -2434,7 +2438,7 @@ export class GameSession {
     for (const m of models) jobs.push(this.view.models.load(m).catch(() => undefined));
     // Every shader the match will need (a character of each look, every effect), built before the start:
     // the first sight of a model or an effect mid-fight otherwise stalled on it (GameView.prewarm).
-    const looks = [...new Set([...this.looks.values(), ...this.rlUpcoming])].map((look) => ({ look }));
+    const looks = [...new Set([...this.looks.values(), ...this.rlUpcoming, ...(zombies ? ZOMBIE_LOOKS : [])])].map((look) => ({ look }));
     // (The gate waits for it 8 s at most: a slow machine finishes it in the background, out of sight.)
     // Every gun the match can put in a hand (starting weapons, pickups and what they may roll), as held and as yours.
     const guns = [...models].filter((m) => WEAPONS_BY_SLOT.some((w) => w.view.model === m) || thrown.has(m));
