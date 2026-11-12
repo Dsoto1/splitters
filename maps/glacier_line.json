@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "glacier_line",
     "name": "Glacier Line",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_6jrvegnpqp5udvrt",
-      "versionId": "v_hyikvshnlombtc55",
-      "revision": 4,
-      "contentHash": "sha256:db9a242ca678a8e7b0955de11e7f7c6e7a9c212c83ae38170e5703c1a7c67ed2",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T09:25:53.153Z"
+      "versionId": "v_kutcctnntswebnho",
+      "revision": 5,
+      "contentHash": "sha256:2ce9e0e3bdd2fe4554ef196e3b911fe49812573d79789c920e720e09dfd775a1",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-12T09:19:50.706Z"
     }
   },
   "classicStructure": {
@@ -1612,7 +1612,7 @@
         108
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,

@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_cz2zu3ctolnayno6",
-      "versionId": "v_rbhtkyoiokaanhpu",
-      "revision": 5,
-      "contentHash": "sha256:4548a465ba11a0ee6bbc9578f26587158d66551d45d8d71d499bc74f2180ff20",
+      "versionId": "v_woug3wc6eyrf7geb",
+      "revision": 6,
+      "contentHash": "sha256:7721b1b63eb8dab1abb2c7b26efc734a4bc76a6f0eb8d80c4a78544cc076f47a",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T21:26:31.844Z"
+      "releasedAt": "2026-11-12T09:11:11.179Z"
     }
   },
   "classicStructure": {
@@ -5007,7 +5007,7 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5021,7 +5021,7 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5541,7 +5541,7 @@
         15.2
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5555,7 +5555,7 @@
         15.2
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": 0,
       "scale": 1,
       "solid": true,

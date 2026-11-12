@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_e6dqdikseiiwt3s5",
-      "versionId": "v_n2tftm2nxqrpvcie",
-      "revision": 8,
-      "contentHash": "sha256:a14cb0a1e2c98ba354c35430d8e7c5787db739c0dec107652a1b80cb3626319a",
+      "versionId": "v_gbjlfwngqfdoi3wi",
+      "revision": 9,
+      "contentHash": "sha256:ec9a1455fc58482e472d4753176312713b9abce42c6406c2bd259cd22b66af85",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T21:35:00.813Z"
+      "releasedAt": "2026-11-12T09:24:45.310Z"
     }
   },
   "classicStructure": {
@@ -12478,7 +12478,7 @@
         -3.02
       ],
       "kind": "prop",
-      "model": "prop.bottle_return",
+      "model": "kit.shop.bottle_return",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12492,7 +12492,7 @@
         -0.44
       ],
       "kind": "prop",
-      "model": "prop.bottle_return",
+      "model": "kit.shop.bottle_return",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -12506,7 +12506,7 @@
         4.62
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -12534,7 +12534,7 @@
         4
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12548,7 +12548,7 @@
         2.65
       ],
       "kind": "prop",
-      "model": "prop.fruit_display",
+      "model": "kit.shop.produce_stand",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -12562,7 +12562,7 @@
         5.35
       ],
       "kind": "prop",
-      "model": "prop.fruit_display",
+      "model": "kit.shop.produce_stand",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -13332,7 +13332,7 @@
         64
       ],
       "kind": "prop",
-      "model": "prop.checkout",
+      "model": "kit.shop.checkout",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13346,7 +13346,7 @@
         61.34
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0.6592,
       "scale": 1,
       "solid": true,
@@ -13360,7 +13360,7 @@
         61.35
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -15222,7 +15222,7 @@
         11.4
       ],
       "kind": "prop",
-      "model": "prop.bottle_return",
+      "model": "kit.shop.bottle_return",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,

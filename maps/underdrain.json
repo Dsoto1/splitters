@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_wtaygxmgpnk3xung",
-      "versionId": "v_imm7oc5zhrwubief",
-      "revision": 5,
-      "contentHash": "sha256:2887dc2f4f49429ca58354256fc77e4444a68611fb925e9a786d70ec4686de61",
+      "versionId": "v_wiinnex6mbn3me3l",
+      "revision": 6,
+      "contentHash": "sha256:fdebaadc1e7758de1d0d37eb478793efb6a34617720f9003f06b430da2971017",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T21:54:13.772Z"
+      "releasedAt": "2026-11-12T09:47:50.464Z"
     }
   },
   "classicStructure": {
@@ -21020,7 +21020,7 @@
         2.2
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -21118,7 +21118,7 @@
         -5.2
       ],
       "kind": "prop",
-      "model": "prop.screen_panel",
+      "model": "kit.console.panel",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
