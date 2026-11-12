@@ -1,6 +1,6 @@
 # St. John's: the owner's brief for a rework (2026-11-12)
 
-The owner knows the real campus. This is what they said and what their ten reference photos show. Nothing is built
+The owner knows the real campus. This is what they said and what their fourteen reference photos show. Nothing is built
 from it yet; more references are coming ("I'll add reference more after this"). The photos are not in the repository
 (they are the school's own pictures, not ours to ship or commit): ask the owner for them, or look in the session
 scratchpad `stjohns-refs/` while that session lives. Use them as reference only: nothing from them goes into a texture.
@@ -41,6 +41,29 @@ scratchpad `stjohns-refs/` while that session lives. Use them as reference only:
    a mulched island where paths meet; a square crenellated limestone tower with a round window behind it.
 10. **The admin building inside.** Dark wood wainscot and door frames, a heavy panelled wood door with a diamond
     pattern, a half-glazed office door, framed pictures, a wood plank ceiling, an office seen through interior windows.
+
+### Second set (the same day): four more photos and two more notes
+
+The owner: "For dorm floors, there is also an office in middle on right side, with bathrooms and middle stairway
+directly across from it. Also noticed one of the buildings is partly 2 floors then 3 floors, it should just be 3
+floors."
+
+11. **The chapel inside.** A tall nave of warm coursed limestone, a great round arch before the chancel with a round
+    stained-glass rose window high in the end wall, a green curtain behind the altar, tall narrow stained-glass
+    windows down both side walls, rows of dark wood pews either side of a centre aisle, national flags hanging from
+    the dark timber roof and standing by the chancel, wall sconces, hymn boards.
+12. **The mess hall.** A long hall under a dark wood beam-and-plank ceiling, a row of square limestone piers down
+    one side with round-arched windows beyond, long tables with black chairs in rows, flags hung along the piers,
+    round iron chandeliers, a fireplace wall at the far end.
+13. **The chapel from the lawn** (wider than photo 4): the row of tall arched windows over a low arcade of smaller
+    openings, a small cannon on the lawn before it, a flagpole, the class marker stone.
+14. **The centre of the grounds.** A brick path through lawn to a low stone building with a tall red conical roof
+    over a round-arched entrance, stone benches on mulched beds, black lamp posts with banners, bare mature trees,
+    a crenellated limestone hall behind.
+
+So a dorm floor is: a hall down the middle, rooms both sides, and at its middle an office on the right with the
+bathrooms and the middle stairway across the hall from it. And the building that is two floors for part of its
+length is three floors throughout.
 
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
