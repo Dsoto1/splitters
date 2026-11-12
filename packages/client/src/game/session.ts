@@ -420,6 +420,8 @@ export class GameSession {
   /** The bot debug view (`?botdebug=1`, host or offline: botDebugView.ts), when asked for. */
   private botDebug: BotDebugView | null = null;
   private outbox: PlayerInput[] = [];
+  /** The whole-map canvas (M). */
+  private readonly bigMap = document.getElementById('bigmap') as HTMLCanvasElement | null;
   private showStats: boolean;
   private closed = false;
   /** Pickups currently taken (hidden until they respawn). */
@@ -676,6 +678,12 @@ export class GameSession {
     // The performance overlay: ?stats, F3 or Options; remembered.
     this.showStats = opts.showStats || loadPerfOverlay();
     this.input.onToggle.set('F3', () => this.setShowStats(!this.showStats));
+    // M: the whole map, larger, in the middle of the screen (again to put it away).
+    this.input.onToggle.set('KeyM', () => {
+      if (!this.bigMap) return;
+      this.bigMap.hidden = !this.bigMap.hidden;
+      if (!this.bigMap.hidden) this.hud.pickup('Map (M to put it away)');
+    });
     if (opts.exitOnF5) this.input.onToggle.set('F5', () => this.exit());
     // Watching: Space switches between following someone and the free camera (or skips the kill cam).
     this.input.onToggle.set('Space', () => {
@@ -3381,6 +3389,8 @@ export class GameSession {
       }
       // Jammed by an enemy Counter-UAV: no blips at all.
       this.hud.minimap.update(local.eye.x, local.eye.z, this.input.yaw, this.jam > 0 ? [] : blips);
+      // The whole map (M): the same dots, the map entire, north up.
+      if (this.bigMap && !this.bigMap.hidden) this.hud.minimap.drawWhole(this.bigMap, local.eye.x, local.eye.z, this.input.yaw, this.jam > 0 ? [] : blips);
       this.updatePings(local, poses, now);
       this.damageNumbers.update((p) => this.view.project(p), now);
       // On the game's clock (inputs), so a slow frame rate doesn't split a burst or stretch the settle time.

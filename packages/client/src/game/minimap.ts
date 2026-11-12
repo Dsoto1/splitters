@@ -28,6 +28,8 @@ export class Minimap {
   private planImage: ImageBitmap | null = null;
   /** What the last draw showed (redrawn only when it would differ). */
   private last = '';
+  /** The same for the whole-map view (drawWhole). */
+  private lastWhole = '';
   private origin = { x: 0, z: 0, h: 0 };
   private readonly g: CanvasRenderingContext2D | null;
 
@@ -66,6 +68,7 @@ export class Minimap {
     this.planImage?.close();
     this.planImage = null;
     this.last = '';
+    this.lastWhole = '';
     this.origin = { x: x0, z: z0, h };
     // A big open map's plan is a couple of million pixels (Shingle Point 1,210 × 1,470): drawn from a bitmap.
     if (typeof createImageBitmap === 'function') {
@@ -74,11 +77,74 @@ export class Minimap {
           if (this.plan === plan) {
             this.planImage = bmp;
             this.last = '';
+            this.lastWhole = '';
           } else bmp.close();
         },
         () => undefined,
       );
     }
+  }
+
+  /**
+   * The whole map at once on a larger canvas (M in a match): north up, the plan fitted to the canvas, you as an arrow
+   * turned the way you face, teammates as dots and objectives as labelled squares where they are.
+   */
+  drawWhole(canvas: HTMLCanvasElement, x: number, z: number, yaw: number, blips: readonly MinimapBlip[]): void {
+    const g = canvas.getContext('2d');
+    const src = this.planImage ?? this.plan;
+    if (!g || !src) return;
+    let key = `${canvas.width}x${canvas.height},${Math.round(x)},${Math.round(z)},${Math.round(yaw * 20)}`;
+    for (const b of blips) key += `|${Math.round(b.x)},${Math.round(b.z)},${b.color},${b.label ?? ''}`;
+    if (key === this.lastWhole) return;
+    this.lastWhole = key;
+    const pad = 14;
+    const scale = Math.min((canvas.width - pad * 2) / src.width, (canvas.height - pad * 2) / src.height);
+    const ox = (canvas.width - src.width * scale) / 2;
+    const oy = (canvas.height - src.height * scale) / 2;
+    const at = (wx: number, wz: number) => [ox + (wx - this.origin.x) * PX_PER_M * scale, oy + (this.origin.h - (wz - this.origin.z) * PX_PER_M) * scale] as const;
+    g.clearRect(0, 0, canvas.width, canvas.height);
+    g.fillStyle = 'rgba(11, 15, 26, 0.88)';
+    g.fillRect(0, 0, canvas.width, canvas.height);
+    g.imageSmoothingEnabled = true;
+    g.drawImage(src, ox, oy, src.width * scale, src.height * scale);
+    for (const b of blips) {
+      const [bx, by] = at(b.x, b.z);
+      g.fillStyle = b.color;
+      if (b.label !== undefined) {
+        g.fillRect(bx - 9, by - 9, 18, 18);
+        g.fillStyle = '#0b0f1a';
+        g.font = 'bold 11px sans-serif';
+        g.textAlign = 'center';
+        g.textBaseline = 'middle';
+        g.fillText(b.label.slice(0, 2), bx, by + 0.5);
+        continue;
+      }
+      g.beginPath();
+      g.arc(bx, by, b.ring ? 6 : 4.5, 0, Math.PI * 2);
+      g.fill();
+      if (b.ring) {
+        g.strokeStyle = '#0b0f1a';
+        g.lineWidth = 2;
+        g.stroke();
+      }
+    }
+    // You: the arrow, turned the way you face (yaw 0 looks along +Z, up the plan).
+    const [mx, my] = at(x, z);
+    g.save();
+    g.translate(mx, my);
+    g.rotate(yaw);
+    g.fillStyle = '#00d1ff';
+    g.strokeStyle = '#0b0f1a';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    g.moveTo(0, -11);
+    g.lineTo(7, 8);
+    g.lineTo(0, 4);
+    g.lineTo(-7, 8);
+    g.closePath();
+    g.fill();
+    g.stroke();
+    g.restore();
   }
 
   update(x: number, z: number, yaw: number, blips: readonly MinimapBlip[]): void {
