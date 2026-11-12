@@ -127,7 +127,9 @@ named in `content/vfx.json` (`packs.<id>.dir`, `.file`) as JSON (only the effect
 as small WebPs), and `game/godotVfx.ts` plays them: a small GPUParticles3D simulator plus each pack shader rewritten
 in GLSL (`PORTS`, keyed `<PackDir>/<shader>` where two packs' shaders share a name). Rebuild one pack with
 `ONLY=<file> node tools/content/prepare-vfx.mjs --downloads /home/user/fx-packs/links-full` (the links point at
-the extracted zips in `/home/user/fx-packs/`); `node tools/content/vfx-map.mjs` after editing the map.
+the extracted zips in `/home/user/fx-packs/`: `links-full/<pack id>` → the folder its zip was extracted into, so
+`<pack id>/assets/BinbunVFX…` is there; the zips come from the owner's Drive folder `fx` and are fetched again on a
+new machine, never committed); `node tools/content/vfx-map.mjs` after editing the map.
 
 - **One-shots** (`GodotVfx.play`): impacts, explosions, lightning bolts (`map.arcs`: each jump a pack zap whose
   tube is stretched to the jump and played 2.5-4x faster to fit 0.1-0.15 s between arcs), moments of play.
@@ -140,8 +142,29 @@ the extracted zips in `/home/user/fx-packs/`); `node tools/content/vfx-map.mjs` 
   `at` the flame's foot in the prop's space as drawn, x mirrored; `size` its height in metres; `hide` the model's
   own flame materials). They are `decor`: placed after every gameplay effect, not drawn on low graphics, and the
   model's flame shows wherever the pack flame isn't drawn. Torches use the cheaper candle effect (24 particles).
+- **Pickup glows** (`game/lootGlow.ts`, map.lasting `loot.<kind>`; Binbun's Loot VFX, the ground glows): a ring,
+  a flare of soft streaks and a low glowing dome on the floor under a weapon (the pack's gold), health (green),
+  armor (the pack's teal one tinted the game's armor blue) or ammo (pale) pickup that is there to take, with a few
+  sparkles drifting up. The pack's pillars of light, second rings and flares are left out (`skip` in the map: the
+  pillars stood through the pickup itself). `decor`: placed after every gameplay effect, the nearest pickups within
+  28 m, at most half the lasting places (low 2, medium 5, high 8); the pickup's own model, ring and bob never
+  change, so one without a glow looks as it always did. It eases in over about a second (a pickup coming back
+  doesn't pop). **Reduce flashing on:** held still (`steady`: the shaders' clock at zero, so no scrolling streaks
+  and no bob, and no sparkles), at 0.5 of its strength instead of 0.8, eased in over two seconds. The pack counts
+  on Godot's glow pass; without one its flare (20 % opaque at most) and thin rings could not be seen, so they are
+  lifted three times and the flare adds its light (`LOOT_LIFT`). It is light added to the scene: clear on dark and
+  mid floors, little more than a tint on a sunlit pale floor (the Range's).
+- Map entries may `skip` parts of an effect (node names) and lasting effects may be held `steady`
+  (`VfxOptions.steady`, `LastingPlace.steady`; changing it starts the effect again).
 - Every effect piece has its own geometry: thin-instance buffers live on the geometry, so pieces sharing one
-  drew with another's buffers and nothing once it was gone (the mesh-part bug that hid fires' `Core`).
+  drew with another's buffers and nothing once it was gone (the mesh-part bug that hid fires' `Core`, and the
+  loot glows' rings, flare and dome in the 3 Nov pass: an effect's MeshInstance parts all shared the base mesh's
+  geometry, so of several plays of one effect, or one started after the same effect was warmed, only the last
+  piece to set its buffers drew, and none once that piece was gone. Checked again on 12 Nov with three of each
+  side by side: fires' `Core`, the toxic cloud's `Glow` and the loot glows' parts all draw; with shared geometry
+  put back for the test, a twentieth of the loot parts' pixels and a seventh of the fire cores' were left).
+- A lasting effect asked for after the frame's `update` (pickups) is kept until the next one, however long the
+  frame took: at under three frames a second it was dropped and started again every frame (`lastingFx.ts` KEEP_MS).
 - One-shots are capped too (low 6 / medium 12 / high 16 at once, minor ones 3 / 7 / 10), and every mapped effect
   is built while the map loads (`warm`), so the first one mid-fight costs no build.
 - `pnpm perf:budget` times starting each kind (`arc`, `arc sentry`, `lasting <key>`) against the 40 ms budget.

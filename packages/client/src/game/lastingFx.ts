@@ -11,6 +11,8 @@ export interface LastingPlace {
   level?: number;
   /** Turned so its up follows this. */
   up?: Vec3;
+  /** Held still, without its particles (Reduce flashing's steady glow; GodotVfx `steady`). Changing it starts the effect again. */
+  steady?: boolean;
 }
 
 interface Want {
@@ -21,12 +23,18 @@ interface Want {
   seen: number;
 }
 
-/** A request not repeated for this long is dropped (owners that update at snapshot rate, not every frame). */
+/**
+ * A request not repeated for this long is dropped (owners that update at snapshot rate, not every frame), unless it
+ * was made since the last update: on a page drawing fewer than three frames a second, an owner that asks after the
+ * frame's update (pickups) was dropped and started again every frame, its effect never past fading in.
+ */
 const KEEP_MS = 300;
 /** Lasting effects further than this from the camera aren't drawn (their plain look stands in). */
 const RANGE = 70;
 /** Pickup glows count as this much further off when places are handed out. */
 const LOOT_FAR = 2.5;
+/** Pickup glows take at most this share of the lasting effects the graphics quality allows (low 2, medium 5, high 8). */
+const LOOT_SHARE = 0.5;
 
 /**
  * Lasting pack effects for things that burn, glow or crackle while they last (content/vfx.json map.lasting):
@@ -36,7 +44,10 @@ const LOOT_FAR = 2.5;
  */
 export class LastingFx {
   private readonly wants = new Map<string, Want>();
-  private readonly live = new Map<string, { h: VfxHandle; fx: string }>();
+  private readonly live = new Map<string, { h: VfxHandle; fx: string; steady: boolean }>();
+
+  /** When `update` last ran (ms). */
+  private updated = 0;
 
   constructor(private readonly vfx: GodotVfx) {}
 
@@ -60,7 +71,8 @@ export class LastingFx {
   /** Draw the nearest wanted effects, stop the rest. */
   update(cam: Vec3): void {
     const now = performance.now();
-    for (const [id, w] of this.wants) if (now - w.seen > KEEP_MS) this.wants.delete(id);
+    for (const [id, w] of this.wants) if (now - w.seen > KEEP_MS && w.seen < this.updated) this.wants.delete(id);
+    this.updated = now;
     // Nearest first; the far ones and the ones no longer wanted give their places up first.
     const order = [...this.wants.values()]
       .map((w) => ({ w, d: Math.hypot(w.at.x - cam.x, w.at.y - cam.y, w.at.z - cam.z) }))
@@ -70,16 +82,24 @@ export class LastingFx {
       .map((x) => ({ ...x, d: x.w.key.startsWith('loot.') ? x.d * LOOT_FAR : x.d, decor: !!lastingFx(x.w.key)?.decor }))
       .sort((a, b) => Number(a.decor) - Number(b.decor) || a.d - b.d);
     const room = this.vfx.loopRoom + this.live.size;
-    const keep = new Set(order.slice(0, room).map((x) => x.w));
+    // Pickup glows take at most LOOT_SHARE of the places, however many pickups are near.
+    const lootRoom = Math.floor(room * LOOT_SHARE);
+    const keep = new Set<Want>();
+    let loot = 0;
+    for (const { w } of order) {
+      if (keep.size >= room) break;
+      if (w.key.startsWith('loot.') && loot++ >= lootRoom) continue;
+      keep.add(w);
+    }
     for (const [id, l] of this.live) {
       const w = this.wants.get(id);
-      if (!w || !keep.has(w) || l.h.done || l.fx !== w.key) {
+      if (!w || !keep.has(w) || l.h.done || l.fx !== w.key || l.steady !== !!w.place.steady) {
         l.h.stop();
         this.live.delete(id);
       }
     }
     for (const { w } of order) {
-      if (!keep.has(w)) break;
+      if (!keep.has(w)) continue;
       const ref = lastingFx(w.key);
       if (!ref) continue;
       const at = new Vector3(w.at.x, w.at.y, w.at.z);
@@ -88,9 +108,10 @@ export class LastingFx {
       const id = w.id;
       let l = this.live.get(id);
       if (!l) {
-        const h = this.vfx.start(ref.pack, ref.effect, at, { ...place, ...tint });
+        const steady = !!w.place.steady;
+        const h = this.vfx.start(ref.pack, ref.effect, at, { ...place, ...tint, ...(ref.skip ? { skip: ref.skip } : {}), ...(steady ? { steady } : {}) });
         if (!h) continue;
-        this.live.set(id, (l = { h, fx: w.key }));
+        this.live.set(id, (l = { h, fx: w.key, steady }));
       } else l.h.move(at, place);
       l.h.setLevel(w.place.level ?? 1);
     }
