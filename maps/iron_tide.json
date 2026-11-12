@@ -34,11 +34,11 @@
     },
     "release": {
       "mapId": "m_vfevdrgwi6zn7cfg",
-      "versionId": "v_oj7vdf54blkvrw4f",
-      "revision": 7,
-      "contentHash": "sha256:963f546ea06454cdfb91859c2157f07d2aecf7106192f0677101b119734de18a",
+      "versionId": "v_im26hd2sqoijrkrl",
+      "revision": 8,
+      "contentHash": "sha256:2e8a30e6012b1cdfbd77119538a432420cb736ad18b8f1c3babd9b19bcc7f194",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T17:05:57.738Z"
+      "releasedAt": "2026-11-12T09:25:45.072Z"
     }
   },
   "classicStructure": {
@@ -10338,7 +10338,7 @@
         26
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 0,
       "scale": 1,
       "solid": true,

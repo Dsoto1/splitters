@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_5x4zlanrxgtdua3l",
-      "versionId": "v_mzl77sn43qkja36m",
-      "revision": 8,
-      "contentHash": "sha256:37e73e8dc473d1642e1e6023b71eeafdf231aab1861c67e7cedc754c094682ee",
+      "versionId": "v_qfd74pqde2dywdur",
+      "revision": 9,
+      "contentHash": "sha256:36d4cecf7978fd18626fdbc4ac2216de7f7ed7495c860f49e1805d52035b0a98",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T21:50:57.721Z"
+      "releasedAt": "2026-11-12T09:43:10.648Z"
     }
   },
   "classicStructure": {
@@ -8568,7 +8568,7 @@
         50.96
       ],
       "kind": "prop",
-      "model": "prop.bottle_return",
+      "model": "kit.shop.bottle_return",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -8806,7 +8806,7 @@
         50.5
       ],
       "kind": "prop",
-      "model": "prop.bread_display",
+      "model": "kit.shop.bakery_stand",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

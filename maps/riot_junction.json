@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "riot_junction",
     "name": "Riot Junction",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_ruc3fnxenmg4ganz",
-      "versionId": "v_ivdkiimhrvxxrkyd",
-      "revision": 6,
-      "contentHash": "sha256:32202b558052f4df30f050a65de5bcbb6f7ea2ac21acbb4c4e3909923aafb7b5",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T15:26:59.481Z"
+      "versionId": "v_hupjtc7aqlwv5b7s",
+      "revision": 7,
+      "contentHash": "sha256:73b02d8df722d500c58bfe0c06e4855f151866428fe273bb0987b267cc7f03ee",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-12T09:41:41.977Z"
     }
   },
   "classicStructure": {
@@ -18213,7 +18213,7 @@
         114
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 0.6,
       "scale": 1,
       "solid": true,
@@ -18227,7 +18227,7 @@
         132
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 2.1,
       "scale": 1,
       "solid": true,
@@ -23264,7 +23264,7 @@
         58.69
       ],
       "kind": "prop",
-      "model": "prop.shopping_cart",
+      "model": "kit.shop.cart",
       "yaw": 2.2984,
       "scale": 1,
       "solid": true,

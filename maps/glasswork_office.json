@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_eu7kdm7dnuvylmjv",
-      "versionId": "v_dxhh74gxhkedkt23",
-      "revision": 7,
-      "contentHash": "sha256:b6c04044136c5051ab065e87e8b822fb46525b26f59514dc1291c861f8fcd630",
+      "versionId": "v_obxiq3rvtpo2ymc3",
+      "revision": 8,
+      "contentHash": "sha256:26e5a79eac5a84c63709d36c747d821a778ae6d7c77c995ac09acb50b98e3c16",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T21:33:45.054Z"
+      "releasedAt": "2026-11-12T09:21:11.254Z"
     }
   },
   "classicStructure": {
@@ -4794,7 +4794,7 @@
         53.1
       ],
       "kind": "prop",
-      "model": "prop.bottle_return",
+      "model": "kit.shop.bottle_return",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4808,7 +4808,7 @@
         53.1
       ],
       "kind": "prop",
-      "model": "prop.bottle_return",
+      "model": "kit.shop.bottle_return",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -8531,7 +8531,7 @@
         32.7
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -8545,7 +8545,7 @@
         34.65
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -8559,7 +8559,7 @@
         22.35
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -8573,7 +8573,7 @@
         28.55
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -8587,7 +8587,7 @@
         13.35
       ],
       "kind": "prop",
-      "model": "prop.pipe_valve",
+      "model": "kit.pipe.valve",
       "yaw": 0,
       "scale": 1,
       "solid": true,
