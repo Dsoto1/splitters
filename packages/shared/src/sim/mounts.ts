@@ -198,8 +198,10 @@ export interface MountDef {
   /**
    * Wheels drawn on a body that has none of its own (drawing only): one model, its axle along its own X once placed,
    * at each `at` (the wheel's centre in the mount's frame; a wheel with x < 0 is turned to face outwards on the left).
+   * `radius` and `width` (m): the size the tire is drawn at, its model scaled to them (left out: the model's own
+   * size; `width` alone left out: as much wider as it is bigger). With a `radius` the wheels roll by it.
    */
-  wheels?: { model: string; at: [number, number, number][] };
+  wheels?: { model: string; at: [number, number, number][]; radius?: number; width?: number };
   /**
    * The driver's eye in the cockpit view, in the mount's frame (drawing only).
    * Absent: a seated head height above the driver's seat, a little forward (see cockpitEye).

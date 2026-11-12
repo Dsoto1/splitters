@@ -63,10 +63,61 @@ function drive(model: string, blocks: MapEntity[] = []) {
 }
 
 describe('raycast suspension (sim/suspension.ts)', () => {
-  it('buggy and gun jeep have it; tank, armored rover, hover and flyers do not', () => {
+  it('buggy, gun jeep and armored rover have it; tank, hover and flyers do not', () => {
     expect(suspensionOf(MOUNT_DEFS.buggy)?.points).toHaveLength(4);
     expect(suspensionOf(MOUNT_DEFS.gun_jeep)?.points).toHaveLength(4);
-    for (const id of ['tank', 'armored_rover', 'speeder', 'hover_bike', 'skyfighter', 'dropship', 'kart'] as const) expect(suspensionOf(MOUNT_DEFS[id])).toBeNull();
+    expect(suspensionOf(MOUNT_DEFS.armored_rover)?.points).toHaveLength(4);
+    for (const id of ['tank', 'speeder', 'hover_bike', 'skyfighter', 'dropship', 'kart'] as const) expect(suspensionOf(MOUNT_DEFS[id])).toBeNull();
+  });
+
+  it('the armored rover drives the same on level ground with its suspension as it did without (2026-11-12: added for its tires)', () => {
+    // Flat out, a hard right turn at speed, the brakes, reverse with the wheel over: the chassis tick by tick.
+    const lap = (d: ReturnType<typeof drive>) => {
+      const path: number[][] = [];
+      let top = 0;
+      let radius = 0;
+      const leg = (n: number, i: Partial<PlayerInput>, turning = false) => {
+        for (let k = 0; k < n; k++) {
+          const yaw = d.m.yaw;
+          d.run(1, i);
+          path.push([d.m.pos.x, d.m.pos.y, d.m.pos.z, d.m.yaw, d.m.speed, d.m.slide]);
+          top = Math.max(top, d.m.speed);
+          // The turning circle: speed over turn rate, on the last tick of the turn.
+          if (turning && k === n - 1) radius = Math.abs(d.m.speed / ((d.m.yaw - yaw) * 60));
+        }
+      };
+      leg(180, { forward: 1 });
+      leg(60, { forward: 1, right: 1 }, true);
+      leg(60, { forward: -1 });
+      leg(90, { forward: -1, right: -1 });
+      // Still well inside the yard (its edge is not level ground).
+      expect(d.m.pos.z).toBeGreaterThan(4);
+      expect(d.m.pos.x).toBeLessThan(110);
+      return { path, top, radius };
+    };
+    const def = MOUNT_DEFS.armored_rover;
+    const defs = MOUNT_DEFS as unknown as Record<string, typeof def>;
+    const { suspension, ...unsprung } = def.vehicle!;
+    expect(suspension).toBeDefined();
+    let before: ReturnType<typeof lap>;
+    try {
+      defs.armored_rover = { ...def, vehicle: unsprung };
+      const d = drive('armored_rover');
+      expect(d.m.susp).toBeUndefined();
+      before = lap(d);
+    } finally {
+      defs.armored_rover = def;
+    }
+    const d = drive('armored_rover');
+    expect(d.m.susp).toBeDefined();
+    const after = lap(d);
+    if (process.env.SUSPENSION_TRACE) console.log(`armored rover, level ground: top speed ${before.top.toFixed(3)} -> ${after.top.toFixed(3)} m/s, turning circle radius flat out ${before.radius.toFixed(3)} -> ${after.radius.toFixed(3)} m, end ${before.path.at(-1)!.map((v) => v.toFixed(3))} -> ${after.path.at(-1)!.map((v) => v.toFixed(3))}`);
+    expect(after.top).toBe(before.top);
+    expect(after.top).toBeGreaterThan(13.9);
+    expect(after.radius).toBe(before.radius);
+    expect(after.path).toEqual(before.path);
+    // And the springs work: it leaned in the turn and dived under the brakes.
+    expect(d.m.susp!.contact).toBe(4);
   });
 
   it('squats under power, dives under the brakes, leans out of a turn', () => {

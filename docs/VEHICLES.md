@@ -61,8 +61,7 @@ Spaceships and Tank Pack (all CC0).
 - **Models.** The vehicle refresh (2026-11-11; Meshy Community CC0 from the owner's Drive, built by
   `prepare-guns.mjs` from `content/guns.json`: about 14-20k triangles plus a quarter-size level from 40 m,
   1-2k colour and 1k normal maps, 1.5-2.1 MB each): the **gun jeep** is the Recon Trike
-  (`vehicles/recon_jeep.glb`, a Warthog-style four-wheeler with a pintle gun on the cage; its tires are cut out as
-  parts, `wheel_*`, so they spin, steer and ride the springs), the **hover bike** TNR 1017
+  (`vehicles/recon_jeep.glb`, a Warthog-style four-wheeler with a pintle gun on the cage), the **hover bike** TNR 1017
   (`vehicles/tnr_hover_bike.glb`), the **speeder** Cyber Fang Mk III (`vehicles/cyber_fang.glb`) and the **armored
   rover** Dust Runner (`vehicles/dust_runner.glb`, a closed off-roader). Re-skins only: each keeps its box,
   handling, guns and health; the seats were moved onto the new models (measured on them, notes in
@@ -80,17 +79,23 @@ Spaceships and Tank Pack (all CC0).
   The buggy (vehicle refresh part 2, 2026-11-11) is a Meshy Community sci-fi buggy (`Meshy_AI__1108120754`, CC0;
   `vehicles/sixer_buggy.glb`, 20k triangles plus a quarter LOD, 2048 px colour map): a tube-frame four-wheeler with
   a cage over two seats and an open deck behind, where four riders stand (the owner's layout: driver, a seated
-  front passenger, four standing). Its tires, like the gun jeep's, are cut out of the body as parts (`parts` in
-  `content/guns.json`, nodes `wheel_*`): `mountVisuals.ts` puts each on a pivot at its hub (its lower level of detail
-  with it), so they roll with the speed, the front pair steers, and each rides its own spring (see Suspension
-  below). The suspension's contact points and hub height are the old tires' (`vehicle.suspension.wheels`, `hub`),
-  so it drives as before. The Tactical Off-Road Beast it replaced, on its separate Rugged Off-Road Tires, is its
+  front passenger, four standing). The suspension's contact points and hub height are the old buggy's
+  (`vehicle.suspension.wheels`, `hub`), so it drives as before. The Tactical Off-Road Beast it replaced is its
   `fallback`.
   The **troop truck** (2026-11-11) is Ironclad Vanguard (Meshy Community CC0, the owner's Drive,
   `Meshy_AI_Ironclad_Vanguard_1111000212_texture.glb`; `vehicles/troop_truck.glb`, 20k triangles plus a quarter LOD):
-  a three-axle army truck, a closed cab ahead of an open flatbed where four riders stand. Its six tires are `wheel_*`
-  parts on six suspension points; its box is the whole truck, tires included (2.8 × 2.54 × 5.6 m). Not placed on
+  a three-axle army truck, a closed cab ahead of an open flatbed where four riders stand, on six suspension
+  points; its box is the whole truck, tires included (2.8 × 2.54 × 5.6 m). Not placed on
   any real map yet (the coverage map has one).
+  **Tires** (2026-11-12): the buggy, the gun jeep, the troop truck and the armored rover all ride on the owner's
+  separate Rugged Off-Road Tire (`vehicles/offroad_tire.glb`), one at each hub: `wheels` in the vehicle's JSON
+  (`model`, `at`: the hubs in the mount's frame, and `radius` and `width`: the size it is drawn at, the model
+  scaled to them). `mountVisuals.ts` puts each on a pivot at its hub, so it rolls with the speed (by its drawn
+  radius), the front pair steers, and each rides its own spring (see Suspension below). The bodies' own tires are
+  cut out of them at build time and thrown away (`parts` in `content/guns.json` with `round` and `drop`: a
+  wheel-shaped cut that leaves the arch on the body), and `rideHeight` holds the body where it stood on them.
+  Before, the tires were kept as parts (`wheel_*`) and spun about their boxes' middles: the box cuts took fenders
+  with them and were off the axles, and the armored rover's never turned.
 - **Shooting from a seat.** Gunners fire the seat's gun (heat, no
   reloading) within its arc; side door guns (the gunship's) have arcs centred
   on their own side (`facing` on the seat). Passengers use their own weapons. Drivers can't
@@ -235,8 +240,11 @@ and the handbrake (Space) still breaks grip for a proper slide.
 | Buggy | 1.5 Hz, 0.32 (soft, bouncy) | 0.20 / 0.16 m | 0.004 · 0.0045 | 1.4 rad/s² | 0.5 | 0.55 | 0.5 rad |
 | Gun Jeep | 1.8 Hz, 0.38 (a pickup: firmer) | 0.16 / 0.13 m | 0.0028 · 0.0038 | 1.2 rad/s² | 0.45 | 0.4 | 0.45 rad |
 | Troop Truck (six wheels) | 1.9 Hz, 0.45 (a truck: stiff) | 0.14 / 0.11 m | 0.002 · 0.0025 | 0.8 rad/s² | 0.4 | 0.15 | 0.4 rad |
+| Armored Rover | 1.9 Hz, 0.45 (the truck's) | 0.14 / 0.11 m | 0.002 · 0.0025 | 0.8 rad/s² | 0.4 | none | 0.4 rad |
 
-Tank and armored rover stay heavy and planted, and the kart, ice cream truck,
+The armored rover got its springs on 2026-11-12, so its tires steer and ride them; its speeds, turn, grip and mass
+are as before, and on level ground it drives the same tick for tick (`packages/shared/test/suspension.test.ts`).
+The tank stays heavy and planted, and the kart, ice cream truck,
 hovercraft and flyers are unchanged: their bodies are drawn settling to the
 ground as before (`View.suspend`, drawing only).
 

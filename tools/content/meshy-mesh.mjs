@@ -1339,3 +1339,127 @@ export function cutKeeping(indices, positions, target, parts, { errors = [0.008]
   }
   return all;
 }
+
+/**
+ * `parts` (a vehicle whose turret and gun turn): the built mesh, and its lower level of detail, cut into named parts
+ * that the game turns on their own. Each part is `{ name, box: [[x, y, z] min, [x, y, z] max], pivot: [x, y, z],
+ * parent? }` in the built model's frame (metres, +Z forward, centred as built: the ground is the bottom of the
+ * bounds); a triangle goes to the last part whose box holds its centre (list a child after its parent), else it stays
+ * on the body (`hull`). Each part is a node `<name>` at its pivot (under its parent part's node, or the model's)
+ * holding a mesh node `<name>_body` (and `<name>_body_lod`); the body is `hull` (and `hull_lod`). The parts share
+ * the body's material and maps. A turret that turns uncovers the deck under it: `cap: { y, colour: [u, v] }` on a part
+ * lays a flat disc of that part's footprint over the hull's opening at height `y`, textured from one texel of the
+ * colour map (the deck's paint).
+ *
+ * `round: true` on a part: its box is a wheel's, the axle along X: only the triangles inside the ellipse the box
+ * holds, seen from the side (Y and Z), are the part's, so the wheel arch around a tire stays on the body.
+ * `drop: true`: the part's triangles are cut out of the body and thrown away (no node, no mesh, no pivot needed):
+ * a body's own tires, where the game draws separate ones at its hubs (content/vehicles `wheels`).
+ */
+export function splitParts(doc, holder, parts) {
+  const root = doc.getRoot();
+  const buffer = root.listBuffers()[0];
+  const meshNodes = holder.listChildren().filter((n) => n.getMesh());
+  const full = meshNodes.find((n) => !n.getExtras()?.lod);
+  const lods = meshNodes.filter((n) => n.getExtras()?.lod);
+  const nodes = new Map();
+  for (const part of parts) {
+    if (part.drop) {
+      if (part.cap || parts.some((p) => p.parent === part.name)) throw new Error(`parts: ${part.name} is dropped, so it can't have a cap or child parts`);
+      continue;
+    }
+    if (!part.pivot) throw new Error(`parts: ${part.name} needs a pivot`);
+    const parent = part.parent ? nodes.get(part.parent) : null;
+    if (part.parent && !parent) throw new Error(`parts: ${part.name}'s parent ${part.parent} must come first`);
+    const node = doc.createNode(part.name).setTranslation(parent ? part.pivot.map((v, k) => v - parent.pivot[k]) : part.pivot);
+    (parent ? parent.node : holder).addChild(node);
+    nodes.set(part.name, { node, pivot: part.pivot, part });
+  }
+  /** One source mesh node cut into the parts (`suffix`: '' for full detail, '_lod' for the lower level). */
+  const cut = (src, suffix) => {
+    const prim = src.getMesh().listPrimitives()[0];
+    const P = prim.getAttribute('POSITION').getArray();
+    const idx = prim.getIndices().getArray();
+    const sets = parts.map(() => []);
+    const hull = [];
+    for (let i = 0; i < idx.length; i += 3) {
+      const c = [0, 1, 2].map((k) => (P[idx[i] * 3 + k] + P[idx[i + 1] * 3 + k] + P[idx[i + 2] * 3 + k]) / 3);
+      let at = -1;
+      for (let p = parts.length - 1; p >= 0 && at < 0; p--) if (insidePart(parts[p], c)) at = p;
+      (at < 0 ? hull : sets[at]).push(idx[i], idx[i + 1], idx[i + 2]);
+    }
+    const piece = (name, tris, pivot, extras) => {
+      const p = doc.createPrimitive().setMaterial(prim.getMaterial()).setMode(prim.getMode());
+      for (const sem of prim.listSemantics()) p.setAttribute(sem, prim.getAttribute(sem).clone());
+      p.setIndices(prim.getIndices().clone().setArray(new Uint32Array(tris)));
+      compactPrimitive(p);
+      if (pivot) {
+        const pos = p.getAttribute('POSITION');
+        const a = pos.getArray().slice();
+        for (let i = 0; i < a.length; i += 3) for (let k = 0; k < 3; k++) a[i + k] -= pivot[k];
+        pos.setArray(a);
+      }
+      const node = doc.createNode(name).setMesh(doc.createMesh(name).addPrimitive(p));
+      if (extras) node.setExtras(extras);
+      return node;
+    };
+    const extras = src.getExtras()?.lod ? src.getExtras() : null;
+    const hullNode = piece(`hull${suffix}`, hull, null, extras);
+    holder.addChild(hullNode);
+    parts.forEach((part, i) => {
+      if (!sets[i].length) throw new Error(`parts: no triangles in ${part.name}'s box`);
+      if (part.drop) return console.log(`  part ${part.name}${suffix}: ${sets[i].length / 3} triangles dropped`);
+      nodes.get(part.name).node.addChild(piece(`${part.name}_body${suffix}`, sets[i], part.pivot, extras));
+      console.log(`  part ${part.name}${suffix}: ${sets[i].length / 3} triangles`);
+    });
+    console.log(`  part hull${suffix}: ${hull.length / 3} triangles`);
+    for (const part of parts) if (part.cap && !part.drop) addCap(part, hullNode.getMesh().listPrimitives()[0]);
+    src.dispose();
+  };
+  /**
+   * The deck under a turning part: a flat disc (24 sides) filling the part's footprint at `cap.y`, added to the hull's
+   * own primitive (one mesh per part, so each level of detail finds its part by name).
+   */
+  const addCap = (part, prim) => {
+    const [[x0, , z0], [x1, , z1]] = part.box;
+    const r = part.cap.radius ?? [(x1 - x0) / 2, (z1 - z0) / 2];
+    const [cx, cz] = [part.pivot[0], part.pivot[2]];
+    const n = 24;
+    const add = { POSITION: [cx, part.cap.y, cz], NORMAL: [0, 1, 0], TEXCOORD_0: [...part.cap.colour], TANGENT: [1, 0, 0, 1] };
+    for (let i = 0; i < n; i++) {
+      add.POSITION.push(cx + r[0] * Math.cos((2 * Math.PI * i) / n), part.cap.y, cz + r[1] * Math.sin((2 * Math.PI * i) / n));
+      add.NORMAL.push(0, 1, 0);
+      add.TEXCOORD_0.push(...part.cap.colour);
+      add.TANGENT.push(1, 0, 0, 1);
+    }
+    const base = prim.getAttribute('POSITION').getCount();
+    for (const sem of prim.listSemantics()) {
+      if (!add[sem]) throw new Error(`parts: cap can't fill the hull's ${sem}`);
+      const a = prim.getAttribute(sem);
+      const old = a.getArray();
+      const out = new old.constructor(old.length + add[sem].length);
+      out.set(old);
+      out.set(add[sem], old.length);
+      a.setArray(out);
+    }
+    const idx = prim.getIndices().getArray();
+    const tris = [];
+    for (let i = 0; i < n; i++) tris.push(base, base + 1 + ((i + 1) % n), base + 1 + i);
+    const out = new Uint32Array(idx.length + tris.length);
+    out.set(idx);
+    out.set(tris, idx.length);
+    prim.getIndices().setArray(out);
+  };
+  cut(full, '');
+  for (const lod of lods) cut(lod, '_lod');
+}
+
+/** Whether a point (a triangle's centre) is in a part's box, or for a `round` part in the ellipse its box holds across X. */
+export function insidePart(part, c) {
+  const [lo, hi] = part.box;
+  if (!c.every((v, k) => v >= lo[k] && v <= hi[k])) return false;
+  if (!part.round) return true;
+  const u = (c[1] - (lo[1] + hi[1]) / 2) / ((hi[1] - lo[1]) / 2);
+  const w = (c[2] - (lo[2] + hi[2]) / 2) / ((hi[2] - lo[2]) / 2);
+  return u * u + w * w <= 1;
+}

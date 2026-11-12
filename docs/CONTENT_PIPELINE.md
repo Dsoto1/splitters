@@ -393,6 +393,10 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
    closing the deck under a turning turret), and give the mount `turret: { seat, pitch }`: that seat's aim turns the
    turret within its `arc` and pitches the barrel within `pitch` (drawing only; shots leave from the gunner's eye as on
    every mounted weapon). Measure the boxes and pivots on a first build without `parts`.
+   **A body whose tires come off** (the buggy, gun jeep, troop truck and armored rover ride on the separate tire,
+   `wheels` in their JSON): a part with `round: true` is a wheel-shaped cut (the ellipse its box holds, the axle
+   along X, so the arch stays on the body) and `drop: true` throws its triangles away instead of writing a part.
+   Set `rideHeight` to how far the body's lowest point left stands over the ground the tires stood on.
    **Tanks and armour** (owner, 2026-11-07; the Tank is the example):
    - `armour`: `surface` (a surface type from content/surface-types.json: its ballistic class decides what rounds do
      to the hull, `armor` stops them all, its impact the sparks and sound; empty: metal), the share of each kind of
