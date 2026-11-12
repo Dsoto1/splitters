@@ -1038,6 +1038,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - heatmaps stay in memory.
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
+  - **Next in line to land, after the Desert City dome kit: the weapon and vehicle lane's seventh batch** (this line said "Landing now" for five minutes by mistake: the dome kit's lock was already up; nothing was pushed to main meanwhile but docs) (`check/vehicles-b7`, pushed 2026-11-12 17:40 UTC; this account): Fireteams' bots all take the squad role (`sim/match.ts`, `fireteamRoles.test.ts`), MapMaker's navigation check in the test worker (`editor/mapChecks.ts`, `mapTestWorkerCore.ts`), Match Setup's party presets in the Presets tab only (`frontend/frontEnd.ts`, the Match Setup checks in `e2e/run.mjs`). Locally `pnpm prepush` passed all but `host.test.ts` (a wait for a player's account) and `bigMatch.test.ts` (30.9 ms against a 30 ms budget) on a machine at load 16; neither file is touched by the change; CI decides.
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
