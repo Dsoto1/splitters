@@ -1,7 +1,7 @@
 import {
   edgeSegments,
   getProp,
-  MOUNT_DEFS,
+  placedMountDef,
   newMapDocument,
   newTerrain,
   SET_PIECE_MATERIAL_ROLES,
@@ -294,7 +294,7 @@ export function pickRadius(e: MapEntity): number {
       return Math.max(0.5, (Math.min(size[0], size[2]) * e.scale) / 2 + 0.2);
     }
     case 'mount': {
-      const half = MOUNT_DEFS[e.model].half;
+      const half = placedMountDef(e.model).half;
       return Math.max(0.8, Math.min(half[0], half[2]) + 0.2);
     }
     case 'block':

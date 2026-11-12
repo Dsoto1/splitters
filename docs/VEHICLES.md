@@ -9,11 +9,10 @@ Spaceships and Tank Pack (all CC0).
 
 | Mount | Seats | What it does |
 |---|---|---|
-| Heavy MG Turret | 1 gunner | Twin machine gun on a pedestal, ±80° arc, overheats instead of reloading |
+| Heavy MG Turret | 1 gunner | A heavy machine gun on a tripod, ±80° arc, overheats instead of reloading. Drawn at twice its model's built size (`scale` 2: 3 m long, the top of the receiver 1.28 m up, chest height to the gunner standing behind it); you see your own gun in front of you when you man it |
 | Rocket Turret | 1 gunner | Slow, heavy rockets, ±70° arc (model: a Meshy community cannon on a pedestal, CC0 per the owner, `guns/arc_cannon_turret.glb`, centred on its pedestal so it turns about it) |
 | Sentry Gun | none | Aims and fires on its own at its team's enemies (no team: everyone) |
 | Arc Turret | none | An auto-turret like the Sentry Gun, with a tell: it winds up (0.75 s, a growing charge ball and a warning sound) on an enemy it can see within 22 m, then locks an energy arc on that hits 5 every 0.1 s and jumps to one enemy within 6 m of them (half damage). Breaking its line of sight or leaving its reach drops the lock and the charge; a 2 s lock ends in a 1.25 s vent. 240 health. Drawn on the Rocket Turret's cannon in its own violet energy colour (`MountDef.glow`). MapMaker warns (`mount.arc_spawn`) when one stands within 12 m of a spawn it would shoot at. See "Arc Turret" below |
-| Go-Kart | 1 driver | Very quick, no gun: run people over |
 | Speeder | 2 (pilot, passenger) | Hovering; the pilot fires twin blasters ahead, the passenger shoots their own weapon |
 | Buggy | 6 (driver, front passenger, 4 on the deck) | Everyone but the driver shoots their own weapon, all round: the front passenger sits, the four in the back stand on the open deck behind the cage |
 | Hauler | 6 (pilot, gunner, 4 passengers) | A slow hovering transport with a rocket gunner |
@@ -24,7 +23,6 @@ Spaceships and Tank Pack (all CC0).
 | Armored Rover | 5 (driver, front gun, rear gun, 2 riders) | Wheeled heavy: slow, grippy and 900 health; the front gunner covers ±75° ahead, the rear gunner ±90° behind |
 | Hover Bike | 1 rider | Hover: the fastest thing on the map (31 m/s), fragile (170 health), no gun |
 | Gunship | 3 (pilot, left and right door guns) | Flying, on the dropship's flight model: the pilot fires blasters ahead, each door gunner covers ±70° off their own side (950 health) |
-| Ice Cream Truck | 4 (driver, 3 riders) | Wheeled light, the fun one: no gun, but the three riders shoot their own weapons out of the windows |
 | Troop Truck | 6 (driver, cab passenger, 4 on the bed) | Wheeled heavy, no gun: a six-wheeled army truck (700 health); the cab passenger sits, the four on the flatbed stand, and all five shoot their own weapons |
 | Snow Sled | 2 (driver, passenger) | A snowmobile with hover handling: quick and slidey, sits on the snow instead of floating; both riders sit astride the saddle |
 
@@ -65,8 +63,8 @@ Spaceships and Tank Pack (all CC0).
   (`vehicles/tnr_hover_bike.glb`), the **speeder** Cyber Fang Mk III (`vehicles/cyber_fang.glb`) and the **armored
   rover** Dust Runner (`vehicles/dust_runner.glb`, a closed off-roader). Re-skins only: each keeps its box,
   handling, guns and health; the seats were moved onto the new models (measured on them, notes in
-  `content/vehicles/<id>.json`) and the models they replaced are their `fallback`. The ice cream truck (van) is a
-  Kenney Car Kit model recoloured at build time; the transport plane (cargo craft A) is from Kenney Space Kit. The
+  `content/vehicles/<id>.json`) and the models they replaced are their `fallback`. The transport plane is the
+  Hauler's model drawn 2.35 times its size (below). The
   **gunship** is the Sky Cruiser (`vehicles/sky_cruiser.glb`, Meshy Community, CC0; 2026-11-12): its box is fitted to
   the hull, the pilot sits in the closed cab and each door gunner sits on their door's sill, feet on the step board
   (measurements in `content/vehicles/gunship.json`); handling, guns and health are as before. The snow sled is "Snowmobile" by
@@ -126,7 +124,7 @@ Spaceships and Tank Pack (all CC0).
   waits to respawn at home. Turrets and sentries leave no wreck.
 - **Crashes.** Driving into another vehicle, a wreck or a turret at 5 m/s
   or more (closing speed) hurts both, `(closing − 3) × 8` shared out by
-  weight: a kart into a tank comes off far worse. Each driver is credited for
+  weight: a hover bike into a tank comes off far worse. Each driver is credited for
   the other's damage, and the lighter one is shoved. Running people over
   (5 m/s+) hurts and throws them, credited to the driver. Both play a metal
   crash with sparks.
@@ -213,7 +211,7 @@ from the hoop behind the cabin (z -0.6, where the deck starts) to the front bar
 with its lamps (z 0.4), a hoop behind the seats (z -0.15), A-pillars and a centre
 brace falling to the hood, one row of seats (the deck riders stand), the wheel on
 the left at z 0.58 and a cowl over the dash so the road shows past the hood. About 17k triangles in 9 draws (4 surfaces static, 2 for the
-wheel, one per needle), built once on first use. The gun jeep and kart can get
+wheel, one per needle), built once on first use. The gun jeep can get
 one by adding an entry.
 
 ## Suspension (the Warthog feel)
@@ -244,7 +242,7 @@ and the handbrake (Space) still breaks grip for a proper slide.
 
 The armored rover got its springs on 2026-11-12, so its tires steer and ride them; its speeds, turn, grip and mass
 are as before, and on level ground it drives the same tick for tick (`packages/shared/test/suspension.test.ts`).
-The tank stays heavy and planted, and the kart, ice cream truck,
+The tank stays heavy and planted, and the
 hovercraft and flyers are unchanged: their bodies are drawn settling to the
 ground as before (`View.suspend`, drawing only).
 
@@ -265,7 +263,7 @@ own tuning (top speed, acceleration, turn rate, grip, weight, health, blast):
 
 | Class | How it drives | Vehicles |
 |---|---|---|
-| Wheeled light | Grippy, quick to turn, ramps launch it, hard landings dent it (buggy and gun jeep: on raycast suspension, loose at speed) | Go-Kart, Buggy, Gun Jeep, Ice Cream Truck |
+| Wheeled light | Grippy, quick to turn, ramps launch it, hard landings dent it (buggy and gun jeep: on raycast suspension, loose at speed) | Buggy, Gun Jeep |
 | Wheeled heavy | Slow to speed up, high grip and weight: shrugs off pushes, loses little in crashes | Armored Rover (14 m/s, accel 7, turn 1.25 rad/s, grip 0.38, 3.6 t, 900 health), Troop Truck (16 m/s, accel 8.5, turn 1.4 rad/s, grip 0.36, 3 t, 700 health; on raycast suspension) |
 | Tracked | Slowest, heaviest, turns on the spot | Tank |
 | Hover | Low grip, drifts, floats over bumps, no landing damage | Speeder, Hauler, Hover Bike, Snow Sled |
@@ -305,7 +303,45 @@ The sim is `shared/src/sim/parachute.ts` (run inside `stepMovement`, so
 client prediction matches); snapshots carry `ch` (canopy) and `dr` (opener
 armed), private state `gl` (glider).
 
+## Retired vehicles
+
+The **Go-Kart** (`kart`) and the **Ice Cream Truck** (`ice_cream_truck`) were retired on 2026-11-12 (owner, after
+seeing every vehicle side by side: simple old models next to the rest). Their definitions and palette entries are
+gone. A map names a vehicle by id, so the two ids stay readable for good (`RETIRED_MOUNTS` in
+`packages/shared/src/sim/mounts.ts`, `packages/shared/src/map/mountAliases.ts`), the way retired props and tiles do: a
+map that names one is still a valid file as written, and as played it has the vehicle that took its place.
+
+| Retired | Reads as | Why that one |
+|---|---|---|
+| Go-Kart (`kart`: 1 seat, no gun, 20 m/s, 220 health) | Hover Bike (`hover_bike`) | Also one seat and no gun, a quick thing to run people over with. Faster (31 m/s), more fragile (170 health), and it hovers and drifts where the kart gripped |
+| Ice Cream Truck (`ice_cream_truck`: 4 seats, no gun, 16 m/s, 520 health) | Buggy (`buggy`) | Also no mounted gun, its riders shooting their own weapons, so a map gains no machine gun it was not made with (the Gun Jeep would bring one). Six seats for four, a little quicker (18 m/s) and lighter (450 health), 0.25 m wider a side |
+
+- A placed vehicle keeps its place, facing, team, paint and respawn time. A track's NPC cars (`ambientVehicle`) and
+  its old race vehicle read the same way; a track that doesn't say gets Hover Bikes (the default was the Go-Kart).
+- Saved, community and published maps that still name a retired id load, check and play
+  (`packages/shared/test/mountAliases.test.ts`, with Cedar Lane's file as it was). Nothing about the file changes: its
+  release stamp still describes it (no new version, no "changed since it was exported").
+- MapMaker opens such a map as made, draws and describes the retired vehicle as its replacement, and says so: the
+  vehicle's inspector shows "Go-Kart (retired)" as its Type with **Replace all** (every one on the map and the track's
+  cars, one undo step), the track's pane has the same button, and the checks list `mount.retired` (a warning). The
+  shipped maps were changed that way and name the new vehicles.
+- Never reuse a retired id for something new.
+
+## Drawing a model larger: `scale`
+
+A mount can draw its model larger or smaller than it was built (`scale` in `content/vehicles/<id>.json`,
+`MountDef.scale`, 0.25 to 4, default 1): about its footprint's centre, its lowest point still on the ground (or at
+its ride height). Drawing only: `half`, the seats and `cockpitEye` are metres as always and must be fitted to the
+model at that size, and its lower levels of detail come in that many times further off. Two use it: the Transport
+Plane (the Hauler's model at 2.35) and the Heavy MG Turret (2). It costs no download; the texture is that much
+coarser, so for a model seen close up at a much larger size, build it larger in `content/guns.json` instead.
+
 ## The transport plane and air drop
+
+The craft is the **Hauler's model drawn 2.35 times its size** (owner, 2026-11-12): the Ironbound Voyager at 16 m long,
+a closed hull 4.2 m wide and 5.65 m tall. That is the length the old plane's box had, so riders leave from the same
+place behind it and the chase camera sits where it did. Its 24 riders are in the hold, two columns of twelve, out of
+sight in the closed hull (measurements in `content/vehicles/airplane.json`).
 
 A **Transport Plane** (MapMaker: Entities → Gameplay; map entity `airplane`,
 format v19) flies a fixed route over the map: its marker is the route's
@@ -316,7 +352,7 @@ to last and then starts over, throwing out anyone still aboard. Where it is
 depends only on the match clock, so it costs nothing on the wire beyond the
 usual mount snapshot. It can't be hurt and doesn't block anything.
 
-Players ride it on 24 benches (seated passengers with a chase camera, unable
+Players ride it on 24 benches (passengers with a chase camera, unable
 to shoot) and **jump out with E or Space** at any time: out of the tail with
 half the plane's speed, the parachute opener armed. **Air drop** decides who
 starts aboard: *Off* (it just flies over), *Round start* (everyone's first

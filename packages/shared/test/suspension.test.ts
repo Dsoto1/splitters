@@ -67,7 +67,7 @@ describe('raycast suspension (sim/suspension.ts)', () => {
     expect(suspensionOf(MOUNT_DEFS.buggy)?.points).toHaveLength(4);
     expect(suspensionOf(MOUNT_DEFS.gun_jeep)?.points).toHaveLength(4);
     expect(suspensionOf(MOUNT_DEFS.armored_rover)?.points).toHaveLength(4);
-    for (const id of ['tank', 'speeder', 'hover_bike', 'skyfighter', 'dropship', 'kart'] as const) expect(suspensionOf(MOUNT_DEFS[id])).toBeNull();
+    for (const id of ['tank', 'speeder', 'hover_bike', 'skyfighter', 'dropship'] as const) expect(suspensionOf(MOUNT_DEFS[id])).toBeNull();
   });
 
   it('the armored rover drives the same on level ground with its suspension as it did without (2026-11-12: added for its tires)', () => {

@@ -298,7 +298,7 @@ export class ModelLibrary {
    * and hiding reach them too (a level is drawn in its mesh's place, with its mesh's transform). Returns how many were
    * attached. `name` is the name the copy was made with.
    */
-  attachLods(path: string, name: string, root: TransformNode): number {
+  attachLods(path: string, name: string, root: TransformNode, distanceScale = 1): number {
     const levels = (this.lods.get(path) ?? []).filter((l) => !l.billboard && l.owner);
     let n = 0;
     for (const mesh of root.getChildMeshes(false)) {
@@ -312,7 +312,7 @@ export class ModelLibrary {
         lod.sideOrientation = mesh.sideOrientation;
         lod.isPickable = false;
         lod.parent = mesh.parent;
-        mesh.addLODLevel(l.distance, lod);
+        mesh.addLODLevel(l.distance * distanceScale, lod);
         n++;
       }
     }

@@ -3287,7 +3287,11 @@ export class GameView {
 
   private readonly mountNodes = new Map<number, TransformNode>();
 
-  /** Turrets, sentries and vehicles at their smoothed poses; turret guns follow the aim. `manned` (the turret you are gunning) is hidden, as your own body is. */
+  /**
+   * Turrets, sentries and vehicles at their smoothed poses; turret guns follow the aim. `manned` (the turret you are
+   * gunning) is drawn too: you stand behind it and look along its gun, which turns with your own view (not the
+   * smoothed aim the match sends back, which would trail your crosshair).
+   */
   updateMounts(mounts: Iterable<ClientMount>, manned: number | null = null): void {
     let cockpit: { m: ClientMount; node: TransformNode } | null = null;
     for (const m of mounts) {
@@ -3299,7 +3303,7 @@ export class GameView {
       const now = performance.now();
       const fade = m.wreckGoneAt ? (now - m.wreckGoneAt) / (MOUNT_WRECK_FADE_SECONDS * 1000) : 1;
       const shown = m.alive || m.wreck || fade < 1;
-      node.setEnabled(shown && m.index !== manned);
+      node.setEnabled(shown);
       node.position.set(m.shown.pos.x, m.shown.pos.y, m.shown.pos.z);
       this.charMount(m.index, node, !m.alive && shown, m.alive ? 1 : m.wreck ? 1 : Math.max(0, 1 - fade));
       this.mountDamageFx(m, now);
@@ -3316,7 +3320,21 @@ export class GameView {
       if (m.index === this.cockpit && m.alive && shown && m.index !== manned) cockpit = { m, node };
       if (m.def.kind !== 'vehicle') {
         const gun = mountGun(node);
-        if (gun) gun.rotation.y = m.shown.aimYaw - m.shown.yaw;
+        if (gun) {
+          let rel = m.shown.aimYaw - m.shown.yaw;
+          const seat = m.index === manned && m.alive ? m.def.seats[0] : undefined;
+          if (seat) {
+            // Your own: with your view, held within the seat's arc as the match holds the aim.
+            const arc = seat.arc ?? Math.PI;
+            const own = this.steadyEye.yaw - m.shown.yaw;
+            rel = Math.max(-arc, Math.min(arc, Math.atan2(Math.sin(own), Math.cos(own))));
+          }
+          gun.rotation.y = rel;
+          // In your own view the gun turns about where you stand (the seat stays put while the aim swings up to its
+          // arc), so it stays in front of you like a held gun; everyone else sees it turn on its tripod.
+          const [ox, , oz] = seat?.offset ?? [0, 0, 0];
+          gun.position.set(ox - (ox * Math.cos(rel) + oz * Math.sin(rel)), 0, oz - (-ox * Math.sin(rel) + oz * Math.cos(rel)));
+        }
       } else if (m.def.turret && m.alive) this.turnTurret(m, node);
       if (m.def.glow) this.arcSentryGlow(m, node, now);
     }

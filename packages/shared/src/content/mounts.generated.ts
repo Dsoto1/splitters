@@ -3,19 +3,23 @@
 import type { MountDef } from '../sim/mounts.ts';
 
 /** Placeable mounts, in MapMaker palette order (`order`). Maps name a mount by id: never rename one. */
-export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'sentry_arc', 'kart', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship', 'tank', 'gun_jeep', 'armored_rover', 'hover_bike', 'gunship', 'ice_cream_truck', 'snow_sled', 'troop_truck'] as const;
+export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'sentry_arc', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship', 'tank', 'gun_jeep', 'armored_rover', 'hover_bike', 'gunship', 'snow_sled', 'troop_truck'] as const;
 
 export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef>> = {
-  // model: The owner's toy machine gun on a tripod (Meshy, owned; content/guns.json, centred on its tripod).
+  // model: The owner's toy machine gun on a tripod (Meshy, owned; content/guns.json, centred on its tripod), built 1.5 m long: a 0.57 m receiver and a 0.93 m barrel, its bore 0.55 m off the ground.
+  // scale: Drawn twice its built size (owner, 2026-11-12: "the MG turret should be scaled up"; at its built size its top was 0.64 m up, knee height to a 1.8 m player, and it read as a toy). At 2: 3.0 m long (receiver 1.14 m, barrel 1.86 m), bore 1.1 m up, top of the receiver 1.28 m (a standing player's chest), the spade grips about a metre up, tripod feet 2.2 m apart. The model's tripod is short for its gun, so one scale can't give both a chest-high gun and a 1.2-1.5 m barrel: 1.6 gives a 1.5 m barrel on a gun at hip height (bore 0.88 m), 2.4 a chest-high bore with a 2.2 m barrel. 2 is between them, the height coming first because the gunner stands.
+  // half: The solid part at that size: the receiver and the pintle (1.5 m wide, 1.9 m long, 1.28 m tall). The barrel (to z 2.06) and the tripod's side feet (1.1 m either side) are outside it, like the Tank's barrel.
+  // seats: The gunner stands 1.45 m behind the pintle, half a metre clear of the receiver's back (z -0.94). The seat doesn't move as the gun turns; in the gunner's own view the gun is drawn turning about where they stand, so it stays in front of them (client View.updateMounts).
   turret_mg: {
     id: 'turret_mg',
     displayName: 'Heavy MG Turret',
     kind: 'turret',
     model: 'guns/tripod_mg.glb',
+    scale: 2,
     health: 400,
-    half: [0.6, 0.5, 0.6],
-    seats: [{ role: 'gunner', label: 'Gunner', offset: [0, 0, -1.1], weapon: 'core.mount_mg', arc: 1.4 }],
-    enterRadius: 2.4,
+    half: [0.75, 0.64, 0.95],
+    seats: [{ role: 'gunner', label: 'Gunner', offset: [0, 0, -1.45], weapon: 'core.mount_mg', arc: 1.4 }],
+    enterRadius: 2.8,
     respawnSeconds: 45,
     blast: { radius: 3, damage: 60 },
     blurb: 'A heavy machine gun on a tripod: one gunner, a wide arc, overheats instead of reloading',
@@ -69,21 +73,6 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     },
     glow: '#8f7bff',
     blurb: 'Winds up on an enemy it can see, then locks an energy arc onto them that jumps to one more. Break its line of sight to shake it off',
-  },
-  // seats: The driver sits in the pod (2026-11-11: standing, they stood up through its dome): the cushion 0.6 m up.
-  kart: {
-    id: 'kart',
-    displayName: 'Go-Kart',
-    kind: 'vehicle',
-    model: 'vehicles/kart.glb',
-    health: 220,
-    half: [0.7, 0.45, 1],
-    seats: [{ role: 'driver', label: 'Driver', offset: [0, 0.6, -0.1], seated: true, legDrop: 0.25 }],
-    enterRadius: 2.6,
-    respawnSeconds: 30,
-    blast: { radius: 3.5, damage: 70 },
-    vehicle: { maxSpeed: 20, reverseSpeed: 7, accel: 16, turnRate: 2.6, idleBrake: 16, grip: 0.32, mass: 0.4 },
-    blurb: 'One seat, very quick, no gun: run them over',
   },
   // model: Cyber Fang Mk III (Meshy Community, CC0; content/guns.json vehicles/cyber_fang.glb, 2026-11-10): a heavy hover bike, 4.0 m long, 2.2 m wide and 2.2 m tall over its front fairing. The Quaternius Striker it replaced is the fallback (vehicles/speeder.glb).
   // seats: Measured on the model: the saddle at z -0.7 to -0.9, 1.6-1.7 m up, behind the fairing (2.0-2.2 m); the passenger on the tail hump behind it (z -1.3, 1.9 m). Roles, the pilot's blasters and their arc unchanged. Both sit astride (2026-11-11: they stood knee-deep in the saddle): the pilot on the saddle 1.65 m up, the passenger on the tail hump 1.9 m up.
@@ -595,26 +584,6 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     cockpitEye: [0, 2.35, 2.3],
     blurb: 'A flying gunship (the dropship\'s flight model): the pilot fires blasters ahead, two door gunners cover the sides',
   },
-  // seats: All four sit (2026-11-11: standing on the floor, their heads came out through the roof, 2.2 m): cushions 1.1 m up.
-  ice_cream_truck: {
-    id: 'ice_cream_truck',
-    displayName: 'Ice Cream Truck',
-    kind: 'vehicle',
-    model: 'vehicles/ice_cream_truck.glb',
-    health: 520,
-    half: [1.2, 1.1, 2.4],
-    seats: [
-      { role: 'driver', label: 'Driver', offset: [-0.45, 1.1, 1.2], seated: true, legDrop: 0.4 },
-      { role: 'passenger', label: 'Serving hatch', offset: [0.5, 1.1, 0], seated: true, legDrop: 0.4 },
-      { role: 'passenger', label: 'Back left', offset: [-0.5, 1.1, -1.2], seated: true, legDrop: 0.4 },
-      { role: 'passenger', label: 'Back right', offset: [0.5, 1.1, -1.2], seated: true, legDrop: 0.4 },
-    ],
-    enterRadius: 3.4,
-    respawnSeconds: 45,
-    blast: { radius: 5, damage: 95 },
-    vehicle: { maxSpeed: 16, reverseSpeed: 6, accel: 8, turnRate: 1.5, idleBrake: 10, grip: 0.24, mass: 1.9 },
-    blurb: 'A pastel van for four: no gun, but the three riders shoot out of the windows',
-  },
   // model: "Snowmobile" by roygbpjyt (Meshy Community, CC0; content/guns.json pack meshy-community-snowmobile): 3.0 m long, 1.31 m across the skis, 1.15 m to the top of the windscreen, skis ahead (+Z) and the track behind. It replaced the Kenney Holiday Kit long sled on 2026-11-04.
   // half: The body is 3.0 m long and 1.31 m wide at the skis (0.72 m along the seat and track); the box stops at 1.1 m, just under the windscreen's top (1.15 m).
   // seats: Measured on the model (top-down height map of the built mesh): one long saddle from z -0.2 to -1.3, 0.55 m up where the driver sits and rising to 0.7 m at the back; the handlebars across at z -0.1, 1.1 m up; running boards 0.43 m up either side of the tunnel and footwells 0.36 m up at z 0 to 0.1. Both riders sit astride (`straddle`: thighs turned out either side of the saddle, 0.25-0.3 rad, enough for the knees to clear the side panels without splaying past the running boards), the driver's hips at z -0.55, the passenger's behind at z -1.02 on the rise. A small `legDrop` (0.1, 0.14) bends the shins forward so the driver's feet rest in the footwells under the front of the hood (0.36 m up, z 0 to 0.1) instead of hanging past the running boards. Tuned by eye on Frost Basin.
@@ -708,38 +677,42 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
 /** The route crafts (`airplane` map entities): not placeable, they fly their entity's route. */
 export const ROUTE_CRAFT_DEFS: Readonly<Record<'airplane' | 'dropship_drop', MountDef>> = {
   // design: The transport plane (AirplaneEntity, sim/airplane.ts): 24 passenger benches along the hold; it cannot be hurt and nobody flies it. Not placeable: it flies its map entity's route.
+  // model: The Hauler's model drawn 2.35 times its size (owner, 2026-11-12: "the transport plane can be replaced with a larger scaled version of the hauler"): the Ironbound Voyager (Meshy Community, CC0; content/guns.json vehicles/ironbound_hauler.glb, built 6.8 m long) at 16 m, the length the old plane's box had, so the air drop's exit (half its length and a metre behind, sim/airplane.ts dropOffsets) and the chase camera are where they were. `scale` (MountDef.scale), not a second build: one file serves both craft, and a build at 16 m with the same 2048 texture would look the same (the texels are 2.35 times larger either way: about 100 to the metre, on a craft seen from the ground or from the chase camera 22 m behind).
+  // half: The hull at that size, measured on the model's triangles: a closed tube 4.2 m wide (4.7 with the deck rails) and 5.65 m tall from its lowest point, 16 m long. The fins amidships reach 6.5 m either side, outside the box, as on the Hauler. The old plane's box was 10.4 m wide (its wings); nothing collides with a route craft.
+  // seats: 24 in the hold, two columns 0.9 m either side of the middle, twelve rows a metre apart from z 6 back to z -5, feet 2 m up: inside the hull everywhere (at a rider's heights it is 1.48 m wide a side at the front row, in the nose, and 1.8 m and more behind; its floor is 0.5 m up and its roof 5.2 m; aft of z -5.6 the tail's underside rises to 2 m, so no row is further back). Riders are out of sight in the closed hull, like the Hauler's pilot; yours is the chase camera.
   airplane: {
     id: 'airplane',
     displayName: 'Transport Plane',
     kind: 'vehicle',
-    model: 'vehicles/transport_plane.glb',
+    model: 'vehicles/ironbound_hauler.glb',
+    scale: 2.35,
     health: 1000000,
-    half: [5.2, 2.6, 8],
+    half: [2.4, 2.83, 8],
     seats: [
-      { role: 'passenger', label: 'Bench 1', offset: [-1.4, 1, 6] },
-      { role: 'passenger', label: 'Bench 2', offset: [1.4, 1, 6] },
-      { role: 'passenger', label: 'Bench 3', offset: [-1.4, 1, 5] },
-      { role: 'passenger', label: 'Bench 4', offset: [1.4, 1, 5] },
-      { role: 'passenger', label: 'Bench 5', offset: [-1.4, 1, 4] },
-      { role: 'passenger', label: 'Bench 6', offset: [1.4, 1, 4] },
-      { role: 'passenger', label: 'Bench 7', offset: [-1.4, 1, 3] },
-      { role: 'passenger', label: 'Bench 8', offset: [1.4, 1, 3] },
-      { role: 'passenger', label: 'Bench 9', offset: [-1.4, 1, 2] },
-      { role: 'passenger', label: 'Bench 10', offset: [1.4, 1, 2] },
-      { role: 'passenger', label: 'Bench 11', offset: [-1.4, 1, 1] },
-      { role: 'passenger', label: 'Bench 12', offset: [1.4, 1, 1] },
-      { role: 'passenger', label: 'Bench 13', offset: [-1.4, 1, 0] },
-      { role: 'passenger', label: 'Bench 14', offset: [1.4, 1, 0] },
-      { role: 'passenger', label: 'Bench 15', offset: [-1.4, 1, -1] },
-      { role: 'passenger', label: 'Bench 16', offset: [1.4, 1, -1] },
-      { role: 'passenger', label: 'Bench 17', offset: [-1.4, 1, -2] },
-      { role: 'passenger', label: 'Bench 18', offset: [1.4, 1, -2] },
-      { role: 'passenger', label: 'Bench 19', offset: [-1.4, 1, -3] },
-      { role: 'passenger', label: 'Bench 20', offset: [1.4, 1, -3] },
-      { role: 'passenger', label: 'Bench 21', offset: [-1.4, 1, -4] },
-      { role: 'passenger', label: 'Bench 22', offset: [1.4, 1, -4] },
-      { role: 'passenger', label: 'Bench 23', offset: [-1.4, 1, -5] },
-      { role: 'passenger', label: 'Bench 24', offset: [1.4, 1, -5] },
+      { role: 'passenger', label: 'Bench 1', offset: [-0.9, 2, 6] },
+      { role: 'passenger', label: 'Bench 2', offset: [0.9, 2, 6] },
+      { role: 'passenger', label: 'Bench 3', offset: [-0.9, 2, 5] },
+      { role: 'passenger', label: 'Bench 4', offset: [0.9, 2, 5] },
+      { role: 'passenger', label: 'Bench 5', offset: [-0.9, 2, 4] },
+      { role: 'passenger', label: 'Bench 6', offset: [0.9, 2, 4] },
+      { role: 'passenger', label: 'Bench 7', offset: [-0.9, 2, 3] },
+      { role: 'passenger', label: 'Bench 8', offset: [0.9, 2, 3] },
+      { role: 'passenger', label: 'Bench 9', offset: [-0.9, 2, 2] },
+      { role: 'passenger', label: 'Bench 10', offset: [0.9, 2, 2] },
+      { role: 'passenger', label: 'Bench 11', offset: [-0.9, 2, 1] },
+      { role: 'passenger', label: 'Bench 12', offset: [0.9, 2, 1] },
+      { role: 'passenger', label: 'Bench 13', offset: [-0.9, 2, 0] },
+      { role: 'passenger', label: 'Bench 14', offset: [0.9, 2, 0] },
+      { role: 'passenger', label: 'Bench 15', offset: [-0.9, 2, -1] },
+      { role: 'passenger', label: 'Bench 16', offset: [0.9, 2, -1] },
+      { role: 'passenger', label: 'Bench 17', offset: [-0.9, 2, -2] },
+      { role: 'passenger', label: 'Bench 18', offset: [0.9, 2, -2] },
+      { role: 'passenger', label: 'Bench 19', offset: [-0.9, 2, -3] },
+      { role: 'passenger', label: 'Bench 20', offset: [0.9, 2, -3] },
+      { role: 'passenger', label: 'Bench 21', offset: [-0.9, 2, -4] },
+      { role: 'passenger', label: 'Bench 22', offset: [0.9, 2, -4] },
+      { role: 'passenger', label: 'Bench 23', offset: [-0.9, 2, -5] },
+      { role: 'passenger', label: 'Bench 24', offset: [0.9, 2, -5] },
     ],
     enterRadius: 0,
     respawnSeconds: 600,

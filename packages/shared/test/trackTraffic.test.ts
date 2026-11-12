@@ -44,7 +44,7 @@ function oval(o: Partial<Track> = {}): Track {
     const a = (i / 10) * Math.PI * 2;
     points.push([Math.round(Math.sin(a) * 55 * 100) / 100, 0, Math.round(-Math.cos(a) * 40 * 100) / 100]);
   }
-  return { points, width: 12, loop: true, laps: 2, grid: 4, vehicle: 'kart', combat: false, surface: 'asphalt', curbs: true, ambient: 0, ambientVehicle: 'kart', pit: null, ...o };
+  return { points, width: 12, loop: true, laps: 2, grid: 4, vehicle: 'hover_bike', combat: false, surface: 'asphalt', curbs: true, ambient: 0, ambientVehicle: 'hover_bike', pit: null, ...o };
 }
 
 /** Flat open ground with the oval on it and spawns in the infield, offering `modes`. */

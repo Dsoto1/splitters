@@ -117,17 +117,17 @@ describe('bot drivers getting stuck', () => {
 describe('enemy vehicles', () => {
   it('knows when someone is bearing down on it, and which way is out of the path', () => {
     // Heading +z at 15 m/s from the origin.
-    const kart = car({ speed: 15 });
-    const ahead = inVehiclePath(kart, { x: 1, y: 0, z: 20 });
+    const jeep = car({ speed: 15 });
+    const ahead = inVehiclePath(jeep, { x: 1, y: 0, z: 20 });
     expect(ahead).not.toBeNull();
     expect(ahead!.eta).toBeCloseTo(20 / 15, 3);
     // The right of a vehicle heading +z is +x, where the bot is: out of the path is further that way.
     expect(ahead!.side).toBe(1);
     expect(Math.sin(ahead!.away)).toBeCloseTo(1, 5);
     // Off to the side, behind, too far ahead, or going slowly: no danger.
-    expect(inVehiclePath(kart, { x: 5, y: 0, z: 20 })).toBeNull();
-    expect(inVehiclePath(kart, { x: 0, y: 0, z: -5 })).toBeNull();
-    expect(inVehiclePath(kart, { x: 0, y: 0, z: 60 })).toBeNull();
+    expect(inVehiclePath(jeep, { x: 5, y: 0, z: 20 })).toBeNull();
+    expect(inVehiclePath(jeep, { x: 0, y: 0, z: -5 })).toBeNull();
+    expect(inVehiclePath(jeep, { x: 0, y: 0, z: 60 })).toBeNull();
     expect(inVehiclePath(car({ speed: 2 }), { x: 0, y: 0, z: 3 })).toBeNull();
     // Backing up, the danger is behind it.
     expect(inVehiclePath(car({ speed: 6, reversing: true }), { x: 0, y: 0, z: -5 })).not.toBeNull();
@@ -199,23 +199,23 @@ const give = (c: Combatant, id: string) => {
 
 describe('bot vehicle sense in a match', () => {
   it('a bot wedged at the wheel backs out, then gets out and leaves that vehicle alone', () => {
-    const match = new Match(yard([{ position: [30, 0, 22], model: 'kart', yaw: 0, faction: null, respawnSeconds: null }], [[0, 0, 0]]), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 3);
+    const match = new Match(yard([{ position: [30, 0, 22], model: 'gun_jeep', yaw: 0, faction: null, respawnSeconds: null }], [[0, 0, 0]]), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 3);
     const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.normal)!;
     match.step();
     place(bot, 31, 22);
     const { mounts, enterMount } = internals(match);
-    const kart = mounts[0]!;
+    const jeep = mounts[0]!;
     expect(enterMount.call(match, bot)).toBe(true);
-    const home = { ...kart.pos };
+    const home = { ...jeep.pos };
     let reversed = -1;
     let out = -1;
     for (let t = 0; t < 60 * 10 && out < 0; t++) {
       match.step();
       // Wedged: it can't move however it is driven.
-      kart.pos.x = home.x;
-      kart.pos.z = home.z;
-      kart.speed = 0;
-      if (reversed < 0 && kart.drive.forward < 0) reversed = t;
+      jeep.pos.x = home.x;
+      jeep.pos.z = home.z;
+      jeep.speed = 0;
+      if (reversed < 0 && jeep.drive.forward < 0) reversed = t;
       if (!bot.mount) out = t;
     }
     expect(reversed).toBeGreaterThan(0);
@@ -223,11 +223,11 @@ describe('bot vehicle sense in a match', () => {
     // Out within a few seconds of the back-out not working.
     expect(out).toBeLessThan(60 * 7);
     const brain = bot.bot as unknown as { avoidMounts: Map<number, number> };
-    expect(brain.avoidMounts.has((kart as unknown as { index: number }).index)).toBe(true);
+    expect(brain.avoidMounts.has((jeep as unknown as { index: number }).index)).toBe(true);
   });
 
   it('a bot gets out of a vehicle that catches fire, however healthy it looked', () => {
-    const match = new Match(yard([{ position: [30, 0, 22], model: 'kart', yaw: 0, faction: null, respawnSeconds: null }], [[0, 0, 0]]), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 3);
+    const match = new Match(yard([{ position: [30, 0, 22], model: 'gun_jeep', yaw: 0, faction: null, respawnSeconds: null }], [[0, 0, 0]]), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 3);
     const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.normal)!;
     match.step();
     place(bot, 31, 22);
@@ -246,14 +246,14 @@ describe('bot vehicle sense in a match', () => {
     expect(out).toBeLessThan(90);
   });
 
-  it('steps out of the path of an enemy kart driven at it', () => {
+  it('steps out of the path of an enemy jeep driven at it', () => {
     const run = (dodge: boolean) => {
-      const match = new Match(yard([{ position: [4, 0, 12], model: 'kart', yaw: Math.PI / 2, faction: null, respawnSeconds: null }], [[0, 0, 0], [30, 0, 24]]), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 5);
+      const match = new Match(yard([{ position: [4, 0, 12], model: 'gun_jeep', yaw: Math.PI / 2, faction: null, respawnSeconds: null }], [[0, 0, 0], [30, 0, 24]]), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 5);
       const human = match.addHuman('driver')!;
       const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.hard)!;
       match.step();
       place(human, 4, 13);
-      // Facing the kart, a pistol only (nothing that stops a kart).
+      // Facing the jeep, a pistol only (nothing that stops a jeep).
       place(bot, 30, 12, -Math.PI / 2);
       bot.weapons.clear();
       give(bot, 'core.pistol');

@@ -368,7 +368,7 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
 
 | File | Holds |
 |---|---|
-| `content/vehicles/<id>.json` | one mount: `kind` (`turret`, `sentry`, `vehicle`), `order` (MapMaker palette order), model, health, collision box, seats (role, label, place, mounted `weapon`, aim `arc`), get-in reach, respawn, blast, `armour` and `bailHealth`, the `vehicle` handling (speeds, grip, mass, hover, fly, suspension, `pivot`, `idleBrake`, `routeFit`) or the `sentry` block, drawing numbers (`rideHeight`, `wheels`, `cockpitEye`, `glow`), `blurb` and `notes` |
+| `content/vehicles/<id>.json` | one mount: `kind` (`turret`, `sentry`, `vehicle`), `order` (MapMaker palette order), model (and `scale`: drawn that many times its built size; VEHICLES.md, "Drawing a model larger"), health, collision box, seats (role, label, place, mounted `weapon`, aim `arc`), get-in reach, respawn, blast, `armour` and `bailHealth`, the `vehicle` handling (speeds, grip, mass, hover, fly, suspension, `pivot`, `idleBrake`, `routeFit`) or the `sentry` block, drawing numbers (`rideHeight`, `wheels`, `cockpitEye`, `glow`), `blurb` and `notes` |
 | `content/npcs.json` | every NPC role: its network `code`, health, weapon, speed, size (`scale`), `damage` multiple, `creature` / `melee`, the character `look` it is drawn as, and `bot` (what its bot profile changes from `NPC_PROFILE`) |
 
 #### How to add a vehicle or turret
@@ -421,7 +421,7 @@ in JSON, the behaviour in code (driving, suspension, flying, sentry aim and the 
      (blasts 1.25): a Rocket Launcher hit on its side is 2 × (40 + 120) × 1.25 = 400, so 3 kill it (4 off its front or
      at an angle; 6 before), a Guided Rocket 412 (3), a Blast Rocket 288 (5), a full Swarm volley 500 (3); a grenade
      launcher's grenade stays 125 (10), a cannon shell 262 (5). Light vehicles go quicker too: a Rocket Launcher hit is
-     320 to anything unarmoured (a buggy, 450, in 2; a kart, speeder or hover bike in 1).
+     320 to anything unarmoured (a buggy, 450, in 2; a speeder or hover bike in 1).
    - `vehicle.pivot` (rad/s): tracks, turning on the spot, fading out by 5 m/s. The Tank: 0.8.
    - `vehicle.idleBrake` (m/s²): with nobody at the wheel it brakes to a stop at this rate, its slide too (default 10;
      not ambient track cars, which a track driver drives). From 12.7 m/s a Hauler (12) stops in about 7 m.

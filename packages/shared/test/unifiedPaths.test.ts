@@ -7,6 +7,7 @@ import {
   TrackGeometry,
   ambientCarEntities,
   buildMapGeometry,
+  liveMount,
   loadMap,
   migrateMapDocument,
   pathGeometry,
@@ -54,6 +55,9 @@ describe('one path primitive: migration (v22 -> v23)', () => {
     expect(paths[1]).toEqual({ id: 'race_track', style: 'cobble', width: 4, points: [[0, 0, 0], [10, 0, 0], [10, 0, 10]], closed: true, uses: ['road'], lay: true });
     const map = MapDocument.parse(doc);
     expect(racePath(map)!.id).toBe('race_track_2');
+    // The Go-Kart is retired: the path still says `kart` as written, and the track drives Hover Bikes (map/mountAliases.ts).
+    expect(racePath(map)!.race).toMatchObject({ vehicle: 'kart', ambientVehicle: 'kart' });
+    expect(raceTrack(map)).toMatchObject({ vehicle: 'hover_bike', ambientVehicle: 'hover_bike' });
     expect(raceTrack(map)).toMatchObject({ loop: true, width: 10, surface: 'dirt', ambient: 2, laps: 3 });
   });
 
@@ -81,7 +85,8 @@ describe('one path primitive: migration (v22 -> v23)', () => {
       const old = new TrackGeometry(Track.parse(track));
       const map = loaded(raw(id));
       const after = trackGeometry(map)!;
-      expect(after.track).toEqual(old.track);
+      // The Go-Kart these tracks ran is retired (2026-11-12): the same track, on the vehicle that replaced it.
+      expect(after.track).toEqual({ ...old.track, vehicle: liveMount(old.track.vehicle), ambientVehicle: liveMount(old.track.ambientVehicle) });
       expect(after.samples).toEqual(old.samples);
       expect(after.gates).toEqual(old.gates);
       expect(after.length).toBe(old.length);

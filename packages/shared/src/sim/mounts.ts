@@ -19,6 +19,28 @@ import type { SuspensionTuning } from './suspension.ts';
 export { MOUNT_DEFS, MOUNT_MODELS };
 export type MountModel = (typeof MOUNT_MODELS)[number];
 
+/**
+ * Retired vehicles (owner, 2026-11-12: "we can retire the go-kart and ice cream truck"): each id and the vehicle
+ * that took its place. Their definitions, models and palette entries are gone, but a map names a vehicle by id, so
+ * the ids stay readable for good (map/mountAliases.ts): a map that names one is still a valid file, and plays with
+ * the replacement. Never reuse a retired id.
+ * - `kart` (Go-Kart: one seat, quick, no gun) -> `hover_bike` (one rider, quick, no gun).
+ * - `ice_cream_truck` (a van for four, no mounted gun, riders shoot their own weapons) -> `buggy` (the same idea
+ *   for six), so a map gains no mounted weapon it was not made with.
+ */
+export const RETIRED_MOUNTS = { kart: 'hover_bike', ice_cream_truck: 'buggy' } as const satisfies Readonly<Record<string, MountModel>>;
+export type RetiredMountModel = keyof typeof RETIRED_MOUNTS;
+export const RETIRED_MOUNT_MODELS = ['kart', 'ice_cream_truck'] as const satisfies readonly RetiredMountModel[];
+/** What the retired ones were called (MapMaker says what a map still names). */
+export const RETIRED_MOUNT_NAMES: Readonly<Record<RetiredMountModel, string>> = { kart: 'Go-Kart', ice_cream_truck: 'Ice Cream Truck' };
+/** A vehicle id as a map file may name it: a placeable one, or a retired one. */
+export type PlacedMountModel = MountModel | RetiredMountModel;
+export const isRetiredMount = (id: unknown): id is RetiredMountModel => typeof id === 'string' && Object.hasOwn(RETIRED_MOUNTS, id);
+/** The vehicle a map's id stands for today: a retired one's replacement, anything else as it is. */
+export function liveMount<T extends string>(id: T): T extends RetiredMountModel ? (typeof RETIRED_MOUNTS)[T] : T {
+  return (isRetiredMount(id) ? RETIRED_MOUNTS[id] : id) as T extends RetiredMountModel ? (typeof RETIRED_MOUNTS)[T] : T;
+}
+
 /** Snapshot index of a sentry a player built (Classes): this plus the builder's slot. */
 export const BUILT_MOUNT_BASE = 10_000;
 /** The transport plane of an `airplane` map entity: not placeable as a mount, it flies the entity's route. */
@@ -139,6 +161,13 @@ export interface MountDef {
   kind: 'turret' | 'sentry' | 'vehicle';
   /** Built model (content/models.json). */
   model: string;
+  /**
+   * Drawing only: the model is drawn this many times its built size (default 1), about its footprint's centre, its
+   * lowest point still on the ground (or at its ride height). The transport plane is the Hauler's model drawn larger;
+   * the Heavy MG Turret its tripod gun at a full-size gun's height. `half`, the seats and `cockpitEye` are in metres
+   * as always, fitted to the model at this size; its lower levels of detail come in that many times further off.
+   */
+  scale?: number;
   health: number;
   /** Collision box half extents (blocks players, shots and sight); its base sits on the ground. */
   half: [number, number, number];
@@ -261,7 +290,10 @@ export const DROPSHIP_DROP_DEF: MountDef = ROUTE_CRAFT_DEFS.dropship_drop;
 /** The mount that flies an `airplane` entity's route (its craft). */
 export const airCraftDef = (craft: string | undefined): MountDef => (craft === 'dropship' ? DROPSHIP_DROP_DEF : AIRPLANE_DEF);
 
-export const getMountDef = (id: string): MountDef | undefined => (id === AIRPLANE_MODEL ? AIRPLANE_DEF : id === DROPSHIP_DROP_MODEL ? DROPSHIP_DROP_DEF : MOUNT_DEFS[id as MountModel]);
+/** A mount's definition by the id a map or the match names it by (a retired vehicle's id: its replacement's). */
+export const getMountDef = (id: string): MountDef | undefined => (id === AIRPLANE_MODEL ? AIRPLANE_DEF : id === DROPSHIP_DROP_MODEL ? DROPSHIP_DROP_DEF : MOUNT_DEFS[liveMount(id) as MountModel]);
+/** The definition a placed mount plays with (MapMaker keeps a retired vehicle's id as the map was made). */
+export const placedMountDef = (id: PlacedMountModel): MountDef => MOUNT_DEFS[liveMount(id)];
 
 /**
  * Vehicles placed to ride on water (MountEntity.onWater). Over water or
@@ -437,7 +469,7 @@ export function arcSentryIssues(entities: readonly { kind: string; id: string; p
   const out: { severity: 'warning'; code: string; message: string; targetId: string }[] = [];
   const spawns = entities.filter((e) => e.kind === 'spawn');
   for (const e of entities) {
-    if (e.kind !== 'mount' || !e.model || !MOUNT_DEFS[e.model as MountModel]?.sentry?.arc) continue;
+    if (e.kind !== 'mount' || !e.model || !getMountDef(e.model)?.sentry?.arc) continue;
     let near: { id: string; d: number } | null = null;
     for (const s of spawns) {
       // Its own team's spawn is safe (it doesn't shoot its team).
@@ -445,7 +477,7 @@ export function arcSentryIssues(entities: readonly { kind: string; id: string; p
       const d = Math.hypot(s.position[0]! - e.position[0]!, s.position[2]! - e.position[2]!);
       if (d < ARC_SENTRY_SPAWN_CLEAR && (!near || d < near.d)) near = { id: s.id, d };
     }
-    if (near) out.push({ severity: 'warning', code: 'mount.arc_spawn', message: `${MOUNT_DEFS[e.model as MountModel].displayName} ${e.id} is ${near.d.toFixed(1)} m from spawn ${near.id}: players it shoots at could spawn inside its wind-up. Keep it ${ARC_SENTRY_SPAWN_CLEAR} m away, or give it that spawn's team`, targetId: e.id });
+    if (near) out.push({ severity: 'warning', code: 'mount.arc_spawn', message: `${getMountDef(e.model)!.displayName} ${e.id} is ${near.d.toFixed(1)} m from spawn ${near.id}: players it shoots at could spawn inside its wind-up. Keep it ${ARC_SENTRY_SPAWN_CLEAR} m away, or give it that spawn's team`, targetId: e.id });
   }
   return out;
 }

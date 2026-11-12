@@ -39,16 +39,16 @@ describe('vehicles generator (tools/content/vehicles.mjs)', () => {
   it('checks seats by kind, and the palette order', () => {
     const c = clone(content);
     mount(c, 'turret_mg').seats[0].role = 'passenger';
-    mount(c, 'kart').seats.push({ role: 'driver', label: 'Second driver', offset: [0, 0, 0] });
+    mount(c, 'snow_sled').seats.push({ role: 'driver', label: 'Second driver', offset: [0, 0, 0] });
     mount(c, 'sentry').seats.push({ role: 'gunner', label: 'Gunner', offset: [0, 0, 0], weapon: 'core.mount_mg' });
     mount(c, 'hauler').seats[1].weapon = undefined;
-    mount(c, 'buggy').order = mount(c, 'kart').order;
+    mount(c, 'buggy').order = mount(c, 'snow_sled').order;
     const p = vehicles.build(clone(c)).problems.join('\n');
     expect(p).toMatch(/turret_mg\.json: a turret has gunner seats only/);
-    expect(p).toMatch(/kart\.json: a vehicle has exactly one driver seat/);
+    expect(p).toMatch(/snow_sled\.json: a vehicle has exactly one driver seat/);
     expect(p).toMatch(/sentry\.json: a sentry has no seats/);
     expect(p).toMatch(/hauler\.json: seats\[1\] \(Gunner\): a gunner seat needs a weapon/);
-    expect(p).toMatch(/order \d+ is also (kart|buggy)'s/);
+    expect(p).toMatch(/order \d+ is also (snow_sled|buggy)'s/);
   });
 
   it("checks a drawn tire's size", () => {
