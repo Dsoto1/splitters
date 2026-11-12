@@ -1,6 +1,6 @@
 # St. John's: the owner's brief for a rework (2026-11-12)
 
-The owner knows the real campus. This is what they said and what their seventeen reference photos show. Nothing is built
+The owner knows the real campus. This is what they said and what their eighteen reference photos show. Nothing is built
 from it yet; more references are coming ("I'll add reference more after this"). The photos are not in the repository
 (they are the school's own pictures, not ours to ship or commit): ask the owner for them, or look in the session
 scratchpad `stjohns-refs/` while that session lives. Use them as reference only: nothing from them goes into a texture.
@@ -107,6 +107,16 @@ reference of it directly on." (Photo 9 is that head-on view.)
     the far end and a small arched door in the tower's base; a large tree at the left.
 
 So the main entrance is a drive that splits round the stone cairn in front of the castle-like hall, not a skywalk.
+
+### Another view of "that other building" (the owner, the same day, photo 18)
+
+18. **A three-storey hall at an angle.** (Read here as the three-floor hall of photo 16 from its left end: the owner
+    said only "another view of that other building"; confirm before building from it.) Coursed limestone, three
+    floors of square windows, a crenellated parapet. The centre block stands forward and taller, with a round turret
+    at each of its front corners rising past the parapet, an arched entrance at its foot and a bay of windows
+    above. A lower wing at the near end with large round-arched ground-floor openings and a dark double door. A
+    small conical-roofed turret at the far end. In front: a flagstone path and a low curved wall of stacked
+    limestone with a square pier, lawn, a tall spruce.
 
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
