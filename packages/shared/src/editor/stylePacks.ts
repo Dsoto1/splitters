@@ -581,9 +581,9 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'kit.conveyor.belt', 'kit.crate.factory', 'kit.crate.factory_long', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.crate.bin', 'kit.crate.framed', 'kit.drum.steel', 'kit.drum.steel_open',
       'kit.container.shipping', 'kit.barrier.concrete', 'kit.sign.warning', 'kit.console.panel', 'kit.pipe.valve', 'kit.fence.iron', 'kit.shelf.gondola', 'kit.shelf.end', 'kit.box.carton', 'kit.bin.waste', 'kit.table.desk', 'kit.seat.office',
       // Already in the game: machines, pipes, tanks, the gantry crane, yard pieces.
-      'machine', 'machine_window', 'hopper', 'hopper_tall', 'piston', 'scanner', 'lever', 'cog', 'big_pipe', 'workbench', 'mp_control_cabinet', 'sf_pipe_rack', 'so_pipe_run',
+      'kit.machine.heavy', 'kit.machine.window', 'kit.hopper.round', 'kit.hopper.tall', 'kit.machine.piston', 'kit.machine.scanner', 'kit.machine.lever', 'kit.machine.cog', 'kit.pipe.riser', 'kit.table.workbench', 'mp_control_cabinet', 'sf_pipe_rack', 'so_pipe_run',
       'fuel_tank', 'storage_tank', 'steel_water_tower', 'cargo_ibc_tank', 'cargo_gantry_crane', 'cargo_crate_stack', 'so_generator', 'so_chainlink_fence',
-      'cone', 'fuel_drum', 'pallet', 'floodlight', 'yard_lamp', 'dumpster', 'street_rusty_barrel', 'street_fuel_can', 'sv_propane',
+      'kit.sign.cone', 'fuel_drum', 'pallet', 'floodlight', 'yard_lamp', 'dumpster', 'street_rusty_barrel', 'street_fuel_can', 'sv_propane',
     ),
     materials: ['core.steel_grating', 'core.pbr_tread_plate', 'core.pbr_rusted_plate', 'core.hazard', 'core.pbr_grey_corrugated', 'core.rusty_corrugated', 'core.pbr_concrete', 'core.pbr_concrete_dark', 'core.pbr_steel'],
     facades: ['corrugated', 'concrete', 'brick'],
