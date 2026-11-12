@@ -190,7 +190,7 @@ slightly recessed (tall ceilings), has classrooms above in same layout of hallwa
 | Smythe Hall | Dorms | The L-shaped hall by the visitor parking. |
 | Noble Victory Memorial Chapel | The chapel | Photos 4, 11, 13. |
 | Farrand Hall Gymnasium, Gerber Pool | The gym and pool | Photos 2, 3. |
-| Stangeland / Cord Hall | Not said | It is the far end of the walkway from the classroom floor over the mess hall: probably the school building (ask the owner). |
+| Stangeland / Cord Hall | The school building (the owner: "Stangeland/Cord Hall is the school building") | Several floors, a hall down the middle with classrooms both sides (photos 6, 7, 8); the walkway runs from it to the classroom floor over the mess hall. |
 
 A crest and school emblems as the owner describes them are the school's own marks: use a crest of our own design in
 their place (no real logo goes into the game).
