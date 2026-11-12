@@ -10,6 +10,8 @@ import {
   buildMapGeometry,
   builtInSetPieces,
   checkSetPieceDefinition,
+  edgeSegments,
+  edgeTrimBoxes,
   emptyInput,
   getProp,
   initPhysics,
@@ -29,6 +31,7 @@ import {
   type SetPiecePlacement,
   type Vec3,
 } from '../src/index.ts';
+import { EDGE_SHAPES } from '../src/content/edgeStyles.generated.ts';
 import { NavWorld, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -186,6 +189,65 @@ describe('bays end to end make one hall', () => {
   }
 });
 
+describe('the wall styles the bays are built with', () => {
+  it('a sash window is 1.2 m wide from 0.9 to 3 m, glazed; the twin has one each side, 2 m from the middle', () => {
+    expect(EDGE_SHAPES.window_sash!.openings).toEqual([[-0.6, 0.6, 0.9, 3]]);
+    expect(EDGE_SHAPES.windows_sash!.openings).toEqual([[-2.6, -1.4, 0.9, 3], [1.4, 2.6, 0.9, 3]]);
+    const map = mapOf([{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
+    // One pane a room, in the middle of its outer wall (the rooms' doors are at x -2 and 2), breakable in the Collegiate look.
+    const panes = windowPanes(map);
+    expect(panes.map((p) => [p.box.center.x, p.box.center.z, p.kind]).sort()).toEqual([[-2, -3.75, 'breakable'], [-2, 11.75, 'breakable'], [2, -3.75, 'breakable'], [2, 11.75, 'breakable']]);
+    // The wall stands round the opening, floor to ceiling, and is 0.5 m thick.
+    const segs = edgeSegments('window_sash', 4, 4);
+    expect(segs).toContainEqual([-0.6, 0.6, 0, 0.9, 0.5]);
+    expect(segs).toContainEqual([-0.6, 0.6, 3, 4, 0.5]);
+  });
+
+  it('the sash is drawn in the wall by the glass, in its own paint; nothing of it collides', () => {
+    const trim = edgeTrimBoxes('window_sash', 4, 4);
+    const sash = trim.filter((p) => p.surface);
+    // Two stiles, a bottom and a top rail, the meeting rail, a glazing bar in each sash.
+    expect(sash).toHaveLength(7);
+    for (const p of sash) {
+      expect(p.surface).toEqual({ material: 'core.paint_matte', tint: '#e6e1d3' });
+      // Inside the wall's thickness, round the glass's plane (0.25 m in), inside the opening.
+      expect(p.v0).toBeGreaterThan(0);
+      expect(p.v1).toBeLessThan(0.5);
+      expect(p.v0).toBeLessThan(0.25);
+      expect(p.v1).toBeGreaterThan(0.25);
+      expect(p.u0).toBeGreaterThanOrEqual(-0.6);
+      expect(p.u1).toBeLessThanOrEqual(0.6);
+      expect(p.y0).toBeGreaterThanOrEqual(0.9);
+      expect(p.y1).toBeLessThanOrEqual(3);
+      expect(p.depth).toBeUndefined();
+    }
+    // A meeting rail half way up the glass, across it.
+    expect(sash.some((p) => Math.abs((p.y0 + p.y1) / 2 - 1.95) < 0.01 && p.u1 - p.u0 > 1)).toBe(true);
+    // The stone sill stands into the room; where nothing is built beyond, the surround is on the outer face too.
+    expect(trim.some((p) => p.depth === 0.14 && p.y1 === 0.9)).toBe(true);
+    expect(edgeTrimBoxes('window_sash', 4, 4, true).filter((p) => p.v1 === 0).length).toBe(4);
+    // Drawn as trim with that surface in a map; no collision box of the map comes from the sash.
+    const map = mapOf([{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
+    const painted = buildMapDecor(map).filter((b) => b.surface?.material === 'core.paint_matte');
+    expect(painted).toHaveLength(28);
+    expect(painted.every((b) => b.kind === 'trim')).toBe(true);
+    expect(buildMapGeometry(map).some((b) => b.surface?.material === 'core.paint_matte')).toBe(false);
+  });
+
+  it('the Room doorway is 2 m wide and 2.6 m high in an oak frame, whatever the trim; the Oak Door fits it', () => {
+    expect(EDGE_SHAPES.door_room!.openings).toEqual([[-1, 1, 0, 2.6]]);
+    expect(edgeSegments('door_room', 4, 4)).toContainEqual([-1, 1, 2.6, 4, 0.5]);
+    const frame = edgeTrimBoxes('door_room', 4, 4).filter((p) => p.surface);
+    expect(frame).toHaveLength(3);
+    expect(frame.every((p) => p.surface!.material === 'core.oak_beam')).toBe(true);
+    for (const id of ['kit.door.oak', 'kit.door.oak_ajar', 'kit.door.oak_open']) expect(getProp(id)!.size.slice(0, 2), id).toEqual([2, 2.6]);
+    // Shut and ajar close the doorway (the slab in it); open leaves it clear.
+    expect(getProp('kit.door.oak')!.collision).toEqual([2, 2.6, 0.16]);
+    expect(getProp('kit.door.oak_ajar')!.boxes).toEqual([[-1, 0, -0.08, 1, 2.6, 0.08]]);
+    expect(getProp('kit.door.oak_open')!.collision).toBeNull();
+  });
+});
+
 describe('what the bays are made of, and what they cost', () => {
   const made = (id: string) => {
     const def = library.pieces.get(id)!;
@@ -220,9 +282,10 @@ describe('what the bays are made of, and what they cost', () => {
       };
     };
     const one = cost([{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
-    // Measured 2026-11-12: 126 collision boxes (walls 26, partitions 16, furniture 82: a bunk is 12, the slab 2), 114 trim, 4 panes.
-    expect(one.collision).toBeLessThanOrEqual(130);
-    expect(one.trim).toBeLessThanOrEqual(130);
+    // Measured 2026-11-12: 110 collision boxes (walls, slabs and roofs 18, partitions 16, furniture 76: a bunk is 12),
+    // 130 trim boxes (two thirds of them the four sashes), 4 panes. 20 bays, half of them with two rooms shut: 2,120 and 2,600.
+    expect(one.collision).toBeLessThanOrEqual(115);
+    expect(one.trim).toBeLessThanOrEqual(135);
     expect(one.panes).toBe(4);
     expect(one.props).toBe(28);
   });
