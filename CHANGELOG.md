@@ -7,6 +7,8 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Pickups glow.** Weapons, health, armor and ammo sit in a soft ground glow from the Binbun Loot pack, coloured by kind (weapon gold, health green, armor blue, ammo pale), on the nearest pickups within 28 m. Steady and eased in; with Reduce flashing on it is dimmer, held still and has no sparkles.
+- **Fix:** an effect asked for late in a slow frame no longer restarts each frame.
 - **Sandgate's roofs wear the new domes.** Its seven small roof domes are kit domes now, placed in MapMaker: white plaster, and blue tile on the west hall. They are closed domes on solid drums with blind arches, solid as the old ones were.
 - **Closed domes in the dome kit:** whole one-cell domes with 8 or 12 segments on a solid drum with blind arches, in the kit's six looks, for roofs where nobody should get inside.
 - **The Desert City dome kit.** Domes you build from parts in MapMaker, from the owner's dome set sheet: a cap, dome panels for 4, 6, 8 and 12 segments (plain, with a window, broken), drum quarters with arched doorways, windows or solid wall, three ring trims, and 4-, 3- and 2-way arch transitions a drum stands on. Every part shares the dome's centre, so you drop them on one point and turn each by its step. Whole domes too: one-cell domes and 15 m hall domes with 8 or 12 segments, and three ruins. Six looks: stone, sandstone, white plaster, copper, blue tile and green tile. You can stand inside under a dome; doorways, windows and breaks are open.
