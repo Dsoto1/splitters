@@ -3,6 +3,7 @@ import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorIns
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
+import { envCanBreak, envVariant, getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import { terrainBoundary, terrainLowest, terrainTriangles } from './terrain.ts';
 import { resolveBackdrop } from './backdrop.ts';
 import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './border.ts';
@@ -503,9 +504,12 @@ export function buildMapDecor(map: MapDocument, catalog: TileCatalog = coreCatal
 /**
  * A solid prop that can be shot apart: its catalogue entry has health, or the placement its own; with `everything`
  * (the map's `metadata.destruction`) any solid prop but a natural rock. Never one marked `unbreakable`.
+ * The generated environment (`env.*`) stays whatever the map says, but for a fallen log (content/environment.ts
+ * `envCanBreak`) the map maker gave its own health: solid cover unless toggled.
  */
 export function isBreakableProp(e: MapEntity, everything = false): boolean {
   if (e.kind !== 'prop' || !e.solid || e.unbreakable) return false;
+  if (isEnvModel(e.model)) return (e.health ?? 0) > 0 && envCanBreak(e.model);
   const def = getProp(e.model);
   if (!def?.collision) return false;
   return !!def.breakable || e.health !== undefined || (everything && !isRock(def));
@@ -515,6 +519,13 @@ export function isBreakableProp(e: MapEntity, everything = false): boolean {
 /** Natural rocks and boulders (not logs or stumps), which collide as rounded tiers. */
 const isRock = (def: { id: string; category: string }): boolean => def.category === 'Rocks & Wood' && /rock|boulder|stone|cliff/.test(def.id);
 
+/** The bounds of an environment placement as it lies: half sizes of its variant's built size, scaled (turned by its yaw). */
+export function envHalfSize(e: Extract<MapEntity, { kind: 'prop' }>): [number, number, number] | null {
+  const species = getEnvSpecies(e.model);
+  if (!species) return null;
+  return envVariant(species, e.variant).size.map((v) => (v * e.scale) / 2) as [number, number, number];
+}
+
 export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   const out: WorldBox[] = [];
   // Props riding a mover are drawn only (its blocks collide).
@@ -523,6 +534,12 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   for (const e of map.entities) {
     // Breakable props are not static: the scenario runtime owns their colliders (ask for them with `breakable`).
     if (e.kind !== 'prop' || !e.solid || isBreakableProp(e, everything) !== breakable || carried.has(e.id)) continue;
+    if (isEnvModel(e.model)) {
+      // The environment's shapes collide (map/environment.ts); a breakable log is the scenario's, here as its bounds.
+      const half = breakable ? envHalfSize(e) : null;
+      if (half) out.push({ min: [e.position[0] - half[0], e.position[1], e.position[2] - half[2]], max: [e.position[0] + half[0], e.position[1] + half[1] * 2, e.position[2] + half[2]], kind: 'prop', sourceId: e.id, ...(e.yaw ? { yaw: e.yaw } : {}) });
+      continue;
+    }
     const def = getProp(e.model);
     if (!def?.collision) continue;
     const [x, y, z] = e.position;

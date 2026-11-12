@@ -220,6 +220,19 @@ export class PhysicsWorld {
   }
 
   /**
+   * An environment shape the scenario switches on and off like a box (a breakable log's hull: setBoxEnabled). Not
+   * part of the level (shapeAt and the level-only queries don't know it). Null when Rapier can't make it.
+   */
+  createShape(sh: EnvWorldShape): RAPIER.Collider | null {
+    const desc = envColliderDesc(sh);
+    if (!desc) return null;
+    desc.setCollisionGroups(sh.blocks === 'all' ? WORLD_COLLIDER_GROUPS : SHOTS_ONLY_COLLIDER_GROUPS);
+    this.dirty = true;
+    this.structureVersion++;
+    return this.world.createCollider(desc);
+  }
+
+  /**
    * A glass pane (sim/glass.ts): it stops movement and never sight; a
    * `reinforced` pane also stops shots (raycastHit and raycastNormal hit it,
    * raycastWorld and lineOfSight don't).
