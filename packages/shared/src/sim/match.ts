@@ -2754,13 +2754,23 @@ export class Match {
   private stepFireteams(): void {
     const size = this.rules.fireteams;
     if (!size || !this.teams || !fireteamMode(this.rules.mode)) {
-      this.fireteams = null;
+      if (this.fireteams) {
+        // The variant went off: campers, snipers and lone wolves get their roles back.
+        this.fireteams = null;
+        this.rolesFor = -1;
+        this.refreshRoles();
+      }
       return;
     }
     if (!this.fireteams || this.fireteams.size !== size) {
       this.fireteams = new Fireteams(size);
       this.squadsDirty = true;
+      // Every bot plays in its squad from here on (refreshRoles: no campers, snipers or lone wolves). The roles were
+      // handed out as the bots joined, before the first tick made the squads: without handing them out again here,
+      // a camper or sniper leading a squad took it to a vantage spot and sat there with it, and a lone wolf led its
+      // squad away from the fight (owner, 2026-11-12: squads standing about until their leader was shot).
       this.rolesFor = -1;
+      this.refreshRoles();
     }
     const ft = this.fireteams;
     if (this.squadsDirty || this.tick - this.squadsAt >= TICK_RATE * 2) {

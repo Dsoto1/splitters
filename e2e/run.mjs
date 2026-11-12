@@ -209,8 +209,8 @@ async function setupTab(page, tab) {
 }
 
 /**
- * Match Setup: open one of the Match Setup tab's one-row sections if it is shut, by its head (`setup-variants-row`:
- * Variants; `setup-party-row`: Party presets), and wait until its settings show.
+ * Match Setup: open the Match Setup tab's one-row section if it is shut, by its head (`setup-variants-row`: Variants),
+ * and wait until its settings show. (Party presets are in the Presets tab: `setupTab(page, 'presets')`.)
  */
 async function openSetupRow(page, id) {
   await page.waitForSelector(`#${id}-head`, { state: 'attached', timeout: T(30000) });
@@ -3445,8 +3445,8 @@ async function offlineFlow(browser) {
   check(bar.rows === 1 && bar.columns === 4, `the map list's controls are one row and its grid four columns at 1670 × 941 (${JSON.stringify(bar)})`);
   if (sizeWas) await page.setViewportSize(sizeWas);
   // Match Setup's panel (redesign part 2): four tabs; the Match Setup tab's numbered sections keep the mode tiles and
-  // what wins (score, time) in view after picking a mode, with the size presets worked out for the map; Variants and
-  // Party presets are one row each until opened; the rest is behind the other tabs.
+  // what wins (score, time) in view after picking a mode, with the size presets worked out for the map; Variants is one
+  // row until opened; Party presets are in the Presets tab only (owner, 2026-11-12); the rest is behind the other tabs.
   await page.click('#arcade-modes .mode-chip:not(.on)');
   const top = await page.evaluate(() => {
     const body = document.querySelector('#match-setup .setup-body').getBoundingClientRect();
@@ -3460,14 +3460,14 @@ async function offlineFlow(browser) {
       chips: seen('arcade-modes'),
       win: seen('setup-win'),
       variants: !!document.getElementById('setup-variants') && shut('setup-variants-row'),
-      party: !!document.getElementById('setup-party') && shut('setup-party-row'),
+      party: !document.querySelector('#match-setup .pane-match #setup-party') && !document.getElementById('setup-party-row') && !!document.querySelector('#match-setup .pane-presets #setup-party'),
       sizes: document.querySelectorAll('#setup-sizes .size-chip').length,
       tabs: [...document.querySelectorAll('#setup-tabs .setup-tab')].map((x) => x.dataset.tab),
       numbers: [...document.querySelectorAll('#match-setup .pane-match .num-badge')].map((x) => x.textContent).join(''),
       foot: ['setup-saved', 'arcade-where-menu', 'arcade-spectate', 'arcade-start'].every((id) => { const r = document.getElementById(id)?.getBoundingClientRect(); return !!r && r.height > 0 && r.bottom <= innerHeight; }),
     };
   });
-  check(top.chips && top.win && top.variants && top.party && top.sizes >= 2 && top.tabs.join() === 'match,bots,rules,presets' && top.numbers === '12345' && top.foot, `picking a mode keeps the mode and what wins in view, with the size presets; Variants and Party presets are a row each; four tabs and the foot bar (${JSON.stringify(top)})`);
+  check(top.chips && top.win && top.variants && top.party && top.sizes >= 2 && top.tabs.join() === 'match,bots,rules,presets' && top.numbers === '1234' && top.foot, `picking a mode keeps the mode and what wins in view, with the size presets; Variants is a row, Party presets only in the Presets tab; four tabs and the foot bar (${JSON.stringify(top)})`);
   // A tab stays open across a redraw (a setting changed in it), and the rows open to their chips and cards.
   await setupTab(page, 'bots');
   const skillWas = await page.evaluate(() => {
@@ -3479,13 +3479,12 @@ async function offlineFlow(browser) {
   await page.evaluate((v) => document.querySelector(`#arcade-skill .tab[data-value="${v}"]`).click(), skillWas);
   await setupTab(page, 'match');
   await openSetupRow(page, 'setup-variants-row');
-  await openSetupRow(page, 'setup-party-row');
-  const rows = await page.evaluate(() => ({ variants: [...document.querySelectorAll('#setup-variants .variant-chip')].filter((b) => b.offsetParent).length, party: [...document.querySelectorAll('#setup-party .party-chip')].filter((b) => b.offsetParent).length, sum: document.getElementById('setup-variants-row-sum')?.textContent, preset: document.getElementById('setup-party-row-sum')?.textContent }));
-  check(kept.tab === 'bots' && kept.skill && !kept.modes && rows.variants > 0 && rows.party >= 3 && !!rows.sum && !!rows.preset, `the Bots & AI tab stays open through a change; Variants and Party presets open to their chips and cards (${JSON.stringify({ kept, rows })})`);
-  await page.evaluate(() => {
-    document.getElementById('setup-variants-row-head').click();
-    document.getElementById('setup-party-row-head').click();
-  });
+  const rows = await page.evaluate(() => ({ variants: [...document.querySelectorAll('#setup-variants .variant-chip')].filter((b) => b.offsetParent).length, sum: document.getElementById('setup-variants-row-sum')?.textContent }));
+  await page.evaluate(() => document.getElementById('setup-variants-row-head').click());
+  await setupTab(page, 'presets');
+  rows.party = await page.evaluate(() => [...document.querySelectorAll('#setup-party .party-chip')].filter((b) => b.offsetParent).length);
+  await setupTab(page, 'match');
+  check(kept.tab === 'bots' && kept.skill && !kept.modes && rows.variants > 0 && rows.party >= 3 && !!rows.sum, `the Bots & AI tab stays open through a change; Variants opens to its chips, the Presets tab shows the party cards (${JSON.stringify({ kept, rows })})`);
   await page.setViewportSize({ width: 960, height: 540 });
   await page.goto(`${CLIENT}/?offline`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
@@ -5375,8 +5374,8 @@ async function setupLayoutFlow(browser) {
     const state = { start: true, sideways: false, past: [], scrolled: 0, shown: [] };
     for (const tab of ['bots', 'rules', 'presets', 'match']) {
       await setupTab(page, tab);
-      // The Match Setup tab: both of its rows opened in turn (a phone closes the one open before).
-      if (tab === 'match') for (const id of ['setup-variants-row', 'setup-party-row']) await openSetupRow(page, id);
+      // The Match Setup tab: its Variants row opened.
+      if (tab === 'match') await openSetupRow(page, 'setup-variants-row');
       const at = await page.evaluate(() => {
         const body = document.querySelector('#match-setup .setup-body');
         body.scrollTop = body.scrollHeight;
@@ -5397,7 +5396,7 @@ async function setupLayoutFlow(browser) {
     const open = await page.evaluate(() => [...document.querySelectorAll('#match-setup .fold-row.open')].map((x) => x.id));
     check(essentials, `${name}: the mode and what wins show without scrolling`);
     check(state.start && !state.sideways && !state.past.length && state.scrolled > 0 && state.shown.join() === 'setup-bots,setup-advanced,setup-presets,setup-match', `${name}: Start stays in view in every tab with the setup scrolled to the bottom, one tab's settings showing, nothing sideways (${JSON.stringify(state)})`);
-    check(touch ? open.join() === 'setup-party-row' : open.length === 2, `${name}: ${touch ? 'one of Variants and Party presets open at a time' : 'Variants and Party presets open together'} (${open.join(', ')})`);
+    check(open.join() === 'setup-variants-row', `${name}: Variants is the Match Setup tab's one row, open (${open.join(', ')})`);
     await page.context().close();
   }
 
@@ -5447,9 +5446,10 @@ async function setupLayoutFlow(browser) {
   check(capped.teams?.join() === '32,32' && capped.note === "32 per team is this computer's limit.", `a bot past the limit says whose limit it is (${JSON.stringify(capped)})`);
   await page.evaluate(() => document.getElementById('arcade-team-size-0-minus').click());
   check((await setup()).teams?.join() === '31,31', 'a bot fewer shrinks every team alike (Even teams)');
-  // A party preset: Lunar Roulette (the Roulette mode, Lunar on, its standard features on). Party presets is a row until opened.
-  await openSetupRow(page, 'setup-party-row');
+  // A party preset: Lunar Roulette (the Roulette mode, Lunar on, its standard features on), from the Presets tab.
+  await setupTab(page, 'presets');
   await page.evaluate(() => document.getElementById('setup-party-lunar_roulette').click());
+  await setupTab(page, 'match');
   const party = await setup();
   const lit = await read();
   check(party.mode === 'core.roulette' && party.gravity === 0.4 && party.fallDamage === false && !party.randomChars && lit.variants.join() === 'lunar,signature,jackpots,streakpick', `Lunar Roulette: the Roulette mode in low gravity, the map's own size (${JSON.stringify({ mode: party.mode, gravity: party.gravity, fall: party.fallDamage, random: party.randomChars, bots: party.bots, variants: lit.variants })})`);
@@ -5542,10 +5542,10 @@ async function customSetupFlow(browser) {
   await page.reload();
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.click('#nav-play');
-  // The teams are in the Match Setup tab (section 3), showing as it opens; Variants and Party presets start as a row each.
+  // The teams are in the Match Setup tab (section 3), showing as it opens; Variants starts as a row.
   await page.waitForSelector('#arcade-team-cards', { state: 'attached', timeout: T(30000) });
   const closed = await page.evaluate(() => ({ rows: [...document.querySelectorAll('#match-setup .fold-row.open')].length, tab: document.querySelector('#setup-tabs .setup-tab.on')?.dataset.tab, teams: !!document.getElementById('arcade-team-cards')?.offsetParent }));
-  check(closed.rows === 0 && closed.tab === 'match' && closed.teams, `a small window starts on the Match Setup tab, the teams in it, Variants and Party presets closed (${JSON.stringify(closed)})`);
+  check(closed.rows === 0 && closed.tab === 'match' && closed.teams, `a small window starts on the Match Setup tab, the teams in it, Variants closed (${JSON.stringify(closed)})`);
   // Uneven teams: Even teams off first (on, every team changes alike).
   await page.evaluate(() => document.getElementById('arcade-even').click());
   const setSize = (i, v) =>
@@ -5919,8 +5919,9 @@ async function rouletteFlow(browser) {
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/roulette-setup.png`, timeout: T(60000) }).catch(() => {});
   // The party preset: Lunar Roulette plays the mode, Lunar on.
   await page.evaluate(() => document.getElementById('arcade-mode-deathmatch').click());
-  await openSetupRow(page, 'setup-party-row');
+  await setupTab(page, 'presets');
   await page.evaluate(() => document.getElementById('setup-party-lunar_roulette').click());
+  await setupTab(page, 'match');
   const party = await chips();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('cs.arcade') ?? '{}'));
   check(party.mode === 'core.roulette' && party.on.join() === 'lunar,signature,jackpots,streakpick' && saved.gravity === 0.4 && saved.fallDamage === false && !saved.randomChars, `Lunar Roulette starts the Roulette mode with Lunar on (${JSON.stringify({ ...party, gravity: saved.gravity, fall: saved.fallDamage })})`);
@@ -8268,7 +8269,7 @@ async function fireteamsFlow(browser) {
   await page.goto(`${CLIENT}/?test=1&god=1&vote=1`);
   await page.click('#nav-play');
   // The party preset (Part 3): one click into Team Deathmatch with Fireteams, the map's teams, squads to fit them.
-  await openSetupRow(page, 'setup-party-row');
+  await setupTab(page, 'presets');
   await page.waitForSelector('#setup-party-fireteams', { timeout: T(30000) });
   await page.click('#setup-party-fireteams');
   const setup = await page.waitForFunction(() => {

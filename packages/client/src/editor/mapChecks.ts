@@ -5,10 +5,15 @@ import {
   setPiecePortStates,
   validateMap,
   type CoplanarSpot,
+  type MapDocument,
   type ValidationIssue
 } from '@tiletrigger/shared';
+import type { FromMapTest, ToMapTest } from './mapTestWorkerCore.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
+
+/** Navigation is checked this long after the last edit (ms): not between the clicks of someone placing or deleting in a row. */
+const NAV_DELAY_MS = 900;
 
 /** The map's checks: validation, navigation and the bots' own spots worked out a moment after each edit, coplanar overlaps, and the issues list and status pill (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class MapChecks {
@@ -66,23 +71,81 @@ export class MapChecks {
       return;
     }
     this.scheduleOverlaps();
-    this.navTimer = window.setTimeout(async () => {
-      const { initNavigation, validateMapNavigation } = await import('@tiletrigger/shared/match');
-      await initNavigation();
-      if (token !== this.navToken) return;
+    // Navigation a moment after the last edit, in the test worker (mapTestWorker.ts): the page keeps drawing and taking
+    // edits while the navmesh is built. One check at a time; an edit made meanwhile is checked when it comes back.
+    this.navTimer = window.setTimeout(() => this.checkNavigation(doc, token), NAV_DELAY_MS);
+  }
+
+  /** The navigation worker (kept between checks: its physics and navigation are set up once), and what it is doing. */
+  private navWorker: Worker | null = null;
+  private navBusy = false;
+  private navNext: { doc: MapDocument; token: number } | null = null;
+
+  private checkNavigation(doc: MapDocument, token: number): void {
+    if (token !== this.navToken) return;
+    if (this.navBusy) {
+      this.navNext = { doc, token };
+      return;
+    }
+    let worker = this.navWorker;
+    if (!worker) {
       try {
-        await initPhysics();
-        // The navmesh as the match builds it, and the navigation audit (traps, spawn points, objectives and pickups
-        // cut off): warnings for creators (errors only on the official maps' own checks).
-        const nav = validateMapNavigation(doc, false, { computed: this.app.hints.computedOn });
-        this.navIssues = nav.issues;
-        // "What bots know" (bot hints): the bots' own spots, worked out on the same navmesh.
-        this.app.hints.setComputed(nav.computed ?? null);
-      } catch (e) {
-        this.navIssues = [{ severity: 'warning', code: 'nav.failed', message: `navigation could not be generated: ${(e as Error).message}` }];
+        worker = this.navWorker = new Worker(new URL('./mapTestWorker.ts', import.meta.url), { type: 'module', name: 'mapchecks' });
+      } catch {
+        // No workers here: on the page, as before.
+        void this.checkNavigationHere(doc, token);
+        return;
       }
-      this.renderIssues();
-    }, 400);
+      worker.onmessage = (e: MessageEvent<FromMapTest>) => {
+        const m = e.data;
+        if (m.k !== 'nav' && m.k !== 'navFailed' && m.k !== 'failed') return;
+        this.navBusy = false;
+        const latest = m.k !== 'failed' && m.token === this.navToken;
+        if (m.k === 'nav' && latest) {
+          this.navIssues = m.result.issues;
+          // "What bots know" (bot hints): the bots' own spots, worked out on the same navmesh.
+          this.app.hints.setComputed(m.result.computed ?? null);
+          this.renderIssues();
+        } else if (m.k !== 'nav' && (m.k === 'failed' || latest)) {
+          this.navIssues = [{ severity: 'warning', code: 'nav.failed', message: `navigation could not be generated: ${m.error}` }];
+          this.renderIssues();
+        }
+        const next = this.navNext;
+        this.navNext = null;
+        if (next) this.checkNavigation(next.doc, next.token);
+      };
+      worker.onerror = () => {
+        // The worker itself failed to load: on the page from here on.
+        this.navWorker?.terminate();
+        this.navWorker = null;
+        this.navBusy = false;
+        this.navNext = null;
+        this.noNavWorker = true;
+        void this.checkNavigationHere(this.app.viewDoc, this.navToken);
+      };
+    }
+    if (this.noNavWorker) return void this.checkNavigationHere(doc, token);
+    this.navBusy = true;
+    const job: ToMapTest = { k: 'nav', map: doc, computed: this.app.hints.computedOn, token };
+    worker.postMessage(job);
+  }
+
+  private noNavWorker = false;
+
+  /** The check on the page (no worker): the navmesh as the match builds it, and the navigation audit. */
+  private async checkNavigationHere(doc: MapDocument, token: number): Promise<void> {
+    const { initNavigation, validateMapNavigation } = await import('@tiletrigger/shared/match');
+    await initNavigation();
+    if (token !== this.navToken) return;
+    try {
+      await initPhysics();
+      const nav = validateMapNavigation(doc, false, { computed: this.app.hints.computedOn });
+      this.navIssues = nav.issues;
+      this.app.hints.setComputed(nav.computed ?? null);
+    } catch (e) {
+      this.navIssues = [{ severity: 'warning', code: 'nav.failed', message: `navigation could not be generated: ${(e as Error).message}` }];
+    }
+    this.renderIssues();
   }
 
   /** A set piece's port with a wall in it (MapMaker's warning; the outline shows it red): one per port. */
