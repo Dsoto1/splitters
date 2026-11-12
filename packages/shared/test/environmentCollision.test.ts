@@ -155,6 +155,26 @@ describe('environment collision', () => {
     expect(physics.shapeAt(physics.raycastHit({ x: 0, y: 0.6, z: 0 }, d, 10)!.handle)?.surface).toBe('rock');
   });
 
+  it('the round boulder, the outcrop and the fallen log stop a rifle; the slab is ground you stand on; bots route round the outcrop', () => {
+    expect(shoot(arena([{ model: 'env.rock.boulder_round', position: [6, 0, 0] }]), 'core.rifle', 10, 0.9)).toBe(0);
+    expect(shoot(arena([{ model: 'env.rock.outcrop', position: [6, 0, 0] }]), 'core.rifle', 12)).toBe(0);
+    // The log lies across the line of fire, just in front of a target shot at low.
+    expect(shoot(arena([{ model: 'env.deadwood.log', position: [9, 0, 0], yaw: Math.PI / 2 }]), 'core.rifle', 10, 0.2)).toBe(0);
+    expect(shoot(arena([]), 'core.rifle', 10, 0.2)).toBeGreaterThan(0);
+    const physics = physicsOf(arena([{ model: 'env.rock.slab', position: [6, 0, 0] }, { model: 'env.deadwood.log', position: [14, 0, 0] }]));
+    const down = { x: 0, y: -1, z: 0 };
+    const slab = physics.raycastHit({ x: 6, y: 2, z: 0 }, down, 5)!;
+    expect(physics.shapeAt(slab.handle)?.surface).toBe('rock');
+    // Its top, 0.3 to 0.4 m up; a player's box rests clear on it.
+    expect(2 - slab.dist).toBeGreaterThan(0.3);
+    expect(2 - slab.dist).toBeLessThanOrEqual(0.401);
+    expect(physics.boxClear({ x: 6, y: 0.45 + 0.9, z: 0 }, { x: 0.3, y: 0.9, z: 0.3 })).toBe(true);
+    expect(physics.shapeAt(physics.raycastHit({ x: 14, y: 2, z: 0 }, down, 5)!.handle)?.surface).toBe('bark');
+    const match = new Match(arena([{ model: 'env.rock.outcrop', position: [20, 0, 0] }]), rules);
+    const path = match.nav.findPath(match.nav.closestPoint({ x: 8, y: 0, z: 0 })!, match.nav.closestPoint({ x: 32, y: 0, z: 0 })!)!;
+    expect(Math.max(...path.map((p) => Math.abs(p.z)))).toBeGreaterThan(1.5);
+  });
+
   it('a shrub conceals as a bush does (cylinder from its bounds), and stops nothing', () => {
     const shrub = getEnvSpecies('env.shrub.broadleaf')!;
     const map = arena([{ model: 'env.shrub.broadleaf', position: [6, 0, 0], scale: 1.2 }]);

@@ -18,7 +18,7 @@ describe('environment generator', () => {
 
   it('the content is valid', () => {
     expect(problems).toEqual([]);
-    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.pebbles', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass']);
+    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.deadwood.log', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass']);
   });
 
   it('builds byte-identical output twice, the same as is shipped and locked', async () => {
@@ -45,6 +45,9 @@ describe('environment generator', () => {
     expect(tris['env.conifer.pine_tall'][0]).toBeLessThanOrEqual(2400);
     expect(tris['env.shrub.broadleaf'][0]).toBeLessThanOrEqual(400);
     expect(tris['env.rock.boulder_angular'][0]).toBeLessThanOrEqual(700);
+    // The round boulder, the slab and the outcrop (three masses in one) keep to the boulder's targets; the fallen log is lighter.
+    for (const id of ['env.rock.boulder_round', 'env.rock.slab', 'env.rock.outcrop']) expect(tris[id][0], id).toBeLessThanOrEqual(760);
+    expect(tris['env.deadwood.log'][0]).toBeLessThanOrEqual(460);
     // The plants brush's flowers and fern: no heavier than the Kenney pieces they replace (76 and 32-44 triangles).
     expect(tris['env.flower.meadow'][0]).toBeLessThanOrEqual(40);
     expect(tris['env.fern.bracken'][0]).toBeLessThanOrEqual(64);

@@ -265,8 +265,8 @@ export function envDabSeed(seed: number, x: number, z: number): number {
   return (h ^ (h >>> 15)) >>> 0;
 }
 
-/** Canopy (trees, boulders, cliffs, hedges) or undergrowth (shrubs, ferns, grass, pebbles): each layer spaces only within itself. */
-const CANOPY: ReadonlySet<EnvCategory> = new Set(['tree', 'boulder', 'cliff']);
+/** Canopy (trees, boulders, cliffs, hedges, fallen logs) or undergrowth (shrubs, ferns, grass, pebbles): each layer spaces only within itself. */
+const CANOPY: ReadonlySet<EnvCategory> = new Set(['tree', 'boulder', 'cliff', 'deadwood']);
 const layerOf = (s: EnvSpeciesData): 'canopy' | 'under' => (CANOPY.has(s.category) || s.role === 'blocking' ? 'canopy' : 'under');
 const spacingOf = (s: EnvSpeciesData): number => Math.max(0.3, s.placement.minSpacing);
 
