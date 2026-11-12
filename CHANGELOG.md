@@ -7,6 +7,12 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Zombies are your zombies.** Every zombie in Zombies mode (and in co-op squads) now wears one of the roster's six zombie characters: the Groaner, Lurcher, Rotter, Shambler and the two Zombie Soldiers. Two in three used to wear a stock zombie body that had no ragdoll, so it tipped over flat like a box when it died; now every zombie falls as a ragdoll, thrown by the shot or blast that killed it, the same as a player.
+- **The Auto Shotgun has a proper model.** It was a thin, near-black shape that barely showed on a pickup (only the glow did). It is now a textured steel-and-wood shotgun, in the hand and on the ground.
+- **Sandgate's doorways are clear.** A facade's plinth ran straight across its doorway, a low bar sticking out of the floor in the entrance. The plinth now stops at each side of a door, on all twelve facade styles.
+- **Calmer Desert City plaster.** The plaster walls had hard, dark-rimmed patches of bare stone. It is now worn thin in a few small, soft places.
+- **Sandfall Colosseum is now Flavius Rule,** after the owner's board game of the same theme and layout.
+- **One switch for random bodies.** The Rules tab's "Random characters" row is gone: it did the same as the Roulette Bodies variant, which now only gives everyone a random character each life (turn on Character stats in Rules if the bodies' stats should count).
 - **Sandgate's roofs wear the new domes.** Its seven small roof domes are kit domes now, placed in MapMaker: white plaster, and blue tile on the west hall. They are closed domes on solid drums with blind arches, solid as the old ones were.
 - **Closed domes in the dome kit:** whole one-cell domes with 8 or 12 segments on a solid drum with blind arches, in the kit's six looks, for roofs where nobody should get inside.
 - **The Desert City dome kit.** Domes you build from parts in MapMaker, from the owner's dome set sheet: a cap, dome panels for 4, 6, 8 and 12 segments (plain, with a window, broken), drum quarters with arched doorways, windows or solid wall, three ring trims, and 4-, 3- and 2-way arch transitions a drum stands on. Every part shares the dome's centre, so you drop them on one point and turn each by its step. Whole domes too: one-cell domes and 15 m hall domes with 8 or 12 segments, and three ruins. Six looks: stone, sandstone, white plaster, copper, blue tile and green tile. You can stand inside under a dome; doorways, windows and breaks are open.

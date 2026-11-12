@@ -1142,7 +1142,7 @@ and stamina reach the predicting client in the private state (`bs`).
 
 ## Random characters
 
-The match setting **Random characters** (Off by default on every map; `MatchRules.randomCharacters`, setup
+The match setting **Random characters** (Off by default on every map; in Match Setup it is the **Roulette Bodies** variant, there is no separate Rules row since 2026-11-12; `MatchRules.randomCharacters`, setup
 `randomChars`, host rule `randomchars`): everyone, people and bots, plays a random look each life, any on the roster
 (`PICKABLE_LOOKS`: playable, not retired, core tier; never NPC-only bodies, NPC skins or experimental characters). The pick hashes the match seed, the slot
 and the life (`sim/randomLooks.ts`: the same every replay, never the look just played); the look travels in the
