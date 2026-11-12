@@ -1009,8 +1009,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - heatmaps stay in memory.
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
-  - **Next in line to land: Rockfall Canyon's refresh** (`wip/mapmaker-canyon`, to go to `check/mapmaker-canyon`; MapMaker lane, 2026-11-12; one map file and its card picture). The weapon and vehicle lane's third batch has landed (2026-11-12 03:20 UTC): the slot is yours.
-  - **Next in line to land, after Rockfall Canyon's refresh: a placed log can be made breakable** (`wip/mapmaker-log-break`, to go to `check/mapmaker-log-break`; MapMaker lane, 2026-11-12; `maps/breakyard.json` gains two logs). The two may go as one train.
+  - **Landing now: Rockfall Canyon's refresh, the breakable log and The Spillway's long stair, as one train** (`check/mapmaker-train-2` = main + `wip/mapmaker-canyon` + `wip/mapmaker-log-break` + `wip/mapmaker-spillway-4`; MapMaker lane, 2026-11-12; `maps/canyon.json`, `maps/breakyard.json`, `maps/the_spillway.json`).
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
