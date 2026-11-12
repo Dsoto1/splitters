@@ -1,13 +1,16 @@
 // Yard and workshop pieces (kit-prop families of part 10; docs/PROCEDURAL_ENVIRONMENT.md §11 Phase 6): a section of
 // glass pipe between two flanges (`glasspipe`: along x, open through both ends, as the valve of plant.mjs is), a
 // capped pipe riser (`pipestub`: a wide pipe standing out of the ground under a collar), a workbench with a vice
-// (`workbench`) and a traffic cone (`cone`). Each fills its bounds, [-w/2, w/2] × [0, h] × [-d/2, d/2].
+// (`workbench`), a traffic cone (`cone`) and, from part 11, an anvil on its timber block (`anvil`). Each fills its
+// bounds, [-w/2, w/2] × [0, h] × [-d/2, d/2].
 //
 // The pipe, the riser and the bench collide as finer boxes (a generator's `boxes`: tools/content/kitprops.mjs), the
 // same for each variant: the glass pipe's leave its bore open from end to end, as the retired piece's did; the
 // riser, whose bore was a pit a player could not climb out of, is capped a little below its rim and solid. The cone
-// has no collision (its family says `collide: "none"`), as the cones it replaces had none. The boxes are in metres:
-// a family here has one size, its retired prop's.
+// has no collision (its family says `collide: "none"`), as the cones it replaces had none. The anvil collides as
+// four boxes (two sleepers, the block on them, the anvil), open between the sleepers and beside the anvil as the
+// retired piece was under its bench and beside its anvil. The boxes are in metres: a family here has one size, its
+// retired prop's.
 //
 // Nothing here glows or blinks: glass is pale paint with a still streak, a cone's bands are paint (CLAUDE.md,
 // "Accessibility").
@@ -15,7 +18,7 @@
 // Level 1 keeps the outline with far fewer triangles; level 2 is a stand-in of a few faces.
 
 import { rng } from '../env/rng.mjs';
-import { Mesh, annulus, bar, box, cyl, disc, hex, lathe, mix3, ovalDisc, ovalShell, quadN, scale3 } from './geom.mjs';
+import { Mesh, annulus, bar, box, cyl, disc, hex, lathe, mix3, ovalDisc, ovalShell, quadN, scale3, triN } from './geom.mjs';
 import { lerp, onX, onY, onZ, round, solid, tone } from './machines.mjs';
 
 const DARK = '#17191b';
@@ -309,5 +312,103 @@ export function coneMesh(seed, size, g, look, level) {
   lathe(m, prof, S, (p, n, row) => (rows[row] === 'band' ? band(p, n) : body(p, n)), { hard: prof.map((_, i) => i) });
   disc(m, rt, h, S, scale3(bodyC, 0.8));
   if (fine) lathe(m, [[rb + 0.035, t], [rb + 0.035, t + 0.02], [rb, t + 0.02]], S, body, { hard: [1] });
+  return m;
+}
+
+// ---------------------------------------------------------------- the anvil
+
+/**
+ * A section tapering along x from `a` to `b`, each [x, yc, zc, ry, rz] (its centre and half heights), `seg` sides (4:
+ * a rectangle; 8: an octagon); closed at `b` when `cap`.
+ */
+function taper(m, a, b, seg, colour, cap = true) {
+  const k = Math.cos(Math.PI / seg);
+  const ring = ([x, yc, zc, ry, rz]) => Array.from({ length: seg }, (_, i) => {
+    const t = Math.PI / seg + (i / seg) * Math.PI * 2;
+    return [x, yc + (Math.sin(t) * ry) / k, zc + (Math.cos(t) * rz) / k];
+  });
+  const [p, q] = [ring(a), ring(b)];
+  for (let i = 0; i < seg; i++) {
+    const j = (i + 1) % seg;
+    const t = Math.PI / seg + ((i + 0.5) / seg) * Math.PI * 2;
+    quadN(m, p[i], p[j], q[j], q[i], [0, Math.sin(t), Math.cos(t)], colour);
+  }
+  if (cap) for (let i = 1; i + 1 < seg; i++) triN(m, q[0], q[i], q[i + 1], [b[0] - a[0], 0, 0], colour);
+}
+
+/**
+ * An anvil on a timber block that stands on two sleepers: its foot, its waist, its body under a worn face, a horn
+ * out to +x and a heel out to −x, iron straps round the block, a tool left on it. Settings `g`: `baulks` (the
+ * timbers side by side in the block), `straps` (0–2), `horn` ('round' or 'square'), `kit` ('hammer', 'tongs' or
+ * 'none'). `look`: `iron`, `face` (the worn top), `wood`, `strap`, `tool` (the hammer's handle), `grime`.
+ */
+export function anvilMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const X = w / 2;
+  const Z = d / 2;
+  const [ys, yb] = [0.16, 0.46];
+  const xs = 0.18;
+  const za = 0.1;
+  const ironC = hex(look.iron);
+  const woodC = hex(look.wood);
+  const m = new Mesh();
+  if (level >= 2) {
+    solid(m, [-X, 0, -Z, X, yb, Z], scale3(woodC, 0.85), ['ny']);
+    solid(m, [-X, yb, -za, X, h, za], scale3(ironC, 0.9), ['ny']);
+    return m;
+  }
+  // Solid: the two sleepers, the block, the anvil from heel to horn. Open: between the sleepers under the block;
+  // over the block each side of the anvil.
+  m.boxes = [
+    [-X, 0, -Z, -xs, ys, Z],
+    [xs, 0, -Z, X, ys, Z],
+    [-X, ys, -Z, X, yb, Z],
+    [-X, yb, -0.14, X, h, 0.14],
+  ];
+  const r = rng(seed);
+  const fine = level === 0;
+  const grime = look.grime ?? 0.3;
+  const wood = (k = 1) => tone(scale3(woodC, k * (1 + r.jitter(0.04))), grime * 0.6);
+  const endGrain = (c) => (p, n) => scale3(c(p, n), Math.abs(n[2]) > 0.5 ? 1.25 : 1);
+  const iron = tone(ironC, grime * 0.4);
+  const faceC = hex(look.face ?? '#8b9094');
+  // The sleepers, along z out to the bounds; the block on them, a little inside the bounds for its straps.
+  for (const s of [-1, 1]) solid(m, [s > 0 ? xs : -X, 0, -Z, s > 0 ? X : -xs, ys, Z], endGrain(wood(0.8)), ['ny']);
+  const [bx, bz] = [X - 0.02, Z - 0.02];
+  const nk = fine ? Math.max(1, Math.min(4, g.baulks ?? 3)) : 1;
+  for (let k = 0; k < nk; k++) solid(m, [lerp(-bx, bx, k / nk), ys, -bz, lerp(-bx, bx, (k + 1) / nk), yb, bz], endGrain(wood()), fine ? [] : ['ny']);
+  // The anvil: its foot, its waist drawn in, its body, the heel a little lower than the face, the horn.
+  solid(m, [-0.2, yb, -0.13, 0.2, yb + 0.06, 0.13], iron, ['ny']);
+  const body = (p, n) => (n[1] > 0.5 ? scale3(faceC, 0.95) : iron(p, n));
+  solid(m, [-0.11, yb + 0.06, -0.075, 0.11, 0.63, 0.075], iron, ['ny', 'py']);
+  solid(m, [-0.2, 0.63, -za, 0.2, h, za], body);
+  solid(m, [-X, 0.7, -za, -0.2, h - 0.004, za], iron, ['px']);
+  const round8 = (g.horn ?? 'round') === 'round' && fine;
+  taper(m, [0.2, 0.72, 0, 0.08, za * 0.9], [X, h - 0.025, 0, 0.025, 0.02], round8 ? 8 : 4, iron);
+  if (!fine) return m;
+  // The hardy hole and the pritchel hole in the heel (paint).
+  onY(m, -X + 0.05, -0.025, -X + 0.1, 0.025, h - 0.004, scale3(hex(DARK), 1));
+  onY(m, -X + 0.13, -0.012, -X + 0.155, 0.012, h - 0.004, scale3(hex(DARK), 1));
+  // Staples over the foot's corners, into the block.
+  const strapC = hex(look.strap ?? '#3a3d42');
+  const strap = tone(strapC, grime * 0.5);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) solid(m, [sx * 0.2 - 0.02, yb, sz * 0.15 - 0.03, sx * 0.2 + 0.02, yb + 0.075, sz * 0.15 + 0.03], strap, ['ny']);
+  // Iron straps round the block.
+  const ns = Math.max(0, Math.min(2, g.straps ?? 2));
+  for (let k = 0; k < ns; k++) {
+    const z = ns === 1 ? 0 : lerp(-0.2, 0.2, k);
+    solid(m, [-bx - 0.012, ys + 0.002, z - 0.03, bx + 0.012, yb + 0.006, z + 0.03], strap, ['ny']);
+  }
+  // What is left on the block, beside the anvil.
+  const kit = g.kit ?? 'hammer';
+  const toolC = hex(look.tool ?? '#8a5f3a');
+  if (kit === 'hammer') {
+    bar(m, [-0.22, yb + 0.03, 0.25], [0.12, yb + 0.03, 0.25], 0.035, tone(toolC, 0), { ends: true });
+    solid(m, [0.1, yb + 0.006, 0.19, 0.17, yb + 0.07, 0.31], iron, ['ny']);
+  } else if (kit === 'tongs') {
+    const steel = tone(scale3(strapC, 1.3), 0);
+    bar(m, [-0.26, yb + 0.02, -0.21], [0.24, yb + 0.02, -0.29], 0.025, steel, { ends: true });
+    bar(m, [-0.26, yb + 0.03, -0.29], [0.24, yb + 0.03, -0.21], 0.025, steel, { ends: true });
+  }
   return m;
 }

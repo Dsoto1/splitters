@@ -36,7 +36,8 @@ import { conveyorMesh, signMesh, yokeCrateMesh } from './kit/factory.mjs';
 import { bakeryMesh, bottleReturnMesh, cartMesh, checkoutMesh, chestFreezerMesh, produceMesh } from './kit/market.mjs';
 import { consoleMesh, valveMesh } from './kit/plant.mjs';
 import { cogMesh, hopperMesh, leverMesh, machineMesh, pistonMesh, scannerMesh, tallHopperMesh, windowMachineMesh } from './kit/machines.mjs';
-import { coneMesh, glassPipeMesh, pipeStubMesh, workbenchMesh } from './kit/yard.mjs';
+import { anvilMesh, coneMesh, glassPipeMesh, pipeStubMesh, workbenchMesh } from './kit/yard.mjs';
+import { coolantPipeMesh, pipeJunctionMesh } from './kit/pipes.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = 'content/kitprops.json';
@@ -46,7 +47,7 @@ const OUT = 'packages/client/public/kit';
 const SHARED = 'packages/shared/src/content/kitProps.generated.ts';
 
 /** Generator kinds and what makes each. */
-export const KINDS = { crate: crateMesh, framed: framedCrateMesh, bin: binMesh, drum: drumMesh, carton: cartonMesh, fence: fenceMesh, railing: railingMesh, stonewall: stoneWallMesh, barrier: barrierMesh, container: containerMesh, table: tableMesh, seat: seatMesh, bookcase: bookcaseMesh, shelf: shelfMesh, stall: stallMesh, counter: counterMesh, wastebin: wasteBinMesh, sofa: sofaMesh, cabinet: cabinetMesh, appliance: applianceMesh, roundtable: roundTableMesh, officechair: officeChairMesh, bed: bedMesh, cornersofa: cornerSofaMesh, yokecrate: yokeCrateMesh, sign: signMesh, conveyor: conveyorMesh, freezer: freezerMesh, cart: cartMesh, bakery: bakeryMesh, checkout: checkoutMesh, chestfreezer: chestFreezerMesh, bottlereturn: bottleReturnMesh, produce: produceMesh, console: consoleMesh, valve: valveMesh, machine: machineMesh, windowmachine: windowMachineMesh, hopper: hopperMesh, tallhopper: tallHopperMesh, piston: pistonMesh, scanner: scannerMesh, lever: leverMesh, cog: cogMesh, glasspipe: glassPipeMesh, pipestub: pipeStubMesh, workbench: workbenchMesh, cone: coneMesh };
+export const KINDS = { crate: crateMesh, framed: framedCrateMesh, bin: binMesh, drum: drumMesh, carton: cartonMesh, fence: fenceMesh, railing: railingMesh, stonewall: stoneWallMesh, barrier: barrierMesh, container: containerMesh, table: tableMesh, seat: seatMesh, bookcase: bookcaseMesh, shelf: shelfMesh, stall: stallMesh, counter: counterMesh, wastebin: wasteBinMesh, sofa: sofaMesh, cabinet: cabinetMesh, appliance: applianceMesh, roundtable: roundTableMesh, officechair: officeChairMesh, bed: bedMesh, cornersofa: cornerSofaMesh, yokecrate: yokeCrateMesh, sign: signMesh, conveyor: conveyorMesh, freezer: freezerMesh, cart: cartMesh, bakery: bakeryMesh, checkout: checkoutMesh, chestfreezer: chestFreezerMesh, bottlereturn: bottleReturnMesh, produce: produceMesh, console: consoleMesh, valve: valveMesh, machine: machineMesh, windowmachine: windowMachineMesh, hopper: hopperMesh, tallhopper: tallHopperMesh, piston: pistonMesh, scanner: scannerMesh, lever: leverMesh, cog: cogMesh, glasspipe: glassPipeMesh, pipestub: pipeStubMesh, workbench: workbenchMesh, cone: coneMesh, anvil: anvilMesh, coolantpipe: coolantPipeMesh, pipejunction: pipeJunctionMesh };
 const { num, int, str, en, tup, arr, obj, map } = shape;
 const ID = /^kit\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
 const mm = (v) => Math.round(v * 1000) / 1000;

@@ -251,6 +251,21 @@
         240,
         60,
         10
+      ],
+      "coolantpipe": [
+        900,
+        80,
+        12
+      ],
+      "pipejunction": [
+        800,
+        144,
+        24
+      ],
+      "anvil": [
+        320,
+        120,
+        24
       ]
     }
   },
@@ -617,6 +632,21 @@
     },
     "prop.nc_cone": {
       "model": "kit.sign.cone_slim",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.anvil": {
+      "model": "kit.tool.anvil",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.os_coolant_pipe": {
+      "model": "kit.pipe.coolant",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.os_pipe_junction": {
+      "model": "kit.pipe.junction",
       "variant": 0,
       "scale": 1
     }

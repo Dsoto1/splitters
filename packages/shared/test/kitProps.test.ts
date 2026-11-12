@@ -106,6 +106,9 @@ const REMATERIALLED = new Map<string, string>([
   // solid cover as they were, like the conveyor.)
   ['prop.machine_window', 'metal'], ['prop.workbench', 'wood'], ['prop.lever', 'thin_metal'],
   ['prop.cone', 'drywall'], ['prop.nc_cone', 'drywall'],
+  // Part 11, by the same rule: the anvil (concrete by the guess, so it rang as stone) is iron on a timber block:
+  // metal, hard cover as it was. (The coolant pipe and the pipe junction keep their class: metal.)
+  ['prop.anvil', 'metal'],
 ]);
 
 describe('kit aliases', () => {

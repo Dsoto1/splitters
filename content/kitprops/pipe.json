@@ -1,5 +1,5 @@
 {
-  "$comment": "Pipe pieces (tools/content/kit/plant.mjs, yard.mjs): each the size of the Kenney piece it replaces, a pipe on the same axis, colliding as finer boxes: the valve and the glass pipe leave the bore open as those pieces' did; the riser (a wide pipe standing out of the ground) is capped and solid.",
+  "$comment": "Pipe pieces (tools/content/kit/plant.mjs, yard.mjs, pipes.mjs): each the size of the Kenney piece it replaces, a pipe on the same axis, colliding as finer boxes: the valve, the glass pipe, the coolant pipe and the pipe junction leave the bore open as those pieces' did; the riser (a wide pipe standing out of the ground) is capped and solid.",
   "type": "pipe",
   "props": [
     {
@@ -309,6 +309,206 @@
             "band": "#d8d4c8",
             "cap": "#8b9094",
             "grime": 0.25
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.pipe.coolant",
+      "displayName": "Coolant Pipe",
+      "category": "Orbital Station",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a section of large pipe along z, open through both ends, a flange at each end, hoops round it, a thin coolant line clamped along each side, a service panel on top, the size of the Kenney space kit's straight pipe (1.617 × 1.4 × 2.333 m), its axis where that one's was; collides as ten boxes, as that did, the bore open from end to end as it was; plays as metal, as that did."
+      },
+      "size": [
+        1.617,
+        1.4,
+        2.333
+      ],
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "coolantpipe",
+        "flange": "hex",
+        "hoops": 2,
+        "panel": 1,
+        "band": 0,
+        "bolts": 6
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 22
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "white",
+          "seed": 9931,
+          "look": {
+            "paint": "#c9ced6",
+            "flange": "#9aa3ad",
+            "line": "#3f8a9a",
+            "panel": "#3a4048",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "grey",
+          "seed": 9932,
+          "set": {
+            "flange": "round",
+            "hoops": 3,
+            "band": 0.2,
+            "bolts": 8
+          },
+          "look": {
+            "paint": "#7a8088",
+            "flange": "#6a7078",
+            "line": "#b08c1f",
+            "band": "#c9a227",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "orange",
+          "seed": 9933,
+          "set": {
+            "hoops": 1
+          },
+          "look": {
+            "paint": "#c8782a",
+            "flange": "#8b9094",
+            "line": "#8b9094",
+            "panel": "#2a2d31",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "teal",
+          "seed": 9934,
+          "set": {
+            "flange": "round",
+            "panel": 0,
+            "band": 0.3,
+            "bolts": 8
+          },
+          "look": {
+            "paint": "#3f7a80",
+            "flange": "#356a70",
+            "line": "#c9ced6",
+            "band": "#d8d4c8",
+            "grime": 0.25
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.pipe.junction",
+      "displayName": "Pipe Junction",
+      "category": "Orbital Station",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a pipe along z, off the ground and open through both ends, through a deep collar that stands on the floor, a blanked branch port on a block each side of the collar, the size of the Kenney space kit's pipe ring (1.963 × 1.7 × 2.125 m), its axis where that one's was; collides as sixteen boxes, as that did, the bore open from end to end and the space under the pipe open each side of the collar, as they were; plays as metal, as that did."
+      },
+      "size": [
+        1.963,
+        1.7,
+        2.125
+      ],
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "pipejunction",
+        "bolts": 8,
+        "port": "blank",
+        "lips": 1,
+        "panel": 0
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 22
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "orange",
+          "seed": 9941,
+          "look": {
+            "paint": "#c9ced6",
+            "collar": "#d98a2b",
+            "block": "#9aa3ad",
+            "port": "#8b9094",
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "grey",
+          "seed": 9942,
+          "set": {
+            "port": "gauge",
+            "panel": 1
+          },
+          "look": {
+            "paint": "#7a8088",
+            "collar": "#6a7078",
+            "block": "#5a6068",
+            "port": "#8b9094",
+            "panel": "#2a2d31",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "teal",
+          "seed": 9943,
+          "set": {
+            "port": "cap",
+            "bolts": 12,
+            "lips": 0
+          },
+          "look": {
+            "paint": "#3f7a80",
+            "collar": "#356a70",
+            "block": "#c9ced6",
+            "port": "#c9a227",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "white",
+          "seed": 9944,
+          "set": {
+            "port": "gauge",
+            "bolts": 6,
+            "panel": 1
+          },
+          "look": {
+            "paint": "#9aa3ad",
+            "collar": "#c9ced6",
+            "block": "#3a4048",
+            "port": "#8b9094",
+            "panel": "#3a4048",
+            "grime": 0.2
           }
         }
       ]
