@@ -82,6 +82,15 @@ const LINEUP2: [string, number, string, number, number, number][] = [
   ['env.broadleaf.acacia', 1, 'prop.tree_plateau', 22, -64, 0],
   ['env.palm.coconut', 1, 'prop.palm', -18, -80, 0],
   ['env.palm.leaning', 1, 'prop.palm_bent', 12, -80, 0],
+  // The rocks and deadwood of the Rockfall Canyon refresh, in front of the bushes (beside the Kenney pieces they replace).
+  ['env.rock.boulder_round', 0, 'prop.rock_large', -14, -88, 0],
+  ['env.rock.boulder_round', 1, 'prop.rock_large', -10.5, -88, 0.6],
+  ['env.rock.slab', 0, 'prop.rock_flat', 10, -88, 0],
+  ['env.rock.slab', 1, 'prop.rock_flat', 15, -88, 0.4],
+  ['env.rock.outcrop', 0, 'prop.rocks_tall', -22, -84, 0],
+  ['env.rock.outcrop', 1, 'prop.rocks_tall', 22, -84, 0.8],
+  ['env.deadwood.log', 0, 'prop.log', -8, -90, 1.2],
+  ['env.deadwood.log', 1, 'prop.log', 8, -90, 0.3],
   ['env.hedge.privet', 1, 'prop.hedge', 1.2, -91, 1.3],
   ['env.hedge.yew', 1, 'prop.hedge_large', 5.2, -91, 1.3],
 ];
