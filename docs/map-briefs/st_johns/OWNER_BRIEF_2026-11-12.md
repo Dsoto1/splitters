@@ -225,6 +225,27 @@ So the chapel is: a tower at one front corner, a great window over red doors in 
 windows a side between buttresses, low side aisles behind arcades, a gallery over the entrance, a timber truss roof,
 and a chancel arch with a small rose window beyond.
 
+**How the chapel is laid out inside (the owner, after photos 21 and 22):** "When you first come in, the entrance
+had spiral cobble staircases on both sides (left and right) for the upper seating. You enter the main hall from the
+right and left beyond and around each side. The shot provided is from the upper seating. The left and right halls
+with pillars, those are where you would come in and sit in a pew. Behind the altar in the back is a room and office,
+and stairs that lead to a basement area. This is accessible from the back, or from a door at the end of the left
+hallway inside of the chapel before the altar area steps."
+
+So, in order from the red doors:
+- **Entrance (the narthex):** a spiral stair of cobble stone on the left and another on the right, each up to the
+  gallery (the upper seating over the entrance; photo 21 was taken from it).
+- **Into the nave:** not straight ahead but round each side: you pass the stairs and come into the left or the right
+  side aisle (the "halls with pillars" behind the arcades), and step from an aisle into the pews.
+- **Behind the altar:** a room and an office (a sacristy), and a stair down to a basement.
+- **Ways to that back part:** a door from outside at the back of the chapel, or a door at the far end of the left
+  aisle, just before the steps up to the altar.
+
+For the map this gives the chapel three levels (basement, nave, gallery) and four ways through it (the front doors,
+the back door, the two aisles), with the spiral stairs and the basement stair as the vertical routes. A spiral stair
+is a new stair piece (the game has straight and half-turn ones): to be specified in the chapel step, wide enough for
+bots.
+
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
 - A dorm room as a piece: door, sink, desk with shelves, bunk, window, two slim closets either side of the door; and
