@@ -35,7 +35,7 @@ export function createMountNode(scene: Scene, models: ModelLibrary, model: strin
       if (tint) paint(m, tint);
       else if (def.glow) glowsOf(root).push(...energise(m, def.glow));
     }
-    // A model with wheels of its own (meshes named wheel-front-left and so on, or Meshy models' wheel_* parts) on a vehicle with
+    // A model with wheels of its own (meshes named wheel-front-left and so on, or a model's wheel_* parts) on a vehicle with
     // suspension: each wheel goes on a pivot at its centre, so it can spin, steer and ride its spring.
     if (!def.wheels && suspensionOf(def)) {
       body.computeWorldMatrix(true);
@@ -67,6 +67,11 @@ export function createMountNode(scene: Scene, models: ModelLibrary, model: strin
       wheelsOf(root).push({ pivot, rest: y, front: z > 0, slot: nearestWheel(def, x, z) });
       void models.instantiate(wheels.model, `${name}_wheel${i}`).then((wheel) => {
         if (root.isDisposed()) return wheel.dispose();
+        // Its size as drawn (`wheels.radius`, `wheels.width`), from the model's own (measured here, at the origin,
+        // its axle along Z).
+        const { min, max } = wheel.getHierarchyBoundingVectors(true);
+        const [across, , along] = tireScale({ radius: (max.y - min.y) / 2, width: max.z - min.z }, wheels);
+        wheel.scaling.set(wheel.scaling.x * across, wheel.scaling.y * across, wheel.scaling.z * along);
         wheel.parent = pivot;
         wheel.rotation.y = x < 0 ? -Math.PI / 2 : Math.PI / 2;
         // Rubber stays black: no skin or team paint on the tires.
@@ -75,6 +80,16 @@ export function createMountNode(scene: Scene, models: ModelLibrary, model: strin
     });
   }
   return root;
+}
+
+/**
+ * How much a tire model (its own `radius` and `width`, m; axle along Z) is scaled to be drawn at a mount's
+ * `wheels.radius` and `wheels.width`: [x, y, z]. No radius: its own size; no width: as much wider as it is bigger.
+ */
+export function tireScale(own: { radius: number; width: number }, wheels: { radius?: number; width?: number }): [number, number, number] {
+  const across = wheels.radius !== undefined && own.radius > 0 ? wheels.radius / own.radius : 1;
+  const along = wheels.width !== undefined && own.width > 0 ? wheels.width / own.width : across;
+  return [across, across, along];
 }
 
 /** A wheel drawn on a pivot at its hub, in the mount's frame: View.suspend spins, steers and moves it on its spring. */

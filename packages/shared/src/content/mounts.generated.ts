@@ -116,17 +116,24 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     vehicle: { maxSpeed: 24, reverseSpeed: 8, accel: 14, turnRate: 2.1, idleBrake: 16, hover: true, grip: 0.07, mass: 0.6 },
     blurb: 'A hovering two-seater: the pilot fires twin blasters ahead, the passenger shoots their own gun',
   },
-  // model: A Meshy Community sci-fi buggy (Meshy_AI__1108120754, CC0; content/guns.json vehicles/sixer_buggy.glb, 2026-11-11): a tube-frame four-wheeler with a cage over the cabin and an open deck behind it. Its tires are cut out as parts (wheel_*), so they spin, steer and ride the springs. The Tactical Off-Road Beast (on its separate tires) it replaced is the fallback (vehicles/offroad_buggy.glb).
+  // model: A Meshy Community sci-fi buggy (Meshy_AI__1108120754, CC0; content/guns.json vehicles/sixer_buggy.glb, 2026-11-11): a tube-frame four-wheeler with a cage over the cabin and an open deck behind it. It rides on the owner's Rugged Off-Road Tire (vehicles/offroad_tire.glb), one at each hub (2026-11-12): the body's own tires are cut out of it and dropped (guns.json `parts`, `drop`), since cut out as parts they took bodywork with them and spun off their axles. Hubs and size measured on the body's old tires: 0.5 m radius, 0.45 m wide, hubs 0.5 m up at x ±1.14, z 1.53 and -1.47; the body's lowest point left (its chassis) is 0.258 m up (`rideHeight`). The Tactical Off-Road Beast it replaced is the fallback (vehicles/offroad_buggy.glb).
   // half: Fitted across the tires (2026-11-11, as the Troop Truck's): 2.9 m wide, so walls stop the tires where they are drawn and rounds that hit a tire hit the buggy. Length and height unchanged: the model is 4.4 m long and 1.98 m tall; its body is about 1.8 m wide and its tires stand out to 2.86 m.
   // seats: Measured on the model (slices of its triangles): two front seats, cushions 0.82 m up at z 0.08 and 0.4 m either side (the floor 0.6 m up, the wheel on the left); behind the cabin's hoop (z -0.6) an open deck 1.7 m up, clear overhead, from x -0.25 to 0.75 (a rack box stands on its left side, x -0.7 to -0.3, 2.0 m) and z -0.6 to -1.45. The four standing riders stand on it two by two (x -0.15 and 0.45, z -0.7 and -1.3: as near the buggy's middle as the rack lets the left pair's feet go, 0.1 m nearer than at first), like the Gun Jeep's standing gunner. The owner's layout, 2026-11-11: a driver, a seated front passenger and four standing in the back. Owner, 2026-11-11 ("if what I asked for doesn't look normal, normalize"): four standing on the small deck looked top-heavy, so the four ride sitting on its edges facing out, like the Gun Jeep's rail riders: the right pair on the deck's edge (1.7 m), the left pair on the rack box (2.0 m), legs over the side.
   // cockpitEye: A seated head height (1.5 m), under the cage's front bar (1.6 m at z 0.4), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts), refitted to this body.
-  // vehicle: The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides. The suspension's contact points and hub height are the old drawn tires' (unchanged handling).
+  // vehicle: The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides. The suspension's contact points and hub height are the old buggy's (unchanged handling); the tires are drawn at this body's hubs (`wheels.at`), each riding the nearest contact point's spring.
   buggy: {
     id: 'buggy',
     displayName: 'Buggy',
     kind: 'vehicle',
     model: 'vehicles/sixer_buggy.glb',
     fallback: 'vehicles/offroad_buggy.glb',
+    rideHeight: 0.258,
+    wheels: {
+      model: 'vehicles/offroad_tire.glb',
+      radius: 0.5,
+      width: 0.45,
+      at: [[-1.14, 0.5, 1.53], [1.14, 0.5, 1.53], [-1.14, 0.5, -1.47], [1.14, 0.5, -1.47]],
+    },
     health: 450,
     half: [1.45, 0.8, 2.2],
     seats: [
@@ -376,17 +383,24 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     turret: { seat: 1, pitch: [-0.17, 0.35], traverse: 1.2 },
     blurb: 'A heavy tank for three: a driver, a cannon gunner whose turret turns all the way round, and a roof machine gun',
   },
-  // model: Recon Trike (Meshy Community, CC0; content/guns.json vehicles/recon_jeep.glb, 2026-11-10): a Warthog-style four-wheeler with a pintle machine gun on the roll cage over the cab and an open bed behind. Its tires are cut out as parts (wheel_*), so they spin, steer and ride the springs like the Car Kit truck's wheel meshes did. The Car Kit pickup it replaced is the fallback (vehicles/gun_jeep.glb).
+  // model: Recon Trike (Meshy Community, CC0; content/guns.json vehicles/recon_jeep.glb, 2026-11-10): a Warthog-style four-wheeler with a pintle machine gun on the roll cage over the cab and an open bed behind. It rides on the owner's Rugged Off-Road Tire (vehicles/offroad_tire.glb), one at each hub (2026-11-12): the body's own tires are cut out of it and dropped (guns.json `parts`, `drop`), since cut out as parts they took bodywork with them and spun off their axles. Hubs and size measured on the body's old tires: 0.56 m radius, 0.56 m wide, hubs 0.56 m up at x ±1.12, z 1.58 and -1.63; the body's lowest point left is 0.327 m up (`rideHeight`). The Car Kit pickup it replaced is the fallback (vehicles/gun_jeep.glb).
   // half: Fitted across the tires (2026-11-11, as the Troop Truck's): 2.9 m wide, so walls stop the tires where they are drawn and rounds that hit a tire hit the jeep. Length and height unchanged: the model is 4.4 m long and 2.44 m tall at the gun; its body is about 2.2 m wide and its tires stand out to 2.88 m.
   // seats: Measured on the model (slices of its triangles): two cab seats with cushions 0.92 m up at z -0.05 (backrests at z -0.3, the floor 0.7 m up under the dash); the gun's ring on the cage roof at z 0.3, 2.3 m up, so the gunner stands behind its breech on the console between the cab and the bed (feet 1.05 m), shoulders out of the roof like a hatch gunner; the bed (floor 0.7 m) runs from z -1.2 to -2.0 between walls 1.1 m high at x ±0.9, where the two rail riders sit facing out. Roles, weapon and arcs unchanged.
   // cockpitEye: A seated head height over the driver's cushion, under the cage roof (2.0 m).
-  // vehicle: Its own wheels (the model's tires, cut out as parts) on stiffer springs than the buggy's: a pickup. The suspension's contact points are unchanged.
+  // vehicle: Stiffer springs than the buggy's: a pickup. The suspension's contact points and hub height are unchanged (the handling is); the tires are drawn at this body's hubs (`wheels.at`), each riding the nearest contact point's spring.
   gun_jeep: {
     id: 'gun_jeep',
     displayName: 'Gun Jeep',
     kind: 'vehicle',
     model: 'vehicles/recon_jeep.glb',
     fallback: 'vehicles/gun_jeep.glb',
+    rideHeight: 0.327,
+    wheels: {
+      model: 'vehicles/offroad_tire.glb',
+      radius: 0.56,
+      width: 0.56,
+      at: [[-1.12, 0.56, 1.58], [1.12, 0.56, 1.58], [-1.12, 0.56, -1.63], [1.12, 0.56, -1.63]],
+    },
     health: 380,
     half: [1.45, 0.95, 2.2],
     seats: [
@@ -440,15 +454,23 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     },
     blurb: 'A light pickup with a machine gun on the back: a driver, a gunner who fires all round and three passengers with their own weapons',
   },
-  // model: Dust Runner (Meshy Community, CC0; content/guns.json vehicles/dust_runner.glb, 2026-11-10): a closed two-door off-roader with a roof rack, 5.3 m long, 2.56 m wide and 2.57 m tall, fitted to the box. The Car Kit delivery truck it replaced is the fallback (vehicles/armored_rover.glb).
+  // model: Dust Runner (Meshy Community, CC0; content/guns.json vehicles/dust_runner.glb, 2026-11-10): a closed two-door off-roader with a roof rack, 5.3 m long, 2.56 m wide and 2.57 m tall, fitted to the box. It rides on the owner's Rugged Off-Road Tire (vehicles/offroad_tire.glb), one at each hub (2026-11-12): the body's own tires, which were part of its one mesh and never turned, are cut out of it and dropped (guns.json `parts`, `drop`). Hubs and size measured on them: 0.53 m radius, 0.42 m wide, hubs 0.53 m up at x ±1.04, z 1.675 and -1.3; the body's lowest point left is 0.373 m up (`rideHeight`). The Car Kit delivery truck it replaced is the fallback (vehicles/armored_rover.glb).
   // seats: Measured on the model: the cab floor 0.7 m up from z 0.4 back to the tailgate, the windscreen at z 0.6-0.9, the roof and its rack 2.4-2.5 m up from z 0.6 to -2.2. The driver moves back from the old truck's cab (z 1.5, now the hood) to the front seat (z 0.05); the gunners stand on the rack at its front and back ends. Roles, weapons and arcs unchanged. The three inside sit (2026-11-11: standing on the floor their heads came out through the roof, 2.5 m): cushions 1.02 m up, the driver on the left front seat, the two passengers on a bench against the panel behind the front seats (the in-house cockpit draws the seats and the bench, client content/cockpits.ts).
   // cockpitEye: A seated head height in the driver's seat, under the roof, behind the windscreen.
+  // vehicle: Speeds, turn, grip and mass unchanged. Suspension added 2026-11-12 so its tires steer and ride springs (a vehicle without it only rolls them): the Troop Truck's stiff truck springs (which were derived from this vehicle), on this body's four hubs. On level ground it drives as before; with a wheel off the ground (a crest, a kerb) it now grips less, as every sprung vehicle does.
   armored_rover: {
     id: 'armored_rover',
     displayName: 'Armored Rover',
     kind: 'vehicle',
     model: 'vehicles/dust_runner.glb',
     fallback: 'vehicles/armored_rover.glb',
+    rideHeight: 0.373,
+    wheels: {
+      model: 'vehicles/offroad_tire.glb',
+      radius: 0.53,
+      width: 0.42,
+      at: [[-1.04, 0.53, 1.675], [1.04, 0.53, 1.675], [-1.04, 0.53, -1.3], [1.04, 0.53, -1.3]],
+    },
     health: 900,
     half: [1.25, 1.2, 2.65],
     seats: [
@@ -469,7 +491,29 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     enterRadius: 3.8,
     respawnSeconds: 60,
     blast: { radius: 5.5, damage: 110 },
-    vehicle: { maxSpeed: 14, reverseSpeed: 6, accel: 7, turnRate: 1.25, idleBrake: 10, grip: 0.38, mass: 3.6 },
+    vehicle: {
+      maxSpeed: 14,
+      reverseSpeed: 6,
+      accel: 7,
+      turnRate: 1.25,
+      idleBrake: 10,
+      grip: 0.38,
+      mass: 3.6,
+      suspension: {
+        wheels: [[-1.04, 1.675], [1.04, 1.675], [-1.04, -1.3], [1.04, -1.3]],
+        hub: 0.53,
+        travel: 0.14,
+        bump: 0.11,
+        freq: 1.9,
+        damping: 0.45,
+        squat: 0.002,
+        lean: 0.0025,
+        tumble: 0.8,
+        land: 0.4,
+        maxTilt: 0.3,
+        steer: 0.4,
+      },
+    },
     blurb: 'A heavy armoured truck for five: a driver, a front and a rear machine gunner and two riders in the back',
   },
   // model: TNR 1017 (Meshy Community, CC0; content/guns.json vehicles/tnr_hover_bike.glb, 2026-11-10): a one-seat hover bike with handlebars, stub wings and twin thrusters, 3.0 m long. Its wings stand 0.16 m out of the box either side (not solid). The Space Kit speeder it replaced is the fallback (vehicles/hover_bike.glb).
@@ -579,16 +623,30 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     rideHeight: 0,
     blurb: 'A two-seat snowmobile that skims over snow (hover handling): a driver and a passenger with their own gun',
   },
-  // model: Ironclad Vanguard (Meshy Community, CC0; the owner's Drive, Meshy_AI_Ironclad_Vanguard_1111000212_texture.glb; content/guns.json vehicles/troop_truck.glb, 2026-11-11): an armoured three-axle army truck, a closed cab ahead of an open flatbed, 5.6 m long, 2.79 m wide over the tires and 2.54 m tall. Its six tires are cut out as parts (wheel_*), so they spin, the front pair steers, and each rides a spring.
+  // model: Ironclad Vanguard (Meshy Community, CC0; the owner's Drive, Meshy_AI_Ironclad_Vanguard_1111000212_texture.glb; content/guns.json vehicles/troop_truck.glb, 2026-11-11): an armoured three-axle army truck, a closed cab ahead of an open flatbed, 5.6 m long, 2.79 m wide over the tires and 2.54 m tall. It rides on six of the owner's Rugged Off-Road Tire (vehicles/offroad_tire.glb) (2026-11-12): the body's own tires are cut out of it and dropped (guns.json `parts`, `drop`), since cut out as parts they took the fenders with them and spun off their axles. They spin, the front pair steers, and each rides a spring. Size and hubs measured on the body's old tires: about 0.6 m radius (the buggy's are 0.5) and 0.5 m wide, hubs 0.6 m up at x ±0.97, z 1.41, -0.70 and -1.83. The old middle and rear tires ran into each other (1.13 m between hubs, 1.2 m tires, one mesh), so the separate ones stand 4.5 cm further apart each (z -0.655 and -1.875: 2 cm between them) under the same long fender. The body's lowest point left is 0.354 m up (`rideHeight`).
   // half: Fitted to the whole truck, tires included (owner, 2026-11-11): 2.8 × 2.54 × 5.6 m.
   // seats: Measured on the model (slices of its triangles): the cab, a closed shell (no seats of its own), from z 0.3 to the windscreen at 2.3, roof 2.3-2.5 m up; the two in it sit on cushions 1.2 m up at z 1.1, 0.45 m either side. The flatbed is 1.6 m up from z -0.1 to the tail at -2.8, 2.4 m wide, open overhead; four riders stand on it two by two (x ±0.55, z -0.9 and -2.0), like the Buggy's deck riders. No mounted gun.
   // cockpitEye: A seated head height in the driver's seat, under the cab roof, behind the windscreen.
-  // vehicle: Wheeled heavy, from the Armored Rover (14 m/s, accel 7, turn 1.25, grip 0.38, mass 3.6): a little quicker (16 m/s, accel 8.5, turn 1.4), still heavy and grippy (grip 0.36, mass 3: it rams like the heavies and loses little in a crash); stiff truck springs on six wheels, barely loose at speed (drift 0.15).
+  // vehicle: Wheeled heavy, from the Armored Rover (14 m/s, accel 7, turn 1.25, grip 0.38, mass 3.6): a little quicker (16 m/s, accel 8.5, turn 1.4), still heavy and grippy (grip 0.36, mass 3: it rams like the heavies and loses little in a crash); stiff truck springs on six wheels, barely loose at speed (drift 0.15). The suspension's contact points and hub height are unchanged; the rear two pairs of tires are drawn 4.5 cm off theirs (see model).
   troop_truck: {
     id: 'troop_truck',
     displayName: 'Troop Truck',
     kind: 'vehicle',
     model: 'vehicles/troop_truck.glb',
+    rideHeight: 0.354,
+    wheels: {
+      model: 'vehicles/offroad_tire.glb',
+      radius: 0.6,
+      width: 0.5,
+      at: [
+        [-0.97, 0.6, 1.41],
+        [0.97, 0.6, 1.41],
+        [-0.97, 0.6, -0.655],
+        [0.97, 0.6, -0.655],
+        [-0.97, 0.6, -1.875],
+        [0.97, 0.6, -1.875],
+      ],
+    },
     health: 700,
     half: [1.4, 1.27, 2.8],
     seats: [

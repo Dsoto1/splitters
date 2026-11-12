@@ -51,6 +51,22 @@ describe('vehicles generator (tools/content/vehicles.mjs)', () => {
     expect(p).toMatch(/order \d+ is also (kart|buggy)'s/);
   });
 
+  it("checks a drawn tire's size", () => {
+    const c = clone(content);
+    mount(c, 'buggy').wheels.radius = 0;
+    mount(c, 'troop_truck').wheels.width = -0.5;
+    const p = vehicles.build(c).problems.join('\n');
+    expect(p).toMatch(/buggy\.json: wheels\.radius and wheels\.width are the drawn tire's size/);
+    expect(p).toMatch(/troop_truck\.json: wheels\.radius and wheels\.width are the drawn tire's size/);
+    mount(c, 'gun_jeep').wheels.raduis = 0.5;
+    expect(vehicles.build(c).problems.join('\n')).toMatch(/unknown field "raduis"/);
+    // Left out: the tire model's own size.
+    const d = clone(content);
+    delete mount(d, 'buggy').wheels.radius;
+    delete mount(d, 'buggy').wheels.width;
+    expect(vehicles.build(d).problems).toEqual([]);
+  });
+
   it('needs both route crafts', () => {
     const c = clone(content);
     c.mounts = c.mounts.filter((m) => m.data.id !== 'dropship_drop');

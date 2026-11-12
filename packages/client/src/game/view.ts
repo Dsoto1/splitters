@@ -3760,7 +3760,8 @@ export class GameView {
     const wheels = wheelsOf(node);
     if (!wheels.length) return;
     const setup = suspensionOf(m.def);
-    const radius = setup?.hubY ?? m.def.wheels?.at[0]?.[1] ?? 0.4;
+    // The drawn tire's radius where the def gives it (it rolls without slipping), else the hub's height.
+    const radius = m.def.wheels?.radius ?? setup?.hubY ?? m.def.wheels?.at[0]?.[1] ?? 0.4;
     const speed = m.vel.x * Math.sin(m.shown.yaw) + m.vel.z * Math.cos(m.shown.yaw);
     const roll = ((this.wheelRoll.get(m.index) ?? 0) + (speed * dt) / radius) % (Math.PI * 2);
     this.wheelRoll.set(m.index, roll);

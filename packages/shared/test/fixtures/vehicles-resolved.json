@@ -304,6 +304,34 @@
     "kind": "vehicle",
     "model": "vehicles/sixer_buggy.glb",
     "fallback": "vehicles/offroad_buggy.glb",
+    "rideHeight": 0.258,
+    "wheels": {
+     "model": "vehicles/offroad_tire.glb",
+     "radius": 0.5,
+     "width": 0.45,
+     "at": [
+      [
+       -1.14,
+       0.5,
+       1.53
+      ],
+      [
+       1.14,
+       0.5,
+       1.53
+      ],
+      [
+       -1.14,
+       0.5,
+       -1.47
+      ],
+      [
+       1.14,
+       0.5,
+       -1.47
+      ]
+     ]
+    },
     "health": 450,
     "half": [
      1.45,
@@ -924,6 +952,34 @@
     "kind": "vehicle",
     "model": "vehicles/recon_jeep.glb",
     "fallback": "vehicles/gun_jeep.glb",
+    "rideHeight": 0.327,
+    "wheels": {
+     "model": "vehicles/offroad_tire.glb",
+     "radius": 0.56,
+     "width": 0.56,
+     "at": [
+      [
+       -1.12,
+       0.56,
+       1.58
+      ],
+      [
+       1.12,
+       0.56,
+       1.58
+      ],
+      [
+       -1.12,
+       0.56,
+       -1.63
+      ],
+      [
+       1.12,
+       0.56,
+       -1.63
+      ]
+     ]
+    },
     "health": 380,
     "half": [
      1.45,
@@ -1078,6 +1134,34 @@
     "kind": "vehicle",
     "model": "vehicles/dust_runner.glb",
     "fallback": "vehicles/armored_rover.glb",
+    "rideHeight": 0.373,
+    "wheels": {
+     "model": "vehicles/offroad_tire.glb",
+     "radius": 0.53,
+     "width": 0.42,
+     "at": [
+      [
+       -1.04,
+       0.53,
+       1.675
+      ],
+      [
+       1.04,
+       0.53,
+       1.675
+      ],
+      [
+       -1.04,
+       0.53,
+       -1.3
+      ],
+      [
+       1.04,
+       0.53,
+       -1.3
+      ]
+     ]
+    },
     "health": 900,
     "half": [
      1.25,
@@ -1160,7 +1244,38 @@
      "turnRate": 1.25,
      "idleBrake": 10,
      "grip": 0.38,
-     "mass": 3.6
+     "mass": 3.6,
+     "suspension": {
+      "wheels": [
+       [
+        -1.04,
+        1.675
+       ],
+       [
+        1.04,
+        1.675
+       ],
+       [
+        -1.04,
+        -1.3
+       ],
+       [
+        1.04,
+        -1.3
+       ]
+      ],
+      "hub": 0.53,
+      "travel": 0.14,
+      "bump": 0.11,
+      "freq": 1.9,
+      "damping": 0.45,
+      "squat": 0.002,
+      "lean": 0.0025,
+      "tumble": 0.8,
+      "land": 0.4,
+      "maxTilt": 0.3,
+      "steer": 0.4
+     }
     },
     "blurb": "A heavy armoured truck for five: a driver, a front and a rear machine gunner and two riders in the back"
    },
@@ -1257,7 +1372,7 @@
     "id": "gunship",
     "displayName": "Gunship",
     "kind": "vehicle",
-    "model": "vehicles/gunship.glb",
+    "model": "vehicles/sky_cruiser.glb",
     "health": 950,
     "half": [
      2.4,
@@ -1528,6 +1643,44 @@
     "displayName": "Troop Truck",
     "kind": "vehicle",
     "model": "vehicles/troop_truck.glb",
+    "rideHeight": 0.354,
+    "wheels": {
+     "model": "vehicles/offroad_tire.glb",
+     "radius": 0.6,
+     "width": 0.5,
+     "at": [
+      [
+       -0.97,
+       0.6,
+       1.41
+      ],
+      [
+       0.97,
+       0.6,
+       1.41
+      ],
+      [
+       -0.97,
+       0.6,
+       -0.655
+      ],
+      [
+       0.97,
+       0.6,
+       -0.655
+      ],
+      [
+       -0.97,
+       0.6,
+       -1.875
+      ],
+      [
+       0.97,
+       0.6,
+       -1.875
+      ]
+     ]
+    },
     "health": 700,
     "half": [
      1.4,

@@ -6932,8 +6932,8 @@ async function vehiclesFlow(browser) {
     const me = window.__match.slots[window.__cs.slot];
     const m = me.mount ? window.__cs.mounts.mounts.get(window.__match.mounts[me.mount.index].index) : null;
     const root = m && window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
-    // The buggy's own tires (its model's wheel parts) on pivots at their hubs (mountVisuals.ts).
-    const pivots = root ? root.getChildTransformNodes().filter((n) => /_pivot(\d$|_.*wheel)/.test(n.name)) : [];
+    // The buggy's tires (the separate tire model, one per hub: its def's `wheels`) on pivots at the hubs (mountVisuals.ts).
+    const pivots = root ? root.getChildTransformNodes().filter((n) => /_pivot\d$/.test(n.name)) : [];
     return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, tires: pivots.filter((p) => p.getChildren().length).length, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
   });
   check(sprung.susp && sprung.wheels === 4 && sprung.pivots === 4 && sprung.tires === 4 && sprung.rolled, `the buggy rides the sim's suspension, its tires on hub pivots rolling (${JSON.stringify(sprung)})`);
@@ -7446,7 +7446,7 @@ async function troopTruckChecks(browser) {
   check(cockpit.view === 'cockpit' && cockpit.inBox && cockpit.local[2] > 0.5, `in the cockpit the eye is in the cab (${JSON.stringify(cockpit)})`);
   if (process.env.E2E_SHOTS) await page.addStyleTag({ content: '#pause, #message { display: none !important; }' });
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/vehicles-truck-cockpit.png`, timeout: T(60000) }).catch(() => {});
-  // Drive off: the six tires on pivots at their hubs, rolling.
+  // Drive off: the six tires (the separate tire model, one per hub: its def's `wheels`) on pivots at the hubs, rolling.
   const start = await sim(page, (m, me) => ({ ...me.move.pos })).catch(() => null);
   await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
   await simWait(page, (m, me, s) => Math.hypot(me.move.pos.x - s.x, me.move.pos.z - s.z) > 6, start, T(15000));
@@ -7454,16 +7454,19 @@ async function troopTruckChecks(browser) {
   await page.waitForFunction(() => {
     const m = [...window.__cs.mounts.mounts.values()].find((x) => x.def.id === 'troop_truck');
     const root = m && window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
-    return !!root && root.getChildTransformNodes().some((n) => /_pivot_.*wheel/.test(n.name) && Math.abs(n.rotation.x) > 1e-3);
+    const pivots = root ? root.getChildTransformNodes().filter((n) => /_pivot\d$/.test(n.name)) : [];
+    return pivots.length === 6 && pivots.every((p) => p.getChildren().length) && pivots.some((p) => Math.abs(p.rotation.x) > 1e-3);
   }, null, { timeout: T(15000) }).catch(() => {});
   const wheels = await page.evaluate(() => {
     const m = [...window.__cs.mounts.mounts.values()].find((x) => x.def.id === 'troop_truck');
     const root = m && window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
-    const pivots = root ? root.getChildTransformNodes().filter((n) => /_pivot_.*wheel/.test(n.name)) : [];
-    return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
+    const pivots = root ? root.getChildTransformNodes().filter((n) => /_pivot\d$/.test(n.name)) : [];
+    // No tire is left in the body itself (they are cut out of it: guns.json `parts`, `drop`).
+    const own = root ? root.getChildMeshes().filter((x) => /wheel|tire/i.test(x.name) && !/_wheel\d/.test(x.name)).length : -1;
+    return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, tires: pivots.filter((p) => p.getChildren().length).length, own, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
   });
   const moved = await sim(page, (m, me, s) => +Math.hypot(me.move.pos.x - s.x, me.move.pos.z - s.z).toFixed(1), start).catch(() => 0);
-  check(moved > 6 && wheels.susp && wheels.wheels === 6 && wheels.pivots === 6 && wheels.rolled, `it drives off (${moved} m) on six sprung tires, rolling (${JSON.stringify(wheels)})`);
+  check(moved > 6 && wheels.susp && wheels.wheels === 6 && wheels.pivots === 6 && wheels.tires === 6 && wheels.own === 0 && wheels.rolled, `it drives off (${moved} m) on six sprung tires, rolling (${JSON.stringify(wheels)})`);
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   await page.keyboard.press('KeyH');
   await page.waitForFunction(() => window.__cs.rideView() === 'chase', null, { timeout: T(8000) }).catch(() => {});
