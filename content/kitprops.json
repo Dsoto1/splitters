@@ -1,5 +1,5 @@
 {
-  "$comment": "Kit props (docs/PROCEDURAL_ENVIRONMENT.md \u00a711 Phase 6; docs/CONTENT_PIPELINE.md, \"Kit props\"): simple man-made props generated in code from seeds, families in content/kitprops/<type>.json, built by tools/content/kitprops.mjs. Budgets: bytes per file and triangles per level of detail by generator kind. Aliases: a retired catalogue prop and the family and variant that take its place as played (map/validate.ts loadMap; MapMaker keeps the map as made and offers Replace all); `scale` multiplies the placement's own.",
+  "$comment": "Kit props (docs/PROCEDURAL_ENVIRONMENT.md §11 Phase 6; docs/CONTENT_PIPELINE.md, \"Kit props\"): simple man-made props generated in code from seeds, families in content/kitprops/<type>.json, built by tools/content/kitprops.mjs. Budgets: bytes per file and triangles per level of detail by generator kind. Aliases: a retired catalogue prop and the family and variant that take its place as played (map/validate.ts loadMap; MapMaker keeps the map as made and offers Replace all); `scale` multiplies the placement's own.",
   "generatorVersion": 1,
   "pack": {
     "id": "tiletrigger-kitprops",
@@ -266,6 +266,36 @@
         320,
         120,
         24
+      ],
+      "dome": [
+        1700,
+        620,
+        60
+      ],
+      "domecap": [
+        200,
+        70,
+        20
+      ],
+      "domepanel": [
+        320,
+        130,
+        10
+      ],
+      "domedrum": [
+        190,
+        80,
+        10
+      ],
+      "dometrim": [
+        260,
+        80,
+        50
+      ],
+      "domearch": [
+        540,
+        260,
+        20
       ]
     }
   },

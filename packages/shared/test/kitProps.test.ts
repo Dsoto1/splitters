@@ -35,8 +35,12 @@ const MAPS = new URL('../../../maps/', import.meta.url);
 const mapIds = readdirSync(MAPS).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).sort();
 const prop = (over: Partial<PropEntity> = {}): PropEntity => ({ kind: 'prop', id: 'p1', name: '', position: [1, 0, 2], yaw: 0.5, scale: 1, solid: true, tint: null, model: 'prop.crate_small', ...over }) as PropEntity;
 
-/** Families with no collision: each replaces a prop that had none (kit props part 10). */
-const NO_COLLISION = new Set(['kit.sign.cone', 'kit.sign.cone_slim']);
+/** Families with no collision: the cones replace props that had none (kit props part 10); the dome kit's trims are mouldings on a wall. */
+const NO_COLLISION = new Set([
+  'kit.sign.cone', 'kit.sign.cone_slim',
+  // The dome kit's ring trims: mouldings 0.2 m proud of the drum's wall, which is what collides.
+  'kit.dome.trim_top', 'kit.dome.trim_middle', 'kit.dome.trim_bottom',
+]);
 
 describe('kit families', () => {
   it('are catalogue props, found by getProp, each colliding as its box', () => {
