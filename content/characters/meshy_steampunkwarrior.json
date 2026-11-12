@@ -37,8 +37,10 @@
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true,
+    "fingers": "fit",
     "hands": {
-      "curl": 1
+      "curl": 1,
+      "together": 1
     },
     "hold": {
       "forward": 0.08,
