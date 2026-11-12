@@ -1016,6 +1016,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - heatmaps stay in memory.
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
+  - **Landing now: kit props part 9 and The Spillway's card picture, as one train** (`check/mapmaker-train-3` = main + `wip/mapmaker-kit-props-9` + `wip/mapmaker-spillway-card`; MapMaker lane, 2026-11-12; 32 maps change).
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
