@@ -1,0 +1,102 @@
+{
+  "$comment": "Control consoles (tools/content/kit/plant.mjs): the size of the Kenney factory piece it replaces, colliding as that piece's boxes. Screens are paint: nothing glows or blinks.",
+  "type": "console",
+  "props": [
+    {
+      "id": "kit.console.panel",
+      "displayName": "Control Console",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a bank of screens (dark paint, still shapes: nothing lit) on two cabinets and two skids, a button shelf and a sloped keyboard desk in front, the size of the Kenney wide screen panel (1.937 × 1.6 × 1.061 m), the operator at −z as there; collides as the same nine boxes; plays as thin metal (that was glass, by the word screen)."
+      },
+      "size": [
+        1.937,
+        1.6,
+        1.061
+      ],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "breakable": {
+        "health": 30,
+        "debris": "#7a8088"
+      },
+      "generator": {
+        "kind": "console",
+        "screens": 3,
+        "desk": "keys"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 20
+        },
+        {
+          "distance": 55
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "grey",
+          "seed": 9761,
+          "look": {
+            "paint": "#7a8088",
+            "desk": "#8b9197",
+            "dark": "#1e2124",
+            "ink": "#b8862a",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 9762,
+          "set": {
+            "screens": 4
+          },
+          "look": {
+            "paint": "#5b6b56",
+            "desk": "#6a7a64",
+            "dark": "#1c201c",
+            "ink": "#4f8a5a",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 2,
+          "name": "sand",
+          "seed": 9763,
+          "set": {
+            "screens": 2,
+            "desk": "sliders"
+          },
+          "look": {
+            "paint": "#a89a78",
+            "desk": "#b8aa88",
+            "dark": "#26241f",
+            "ink": "#b8862a",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 3,
+          "name": "blue",
+          "seed": 9764,
+          "set": {
+            "desk": "sliders"
+          },
+          "look": {
+            "paint": "#3f5568",
+            "desk": "#4f6578",
+            "dark": "#181c20",
+            "ink": "#5a8a9a",
+            "grime": 0.25
+          }
+        }
+      ]
+    }
+  ]
+}

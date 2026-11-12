@@ -344,7 +344,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'sb_picket_fence', 'sb_swing_set', 'sb_slide', 'sb_trampoline', 'sb_basketball_hoop', 'sb_gas_pump', 'sb_sedan', 'sb_patio_set', 'sb_sun_lounger', 'sb_fire_hydrant',
       // Already in the game: furniture, shop fittings, garden and street pieces.
       'hm_couch', 'hm_armchair', 'hm_kitchen_counter', 'hm_oven', 'hm_bed_king', 'hm_bathtub', 'hm_toilet', 'hm_houseplant_tall', 'tv', 'kit.appliance.washer', 'sv_propane',
-      'kit.shelf.gondola', 'checkout', 'freezer', 'shopping_cart', 'kit.box.carton', 'kit.bin.waste', 'dumpster', 'cone', 'parasol', 'bush', 'hedge', 'tree_round', 'potted_plant',
+      'kit.shelf.gondola', 'kit.shop.checkout', 'kit.appliance.freezer_chest', 'kit.shop.cart', 'kit.box.carton', 'kit.bin.waste', 'dumpster', 'cone', 'parasol', 'bush', 'hedge', 'tree_round', 'potted_plant',
     ),
     materials: ['core.pbr_clapboard', 'core.pbr_slate_roof', 'core.pbr_pool_tiles'],
     facades: ['clapboard', 'suburban_brick'],

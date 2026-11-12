@@ -151,6 +151,46 @@
         760,
         120,
         10
+      ],
+      "cart": [
+        900,
+        300,
+        40
+      ],
+      "bakery": [
+        1300,
+        340,
+        30
+      ],
+      "checkout": [
+        420,
+        140,
+        40
+      ],
+      "chestfreezer": [
+        700,
+        120,
+        10
+      ],
+      "bottlereturn": [
+        520,
+        160,
+        30
+      ],
+      "produce": [
+        1100,
+        300,
+        40
+      ],
+      "console": [
+        460,
+        150,
+        40
+      ],
+      "valve": [
+        1000,
+        360,
+        40
       ]
     }
   },
@@ -412,6 +452,46 @@
     },
     "prop.freezers_upright": {
       "model": "kit.appliance.freezer_upright",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.shopping_cart": {
+      "model": "kit.shop.cart",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.bread_display": {
+      "model": "kit.shop.bakery_stand",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.checkout": {
+      "model": "kit.shop.checkout",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.freezer": {
+      "model": "kit.appliance.freezer_chest",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.bottle_return": {
+      "model": "kit.shop.bottle_return",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.fruit_display": {
+      "model": "kit.shop.produce_stand",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.screen_panel": {
+      "model": "kit.console.panel",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.pipe_valve": {
+      "model": "kit.pipe.valve",
       "variant": 0,
       "scale": 1
     }
