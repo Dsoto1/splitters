@@ -1,6 +1,6 @@
 # St. John's: the owner's brief for a rework (2026-11-12)
 
-The owner knows the real campus. This is what they said and what their sixteen reference photos show. Nothing is built
+The owner knows the real campus. This is what they said and what their seventeen reference photos show. Nothing is built
 from it yet; more references are coming ("I'll add reference more after this"). The photos are not in the repository
 (they are the school's own pictures, not ours to ship or commit): ask the owner for them, or look in the session
 scratchpad `stjohns-refs/` while that session lives. Use them as reference only: nothing from them goes into a texture.
@@ -94,6 +94,19 @@ link are to be joined into one structure as in photo 15, from the pieces the map
 details." So photo 14's low stone building with the tall red conical roof over a round-arched entrance is the
 library; the map's red building is to be reworked to show it (stone walls, the cone, the arched entrance), not
 replaced with a new place.
+
+### The main entrance (the owner, the same day, with photo 17)
+
+"See that stone obelisk style thing, that is one aspect of it (splits the path/road). You should have another
+reference of it directly on." (Photo 9 is that head-on view.)
+
+17. **The entrance, at an angle.** The fieldstone cairn (rounded field stones, a pointed arched niche at its top
+    with dressed-stone edges) stands on a low stone-walled flower bed with a concrete kerb, in the middle of the
+    drive: the road splits round it. Behind it a two-to-three-storey crenellated limestone building with a square
+    corner tower, narrow slit windows in the tower, arched and square windows along the side, an arched doorway at
+    the far end and a small arched door in the tower's base; a large tree at the left.
+
+So the main entrance is a drive that splits round the stone cairn in front of the castle-like hall, not a skywalk.
 
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
