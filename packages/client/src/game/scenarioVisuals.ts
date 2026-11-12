@@ -63,6 +63,7 @@ import { GlassVisuals, glassMaterial } from './glassVisuals.ts';
 import { WaterVisuals } from './waterVisuals.ts';
 import { loadGraphicsQuality } from './atmosphere.ts';
 import { SAFE_LIGHT, blinkLevel, ease, reduceFlashing } from './reduceFlashing.ts';
+import { PAD_FX_RANGE, PORTAL_FX_RANGE, PORTAL_GATE, fixtureLevel, portalCover, portalFit } from './fixtureFx.ts';
 
 /** How each liquid looks: colour, glow, surface and depth opacity, shine and how fast it flows. */
 export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: number; depthAlpha: number; shine: number; flow: number }> = {
@@ -132,6 +133,8 @@ export class ScenarioVisuals {
   /** Pack effects that last (a flame trap's fire: content/vfx.json map.lasting `fire.trap`), set by the game view. */
   lasting: LastingFx | null = null;
   private readonly visuals = new Map<number, Visual>();
+  /** Jump pads in the game (their meshes are merged; game/fixtureFx.ts): where each stands and its lift's level now. */
+  private pads: { id: string; at: { x: number; y: number; z: number }; level: number }[] = [];
   private readonly mats = new Map<string, StandardMaterial>();
   private last = performance.now();
 
@@ -188,6 +191,8 @@ export class ScenarioVisuals {
       // Decorations nothing ever changes (a ladder's rails and rungs, a jump pad, a bomb site's ring): merged below.
       if (!this.opts.editor && !v.update && !v.batch && STILL_KINDS.has(e.kind)) for (const m of v.root.getChildMeshes()) if (m instanceof Mesh) still.push(m);
       this.visuals.set(i, v);
+      // The lift stands on the plate, under the chevrons' tops (they show through it).
+      if (e.kind === 'pad' && !this.opts.editor) this.pads.push({ id: `pad:${e.id}`, at: { x: e.position[0], y: e.position[1] + 0.13, z: e.position[2] }, level: 0 });
     });
     this.mergeFixtures(fixtures);
     this.mergeStill(still);
@@ -394,12 +399,21 @@ export class ScenarioVisuals {
       const s = states.get(i);
       if (s && v.update) v.update(s[0], s[1], now, dt);
     }
+    // Jump pads: a column of light rising off each (map.lasting `pad`); the plate, ring and chevrons stay as they are.
+    if (this.lasting && this.pads.length) {
+      const calm = reduceFlashing();
+      for (const p of this.pads) {
+        p.level = fixtureLevel('pad', p.level, this.lasting.drawn(p.id), dt, calm);
+        this.lasting.want(p.id, 'pad', p.at, { level: p.level, steady: calm, range: PAD_FX_RANGE });
+      }
+    }
     this.glass.apply(states);
   }
 
   clear(): void {
     for (const v of this.visuals.values()) v.root.dispose(false, false);
     this.visuals.clear();
+    this.pads = [];
     for (const m of this.merged) m.dispose();
     this.merged = [];
     for (const m of this.batches) m.dispose();
@@ -606,13 +620,30 @@ export class ScenarioVisuals {
     this.box(`${name}_rimTop`, root, [w, 0.08, 0.08], [0, h - 0.04, -0.06], rim);
     let on = e.startEnabled ? 1 : 0;
     let shown = on;
+    // The pack's swirl (map.lasting `portal`, in the pair's colour) over the painted one while it has a place; the
+    // frame and the rim in the pair's colour stay, so which pair it is reads either way.
+    const fxId = `portal:${name}`;
+    const fit = portalFit(w, h);
+    const stretch = { nodes: PORTAL_GATE.parts, by: fit.stretch };
+    let level = 0;
     const spin = this.opts.editor ? null : this.scene.onBeforeRenderObservable.add(() => {
       const dt = Math.min(0.1, this.scene.getEngine().getDeltaTime() / 1000);
       shown += Math.sign(on - shown) * Math.min(Math.abs(on - shown), dt * 2);
       tex.wAng += dt * 1.8;
       const pulse = 0.85 + Math.sin(performance.now() / 260) * 0.15;
-      swirlMat.alpha = shown * pulse;
-      disc.isVisible = shown > 0.02;
+      const calm = reduceFlashing();
+      if (this.lasting) {
+        level = fixtureLevel('portal', level, on > 0 && this.lasting.drawn(fxId), dt, calm);
+        if (on > 0) {
+          const m = root.getWorldMatrix();
+          const at = Vector3.TransformCoordinates(new Vector3(0, h / 2, 0.04), m);
+          const face = Vector3.TransformNormal(new Vector3(0, 0, 1), m);
+          this.lasting.want(fxId, 'portal', at, { size: fit.size, yaw: Math.atan2(face.x, face.z), tint: colour, level, steady: calm, stretch, range: PORTAL_FX_RANGE });
+        }
+      }
+      const plain = shown * pulse * (1 - portalCover(level, calm));
+      swirlMat.alpha = plain;
+      disc.isVisible = plain > 0.02;
     });
     if (spin) root.onDisposeObservable.add(() => this.scene.onBeforeRenderObservable.remove(spin));
     root.onDisposeObservable.add(() => {

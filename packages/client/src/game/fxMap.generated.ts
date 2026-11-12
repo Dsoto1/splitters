@@ -546,6 +546,22 @@ export const FX_MAP = {
       "skip": [
         "Pillar_01"
       ]
+    },
+    "portal": {
+      "pack": "portal_fx",
+      "effect": "gate_portal_vfx_01",
+      "scale": 0.4,
+      "fixture": true,
+      "skip": [
+        "StencilMesh",
+        "GPUParticles3D"
+      ]
+    },
+    "pad": {
+      "pack": "magic_area_fx",
+      "effect": "lift_area_vfx_02",
+      "scale": 0.75,
+      "fixture": true
     }
   }
 } as const;

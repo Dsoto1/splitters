@@ -180,6 +180,9 @@ function plain(v, own, base) {
   if ('SubResource' in v) {
     const sec = own.sub[v.SubResource];
     if (!sec) return null;
+    // Pictures written into a scene (a portal's 2048 particle start points and their directions, as floats) are
+    // left out: 150 KB an effect, for particles the player does not draw from points yet.
+    if (sec.attrs.type === 'Image') return null;
     return { type: sec.attrs.type, ...plain(sec.props, own, base) };
   }
   if ('ExtResource' in v) {

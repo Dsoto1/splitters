@@ -14,6 +14,8 @@ export interface FxRef {
   readonly scale: number;
   /** A lasting effect that only dresses the scene (a fire prop's flame): drawn after every other lasting one. */
   readonly decor?: boolean;
+  /** A lasting effect on a thing of the map that matters to play (a portal, a jump pad): after the effects of the moment, before every `decor` one. */
+  readonly fixture?: boolean;
   /** Recolour it (#rrggbb): godotVfx.ts VfxOptions.tint. */
   readonly tint?: string;
   /** Lasting effects: parts of it left out (node names; godotVfx.ts VfxOptions.skip). */

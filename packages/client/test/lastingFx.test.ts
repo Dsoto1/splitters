@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import type { GodotVfx, VfxHandle } from '../src/game/godotVfx.ts';
+import type { GodotVfx, VfxHandle, VfxOptions } from '../src/game/godotVfx.ts';
 import { LastingFx } from '../src/game/lastingFx.ts';
 
 /** A stand-in for GodotVfx: `cap` lasting effects at once, each a handle that records what was done to it. */
 function fakeVfx(cap: number) {
-  const live: { at: { x: number }; level: number; stopped: boolean; steady: boolean }[] = [];
+  const live: { at: { x: number }; level: number; stopped: boolean; steady: boolean; opts: VfxOptions }[] = [];
   const vfx = {
     get loopRoom() {
       return Math.max(0, cap - live.filter((l) => !l.stopped).length);
     },
-    start(_pack: string, _effect: string, at: { x: number }, opts: { steady?: boolean } = {}) {
+    start(_pack: string, _effect: string, at: { x: number }, opts: VfxOptions = {}) {
       if (live.filter((l) => !l.stopped).length >= cap) return null;
-      const l = { at: { x: at.x }, level: 0, stopped: false, steady: !!opts.steady };
+      const l = { at: { x: at.x }, level: 0, stopped: false, steady: !!opts.steady, opts };
       live.push(l);
       const h: VfxHandle = {
         move: (to) => void (l.at.x = to.x),
@@ -105,6 +105,56 @@ describe('lasting effects (lastingFx.ts)', () => {
     expect([1, 2, 3].every((i) => fx.drawn(`fire${i}`))).toBe(true);
     expect([1, 2, 3, 4].map((i) => fx.drawn(`loot${i}`))).toEqual([true, false, false, false]);
     expect(fx.drawn('torch')).toBe(false);
+  });
+
+  it('places portals and jump pads after the effects of the moment and before every decoration', () => {
+    const { vfx } = fakeVfx(4);
+    const fx = new LastingFx(vfx);
+    const cam = { x: 0, y: 0, z: 0 };
+    const ask = () => {
+      // Glows and a prop flame right at your feet, a pad and a portal further off, fires further still.
+      fx.want('glow1', 'loot.weapon', { x: 1, y: 0, z: 0 });
+      fx.want('glow2', 'loot.health', { x: 2, y: 0, z: 0 });
+      fx.want('torch', 'flame.torch', { x: 3, y: 0, z: 0 });
+      fx.want('pad', 'pad', { x: 20, y: 0, z: 0 });
+      fx.want('portal', 'portal', { x: 30, y: 0, z: 0 });
+      fx.want('fire1', 'fire.zone', { x: 50, y: 0, z: 0 });
+      fx.want('fire2', 'fire.zone', { x: 60, y: 0, z: 0 });
+    };
+    ask();
+    fx.update(cam);
+    // Four places: both fires, then the pad and the portal; no glow, no torch.
+    expect(['fire1', 'fire2', 'pad', 'portal', 'glow1', 'glow2', 'torch'].map((id) => fx.drawn(id))).toEqual([true, true, true, true, false, false, false]);
+    // The fires go out: the glows (half the places at most) and the torch get what the fixtures leave.
+    fx.dispose();
+    fx.want('glow1', 'loot.weapon', { x: 1, y: 0, z: 0 });
+    fx.want('glow2', 'loot.health', { x: 2, y: 0, z: 0 });
+    fx.want('torch', 'flame.torch', { x: 3, y: 0, z: 0 });
+    fx.want('pad', 'pad', { x: 20, y: 0, z: 0 });
+    fx.want('portal', 'portal', { x: 30, y: 0, z: 0 });
+    fx.update(cam);
+    expect(fx.drawn('pad') && fx.drawn('portal')).toBe(true);
+    expect(['glow1', 'glow2', 'torch'].filter((id) => fx.drawn(id)).length).toBe(2);
+  });
+
+  it("keeps to a request's own range, hands on its turn, colour and fit, and starts again when the colour changes", () => {
+    const { vfx, live } = fakeVfx(4);
+    const fx = new LastingFx(vfx);
+    const cam = { x: 0, y: 0, z: 0 };
+    fx.want('far', 'pad', { x: 40, y: 0, z: 0 }, { range: 36 });
+    fx.want('near', 'pad', { x: 30, y: 0, z: 0 }, { range: 36 });
+    fx.want('gate', 'portal', { x: 5, y: 0, z: 0 }, { yaw: 1.5, tint: '#3aa8ff', stretch: { nodes: ['PortalMesh'], by: 0.9 } });
+    fx.update(cam);
+    expect([fx.drawn('far'), fx.drawn('near'), fx.drawn('gate')]).toEqual([false, true, true]);
+    const gate = live.find((l) => l.opts.tint === '#3aa8ff');
+    expect(gate?.opts.yaw).toBe(1.5);
+    expect(gate?.opts.stretch).toEqual({ nodes: ['PortalMesh'], by: 0.9 });
+    expect(gate?.opts.skip).toContain('StencilMesh');
+    fx.want('gate', 'portal', { x: 5, y: 0, z: 0 }, { yaw: 1.5, tint: '#ff8a2a' });
+    fx.update(cam);
+    fx.update(cam);
+    expect(gate?.stopped).toBe(true);
+    expect(live.some((l) => !l.stopped && l.opts.tint === '#ff8a2a')).toBe(true);
   });
 
   it('keeps an effect asked for after the last update, however long the frame took', async () => {
