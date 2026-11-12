@@ -198,6 +198,40 @@ function planDrawn(page, sel) {
   }, sel);
 }
 
+/**
+ * Match Setup (redesign part 2: four tabs under the header): open one of its tabs as a player does, by its
+ * button (`match`, `bots`, `rules`, `presets`), and wait until its pane shows.
+ */
+async function setupTab(page, tab) {
+  await page.waitForSelector(`#setup-tab-${tab}`, { state: 'attached', timeout: T(30000) });
+  await page.evaluate((t) => document.getElementById(`setup-tab-${t}`).click(), tab);
+  await page.waitForFunction((t) => document.getElementById(`setup-tab-${t}`)?.getAttribute('aria-selected') === 'true' && !document.querySelector(`#match-setup .setup-pane.pane-${t}`)?.hidden, tab, { timeout: T(10000) });
+}
+
+/**
+ * Match Setup: open one of the Match Setup tab's one-row sections if it is shut, by its head (`setup-variants-row`:
+ * Variants; `setup-party-row`: Party presets), and wait until its settings show.
+ */
+async function openSetupRow(page, id) {
+  await page.waitForSelector(`#${id}-head`, { state: 'attached', timeout: T(30000) });
+  await page.waitForFunction((i) => {
+    const head = document.getElementById(`${i}-head`);
+    if (head && head.getAttribute('aria-expanded') !== 'true') head.click();
+    return document.getElementById(`${i}-head`)?.getAttribute('aria-expanded') === 'true' && document.getElementById(`${i}-body`)?.hidden === false;
+  }, id, { timeout: T(10000), polling: 250 });
+}
+
+/** Match Setup's foot: pick where the match runs from its menu (`arcade-offline`, `arcade-host`), as a player does. */
+async function setupWhere(page, id) {
+  await page.waitForSelector('#arcade-where-now', { state: 'attached', timeout: T(30000) });
+  await page.evaluate(() => {
+    const menu = document.getElementById('arcade-where-menu');
+    if (!menu.open) document.getElementById('arcade-where-now').click();
+  });
+  await page.waitForSelector(`#${id}`, { state: 'visible', timeout: T(10000) });
+  await page.evaluate((i) => document.getElementById(i).click(), id);
+}
+
 async function editorFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
@@ -3359,7 +3393,7 @@ async function offlineFlow(browser) {
   await until(() => planDrawn(page, '.map-card .map-thumb.plan canvas'), T(5000));
   check(await planDrawn(page, '.map-card .map-thumb.plan canvas'), 'the plan is drawn top-down');
   await page.waitForFunction(() => document.querySelector('.setup-preview .pic img')?.naturalWidth > 0, null, { timeout: T(10000) }).catch(() => {});
-  check((await thumbLoaded(page, '.setup-preview .pic img')) && (await planDrawn(page, '.setup-preview .plan canvas')), 'match setup shows the picture and the plan side by side');
+  check((await thumbLoaded(page, '.setup-preview .pic img')) && (await planDrawn(page, '.setup-preview .plan canvas')), 'match setup shows the picture (the header\'s banner) and the plan');
   // The list's mode tabs and search narrow it; every card stays the same height.
   const heights = await page.$$eval('#map-cards .map-card', (cs) => new Set(cs.map((c) => Math.round(c.getBoundingClientRect().height))).size);
   check(heights === 1, `every map card is the same height (${heights} different heights)`);
@@ -3387,9 +3421,32 @@ async function offlineFlow(browser) {
   await page.fill('#map-search', 'sandg');
   const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
   check(found.includes('sandgate') && found.length < 4, `searching finds the map by name (${found.join(', ')})`);
+  // F opens the Filter maps window (the bottom bar says so); typed into the search box, it is only a letter.
   await page.fill('#map-search', '');
-  // What matters most stays on top: picking a mode keeps the mode chips, its variants and what wins (score, time)
-  // in view, with the size presets worked out for the map; the rest is in sections below.
+  await page.type('#map-search', 'f');
+  const typed = await page.evaluate(() => ({ dialog: !!document.querySelector('#map-filter-dialog[open]'), value: document.getElementById('map-search').value }));
+  await page.fill('#map-search', '');
+  await page.evaluate(() => document.getElementById('map-search').blur());
+  await page.keyboard.press('f');
+  const byKey = await page.waitForSelector('#map-filter-dialog[open]', { timeout: T(5000) }).then(() => true, () => false);
+  await page.keyboard.press('f');
+  const once = await page.$$eval('#map-filter-dialog', (d) => d.length);
+  await page.keyboard.press('Escape');
+  const hint = await page.evaluate(() => document.getElementById('hint-filter')?.textContent ?? '');
+  check(!typed.dialog && typed.value === 'f' && byKey && once === 1 && /Filters/.test(hint), `F opens Filter maps (once, not while typing in the search box), and the key hints say so (${JSON.stringify({ typed, byKey, once, hint })})`);
+  // On a wide screen (the owner's 1670 × 941) the list's controls are one row (tabs, Filter maps, search, sort,
+  // grid/list) and the grid is four across.
+  const sizeWas = page.viewportSize();
+  await page.setViewportSize({ width: 1670, height: 941 });
+  const bar = await page.evaluate(() => {
+    const tops = [...document.querySelectorAll('.map-bar .map-tab, .map-bar #map-filter, .map-bar #map-search, .map-bar #map-sort, .map-bar .view-btn')].map((e) => Math.round(e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2));
+    return { width: innerWidth, rows: new Set(tops.map((t) => Math.round(t / 6))).size, columns: getComputedStyle(document.getElementById('map-cards')).gridTemplateColumns.split(' ').length };
+  });
+  check(bar.rows === 1 && bar.columns === 4, `the map list's controls are one row and its grid four columns at 1670 × 941 (${JSON.stringify(bar)})`);
+  if (sizeWas) await page.setViewportSize(sizeWas);
+  // Match Setup's panel (redesign part 2): four tabs; the Match Setup tab's numbered sections keep the mode tiles and
+  // what wins (score, time) in view after picking a mode, with the size presets worked out for the map; Variants and
+  // Party presets are one row each until opened; the rest is behind the other tabs.
   await page.click('#arcade-modes .mode-chip:not(.on)');
   const top = await page.evaluate(() => {
     const body = document.querySelector('#match-setup .setup-body').getBoundingClientRect();
@@ -3397,9 +3454,38 @@ async function offlineFlow(browser) {
       const r = document.getElementById(id)?.getBoundingClientRect();
       return !!r && r.height > 0 && r.top >= body.top - 1 && r.bottom <= body.bottom + 1;
     };
-    return { mode: document.querySelector('#arcade-modes .mode-chip.on')?.dataset.mode, chips: seen('arcade-modes'), win: seen('setup-win'), variants: !!document.getElementById('setup-variants'), sizes: document.querySelectorAll('#setup-sizes .size-chip').length, sections: [...document.querySelectorAll('#match-setup .setup-sec')].map((x) => x.id) };
+    const shut = (id) => document.getElementById(`${id}-head`)?.getAttribute('aria-expanded') === 'false' && document.getElementById(`${id}-body`)?.hidden === true;
+    return {
+      mode: document.querySelector('#arcade-modes .mode-chip.on')?.dataset.mode,
+      chips: seen('arcade-modes'),
+      win: seen('setup-win'),
+      variants: !!document.getElementById('setup-variants') && shut('setup-variants-row'),
+      party: !!document.getElementById('setup-party') && shut('setup-party-row'),
+      sizes: document.querySelectorAll('#setup-sizes .size-chip').length,
+      tabs: [...document.querySelectorAll('#setup-tabs .setup-tab')].map((x) => x.dataset.tab),
+      numbers: [...document.querySelectorAll('#match-setup .pane-match .num-badge')].map((x) => x.textContent).join(''),
+      foot: ['setup-saved', 'arcade-where-menu', 'arcade-spectate', 'arcade-start'].every((id) => { const r = document.getElementById(id)?.getBoundingClientRect(); return !!r && r.height > 0 && r.bottom <= innerHeight; }),
+    };
   });
-  check(top.chips && top.win && top.variants && top.sizes >= 2 && top.sections.join() === 'setup-teams,setup-bots,setup-advanced', `picking a mode keeps the mode, variants and what wins in view, with the size presets (${JSON.stringify(top)})`);
+  check(top.chips && top.win && top.variants && top.party && top.sizes >= 2 && top.tabs.join() === 'match,bots,rules,presets' && top.numbers === '12345' && top.foot, `picking a mode keeps the mode and what wins in view, with the size presets; Variants and Party presets are a row each; four tabs and the foot bar (${JSON.stringify(top)})`);
+  // A tab stays open across a redraw (a setting changed in it), and the rows open to their chips and cards.
+  await setupTab(page, 'bots');
+  const skillWas = await page.evaluate(() => {
+    const was = document.querySelector('#arcade-skill .tab.on').dataset.value;
+    document.querySelector('#arcade-skill .tab:not(.on)').click();
+    return was;
+  });
+  const kept = await page.evaluate(() => ({ tab: document.querySelector('#setup-tabs .setup-tab.on')?.dataset.tab, skill: !!document.getElementById('arcade-skill')?.offsetParent, modes: !!document.getElementById('arcade-modes')?.offsetParent }));
+  await page.evaluate((v) => document.querySelector(`#arcade-skill .tab[data-value="${v}"]`).click(), skillWas);
+  await setupTab(page, 'match');
+  await openSetupRow(page, 'setup-variants-row');
+  await openSetupRow(page, 'setup-party-row');
+  const rows = await page.evaluate(() => ({ variants: [...document.querySelectorAll('#setup-variants .variant-chip')].filter((b) => b.offsetParent).length, party: [...document.querySelectorAll('#setup-party .party-chip')].filter((b) => b.offsetParent).length, sum: document.getElementById('setup-variants-row-sum')?.textContent, preset: document.getElementById('setup-party-row-sum')?.textContent }));
+  check(kept.tab === 'bots' && kept.skill && !kept.modes && rows.variants > 0 && rows.party >= 3 && !!rows.sum && !!rows.preset, `the Bots & AI tab stays open through a change; Variants and Party presets open to their chips and cards (${JSON.stringify({ kept, rows })})`);
+  await page.evaluate(() => {
+    document.getElementById('setup-variants-row-head').click();
+    document.getElementById('setup-party-row-head').click();
+  });
   await page.setViewportSize({ width: 960, height: 540 });
   await page.goto(`${CLIENT}/?offline`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
@@ -4952,8 +5038,8 @@ async function teamsFlow(browser) {
   await page.click('#nav-play');
   // More layouts (beside the size presets worked out for the map): any fixed shape.
   await page.selectOption('#arcade-teams', '2,2,2,2,2,2,12');
-  // Bots section → your bots: a built-in set (Knights vs Space Crew: knights on the first team, the space crew on the second).
-  await page.click('#setup-bots-head');
+  // Bots & AI tab → your bots: a built-in set (Knights vs Space Crew: knights on the first team, the space crew on the second).
+  await setupTab(page, 'bots');
   await page.click('#arcade-botset');
   await page.waitForSelector('#bot-manager', { timeout: T(5000) });
   await page.selectOption('#bm-from', 'p:knights_vs_space');
@@ -5224,10 +5310,10 @@ async function botCastFlow(browser) {
   await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, teams: [8, 8] })));
   await page.goto(`${CLIENT}/?test=1`);
   await page.click('#nav-play');
-  await page.click('#setup-bots-head');
+  await setupTab(page, 'bots');
   await page.waitForSelector('#arcade-cast', { timeout: T(5000) });
   const offered = await page.evaluate(() => [...document.querySelectorAll('#arcade-cast option')].map((o) => o.value));
-  check(offered[0] === 'map' && offered.includes('all') && offered.includes('soldiers') && offered.includes('pirate'), `the Bots section offers bot characters (${offered.length}: ${offered.slice(0, 4).join(', ')}…)`);
+  check(offered[0] === 'map' && offered.includes('all') && offered.includes('soldiers') && offered.includes('pirate'), `the Bots & AI tab offers bot characters (${offered.length}: ${offered.slice(0, 4).join(', ')}…)`);
   await page.selectOption('#arcade-cast', 'soldiers');
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(60000) });
@@ -5285,19 +5371,33 @@ async function setupLayoutFlow(browser) {
       };
       return seen('arcade-modes') && seen('setup-win');
     });
-    // Open every section in turn (a phone closes the one open before).
-    for (const id of ['setup-teams', 'setup-bots', 'setup-advanced']) {
-      if (!(await page.evaluate((i) => document.getElementById(i).classList.contains('open'), id))) await page.evaluate((i) => document.getElementById(`${i}-head`).click(), id);
+    // Every tab in turn, scrolled to its bottom: Start stays in view, nothing sideways, nothing past the panel's edge.
+    const state = { start: true, sideways: false, past: [], scrolled: 0, shown: [] };
+    for (const tab of ['bots', 'rules', 'presets', 'match']) {
+      await setupTab(page, tab);
+      // The Match Setup tab: both of its rows opened in turn (a phone closes the one open before).
+      if (tab === 'match') for (const id of ['setup-variants-row', 'setup-party-row']) await openSetupRow(page, id);
+      const at = await page.evaluate(() => {
+        const body = document.querySelector('#match-setup .setup-body');
+        body.scrollTop = body.scrollHeight;
+        const s = document.getElementById('arcade-start').getBoundingClientRect();
+        const panel = document.getElementById('match-setup').getBoundingClientRect();
+        const past = [...document.querySelectorAll('#match-setup .setup-tabs *, #match-setup .setup-body *, #match-setup .foot-bar > *')].filter((e) => {
+          const r = e.getBoundingClientRect();
+          return e.offsetParent && r.width > 0 && (r.right > panel.right + 1 || r.left < panel.left - 1);
+        }).map((e) => e.id || e.className).slice(0, 4);
+        return { start: s.top >= 0 && s.bottom <= innerHeight && s.right <= innerWidth && s.height > 0, sideways: document.documentElement.scrollWidth > innerWidth, past, scrolled: body.scrollTop, shown: [...document.querySelectorAll('#match-setup .setup-pane')].filter((x) => !x.hidden).map((x) => x.id) };
+      });
+      state.start &&= at.start;
+      state.sideways ||= at.sideways;
+      state.past.push(...at.past.map((x) => `${tab}: ${x}`));
+      state.scrolled = Math.max(state.scrolled, at.scrolled);
+      state.shown.push(at.shown.join('+'));
     }
-    const state = await page.evaluate(() => {
-      const body = document.querySelector('#match-setup .setup-body');
-      body.scrollTop = body.scrollHeight;
-      const s = document.getElementById('arcade-start').getBoundingClientRect();
-      return { open: [...document.querySelectorAll('#match-setup .setup-sec.open')].map((x) => x.id), start: s.top >= 0 && s.bottom <= innerHeight && s.right <= innerWidth && s.height > 0, sideways: document.documentElement.scrollWidth > innerWidth, scrolled: body.scrollTop };
-    });
+    const open = await page.evaluate(() => [...document.querySelectorAll('#match-setup .fold-row.open')].map((x) => x.id));
     check(essentials, `${name}: the mode and what wins show without scrolling`);
-    check(state.start && !state.sideways && state.scrolled > 0, `${name}: Start stays in view with the setup scrolled to the bottom, nothing sideways (${JSON.stringify(state)})`);
-    check(touch ? state.open.join() === 'setup-advanced' : state.open.length === 3, `${name}: ${touch ? 'one section open at a time' : 'several sections open at once'} (${state.open.join(', ')})`);
+    check(state.start && !state.sideways && !state.past.length && state.scrolled > 0 && state.shown.join() === 'setup-bots,setup-advanced,setup-presets,setup-match', `${name}: Start stays in view in every tab with the setup scrolled to the bottom, one tab's settings showing, nothing sideways (${JSON.stringify(state)})`);
+    check(touch ? open.join() === 'setup-party-row' : open.length === 2, `${name}: ${touch ? 'one of Variants and Party presets open at a time' : 'Variants and Party presets open together'} (${open.join(', ')})`);
     await page.context().close();
   }
 
@@ -5317,15 +5417,20 @@ async function setupLayoutFlow(browser) {
     page.evaluate(() => ({
       who: document.querySelector('#setup-summary .fact-players')?.textContent,
       fit: document.getElementById('setup-fit')?.dataset.level,
-      advanced: document.querySelector('#setup-advanced-head .sec-sum')?.textContent,
-      chips: document.querySelectorAll('#setup-rule-chips span').length,
+      advanced: document.getElementById('setup-advanced-sum')?.textContent,
+      // (The rules that are changed: a chip each in the Rules tab, counted on its button while another tab is open.)
+      chips: [...document.querySelectorAll('#setup-rule-chips span')].filter((x) => x.offsetParent).length,
+      badge: document.querySelector('#setup-tab-rules .tab-n')?.textContent ?? '',
       preset: document.querySelector('#setup-sizes .size-chip.on')?.dataset.preset ?? 'custom',
       variants: [...document.querySelectorAll('#setup-variants .variant-chip.on')].map((b) => b.dataset.variant),
     }));
   const owner = await read();
   // (24v24 was Max until performance round 4 raised a computer's limit to 32v32: between Big battle and Max now.)
   check(owner.who === 'You + 47 bots · 24v24' && owner.preset === 'custom', `people apart from bots: the owner's setup reads "${owner.who}", on no preset (${owner.preset})`);
-  check(owner.advanced === '9 changed · Low gravity · Tactical bots +7' && owner.chips === 0, `Advanced rules in one line, its chips inside it ("${owner.advanced}", ${owner.chips} chips while closed)`);
+  await setupTab(page, 'rules');
+  const rulesTab = await read();
+  await setupTab(page, 'match');
+  check(owner.advanced === '9 changed · Low gravity · Tactical bots +7' && owner.chips === 0 && owner.badge === '9' && rulesTab.chips === 9, `the changed rules in one line and counted on the Rules tab, their chips inside it ("${owner.advanced}", "${owner.badge}" on the tab, ${owner.chips} chips showing in Match setup, ${rulesTab.chips} in Rules)`);
   check(owner.variants.join() === 'roulette', `a variant shows on when its settings are, however set (${owner.variants.join(', ')})`);
   // The fit indicator: Crowded, its details say why, and the map's own layout is a button.
   await page.evaluate(() => document.getElementById('setup-fit').click());
@@ -5342,7 +5447,8 @@ async function setupLayoutFlow(browser) {
   check(capped.teams?.join() === '32,32' && capped.note === "32 per team is this computer's limit.", `a bot past the limit says whose limit it is (${JSON.stringify(capped)})`);
   await page.evaluate(() => document.getElementById('arcade-team-size-0-minus').click());
   check((await setup()).teams?.join() === '31,31', 'a bot fewer shrinks every team alike (Even teams)');
-  // A party preset: Lunar Roulette (the Roulette mode, Lunar on, its standard features on).
+  // A party preset: Lunar Roulette (the Roulette mode, Lunar on, its standard features on). Party presets is a row until opened.
+  await openSetupRow(page, 'setup-party-row');
   await page.evaluate(() => document.getElementById('setup-party-lunar_roulette').click());
   const party = await setup();
   const lit = await read();
@@ -5436,11 +5542,10 @@ async function customSetupFlow(browser) {
   await page.reload();
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.click('#nav-play');
-  // A small window opens one section at a time, and starts with them all closed.
-  const closed = await page.evaluate(() => [...document.querySelectorAll('#match-setup .setup-sec.open')].length);
-  await page.click('#setup-teams-head');
-  await page.waitForSelector('#arcade-team-cards');
-  check(closed === 0, `a small window starts with the setup's sections closed (${closed} open)`);
+  // The teams are in the Match Setup tab (section 3), showing as it opens; Variants and Party presets start as a row each.
+  await page.waitForSelector('#arcade-team-cards', { state: 'attached', timeout: T(30000) });
+  const closed = await page.evaluate(() => ({ rows: [...document.querySelectorAll('#match-setup .fold-row.open')].length, tab: document.querySelector('#setup-tabs .setup-tab.on')?.dataset.tab, teams: !!document.getElementById('arcade-team-cards')?.offsetParent }));
+  check(closed.rows === 0 && closed.tab === 'match' && closed.teams, `a small window starts on the Match Setup tab, the teams in it, Variants and Party presets closed (${JSON.stringify(closed)})`);
   // Uneven teams: Even teams off first (on, every team changes alike).
   await page.evaluate(() => document.getElementById('arcade-even').click());
   const setSize = (i, v) =>
@@ -5469,8 +5574,7 @@ async function customSetupFlow(browser) {
   await page.reload();
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.click('#nav-play');
-  await page.click('#setup-teams-head');
-  await page.waitForSelector('#arcade-team-cards');
+  await page.waitForSelector('#arcade-team-cards', { state: 'attached', timeout: T(30000) });
   const remembered = await total();
   check(changed.startsWith('1v1') && remembered.startsWith('1v1'), `the last setup is remembered across a reload (${changed} → ${remembered})`);
   await page.evaluate(() => (document.getElementById('setup-saved').open = true));
@@ -5509,19 +5613,14 @@ async function weaponsetsFlow(browser) {
     localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, teams: [2, 2] }));
     sessionStorage.setItem('seeded', '1');
   });
-  /** Play → Match setup, Advanced rules → Weapons, pickups & vehicles open: the Weapon set row in view. */
+  /** Play → Match setup, the Rules tab → Weapons, pickups & vehicles open: the Weapon set row in view. */
   const openWeapons = async (p) => {
     await p.goto(`${CLIENT}/?test=1`);
     await p.waitForFunction(() => window.__front, null, { timeout: T(30000) });
     await p.evaluate(() => document.getElementById('nav-play').click());
-    await p.waitForSelector('#setup-advanced-head', { timeout: T(30000) });
-    // Advanced rules open (the head is a toggle, and the setup redraws as it settles: a click while it redrew, or on a
-    // section already open, left it shut): opened only while it says it is shut, until its Weapons fold is there.
-    await p.waitForFunction(() => {
-      const head = document.getElementById('setup-advanced-head');
-      if (head && head.getAttribute('aria-expanded') !== 'true') head.click();
-      return !!document.getElementById('setup-arsenal');
-    }, null, { timeout: T(10000), polling: 500 });
+    // The Rules tab (the setup redraws as it settles, so its button is pressed until its pane shows), then its Weapons fold.
+    await setupTab(p, 'rules');
+    await p.waitForSelector('#setup-arsenal', { timeout: T(10000) });
     await p.evaluate(() => {
       const d = document.getElementById('setup-arsenal');
       if (!d.open) d.querySelector('summary').click();
@@ -5796,6 +5895,8 @@ async function rouletteFlow(browser) {
   await page.evaluate(() => document.getElementById('nav-play').click());
   await page.waitForSelector('#arcade-mode-roulette', { timeout: T(30000) });
   await page.evaluate(() => document.getElementById('arcade-mode-roulette').click());
+  // Variants is one row until opened (its summary says what's on); opened, its chips.
+  await openSetupRow(page, 'setup-variants-row');
   await page.waitForSelector('#setup-variant-signature', { timeout: T(10000) });
   const chips = () =>
     page.evaluate(() => ({
@@ -5818,6 +5919,7 @@ async function rouletteFlow(browser) {
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/roulette-setup.png`, timeout: T(60000) }).catch(() => {});
   // The party preset: Lunar Roulette plays the mode, Lunar on.
   await page.evaluate(() => document.getElementById('arcade-mode-deathmatch').click());
+  await openSetupRow(page, 'setup-party-row');
   await page.evaluate(() => document.getElementById('setup-party-lunar_roulette').click());
   const party = await chips();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('cs.arcade') ?? '{}'));
@@ -8166,6 +8268,7 @@ async function fireteamsFlow(browser) {
   await page.goto(`${CLIENT}/?test=1&god=1&vote=1`);
   await page.click('#nav-play');
   // The party preset (Part 3): one click into Team Deathmatch with Fireteams, the map's teams, squads to fit them.
+  await openSetupRow(page, 'setup-party-row');
   await page.waitForSelector('#setup-party-fireteams', { timeout: T(30000) });
   await page.click('#setup-party-fireteams');
   const setup = await page.waitForFunction(() => {
@@ -9750,8 +9853,8 @@ async function lobbyFlow(browser) {
   await setupHost.goto(`${CLIENT}/?${hub}`, { waitUntil: 'domcontentloaded' });
   await setupHost.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await setupHost.evaluate(() => document.getElementById('nav-play').click());
-  await setupHost.waitForSelector('#arcade-host', { timeout: T(30000) });
-  await setupHost.evaluate(() => document.getElementById('arcade-host').click());
+  await setupWhere(setupHost, 'arcade-host');
+  await setupHost.waitForSelector('#arcade-online-note', { timeout: T(10000) }).catch(() => {});
   const foot = await setupHost.evaluate(() => ({ on: document.getElementById('arcade-host').classList.contains('on'), note: document.getElementById('arcade-online-note')?.textContent ?? '' }));
   check(foot.on && /listed in the game browser/.test(foot.note), `Match setup's Host online says the match is listed (${JSON.stringify(foot)})`);
   await setupHost.evaluate(() => document.getElementById('arcade-start').click());
@@ -9821,8 +9924,8 @@ async function communityFlow(browser) {
   const allShown = await host.evaluate(() => [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.title));
   check(!allShown.includes('E2E Pick Yard'), 'All maps leaves the picks to their tab');
   await host.evaluate(() => [...document.querySelectorAll('#map-cards .map-card')].find((c) => c.title === 'E2E Dune Run').click());
-  await host.waitForSelector('#arcade-host', { timeout: T(30000) });
-  await host.evaluate(() => document.getElementById('arcade-host').click());
+  await setupWhere(host, 'arcade-host');
+  await host.waitForFunction(() => document.getElementById('arcade-host')?.classList.contains('on'), null, { timeout: T(10000) }).catch(() => {});
   await host.evaluate(() => document.getElementById('arcade-start').click());
   const ours = () => hubGames(HUB_PORT).then((g) => (g ?? []).find((x) => x.host === 'Hosty') ?? null);
   const listed = await hubUntil(async () => !!(await ours()), T(120000));
