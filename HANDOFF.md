@@ -1021,6 +1021,7 @@ docs/MAPMAKER_OVERHAUL_PLAN.md). Branches `wip/mapmaker-*` / `check/mapmaker-*` 
     - heatmaps stay in memory.
   - **Landing:** a session landing a branch adds a "Landing now" line here, and the other holds code pushes to main
     until it's gone (docs are fine).
+  - **Landing now: the weapon and vehicle lane's fifth batch** (`check/vehicles-setup` at 8f7dee70, pushed 2026-11-12 13:15 UTC; this account): the Match Setup redesign to the owner's mock-up (`frontend/frontEnd.ts`, `setupControls.ts`, `style.css`, Match Setup checks in `e2e/run.mjs`) and Iron Maw's card picture. `pnpm prepush` passed on that commit with main e0eabf06 merged.
 - **Landed 2026-11-09 in one train** (`check/train-20261109-155445`, main 4fb799e):
   - the follow-ups (jump hint, refusal over nothing, budget bar in the status bar);
   - bot hints (map format v33);
