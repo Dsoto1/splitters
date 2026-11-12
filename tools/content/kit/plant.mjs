@@ -5,7 +5,7 @@
 // −z and a blind boss at +z). Each fills its bounds, [-w/2, w/2] × [0, h] × [-d/2, d/2].
 //
 // Both collide as finer boxes (a generator's `boxes`: tools/content/kitprops.mjs), the same for each variant: the
-// console's are the nine the retired piece had; the valve's are fourteen for its twenty-five: the pipe as four walls
+// console's are the nine the retired piece had; the valve's are sixteen for its twenty-five: the pipe as walls
 // round its bore (which stays open from end to end, as it was), each flange as four pieces round the bore, the boss.
 // The pipe's axis is where the retired piece's was (the middle of the height, 12.5 mm towards +z), so it still meets
 // the pipe pieces placed against its ends. The boxes are in metres: a family here has one size, its retired prop's.
@@ -180,13 +180,15 @@ export function valveMesh(seed, size, g, look, level) {
     for (const s of [-1, 1]) box(m, [s > 0 ? xf : -X, 0, zc - R], [s > 0 ? X : -xf, h, zc + R], scale3(flangeC, 0.8), ['ny']);
     return m;
   }
-  // Solid: the pipe's four walls round its bore (under, over, behind in two steps, in front), each flange's four
+  // Solid: the pipe's walls round its bore (under, over, behind in two steps, in front in three), each flange's four
   // pieces round the bore (its foot, its top, its front, its back), the boss at +z. Open: the bore, end to end.
   m.boxes = [
-    [-X, 0.1, -0.35, X, 0.4, 0.45],
-    [-X, 1.2, -0.35, X, 1.5, 0.45],
+    [-X, 0.1, -0.35, X, 0.4, 0.35],
+    [-X, 1.2, -0.35, X, 1.5, 0.35],
     [-X, 0.2, -0.55, X, 1.4, -0.35],
     [-X, 0.4, -Z, X, 1.2, -0.55],
+    [-X, 0.2, 0.35, X, 0.6, 0.55],
+    [-X, 1, 0.35, X, 1.3, 0.55],
     [-X, 0.3, 0.45, X, 1.3, 0.65],
     ...[-1, 1].flatMap((s) => {
       const [x0, x1] = s > 0 ? [0.6, X] : [-X, -0.6];

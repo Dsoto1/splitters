@@ -8,7 +8,7 @@
 // (metadata.testOnly): no list offers it.
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { CORE_ITEMS, EDGE_STYLES, GLASS_KINDS, MOUNT_MODELS, MapEntity, STYLE_PACKS, builtInSetPieces, coreCatalog, loadMap, playableModes, raceTrack, type MapDocument } from '../src/index.ts';
+import { CORE_ITEMS, EDGE_STYLES, GLASS_KINDS, MOUNT_MODELS, MapEntity, STYLE_PACKS, builtInSetPieces, coreCatalog, loadMap, playableModes, propAlias, raceTrack, type MapDocument } from '../src/index.ts';
 import { KIT_TILES } from '../src/content/kitTiles.generated.ts';
 import { SCENARIO_PALETTE, newScenarioEntities } from '../src/editor/operations.ts';
 
@@ -54,7 +54,9 @@ describe('the coverage map', () => {
     const dir = new URL('content/props/', ROOT);
     const without = readdirSync(dir)
       .filter((f) => f.endsWith('.json'))
-      .filter((f) => !(JSON.parse(readFileSync(new URL(f, dir), 'utf8')).props as { id: string }[]).some((p) => models.has(`prop.${p.id}`)));
+      // (The map is read as played: a retired prop on it is the kit family that took its place. A pack whose props are
+      // all retired, the mini-market's since kit props part 9, is on the map by one of those families.)
+      .filter((f) => !(JSON.parse(readFileSync(new URL(f, dir), 'utf8')).props as { id: string }[]).some((p) => models.has(`prop.${p.id}`) || models.has(propAlias(`prop.${p.id}`)?.model ?? '')));
     expect(without).toEqual([]);
   });
 

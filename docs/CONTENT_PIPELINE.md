@@ -729,7 +729,8 @@ barrels and boxes first; fences and walls, then containers, come next.
 - **Sources:** `content/kitprops.json` (generator version, pack provenance, budgets by generator kind, `aliases`) and
   `content/kitprops/<type>.json` (families: id `kit.<type>.<name>`, display name, palette `category` (an existing prop
   category), `assetVersion` with a note per version, `size` (the box it fills), `surface` (a surface type: impacts and
-  ballistics), `detail` (the content/surfaces.json picture drawn on it), optional `breakable`, the generator's kind and
+  ballistics), `detail` (the content/surfaces.json picture drawn on it), optional `breakable` (`health`, `debris`, and
+  `blast` for a piece that explodes: the pipe valve), the generator's kind and
   settings, levels of detail, variants: `index`, `name`, `seed`, `look` (colours and wear) and optional `set` (settings
   of its own: an X brace, no brace, narrower planks)).
 - **Build:** `node tools/content/kitprops.mjs` (`content:rebuild` and `content:check` run it, after prepare-props).
@@ -745,8 +746,12 @@ barrels and boxes first; fences and walls, then containers, come next.
   `cabinet.mjs` (cabinets: a carcass on a recessed plinth, doors, drawers and open bays under a top; appliances: a
   fridge's doors, a stove's hob rings, knobs and oven door, a washing machine's round door; handles and knobs stand
   inside the box, the case set back for them; the bank of upright shop freezers: framed glass doors over shelves of
-  goods), `factory.mjs` (the shipping crate under a lifting saddle, the warning signs, the belt conveyor), `glb.mjs`
-  (the writer).
+  goods), `factory.mjs` (the shipping crate under a lifting saddle, the warning signs, the belt conveyor), `market.mjs`
+  (shop fittings: the wire shopping cart, the bakery stand, the checkout, the chest freezer, the bottle-return
+  machine, the produce stand), `plant.mjs` (the control console, the valve on a large pipe; these eight collide as
+  finer boxes written in their generators, in metres, as the props they replace did), `glb.mjs` (the writer).
+  `geom.mjs` also has square bars between any two points, wire panels (flat strips seen from both sides), and
+  cylinders and rings along any axis.
   Randomness only from `env/rng.mjs` streams.
 - **Outputs:** `packages/client/public/kit/<type>.<name>.<variant>.glb`: one material (the family's surface: roughness,
   metalness and material extras `{ surface, tile, uv, detail }` that `client/content/propSurfaces.ts` turns into the
