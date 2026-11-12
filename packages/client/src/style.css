@@ -164,15 +164,37 @@ button.cta:hover { background: #ffc46e; }
 #host-left .hl-actions:empty { display: none; }
 
 /* Arcade (Play) */
-.arcade { display: grid; grid-template-columns: minmax(0, 1fr) clamp(420px, 44vw, 660px); gap: 18px; margin-top: 18px; height: calc(100% - 70px); min-height: 0; }
+/* Match Setup (the owner's mock-up of 2026-11-11): the title over the map list, the setup panel the screen's whole height beside them. */
+#menu .screen.play { display: grid; grid-template-columns: minmax(0, 1fr) clamp(420px, 42vw, 630px); grid-template-rows: auto minmax(0, 1fr); gap: 14px 18px; padding: 22px 22px 70px; }
+.screen.play .arcade { display: contents; }
+.screen.play .screen-head { grid-column: 1; grid-row: 1; }
+.screen.play .map-browse { grid-column: 1; grid-row: 2; }
+.screen.play .setup { grid-column: 2; grid-row: 1 / span 2; min-height: 0; }
 .map-browse { display: flex; flex-direction: column; gap: 12px; min-height: 0; min-width: 0; }
-/* The list's controls: a tab per mode (scrolls sideways when they don't fit), then search, sort and grid/list. */
-.map-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-.map-tabs { flex: 1 1 420px; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }
-.map-tab { flex: none; padding: 9px 14px; font: 700 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface-1); white-space: nowrap; }
+/* The list's controls, one row: the tabs for which maps (they scroll sideways when they don't fit), then Filter maps, search, sort and grid/list. */
+.map-bar { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; }
+.map-tabs { flex: 0 1 auto; min-width: 140px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; }
+.map-tab { flex: none; padding: 9px 12px; font: 700 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface-1); white-space: nowrap; }
 .map-tab.on { background: var(--cyan); color: #04121a; border-color: var(--cyan); }
-.map-tools { flex: 0 1 auto; display: flex; align-items: center; gap: 8px; margin-left: auto; }
-#map-search { width: 190px; min-width: 0; padding: 8px 10px 8px 30px; background: var(--surface-1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238ea2c0' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") no-repeat 9px center / 15px; }
+.map-tools { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; }
+.map-filter { flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px; font: 700 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface-1); border-color: rgba(0, 209, 255, 0.6); white-space: nowrap; }
+.map-filter::before { content: ''; width: 13px; height: 12px; background: currentColor; clip-path: polygon(0 0, 100% 0, 60% 50%, 60% 100%, 40% 86%, 40% 50%); }
+.map-filter.on { color: var(--cyan); border-color: var(--cyan); background: rgba(0, 209, 255, 0.12); }
+.map-filter-n { min-width: 18px; padding: 1px 5px; border-radius: 9px; background: var(--cyan); color: #04121a; font: 700 11px var(--font-display); text-align: center; }
+.map-filter-dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 22px 24px; color: var(--text); background: #0e1421; overflow: auto; }
+.map-filter-dialog::backdrop { background: rgba(3, 8, 16, 0.72); }
+.map-filter-dialog h3 { margin: 0 0 6px; font: 700 22px var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
+.mf-modes { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 16px 0 18px; }
+.mf-mode { display: grid; grid-template-columns: auto 22px 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); background: var(--surface-1); cursor: pointer; }
+.mf-mode input { grid-row: 1 / span 2; width: 20px; height: 20px; accent-color: var(--cyan); }
+.mf-mode svg { grid-row: 1 / span 2; width: 22px; height: 22px; }
+.mf-mode b { font: 700 14px var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
+.mf-mode i { font-style: normal; font-size: 12px; color: var(--muted); }
+.mf-mode:has(input:checked) { border-color: var(--cyan); background: rgba(0, 209, 255, 0.1); }
+.mf-mode:has(input:focus-visible) { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.mf-foot { display: flex; justify-content: space-between; gap: 10px; }
+.mf-foot button { padding: 11px 18px; font: 700 13px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
+#map-search { flex: 1 1 120px; width: 120px; min-width: 90px; padding: 8px 10px 8px 30px; background: var(--surface-1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238ea2c0' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") no-repeat 9px center / 15px; }
 #map-sort { padding: 8px 10px; }
 .view-pick { display: flex; gap: 4px; }
 .view-btn { width: 36px; height: 34px; padding: 0; font-size: 17px; line-height: 1; background: var(--surface-1); }
@@ -431,63 +453,231 @@ button.cta:hover { background: #ffc46e; }
 .rule-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .rule-chips span { padding: 3px 8px; font: 600 11px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--orange); border: 1px solid rgba(255, 179, 71, 0.45); background: rgba(255, 179, 71, 0.08); }
 .rule-chips .rule-reset { margin-left: auto; padding: 3px 10px; font-size: 11px; }
-/* A desktop window under 900 px tall (1280 × 720): the map's header in two lines, the mode's line in its tooltips only, so the essentials show without scrolling. */
+/*
+ * Match setup as the owner's mock-up of 2026-11-11 draws it (frontEnd.ts fillSetup): "Match configuration" with
+ * the map's picture as a banner, four tabs, the Match Setup tab's numbered sections, and one bar at the foot.
+ */
+.glyph { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.glyph.solid { fill: currentColor; stroke: none; }
+.setup-head { position: relative; display: block; padding: 11px 16px 10px; overflow: hidden; background: #0a101c; }
+.setup-preview { position: absolute; inset: 0; display: block; }
+.setup-preview .pic { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; border: 0; border-radius: 0; }
+.setup-preview .pic::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(9, 14, 25, 0.96) 0 28%, rgba(9, 14, 25, 0.74) 56%, rgba(9, 14, 25, 0.22)), linear-gradient(0deg, rgba(9, 14, 25, 0.55), transparent 55%); }
+.setup-preview .pic.none::after { content: none; }
+.setup-preview .plan { position: absolute; z-index: 2; right: 14px; top: 40px; width: 52px; aspect-ratio: 1; background: #0d1322; }
+.setup-title { position: relative; z-index: 2; }
+/* (The name and the line under it leave room for the fit chip and the plan; the facts run the header's width.) */
+.setup-title > small, .setup-title > h3, .setup-title > .inspired, .setup-title > .setup-blurb, .setup-title > .setup-community { margin-right: 76px; }
+.setup-head .fit-chip { position: absolute; z-index: 3; top: 10px; right: 14px; }
+.setup-head small { letter-spacing: 0.14em; }
+.setup-head h3 { margin: 1px 0 3px; font-size: 30px; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7); }
+.setup-blurb { margin: 0 0 7px; opacity: 0.92; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8); }
+.setup-facts { margin: 0; gap: 4px 0; color: var(--text); font-size: 13.5px; }
+.setup-facts > span { padding: 0 12px; border-left: 1px solid rgba(142, 162, 192, 0.4); white-space: nowrap; }
+.fact-caps { --glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2Z M9 4v14 M15 6v14'/%3E%3C/svg%3E"); }
+.setup-facts > span:first-child { padding-left: 0; border-left: 0; }
+/* The tabs: Match setup, Bots & AI, Rules, Presets (the one open in cyan; Rules counts what's changed). */
+.setup-tabs { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 9px 14px 0; }
+.setup-tab { display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; padding: 9px 6px; background: var(--surface-1); font: 700 13px var(--font-display); letter-spacing: 0.05em; white-space: nowrap; }
+.setup-tab.on { background: var(--cyan); border-color: var(--cyan); color: #04121a; }
+.setup-tab:focus-visible { outline: 2px solid var(--text); outline-offset: 1px; }
+.tab-n { min-width: 18px; padding: 1px 5px; border-radius: 9px; background: var(--orange); color: #241400; font: normal 700 11px var(--font-display); text-align: center; }
+.setup-body { padding: 8px 14px; gap: 6px; }
+.setup-body > .fit-details { padding: 0 0 4px; border-bottom: 0; }
+.setup-pane { display: flex; flex-direction: column; gap: 6px; }
+.setup-pane[hidden], .num-body[hidden] { display: none; }
+/* A numbered section: its badge, icon and title, then its settings. */
+.setup-num { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 7px 12px 8px; border: 1px solid var(--line); border-radius: 4px; background: rgba(18, 24, 39, 0.62); }
+.num-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 9px; min-width: 0; }
+.num-badge { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid var(--cyan); border-radius: 50%; color: var(--text); font: 700 12px/1 var(--font-display); }
+.num-head .glyph { color: var(--cyan); }
+.setup-body .num-head h4 { flex: none; font-size: 14px; letter-spacing: 0.08em; }
+.setup-body .num-head h4::before, .setup-body .pane-title::before { content: none; }
+.num-head .more-layouts { flex: 0 1 150px; margin-left: auto; max-width: 150px; min-width: 90px; }
+.team-count-slot { display: inline-flex; margin-left: auto; }
+.team-count-slot:empty { display: none; }
+.team-count-slot:not(:empty) + .more-layouts { margin-left: 0; }
+/* The mode in a line, at the end of the title's line. */
+.num-head .mode-line { flex: 1; min-width: 0; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: right; }
+/* Variants and Party presets: one row saying what's on, until opened. */
+.setup-num.fold-row { padding: 0; gap: 0; }
+.num-toggle { flex-wrap: nowrap; width: 100%; padding: 8px 12px; border: 0; border-radius: 4px; background: none; color: var(--text); text-align: left; text-transform: none; letter-spacing: 0; }
+.num-toggle:hover { background: rgba(0, 209, 255, 0.06); }
+.num-toggle:focus-visible { outline: 1px solid var(--cyan); outline-offset: -1px; }
+.num-note { flex: none; color: var(--muted); font: 500 13px var(--font-body); }
+.num-sum { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: right; color: var(--muted); font: 500 14px var(--font-body); }
+.num-sum.lit { color: var(--text); }
+.num-caret { flex: none; color: var(--text); font: 400 22px/0.8 var(--font-body); transition: transform 0.15s; }
+.fold-row.open .num-caret { transform: rotate(90deg); }
+.num-body { padding: 2px 12px 12px; }
+/* 1 Game mode: a large tile per mode the map plays. */
+.setup-num .mode-pick { grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr)); gap: 6px; }
+.setup-num .mode-chip { flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 74px; padding: 7px 3px 6px; text-align: center; }
+.setup-num .mode-chip .mode-icon { width: 26px; height: 26px; margin-bottom: 1px; }
+.setup-num .mode-chip b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font: 700 15px/1.1 var(--font-display); letter-spacing: 0.03em; }
+.setup-num .mode-chip small { max-width: 100%; color: var(--muted); font: 500 11.5px/1.1 var(--font-body); letter-spacing: 0; text-transform: none; text-wrap: balance; }
+.setup-num .mode-chip.on small { color: var(--text); }
+/* More than six modes: two even rows, a little shorter. */
+.setup-num .mode-pick.rows2 .mode-chip { min-height: 54px; padding: 4px 3px 3px; gap: 1px; }
+.setup-num .mode-pick.rows2 .mode-chip .mode-icon { width: 21px; height: 21px; margin: 0; }
+.setup-num .mode-pick.rows2 .mode-chip b { font-size: 14px; }
+/* 2 Match settings: score and time side by side, then the mode's own. */
+.win-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; min-width: 0; }
+.win-row .field-grid { flex: 0 1 auto; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.win-row .limits-line { flex: 1 1 210px; min-width: 0; }
+.setup-num .field .stepper b { min-width: 64px; }
+/* 3 Teams & players: the size presets a compact row, then a card per team in its colour. */
+.setup-num .size-chips { gap: 5px; }
+.setup-num .size-chip { flex-direction: row; align-items: baseline; gap: 6px; padding: 5px 9px; }
+.setup-num .size-chip small { font-size: 14px; }
+.team-editor.compact .team-cards { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.team-editor.compact .team-cards.two { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px; }
+.team-editor.compact .team-card { align-items: center; gap: 3px; padding: 4px 10px 6px; border: 1.5px solid var(--team); border-radius: 5px; background: var(--surface-1); background: linear-gradient(180deg, color-mix(in srgb, var(--team) 24%, transparent), color-mix(in srgb, var(--team) 5%, transparent)), var(--surface-1); }
+.team-editor.compact .team-card.mine { box-shadow: 0 0 0 1px var(--team), 0 0 14px color-mix(in srgb, var(--team) 38%, transparent); }
+.team-editor.compact .team-top { width: 100%; }
+.team-editor.compact .team-name { padding: 1px 5px; border-color: transparent; background: transparent; font: 700 17px var(--font-display); }
+.team-editor.compact .team-name:hover:not(:disabled), .team-editor.compact .team-name:focus { border-color: var(--line); background: rgba(0, 0, 0, 0.32); }
+.team-editor.compact .team-card .stepper button { padding: 3px 12px; font-size: 15px; background: rgba(5, 9, 18, 0.55); }
+.team-editor.compact .team-card .stepper input { width: 66px; padding: 2px 4px; font-size: 19px; background: rgba(5, 9, 18, 0.55); }
+.team-editor.compact .team-who { color: var(--text); opacity: 0.9; font: 500 13px var(--font-body); letter-spacing: 0; }
+.team-editor.compact .team-join { margin-left: 0; flex: none; }
+.team-swap { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border-radius: 50%; background: var(--surface-1); }
+.team-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; min-width: 0; }
+.team-sum, .team-sum .team-total { color: var(--text); font: 600 14px var(--font-body); letter-spacing: 0; text-transform: none; }
+.team-foot > .even-switch { margin-left: auto; }
+.team-assign select { padding: 4px 6px; font-size: 13px; }
+.team-count, .team-assign, .solo-players { display: inline-flex; align-items: center; gap: 8px; min-width: 0; color: var(--muted); font: 600 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
+.team-count .stepper input { width: 44px; padding: 2px 4px; }
+.team-count .stepper button { padding: 3px 9px; }
+.solo-players { display: flex; gap: 12px; }
+.solo-players .team-sum { margin-left: auto; text-transform: none; letter-spacing: 0; }
+/* Bots & AI, Rules, Presets: their settings as rows; folds and lists in boxes like the numbered sections. */
+.pane-sum { margin: 0; color: var(--muted); font: 600 13px var(--font-display); letter-spacing: 0.03em; }
+.setup-pane .row { grid-template-columns: minmax(110px, 200px) minmax(0, 1fr); }
+.setup-pane > .row { padding: 2px 0; }
+.setup-pane > .setup-more { padding: 6px 12px 10px; border: 1px solid var(--line); border-radius: 4px; background: rgba(18, 24, 39, 0.62); }
+.setup-body .pane-title { margin-top: 4px; font-size: 13px; letter-spacing: 0.1em; }
+.saved-items { display: flex; flex-direction: column; gap: 6px; }
+.saved-item { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-1); }
+.saved-item.on { border-color: var(--cyan); }
+.saved-what { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.saved-what b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font: 700 14px var(--font-display); letter-spacing: 0.04em; }
+.saved-what small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); font: 500 12px var(--font-body); }
+.saved-item button { flex: none; padding: 5px 12px; font-size: 12px; }
+/* The foot, one bar: Save preset (the saved setups' menu), where the match runs, Spectate, and Start match the largest. */
+.setup-foot { padding: 9px 14px 11px; gap: 6px; }
+.foot-bar { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; min-width: 0; }
+.foot-bar .saved-menu, .where-menu { position: relative; flex: none; display: flex; margin: 0; }
+.foot-bar .saved-menu > summary, .where-menu > summary { display: inline-flex; align-items: center; gap: 8px; max-width: none; padding: 0 12px; min-height: 40px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface-2); color: var(--text); font: 600 13px var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; list-style: none; cursor: pointer; }
+.foot-bar .saved-menu > summary::after { content: none; }
+.where-menu > summary::-webkit-details-marker { display: none; }
+.where-menu > summary::after { content: '▾'; color: var(--cyan); font-size: 11px; }
+.foot-bar summary:hover, .foot-bar details[open] > summary { border-color: rgba(0, 209, 255, 0.55); background: var(--surface-3); }
+.foot-bar summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.where-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--muted); }
+.where-dot.online { border-color: var(--success); background: var(--success); }
+.foot-bar .saved-pop { left: 0; right: auto; }
+.saved-pop h4 { display: flex; align-items: baseline; gap: 8px; }
+.saved-pop h4 small { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--text); font: 500 12px var(--font-body); letter-spacing: 0; text-transform: none; }
+.where-pop { position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 6; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; background: var(--slate); border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55); }
+.where-pop h4 { margin: 0; color: var(--muted); font: 700 11px var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; }
+.where-pop .seg-switch { flex-direction: column; align-items: stretch; }
+.where-pop .seg-opt { padding: 9px 14px; font-size: 13px; text-align: left; white-space: nowrap; }
+.setup .foot-bar .go.spectate { flex: none; padding: 0 14px; font-size: 13px; letter-spacing: 0.06em; }
+.setup .foot-bar .go.primary { flex: 1 1 190px; min-width: 0; gap: 10px; padding: 13px 10px; font-size: 20px; white-space: nowrap; }
+.setup .foot-bar .go.primary .glyph { width: 20px; height: 20px; }
+/* A desktop window under 900 px tall (1280 × 720): the header in two lines, smaller mode tiles, the mode's line in its tooltips only, so the mode and what wins show without scrolling. */
 @media (max-height: 900px) {
-  .setup-head { padding: 10px 18px 9px; }
+  .setup-head { padding: 9px 14px 8px; }
   .setup-head small, .setup-blurb, .setup-head .inspired { display: none; }
   .setup-head h3 { font-size: 22px; }
-  .setup-preview .pic { width: 80px; }
-  .setup-preview .plan { width: 45px; }
-  .mode-line { display: none; }
+  .setup-preview .plan { width: 44px; top: 7px; }
+  .setup-title > h3 { margin-right: 150px; }
+  .setup-facts { margin-right: 56px; }
+  .setup-head .fit-chip { top: 8px; right: 66px; }
+  .setup-num .mode-chip { min-height: 62px; padding: 5px 3px; }
+  .setup-num .mode-chip .mode-icon { width: 22px; height: 22px; }
+  .setup-num .mode-pick.rows2 .mode-chip { min-height: 52px; }
+  .setup-tab { padding: 8px 6px; }
+}
+/* Narrower windows (the panel under its full width): the list's controls take two rows; the setup's tabs lose their icons, Save preset its words, the team count its name. */
+@media (max-width: 1500px) {
+  .map-bar { flex-wrap: wrap; }
+  .setup-tab .glyph { display: none; }
+  .team-count .row-label { display: none; }
+  .num-head .more-layouts { flex-basis: 96px; }
+  .foot-bar .saved-menu > summary > span { display: none; }
+  .setup .foot-bar .go.spectate { padding: 0 11px; }
+  .setup .foot-bar .go.primary { flex-basis: 150px; font-size: 18px; }
+}
+@media (max-width: 1250px) {
+  .setup-tab { font-size: 12px; letter-spacing: 0.03em; }
 }
 /* Narrow windows: the setup takes the whole width and the map is picked from its own list. */
 @media (max-width: 900px) {
-  .arcade { grid-template-columns: minmax(0, 1fr); }
-  .arcade .map-browse { display: none; }
+  #menu .screen.play { grid-template-columns: minmax(0, 1fr); }
+  .screen.play .map-browse { display: none; }
+  .screen.play .setup { grid-column: 1; grid-row: 2; }
   #arcade-map { display: block; }
   .setup-title h3, .setup-title > small { display: none; }
+  .menu-footer[data-screen='play'] #hint-filter { display: none; }
 }
-/* Little room (down to 640 × 360, a phone sideways): tighter screen, header and rows, the foot in one row; the setup body scrolls. */
+/* Little room (down to 640 × 360, a phone sideways): tighter screen, header, tabs and sections, small mode tiles; the setup body scrolls and the foot stays. */
 @media (max-height: 600px), (max-width: 700px) {
-  #menu .screen.play { padding: 8px 12px 50px; }
+  #menu .screen.play { padding: 8px 12px 50px; gap: 6px 10px; }
   .screen.play .screen-head h2 { font-size: 20px; }
-  .screen.play .arcade { margin-top: 6px; height: calc(100% - 30px); gap: 10px; }
-  .setup-head { padding: 6px 10px; gap: 10px; }
-  .setup-head h3 { font-size: 18px; }
-  /* The players line and the map list (narrow) side by side: the header in one row. */
-  .setup-title { display: flex; flex-wrap: wrap; align-items: center; column-gap: 14px; }
+  /* The header in one row: the name, the players line and the map list (narrow) side by side, the fit chip, the plan at its end. */
+  .setup-head { display: flex; align-items: center; gap: 8px; padding: 6px 52px 6px 10px; }
+  .setup-head h3 { font-size: 18px; margin: 0; }
+  .setup-title { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 14px; padding-right: 0; }
   .setup-facts, #arcade-map { margin: 0; }
+  #arcade-map { flex: 1 1 130px; min-width: 0; }
+  .setup-facts { font-size: 12px; }
+  .setup-facts > span { padding: 0 8px; }
   .setup-head small, .setup-head .inspired, .setup-blurb { display: none; }
-  .setup-preview .pic { width: 80px; }
-  .setup-preview .plan { width: 45px; }
+  .setup-preview .plan { width: 34px; right: 8px; top: 50%; transform: translateY(-50%); }
+  .setup-head .fit-chip { position: static; flex: none; }
   .setup-sub { font-size: 12px; }
-  .setup-body { padding: 0 10px 8px; }
-  .setup-body > section, .setup-body > .fit-details { padding: 7px 0; gap: 6px; }
-  .setup-body > .setup-sec { padding: 0; }
-  .mode-line { display: none; }
-  .setup-foot { flex-direction: row; flex-wrap: wrap; align-items: center; padding: 6px 10px 8px; gap: 6px 8px; }
-  .foot-row { flex: 0 1 auto; }
-  .go-row { flex: 1 1 250px; }
-  .foot-note { flex-basis: 100%; }
-  .setup .go { padding: 7px; font-size: 15px; }
-  .setup .go.spectate { padding: 7px 12px; font-size: 13px; }
-  .mode-pick { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 4px; }
-  .mode-chip { padding: 3px 7px; min-height: 30px; gap: 6px; }
-  .mode-chip b { font-size: 11px; letter-spacing: 0.02em; }
-  .mode-chip b.long { font-size: 9.5px; letter-spacing: 0; }
+  .setup-tabs { padding: 6px 10px 0; gap: 4px; }
+  .setup-tab { padding: 6px 4px; font-size: 11px; letter-spacing: 0.02em; }
+  .setup-tab .glyph { display: none; }
+  .setup-body { padding: 6px 10px; gap: 6px; }
+  .setup-pane { gap: 6px; }
+  .setup-num { padding: 6px 10px 8px; gap: 6px; }
+  .num-toggle { padding: 7px 10px; }
+  .num-body { padding: 0 10px 8px; }
+  .num-badge { width: 19px; height: 19px; font-size: 11px; }
+  .setup-body .num-head h4 { font-size: 12px; }
+  .num-head .mode-line, .setup-facts > .fact-weapons { display: none; }
+  .setup-num .mode-pick, html.touch .setup-num .mode-pick { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 4px; }
+  .setup-num .mode-pick .mode-chip, .setup-num .mode-pick.rows2 .mode-chip { flex-direction: row; justify-content: flex-start; gap: 6px; min-height: 32px; padding: 3px 7px; text-align: left; }
+  .setup-num .mode-pick .mode-chip .mode-icon, .setup-num .mode-pick.rows2 .mode-chip .mode-icon { width: 16px; height: 16px; margin: 0; }
+  .setup-num .mode-pick .mode-chip b, .setup-num .mode-pick.rows2 .mode-chip b { font-size: 12px; letter-spacing: 0.02em; }
+  .setup-num .mode-chip small { display: none; }
+  .setup-title > small, .setup-title > h3, .setup-title > .inspired, .setup-title > .setup-blurb, .setup-title > .setup-community { margin-right: 0; }
   /* What wins: a name beside its stepper, a row each. */
   .field { flex-direction: row; align-items: center; gap: 8px; }
-  .mode-chip .mode-icon { width: 16px; height: 16px; }
-  .size-chip { padding: 3px 8px; }
-  .size-chip small { font-size: 13px; }
+  .setup-num .size-chip { padding: 3px 8px; }
+  .setup-num .size-chip small { font-size: 13px; }
   .party-chip { padding: 5px 9px; }
   .party-chip small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sec-head { padding: 8px 2px; }
-  .setup-facts { font-size: 12px; }
   .setup .row { grid-template-columns: minmax(84px, 120px) minmax(0, 1fr); gap: 6px; font-size: 11px; }
-  .team-cards { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .team-editor.compact .team-cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .team-editor.compact .team-card { padding: 4px 8px 6px; gap: 3px; }
+  .team-editor.compact .team-card .stepper input { font-size: 16px; }
+  .team-editor.compact .team-card .stepper button { padding: 2px 10px; font-size: 14px; }
   .fit-item { grid-template-columns: minmax(0, 1fr) auto; }
   .fit-item .fit-topic { grid-column: 1 / -1; }
+  .setup-foot { padding: 6px 10px 8px; }
+  .foot-bar { gap: 6px; }
+  .foot-bar .saved-menu > summary, .where-menu > summary { min-height: 34px; padding: 0 9px; font-size: 12px; }
+  .setup .foot-bar .go.spectate { padding: 0 10px; font-size: 12px; }
+  .setup .foot-bar .go.primary { flex-basis: 150px; padding: 7px; font-size: 15px; }
+  .foot-note { font-size: 11px; }
+}
+/* The narrowest (640 × 360): the header keeps to one row (the caps are in the fit check's details). */
+@media (max-width: 700px) {
+  .setup-facts > .fact-caps { display: none; }
 }
 /* A phone has no bottom bar off the main menu: the setup takes that room too. */
 html.touch #menu .screen.play { padding-bottom: 10px; }

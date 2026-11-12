@@ -23,12 +23,13 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_odjju34caiz4dj4r",
-      "revision": 8,
-      "contentHash": "sha256:e58b56a498b47326fc843fa20c688641edb36bbc0eda7de7a21651b86ae7e160",
+      "versionId": "v_amj2h4toskm5rkpy",
+      "revision": 9,
+      "contentHash": "sha256:422beb41ea5a06186739b37971b855d0bc51acf29c388ce158d777b78c5d9e14",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T12:44:34.072Z"
-    }
+      "releasedAt": "2026-11-12T10:44:11.353Z"
+    },
+    "tier": "experimental"
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1867,7 +1868,7 @@
         71.88
       ],
       "kind": "prop",
-      "model": "kit.machine.cog",
+      "model": "prop.cog",
       "yaw": 0,
       "scale": 0.55,
       "solid": false,
@@ -2324,7 +2325,7 @@
         -75.56
       ],
       "kind": "prop",
-      "model": "kit.machine.cog",
+      "model": "prop.cog",
       "yaw": 0,
       "scale": 0.55,
       "solid": false,
@@ -4481,7 +4482,7 @@
         35.17
       ],
       "kind": "prop",
-      "model": "kit.machine.heavy",
+      "model": "prop.machine",
       "yaw": -2.24,
       "scale": 1.2,
       "solid": true,
@@ -4664,7 +4665,7 @@
         9.44
       ],
       "kind": "prop",
-      "model": "kit.machine.heavy",
+      "model": "prop.machine",
       "yaw": -1.309,
       "scale": 1.2,
       "solid": true,
@@ -5370,7 +5371,7 @@
         111.35
       ],
       "kind": "prop",
-      "model": "kit.machine.heavy",
+      "model": "prop.machine",
       "yaw": 0,
       "scale": 1.6,
       "solid": true,
@@ -5384,7 +5385,7 @@
         120.85
       ],
       "kind": "prop",
-      "model": "kit.machine.piston",
+      "model": "prop.piston",
       "yaw": 0,
       "scale": 1.4,
       "solid": true,
@@ -5398,7 +5399,7 @@
         120.35
       ],
       "kind": "prop",
-      "model": "kit.hopper.round",
+      "model": "prop.hopper",
       "yaw": 0,
       "scale": 1.3,
       "solid": true,
@@ -5413,7 +5414,7 @@
       ],
       "name": "Dump hopper",
       "kind": "prop",
-      "model": "kit.hopper.tall",
+      "model": "prop.hopper_tall",
       "yaw": 0,
       "scale": 1.6,
       "solid": true,
@@ -5427,7 +5428,7 @@
         121.35
       ],
       "kind": "prop",
-      "model": "kit.machine.lever",
+      "model": "prop.lever",
       "yaw": 3.142,
       "scale": 1,
       "solid": true,
@@ -6042,7 +6043,7 @@
         172.35
       ],
       "kind": "prop",
-      "model": "kit.machine.window",
+      "model": "prop.machine_window",
       "yaw": 0,
       "scale": 1.4,
       "solid": true,
@@ -6056,7 +6057,7 @@
         170.85
       ],
       "kind": "prop",
-      "model": "kit.hopper.round",
+      "model": "prop.hopper",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -12411,7 +12412,7 @@
         178
       ],
       "kind": "prop",
-      "model": "kit.hopper.tall",
+      "model": "prop.hopper_tall",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12425,7 +12426,7 @@
         182
       ],
       "kind": "prop",
-      "model": "kit.machine.heavy",
+      "model": "prop.machine",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13494,7 +13495,7 @@
         -6
       ],
       "kind": "prop",
-      "model": "kit.machine.heavy",
+      "model": "prop.machine",
       "yaw": 0,
       "scale": 1.6,
       "solid": true,
@@ -14412,7 +14413,7 @@
         -70
       ],
       "kind": "prop",
-      "model": "kit.machine.heavy",
+      "model": "prop.machine",
       "yaw": 2,
       "scale": 1.4,
       "solid": true,
@@ -14545,11 +14546,11 @@
     {
       "id": "flag_tide",
       "position": [
-        148.7,
-        -0.17,
-        139.25
+        30,
+        -48,
+        -40
       ],
-      "name": "Tide flag (workers camp)",
+      "name": "Tide flag (pit floor)",
       "kind": "flag",
       "yaw": 0,
       "team": "tide"
@@ -14557,11 +14558,11 @@
     {
       "id": "hill_maw",
       "position": [
-        -14,
-        -48,
-        -28
+        -39.5,
+        -24,
+        35
       ],
-      "name": "The Maw (pit floor)",
+      "name": "The Maw (north bench)",
       "kind": "hill",
       "radius": 14
     },
@@ -14988,353 +14989,353 @@
     {
       "id": "spawn_tide_001",
       "position": [
-        118,
-        0.05,
-        108
+        -6,
+        -47.95,
+        -10
       ],
       "kind": "spawn",
-      "yaw": -2.26213,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_002",
       "position": [
-        116.7,
-        -0.17,
-        115.25
+        -2.5,
+        -47.95,
+        -10
       ],
       "kind": "spawn",
-      "yaw": -2.33865,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_003",
       "position": [
-        119.3,
-        -0.17,
-        124.75
+        -6,
+        -47.95,
+        -13.5
       ],
       "kind": "spawn",
-      "yaw": -2.4053400000000003,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_004",
       "position": [
-        118,
-        0.05,
-        132
+        -2.5,
+        -47.95,
+        -13.5
       ],
       "kind": "spawn",
-      "yaw": -2.4634699999999996,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_005",
       "position": [
-        130,
-        0.05,
-        112
+        1,
+        -47.95,
+        -13.5
       ],
       "kind": "spawn",
-      "yaw": -2.20971,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_006",
       "position": [
-        131.3,
-        -0.11,
-        119.25
+        4.5,
+        -47.95,
+        -13.5
       ],
       "kind": "spawn",
-      "yaw": -2.27942,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_007",
       "position": [
-        130,
-        0.05,
-        128
+        -6,
+        -47.95,
+        -17
       ],
       "kind": "spawn",
-      "yaw": -2.3417,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_008",
       "position": [
-        130,
-        0.05,
-        136
+        -2.5,
+        -47.95,
+        -17
       ],
       "kind": "spawn",
-      "yaw": -2.39727,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_009",
       "position": [
-        142,
-        0.05,
-        108
+        1,
+        -47.95,
+        -17
       ],
       "kind": "spawn",
-      "yaw": -2.10039,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_010",
       "position": [
-        142,
-        0.05,
-        116
+        4.5,
+        -47.95,
+        -17
       ],
       "kind": "spawn",
-      "yaw": -2.1699699999999997,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_011",
       "position": [
-        142,
-        0.05,
-        124
+        8,
+        -47.95,
+        -17
       ],
       "kind": "spawn",
-      "yaw": -2.23353,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_012",
       "position": [
-        142,
-        0.05,
-        132
+        -6,
+        -47.95,
+        -20.5
       ],
       "kind": "spawn",
-      "yaw": -2.29135,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_013",
       "position": [
-        154,
-        0.05,
-        112
+        -2.5,
+        -47.95,
+        -20.5
       ],
       "kind": "spawn",
-      "yaw": -2.07609,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_014",
       "position": [
-        154.75,
-        0.02,
-        121.3
+        1,
+        -47.95,
+        -20.5
       ],
       "kind": "spawn",
-      "yaw": -2.1389,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_015",
       "position": [
-        154,
-        0.05,
-        128
+        4.5,
+        -47.95,
+        -20.5
       ],
       "kind": "spawn",
-      "yaw": -2.19706,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_016",
       "position": [
-        154,
-        0.05,
-        136
+        8,
+        -47.95,
+        -20.5
       ],
       "kind": "spawn",
-      "yaw": -2.25071,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_017",
       "position": [
-        166,
-        0.05,
-        108
+        11.5,
+        -47.95,
+        -20.5
       ],
       "kind": "spawn",
-      "yaw": -1.996,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_018",
       "position": [
-        164.7,
-        -0.17,
-        115.25
+        15,
+        -47.95,
+        -20.5
       ],
       "kind": "spawn",
-      "yaw": -2.0568299999999997,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_019",
       "position": [
-        167.3,
-        -0.17,
-        124.75
+        -2.5,
+        -47.95,
+        -24
       ],
       "kind": "spawn",
-      "yaw": -2.11399,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_020",
       "position": [
-        166,
-        0.05,
-        132
+        1,
+        -47.95,
+        -24
       ],
       "kind": "spawn",
-      "yaw": -2.16746,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_021",
       "position": [
-        178,
-        0.05,
-        112
+        4.5,
+        -47.95,
+        -24
       ],
       "kind": "spawn",
-      "yaw": -1.9858699999999998,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_022",
       "position": [
-        178,
-        0.05,
-        120
+        8,
+        -47.95,
+        -24
       ],
       "kind": "spawn",
-      "yaw": -2.0412,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_023",
       "position": [
-        178,
-        0.05,
-        128
+        15,
+        -47.95,
+        -24
       ],
       "kind": "spawn",
-      "yaw": -2.0935900000000003,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_024",
       "position": [
-        178,
-        0.05,
-        136
+        18.5,
+        -47.95,
+        -24
       ],
       "kind": "spawn",
-      "yaw": -2.1429899999999997,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_025",
       "position": [
-        174.25,
-        0.82,
-        63.9
+        22,
+        -47.95,
+        -24
       ],
       "kind": "spawn",
-      "yaw": -2.00615,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_026",
       "position": [
-        184,
-        0.58,
-        48
+        -2.5,
+        -47.95,
+        -27.5
       ],
       "kind": "spawn",
-      "yaw": -1.92479,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_027",
       "position": [
-        172,
-        0.05,
-        36
+        1,
+        -47.95,
+        -27.5
       ],
       "kind": "spawn",
-      "yaw": -1.88555,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_028",
       "position": [
-        184,
-        0.08,
-        24
+        4.5,
+        -47.95,
+        -27.5
       ],
       "kind": "spawn",
-      "yaw": -1.80552,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_029",
       "position": [
-        175,
-        5.45,
-        12
+        18.5,
+        -47.95,
+        -27.5
       ],
       "kind": "spawn",
-      "yaw": -1.75474,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_030",
       "position": [
-        184,
-        0.05,
-        0
+        22,
+        -47.95,
+        -27.5
       ],
       "kind": "spawn",
-      "yaw": -1.6790699999999998,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_031",
       "position": [
-        172,
-        0.05,
-        -12
+        25.5,
+        -47.95,
+        -27.5
       ],
       "kind": "spawn",
-      "yaw": -1.61727,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
       "id": "spawn_tide_032",
       "position": [
-        184,
-        0.05,
-        -24
+        -6,
+        -47.95,
+        -31
       ],
       "kind": "spawn",
-      "yaw": -1.5490599999999999,
+      "yaw": -1.571,
       "faction": "tide"
     },
     {
@@ -16198,9 +16199,9 @@
     {
       "id": "pickup_046",
       "position": [
-        -12,
-        -47.95,
-        -32
+        55.5,
+        -23.9,
+        22.8
       ],
       "kind": "pickup",
       "item": "core.weapon_rockets",
@@ -16209,9 +16210,9 @@
     {
       "id": "pickup_047",
       "position": [
-        -40,
-        -47.95,
-        -56
+        -93.7,
+        -23.9,
+        -39.5
       ],
       "kind": "pickup",
       "item": "core.weapon_railgun",
@@ -16220,9 +16221,9 @@
     {
       "id": "pickup_048",
       "position": [
-        6,
-        -47.95,
-        -46
+        9.4,
+        -31.9,
+        20
       ],
       "kind": "pickup",
       "item": "core.armor_large",
@@ -16231,9 +16232,9 @@
     {
       "id": "pickup_049",
       "position": [
-        -26,
-        -47.71,
-        -22
+        -57.9,
+        -31.9,
+        4.6
       ],
       "kind": "pickup",
       "item": "core.health_large",
@@ -16242,9 +16243,9 @@
     {
       "id": "pickup_050",
       "position": [
-        -2,
-        -47.95,
-        -61
+        64.4,
+        -31.9,
+        -32
       ],
       "kind": "pickup",
       "item": "core.ammo_explosive",
@@ -16399,91 +16400,91 @@
     {
       "id": "mount_buggy_003",
       "position": [
-        156,
-        0.02,
-        172
+        98.7,
+        -15.95,
+        -0.3
       ],
       "kind": "mount",
       "model": "buggy",
-      "yaw": 3.1415900000000003,
+      "yaw": -0.471,
       "faction": "tide",
       "respawnSeconds": null
     },
     {
       "id": "mount_buggy_004",
       "position": [
-        132,
-        0.02,
-        172
+        43,
+        -23.95,
+        -87
       ],
       "kind": "mount",
       "model": "buggy",
-      "yaw": 3.1415900000000003,
+      "yaw": 1.571,
       "faction": "tide",
       "respawnSeconds": null
     },
     {
       "id": "mount_gun_jeep_003",
       "position": [
-        144,
-        -0.3,
-        172
+        54,
+        -23.95,
+        -79
       ],
       "kind": "mount",
       "model": "gun_jeep",
-      "yaw": 3.1415900000000003,
+      "yaw": 0.803,
       "faction": "tide",
       "respawnSeconds": null
     },
     {
       "id": "mount_gun_jeep_004",
       "position": [
-        120,
-        0.05,
-        104
+        99.3,
+        -15.95,
+        -9.2
       ],
       "kind": "mount",
       "model": "gun_jeep",
-      "yaw": 3.1415900000000003,
+      "yaw": 0,
       "faction": "tide",
       "respawnSeconds": null
     },
     {
       "id": "mount_armored_rover_002",
       "position": [
-        170,
-        0.05,
-        104
+        36,
+        -23.95,
+        -86
       ],
       "kind": "mount",
       "model": "armored_rover",
-      "yaw": 3.1415900000000003,
+      "yaw": 1.571,
       "faction": "tide",
       "respawnSeconds": null
     },
     {
       "id": "mount_tank_002",
       "position": [
-        186,
-        0.05,
-        150
+        49,
+        -23.95,
+        -84
       ],
       "kind": "mount",
       "model": "tank",
-      "yaw": 3.1415900000000003,
+      "yaw": 0.803,
       "faction": "tide",
       "respawnSeconds": null
     },
     {
       "id": "mount_hover_bike_002",
       "position": [
-        104,
-        -0.3,
-        140
+        86.4,
+        -15.95,
+        20.5
       ],
       "kind": "mount",
       "model": "hover_bike",
-      "yaw": 3.1415900000000003,
+      "yaw": -0.628,
       "faction": "tide",
       "respawnSeconds": null
     },
@@ -16618,15 +16619,135 @@
     {
       "id": "mount_w41byxb03r",
       "position": [
-        145,
-        0,
-        104
+        91.1,
+        -15.95,
+        14
       ],
       "kind": "mount",
       "model": "troop_truck",
-      "yaw": 3.142,
+      "yaw": -0.628,
       "faction": "tide",
       "respawnSeconds": null
+    },
+    {
+      "id": "pad_sg29vmomlc",
+      "position": [
+        16,
+        -48,
+        -44
+      ],
+      "kind": "pad",
+      "yaw": 3.142,
+      "power": 34,
+      "push": 26
+    },
+    {
+      "id": "pad_za7oh8hth3",
+      "position": [
+        -30,
+        -48,
+        -26
+      ],
+      "kind": "pad",
+      "yaw": 0,
+      "power": 30,
+      "push": 34
+    },
+    {
+      "id": "pad_qse6400m0s",
+      "position": [
+        -54,
+        -48,
+        -32
+      ],
+      "kind": "pad",
+      "yaw": -0.785,
+      "power": 34,
+      "push": 34
+    },
+    {
+      "id": "pad_m6sjfqfbpv",
+      "position": [
+        18,
+        -48,
+        -32
+      ],
+      "kind": "pad",
+      "yaw": 0,
+      "power": 30,
+      "push": 34
+    },
+    {
+      "id": "pad_398d9ldia1",
+      "position": [
+        73,
+        -20.31,
+        -50
+      ],
+      "kind": "pad",
+      "yaw": 0.393,
+      "power": 32,
+      "push": 40
+    },
+    {
+      "id": "pad_gq7e7513kw",
+      "position": [
+        32,
+        -24,
+        -85.2
+      ],
+      "kind": "pad",
+      "yaw": 2.749,
+      "power": 34,
+      "push": 32
+    },
+    {
+      "id": "pad_ewku2765dl",
+      "position": [
+        -38,
+        -32,
+        22.7
+      ],
+      "kind": "pad",
+      "yaw": -0.785,
+      "power": 38,
+      "push": 40
+    },
+    {
+      "id": "pad_ill2zl6xak",
+      "position": [
+        -90.7,
+        -24,
+        6.8
+      ],
+      "kind": "pad",
+      "yaw": -0.785,
+      "power": 34,
+      "push": 40
+    },
+    {
+      "id": "pad_6ezjp39lp9",
+      "position": [
+        20,
+        -32,
+        14.7
+      ],
+      "kind": "pad",
+      "yaw": 0.393,
+      "power": 34,
+      "push": 32
+    },
+    {
+      "id": "pad_yvfaq6tdhh",
+      "position": [
+        96.5,
+        -16,
+        9.9
+      ],
+      "kind": "pad",
+      "yaw": 0.393,
+      "power": 30,
+      "push": 40
     }
   ],
   "factions": [],

@@ -211,6 +211,62 @@ export function section(o: { id: string; title: string; summary?: (Node | string
   return sec;
 }
 
+/** A small line icon (24 × 24, drawn in the text colour) from a path: section titles, the setup's tabs, the foot. */
+export function glyph(d: string, cls = 'glyph'): SVGSVGElement {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('class', cls);
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS(ns, 'path');
+  path.setAttribute('d', d);
+  svg.append(path);
+  return svg;
+}
+
+/** Our own drawings for the setup panel (frontEnd.ts fillSetup). */
+export const GLYPHS = {
+  gamepad: 'M7 8h10a4 4 0 0 1 4 4l-.6 4.2a2 2 0 0 1-3.5 1L15 15H9l-1.9 2.2a2 2 0 0 1-3.5-1L3 12a4 4 0 0 1 4-4Z M8 10.5v3 M6.5 12h3 M15.5 11h.01 M17.5 13h.01',
+  bot: 'M6 9h12v9H6Z M12 9V5 M12 4.5h.01 M9.5 13h.01 M14.5 13h.01 M10 16h4 M3.5 12v3 M20.5 12v3',
+  rules: 'M5 4h14v16H5Z M8.5 8.5h7 M8.5 12h7 M8.5 15.5h4',
+  layers: 'M12 4l9 4.5-9 4.5-9-4.5Z M3 12.5l9 4.5 9-4.5 M3 16.5l9 4.5 9-4.5',
+  gear: 'M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z M12 2.5v3 M12 18.5v3 M2.5 12h3 M18.5 12h3 M5.3 5.3l2.1 2.1 M16.6 16.6l2.1 2.1 M5.3 18.7l2.1-2.1 M16.6 7.4l2.1-2.1',
+  people: 'M9 7a3 3 0 1 0 0 .01 M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6 M16 5.5a2.5 2.5 0 1 1 0 5 M17 13c2.5.5 4 2.7 4 6',
+  sliders: 'M4 7h9 M17 7h3 M15 5v4 M4 12h3 M11 12h9 M9 10v4 M4 17h11 M19 17h1 M17 15v4',
+  save: 'M5 4h11l3 3v13H5Z M8 4v5h7V4 M8 20v-6h8v6',
+  play: 'M7 4.5v15l12-7.5Z',
+  swap: 'M4 9h15 M15.5 5.5 19 9l-3.5 3.5 M20 15H5 M8.5 11.5 5 15l3.5 3.5',
+} as const;
+
+/**
+ * A numbered section of the Match Setup tab (the owner's mock-up of 2026-11-11): a number badge, an icon and
+ * a title, anything else on the title's line (`extra`), then its settings.
+ */
+export function numbered(o: { n: number; id: string; title: string; icon: string; extra?: (HTMLElement | SVGElement)[] }, ...children: HTMLElement[]): HTMLElement {
+  return el('section', { class: 'setup-num', id: o.id }, el('div', { class: 'num-head' }, el('span', { class: 'num-badge', textContent: String(o.n) }), glyph(o.icon), el('h4', { textContent: o.title }), ...(o.extra ?? [])), ...children);
+}
+
+/**
+ * A numbered section that stays one row until opened (Variants, Party presets): the row says what it's set to
+ * (`summary`; lit when something is on) and opens to its settings. Closed, they stay in the page, hidden.
+ */
+export function numberedRow(o: { n: number; id: string; title: string; icon: string; note?: string; summary: string; lit?: boolean; open: boolean; onToggle: () => void }, ...children: HTMLElement[]): HTMLElement {
+  const head = el(
+    'button',
+    { type: 'button', class: 'num-head num-toggle', id: `${o.id}-head` },
+    el('span', { class: 'num-badge', textContent: String(o.n) }),
+    glyph(o.icon),
+    el('h4', { textContent: o.title }),
+    ...(o.note ? [el('small', { class: 'num-note', textContent: o.note })] : []),
+    el('span', { class: `num-sum${o.lit ? ' lit' : ''}`, id: `${o.id}-sum`, textContent: o.summary }),
+    el('span', { class: 'num-caret', textContent: '›' }),
+  );
+  head.setAttribute('aria-expanded', String(o.open));
+  head.setAttribute('aria-controls', `${o.id}-body`);
+  head.addEventListener('click', o.onToggle);
+  return el('section', { class: `setup-num fold-row${o.open ? ' open' : ''}`, id: o.id }, head, el('div', { class: 'num-body', id: `${o.id}-body`, hidden: !o.open }, ...children));
+}
+
 /**
  * The size presets worked out for this map, mode and device (Duel, Small, Map's pick, Big battle, Max), the one
  * the setup is on lit; changed from all of them, a Custom chip says so (with what it is: `custom`).
@@ -306,6 +362,13 @@ export interface TeamEditorOptions {
   even?: { on: boolean; onToggle: (on: boolean) => void };
   /** Why the last change stopped short (a limit), shown under the teams. */
   stopped?: string | null;
+  /**
+   * Match Setup's cards (the owner's mock-up of 2026-11-11): each team in its colour with its name, its size
+   * between − and + and a line saying who's on it; two teams have a switch-sides button between them; under the
+   * cards, one line with the total. `extra`: more controls for that line (Your team); `countTo`: where the
+   * number of teams goes instead of that line (the section's title line).
+   */
+  compact?: { extra?: HTMLElement[]; countTo?: HTMLElement };
   /** The new teams, and why the change stopped short of what was asked (null: it didn't). */
   onChange: (next: TeamEditorState, stopped: string | null) => void;
 }
@@ -366,6 +429,8 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
     el('span', { class: 'team-total', id: `${o.id}-team-total`, textContent: `${s.sizes.join('v')} · ${s.you !== null || !humans ? peopleAndBots(humans, total - humans) : `${humans} ${humans === 1 ? 'player' : 'players'} + ${total - humans} bots`}` }),
   );
   const cards = el('div', { class: 'team-cards', id: `${o.id}-team-cards` });
+  // Match Setup, two teams and you on one: a switch-sides button between the cards stands in for Join.
+  const swapSides = !!o.compact && n === 2 && s.you !== null && !!o.youLabel;
   s.sizes.forEach((size, i) => {
     const color = s.colors[i] ?? TEAM_PALETTE[i % TEAM_PALETTE.length]!;
     const card = el('div', { class: `team-card${s.you === i ? ' mine' : ''}` });
@@ -446,11 +511,34 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
       join.addEventListener('click', () => emit({ you: i }));
       roster.append(join);
     }
-    card.append(el('div', { class: 'team-top' }, swatch, name), el('div', { class: 'team-mid' }, who, sizeStep), roster);
+    if (o.compact) {
+      // "1 player (you) · 23 bots": who's on it, under its size. With more than two teams (or yours random), Join picks yours.
+      who.textContent = `${mine} ${mine === 1 ? 'player' : 'players'}${s.you === i ? ' (you)' : ''} · ${bots} ${bots === 1 ? 'bot' : 'bots'}`;
+      const join = roster.querySelector<HTMLElement>('.team-join');
+      card.append(el('div', { class: 'team-top' }, swatch, name, ...(join && !swapSides ? [join] : [])), sizeStep, who);
+    } else card.append(el('div', { class: 'team-top' }, swatch, name), el('div', { class: 'team-mid' }, who, sizeStep), roster);
     cards.append(card);
   });
   const note = o.stopped ? [el('p', { class: 'cap-note', id: `${o.id}-team-stopped`, role: 'status', textContent: o.stopped })] : [];
-  return el('div', { class: 'team-editor' }, head, cards, ...note);
+  if (!o.compact) return el('div', { class: 'team-editor' }, head, cards, ...note);
+  if (swapSides) {
+    // Two teams, you on one: one button between them puts you on the other (what Join does with more teams).
+    const other = s.you === 0 ? 1 : 0;
+    const swap = el('button', { type: 'button', class: 'team-swap', id: `${o.id}-team-swap`, title: `Switch sides: play on ${s.names[other] || `team ${other + 1}`}` }, glyph(GLYPHS.swap));
+    swap.setAttribute('aria-label', swap.title);
+    swap.addEventListener('click', () => emit({ you: other }));
+    cards.classList.add('two');
+    cards.insertBefore(swap, cards.lastElementChild);
+  }
+  // Under the cards, one line: the total ("Total: 8v8 · 16 combatants"), `extra` (Your team) and Even teams. How many
+  // teams goes where the caller wants it (the section's title line), else on this line.
+  const [label, countStep, ...rest] = [...head.children] as HTMLElement[];
+  const totalLine = rest.pop()!;
+  totalLine.textContent = `${s.sizes.join('v')} · ${total} combatants`;
+  const countBox = el('span', { class: 'team-count' }, label!, countStep!);
+  if (o.compact.countTo) o.compact.countTo.replaceChildren(countBox);
+  const foot = el('div', { class: 'team-foot' }, el('span', { class: 'team-sum', id: `${o.id}-team-sum` }, 'Total: ', totalLine), ...(o.compact.countTo ? [] : [countBox]), ...(o.compact.extra ?? []), ...rest);
+  return el('div', { class: 'team-editor compact' }, cards, foot, ...note);
 }
 
 /** A labelled on/off switch (a checkbox drawn as a switch), its tooltip saying what it does. */
