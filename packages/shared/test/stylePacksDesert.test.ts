@@ -27,7 +27,7 @@ describe('Style Pack 09 Desert City (in Sands of Egypt\'s place)', () => {
     expect(own).toBeGreaterThanOrEqual(25);
     expect(own).toBeLessThanOrEqual(40);
     const domeKit = KIT_PROPS.filter((p) => p.id.startsWith('kit.dome.')).map((p) => p.id);
-    expect(domeKit.length).toBe(29);
+    expect(domeKit.length).toBe(31);
     expect(pack.props.filter((p) => p.startsWith('kit.dome.'))).toEqual(domeKit);
     for (const id of domeKit) expect(getProp(id)?.category, id).toBe('Desert City');
     for (const p of pack.props) expect(getProp(p), p).toBeDefined();

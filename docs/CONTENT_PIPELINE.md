@@ -797,7 +797,7 @@ barrels and boxes first; fences and walls, then containers, come next.
 #### The dome kit
 
 Desert City domes built from parts, from the owner's reference sheet (2026-11-12): `tools/content/kit/dome.mjs`,
-`content/kitprops/dome.json`, 29 families `kit.dome.*` in the Desert City palette category and Style Pack. Our own
+`content/kitprops/dome.json`, 31 families `kit.dome.*` in the Desert City palette category and Style Pack. Our own
 geometry; nothing glows or blinks (every look is paint).
 
 - **One axis, one drum.** Every part's origin is the dome's centre axis at the foot of the drum, and a part is drawn
@@ -821,6 +821,10 @@ geometry; nothing glows or blinks (every look is paint).
   cells: doorways 2 m wide; the twelve-segment one has a blind arch between each two doorways), and the ruins
   `ruin_8`, `ruin_12` and `hall_ruin_12` (panels broken off or gone, no cap). Ruins are families of their own
   because their collision differs (a family has one collision).
+- **Closed domes** for roofs, `closed_8` and `closed_12`: the one-cell whole dome (same size, origin and six looks) on a
+  solid drum whose eight arches are blind, with no inside; collision is 28 boxes that are solid all through (the drum
+  five crossed boxes within 0.12 m outside and 0.21 m inside the wall's face, the dome stepped in six such layers of
+  four or three with their corners on the shell, the cap's foot): nothing to walk or shoot into, as the old `dc_dome` props were. 1260 / 1290 triangles (364 / 56 further off).
 - **Looks** (variants): stone, sandstone, plaster, copper (verdigris with bare patches), blue tile, green tile; on the
   masonry parts the last three change the frieze under the cornice, the trims and the cap. The ruins have four
   (stone, sandstone, plaster, blue tile).

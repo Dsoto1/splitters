@@ -11,7 +11,8 @@
 // need not fill it. Whole domes and arch transitions fill theirs like any other piece.
 //
 // Angles are measured from +z towards +x. Collision is boxes (a generator's `boxes`): rings of small boxes round
-// a hollow middle, so a player stands inside under the dome; doorways, windows and missing panels stay open.
+// a hollow middle, so a player stands inside under the dome; doorways, windows and missing panels stay open. The
+// closed domes (`kit.dome.closed_*`: roof domes on a blind drum) are the exception: solid all through, a few boxes.
 // Nothing glows or blinks: every look is paint (CLAUDE.md, "Accessibility").
 
 import { noise3 } from '../env/noise.mjs';
@@ -134,6 +135,27 @@ function arcBoxes(out, r0, r1, y0, y1, a0, a1, step, { jamb0 = false, jamb1 = fa
     if (jamb1 && s === n - 1) while (past(b, a1, 1) > 0.03 && s1 > s0 + DEG) b = ((s1 -= 0.25 * DEG), make());
     out.push(b);
   }
+}
+
+/**
+ * A closed dome's collision (`kit.dome.closed_*`): solid all through, no hollow middle. Each layer is a few boxes
+ * crossed into a rough round (their angles chosen so the notches between them are shallowest). The drum is one
+ * layer of five whose corners stand 0.12 m off the wall, inside the plinth's and the cornice's reach, so the notches
+ * are no more than 0.21 m into it; the dome is stepped in six layers (four boxes each, three in the small upper
+ * ones) with their corners on the shell, so a shot never stops in thin air over it and a player on it is not
+ * floating; the cap's foot and cone on top. 28 boxes.
+ */
+const SOLID_ANGLES = { 3: [30, 45, 60], 4: [26.5, 39.5, 50.5, 63.5], 5: [23.5, 35, 45, 55, 66.5] };
+function solidBoxes(D) {
+  const out = [];
+  const layer = (r, y0, y1, n) => {
+    for (const d of SOLID_ANGLES[n]) out.push([-r * Math.sin(d * DEG), y0, -r * Math.cos(d * DEG), r * Math.sin(d * DEG), y1, r * Math.cos(d * DEG)]);
+  };
+  layer(D.wallR + D.lip * 0.6, 0, D.drumH, 5);
+  const rows = [0, 15, 30, 45, 58, 70, 82].map((d) => d * DEG);
+  for (let j = 0; j + 1 < rows.length; j++) layer(D.shellR * Math.cos(rows[j + 1]), D.drumH + D.rise * Math.sin(rows[j]), D.drumH + D.rise * Math.sin(rows[j + 1]), j < 3 ? 4 : 3);
+  for (const [k, top] of [[0.6, 0.18], [0.4, 0.42]]) out.push([-D.capR * k, D.shellTop, -D.capR * k, D.capR * k, D.capY + D.capH * top, D.capR * k]);
+  return out;
 }
 
 /** Boxes round a piece of the shell: between the rows `f0` and `f1` (radians) and the angles `a0` and `a1`. */
@@ -272,7 +294,7 @@ function panelCols(D, a0, a1, level, window) {
  * a window (`windows` lists them) or broken off at a row (`breaks`: { panel: row }; rows 0, 3, 4 or 5 of level 0).
  * Returns its collision boxes.
  */
-function panels(m, D, P, n, from, to, level, { windows = [], breaks = {}, wrap = false, crown = true } = {}) {
+function panels(m, D, P, n, from, to, level, { windows = [], breaks = {}, wrap = false, crown = true, inner = true } = {}) {
   const span = (Math.PI * 2) / n;
   const anyWindow = windows.length > 0;
   const rows = (level === 1 && anyWindow ? ROWS_WINDOW_1 : ROWS[level]).map((d) => d * DEG);
@@ -316,7 +338,7 @@ function panels(m, D, P, n, from, to, level, { windows = [], breaks = {}, wrap =
   const first = [];
   owner.forEach((p, i) => (first[p] ??= i));
   const group = wrap ? (i) => [first[owner[i]], first[owner[i]] + local[i][1] - 1] : null;
-  const sh = shell(m, D, P, cols, rows, kindOf, { wrap, sides: !wrap, inner: level < 2, group, crown });
+  const sh = shell(m, D, P, cols, rows, kindOf, { wrap, sides: !wrap, inner: inner && level < 2, group, crown });
   const style = level > 0 ? 'strip' : wrap ? 'ridge' : 'box';
   if (level < 2) {
     const nc = cols.length - 1;
@@ -367,9 +389,9 @@ function cap(m, D, P, level) {
  * One bay of the drum, centred on angle `c`, `half` wide each side: 'arch' (a doorway to the floor), 'window' or
  * 'solid' (a blind arch sunk in paint). `ends`: [first, last] closes that end (a segment's own). Level 0 has the
  * arch's curve and its frame; level 1 a flat head, no frame and no frieze. `lean`: a whole dome's (one face for the
- * wall's top).
+ * wall's top). `inner` false: no inside faces (a closed dome's drum: nobody sees in).
  */
-function bay(m, D, P, c, half, kind, level, { ends = [false, false], frames = true, lean = false } = {}) {
+function bay(m, D, P, c, half, kind, level, { ends = [false, false], frames = true, lean = false, inner = true } = {}) {
   const win = kind === 'window';
   const hw = win ? D.winHalf : D.doorHalf;
   const sill = win ? D.winSill : 0;
@@ -392,7 +414,7 @@ function bay(m, D, P, c, half, kind, level, { ends = [false, false], frames = tr
     // Level 1 leaves the frieze and the wall's top out.
     quadN(m, pt(a0, ro, 0), pt(a1, ro, 0), pt(a1, ro, level ? H : ly), pt(a0, ro, level ? H : ly), o, P.wall);
     if (!level) quadN(m, pt(a0, ro, ly), pt(a1, ro, ly), pt(a1, ro, H), pt(a0, ro, H), o, fz);
-    quadN(m, pt(a0, ri, 0), pt(a1, ri, 0), pt(a1, ri, H), pt(a0, ri, H), neg(o), P.inside);
+    if (inner) quadN(m, pt(a0, ri, 0), pt(a1, ri, 0), pt(a1, ri, H), pt(a0, ri, H), neg(o), P.inside);
     if (!lean && !level) quadN(m, pt(a0, ro, H), pt(a1, ro, H), pt(a1, ri, H), pt(a0, ri, H), up, P.trim);
   }
   // The wall's top: under a whole dome's cornice and shell, one face a bay is enough.
@@ -410,7 +432,7 @@ function bay(m, D, P, c, half, kind, level, { ends = [false, false], frames = tr
   const jambTop = level === 0 ? spring : apex - 0.1 * D.k;
   if (kind === 'solid') {
     quadN(m, ch(-1, 0, ro), ch(1, 0, ro), ch(1, oTop, ro), ch(-1, oTop, ro), out, P.wall);
-    quadN(m, ch(-1, 0, ri), ch(1, 0, ri), ch(1, H, ri), ch(-1, H, ri), inn, P.inside);
+    if (inner) quadN(m, ch(-1, 0, ri), ch(1, 0, ri), ch(1, H, ri), ch(-1, H, ri), inn, P.inside);
     if (level === 0) {
       // A blind arch: paint a hair off the wall, the frame round it.
       const line = [[-1, 0.5], ...arc, [1, 0.5]];
@@ -456,10 +478,10 @@ function bay(m, D, P, c, half, kind, level, { ends = [false, false], frames = tr
 }
 
 /** The drum's bays from `from` to `to` (bay b is centred on (b + ½) × 360° / bays), their kinds by `kindOf(b)`. */
-function drum(m, D, P, from, to, kindOf, level, { whole = false, frames = true } = {}) {
+function drum(m, D, P, from, to, kindOf, level, { whole = false, frames = true, inner = true } = {}) {
   const span = (Math.PI * 2) / D.bays;
   const boxes = [];
-  for (let b = from; b < to; b++) boxes.push(...bay(m, D, P, (b + 0.5) * span, span / 2, kindOf(b), level, { ends: [!whole && b === from, !whole && b === to - 1], frames, lean: whole }));
+  for (let b = from; b < to; b++) boxes.push(...bay(m, D, P, (b + 0.5) * span, span / 2, kindOf(b), level, { ends: [!whole && b === from, !whole && b === to - 1], frames, lean: whole, inner }));
   return boxes;
 }
 
@@ -558,7 +580,8 @@ export function domeTrimMesh(seed, size, g, look, level) {
 /**
  * A whole dome on its drum (`kit.dome.whole_*`, `kit.dome.hall_*`, and the ruins): `segments`, the drum's `bays`
  * all doorways (`blind` 2: every other bay a blind arch instead), the plinth and the cornice (`plainCornice`: without its lower moulding), the cap. A ruin: `breaks` ("panel:row, …": those panels broken off at
- * that row; 0 is the whole panel), `nocap`.
+ * that row; 0 is the whole panel), `nocap`. `closed` 1 (`kit.dome.closed_*`): a roof dome nobody enters: every bay
+ * a blind arch, no inside faces, and collision that is solid all through (`solidBoxes`).
  */
 export function domeMesh(seed, size, g, look, level) {
   const m = new Mesh();
@@ -572,12 +595,14 @@ export function domeMesh(seed, size, g, look, level) {
   }
   D.archSegs = g.archSegs ?? 4;
   const breaks = parseBreaks(g.breaks);
-  const boxes = drum(m, D, P, 0, D.bays, (b) => (g.blind && b % g.blind ? 'solid' : 'arch'), level, { whole: true, frames: g.frames !== 0 });
+  const closed = !!g.closed;
+  let boxes = drum(m, D, P, 0, D.bays, (b) => (closed || (g.blind && b % g.blind) ? 'solid' : 'arch'), level, { whole: true, frames: g.frames !== 0, inner: !closed });
   ringTrim(m, D, P, 'bottom', level);
   ringTrim(m, D, P, 'top', level, !!g.plainCornice);
   // The crown's rim is under the cap (a ruin has neither).
-  boxes.push(...panels(m, D, P, g.segments, 0, g.segments, level, { breaks, wrap: true, crown: !!g.nocap }));
+  boxes.push(...panels(m, D, P, g.segments, 0, g.segments, level, { breaks, wrap: true, crown: !!g.nocap, inner: !closed }));
   if (!g.nocap) boxes.push(...cap(m, D, P, level));
+  if (closed) boxes = solidBoxes(D);
   if (level === 0) m.boxes = boxes;
   return m;
 }

@@ -3,7 +3,7 @@
 // lighter level on no heavier than the prop an alias replaces; every level of every variant stays inside its family's
 // box and level 0 fills it (the box is its collision, unless the family has none: a traffic cone; a part of the dome
 // kit, drawn where it stands on its drum, stays inside its box and need not fill it); the dome kit's parts share one
-// axis, are hollow and keep their openings open; variants of a family are different models; the aliases keep the
+// axis, are hollow and keep their openings open (the closed domes are solid all through instead); variants of a family are different models; the aliases keep the
 // retired props' sizes; and nothing in it draws from Math.random.
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -21,7 +21,7 @@ describe('kit-prop generator', () => {
 
   it('the content is valid', () => {
     expect(problems).toEqual([]);
-    expect(families.map((f) => f.id).sort()).toEqual(['kit.appliance.freezer_chest', 'kit.appliance.freezer_upright', 'kit.appliance.fridge', 'kit.appliance.stove', 'kit.appliance.washer', 'kit.barrier.concrete', 'kit.bed.bunk', 'kit.bed.double', 'kit.bin.waste', 'kit.bookcase.tall', 'kit.bookcase.wide', 'kit.box.carton', 'kit.cabinet.kitchen', 'kit.cabinet.media', 'kit.console.panel', 'kit.container.shipping', 'kit.conveyor.belt', 'kit.crate.bin', 'kit.crate.factory', 'kit.crate.factory_long', 'kit.crate.framed', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.dome.arch_2way', 'kit.dome.arch_3way', 'kit.dome.arch_4way', 'kit.dome.cap', 'kit.dome.drum_arch', 'kit.dome.drum_solid', 'kit.dome.drum_window', 'kit.dome.hall_12', 'kit.dome.hall_8', 'kit.dome.hall_ruin_12', 'kit.dome.panel_12', 'kit.dome.panel_12_broken', 'kit.dome.panel_12_window', 'kit.dome.panel_4', 'kit.dome.panel_4_broken', 'kit.dome.panel_4_window', 'kit.dome.panel_6', 'kit.dome.panel_6_broken', 'kit.dome.panel_6_window', 'kit.dome.panel_8', 'kit.dome.panel_8_broken', 'kit.dome.panel_8_window', 'kit.dome.ruin_12', 'kit.dome.ruin_8', 'kit.dome.trim_bottom', 'kit.dome.trim_middle', 'kit.dome.trim_top', 'kit.dome.whole_12', 'kit.dome.whole_8', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.fence.board', 'kit.fence.iron', 'kit.fence.iron_broken', 'kit.fence.palisade', 'kit.fence.rail', 'kit.fence.town', 'kit.hopper.round', 'kit.hopper.tall', 'kit.machine.cog', 'kit.machine.heavy', 'kit.machine.lever', 'kit.machine.piston', 'kit.machine.scanner', 'kit.machine.window', 'kit.pipe.coolant', 'kit.pipe.glass', 'kit.pipe.junction', 'kit.pipe.riser', 'kit.pipe.valve', 'kit.seat.bench', 'kit.seat.chair', 'kit.seat.chair_cushion', 'kit.seat.office', 'kit.shelf.end', 'kit.shelf.gondola', 'kit.shelf.gondola_snack', 'kit.shop.bakery_stand', 'kit.shop.bottle_return', 'kit.shop.cart', 'kit.shop.checkout', 'kit.shop.produce_stand', 'kit.sign.cone', 'kit.sign.cone_slim', 'kit.sign.warning', 'kit.sofa.armchair', 'kit.sofa.corner', 'kit.sofa.two_seat', 'kit.stall.counter', 'kit.stall.market', 'kit.table.console', 'kit.table.desk', 'kit.table.dining', 'kit.table.round', 'kit.table.workbench', 'kit.tool.anvil', 'kit.wall.stone', 'kit.wall.stone_broken']);
+    expect(families.map((f) => f.id).sort()).toEqual(['kit.appliance.freezer_chest', 'kit.appliance.freezer_upright', 'kit.appliance.fridge', 'kit.appliance.stove', 'kit.appliance.washer', 'kit.barrier.concrete', 'kit.bed.bunk', 'kit.bed.double', 'kit.bin.waste', 'kit.bookcase.tall', 'kit.bookcase.wide', 'kit.box.carton', 'kit.cabinet.kitchen', 'kit.cabinet.media', 'kit.console.panel', 'kit.container.shipping', 'kit.conveyor.belt', 'kit.crate.bin', 'kit.crate.factory', 'kit.crate.factory_long', 'kit.crate.framed', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.dome.arch_2way', 'kit.dome.arch_3way', 'kit.dome.arch_4way', 'kit.dome.cap', 'kit.dome.closed_12', 'kit.dome.closed_8', 'kit.dome.drum_arch', 'kit.dome.drum_solid', 'kit.dome.drum_window', 'kit.dome.hall_12', 'kit.dome.hall_8', 'kit.dome.hall_ruin_12', 'kit.dome.panel_12', 'kit.dome.panel_12_broken', 'kit.dome.panel_12_window', 'kit.dome.panel_4', 'kit.dome.panel_4_broken', 'kit.dome.panel_4_window', 'kit.dome.panel_6', 'kit.dome.panel_6_broken', 'kit.dome.panel_6_window', 'kit.dome.panel_8', 'kit.dome.panel_8_broken', 'kit.dome.panel_8_window', 'kit.dome.ruin_12', 'kit.dome.ruin_8', 'kit.dome.trim_bottom', 'kit.dome.trim_middle', 'kit.dome.trim_top', 'kit.dome.whole_12', 'kit.dome.whole_8', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.fence.board', 'kit.fence.iron', 'kit.fence.iron_broken', 'kit.fence.palisade', 'kit.fence.rail', 'kit.fence.town', 'kit.hopper.round', 'kit.hopper.tall', 'kit.machine.cog', 'kit.machine.heavy', 'kit.machine.lever', 'kit.machine.piston', 'kit.machine.scanner', 'kit.machine.window', 'kit.pipe.coolant', 'kit.pipe.glass', 'kit.pipe.junction', 'kit.pipe.riser', 'kit.pipe.valve', 'kit.seat.bench', 'kit.seat.chair', 'kit.seat.chair_cushion', 'kit.seat.office', 'kit.shelf.end', 'kit.shelf.gondola', 'kit.shelf.gondola_snack', 'kit.shop.bakery_stand', 'kit.shop.bottle_return', 'kit.shop.cart', 'kit.shop.checkout', 'kit.shop.produce_stand', 'kit.sign.cone', 'kit.sign.cone_slim', 'kit.sign.warning', 'kit.sofa.armchair', 'kit.sofa.corner', 'kit.sofa.two_seat', 'kit.stall.counter', 'kit.stall.market', 'kit.table.console', 'kit.table.desk', 'kit.table.dining', 'kit.table.round', 'kit.table.workbench', 'kit.tool.anvil', 'kit.wall.stone', 'kit.wall.stone_broken']);
   });
 
   it('builds byte-identical output twice, the same as is shipped and locked', async () => {
@@ -67,7 +67,7 @@ describe('kit-prop generator', () => {
     const dome = (name) => families.find((f) => f.id === `kit.dome.${name}`);
     const mesh = (f, level = 0) => KINDS[f.generator.kind](f.variants[0].seed, f.size, f.generator, f.variants[0].look, level);
     const parts = families.filter((f) => f.type === 'dome' && f.bounds === 'within');
-    expect(parts.map((f) => f.id)).toEqual(families.filter((f) => f.type === 'dome' && !/\.(arch_|whole_|hall_|ruin_)/.test(f.id)).map((f) => f.id));
+    expect(parts.map((f) => f.id)).toEqual(families.filter((f) => f.type === 'dome' && !/\.(arch_|whole_|closed_|hall_|ruin_)/.test(f.id)).map((f) => f.id));
     // Parts collide as their own boxes, or (the trims) not at all; none is breakable.
     for (const f of parts) expect(!!mesh(f).boxes?.length, f.id).toBe(f.collide !== 'none');
     // The whole dome's box holds every part where it stands: no part reaches outside the dome it belongs to.
@@ -129,6 +129,40 @@ describe('kit-prop generator', () => {
     };
     expect(sky('ruin_8')).toBe(true);
     expect(sky('whole_8')).toBe(false);
+    // The closed domes (roof domes) are not hollow: solid at the centre and all the way out along every bay and pier,
+    // no doorway to walk or shoot into; the same size and looks as the whole dome, in a few boxes that stay inside
+    // the visible shape (the drum's within its trims' reach; a shot never stops in thin air over the dome) and close to it.
+    for (const n of [8, 12]) {
+      const name = `closed_${n}`;
+      const f = families.find((x) => x.id === `kit.dome.${name}`);
+      const whole = families.find((x) => x.id === `kit.dome.whole_${n}`);
+      const b = boxes(name);
+      const D = domeDims(f.generator);
+      expect(f.size).toEqual(whole.size);
+      expect(f.variants.map((v) => [v.index, v.name, v.look])).toEqual(whole.variants.map((v) => [v.index, v.name, v.look]));
+      expect(b.length, name).toBeLessThanOrEqual(30);
+      expect(hit(b, 0, 1, 0), name).toBe(true);
+      for (const y of [0.05, 0.9, 1.75, D.drumH + 1, D.shellTop - 0.05]) expect(hit(b, 0, y, 0), `${name} centre at ${y}`).toBe(true);
+      for (let deg = 0; deg < 360; deg += 7.5) {
+        for (let r = 0; r <= D.wallR - D.wallT - 0.02; r += 0.05) for (const y of [0.05, 0.9, 1.75]) expect(hit(b, at(deg, r)[0], y, at(deg, r)[1]), `${name} at ${deg}°, ${r}`).toBe(true);
+        // (Solid to where the wall's inner face would be, at the least.) A shot stops within 0.22 m of the wall's face,
+        // never outside the trims' reach.
+        expect(hit(b, at(deg, D.wallR - 0.22)[0], 0.9, at(deg, D.wallR - 0.22)[1]), `${name} at ${deg}°`).toBe(true);
+        expect(hit(b, at(deg, D.R)[0], 0.9, at(deg, D.R)[1]), `${name} at ${deg}°`).toBe(false);
+        expect(hit(b, at(deg, D.wallR - D.wallT)[0], 0.9, at(deg, D.wallR - D.wallT)[1], 0.4), `${name} at ${deg}°`).toBe(true);
+      }
+      // Every box is inside the drum's wall or the shell's outside, and the shell has collision close under it.
+      for (const q of b) for (const x of [q[0], q[3]]) for (const z of [q[2], q[5]]) {
+        const r = Math.hypot(x, z);
+        const limit = q[4] <= D.drumH + 1e-6 ? D.R - 0.05 : q[1] >= D.shellTop - 1e-6 ? D.capR : D.shellR * Math.sqrt(Math.max(0, 1 - ((q[4] - D.drumH) / D.rise) ** 2));
+        expect(r, name).toBeLessThanOrEqual(limit + 0.001);
+      }
+      for (let fdeg = 5; fdeg <= 80; fdeg += 5) for (let deg = 0; deg < 360; deg += 15) {
+        const fr = (fdeg * Math.PI) / 180;
+        const [x, z] = at(deg, (D.shellR - 0.75) * Math.cos(fr));
+        expect(hit(b, x, D.drumH + (D.rise - 0.75) * Math.sin(fr), z), `${name} shell at ${fdeg}°, ${deg}°`).toBe(true);
+      }
+    }
     // The drum's quarters: doorways a player walks through, windows a shot passes (a player does not), a solid wall.
     for (const [kind, walk, shoot] of [['arch', true, true], ['window', false, true], ['solid', false, false]]) {
       const b = boxes(`drum_${kind}`);
