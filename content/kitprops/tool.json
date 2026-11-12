@@ -1,0 +1,106 @@
+{
+  "$comment": "Workshop tools (tools/content/kit/yard.mjs): the anvil on its timber block, the size of the Kenney piece it replaces, colliding as four boxes: two sleepers, the block on them, the anvil; open between the sleepers and beside the anvil.",
+  "type": "tool",
+  "props": [
+    {
+      "id": "kit.tool.anvil",
+      "displayName": "Anvil",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: an anvil stapled to a timber block on two sleepers, a horn out to +x and a heel out to −x, iron straps round the block, a hammer or tongs left on it, the size of the Kenney anvil on its bench (0.769 × 0.8 × 0.704 m); collides as four boxes, as that did: open between the sleepers and beside the anvil; plays as metal (that piece was concrete by the guess)."
+      },
+      "size": [
+        0.769,
+        0.8,
+        0.704
+      ],
+      "surface": "metal",
+      "detail": "wood",
+      "generator": {
+        "kind": "anvil",
+        "baulks": 3,
+        "straps": 2,
+        "horn": "round",
+        "kit": "hammer"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 16
+        },
+        {
+          "distance": 45
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "iron",
+          "seed": 9951,
+          "look": {
+            "iron": "#3a3d42",
+            "face": "#8b9094",
+            "wood": "#7a5a3a",
+            "strap": "#2a2d31",
+            "tool": "#9a7444",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "rust",
+          "seed": 9952,
+          "set": {
+            "kit": "none",
+            "straps": 1,
+            "baulks": 2
+          },
+          "look": {
+            "iron": "#5e4334",
+            "face": "#84705e",
+            "wood": "#6f6a5e",
+            "strap": "#5a3a28",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 2,
+          "name": "blued",
+          "seed": 9953,
+          "set": {
+            "kit": "tongs",
+            "horn": "square",
+            "baulks": 4
+          },
+          "look": {
+            "iron": "#2c3540",
+            "face": "#9aa3ad",
+            "wood": "#4a3524",
+            "strap": "#1e2124",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "worn",
+          "seed": 9954,
+          "set": {
+            "straps": 0,
+            "baulks": 1
+          },
+          "look": {
+            "iron": "#4a4d50",
+            "face": "#b4b8ba",
+            "wood": "#a8875a",
+            "strap": "#3a3d42",
+            "tool": "#5a3f2a",
+            "grime": 0.35
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_snj2ivjohajuozh5",
-      "versionId": "v_eg66nkzpvhe6ddw2",
-      "revision": 6,
-      "contentHash": "sha256:b0399c135ba9044a74736591024f4136ada7145d1ea3968332490c376d2e7b8b",
+      "versionId": "v_rbehg5q2pg5xlirz",
+      "revision": 7,
+      "contentHash": "sha256:219beda32953df6f4f6d004979b1b0baff3871192ba74f5e5872da2ab9d3f238",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:04:45.770Z"
+      "releasedAt": "2026-11-12T12:21:32.829Z"
     }
   },
   "classicStructure": {
@@ -11065,7 +11065,7 @@
         -88.8
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -11079,7 +11079,7 @@
         -88.8
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -11093,7 +11093,7 @@
         -88.8
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -11107,7 +11107,7 @@
         -88.8
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -11121,7 +11121,7 @@
         -88.8
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -11135,7 +11135,7 @@
         -88.8
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -11149,7 +11149,7 @@
         -88.8
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -11163,7 +11163,7 @@
         -88.8
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -11177,7 +11177,7 @@
         -88.8
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -15513,7 +15513,7 @@
         -76.2
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -15778,7 +15778,7 @@
         -76.2
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -16043,7 +16043,7 @@
         -76.2
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -16308,7 +16308,7 @@
         -76.2
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -16573,7 +16573,7 @@
         -76.2
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -16838,7 +16838,7 @@
         -76.2
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -17103,7 +17103,7 @@
         -76.2
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -17368,7 +17368,7 @@
         -76.2
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -17633,7 +17633,7 @@
         -76.2
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -17898,7 +17898,7 @@
         -76.2
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,

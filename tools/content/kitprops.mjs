@@ -7,7 +7,10 @@
 // Reads content/kitprops.json (generator version, pack, budgets, aliases) and content/kitprops/<type>.json (families:
 // id `kit.<type>.<name>`). A family is one catalogue prop: its size, collision (the box: every family fills its bounds),
 // surface, breakable data and palette category; its variants share all of that and differ in structure (their seed
-// and `set` settings) and look. Each variant is kit/<type>.<name>.<variant>.glb with its levels of detail. Writes
+// and `set` settings) and look; a family that replaces a prop nothing collided with says `collide: "none"` (a traffic
+// cone). A part of a larger build drawn where it belongs in it says `bounds: "within"` (the dome kit: a panel stands
+// up on its drum, round the dome's axis): it stays inside its size and need not fill it, and it collides as its own
+// boxes or not at all. Each variant is kit/<type>.<name>.<variant>.glb with its levels of detail. Writes
 // content/kitprops.lock.json (sha, bytes, triangles per level, generator and asset versions) and
 // packages/shared/src/content/kitProps.generated.ts (the families as PropDefinitions, their variants' files, the aliases).
 // Deterministic: only seeded random numbers (env/rng.mjs), vertex data rounded before writing.
@@ -34,6 +37,10 @@ import { applianceMesh, cabinetMesh, freezerMesh } from './kit/cabinet.mjs';
 import { conveyorMesh, signMesh, yokeCrateMesh } from './kit/factory.mjs';
 import { bakeryMesh, bottleReturnMesh, cartMesh, checkoutMesh, chestFreezerMesh, produceMesh } from './kit/market.mjs';
 import { consoleMesh, valveMesh } from './kit/plant.mjs';
+import { cogMesh, hopperMesh, leverMesh, machineMesh, pistonMesh, scannerMesh, tallHopperMesh, windowMachineMesh } from './kit/machines.mjs';
+import { anvilMesh, coneMesh, glassPipeMesh, pipeStubMesh, workbenchMesh } from './kit/yard.mjs';
+import { coolantPipeMesh, pipeJunctionMesh } from './kit/pipes.mjs';
+import { domeArchMesh, domeCapMesh, domeDrumMesh, domeMesh, domePanelMesh, domeTrimMesh } from './kit/dome.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = 'content/kitprops.json';
@@ -43,7 +50,7 @@ const OUT = 'packages/client/public/kit';
 const SHARED = 'packages/shared/src/content/kitProps.generated.ts';
 
 /** Generator kinds and what makes each. */
-export const KINDS = { crate: crateMesh, framed: framedCrateMesh, bin: binMesh, drum: drumMesh, carton: cartonMesh, fence: fenceMesh, railing: railingMesh, stonewall: stoneWallMesh, barrier: barrierMesh, container: containerMesh, table: tableMesh, seat: seatMesh, bookcase: bookcaseMesh, shelf: shelfMesh, stall: stallMesh, counter: counterMesh, wastebin: wasteBinMesh, sofa: sofaMesh, cabinet: cabinetMesh, appliance: applianceMesh, roundtable: roundTableMesh, officechair: officeChairMesh, bed: bedMesh, cornersofa: cornerSofaMesh, yokecrate: yokeCrateMesh, sign: signMesh, conveyor: conveyorMesh, freezer: freezerMesh, cart: cartMesh, bakery: bakeryMesh, checkout: checkoutMesh, chestfreezer: chestFreezerMesh, bottlereturn: bottleReturnMesh, produce: produceMesh, console: consoleMesh, valve: valveMesh };
+export const KINDS = { crate: crateMesh, framed: framedCrateMesh, bin: binMesh, drum: drumMesh, carton: cartonMesh, fence: fenceMesh, railing: railingMesh, stonewall: stoneWallMesh, barrier: barrierMesh, container: containerMesh, table: tableMesh, seat: seatMesh, bookcase: bookcaseMesh, shelf: shelfMesh, stall: stallMesh, counter: counterMesh, wastebin: wasteBinMesh, sofa: sofaMesh, cabinet: cabinetMesh, appliance: applianceMesh, roundtable: roundTableMesh, officechair: officeChairMesh, bed: bedMesh, cornersofa: cornerSofaMesh, yokecrate: yokeCrateMesh, sign: signMesh, conveyor: conveyorMesh, freezer: freezerMesh, cart: cartMesh, bakery: bakeryMesh, checkout: checkoutMesh, chestfreezer: chestFreezerMesh, bottlereturn: bottleReturnMesh, produce: produceMesh, console: consoleMesh, valve: valveMesh, machine: machineMesh, windowmachine: windowMachineMesh, hopper: hopperMesh, tallhopper: tallHopperMesh, piston: pistonMesh, scanner: scannerMesh, lever: leverMesh, cog: cogMesh, glasspipe: glassPipeMesh, pipestub: pipeStubMesh, workbench: workbenchMesh, cone: coneMesh, anvil: anvilMesh, coolantpipe: coolantPipeMesh, pipejunction: pipeJunctionMesh, dome: domeMesh, domecap: domeCapMesh, domepanel: domePanelMesh, domedrum: domeDrumMesh, dometrim: domeTrimMesh, domearch: domeArchMesh };
 const { num, int, str, en, tup, arr, obj, map } = shape;
 const ID = /^kit\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
 const mm = (v) => Math.round(v * 1000) / 1000;
@@ -71,7 +78,7 @@ export function validate(content, root = ROOT) {
   for (const { file, data } of content.types) {
     for (const k of Object.keys(data)) if (!['$comment', 'type', 'props'].includes(k)) problems.push(`${file}: unknown field "${k}"`);
     const spec = obj({
-      id: str, displayName: str, category: str, assetVersion: int, notes: map(str), size: tup(3), surface: str, detail: str,
+      id: str, displayName: str, category: str, assetVersion: int, notes: map(str), size: tup(3), 'bounds?': en(['within']), 'collide?': en(['none']), surface: str, detail: str,
       'breakable?': obj({ health: num, debris: str, 'blast?': obj({ radius: num, damage: num, edge: num }) }),
       generator: obj({ kind: en(Object.keys(KINDS)) }),
       lods: arr(obj({ distance: num }), 1),
@@ -91,6 +98,7 @@ export function validate(content, root = ROOT) {
       if (!details.has(p.detail)) problems.push(`${where}: detail ${p.detail} is not a surface of content/surfaces.json`);
       if (!p.notes[String(p.assetVersion)]) problems.push(`${where}: notes has no entry for assetVersion ${p.assetVersion} (say what changed)`);
       if (p.size.some((v) => !(v > 0))) problems.push(`${where}: size must be above 0 on every axis`);
+      if (p.bounds === 'within' && p.breakable) problems.push(`${where}: a part with bounds "within" cannot be breakable (its debris would be its whole box)`);
       if (p.breakable && !/^#[0-9a-f]{6}$/.test(p.breakable.debris)) problems.push(`${where}: breakable.debris must be #rrggbb`);
       const idx = p.variants.map((v) => v.index);
       if (new Set(idx).size !== idx.length || idx.some((v) => v < 0 || v > 255)) problems.push(`${where}: variant indices must be distinct, 0–255`);
@@ -135,6 +143,8 @@ export async function build(content, families) {
       const levels = f.lods.map((l, i) => ({ distance: l.distance, mesh: make(v.seed, f.size, g, v.look, i) }));
       const t = levels.map((l) => l.mesh.triangles);
       const own = levels[0].mesh.boxes?.length ? levels[0].mesh.boxes.map((b) => b.map(mm)) : null;
+      if (own && f.collide === 'none') throw new Error(`${f.id}#${v.name}: gives collision boxes, but its family has no collision (collide: "none")`);
+      if (f.bounds === 'within' && !own && f.collide !== 'none') throw new Error(`${f.id}#${v.name}: bounds "within" needs its own collision boxes (it does not fill its size), or collide: "none"`);
       if (v === f.variants[0]) boxes = own;
       else if (JSON.stringify(own) !== JSON.stringify(boxes)) throw new Error(`${f.id}#${v.name}: its collision boxes differ from the first variant's (a family has one collision: structure that changes it belongs in another family)`);
       for (const b of own ?? []) if (b.some((c, k) => Math.abs(c) > f.size[k % 3] / (k % 3 === 1 ? 1 : 2) + 0.001 || (k === 1 && c < 0))) throw new Error(`${f.id}#${v.name}: a collision box ${JSON.stringify(b)} lies outside the family's size`);
@@ -148,13 +158,14 @@ export async function build(content, families) {
       report.push(`${f.id}#${v.name}: ${t.join(' / ')} triangles, ${glb.length} B`);
     }
     const size = f.size.map(mm);
-    props.push({ id: f.id, file: variants[0].file, displayName: f.displayName, category: f.category, size, collision: size, ...(boxes ? { boxes } : {}), ...(f.breakable ? { breakable: { health: f.breakable.health, ...(f.breakable.blast ? { blast: { radius: f.breakable.blast.radius, damage: f.breakable.blast.damage, edge: f.breakable.blast.edge } } : {}), debris: f.breakable.debris } } : {}) });
+    props.push({ id: f.id, file: variants[0].file, displayName: f.displayName, category: f.category, size, collision: f.collide === 'none' ? null : size, ...(boxes ? { boxes } : {}), ...(f.breakable ? { breakable: { health: f.breakable.health, ...(f.breakable.blast ? { blast: { radius: f.breakable.blast.radius, damage: f.breakable.blast.damage, edge: f.breakable.blast.edge } } : {}), debris: f.breakable.debris } } : {}) });
     render.push({ id: f.id, kind: f.generator.kind, assetVersion: f.assetVersion, surface: f.surface, lods: f.lods.map((l) => l.distance), triangles: tris, variants });
   }
   lockFiles.sort((a, b) => (a.file < b.file ? -1 : 1));
   const aliases = Object.entries(m.aliases ?? {}).sort(([a], [b]) => (a < b ? -1 : 1)).map(([from, a]) => ({ from, model: a.model, variant: a.variant, scale: a.scale }));
   const lock = formatLock({ $comment: 'Generated by tools/content/kitprops.mjs from content/kitprops.json and content/kitprops/*.json. Do not edit by hand.', generatorVersion: m.generatorVersion, files: lockFiles });
-  return { files, lock, lockFiles, shared: renderShared(m, props, render, aliases), props, render, aliases, report };
+  const within = new Set(families.filter((f) => f.bounds === 'within').map((f) => f.id));
+  return { files, lock, lockFiles, shared: renderShared(m, props, render, aliases), props, render, aliases, report, within };
 }
 
 /** Bounds [min, max] of a level's mesh (for the check that a piece fills its size). */
@@ -214,7 +225,10 @@ export function budgetProblems(content, out, root = ROOT) {
     const want = [-w / 2, 0, -d / 2, w / 2, h, d / 2];
     for (const v of out.render.find((r) => r.id === p.id).variants) {
       const bb = byFile.get(v.file).bounds;
-      if (bb.some((x, i) => Math.abs(x - want[i]) > 0.002)) problems.push(`${v.file}: bounds ${JSON.stringify(bb)} are not the family's size ${JSON.stringify(p.size)} (collision is that box)`);
+      // A part drawn where it belongs in a larger build (bounds: "within") stays inside its size instead.
+      if (out.within?.has(p.id)) {
+        if (bb.some((x, i) => (i < 3 ? x < want[i] - 0.002 : x > want[i] + 0.002))) problems.push(`${v.file}: bounds ${JSON.stringify(bb)} reach outside the family's size ${JSON.stringify(p.size)}`);
+      } else if (bb.some((x, i) => Math.abs(x - want[i]) > 0.002)) problems.push(`${v.file}: bounds ${JSON.stringify(bb)} are not the family's size ${JSON.stringify(p.size)} (collision is that box)`);
     }
   }
   const old = readLock(join(root, 'content/props.lock.json'));

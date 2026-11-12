@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_gkegta35ah54zd5g",
-      "versionId": "v_umjvgrwgekyeozhx",
-      "revision": 6,
-      "contentHash": "sha256:319fcbc11f6e87ac41b27dd69a82c11d8866d7cd86785f88f1206f0c205e6886",
+      "versionId": "v_5cuo3zxndod27dqr",
+      "revision": 7,
+      "contentHash": "sha256:eb09232ed702a9f5aeeea7fee9216ab1d692a8e6b66ec12f41946bd0dd0db259",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:15:30.091Z"
+      "releasedAt": "2026-11-12T12:33:36.737Z"
     }
   },
   "classicStructure": {
@@ -21104,7 +21104,7 @@
         -3
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -21154,7 +21154,7 @@
         30
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 1.5708,
       "scale": 1,
       "solid": false,
@@ -30711,7 +30711,7 @@
         75.2
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -31914,7 +31914,7 @@
         -29.8
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -32966,7 +32966,7 @@
         34.2
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

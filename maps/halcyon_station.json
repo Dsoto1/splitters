@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 36,
   "metadata": {
     "id": "halcyon_station",
     "name": "Halcyon Station",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_ta56aj7kp5e75s2e",
-      "versionId": "v_gmaxbb4lrzf5yd4d",
-      "revision": 1,
-      "contentHash": "sha256:337e9dbaf3d8b7baab12161e17bb590c87da70de67b45ee6de0e762c173f64e3",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:06:49.967Z"
+      "versionId": "v_56ih6a4l7gmunxqg",
+      "revision": 2,
+      "contentHash": "sha256:244072e6b0958b6daac3d55b0846b2066a1f6775fd276ad794214b6012a912f4",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-12T15:12:10.728Z"
     }
   },
   "classicStructure": {
@@ -653,7 +653,7 @@
         0.5
       ],
       "kind": "prop",
-      "model": "prop.os_coolant_pipe",
+      "model": "kit.pipe.coolant",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1438,7 +1438,7 @@
         8
       ],
       "kind": "prop",
-      "model": "prop.os_pipe_junction",
+      "model": "kit.pipe.junction",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -2492,6 +2492,6 @@
       6
     ]
   },
-  "dependencies": [],
-  "weaponSet": "scifi"
+  "weaponSet": "scifi",
+  "dependencies": []
 }

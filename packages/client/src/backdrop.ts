@@ -888,7 +888,7 @@ const BELTS: Record<string, BeltProfile> = {
 };
 /** Themes whose surroundings are their own, whatever the scenery past them. */
 const THEME_BELTS: Record<string, Partial<BeltProfile>> = {
-  'core.factory': { props: ['container', 'container_wide', 'container_tall', 'barrier_high', 'tank_car', 'kit.crate.factory_long', 'skip', 'cone'], buildings: true },
+  'core.factory': { props: ['container', 'container_wide', 'container_tall', 'barrier_high', 'tank_car', 'kit.crate.factory_long', 'skip', 'kit.sign.cone'], buildings: true },
   'core.industrial': { props: ['kit.container.shipping', 'kit.crate.factory_long', 'kit.barrier.concrete', 'kit.drum.steel', 'kit.crate.framed', 'kit.pipe.valve'], buildings: true },
   'core.castle': { props: [PINE, OAK, SPRUCE, MAPLE, 'rock_large', 'kit.wall.stone_broken', LAUREL, OAK] },
   'core.ruins': { props: ['kit.wall.stone_broken', 'pillar', 'rocks_tall', OAK, MAPLE, LAUREL] },

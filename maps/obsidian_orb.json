@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "obsidian_orb",
     "name": "Obsidian Orb",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_oyvr2rvdsjvrhwut",
-      "versionId": "v_tsif43jylsij4j6j",
-      "revision": 4,
-      "contentHash": "sha256:e62088ef4e5102418a2000925f0ae9cde5f4d4c21912369e30e39bffc74e251c",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T10:03:45.276Z"
+      "versionId": "v_qfvkep32ed6yjo5n",
+      "revision": 5,
+      "contentHash": "sha256:f484f0aea4583430063bf2a7a3d01f38dc83213a3bfc8f7df2b711903c543d2e",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-12T15:13:00.107Z"
     }
   },
   "classicStructure": {
@@ -4004,7 +4004,7 @@
         33.6
       ],
       "kind": "prop",
-      "model": "prop.os_coolant_pipe",
+      "model": "kit.pipe.coolant",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,

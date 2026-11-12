@@ -20601,7 +20601,7 @@
         -85.84
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -24003,7 +24003,7 @@
         10.16
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -24661,7 +24661,7 @@
         74.16
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

@@ -1,0 +1,3476 @@
+{
+  "$comment": "The Desert City dome kit (tools/content/kit/dome.mjs; docs/CONTENT_PIPELINE.md, \"The dome kit\"): a dome from parts round one axis. Every part's origin is the dome's centre axis at the foot of the drum and a part is drawn where it stands on that drum (bounds: \"within\"), so parts placed at one point, each turned by its own step, make the dome: the drum's quarters by quarter turns, a panel by 360° / segments (90°, 60°, 45°, 30°: MapMaker turns props in 15° steps). Arch transitions and whole domes fill their boxes like any piece. Looks: stone, sandstone, plaster, copper (verdigris), blue tile, green tile; the ruins are their own families (their collision differs). All stone: a family has one surface, so the copper look plays as stone too.",
+  "type": "dome",
+  "props": [
+    {
+      "id": "kit.dome.cap",
+      "displayName": "Dome Cap",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the cap that closes a dome's crown, a collar, a low dome and a finial, drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot): 6.1 m up; collides as one box; stone."
+      },
+      "size": [
+        1.7,
+        7.04,
+        1.7
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domecap"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12000,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12001,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12002,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12003,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12004,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12005,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_4",
+      "displayName": "Dome Panel (1 of 4)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: one panel of a dome of 4 segments, half a rib along each edge, drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot): it springs 2.6 m up; 4 of them, each turned 90° on, make the dome; collides as bands of boxes up its curve; stone."
+      },
+      "size": [
+        7.6,
+        6.24,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 4
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12006,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12007,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12008,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12009,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12010,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12011,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_4_window",
+      "displayName": "Dome Panel with Window (1 of 4)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the panel of a dome of 4 segments with a pointed window through it (0.8 m wide, open to shots), drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot); collides as bands of boxes, open at the window; stone."
+      },
+      "size": [
+        7.6,
+        6.24,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 4,
+        "window": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12012,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12013,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12014,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12015,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12016,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12017,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_4_broken",
+      "displayName": "Broken Dome Panel (1 of 4)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the panel of a dome of 4 segments broken off 1.9 m up its curve, a tooth left at each edge, drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot); collides as the boxes of the part that stands; stone."
+      },
+      "size": [
+        7.6,
+        5.29,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 4,
+        "broken": 3
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12018,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12019,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12020,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12021,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12022,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12023,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_6",
+      "displayName": "Dome Panel (1 of 6)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: one panel of a dome of 6 segments, half a rib along each edge, drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot): it springs 2.6 m up; 6 of them, each turned 60° on, make the dome; collides as bands of boxes up its curve; stone."
+      },
+      "size": [
+        7.6,
+        6.24,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 6
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12024,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12025,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12026,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12027,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12028,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12029,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_6_window",
+      "displayName": "Dome Panel with Window (1 of 6)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the panel of a dome of 6 segments with a pointed window through it (0.8 m wide, open to shots), drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot); collides as bands of boxes, open at the window; stone."
+      },
+      "size": [
+        7.6,
+        6.24,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 6,
+        "window": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12030,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12031,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12032,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12033,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12034,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12035,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_6_broken",
+      "displayName": "Broken Dome Panel (1 of 6)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the panel of a dome of 6 segments broken off 1.9 m up its curve, a tooth left at each edge, drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot); collides as the boxes of the part that stands; stone."
+      },
+      "size": [
+        7.6,
+        5.29,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 6,
+        "broken": 3
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12036,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12037,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12038,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12039,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12040,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12041,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_8",
+      "displayName": "Dome Panel (1 of 8)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: one panel of a dome of 8 segments, half a rib along each edge, drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot): it springs 2.6 m up; 8 of them, each turned 45° on, make the dome; collides as bands of boxes up its curve; stone."
+      },
+      "size": [
+        7.6,
+        6.24,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 8
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12042,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12043,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12044,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12045,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12046,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12047,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_8_window",
+      "displayName": "Dome Panel with Window (1 of 8)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the panel of a dome of 8 segments with a pointed window through it (0.8 m wide, open to shots), drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot); collides as bands of boxes, open at the window; stone."
+      },
+      "size": [
+        7.6,
+        6.24,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 8,
+        "window": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12048,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12049,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12050,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12051,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12052,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12053,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_8_broken",
+      "displayName": "Broken Dome Panel (1 of 8)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the panel of a dome of 8 segments broken off 1.9 m up its curve, a tooth left at each edge, drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot); collides as the boxes of the part that stands; stone."
+      },
+      "size": [
+        7.6,
+        5.29,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 8,
+        "broken": 3
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12054,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12055,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12056,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12057,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12058,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12059,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_12",
+      "displayName": "Dome Panel (1 of 12)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: one panel of a dome of 12 segments, half a rib along each edge, drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot): it springs 2.6 m up; 12 of them, each turned 30° on, make the dome; collides as bands of boxes up its curve; stone."
+      },
+      "size": [
+        7.6,
+        6.24,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 12
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12060,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12061,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12062,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12063,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12064,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12065,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_12_window",
+      "displayName": "Dome Panel with Window (1 of 12)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the panel of a dome of 12 segments with a pointed window through it (0.8 m wide, open to shots), drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot); collides as bands of boxes, open at the window; stone."
+      },
+      "size": [
+        7.6,
+        6.24,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 12,
+        "window": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12066,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12067,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12068,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12069,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12070,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12071,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.panel_12_broken",
+      "displayName": "Broken Dome Panel (1 of 12)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the panel of a dome of 12 segments broken off 1.9 m up its curve, a tooth left at each edge, drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot); collides as the boxes of the part that stands; stone."
+      },
+      "size": [
+        7.6,
+        5.29,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domepanel",
+        "segments": 12,
+        "broken": 3
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12072,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12073,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12074,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12075,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12076,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12077,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.drum_arch",
+      "displayName": "Dome Drum, Arches (quarter)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a quarter of the drum a dome stands on (a wall 2.6 m high and 0.4 m thick, 7.2 m across), two arched doorways (1.4 m wide, 2.1 m high) you walk and shoot through; four of them, each a quarter turn on, make the ring; origin: the dome's axis; collides as small boxes round its curve, the openings open, the middle hollow; stone."
+      },
+      "size": [
+        7.6,
+        2.6,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domedrum",
+        "bay": "arch"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12078,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12079,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12080,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12081,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12082,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12083,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.drum_window",
+      "displayName": "Dome Drum, Windows (quarter)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a quarter of the drum a dome stands on (a wall 2.6 m high and 0.4 m thick, 7.2 m across), two arched windows (0.7 m wide, the sill 0.85 m up) open to shots; four of them, each a quarter turn on, make the ring; origin: the dome's axis; collides as small boxes round its curve, the openings open, the middle hollow; stone."
+      },
+      "size": [
+        7.6,
+        2.6,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domedrum",
+        "bay": "window"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12084,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12085,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12086,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12087,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12088,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12089,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.drum_solid",
+      "displayName": "Dome Drum, Solid (quarter)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a quarter of the drum a dome stands on (a wall 2.6 m high and 0.4 m thick, 7.2 m across), two blind arches; four of them, each a quarter turn on, make the ring; origin: the dome's axis; collides as small boxes round its curve, the openings open, the middle hollow; stone."
+      },
+      "size": [
+        7.6,
+        2.6,
+        7.6
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domedrum",
+        "bay": "solid"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12090,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12091,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12092,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12093,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12094,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12095,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.trim_top",
+      "displayName": "Dome Ring Trim, Top",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the cornice round the top of the drum, under the dome's foot, drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot); nothing collides with it (it stands 0.2 m off the drum's wall)."
+      },
+      "size": [
+        7.6,
+        2.7,
+        7.6
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dometrim",
+        "trim": "top"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12096,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12097,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12098,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12099,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#4f9a88",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12100,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#2a5aa8",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12101,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#2f8a62",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.trim_middle",
+      "displayName": "Dome Ring Trim, Middle",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the impost band round the drum at the arches' springing (1.55 m up), on the piers only: it stops each side of every bay's opening, drawn where it stands on the kit's drum (origin: the dome's axis at the drum's foot); nothing collides with it."
+      },
+      "size": [
+        7.6,
+        1.65,
+        7.6
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dometrim",
+        "trim": "middle"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12102,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12103,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12104,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12105,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#4f9a88",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12106,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#2a5aa8",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12107,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#2f8a62",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.trim_bottom",
+      "displayName": "Dome Ring Trim, Bottom",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the plinth round the drum's foot, 7.6 m across; origin: the dome's axis; nothing collides with it (a step 0.17 m high)."
+      },
+      "size": [
+        7.6,
+        0.17,
+        7.6
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dometrim",
+        "trim": "bottom"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12108,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12109,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12110,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12111,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#4f9a88",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12112,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#2a5aa8",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12113,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#2f8a62",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.arch_4way",
+      "displayName": "Dome Arch Transition (4-way)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the square a drum stands on, one cell square and one level high: a pier in each corner, an arch in every side (5.4 m wide, 3.3 m high), a flat top solid to stand on with the drum's round seat marked in it; collides as boxes: the piers, the stepped haunches of each arch, the walls, the top; stone."
+      },
+      "size": [
+        8,
+        4,
+        8
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domearch",
+        "open": "1111"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12114,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12115,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12116,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12117,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12118,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12119,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.arch_3way",
+      "displayName": "Dome Arch Transition (3-way)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the square a drum stands on, one cell square and one level high: a pier in each corner, an arch in three sides, a wall with a blind arch at −z (5.4 m wide, 3.3 m high), a flat top solid to stand on with the drum's round seat marked in it; collides as boxes: the piers, the stepped haunches of each arch, the walls, the top; stone."
+      },
+      "size": [
+        8,
+        4,
+        8
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domearch",
+        "open": "1101"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12120,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12121,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12122,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12123,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12124,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12125,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.arch_2way",
+      "displayName": "Dome Arch Transition (2-way)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the square a drum stands on, one cell square and one level high: a pier in each corner, an arch at +z and −z, a wall with a blind arch each side (5.4 m wide, 3.3 m high), a flat top solid to stand on with the drum's round seat marked in it; collides as boxes: the piers, the stepped haunches of each arch, the walls, the top; stone."
+      },
+      "size": [
+        8,
+        4,
+        8
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "domearch",
+        "open": "1010"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12126,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12127,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12128,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12129,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12130,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12131,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.whole_8",
+      "displayName": "Dome on Drum (8 segments)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a whole dome of 8 segments on its drum (8 arched doorways), the plinth, the cornice and the cap, one cell across; collides as the boxes of its parts: hollow, the doorways open; stone."
+      },
+      "size": [
+        7.6,
+        7.035,
+        7.6
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dome",
+        "segments": 8,
+        "bays": 8
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12132,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12133,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12134,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12135,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12136,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12137,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.whole_12",
+      "displayName": "Dome on Drum (12 segments)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a whole dome of 12 segments on its drum (6 arched doorways), the plinth, the cornice and the cap, one cell across; collides as the boxes of its parts: hollow, the doorways open; stone."
+      },
+      "size": [
+        7.6,
+        7.035,
+        7.6
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dome",
+        "segments": 12,
+        "bays": 6
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12138,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12139,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12140,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12141,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12142,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12143,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.hall_8",
+      "displayName": "Hall Dome on Drum (8 segments)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a whole dome of 8 segments on its drum (8 arched doorways 2 m wide), 15.2 m across, for a hall of 2 × 2 cells; collides as the boxes of its parts: hollow, the doorways open; stone."
+      },
+      "size": [
+        15.2,
+        12.152,
+        15.2
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dome",
+        "segments": 8,
+        "bays": 8,
+        "radius": 7.6,
+        "lip": 0.3,
+        "wall": 0.6,
+        "drumH": 3.6,
+        "rise": 7,
+        "doorHalf": 8.6,
+        "doorSpring": 2,
+        "doorApex": 2.9,
+        "lintel": 2.95,
+        "shell": 0.3,
+        "capR": 1.5,
+        "capH": 1.7,
+        "plainCornice": 1,
+        "frames": 0
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 70
+        },
+        {
+          "distance": 220
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12144,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12145,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12146,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12147,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12148,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12149,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.hall_12",
+      "displayName": "Hall Dome on Drum (12 segments)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a whole dome of 12 segments on its drum (six arched doorways 2 m wide, a blind arch between each two), 15.2 m across, for a hall of 2 × 2 cells; collides as the boxes of its parts: hollow, the doorways open; stone."
+      },
+      "size": [
+        15.2,
+        12.152,
+        15.2
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dome",
+        "segments": 12,
+        "bays": 12,
+        "radius": 7.6,
+        "lip": 0.3,
+        "wall": 0.6,
+        "drumH": 3.6,
+        "rise": 7,
+        "doorHalf": 8.6,
+        "doorSpring": 2,
+        "doorApex": 2.9,
+        "lintel": 2.95,
+        "shell": 0.3,
+        "capR": 1.5,
+        "capH": 1.7,
+        "plainCornice": 1,
+        "frames": 0,
+        "blind": 2
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 70
+        },
+        {
+          "distance": 220
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12150,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12151,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12152,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12153,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12154,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12155,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.ruin_8",
+      "displayName": "Ruined Dome on Drum (8 segments)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the dome of 8 segments in ruins: four panels broken off or gone, the cap gone; collides as what still stands, the breaks open to the sky; stone."
+      },
+      "size": [
+        7.6,
+        6.234,
+        7.6
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dome",
+        "segments": 8,
+        "bays": 8,
+        "breaks": "1:3,2:0,3:4,6:3",
+        "nocap": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12156,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12157,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12158,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.4
+          }
+        },
+        {
+          "index": 3,
+          "name": "blue",
+          "seed": 12159,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.ruin_12",
+      "displayName": "Ruined Dome on Drum (12 segments)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the dome of 12 segments in ruins: seven panels broken off or gone, the cap gone; collides as what still stands, the breaks open to the sky; stone."
+      },
+      "size": [
+        7.6,
+        6.234,
+        7.6
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dome",
+        "segments": 12,
+        "bays": 6,
+        "breaks": "1:4,2:3,3:0,4:0,5:3,9:4,10:3",
+        "nocap": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12160,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12161,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12162,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.4
+          }
+        },
+        {
+          "index": 3,
+          "name": "blue",
+          "seed": 12163,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.hall_ruin_12",
+      "displayName": "Ruined Hall Dome on Drum (12 segments)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the hall dome of 12 segments in ruins: seven panels broken off or gone, the cap gone; collides as what still stands; stone."
+      },
+      "size": [
+        15.2,
+        10.671,
+        15.2
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dome",
+        "segments": 12,
+        "bays": 12,
+        "radius": 7.6,
+        "lip": 0.3,
+        "wall": 0.6,
+        "drumH": 3.6,
+        "rise": 7,
+        "doorHalf": 8.6,
+        "doorSpring": 2,
+        "doorApex": 2.9,
+        "lintel": 2.95,
+        "shell": 0.3,
+        "capR": 1.5,
+        "capH": 1.7,
+        "plainCornice": 1,
+        "frames": 0,
+        "blind": 2,
+        "breaks": "1:3,2:0,3:0,4:4,7:3,8:4,10:5",
+        "nocap": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 70
+        },
+        {
+          "distance": 220
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12164,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12165,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.5
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12166,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.4
+          }
+        },
+        {
+          "index": 3,
+          "name": "blue",
+          "seed": 12167,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.4
+          }
+        }
+      ]
+    }
+  ]
+}

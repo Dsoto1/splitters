@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_5x4zlanrxgtdua3l",
-      "versionId": "v_qfd74pqde2dywdur",
-      "revision": 9,
-      "contentHash": "sha256:36d4cecf7978fd18626fdbc4ac2216de7f7ed7495c860f49e1805d52035b0a98",
+      "versionId": "v_ikhxo6sg6q3awpij",
+      "revision": 10,
+      "contentHash": "sha256:df4d9e1418fa3c42dff1de8cb8406a1e2690ec808d5bcfda8843f8ffad754c51",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:43:10.648Z"
+      "releasedAt": "2026-11-12T13:13:14.470Z"
     }
   },
   "classicStructure": {
@@ -3809,7 +3809,7 @@
         28
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -3823,7 +3823,7 @@
         28
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -3837,7 +3837,7 @@
         -20
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -3851,7 +3851,7 @@
         -20
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -7123,7 +7123,7 @@
         -30
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -7137,7 +7137,7 @@
         -34
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -7151,7 +7151,7 @@
         -40
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -9496,7 +9496,7 @@
         56
       ],
       "kind": "prop",
-      "model": "prop.scanner",
+      "model": "kit.machine.scanner",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -9510,7 +9510,7 @@
         56
       ],
       "kind": "prop",
-      "model": "prop.scanner",
+      "model": "kit.machine.scanner",
       "yaw": 0,
       "scale": 1,
       "solid": true,

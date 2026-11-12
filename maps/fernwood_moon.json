@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 36,
   "metadata": {
     "id": "fernwood_moon",
     "name": "Fernwood Moon",
@@ -10751,7 +10751,7 @@
         -80
       ],
       "kind": "prop",
-      "model": "prop.os_coolant_pipe",
+      "model": "kit.pipe.coolant",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -11057,8 +11057,8 @@
       "yaw": 0.2,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_502",
@@ -11268,8 +11268,8 @@
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "light_518",

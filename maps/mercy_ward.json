@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 36,
   "metadata": {
     "id": "mercy_ward",
     "name": "Mercy Ward",
@@ -13246,7 +13246,7 @@
         -15
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13260,7 +13260,7 @@
         -14.5
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": true,

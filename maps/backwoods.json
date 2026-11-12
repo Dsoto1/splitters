@@ -2954,7 +2954,7 @@
         38.5
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3191,7 +3191,7 @@
         31
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -3205,7 +3205,7 @@
         29.5
       ],
       "kind": "prop",
-      "model": "prop.anvil",
+      "model": "kit.tool.anvil",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4186,7 +4186,7 @@
         -9
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -4564,7 +4564,7 @@
         -16
       ],
       "kind": "prop",
-      "model": "prop.big_pipe",
+      "model": "kit.pipe.riser",
       "yaw": 0,
       "scale": 0.9,
       "solid": true,

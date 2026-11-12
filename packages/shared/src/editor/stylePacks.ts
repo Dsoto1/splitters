@@ -76,7 +76,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'ammo_crate', 'ammo_stack', 'ww2_ammo_crate', 'fuel_drum', 'fuel_tank', 'storage_tank', 'steel_water_tower',
       'kit.container.shipping', 'container', 'container_tall', 'kit.crate.framed',
       'floodlight', 'yard_lamp', 'pallet', 'supply_truck', 'flatbed_truck', 'dumpster',
-      'sv_tent', 'sv_radio', 'sv_gas_can', 'kit.sign.warning', 'cone', 'kit.bed.bunk',
+      'sv_tent', 'sv_radio', 'sv_gas_can', 'kit.sign.warning', 'kit.sign.cone', 'kit.bed.bunk',
     ),
     materials: ['core.pbr_bunker_panels', 'core.pbr_olive_corrugated', 'core.pbr_grey_corrugated', 'core.pbr_burlap'],
     facades: ['concrete', 'corrugated'],
@@ -171,8 +171,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
     ],
     props: /* @__PURE__ */ props(
       'os_airlock_frame', 'os_bulkhead', 'os_bulkhead_window', 'os_laser_gate', 'os_field_emitter', 'os_viewport', 'os_reactor_core', 'os_cryo_pod', 'os_holo_globe',
-      'os_cargo_crate', 'os_generator', 'os_power_unit', 'os_transmitter', 'os_satellite_dish', 'os_comms_dish', 'os_truss', 'os_frame_module', 'os_coolant_pipe',
-      'os_pipe_junction', 'os_console_corner', 'os_terminal', 'os_canister_rack', 'os_floor_cables', 'os_wall_column', 'os_wall_panel',
+      'os_cargo_crate', 'os_generator', 'os_power_unit', 'os_transmitter', 'os_satellite_dish', 'os_comms_dish', 'os_truss', 'os_frame_module', 'kit.pipe.coolant',
+      'kit.pipe.junction', 'os_console_corner', 'os_terminal', 'os_canister_rack', 'os_floor_cables', 'os_wall_column', 'os_wall_panel',
       // From the Modular SciFi MegaKit and the Space Station Kit, already in the game.
       'sf_computer', 'sf_wall_astra_window', 'sf_glass_floor', 'sf_round_platform', 'sf_crate_large', 'sf_fan', 'sf_light_wide', 'holo_table', 'computer_bank', 'container_tall', 'space_bed', 'space_chair',
     ),
@@ -307,7 +307,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
     ],
     props: /* @__PURE__ */ props(
       'nc_streetlight', 'nc_streetlight_double', 'nc_traffic_light', 'nc_traffic_light_hanging', 'nc_highway_sign', 'nc_street_sign', 'nc_dumpster', 'nc_road_barrier',
-      'nc_cone', 'nc_neon_barrier', 'nc_elevated_pillar', 'nc_power_pole', 'nc_monorail_track', 'nc_monorail_pylon', 'nc_skytrain_car', 'nc_skytrain_front',
+      'kit.sign.cone_slim', 'nc_neon_barrier', 'nc_elevated_pillar', 'nc_power_pole', 'nc_monorail_track', 'nc_monorail_pylon', 'nc_skytrain_car', 'nc_skytrain_front',
       'nc_skytrain_end', 'nc_vending', 'nc_holo_kiosk', 'nc_food_stall', 'nc_ac_unit', 'nc_water_tank', 'nc_antenna',
       // Already in the game.
       'container', 'barrier_high',
@@ -345,7 +345,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'sb_picket_fence', 'sb_swing_set', 'sb_slide', 'sb_trampoline', 'sb_basketball_hoop', 'sb_gas_pump', 'sb_sedan', 'sb_patio_set', 'sb_sun_lounger', 'sb_fire_hydrant',
       // Already in the game: furniture, shop fittings, garden and street pieces.
       'hm_couch', 'hm_armchair', 'hm_kitchen_counter', 'hm_oven', 'hm_bed_king', 'hm_bathtub', 'hm_toilet', 'hm_houseplant_tall', 'tv', 'kit.appliance.washer', 'sv_propane',
-      'kit.shelf.gondola', 'kit.shop.checkout', 'kit.appliance.freezer_chest', 'kit.shop.cart', 'kit.box.carton', 'kit.bin.waste', 'dumpster', 'cone', 'parasol', 'bush', 'hedge', 'tree_round', 'potted_plant',
+      'kit.shelf.gondola', 'kit.shop.checkout', 'kit.appliance.freezer_chest', 'kit.shop.cart', 'kit.box.carton', 'kit.bin.waste', 'dumpster', 'kit.sign.cone', 'parasol', 'bush', 'hedge', 'tree_round', 'potted_plant',
     ),
     materials: ['core.pbr_clapboard', 'core.pbr_slate_roof', 'core.pbr_pool_tiles'],
     facades: ['clapboard', 'suburban_brick'],
@@ -390,6 +390,13 @@ export const STYLE_PACKS: readonly StylePack[] = [
     props: /* @__PURE__ */ props(
       'dc_market_stall', 'dc_canopy', 'dc_dome', 'dc_dome_blue', 'dc_banner', 'dc_lantern', 'dc_palm_planter', 'dc_well', 'dc_vase', 'dc_jars', 'dc_rug', 'dc_crane',
       'dc_cloth_line', 'dc_scaffold', 'dc_awning_window', 'dc_lattice_window', 'dc_shutter_window', 'dc_spice_baskets', 'dc_cushions', 'dc_rug_rack', 'dc_column', 'dc_ornate_arch',
+      // The dome kit (tools/content/kit/dome.mjs): a dome from parts round one axis: the cap, panels for 4, 6, 8 or 12 segments, the drum's
+      // quarters, ring trims, the arch transitions a drum stands on, and whole domes on their drums (one cell, and a 2 × 2 cell hall).
+      'kit.dome.cap', 'kit.dome.panel_4', 'kit.dome.panel_4_window', 'kit.dome.panel_4_broken', 'kit.dome.panel_6', 'kit.dome.panel_6_window', 'kit.dome.panel_6_broken',
+      'kit.dome.panel_8', 'kit.dome.panel_8_window', 'kit.dome.panel_8_broken', 'kit.dome.panel_12', 'kit.dome.panel_12_window', 'kit.dome.panel_12_broken',
+      'kit.dome.drum_arch', 'kit.dome.drum_window', 'kit.dome.drum_solid', 'kit.dome.trim_top', 'kit.dome.trim_middle', 'kit.dome.trim_bottom', 'kit.dome.arch_4way',
+      'kit.dome.arch_3way', 'kit.dome.arch_2way', 'kit.dome.whole_8', 'kit.dome.whole_12', 'kit.dome.hall_8', 'kit.dome.hall_12', 'kit.dome.ruin_8', 'kit.dome.ruin_12',
+      'kit.dome.hall_ruin_12',
       // The owner's Meshy pieces (the market stall, well and crane above are the owner's too): a stall, temple statues, fountains.
       'rustic_market_stall', 'temple_spear_statue', 'temple_monk_statue', 'eagle_fountain', 'lion_head_fountain', 'town_fountain',
       // Already in the game: crates, barrels, sandbags, palms, lanterns, pots, carts, ladders and water troughs.
@@ -455,7 +462,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'tiled_well', 'smithy_workbench',
       // Already in the game: castle and siege pieces, the market, carts and barrels, banners, lanterns, fences and trees.
       'castle_gate', 'castle_tower', 'castle_tower_round', 'castle_wall', 'castle_wall_door', 'castle_wall_corner', 'castle_stairs', 'siege_tower', 'portcullis',
-      'kit.stall.market', 'kit.stall.counter', 'cart', 'cart_high', 'hay_bale', 'anvil', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.crate.wood', 'kit.crate.wood_long', 'woodpile', 'log_stack', 'bucket',
+      'kit.stall.market', 'kit.stall.counter', 'cart', 'cart_high', 'hay_bale', 'kit.tool.anvil', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.crate.wood', 'kit.crate.wood_long', 'woodpile', 'log_stack', 'bucket',
       'fountain', 'fountain_square', 'lantern', 'lantern_post', 'banner', 'banner_red', 'banner_green', 'banner_long', 'pennant', 'signpost', 'awning', 'water_wheel',
       'lf_wooden_fence_closed', 'lf_wooden_fence_open', 'lf_drystone_wall', 'nt_common_tree', 'nt_common_tree_2', 'kit.seat.bench', 'sv_tent', 'dg_woodfire',
     ),
@@ -581,9 +588,9 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'kit.conveyor.belt', 'kit.crate.factory', 'kit.crate.factory_long', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.crate.bin', 'kit.crate.framed', 'kit.drum.steel', 'kit.drum.steel_open',
       'kit.container.shipping', 'kit.barrier.concrete', 'kit.sign.warning', 'kit.console.panel', 'kit.pipe.valve', 'kit.fence.iron', 'kit.shelf.gondola', 'kit.shelf.end', 'kit.box.carton', 'kit.bin.waste', 'kit.table.desk', 'kit.seat.office',
       // Already in the game: machines, pipes, tanks, the gantry crane, yard pieces.
-      'machine', 'machine_window', 'hopper', 'hopper_tall', 'piston', 'scanner', 'lever', 'cog', 'big_pipe', 'workbench', 'mp_control_cabinet', 'sf_pipe_rack', 'so_pipe_run',
+      'kit.machine.heavy', 'kit.machine.window', 'kit.hopper.round', 'kit.hopper.tall', 'kit.machine.piston', 'kit.machine.scanner', 'kit.machine.lever', 'kit.machine.cog', 'kit.pipe.riser', 'kit.table.workbench', 'mp_control_cabinet', 'sf_pipe_rack', 'so_pipe_run',
       'fuel_tank', 'storage_tank', 'steel_water_tower', 'cargo_ibc_tank', 'cargo_gantry_crane', 'cargo_crate_stack', 'so_generator', 'so_chainlink_fence',
-      'cone', 'fuel_drum', 'pallet', 'floodlight', 'yard_lamp', 'dumpster', 'street_rusty_barrel', 'street_fuel_can', 'sv_propane',
+      'kit.sign.cone', 'fuel_drum', 'pallet', 'floodlight', 'yard_lamp', 'dumpster', 'street_rusty_barrel', 'street_fuel_can', 'sv_propane',
     ),
     materials: ['core.steel_grating', 'core.pbr_tread_plate', 'core.pbr_rusted_plate', 'core.hazard', 'core.pbr_grey_corrugated', 'core.rusty_corrugated', 'core.pbr_concrete', 'core.pbr_concrete_dark', 'core.pbr_steel'],
     facades: ['corrugated', 'concrete', 'brick'],

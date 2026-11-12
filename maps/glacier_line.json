@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_6jrvegnpqp5udvrt",
-      "versionId": "v_kutcctnntswebnho",
-      "revision": 5,
-      "contentHash": "sha256:2ce9e0e3bdd2fe4554ef196e3b911fe49812573d79789c920e720e09dfd775a1",
+      "versionId": "v_s3wmtzbpbytqhq64",
+      "revision": 6,
+      "contentHash": "sha256:ab7425adbc060d0484d2f452f631b448b893b2433d4ab90bf02fcbfe98e861e9",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:19:50.706Z"
+      "releasedAt": "2026-11-12T15:10:42.510Z"
     }
   },
   "classicStructure": {
@@ -1934,7 +1934,7 @@
         110
       ],
       "kind": "prop",
-      "model": "prop.os_coolant_pipe",
+      "model": "kit.pipe.coolant",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -1948,7 +1948,7 @@
         118
       ],
       "kind": "prop",
-      "model": "prop.os_pipe_junction",
+      "model": "kit.pipe.junction",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,

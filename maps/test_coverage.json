@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_tpnnj6iu2eaxhdop",
-      "revision": 20,
-      "contentHash": "sha256:097297d8e8f4615591f9f8353cdbe765e463bdc41c0c5b07d03972e083a1ebb1",
+      "versionId": "v_rbau6um53slvaio3",
+      "revision": 21,
+      "contentHash": "sha256:3cff97b57b48aa38791328f9bbc765ef7776368566492b67e19d88bab135ff57",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T11:08:24.671Z"
+      "releasedAt": "2026-11-12T13:27:23.364Z"
     },
     "testOnly": true
   },
@@ -4107,7 +4107,7 @@
         112
       ],
       "kind": "prop",
-      "model": "prop.nc_cone",
+      "model": "kit.sign.cone_slim",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4927,7 +4927,7 @@
         112
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": true,

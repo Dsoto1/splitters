@@ -1,5 +1,5 @@
 {
-  "$comment": "Kit props (docs/PROCEDURAL_ENVIRONMENT.md \u00a711 Phase 6; docs/CONTENT_PIPELINE.md, \"Kit props\"): simple man-made props generated in code from seeds, families in content/kitprops/<type>.json, built by tools/content/kitprops.mjs. Budgets: bytes per file and triangles per level of detail by generator kind. Aliases: a retired catalogue prop and the family and variant that take its place as played (map/validate.ts loadMap; MapMaker keeps the map as made and offers Replace all); `scale` multiplies the placement's own.",
+  "$comment": "Kit props (docs/PROCEDURAL_ENVIRONMENT.md §11 Phase 6; docs/CONTENT_PIPELINE.md, \"Kit props\"): simple man-made props generated in code from seeds, families in content/kitprops/<type>.json, built by tools/content/kitprops.mjs. Budgets: bytes per file and triangles per level of detail by generator kind. Aliases: a retired catalogue prop and the family and variant that take its place as played (map/validate.ts loadMap; MapMaker keeps the map as made and offers Replace all); `scale` multiplies the placement's own.",
   "generatorVersion": 1,
   "pack": {
     "id": "tiletrigger-kitprops",
@@ -191,6 +191,111 @@
         1000,
         360,
         40
+      ],
+      "machine": [
+        300,
+        130,
+        40
+      ],
+      "windowmachine": [
+        280,
+        140,
+        30
+      ],
+      "hopper": [
+        720,
+        60,
+        30
+      ],
+      "tallhopper": [
+        300,
+        50,
+        30
+      ],
+      "piston": [
+        760,
+        240,
+        30
+      ],
+      "scanner": [
+        240,
+        80,
+        40
+      ],
+      "lever": [
+        220,
+        90,
+        30
+      ],
+      "cog": [
+        380,
+        140,
+        30
+      ],
+      "glasspipe": [
+        680,
+        150,
+        40
+      ],
+      "pipestub": [
+        320,
+        100,
+        20
+      ],
+      "workbench": [
+        180,
+        120,
+        30
+      ],
+      "cone": [
+        240,
+        60,
+        10
+      ],
+      "coolantpipe": [
+        900,
+        80,
+        12
+      ],
+      "pipejunction": [
+        800,
+        144,
+        24
+      ],
+      "anvil": [
+        320,
+        120,
+        24
+      ],
+      "dome": [
+        1700,
+        620,
+        60
+      ],
+      "domecap": [
+        200,
+        70,
+        20
+      ],
+      "domepanel": [
+        320,
+        130,
+        10
+      ],
+      "domedrum": [
+        190,
+        80,
+        10
+      ],
+      "dometrim": [
+        260,
+        80,
+        50
+      ],
+      "domearch": [
+        540,
+        260,
+        20
       ]
     }
   },
@@ -492,6 +597,86 @@
     },
     "prop.pipe_valve": {
       "model": "kit.pipe.valve",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.machine": {
+      "model": "kit.machine.heavy",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.machine_window": {
+      "model": "kit.machine.window",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.hopper": {
+      "model": "kit.hopper.round",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.hopper_tall": {
+      "model": "kit.hopper.tall",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.piston": {
+      "model": "kit.machine.piston",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.scanner": {
+      "model": "kit.machine.scanner",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.lever": {
+      "model": "kit.machine.lever",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.cog": {
+      "model": "kit.machine.cog",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.pipe_glass": {
+      "model": "kit.pipe.glass",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.big_pipe": {
+      "model": "kit.pipe.riser",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.workbench": {
+      "model": "kit.table.workbench",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.cone": {
+      "model": "kit.sign.cone",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.nc_cone": {
+      "model": "kit.sign.cone_slim",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.anvil": {
+      "model": "kit.tool.anvil",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.os_coolant_pipe": {
+      "model": "kit.pipe.coolant",
+      "variant": 0,
+      "scale": 1
+    },
+    "prop.os_pipe_junction": {
+      "model": "kit.pipe.junction",
       "variant": 0,
       "scale": 1
     }

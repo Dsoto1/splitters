@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_wtaygxmgpnk3xung",
-      "versionId": "v_wiinnex6mbn3me3l",
-      "revision": 6,
-      "contentHash": "sha256:fdebaadc1e7758de1d0d37eb478793efb6a34617720f9003f06b430da2971017",
+      "versionId": "v_czrzkytqeiumsaef",
+      "revision": 7,
+      "contentHash": "sha256:fc3ef3acb9263c6bf56d9868de0543abe0d3ee85f7b3cd1476607b40357a2854",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:47:50.464Z"
+      "releasedAt": "2026-11-12T13:20:56.956Z"
     }
   },
   "classicStructure": {
@@ -19480,7 +19480,7 @@
         -4.6
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19494,7 +19494,7 @@
         -4.6
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19508,7 +19508,7 @@
         4.6
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19522,7 +19522,7 @@
         4.6
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19732,7 +19732,7 @@
         -15
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -19746,7 +19746,7 @@
         -15
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20936,7 +20936,7 @@
         14.8
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -20950,7 +20950,7 @@
         9
       ],
       "kind": "prop",
-      "model": "prop.hopper_tall",
+      "model": "kit.hopper.tall",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20964,7 +20964,7 @@
         -9
       ],
       "kind": "prop",
-      "model": "prop.hopper_tall",
+      "model": "kit.hopper.tall",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20978,7 +20978,7 @@
         11
       ],
       "kind": "prop",
-      "model": "prop.big_pipe",
+      "model": "kit.pipe.riser",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -20992,7 +20992,7 @@
         -10.5
       ],
       "kind": "prop",
-      "model": "prop.big_pipe",
+      "model": "kit.pipe.riser",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -21034,7 +21034,7 @@
         -15.6
       ],
       "kind": "prop",
-      "model": "prop.cog",
+      "model": "kit.machine.cog",
       "yaw": 1.5707963267948966,
       "scale": 0.5,
       "solid": true,
@@ -22141,7 +22141,7 @@
         -1.6
       ],
       "kind": "prop",
-      "model": "prop.lever",
+      "model": "kit.machine.lever",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": false,
@@ -22184,7 +22184,7 @@
         11.4
       ],
       "kind": "prop",
-      "model": "prop.lever",
+      "model": "kit.machine.lever",
       "yaw": 4.71238898038469,
       "scale": 1,
       "solid": false,

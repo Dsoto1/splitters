@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_qyng33h4u3u37xoc",
-      "versionId": "v_gnbleyybjyuihip2",
-      "revision": 6,
-      "contentHash": "sha256:34a35f5475c6df840d2ea1f49a6bed0667d8a9b09c02e81460a6e07dc9e42f8c",
+      "versionId": "v_7jxqsdlr7pq6popi",
+      "revision": 7,
+      "contentHash": "sha256:269ade25ed0279ee970c4e59bf5e223513f1172f1c61db267e52e8221eacf18b",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:07:54.915Z"
+      "releasedAt": "2026-11-12T12:24:48.108Z"
     }
   },
   "classicStructure": {
@@ -9646,7 +9646,7 @@
         -3
       ],
       "kind": "prop",
-      "model": "prop.big_pipe",
+      "model": "kit.pipe.riser",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -10154,7 +10154,7 @@
         -3
       ],
       "kind": "prop",
-      "model": "prop.big_pipe",
+      "model": "kit.pipe.riser",
       "yaw": 0,
       "scale": 1,
       "solid": true,

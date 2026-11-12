@@ -730,7 +730,9 @@ barrels and boxes first; fences and walls, then containers, come next.
   `content/kitprops/<type>.json` (families: id `kit.<type>.<name>`, display name, palette `category` (an existing prop
   category), `assetVersion` with a note per version, `size` (the box it fills), `surface` (a surface type: impacts and
   ballistics), `detail` (the content/surfaces.json picture drawn on it), optional `breakable` (`health`, `debris`, and
-  `blast` for a piece that explodes: the pipe valve), the generator's kind and
+  `blast` for a piece that explodes: the pipe valve), optional `collide: "none"` (a family that replaces a prop
+  nothing collided with: the traffic cones; every other family collides), optional `bounds: "within"` (a part of a
+  larger build drawn where it stands in it: the dome kit, below), the generator's kind and
   settings, levels of detail, variants: `index`, `name`, `seed`, `look` (colours and wear) and optional `set` (settings
   of its own: an X brace, no brace, narrower planks)).
 - **Build:** `node tools/content/kitprops.mjs` (`content:rebuild` and `content:check` run it, after prepare-props).
@@ -749,7 +751,12 @@ barrels and boxes first; fences and walls, then containers, come next.
   goods), `factory.mjs` (the shipping crate under a lifting saddle, the warning signs, the belt conveyor), `market.mjs`
   (shop fittings: the wire shopping cart, the bakery stand, the checkout, the chest freezer, the bottle-return
   machine, the produce stand), `plant.mjs` (the control console, the valve on a large pipe; these eight collide as
-  finer boxes written in their generators, in metres, as the props they replace did), `glb.mjs` (the writer).
+  finer boxes written in their generators, in metres, as the props they replace did), `machines.mjs` (the heavy
+  press, the chamber machine with a port in each end, the round and the tall hopper, the piston, the scanner gate,
+  the lever panel, the giant cog), `yard.mjs` (the glass pipe, the capped pipe riser, the workbench, the traffic
+  cone, the anvil on its timber block; all but the cone collide as finer boxes written in their generators),
+  `pipes.mjs` (the station's coolant pipe and its pipe junction: pipes along z, the bore open from end to end),
+  `dome.mjs` (the Desert City dome kit: "The dome kit" below), `glb.mjs` (the writer).
   `geom.mjs` also has square bars between any two points, wire panels (flat strips seen from both sides), and
   cylinders and rings along any axis.
   Randomness only from `env/rng.mjs` streams.
@@ -763,7 +770,8 @@ barrels and boxes first; fences and walls, then containers, come next.
 - **In the game:** a family is an ordinary catalogue prop (`CORE_PROPS`, `getProp`; shared/src/content/kitProps.ts), so
   collision, settling, footing, budgets, breaking, the palette and the inspector need nothing new. Its collision is its
   box: every variant's level 0 fills `size` to 2 mm and no level leaves it (the build and
-  `tools/content/test/kitprops.test.mjs` check). Variants (`PropEntity.variant`) share the size, collision, surface and
+  `tools/content/test/kitprops.test.mjs` check). A family with `bounds: "within"` only has to stay inside `size`;
+  it collides as its generator's boxes, or not at all. Variants (`PropEntity.variant`) share the size, collision, surface and
   breakable data and change only the drawn file (`kitModelFile`; client game/propVisuals.ts). MapMaker offers each
   family in its category; the prop inspector picks a variant, Randomise rolls one.
 - **Budgets:** triangles per level by kind (`budgets.triangles`), bytes per file; and against what each alias
@@ -781,6 +789,61 @@ barrels and boxes first; fences and walls, then containers, come next.
   kind, run the build, add it to the content test's family list, look at it in the lineup
   (`node tools/content/prop-lineup.mjs` with `ONLY=`, or `window.__lineup.show(['kit.crate.wood#2'], 'eye')`). A change
   to a family's size, collision or surface bumps its `assetVersion` with a note: it is a gameplay change.
+
+#### The dome kit
+
+Desert City domes built from parts, from the owner's reference sheet (2026-11-12): `tools/content/kit/dome.mjs`,
+`content/kitprops/dome.json`, 29 families `kit.dome.*` in the Desert City palette category and Style Pack. Our own
+geometry; nothing glows or blinks (every look is paint).
+
+- **One axis, one drum.** Every part's origin is the dome's centre axis at the foot of the drum, and a part is drawn
+  where it stands on that drum: the drum's wall is 7.2 m across (7.6 m with its trims: one 8 m cell), 0.4 m thick and
+  2.6 m high; the panels spring 2.6 m up; the cap sits on the crown, 6.1 m up. So parts dropped on one point make
+  the dome with nothing to measure, each turned by its own step. That is what `bounds: "within"` is for: such a
+  part's `size` is the box round the whole build up to its own top, not the part.
+- **Parts** (one drum diameter):
+  the cap (`cap`); a panel of a dome of 4, 6, 8 or 12 segments (`panel_<n>`), with a pointed window open to shots
+  (`panel_<n>_window`) or broken off 1.9 m up (`panel_<n>_broken`), half a rib along each edge; a quarter of the
+  drum, two bays each: arched doorways 1.4 m wide and 2.1 m high (`drum_arch`), arched windows 0.7 m wide with the
+  sill 0.85 m up (`drum_window`), or blind arches (`drum_solid`); the ring trims: the cornice under the dome's foot
+  (`trim_top`), the impost band at the arches' springing, on the piers only (`trim_middle`), the plinth
+  (`trim_bottom`).
+- **Arch transitions** (`arch_4way`, `arch_3way`, `arch_2way`): one cell square (8 m) and one level high (4 m), a
+  pier in each corner, an arch 5.4 m wide and 3.3 m high in four sides, three (a wall with a blind arch at −z) or
+  two opposite ones (+z and −z: a passage). The top is flat and solid, level with the next floor, with the drum's
+  round seat marked in it: what is dropped on its middle lands on it.
+- **Whole domes** for quick placing, the same dome in one piece: `whole_8` and `whole_12` (one cell; eight
+  doorways, or six under the twelve ribs), `hall_8` and `hall_12` (15.2 m across and 12.2 m high, for a hall of 2 × 2
+  cells: doorways 2 m wide; the twelve-segment one has a blind arch between each two doorways), and the ruins
+  `ruin_8`, `ruin_12` and `hall_ruin_12` (panels broken off or gone, no cap). Ruins are families of their own
+  because their collision differs (a family has one collision).
+- **Looks** (variants): stone, sandstone, plaster, copper (verdigris with bare patches), blue tile, green tile; on the
+  masonry parts the last three change the frieze under the cornice, the trims and the cap. The ruins have four
+  (stone, sandstone, plaster, blue tile).
+- **Collision:** boxes written by the generator: small boxes round the drum's curve and in bands up the shell, the
+  middle hollow (a player stands inside under the dome), doorways, windows and breaks open; a doorway's sides are
+  drawn back so no box stands more than 3 cm into it (1 m clear). The trims do not collide (mouldings 0.2 m proud of
+  the wall). A quarter drum has 12–22 boxes, a panel 2–20, a whole dome 95–133, a transition 17–29.
+  Surface: stone for every part and look (a family has one surface, so the copper look plays as stone too).
+- **Budgets:** `dome` 1700 / 620 / 60 triangles, `domearch` 540 / 260 / 20, `domepanel` 320 / 130 / 10, `dometrim`
+  260 / 80 / 50, `domecap` 200 / 70 / 20, `domedrum` 190 / 80 / 10; the bytes budget is what holds a whole dome to
+  about 1500 triangles. Level 1 (from 45 m; 70 m for the hall) keeps every opening open; level 2 (from 160 m;
+  220 m) is a closed stand-in.
+
+**How to assemble a dome in MapMaker** (props turn in 15° steps with R, 5° with Shift+R; the inspector's Facing takes
+a number):
+
+1. Optional: place an arch transition on a cell's middle (snap to the grid). Its top is one level up.
+2. Drop a drum quarter on the same middle (on the transition's top, a roof or the floor) and three more on the same
+   point, turned 90°, 180° and 270° (six presses of R each quarter turn). Mix arches, windows and solid quarters.
+3. Drop the trims you want on the same point (no turning).
+4. Drop the panels on the same point: a dome of *n* segments takes *n* panels of that count, each turned 360° / *n* on
+   from the last (4: 90°, 6: 60°, 8: 45°, 12: 30°). Leave one out, or use a broken one, for a ruin.
+5. Drop the cap on the same point.
+
+Every part lands at the same height because the drum is hollow: a drop on its middle falls to what the drum stands
+on. To set panels and a cap straight on a wall of your own with no kit drum, lower them by 2.6 m (Height in the
+inspector). The kit drum has eight bays, so the ribs of a 6- or 12-segment dome do not all stand over piers.
 
 ### Tiles and edge styles
 

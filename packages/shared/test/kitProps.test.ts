@@ -35,6 +35,13 @@ const MAPS = new URL('../../../maps/', import.meta.url);
 const mapIds = readdirSync(MAPS).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).sort();
 const prop = (over: Partial<PropEntity> = {}): PropEntity => ({ kind: 'prop', id: 'p1', name: '', position: [1, 0, 2], yaw: 0.5, scale: 1, solid: true, tint: null, model: 'prop.crate_small', ...over }) as PropEntity;
 
+/** Families with no collision: the cones replace props that had none (kit props part 10); the dome kit's trims are mouldings on a wall. */
+const NO_COLLISION = new Set([
+  'kit.sign.cone', 'kit.sign.cone_slim',
+  // The dome kit's ring trims: mouldings 0.2 m proud of the drum's wall, which is what collides.
+  'kit.dome.trim_top', 'kit.dome.trim_middle', 'kit.dome.trim_bottom',
+]);
+
 describe('kit families', () => {
   it('are catalogue props, found by getProp, each colliding as its box', () => {
     expect(KIT_PROPS.length).toBe(KIT_FAMILIES.length);
@@ -44,7 +51,9 @@ describe('kit families', () => {
       expect(getProp(p.id)).toBe(p);
       // Every variant fills the family's bounds (tools/content/kitprops.mjs checks the models): the box is the shape,
       // or, for a piece you can see through (a rail fence, railings, a wall fallen away), its own finer boxes inside it.
-      expect(p.collision).toEqual(p.size);
+      // (A family that replaces a prop nothing collided with has no collision either: the traffic cones.)
+      if (NO_COLLISION.has(p.id)) expect(p.collision, p.id).toBeNull();
+      else expect(p.collision).toEqual(p.size);
       for (const b of p.boxes ?? []) for (let k = 0; k < 3; k++) expect(b[k + 3]!, p.id).toBeGreaterThan(b[k]!);
       expect(getKitFamily(p.id)?.variants[0]?.file).toBe(p.file);
     }
@@ -94,6 +103,16 @@ const REMATERIALLED = new Map<string, string>([
   // console (glass, by the word "screen") are sheet steel. (The cart was thin metal already; the pipe valve stays metal.)
   ['prop.bread_display', 'wood'], ['prop.fruit_display', 'wood'], ['prop.checkout', 'wood'],
   ['prop.freezer', 'thin_metal'], ['prop.bottle_return', 'thin_metal'], ['prop.screen_panel', 'thin_metal'],
+  // Part 10, by the same rule: the window machine (glass, by the word "window") is metal, as the heavy machine is;
+  // the workbench (concrete by the guess) is wood; the lever panel (concrete by the guess) is sheet steel; the traffic
+  // cones (concrete by the guess; nothing collides with them) are plastic. (The heavy machine, the riser and the glass
+  // pipe keep their classes: metal, metal, glass. The hoppers, the piston, the scanner gate and the cog stay concrete,
+  // solid cover as they were, like the conveyor.)
+  ['prop.machine_window', 'metal'], ['prop.workbench', 'wood'], ['prop.lever', 'thin_metal'],
+  ['prop.cone', 'drywall'], ['prop.nc_cone', 'drywall'],
+  // Part 11, by the same rule: the anvil (concrete by the guess, so it rang as stone) is iron on a timber block:
+  // metal, hard cover as it was. (The coolant pipe and the pipe junction keep their class: metal.)
+  ['prop.anvil', 'metal'],
 ]);
 
 describe('kit aliases', () => {
@@ -115,7 +134,7 @@ describe('kit aliases', () => {
       const was = getProp(a.from)!;
       const now = getProp(a.model)!;
       expect(now.size.map((v) => v * a.scale), a.from).toEqual(was.size);
-      expect(now.collision!.map((v) => v * a.scale), a.from).toEqual(was.collision);
+      expect(now.collision ? now.collision.map((v) => v * a.scale) : null, a.from).toEqual(was.collision);
       // A piece that collided as finer boxes (a fence's posts and rails) is replaced by a family with its own finer
       // boxes (owner, 2026-11-10: kit pieces collide as their own posts and rails; the gaps differ a little from the
       // Kenney ones'), inside the same bounds; a piece that was one box stays one box.

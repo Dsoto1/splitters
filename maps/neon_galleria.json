@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_uy54jdpkmne5vzsk",
-      "versionId": "v_56rdfjnz7mz7j73b",
-      "revision": 8,
-      "contentHash": "sha256:569da5e6061728fe0e32d4d3ef10bbebedededefbff81aed01dc5060b5228a9d",
+      "versionId": "v_v5rczskkb3x4735o",
+      "revision": 9,
+      "contentHash": "sha256:e2ae06c44b362c080919643d76f6a7a7414c073f03e59b3b6c81b42f89154ce8",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:32:43.558Z"
+      "releasedAt": "2026-11-12T12:56:35.806Z"
     }
   },
   "classicStructure": {
@@ -20031,7 +20031,7 @@
         -18.97
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": -0.7837,
       "scale": 1,
       "solid": false,
@@ -20045,7 +20045,7 @@
         -13.03
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": -2.3987,
       "scale": 1,
       "solid": false,

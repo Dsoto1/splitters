@@ -640,7 +640,7 @@
         15
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -654,7 +654,7 @@
         25
       ],
       "kind": "prop",
-      "model": "prop.machine_window",
+      "model": "kit.machine.window",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -668,7 +668,7 @@
         13.5
       ],
       "kind": "prop",
-      "model": "prop.piston",
+      "model": "kit.machine.piston",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -682,7 +682,7 @@
         26.5
       ],
       "kind": "prop",
-      "model": "prop.piston",
+      "model": "kit.machine.piston",
       "yaw": 0,
       "scale": 1,
       "solid": true,

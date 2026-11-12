@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_e6dqdikseiiwt3s5",
-      "versionId": "v_gbjlfwngqfdoi3wi",
-      "revision": 9,
-      "contentHash": "sha256:ec9a1455fc58482e472d4753176312713b9abce42c6406c2bd259cd22b66af85",
+      "versionId": "v_43sh5altpio7sb53",
+      "revision": 10,
+      "contentHash": "sha256:6b5c259edc1f484bf963184c9c7a4eea57752a4aed84680238344a81548e277a",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:24:45.310Z"
+      "releasedAt": "2026-11-12T12:39:49.300Z"
     }
   },
   "classicStructure": {
@@ -13374,7 +13374,7 @@
         61.84
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -13388,7 +13388,7 @@
         65.72
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -13402,7 +13402,7 @@
         62.33
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": -1.5708,
       "scale": 1,
       "solid": true,
@@ -15376,7 +15376,7 @@
         10.6
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -15390,7 +15390,7 @@
         10.6
       ],
       "kind": "prop",
-      "model": "prop.machine_window",
+      "model": "kit.machine.window",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
