@@ -567,7 +567,8 @@ export function sizePresets(mode: GameMode, map: MapDocument, o: PresetOptions):
       add('small', 'Duo', Math.min(2, room), 'You and one bot squadmate.');
       add('pick', "Map's pick", Math.min(pick, room), `The squad the map is made for (up to ${room}).`);
       add('big', 'Big squad', Math.min(pick * 2, room), "Twice the map's own squad, as far as the map is made for.");
-      const zombiesMost = mode === 'core.zombies' && room === ZOMBIES_MAX_PLAYERS && room < squadRoom(map, BROWSER_MAX_PLAYERS);
+      // (Its own limit, not the device's: a phone that runs 16 or fewer still says so.)
+      const zombiesMost = mode === 'core.zombies' && room === ZOMBIES_MAX_PLAYERS && o.deviceMax > ZOMBIES_MAX_PLAYERS && room < squadRoom(map, BROWSER_MAX_PLAYERS);
       add('max', 'Max', room, zombiesMost ? `Zombies takes up to ${room} for now.` : room < squadRoom(map, BROWSER_MAX_PLAYERS) ? `The most ${device} runs: ${room}.` : `The most the map is made for: ${most}.`);
     } else {
       add('duel', 'Duel', 2, 'One on one: you against a bot (or a friend who joins).');

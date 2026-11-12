@@ -177,10 +177,12 @@ describe('co-op size presets stop at the map’s size', () => {
   const values = (ps: { value: string }[]) => ps.map((p) => p.value).join(' ');
 
   it('no squad beyond the map’s team layout or its recommended most', () => {
-    // St. John's layout is 12v12: 24 in all. (Before: Big squad 24, Max 48.)
+    // St. John's layout is 12v12: 24 in all. (Before: Big squad 24, Max 48.) Zombies takes 16 at the most for now
+    // (owner, 2026-11-11: fewer players, a bigger horde), so its Max stops there and says whose limit it is.
     const zombies = sizePresets('core.zombies', campus(), { deviceMax: 48 });
     expect(zombies.map((p) => p.label).join()).toBe("Solo,Duo,Map's pick,Max");
-    expect(values(zombies)).toBe('you alone you + 1 squad of 12 squad of 24');
+    expect(values(zombies)).toBe('you alone you + 1 squad of 12 squad of 16');
+    expect(zombies.find((p) => p.id === 'max')).toMatchObject({ players: 16, tip: 'Zombies takes up to 16 for now.' });
     // A mission made for 1–4: the Arcade starts it with 4, and nothing beyond.
     const coop = sizePresets('core.coop', mission(), { deviceMax: 48, pickPlayers: 4 });
     expect(values(coop)).toBe('you alone you + 1 squad of 4');
