@@ -1,6 +1,6 @@
 # St. John's: the owner's brief for a rework (2026-11-12)
 
-The owner knows the real campus. This is what they said and what their eighteen reference photos show. Nothing is built
+The owner knows the real campus. This is what they said and what their nineteen reference photos show. Nothing is built
 from it yet; more references are coming ("I'll add reference more after this"). The photos are not in the repository
 (they are the school's own pictures, not ours to ship or commit): ask the owner for them, or look in the session
 scratchpad `stjohns-refs/` while that session lives. Use them as reference only: nothing from them goes into a texture.
@@ -117,6 +117,22 @@ So the main entrance is a drive that splits round the stone cairn in front of th
     above. A lower wing at the near end with large round-arched ground-floor openings and a dark double door. A
     small conical-roofed turret at the far end. In front: a flagstone path and a low curved wall of stacked
     limestone with a square pier, lawn, a tall spruce.
+
+### The entrance, from inside it (the owner, the same day, photo 19)
+
+"A view at entrance between those two buildings and the obelisk thing. The gym is to the left (behind) of the
+reference image."
+
+19. **Looking in at the entrance.** In the foreground a fieldstone gate pier with a bronze plaque and a round globe
+    lamp in an iron cage on top, a low fieldstone wall running from it. Beyond the drive, a three-storey limestone
+    keep: two round corner turrets with crenellated tops rising above the roof, red-trimmed square windows, a wide
+    arched window on the top floor, a round-arched door at the ground with a wooden notice board under a small shingle
+    roof beside it. A red conical roof (the library) shows in the distance at the right. The gym is out of frame,
+    to the left and behind the viewer.
+
+So the entrance is: fieldstone gate piers with caged globe lamps and low fieldstone walls at the road, the drive
+splitting round the cairn, the two crenellated stone halls either side, the gym off to the left, the library
+further in to the right.
 
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
