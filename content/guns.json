@@ -1103,6 +1103,24 @@
       "normalSize": 1024
     },
     {
+      "out": "vehicles/sky_cruiser.glb",
+      "pack": "meshy-community-drive-1108",
+      "glb": "Meshy_AI_Sky_Cruiser_1108121108_texture.glb",
+      "label": "Sky Cruiser, the Gunship (Meshy Community download, owner's Drive, 2026-11-08)",
+      "forward": "-x",
+      "length": 8.6,
+      "triangles": 20000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 2048,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 1024
+    },
+    {
       "out": "vehicles/dust_runner.glb",
       "pack": "meshy-community-drive-1108",
       "glb": "Meshy_AI_Dust_Runner_1108120725_texture.glb",
