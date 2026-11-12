@@ -1,6 +1,6 @@
 # St. John's: the owner's brief for a rework (2026-11-12)
 
-The owner knows the real campus. This is what they said and what their nineteen reference photos show. Nothing is built
+The owner knows the real campus. This is what they said and what their nineteen reference photos and the campus plan show. Nothing is built
 from it yet; more references are coming ("I'll add reference more after this"). The photos are not in the repository
 (they are the school's own pictures, not ours to ship or commit): ask the owner for them, or look in the session
 scratchpad `stjohns-refs/` while that session lives. Use them as reference only: nothing from them goes into a texture.
@@ -133,6 +133,42 @@ reference image."
 So the entrance is: fieldstone gate piers with caged globe lamps and low fieldstone walls at the road, the drive
 splitting round the cairn, the two crenellated stone halls either side, the gym off to the left, the library
 further in to the right.
+
+### The campus plan (the owner, the same day: a screenshot of the school's own campus map, reference 20)
+
+North is up. Read from the plan (positions are as drawn, not measured):
+
+- **Streets.** Wisconsin Avenue along the top; St. John's Road below the first row of blocks; then Guard Path
+  (west) and Church Street (east) on one line; Exeter Street below that. Running north-south: Spanjer Street on the
+  west; Smythe Lane and Farrand Lane between the upper blocks; a "Visitor parking" strip down the middle between the
+  two central blocks; Genesee Street (Highway C) along the east edge. **The Main Gate is on Genesee Street at the
+  east end of St. John's Road**, with the Cadet Post just inside it.
+- **North-west central block (between St. John's Road and Guard Path, west of the parking strip):** Noble Victory
+  Memorial Chapel in its north-west corner with The Columbarium attached to its south-east; Smythe Hall, an L-shaped
+  building, in the east of the block (a short west arm at the top, the long arm running south along the parking
+  strip).
+- **North-east central block (east of the parking strip, up to Genesee Street):** the Cadet Post at the top by the
+  gate; Farrand Hall Gymnasium, a large rectangle across the south of the block; Gerber Pool, a long north-south
+  rectangle joined to the gym's east end.
+- **South-west central block (between Guard Path and Exeter Street):** Memorial Hall on the west side; DeKoven
+  Hall, a long north-south building on the east side by the parking strip, with "Reception" marked at its west
+  face; Stangeland / Cord Hall in the south-west; Welles Dining Hall in the south-east, at the foot of DeKoven Hall;
+  **the Adreani Memorial Bridge joins Stangeland / Cord Hall to Welles Dining Hall** (this is the skywalk, and it is
+  here, not at the main gate). The four buildings ring an open court.
+- **South-east central block:** private property, St. John Chrysostom Episcopal Church and cemetery (not part of
+  the campus).
+- **West of the central blocks, east of Spanjer Street:** the Field of Flags and Parade Field with the Flag Pole at
+  its east side; Scott Johnston / Hazelwood Hall along the south of that block, a volleyball court at its west end.
+- **South of Exeter Street:** tennis courts (two sets), Mouso Hall, the Carpenter Shop, Birk Infirmary, the Campus
+  Store, a US Post Office, maintenance barns.
+- **West of Spanjer Street:** the athletics: Price Davis Field at Rick Leone Stadium, the Sturm-Carl Building, Jim
+  Duggan Field (baseball), Adreani Track, the JV baseball field, a rappelling tower.
+
+The plan does not name a library; the owner says the red conical roof is the library (ask which block it stands in).
+The photos' buildings against the plan, as far as they can be told: the chapel (photos 4, 11, 13) is Noble Victory
+Memorial Chapel; the gym (2, 3) is Farrand Hall Gymnasium; the mess hall (12) is Welles Dining Hall; the hall with
+the clock tower and the arch over the path (15) and the halls round the court are among DeKoven, Smythe, Memorial
+and Stangeland / Cord: which is which is a question for the owner.
 
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
