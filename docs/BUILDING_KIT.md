@@ -379,13 +379,14 @@ of the repo).
   are exactly our own. Stack rooms with the same facade for taller buildings.
   Downtown (`maps/downtown.json`) shows all of it.
 
-## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`, `map/packTilesHarbor.ts`, `map/packTilesSnow.ts`, `map/packTilesDesert.ts`, `map/packTilesJungle.ts`)
+## Style Packs (`editor/stylePacks.ts`, `map/packTiles.ts`, `map/packTiles2.ts`, `map/packTilesAncient.ts`, `map/packTilesMedieval.ts`, `map/packTilesHarbor.ts`, `map/packTilesSnow.ts`, `map/packTilesDesert.ts`, `map/packTilesJungle.ts`, `map/packTilesIndustrial.ts`)
 
 Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
 alongside the set), then from the owner's tileset sheets 10 Medieval Village,
-11 Coastal Harbor and 12 Snow Outpost; 09 is now **Desert City**, which
+11 Coastal Harbor and 12 Snow Outpost, then 13 Industrial Factory (owner, 2026-11-12: a pack of our own pieces);
+09 is now **Desert City**, which
 replaced Sands of Egypt (owner, 2026-10-31) and still carries all its pieces,
 and 06 Jungle Ruins was refreshed from the Jungle Ruins sheet with the Ancient
 Temple sheet folded in. One registry (`STYLE_PACKS`, in pack-number order). A Style
@@ -936,6 +937,48 @@ storey a repeat), Snowy Concrete, Frozen Rock (strata rimed with frost), Steel G
 down), *Ice Block* (breakable cover, back after 30 s), *Thin Ice* (4 × 4 m, gives way 0.7 s after you step
 on it, back after 12 s), with blast doors, ladders, alarm lights, water, mines and the generator.
 Not in the game yet: falling snow (the `snowy` sky has no precipitation) and slippery ice.
+
+### 13 Industrial Factory (working factory)
+
+Owner, 2026-11-12: a new pack with its own theme (not a refresh of 01 Military Compound), built from our own
+pieces: factory floor, pipes, catwalks, conveyors, crates. Theme `core.industrial` (dark concrete floors, grey
+sheet walls, rusted plate solids, steel undersides, safety-yellow steel trim; existing materials only; `core.factory`
+is unchanged), backdrop: overcast sky, city skyline, gravel; the scenery belt is containers, long factory crates,
+concrete barriers, drums and valves (kit families). Demo map `maps/ironworks.json`: still to be made in MapMaker.
+Tiles in `map/packTilesIndustrial.ts` (box helpers from packTilesMedieval.ts; `tank` and `disc` from packTilesSnow.ts):
+
+| Tile | Cells | Ports | What it is |
+|---|---|---|---|
+| `industrial.factory_hall` Factory Hall | 2 × 2 (3 levels) | perimeter at level 0; N at level 1 (both cells) | sheet walls 7.5 m high on a steel frame, an open window band 5 m up, a 6 × 4.6 m doorway S (hang a Roll-up Door), doors on every side, a grating mezzanine 4 m up along N (stair up the east side) with a doorway at each north cell onto a catwalk outside |
+| `industrial.pipe_rack` Pipe Rack | 1 × 1 (2 levels) | all sides | three eight-sided pipes E–W on two steel bents 3 m up; walk and drive under, lay them in a row |
+| `industrial.catwalk_cross` Catwalk Crossing | 1 × 1 (2 levels) | all sides at level 0 and at level 1 | grating decks 4 m up to all four edges, railed, on four legs (meets `snow.catwalk`, `snow.metal_stair`) |
+| `industrial.conveyor_line` Conveyor Line | 1 × 1 | all sides | a belt 1.05 m high and 6.4 m long N–S on a steel bed, a 1.5 m guard rail along its east side: cover (it does not move; a Sliding platform can ride along it) |
+| `industrial.loading_bay` Loading Bay | 2 × 1 (2 levels) | perimeter at level 0 | a concrete dock 1.25 m high south of a sheet wall, a ramp up its west end, a canopy on posts; a 6 × 4.6 m doorway in the wall at dock height (Roll-up Door) with steps down behind it to the north; the west 1.5 m stays clear at ground level |
+| `industrial.silo` Silo | 1 × 1 (3 levels) | all sides at level 0; S at levels 1 and 2 | an eight-sided tank 2.8 m across, an open grating stair 2.4 m wide round it (landings N at 2 m and 6 m, S at 4 m and 8 m, the south ones to the edge for a catwalk) to a railed deck 8 m up |
+| `industrial.control_room` Control Room | 1 × 1 (2 levels) | all sides at level 0; N at level 1 | a panel cabin on legs 4 m up, an open window band on three sides, a door N onto a railed balcony at the north edge (a gap in the rail for a catwalk), an open stair up the east side from the south; walk under it |
+
+Window bands are open (no glass: you shoot through them); rails are the solid 1 m rail the other packs use; the
+silo's corner posts and the hall's frame are drawn only. Navmesh notes (on top of Snow's): the bots' navmesh keeps
+0.8 m off every wall and edge, so a stair or deck needs 2.4 m of width (a 2.2 m stair round the silo lost its
+strip in two of four rotations, a 1.5 m one had none); steps need a run of 0.42 m or more (at 0.38 m the mesh
+drops them as a ledge); a switchback whose steps run to the cell's very edge drops off the mesh (the silo's stops
+0.1 m short, with sills at the south landings); and a doorway beside a 1 m stair landing connects nothing (the
+control room's door faces its balcony instead). `test/stylePacksIndustrial.test.ts` walks bots onto the
+mezzanine, the crossing, the dock, both silo landings and its deck, the cabin, and off the hall, silo and
+control room onto a catwalk, in all four rotations, and checks each tile draws no two faces in one plane.
+
+**Props**: none of its own. It lists our kit families (conveyor belt, factory, wooden and framed crates, steel
+drums, shipping container, concrete barrier, warning sign, console panel, pipe valve, iron fence, shelves) and
+pieces already in the game (machines, hoppers, piston, cog, pipes and pipe racks, tanks, the gantry crane, the
+generator, cones, pallets, lamps). So the earlier packs' "25–40 props of its own category" rule does not apply to
+it: the test asks for seven tiles of its own and 25 or more pieces in all.
+
+**Materials**: no new ones (Steel Grating, tread plate, rusted plate, hazard stripes, grey and rusty corrugated
+sheet, concrete, steel). **Facades**: *Corrugated sheet*, *Bunker concrete*, *City brick*. **Set pieces**: role pack
+`industrial` (sheet walls, yellow steel trim, dark concrete, crate wood, rusted plate; blast doors, reinforced
+glass) on the Loading Dock, Power Core Hall, Reactor Room, Server Vault, Catwalk Bridges, Skybridges and Stair
+Towers. **Gameplay pieces**: the Roll-up Door, goods lift, sliding platform, blast door, ladder, alarm light,
+barrier, fence, crates and barrels, gas, the generator, crusher, flames and shock traps.
 
 ### 06 Jungle Ruins refresh (Ancient Temple folded in)
 

@@ -7,7 +7,7 @@
       "displayName": "Reactor Room",
       "category": "Industrial",
       "blurb": "A two-storey reactor hall (the Reactor Hall, its core glowing in the middle, a catwalk all round) behind an airlock, with a pump room beside it and a control room over the airlock looking down through armoured glass: 3 × 2 cells.",
-      "packs": ["orbital", "military", "neon", "snow"],
+      "packs": ["orbital", "military", "neon", "snow", "industrial"],
       "footprint": { "cells": [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]], "levels": [0,1] },
       "mirror": "none",
       "roles": {"glass":"reinforced"},

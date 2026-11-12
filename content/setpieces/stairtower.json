@@ -7,7 +7,7 @@
       "displayName": "Stair Tower (4 levels)",
       "category": "Stairs",
       "blurb": "Switchback stairs 4 levels up, 3 × 1 cells: a stairwell either side of a hall that has a landing on every level, arches out of the hall north and south on each one (into the stands' galleries).",
-      "packs": ["imperial", "desert", "medieval", "gothic", "military"],
+      "packs": ["imperial", "desert", "medieval", "gothic", "military", "industrial"],
       "footprint": { "cells": [[0,0],[1,0],[2,0]], "levels": [0,4] },
       "mirror": "none",
       "ports": [
@@ -47,7 +47,7 @@
       "displayName": "Stair Tower (6 levels)",
       "category": "Stairs",
       "blurb": "Switchback stairs 6 levels up, 3 × 1 cells: a stairwell either side of a hall that has a landing on every level, arches out of the hall north and south on each one (into the stands' galleries).",
-      "packs": ["imperial", "desert", "medieval", "gothic", "military"],
+      "packs": ["imperial", "desert", "medieval", "gothic", "military", "industrial"],
       "footprint": { "cells": [[0,0],[1,0],[2,0]], "levels": [0,6] },
       "mirror": "none",
       "ports": [
@@ -96,7 +96,7 @@
       "displayName": "Stair Tower (8 levels)",
       "category": "Stairs",
       "blurb": "Switchback stairs 8 levels up, 3 × 1 cells: a stairwell either side of a hall that has a landing on every level, arches out of the hall north and south on each one (into the stands' galleries).",
-      "packs": ["imperial", "desert", "medieval", "gothic", "military"],
+      "packs": ["imperial", "desert", "medieval", "gothic", "military", "industrial"],
       "footprint": { "cells": [[0,0],[1,0],[2,0]], "levels": [0,8] },
       "mirror": "none",
       "ports": [
