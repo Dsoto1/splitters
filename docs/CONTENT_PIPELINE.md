@@ -730,7 +730,8 @@ barrels and boxes first; fences and walls, then containers, come next.
   `content/kitprops/<type>.json` (families: id `kit.<type>.<name>`, display name, palette `category` (an existing prop
   category), `assetVersion` with a note per version, `size` (the box it fills), `surface` (a surface type: impacts and
   ballistics), `detail` (the content/surfaces.json picture drawn on it), optional `breakable` (`health`, `debris`, and
-  `blast` for a piece that explodes: the pipe valve), the generator's kind and
+  `blast` for a piece that explodes: the pipe valve), optional `collide: "none"` (a family that replaces a prop
+  nothing collided with: the traffic cones; every other family collides), the generator's kind and
   settings, levels of detail, variants: `index`, `name`, `seed`, `look` (colours and wear) and optional `set` (settings
   of its own: an X brace, no brace, narrower planks)).
 - **Build:** `node tools/content/kitprops.mjs` (`content:rebuild` and `content:check` run it, after prepare-props).
@@ -749,7 +750,10 @@ barrels and boxes first; fences and walls, then containers, come next.
   goods), `factory.mjs` (the shipping crate under a lifting saddle, the warning signs, the belt conveyor), `market.mjs`
   (shop fittings: the wire shopping cart, the bakery stand, the checkout, the chest freezer, the bottle-return
   machine, the produce stand), `plant.mjs` (the control console, the valve on a large pipe; these eight collide as
-  finer boxes written in their generators, in metres, as the props they replace did), `glb.mjs` (the writer).
+  finer boxes written in their generators, in metres, as the props they replace did), `machines.mjs` (the heavy
+  press, the chamber machine with a port in each end, the round and the tall hopper, the piston, the scanner gate,
+  the lever panel, the giant cog), `yard.mjs` (the glass pipe, the capped pipe riser, the workbench, the traffic
+  cone; all but the cone collide as finer boxes written in their generators), `glb.mjs` (the writer).
   `geom.mjs` also has square bars between any two points, wire panels (flat strips seen from both sides), and
   cylinders and rings along any axis.
   Randomness only from `env/rng.mjs` streams.

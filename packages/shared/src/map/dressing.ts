@@ -442,7 +442,7 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
   warehouse: [
     wall([one('kit.shelf.gondola'), one('kit.shelf.gondola_snack'), one('kit.crate.bin'), one('container_tall'), stack('kit.crate.wood_long', 'kit.crate.wood', { turn: Q })], 2.5, 12, { min: 2 }),
     centre([one('kit.crate.factory'), stack('kit.crate.bin', 'kit.crate.wood'), backToBack('kit.shelf.gondola', 'kit.shelf.gondola_snack'), cluster(['kit.drum.steel', 'kit.drum.steel', 'kit.drum.steel', 'kit.drum.steel_open']), one('skip')], 1.2, 6, { min: 1, face: 'axis', gap: 1.1 }),
-    corner(ones(['kit.drum.steel', 'kit.box.carton', 'container', 'cone']), 2, 4),
+    corner(ones(['kit.drum.steel', 'kit.box.carton', 'container', 'kit.sign.cone']), 2, 4),
   ],
   barracks: [
     wall([flanked('kit.bed.bunk', 'kit.crate.framed', 1), flanked('hm_bunk_bed', 'sf_chest', 1), one('kit.bed.bunk'), flanked('hh_bunk_bed', 'hh_bedside', 1)], 2.5, 8, { min: 2 }),
@@ -451,9 +451,9 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
     corner(ones(['kit.drum.steel', 'sv_backpack', 'kit.crate.wood', 'sv_trashcan_metal']), 1.2, 3),
   ],
   lab: [
-    wall(ones(['computer_wide', 'sf_computer', 'kit.console.panel', 'machine_window']), 2, 5, { min: 1 }),
+    wall(ones(['computer_wide', 'sf_computer', 'kit.console.panel', 'kit.machine.window']), 2, 5, { min: 1 }),
     centre([one('holo_table'), one('display_table'), seated('space_table', 'space_chair')], 0.9, 2, { min: 1, face: 'axis', gap: 0.8 }),
-    wall(ones(['pipe_glass', 'sf_chest']), 0.4, 1),
+    wall(ones(['kit.pipe.glass', 'sf_chest']), 0.4, 1),
     corner(ones(['sf_barrel', 'sf_crate', 'potted_plant']), 1.5, 4),
   ],
   bar: [
@@ -469,9 +469,9 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
     corner(ones(['kit.shop.cart', 'kit.box.carton', 'potted_plant']), 1, 3),
   ],
   workshop: [
-    wall(ones(['workbench', 'kit.shelf.gondola', 'kit.crate.framed', 'machine', 'kit.pipe.valve']), 2, 6, { min: 1 }),
-    centre([piece([part('workbench', -0.6), part('workbench', 0.6)]), cluster(['sv_propane', 'kit.drum.steel']), one('kit.crate.factory_long')], 0.7, 2, { face: 'axis', gap: 0.9 }),
-    corner(ones(['sv_gas_can', 'sv_propane', 'kit.drum.steel', 'cone', 'sv_trashcan_metal']), 2, 4),
+    wall(ones(['kit.table.workbench', 'kit.shelf.gondola', 'kit.crate.framed', 'kit.machine.heavy', 'kit.pipe.valve']), 2, 6, { min: 1 }),
+    centre([piece([part('kit.table.workbench', -0.6), part('kit.table.workbench', 0.6)]), cluster(['sv_propane', 'kit.drum.steel']), one('kit.crate.factory_long')], 0.7, 2, { face: 'axis', gap: 0.9 }),
+    corner(ones(['sv_gas_can', 'sv_propane', 'kit.drum.steel', 'kit.sign.cone', 'sv_trashcan_metal']), 2, 4),
   ],
   chapel: [
     wall([piece([part('altar'), part('candles', -0.6, 0, { y: size('altar')[1] }), part('candles', 0.6, 0, { y: size('altar')[1] })])], 1, 1, { min: 1, place: 'front' }),
@@ -488,7 +488,7 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
   ],
   armoury: [
     wall(ones(['kit.shelf.gondola_snack', 'sf_chest', 'dg_chest', 'kit.crate.framed', 'kit.crate.wood_long']), 2, 6, { min: 1 }),
-    centre([one('dg_table_long'), one('workbench'), stack('kit.crate.wood_long', 'sv_medkit_case')], 0.6, 1, { face: 'axis', gap: 0.9 }),
+    centre([one('dg_table_long'), one('kit.table.workbench'), stack('kit.crate.wood_long', 'sv_medkit_case')], 0.6, 1, { face: 'axis', gap: 0.9 }),
     corner(ones(['powder_keg', 'kit.drum.steel', 'sv_gas_can', 'dg_barrel']), 1.5, 4),
     decor(ones(['dg_sword_mount', 'shield']), 1.5, 4, 1.4),
   ],

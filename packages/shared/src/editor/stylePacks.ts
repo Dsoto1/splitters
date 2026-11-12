@@ -76,7 +76,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'ammo_crate', 'ammo_stack', 'ww2_ammo_crate', 'fuel_drum', 'fuel_tank', 'storage_tank', 'steel_water_tower',
       'kit.container.shipping', 'container', 'container_tall', 'kit.crate.framed',
       'floodlight', 'yard_lamp', 'pallet', 'supply_truck', 'flatbed_truck', 'dumpster',
-      'sv_tent', 'sv_radio', 'sv_gas_can', 'kit.sign.warning', 'cone', 'kit.bed.bunk',
+      'sv_tent', 'sv_radio', 'sv_gas_can', 'kit.sign.warning', 'kit.sign.cone', 'kit.bed.bunk',
     ),
     materials: ['core.pbr_bunker_panels', 'core.pbr_olive_corrugated', 'core.pbr_grey_corrugated', 'core.pbr_burlap'],
     facades: ['concrete', 'corrugated'],
@@ -306,7 +306,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
     ],
     props: /* @__PURE__ */ props(
       'nc_streetlight', 'nc_streetlight_double', 'nc_traffic_light', 'nc_traffic_light_hanging', 'nc_highway_sign', 'nc_street_sign', 'nc_dumpster', 'nc_road_barrier',
-      'nc_cone', 'nc_neon_barrier', 'nc_elevated_pillar', 'nc_power_pole', 'nc_monorail_track', 'nc_monorail_pylon', 'nc_skytrain_car', 'nc_skytrain_front',
+      'kit.sign.cone_slim', 'nc_neon_barrier', 'nc_elevated_pillar', 'nc_power_pole', 'nc_monorail_track', 'nc_monorail_pylon', 'nc_skytrain_car', 'nc_skytrain_front',
       'nc_skytrain_end', 'nc_vending', 'nc_holo_kiosk', 'nc_food_stall', 'nc_ac_unit', 'nc_water_tank', 'nc_antenna',
       // Already in the game.
       'container', 'barrier_high',
@@ -344,7 +344,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'sb_picket_fence', 'sb_swing_set', 'sb_slide', 'sb_trampoline', 'sb_basketball_hoop', 'sb_gas_pump', 'sb_sedan', 'sb_patio_set', 'sb_sun_lounger', 'sb_fire_hydrant',
       // Already in the game: furniture, shop fittings, garden and street pieces.
       'hm_couch', 'hm_armchair', 'hm_kitchen_counter', 'hm_oven', 'hm_bed_king', 'hm_bathtub', 'hm_toilet', 'hm_houseplant_tall', 'tv', 'kit.appliance.washer', 'sv_propane',
-      'kit.shelf.gondola', 'kit.shop.checkout', 'kit.appliance.freezer_chest', 'kit.shop.cart', 'kit.box.carton', 'kit.bin.waste', 'dumpster', 'cone', 'parasol', 'bush', 'hedge', 'tree_round', 'potted_plant',
+      'kit.shelf.gondola', 'kit.shop.checkout', 'kit.appliance.freezer_chest', 'kit.shop.cart', 'kit.box.carton', 'kit.bin.waste', 'dumpster', 'kit.sign.cone', 'parasol', 'bush', 'hedge', 'tree_round', 'potted_plant',
     ),
     materials: ['core.pbr_clapboard', 'core.pbr_slate_roof', 'core.pbr_pool_tiles'],
     facades: ['clapboard', 'suburban_brick'],
