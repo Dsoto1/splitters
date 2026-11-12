@@ -186,7 +186,8 @@ new machine, never committed); `node tools/content/vfx-map.mjs` after editing th
   (it bends a copy of the screen) and its stencil window; the swirl is drawn in the pack's Opaque mode (the
   effect's second colour between the sheets), where the pack's scenes use the stencil one. New in the player for
   these: the `portal` and `portal_glow` shaders (parallax through `layers` sheets; a varying of their own for the
-  view in the quad's frame), square gradient fills (a gate's shape), ping-pong noise, and
+  view in the quad's frame), square gradient fills (a gate's shape), ping-pong noise (folded into bands for the ports that ask, `pingPong`;
+  the toxic cloud's one ping-pong mask stays the plain noise it was fitted to), and
   `magic_areas/transparent`: the Vol. 1 family's shader drawn additive, unlit and lifted three times, since the
   Magic Area pack too leans on Godot's glow pass (its masks multiply down to a few per cent of alpha; unlifted the
   column could not be seen even at night). Cost: a portal two draws (the swirl's fragment shader reads 24 texels a

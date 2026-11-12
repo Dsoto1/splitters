@@ -223,10 +223,10 @@ function cellNoise(x: number, y: number, p: number, s: number, manhattan: boolea
 }
 
 const noiseCache = new WeakMap<Scene, Map<string, Texture>>();
-function noiseTexture(scene: Scene, spec: Json | null): Texture {
+function noiseTexture(scene: Scene, spec: Json | null, fold = false): Texture {
   let cache = noiseCache.get(scene);
   if (!cache) noiseCache.set(scene, (cache = new Map()));
-  const key = JSON.stringify(spec ?? {});
+  const key = `${fold ? 'f' : ''}${JSON.stringify(spec ?? {})}`;
   const hit = cache.get(key);
   if (hit) return hit;
   const n = (spec?.noise ?? {}) as Json;
@@ -256,8 +256,9 @@ function noiseTexture(scene: Scene, spec: Json | null): Texture {
         const fy = (y / SIZE) * p;
         let s = type === 2 ? cellNoise(fx, fy, p, seed + o, manhattan) : smoothNoise(fx, fy, p, seed + o);
         if (fractal === 2) s = 1 - Math.abs(s * 2 - 1);
-        // Ping-pong (FastNoiseLite's fourth fractal): the noise folded back and forth into bands.
-        else if (fractal === 3) {
+        // Ping-pong (FastNoiseLite's fourth fractal): the noise folded back and forth into bands. Only for the
+        // ports that ask (ShaderPort.pingPong): the toxic cloud was fitted by eye to the plain noise.
+        else if (fractal === 3 && fold) {
           const t = s * 2 * pingPong;
           const f = t - Math.floor(t * 0.5) * 2;
           s = f < 1 ? f : 2 - f;
@@ -508,6 +509,8 @@ interface ShaderPort {
   fragment: string;
   /** GLSL functions the bodies call (put before main in both stages). */
   helpers?: string;
+  /** Its ping-pong noises are folded into bands as FastNoiseLite makes them (else drawn as plain noise). */
+  pingPong?: boolean;
 }
 
 const PORTS: Record<string, ShaderPort> = {
@@ -1051,6 +1054,7 @@ PORTS['magic_areas/transparent'] = {
   ...PORTS.transparent,
   blend: 'add',
   cull: false,
+  pingPong: true,
   fragment: `${vol1Fragment('0.0')}
       outColor = albedo * u_emission_strength;
       outAlpha = clamp(a * 3.0, 0.0, 1.0);`,
@@ -1452,7 +1456,7 @@ function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefine
   for (const s of port.samplers ?? []) {
     let spec = (mat[`shader_parameter/${s}`] ?? (s === 'noise_texture' ? root.noise_texture : s === 'smoke_texture' ? root.smoke_texture : null)) as Json | null;
     if (s === 'normal_texture' && !spec && root.smoke_texture) spec = { ...(root.smoke_texture as Json), as_normal_map: true, bump_strength: 32 };
-    m.setTexture(s, spec && typeof spec.texture === 'string' ? packTexture(scene, spec.texture) : spec && (spec.type === 'GradientTexture2D' || spec.type === 'GradientTexture1D' || (spec.gradient && !spec.noise)) ? gradientTexture(scene, spec) : noiseTexture(scene, spec));
+    m.setTexture(s, spec && typeof spec.texture === 'string' ? packTexture(scene, spec.texture) : spec && (spec.type === 'GradientTexture2D' || spec.type === 'GradientTexture1D' || (spec.gradient && !spec.noise)) ? gradientTexture(scene, spec) : noiseTexture(scene, spec, port.pingPong === true));
   }
   m.setFloat('u_bright', 0.55);
   m.setFloat('u_gain', gain);
