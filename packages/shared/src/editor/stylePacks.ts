@@ -391,11 +391,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'dc_market_stall', 'dc_canopy', 'dc_dome', 'dc_dome_blue', 'dc_banner', 'dc_lantern', 'dc_palm_planter', 'dc_well', 'dc_vase', 'dc_jars', 'dc_rug', 'dc_crane',
       'dc_cloth_line', 'dc_scaffold', 'dc_awning_window', 'dc_lattice_window', 'dc_shutter_window', 'dc_spice_baskets', 'dc_cushions', 'dc_rug_rack', 'dc_column', 'dc_ornate_arch',
       // The dome kit (tools/content/kit/dome.mjs): a dome from parts round one axis: the cap, panels for 4, 6, 8 or 12 segments, the drum's
-      // quarters, ring trims, the arch transitions a drum stands on, and whole domes on their drums (one cell, and a 2 × 2 cell hall).
+      // quarters, ring trims, the arch transitions a drum stands on, and whole domes on their drums (one cell, the closed roof domes nobody enters, and a 2 × 2 cell hall).
       'kit.dome.cap', 'kit.dome.panel_4', 'kit.dome.panel_4_window', 'kit.dome.panel_4_broken', 'kit.dome.panel_6', 'kit.dome.panel_6_window', 'kit.dome.panel_6_broken',
       'kit.dome.panel_8', 'kit.dome.panel_8_window', 'kit.dome.panel_8_broken', 'kit.dome.panel_12', 'kit.dome.panel_12_window', 'kit.dome.panel_12_broken',
       'kit.dome.drum_arch', 'kit.dome.drum_window', 'kit.dome.drum_solid', 'kit.dome.trim_top', 'kit.dome.trim_middle', 'kit.dome.trim_bottom', 'kit.dome.arch_4way',
-      'kit.dome.arch_3way', 'kit.dome.arch_2way', 'kit.dome.whole_8', 'kit.dome.whole_12', 'kit.dome.hall_8', 'kit.dome.hall_12', 'kit.dome.ruin_8', 'kit.dome.ruin_12',
+      'kit.dome.arch_3way', 'kit.dome.arch_2way', 'kit.dome.whole_8', 'kit.dome.whole_12', 'kit.dome.closed_8', 'kit.dome.closed_12', 'kit.dome.hall_8', 'kit.dome.hall_12', 'kit.dome.ruin_8', 'kit.dome.ruin_12',
       'kit.dome.hall_ruin_12',
       // The owner's Meshy pieces (the market stall, well and crane above are the owner's too): a stall, temple statues, fountains.
       'rustic_market_stall', 'temple_spear_statue', 'temple_monk_statue', 'eagle_fountain', 'lion_head_fountain', 'town_fountain',

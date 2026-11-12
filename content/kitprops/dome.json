@@ -2914,6 +2914,250 @@
       ]
     },
     {
+      "id": "kit.dome.closed_8",
+      "displayName": "Closed Dome (8 segments)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the whole dome of 8 segments as a solid roof dome: its drum's eight arches are blind (recessed panels, no doorway), no inside; collides as a few boxes that are solid all through (the drum an octagon, the dome stepped): nothing to walk or shoot into; stone."
+      },
+      "size": [
+        7.6,
+        7.035,
+        7.6
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dome",
+        "segments": 8,
+        "bays": 8,
+        "closed": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12168,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12169,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12170,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12171,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12172,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12173,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.dome.closed_12",
+      "displayName": "Closed Dome (12 segments)",
+      "category": "Desert City",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the whole dome of 12 segments as a solid roof dome: its drum's eight arches are blind (recessed panels, no doorway), no inside; collides as a few boxes that are solid all through (the drum an octagon, the dome stepped): nothing to walk or shoot into; stone."
+      },
+      "size": [
+        7.6,
+        7.035,
+        7.6
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "dome",
+        "segments": 12,
+        "bays": 6,
+        "closed": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 160
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 12174,
+          "look": {
+            "wall": "#b8ab96",
+            "trim": "#c6baa6",
+            "shell": "#bcb09c",
+            "rib": "#a59884",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "sandstone",
+          "seed": 12175,
+          "look": {
+            "wall": "#d6b688",
+            "trim": "#c4a070",
+            "shell": "#d0ac7a",
+            "rib": "#b48f5c",
+            "pattern": "stone",
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "plaster",
+          "seed": 12176,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#f1e9d8",
+            "rib": "#ddd0b6",
+            "pattern": "stone",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 3,
+          "name": "copper",
+          "seed": 12177,
+          "look": {
+            "wall": "#cfc2a8",
+            "trim": "#b9ab90",
+            "shell": "#4f9a88",
+            "accent": "#7a5236",
+            "rib": "#3f7f70",
+            "pattern": "patina",
+            "frieze": "#7fa898",
+            "finial": "#6aa596",
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 4,
+          "name": "blue",
+          "seed": 12178,
+          "look": {
+            "wall": "#eadcbe",
+            "trim": "#d8c8a4",
+            "shell": "#2a5aa8",
+            "accent": "#6ec0d8",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2a5aa8",
+            "frieze2": "#ece2cc",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 5,
+          "name": "green",
+          "seed": 12179,
+          "look": {
+            "wall": "#e6dcc2",
+            "trim": "#cdbf9c",
+            "shell": "#2f8a62",
+            "accent": "#d9c77a",
+            "rib": "#ece2cc",
+            "pattern": "tiles",
+            "frieze": "#2f8a62",
+            "frieze2": "#e8dcc0",
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
       "id": "kit.dome.hall_8",
       "displayName": "Hall Dome on Drum (8 segments)",
       "category": "Desert City",
