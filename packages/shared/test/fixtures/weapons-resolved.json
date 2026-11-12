@@ -2010,31 +2010,37 @@
     },
     "reserveMax": 40,
     "view": {
-     "model": "weapons/auto_shotgun.glb",
+     "model": "guns/shotgun.glb",
+     "fallback": "weapons/auto_shotgun.glb",
      "viewOffset": [
       0.21,
       -0.21,
-      0.52
+      0.56
      ],
      "tracer": "#ffb38a",
      "hold": {
       "style": "long",
       "grip": [
        0,
-       -0.06,
-       -0.27
+       0,
+       -0.2
       ],
       "support": [
        0,
-       -0.04,
-       0.108
+       0.035,
+       0.2
       ],
       "shoulder": [
        0,
-       0,
-       -0.45
+       -0.02,
+       -0.47
       ]
      },
+     "muzzleAt": [
+      0,
+      0.078,
+      0.475
+     ],
      "sound": "fire.shotgun"
     }
    },
