@@ -241,8 +241,12 @@ So, in order from the red doors:
 - **Ways to that back part:** a door from outside at the back of the chapel, or a door at the far end of the left
   aisle, just before the steps up to the altar.
 
-For the map this gives the chapel three levels (basement, nave, gallery) and four ways through it (the front doors,
-the back door, the two aisles), with the spiral stairs and the basement stair as the vertical routes. A spiral stair
+- **The right aisle's end:** "Door on end of hallway on right leads outside, I believe" (the owner, a moment later;
+  not certain). So the right aisle ends in a door to the outside, where the left aisle's end door leads to the room
+  behind the altar.
+
+For the map this gives the chapel three levels (basement, nave, gallery) and five ways in or through it (the front
+doors, the back door, the right aisle's outside door, and the two aisles inside), with the spiral stairs and the basement stair as the vertical routes. A spiral stair
 is a new stair piece (the game has straight and half-turn ones): to be specified in the chapel step, wide enough for
 bots.
 
