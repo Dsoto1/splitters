@@ -2,7 +2,7 @@ import { MEASURED_HITBOXES } from '../content/hitboxes.generated.ts';
 import { decodeLook, getLook, NPC_KEPT_LOOKS, RETIRED_LOOKS } from '../content/looks.ts';
 import type { NpcRole } from '../map/schema.ts';
 import { PLAYER } from './constants.ts';
-import { CREATURE_SPECS, isCreature, zombieHasCreatureBody } from './creatures.ts';
+import { CREATURE_SPECS, isCreature } from './creatures.ts';
 import type { LookHitbox } from './hitbox.ts';
 import { NPC_ROLE_SPECS, npcLookRole } from './npc.ts';
 
@@ -51,7 +51,7 @@ export function creatureSkinScale(box: LookHitbox): number {
 /** An NPC's shapes and scale (before its encounter size) as the client draws it (session.ts npcLook). */
 export function npcHitbox(role: NpcRole, id: number): { box: LookHitbox; scale: number } {
   const spec = NPC_ROLE_SPECS[role];
-  if (role === 'zombie') return { box: MEASURED_HITBOXES[zombieHasCreatureBody(id) ? 'creature:zombie' : 'base:zombie'] ?? FALLBACK(), scale: 1 };
+  if (role === 'zombie') return { box: MEASURED_HITBOXES['base:zombie'] ?? FALLBACK(), scale: 1 };
   if (isCreature(role) && CREATURE_SPECS[role]) return { box: MEASURED_HITBOXES[`creature:${role}`] ?? FALLBACK(), scale: 1 };
   if (spec.look) return { box: lookHitbox(spec.look).box, scale: spec.scale };
   // Soldiers: about half of each squad on the female mannequin (the client's id % 2).

@@ -71,7 +71,6 @@ import {
   NPC_ROLES,
   NPC_ROLE_SPECS,
   isCreature,
-  zombieHasCreatureBody,
   zombieLook,
   STREAK_REWARDS,
   matchPhysics,
@@ -2535,9 +2534,8 @@ export class GameSession {
     if (!info || !this.map) return undefined;
     const faction = mapFactions(this.map)[info.faction];
     const role = NPC_ROLES[info.role] ?? 'trooper';
-    // Most zombies wear Quaternius' zombie body (its own walk, run and bite); the rest wear the roster's zombie
-    // characters and shamble on the soldiers' rig (never the plain mannequin).
-    if (role === 'zombie') return { color: '#76866a', scale: info.size, size: info.size, label: 'Zombie', zombie: true, ...(zombieHasCreatureBody(id) ? { creature: 'zombie' as const } : { look: zombieLook(id) }) };
+    // Every zombie wears one of the roster's zombie characters on the soldiers' rig, so it dies as a ragdoll.
+    if (role === 'zombie') return { color: '#76866a', scale: info.size, size: info.size, label: 'Zombie', zombie: true, look: zombieLook(id) };
     const spec = NPC_ROLE_SPECS[role];
     // The creature originals wear their own character look.
     return { color: faction?.color ?? '#d04a3a', scale: spec.scale * info.size, size: info.size, label: `${faction?.name ?? 'Enemy'} ${spec.label}`, ...(isCreature(role) ? { creature: role } : {}), ...(spec.look ? { look: spec.look } : {}) };
