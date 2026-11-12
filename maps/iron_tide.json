@@ -34,11 +34,11 @@
     },
     "release": {
       "mapId": "m_vfevdrgwi6zn7cfg",
-      "versionId": "v_im26hd2sqoijrkrl",
-      "revision": 8,
-      "contentHash": "sha256:2e8a30e6012b1cdfbd77119538a432420cb736ad18b8f1c3babd9b19bcc7f194",
+      "versionId": "v_zvhm672bln7gfryd",
+      "revision": 9,
+      "contentHash": "sha256:11abb8091d98bdb0ca94a7f346b96ba6c0426cc613bca140853eaeb2cea16c9c",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:25:45.072Z"
+      "releasedAt": "2026-11-12T12:50:10.233Z"
     }
   },
   "classicStructure": {
@@ -10168,7 +10168,7 @@
         8
       ],
       "kind": "prop",
-      "model": "prop.scanner",
+      "model": "kit.machine.scanner",
       "yaw": 0,
       "scale": 1.6,
       "solid": true,
@@ -10182,7 +10182,7 @@
         -8
       ],
       "kind": "prop",
-      "model": "prop.scanner",
+      "model": "kit.machine.scanner",
       "yaw": 3.141592653589793,
       "scale": 1.2,
       "solid": true,
@@ -10232,7 +10232,7 @@
         8
       ],
       "kind": "prop",
-      "model": "prop.piston",
+      "model": "kit.machine.piston",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -10268,7 +10268,7 @@
         16
       ],
       "kind": "prop",
-      "model": "prop.piston",
+      "model": "kit.machine.piston",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -10282,7 +10282,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.big_pipe",
+      "model": "kit.pipe.riser",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -10296,7 +10296,7 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.big_pipe",
+      "model": "kit.pipe.riser",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -10310,7 +10310,7 @@
         26
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -10324,7 +10324,7 @@
         26
       ],
       "kind": "prop",
-      "model": "prop.machine_window",
+      "model": "kit.machine.window",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -10352,7 +10352,7 @@
         14
       ],
       "kind": "prop",
-      "model": "prop.pipe_glass",
+      "model": "kit.pipe.glass",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -10380,7 +10380,7 @@
         1
       ],
       "kind": "prop",
-      "model": "prop.hopper",
+      "model": "kit.hopper.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -10435,7 +10435,7 @@
         -8
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,
@@ -10547,7 +10547,7 @@
         -56
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -10561,7 +10561,7 @@
         -56
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,

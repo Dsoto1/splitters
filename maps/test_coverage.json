@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_cd4od5tp5itdemyh",
-      "revision": 19,
-      "contentHash": "sha256:eefa315b25c60bc72a8b430911b2c9c2e96dd559bdc1b9031c331659ac186592",
+      "versionId": "v_rbau6um53slvaio3",
+      "revision": 21,
+      "contentHash": "sha256:3cff97b57b48aa38791328f9bbc765ef7776368566492b67e19d88bab135ff57",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:52:34.655Z"
+      "releasedAt": "2026-11-12T13:27:23.364Z"
     },
     "testOnly": true
   },
@@ -883,6 +883,22 @@
         "tile": "core.tunnel_vault_cross_walled",
         "x": 15,
         "y": -20,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_y75xv8ka7q",
+        "tile": "orbital.lab_module",
+        "x": -18,
+        "y": 2,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_2oig4d8etl",
+        "tile": "industrial.pipe_rack",
+        "x": 0,
+        "y": 2,
         "z": 0,
         "rotation": 0
       }
@@ -4091,7 +4107,7 @@
         112
       ],
       "kind": "prop",
-      "model": "prop.nc_cone",
+      "model": "kit.sign.cone_slim",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -4911,7 +4927,7 @@
         112
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": true,

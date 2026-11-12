@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_tqonszbqjn5i6g6u",
-      "versionId": "v_gz2f5lf4f2vqjobt",
-      "revision": 7,
-      "contentHash": "sha256:0b57a3db75184199beb7618bc0d208d177b700d7adfc777c8f59d3bce9cbb0b9",
+      "versionId": "v_xmvndqwvofv7x2vm",
+      "revision": 8,
+      "contentHash": "sha256:fd5b5b9bd2c0503d48f17dca5b11ce4b63d46f2080446803035385f463815fd7",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:29:09.765Z"
+      "releasedAt": "2026-11-12T12:54:50.999Z"
     }
   },
   "classicStructure": {
@@ -11169,7 +11169,7 @@
         22.5
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -11183,7 +11183,7 @@
         33.5
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -11643,7 +11643,7 @@
         42.12
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": 1.5708,
       "scale": 1,
       "solid": true,
@@ -14261,7 +14261,7 @@
         61.82
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,
@@ -14275,7 +14275,7 @@
         61.82
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": 3.1416,
       "scale": 1,
       "solid": true,

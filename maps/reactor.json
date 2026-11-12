@@ -974,7 +974,7 @@
         47
       ],
       "kind": "prop",
-      "model": "prop.hopper_tall",
+      "model": "kit.hopper.tall",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1099,7 +1099,7 @@
         17
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -1197,7 +1197,7 @@
         34
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1252,7 +1252,7 @@
         15
       ],
       "kind": "prop",
-      "model": "prop.hopper_tall",
+      "model": "kit.hopper.tall",
       "yaw": 0,
       "scale": 0.8,
       "solid": true,

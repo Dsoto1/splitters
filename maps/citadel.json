@@ -742,7 +742,7 @@
         16
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": -1.5707963267948966,
       "scale": 1,
       "solid": true,

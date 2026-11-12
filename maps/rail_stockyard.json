@@ -2959,7 +2959,7 @@
         37.5
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -2973,7 +2973,7 @@
         18.5
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -3183,7 +3183,7 @@
         23.5
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3253,7 +3253,7 @@
         8
       ],
       "kind": "prop",
-      "model": "prop.big_pipe",
+      "model": "kit.pipe.riser",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3281,7 +3281,7 @@
         50.5
       ],
       "kind": "prop",
-      "model": "prop.workbench",
+      "model": "kit.table.workbench",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3323,7 +3323,7 @@
         41
       ],
       "kind": "prop",
-      "model": "prop.lever",
+      "model": "kit.machine.lever",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3351,7 +3351,7 @@
         33.5
       ],
       "kind": "prop",
-      "model": "prop.piston",
+      "model": "kit.machine.piston",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -3421,7 +3421,7 @@
         26.5
       ],
       "kind": "prop",
-      "model": "prop.machine_window",
+      "model": "kit.machine.window",
       "yaw": 0,
       "scale": 1,
       "solid": true,

@@ -1189,7 +1189,7 @@
         5.6
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1203,7 +1203,7 @@
         5.6
       ],
       "kind": "prop",
-      "model": "prop.hopper_tall",
+      "model": "kit.hopper.tall",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -1217,7 +1217,7 @@
         18.4
       ],
       "kind": "prop",
-      "model": "prop.hopper_tall",
+      "model": "kit.hopper.tall",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -1231,7 +1231,7 @@
         18.4
       ],
       "kind": "prop",
-      "model": "prop.machine_window",
+      "model": "kit.machine.window",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -1439,7 +1439,7 @@
         8
       ],
       "kind": "prop",
-      "model": "prop.big_pipe",
+      "model": "kit.pipe.riser",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1479,7 +1479,7 @@
         33
       ],
       "kind": "prop",
-      "model": "prop.machine",
+      "model": "kit.machine.heavy",
       "yaw": 3.141592653589793,
       "scale": 1,
       "solid": true,
@@ -1507,7 +1507,7 @@
         34
       ],
       "kind": "prop",
-      "model": "prop.hopper",
+      "model": "kit.hopper.round",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -1616,7 +1616,7 @@
         2.5
       ],
       "kind": "prop",
-      "model": "prop.lever",
+      "model": "kit.machine.lever",
       "yaw": 0,
       "scale": 1,
       "solid": true,

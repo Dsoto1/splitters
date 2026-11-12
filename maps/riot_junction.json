@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_ruc3fnxenmg4ganz",
-      "versionId": "v_hupjtc7aqlwv5b7s",
-      "revision": 7,
-      "contentHash": "sha256:73b02d8df722d500c58bfe0c06e4855f151866428fe273bb0987b267cc7f03ee",
+      "versionId": "v_bqplneeekor7qjv4",
+      "revision": 8,
+      "contentHash": "sha256:34e38244fa1d4f357b88d3f9eaa4e287c8d8dd4aa2d1f207ef0750fe180de027",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:41:41.977Z"
+      "releasedAt": "2026-11-12T13:10:48.612Z"
     }
   },
   "classicStructure": {
@@ -16175,7 +16175,7 @@
         46
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -16189,7 +16189,7 @@
         54
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -16203,7 +16203,7 @@
         100
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,
@@ -16217,7 +16217,7 @@
         98
       ],
       "kind": "prop",
-      "model": "prop.cone",
+      "model": "kit.sign.cone",
       "yaw": 0,
       "scale": 1,
       "solid": false,

@@ -234,6 +234,24 @@
         "door": "blast",
         "glass": "reinforced"
       }
+    },
+    {
+      "id": "industrial",
+      "displayName": "Industrial Factory",
+      "stylePack": "industrial",
+      "themes": ["core.industrial"],
+      "roles": {
+        "stone": { "material": "core.pbr_grey_corrugated", "tint": "#c8ccd0" },
+        "trim": { "material": "core.pbr_steel", "tint": "#d8b040" },
+        "floor": { "material": "core.pbr_concrete_dark", "tint": "#b0aca4" },
+        "paving": { "material": "core.pbr_concrete" },
+        "roof": { "material": "core.pbr_grey_corrugated", "tint": "#9aa0a8" },
+        "wood": { "material": "core.crate_wood" },
+        "metal": { "material": "core.pbr_rusted_plate" },
+        "facade": "corrugated",
+        "door": "blast",
+        "glass": "reinforced"
+      }
     }
   ]
 }

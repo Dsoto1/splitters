@@ -7,7 +7,7 @@
       "displayName": "Loading Dock",
       "category": "Industrial",
       "blurb": "An open-fronted goods shed with its floor 1 m up, a dock edge the length of it with three sets of steps, a truck backed up on the apron and cargo on the dock: 3 × 2 cells.",
-      "packs": ["military", "harbor", "snow", "suburban", "neon", "frontier"],
+      "packs": ["military", "harbor", "snow", "suburban", "neon", "frontier", "industrial"],
       "footprint": { "cells": [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]], "levels": [0,0] },
       "mirror": "free",
       "ports": [

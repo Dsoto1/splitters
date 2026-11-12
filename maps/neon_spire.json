@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 31,
+  "formatVersion": 36,
   "metadata": {
     "id": "neon_spire",
     "name": "Neon Spire",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_blh4e3anqsjhglti",
-      "versionId": "v_7qf2burye2hxsryw",
-      "revision": 2,
-      "contentHash": "sha256:6929110d09e6984f8d109641f917b3ab749e01521a2dbe5208b618c2c364e809",
-      "schemaVersion": 31,
-      "releasedAt": "2026-11-09T05:08:55.051Z"
+      "versionId": "v_py5fjdorv4gf7l6k",
+      "revision": 3,
+      "contentHash": "sha256:c9dc56422b4a1bdf00a28a2683a636c22f997dabd1a7c2973f42aa956170503e",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-12T12:57:25.042Z"
     }
   },
   "classicStructure": {
@@ -12482,7 +12482,7 @@
         8.5
       ],
       "kind": "prop",
-      "model": "prop.nc_cone",
+      "model": "kit.sign.cone_slim",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12496,7 +12496,7 @@
         6
       ],
       "kind": "prop",
-      "model": "prop.nc_cone",
+      "model": "kit.sign.cone_slim",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -12510,7 +12510,7 @@
         15
       ],
       "kind": "prop",
-      "model": "prop.nc_cone",
+      "model": "kit.sign.cone_slim",
       "yaw": 0,
       "scale": 1,
       "solid": true,

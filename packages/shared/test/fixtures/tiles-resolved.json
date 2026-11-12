@@ -268,7 +268,22 @@
   "jungle.rope_bridge",
   "jungle.stone_bridge",
   "jungle.waterfall_wall",
-  "jungle.overgrown_ruin"
+  "jungle.overgrown_ruin",
+  "industrial.factory_hall",
+  "industrial.pipe_rack",
+  "industrial.catwalk_cross",
+  "industrial.conveyor_line",
+  "industrial.loading_bay",
+  "industrial.silo",
+  "industrial.control_room",
+  "orbital.lab_module",
+  "orbital.airlock_tube",
+  "orbital.landing_pad",
+  "orbital.comms_array",
+  "orbital.greenhouse",
+  "orbital.sky_tube",
+  "orbital.rover_bay",
+  "orbital.hab_dome"
  ],
  "kit": [
   {
