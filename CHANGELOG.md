@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Portals swirl and jump pads rise.** A portal's frame holds a moving swirl in its pair's colour (the Binbun Portal pack), and a jump pad stands in a column of rising light (Magic Area pack) with its plate, ring and chevrons still showing. Portals and pads are drawn ahead of loot glows when effects run short. With Reduce flashing on both are held still, dimmer and eased in.
 - **Pickups glow.** Weapons, health, armor and ammo sit in a soft ground glow from the Binbun Loot pack, coloured by kind (weapon gold, health green, armor blue, ammo pale), on the nearest pickups within 28 m. Steady and eased in; with Reduce flashing on it is dimmer, held still and has no sparkles.
 - **Fix:** an effect asked for late in a slow frame no longer restarts each frame.
 - **Sandgate's roofs wear the new domes.** Its seven small roof domes are kit domes now, placed in MapMaker: white plaster, and blue tile on the west hall. They are closed domes on solid drums with blind arches, solid as the old ones were.
