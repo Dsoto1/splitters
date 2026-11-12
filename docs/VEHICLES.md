@@ -67,8 +67,10 @@ Spaceships and Tank Pack (all CC0).
   rover** Dust Runner (`vehicles/dust_runner.glb`, a closed off-roader). Re-skins only: each keeps its box,
   handling, guns and health; the seats were moved onto the new models (measured on them, notes in
   `content/vehicles/<id>.json`) and the models they replaced are their `fallback`. The ice cream truck (van) is a
-  Kenney Car Kit model recoloured at build time; the gunship (cargo craft B) and transport plane (cargo craft A) are
-  from Kenney Space Kit. The snow sled is "Snowmobile" by
+  Kenney Car Kit model recoloured at build time; the transport plane (cargo craft A) is from Kenney Space Kit. The
+  **gunship** is the Sky Cruiser (`vehicles/sky_cruiser.glb`, Meshy Community, CC0; 2026-11-12): its box is fitted to
+  the hull, the pilot sits in the closed cab and each door gunner sits on their door's sill, feet on the step board
+  (measurements in `content/vehicles/gunship.json`); handling, guns and health are as before. The snow sled is "Snowmobile" by
   roygbpjyt (Meshy Community, CC0; `content/guns.json`, built by
   `prepare-guns.mjs`: 20k triangles plus a 5k one from 40 m, 2048 px colour
   and 1024 px normal map, 1.42 MB, 3.0 m long), replacing Kenney Holiday Kit's
