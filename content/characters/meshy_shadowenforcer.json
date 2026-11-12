@@ -6,7 +6,6 @@
   "name": "Shadow Enforcer",
   "look": "core.shadowenforcer",
   "group": "soldiers",
-  "tier": "experimental",
   "nameTheme": "soldier",
   "bio": "You don't see him arrive. You do see the paperwork after.",
   "body": "male",

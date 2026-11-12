@@ -6,7 +6,6 @@
   "name": "Steampunk Warrior",
   "look": "core.steampunkwarrior",
   "group": "legends",
-  "tier": "experimental",
   "nameTheme": "knight",
   "bio": "Runs on coal, brass and spite. Mostly spite.",
   "body": "male",

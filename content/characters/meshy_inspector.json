@@ -6,7 +6,6 @@
   "name": "Inspector Bigotes",
   "look": "core.inspector",
   "group": "folk",
-  "tier": "experimental",
   "nameTheme": "townsfolk",
   "bio": "On the case since breakfast. The moustache does most of the detecting.",
   "body": "male",
