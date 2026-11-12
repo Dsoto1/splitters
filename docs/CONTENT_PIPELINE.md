@@ -753,7 +753,9 @@ barrels and boxes first; fences and walls, then containers, come next.
   finer boxes written in their generators, in metres, as the props they replace did), `machines.mjs` (the heavy
   press, the chamber machine with a port in each end, the round and the tall hopper, the piston, the scanner gate,
   the lever panel, the giant cog), `yard.mjs` (the glass pipe, the capped pipe riser, the workbench, the traffic
-  cone; all but the cone collide as finer boxes written in their generators), `glb.mjs` (the writer).
+  cone, the anvil on its timber block; all but the cone collide as finer boxes written in their generators),
+  `pipes.mjs` (the station's coolant pipe and its pipe junction: pipes along z, the bore open from end to end),
+  `glb.mjs` (the writer).
   `geom.mjs` also has square bars between any two points, wire panels (flat strips seen from both sides), and
   cylinders and rings along any axis.
   Randomness only from `env/rng.mjs` streams.

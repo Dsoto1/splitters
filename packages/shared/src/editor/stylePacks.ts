@@ -171,8 +171,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
     ],
     props: /* @__PURE__ */ props(
       'os_airlock_frame', 'os_bulkhead', 'os_bulkhead_window', 'os_laser_gate', 'os_field_emitter', 'os_viewport', 'os_reactor_core', 'os_cryo_pod', 'os_holo_globe',
-      'os_cargo_crate', 'os_generator', 'os_power_unit', 'os_transmitter', 'os_satellite_dish', 'os_comms_dish', 'os_truss', 'os_frame_module', 'os_coolant_pipe',
-      'os_pipe_junction', 'os_console_corner', 'os_terminal', 'os_canister_rack', 'os_floor_cables', 'os_wall_column', 'os_wall_panel',
+      'os_cargo_crate', 'os_generator', 'os_power_unit', 'os_transmitter', 'os_satellite_dish', 'os_comms_dish', 'os_truss', 'os_frame_module', 'kit.pipe.coolant',
+      'kit.pipe.junction', 'os_console_corner', 'os_terminal', 'os_canister_rack', 'os_floor_cables', 'os_wall_column', 'os_wall_panel',
       // From the Modular SciFi MegaKit and the Space Station Kit, already in the game.
       'sf_computer', 'sf_wall_astra_window', 'sf_glass_floor', 'sf_round_platform', 'sf_crate_large', 'sf_fan', 'sf_light_wide', 'holo_table', 'computer_bank', 'container_tall', 'space_bed', 'space_chair',
     ),
@@ -455,7 +455,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'tiled_well', 'smithy_workbench',
       // Already in the game: castle and siege pieces, the market, carts and barrels, banners, lanterns, fences and trees.
       'castle_gate', 'castle_tower', 'castle_tower_round', 'castle_wall', 'castle_wall_door', 'castle_wall_corner', 'castle_stairs', 'siege_tower', 'portcullis',
-      'kit.stall.market', 'kit.stall.counter', 'cart', 'cart_high', 'hay_bale', 'anvil', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.crate.wood', 'kit.crate.wood_long', 'woodpile', 'log_stack', 'bucket',
+      'kit.stall.market', 'kit.stall.counter', 'cart', 'cart_high', 'hay_bale', 'kit.tool.anvil', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.crate.wood', 'kit.crate.wood_long', 'woodpile', 'log_stack', 'bucket',
       'fountain', 'fountain_square', 'lantern', 'lantern_post', 'banner', 'banner_red', 'banner_green', 'banner_long', 'pennant', 'signpost', 'awning', 'water_wheel',
       'lf_wooden_fence_closed', 'lf_wooden_fence_open', 'lf_drystone_wall', 'nt_common_tree', 'nt_common_tree_2', 'kit.seat.bench', 'sv_tent', 'dg_woodfire',
     ),
