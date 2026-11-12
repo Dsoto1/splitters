@@ -1388,10 +1388,12 @@ export class ScenarioVisuals {
     core.position.y = 0.08;
     core.material = this.mat('padCore', '#1a2a3a', { emissive: 0.2 });
     for (const [i, z] of [0.1, 0.45].entries()) {
+      // Two chevrons pointing the way the pad throws you (+Z in its frame: movement.ts mapPads): each bar leans in to
+      // meet the other at the front. (They leaned out, so the arrows pointed backwards: the owner, 2026-11-12.)
       const a = this.box(`${name}_chev${i}a`, root, [0.12, 0.05, 0.5], [-0.17, 0.18, z], this.mat('padGlow', '#36d6ff', { emissive: 1 }));
-      a.rotation.y = -0.7;
+      a.rotation.y = 0.7;
       const b = this.box(`${name}_chev${i}b`, root, [0.12, 0.05, 0.5], [0.17, 0.18, z], this.mat('padGlow', '#36d6ff', { emissive: 1 }));
-      b.rotation.y = 0.7;
+      b.rotation.y = -0.7;
     }
     return { root };
   }

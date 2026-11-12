@@ -25,7 +25,10 @@
     "roughness": 0.6
   },
   "firstPerson": {
-    "arms": "own"
+    "arms": "ranger_arms_m",
+    "skin": "#d8b48c",
+    "cloth": "#2c2e2f",
+    "trim": "#1c1d1e"
   },
   "fixes": {
     "triangles": 11000,
@@ -34,8 +37,14 @@
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true,
+    "fingers": "fit",
     "hands": {
-      "curl": 1
+      "curl": 1,
+      "together": 1
+    },
+    "hold": {
+      "forward": 0.08,
+      "down": 0.12
     },
     "grip": {
       "gripLong": [

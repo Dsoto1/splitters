@@ -5,6 +5,13 @@
   "kind": "vehicle",
   "model": "vehicles/recon_jeep.glb",
   "fallback": "vehicles/gun_jeep.glb",
+  "rideHeight": 0.327,
+  "wheels": {
+    "model": "vehicles/offroad_tire.glb",
+    "radius": 0.56,
+    "width": 0.56,
+    "at": [[-1.12, 0.56, 1.58], [1.12, 0.56, 1.58], [-1.12, 0.56, -1.63], [1.12, 0.56, -1.63]]
+  },
   "health": 380,
   "half": [1.45, 0.95, 2.2],
   "seats": [
@@ -58,10 +65,10 @@
   },
   "blurb": "A light pickup with a machine gun on the back: a driver, a gunner who fires all round and three passengers with their own weapons",
   "notes": {
-    "model": "Recon Trike (Meshy Community, CC0; content/guns.json vehicles/recon_jeep.glb, 2026-11-10): a Warthog-style four-wheeler with a pintle machine gun on the roll cage over the cab and an open bed behind. Its tires are cut out as parts (wheel_*), so they spin, steer and ride the springs like the Car Kit truck's wheel meshes did. The Car Kit pickup it replaced is the fallback (vehicles/gun_jeep.glb).",
+    "model": "Recon Trike (Meshy Community, CC0; content/guns.json vehicles/recon_jeep.glb, 2026-11-10): a Warthog-style four-wheeler with a pintle machine gun on the roll cage over the cab and an open bed behind. It rides on the owner's Rugged Off-Road Tire (vehicles/offroad_tire.glb), one at each hub (2026-11-12): the body's own tires are cut out of it and dropped (guns.json `parts`, `drop`), since cut out as parts they took bodywork with them and spun off their axles. Hubs and size measured on the body's old tires: 0.56 m radius, 0.56 m wide, hubs 0.56 m up at x ±1.12, z 1.58 and -1.63; the body's lowest point left is 0.327 m up (`rideHeight`). The Car Kit pickup it replaced is the fallback (vehicles/gun_jeep.glb).",
     "half": "Fitted across the tires (2026-11-11, as the Troop Truck's): 2.9 m wide, so walls stop the tires where they are drawn and rounds that hit a tire hit the jeep. Length and height unchanged: the model is 4.4 m long and 2.44 m tall at the gun; its body is about 2.2 m wide and its tires stand out to 2.88 m.",
     "seats": "Measured on the model (slices of its triangles): two cab seats with cushions 0.92 m up at z -0.05 (backrests at z -0.3, the floor 0.7 m up under the dash); the gun's ring on the cage roof at z 0.3, 2.3 m up, so the gunner stands behind its breech on the console between the cab and the bed (feet 1.05 m), shoulders out of the roof like a hatch gunner; the bed (floor 0.7 m) runs from z -1.2 to -2.0 between walls 1.1 m high at x ±0.9, where the two rail riders sit facing out. Roles, weapon and arcs unchanged.",
     "cockpitEye": "A seated head height over the driver's cushion, under the cage roof (2.0 m).",
-    "vehicle": "Its own wheels (the model's tires, cut out as parts) on stiffer springs than the buggy's: a pickup. The suspension's contact points are unchanged."
+    "vehicle": "Stiffer springs than the buggy's: a pickup. The suspension's contact points and hub height are unchanged (the handling is); the tires are drawn at this body's hubs (`wheels.at`), each riding the nearest contact point's spring."
   }
 }

@@ -28,7 +28,11 @@ export class Minimap {
   private planImage: ImageBitmap | null = null;
   /** What the last draw showed (redrawn only when it would differ). */
   private last = '';
+  /** The same for the whole-map view (drawWhole). */
+  private lastWhole = '';
   private origin = { x: 0, z: 0, h: 0 };
+  /** The play area, in world metres: what the whole-map view fits (setMap). */
+  private focus = { x0: 0, z0: 0, x1: 1, z1: 1 };
   private readonly g: CanvasRenderingContext2D | null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -66,7 +70,20 @@ export class Minimap {
     this.planImage?.close();
     this.planImage = null;
     this.last = '';
+    this.lastWhole = '';
     this.origin = { x: x0, z: z0, h };
+    // The whole-map view shows where the match is played (spawns, objectives, pickups, vehicles, with a margin), not
+    // the scenery round it: a map's terrain can run far past its play area (Sandgate's is five times as wide).
+    let [fx0, fz0, fx1, fz1] = [Infinity, Infinity, -Infinity, -Infinity];
+    for (const e of map.entities) {
+      if (e.kind !== 'spawn' && e.kind !== 'flag' && e.kind !== 'hill' && e.kind !== 'pickup' && e.kind !== 'mount') continue;
+      fx0 = Math.min(fx0, e.position[0]);
+      fz0 = Math.min(fz0, e.position[2]);
+      fx1 = Math.max(fx1, e.position[0]);
+      fz1 = Math.max(fz1, e.position[2]);
+    }
+    const pad = 16;
+    this.focus = fx1 > fx0 && fz1 > fz0 ? { x0: Math.max(x0, fx0 - pad), z0: Math.max(z0, fz0 - pad), x1: Math.min(x1, fx1 + pad), z1: Math.min(z1, fz1 + pad) } : { x0, z0, x1, z1 };
     // A big open map's plan is a couple of million pixels (Shingle Point 1,210 × 1,470): drawn from a bitmap.
     if (typeof createImageBitmap === 'function') {
       void createImageBitmap(plan).then(
@@ -74,11 +91,85 @@ export class Minimap {
           if (this.plan === plan) {
             this.planImage = bmp;
             this.last = '';
+            this.lastWhole = '';
           } else bmp.close();
         },
         () => undefined,
       );
     }
+  }
+
+  /**
+   * The whole map at once on a larger canvas (M in a match): north up, the plan fitted to the canvas, you as an arrow
+   * turned the way you face, teammates as dots and objectives as labelled squares where they are.
+   */
+  drawWhole(canvas: HTMLCanvasElement, x: number, z: number, yaw: number, blips: readonly MinimapBlip[]): void {
+    const g = canvas.getContext('2d');
+    const src = this.planImage ?? this.plan;
+    if (!g || !src) return;
+    let key = `${canvas.width}x${canvas.height},${Math.round(x)},${Math.round(z)},${Math.round(yaw * 20)}`;
+    for (const b of blips) key += `|${Math.round(b.x)},${Math.round(b.z)},${b.color},${b.label ?? ''}`;
+    if (key === this.lastWhole) return;
+    this.lastWhole = key;
+    const pad = 14;
+    // The play area's rectangle on the plan (plan pixels; z runs up the plan), fitted to the canvas.
+    const f = this.focus;
+    const sx = (f.x0 - this.origin.x) * PX_PER_M;
+    const sy = this.origin.h - (f.z1 - this.origin.z) * PX_PER_M;
+    const sw = (f.x1 - f.x0) * PX_PER_M;
+    const sh = (f.z1 - f.z0) * PX_PER_M;
+    const scale = Math.min((canvas.width - pad * 2) / sw, (canvas.height - pad * 2) / sh);
+    const ox = (canvas.width - sw * scale) / 2 - sx * scale;
+    const oy = (canvas.height - sh * scale) / 2 - sy * scale;
+    const at = (wx: number, wz: number) => [ox + (wx - this.origin.x) * PX_PER_M * scale, oy + (this.origin.h - (wz - this.origin.z) * PX_PER_M) * scale] as const;
+    g.clearRect(0, 0, canvas.width, canvas.height);
+    g.fillStyle = 'rgba(11, 15, 26, 0.88)';
+    g.fillRect(0, 0, canvas.width, canvas.height);
+    g.imageSmoothingEnabled = true;
+    g.save();
+    g.beginPath();
+    g.rect(pad / 2, pad / 2, canvas.width - pad, canvas.height - pad);
+    g.clip();
+    g.drawImage(src, ox, oy, src.width * scale, src.height * scale);
+    g.restore();
+    for (const b of blips) {
+      const [bx, by] = at(b.x, b.z);
+      g.fillStyle = b.color;
+      if (b.label !== undefined) {
+        g.fillRect(bx - 9, by - 9, 18, 18);
+        g.fillStyle = '#0b0f1a';
+        g.font = 'bold 11px sans-serif';
+        g.textAlign = 'center';
+        g.textBaseline = 'middle';
+        g.fillText(b.label.slice(0, 2), bx, by + 0.5);
+        continue;
+      }
+      g.beginPath();
+      g.arc(bx, by, b.ring ? 6 : 4.5, 0, Math.PI * 2);
+      g.fill();
+      if (b.ring) {
+        g.strokeStyle = '#0b0f1a';
+        g.lineWidth = 2;
+        g.stroke();
+      }
+    }
+    // You: the arrow, turned the way you face (yaw 0 looks along +Z, up the plan).
+    const [mx, my] = at(x, z);
+    g.save();
+    g.translate(mx, my);
+    g.rotate(yaw);
+    g.fillStyle = '#00d1ff';
+    g.strokeStyle = '#0b0f1a';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    g.moveTo(0, -11);
+    g.lineTo(7, 8);
+    g.lineTo(0, 4);
+    g.lineTo(-7, 8);
+    g.closePath();
+    g.fill();
+    g.stroke();
+    g.restore();
   }
 
   update(x: number, z: number, yaw: number, blips: readonly MinimapBlip[]): void {
