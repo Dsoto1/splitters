@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_k7aciqmskqtf7tyb",
-      "revision": 8,
-      "contentHash": "sha256:d08d66735042f5d304f7f64edbcf9186ad2ac77d5a89292dbc86a65763af7cfa",
+      "versionId": "v_amj2h4toskm5rkpy",
+      "revision": 9,
+      "contentHash": "sha256:422beb41ea5a06186739b37971b855d0bc51acf29c388ce158d777b78c5d9e14",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T10:13:19.466Z"
+      "releasedAt": "2026-11-12T10:44:11.353Z"
     },
     "tier": "experimental"
   },
@@ -16631,120 +16631,120 @@
     },
     {
       "id": "pad_sg29vmomlc",
-      "kind": "pad",
       "position": [
-        30,
+        16,
         -48,
         -44
       ],
+      "kind": "pad",
       "yaw": 3.142,
       "power": 34,
       "push": 26
     },
     {
       "id": "pad_za7oh8hth3",
-      "kind": "pad",
       "position": [
         -30,
         -48,
         -26
       ],
+      "kind": "pad",
       "yaw": 0,
       "power": 30,
       "push": 34
     },
     {
       "id": "pad_qse6400m0s",
-      "kind": "pad",
       "position": [
         -54,
         -48,
         -32
       ],
+      "kind": "pad",
       "yaw": -0.785,
       "power": 34,
       "push": 34
     },
     {
       "id": "pad_m6sjfqfbpv",
-      "kind": "pad",
       "position": [
         18,
         -48,
         -32
       ],
+      "kind": "pad",
       "yaw": 0,
       "power": 30,
       "push": 34
     },
     {
       "id": "pad_398d9ldia1",
-      "kind": "pad",
       "position": [
         73,
         -20.31,
         -50
       ],
+      "kind": "pad",
       "yaw": 0.393,
       "power": 32,
       "push": 40
     },
     {
       "id": "pad_gq7e7513kw",
-      "kind": "pad",
       "position": [
         32,
         -24,
         -85.2
       ],
+      "kind": "pad",
       "yaw": 2.749,
       "power": 34,
       "push": 32
     },
     {
       "id": "pad_ewku2765dl",
-      "kind": "pad",
       "position": [
         -38,
         -32,
         22.7
       ],
+      "kind": "pad",
       "yaw": -0.785,
       "power": 38,
       "push": 40
     },
     {
       "id": "pad_ill2zl6xak",
-      "kind": "pad",
       "position": [
         -90.7,
         -24,
         6.8
       ],
+      "kind": "pad",
       "yaw": -0.785,
       "power": 34,
       "push": 40
     },
     {
       "id": "pad_6ezjp39lp9",
-      "kind": "pad",
       "position": [
         20,
         -32,
         14.7
       ],
+      "kind": "pad",
       "yaw": 0.393,
       "power": 34,
       "push": 32
     },
     {
       "id": "pad_yvfaq6tdhh",
-      "kind": "pad",
       "position": [
         96.5,
         -16,
         9.9
       ],
+      "kind": "pad",
       "yaw": 0.393,
       "power": 30,
       "push": 40
