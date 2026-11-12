@@ -5418,14 +5418,19 @@ async function setupLayoutFlow(browser) {
       who: document.querySelector('#setup-summary .fact-players')?.textContent,
       fit: document.getElementById('setup-fit')?.dataset.level,
       advanced: document.getElementById('setup-advanced-sum')?.textContent,
-      chips: document.querySelectorAll('#setup-rule-chips span').length,
+      // (The rules that are changed: a chip each in the Rules tab, counted on its button while another tab is open.)
+      chips: [...document.querySelectorAll('#setup-rule-chips span')].filter((x) => x.offsetParent).length,
+      badge: document.querySelector('#setup-tab-rules .tab-n')?.textContent ?? '',
       preset: document.querySelector('#setup-sizes .size-chip.on')?.dataset.preset ?? 'custom',
       variants: [...document.querySelectorAll('#setup-variants .variant-chip.on')].map((b) => b.dataset.variant),
     }));
   const owner = await read();
   // (24v24 was Max until performance round 4 raised a computer's limit to 32v32: between Big battle and Max now.)
   check(owner.who === 'You + 47 bots · 24v24' && owner.preset === 'custom', `people apart from bots: the owner's setup reads "${owner.who}", on no preset (${owner.preset})`);
-  check(owner.advanced === '9 changed · Low gravity · Tactical bots +7' && owner.chips === 0, `Advanced rules in one line, its chips inside it ("${owner.advanced}", ${owner.chips} chips while closed)`);
+  await setupTab(page, 'rules');
+  const rulesTab = await read();
+  await setupTab(page, 'match');
+  check(owner.advanced === '9 changed · Low gravity · Tactical bots +7' && owner.chips === 0 && owner.badge === '9' && rulesTab.chips === 9, `the changed rules in one line and counted on the Rules tab, their chips inside it ("${owner.advanced}", "${owner.badge}" on the tab, ${owner.chips} chips showing in Match setup, ${rulesTab.chips} in Rules)`);
   check(owner.variants.join() === 'roulette', `a variant shows on when its settings are, however set (${owner.variants.join(', ')})`);
   // The fit indicator: Crowded, its details say why, and the map's own layout is a button.
   await page.evaluate(() => document.getElementById('setup-fit').click());

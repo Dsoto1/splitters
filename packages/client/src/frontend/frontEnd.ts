@@ -233,8 +233,6 @@ const SETUP_TABS: readonly (readonly [SetupTab, string, string])[] = [['match', 
 /** The Match Setup tab's rows that stay one line until opened (one open at a time on small screens). */
 const SETUP_ROWS = ['setup-variants-row', 'setup-party-row'] as const;
 
-/** (The mode tiles show the mode's short tag, MODE_SHORT: TDM, DM, CTF, King, with its full name under it where that says more.) */
-
 /**
  * Small screens and phones open one of the setup's rows at a time (the stylesheet's narrow and short layouts start
  * at the same sizes); a desktop opens as many as you like.
