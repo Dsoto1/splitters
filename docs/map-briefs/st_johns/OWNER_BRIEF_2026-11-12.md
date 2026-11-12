@@ -170,6 +170,31 @@ Memorial Chapel; the gym (2, 3) is Farrand Hall Gymnasium; the mess hall (12) is
 the clock tower and the arch over the path (15) and the halls round the court are among DeKoven, Smythe, Memorial
 and Stangeland / Cord: which is which is a question for the owner.
 
+### Which building is which (the owner, the same day, against the campus plan)
+
+"Memorial Hall is library, clocktower is a part of the Welles Dining Hall building, Scott Johnston / Hazelwood Hall
+has the larger centre and TAC quarters. Scott Johnston / Hazelwood Hall, Smythe Hall are dorms and the 3rd floors of
+Welles and DeKoven Hall are dorms. DeKoven is admin building with offices and has a basement office area too, lots
+of history, antiques, and plaques and awards/trophies over the school's life all baked into the walls with wood trim
+detail and carvings with glass cases. Many portraits and floor emblems/logo of the school crest. The mess hall is
+slightly recessed (tall ceilings), has classrooms above in same layout of hallway and rooms on either side
+(connected by the walkway)."
+
+| Building on the plan | What it is | What the brief asks |
+|---|---|---|
+| Memorial Hall | The library | The red conical roof over an arched entrance (photo 14); improve the map's red building. |
+| Welles Dining Hall | The mess hall, with the clock tower | The hall sits a little below ground level with a tall ceiling (photo 12: stone piers, timber ceiling, long tables); classrooms on the floor above (a hall with rooms both sides), reached by the walkway; the 3rd floor is dorms; the square crenellated clock tower is part of this building (photo 15). |
+| Adreani Memorial Bridge | The walkway | Joins Stangeland / Cord Hall to Welles at the classroom floor. |
+| DeKoven Hall | The admin building | Offices, and a basement of offices too; dark wood trim and carvings, glass cases of trophies and awards, plaques, portraits, antiques, the school crest set in the floor (photo 10); the 3rd floor is dorms. "Reception" on its west face. |
+| Scott Johnston / Hazelwood Hall | Dorms | The three-floor hall with the larger centre, the middle stair and the TAC officer's quarters on each floor (photos 16, 18). |
+| Smythe Hall | Dorms | The L-shaped hall by the visitor parking. |
+| Noble Victory Memorial Chapel | The chapel | Photos 4, 11, 13. |
+| Farrand Hall Gymnasium, Gerber Pool | The gym and pool | Photos 2, 3. |
+| Stangeland / Cord Hall | Not said | It is the far end of the walkway from the classroom floor over the mess hall: probably the school building (ask the owner). |
+
+A crest and school emblems as the owner describes them are the school's own marks: use a crest of our own design in
+their place (no real logo goes into the game).
+
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
 - A dorm room as a piece: door, sink, desk with shelves, bunk, window, two slim closets either side of the door; and
