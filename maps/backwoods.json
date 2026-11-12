@@ -3205,7 +3205,7 @@
         29.5
       ],
       "kind": "prop",
-      "model": "prop.anvil",
+      "model": "kit.tool.anvil",
       "yaw": 0,
       "scale": 1,
       "solid": true,

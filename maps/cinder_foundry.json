@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_cz2zu3ctolnayno6",
-      "versionId": "v_c4zvnyqojvqxktxm",
-      "revision": 7,
-      "contentHash": "sha256:212f2b967a59466a5f6a8592f6cb0cc693f2801f6ad9226afc9b03c72fea3659",
+      "versionId": "v_bghqb5bag4yvtzce",
+      "revision": 8,
+      "contentHash": "sha256:60d7270349fd2c9a0580405df6adf474d45eef4014e36a4caece06956e4ae83b",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T12:29:13.092Z"
+      "releasedAt": "2026-11-12T15:03:55.194Z"
     }
   },
   "classicStructure": {
@@ -5737,7 +5737,7 @@
         -21.5
       ],
       "kind": "prop",
-      "model": "prop.anvil",
+      "model": "kit.tool.anvil",
       "yaw": 0.4,
       "scale": 1,
       "solid": true,
@@ -5751,7 +5751,7 @@
         -21.5
       ],
       "kind": "prop",
-      "model": "prop.anvil",
+      "model": "kit.tool.anvil",
       "yaw": -0.4,
       "scale": 1,
       "solid": true,

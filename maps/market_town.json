@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "market_town",
     "name": "Market Town",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_d3ml2watxrhzzmt6",
-      "versionId": "v_3vqjmorwaedjmczs",
-      "revision": 7,
-      "contentHash": "sha256:337b62eca87d143d3302aeea24df159e40f8083223d402b748e948b48f9e1109",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T09:54:37.727Z"
+      "versionId": "v_w7iioy47277enfak",
+      "revision": 8,
+      "contentHash": "sha256:091008341399e874d8baed6e6f9607e5ecee21f5369cfe4c1ce31d5a66085819",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-12T15:06:29.991Z"
     }
   },
   "classicStructure": {
@@ -2439,8 +2439,8 @@
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_065",
@@ -2576,7 +2576,7 @@
         -40
       ],
       "kind": "prop",
-      "model": "prop.anvil",
+      "model": "kit.tool.anvil",
       "yaw": 0,
       "scale": 1,
       "solid": true,

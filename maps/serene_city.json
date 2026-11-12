@@ -6673,7 +6673,7 @@
         22
       ],
       "kind": "prop",
-      "model": "prop.os_coolant_pipe",
+      "model": "kit.pipe.coolant",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -6796,7 +6796,7 @@
         22
       ],
       "kind": "prop",
-      "model": "prop.os_coolant_pipe",
+      "model": "kit.pipe.coolant",
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
