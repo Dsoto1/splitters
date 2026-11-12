@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 36,
   "metadata": {
     "id": "the_spillway",
     "name": "The Spillway",
@@ -27,11 +27,11 @@
     },
     "release": {
       "mapId": "m_fxtilvssrdvznevx",
-      "versionId": "v_tv5q537s4hxzeotd",
-      "revision": 166,
-      "contentHash": "sha256:c9698599eb91a76d82b5bf181b7c9652a37b33ce8c17d75735ea3dcc1cab5e09",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T18:23:56.297Z"
+      "versionId": "v_eg2y3ux5aytl73xu",
+      "revision": 174,
+      "contentHash": "sha256:6b3400b989e7b21d3693fa18946111ee5710feed76b937f37df155ee7cf5f9fd",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-12T02:42:57.008Z"
     },
     "tier": "experimental"
   },
@@ -213,6 +213,54 @@
         "y": 2,
         "z": 5,
         "rotation": 0
+      },
+      {
+        "id": "tile_b72if49fhi",
+        "tile": "core.stairs_open",
+        "x": 3,
+        "y": 1,
+        "z": 1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_r8rs4fp7l0",
+        "tile": "core.stairs_open",
+        "x": 3,
+        "y": 2,
+        "z": 2,
+        "rotation": 3
+      },
+      {
+        "id": "tile_ki3kyh75tl",
+        "tile": "core.stairs_open",
+        "x": 3,
+        "y": 3,
+        "z": 3,
+        "rotation": 3
+      },
+      {
+        "id": "tile_qpv33g60tb",
+        "tile": "core.stairs_open",
+        "x": 3,
+        "y": 4,
+        "z": 4,
+        "rotation": 3
+      },
+      {
+        "id": "tile_ceoxgwdfho",
+        "tile": "core.stairs_open",
+        "x": 3,
+        "y": 5,
+        "z": 5,
+        "rotation": 3
+      },
+      {
+        "id": "tile_xoanamutp3",
+        "tile": "core.stairs_open",
+        "x": 3,
+        "y": 6,
+        "z": 6,
+        "rotation": 3
       }
     ]
   },
@@ -32699,6 +32747,28 @@
       "scale": 1.14,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "block_f6od1tg4md",
+      "position": [
+        24,
+        27.5,
+        53
+      ],
+      "kind": "block",
+      "size": [
+        4.4,
+        0.5,
+        2.4
+      ],
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
     }
   ],
   "factions": [],

@@ -19,4 +19,9 @@ With both bases low (as first landed) King of the Hill ran Embers 59, Tide 1 and
 - validate-map: OK (1 note, the spawn count).
 Tide leads both scored modes in one seed each: not a balance verdict. The stair towers are the only way up the face and the recoveries rose (31 to 48 in Team Deathmatch).
 
+## The long stair (2026-11-12), bot runs of 48 bots, seed 1
+A third way up the dam's face, six open flights. validate-map OK (1 note).
+- 150 s: Team Deathmatch Embers 44, Tide 91 (136 kills; 95 before the stair); King of the Hill Embers 28, Tide 5 (227 kills; it was 25 to 38); Capture the Flag still no flag taken (212 kills). The scores swing between single runs; no route 0 in all three.
+- **Capture the Flag over a full match (600 s): 20 takes, 2 captures** (both Tide's), 18 drops, 5 returns; the first take at 156 s, the first capture at 357 s; 751 kills. The 150 s runs above were too short to show a take: the mode works on this layout.
+
 Not checked: a perf bench with the vegetation; the flicker check (no new effect).
