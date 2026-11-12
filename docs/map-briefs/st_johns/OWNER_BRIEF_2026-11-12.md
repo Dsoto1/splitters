@@ -1,6 +1,6 @@
 # St. John's: the owner's brief for a rework (2026-11-12)
 
-The owner knows the real campus. This is what they said and what their fourteen reference photos show. Nothing is built
+The owner knows the real campus. This is what they said and what their nineteen reference photos and the campus plan show. Nothing is built
 from it yet; more references are coming ("I'll add reference more after this"). The photos are not in the repository
 (they are the school's own pictures, not ours to ship or commit): ask the owner for them, or look in the session
 scratchpad `stjohns-refs/` while that session lives. Use them as reference only: nothing from them goes into a texture.
@@ -64,6 +64,111 @@ floors."
 So a dorm floor is: a hall down the middle, rooms both sides, and at its middle an office on the right with the
 bathrooms and the middle stairway across the hall from it. And the building that is two floors for part of its
 length is three floors throughout.
+
+### Third set (the same day): two more photos, the structure as a whole
+
+The owner: "You can see the full structure behind the trees. We have most of this built, they are just not put
+together in this way. You can also see what this building (the one that is half 2 floors half 3) is actually looking
+like. It had a larger center (on each floor there is a door to a TAC officer's family living space by the middle
+stairwell). They should be half-turn stairwells on either ends, but a straight run for the middle ones."
+
+15. **The clock tower and the arch.** A three-storey limestone hall with rows of square windows trimmed in red
+    stone, a square crenellated clock tower rising from its corner (a round clock face under paired arched belfry
+    openings), and joined to it at the upper floors a second wing that crosses the path on a wide, low segmental
+    stone arch: you walk under the building, with a parapet wall and benches beyond. Tall conifers and young trees on
+    a lawn in front. (This is the joined-up structure the map has in pieces.)
+16. **The three-floor hall from its lawn.** A long, symmetrical limestone building, three floors of evenly spaced
+    square windows (four each side of the centre on every floor), a crenellated parapet along the whole roof, and a
+    centre block that stands forward and a little taller: a broad round-arched entrance at the ground, a band of small
+    windows over it, a wide bay window on the top floor, its own higher crenellated parapet. A small door near the
+    right end, a conical-roofed turret behind the right corner, two tall spruces either side of the entrance.
+
+So that building is three floors along its whole length with a larger centre block: the middle stairwell is in it,
+with a door on each floor to a TAC officer's family quarters beside the stair. The stairwells at the two ends are
+half-turn (switchback) stairs; the middle ones are straight runs. And the halls, the clock tower and the arched
+link are to be joined into one structure as in photo 15, from the pieces the map already has.
+
+### The library (the owner, the same day)
+
+"Red coned roof is the library, we already have a red building for it, but it needs improvement to give those
+details." So photo 14's low stone building with the tall red conical roof over a round-arched entrance is the
+library; the map's red building is to be reworked to show it (stone walls, the cone, the arched entrance), not
+replaced with a new place.
+
+### The main entrance (the owner, the same day, with photo 17)
+
+"See that stone obelisk style thing, that is one aspect of it (splits the path/road). You should have another
+reference of it directly on." (Photo 9 is that head-on view.)
+
+17. **The entrance, at an angle.** The fieldstone cairn (rounded field stones, a pointed arched niche at its top
+    with dressed-stone edges) stands on a low stone-walled flower bed with a concrete kerb, in the middle of the
+    drive: the road splits round it. Behind it a two-to-three-storey crenellated limestone building with a square
+    corner tower, narrow slit windows in the tower, arched and square windows along the side, an arched doorway at
+    the far end and a small arched door in the tower's base; a large tree at the left.
+
+So the main entrance is a drive that splits round the stone cairn in front of the castle-like hall, not a skywalk.
+
+### Another view of "that other building" (the owner, the same day, photo 18)
+
+18. **A three-storey hall at an angle.** (Read here as the three-floor hall of photo 16 from its left end: the owner
+    said only "another view of that other building"; confirm before building from it.) Coursed limestone, three
+    floors of square windows, a crenellated parapet. The centre block stands forward and taller, with a round turret
+    at each of its front corners rising past the parapet, an arched entrance at its foot and a bay of windows
+    above. A lower wing at the near end with large round-arched ground-floor openings and a dark double door. A
+    small conical-roofed turret at the far end. In front: a flagstone path and a low curved wall of stacked
+    limestone with a square pier, lawn, a tall spruce.
+
+### The entrance, from inside it (the owner, the same day, photo 19)
+
+"A view at entrance between those two buildings and the obelisk thing. The gym is to the left (behind) of the
+reference image."
+
+19. **Looking in at the entrance.** In the foreground a fieldstone gate pier with a bronze plaque and a round globe
+    lamp in an iron cage on top, a low fieldstone wall running from it. Beyond the drive, a three-storey limestone
+    keep: two round corner turrets with crenellated tops rising above the roof, red-trimmed square windows, a wide
+    arched window on the top floor, a round-arched door at the ground with a wooden notice board under a small shingle
+    roof beside it. A red conical roof (the library) shows in the distance at the right. The gym is out of frame,
+    to the left and behind the viewer.
+
+So the entrance is: fieldstone gate piers with caged globe lamps and low fieldstone walls at the road, the drive
+splitting round the cairn, the two crenellated stone halls either side, the gym off to the left, the library
+further in to the right.
+
+### The campus plan (the owner, the same day: a screenshot of the school's own campus map, reference 20)
+
+North is up. Read from the plan (positions are as drawn, not measured):
+
+- **Streets.** Wisconsin Avenue along the top; St. John's Road below the first row of blocks; then Guard Path
+  (west) and Church Street (east) on one line; Exeter Street below that. Running north-south: Spanjer Street on the
+  west; Smythe Lane and Farrand Lane between the upper blocks; a "Visitor parking" strip down the middle between the
+  two central blocks; Genesee Street (Highway C) along the east edge. **The Main Gate is on Genesee Street at the
+  east end of St. John's Road**, with the Cadet Post just inside it.
+- **North-west central block (between St. John's Road and Guard Path, west of the parking strip):** Noble Victory
+  Memorial Chapel in its north-west corner with The Columbarium attached to its south-east; Smythe Hall, an L-shaped
+  building, in the east of the block (a short west arm at the top, the long arm running south along the parking
+  strip).
+- **North-east central block (east of the parking strip, up to Genesee Street):** the Cadet Post at the top by the
+  gate; Farrand Hall Gymnasium, a large rectangle across the south of the block; Gerber Pool, a long north-south
+  rectangle joined to the gym's east end.
+- **South-west central block (between Guard Path and Exeter Street):** Memorial Hall on the west side; DeKoven
+  Hall, a long north-south building on the east side by the parking strip, with "Reception" marked at its west
+  face; Stangeland / Cord Hall in the south-west; Welles Dining Hall in the south-east, at the foot of DeKoven Hall;
+  **the Adreani Memorial Bridge joins Stangeland / Cord Hall to Welles Dining Hall** (this is the skywalk, and it is
+  here, not at the main gate). The four buildings ring an open court.
+- **South-east central block:** private property, St. John Chrysostom Episcopal Church and cemetery (not part of
+  the campus).
+- **West of the central blocks, east of Spanjer Street:** the Field of Flags and Parade Field with the Flag Pole at
+  its east side; Scott Johnston / Hazelwood Hall along the south of that block, a volleyball court at its west end.
+- **South of Exeter Street:** tennis courts (two sets), Mouso Hall, the Carpenter Shop, Birk Infirmary, the Campus
+  Store, a US Post Office, maintenance barns.
+- **West of Spanjer Street:** the athletics: Price Davis Field at Rick Leone Stadium, the Sturm-Carl Building, Jim
+  Duggan Field (baseball), Adreani Track, the JV baseball field, a rappelling tower.
+
+The plan does not name a library; the owner says the red conical roof is the library (ask which block it stands in).
+The photos' buildings against the plan, as far as they can be told: the chapel (photos 4, 11, 13) is Noble Victory
+Memorial Chapel; the gym (2, 3) is Farrand Hall Gymnasium; the mess hall (12) is Welles Dining Hall; the hall with
+the clock tower and the arch over the path (15) and the halls round the court are among DeKoven, Smythe, Memorial
+and Stangeland / Cord: which is which is a question for the owner.
 
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
