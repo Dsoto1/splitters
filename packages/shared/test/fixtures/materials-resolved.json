@@ -4868,6 +4868,35 @@
   },
   {
    "theme": {
+    "id": "core.industrial",
+    "displayName": "Industrial Factory",
+    "sky": "#8a9198",
+    "slots": {
+     "floor": {
+      "material": "core.pbr_concrete_dark",
+      "tint": "#b0aca4"
+     },
+     "walls": {
+      "material": "core.pbr_grey_corrugated",
+      "tint": "#c8ccd0"
+     },
+     "solids": {
+      "material": "core.pbr_rusted_plate"
+     },
+     "underside": {
+      "material": "core.pbr_steel",
+      "tint": "#8a9098"
+     },
+     "trim": {
+      "material": "core.pbr_steel",
+      "tint": "#d8b040"
+     }
+    }
+   },
+   "found": true
+  },
+  {
+   "theme": {
     "id": "core.medieval",
     "displayName": "Medieval Village",
     "sky": "#a8c8e8",
@@ -4978,6 +5007,7 @@
   "core.ancient_temple",
   "core.coastal",
   "core.desert_city",
+  "core.industrial",
   "core.medieval",
   "core.snow_outpost",
   "core.suburban"

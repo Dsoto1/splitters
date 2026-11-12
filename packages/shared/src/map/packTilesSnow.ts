@@ -36,11 +36,11 @@ const drift = (box: Box) => paint(box, DRIFT);
 const flatRoof = (x0: number, z0: number, x1: number, z1: number, y0: number): Box[] => [steel(b(x0, y0, z0, x1, y0 + 0.15, z1)), drift(b(x0, y0 + 0.15, z0, x1, y0 + 0.25, z1))];
 
 /** A round-ish disc of radius `r` (four slabs turned 45° apart), y0..y1: dome tiers, tank ends. */
-const disc = (r: number, y0: number, y1: number, material: string, tint?: string): Box[] =>
+export const disc = (r: number, y0: number, y1: number, material: string, tint?: string): Box[] =>
   [0, 1, 2, 3].map((k) => ({ ...paint(b(-r, y0, -r * 0.42, r, y1, r * 0.42), material, tint), ...(k ? { yaw: (k * Math.PI) / 4 } : {}) }));
 
 /** An eight-sided tank or pipe of diameter `d` along x from x0 to x1, its axis at (y, z): a box and the same box rolled 45°. */
-const tank = (x0: number, x1: number, y: number, z: number, d: number, material: string, tint?: string): Box[] =>
+export const tank = (x0: number, x1: number, y: number, z: number, d: number, material: string, tint?: string): Box[] =>
   [0, Math.PI / 4].map((pitch) => paint(tilted((x0 + x1) / 2, y, z, [x1 - x0, d * 0.83, d * 0.83], pitch ? { pitch } : {}), material, tint));
 
 /**

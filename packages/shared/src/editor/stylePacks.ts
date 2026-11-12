@@ -564,6 +564,43 @@ export const STYLE_PACKS: readonly StylePack[] = [
     pickups: ['core.weapon_sniper', 'core.weapon_marksman', 'core.weapon_rifle', 'core.weapon_lmg', 'core.weapon_smg', 'core.weapon_shotgun', 'core.weapon_rockets', 'core.weapon_flamethrower', 'core.grenades', 'core.mines', 'core.armor_small', 'core.armor_large', 'core.health_small', 'core.health_large'],
     demo: 'whiteout_station',
   },
+  {
+    id: 'industrial',
+    number: '13',
+    displayName: 'Industrial Factory',
+    style: 'Working factory',
+    blurb: 'A factory at work, built from our own pieces: a steel-framed hall with a mezzanine and a roll-up door, pipe racks to fight under, catwalks and a crossing over the floor, conveyor lines for cover, a loading bay with a dock and a ramp, a silo with a stair round it and a control room on legs. Crates, drums, containers, machines and valves; crushers, alarm lights and a generator to blow.',
+    themes: ['core.industrial'],
+    tiles: [
+      'industrial.factory_hall', 'industrial.pipe_rack', 'industrial.catwalk_cross', 'industrial.conveyor_line', 'industrial.loading_bay', 'industrial.silo', 'industrial.control_room',
+      'core.warehouse', 'core.catwalk', 'core.bridge', 'core.stairs_open', 'core.platform_rail', 'core.yard', 'core.yard_crates', 'military.gantry', 'snow.catwalk', 'snow.metal_stair', 'snow.fuel_depot',
+    ],
+    props: /* @__PURE__ */ props(
+      // Our kit families first: the belt, crates, drums, containers, the valve and the console.
+      'kit.conveyor.belt', 'kit.crate.factory', 'kit.crate.factory_long', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.crate.bin', 'kit.crate.framed', 'kit.drum.steel', 'kit.drum.steel_open',
+      'kit.container.shipping', 'kit.barrier.concrete', 'kit.sign.warning', 'kit.console.panel', 'kit.pipe.valve', 'kit.fence.iron', 'kit.shelf.gondola', 'kit.shelf.end', 'kit.box.carton', 'kit.bin.waste', 'kit.table.desk', 'kit.seat.office',
+      // Already in the game: machines, pipes, tanks, the gantry crane, yard pieces.
+      'machine', 'machine_window', 'hopper', 'hopper_tall', 'piston', 'scanner', 'lever', 'cog', 'big_pipe', 'workbench', 'mp_control_cabinet', 'sf_pipe_rack', 'so_pipe_run',
+      'fuel_tank', 'storage_tank', 'steel_water_tower', 'cargo_ibc_tank', 'cargo_gantry_crane', 'cargo_crate_stack', 'so_generator', 'so_chainlink_fence',
+      'cone', 'fuel_drum', 'pallet', 'floodlight', 'yard_lamp', 'dumpster', 'street_rusty_barrel', 'street_fuel_can', 'sv_propane',
+    ),
+    materials: ['core.steel_grating', 'core.pbr_tread_plate', 'core.pbr_rusted_plate', 'core.hazard', 'core.pbr_grey_corrugated', 'core.rusty_corrugated', 'core.pbr_concrete', 'core.pbr_concrete_dark', 'core.pbr_steel'],
+    facades: ['corrugated', 'concrete', 'brick'],
+    gameplay: ['mover:rollup_door', 'mover:lift', 'mover:slider', 'door:blast', 'door', 'button', 'ladder', 'light:alarm', 'light:wall', 'light:ceiling', 'block:barrier', 'block:fence', 'crate', 'barrel', 'gas', 'generator', 'trap:crusher', 'trap:flames', 'trap:shock', 'zone', 'glass'],
+    gameplayNotes: {
+      'mover:rollup_door': 'Roll-up door: the Factory Hall\'s and the Loading Bay\'s steel shutter, rolled up by a button and a rule (Send mover)',
+      'mover:lift': 'Goods lift: from the floor up to a catwalk or the mezzanine',
+      'mover:slider': 'Sliding platform: a pallet riding along the line (the conveyor itself does not move)',
+      'trap:crusher': 'Crusher: a press on the line',
+      'trap:flames': 'Flames: a furnace vent or a burst pipe',
+      'light:alarm': 'Alarm light: the shift alarm (logic)',
+      generator: 'Generator: blow it to cut the lights (logic)',
+      gas: 'Gas: a leak by the pipe rack or the silo',
+    },
+    mounts: ['hauler', 'buggy', 'troop_truck', 'turret_mg', 'sentry'],
+    pickups: ['core.weapon_rifle', 'core.weapon_smg', 'core.weapon_shotgun', 'core.weapon_marksman', 'core.weapon_lmg', 'core.weapon_rockets', 'core.weapon_flamethrower', 'core.grenades', 'core.mines', 'core.armor_small', 'core.armor_large', 'core.health_small', 'core.health_large'],
+    demo: 'ironworks',
+  },
 ];
 
 export const getStylePack = (id: string): StylePack | undefined => STYLE_PACKS.find((p) => p.id === id);
