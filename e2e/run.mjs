@@ -5429,7 +5429,7 @@ async function setupLayoutFlow(browser) {
   await setupTab(page, 'rules');
   const rulesTab = await read();
   await setupTab(page, 'match');
-  check(owner.advanced === '9 changed · Low gravity · Tactical bots +7' && owner.chips === 0 && owner.badge === '9' && rulesTab.chips === 9, `the changed rules in one line and counted on the Rules tab, their chips inside it ("${owner.advanced}", "${owner.badge}" on the tab, ${owner.chips} chips showing in Match setup, ${rulesTab.chips} in Rules)`);
+  check(owner.advanced === '8 changed · Low gravity · Tactical bots +6' && owner.chips === 0 && owner.badge === '8' && rulesTab.chips === 8, `the changed rules in one line and counted on the Rules tab, their chips inside it ("${owner.advanced}", "${owner.badge}" on the tab, ${owner.chips} chips showing in Match setup, ${rulesTab.chips} in Rules)`);
   check(owner.variants.join() === 'roulette', `a variant shows on when its settings are, however set (${owner.variants.join(', ')})`);
   // The fit indicator: Crowded, its details say why, and the map's own layout is a button.
   await page.evaluate(() => document.getElementById('setup-fit').click());

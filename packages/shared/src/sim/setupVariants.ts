@@ -61,10 +61,12 @@ export const SETUP_VARIANTS: readonly SetupVariant[] = [
   {
     id: 'roulette',
     label: 'Roulette bodies',
-    tip: "Everyone, you and the bots, plays a random character each life, with that character's own stats (size, health, speed, damage…).",
+    tip: "Everyone, you and the bots, plays a random character each life, with that character's own stats (size, health, speed, damage…) unless Character stats is off in Rules.",
     // (The Roulette mode deals a new character every life anyway.)
     modes: GAME_MODES.filter((m) => m !== 'core.roulette'),
-    sets: { randomChars: true, stats: true },
+    // (Random characters only: Character stats is its own rule. The chip is the one switch for random characters, so
+    // it reads on whenever they are, whatever the stats rule says.)
+    sets: { randomChars: true },
   },
   // Roulette (docs/ROULETTE_MODE_PLAN.md; sim/roulette.ts): its standard features, then its variants.
   {
