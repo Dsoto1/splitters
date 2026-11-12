@@ -1,6 +1,6 @@
 # St. John's: the owner's brief for a rework (2026-11-12)
 
-The owner knows the real campus. This is what they said and what their nineteen reference photos and the campus plan show. Nothing is built
+The owner knows the real campus. This is what they said and what their twenty-one reference photos and the campus plan show. Nothing is built
 from it yet; more references are coming ("I'll add reference more after this"). The photos are not in the repository
 (they are the school's own pictures, not ours to ship or commit): ask the owner for them, or look in the session
 scratchpad `stjohns-refs/` while that session lives. Use them as reference only: nothing from them goes into a texture.
@@ -205,6 +205,25 @@ Street (tennis courts, Mouso Hall, the infirmary, shops, barns), and the blocks 
 The owner, after: "Leave the houses around St. John's and structures south of Exeter that we have there already."
 So what the map already has outside the main campus (the houses round it, the structures south of Exeter Street)
 stays exactly as it is: not reworked, not removed. The rework touches the main campus only.
+
+### The chapel again (the owner, the same day: "another view of the chapel", photos 21 and 22)
+
+21. **The nave from the rear gallery.** Looking down the length of the nave to the chancel. Both side walls are
+    rough coursed limestone, each with five tall round-arched windows of small-paned stained glass (deep blues with
+    flecks of other colours), almost the full height of the wall above a string course. Under each window, at floor
+    level, a low segmental-arched opening into a side aisle. A dark timber roof on heavy trusses, flags hanging in two
+    rows from it. At the far end a tall round chancel arch, a small round rose window high in the end wall, a white
+    reredos and altar under it, steps up to the chancel. Dark wood pews in two blocks with a centre aisle, wall
+    sconces between the windows. The view is from a gallery over the entrance.
+22. **The entrance front from outside.** A square crenellated tower stands at the front corner, taller than the nave.
+    Beside it the gabled end wall with one great round-arched traceried window over a low round-arched porch with red
+    double doors and a lantern either side. Down the long side, tall arched traceried windows between stepped
+    buttresses, a crenellated parapet above, and a low lean-to aisle with a tiled roof along the foot of the wall
+    (the side aisle of photo 21). Low stone terrace walls and steps in front, lawn and large trees.
+
+So the chapel is: a tower at one front corner, a great window over red doors in the end wall, five tall stained
+windows a side between buttresses, low side aisles behind arcades, a gallery over the entrance, a timber truss roof,
+and a chancel arch with a small rose window beyond.
 
 ## What it asks of MapMaker (pieces first: no one-off map code)
 
