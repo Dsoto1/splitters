@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_uy54jdpkmne5vzsk",
-      "versionId": "v_v5rczskkb3x4735o",
-      "revision": 9,
-      "contentHash": "sha256:e2ae06c44b362c080919643d76f6a7a7414c073f03e59b3b6c81b42f89154ce8",
+      "versionId": "v_ktj3lijl5iz7leix",
+      "revision": 10,
+      "contentHash": "sha256:24afbbd85d7c7b9b4795a32b7feed4558eb2ec113ad0aa648c3638467ea04658",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T12:56:35.806Z"
+      "releasedAt": "2026-11-12T21:02:25.252Z"
     }
   },
   "classicStructure": {
@@ -17542,7 +17542,7 @@
         -46
       ],
       "kind": "mount",
-      "model": "ice_cream_truck",
+      "model": "buggy",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
@@ -17568,7 +17568,7 @@
         32
       ],
       "kind": "mount",
-      "model": "kart",
+      "model": "hover_bike",
       "yaw": 1.5707963267948966,
       "faction": null,
       "respawnSeconds": null

@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_rbau6um53slvaio3",
-      "revision": 21,
-      "contentHash": "sha256:3cff97b57b48aa38791328f9bbc765ef7776368566492b67e19d88bab135ff57",
+      "versionId": "v_7xegbg4jixh5eev7",
+      "revision": 22,
+      "contentHash": "sha256:bfa08dd94891f5eb4ea7f82adae11de621bba1a128226a32bb6e885536de0a74",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T13:27:23.364Z"
+      "releasedAt": "2026-11-12T21:18:34.795Z"
     },
     "testOnly": true
   },
@@ -1219,19 +1219,6 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_5m402baslv",
-      "position": [
-        -68,
-        0,
-        0
-      ],
-      "kind": "mount",
-      "model": "kart",
-      "yaw": 0,
-      "faction": null,
-      "respawnSeconds": null
-    },
-    {
       "id": "mount_2vxoerzt6j",
       "position": [
         -51,
@@ -1357,19 +1344,6 @@
       ],
       "kind": "mount",
       "model": "gunship",
-      "yaw": 0,
-      "faction": null,
-      "respawnSeconds": null
-    },
-    {
-      "id": "mount_p9gzbpmlkz",
-      "position": [
-        119,
-        0,
-        0
-      ],
-      "kind": "mount",
-      "model": "ice_cream_truck",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
@@ -5396,120 +5370,6 @@
     "foliage": []
   },
   "bounds": null,
-  "paths": [
-    {
-      "id": "path_bi9y69ohv2",
-      "points": [
-        [
-          -130,
-          -0.15,
-          19.87
-        ],
-        [
-          -40,
-          -0.15,
-          19.87
-        ],
-        [
-          40,
-          -0.15,
-          19.87
-        ],
-        [
-          130,
-          -0.15,
-          19.87
-        ]
-      ],
-      "closed": false,
-      "uses": [
-        "road"
-      ],
-      "width": 3,
-      "style": "dirt",
-      "lay": true
-    },
-    {
-      "id": "route_323etlkoti",
-      "points": [
-        [
-          -130,
-          -0.15,
-          99.87
-        ],
-        [
-          0,
-          -0.15,
-          99.87
-        ],
-        [
-          130,
-          -0.15,
-          99.87
-        ]
-      ],
-      "closed": false,
-      "uses": [
-        "route"
-      ],
-      "width": 3,
-      "style": "dirt",
-      "lay": false
-    },
-    {
-      "id": "race_4ci5piokva",
-      "points": [
-        [
-          -140,
-          -0.15,
-          134.87
-        ],
-        [
-          140,
-          -0.15,
-          134.87
-        ],
-        [
-          148,
-          -0.15,
-          142.87
-        ],
-        [
-          140,
-          -0.15,
-          150.87
-        ],
-        [
-          -140,
-          -0.15,
-          150.87
-        ],
-        [
-          -148,
-          -0.15,
-          142.87
-        ]
-      ],
-      "closed": true,
-      "uses": [
-        "road",
-        "race"
-      ],
-      "width": 8,
-      "style": "asphalt",
-      "lay": true,
-      "race": {
-        "laps": 3,
-        "grid": 8,
-        "vehicle": "kart",
-        "combat": false,
-        "curbs": true,
-        "ambient": 0,
-        "ambientVehicle": "kart",
-        "pit": null
-      }
-    }
-  ],
   "backdrop": null,
   "physics": null,
   "blood": null,
@@ -6064,6 +5924,120 @@
       "z": 0,
       "rotation": 0,
       "mirror": false
+    }
+  ],
+  "paths": [
+    {
+      "id": "path_bi9y69ohv2",
+      "points": [
+        [
+          -130,
+          -0.15,
+          19.87
+        ],
+        [
+          -40,
+          -0.15,
+          19.87
+        ],
+        [
+          40,
+          -0.15,
+          19.87
+        ],
+        [
+          130,
+          -0.15,
+          19.87
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "road"
+      ],
+      "width": 3,
+      "style": "dirt",
+      "lay": true
+    },
+    {
+      "id": "route_323etlkoti",
+      "points": [
+        [
+          -130,
+          -0.15,
+          99.87
+        ],
+        [
+          0,
+          -0.15,
+          99.87
+        ],
+        [
+          130,
+          -0.15,
+          99.87
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "route"
+      ],
+      "width": 3,
+      "style": "dirt",
+      "lay": false
+    },
+    {
+      "id": "race_4ci5piokva",
+      "points": [
+        [
+          -140,
+          -0.15,
+          134.87
+        ],
+        [
+          140,
+          -0.15,
+          134.87
+        ],
+        [
+          148,
+          -0.15,
+          142.87
+        ],
+        [
+          140,
+          -0.15,
+          150.87
+        ],
+        [
+          -140,
+          -0.15,
+          150.87
+        ],
+        [
+          -148,
+          -0.15,
+          142.87
+        ]
+      ],
+      "closed": true,
+      "uses": [
+        "road",
+        "race"
+      ],
+      "width": 8,
+      "style": "asphalt",
+      "lay": true,
+      "race": {
+        "laps": 3,
+        "grid": 8,
+        "vehicle": "hover_bike",
+        "combat": false,
+        "curbs": true,
+        "ambient": 0,
+        "ambientVehicle": "hover_bike",
+        "pit": null
+      }
     }
   ]
 }

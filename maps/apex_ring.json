@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_snj2ivjohajuozh5",
-      "versionId": "v_rbehg5q2pg5xlirz",
-      "revision": 7,
-      "contentHash": "sha256:219beda32953df6f4f6d004979b1b0baff3871192ba74f5e5872da2ab9d3f238",
+      "versionId": "v_k2yn4qyynsno7yky",
+      "revision": 8,
+      "contentHash": "sha256:8f3bd201c87abe00133c69ab6af6209969aa1a8abfa1664131f2b315c40041f4",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T12:21:32.829Z"
+      "releasedAt": "2026-11-12T21:03:27.573Z"
     }
   },
   "classicStructure": {
@@ -46827,6 +46827,26 @@
     "style": "invisible",
     "height": 12
   },
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "city",
+    "ground": "grass",
+    "haze": 0.35,
+    "border": "skyline",
+    "borderSides": {
+      "south": "forest",
+      "west": "forest"
+    }
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      8,
+      8
+    ]
+  },
+  "dependencies": [],
   "paths": [
     {
       "id": "race_track",
@@ -47048,11 +47068,11 @@
       "race": {
         "laps": 3,
         "grid": 16,
-        "vehicle": "kart",
+        "vehicle": "hover_bike",
         "combat": false,
         "curbs": true,
         "ambient": 12,
-        "ambientVehicle": "kart",
+        "ambientVehicle": "hover_bike",
         "pit": [
           100,
           0.05,
@@ -47061,25 +47081,5 @@
       },
       "curve": "classic"
     }
-  ],
-  "backdrop": {
-    "sky": "clear",
-    "scenery": "city",
-    "ground": "grass",
-    "haze": 0.35,
-    "border": "skyline",
-    "borderSides": {
-      "south": "forest",
-      "west": "forest"
-    }
-  },
-  "physics": null,
-  "blood": null,
-  "teamSetup": {
-    "sizes": [
-      8,
-      8
-    ]
-  },
-  "dependencies": []
+  ]
 }

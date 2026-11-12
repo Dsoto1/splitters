@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 27,
+  "formatVersion": 36,
   "metadata": {
     "id": "cedar_lane",
     "name": "Cedar Lane",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_7esvtm4kykw23mm2",
-      "versionId": "v_pw2xnyehod6rlteu",
-      "revision": 2,
-      "contentHash": "sha256:117b40c901d7706e57129165eb5aa3ab7aed9e616d0b212eb41ae5f8da3213e0",
-      "schemaVersion": 27,
-      "releasedAt": "2026-11-06T15:52:38.727Z"
+      "versionId": "v_7esafb6lib4lj7me",
+      "revision": 3,
+      "contentHash": "sha256:09c92e8ed5c0431df7cc41ba45e0d80359bc843efeab8326d12fd6518e358aa1",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-12T21:06:33.993Z"
     }
   },
   "classicStructure": {
@@ -1329,7 +1329,7 @@
         1.4
       ],
       "kind": "mount",
-      "model": "ice_cream_truck",
+      "model": "buggy",
       "yaw": 1.5707963267948966,
       "faction": null,
       "respawnSeconds": null
