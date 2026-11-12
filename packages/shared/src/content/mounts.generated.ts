@@ -496,7 +496,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     id: 'gunship',
     displayName: 'Gunship',
     kind: 'vehicle',
-    model: 'vehicles/gunship.glb',
+    model: 'vehicles/sky_cruiser.glb',
     health: 950,
     half: [2.4, 1.2, 4.3],
     seats: [

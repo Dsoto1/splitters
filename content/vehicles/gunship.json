@@ -3,7 +3,7 @@
   "order": 14,
   "displayName": "Gunship",
   "kind": "vehicle",
-  "model": "vehicles/gunship.glb",
+  "model": "vehicles/sky_cruiser.glb",
   "health": 950,
   "half": [2.4, 1.2, 4.3],
   "seats": [
