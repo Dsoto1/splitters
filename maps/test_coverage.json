@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_ssz3upj5dkhxk6e7",
-      "revision": 24,
-      "contentHash": "sha256:3af85d0b79851a56382410fd15e78b4826d4ab8412124ae297a5462a73d4ec57",
+      "versionId": "v_yymikxh7ae25harz",
+      "revision": 25,
+      "contentHash": "sha256:29d8c609d5557cf42ce8f189a9db4d8986ece7064fadc31e0f4d27f3b60fb6fc",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-13T00:18:26.891Z"
+      "releasedAt": "2026-11-13T15:16:30.571Z"
     },
     "testOnly": true
   },
@@ -5006,17 +5006,30 @@
     },
     {
       "id": "prop_bb3iujf9mb",
-      "kind": "prop",
       "position": [
         -37.5,
         0,
         -406
       ],
+      "kind": "prop",
       "model": "kit.cabinet.closet_front",
       "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "mount_qhmxcda41f",
+      "kind": "mount",
+      "position": [
+        -68,
+        0,
+        0
+      ],
+      "model": "supply_buggy",
+      "yaw": 0,
+      "faction": null,
+      "respawnSeconds": null
     }
   ],
   "factions": [],
