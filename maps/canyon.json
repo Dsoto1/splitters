@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "canyon",
     "name": "Rockfall Canyon",
@@ -852,8 +852,8 @@
       "yaw": 3.249,
       "scale": 0.75,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_067",
@@ -895,8 +895,8 @@
       "yaw": 0.708,
       "scale": 0.75,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_070",
@@ -980,8 +980,8 @@
       "yaw": 1.508,
       "scale": 0.75,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_076",
@@ -995,8 +995,8 @@
       "yaw": 3.144,
       "scale": 0.75,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_077",
@@ -1256,7 +1256,7 @@
         -60
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
@@ -1308,7 +1308,7 @@
         60
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.141592653589793,
       "faction": null,
       "respawnSeconds": null

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
@@ -54817,7 +54817,7 @@
         -127.625
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": null,
       "respawnSeconds": null
@@ -54830,7 +54830,7 @@
         -132.811
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": null,
       "respawnSeconds": null
@@ -54856,7 +54856,7 @@
         -34.913
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.14159,
       "faction": null,
       "respawnSeconds": null

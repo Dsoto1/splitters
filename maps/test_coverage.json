@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_vz5jy6nakd5q3rro",
-      "revision": 26,
-      "contentHash": "sha256:4fbcd9a3f6619e73c19fcd3a5d16deb14790e91b2a5e81ef2c76c7a442ba9317",
+      "versionId": "v_l4ykr4ofj5hyy3tq",
+      "revision": 27,
+      "contentHash": "sha256:8ded51867157202e05bd4bc9cc6ca04226c68f9ccda11f96373f4160b4df93d5",
       "schemaVersion": 37,
-      "releasedAt": "2026-11-13T12:34:03.061Z"
+      "releasedAt": "2026-11-13T18:03:20.477Z"
     },
     "testOnly": true
   },
@@ -1444,7 +1444,7 @@
         0
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
@@ -5197,6 +5197,19 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "mount_95h2qo8jbg",
+      "kind": "mount",
+      "position": [
+        -68,
+        0,
+        0
+      ],
+      "model": "supply_buggy",
+      "yaw": 0,
+      "faction": null,
+      "respawnSeconds": null
     }
   ],
   "factions": [],

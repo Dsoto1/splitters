@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "sunstone_crag",
     "name": "Sunstone Crag",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_d7xyzfbdralwsq6a",
-      "versionId": "v_57ly372k3yb2huid",
-      "revision": 1,
-      "contentHash": "sha256:cb999c2813877b1db80bdd2fa03912f71c31d978773842205073a0bf3722309a",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-11T18:27:57.407Z"
+      "versionId": "v_oukpqewwzjkvj3ur",
+      "revision": 2,
+      "contentHash": "sha256:496d9d83bb2ac5bd431b6242f495090e3bcba50f720a7b7aae400582fd1e7490",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T18:00:29.128Z"
     }
   },
   "classicStructure": {
@@ -12814,7 +12814,7 @@
         -8
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": "embers",
       "respawnSeconds": null
@@ -12827,7 +12827,7 @@
         8
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": "embers",
       "respawnSeconds": null
@@ -13326,7 +13326,7 @@
         8
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": -1.5707963267948966,
       "faction": "tide",
       "respawnSeconds": null
@@ -13339,7 +13339,7 @@
         -8
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": -1.5707963267948966,
       "faction": "tide",
       "respawnSeconds": null
@@ -20209,12 +20209,12 @@
     },
     {
       "id": "mount_jcajgo28b0",
-      "kind": "mount",
       "position": [
         -98,
         2.39,
         25.5
       ],
+      "kind": "mount",
       "model": "troop_truck",
       "yaw": 1.571,
       "faction": "embers",
@@ -20222,12 +20222,12 @@
     },
     {
       "id": "mount_4x0k24d5ww",
-      "kind": "mount",
       "position": [
         98,
         2.35,
         -25.5
       ],
+      "kind": "mount",
       "model": "troop_truck",
       "yaw": -1.571,
       "faction": "tide",

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "capitol_mall",
     "name": "Capitol Mall",
@@ -34,11 +34,11 @@
     },
     "release": {
       "mapId": "m_pgk246xeiki6vwzm",
-      "versionId": "v_ngntb7nxccjp6h5v",
-      "revision": 1,
-      "contentHash": "sha256:85f5b8ccdfbb5a164906d27c40e3191d4e924f235be2551b9a11e9385be0142e",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T21:05:29.222Z"
+      "versionId": "v_riob7ec656mbxqx7",
+      "revision": 2,
+      "contentHash": "sha256:5f8fc22fcac995968747fff92658a5e2b8f49fb8b1c9ad54390987628a73dce6",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T17:50:47.912Z"
     }
   },
   "classicStructure": {
@@ -20562,7 +20562,7 @@
         52
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.141592653589793,
       "faction": "embers",
       "respawnSeconds": null
@@ -20601,7 +20601,7 @@
         30
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": "tide",
       "respawnSeconds": null
@@ -20640,7 +20640,7 @@
         -25
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null

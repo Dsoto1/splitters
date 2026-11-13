@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "cedar_lane",
     "name": "Cedar Lane",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_7esvtm4kykw23mm2",
-      "versionId": "v_7esafb6lib4lj7me",
-      "revision": 3,
-      "contentHash": "sha256:09c92e8ed5c0431df7cc41ba45e0d80359bc843efeab8326d12fd6518e358aa1",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T21:06:33.993Z"
+      "versionId": "v_gthxuy4kygezfmdk",
+      "revision": 4,
+      "contentHash": "sha256:9ae5d0b83bb5aea77be6eb13a9a30900ee8497b72909d346c1fd44e57fde67d9",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T17:51:43.201Z"
     }
   },
   "classicStructure": {
@@ -1329,7 +1329,7 @@
         1.4
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": null,
       "respawnSeconds": null

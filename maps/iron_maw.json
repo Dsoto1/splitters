@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "iron_maw",
     "name": "Iron Maw",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_tbmvtvdqqxz6pjdj",
-      "revision": 11,
-      "contentHash": "sha256:6f15f3433b9f0f9bd1d911242699b7805ab6a8038be3e2d3cc1ddbbf79a2810e",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-13T03:53:27.118Z"
+      "versionId": "v_t2zurmvzwolmwymz",
+      "revision": 12,
+      "contentHash": "sha256:c44a5fec6f2ad04c26980adf42d3b0ec7ee81c92bc40802da9c0f56c6ec8b1fb",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T17:54:38.877Z"
     },
     "tier": "experimental"
   },
@@ -16314,7 +16314,7 @@
         172
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.1415900000000003,
       "faction": "embers",
       "respawnSeconds": null
@@ -16327,7 +16327,7 @@
         172
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.1415900000000003,
       "faction": "embers",
       "respawnSeconds": null
@@ -16405,7 +16405,7 @@
         -0.3
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": -0.471,
       "faction": "tide",
       "respawnSeconds": null
@@ -16418,7 +16418,7 @@
         -87
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.571,
       "faction": "tide",
       "respawnSeconds": null
@@ -16496,7 +16496,7 @@
         -10.45
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": -2.96706,
       "faction": null,
       "respawnSeconds": null
@@ -16509,7 +16509,7 @@
         0.07
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": -0.34907,
       "faction": null,
       "respawnSeconds": null
@@ -16522,7 +16522,7 @@
         -28
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.2,
       "faction": null,
       "respawnSeconds": null

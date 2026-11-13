@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "coldwater_gulch",
     "name": "Coldwater Gulch",
@@ -350,7 +350,7 @@
         84
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.141592653589793,
       "faction": "red",
       "respawnSeconds": null
@@ -771,7 +771,7 @@
         -84
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0,
       "faction": "blue",
       "respawnSeconds": null
