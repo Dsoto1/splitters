@@ -4,22 +4,26 @@
   "displayName": "Heavy MG Turret",
   "kind": "turret",
   "model": "guns/tripod_mg.glb",
+  "scale": 2,
   "health": 400,
-  "half": [0.6, 0.5, 0.6],
+  "half": [0.75, 0.64, 0.95],
   "seats": [
     {
       "role": "gunner",
       "label": "Gunner",
-      "offset": [0, 0, -1.1],
+      "offset": [0, 0, -1.45],
       "weapon": "core.mount_mg",
       "arc": 1.4
     }
   ],
-  "enterRadius": 2.4,
+  "enterRadius": 2.8,
   "respawnSeconds": 45,
   "blast": { "radius": 3, "damage": 60 },
   "blurb": "A heavy machine gun on a tripod: one gunner, a wide arc, overheats instead of reloading",
   "notes": {
-    "model": "The owner's toy machine gun on a tripod (Meshy, owned; content/guns.json, centred on its tripod)."
+    "model": "The owner's toy machine gun on a tripod (Meshy, owned; content/guns.json, centred on its tripod), built 1.5 m long: a 0.57 m receiver and a 0.93 m barrel, its bore 0.55 m off the ground.",
+    "scale": "Drawn twice its built size (owner, 2026-11-12: \"the MG turret should be scaled up\"; at its built size its top was 0.64 m up, knee height to a 1.8 m player, and it read as a toy). At 2: 3.0 m long (receiver 1.14 m, barrel 1.86 m), bore 1.1 m up, top of the receiver 1.28 m (a standing player's chest), the spade grips about a metre up, tripod feet 2.2 m apart. The model's tripod is short for its gun, so one scale can't give both a chest-high gun and a 1.2-1.5 m barrel: 1.6 gives a 1.5 m barrel on a gun at hip height (bore 0.88 m), 2.4 a chest-high bore with a 2.2 m barrel. 2 is between them, the height coming first because the gunner stands.",
+    "half": "The solid part at that size: the receiver and the pintle (1.5 m wide, 1.9 m long, 1.28 m tall). The barrel (to z 2.06) and the tripod's side feet (1.1 m either side) are outside it, like the Tank's barrel.",
+    "seats": "The gunner stands 1.45 m behind the pintle, half a metre clear of the receiver's back (z -0.94). The seat doesn't move as the gun turns; in the gunner's own view the gun is drawn turning about where they stand, so it stays in front of them (client View.updateMounts)."
   }
 }

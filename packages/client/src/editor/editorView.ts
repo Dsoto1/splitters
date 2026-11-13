@@ -17,7 +17,7 @@ import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, MapWeather, PropEntity, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
-import { mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
+import { mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, placedMountDef, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
@@ -595,7 +595,7 @@ export class EditorView {
   private entityNode(e: MapEntity, id: string, teams: ReturnType<typeof mapTeams>): TransformNode {
     if (e.kind === 'pickup') return createPickupVisual(this.scene, this.models, e.item, `edpickup_${id}`);
     if (e.kind === 'prop') return createPropNode(this.scene, this.models, e, `edprop_${id}`, false);
-    if (e.kind === 'mount') return createMountNode(this.scene, this.models, e.model, `edmount_${id}`, MOUNT_DEFS[e.model].kind === 'sentry' ? null : mountTint(e.skin, e.faction ? (teams.find((t) => t.id === e.faction)?.color ?? null) : null));
+    if (e.kind === 'mount') return createMountNode(this.scene, this.models, e.model, `edmount_${id}`, placedMountDef(e.model).kind === 'sentry' ? null : mountTint(e.skin, e.faction ? (teams.find((t) => t.id === e.faction)?.color ?? null) : null));
     return this.scenario.createNode(e as Parameters<ScenarioVisuals['createNode']>[0], `ed_${id}`);
   }
 

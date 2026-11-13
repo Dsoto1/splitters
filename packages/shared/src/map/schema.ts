@@ -9,7 +9,7 @@ import { ScenarioLogic } from './logic.ts';
 
 // The plain constants (format, factions, NPC roles, squad orders): mapKeys.ts, which the menu reads without the schemas.
 export * from './mapKeys.ts';
-import { MOUNT_MODELS, MOUNT_SKINS } from '../sim/mounts.ts';
+import { MOUNT_MODELS, MOUNT_SKINS, RETIRED_MOUNT_MODELS } from '../sim/mounts.ts';
 import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
 
 /**
@@ -479,7 +479,8 @@ export const PropEntity = EntityBase.extend({
 /** A turret, sentry gun or vehicle (see sim/mounts.ts). Position is the centre of its footprint on the ground. */
 export const MountEntity = EntityBase.extend({
   kind: z.literal('mount'),
-  model: z.enum(MOUNT_MODELS),
+  /** A placeable mount, or a retired vehicle's id (a map made with one: it plays as its replacement, mountAliases.ts). */
+  model: z.enum([...MOUNT_MODELS, ...RETIRED_MOUNT_MODELS]),
   yaw: Yaw,
   /** Sentries shoot this team's enemies (null: everyone); vehicles and turrets given a team wear its colour (skin `auto`). */
   faction: FactionId.nullable().default(null),
@@ -859,8 +860,13 @@ export const MapBounds = z
 
 /** Road surfaces a race track is drawn in. */
 export const TRACK_SURFACES = ['asphalt', 'dirt'] as const;
-/** Vehicles a race can be run in (the wheeled and hovering ones that drive the ground). */
-export const RACE_VEHICLES = ['kart', 'speeder', 'buggy'] as const;
+/**
+ * Vehicles a track's NPC cars can be (the wheeled and hovering ones that drive the ground). The Go-Kart was the
+ * first and the default until it was retired (2026-11-12): a track may still name `kart`, and its cars are then
+ * Hover Bikes (mountAliases.ts); a track that doesn't say gets Hover Bikes.
+ */
+export const RACE_VEHICLES = ['hover_bike', 'speeder', 'buggy'] as const;
+const RaceVehicleId = z.enum(['kart', ...RACE_VEHICLES]).default('hover_bike');
 
 /**
  * A race track as the curve code reads it (track.ts): ordered control points
@@ -879,7 +885,7 @@ export const Track = z.object({
   /** Places on the start grid (two abreast behind the start line). */
   grid: z.number().int().min(2).max(16).default(8),
   /** Vehicle everyone races in (Arcade can change it). */
-  vehicle: z.enum(RACE_VEHICLES).default('kart'),
+  vehicle: RaceVehicleId,
   /** Weapons, vehicle guns and the sideline sentries on (Arcade can change it). */
   combat: z.boolean().default(false),
   surface: z.enum(TRACK_SURFACES).default('asphalt'),
@@ -891,7 +897,7 @@ export const Track = z.object({
    * take the wheel). Wrecked ones come back in the pit lane.
    */
   ambient: z.number().int().min(0).max(12).default(0),
-  ambientVehicle: z.enum(RACE_VEHICLES).default('kart'),
+  ambientVehicle: RaceVehicleId,
   /** Where wrecked ambient cars come back (lined up behind it, facing down the road); null: just off the road by the start line. */
   pit: Vec3Tuple.nullable().default(null),
 });
@@ -932,7 +938,7 @@ export const RaceSettings = z.object({
   /** Places on the start grid (two abreast behind the start line). */
   grid: z.number().int().min(2).max(16).default(8),
   /** Vehicle everyone races in (Arcade can change it). */
-  vehicle: z.enum(RACE_VEHICLES).default('kart'),
+  vehicle: RaceVehicleId,
   /** Weapons, vehicle guns and the sideline sentries on (Arcade can change it). */
   combat: z.boolean().default(false),
   /** Red-and-white curbs along both edges. */
@@ -943,7 +949,7 @@ export const RaceSettings = z.object({
    * take the wheel). Wrecked ones come back in the pit lane.
    */
   ambient: z.number().int().min(0).max(12).default(0),
-  ambientVehicle: z.enum(RACE_VEHICLES).default('kart'),
+  ambientVehicle: RaceVehicleId,
   /** Where wrecked ambient cars come back (lined up behind it, facing down the road); null: just off the road by the start line. */
   pit: Vec3Tuple.nullable().default(null),
 });
