@@ -73,14 +73,22 @@ wall, a visor and stepped cheeks outside), Half wall, Railing, High wall,
 Towering wall, Tall fence, Broken wall (a ragged hole with rubble), Bars
 (floor-to-ceiling, see and shoot through), Barred gate (bars either side of a 3 m
 gateway: hang a Portcullis door in it), Shutter (a wide opening with its
-shutter stuck 1.35 m up: crouch under; bots don't path through it) or No wall.
+shutter stuck 1.35 m up: crouch under; bots don't path through it), Shopfront (a stall
+riser 0.45 m high between two 1 m piers and one opening 6 m wide up to a head at
+3 m: give it Glass; bots don't path through it), Arched window (2 m wide, sill
+0.9 m, a round head from 2 m to 3 m, voussoirs and a keystone; takes Glass like
+the Window) or No wall. Shopfront and Arched window came with **map format v38**
+(Tileset 11, Urban & Civilian; owner-approved 2026-11-13): a map that uses one
+needs a build that knows v38, and every older map loads as it was (the v37 to
+v38 step changes nothing).
 Use the **Walls & Openings** tool (O cycles styles; right-click resets) or the
 tile inspector. Choices are stored on the tile in its own frame (they turn with
 it) and apply to both halves of a shared wall.
 
 ### Glass (glass panes)
 
-Windows can hold real glass. Window, Twin windows and Firing slit sides take a
+Windows can hold real glass. Window, Twin windows, Firing slit, the sash windows,
+Shopfront and Arched window sides take a
 **Glass** setting (the select under the wall styles in **Walls & Openings**:
 *Glass: none / breakable / reinforced*; stored per side in the tile's `glass`,
 `MapBuilder.glass(x, y, z, side, kind)` in map scripts). Free blocks take the
@@ -1069,6 +1077,26 @@ decision). Two kit looks: **Painted Door** (`kit.door.painted`, `kit.door.painte
 collision; red, blue, white half-glazed and a glazed shop door) and **Shop Awning** (`kit.shop.awning`: 3.2 m wide,
 1.3 m out, 1 m high; red, green, blue, yellow and faded stripes; no collision, raise it over a shop window).
 `client/test/patternsUrban.test.ts`.
+
+**Made for the pack (plan step C: small new shapes).** Two wall styles, *Shopfront* and *Arched window* (above, "Walls
+and openings"; map format v38; `test/urbanWallStyles.test.ts`). A shopfront with **Glass: none** is an open shop front:
+its 0.45 m riser is more than a walking step (0.3 m), so players jump it and bots do not path through; with glass it
+is closed to players, and to shots as the glass kind says. Kit families, each with looks and one collision:
+
+| Family | Size (m) | Looks | Collision |
+|---|---|---|---|
+| `kit.barrier.bollard` Street Bollard | 0.24 x 0.95 x 0.24 | yellow, steel, concrete, striped | its box |
+| `kit.street.bike_rack` Bike Rack | 2 x 0.85 x 0.7 | steel, black, green, red | its three hoops only (5 cm tube): shots and sight pass |
+| `kit.street.mailbox` Street Mailbox | 0.56 x 1.22 x 0.5 | blue, red, green, yellow | its box (crouch cover) |
+| `kit.street.newsbox` Newspaper Box | 0.5 x 1.2 x 0.46 | red, blue, yellow, green, white | its box (crouch cover) |
+| `kit.spool.cable` Cable Spool | 0.9 x 1.4 x 1.4 | wood, weathered, empty, orange | its box |
+| `kit.fence.chainlink` Chain-link Fence | 3 x 2.4 x 0.08 | galvanised, green, rusty | posts, rails, an upright bar every 0.25 m |
+| `kit.fence.chainlink_gate` Chain-link Gate (shut, a still prop) | 3 x 2.4 x 0.08 | galvanised, green, rusty | posts, leaf frames, bars |
+| `kit.fence.site_panel` Site Fence Panel | 3.4 x 2 x 0.6 | galvanised, green, rusty | two block feet, frame, bars |
+
+The mailbox and the newspaper box are plain paint: no postal service's or publisher's name, sign or livery. Nothing
+glows or blinks. **No curb drop wedge** (plan C8): a vehicle moves on the same controller as a player (autostep 0.3 m)
+and rides up the street tiles' 0.15 m sidewalks (`test/urbanKerb.test.ts`).
 
 ### 06 Jungle Ruins refresh (Ancient Temple folded in)
 

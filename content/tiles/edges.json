@@ -502,6 +502,81 @@
       "dressing": { "kind": "door", "span": 2 },
       "notes": { "design": "A room's doorway, 2 m wide and 2.6 m high, in an oak frame (a library material of its own on the frame, whatever the theme's trim). 2 m, not 1 m: bots keep 0.8 m off walls (NAV_RADIUS_CELLS, 4 cells of 0.2 m), so a narrower door is closed to them. The Oak Door kit props (kit.door.oak, shut; kit.door.oak_ajar; kit.door.oak_open) fit it." }
     },
+    {
+      "id": "shopfront",
+      "label": "Shopfront",
+      "segments": [
+        { "u": ["-half", -3], "y": [0, "height"] },
+        { "u": [3, "half"], "y": [0, "height"] },
+        { "u": [-3, 3], "y": [0, 0.45] },
+        { "u": [-3, 3], "y": ["min(3,height)", "height"] }
+      ],
+      "trim": [
+        { "base": ["-half", "half"] },
+        { "cornice": ["-half", "half"] },
+        { "u": [-3.2, 3.2], "y": [0.33, 0.45], "depth": 0.14, "outside": true },
+        { "u": [-3.2, 3.2], "y": [3, 3.16], "depth": 0.07, "outside": true },
+        { "u": [-3.16, -3], "y": [0.45, 3], "depth": 0.05, "outside": true },
+        { "u": [3, 3.16], "y": [0.45, 3], "depth": 0.05, "outside": true },
+        { "u": [-3, -2.93], "y": [0.45, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#3a3d42" } },
+        { "u": [2.93, 3], "y": [0.45, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#3a3d42" } },
+        { "u": [-2.93, 2.93], "y": [0.45, 0.54], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#3a3d42" } },
+        { "u": [-2.93, 2.93], "y": [2.93, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#3a3d42" } }
+      ],
+      "openings": [[-3, 3, 0.45, 3]],
+      "glass": true,
+      "corner": true,
+      "facade": true,
+      "street": true,
+      "dressing": { "kind": "window", "span": 6 },
+      "notes": { "design": "A shop's front (Tileset 11, Urban & Civilian: docs/map-briefs/urban/URBAN_PLAN.md C1; map format v38): a stall riser 0.45 m high between two piers 1 m wide, and one opening 6 m wide from the riser to a head at 3 m that takes glass (Glass: breakable or reinforced, as a Window: glass stops players and lets sight through; breakable glass lets shots through and shatters, reinforced stops them). A sill on the riser, a head and jambs dress the inner face and the outer face where nothing is built beyond; a dark painted frame is drawn in the wall by the glass (trim only). With no glass it is an open shop front: the riser is a step up of 0.45 m, more than a walk (0.3 m), so players jump it and bots do not path through." }
+    },
+    {
+      "id": "window_arched",
+      "label": "Arched window",
+      "segments": [
+        { "u": ["-half", -1], "y": [0, "height"] },
+        { "u": [1, "half"], "y": [0, "height"] },
+        { "u": [-1, 1], "y": [0, 0.9] },
+        { "u": [-1, -0.98], "y": ["min(2.2,height)", "height"] },
+        { "u": [-0.98, -0.94], "y": ["min(2.35,height)", "height"] },
+        { "u": [-0.94, -0.87], "y": ["min(2.5,height)", "height"] },
+        { "u": [-0.87, -0.77], "y": ["min(2.64,height)", "height"] },
+        { "u": [-0.77, -0.64], "y": ["min(2.77,height)", "height"] },
+        { "u": [-0.64, -0.5], "y": ["min(2.87,height)", "height"] },
+        { "u": [-0.5, -0.34], "y": ["min(2.95,height)", "height"] },
+        { "u": [-0.34, -0.17], "y": ["min(2.99,height)", "height"] },
+        { "u": [-0.17, 0.17], "y": ["min(3,height)", "height"] },
+        { "u": [0.17, 0.34], "y": ["min(2.99,height)", "height"] },
+        { "u": [0.34, 0.5], "y": ["min(2.95,height)", "height"] },
+        { "u": [0.5, 0.64], "y": ["min(2.87,height)", "height"] },
+        { "u": [0.64, 0.77], "y": ["min(2.77,height)", "height"] },
+        { "u": [0.77, 0.87], "y": ["min(2.64,height)", "height"] },
+        { "u": [0.87, 0.94], "y": ["min(2.5,height)", "height"] },
+        { "u": [0.94, 0.98], "y": ["min(2.35,height)", "height"] },
+        { "u": [0.98, 1], "y": ["min(2.2,height)", "height"] }
+      ],
+      "trim": [
+        { "base": ["-half", "half"] },
+        { "cornice": ["-half", "half"] },
+        { "u": [-1.2, 1.2], "y": [0.78, 0.9], "depth": 0.14, "outside": true },
+        { "u": [-1.16, -1], "y": [0.9, 2], "depth": 0.05, "outside": true },
+        { "u": [1, 1.16], "y": [0.9, 2], "depth": 0.05, "outside": true },
+        { "arch": { "u": [-1, 1], "y": [2, 3], "count": 9, "band": 0.3, "key": 0.2 }, "outside": true },
+        { "u": [-1, -0.93], "y": [0.9, 2], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [0.93, 1], "y": [0.9, 2], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-0.93, 0.93], "y": [0.9, 0.99], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-0.93, 0.93], "y": [1.96, 2.04], "v": [0.18, 0.32], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-0.02, 0.02], "y": [0.99, 1.96], "v": [0.225, 0.275], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-0.02, 0.02], "y": [2.04, 2.99], "v": [0.225, 0.275], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } }
+      ],
+      "openings": [[-1, 1, 0.9, 3]],
+      "glass": true,
+      "corner": true,
+      "facade": true,
+      "dressing": { "kind": "window", "span": 2 },
+      "notes": { "design": "An arched window (Tileset 11, Urban & Civilian: URBAN_PLAN.md C2; map format v38): 2 m wide, sill 0.9 m, a semicircular head springing at 2 m to its crown at 3 m. Its collision steps over the curve and never dips below it (10° steps, as the Round arch); nine voussoirs and a keystone dress both faces (the outer one where nothing is built beyond the side), with a stone sill and jambs. It takes glass like the Window (the pane is the opening's rectangle; its corners are inside the stone over the curve), and a painted frame is drawn in the wall by the glass: stiles, a bottom rail, a transom at the springing, a mullion and a bar in the fanlight (trim only). Open, it is climbed through as the Window is: jump and crouch." }
+    },
     { "id": "open", "label": "No wall", "rule": "open" }
   ]
 }

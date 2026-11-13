@@ -27,7 +27,7 @@ import { writeKitModel } from './kit/glb.mjs';
 import { binMesh, crateMesh, framedCrateMesh } from './kit/crate.mjs';
 import { drumMesh } from './kit/drum.mjs';
 import { cartonMesh } from './kit/carton.mjs';
-import { barrierMesh, fenceMesh, railingMesh, stoneWallMesh } from './kit/fence.mjs';
+import { barrierMesh, chainlinkMesh, fenceMesh, railingMesh, stoneWallMesh } from './kit/fence.mjs';
 import { containerMesh } from './kit/container.mjs';
 import { bookcaseMesh, officeChairMesh, roundTableMesh, seatMesh, tableMesh } from './kit/furniture.mjs';
 import { counterMesh, shelfMesh, stallMesh, wasteBinMesh } from './kit/shop.mjs';
@@ -41,7 +41,7 @@ import { cogMesh, hopperMesh, leverMesh, machineMesh, pistonMesh, scannerMesh, t
 import { anvilMesh, coneMesh, glassPipeMesh, pipeStubMesh, workbenchMesh } from './kit/yard.mjs';
 import { coolantPipeMesh, pipeJunctionMesh } from './kit/pipes.mjs';
 import { closetFrontMesh, closetMesh, deskHutchMesh, doorMesh } from './kit/academy.mjs';
-import { awningMesh } from './kit/street.mjs';
+import { awningMesh, bikeRackMesh, bollardMesh, mailboxMesh, newsBoxMesh, spoolMesh } from './kit/street.mjs';
 import { domeArchMesh, domeCapMesh, domeDrumMesh, domeMesh, domePanelMesh, domeTrimMesh } from './kit/dome.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -52,7 +52,7 @@ const OUT = 'packages/client/public/kit';
 const SHARED = 'packages/shared/src/content/kitProps.generated.ts';
 
 /** Generator kinds and what makes each. */
-export const KINDS = { crate: crateMesh, framed: framedCrateMesh, bin: binMesh, drum: drumMesh, carton: cartonMesh, fence: fenceMesh, railing: railingMesh, stonewall: stoneWallMesh, barrier: barrierMesh, container: containerMesh, table: tableMesh, seat: seatMesh, bookcase: bookcaseMesh, shelf: shelfMesh, stall: stallMesh, counter: counterMesh, wastebin: wasteBinMesh, sofa: sofaMesh, cabinet: cabinetMesh, appliance: applianceMesh, roundtable: roundTableMesh, officechair: officeChairMesh, bed: bedMesh, cornersofa: cornerSofaMesh, yokecrate: yokeCrateMesh, sign: signMesh, conveyor: conveyorMesh, freezer: freezerMesh, cart: cartMesh, bakery: bakeryMesh, checkout: checkoutMesh, chestfreezer: chestFreezerMesh, bottlereturn: bottleReturnMesh, produce: produceMesh, console: consoleMesh, valve: valveMesh, machine: machineMesh, windowmachine: windowMachineMesh, hopper: hopperMesh, tallhopper: tallHopperMesh, piston: pistonMesh, scanner: scannerMesh, lever: leverMesh, cog: cogMesh, glasspipe: glassPipeMesh, pipestub: pipeStubMesh, workbench: workbenchMesh, cone: coneMesh, anvil: anvilMesh, coolantpipe: coolantPipeMesh, pipejunction: pipeJunctionMesh, dome: domeMesh, domecap: domeCapMesh, domepanel: domePanelMesh, domedrum: domeDrumMesh, dometrim: domeTrimMesh, domearch: domeArchMesh, door: doorMesh, deskhutch: deskHutchMesh, closet: closetMesh, closetfront: closetFrontMesh, awning: awningMesh };
+export const KINDS = { crate: crateMesh, framed: framedCrateMesh, bin: binMesh, drum: drumMesh, carton: cartonMesh, fence: fenceMesh, railing: railingMesh, stonewall: stoneWallMesh, barrier: barrierMesh, container: containerMesh, table: tableMesh, seat: seatMesh, bookcase: bookcaseMesh, shelf: shelfMesh, stall: stallMesh, counter: counterMesh, wastebin: wasteBinMesh, sofa: sofaMesh, cabinet: cabinetMesh, appliance: applianceMesh, roundtable: roundTableMesh, officechair: officeChairMesh, bed: bedMesh, cornersofa: cornerSofaMesh, yokecrate: yokeCrateMesh, sign: signMesh, conveyor: conveyorMesh, freezer: freezerMesh, cart: cartMesh, bakery: bakeryMesh, checkout: checkoutMesh, chestfreezer: chestFreezerMesh, bottlereturn: bottleReturnMesh, produce: produceMesh, console: consoleMesh, valve: valveMesh, machine: machineMesh, windowmachine: windowMachineMesh, hopper: hopperMesh, tallhopper: tallHopperMesh, piston: pistonMesh, scanner: scannerMesh, lever: leverMesh, cog: cogMesh, glasspipe: glassPipeMesh, pipestub: pipeStubMesh, workbench: workbenchMesh, cone: coneMesh, anvil: anvilMesh, coolantpipe: coolantPipeMesh, pipejunction: pipeJunctionMesh, dome: domeMesh, domecap: domeCapMesh, domepanel: domePanelMesh, domedrum: domeDrumMesh, dometrim: domeTrimMesh, domearch: domeArchMesh, door: doorMesh, deskhutch: deskHutchMesh, closet: closetMesh, closetfront: closetFrontMesh, awning: awningMesh, bollard: bollardMesh, bikerack: bikeRackMesh, mailbox: mailboxMesh, newsbox: newsBoxMesh, spool: spoolMesh, chainlink: chainlinkMesh };
 const { num, int, str, en, tup, arr, obj, map } = shape;
 const ID = /^kit\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
 const mm = (v) => Math.round(v * 1000) / 1000;
