@@ -7700,6 +7700,23 @@ async function coverageFlow(browser) {
     // The match also runs the transport plane and the dropship as mounts.
     const want = { pickups: count('pickup'), mounts: count('mount') + count('airplane'), ziplines: count('zipline') };
     check(got.pickups >= want.pickups && got.mounts === want.mounts && got.ziplines === want.ziplines, `every pickup, vehicle, turret and zipline is in the match (${JSON.stringify(got)} of ${JSON.stringify(want)})`);
+    // Tileset 04 (shared map/groundBore.ts): the buried tunnels under the hill at (-140, 68): the vaulted run along
+    // z = 64 from its west portal at x = -156, the concrete kit's run beside it along z = 72. A shot along each passage
+    // isn't stopped by the hill (the bend's and the curve's far walls are 30 m in), the hill is whole over them
+    // (straight down from the sky meets earth over the 3.75 m caps), and beside the mouths the earth stops a shot.
+    const bore = await sim(page, (m) => {
+      const ray = (o, d, max) => m.physics.raycastWorld(o, d, max);
+      return {
+        vault: ray({ x: -157, y: 1.5, z: 64 }, { x: 1, y: 0, z: 0 }, 28),
+        concrete: ray({ x: -157, y: 1.5, z: 72 }, { x: 1, y: 0, z: 0 }, 28),
+        top: 40 - (ray({ x: -140, y: 40, z: 68 }, { x: 0, y: -1, z: 0 }, 60) ?? 99),
+        beside: ray({ x: -157, y: 1.5, z: 58 }, { x: 1, y: 0, z: 0 }, 36),
+        // The run a level under flat ground (the Lit Tunnel Run along z = 48): clear inside, and the field over it as it was.
+        sunk: ray({ x: -150, y: -2.5, z: 48 }, { x: 1, y: 0, z: 0 }, 24),
+        field: 10 - (ray({ x: -136, y: 10, z: 48 }, { x: 0, y: -1, z: 0 }, 30) ?? 99),
+      };
+    }).catch((e) => ({ error: String(e) }));
+    check(bore.vault === null && bore.concrete === null && bore.top > 4.5 && bore.beside !== null && bore.beside < 25 && bore.sunk === null && Math.abs(bore.field + 0.15) < 0.02, `the buried tunnels: a shot passes through each mouth and passage, the hill is whole on top of them and solid beside them (${JSON.stringify(bore)})`);
     // The Tank turns its own gun (content/guns.json `parts`, MountDef.turret): its model's turret and barrel are parts,
     // each with its own lower level of detail, and a manned cannon seat's aim turns the turret and pitches the barrel.
     // The match runs in a worker: the tank's place in it (`at`) and its entity index (its node's name) from there.

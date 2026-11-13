@@ -75,6 +75,7 @@ import {
 import { quickFacings } from './quickFacings.ts';
 import { replaceTilePanel } from './retiredTiles.ts';
 import { tileOptionPanel } from './tileOptionPanel.ts';
+import { tunnelPanel } from './tunnelPanel.ts';
 
 /** The side panel's inspector: what's selected (a tile, a set piece, an entity, a moving build, several things) or Map properties with nothing selected; the tile's walls, room options, upper floors, dressing and surfaces (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class Inspector {
@@ -126,6 +127,8 @@ export class Inspector {
       el.append(text(`${tiles.length} tiles, ${entities.length} entities${pieces.length ? `, ${pieces.length} set piece${pieces.length === 1 ? '' : 's'}` : ''}`));
       const tileOpts = tiles.length ? tileOptionPanel(doc, tiles, (label, cmd) => this.app.run(label, cmd)) : null;
       if (tileOpts) el.append(tileOpts);
+      const tunnel = tiles.length ? tunnelPanel(doc, tiles, (label, cmd) => this.app.run(label, cmd)) : null;
+      if (tunnel) el.append(tunnel);
       // Groups (MapMaker overhaul Phase 3 item 3): its name and Ungroup, or Group.
       el.append(groupSection(this.groupHost));
       // Box-selected pieces can become a set piece of their own.
@@ -207,6 +210,8 @@ export class Inspector {
     if (def?.configurable) this.roomOptionsPanel(el, t);
     const tileOpts = tileOptionPanel(doc, [t.id], (label, cmd) => this.app.run(label, cmd));
     if (tileOpts) el.append(tileOpts);
+    const tunnel = tunnelPanel(doc, [t.id], (label, cmd) => this.app.run(label, cmd));
+    if (tunnel) el.append(tunnel);
     this.upperFloorsPanel(el, t);
     if (def && dressable(def)) this.dressPanel(el, t);
     const h3 = document.createElement('h3');

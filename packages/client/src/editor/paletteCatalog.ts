@@ -4,7 +4,7 @@
  * atlas each piece's preview lives in. Plain data, no Babylon, so the atlas
  * tool (tools/content/palette-items.ts) and the tests read the same rules.
  */
-import { CORE_PROPS, ENV_SPECIES, KIT_ALIASES, MOUNT_DEFS, MOUNT_MODELS, builtInSetPieces, coreCatalog, envModelFile, type PropDefinition, type SetPieceDefinition } from '@tiletrigger/shared';
+import { CORE_PROPS, ENV_SPECIES, KIT_ALIASES, MOUNT_DEFS, MOUNT_MODELS, builtInSetPieces, coreCatalog, envModelFile, isTileOptionTwin, type PropDefinition, type SetPieceDefinition } from '@tiletrigger/shared';
 
 /** Palette categories: each tab has one, with one colour used on the tab, its headings and a thin accent on its pieces. */
 export const PALETTE_CATEGORIES = {
@@ -188,7 +188,8 @@ export function atlasGroup(key: string, propPack?: string): string {
 export function pictureKeys(): { key: string; tile?: string; file?: string; setPiece?: string }[] {
   return [
     // A tile option's twin (the Vaulted Tunnel with side walls) isn't in the palette: no picture.
-    ...coreCatalog.all().filter((d) => !d.optionOf).map((d) => ({ key: `tile:${d.id}`, tile: d.id })),
+    // (Nor is a tunnel shape in another material family: a placed piece's `family` reaches it.)
+    ...coreCatalog.all().filter((d) => !isTileOptionTwin(d)).map((d) => ({ key: `tile:${d.id}`, tile: d.id })),
     ...CORE_PROPS.map((p) => ({ key: `prop:${p.id}`, file: p.file })),
     ...GROUND_COVER_IDS.map((id) => ({ key: `prop:${id}`, file: envModelFile(id)! })),
     ...ENV_SPECIES.filter((s) => !GROUND_COVER_IDS.includes(s.id)).map((s) => ({ key: `prop:${s.id}`, file: envModelFile(s.id)! })),

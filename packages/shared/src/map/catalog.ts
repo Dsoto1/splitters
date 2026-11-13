@@ -47,7 +47,7 @@ export interface LocalBox {
 }
 
 /** MapMaker's tile options that are tiles of their own (TileDefinition.optionOf), so a map needs no new field for one. */
-export const TILE_OPTIONS = ['sideWalls'] as const;
+export const TILE_OPTIONS = ['sideWalls', 'underGround'] as const;
 export type TileOptionId = (typeof TILE_OPTIONS)[number];
 
 export interface TileDefinition {
@@ -86,6 +86,27 @@ export interface TileDefinition {
    * tile inspector's checkbox swaps between the two, and the palette shows only the plain one. Same cells and ports.
    */
   optionOf?: { tile: string; option: TileOptionId };
+  /**
+   * The tunnel kit (content/tiles/tunnels.json): this tile is the shape `base` (the tile MapMaker's palette shows,
+   * itself in the kit's first family) in the material family `family`. Same cells, ports, collision and bore as the
+   * base: only materials and drawn trim differ. A placed piece's `family` (map format v37) picks among them.
+   */
+  familyOf?: { base: string; family: string; label: string };
+  /**
+   * A piece buried in terrain (a tunnel, its portal; map/groundBore.ts): the ground's surface inside each `cut` box is
+   * taken out (the hill above stays on top), and over each `open` box (a mouth; its lower y is the floor) the ground
+   * comes down to the floor, with banks beyond, and on `out` (the side the mouth faces) to daylight. Boxes are [x0, y0, z0, x1, y1, z1] in the tile's frame. The piece's
+   * floors don't pull the ground down (settle.ts terrainUnderFloors): its own shell meets the ground.
+   */
+  bore?: {
+    cut?: readonly (readonly number[])[];
+    open?: readonly (readonly number[])[];
+    out?: TilePort['side'];
+    /** Lines the ground is brought to: `line` [x0, z0, x1, z1], `y` its height at each end, and whether the ground goes up to it, down to it or both. */
+    rim?: readonly { line: readonly number[]; y: readonly number[]; mode: 'both' | 'raise' | 'lower' }[];
+    /** Rectangles [x0, z0, x1, z1, y] the ground is at least `y` high over (earth over the piece's cap). */
+    cover?: readonly (readonly number[])[];
+  };
   /**
    * Drawn with a model (city buildings and streets) centred on the tile's
    * footprint and turned with it; collision comes from `solids` (`prop` boxes
@@ -472,7 +493,7 @@ type Pair = readonly [number, number];
  * One part of a kit tile, as content/tiles/core.json lists it: the builder it names and that builder's numbers.
  * `kind` (which theme slot paints it), `yaw` and `surface` (a library material of its own) apply to what it builds.
  */
-export type KitPart = { kind?: NonNullable<LocalBox['kind']>; yaw?: number; surface?: LocalBox['surface'] } & (
+export type KitPart = { kind?: NonNullable<LocalBox['kind']>; yaw?: number; pitch?: number; roll?: number; surface?: LocalBox['surface'] } & (
   | { box: readonly [number, number, number, number, number, number] }
   | { flight: { axis: 'x' | 'z'; dir: 1 | -1; from: number; across: Pair; steps: number; base?: number; run?: number; floor?: number } }
   | { descending: { edge: number; across: Pair; steps: number; top: number; floor?: number; run?: number } }
@@ -515,7 +536,7 @@ function kitPartBoxes(p: KitPart, spec: TileSpec): LocalBox[] {
   if ('box' in p) {
     const [x0, y0, z0, x1, y1, z1] = p.box;
     const b: LocalBox = { min: [x0, y0, z0], max: [x1, y1, z1] };
-    return [{ ...b, ...(p.yaw !== undefined ? { yaw: p.yaw } : {}), ...(p.kind ? { kind: p.kind } : {}), ...(p.surface ? { surface: p.surface } : {}) }];
+    return [{ ...b, ...(p.yaw !== undefined ? { yaw: p.yaw } : {}), ...(p.pitch !== undefined ? { pitch: p.pitch } : {}), ...(p.roll !== undefined ? { roll: p.roll } : {}), ...(p.kind ? { kind: p.kind } : {}), ...(p.surface ? { surface: p.surface } : {}) }];
   } else if ('flight' in p) {
     const f = p.flight;
     out = flight(f.axis, f.dir, f.from, f.across[0], f.across[1], f.steps, f.base ?? 0, f.run ?? 0.5, f.floor ?? 0);
@@ -649,6 +670,33 @@ export class TileCatalog {
 
   all(): TileDefinition[] {
     return [...this.byId.values()];
+  }
+
+  private families: Map<string, TileDefinition[]> | null = null;
+
+  /** The material families a tile comes in (the tunnel kit: the tiles sharing its shape), its own shape's first family first; empty for a tile with none. */
+  familiesOf(tile: string): TileDefinition[] {
+    if (!this.families) {
+      this.families = new Map();
+      for (const d of this.byId.values()) {
+        if (!d.familyOf) continue;
+        const list = this.families.get(d.familyOf.base);
+        if (list) list.push(d);
+        else this.families.set(d.familyOf.base, [d]);
+      }
+    }
+    const base = this.byId.get(tile)?.familyOf?.base;
+    return base ? (this.families.get(base) ?? []) : [];
+  }
+
+  /**
+   * The tile a placement is drawn as: its own, or that shape in the placement's `family` (map format v37). The two
+   * have the same cells, ports, collision and bore, so everything but the drawing can go by `get(placement.tile)`.
+   */
+  drawn(placement: { tile: string; family?: string | undefined }): TileDefinition | undefined {
+    const own = this.byId.get(placement.tile);
+    if (!placement.family || !own?.familyOf || own.familyOf.family === placement.family) return own;
+    return this.familiesOf(placement.tile).find((d) => d.familyOf!.family === placement.family) ?? own;
   }
 }
 

@@ -1,0 +1,29 @@
+{
+ "$comment": "The tunnel kit's set pieces (Tileset 04, Tunnel Systems: docs/map-briefs/tunnels/PLAN_2026-11-13.md). A single tunnel module carries a glowing fixture and no light; a lit run is the modules with a real light under each fixture (counted against the map's lights). Place it like the modules: under a hill, or a level down under flat ground, a portal on each end. Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+ "family": "tunnels",
+ "pieces": [
+  {
+   "id": "setpiece.tunnel_lit_run",
+   "displayName": "Lit Tunnel Run",
+   "category": "Tunnels",
+   "blurb": "Three concrete tunnel modules in a row, north–south (24 m), a real light at each strip fixture: 3 lights. Buried like the modules; put a portal on each end.",
+   "footprint": {
+    "cells": [[0, 0], [0, 1], [0, 2]],
+    "levels": [0, 0]
+   },
+   "mirror": "none",
+   "ports": [
+    { "side": "S", "cell": [0, 0], "level": 0, "kind": "opening" },
+    { "side": "N", "cell": [0, 2], "level": 0, "kind": "opening" }
+   ],
+   "parts": [
+    { "kind": "tile", "tile": "core.tunnel_concrete_straight", "x": 0, "y": 0, "z": 0, "rotation": 0 },
+    { "kind": "tile", "tile": "core.tunnel_concrete_straight", "x": 0, "y": 1, "z": 0, "rotation": 0 },
+    { "kind": "tile", "tile": "core.tunnel_concrete_straight", "x": 0, "y": 2, "z": 0, "rotation": 0 },
+    { "kind": "light", "position": [0, 3.1, 0], "fixture": "none", "color": "#ffe6b8", "intensity": 1, "range": 9 },
+    { "kind": "light", "position": [0, 3.1, 8], "fixture": "none", "color": "#ffe6b8", "intensity": 1, "range": 9 },
+    { "kind": "light", "position": [0, 3.1, 16], "fixture": "none", "color": "#ffe6b8", "intensity": 1, "range": 9 }
+   ]
+  }
+ ]
+}

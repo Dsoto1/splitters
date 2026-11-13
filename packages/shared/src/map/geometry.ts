@@ -5,6 +5,7 @@ import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
 import { envCanBreak, envVariant, getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import { terrainBoundary, terrainLowest, terrainTriangles } from './terrain.ts';
+import { mapGroundBores, terrainTrianglesCut } from './groundBore.ts';
 import { resolveBackdrop } from './backdrop.ts';
 import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './border.ts';
 import { pathsExtent } from './paths.ts';
@@ -673,8 +674,11 @@ export function blockBox(e: Extract<MapEntity, { kind: 'block' }>): WorldBox {
 }
 
 /** The terrain's collision mesh, if the map has terrain. */
-export function mapTerrainMesh(map: MapDocument): { positions: Float32Array; indices: Uint32Array } | null {
-  return map.terrain ? terrainTriangles(map.terrain) : null;
+export function mapTerrainMesh(map: MapDocument, catalog: TileCatalog = coreCatalog): { positions: Float32Array; indices: Uint32Array } | null {
+  if (!map.terrain) return null;
+  // Tunnels buried in the ground cut their bores out of its surface (groundBore.ts).
+  const { cuts } = mapGroundBores(map, catalog);
+  return cuts.length ? terrainTrianglesCut(map.terrain, cuts) : terrainTriangles(map.terrain);
 }
 
 /** Lowest point anyone can stand on, minus a margin: falling past it kills. */
@@ -725,7 +729,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     boxes.push(...packFacadeBoxes(map, cells));
     // Trim on curved pieces (it never collides).
     for (const placement of map.classicStructure.tiles) {
-      const def = catalog.get(placement.tile);
+      const def = catalog.drawn(placement);
       for (const solid of def?.solids ?? []) {
         if (solid.kind === 'trim') boxes.push(rotateLocalBox(solid, placement.rotation, placement.x * cellSize, placement.z * levelHeight, placement.y * cellSize, placement.id, 'trim'));
       }
@@ -745,7 +749,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
   if (hasBorder(map)) boxes.push(...borderBoxes(map, borderFloor(map, boxes)));
   boxes.push(...electricFenceBoxes(map));
   for (const placement of map.classicStructure.tiles) {
-    const def = catalog.get(placement.tile);
+    const def = catalog.drawn(placement);
     if (!def) continue;
     const cx = placement.x * cellSize;
     const cz = placement.y * cellSize;
