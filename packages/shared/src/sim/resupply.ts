@@ -138,3 +138,6 @@ export function cookOff(share: number, seed: number, tickRate: number): { tick: 
 
 /** A map pickup that plays as an ammo box crate (a placed Ammo Box, not a random one). */
 export const isAmmoBoxPickup = (e: { item: string; random?: unknown }): boolean => e.item === AMMO_BOX_ITEM && !e.random;
+
+/** How much smaller than its model the Ammo Box Kit is drawn as a pickup and in the hand (the crate model is 1 m long). */
+export const AMMO_BOX_KIT_SCALE = 0.42;

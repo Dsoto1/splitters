@@ -98,6 +98,8 @@ import {
   type SkyDefinition,
   isBreakableProp,
   isAmmoBoxPickup,
+  AMMO_BOX_KIT_SCALE,
+  AMMO_BOX_MODEL,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
@@ -1723,6 +1725,8 @@ export class GameView {
       p = this.models.instantiate(path, `throwHold_${this.throwModels.size}`).then(
         (node) => {
           node.parent = root;
+          // (The Ammo Box Kit's model is the full-size crate: in the hand it is a small one.)
+          if (path === AMMO_BOX_MODEL) node.scaling.setAll(AMMO_BOX_KIT_SCALE);
           // Drawn over the world like the gun, so it never clips into a wall in front of you.
           for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
           node.setEnabled(false);
