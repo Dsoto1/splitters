@@ -1,6 +1,8 @@
 import { coreCatalog, SIDES, SIDE_DIRS, type Side, type TileCatalog } from '../map/catalog.ts';
 import { buildOccupancy, cellKey, edgeSegments, resolveEdge, rotateSide, type CellOccupant } from '../map/geometry.ts';
 import type { MapDocument, Rotation, TilePlacement } from '../map/schema.ts';
+import { expandSetPieces } from '../map/setPieces.ts';
+import { builtInSetPieces } from '../map/setPieceLibrary.ts';
 import { newId, type EditCommand } from './commands.ts';
 
 /**
@@ -17,6 +19,9 @@ export function tileFamilies(placement: Pick<TilePlacement, 'tile' | 'family'>, 
 
 const OPPOSITE: Record<Side, Side> = { N: 'S', E: 'W', S: 'N', W: 'E' };
 
+/** The map with its set pieces' parts in place (a Lit Tunnel Run is part of a run, and its cells are taken). */
+const asBuilt = (doc: MapDocument, catalog: TileCatalog): MapDocument => (doc.setPieces?.length ? expandSetPieces(doc, builtInSetPieces(), catalog).map : doc);
+
 /** The world sides a cell's piece has a port on. */
 function portSides(occ: CellOccupant): Side[] {
   return occ.def.ports
@@ -31,10 +36,11 @@ function walledUp(cells: Map<string, CellOccupant>, x: number, y: number, z: num
 
 /**
  * The buried pieces joined to the given ones port to port (a run and its branches), the given ones included: what
- * "the whole run" means for the Family switch. Pieces that aren't buried (no bore) are not part of a run.
+ * "the whole run" means for the Family switch. Pieces that aren't buried (no bore) are not part of a run. A run goes
+ * on through a set piece's tunnels (a Lit Tunnel Run), but only the map's own tiles are returned.
  */
 export function connectedRun(doc: MapDocument, tileIds: readonly string[], catalog: TileCatalog = coreCatalog): string[] {
-  const { cells } = buildOccupancy(doc, catalog);
+  const { cells } = buildOccupancy(asBuilt(doc, catalog), catalog);
   const byTile = new Map<string, [number, number, number, CellOccupant][]>();
   for (const [key, occ] of cells) {
     if (!occ.def.bore) continue;
@@ -94,7 +100,7 @@ export interface OpenEnd {
 
 /** The open ends of the given buried pieces (all of the map's when none are given). */
 export function openEnds(doc: MapDocument, tileIds?: readonly string[], catalog: TileCatalog = coreCatalog): OpenEnd[] {
-  const { cells } = buildOccupancy(doc, catalog);
+  const { cells } = buildOccupancy(asBuilt(doc, catalog), catalog);
   const { cellSize, levelHeight } = doc.classicStructure;
   const want = tileIds ? new Set(tileIds) : null;
   const out: OpenEnd[] = [];
@@ -132,7 +138,7 @@ function portalFor(placement: TilePlacement, catalog: TileCatalog): { tile: stri
 export function addPortalsCommand(doc: MapDocument, tileIds?: readonly string[], catalog: TileCatalog = coreCatalog): { command: EditCommand; placed: TilePlacement[] } | { error: string } {
   const ends = openEnds(doc, tileIds, catalog);
   if (!ends.length) return { error: 'No open end to put a portal on (every end is joined, walled up or already a mouth)' };
-  const byId = new Map(doc.classicStructure.tiles.map((t) => [t.id, t]));
+  const byId = new Map(asBuilt(doc, catalog).classicStructure.tiles.map((t) => [t.id, t]));
   const taken = new Set<string>();
   const placed: TilePlacement[] = [];
   for (const end of ends) {

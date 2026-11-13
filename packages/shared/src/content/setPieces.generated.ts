@@ -2404,6 +2404,27 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'tile', tile: 'core.trench_sunk', x: 1, y: 1, z: 0, rotation: 0, surfaces: { walls: { material: 'core.sandbags' } } },
     ],
   },
+  {
+    id: 'setpiece.tunnel_lit_run',
+    displayName: 'Lit Tunnel Run',
+    family: 'tunnels',
+    category: 'Tunnels',
+    blurb: 'Three concrete tunnel modules in a row, north–south (24 m), a real light at each strip fixture: 3 lights. Buried like the modules; put a portal on each end.',
+    footprint: { cells: [[0, 0], [0, 1], [0, 2]], levels: [0, 0] },
+    mirror: 'none',
+    ports: [
+      { side: 'S', cell: [0, 0], level: 0, kind: 'opening' },
+      { side: 'N', cell: [0, 2], level: 0, kind: 'opening' },
+    ],
+    parts: [
+      { kind: 'tile', tile: 'core.tunnel_concrete_straight', x: 0, y: 0, z: 0, rotation: 0 },
+      { kind: 'tile', tile: 'core.tunnel_concrete_straight', x: 0, y: 1, z: 0, rotation: 0 },
+      { kind: 'tile', tile: 'core.tunnel_concrete_straight', x: 0, y: 2, z: 0, rotation: 0 },
+      { kind: 'light', position: [0, 3.1, 0], fixture: 'none', color: '#ffe6b8', intensity: 1, range: 9 },
+      { kind: 'light', position: [0, 3.1, 8], fixture: 'none', color: '#ffe6b8', intensity: 1, range: 9 },
+      { kind: 'light', position: [0, 3.1, 16], fixture: 'none', color: '#ffe6b8', intensity: 1, range: 9 },
+    ],
+  },
 ];
 
 /** The role packs (content/setpieces/roles.json): what each role is in one look, and the themes it is the default for. */
