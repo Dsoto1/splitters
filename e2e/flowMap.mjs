@@ -81,6 +81,25 @@ export const BOT_CHECK_MAPS = new Set(JSON.parse(readFileSync(new URL('../packag
 /** Whether a repo-relative path is docs only (DOC_PATTERNS). */
 export const isDocPath = (p) => DOC_PATTERNS.some((re) => re.test(p.replace(/^\.\//, '')));
 
+/** A character's manifest (and the manifests' lock). */
+const CHARACTER_MANIFEST = /^content\/(characters\/|characters\.lock\.json$)/;
+/** A character's built files: its models (packages/client/public/characters/) and its portrait. */
+const CHARACTER_BUILT = /^packages\/client\/public\/(characters|portraits)\//;
+/** What a character's built files (and the provenance and Meshy lock lines that come with them) run. */
+const CHARACTER_BUILT_FLOWS = [...CHARACTER_FLOWS, 'offline'];
+const CHARACTER_UNITS = ['client', 'content', 'shared'];
+/**
+ * The two files every content change of any kind writes to: the provenance list and the Meshy lock. By themselves
+ * they run everything (the `content/` rule: nothing says what kind of content the lines are for). In a change that
+ * also touches a character (manifest, model or portrait) they count as part of that character and add the character
+ * flows only. That cannot hide another kind of content: whatever else the same change touches is still planned by
+ * its own rule, and any other content's built files (public/models, props, sounds…, the generated tables in
+ * packages/shared) run everything by theirs.
+ */
+const CONTENT_LEDGERS = /^content\/(provenance|meshy\.lock)\.json$/;
+/** Whether a path is a character's own file (CHARACTER_MANIFEST, CHARACTER_BUILT). */
+export const isCharacterPath = (p) => CHARACTER_MANIFEST.test(p) || CHARACTER_BUILT.test(p);
+
 const FULL = Symbol('full');
 const NONE = Symbol('none');
 const UNIT_ALL = 'all';
@@ -117,7 +136,8 @@ const RULES = [
   // always runs, holds them to the built files). What the runtime reads is the build output (public/models,
   // packages/shared/src/content/*.generated.ts: those run everything), so a manifest alone runs the flows that
   // look at that kind of content, and the unit tests that read it. Any other content/ path: everything.
-  [/^content\/(characters\/|characters\.lock\.json$)/, [...CHARACTER_FLOWS, 'designer', 'visual'], ['client', 'content', 'shared']],
+  // (A character change also runs `offline`: its Character Select lists every character by section.)
+  [/^content\/(characters\/|characters\.lock\.json$)/, [...CHARACTER_FLOWS, 'offline', 'designer', 'visual'], ['client', 'content', 'shared']],
   [/^content\/(clip-sets\/|clip-sets\.lock\.json$)/, [...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
   [/^content\/gear(\.lock)?\.json$/, [...CHARACTER_FLOWS, 'designer', 'visual'], ['shared']],
   // Props: one file per content pack (content/props/<pack>.json); the palette test reads them too.
@@ -132,6 +152,8 @@ const RULES = [
   // The procedural environment's species (tools/content/environment.mjs builds them): the lab, WebGPU, the baseline.
   [/^content\/environment(\/|\.json$|\.lock\.json$)/, ['environment', 'webgpu', 'visual'], ['client', 'content', 'shared']],
   [/^(content|assets-src)\//, FULL, UNIT_ALL],
+  // A character's built files: its models (body, first-person arms) and its portrait.
+  [CHARACTER_BUILT, CHARACTER_BUILT_FLOWS, CHARACTER_UNITS],
   [/^packages\/client\/(public|index\.html|vite\.config\.ts|package\.json|tsconfig\.json)/, FULL, ['client']],
   [/^packages\/client\/src\/(main|engine|assetUrl|renamedStorage|style)\./, FULL, ['client']],
   [/^packages\/client\/src\/game\/(session|hud|localTransport|matchHost|simWorker|input|prediction|interpolation|snapshotMerge|characterAnimator|atmosphere|framePacer|cameraPose|transport)\.ts$/, FULL, ['client']],
@@ -218,6 +240,8 @@ export function selectForPaths(paths, mapIds = [], { tour = false } = {}) {
   let perf = false;
   let bots = false;
   const reasons = [];
+  // The provenance list and the Meshy lock ride with a character change (CONTENT_LEDGERS).
+  const characterChange = paths.some((raw) => isCharacterPath(raw.replace(/^\.\//, '')));
   for (const raw of paths) {
     const p = raw.replace(/^\.\//, '');
     if (!p) continue;
@@ -254,6 +278,11 @@ export function selectForPaths(paths, mapIds = [], { tour = false } = {}) {
       full = true;
       unitAll = true;
       reasons.push(`${p}: not a map file the tour knows`);
+      continue;
+    }
+    if (characterChange && CONTENT_LEDGERS.test(p)) {
+      for (const f of CHARACTER_BUILT_FLOWS) flows.add(f);
+      for (const u of CHARACTER_UNITS) unit.add(u);
       continue;
     }
     const rule = RULES.find(([re]) => re.test(p));
