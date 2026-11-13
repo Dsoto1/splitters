@@ -181,6 +181,16 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
   beside a portal's wing walls goes to their sloping tops, up where the hill is low and down where it is high. So a
   buried run on flat ground is a mound with its mouths open, and no outer wall of a buried piece stands bare. It
   can raise ground a few metres round the piece: keep things that must stay on flat ground a cell away.
+- **Tunnel tools in the tile inspector (the Tunnel box; Tileset 04 step 3).** *Family*: the material family a buried
+  piece is drawn in (map format v37: concrete, brick; the same passage and collision), for the selected pieces or,
+  with *Whole run* ticked, every buried piece joined to them. *Add a portal at the open end*: a portal on each end
+  that leads to nothing built, facing out. Buried passages show as dashes on the ground over them, and on the plan
+  and the minimap.
+- **A tunnel under flat ground:** place the run a level down (Page Down). The surface stays as it is, and each
+  portal digs its own ramp down from the field (2 m level at the mouth, then about 11 m of ramp for 4 m of depth).
+  On level 0 of flat ground a buried run is an earth mound instead.
+- **Lit Tunnel Run** (Set pieces, Tunnels): three concrete modules with a real light under each fixture (3 lights).
+  Single modules only glow.
 - **The tunnel kit (the Tunnels group; Tileset 04 step 2).** Concrete Tunnel, Curve, T-Junction, Four-Way, Dead End
   and Portal: the same 3.6 m passage as the vaulted tunnels (they join with no step), 3.3 m clear under a flat
   soffit, always buried. Cast concrete with panel joints, a floor drain, a pipe run on straight walls, a strip light

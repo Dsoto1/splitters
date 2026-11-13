@@ -7711,9 +7711,12 @@ async function coverageFlow(browser) {
         concrete: ray({ x: -157, y: 1.5, z: 72 }, { x: 1, y: 0, z: 0 }, 28),
         top: 40 - (ray({ x: -140, y: 40, z: 68 }, { x: 0, y: -1, z: 0 }, 60) ?? 99),
         beside: ray({ x: -157, y: 1.5, z: 58 }, { x: 1, y: 0, z: 0 }, 36),
+        // The run a level under flat ground (the Lit Tunnel Run along z = 48): clear inside, and the field over it as it was.
+        sunk: ray({ x: -150, y: -2.5, z: 48 }, { x: 1, y: 0, z: 0 }, 24),
+        field: 10 - (ray({ x: -136, y: 10, z: 48 }, { x: 0, y: -1, z: 0 }, 30) ?? 99),
       };
     }).catch((e) => ({ error: String(e) }));
-    check(bore.vault === null && bore.concrete === null && bore.top > 4.5 && bore.beside !== null && bore.beside < 25, `the buried tunnels: a shot passes through each mouth and passage, the hill is whole on top of them and solid beside them (${JSON.stringify(bore)})`);
+    check(bore.vault === null && bore.concrete === null && bore.top > 4.5 && bore.beside !== null && bore.beside < 25 && bore.sunk === null && Math.abs(bore.field + 0.15) < 0.02, `the buried tunnels: a shot passes through each mouth and passage, the hill is whole on top of them and solid beside them (${JSON.stringify(bore)})`);
     // The Tank turns its own gun (content/guns.json `parts`, MountDef.turret): its model's turret and barrel are parts,
     // each with its own lower level of detail, and a manned cannon seat's aim turns the turret and pitches the barrel.
     // The match runs in a worker: the tank's place in it (`at`) and its entity index (its node's name) from there.
