@@ -30,6 +30,11 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## In flight
 - M · A · Ammo Box: map Ammo Boxes become solid resupply crates (10 uses, cook-off); "Ammo Box Kit" throwable · `wip/ammo-box` · after the line-up
 - S · A · Effects checks, findings only: Pantry Raid portals, loot rings on bright floors, perf and Low graphics for the new effects, Reduce flashing · `wip/fx-checks` (docs)
+- M · B (session splitters22, Opus 5.5 medium; owner, 2026-11-13) · New characters: the T-pose models in the owner's Drive (Meshy Community, CC0; files `Meshy_AI_*_20261113_animated_mixamo_All_animation.glb` and the like, added 2026-11-13). Intake through the character pipeline, recorded as community CC0, Experimental until looked over · claims in HANDOFF first
+- S · B · In flight (owner: "1 2 3") · Tileset 11: reshape the bandstand (it reads as a squat pavilion); a label for the Urban set-piece family; a bus stop sign.
+- M · B · Tileset 11, step E: two tiles, a fire escape and a scaffold bay (data tiles first) · `docs/map-briefs/urban/URBAN_PLAN.md`
+- S · B · In flight · A repeatable performance measurement (a fixed camera with no bots, or the mean of several runs): one run of `tools/perf/client-perf.mjs` swings by half on an unchanged map · `docs/map-briefs/urban/PERF_BASELINE.md`. Do it before the first map uses urban pieces.
+- S · B · In flight (owner: lane B takes them) · MapMaker speed, from the owner's trace of 2026-11-13 (`docs/PERF_STJOHNS_2026-11-13.md`; the trace is of MapMaker on a big map, not of a match): (1) the Paths tool's markers freeze 110–640 ms a redraw: one shared line material and redraw only the changed path (`pathTool.ts`); (2) Map properties rebuilt on every edit (`inspector.ts`, XS); (3) a forced layout in `pickPlane` on every drag edit: cache the canvas rectangle (`editorView.ts`, XS); (4) the outliner redrawn whole on selection (`outlinerPanel.ts`); (5) a cheaper hover pick (`hover.ts`, `editorView.ts`, M). These are the files lane A's MapMaker editing helper worked in: claimed in HANDOFF first.
 
 ## Ready to land
 - (none)
@@ -51,14 +56,10 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · A · Mobile audit: Options in one column on phones (proposal 7).
 - S · A · Mobile audit: Match Setup on phones, sticky header and bigger steppers (proposal 11).
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
-- S · ? · MapMaker speed, from the owner's trace of 2026-11-13 (`docs/PERF_STJOHNS_2026-11-13.md`; the trace is of MapMaker on a big map, not of a match): (1) the Paths tool's markers freeze 110–640 ms a redraw: one shared line material and redraw only the changed path (`pathTool.ts`); (2) Map properties rebuilt on every edit (`inspector.ts`, XS); (3) a forced layout in `pickPlane` on every drag edit: cache the canvas rectangle (`editorView.ts`, XS); (4) the outliner redrawn whole on selection (`outlinerPanel.ts`); (5) a cheaper hover pick (`hover.ts`, `editorView.ts`, M). No lane yet: these are the files lane A's MapMaker editing helper worked in.
 
 ## Features
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
 - L · A · St. John's step 2: Smythe Hall (corner piece, side entry, about 1,150 props, perf run), then the chapel's spiral stair and our own crest.
-- M · B · Tileset 11, step E: two tiles, a fire escape and a scaffold bay (data tiles first) · `docs/map-briefs/urban/URBAN_PLAN.md`
-- S · B · A repeatable performance measurement (a fixed camera with no bots, or the mean of several runs): one run of `tools/perf/client-perf.mjs` swings by half on an unchanged map · `docs/map-briefs/urban/PERF_BASELINE.md`. Do it before the first map uses urban pieces.
-- S · B · Tileset 11: reshape the bandstand (it reads as a squat pavilion); a label for the Urban set-piece family; a bus stop sign.
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
 - M · B · Player profiles.
 - M · B · Map pass, like-for-like swaps only (owner: the tuned arenas are left alone; Qasr Medina stays as it is). Sandgate is done; no other map with as clear a swap has been found yet.
@@ -66,7 +67,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Mobile audit: touch layout options: button size, opacity, left-handed, aim hold or toggle (proposal 3).
 - M · A · Mobile audit: Character Select phone layout (proposal 4).
 - M · A · Material surface types: 0 of 150 materials set `surface`, so footsteps and impacts can't tell metal from wood (owner: end of queue).
-- M · ? · New characters: several T-pose models in the Drive (owner, 2026-11-13: Meshy Community, CC0). Intake through the character pipeline, recorded as community CC0, Experimental until looked over. Not started; no lane yet (lane A did the last ten).
 
 ## Waiting on the owner
 - St. John's performance in a match: the 2026-11-13 trace turned out to be MapMaker, so whether the character work helped since 2026-11-10 is still unmeasured. Needs a recording of a match on St. John's (Settings → Record performance, or a Chrome trace while playing).
