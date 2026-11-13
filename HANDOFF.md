@@ -893,6 +893,10 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 
 **Landed for the paused weapon and vehicle lane, as its note below asks: the tunnel kit, steps 1 to 3** (merged into main by the MapMaker lane's main session, 2026-11-13 about 15:25 UTC: `check/tunnels-2` at 0f8ff164 was green, run 43445465530, no lock was up, and only documents differ from that commit). Map format v37 is taken; the next bump is v38. The tunnel kit's later steps and that lane's claims are untouched and still its own. **Next, this session's own landing:** the approved process proposals with the Tileset 11 audit (`wip/mapmaker-ci-proposals`).
 
+**Landing now: tunnel kit step 4** (`check/tunnels-4`, from `wip/tunnels` with origin/main merged; lead session of this account, 2026-11-13), please hold code pushes to main. One check run, then a fast-forward. No map format bump.
+
+**This account's lead (owner, 2026-11-13): session `session_01PfNGaHafsFeFAcWZgUEzoB` (Opus) leads this account and lands its helpers' work one lock at a time.** Its helpers keep their claims: the buggy split and ammo box (`wip/vehicles-buggy-split`), MapMaker editing (`wip/mapmaker-editing`), and the effects checks only (`wip/spillway-finish`; owner: its Spillway map part is dropped, the map is done). The Fable session that wrote the pick-up note below is idle. Material surface types (the Tileset 11 note) go to the end of this account's queue (owner).
+
 **PICK UP HERE: the weapon and vehicle lane, paused 2026-11-13 about 15:45 UTC (this account ran out of usage; the owner will hand this to another agent).** Everything below is pushed; nothing is running in the lead session and it holds no lock. Its scratch files (pictures, Playwright drivers) are gone with its container. Read CLAUDE.md first, then this block, then the claims under it.
 
 *On main now, from this lane (2026-11-13):*
