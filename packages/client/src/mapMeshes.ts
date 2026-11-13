@@ -5,7 +5,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { TERRAIN_MATERIALS, TERRAIN_SURFACES, axisFaces, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type RenderFace, type TilePlacement, type WorldBox, visibleFaces, LEVEL_DEPTH_BIAS } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, TERRAIN_SURFACES, cutGroundPolygon, mapGroundBores, type GroundCut, type P3, axisFaces, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type RenderFace, type TilePlacement, type WorldBox, visibleFaces, LEVEL_DEPTH_BIAS } from '@tiletrigger/shared';
 import { materialPixels, patternSize } from './materials/patterns.ts';
 import { versioned } from './assetUrl.ts';
 import { jpegPixels, mergeLevel, type MergeSource } from './levelMerge.ts';
@@ -234,6 +234,8 @@ export class MapStyler {
    * hardly at all).
    */
   terrainDrawStep = 1;
+  /** The drawn cells a buried tunnel cut into (buildTerrain), for the soft paint borders to leave alone. */
+  private readonly cutCells = new Set<number>();
 
   buildTerrain(doc: MapDocument, name = 'map'): void {
     for (const m of this.terrainMeshes) m.dispose();
@@ -272,6 +274,31 @@ export class MapStyler {
     // Drawn cells (k = row of drawn cells × drawn columns + column), each the material of its first fine cell.
     const byMaterial = new Map<number, number[]>();
     const dc = ci.length - 1;
+    // Buried tunnels cut their bores out of the ground (shared groundBore.ts): the drawn cells a cut's footprint
+    // touches, each with its cuts; what is left of such a cell is drawn in pieces (below).
+    const cutBy = new Map<number, GroundCut[]>();
+    const firstPast = (list: number[], v: number) => {
+      let i = 0;
+      while (i < list.length - 1 && list[i + 1]! <= v) i++;
+      return i;
+    };
+    for (const cut of mapGroundBores(doc).cuts) {
+      const fx0 = (cut.min[0] - t.origin[0]) / s;
+      const fx1 = (cut.max[0] - t.origin[0]) / s;
+      const fz0 = (cut.min[2] - t.origin[1]) / s;
+      const fz1 = (cut.max[2] - t.origin[1]) / s;
+      if (fx1 <= 0 || fz1 <= 0 || fx0 >= cols - 1 || fz0 >= rows - 1) continue;
+      const c1 = Math.min(dc - 1, firstPast(ci, Math.ceil(fx1) - 1));
+      const r1 = Math.min(ri.length - 2, firstPast(ri, Math.ceil(fz1) - 1));
+      for (let r = firstPast(ri, Math.max(0, Math.floor(fz0))); r <= r1; r++) {
+        for (let c = firstPast(ci, Math.max(0, Math.floor(fx0))); c <= c1; c++) {
+          const list = cutBy.get(r * dc + c);
+          if (list) list.push(cut);
+          else cutBy.set(r * dc + c, [cut]);
+        }
+      }
+    }
+    this.cutCells.clear();
     for (let r = 0; r < ri.length - 1; r++) {
       for (let c = 0; c < dc; c++) {
         const m = t.materials[ri[r]! * (cols - 1) + ci[c]!]!;
@@ -291,9 +318,48 @@ export class MapStyler {
       const indices = new Uint32Array(n * 6);
       const inv = 1 / def.scale;
       let k = 0;
+      // The pieces left of cut cells: vertices of their own, after the whole cells'.
+      const cutPos: number[] = [];
+      const cutNrm: number[] = [];
+      const cutIdx: number[] = [];
       for (const i of cells) {
         const cc = i % dc;
         const rr = (i - cc) / dc;
+        const cuts = cutBy.get(i);
+        if (cuts) {
+          const c0 = ci[cc]!;
+          const c1 = ci[cc + 1]!;
+          const r0 = ri[rr]!;
+          const r1 = ri[rr + 1]!;
+          const x0 = t.origin[0] + c0 * s;
+          const z0 = t.origin[1] + r0 * s;
+          const x1 = t.origin[0] + c1 * s;
+          const z1 = t.origin[1] + r1 * s;
+          const p00: P3 = [x0, hy[r0 * cols + c0]!, z0];
+          const p10: P3 = [x1, hy[r0 * cols + c1]!, z0];
+          const p01: P3 = [x0, hy[r1 * cols + c0]!, z1];
+          const p11: P3 = [x1, hy[r1 * cols + c1]!, z1];
+          // The collision mesh's two triangles (terrain.ts terrainTriangles), wound to face up here.
+          const ta: P3[] = [p00, p11, p01];
+          const tb: P3[] = [p00, p10, p11];
+          const pa = cutGroundPolygon(ta, cuts);
+          const pb = cutGroundPolygon(tb, cuts);
+          if (!(pa.length === 1 && pa[0] === ta && pb.length === 1 && pb[0] === tb)) {
+            this.cutCells.add(i);
+            const n4 = [r0 * cols + c0, r0 * cols + c1, r1 * cols + c0, r1 * cols + c1];
+            for (const poly of [...pa, ...pb]) {
+              const first = cutPos.length / 3;
+              for (const p of poly) {
+                cutPos.push(p[0], p[1], p[2]);
+                const u = (p[0] - x0) / (x1 - x0);
+                const v = (p[2] - z0) / (z1 - z0);
+                for (let d = 0; d < 3; d++) cutNrm.push(nrm[n4[0]! * 3 + d]! * (1 - u) * (1 - v) + nrm[n4[1]! * 3 + d]! * u * (1 - v) + nrm[n4[2]! * 3 + d]! * (1 - u) * v + nrm[n4[3]! * 3 + d]! * u * v);
+              }
+              for (let j = 1; j < poly.length - 1; j++) cutIdx.push(first, first + j, first + j + 1);
+            }
+            continue;
+          }
+        }
         for (let q = 0; q < 4; q++) {
           // Corners 00, 10, 11, 01.
           const vc = ci[cc + (q === 1 || q === 2 ? 1 : 0)]!;
@@ -317,10 +383,36 @@ export class MapStyler {
         k++;
       }
       const vd = new VertexData();
-      vd.positions = positions;
-      vd.normals = normals;
-      vd.uvs = uvs;
-      vd.indices = indices;
+      if (k === n) {
+        vd.positions = positions;
+        vd.normals = normals;
+        vd.uvs = uvs;
+        vd.indices = indices;
+      } else {
+        // Some cells were cut: the whole cells' quads, then the cut cells' pieces.
+        const whole = k * 4;
+        const extra = cutPos.length / 3;
+        const pos = new Float32Array((whole + extra) * 3);
+        pos.set(positions.subarray(0, whole * 3));
+        pos.set(cutPos, whole * 3);
+        const nor = new Float32Array((whole + extra) * 3);
+        nor.set(normals.subarray(0, whole * 3));
+        nor.set(cutNrm, whole * 3);
+        const uv = new Float32Array((whole + extra) * 2);
+        uv.set(uvs.subarray(0, whole * 2));
+        for (let j = 0; j < extra; j++) {
+          uv[(whole + j) * 2] = cutPos[j * 3]! * inv;
+          uv[(whole + j) * 2 + 1] = cutPos[j * 3 + 2]! * inv;
+        }
+        const idx = new Uint32Array(k * 6 + cutIdx.length);
+        idx.set(indices.subarray(0, k * 6));
+        for (let j = 0; j < cutIdx.length; j++) idx[k * 6 + j] = whole + cutIdx[j]!;
+        if (!idx.length) continue;
+        vd.positions = pos;
+        vd.normals = nor;
+        vd.uvs = uv;
+        vd.indices = idx;
+      }
       const mesh = new Mesh(`${name}_terrain_${material}`, this.scene);
       vd.applyToMesh(mesh);
       mesh.material = this.material(style);
@@ -373,6 +465,8 @@ export class MapStyler {
         for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) others.add(cell(c + dx, r + dz));
         others.delete(own);
         others.delete(-1);
+        // A cell a buried tunnel cuts is drawn in pieces (buildTerrain): no fade is laid over the hole.
+        if (this.cutCells.has(r * dc + c)) continue;
         for (const m of others) {
           let list = quads.get(m);
           if (!list) quads.set(m, (list = []));

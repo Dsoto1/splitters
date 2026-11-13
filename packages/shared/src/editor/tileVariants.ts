@@ -9,10 +9,12 @@ import type { EditCommand } from './commands.ts';
  */
 export const TILE_OPTION_LABELS: Record<TileOptionId, string> = {
   sideWalls: 'Side walls',
+  underGround: 'Under ground',
 };
 
 export const TILE_OPTION_HELP: Record<TileOptionId, string> = {
   sideWalls: 'Masonry up to ground level on the closed sides, so the ground round the tunnel meets a kerb instead of sloping down to it',
+  underGround: 'Buried: the hill stays on top of the tunnel and only what crosses its passage is cut out of the ground. Put a Tunnel Portal on each end that comes out of the hill',
 };
 
 /** One option a tile offers: whether it is on for that tile, and the tile it is with the option off and on. */
@@ -24,18 +26,22 @@ export interface TileOptionState {
   onTile: string;
 }
 
-/** A tile that is another tile with an option on (kept out of the palette). */
-export const isTileOptionTwin = (def: TileDefinition | undefined): boolean => !!def?.optionOf;
+/**
+ * A tile that is another tile with an option on, or the same shape in another material family (the tunnel kit: a
+ * placed piece's `family` reaches it): kept out of the palette.
+ */
+export const isTileOptionTwin = (def: TileDefinition | undefined): boolean => !!def?.optionOf || (!!def?.familyOf && def.familyOf.base !== def.id);
 
 /** The options a tile has (as the plain tile or as one with an option on). */
 export function tileOptionsOf(tile: string, catalog: TileCatalog = coreCatalog): TileOptionState[] {
   const def = catalog.get(tile);
   if (!def) return [];
-  if (def.optionOf) return [{ option: def.optionOf.option, label: TILE_OPTION_LABELS[def.optionOf.option], on: true, off: def.optionOf.tile, onTile: def.id }];
+  // A tile with one option on still offers the plain tile's other options (one at a time: switching one on swaps to its tile).
+  const plain = def.optionOf?.tile ?? tile;
   return catalog
     .all()
-    .filter((d) => d.optionOf?.tile === tile)
-    .map((d) => ({ option: d.optionOf!.option, label: TILE_OPTION_LABELS[d.optionOf!.option], on: false, off: tile, onTile: d.id }));
+    .filter((d) => d.optionOf?.tile === plain)
+    .map((d) => ({ option: d.optionOf!.option, label: TILE_OPTION_LABELS[d.optionOf!.option], on: d.id === def.id, off: plain, onTile: d.id }));
 }
 
 /**

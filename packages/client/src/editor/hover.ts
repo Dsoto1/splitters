@@ -153,7 +153,32 @@ export class Hover {
     // A cell a set piece claims (its footprint holds every level of it), even where none of its parts stands.
     const held = this.app.expansion.footprints;
     for (const [id, cells] of held) if (free(id) && cells.some((c) => c[0] === cell[0] && c[1] === cell[1] && c[2] === this.app.level)) return { kind: 'setpiece', id };
-    return null;
+    // Under the ground (Select only: Erase takes what is seen): the pointer is on the ground over a buried piece, a
+    // tunnel a level or more down, with nothing of this level there. The piece nearest under the ground wins.
+    const under = this.app.tool.kind === 'select' ? this.buriedUnderPointer(free) : null;
+    return under ? whole({ kind: 'tile', id: under }) : null;
+  }
+
+  /** The buried piece (a tile with a bore: map/groundBore.ts) under the place on the ground the pointer is on, if any. */
+  private buriedUnderPointer(free: (id: string) => boolean): string | null {
+    const ray = this.app.ray;
+    const ground = this.app.shownGround;
+    const at = ray && ground ? terrainRaycast(ground, ray.origin, ray.dir) : null;
+    if (!at) return null;
+    const view = this.app.viewDoc;
+    const { cellSize, levelHeight } = view.classicStructure;
+    const cx = Math.round(at.x / cellSize);
+    const cy = Math.round(at.z / cellSize);
+    let best: { id: string; level: number } | null = null;
+    for (const t of view.classicStructure.tiles) {
+      if (!coreCatalog.get(t.tile)?.bore || !free(t.id)) continue;
+      for (const c of placementCells(t) ?? []) {
+        // Its floor under the ground there, and the highest such.
+        if (c[0] !== cx || c[1] !== cy || c[2] * levelHeight > at.y || (best && best.level >= c[2])) continue;
+        best = { id: t.id, level: c[2] };
+      }
+    }
+    return best?.id ?? null;
   }
 
   // ---------------------------------------------------------------- hover / drag
@@ -280,6 +305,8 @@ export class Hover {
         if (hit) {
           title = this.targetName(hit);
           tone = this.app.tool.kind === 'erase' ? 'erase' : 'pick';
+          const below = hit.kind === 'tile' ? this.app.viewDoc.classicStructure.tiles.find((t) => t.id === hit.id) : undefined;
+          if (below && !(placementCells(below) ?? []).some((c) => c[2] === this.app.level)) lines.push(`Under the ground, on ${levelName(below.z)}`);
           const placement = hit.kind === 'setpiece' ? this.app.placementOf(hit.id) : undefined;
           const def = placement && this.app.pieceDef(placement.piece);
           if (placement && def) lines.push('Set piece (selects as one)', ...this.app.pieces.pieceLines(def, placement));

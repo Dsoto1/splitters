@@ -44,7 +44,8 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
  * The pieces with open sides (no wall of their own at a port): setPieces3.test.ts proves their ways through,
  * setPieces4.test.ts the command bunker's gates and the gatehouse's arches (MAP 21), and setPieces5.test.ts the
  * brainstorm list's open ones (catwalks, the overlook, the dock, the arena, the bunker cluster, the plaza, the ramp
- * junction) and MAP 21's sea wall and its breach; setPiecesAcademy.test.ts the dormitory bays.
+ * junction) and MAP 21's sea wall and its breach; setPiecesAcademy.test.ts the dormitory bays; tunnelFamily.test.ts
+ * the Lit Tunnel Run.
  */
 const OPEN_SIDED = [
   'setpiece.arena_arcade',
@@ -83,6 +84,10 @@ const OPEN_SIDED = [
   'setpiece.tunnel_cross',
   'setpiece.tunnel_hatch',
   'setpiece.tunnel_junction',
+  'setpiece.tunnel_lit_run',
+  // (A ladder between a tunnel and the field, or between two levels: tunnelElevation.test.ts, tunnelLadderBots.test.ts.)
+  'setpiece.tunnel_riser',
+  'setpiece.tunnel_shaft',
   'setpiece.tunnel_straight',
 ].sort();
 

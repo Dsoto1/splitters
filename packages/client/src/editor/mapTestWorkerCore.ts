@@ -26,6 +26,8 @@ export type FromMapTest =
   | { k: 'bots'; result: BotTestResult }
   | { k: 'exposure'; result: ExposureResult }
   | { k: 'nav'; token: number; result: NavCheck }
+  /** The jump pads flown, after `nav` (the check is over with this, or with `navFailed`). */
+  | { k: 'pads'; token: number; issues: ValidationIssue[] }
   | { k: 'navFailed'; token: number; error: string }
   | { k: 'check'; token: number; issues: ValidationIssue[]; spots: CoplanarSpot[]; zIssues: ValidationIssue[] }
   | { k: 'checkFailed'; token: number; error: string }
@@ -63,7 +65,17 @@ export async function runMapTest(m: ToMapTest, post: (m: FromMapTest) => void): 
       post({ k: 'nav', token: m.token, result: mod.validateMapNavigation(m.map, false, { computed: m.computed }) });
     } catch (e) {
       post({ k: 'navFailed', token: m.token, error: (e as Error).message });
+      return;
     }
+    // Then every jump pad flown by a player's body (shared sim/padFlight.ts: the `pad.flight` warning), in a match
+    // of the map: a second answer, so the navigation issues don't wait for it. It ends the check.
+    let issues: ValidationIssue[] = [];
+    try {
+      issues = mod.padFlightIssues(mod.flyPads(m.map));
+    } catch {
+      // A map no match can be made of: the navigation check has said what it could.
+    }
+    post({ k: 'pads', token: m.token, issues });
     return;
   }
   if (m.k === 'exposure') {

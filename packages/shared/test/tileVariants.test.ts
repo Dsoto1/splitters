@@ -58,7 +58,7 @@ function passagePoints(doc: MapDocument): [number, number][] {
 describe('tile options as tiles of their own: the Vaulted Tunnel side walls', () => {
   it('every vaulted tunnel has a Side Walls twin with its cells and ports, kept out of the palette', () => {
     for (const id of TUNNELS) {
-      const [opt] = tileOptionsOf(id);
+      const opt = tileOptionsOf(id).find((o) => o.option === 'sideWalls');
       expect(opt, id).toMatchObject({ option: 'sideWalls', label: 'Side walls', on: false, off: id });
       const twin = coreCatalog.get(opt!.onTile)!;
       expect(twin.optionOf).toEqual({ tile: id, option: 'sideWalls' });
@@ -66,7 +66,9 @@ describe('tile options as tiles of their own: the Vaulted Tunnel side walls', ()
       expect(isTileOptionTwin(coreCatalog.get(id))).toBe(false);
       expect(twin.cells).toEqual(coreCatalog.get(id)!.cells);
       expect(twin.ports).toEqual(coreCatalog.get(id)!.ports);
-      expect(tileOptionsOf(twin.id)).toEqual([{ ...opt, on: true }]);
+      // On the twin its own option is on; the plain tile's other options are still offered (off), one at a time.
+      expect(tileOptionsOf(twin.id).find((o) => o.option === 'sideWalls')).toEqual({ ...opt, on: true });
+      expect(tileOptionsOf(twin.id).filter((o) => o.on).length).toBe(1);
     }
     expect(tileOptionsOf('core.room')).toEqual([]);
   });

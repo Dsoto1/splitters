@@ -2,12 +2,14 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { initPhysics, loadMap } from '@tiletrigger/shared';
-import { initNavigation, validateMapNavigation } from '@tiletrigger/shared/match';
+import { initNavigation, validateMapPlay } from '@tiletrigger/shared/match';
 
 /**
  * Usage: pnpm validate-map <map.json> — prints creator-facing issues; exits 1 on errors. A map in the repo's maps/
  * folder is official: the navigation audit's findings (traps, spawn points, objectives and pickups cut off) and spawn
  * points inside something solid are errors there (docs/BOTS.md, "Navigation audit"); warnings for anyone else's.
+ * Every jump pad is flown by a player's body (sim/padFlight.ts): one that misses its predicted landing is a warning
+ * (`pad.flight`) on any map.
  */
 const arg = process.argv[2];
 if (!arg) {
@@ -20,7 +22,7 @@ const official = path.startsWith(fileURLToPath(new URL('../../../../maps/', impo
 await Promise.all([initPhysics(), initNavigation()]);
 const result = loadMap(readFileSync(path, 'utf8'));
 const issues = [...result.issues];
-if (result.ok) issues.push(...validateMapNavigation(result.map, official).issues);
+if (result.ok) issues.push(...validateMapPlay(result.map, official).issues);
 for (const i of issues) console.log(`${i.severity.toUpperCase().padEnd(10)} ${i.code.padEnd(20)} ${i.message}`);
 const errors = issues.filter((i) => i.severity === 'error').length;
 console.log(result.ok && !errors ? `OK (${issues.length} issue${issues.length === 1 ? '' : 's'})` : `FAILED (${errors} error${errors === 1 ? '' : 's'})`);
