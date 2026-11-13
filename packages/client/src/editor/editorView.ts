@@ -17,7 +17,7 @@ import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, MapWeather, PropEntity, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
-import { buriedPassageLines, groundCutsKey, mapGroundBores, mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, placedMountDef, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
+import { buriedPassageLines, groundCutAt, groundCutsKey, mapGroundBores, mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, placedMountDef, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
@@ -1073,6 +1073,7 @@ export class EditorView {
     this.buriedLines = undefined;
     if (!lines.length) return;
     const t = doc.terrain;
+    const cuts = mapGroundBores(doc).cuts;
     const dashes: Vector3[][] = [];
     const [on, off] = [0.6, 0.4];
     for (const l of lines) {
@@ -1082,8 +1083,9 @@ export class EditorView {
         const x = l.a[0] + (l.b[0] - l.a[0]) * u;
         const z = l.a[1] + (l.b[1] - l.a[1]) * u;
         const ground = t ? terrainHeightAt(t, x, z) : null;
-        // On the ground over the piece, or on its cap where the ground is lower (an apron, a piece with no terrain).
-        return new Vector3(x, Math.max(ground ?? -Infinity, l.y + 0.05) + 0.12, z);
+        // On the ground over the piece; on its floor where the ground is cut away (a portal's apron) or there is none.
+        const over = ground !== null && !groundCutAt(cuts, x, ground, z) ? ground : -Infinity;
+        return new Vector3(x, Math.max(over, l.y + 0.05) + 0.12, z);
       };
       for (let d = 0; d < len - 1e-6; d += on + off) dashes.push([at(d), at(Math.min(len, d + on))]);
     }
