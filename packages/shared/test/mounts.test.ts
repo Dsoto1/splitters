@@ -48,8 +48,9 @@ describe('turrets, sentries and vehicles', () => {
     expect(match.snapshot([]).mt).toHaveLength(1);
   });
 
-  it('a buggy seats six (a driver, a front passenger, two seated behind and two standing in the back row); a seventh player cannot get in', () => {
-    expect(MOUNT_DEFS.buggy.model).toBe('vehicles/offroad_buggy.glb');
+  it('a buggy seats six (a driver, a front passenger, two sitting on the deck\'s edges and two standing at its back); a seventh player cannot get in', () => {
+    expect(MOUNT_DEFS.buggy.model).toBe('vehicles/sixer_buggy.glb');
+    expect(MOUNT_DEFS.supply_buggy.model).toBe('vehicles/offroad_buggy.glb');
     expect(MOUNT_DEFS.buggy.seats.map((s) => s.role)).toEqual(['driver', 'passenger', 'passenger', 'passenger', 'passenger', 'passenger']);
     expect(MOUNT_DEFS.buggy.seats.map((s) => !!s.seated)).toEqual([true, true, true, true, false, false]);
     expect(MOUNT_DEFS.buggy.seats.every((s) => !s.weapon)).toBe(true);
@@ -62,7 +63,7 @@ describe('turrets, sentries and vehicles', () => {
     // E fills the next free seat: the wheel first, then the passenger seats in order.
     for (const p of players) use(d, p);
     expect(players.map((p) => p.mount?.seat ?? -1)).toEqual([0, 1, 2, 3, 4, 5, -1]);
-    // Four sit on cushions with the crouching eye; the back row's two stand.
+    // Four sit (the cushions, the deck's edges) with the crouching eye; the back pair stand.
     for (const p of players.slice(0, 4)) expect(p.move.stance).toBe(1);
     for (const p of players.slice(4, 6)) expect(p.move.stance).toBeUndefined();
     // The driver can't shoot; every passenger fires their own weapon, aiming wherever they look (no arc), and

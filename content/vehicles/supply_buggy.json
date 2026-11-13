@@ -3,23 +3,22 @@
   "order": 18,
   "displayName": "Supply Buggy",
   "kind": "vehicle",
-  "model": "vehicles/sixer_buggy.glb",
-  "fallback": "vehicles/offroad_buggy.glb",
-  "rideHeight": 0.258,
+  "model": "vehicles/offroad_buggy.glb",
+  "rideHeight": 0.24,
   "wheels": {
     "model": "vehicles/offroad_tire.glb",
-    "radius": 0.5,
-    "width": 0.45,
-    "at": [[-1.14, 0.5, 1.53], [1.14, 0.5, 1.53], [-1.14, 0.5, -1.47], [1.14, 0.5, -1.47]]
+    "radius": 0.42,
+    "width": 0.33,
+    "at": [[-1, 0.42, 1.74], [1, 0.42, 1.74], [-1, 0.42, -1.86], [1, 0.42, -1.86]]
   },
   "health": 450,
-  "half": [1.45, 0.8, 2.2],
+  "half": [1.17, 0.8, 2.28],
   "seats": [
-    { "role": "driver", "label": "Driver", "offset": [-0.4, 0.82, 0.08], "seated": true, "legDrop": 0.2 },
-    { "role": "passenger", "label": "Front passenger", "offset": [0.4, 0.82, 0.08], "seated": true, "legDrop": 0.2 }
+    { "role": "driver", "label": "Driver", "offset": [-0.32, 0.8, 0.3], "seated": true, "legDrop": 0.18 },
+    { "role": "passenger", "label": "Front passenger", "offset": [0.32, 0.8, 0.3], "seated": true, "legDrop": 0.18 }
   ],
-  "resupply": { "at": [0, 1.0, -2.2], "reach": 1.6, "uses": 10, "wait": 4 },
-  "cockpitEye": [-0.4, 1.5, 0.12],
+  "resupply": { "at": [0, 1.0, -2.3], "reach": 1.6, "uses": 10, "wait": 4 },
+  "cockpitEye": [-0.32, 1.36, 0.32],
   "enterRadius": 3.2,
   "respawnSeconds": 45,
   "blast": { "radius": 4.5, "damage": 90 },
@@ -49,11 +48,11 @@
   },
   "blurb": "Two aboard, a driver and a passenger shooting their own weapon; players on foot at its back resupply from it (ammo and grenades, ten times, then it is empty until it respawns)",
   "notes": {
-    "model": "A Meshy Community sci-fi buggy (Meshy_AI__1108120754, CC0; content/guns.json vehicles/sixer_buggy.glb, 2026-11-11): a tube-frame four-wheeler with a cage over the cabin and an open deck behind it. It rides on the owner's Rugged Off-Road Tire (vehicles/offroad_tire.glb), one at each hub (2026-11-12): the body's own tires are cut out of it and dropped (guns.json `parts`, `drop`), since cut out as parts they took bodywork with them and spun off their axles. Hubs and size measured on the body's old tires: 0.5 m radius, 0.45 m wide, hubs 0.5 m up at x ±1.14, z 1.53 and -1.47; the body's lowest point left (its chassis) is 0.258 m up (`rideHeight`). It was the Buggy from 2026-11-11 to 2026-11-13; the owner split it off (\"the new buggy should be only a 2 seater, but players can go to the back and resupply from it (limited supply, 10x resupplies?)\"). The Tactical Off-Road Beast is the fallback (vehicles/offroad_buggy.glb) and the Buggy again.",
-    "half": "Fitted across the tires (2026-11-11, as the Troop Truck's): 2.9 m wide, so walls stop the tires where they are drawn and rounds that hit a tire hit the buggy. Length and height unchanged: the model is 4.4 m long and 1.98 m tall; its body is about 1.8 m wide and its tires stand out to 2.86 m.",
-    "seats": "Measured on the model (slices of its triangles): two front seats, cushions 0.82 m up at z 0.08 and 0.4 m either side (the floor 0.6 m up, the wheel on the left); behind the cabin's hoop (z -0.6) an open deck 1.7 m up from z -0.6 to -1.45, with a rack box on its left side (2.0 m): the supply load. Nobody rides on it; it is where players on foot resupply (`resupply`).",
-    "cockpitEye": "A seated head height (1.5 m), under the cage's front bar (1.6 m at z 0.4), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts), refitted to this body.",
-    "vehicle": "The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides. The suspension's contact points and hub height are the old buggy's (unchanged handling); the tires are drawn at this body's hubs (`wheels.at`), each riding the nearest contact point's spring.",
-    "resupply": "Owner, 2026-11-12: ten resupplies from its back. The reach point is the tailgate (z -2.2, behind the deck's rack, 1 m up); players on foot within 1.6 m of it press Use there (instead of getting in). Each use gives what a resupply gives (sim/resupply.ts: every carried gun's reserve full, underbarrel rounds full, grenades topped up), with a short wait per player."
+    "model": "The owner's Tactical Off-Road Beast and its Rugged Off-Road Tire (Meshy Community, content/guns.json): a long tube-frame buggy with a roof gun, its hubs bare, so the tires go on at its hubs and it rides on them. It was the Buggy until 2026-11-11; the buggy split (owner, 2026-11-12/13: \"the new buggy should be only a 2 seater, but players can go to the back and resupply from it (limited supply, 10x resupplies?)\") brings it back as the Supply Buggy, the sci-fi buggy staying the six-seat Buggy.",
+    "half": "Fitted across the tires (as the Gun Jeep's and Troop Truck's): the body is 1.8 m wide and 4.4 m long; the tires (0.42 m radius, 0.33 m wide: the tire model's own size, 0.41 by 0.32 m, a touch larger so each hub, 0.42 m up, has its tire on the ground) stand out to 1.17 m either side and 2.28 m behind the middle (the rear hubs at z -1.86). 1.48 m tall on 0.24 m of ride height.",
+    "seats": "Measured on the model (slices of its triangles, 2026-11-13): two rows of cushions 0.8 m up, 0.32 m either side of the middle (front row z 0.3, back row z -0.45; the front footwell 0.18 m under the cushion); the wheel on the left at z 0.75. Two ride in front; the back rows and the cargo box behind them (z -1.1 to -2.2, its top 1.3 m up) are the supply load. The roof gun is not manned.",
+    "cockpitEye": "A seated head height, under the front roof bar (1.47 m at z 0.55), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts).",
+    "vehicle": "The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides; the suspension's contact points are the hubs (`wheels`, `hub` 0.42 m).",
+    "resupply": "Owner, 2026-11-12: ten resupplies from its back. The reach point is the tail (z -2.3, the back of the cargo box, 1 m up); players on foot within 1.6 m of it press Use there (instead of getting in). Each use gives what a resupply gives (sim/resupply.ts: every carried gun's reserve full, underbarrel rounds full, grenades topped up), with a 4 s wait per player."
   }
 }
