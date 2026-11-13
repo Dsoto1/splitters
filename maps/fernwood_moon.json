@@ -19,7 +19,15 @@
       "core.ctf",
       "core.koth",
       "core.deathmatch"
-    ]
+    ],
+    "release": {
+      "mapId": "m_s636q3k4tyultfnp",
+      "versionId": "v_truxkumabf2f6vat",
+      "revision": 1,
+      "contentHash": "sha256:6ba0c16ca52ca3fb0eb0f8c0353cf9d70756f9843a1e69a2782c25731b8b70ad",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-13T09:24:34.634Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -12829,9 +12837,9 @@
     {
       "id": "mount_593",
       "position": [
-        65.4,
-        3,
-        10.2
+        64.4,
+        0,
+        5.5
       ],
       "kind": "mount",
       "model": "turret_mg",
