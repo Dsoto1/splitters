@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   MAP_FORMAT_VERSION,
+  PhysicsWorld,
   addPortalsCommand,
+  builtInSetPieces,
+  expandSetPieces,
+  initPhysics,
   applyCommand,
   buildMapDecor,
   buildMapGeometry,
@@ -169,5 +173,26 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     expect(flooded(water([12, -0.4, 0], [6, 1, 14]))).toEqual([]);
     // A lake on the hill over the tunnel, its bed above the cap.
     expect(flooded(water([0, 5, 0], [20, 1, 20]))).toEqual([]);
+  });
+
+  it('the Lit Tunnel Run: three concrete modules and three real lights, open from end to end, part of a run, with a portal for each end', async () => {
+    await initPhysics();
+    const doc = mapOf([{ tile: 'core.tunnel_concrete_straight', x: 0, y: -1 }], 8);
+    const placed: MapDocument = { ...doc, setPieces: [{ id: 'piece_lit', piece: 'setpiece.tunnel_lit_run', x: 0, y: 0, z: 0, rotation: 0, mirror: false }] };
+    const built = expandSetPieces(placed, builtInSetPieces()).map;
+    expect(built.classicStructure.tiles.filter((t) => t.tile === 'core.tunnel_concrete_straight').length).toBe(4);
+    const lights = built.entities.filter((e) => e.kind === 'light');
+    expect(lights.length).toBe(3);
+    expect(lights.map((l) => l.position)).toEqual([[0, 3.1, 0], [0, 3.1, 8], [0, 3.1, 16]]);
+    // Open along its whole length (and through the tile joined on at its south end): 32 m of passage.
+    const physics = new PhysicsWorld(buildMapGeometry(built).filter((b) => b.kind !== 'barrier'), null);
+    for (const [x, y] of [[0, 1.5], [1.6, 0.3], [-1.6, 3.1]] as [number, number][]) expect(physics.raycastWorld({ x, y, z: -11.9 }, { x: 0, y: 0, z: 1 }, 31.8)).toBeNull();
+    physics.free();
+    // The map's own tile and the piece's are one run; its open ends are the tile's south and the piece's north.
+    expect(connectedRun(placed, ['tile_0'])).toEqual(['tile_0']);
+    expect(openEnds(placed).map((e) => `${e.side}@${e.x},${e.y}`).sort()).toEqual(['N@0,3', 'S@0,-2']);
+    const made = addPortalsCommand(placed);
+    if ('error' in made) throw new Error(made.error);
+    expect(made.placed.map((p) => `${p.tile}@${p.x},${p.y}r${p.rotation}`).sort()).toEqual(['core.tunnel_concrete_portal@0,-2r0', 'core.tunnel_concrete_portal@0,3r2']);
   });
 });
