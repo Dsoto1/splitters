@@ -129,7 +129,7 @@ in GLSL (`PORTS`, keyed `<PackDir>/<shader>` where two packs' shaders share a na
 `ONLY=<file> node tools/content/prepare-vfx.mjs --downloads /home/user/fx-packs/links-full` (the links point at
 the extracted zips in `/home/user/fx-packs/`: `links-full/<pack id>` → the folder its zip was extracted into, so
 `<pack id>/assets/BinbunVFX…` is there (a zip with a top folder of its own, `PortalVFXFull.zip` and
-`MagicAreaVFX.zip`, is linked to that folder); the zips come from the owner's Drive folder `fx` and are fetched again on a
+`MagicAreaVFX.zip` and `StatusFXFull.zip`, is linked to that folder); the zips come from the owner's Drive folder `fx` and are fetched again on a
 new machine, never committed); `node tools/content/vfx-map.mjs` after editing the map.
 
 - **One-shots** (`GodotVfx.play`): impacts, explosions, lightning bolts (`map.arcs`: each jump a pack zap whose
@@ -193,6 +193,41 @@ new machine, never committed); `node tools/content/vfx-map.mjs` after editing th
   column could not be seen even at night). Cost: a portal two draws (the swirl's fragment shader reads 24 texels a
   pixel), a pad four; not measured with `pnpm perf:budget`. The e2e flow `flashing` records a portal and a pad
   coming up at night (moment `fixtures`).
+- **Status auras** (`game/statusFx.ts`, map.lasting `status.<kind>`; Binbun's **Stylized Status FX**, asked for by
+  `view.ts` for every other character in view with a status). Burning: `vfx_status_flame` (a tall shell of orange
+  and yellow streaks twisting up round the body, flecks drifting up). Poisoned: `vfx_status_poison` (a soft green
+  haze and green bubbles). Slowed by goo: `vfx_status_rot` tinted the goo's pink `#ff5ac8` (a pink haze, small
+  bubbles). Chilled or frozen: `vfx_status_ice` (pale ice crystals growing and melting round the body, a faint cold
+  haze); a frozen character keeps its block of ice under them, since the block is what says "can't move". One aura
+  a character, the strongest status (frozen, burn, poison, slow, chill: the plain shell's order). Placed at the
+  middle of the body at 0.9 of the pack's size (its figure is 2 m) times the character's own. **Drawing only**: what
+  a status does and how long it lasts is the simulation's. **Places:** effects of the moment (tier 0, with fire and
+  gas: someone near you on fire is news, and a status lasts two to four seconds), but only the nearest 3 characters
+  within 40 m ask (`STATUS_FX_MAX`, `STATUS_FX_RANGE`), so a burning crowd cannot take every place and Low graphics
+  (4 places) always keeps one for a fire. A character with no place keeps the plain look (the see-through shell in
+  the status' colour, `arsenalVisuals.ts setAura`), and the shell is hidden while the aura is worn
+  (`plainStatus`). The auras are see-through and sit round the body: the character's own colours, its ally outline
+  and its outline against the scene stay readable (checked on dark characters at night, the worst case for the
+  poison haze). **Your own character** never wears one: from its eyes an aura is a sheet over the view; the
+  screen's tint in the status' colour (`hud.setStatusTint`) is unchanged. A cloaked character is not asked for
+  either (its shell fades with it). **Reduce flashing on:** each aura runs at half the pack's speed (`slow`: the
+  shaders' clock and the particles; flames and bubbles drift), at 0.65 of its strength instead of 0.8, eased in
+  over about 0.8 s instead of a quarter second; the plain shell, which pulsed about twice a second, holds still.
+  Off, nothing blinks either: the motion is noise scrolling and particles fading in and out over two seconds. The
+  aura starts with its particles already out (`prefill`), so it is whole for a three second status; its level
+  fades it in. New in the player for these: the pack's five shaders used here (`StatusFX/aura_particle`,
+  `aura_sphere`, `noise_particle`, `bubble_particle`, `ice_particle`), `VfxOptions.slow` and `prefill`
+  (`LastingPlace.slow`, `.prefill`; a slowed play is gone as soon as it has faded out, so its long-lived particles
+  do not hold a place unseen), and orbit speeds given as a `CurveXYZTexture` (about Y, each particle its own
+  between `orbit_velocity_min` and `_max`). **Not ported:** the pack's 17 overlay materials (`status_overlay`: a
+  second pass over the character's own meshes that recolours its rim; it would cover team and skin colours and
+  needs a next-pass on every character material), its proximity fade (reads the depth buffer), the flecks'
+  `directional_velocity_curve` (they rise straight instead of weaving), and the 14 other auras (heal, sleep,
+  nature, dark, shard, green, water, divine, glow, purple, shatter, gem, magic, void: the game has no state for
+  them; `streaks`, `heal_particle`, `sleep_particle` and `texture_particle` have no port). Spawn protection and
+  the powerups keep their Electric and Flame FX looks. Cost: two draws an aura (three for the flame), 64 particles;
+  at most 3 at once; not measured with `pnpm perf:budget`. The e2e flow `flashing` records three bots' auras
+  (burning, poisoned, slowed) coming up at night (moment `status`).
 - Map entries may `skip` parts of an effect (node names) and lasting effects may be held `steady`
   (`VfxOptions.steady`, `LastingPlace.steady`; changing it starts the effect again).
 - Every effect piece has its own geometry: thin-instance buffers live on the geometry, so pieces sharing one
