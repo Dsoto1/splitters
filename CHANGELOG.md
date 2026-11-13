@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- MapMaker: editing big maps is two to three times quicker (moving, undoing, selecting); select an existing path or road to edit it; fit the ground to a build.
 - **MapMaker: fit the ground to a build.** Select a building, a set piece, blocks or props and press **Fit ground to this** (the inspector's Ground section, or right-click): the ground rises or drops to meet its base and eases back into the ground about, so foundations no longer hang over a slope. **Settle onto the ground** does the reverse and moves the build onto the ground instead. A path has both in the Paths pane. One undo step each.
 - **MapMaker: click a road to edit it.** With the Select tool, a road, trail, track or route lights up under the pointer and a click opens it in Paths, its points ready to drag, add and remove. The Paths pane sets its length by number and adds points at either end.
 - **MapMaker is quicker on big maps.** Moving, placing or undoing a piece on a map of thousands of blocks no longer rebuilds the whole level: on St. John's an edit takes between a third and a half of the time on the page it did, and the map's checks run in the background.
