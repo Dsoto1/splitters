@@ -32,6 +32,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Ammo Box: map Ammo Boxes become solid resupply crates (10 uses, cook-off); "Ammo Box Kit" throwable · `wip/ammo-box` · after the line-up
 - S · A · Effects checks, findings only: Pantry Raid portals, loot rings on bright floors, perf and Low graphics for the new effects, Reduce flashing · `wip/fx-checks` (docs)
 - M · B · Tileset 11, step D: six set pieces built in MapMaker (porch, bus shelter, parking deck bay and ramp, concrete frame, bandstand, shop unit), with the arched window's neater stones riding along · `wip/mapmaker-urban-setpieces` (on `wip/mapmaker-urban-arch`) · lands after lane A's line-up
+- M · B · St. John's performance, step 1: read the owner's new trace (`Trace-20261113T152743.json.gz`, 2026-11-13) and write findings with a ranked list of fixes; documents only, no code yet · `docs/perf/` · the fixes follow as their own items
 
 ## Ready to land
 - (none)
@@ -57,7 +58,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Features
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
 - L · A · St. John's step 2: Smythe Hall (corner piece, side entry, about 1,150 props, perf run), then the chapel's spiral stair and our own crest.
-- L · B · St. John's performance (owner's recording: about 25 fps on an M1 Pro; characters 13.6 ms a frame). Not started. **The owner uploaded a new trace of St. John's to the Drive on 2026-11-13**; start from that one.
 - M · B · Tileset 11, step E: two tiles, a fire escape and a scaffold bay (data tiles first) · `docs/map-briefs/urban/URBAN_PLAN.md`
 - S · B · A repeatable performance measurement (a fixed camera with no bots, or the mean of several runs): one run of `tools/perf/client-perf.mjs` swings by half on an unchanged map · `docs/map-briefs/urban/PERF_BASELINE.md`. Do it before the first map uses urban pieces.
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
