@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **The Spillway: the crest's edges close up and the hillside stair gets legs.** The south parapet now returns to the two tower bridges and the long stair's head, with a rail on each side of the three short slabs over the slot between tower and dam; the north parapet runs on into the west hillside; and the open stair up to the east bench stands on eight concrete legs. Built in MapMaker from solid blocks.
 - **The Spillway: parapets on the crest and legs under the long stair.** A 1 m concrete parapet runs along both edges of the dam's crest, open where the two tower bridges and the long stair come up, and the long stair stands on pairs of concrete legs. Built in MapMaker from solid blocks.
 - **The Spillway seats 64.** Eight more spawns a side, placed in MapMaker: Embers between their two rows on the dam's crest, Tide beside theirs in the valley.
 - **The dome kit's parts read in the palette.** The cap, panels, broken panels and drum quarters fill their palette pictures now (they were small slivers framed by the whole dome's size).
