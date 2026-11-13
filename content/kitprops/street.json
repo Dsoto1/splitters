@@ -1,0 +1,61 @@
+{
+  "$comment": "Street furniture (tools/content/kit/street.mjs; Tileset 11, Urban & Civilian: docs/map-briefs/urban/URBAN_PLAN.md step C): a bike rack, a street mailbox and a newspaper box, generated in code. They replace nothing. No real marks: the mailbox and the newspaper box are plain paint, with no service's or publisher's name, sign or livery. The bollard is kit.barrier.bollard, the cable spool kit.spool.cable, the awning kit.shop.awning.",
+  "type": "street",
+  "props": [
+    {
+      "id": "kit.street.bike_rack",
+      "displayName": "Bike Rack",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Tileset 11, Urban & Civilian): three steel hoops 0.85 m high and 0.7 m long, 0.95 m apart on two flat ground rails (2 × 0.85 × 0.7 m). Looks: galvanised, black, green and red. It collides as its hoops only (two legs and a top bar each, 5 cm tube): shots and sight pass between them, as through the Rail Fence; the ground rails are drawn only." },
+      "size": [2, 0.85, 0.7],
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": { "kind": "bikerack", "hoops": 3, "tube": 0.05, "bend": 0.16 },
+      "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 40 }],
+      "variants": [
+        { "index": 0, "name": "steel", "seed": 12271, "look": { "body": "#a4a9ae", "grime": 0.25, "wear": 0.05, "rust": 0.05 } },
+        { "index": 1, "name": "black", "seed": 12272, "look": { "body": "#1f2124", "grime": 0.25, "wear": 0.2, "rust": 0.12 } },
+        { "index": 2, "name": "green", "seed": 12273, "look": { "body": "#2f6b45", "grime": 0.25, "wear": 0.2, "rust": 0.12 } },
+        { "index": 3, "name": "red", "seed": 12274, "look": { "body": "#a82a22", "grime": 0.25, "wear": 0.2, "rust": 0.12 } }
+      ]
+    },
+    {
+      "id": "kit.street.mailbox",
+      "displayName": "Street Mailbox",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": { "1": "First version: a street mailbox 0.56 m wide, 1.22 m high and 0.5 m deep: a steel box with a rounded top on four short legs, a pull-down door, a collection door and a blank plate. Plain paint: no postal service's name, sign or livery. Looks: blue, red, green and yellow. Collides as its box: crouch cover." },
+      "size": [0.56, 1.22, 0.5],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "generator": { "kind": "mailbox", "legs": 0.2 },
+      "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 40 }],
+      "variants": [
+        { "index": 0, "name": "blue", "seed": 12281, "look": { "body": "#2b4c8a", "grime": 0.25, "wear": 0.2, "rust": 0.12, "trim": "#223d70", "plate": "#e4e1d6" } },
+        { "index": 1, "name": "red", "seed": 12282, "look": { "body": "#b02a22", "grime": 0.25, "wear": 0.2, "rust": 0.12, "trim": "#8e221c", "plate": "#e4e1d6" } },
+        { "index": 2, "name": "green", "seed": 12283, "look": { "body": "#2f6b45", "grime": 0.25, "wear": 0.2, "rust": 0.12, "trim": "#255538", "plate": "#e4e1d6" } },
+        { "index": 3, "name": "yellow", "seed": 12284, "look": { "body": "#d6a51c", "grime": 0.25, "wear": 0.2, "rust": 0.12, "trim": "#b0871a", "plate": "#e4e1d6" } }
+      ]
+    },
+    {
+      "id": "kit.street.newsbox",
+      "displayName": "Newspaper Box",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": { "1": "First version: a newspaper box 0.5 m wide, 1.2 m high and 0.46 m deep: a steel cabinet on a post and a base plate, a window door with a blank sheet behind the glass, a pull handle, a coin box. Plain paint: no publisher's name or sign, nothing printed. Looks: red, blue, yellow, green and white. Collides as its box: crouch cover." },
+      "size": [0.5, 1.2, 0.46],
+      "surface": "sheet_metal",
+      "detail": "painted_metal",
+      "generator": { "kind": "newsbox", "cabinet": 0.42 },
+      "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 40 }],
+      "variants": [
+        { "index": 0, "name": "red", "seed": 12291, "look": { "body": "#b02a22", "grime": 0.25, "wear": 0.2, "rust": 0.12 } },
+        { "index": 1, "name": "blue", "seed": 12292, "look": { "body": "#2b4c8a", "grime": 0.25, "wear": 0.2, "rust": 0.12 } },
+        { "index": 2, "name": "yellow", "seed": 12293, "look": { "body": "#d6a51c", "grime": 0.25, "wear": 0.2, "rust": 0.12 } },
+        { "index": 3, "name": "green", "seed": 12294, "look": { "body": "#2f6b45", "grime": 0.25, "wear": 0.2, "rust": 0.12 } },
+        { "index": 4, "name": "white", "seed": 12295, "look": { "body": "#dedbd0", "grime": 0.35, "wear": 0.2, "rust": 0.12 } }
+      ]
+    }
+  ]
+}

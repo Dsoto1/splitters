@@ -37,8 +37,8 @@ export interface StylePack {
   mounts: readonly MountModel[];
   /** Pickup item IDs. */
   pickups: readonly string[];
-  /** The demo map built with the pack (maps/<id>.json). */
-  demo: string;
+  /** The demo map built with the pack (maps/<id>.json). A pack may have none yet (14 Urban & Civilian: owner, 2026-11-13). */
+  demo?: string;
 }
 
 /**
@@ -102,7 +102,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'locomotive', 'locomotive_red', 'passenger_car', 'ore_wagon', 'hopper_wagon', 'timber_wagon', 'flatbed_wagon', 'coal_car', 'lumber_car', 'railroad', 'railroad_broken',
       'hitching_post', 'water_trough', 'wagon_wheel', 'wanted_board', 'outhouse', 'tumbleweed', 'covered_wagon', 'wind_pump', 'rustic_market_stall',
       'kit.drum.steel', 'kit.drum.steel_open', 'kit.crate.wood', 'kit.crate.wood_long', 'hay_bale', 'cart', 'woodpile', 'planks_stack', 'signpost', 'bucket',
-      'cactus', 'cactus_tall', 'nt_saguaro', 'nt_cactus_round', 'coffin', 'gravestone_cross', 'bar_stool', 'kit.table.dining', 'kit.seat.chair', 'dg_coin_pile', 'dg_coin_bag',
+      'nt_saguaro', 'nt_cactus_round', 'coffin', 'gravestone_cross', 'bar_stool', 'kit.table.dining', 'kit.seat.chair', 'dg_coin_pile', 'dg_coin_bag',
       // loafbrr's Mines and Caves set (CC0).
       'mc_cart', 'mc_cart_empty', 'mc_cart_tipper', 'mc_rail', 'mc_rail_curve', 'mc_rail_end', 'mc_ladder', 'mc_support_frame', 'mc_support_post', 'mc_beam',
       'mc_mine_wall', 'mc_mine_entrance', 'mc_mine_tunnel', 'mc_cave_wall', 'mc_cave_entrance', 'mc_cave_rock_wall', 'mc_cave_rocks_a', 'mc_cave_rocks_b',
@@ -209,7 +209,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'ge_sarcophagus', 'ge_angel_statue', 'ge_headstone_tall', 'ge_iron_fence', 'ge_iron_gate', 'ge_hedge_wall', 'ge_hedge_arch', 'ge_topiary', 'ge_gas_lamp',
       // Already in the game: graveyard, house interior, ruins and dungeon pieces.
       'gravestone_cross', 'gravestone_round', 'gravestone_broken', 'grave', 'coffin', 'coffin_old', 'crypt', 'kit.fence.iron', 'kit.fence.iron_broken', 'lightpost', 'lantern', 'candles', 'urn', 'pumpkin',
-      'rn_candles', 'rn_arch_gothic', 'rn_door_gothic', 'rn_dead_tree', 'nt_dead_tree', 'hm_fireplace', 'hm_chandelier', 'hm_bed_king', 'hm_dresser', 'hm_armchair', 'hedge', 'hedge_large', 'hedge_gate', 'fountain', 'dg_skull',
+      'rn_candles', 'rn_arch_gothic', 'rn_door_gothic', 'rn_dead_tree', 'nt_dead_tree', 'hm_fireplace', 'hm_chandelier', 'hm_bed_king', 'hm_dresser', 'hm_armchair', 'fountain', 'dg_skull',
     ),
     materials: ['core.wallpaper_damask', 'core.pbr_slate_roof', 'core.pbr_mossy_cobble'],
     facades: ['gothic_stone', 'manor_brick'],
@@ -258,8 +258,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'jg_stone_idol', 'jg_serpent_statue', 'jg_carved_pillar', 'jg_altar_stone', 'jg_stele', 'jg_vine_curtain', 'jg_liana', 'jg_bridge_post', 'jg_waterfall', 'jg_giant_root', 'jg_banana_plant',
       'jg_giant_fern', 'jg_monstera', 'jg_bamboo', 'jg_brazier', 'jg_rubble_blocks', 'jg_gold_idol',
       // Already in the game: ruins, rocks, jungle plants and an expedition camp.
-      'rn_column_round', 'rn_column_broken', 'rn_wall_arch_ivy', 'rn_wall_broken', 'rn_stairs', 'rn_urn', 'rn_urn_broken', 'hanging_moss', 'fern', 'bush_leafy', 'lily', 'mushrooms',
-      'palm', 'palm_bent', 'nt_palm_curved', 'nt_palm_tall', 'nt_boulder_moss', 'nt_rock_moss', 'nt_log_moss', 'nt_stump_moss', 'cliff', 'cliff_corner', 'cliff_steps',
+      'rn_column_round', 'rn_column_broken', 'rn_wall_arch_ivy', 'rn_wall_broken', 'rn_stairs', 'rn_urn', 'rn_urn_broken',
+      'nt_palm_curved', 'nt_palm_tall', 'nt_boulder_moss', 'nt_rock_moss', 'nt_log_moss', 'nt_stump_moss', 'cliff', 'cliff_corner', 'cliff_steps',
       'sv_tent', 'sv_backpack', 'sv_radio', 'campfire', 'dg_skull', 'dg_coin_pile', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.drum.steel',
     ),
     materials: [
@@ -345,7 +345,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'sb_picket_fence', 'sb_swing_set', 'sb_slide', 'sb_trampoline', 'sb_basketball_hoop', 'sb_gas_pump', 'sb_sedan', 'sb_patio_set', 'sb_sun_lounger', 'sb_fire_hydrant',
       // Already in the game: furniture, shop fittings, garden and street pieces.
       'hm_couch', 'hm_armchair', 'hm_kitchen_counter', 'hm_oven', 'hm_bed_king', 'hm_bathtub', 'hm_toilet', 'hm_houseplant_tall', 'tv', 'kit.appliance.washer', 'sv_propane',
-      'kit.shelf.gondola', 'kit.shop.checkout', 'kit.appliance.freezer_chest', 'kit.shop.cart', 'kit.box.carton', 'kit.bin.waste', 'dumpster', 'kit.sign.cone', 'parasol', 'bush', 'hedge', 'tree_round', 'potted_plant',
+      'kit.shelf.gondola', 'kit.shop.checkout', 'kit.appliance.freezer_chest', 'kit.shop.cart', 'kit.box.carton', 'kit.bin.waste', 'dumpster', 'kit.sign.cone', 'parasol', 'potted_plant',
     ),
     materials: ['core.pbr_clapboard', 'core.pbr_slate_roof', 'core.pbr_pool_tiles'],
     facades: ['clapboard', 'suburban_brick'],
@@ -400,13 +400,13 @@ export const STYLE_PACKS: readonly StylePack[] = [
       // The owner's Meshy pieces (the market stall, well and crane above are the owner's too): a stall, temple statues, fountains.
       'rustic_market_stall', 'temple_spear_statue', 'temple_monk_statue', 'eagle_fountain', 'lion_head_fountain', 'town_fountain',
       // Already in the game: crates, barrels, sandbags, palms, lanterns, pots, carts, ladders and water troughs.
-      'kit.crate.wood', 'kit.crate.wood_long', 'kit.drum.steel', 'kit.drum.steel_open', 'sandbag_wall', 'sandbag_wall_low', 'palm', 'palm_tall', 'nt_palm_curved', 'lantern', 'ww_lantern', 'pot', 'urn',
+      'kit.crate.wood', 'kit.crate.wood_long', 'kit.drum.steel', 'kit.drum.steel_open', 'sandbag_wall', 'sandbag_wall_low', 'nt_palm_curved', 'lantern', 'ww_lantern', 'pot', 'urn',
       'cart', 'rn_cart', 'ww_ladder', 'water_trough', 'im_velarium', 'kit.stall.market', 'awning', 'rug', 'hm_potted_palm',
       // Sands of Egypt (the pack this one replaced).
       'eg_obelisk', 'eg_sphinx', 'eg_statue_pharaoh', 'eg_anubis', 'eg_sarcophagus', 'eg_canopic_jars', 'eg_column_papyrus', 'eg_felucca', 'eg_reed_boat',
       'eg_palm', 'eg_papyrus', 'eg_torch', 'eg_chest', 'eg_stele', 'eg_cat_statue', 'eg_pyramidion',
       // Shared with 03 Imperial Arena and the game's ruins.
-      'im_amphorae', 'im_brazier', 'im_altar', 'rn_column_broken', 'rn_urn', 'rn_urn_broken', 'cactus', 'nt_cactus_round', 'dg_coin_pile', 'dg_coin_bag',
+      'im_amphorae', 'im_brazier', 'im_altar', 'rn_column_broken', 'rn_urn', 'rn_urn_broken', 'nt_cactus_round', 'dg_coin_pile', 'dg_coin_bag',
     ),
     materials: [
       'core.ashlar', 'core.stucco', 'core.dome_tiles', 'core.zellige', 'core.worn_paving', 'core.sandstone_tiles', 'core.rug_red', 'core.mashrabiya', 'core.canopy_red', 'core.cedar',
@@ -608,6 +608,79 @@ export const STYLE_PACKS: readonly StylePack[] = [
     mounts: ['hauler', 'troop_buggy', 'troop_truck', 'turret_mg', 'sentry'],
     pickups: ['core.weapon_rifle', 'core.weapon_smg', 'core.weapon_shotgun', 'core.weapon_marksman', 'core.weapon_lmg', 'core.weapon_rockets', 'core.weapon_flamethrower', 'core.grenades', 'core.mines', 'core.armor_small', 'core.armor_large', 'core.health_small', 'core.health_large'],
     demo: 'ironworks',
+  },
+  {
+    // Tileset 11 (docs/map-briefs/urban/URBAN_PLAN.md, step A): a list of what the game already has, by reference, and
+    // the few pieces made for it (steps B and C: materials, kit families). It has no tiles of its own and copies nothing: the Suburban, Neon and Industrial packs keep their lists, and a piece listed
+    // here is the same piece there. No demo map yet (owner, 2026-11-13).
+    id: 'urban',
+    number: '14',
+    displayName: 'Urban & Civilian',
+    style: 'Present-day town',
+    blurb: 'An ordinary town from pieces the game already has: houses and garages, shops and a gas station, brownstones and office blocks, streets and crossings, a warehouse and factory yard, a plaza. Street lights, traffic lights, signs, benches, bins, barriers, fences, parked cars, metro and shop fittings. Residential, downtown, parking and transit, warehouses, building sites and public squares.',
+    themes: ['core.city', 'core.suburban', 'core.factory'],
+    tiles: [
+      // Residential and shops.
+      'suburban.house', 'suburban.garage', 'suburban.store', 'suburban.gas_station', 'suburban.street', 'suburban.backyard', 'suburban.pool', 'suburban.playground',
+      'core.house', 'core.shop', 'core.gas_station', 'neon.shop_a',
+      // Downtown.
+      'city.street', 'city.crossroads', 'city.brownstone', 'city.midrise', 'city.highrise', 'neon.block_n', 'core.street', 'core.intersection', 'core.plaza',
+      // Warehouses and workshops.
+      'core.warehouse', 'industrial.factory_hall', 'industrial.loading_bay', 'industrial.pipe_rack', 'industrial.catwalk_cross', 'industrial.conveyor_line', 'industrial.silo', 'industrial.control_room',
+      // Rooms to dress with a facade, and the ways up: stairs, ramp, platforms (parking decks, bare frames).
+      'core.room', 'core.room_long', 'core.room_tall', 'core.stairs', 'core.stairs_open', 'core.stairwell', 'snow.metal_stair', 'core.ramp', 'core.platform', 'core.platform_rail',
+      'core.balcony', 'core.terrace', 'core.bridge', 'core.yard', 'core.yard_wall',
+    ],
+    props: /* @__PURE__ */ props(
+      // The street: lights, signals, signs.
+      'nc_streetlight', 'nc_streetlight_double', 'hs_lamppost', 'lightpost', 'yard_lamp', 'nc_traffic_light', 'nc_traffic_light_hanging', 'nc_street_sign', 'nc_highway_sign', 'nc_power_pole', 'kit.sign.warning', 'street_panel',
+      // Benches, bins and dumpsters.
+      'kit.seat.bench', 'mt_bench', 'kit.bin.waste', 'street_trash_can', 'street_trash_can_classic', 'street_city_trash', 'sb_wheelie_bin', 'gs_trash_bags', 'street_trash_pile',
+      'dumpster', 'nc_dumpster', 'gs_dumpster', 'street_dumpster',
+      // Barriers, cones and fences.
+      'kit.barrier.concrete', 'jersey_barrier_hazard', 'plastic_road_barrier', 'road_barrier', 'nc_road_barrier', 'kit.sign.cone', 'kit.sign.cone_slim',
+      'kit.fence.board', 'kit.fence.iron', 'kit.fence.rail', 'sb_picket_fence', 'so_chainlink_fence', 'lf_metal_fence_gate',
+      // Street furniture and rooftops.
+      'sb_fire_hydrant', 'sb_mailbox', 'nc_vending', 'mt_vending_machine', 'mp_control_cabinet', 'nc_ac_unit', 'nc_water_tank', 'nc_antenna', 'potted_plant', 'parasol', 'awning', 'sb_patio_set', 'sb_basketball_hoop',
+      // Parked cars.
+      'sb_sedan', 'car_beetle', 'car_pickup', 'car_offroader', 'car_racer', 'flatbed_truck',
+      // Metro and transit.
+      'mt_ticket_gate', 'mt_ticket_machine', 'mt_bin', 'mt_light', 'mt_subway_car', 'subway_car',
+      // The gas station and the shop.
+      'gs_fuel_pump', 'gs_fuel_pump_slim', 'sb_gas_pump', 'gs_shop_counter', 'gs_shop_shelving', 'gs_ice_chest', 'gs_drinks_fridge', 'gs_coffee_machine', 'gs_slush_machine',
+      'kit.shelf.gondola', 'kit.shop.checkout', 'kit.shop.cart', 'kit.box.carton',
+      // Made for the pack (plan step B): painted doors on the Oak Door's frame, the striped shop awning.
+      'kit.door.painted', 'kit.door.painted_open', 'kit.shop.awning',
+      // Made for the pack (plan step C): street furniture and wire fencing.
+      'kit.barrier.bollard', 'kit.street.bike_rack', 'kit.street.mailbox', 'kit.street.newsbox', 'kit.spool.cable',
+      'kit.fence.chainlink', 'kit.fence.chainlink_gate', 'kit.fence.site_panel',
+      // Warehouses and building sites.
+      'kit.crate.wood', 'kit.drum.steel', 'kit.container.shipping', 'pallet', 'cargo_gantry_crane', 'dc_scaffold',
+    ),
+    materials: [
+      'core.pbr_asphalt', 'core.pbr_wet_asphalt', 'core.pbr_concrete', 'core.pbr_concrete_dark', 'core.pbr_hex_paving', 'core.pbr_flagstone', 'core.pbr_walkway', 'core.white_tiles',
+      'core.pbr_brick_red', 'core.pbr_brick_old', 'core.dark_brick', 'core.stucco', 'core.pbr_plaster', 'core.pbr_plaster_white', 'core.pbr_siding', 'core.pbr_clapboard', 'core.pbr_weathered_siding',
+      'core.pbr_corrugated', 'core.pbr_grey_corrugated', 'core.pbr_glass_facade', 'core.pbr_slate_roof', 'core.pbr_roof', 'core.roof_tiles_red', 'core.hazard',
+      // Made for the pack (plan step B): our own painted patterns.
+      'core.parking_bays', 'core.tactile_paving', 'core.graffiti_brick', 'core.damaged_plaster',
+    ],
+    facades: ['brick', 'storefront', 'plaster', 'clapboard', 'suburban_brick', 'glass', 'corrugated'],
+    gameplay: ['door', 'mover:garage_door', 'mover:rollup_door', 'mover:lift', 'mover:elevator', 'glass', 'block:fence', 'block:barrier', 'block:roof', 'ladder', 'button', 'crate', 'barrel', 'gas', 'light:ceiling', 'light:wall', 'light:sign'],
+    gameplayNotes: {
+      door: 'Front door or shop door that opens as you come close',
+      'mover:garage_door': 'Garage door: an up-and-over door a button or a rule swings up',
+      'mover:rollup_door': 'Roll-up door: a shop shutter or a warehouse bay, rolled up by a button and a rule (Send mover)',
+      'mover:lift': 'Goods lift, or a car lift up to a parking deck',
+      'mover:elevator': 'Elevator up an office block',
+      glass: 'Window pane: shop windows that shatter',
+      'block:fence': 'Breakable fence: a back-yard fence that splinters',
+      'block:barrier': 'Barrier: a road block that can be blown',
+      'block:roof': 'Pitched roof: two slabs making a gable over a cell (houses, garages, sheds)',
+      ladder: 'Ladder up to a roof',
+      'light:sign': 'Shop sign: lit words; logic switches and recolours it',
+    },
+    mounts: ['buggy', 'hauler', 'troop_truck'],
+    pickups: ['core.weapon_smg', 'core.weapon_shotgun', 'core.weapon_rifle', 'core.weapon_burst_rifle', 'core.weapon_marksman', 'core.weapon_launcher', 'core.grenades', 'core.health_small', 'core.health_large', 'core.armor_small', 'core.armor_large'],
   },
 ];
 

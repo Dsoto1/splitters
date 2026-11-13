@@ -118,6 +118,14 @@ export const PATTERN_IDS = [
   'thatch',
   /** Set pieces part 3 (trench revetment, parapets): courses of burlap sandbags in stretcher bond, each a rounded pillow. */
   'sandbags',
+  /** Style Pack 14 Urban & Civilian: asphalt with white parking bay lines (two bays wide and one deep a repeat), the paint worn. */
+  'parking_bays',
+  /** Style Pack 14: tactile paving slabs, rows of round studs. */
+  'tactile',
+  /** Style Pack 14: a brick wall with spray paint on it (abstract shapes only: no letters, words or marks); one storey a repeat. */
+  'graffiti',
+  /** Style Pack 14: painted plaster fallen away in patches to the brick behind (the accent). */
+  'spalled_plaster',
 ] as const;
 export type PatternId = (typeof PATTERN_IDS)[number];
 

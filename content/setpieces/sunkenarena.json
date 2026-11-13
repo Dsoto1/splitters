@@ -7,7 +7,7 @@
       "displayName": "Sunken Arena",
       "category": "Arenas & Plazas",
       "blurb": "A fighting pit 14 m square sunk 2 m into the ground, three tiers of steps down to it on every side, a stair down the middle of each, low walls and pillars on its floor: 3 × 3 cells.",
-      "packs": ["imperial", "military", "medieval", "desert", "jungle", "neon", "orbital", "collegiate", "gothic", "suburban", "harbor", "snow", "frontier"],
+      "packs": ["imperial", "military", "medieval", "desert", "jungle", "neon", "orbital", "collegiate", "gothic", "suburban", "harbor", "snow", "frontier", "urban"],
       "footprint": { "cells": [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2],[2,2]], "levels": [-1,0] },
       "mirror": "none",
       "ports": [
