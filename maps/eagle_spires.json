@@ -1,11 +1,11 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 36,
   "metadata": {
     "id": "eagle_spires",
     "name": "Eagle Spires",
     "author": "Tile Trigger",
-    "description": "A sniper’s alpine valley. Embers and Tide each hold a 40 m mesa with a ruined lookout tower and their flag, roped by plank bridges to two flank spires with stilted sniper nests. Jump-pad chains climb every top over wooden scaffolds, zipline pads throw you back down, and gliders wait on the peaks; every round starts with a parachute drop from a transport plane. The 64 m Eagle Spire holds the railgun over a river island, two cave spires have shotgun tunnels right through them, and dropships and hover bikes wait in the forested, misty valley.",
+    "description": "A sniper’s alpine valley. Embers and Tide each hold a 40 m mesa with a ruined lookout tower and their flag, roped by plank bridges to two flank spires with stilted sniper nests. Jump-pad chains climb every top over wooden scaffolds, zipline pads throw you back down, and gliders wait on the peaks; every round starts with a parachute drop from a Drop Carrier. The 64 m Eagle Spire holds the railgun over a river island, two cave spires have shotgun tunnels right through them, and dropships and hover bikes wait in the forested, misty valley.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-11-03T23:58:00.721Z",
     "parentId": null,
@@ -19,7 +19,15 @@
       "core.koth",
       "core.deathmatch",
       "core.elim"
-    ]
+    ],
+    "release": {
+      "mapId": "m_gpezajcopcly3eaa",
+      "versionId": "v_bzwiguv2wtl7yitk",
+      "revision": 1,
+      "contentHash": "sha256:bd1805740473280a82d9850934bc66ef09f4b1245fd6ce7a71b883b5ef4f640f",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-13T03:53:54.747Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,

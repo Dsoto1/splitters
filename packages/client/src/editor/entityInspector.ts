@@ -42,6 +42,11 @@ import {
   MAX_TEAMS,
   MOUNT_DEFS,
   MOUNT_MODELS,
+  RETIRED_MOUNT_NAMES,
+  isRetiredMount,
+  placedMountDef,
+  replaceRetiredMountCommand,
+  retiredMountUses,
   MOUNT_SKIN_LABELS,
   MOUNT_SKINS,
   MOVER_MODES,
@@ -524,8 +529,24 @@ export class EntityInspector {
         break;
       }
       case 'mount': {
-        const def = MOUNT_DEFS[e.model];
-        choose('Type', MOUNT_MODELS.map((m) => [m, MOUNT_DEFS[m].displayName] as const), e.model, (v) => ({ model: v as MountModel }));
+        // A retired vehicle (the map was made with a Go-Kart or an Ice Cream Truck): shown as what it plays as, with
+        // Replace all to keep that in the map (map/mountAliases.ts).
+        const def = placedMountDef(e.model);
+        const retired = isRetiredMount(e.model) ? e.model : null;
+        choose('Type', [...(retired ? [[retired, `${RETIRED_MOUNT_NAMES[retired]} (retired)`] as const] : []), ...MOUNT_MODELS.map((m) => [m, MOUNT_DEFS[m].displayName] as const)], e.model, (v) => ({ model: v as MountModel }));
+        if (retired) {
+          const uses = retiredMountUses(doc).find((u) => u.model === retired);
+          const n = uses?.entities.length ?? 0;
+          el.append(small(`The ${RETIRED_MOUNT_NAMES[retired]} is retired: this plays as a ${def.displayName}, and everything below is the ${def.displayName}'s. Replace all to keep that in the map, or pick another Type.`));
+          const go = button(`Replace all ${n} with ${def.displayName}`, () => {
+            const r = replaceRetiredMountCommand(this.app.doc, retired);
+            if (!r.placed && !r.tracks) return this.app.toast('Nothing to replace');
+            if (this.app.run(`Replace all ${RETIRED_MOUNT_NAMES[retired]}`, r.command)) this.app.toast(`Replaced ${r.placed} ${RETIRED_MOUNT_NAMES[retired]}${r.tracks ? " and the track's cars" : ''} with ${def.displayName}`);
+          });
+          go.id = 'ed-replace-mounts';
+          go.title = `Every ${RETIRED_MOUNT_NAMES[retired]} on the map${uses?.paths.length ? ", and the track's cars," : ''} in one undo step`;
+          el.append(go);
+        }
         number('Facing (°)', Math.round((e.yaw * 180) / Math.PI), 15, (v) => ({ yaw: (v * Math.PI) / 180 }));
         const teams = mapTeams(doc, MAX_TEAMS);
         if (def.kind === 'sentry') choose('Team', [['', 'Nobody (shoots everyone)'] as const, ...teams.map((t) => [t.id, t.name] as const)], e.faction ?? '', (v) => ({ faction: v || null }));

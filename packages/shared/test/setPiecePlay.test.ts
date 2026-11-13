@@ -44,7 +44,7 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
  * The pieces with open sides (no wall of their own at a port): setPieces3.test.ts proves their ways through,
  * setPieces4.test.ts the command bunker's gates and the gatehouse's arches (MAP 21), and setPieces5.test.ts the
  * brainstorm list's open ones (catwalks, the overlook, the dock, the arena, the bunker cluster, the plaza, the ramp
- * junction) and MAP 21's sea wall and its breach.
+ * junction) and MAP 21's sea wall and its breach; setPiecesAcademy.test.ts the dormitory bays.
  */
 const OPEN_SIDED = [
   'setpiece.arena_arcade',
@@ -64,11 +64,17 @@ const OPEN_SIDED = [
   'setpiece.command_bunker',
   'setpiece.courtyard_gate_wall',
   'setpiece.crossroads_plaza',
+  // The dormitory bays (setPiecesAcademy.test.ts): the hall runs out of each end between partitions, no doorway of a tile's.
+  'setpiece.dorm_bay',
+  'setpiece.dorm_bay_closed',
+  'setpiece.dorm_office_bay',
   'setpiece.landing_craft_beached',
   'setpiece.loading_dock',
   'setpiece.ramp_junction',
   'setpiece.sea_wall',
   'setpiece.sea_wall_breach',
+  'setpiece.stair_end_bay',
+  'setpiece.stair_end_bay_3',
   'setpiece.sunken_arena',
   'setpiece.temple_pylon',
   'setpiece.twin_stair_overlook',
@@ -177,13 +183,15 @@ describe('z-fighting audit over every set piece', () => {
         }
       }
     }
-    // Neighbours round some of them: rooms beside the carriageways, buildings at the skybridges' ends.
-    const doc = mapOf([room('home', -10, -10)], pieces);
-    const map = played(doc);
-    const boxes: WorldBox[] = [...buildMapGeometry(map), ...buildMapDecor(map)];
-    const faces = visibleFaces(boxes);
-    const left = coplanarOverlaps(boxes, { faces });
-    expect(left.slice(0, 5).map((o) => `${boxes[o.a]!.kind} ${boxes[o.a]!.sourceId} / ${boxes[o.b]!.kind} ${boxes[o.b]!.sourceId} at ${o.center.map((v) => v.toFixed(2))} (${o.area.toFixed(3)} m²)`)).toEqual([]);
+    // In maps of 96 placements each, every piece where the one map had it: all of them as played are over a map's
+    // 4096 entities since the dormitory bays (47 parts a bay, in eight turns).
+    for (let i = 0; i < pieces.length; i += 96) {
+      const map = played(mapOf([room('home', -10, -10)], pieces.slice(i, i + 96)));
+      const boxes: WorldBox[] = [...buildMapGeometry(map), ...buildMapDecor(map)];
+      const faces = visibleFaces(boxes);
+      const left = coplanarOverlaps(boxes, { faces });
+      expect(left.slice(0, 5).map((o) => `${boxes[o.a]!.kind} ${boxes[o.a]!.sourceId} / ${boxes[o.b]!.kind} ${boxes[o.b]!.sourceId} at ${o.center.map((v) => v.toFixed(2))} (${o.area.toFixed(3)} m²)`)).toEqual([]);
+    }
   });
 
   it('carriageways between buildings and skybridges meeting them: no coplanar overlaps left', () => {

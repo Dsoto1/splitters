@@ -5042,7 +5042,7 @@ export class Match {
   /**
    * Crashes between mounts: a vehicle driven into another vehicle, a wreck
    * or a turret hurts both, by how fast they closed and how heavy the other
-   * one is (a kart into a tank comes off far worse), and shoves the lighter
+   * one is (a hover bike into a tank comes off far worse), and shoves the lighter
    * one. Each side's driver gets the credit for the other's damage.
    */
   private ramMounts(m: MountRt, vx: number, vz: number, driver: Combatant | null): void {

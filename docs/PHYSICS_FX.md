@@ -128,7 +128,8 @@ as small WebPs), and `game/godotVfx.ts` plays them: a small GPUParticles3D simul
 in GLSL (`PORTS`, keyed `<PackDir>/<shader>` where two packs' shaders share a name). Rebuild one pack with
 `ONLY=<file> node tools/content/prepare-vfx.mjs --downloads /home/user/fx-packs/links-full` (the links point at
 the extracted zips in `/home/user/fx-packs/`: `links-full/<pack id>` → the folder its zip was extracted into, so
-`<pack id>/assets/BinbunVFX…` is there; the zips come from the owner's Drive folder `fx` and are fetched again on a
+`<pack id>/assets/BinbunVFX…` is there (a zip with a top folder of its own, `PortalVFXFull.zip` and
+`MagicAreaVFX.zip`, is linked to that folder); the zips come from the owner's Drive folder `fx` and are fetched again on a
 new machine, never committed); `node tools/content/vfx-map.mjs` after editing the map.
 
 - **One-shots** (`GodotVfx.play`): impacts, explosions, lightning bolts (`map.arcs`: each jump a pack zap whose
@@ -137,6 +138,9 @@ new machine, never committed); `node tools/content/vfx-map.mjs` after editing th
   an id (a fire on a burning patch, a vehicle, a flare, a flame trap; the Arc Turret's charge ball; a toxic cloud;
   wreck smoke). The nearest within 70 m are drawn, as many as the graphics quality allows (low 4, medium 10,
   high 16; low also thins their particles), started once and moved; the rest keep their plain look (`drawn(id)`).
+  Places go by tier, nearest first within each: the effects of the moment, then the map's `fixture`s (portals,
+  jump pads), then `decor` (pickup glows, prop flames). A request may carry its own `range`, `yaw`, `tint`
+  (changing it starts the effect again) and `stretch` (`LastingPlace`).
 - **Fire props** (`game/propFlames.ts`): braziers, fire bowls, torches, campfires and a few candles carry a
   `flame` in content/props/<pack>.json (`fx` brazier / torch / candle / campfire → map.lasting `flame.<fx>`,
   `at` the flame's foot in the prop's space as drawn, x mirrored; `size` its height in metres; `hide` the model's
@@ -156,6 +160,39 @@ new machine, never committed); `node tools/content/vfx-map.mjs` after editing th
   mid floors, fainter on a sunlit pale one (the Range's). Cost: four draws a glow (three held still), so at most
   8 / 20 / 32 draws on low / medium / high; not measured with `pnpm perf:budget`. The e2e flow `flashing` records
   six of them coming up at night (moment `loot`).
+- **Portals and jump pads** (`game/fixtureFx.ts`, map.lasting `portal` and `pad`; asked for by
+  `scenarioVisuals.ts`). A portal that is switched on wears the gate of Binbun's **Portal VFX**
+  (`gate_portal_vfx_01`: sheets of cloud turning slowly and drawn back into the frame, with a glow licking round
+  its edge), tinted the pair's colour (blue unless the map gives one), sized to the frame (the map's scale is per
+  metre of width; the swirl and glow quads are stretched to the frame's height) and set 4 cm proud of the frame's
+  face. It comes up over the painted swirl in about 0.8 s and the painted one fades as it does (`portalCover`); a
+  portal with no place, or switched off, shows the painted swirl as before; the stone frame and the rim in the
+  pair's colour never change. A jump pad wears the blue lift area of Binbun's **Magic Area VFX**
+  (`lift_area_vfx_02`: a column of pale blue streaks rising 2.3 m off the plate, a faint ring round it), at 0.75 of
+  the pack's size so it stands on the 2.2 m plate; it is light added over the pad, so the plate, the glowing ring
+  and the chevrons that show which way it throws you stay as they are and show through it. **Places:** both are
+  `fixture`s, a tier of their own in `lastingFx.ts`: after the effects of the moment (fire, gas, a charge ball, a
+  shield: tier 0) and before every `decor` one (pickup glows, prop flames), nearest first within a tier. So when
+  places run out, pickup glows and prop flames go first, then the far pads and portals; pickup glows still take
+  at most half the places of what is left to them. Portals ask within 60 m, pads within 36 m (a map with many pads
+  does not hold places for ones across the map). **Reduce flashing on:** both are held still (`steady`: the swirl
+  does not turn, the streaks do not rise), dimmer (portal 0.7 of its strength, pad 0.6) and eased in over about two
+  seconds; off, the motion is a slow turn and a slow rise, nothing blinks or pulses. The swirl is drawn unlit and in its own colours (the
+  pack's portal is its own light; the effects' usual roll-off is undone for it, which had turned an orange pair
+  mustard), so the pair's colour is the colour seen, as bright at night as by day; it fills the frame (a 2.4 x 3.2 m panel),
+  which up close is much of the screen, hence the slow rise. **What is not ported from the Portal pack:** its
+  particles (they start from 512 points written into each scene as a float picture and are drawn with a plain
+  StandardMaterial3D; `prepare-vfx.mjs` leaves such pictures out of the JSON, 150 KB an effect), its Warp mode
+  (it bends a copy of the screen) and its stencil window; the swirl is drawn in the pack's Opaque mode (the
+  effect's second colour between the sheets), where the pack's scenes use the stencil one. New in the player for
+  these: the `portal` and `portal_glow` shaders (parallax through `layers` sheets; a varying of their own for the
+  view in the quad's frame), square gradient fills (a gate's shape), ping-pong noise (folded into bands for the ports that ask, `pingPong`;
+  the toxic cloud's one ping-pong mask stays the plain noise it was fitted to), and
+  `magic_areas/transparent`: the Vol. 1 family's shader drawn additive, unlit and lifted three times, since the
+  Magic Area pack too leans on Godot's glow pass (its masks multiply down to a few per cent of alpha; unlifted the
+  column could not be seen even at night). Cost: a portal two draws (the swirl's fragment shader reads 24 texels a
+  pixel), a pad four; not measured with `pnpm perf:budget`. The e2e flow `flashing` records a portal and a pad
+  coming up at night (moment `fixtures`).
 - Map entries may `skip` parts of an effect (node names) and lasting effects may be held `steady`
   (`VfxOptions.steady`, `LastingPlace.steady`; changing it starts the effect again).
 - Every effect piece has its own geometry: thin-instance buffers live on the geometry, so pieces sharing one

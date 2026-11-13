@@ -223,10 +223,10 @@ function cellNoise(x: number, y: number, p: number, s: number, manhattan: boolea
 }
 
 const noiseCache = new WeakMap<Scene, Map<string, Texture>>();
-function noiseTexture(scene: Scene, spec: Json | null): Texture {
+function noiseTexture(scene: Scene, spec: Json | null, fold = false): Texture {
   let cache = noiseCache.get(scene);
   if (!cache) noiseCache.set(scene, (cache = new Map()));
-  const key = JSON.stringify(spec ?? {});
+  const key = `${fold ? 'f' : ''}${JSON.stringify(spec ?? {})}`;
   const hit = cache.get(key);
   if (hit) return hit;
   const n = (spec?.noise ?? {}) as Json;
@@ -236,6 +236,7 @@ function noiseTexture(scene: Scene, spec: Json | null): Texture {
   const fractal = num(n.fractal_type, 1);
   const octaves = fractal === 0 ? 1 : Math.min(4, num(n.fractal_octaves, 5));
   const gain = num(n.fractal_gain, 0.5);
+  const pingPong = num(n.fractal_ping_pong_strength, 2);
   const seed = num(n.seed, 0) + 1;
   const manhattan = num(n.cellular_distance_function, 0) === 1;
   // Godot draws the noise at `width` pixels; this makes the same number of features at SIZE.
@@ -255,6 +256,13 @@ function noiseTexture(scene: Scene, spec: Json | null): Texture {
         const fy = (y / SIZE) * p;
         let s = type === 2 ? cellNoise(fx, fy, p, seed + o, manhattan) : smoothNoise(fx, fy, p, seed + o);
         if (fractal === 2) s = 1 - Math.abs(s * 2 - 1);
+        // Ping-pong (FastNoiseLite's fourth fractal): the noise folded back and forth into bands. Only for the
+        // ports that ask (ShaderPort.pingPong): the toxic cloud was fitted by eye to the plain noise.
+        else if (fractal === 3 && fold) {
+          const t = s * 2 * pingPong;
+          const f = t - Math.floor(t * 0.5) * 2;
+          s = f < 1 ? f : 2 - f;
+        }
         v += s * amp;
         total += amp;
         amp *= gain;
@@ -304,6 +312,7 @@ function gradientTexture(scene: Scene, spec: Json): Texture {
   const SIZE = 64;
   const g = gradientOf(spec) ?? { offsets: [0, 1], colors: [0, 0, 0, 1, 1, 1, 1, 1] };
   const radial = num(spec.fill, 0) === 1;
+  const square = num(spec.fill, 0) === 2;
   const from = vec2(spec.fill_from, [0, 0]);
   const to = vec2(spec.fill_to, [1, 0]);
   const rgba = new Uint8Array(SIZE * SIZE * 4);
@@ -313,7 +322,12 @@ function gradientTexture(scene: Scene, spec: Json): Texture {
     for (let x = 0; x < SIZE; x++) {
       const u = (x + 0.5) / SIZE;
       const v = (y + 0.5) / SIZE;
-      const t = radial ? Math.hypot(u - from[0], v - from[1]) / len : ((u - from[0]) * (to[0] - from[0]) + (v - from[1]) * (to[1] - from[1])) / (len * len);
+      // Godot's fills: linear along from→to, radial round `from`, or square round it (a gate's shape).
+      const t = square
+        ? Math.max(Math.abs(u - from[0]), Math.abs(v - from[1])) / (Math.max(Math.abs(to[0] - from[0]), Math.abs(to[1] - from[1])) || 1)
+        : radial
+          ? Math.hypot(u - from[0], v - from[1]) / len
+          : ((u - from[0]) * (to[0] - from[0]) + (v - from[1]) * (to[1] - from[1])) / (len * len);
       sampleGradient(g, Math.min(1, Math.max(0, t)), c);
       rgba.set([c[0]! * 255, c[1]! * 255, c[2]! * 255, c[3]! * 255], (y * SIZE + x) * 4);
     }
@@ -495,6 +509,8 @@ interface ShaderPort {
   fragment: string;
   /** GLSL functions the bodies call (put before main in both stages). */
   helpers?: string;
+  /** Its ping-pong noises are folded into bands as FastNoiseLite makes them (else drawn as plain noise). */
+  pingPong?: boolean;
 }
 
 const PORTS: Record<string, ShaderPort> = {
@@ -1029,6 +1045,20 @@ PORTS.transparent = {
 };
 PORTS.particle = { ...PORTS.transparent, vertex: vol1Vertex('pcolor.r'), fragment: vol1Fragment('vColor.r') };
 PORTS.opaque = { ...PORTS.transparent, blend: 'cut', cut: 0.05 };
+/**
+ * Magic Area VFX: areas of light on the ground (a jump pad's lift). The family's shader, but the pack leans on Godot's
+ * glow pass as the Loot pack does: its masks multiply down to a few per cent of alpha, which without that pass could
+ * not be seen even at night. So here it is light added to the scene, unlit, and lifted (AREA_LIFT).
+ */
+PORTS['magic_areas/transparent'] = {
+  ...PORTS.transparent,
+  blend: 'add',
+  cull: false,
+  pingPong: true,
+  fragment: `${vol1Fragment('0.0')}
+      outColor = albedo * u_emission_strength;
+      outAlpha = clamp(a * 3.0, 0.0, 1.0);`,
+};
 /** Smoke: the family's masks, its third colour mixed in by the particle's blue (darker puffs). */
 PORTS.smoke = { ...PORTS.transparent, vertex: '', fragment: vol1Fragment('vColor.r', true) };
 /** A fresnel glow (a shell round an orb): bright at the rim through its gradient. */
@@ -1144,6 +1174,106 @@ PORTS.particle_star = {
       else shape = smoothstep(1.0, 1.2, length(fract(vUV - 0.5) * 2.0 - 1.0));
       outColor = u_primary_color * u_emission;
       outAlpha = shape * vColor.a * vExtra.w;`,
+};
+
+// ---- Portal VFX (Binbun VFX Vol. 1): a swirl with depth in a frame, and the glow licking round its edge
+// The swirl is one quad: the shader walks `layers` sheets of noise set back behind it (parallax by the view angle),
+// each smaller and fainter, so it reads as a tunnel. Its shape is a picture (a radial gradient: round; a square
+// one: a gate), which also bulges the quad. Drawn in the pack's Opaque mode whatever the scene says: between the
+// sheets it is the effect's second colour (a portal's pair colour stays plain to see). Not ported: the Warp mode (it
+// bends the picture of the scene behind, and effects here have no copy of the screen), the Stencil mode's window
+// (the pack's scenes use it: it lets things on the other side show through, half hiding the swirl), and its
+// particles (they start from 512 points written into the scene as a float picture and are drawn with a plain
+// StandardMaterial3D, neither of which this player reads).
+const PORTAL_HELPERS = `
+varying vec3 vTanView;
+vec2 portalAspect(vec2 uv) {
+  vec2 c = uv * 2.0 - 1.0;
+  c *= u_size.y < u_size.x ? vec2(1.0, u_size.y / u_size.x) : vec2(u_size.x / u_size.y, 1.0);
+  return mod(c / 2.0 - 0.5, vec2(1.0));
+}
+float portalShape(vec2 uv, float opened) {
+  return clamp(texture2D(shape_texture, uv).r / max(opened, 1e-4), 0.0, 1.0);
+}`;
+/** How coarse a mip of the 128 px noise a pixel covers (the polar mapping has a seam the automatic choice draws as a line). */
+const PORTAL_LOD = `
+      float lod = max(0.0, log2(max(length(dFdx(vUV)), length(dFdy(vUV))) * 128.0 * 1.5));`;
+PORTS.portal = {
+  uniforms: {
+    size: [2, 2], primary_color: [1, 1, 1], secondary_color: [0.5, 0.5, 1], emission_strength: 2, shape_warp: 0.1, open_amount: 1, density: 0.4, edge_softness: 0.5, shrink_amount: 0.5,
+    layers: 8, depth_amount: 1, depth_mult: 1, fade_amount: 1, fade_mult: 1, speed_scale: 1, spin_motion: 0.5, inward_motion: 1, base_motion: 0.2,
+  },
+  samplers: ['noise_texture', 'shape_texture'],
+  helpers: PORTAL_HELPERS,
+  blend: 'mix',
+  cull: false,
+  vertex: `
+      // The view from this spot in the quad's own frame (across, up, out), for the fragment's parallax.
+      vec3 pv = eye - (fw * vec4(p, 1.0)).xyz;
+      vTanView = vec3(dot(pv, normalize(mat3(fw) * vec3(1.0, 0.0, 0.0))), dot(pv, normalize(mat3(fw) * vec3(0.0, 1.0, 0.0))), dot(pv, normalize(mat3(fw) * n)));
+      p += n * ((pow(1.0 - portalShape(uv, u_open_amount), 0.2) * 2.0 - 1.0) * 0.2) * u_open_amount;`,
+  fragment: `
+      vec2 uv = portalAspect(vUV);
+      vec2 par = vec2(-vTanView.x, vTanView.y) / max(abs(vTanView.z), 0.001);${PORTAL_LOD}
+      float tm = u_time * u_speed_scale;
+      float value = 0.0;
+      for (int i = 0; i < 16; i++) {
+        if (float(i) >= u_layers) break;
+        float t = float(i) / u_layers;
+        vec2 off = par * (t * u_depth_amount * u_depth_mult);
+        float circle = portalShape(vUV + off, u_open_amount - t * u_shrink_amount);
+        circle = clamp((circle - (0.5 - u_density)) / (1.5 - u_density), 0.0, 1.0);
+        vec2 nuv = uv + off;
+        vec2 motion = vec2(tm) * (t + u_base_motion) * vec2(u_spin_motion, u_inward_motion) + vec2(t, 0.0);
+        vec2 c2 = nuv * 4.0 - 2.0;
+        vec2 q = vec2(atan(c2.x, c2.y) / 2.0, length(c2)) / 3.14159265 + motion;
+        q.x *= 2.0;
+        float warp = texture2DLodEXT(noise_texture, q, lod).r;
+        vec2 c1 = nuv * (1.0 - warp * u_shape_warp) * 2.0 - 1.0;
+        q = vec2(atan(c1.x, c1.y) / 2.0, length(c1)) / 3.14159265 + motion;
+        float noise = texture2DLodEXT(noise_texture, q, lod).r;
+        float sheet = overlay(circle, noise);
+        sheet = smoothstep(mix(0.4, 0.8, 1.0 - u_edge_softness), mix(1.0, 0.8, 1.0 - u_edge_softness) + 1e-4, sheet);
+        value = max(value, sheet * pow(1.0 - t, u_fade_amount * u_fade_mult));
+      }
+      float edge = portalShape(vUV, u_open_amount);
+      vec3 col = clamp(mix(u_secondary_color, u_primary_color, value), 0.0, 1.0);
+      // (The pack cuts the edge with step(); a hair of smoothing keeps it from crawling.)
+      float a = smoothstep(0.18, 0.22, smoothstep(0.0, 0.5, 1.0 - edge));
+      // The pack's portal is its own light (EMISSION twice its colour, under Godot's glow): drawn unlit and in its
+      // colours as they are (the roll-off below undone), so a pair's colour is the colour seen, by day and by night.
+      outColor = -log(vec3(1.0) - clamp(col, 0.0, 0.97)) / max(u_bright, 1e-3);
+      outAlpha = a * vExtra.w;`,
+};
+PORTS.portal_glow = {
+  uniforms: { size: [2, 2], primary_color: [1, 1, 1], secondary_color: [0.5, 0.5, 1], emission_strength: 2, shape_warp: 0.1, open_amount: 1, edge_softness: 0.5, speed_scale: 1 },
+  samplers: ['noise_texture', 'shape_texture'],
+  helpers: PORTAL_HELPERS,
+  blend: 'mix',
+  cull: false,
+  vertex: `
+      vTanView = vec3(0.0);
+      p += n * ((pow(1.0 - portalShape(uv, u_open_amount), 0.2) * 2.0 - 1.5) * 0.4) * pow(u_open_amount, 8.0);`,
+  fragment: `
+      vec2 uv = portalAspect(vUV);${PORTAL_LOD}
+      float shape = clamp((1.0 - portalShape(vUV, sqrt(u_open_amount))) * 2.4, 0.0, 1.0);
+      float inner = 1.0 - portalShape(vUV, u_open_amount);
+      float innerMask = sqrt(clamp(inner - 0.43, 0.0, 1.0)) * 1.5;
+      shape -= innerMask;
+      vec2 motion = vec2(u_time * u_speed_scale) * vec2(0.05, 0.1);
+      vec2 c3 = uv * 6.0 - 3.0;
+      vec2 q = vec2(atan(c3.x, c3.y), length(c3)) / 3.14159265 + motion;
+      q.x *= 3.0;
+      float warp = texture2DLodEXT(noise_texture, q, lod).r;
+      vec2 c1 = uv * (1.0 - warp * u_shape_warp) * 2.0 - 1.0;
+      float noise = texture2DLodEXT(noise_texture, vec2(atan(c1.x, c1.y), length(c1)) / 3.14159265 + motion, lod).r;
+      float glow = clamp(shape - (1.0 - noise), 0.0, 1.0);
+      float rim = pow(clamp(inner * 2.4, 0.0, 1.0), 3.0) - innerMask;
+      glow += clamp((rim - 0.5) / 0.45, 0.0, 1.0) * 0.5;
+      glow = smoothstep(mix(0.4, 0.0, u_edge_softness), mix(0.4, 1.0, u_edge_softness) + 1e-4, glow);
+      vec3 col = mix(u_secondary_color, u_primary_color, glow);
+      outColor = -log(vec3(1.0) - clamp(col, 0.0, 0.97)) / max(u_bright, 1e-3);
+      outAlpha = glow * vExtra.w;`,
 };
 
 const VERTEX = `
@@ -1326,7 +1456,7 @@ function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefine
   for (const s of port.samplers ?? []) {
     let spec = (mat[`shader_parameter/${s}`] ?? (s === 'noise_texture' ? root.noise_texture : s === 'smoke_texture' ? root.smoke_texture : null)) as Json | null;
     if (s === 'normal_texture' && !spec && root.smoke_texture) spec = { ...(root.smoke_texture as Json), as_normal_map: true, bump_strength: 32 };
-    m.setTexture(s, spec && typeof spec.texture === 'string' ? packTexture(scene, spec.texture) : spec && (spec.type === 'GradientTexture2D' || spec.type === 'GradientTexture1D' || (spec.gradient && !spec.noise)) ? gradientTexture(scene, spec) : noiseTexture(scene, spec));
+    m.setTexture(s, spec && typeof spec.texture === 'string' ? packTexture(scene, spec.texture) : spec && (spec.type === 'GradientTexture2D' || spec.type === 'GradientTexture1D' || (spec.gradient && !spec.noise)) ? gradientTexture(scene, spec) : noiseTexture(scene, spec, port.pingPong === true));
   }
   m.setFloat('u_bright', 0.55);
   m.setFloat('u_gain', gain);

@@ -6,9 +6,11 @@
     {"file":"vfx/flame_fx.json","source":"binbun-flame-fx","src":"BinbunVFX_Vol2/FlameFX/effects/**/*.tscn","title":"flame effect scenes","bytes":36629,"sha256":"523d0432e65a5466"},
     {"file":"vfx/hit_fx.json","source":"binbun-hit-fx","src":"BinbunVFX_Vol2/StylizedHitFX/effects/**/*.tscn","title":"hit effect scenes","bytes":141257,"sha256":"513b2d5c9b5e687a"},
     {"file":"vfx/loot_fx.json","source":"binbun-loot-vfx","src":"BinbunVFX/loot_effects/effects/**/*.tscn","title":"loot effect scenes","bytes":29896,"sha256":"9d471d08c3d093cc"},
+    {"file":"vfx/magic_area_fx.json","source":"binbun-magic-area-vfx","src":"BinbunVFX/magic_areas/effects/**/*.tscn","title":"magic area effect scenes","bytes":13731,"sha256":"e2e521142793e84a"},
     {"file":"vfx/muzzle_flash.json","source":"binbun-muzzle-flash","src":"muzzle_flash/effects/*/*.tscn","title":"flash effect settings","bytes":26566,"sha256":"f3cb2e6cca88fccf"},
     {"file":"vfx/muzzle_flash.webp","source":"binbun-muzzle-flash","src":"shared/texture/*/*.png","title":"flash textures (atlas)","bytes":20480,"sha256":"9cedf59420ed172a"},
     {"file":"vfx/poison_fx.json","source":"binbun-poison-vfx","src":"BinbunVFX/poison_effects/effects/**/*.tscn","title":"poison effect scenes","bytes":11248,"sha256":"1cf24ca1050fbcda"},
+    {"file":"vfx/portal_fx.json","source":"binbun-portal-vfx","src":"BinbunVFX/portal_vfx/effects/**/*.tscn","title":"portal effect scenes","bytes":8153,"sha256":"741d7d203e9c19b3"},
     {"file":"vfx/smoke_fx.json","source":"binbun-smoke-vfx","src":"BinbunVFX/smoke_effects/effects/**/*.tscn","title":"smoke effect scenes","bytes":4126,"sha256":"23852bdc3251048f"}
   ]
 }

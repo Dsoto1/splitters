@@ -13,6 +13,14 @@ export interface LastingPlace {
   up?: Vec3;
   /** Held still, without its particles (Reduce flashing's steady glow; GodotVfx `steady`). Changing it starts the effect again. */
   steady?: boolean;
+  /** Turned about its up by this much (radians): the way a portal faces. */
+  yaw?: number;
+  /** Recoloured (#rrggbb; GodotVfx `tint`): a portal pair's colour. Changing it starts the effect again. */
+  tint?: string;
+  /** These parts stretched along their Y (GodotVfx `stretch`): a portal's swirl fitted to its frame. Read when the effect starts. */
+  stretch?: { nodes: readonly string[]; by: number };
+  /** Not drawn further than this from the camera (metres; never past RANGE). */
+  range?: number;
 }
 
 interface Want {
@@ -44,7 +52,7 @@ const LOOT_SHARE = 0.5;
  */
 export class LastingFx {
   private readonly wants = new Map<string, Want>();
-  private readonly live = new Map<string, { h: VfxHandle; fx: string; steady: boolean }>();
+  private readonly live = new Map<string, { h: VfxHandle; fx: string; steady: boolean; tint: string }>();
 
   /** When `update` last ran (ms). */
   private updated = 0;
@@ -76,11 +84,17 @@ export class LastingFx {
     // Nearest first; the far ones and the ones no longer wanted give their places up first.
     const order = [...this.wants.values()]
       .map((w) => ({ w, d: Math.hypot(w.at.x - cam.x, w.at.y - cam.y, w.at.z - cam.z) }))
-      .filter((x) => x.d <= RANGE)
-      // Hazards (fire, charge, gas) before decoration (a pickup's glow): a glow counts as LOOT_FAR times as far off,
-      // and a decor effect (a fire prop's flame) comes after all of them, nearest first among its own.
-      .map((x) => ({ ...x, d: x.w.key.startsWith('loot.') ? x.d * LOOT_FAR : x.d, decor: !!lastingFx(x.w.key)?.decor }))
-      .sort((a, b) => Number(a.decor) - Number(b.decor) || a.d - b.d);
+      .filter((x) => x.d <= Math.min(RANGE, x.w.place.range ?? RANGE))
+      // Three tiers, nearest first within each. The effects of the moment (fire, gas, a charge ball, a shield) come
+      // first: they say something is happening. Then the map's fixtures that matter to play (a portal's swirl, a jump
+      // pad's lift: `fixture`). Last the decoration (`decor`: a pickup's glow, a fire prop's flame), where a glow
+      // counts as LOOT_FAR times as far off. So when places run out, glows and prop flames go first, then the far
+      // pads and portals; every one of them has a plain look that stands in.
+      .map((x) => {
+        const ref = lastingFx(x.w.key);
+        return { ...x, d: x.w.key.startsWith('loot.') ? x.d * LOOT_FAR : x.d, tier: ref?.decor ? 2 : ref?.fixture ? 1 : 0 };
+      })
+      .sort((a, b) => a.tier - b.tier || a.d - b.d);
     const room = this.vfx.loopRoom + this.live.size;
     // Pickup glows take at most LOOT_SHARE of the places, however many pickups are near.
     const lootRoom = Math.floor(room * LOOT_SHARE);
@@ -93,7 +107,7 @@ export class LastingFx {
     }
     for (const [id, l] of this.live) {
       const w = this.wants.get(id);
-      if (!w || !keep.has(w) || l.h.done || l.fx !== w.key || l.steady !== !!w.place.steady) {
+      if (!w || !keep.has(w) || l.h.done || l.fx !== w.key || l.steady !== !!w.place.steady || l.tint !== (w.place.tint ?? '')) {
         l.h.stop();
         this.live.delete(id);
       }
@@ -103,15 +117,16 @@ export class LastingFx {
       const ref = lastingFx(w.key);
       if (!ref) continue;
       const at = new Vector3(w.at.x, w.at.y, w.at.z);
-      const place = { scale: ref.scale * (w.place.size ?? 1), ...(w.place.up ? { up: new Vector3(w.place.up.x, w.place.up.y, w.place.up.z) } : {}) };
-      const tint = ref.tint ? { tint: ref.tint } : {};
+      const place = { scale: ref.scale * (w.place.size ?? 1), ...(w.place.up ? { up: new Vector3(w.place.up.x, w.place.up.y, w.place.up.z) } : {}), ...(w.place.yaw ? { yaw: w.place.yaw } : {}) };
+      const colour = w.place.tint ?? ref.tint;
+      const tint = colour ? { tint: colour } : {};
       const id = w.id;
       let l = this.live.get(id);
       if (!l) {
         const steady = !!w.place.steady;
-        const h = this.vfx.start(ref.pack, ref.effect, at, { ...place, ...tint, ...(ref.skip ? { skip: ref.skip } : {}), ...(steady ? { steady } : {}) });
+        const h = this.vfx.start(ref.pack, ref.effect, at, { ...place, ...tint, ...(ref.skip ? { skip: ref.skip } : {}), ...(steady ? { steady } : {}), ...(w.place.stretch ? { stretch: w.place.stretch } : {}) });
         if (!h) continue;
-        this.live.set(id, (l = { h, fx: w.key, steady }));
+        this.live.set(id, (l = { h, fx: w.key, steady, tint: w.place.tint ?? '' }));
       } else l.h.move(at, place);
       l.h.setLevel(w.place.level ?? 1);
     }

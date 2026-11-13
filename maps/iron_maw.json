@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_p4bgalgn4yjkzk6s",
-      "revision": 10,
-      "contentHash": "sha256:4b2ecdf8fd682c281c53eaee7a1f008ab4af145c108ea1fdaf8a72c20fe930c3",
+      "versionId": "v_tbmvtvdqqxz6pjdj",
+      "revision": 11,
+      "contentHash": "sha256:6f15f3433b9f0f9bd1d911242699b7805ab6a8038be3e2d3cc1ddbbf79a2810e",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T14:02:33.057Z"
+      "releasedAt": "2026-11-13T03:53:27.118Z"
     },
     "tier": "experimental"
   },
@@ -16570,7 +16570,7 @@
     {
       "id": "turret_loadout",
       "position": [
-        136,
+        140,
         8,
         -163.5
       ],

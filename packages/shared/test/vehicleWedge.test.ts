@@ -113,36 +113,36 @@ describe('flyers driven into something they cannot pass', () => {
 
 describe('a wedged vehicle', () => {
   it('the match marks a vehicle driven and going nowhere as wedged; bots leave it; moved away, it is free again', () => {
-    const match = new Match(yard('kart'), rules, 2);
+    const match = new Match(yard('gun_jeep'), rules, 2);
     const driver = match.addHuman('driver')!;
     match.step();
     driver.move = { pos: { x: 21, y: 0, z: 6 }, velY: 0, grounded: true };
     const { mounts, enterMount, mountViews } = internals(match);
     expect(enterMount.call(match, driver)).toBe(true);
-    const kart = mounts[0]!;
+    const jeep = mounts[0]!;
     let seq = 0;
     // Into the yard's far wall, head on: the throttle open and going nowhere.
     let stoppedAt = -1;
-    for (let t = 0; t < 60 * 20 && !kart.wedged; t++) {
+    for (let t = 0; t < 60 * 20 && !jeep.wedged; t++) {
       match.queueInputs(driver.slot, [{ seq: ++seq, forward: 1, right: 0, yaw: 0, pitch: 0, buttons: 0 }]);
       match.step();
-      if (stoppedAt < 0 && kart.pos.z > 50 && Math.abs(kart.speed) < 6) stoppedAt = t;
+      if (stoppedAt < 0 && jeep.pos.z > 50 && Math.abs(jeep.speed) < 6) stoppedAt = t;
     }
-    expect(kart.wedged).toBeDefined();
-    const view = mountViews.call(match, match.combatants()).find((v) => v.index === kart.index)!;
+    expect(jeep.wedged).toBeDefined();
+    const view = mountViews.call(match, match.combatants()).find((v) => v.index === jeep.index)!;
     expect(view.wedged).toBe(true);
     const free = { ...view, humanNear: false, seats: view.seats.map((s) => ({ ...s, free: true })) };
     // A bot beside it with a long trip the way it would go.
-    const near = { x: kart.pos.x + 2, y: 0, z: kart.pos.z - 3 };
-    const goal = { x: kart.pos.x, y: 0, z: kart.pos.z - 70 };
+    const near = { x: jeep.pos.x + 2, y: 0, z: jeep.pos.z - 3 };
+    const goal = { x: jeep.pos.x, y: 0, z: jeep.pos.z - 70 };
     expect(vehicleFor([free], near, goal, 22)).toBeNull();
-    expect(vehicleFor([{ ...free, wedged: undefined }], near, goal, 22)?.index).toBe(kart.index);
+    expect(vehicleFor([{ ...free, wedged: undefined }], near, goal, 22)?.index).toBe(jeep.index);
     // Got out (backed away from the wall): no longer wedged once it is a few metres from where it stuck.
-    for (let t = 0; t < 60 * 4 && kart.wedged; t++) {
+    for (let t = 0; t < 60 * 4 && jeep.wedged; t++) {
       match.queueInputs(driver.slot, [{ seq: ++seq, forward: -1, right: 0, yaw: 0, pitch: 0, buttons: 0 }]);
       match.step();
     }
-    expect(kart.wedged).toBeUndefined();
+    expect(jeep.wedged).toBeUndefined();
   });
 });
 
@@ -151,17 +151,17 @@ describe('bots that cannot get in', () => {
   type Brain = { mountPlan: { index: number; until: number; drive: boolean } | null; state: string; avoidMounts: Map<number, number>; boarding: { tries: number; failed: number; gaveUp: number; back: number } };
 
   it(`give up on that mount after ${MAX_BOARD_FAILS} failed boardings, and stay away longer each time (no going back and forth)`, () => {
-    const match = new Match(yard('kart'), rules, 3);
+    const match = new Match(yard('gun_jeep'), rules, 3);
     const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.normal)!;
     match.step();
     const { mounts } = internals(match);
-    const kart = mounts[0]!;
+    const jeep = mounts[0]!;
     // Every use is refused (as at a vehicle the mode won't let it into, or one that turned out to be out of reach).
     (match as unknown as { enterMount: () => boolean }).enterMount = () => false;
     const brain = bot.bot as unknown as Brain;
     const tryBoarding = () => {
       bot.move = { pos: { x: 22, y: 0, z: 6 }, velY: 0, grounded: true };
-      brain.mountPlan = { index: kart.index, until: match.tick + 60 * 20, drive: true };
+      brain.mountPlan = { index: jeep.index, until: match.tick + 60 * 20, drive: true };
       brain.state = 'mount';
       let gaveUpAt = -1;
       for (let t = 0; t < 60 * 6 && gaveUpAt < 0; t++) {
@@ -174,13 +174,13 @@ describe('bots that cannot get in', () => {
     expect(first).toBeGreaterThan(0);
     expect(brain.boarding.failed).toBe(MAX_BOARD_FAILS);
     expect(brain.boarding.gaveUp).toBe(1);
-    expect((brain.avoidMounts.get(kart.index) ?? 0) - first).toBeGreaterThanOrEqual(60 * STUCK_AVOID_SECONDS - 2);
+    expect((brain.avoidMounts.get(jeep.index) ?? 0) - first).toBeGreaterThanOrEqual(60 * STUCK_AVOID_SECONDS - 2);
     // The next time it gives up on the same one (after the first spell is over), twice as long.
-    brain.avoidMounts.set(kart.index, match.tick - 1);
+    brain.avoidMounts.set(jeep.index, match.tick - 1);
     const second = tryBoarding();
     expect(second).toBeGreaterThan(0);
     expect(brain.boarding.gaveUp).toBe(2);
-    expect((brain.avoidMounts.get(kart.index) ?? 0) - second).toBeGreaterThanOrEqual(60 * avoidSeconds(2) - 2);
+    expect((brain.avoidMounts.get(jeep.index) ?? 0) - second).toBeGreaterThanOrEqual(60 * avoidSeconds(2) - 2);
     expect(avoidSeconds(2)).toBe(2 * STUCK_AVOID_SECONDS);
   });
 
@@ -188,11 +188,11 @@ describe('bots that cannot get in', () => {
     const match = new Match(yard('dropship'), rules, 4);
     const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.normal)!;
     match.step();
-    const kart = internals(match).mounts[0]!;
+    const jeep = internals(match).mounts[0]!;
     const brain = bot.bot as unknown as Brain;
     // Off its tail: 5.6 m from its centre.
     bot.move = { pos: { x: 20, y: 0, z: 6 - MOUNT_DEFS.dropship.half[2] - 0.8 }, velY: 0, grounded: true };
-    brain.mountPlan = { index: kart.index, until: match.tick + 60 * 10, drive: true };
+    brain.mountPlan = { index: jeep.index, until: match.tick + 60 * 10, drive: true };
     brain.state = 'mount';
     let inAt = -1;
     for (let t = 0; t < 60 * 3 && inAt < 0; t++) {

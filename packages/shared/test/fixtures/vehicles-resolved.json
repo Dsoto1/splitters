@@ -4,7 +4,6 @@
   "turret_rocket",
   "sentry",
   "sentry_arc",
-  "kart",
   "speeder",
   "buggy",
   "hauler",
@@ -15,7 +14,6 @@
   "armored_rover",
   "hover_bike",
   "gunship",
-  "ice_cream_truck",
   "snow_sled",
   "troop_truck"
  ],
@@ -26,11 +24,12 @@
     "displayName": "Heavy MG Turret",
     "kind": "turret",
     "model": "guns/tripod_mg.glb",
+    "scale": 2.4,
     "health": 400,
     "half": [
-     0.6,
-     0.5,
-     0.6
+     0.9,
+     0.77,
+     1.14
     ],
     "seats": [
      {
@@ -39,13 +38,13 @@
       "offset": [
        0,
        0,
-       -1.1
+       -1.65
       ],
       "weapon": "core.mount_mg",
       "arc": 1.4
      }
     ],
-    "enterRadius": 2.4,
+    "enterRadius": 3,
     "respawnSeconds": 45,
     "blast": {
      "radius": 3,
@@ -58,7 +57,7 @@
     [
      0,
      1,
-     -0.9500000000000001
+     -1.5
     ]
    ]
   },
@@ -167,57 +166,6 @@
    },
    "mass": 4,
    "eyes": []
-  },
-  {
-   "def": {
-    "id": "kart",
-    "displayName": "Go-Kart",
-    "kind": "vehicle",
-    "model": "vehicles/kart.glb",
-    "health": 220,
-    "half": [
-     0.7,
-     0.45,
-     1
-    ],
-    "seats": [
-     {
-      "role": "driver",
-      "label": "Driver",
-      "offset": [
-       0,
-       0.6,
-       -0.1
-      ],
-      "seated": true,
-      "legDrop": 0.25
-     }
-    ],
-    "enterRadius": 2.6,
-    "respawnSeconds": 30,
-    "blast": {
-     "radius": 3.5,
-     "damage": 70
-    },
-    "vehicle": {
-     "maxSpeed": 20,
-     "reverseSpeed": 7,
-     "accel": 16,
-     "turnRate": 2.6,
-     "idleBrake": 16,
-     "grip": 0.32,
-     "mass": 0.4
-    },
-    "blurb": "One seat, very quick, no gun: run them over"
-   },
-   "mass": 0.4,
-   "eyes": [
-    [
-     0,
-     1.6,
-     0.04999999999999999
-    ]
-   ]
   },
   {
    "def": {
@@ -1471,105 +1419,6 @@
   },
   {
    "def": {
-    "id": "ice_cream_truck",
-    "displayName": "Ice Cream Truck",
-    "kind": "vehicle",
-    "model": "vehicles/ice_cream_truck.glb",
-    "health": 520,
-    "half": [
-     1.2,
-     1.1,
-     2.4
-    ],
-    "seats": [
-     {
-      "role": "driver",
-      "label": "Driver",
-      "offset": [
-       -0.45,
-       1.1,
-       1.2
-      ],
-      "seated": true,
-      "legDrop": 0.4
-     },
-     {
-      "role": "passenger",
-      "label": "Serving hatch",
-      "offset": [
-       0.5,
-       1.1,
-       0
-      ],
-      "seated": true,
-      "legDrop": 0.4
-     },
-     {
-      "role": "passenger",
-      "label": "Back left",
-      "offset": [
-       -0.5,
-       1.1,
-       -1.2
-      ],
-      "seated": true,
-      "legDrop": 0.4
-     },
-     {
-      "role": "passenger",
-      "label": "Back right",
-      "offset": [
-       0.5,
-       1.1,
-       -1.2
-      ],
-      "seated": true,
-      "legDrop": 0.4
-     }
-    ],
-    "enterRadius": 3.4,
-    "respawnSeconds": 45,
-    "blast": {
-     "radius": 5,
-     "damage": 95
-    },
-    "vehicle": {
-     "maxSpeed": 16,
-     "reverseSpeed": 6,
-     "accel": 8,
-     "turnRate": 1.5,
-     "idleBrake": 10,
-     "grip": 0.24,
-     "mass": 1.9
-    },
-    "blurb": "A pastel van for four: no gun, but the three riders shoot out of the windows"
-   },
-   "mass": 1.9,
-   "eyes": [
-    [
-     -0.45,
-     2.1,
-     1.3499999999999999
-    ],
-    [
-     0.5,
-     2.1,
-     0.15
-    ],
-    [
-     -0.5,
-     2.1,
-     -1.05
-    ],
-    [
-     0.5,
-     2.1,
-     -1.05
-    ]
-   ]
-  },
-  {
-   "def": {
     "id": "snow_sled",
     "displayName": "Snow Sled",
     "kind": "vehicle",
@@ -1854,13 +1703,14 @@
  "airplane": {
   "def": {
    "id": "airplane",
-   "displayName": "Transport Plane",
+   "displayName": "Drop Carrier",
    "kind": "vehicle",
-   "model": "vehicles/transport_plane.glb",
+   "model": "vehicles/ironbound_hauler.glb",
+   "scale": 2.35,
    "health": 1000000,
    "half": [
-    5.2,
-    2.6,
+    2.4,
+    2.83,
     8
    ],
    "seats": [
@@ -1868,8 +1718,8 @@
      "role": "passenger",
      "label": "Bench 1",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       6
      ]
     },
@@ -1877,8 +1727,8 @@
      "role": "passenger",
      "label": "Bench 2",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       6
      ]
     },
@@ -1886,8 +1736,8 @@
      "role": "passenger",
      "label": "Bench 3",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       5
      ]
     },
@@ -1895,8 +1745,8 @@
      "role": "passenger",
      "label": "Bench 4",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       5
      ]
     },
@@ -1904,8 +1754,8 @@
      "role": "passenger",
      "label": "Bench 5",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       4
      ]
     },
@@ -1913,8 +1763,8 @@
      "role": "passenger",
      "label": "Bench 6",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       4
      ]
     },
@@ -1922,8 +1772,8 @@
      "role": "passenger",
      "label": "Bench 7",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       3
      ]
     },
@@ -1931,8 +1781,8 @@
      "role": "passenger",
      "label": "Bench 8",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       3
      ]
     },
@@ -1940,8 +1790,8 @@
      "role": "passenger",
      "label": "Bench 9",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       2
      ]
     },
@@ -1949,8 +1799,8 @@
      "role": "passenger",
      "label": "Bench 10",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       2
      ]
     },
@@ -1958,8 +1808,8 @@
      "role": "passenger",
      "label": "Bench 11",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       1
      ]
     },
@@ -1967,8 +1817,8 @@
      "role": "passenger",
      "label": "Bench 12",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       1
      ]
     },
@@ -1976,8 +1826,8 @@
      "role": "passenger",
      "label": "Bench 13",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       0
      ]
     },
@@ -1985,8 +1835,8 @@
      "role": "passenger",
      "label": "Bench 14",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       0
      ]
     },
@@ -1994,8 +1844,8 @@
      "role": "passenger",
      "label": "Bench 15",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       -1
      ]
     },
@@ -2003,8 +1853,8 @@
      "role": "passenger",
      "label": "Bench 16",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       -1
      ]
     },
@@ -2012,8 +1862,8 @@
      "role": "passenger",
      "label": "Bench 17",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       -2
      ]
     },
@@ -2021,8 +1871,8 @@
      "role": "passenger",
      "label": "Bench 18",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       -2
      ]
     },
@@ -2030,8 +1880,8 @@
      "role": "passenger",
      "label": "Bench 19",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       -3
      ]
     },
@@ -2039,8 +1889,8 @@
      "role": "passenger",
      "label": "Bench 20",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       -3
      ]
     },
@@ -2048,8 +1898,8 @@
      "role": "passenger",
      "label": "Bench 21",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       -4
      ]
     },
@@ -2057,8 +1907,8 @@
      "role": "passenger",
      "label": "Bench 22",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       -4
      ]
     },
@@ -2066,8 +1916,8 @@
      "role": "passenger",
      "label": "Bench 23",
      "offset": [
-      -1.4,
-      1,
+      -0.9,
+      2,
       -5
      ]
     },
@@ -2075,8 +1925,8 @@
      "role": "passenger",
      "label": "Bench 24",
      "offset": [
-      1.4,
-      1,
+      0.9,
+      2,
       -5
      ]
     }
@@ -2093,123 +1943,123 @@
   "mass": 4,
   "eyes": [
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     6.15
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     6.15
    ],
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     5.15
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     5.15
    ],
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     4.15
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     4.15
    ],
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     3.15
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     3.15
    ],
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     2.15
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     2.15
    ],
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     1.15
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     1.15
    ],
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     0.15
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     0.15
    ],
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     -0.85
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     -0.85
    ],
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     -1.85
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     -1.85
    ],
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     -2.85
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     -2.85
    ],
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     -3.85
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     -3.85
    ],
    [
-    -1.4,
-    2,
+    -0.9,
+    3,
     -4.85
    ],
    [
-    1.4,
-    2,
+    0.9,
+    3,
     -4.85
    ]
   ]

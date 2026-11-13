@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_gkegta35ah54zd5g",
-      "versionId": "v_5cuo3zxndod27dqr",
-      "revision": 7,
-      "contentHash": "sha256:eb09232ed702a9f5aeeea7fee9216ab1d692a8e6b66ec12f41946bd0dd0db259",
+      "versionId": "v_kwt67eb5er3b4mas",
+      "revision": 8,
+      "contentHash": "sha256:742f80af7f48a3049fa2f5556e1ee58225dba8d5e9bb77ae3305bf076bfb54f3",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T12:33:36.737Z"
+      "releasedAt": "2026-11-12T21:08:06.537Z"
     }
   },
   "classicStructure": {
@@ -30407,7 +30407,7 @@
         30
       ],
       "kind": "mount",
-      "model": "kart",
+      "model": "hover_bike",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null

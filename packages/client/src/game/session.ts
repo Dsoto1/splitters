@@ -2715,7 +2715,7 @@ export class GameSession {
     this.hud.setPingMarkers(list);
   }
 
-  /** The turret you are gunning (hidden, as your own body is), or null. */
+  /** The turret you are gunning (its gun turns with your view), or null. */
   private mannedTurret(): number | null {
     const m = this.seat ? this.mounts?.mounts.get(this.seat[0]) : undefined;
     return m?.def.kind === 'turret' ? m.index : null;

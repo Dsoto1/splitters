@@ -8709,7 +8709,7 @@ async function frameStrip(frames, every = 4, cols = 5) {
  * frame by frame at 30 frames a second of the page's own time (e2e/frameClock.mjs: however slowly this machine draws,
  * a recorded second is a second of play): an arc fight up close, the fence zapping bots in front of you, four
  * grenade blasts in front of the camera, a machine gun firing at a wall in the dark, heavy rain and a blizzard at
- * night, pickups' floor glows coming up, the alarm light. With the setting
+ * night, pickups' floor glows coming up, a portal's swirl and a jump pad's lift coming up, the alarm light. With the setting
  * on each moment must stay under the thresholds; the same moments with it off are measured and reported as numbers
  * only. Frame strips (every 4th frame) and the numbers go to e2e-artifacts/ (flashing-<moment>-<on|off>.png,
  * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
@@ -8747,6 +8747,10 @@ async function flashingFlow(browser) {
       { id: 'arc_turret', kind: 'mount', model: 'sentry_arc', position: [-24, 0, 24], yaw: 0, faction: null, respawnSeconds: null },
       { id: 'live_fence', kind: 'trap', trap: 'shock', position: [24, 0, 24], yaw: 0, activation: 'always', onSeconds: 2, offSeconds: 2, offsetSeconds: 0, startEnabled: true, damage: null, length: 12 },
       // Pickups out in the dark, a metre apart (the `loot` moment: their floor glows).
+      // A pair of portals and a jump pad out in the dark (the `fixtures` moment: the swirl in the frame, the lift off the pad).
+      { id: 'gate_a', kind: 'portal', position: [32.6, 0, 5.2], yaw: Math.PI, size: [2.4, 3.2], pair: 'flick', startEnabled: true, color: '#3aa8ff' },
+      { id: 'gate_b', kind: 'portal', position: [32.6, 0, 14], yaw: 0, size: [2.4, 3.2], pair: 'flick', startEnabled: true, color: '#3aa8ff' },
+      { id: 'lift_pad', kind: 'pad', position: [29.4, 0, 4.4], yaw: 0, power: 14, push: 6 },
       ...[['weapon_rifle', -25.3, -24], ['health_small', -24.4, -24.7], ['armor_small', -23.5, -24], ['ammo', -24.4, -23.2], ['weapon_shotgun', -26.2, -23], ['health_large', -22.6, -23]].map(([item, x, z], i) => ({ id: `glow_pickup_${i}`, kind: 'pickup', item: `core.${item}`, position: [x, 0, z], respawnSeconds: null })),
     ];
     const before = ed.doc.backdrop ?? null;
@@ -8754,7 +8758,7 @@ async function flashingFlow(browser) {
     const ok = ed.run('Flicker check scene', { kind: 'batch', commands: [{ kind: 'setBackdrop', before, after }, { kind: 'addEntities', entities }] });
     return { ok, entities: ed.doc.entities.length, sky: ed.doc.backdrop?.sky };
   });
-  check(made.ok && made.sky === 'night', `MapMaker makes the check's night scene: two dark rooms (one with a red alarm light blinking 4 times a second), an Arc Turret, an electric fence and six pickups (${JSON.stringify(made)})`);
+  check(made.ok && made.sky === 'night', `MapMaker makes the check's night scene: two dark rooms (one with a red alarm light blinking 4 times a second), an Arc Turret, an electric fence, six pickups, a pair of portals and a jump pad (${JSON.stringify(made)})`);
   await page.keyboard.press('F5');
   const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(60000) }).then(() => true, () => false);
   check(playing, 'the scene plays (MapMaker TEST)');
@@ -8923,6 +8927,26 @@ async function flashingFlow(browser) {
       at: { 2: () => page.evaluate(() => window.__cs.view.lasting.dispose()) },
       seen: () => page.evaluate(() => ({ glows: window.__cs.view.pickupGlows(), steady: window.__cs.view.scene.meshes.filter((m) => /^gv_(Ring_01|Flare|GlowCore)_/.test(m.name) && m.isEnabled() && /#still$/.test(m.material?.name ?? '')).length })),
       sees: (on, s) => s.glows >= 4 && (on ? s.steady >= 12 : s.steady === 0),
+      after: () => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality)),
+    },
+    // A portal's swirl and a jump pad's lift (Binbun's Portal VFX and Magic Area VFX; game/fixtureFx.ts), 5 m in
+    // front of you at night. They are dropped as the recording starts, so it holds them coming up over the painted
+    // swirl and the plain pad: with the setting on eased in slowly, held still (no turning, no rising streaks), dimmer.
+    {
+      name: 'fixtures',
+      label: "a portal's swirl and a jump pad's lift coming up 5 m in front of you at night",
+      weapon: 'core.arc_caster',
+      me: [31.4, 0, 0],
+      look: aim([31.4, 0, 0], [31.1, 1.3, 5]),
+      bots: [],
+      before: () => page.evaluate(() => (window.__cs.view.vfx.quality = 'high')),
+      at: { 2: () => page.evaluate(() => window.__cs.view.lasting.dispose()) },
+      seen: () =>
+        page.evaluate(() => {
+          const parts = window.__cs.view.scene.meshes.filter((m) => /^gv_(PortalMesh|GlowMesh|Lift_01|Lift_02|Upward|Ground)_/.test(m.name) && m.isEnabled());
+          return { portal: parts.filter((m) => /^gv_(PortalMesh|GlowMesh)_/.test(m.name)).length, pad: parts.filter((m) => /^gv_(Lift|Upward|Ground)/.test(m.name)).length, steady: parts.filter((m) => /#still$/.test(m.material?.name ?? '')).length };
+        }),
+      sees: (on, s) => s.portal >= 2 && s.pad >= 4 && (on ? s.steady === s.portal + s.pad : s.steady === 0),
       after: () => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality)),
     },
     {

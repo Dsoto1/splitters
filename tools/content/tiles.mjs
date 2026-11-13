@@ -88,7 +88,8 @@ function schemas(root, materials) {
   const trimPiece = obj({
     'base?': pair, 'cornice?': pair, 'frame?': obj({ half: num, top: num }), 'window?': obj({ u: tup(2), y: tup(2) }),
     'arch?': obj({ u: tup(2), y: tup(2), count: int, band: num, 'key?': num, 'depth?': num }),
-    'u?': pair, 'y?': pair, 'depth?': num, 'repeat?': repeat, 'outside?': bool,
+    'u?': pair, 'y?': pair, 'depth?': num, 'v?': tup(2), 'repeat?': repeat, 'outside?': bool,
+    'surface?': obj({ material: en(materials), 'tint?': str }),
   });
   const edge = obj({
     id: str, label: str, 'rule?': en(['auto', 'open']), 'segments?': arr(segment), 'trim?': arr(trimPiece), 'trimFrom?': num,
@@ -259,7 +260,10 @@ export function build(content, root = ROOT) {
       if (t.outside && !t.arch && !t.u) problems.push(`${where}: ${path}: outside goes on an arch or a trim box`);
       if (t.base) return { base: pair(t.base, uValue, `${path}.base`) };
       if (t.cornice) return { cornice: pair(t.cornice, uValue, `${path}.cornice`) };
-      if (t.frame) return { frame: t.frame };
+      const own = t.surface ? { surface: t.surface } : {};
+      if (t.surface && !t.frame && !t.u) problems.push(`${where}: ${path}: surface goes on a frame or a trim box`);
+      if (t.surface?.tint !== undefined && !/^#[0-9a-f]{6}$/.test(t.surface.tint)) problems.push(`${where}: ${path}.surface.tint must be #rrggbb`);
+      if (t.frame) return { frame: t.frame, ...own };
       if (t.window) return { window: t.window };
       if (t.arch) {
         const a = t.arch;
@@ -269,10 +273,16 @@ export function build(content, root = ROOT) {
         if (a.y[1] - a.y[0] > (a.u[1] - a.u[0]) / 2) problems.push(`${where}: ${path}.arch: a segmental arch rises at most half its span`);
         return { arch: a, ...(t.outside ? { outside: true } : {}) };
       }
-      if (t.y === undefined || t.depth === undefined) problems.push(`${where}: ${path}: a trim box needs u, y and depth`);
+      if (t.v !== undefined) {
+        // A box set in the wall itself (a sash's bars by the glass): from and to, in from the cell's boundary.
+        if (t.y === undefined || t.depth !== undefined || t.repeat || t.outside) problems.push(`${where}: ${path}: a box set in the wall has u, y and v (no depth, repeat or outside)`);
+        if (!(t.v[0] < t.v[1])) problems.push(`${where}: ${path}.v: [from, to] in from the cell's boundary, from < to`);
+        return { u: pair(t.u, uValue, `${path}.u`), y: pair(t.y ?? [0, 0], yValue, `${path}.y`), v: t.v, ...own };
+      }
+      if (t.y === undefined || t.depth === undefined) problems.push(`${where}: ${path}: a trim box needs u, y and depth (or v)`);
       const r = rep(t.repeat, `${path}.repeat`);
       if (r && t.u.some((x) => typeof x !== 'number')) problems.push(`${where}: ${path}.u: offsets from the repeat are metres`);
-      return { u: r ? t.u : pair(t.u, uValue, `${path}.u`), y: pair(t.y ?? [0, 0], yValue, `${path}.y`), depth: t.depth, ...(r ? { repeat: r } : {}), ...(t.outside ? { outside: true } : {}) };
+      return { u: r ? t.u : pair(t.u, uValue, `${path}.u`), y: pair(t.y ?? [0, 0], yValue, `${path}.y`), depth: t.depth, ...(r ? { repeat: r } : {}), ...(t.outside ? { outside: true } : {}), ...own };
     });
     if (e.glass && !e.openings?.length) problems.push(`${where}: glass needs "openings" (the window openings it fills)`);
     for (const [j, o] of (e.openings ?? []).entries()) if (!(o[0] < o[1] && o[2] < o[3])) problems.push(`${where}: openings[${j}]: [u0, u1, y0, y1] with u0 < u1 and y0 < y1`);

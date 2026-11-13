@@ -671,7 +671,7 @@ export const SCENARIO_PALETTE = [
   { key: 'water:lava', label: 'Lava', search: 'lava magma liquid hazard burn' },
   { key: 'water:acid', label: 'Acid', search: 'acid toxic liquid hazard pool' },
   { key: 'water:swamp', label: 'Swamp', search: 'swamp mud bog marsh liquid slow' },
-  { key: 'airplane', label: 'Transport Plane', search: 'airplane plane transport air drop parachute route fly over battle royale jump' },
+  { key: 'airplane', label: 'Drop Carrier', search: 'drop carrier airplane plane transport air drop parachute route fly over battle royale jump' },
   { key: 'airplane:dropship', label: 'Dropship Drop', search: 'dropship drop ship gunship air drop parachute route fly over battle royale jump transport' },
   { key: 'mover:lift', label: 'Lift', search: 'mover lift elevator platform moving up down ride' },
   { key: 'mover:slider', label: 'Sliding Wall', search: 'mover sliding wall door gate moving platform train car shuttle' },
@@ -1135,7 +1135,7 @@ export const latestSector = (doc?: MapDocument): number => Math.max(1, ...(doc?.
 /** Breakthrough: the sector orders a map has, lowest first, each once. */
 export const sectorOrders = (doc: MapDocument): number[] => [...new Set(doc.entities.flatMap((e) => (e.kind === 'sector' ? [e.order] : [])))].sort((a, b) => a - b);
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Transport Plane', mover: 'Mover', portal: 'Portal', zipline: 'Zipline', sector: 'Sector', objective: 'Objective' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Drop Carrier', mover: 'Mover', portal: 'Portal', zipline: 'Zipline', sector: 'Sector', objective: 'Objective' };
 
 /** An entity's kind as MapMaker names it: "Door", a trap's or object's own name, a prop's model name. */
 export function entityKindLabel(e: MapEntity): string {

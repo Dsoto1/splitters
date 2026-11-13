@@ -30,6 +30,7 @@ import { GLASS_EDGES } from '../sim/glass.ts';
 import { expandSetPieces, setPieceOverlapIssues, type SetPieceLibrary } from './setPieces.ts';
 import { withTileAliases } from './setPieceAliases.ts';
 import { withPropAliases } from './propAliases.ts';
+import { retiredMountIssues, withMountAliases } from './mountAliases.ts';
 import { builtInSetPieces } from './setPieceLibrary.ts';
 import { checkSetPieceDefinition } from './setPieceCheck.ts';
 
@@ -103,7 +104,8 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
   // every floor, the set pieces' too, and the props on the ground re-bedded on it), as MapMaker draws it.
   // A retired prop plays as the kit family that replaced it (propAliases.ts: the family has its size, so collision is
   // unchanged), set pieces' props included; MapMaker keeps it as made.
-  const map = opts.forEditing ? parsed.data : withGroundAsPlayed(withPropAliases(expandSetPieces(doc, library, catalog).map), catalog);
+  // A retired vehicle plays as the one that replaced it (mountAliases.ts); MapMaker keeps it as made.
+  const map = opts.forEditing ? parsed.data : withGroundAsPlayed(withMountAliases(withPropAliases(expandSetPieces(doc, library, catalog).map)), catalog);
   return { ok: true, map, issues, migratedFrom: migrated.fromVersion };
 }
 
@@ -115,6 +117,8 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
 export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): ValidationIssue[] {
   const issues = validatePieces(map, catalog, library);
   if (map.groups?.length) issues.push(...groupIssues(map));
+  // Retired vehicles the map still names (mountAliases.ts): a warning each, it plays as the replacement.
+  issues.push(...retiredMountIssues(map));
   // Bot hints (v33): warnings only (map/botHints.ts; the navmesh's own check is the navigation validator's).
   if (map.botHints?.length) issues.push(...botHintIssues(map));
   return issues;
