@@ -57,7 +57,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Features
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
 - L · A · St. John's step 2: Smythe Hall (corner piece, side entry, about 1,150 props, perf run), then the chapel's spiral stair and our own crest.
-- L · B · St. John's performance (owner's recording: about 25 fps on an M1 Pro; characters 13.6 ms a frame). Not started; the recording's files were in an earlier scratchpad and are gone, so it needs them sent again or a fresh measurement.
+- L · B · St. John's performance (owner's recording: about 25 fps on an M1 Pro; characters 13.6 ms a frame). Not started. **The owner uploaded a new trace of St. John's to the Drive on 2026-11-13**; start from that one.
 - M · B · Tileset 11, step E: two tiles, a fire escape and a scaffold bay (data tiles first) · `docs/map-briefs/urban/URBAN_PLAN.md`
 - S · B · A repeatable performance measurement (a fixed camera with no bots, or the mean of several runs): one run of `tools/perf/client-perf.mjs` swings by half on an unchanged map · `docs/map-briefs/urban/PERF_BASELINE.md`. Do it before the first map uses urban pieces.
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
@@ -67,6 +67,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Mobile audit: touch layout options: button size, opacity, left-handed, aim hold or toggle (proposal 3).
 - M · A · Mobile audit: Character Select phone layout (proposal 4).
 - M · A · Material surface types: 0 of 150 materials set `surface`, so footsteps and impacts can't tell metal from wood (owner: end of queue).
+- M · ? · New characters: several T-pose models in the Drive (owner, 2026-11-13: Meshy Community, CC0). Intake through the character pipeline, recorded as community CC0, Experimental until looked over. Not started; no lane yet (lane A did the last ten).
+- ? · ? · A parachute model in the Drive (owner, 2026-11-13: "wondering if that can be used"). Not looked at. First: its licence and source for provenance, then what it would be for (a drop-in spawn, the Transport Plane, a supply drop). Needs the owner's pick before any work.
 
 ## Waiting on the owner
 - A hover model for the Hauler (Ironclad Vanguard became the Troop Truck; the Sky Cruiser is the only unused hover model).
