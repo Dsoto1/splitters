@@ -94,3 +94,34 @@ single stretch of MapMaker's own work: the hang that is felt.
    or steeper?
 4. Should Fit also repaint the ground it raised, or re-bed the props on it?
 5. A new recording on a real GPU once this lands.
+
+## State when work stopped (2026-11-13, about 17:40 UTC, at the owner's word)
+
+- **Branch:** `wip/mapmaker-editing`, pushed. `origin/main` (73f1758: tunnel kit step 4, the process proposals) is
+  merged in at a2d51f7. Conflicts were in `editor/editorView.ts` and `editor/mapTestWorkerCore.ts` (imports: both
+  sides kept) and `editor/mapChecks.ts` (`allIssues`: the issues as last worked out, plus main's `padIssues`).
+- **Checked on the merge:** `pnpm typecheck` passes; the client builds.
+- **Not checked on the merge:** the five editor e2e flows were stopped part way (171 checks passed, none failed:
+  `editor` whole, `editorux` in part); `pnpm test:changed` and `visual` / `offline` were not run again. Everything in
+  the table above is for 07fc683, before the merge.
+- **Timings** above are also from before the merge; not re-measured after it.
+
+### Next, for whoever picks this up
+1. On a2d51f7 (or after merging main again): `NODE_OPTIONS=--max-old-space-size=6000 pnpm build`, then
+   `E2E_ONLY=editor,editorux,editorpieces,editortools,editorenv node e2e/run.mjs`, `pnpm test:changed`, and
+   `E2E_ONLY=visual,offline node e2e/run.mjs`. Look hardest at the three merged files: the issues list after an edit
+   (map checks, pad flights, navigation, overlaps all arriving), and picking a buried tunnel piece with Select (main's
+   change to `hover.ts` now runs inside this branch's one-pick-per-hover wrapper).
+2. Then it is a merge candidate: `pnpm prepush`, a check branch, land under the lock. HANDOFF on main still names this
+   branch at 599955a4 with early numbers; this file has the final ones.
+3. Look at Fit ground on a real building from eye level (St. John's), and put the questions above to the owner.
+
+### Notes for running things in a cloud container
+- The repo pins Playwright 1.56.1, which looks for a browser build the container does not have. Without touching the
+  repo: `mkdir -p /opt/pw-browsers/chromium_headless_shell-1194/chrome-linux && ln -sf /opt/pw-browsers/chromium
+  /opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell` (and the same for
+  `chromium-1194/chrome-linux/chrome`). `tools/perf/editor-edit.mjs` also takes `CHROMIUM=<path>`.
+- `tools/perf/editor-edit.mjs`: `EDIT_PROFILE=<dir>` writes a CPU profile per step; `EDIT_URL=http://localhost:<port>`
+  against `vite` (the dev server) gives readable function names. Do not measure while a build, vitest or an e2e run is
+  going: the numbers double.
+- The five editor flows take about 28 minutes here (editorux and editorenv about 8 each).
