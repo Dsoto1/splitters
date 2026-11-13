@@ -35676,8 +35676,7 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.light_strip",
-      "tint": "#ffe2b0"
+      "material": "core.lamp_glow"
      }
     }
    ],
@@ -36270,8 +36269,7 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.light_strip",
-      "tint": "#ffe2b0"
+      "material": "core.lamp_glow"
      }
     }
    ],
@@ -36916,8 +36914,7 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.light_strip",
-      "tint": "#ffe2b0"
+      "material": "core.lamp_glow"
      }
     }
    ],
@@ -37614,8 +37611,7 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.light_strip",
-      "tint": "#ffe2b0"
+      "material": "core.lamp_glow"
      }
     }
    ],
@@ -38156,8 +38152,7 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.light_strip",
-      "tint": "#ffe2b0"
+      "material": "core.lamp_glow"
      }
     },
     {
@@ -38768,8 +38763,7 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.light_strip",
-      "tint": "#ffe2b0"
+      "material": "core.lamp_glow"
      }
     },
     {
