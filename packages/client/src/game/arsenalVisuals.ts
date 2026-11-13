@@ -14,7 +14,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { SMOKE, STATUS_BURN, STATUS_CHILL, STATUS_FROZEN, STATUS_POISON, STATUS_SLOW, ZONE_KINDS, type ProjectileVisual, type SmokeCloud, type Vec3, type ZoneSnapshot } from '@tiletrigger/shared';
-import { indicator } from './reduceFlashing.ts';
+import { indicator, reduceFlashing } from './reduceFlashing.ts';
 
 /**
  * Looks for the extended arsenal, all built from simple shapes and glowing
@@ -617,6 +617,8 @@ export function setAura(scene: Scene, aura: Mesh, bits: number, now: number): vo
   aura.setEnabled(!!color);
   if (!color) return;
   const frozen = (bits & STATUS_FROZEN) !== 0;
-  aura.material = mat(scene, color, frozen ? 0.4 : 0.9, frozen ? 0.55 : 0.18 + 0.08 * Math.sin(now * 0.012));
-  aura.scaling.set(frozen ? 1.05 : 1 + Math.sin(now * 0.01) * 0.04, 1, frozen ? 1.05 : 1 + Math.cos(now * 0.01) * 0.04);
+  // Reduce flashing: the shell holds still (it pulsed about twice a second).
+  const still = frozen || reduceFlashing();
+  aura.material = mat(scene, color, frozen ? 0.4 : 0.9, frozen ? 0.55 : still ? 0.18 : 0.18 + 0.08 * Math.sin(now * 0.012));
+  aura.scaling.set(frozen ? 1.05 : still ? 1 : 1 + Math.sin(now * 0.01) * 0.04, 1, frozen ? 1.05 : still ? 1 : 1 + Math.cos(now * 0.01) * 0.04);
 }

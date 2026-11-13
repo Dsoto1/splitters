@@ -131,6 +131,7 @@ import { ModelLibrary } from '../content/models.ts';
 import { disposeTree } from '../content/disposeTree.ts';
 import { DROP_LIE_HEIGHT, PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
 import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel } from './lootGlow.ts';
+import { StatusFx, plainStatus } from './statusFx.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
 import { CityVisuals } from './cityVisuals.ts';
@@ -430,6 +431,8 @@ export class GameView {
   readonly steadyArcs: SteadyArcs;
   /** Pack effects that last while something burns or glows (fires, flares), the nearest drawn first. */
   private readonly lasting: LastingFx;
+  /** Pack auras round other characters with a status (statusFx.ts). */
+  private readonly statusFx: StatusFx;
   /** Fire props' open flames (content/props.json `flame`), drawn with Flame FX near the camera. */
   private propFlames: PropFlames;
   /** Each placement's surface (stone, metal, wood …) for where rounds land (fxMap.ts), made with the map. */
@@ -570,6 +573,7 @@ export class GameView {
     // Low graphics plays fewer pack effects at once and thins the lasting ones (fires, charge balls).
     this.vfx.quality = this.atmosphere.quality;
     this.lasting = new LastingFx(this.vfx);
+    this.statusFx = new StatusFx(this.lasting);
     // Low graphics keeps the fire props' own flames: its few lasting places go to the fires that matter.
     this.propFlames = new PropFlames(this.lasting, this.atmosphere.quality !== 'low');
     this.zoneVisuals.lasting = this.lasting;
@@ -2258,9 +2262,12 @@ export class GameView {
         if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black());
       }
       if (p.weapon !== a.weaponSlot) this.setAvatarWeapon(a, p.weapon);
+      // A status: the pack's aura for the nearest few (statusFx.ts), the plain shell for the rest.
+      // (Not a cloaked one: its shell fades with it, an aura would give it away.)
+      if (p.status && p.alive && !a.culled && eye && !(p.status & FX_CLOAK)) this.statusFx.ask(p.slot, p.status, p, a.root.scaling.y || 1, eye);
       if (p.status || a.aura) {
         a.aura ??= createAura(this.scene, a.root);
-        setAura(this.scene, a.aura, p.alive ? p.status : 0, now);
+        setAura(this.scene, a.aura, p.alive ? plainStatus(p.status, this.statusFx.worn(p.slot)) : 0, now);
       }
       // Jetpack firing: a flickering flame from the back.
       const jetting = p.alive && (p.status & FX_JET) !== 0;
@@ -2315,6 +2322,7 @@ export class GameView {
         }
       }
     }
+    this.statusFx.flush(now, reduceFlashing());
     for (const [slot, a] of this.avatars) {
       if (!seen.has(slot)) {
         this.disposeAvatar(a);
