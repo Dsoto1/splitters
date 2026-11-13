@@ -3315,7 +3315,7 @@ export class GameView {
   /**
    * Turrets, sentries and vehicles at their smoothed poses; turret guns follow the aim. `manned` (the turret you are
    * gunning) is drawn too: you stand behind it and look along its gun, which turns with your own view (not the
-   * smoothed aim the match sends back, which would trail your crosshair).
+   * smoothed aim the match sends back, which would trail your crosshair); ducked below its top it is left out.
    */
   updateMounts(mounts: Iterable<ClientMount>, manned: number | null = null): void {
     let cockpit: { m: ClientMount; node: TransformNode } | null = null;
@@ -3328,7 +3328,10 @@ export class GameView {
       const now = performance.now();
       const fade = m.wreckGoneAt ? (now - m.wreckGoneAt) / (MOUNT_WRECK_FADE_SECONDS * 1000) : 1;
       const shown = m.alive || m.wreck || fade < 1;
-      node.setEnabled(shown);
+      // Your own turret is left out while your eye is below its top (ducked behind it, crouch in a standing place):
+      // you would be looking into the back of the gun. Standing, you look over it.
+      const ducked = m.index === manned && this.steadyEye.pos.y - m.shown.pos.y < m.def.half[1] * 2 + 0.03;
+      node.setEnabled(shown && !ducked);
       node.position.set(m.shown.pos.x, m.shown.pos.y, m.shown.pos.z);
       this.charMount(m.index, node, !m.alive && shown, m.alive ? 1 : m.wreck ? 1 : Math.max(0, 1 - fade));
       this.mountDamageFx(m, now);
