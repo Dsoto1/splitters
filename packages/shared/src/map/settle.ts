@@ -282,7 +282,8 @@ export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] 
   // Highest floors first: ground lowered under an upper floor may then reach a lower one, and goes under that
   // too in the same pass (so a second pass changes nothing).
   const floors = boxes.filter((b) => b.kind === 'floor' && !b.yaw && !b.pitch && !b.roll && !bores.tiles.has(b.sourceId)).sort((a, b) => b.max[1] - a.max[1]);
-  const foot = stepFootVertices(t, boxes);
+  // (A buried piece's own low parts are no steps to bring the ground up to.)
+  const foot = stepFootVertices(t, bores.tiles.size ? boxes.filter((b) => !bores.tiles.has(b.sourceId)) : boxes);
   for (const b of floors) {
     const top = b.max[1];
     const c0 = Math.max(0, Math.ceil((b.min[0] - 0.01 - t.origin[0]) / s));
