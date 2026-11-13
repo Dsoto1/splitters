@@ -22,7 +22,7 @@
 // Level 1 keeps the outline (frame, leaf, straps; desk, hutch and shelves; case and door); level 2 is a few boxes.
 
 import { rng } from '../env/rng.mjs';
-import { Mesh, bar, box, hex, quad, scale3, standIn, triN } from './geom.mjs';
+import { Mesh, bar, box, hex, quad, quadN, scale3, standIn, triN } from './geom.mjs';
 import { woodTone } from './crate.mjs';
 
 const lerp = (p, q, t) => p + (q - p) * t;
@@ -343,14 +343,16 @@ export function closetFrontMesh(seed, size, g, look, level) {
   const fine = level === 0;
   const fr = 0.07;
   const kick = g.kick ?? 0.1;
-  const frame = tone(scale3(wood, 0.9), 1);
+  const frame = tone(scale3(wood, 0.74), 1);
+  // A dark ground behind everything: the gap round the door and between its parts reads as a shadow line.
+  quadN(m, [-X + 0.01, 0.01, -Z + 0.001], [X - 0.01, 0.01, -Z + 0.001], [X - 0.01, h - 0.01, -Z + 0.001], [-X + 0.01, h - 0.01, -Z + 0.001], [0, 0, 1], scale3(wood, 0.12));
   // The face frame: two stiles, a head, the kick board; the full depth, so the piece fills its box.
   box(m, [-X, 0, -Z], [-X + fr, h, Z], frame, ['ny', 'nz']);
   box(m, [X - fr, 0, -Z], [X, h, Z], frame, ['ny', 'nz']);
   box(m, [-X + fr, h - fr, -Z], [X - fr, h, Z], frame, ['nz', 'nx', 'px']);
-  box(m, [-X + fr, 0, -Z], [X - fr, kick, Z], tone(scale3(wood, 0.7), 2), ['ny', 'nz', 'nx', 'px']);
+  box(m, [-X + fr, 0, -Z], [X - fr, kick, Z], tone(scale3(wood, 0.55), 2), ['ny', 'nz', 'nx', 'px']);
   // The door, a shade back from the frame's face: stiles and rails round panels set back again.
-  const [xa, xb, ya, yb] = [-X + fr + 0.004, X - fr - 0.004, kick + 0.004, h - fr - 0.004];
+  const [xa, xb, ya, yb] = [-X + fr + 0.008, X - fr - 0.008, kick + 0.008, h - fr - 0.008];
   const zd = Z - 0.003;
   const st = 0.075;
   const rail = tone(doorC, 3);
@@ -365,7 +367,7 @@ export function closetFrontMesh(seed, size, g, look, level) {
       const [r0, r1] = i === 0 ? [y, y + st * 1.3] : i === n ? [y - st, y] : [y - st / 2, y + st / 2];
       box(m, [xa + st, r0, -Z], [xb - st, r1, zd], rail, ['nz', 'nx', 'px']);
     }
-    box(m, [xa + st, ya, -Z], [xb - st, yb, zd - 0.005], tone(scale3(doorC, 0.88), 4), ['nz', 'nx', 'px', 'ny', 'py']);
+    box(m, [xa + st + 0.006, ya, -Z], [xb - st - 0.006, yb, zd - 0.005], tone(scale3(doorC, 0.8), 4), ['nz', 'nx', 'px', 'ny', 'py']);
   }
   // The pull, and two hinges on the other side.
   const metal = hex(look.metal ?? '#2a2c30');
