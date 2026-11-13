@@ -223,7 +223,7 @@ describe('map format v38', () => {
       expect(buildMapGeometry(old.map)).toEqual(buildMapGeometry(plain));
     }
     // Shipped files (v36 and v37 among them): opened for editing, the tiles, their sides and their glass are the file's own.
-    for (const id of ['riot_junction', 'crossroads', 'st_johns', 'test_coverage']) {
+    for (const id of ['riot_junction', 'crossroads', 'st_johns']) {
       const raw = JSON.parse(readFileSync(new URL(`../../../maps/${id}.json`, import.meta.url), 'utf8')) as { formatVersion: number; classicStructure: { tiles: { id: string; edges?: Record<string, string>; glass?: Record<string, string> }[] } };
       expect(raw.formatVersion, id).toBeLessThan(38);
       const r = loadMap(raw, undefined, { forEditing: true, openWithErrors: true });
@@ -232,8 +232,12 @@ describe('map format v38', () => {
       expect(r.map.formatVersion).toBe(38);
       const sides = (tiles: { id: string; edges?: Record<string, string>; glass?: Record<string, string> }[]) => tiles.map((t) => [t.id, t.edges ?? null, t.glass ?? null]);
       expect(sides(r.map.classicStructure.tiles), id).toEqual(sides(raw.classicStructure.tiles));
-      // No shipped map names a new style: nothing was changed to use them.
+      // No playable map names a new style: nothing was changed to use them (the coverage map carries one of each, below).
       expect(JSON.stringify(raw).includes('shopfront') || JSON.stringify(raw).includes('window_arched'), id).toBe(false);
     }
+    // The coverage map (one of everything) has a room with both, saved by MapMaker at v38.
+    const cov = readFileSync(new URL('../../../maps/test_coverage.json', import.meta.url), 'utf8');
+    expect((JSON.parse(cov) as { formatVersion: number }).formatVersion).toBe(38);
+    expect(cov.includes('"shopfront"') && cov.includes('"window_arched"')).toBe(true);
   });
 });
