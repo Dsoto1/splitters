@@ -13,7 +13,7 @@
 // So movement, shots and bots are the same in a concrete tunnel and, later, a brick sewer of the same shape.
 
 const SIDES = ['N', 'E', 'S', 'W'];
-const TWELFTHS = [Math.round((Math.PI / 6) * 1000) / 1000, Math.round((Math.PI / 3) * 1000) / 1000];
+const EIGHTHS = [0, 1, 2, 3].map((i) => Math.round(((i * Math.PI) / 4) * 1000) / 1000);
 const r3 = (v) => Math.round(v * 1000) / 1000;
 
 /** A box [x0, y0, z0, x1, y1, z1] turned `turns` quarter turns clockwise seen from above (N to E), as tiles turn. */
@@ -77,14 +77,21 @@ function moduleParts(profile, family, shape) {
     if (!arms.has('S')) wallTrim(1, 1, -w, w);
   }
 
+  // An eight-sided pipe from z = `from` to the cell's north edge: four slats, each as wide as the pipe and as thick as
+  // one of its sides, turned an eighth apart about its run (their union is the regular octagon: no points stand out).
+  function pipeRun(from) {
+    const p = trim.pipe;
+    const cx = -w + 0.05 + p.r;
+    const side = p.r * Math.tan(Math.PI / 8);
+    for (const roll of EIGHTHS) trims.push({ box: [cx - p.r, p.y - side, from, cx + p.r, p.y + side, E].map(r3), kind: 'trim', ...(roll ? { roll } : {}), ...surf(p.material, p.tint) });
+  }
+
   // --- a pipe run on the west wall of a passage that runs straight through north to south (or to a dead end or a mouth).
   const through = arms.has('N') && !arms.has('E') && !arms.has('W');
   if (trim.pipe && through && !shape.hatch) {
     const p = trim.pipe;
     const z0 = arms.has('S') ? -E : mouth === 'S' ? shape.headwall.at + shape.headwall.t / 2 : -w;
-    draw([-w + 0.05, p.y - p.r, z0, -w + 0.05 + 2 * p.r, p.y + p.r, E], p.material, p.tint);
-    // The same bar turned a twelfth and a sixth about its run: twelve sides, which reads as round at this size.
-    for (const roll of TWELFTHS) trims.push({ box: [-w + 0.05, p.y - p.r, z0, -w + 0.05 + 2 * p.r, p.y + p.r, E].map(r3), kind: 'trim', roll, ...surf(p.material, p.tint) });
+    pipeRun(z0);
     for (let z = Math.ceil(z0) + 0.5; z < E; z += 2) draw([-w, p.y - p.r - 0.05, z - 0.05, -w + 0.07 + 2 * p.r, p.y + p.r + 0.05, z + 0.05], m.trim);
   }
 
@@ -177,8 +184,7 @@ function moduleParts(profile, family, shape) {
     armTrim(0, from, E);
     if (trim.pipe) {
       const p = trim.pipe;
-      draw([-w + 0.05, p.y - p.r, from, -w + 0.05 + 2 * p.r, p.y + p.r, E], p.material, p.tint);
-      for (const roll of TWELFTHS) trims.push({ box: [-w + 0.05, p.y - p.r, from, -w + 0.05 + 2 * p.r, p.y + p.r, E].map(r3), kind: 'trim', roll, ...surf(p.material, p.tint) });
+      pipeRun(from);
     }
     if (trim.light) {
       const l = trim.light;
@@ -252,7 +258,11 @@ function specialParts(profile, family, shape) {
       // (Its low end comes to a point over the floor; the tile's floor is under it.)
     } else solids.push({ flight: { axis: 'z', dir: 1, from: -E, across: [-w, w], steps: 16 }, ...surf(m.floor) });
     // A handrail on each wall, following the flight.
-    for (const sx of [-1, 1]) draw([sx * (w - 0.1) - 0.03, L / 2 + 0.95, -len / 2, sx * (w - 0.1) + 0.03, L / 2 + 1.01, len / 2], m.trim, undefined, tilt);
+    // (Open to the sky it stops where it would stand over the low walls.)
+    const railTo = shape.kind === 'descent' ? 2.6 : E;
+    const railMid = (railTo - E) / 2;
+    const railHalf = ((railTo + E) / 2) * (len / (2 * E));
+    for (const sx of [-1, 1]) draw([sx * (w - 0.1) - 0.03, L / 2 + railMid / 2 + 0.95, railMid - railHalf, sx * (w - 0.1) + 0.03, L / 2 + railMid / 2 + 1.01, railMid + railHalf], m.trim, undefined, tilt);
     const bore = {};
     if (open) {
       // Low walls either side, a parapet over the ground; a lintel over the way into the tunnel.

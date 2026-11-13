@@ -1509,6 +1509,9 @@ async function editorBuriedPickChecks(browser) {
   await frames(page, 4);
   const level = await page.evaluate(() => window.__editor.level);
   const pointAt = async (x, z) => {
+    // (The view centred there first: clear of the panels either side.)
+    await page.evaluate((p) => window.__editor.view.focus(p), { x, y: 0, z });
+    await frames(page, 3);
     const q = await page.evaluate((p) => window.__editor.view.project(p), { x, y: -0.15, z });
     await page.mouse.move(q.x, q.y);
     await frames(page, 2);
@@ -8806,13 +8809,14 @@ const FLASHING_DAY = {
   make: (page) =>
     page.evaluate(() => {
       const ed = window.__editor;
-      const tile = (id, tile, y, rotation) => ({ id, tile, x: 0, y, z: 0, rotation });
+      // (Three cells east of the new map's own starting room.)
+      const tile = (id, tile, y, rotation) => ({ id, tile, x: 3, y, z: 0, rotation });
       const tiles = [tile('day_portal_s', 'core.tunnel_concrete_portal', -2, 0), ...[-1, 0, 1].map((y) => tile(`day_run_${y + 1}`, 'core.tunnel_concrete_straight', y, 0)), tile('day_portal_n', 'core.tunnel_concrete_portal', 2, 2)];
-      const entities = [-8, 0, 8].map((z, i) => ({ id: `day_light_${i}`, kind: 'light', position: [0, 3.1, z], yaw: 0, color: '#ffe6b8', intensity: 1, range: 9, fixture: 'none' }));
+      const entities = [-8, 0, 8].map((z, i) => ({ id: `day_light_${i}`, kind: 'light', position: [24, 3.1, z], yaw: 0, color: '#ffe6b8', intensity: 1, range: 9, fixture: 'none' }));
       const ok = ed.run('Flicker check day scene', { kind: 'batch', commands: [{ kind: 'addTiles', tiles }, { kind: 'addEntities', entities }] });
-      return { ok, tiles: ed.doc.classicStructure.tiles.length, entities: ed.doc.entities.length, sky: ed.doc.backdrop?.sky ?? 'day' };
+      return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
     }),
-  made: (m) => m.ok && m.tiles === 5 && m.sky !== 'night',
+  made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.sky !== 'night',
   moments: ({ page, stage }) => {
     // Sprinting (8 m/s): out over the first second, back in over the second.
     const zAt = (f) => (f < 30 ? -13 - (8 * f) / 30 : -21 + (8 * (f - 30)) / 30);
@@ -8820,7 +8824,7 @@ const FLASHING_DAY = {
     for (let f = 0; f < 60; f++) {
       at[f] = async () => {
         if (f === 30) await page.evaluate(() => Object.assign(window.__cs.input, { yaw: 0, pitch: 0 }));
-        await stage({ me: [0, 0, zAt(f)], bots: [] });
+        await stage({ me: [24, 0, zAt(f)], bots: [] });
       };
     }
     return [
@@ -8828,7 +8832,7 @@ const FLASHING_DAY = {
         name: 'tunnel',
         label: 'sprinting out of a lit tunnel into daylight, turning round and sprinting back in',
         weapon: 'core.arc_caster',
-        me: [0, 0, -13],
+        me: [24, 0, -13],
         look: { yaw: Math.PI, pitch: 0 },
         bots: [],
         before: () => page.evaluate(() => Object.assign(window.__cs.input, { yaw: Math.PI, pitch: 0 })),
