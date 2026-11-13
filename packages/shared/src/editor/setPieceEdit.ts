@@ -368,6 +368,16 @@ export function setPiecePortStates(
   return setPiecePorts(p, def).map((port) => {
     const [dx, dy] = SIDE_DIRS[port.side];
     const floor = port.z * levelHeight;
+    // Only what stands within a cell of the port can be in it (a big map has thousands of boxes; every probe point
+    // went through them all, after every edit).
+    const mx = port.x * cellSize + (dx * cellSize) / 2;
+    const mz = port.y * cellSize + (dy * cellSize) / 2;
+    const close = (b: WorldBox) => {
+      const r = Math.hypot(b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]) / 2 + cellSize + levelHeight;
+      return Math.abs((b.min[0] + b.max[0]) / 2 - mx) <= r && Math.abs((b.min[2] + b.max[2]) / 2 - mz) <= r && Math.abs((b.min[1] + b.max[1]) / 2 - floor) <= r;
+    };
+    const mineHere = mine.filter(close);
+    const othersHere = others.filter(close);
     /** What stands in the port `v` metres out from the side (in: negative), across its middle at waist to chest height. */
     const probe = (v: number, list: readonly WorldBox[]): string | null => {
       const out = cellSize / 2 + v;
@@ -382,7 +392,7 @@ export function setPiecePortStates(
       }
       return null;
     };
-    const closed = !!probe(-PORT_PROBE.out, mine);
-    return { ...port, closed, blockedBy: closed ? null : probe(PORT_PROBE.out, others) };
+    const closed = !!probe(-PORT_PROBE.out, mineHere);
+    return { ...port, closed, blockedBy: closed ? null : probe(PORT_PROBE.out, othersHere) };
   });
 }

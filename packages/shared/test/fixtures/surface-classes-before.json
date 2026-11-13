@@ -150,7 +150,11 @@
     "core.pbr_opus_incertum": {"ballistic":"brick","effect":"stone"},
     "core.pbr_sandstone_blocks": {"ballistic":"soil","effect":"dirt"},
     "core.pbr_rough_sandstone": {"ballistic":"soil","effect":"dirt"},
-    "core.sandbags": {"ballistic":"soil","effect":"dirt"}
+    "core.sandbags": {"ballistic":"soil","effect":"dirt"},
+    "core.parking_bays": {"ballistic":"soil","effect":"stone"},
+    "core.tactile_paving": {"ballistic":"stone","effect":"stone"},
+    "core.graffiti_brick": {"ballistic":"brick","effect":"stone"},
+    "core.damaged_plaster": {"ballistic":"drywall","effect":"stone"}
   },
   "props": {
     "prop.barrel": {"ballistic":"thin_metal","effect":"metal"},

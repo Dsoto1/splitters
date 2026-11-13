@@ -484,7 +484,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'atrium',
     category: 'Towers',
     blurb: 'A four-storey tower round a glazed atrium (two Atriums stacked, balconies all round), a lobby, offices up the east side and a stairwell joining the first floor to the second: 3 × 2 cells, levels 0-3.',
-    packs: ['neon', 'suburban', 'harbor', 'orbital', 'military', 'collegiate'],
+    packs: ['neon', 'suburban', 'harbor', 'orbital', 'military', 'collegiate', 'urban'],
     footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], levels: [0, 3] },
     mirror: 'none',
     roles: { glass: 'breakable' },
@@ -753,7 +753,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'catwalk',
     category: 'Bridges',
     blurb: 'Open steel stairs up to a railed catwalk 4 m up on legs, meeting the level above at its north end (1 × 2 cells; the Catwalk Gantry\'s footprint, levels and ways in).',
-    packs: ['military', 'orbital', 'neon', 'snow', 'harbor', 'suburban', 'industrial'],
+    packs: ['military', 'orbital', 'neon', 'snow', 'harbor', 'suburban', 'industrial', 'urban'],
     footprint: { cells: [[0, 0], [0, 1]], levels: [0, 1] },
     mirror: 'none',
     ports: [
@@ -779,7 +779,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'catwalk',
     category: 'Bridges',
     blurb: 'A railed catwalk 4 m up on legs with open steel stairs down at both ends, 3 cells long: walk under it or over it.',
-    packs: ['military', 'orbital', 'neon', 'snow', 'harbor', 'suburban', 'industrial'],
+    packs: ['military', 'orbital', 'neon', 'snow', 'harbor', 'suburban', 'industrial', 'urban'],
     footprint: { cells: [[0, 0], [0, 1], [0, 2]], levels: [0, 1] },
     mirror: 'none',
     ports: [
@@ -806,7 +806,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'catwalk',
     category: 'Bridges',
     blurb: 'A railed catwalk 4 m up on legs with open steel stairs down at both ends, 4 cells long: walk under it or over it.',
-    packs: ['military', 'orbital', 'neon', 'snow', 'harbor', 'suburban', 'industrial'],
+    packs: ['military', 'orbital', 'neon', 'snow', 'harbor', 'suburban', 'industrial', 'urban'],
     footprint: { cells: [[0, 0], [0, 1], [0, 2], [0, 3]], levels: [0, 1] },
     mirror: 'none',
     ports: [
@@ -1567,7 +1567,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'loadingdock',
     category: 'Industrial',
     blurb: 'An open-fronted goods shed with its floor 1 m up, a dock edge the length of it with three sets of steps, a truck backed up on the apron and cargo on the dock: 3 × 2 cells.',
-    packs: ['military', 'harbor', 'snow', 'suburban', 'neon', 'frontier', 'industrial'],
+    packs: ['military', 'harbor', 'snow', 'suburban', 'neon', 'frontier', 'industrial', 'urban'],
     footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], levels: [0, 0] },
     mirror: 'free',
     ports: [
@@ -1608,7 +1608,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'overlook',
     category: 'Stairs & Overlooks',
     blurb: 'A lookout platform 4 m up between two open stairs, a half wall to the north to fight over, a railing to the south, and an arched passage under it: 3 × 1 cells.',
-    packs: ['military', 'imperial', 'medieval', 'desert', 'jungle', 'harbor', 'collegiate', 'gothic', 'suburban', 'neon'],
+    packs: ['military', 'imperial', 'medieval', 'desert', 'jungle', 'harbor', 'collegiate', 'gothic', 'suburban', 'neon', 'urban'],
     footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 1] },
     mirror: 'none',
     ports: [
@@ -1634,7 +1634,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'plaza',
     category: 'Arenas & Plazas',
     blurb: 'Two streets crossing, with a paved square a kerb up on each corner: planter walls along the streets for cover, a bench and a lamp on each, four ways in and out: 3 × 3 cells.',
-    packs: ['suburban', 'neon', 'harbor', 'collegiate', 'medieval', 'desert', 'military', 'snow'],
+    packs: ['suburban', 'neon', 'harbor', 'collegiate', 'medieval', 'desert', 'military', 'snow', 'urban'],
     footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]], levels: [0, 1] },
     mirror: 'none',
     ports: [
@@ -1778,7 +1778,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'rampjunction',
     category: 'Stairs & Overlooks',
     blurb: 'Three levels meet: a long ramp from the ground to a railed junction deck on level 1, a second ramp on up to level 2, and an arched passage and a corridor under them at ground level: 3 × 2 cells, levels 0-2.',
-    packs: ['military', 'neon', 'orbital', 'snow', 'imperial', 'suburban', 'harbor'],
+    packs: ['military', 'neon', 'orbital', 'snow', 'imperial', 'suburban', 'harbor', 'urban'],
     footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], levels: [0, 2] },
     mirror: 'none',
     ports: [
@@ -1926,7 +1926,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'servervault',
     category: 'Interiors',
     blurb: 'A secure server floor behind a vault door: a lobby and a guard post behind armoured glass, then two rows of racks on a raised floor, a fire exit out the far side: 2 × 2 cells.',
-    packs: ['neon', 'orbital', 'military', 'suburban', 'snow', 'industrial'],
+    packs: ['neon', 'orbital', 'military', 'suburban', 'snow', 'industrial', 'urban'],
     footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1]], levels: [0, 0] },
     mirror: 'free',
     ports: [
@@ -1962,7 +1962,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'skybridge',
     category: 'Bridges',
     blurb: 'An enclosed bridge 2 cells long between two buildings\' upper floors: windows down both sides, a roof, a door at each end, nothing underneath (streets pass below). Place it on level 1 or 2.',
-    packs: ['collegiate', 'gothic', 'military', 'neon', 'snow', 'suburban', 'harbor', 'orbital', 'industrial'],
+    packs: ['collegiate', 'gothic', 'military', 'neon', 'snow', 'suburban', 'harbor', 'orbital', 'industrial', 'urban'],
     footprint: { cells: [[0, 0], [0, 1]], levels: [0, 0] },
     mirror: 'free',
     roles: { glass: 'breakable' },
@@ -1986,7 +1986,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'skybridge',
     category: 'Bridges',
     blurb: 'An enclosed bridge 3 cells long between two buildings\' upper floors: windows down both sides, a roof, a door at each end, nothing underneath (streets pass below). Place it on level 1 or 2.',
-    packs: ['collegiate', 'gothic', 'military', 'neon', 'snow', 'suburban', 'harbor', 'orbital', 'industrial'],
+    packs: ['collegiate', 'gothic', 'military', 'neon', 'snow', 'suburban', 'harbor', 'orbital', 'industrial', 'urban'],
     footprint: { cells: [[0, 0], [0, 1], [0, 2]], levels: [0, 0] },
     mirror: 'free',
     roles: { glass: 'breakable' },
@@ -2012,7 +2012,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'skybridge',
     category: 'Bridges',
     blurb: 'An enclosed bridge 4 cells long between two buildings\' upper floors: windows down both sides, a roof, a door at each end, nothing underneath (streets pass below). Place it on level 1 or 2.',
-    packs: ['collegiate', 'gothic', 'military', 'neon', 'snow', 'suburban', 'harbor', 'orbital', 'industrial'],
+    packs: ['collegiate', 'gothic', 'military', 'neon', 'snow', 'suburban', 'harbor', 'orbital', 'industrial', 'urban'],
     footprint: { cells: [[0, 0], [0, 1], [0, 2], [0, 3]], levels: [0, 0] },
     mirror: 'free',
     roles: { glass: 'breakable' },
@@ -2040,7 +2040,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'stairtower',
     category: 'Stairs',
     blurb: 'Switchback stairs 4 levels up, 3 × 1 cells: a stairwell either side of a hall that has a landing on every level, arches out of the hall north and south on each one (into the stands\' galleries).',
-    packs: ['imperial', 'desert', 'medieval', 'gothic', 'military', 'industrial'],
+    packs: ['imperial', 'desert', 'medieval', 'gothic', 'military', 'industrial', 'urban'],
     footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 4] },
     mirror: 'none',
     ports: [
@@ -2081,7 +2081,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'stairtower',
     category: 'Stairs',
     blurb: 'Switchback stairs 6 levels up, 3 × 1 cells: a stairwell either side of a hall that has a landing on every level, arches out of the hall north and south on each one (into the stands\' galleries).',
-    packs: ['imperial', 'desert', 'medieval', 'gothic', 'military', 'industrial'],
+    packs: ['imperial', 'desert', 'medieval', 'gothic', 'military', 'industrial', 'urban'],
     footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 6] },
     mirror: 'none',
     ports: [
@@ -2131,7 +2131,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'stairtower',
     category: 'Stairs',
     blurb: 'Switchback stairs 8 levels up, 3 × 1 cells: a stairwell either side of a hall that has a landing on every level, arches out of the hall north and south on each one (into the stands\' galleries).',
-    packs: ['imperial', 'desert', 'medieval', 'gothic', 'military', 'industrial'],
+    packs: ['imperial', 'desert', 'medieval', 'gothic', 'military', 'industrial', 'urban'],
     footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 8] },
     mirror: 'none',
     ports: [
@@ -2191,7 +2191,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     family: 'sunkenarena',
     category: 'Arenas & Plazas',
     blurb: 'A fighting pit 14 m square sunk 2 m into the ground, three tiers of steps down to it on every side, a stair down the middle of each, low walls and pillars on its floor: 3 × 3 cells.',
-    packs: ['imperial', 'military', 'medieval', 'desert', 'jungle', 'neon', 'orbital', 'collegiate', 'gothic', 'suburban', 'harbor', 'snow', 'frontier'],
+    packs: ['imperial', 'military', 'medieval', 'desert', 'jungle', 'neon', 'orbital', 'collegiate', 'gothic', 'suburban', 'harbor', 'snow', 'frontier', 'urban'],
     footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]], levels: [-1, 0] },
     mirror: 'none',
     ports: [
@@ -2479,6 +2479,8 @@ export const SET_PIECE_PACKS: readonly SetPieceRolePackInput[] = [
   { id: 'harbor', displayName: 'Coastal Harbor', stylePack: 'harbor', themes: ['core.coastal', 'core.harbour'], roles: { stone: { material: 'core.quay_granite' }, trim: { material: 'core.harbour_paint' }, floor: { material: 'core.pier_decking' }, paving: { material: 'core.harbour_setts' }, roof: { material: 'core.pbr_slate_roof' }, wood: { material: 'core.tarred_boards' }, metal: { material: 'core.rusty_corrugated' }, facade: 'harbour_render', door: 'oak', glass: 'breakable' } },
   { id: 'snow', displayName: 'Snow Outpost', stylePack: 'snow', themes: ['core.snow_outpost', 'core.arctic'], roles: { stone: { material: 'core.prefab_red' }, trim: { material: 'core.prefab_white' }, floor: { material: 'core.steel_grating' }, paving: { material: 'core.packed_snow' }, roof: { material: 'core.snowy_concrete' }, wood: { material: 'core.prefab_white' }, metal: { material: 'core.pbr_steel', tint: '#b8c0c8' }, facade: 'prefab', door: 'blast', glass: 'reinforced' } },
   { id: 'industrial', displayName: 'Industrial Factory', stylePack: 'industrial', themes: ['core.industrial'], roles: { stone: { material: 'core.pbr_grey_corrugated', tint: '#c8ccd0' }, trim: { material: 'core.pbr_steel', tint: '#d8b040' }, floor: { material: 'core.pbr_concrete_dark', tint: '#b0aca4' }, paving: { material: 'core.pbr_concrete' }, roof: { material: 'core.pbr_grey_corrugated', tint: '#9aa0a8' }, wood: { material: 'core.crate_wood' }, metal: { material: 'core.pbr_rusted_plate' }, facade: 'corrugated', door: 'blast', glass: 'reinforced' } },
+  // design: Tileset 11 (docs/map-briefs/urban/URBAN_PLAN.md, A2): an ordinary present-day town: old brick walls with pale concrete bands and sills, terrazzo floors, grey pavers, flat dark concrete roofs, plank and steel fittings, the brick facade, a wooden door, glass that breaks. It is the default for no theme (`themes` is empty): maps in City Block, Factory and Research Lab place set pieces with no pack named, and those keep the look their theme paints. A set piece takes this look when it is placed with the Urban & Civilian pack picked, or when its inspector names it.
+  { id: 'urban', displayName: 'Urban & Civilian', stylePack: 'urban', themes: [], roles: { stone: { material: 'core.pbr_brick_old' }, trim: { material: 'core.pbr_concrete', tint: '#d6d2c8' }, floor: { material: 'core.pbr_terrazzo' }, paving: { material: 'core.pbr_hex_paving', tint: '#c4c0b8' }, roof: { material: 'core.pbr_concrete_dark' }, wood: { material: 'core.pbr_planks' }, metal: { material: 'core.pbr_steel', tint: '#7c8088' }, facade: 'brick', door: 'oak', glass: 'breakable' } },
 ];
 
 /**

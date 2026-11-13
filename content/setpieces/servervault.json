@@ -7,7 +7,7 @@
       "displayName": "Server Vault",
       "category": "Interiors",
       "blurb": "A secure server floor behind a vault door: a lobby and a guard post behind armoured glass, then two rows of racks on a raised floor, a fire exit out the far side: 2 × 2 cells.",
-      "packs": ["neon", "orbital", "military", "suburban", "snow", "industrial"],
+      "packs": ["neon", "orbital", "military", "suburban", "snow", "industrial", "urban"],
       "footprint": { "cells": [[0,0],[1,0],[0,1],[1,1]], "levels": [0,0] },
       "mirror": "free",
       "ports": [

@@ -95,7 +95,8 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
   });
 
   it('the format: v37 keeps the field through save and load; a v36 map opens unchanged; a family the tile has none of is a warning and is ignored', () => {
-    expect(MAP_FORMAT_VERSION).toBe(37);
+    // (v37 is where the field came in; later bumps are other pieces' and say so in their own tests.)
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(37);
     const brick = mapOf([{ tile: 'core.tunnel_concrete_cross', x: 0, y: 0, family: 'brick' }]);
     const again = loadMap(serializeMap(brick), undefined, { forEditing: true, openWithErrors: true });
     expect(again.ok && again.map.classicStructure.tiles[0]!.family).toBe('brick');

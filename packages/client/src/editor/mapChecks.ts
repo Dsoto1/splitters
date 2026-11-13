@@ -14,6 +14,8 @@ import { $ } from './editorDom.ts';
 
 /** Navigation is checked this long after the last edit (ms): not between the clicks of someone placing or deleting in a row. */
 const NAV_DELAY_MS = 900;
+/** The map's own checks and the overlaps go to their worker this long after the last edit (ms): one check for a run of quick edits. */
+const CHECK_DELAY_MS = 120;
 
 /** The map's checks: validation, navigation and the bots' own spots worked out a moment after each edit, coplanar overlaps, and the issues list and status pill (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class MapChecks {
@@ -23,10 +25,9 @@ export class MapChecks {
   /** Jump pads whose flight misses its predicted landing (`pad.flight`, shared sim/padFlight.ts): flown after the navigation check, in the same worker. */
   padIssues: ValidationIssue[] = [];
   navTimer?: number;
-  /** Coplanar overlaps (geometry.coplanar), worked out a moment after each edit like navigation. */
+  /** Coplanar overlaps (geometry.coplanar), worked out a moment after each edit, with the map's own checks. */
   zIssues: ValidationIssue[] = [];
   zSpots: CoplanarSpot[] = [];
-  zTimer?: number;
   overlapsOn = false;
   navToken = 0;
 
@@ -58,25 +59,119 @@ export class MapChecks {
 
   // ---------------------------------------------------------------- validation
 
+  /**
+   * After every edit. The map's own checks (validateMap) and the overlaps check are worked out a moment later in a
+   * worker of their own, and the issues list follows when they come back: on the page they took 0.15 to 0.25 s of
+   * every edit on St. John's (2,500 blocks), before the next click was taken. Whoever needs the issues at once
+   * (Test, the editor's `issues`) gets them worked out on the spot (`settle`).
+   */
   validate(): void {
-    this.app.issues = [...validateMap(this.app.doc), ...this.portIssues()];
-    this.renderIssues();
+    this.stale = true;
+    this.editedAt = performance.now();
     clearTimeout(this.navTimer);
+    clearTimeout(this.checkTimer);
     const token = ++this.navToken;
-    // Navigation and overlaps as played: set pieces expanded into their parts, on the ground as shown (paths laid in,
-    // kept under the floors).
-    const ground = this.app.view.ground;
-    const doc = ground && ground !== this.app.viewDoc.terrain ? { ...this.app.viewDoc, terrain: ground } : this.app.viewDoc;
+    this.checkTimer = window.setTimeout(() => this.sendCheck(token), CHECK_DELAY_MS);
+  }
+
+  /** The issues list is behind the document (an edit since it was worked out). */
+  private stale = false;
+  private editedAt = 0;
+  private checkTimer?: number;
+  private checkWorker: Worker | null = null;
+  private checkBusy = false;
+  private checkNext = 0;
+  private noCheckWorker = false;
+
+  /** The map's own issues, now: worked out on the page if an edit has not been checked yet. */
+  settle(): void {
+    if (!this.stale) return;
+    this.stale = false;
+    this.app.issues = [...validateMap(this.app.doc), ...this.portIssues()];
+  }
+
+  private sendCheck(token: number): void {
+    if (token !== this.navToken) return;
+    if (this.noCheckWorker) return this.checkHere(token);
+    if (this.checkBusy) {
+      this.checkNext = token;
+      return;
+    }
+    let worker = this.checkWorker;
+    if (!worker) {
+      try {
+        worker = this.checkWorker = new Worker(new URL('./mapTestWorker.ts', import.meta.url), { type: 'module', name: 'mapissues' });
+      } catch {
+        this.noCheckWorker = true;
+        return this.checkHere(token);
+      }
+      worker.onmessage = (e: MessageEvent<FromMapTest>) => {
+        const m = e.data;
+        if (m.k !== 'check' && m.k !== 'checkFailed' && m.k !== 'failed') return;
+        this.checkBusy = false;
+        const next = this.checkNext;
+        this.checkNext = 0;
+        if (m.k === 'check') {
+          if (m.token === this.navToken) this.checked(m.token, m.issues, m.spots, m.zIssues);
+        } else if (m.k === 'failed' || m.token === this.navToken) return this.checkHere(this.navToken);
+        if (next) this.sendCheck(next);
+      };
+      worker.onerror = () => {
+        // The worker itself failed to load: on the page from here on.
+        this.checkWorker?.terminate();
+        this.checkWorker = null;
+        this.checkBusy = false;
+        this.checkNext = 0;
+        this.noCheckWorker = true;
+        this.checkHere(this.navToken);
+      };
+    }
+    this.checkBusy = true;
+    const { map: view, partOf } = this.app.expansion;
+    // (One message: what the document and its expansion share is copied once.)
+    const job: ToMapTest = { k: 'check', doc: this.app.doc, view, partOf, token };
+    worker.postMessage(job);
+  }
+
+  /** The checks on the page (no worker here): as before the worker. */
+  private checkHere(token: number): void {
+    if (token !== this.navToken) return;
+    const { map: view, partOf } = this.app.expansion;
+    let spots: CoplanarSpot[] = [];
+    const issues = validateMap(this.app.doc);
+    if (!issues.some((i) => i.severity === 'error')) {
+      try {
+        spots = coplanarSpots(view, undefined, partOf);
+      } catch {
+        spots = [];
+      }
+    }
+    this.checked(token, issues, spots, coplanarIssues(view, spots));
+  }
+
+  /** The checks of the document as it is now came back: the issues list, the overlaps, and navigation next. */
+  private checked(token: number, issues: ValidationIssue[], spots: CoplanarSpot[], zIssues: ValidationIssue[]): void {
+    this.stale = false;
+    this.app.issues = [...issues, ...this.portIssues()];
     if (this.app.issues.some((i) => i.severity === 'error')) {
       this.navIssues = [];
       this.padIssues = [];
       this.renderIssues();
       return;
     }
-    this.scheduleOverlaps();
+    // A set piece's parts against each other are the piece's own business (the author can't move a part).
+    this.zSpots = spots;
+    this.zIssues = zIssues;
+    if (this.overlapsOn) this.app.view.setOverlaps(this.zSpots);
+    this.renderIssues();
+    // Navigation as played: set pieces expanded into their parts, on the ground as shown (paths laid in, kept under
+    // the floors).
+    const ground = this.app.view.ground;
+    const doc = ground && ground !== this.app.viewDoc.terrain ? { ...this.app.viewDoc, terrain: ground } : this.app.viewDoc;
     // Navigation a moment after the last edit, in the test worker (mapTestWorker.ts): the page keeps drawing and taking
     // edits while the navmesh is built. One check at a time; an edit made meanwhile is checked when it comes back.
-    this.navTimer = window.setTimeout(() => this.checkNavigation(doc, token), NAV_DELAY_MS);
+    clearTimeout(this.navTimer);
+    this.navTimer = window.setTimeout(() => this.checkNavigation(doc, token), Math.max(0, NAV_DELAY_MS - (performance.now() - this.editedAt)));
   }
 
   /** The navigation worker (kept between checks: its physics and navigation are set up once), and what it is doing. */
@@ -178,31 +273,15 @@ export class MapChecks {
     return out;
   }
 
-  /** Coplanar overlaps of the map as it is now (its warning and the Overlaps highlight), a moment after the last edit. */
-  scheduleOverlaps(): void {
-    clearTimeout(this.zTimer);
-    const { map: doc, partOf } = this.app.expansion;
-    this.zTimer = window.setTimeout(() => {
-      if (doc !== this.app.viewDoc) return;
-      try {
-        // A set piece's parts against each other are the piece's own business (the author can't move a part).
-        this.zSpots = coplanarSpots(doc, undefined, partOf);
-      } catch {
-        this.zSpots = [];
-      }
-      this.zIssues = coplanarIssues(doc, this.zSpots);
-      if (this.overlapsOn) this.app.view.setOverlaps(this.zSpots);
-      this.renderIssues();
-    }, 450);
-  }
-
-  allIssues(): ValidationIssue[] {
+  /** Every issue: the map's own, navigation, overlaps and the test runs'. `settle` false: as last worked out (the list drawn while a check is on its way). */
+  allIssues(settle = true): ValidationIssue[] {
     const order = { error: 0, warning: 1, suggestion: 2 } as const;
-    return [...this.app.issues, ...this.navIssues, ...this.padIssues, ...this.zIssues, ...this.app.mapTest.issues()].sort((a, b) => order[a.severity] - order[b.severity]);
+    if (settle) this.settle();
+    return [...this.app.issuesNow, ...this.navIssues, ...this.padIssues, ...this.zIssues, ...this.app.mapTest.issues()].sort((a, b) => order[a.severity] - order[b.severity]);
   }
 
   renderIssues(): void {
-    const issues = this.allIssues();
+    const issues = this.allIssues(false);
     const list = $('ed-issues');
     list.replaceChildren();
     if (!issues.length) {

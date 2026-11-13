@@ -44,6 +44,9 @@ const NO_COLLISION = new Set([
   'kit.door.oak_open',
   // The built-in closet's front: the wall it is set in is the closet, and collides.
   'kit.cabinet.closet_front',
+  // Tileset 11 (Urban & Civilian): the Painted Door standing open, as the Oak Door; the Shop Awning hangs on a wall
+  // above head height, as the game's other awnings (prop.awning, prop.mv_awning: no collision).
+  'kit.door.painted_open', 'kit.shop.awning',
 ]);
 
 describe('kit families', () => {
