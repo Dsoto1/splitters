@@ -89,6 +89,17 @@ describe('tunnel kit: stairs and slopes climb a level, buried', () => {
         expect(hit, `over z ${z}`).toBeGreaterThan(1.9);
         expect(hit, `over z ${z}`).toBeLessThan(2.6);
       }
+      // No slit to the sky where the climbing soffit meets the level ones: straight up from inside, every centimetre
+      // across both joints (and every 10 cm between), the soffit is overhead.
+      const zs: number[] = [];
+      for (let z = -4.4; z <= -3.5; z += 0.01) zs.push(z);
+      for (let z = -3.5; z <= 3.5; z += 0.1) zs.push(z);
+      for (let z = 3.5; z <= 4.4; z += 0.01) zs.push(z);
+      for (const z of zs) {
+        const floor = -8 + Math.max(0, Math.min(4, (z + 4) / 2));
+        // (The piece's own soffit, 3.3 m over the floor's line: not the field's underside further up.)
+        for (const x of [-1.75, 0, 1.75]) expect(w.physics.raycastWorld({ x, y: floor + 1.5, z }, { x: 0, y: 1, z: 0 }, 30) ?? 99, `overhead at ${x}, ${z.toFixed(2)}`).toBeLessThan(2);
+      }
       const path = w.nav.findPath({ x: 0, y: -8, z: -10 }, { x: 0, y: -4, z: 10 })!;
       expect(path).not.toBeNull();
       expect(path[path.length - 1]!.y).toBeCloseTo(-4, 0);

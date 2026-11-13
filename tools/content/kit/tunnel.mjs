@@ -240,7 +240,7 @@ function specialParts(profile, family, shape) {
   const solids = [];
   const trims = [];
   const solid = (box, material, kind = 'wall') => solids.push({ box: box.map(r3), kind, ...surf(material) });
-  const draw = (box, material, tint, tilt = {}) => trims.push({ box: box.map(r3), kind: 'trim', ...tilt, ...surf(material, tint) });
+  const draw = (box, material, tint) => trims.push({ box: box.map(r3), kind: 'trim', ...surf(material, tint) });
   const E = 4;
   const L = 4; // a level
   const T = r3(cap - clear);
@@ -249,20 +249,28 @@ function specialParts(profile, family, shape) {
   if (shape.kind === 'flight' || shape.kind === 'descent') {
     const open = shape.kind === 'descent';
     const a = Math.atan2(L, 2 * E);
-    const len = Math.hypot(2 * E, L);
-    const tilt = { pitch: r3(a) };
-    // The floor: 16 steps of 0.25 m, or a slab at 1 in 2.
+    const lean = Math.sin(a);
+    // The flight's line: the floor's height at z (0 at the south edge, a level at the north).
+    const rise = (z) => ((z + E) * L) / (2 * E);
+    // A tilted box `t` thick whose face follows the flight from z0 to z1, `up` metres over the floor's line: lying over
+    // that face (a soffit) or under it (a floor). Kept inside the cell: a tilted box's ends lean t x sin(a) past its face.
+    const along = (x0, x1, z0, z1, up, t, over) => {
+      const l = Math.hypot(z1 - z0, rise(z1) - rise(z0));
+      const side = over ? 1 : -1;
+      const cz = (z0 + z1) / 2 - side * (t / 2) * lean;
+      const cy = (rise(z0) + rise(z1)) / 2 + up + side * (t / 2) * Math.cos(a);
+      return { box: [x0, cy - t / 2, cz - l / 2, x1, cy + t / 2, cz + l / 2].map(r3), pitch: r3(a) };
+    };
+    // The floor: 16 steps of 0.25 m, or a slab at 1 in 2 with a short level landing at its head.
     if (shape.floor === 'ramp') {
       const t = 0.5;
-      solids.push({ box: [-w, L / 2 - (t / 2) * Math.cos(a) - t / 2, (t / 2) * Math.sin(a) - len / 2, w, L / 2 - (t / 2) * Math.cos(a) + t / 2, (t / 2) * Math.sin(a) + len / 2].map(r3), kind: 'solid', ...tilt, ...surf(m.floor) });
-      // (Its low end comes to a point over the floor; the tile's floor is under it.)
+      const head = E - t * lean - 0.01;
+      solids.push({ ...along(-w, w, -E, head, 0, t, false), kind: 'solid', ...surf(m.floor) });
+      solid([-w, L - t, head - 0.05, w, L, E], m.floor, 'solid');
     } else solids.push({ flight: { axis: 'z', dir: 1, from: -E, across: [-w, w], steps: 16 }, ...surf(m.floor) });
-    // A handrail on each wall, following the flight.
-    // (Open to the sky it stops where it would stand over the low walls.)
-    const railTo = shape.kind === 'descent' ? 2.6 : E;
-    const railMid = (railTo - E) / 2;
-    const railHalf = ((railTo + E) / 2) * (len / (2 * E));
-    for (const sx of [-1, 1]) draw([sx * (w - 0.1) - 0.03, L / 2 + railMid / 2 + 0.95, railMid - railHalf, sx * (w - 0.1) + 0.03, L / 2 + railMid / 2 + 1.01, railMid + railHalf], m.trim, undefined, tilt);
+    // A handrail on each wall, following the flight. (Open to the sky it stops where it would stand over the low walls.)
+    const railTo = shape.kind === 'descent' ? 2.6 : E - 0.03;
+    for (const sx of [-1, 1]) trims.push({ ...along(sx * (w - 0.1) - 0.03, sx * (w - 0.1) + 0.03, -E + 0.03, railTo, 0.95, 0.06, true), kind: 'trim', ...surf(m.trim) });
     const bore = {};
     if (open) {
       // Low walls either side, a parapet over the ground; a lintel over the way into the tunnel.
@@ -292,15 +300,17 @@ function specialParts(profile, family, shape) {
         bore.cut.push([-E, j - 0.5, z0, E, r3(Math.min(top, L + cap)), z0 + 2].map(r3));
         bore.cover.push([-E, z0, E, z0 + 2, cover(Math.min(top, L + cap))]);
       }
-      // The soffit climbs with the floor: one slab, its underside from the low passage's soffit to the high one's.
-      const cy = L / 2 + clear + (T / 2) * Math.cos(a);
-      const cz = -(T / 2) * Math.sin(a);
-      solids.push({ box: [-E, cy - T / 2, cz - len / 2, E, cy + T / 2, cz + len / 2].map(r3), kind: 'wall', ...tilt, ...surf(m.soffit) });
-      if (lining.haunch) for (const sx of [-1, 1]) draw([Math.min(sx * w, sx * (w - lining.haunch)), L / 2 + clear - lining.haunch - 0.02, -len / 2, Math.max(sx * w, sx * (w - lining.haunch)), L / 2 + clear - 0.02, len / 2], m.soffit, undefined, tilt);
+      // The soffit climbs with the floor: one slab, its underside from the low passage's soffit to the high one's, and
+      // a level piece at each end where the slab's leaning end would leave a slit against the next piece's cap.
+      const foot = -E + T * lean + 0.01;
+      solids.push({ ...along(-E, E, foot, E - 0.01, clear, T, true), kind: 'wall', ...surf(m.soffit) });
+      solid([-E, clear, -E, E, clear + T + 0.25, foot + 0.05], m.soffit);
+      solid([-E, L + clear, E - 0.3, E, L + cap, E], m.soffit);
+      if (lining.haunch) for (const sx of [-1, 1]) trims.push({ ...along(Math.min(sx * w, sx * (w - lining.haunch)), Math.max(sx * w, sx * (w - lining.haunch)), foot + 0.05, E - lining.haunch * lean - 0.02, clear - 0.02, lining.haunch, false), kind: 'trim', ...surf(m.soffit) });
       if (trim.light) {
         const l = trim.light;
-        draw([-0.14, L / 2 + clear - 0.09, -l.length / 2 - 0.08, 0.14, L / 2 + clear - 0.03, l.length / 2 + 0.08], m.trim, undefined, tilt);
-        draw([-0.06, L / 2 + clear - 0.14, -l.length / 2, 0.06, L / 2 + clear - 0.09, l.length / 2], l.material, l.tint, tilt);
+        trims.push({ ...along(-0.14, 0.14, -l.length / 2 - 0.08, l.length / 2 + 0.08, clear - 0.02, 0.06, false), kind: 'trim', ...surf(m.trim) });
+        trims.push({ ...along(-0.06, 0.06, -l.length / 2, l.length / 2, clear - 0.08, 0.05, false), kind: 'trim', ...surf(l.material, l.tint) });
       }
     }
     bore.plan = [[-w, -E, -w, E], [w, -E, w, E]];

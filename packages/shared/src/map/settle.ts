@@ -324,7 +324,10 @@ export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] 
     }
   }
   const under = heights ? { ...t, heights } : t;
-  const out = stepFeet(under, foot, floors) ?? under;
+  let out = stepFeet(under, foot, floors) ?? under;
+  // The same terrain when the passes together changed nothing (a rim's pin undone by a neighbour's step foot is two
+  // changes and no difference: the ground as played stays the object it was).
+  if (out !== map.terrain && out.heights.length === map.terrain.heights.length && out.heights.every((h, i) => h === map.terrain!.heights[i])) out = map.terrain;
   rememberTerrainCuts(out, bores.cuts);
   return out;
 }
