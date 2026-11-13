@@ -7058,7 +7058,7 @@ async function vehiclesFlow(browser) {
   await page.evaluate(() => {
     for (const c of window.__match.slots) if (c?.bot) c.bot.nextMountTick = Number.MAX_SAFE_INTEGER;
     const me = window.__match.slots[window.__cs.slot];
-    const free = window.__match.mounts.filter((m) => m.def.id === 'buggy' && m.alive && m.seats.every((s) => s === null));
+    const free = window.__match.mounts.filter((m) => m.def.id === 'troop_buggy' && m.alive && m.seats.every((s) => s === null));
     const home = me.faction === 'tide' ? 60 : -60;
     const m = free.sort((a, b) => Math.abs(a.pos.z - home) - Math.abs(b.pos.z - home))[0];
     me.move = { pos: { x: m.pos.x, y: m.pos.y + 0.3, z: m.pos.z + (m.pos.z > 0 ? 3 : -3) }, velY: 0, grounded: false };
@@ -7066,7 +7066,7 @@ async function vehiclesFlow(browser) {
   });
   await page.waitForFunction(() => /Drive/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
   const prompt = await page.evaluate(() => document.getElementById('prompt').textContent);
-  check(/Drive the Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
+  check(/Drive the Troop Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
   // It reads on sand, snow and sky (owner, 2026-11-07: "kinda dark, black font?"): white words, a light green key on
   // a dark cap, each with a dark outline; the key's letter stands out from its cap (its ink was the dark of every other kbd).
   const look = await page.evaluate(() => {
@@ -7235,9 +7235,9 @@ async function vehiclesFlow(browser) {
   }
   await page.evaluate(() => (window.__cs.input.pitch = 0));
   check(roll < 1, `after leaving the buggy and a blast nearby, the view and gun stay level as you turn (${roll.toFixed(2)}° roll)`);
-  // Passengers: five bots take the driver's, the front passenger's and three deck places (E fills the next free seat),
-  // you take the last place on the deck; all sit (the deck riders on its edges, facing out), and you shoot your own gun out of
-  // the side without hitting the buggy. A seventh can't get in.
+  // Passengers: five bots take the driver's, the front passenger's, the two back seats and one standing place in the
+  // back row (E fills the next free seat), you take the last one, standing; four sit, the back row stands, and you shoot
+  // your own gun out of the side without hitting the buggy. A seventh can't get in.
   const ride = await page.evaluate(() => {
     const match = window.__match;
     const me = match.slots[window.__cs.slot];
@@ -7247,7 +7247,7 @@ async function vehiclesFlow(browser) {
     for (const c of match.slots) if (c?.bot) { const think = c.bot.think.bind(c.bot); c.bot.think = (v) => ({ ...think(v), forward: 0, right: 0, buttons: 0 }); }
     // The buggy we drove, back at its spawn on flat ground and stopped (the drive and the steering check leave it
     // anywhere, on a slope or against a rock, where getting in from beside it can fail).
-    const m = match.mounts[window.__drivenMount] ?? match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.seats.every((s) => s === null))[0];
+    const m = match.mounts[window.__drivenMount] ?? match.mounts.filter((x) => x.def.id === 'troop_buggy' && x.alive && x.seats.every((s) => s === null))[0];
     m.pos = { ...m.home.pos };
     m.yaw = m.home.yaw;
     if ('speed' in m) m.speed = 0;
@@ -7261,7 +7261,7 @@ async function vehiclesFlow(browser) {
     }
     me.move = { pos: { x: m.pos.x + 2.4, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: false };
     window.__autoInput = { buttons: 0 };
-    return { index: m.index, seats, fifth: bots[5]?.slot, riders: bots.slice(0, 2).map((b) => b.slot), standing: bots.slice(2, 5).map((b) => b.slot) };
+    return { index: m.index, seats, fifth: bots[5]?.slot, riders: bots.slice(0, 4).map((b) => b.slot), standing: bots.slice(4, 5).map((b) => b.slot) };
   });
   for (let i = 0; i < 4; i++) {
     if (await page.evaluate(() => !!window.__match.slots[window.__cs.slot].mount)) break;
@@ -7277,7 +7277,7 @@ async function vehiclesFlow(browser) {
       (ride) => {
         const match = window.__match;
         const m = match.mounts.find((x) => x.index === ride.index);
-        if (!ride.standing.every((s) => (window.__cs.view.avatars.get(s)?.anim?.sit ?? 0) > 0.95)) return false;
+        if (!ride.standing.every((s) => (window.__cs.view.avatars.get(s)?.anim?.sit ?? 0) < 0.05)) return false;
         return ride.riders.every((s) => {
           const a = window.__cs.view.avatars.get(s);
           const thigh = a?.anim?.ch.joints.get('thigh_l');
@@ -7316,9 +7316,9 @@ async function vehiclesFlow(browser) {
       health: m.health,
     };
   }, ride);
-  check(ride.seats.join() === '0,1,2,3,4' && seated.mine === 5 && seated.role === 'passenger' && seated.stance === 1 && seated.view === 'seat', `five riders and you fill the buggy's six places in order, you sitting on the edge of its deck (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
+  check(ride.seats.join() === '0,1,2,3,4' && seated.mine === 5 && seated.role === 'passenger' && seated.stance === undefined && seated.view === 'seat', `five riders and you fill the buggy's six places in order, you standing in its back row (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
   check(seated.sit.every((v) => v > 0.95) && seated.hips.every((h) => h !== null && h > 0 && h < 0.3), `riders are drawn sitting on their seats (sit ${seated.sit.join(', ')}; hips ${seated.hips.join(', ')} m over the cushions)`);
-  check(seated.stand.length === 3 && seated.stand.every((v) => v > 0.95), `riders on the deck are drawn sitting on its edges (sit ${seated.stand.join(', ')})`);
+  check(seated.stand.length === 1 && seated.stand.every((v) => v < 0.05), `the back row's riders are drawn standing (sit ${seated.stand.join(', ')})`);
   check(seated.fifth === false, 'a seventh player can\'t get into a full buggy');
   // Fire out of the right side, aiming down a little: your own gun, and the rounds leave through the buggy.
   const shot = await page.evaluate((index) => {
@@ -7339,7 +7339,7 @@ async function vehiclesFlow(browser) {
     const m = window.__match.mounts.find((x) => x.index === index);
     return { mag: me.weapons.get(window.__shotStart.weapon)?.mag, health: m.health, seat: me.mount?.seat };
   }, ride.index);
-  check(fired.mag < shot.mag && fired.health === shot.health && fired.seat === 5, `a rider on the deck fires their own gun out of the side and the rounds don't hit their own buggy (${JSON.stringify({ weapon: shot.weapon, mag: [shot.mag, fired.mag], health: [shot.health, fired.health] })})`);
+  check(fired.mag < shot.mag && fired.health === shot.health && fired.seat === 5, `a rider standing in the back row fires their own gun out of the side and the rounds don't hit their own buggy (${JSON.stringify({ weapon: shot.weapon, mag: [shot.mag, fired.mag], health: [shot.health, fired.health] })})`);
   for (let i = 0; i < 4; i++) {
     if (await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount)) break;
     await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
@@ -7349,7 +7349,7 @@ async function vehiclesFlow(browser) {
   // Blow the buggy up: it goes up in a vehicle explosion and leaves a charred wreck the client keeps solid.
   const boom = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
-    const m = window.__match.mounts.filter((x) => x.def.id === 'buggy' && x.alive).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
+    const m = window.__match.mounts.filter((x) => x.def.id === 'troop_buggy' && x.alive).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
     // Down to a tenth of its health (the drive may already have dented it): into the burning band, not past it.
     window.__match.damageMount(m, m.health - m.def.health * 0.1, null, true);
     return m.index;
@@ -7404,7 +7404,7 @@ async function passengerChecks(browser) {
     const me = match.slots[window.__cs.slot];
     for (const c of match.slots) if (c?.bot) c.bot.nextMountTick = Number.MAX_SAFE_INTEGER;
     for (const c of match.slots) if (c?.bot) { const think = c.bot.think.bind(c.bot); c.bot.think = (v) => ({ ...think(v), forward: 0, right: 0, buttons: 0 }); }
-    const m = match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.home.pos.z < 0).sort((a, b) => a.home.pos.z - b.home.pos.z)[0];
+    const m = match.mounts.filter((x) => x.def.id === 'troop_buggy' && x.alive && x.home.pos.z < 0).sort((a, b) => a.home.pos.z - b.home.pos.z)[0];
     if (!m) return null;
     for (const c of match.slots) if (c?.mount && match.mounts[c.mount.index] === m) match.leaveMount(c, true);
     m.pos = { ...m.home.pos };

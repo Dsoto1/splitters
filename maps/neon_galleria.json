@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "neon_galleria",
     "name": "Neon Galleria",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_uy54jdpkmne5vzsk",
-      "versionId": "v_ktj3lijl5iz7leix",
-      "revision": 10,
-      "contentHash": "sha256:24afbbd85d7c7b9b4795a32b7feed4558eb2ec113ad0aa648c3638467ea04658",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T21:02:25.252Z"
+      "versionId": "v_yh26jz73muo226fg",
+      "revision": 11,
+      "contentHash": "sha256:817062b4eced2fed1ab15f5965a2191048fb06f89c97f0054a35feee2939051f",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T17:56:27.970Z"
     }
   },
   "classicStructure": {
@@ -17542,7 +17542,7 @@
         -46
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null

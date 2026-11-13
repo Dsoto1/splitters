@@ -1665,6 +1665,12 @@ export class BotBrain {
     return c.score * 2.4 * (health ? 1.6 : 1);
   }
 
+  /** Short enough to resupply (a Supply Buggy): any gun under half its reserve, or no grenades. */
+  private wantsResupply(view: BotWorldView): boolean {
+    if (view.inventory.some((w) => w.def.reserveMax > 0 && w.reserve < w.def.reserveMax / 2)) return true;
+    return view.throwable === null;
+  }
+
   /** The best pickup within `within` m that a route reaches, with its score (bestPickup's), or null. */
   private pickupScored(view: BotWorldView, within: number): { pos: Vec3; score: number } | null {
     for (let tries = 0; tries < 3; tries++) {
@@ -2368,6 +2374,15 @@ export class BotBrain {
     }
     if (this.zipPress || me.riding) doing = 'zip';
     this.zipPress = false;
+    // At a Supply Buggy's tailgate (a `supply_` pickup: Match.withSupplyStops) and short: E there resupplies (once a
+    // second while short).
+    if (!me.riding && !pressNow && tick - this.lastUseTick > TICK_RATE && this.wantsResupply(view)) {
+      const stop = view.pickups.find((p) => p.available && p.id.startsWith('supply_') && Math.hypot(p.pos.x - me.pos.x, p.pos.z - me.pos.z) < 1.3 && Math.abs(p.pos.y - me.pos.y) < 1.2);
+      if (stop) {
+        buttons |= BUTTON_USE;
+        this.lastUseTick = tick;
+      }
+    }
     // A tall body on a route under a low roof (no way round it: lowRoute) ducks where it can't stand, as a player does.
     // Only then: on every other route it goes round, and keeps its sprint (a carrier that crouched home lost captures).
     if (this.lowRoute && moveYaw !== null && this.mustDuck(view, moveYaw)) {

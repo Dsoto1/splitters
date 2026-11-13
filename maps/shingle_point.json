@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "shingle_point",
     "name": "Shingle Point",
@@ -29,11 +29,11 @@
     },
     "release": {
       "mapId": "m_vql6e6ixmth3q6cb",
-      "versionId": "v_kv3yt7rqdatvefmd",
-      "revision": 9,
-      "contentHash": "sha256:5380e5621c66a9510d147b347fce70323613a2908dbe3644b71c0e0679681c33",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-11T17:17:44.210Z"
+      "versionId": "v_o6wio3ri55cx7xqw",
+      "revision": 10,
+      "contentHash": "sha256:954a12706d752e09c7661cdeb604d07f5b774d4fa88e9045e7a23fafba991af5",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T17:59:35.285Z"
     }
   },
   "classicStructure": {
@@ -2177,7 +2177,7 @@
         116
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.141592653589793,
       "faction": "garrison",
       "respawnSeconds": null

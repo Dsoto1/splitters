@@ -64,7 +64,7 @@ function pose(match: Match, m: MountLike, at: [number, number, number], yaw: num
 }
 
 describe('an empty vehicle brakes to a stop (vehicle.idleBrake)', () => {
-  const MODELS = ['hauler', 'speeder', 'hover_bike', 'snow_sled', 'buggy', 'gun_jeep', 'tank'] as const;
+  const MODELS = ['hauler', 'speeder', 'hover_bike', 'snow_sled', 'troop_buggy', 'gun_jeep', 'tank'] as const;
   for (const model of MODELS) {
     it(`${model}: got out of flat out, it stops within its braking distance (not a long glide)`, () => {
       const match = new Match(yard(model, 16, 30), rules, 1);

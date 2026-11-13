@@ -109,7 +109,7 @@ describe('Sprint 5 vehicle lineup', () => {
     expect(Math.abs((match.mountSnapshots()[0] as number[])[2]! - up)).toBeLessThan(1.5);
   });
 
-  it("the gunship's door gunners aim out of their own side, and the rover's two gunners both fire", () => {
+  it("the gunship's door gunners aim out of their own side, and the rover's rear gunner fires", () => {
     const match = new Match(yard('gunship'), rules);
     const d = new Driver(match);
     const [p, l, r] = [0, 1, 2].map((i) => match.addHuman(`p${i}`)!);
@@ -140,12 +140,13 @@ describe('Sprint 5 vehicle lineup', () => {
       rd.use(c);
     }
     const gunners = crew.filter((c) => c.mount && MOUNT_DEFS.armored_rover.seats[c.mount.seat]!.role === 'gunner');
-    expect(gunners).toHaveLength(2);
+    expect(gunners).toHaveLength(1);
+    expect(MOUNT_DEFS.armored_rover.seats[gunners[0]!.mount!.seat]!.label).toBe('Rear gun');
     const ev = rd.run(20, () => {
       for (const g of gunners) rd.input(g, { yaw: g.yaw, buttons: BUTTON_FIRE });
     });
     const shooters = new Set(ev.filter((e) => e.e === 'shot' && e.w === 'core.mount_mg').map((e) => (e as { s: number }).s));
-    expect(shooters.size).toBe(2);
+    expect(shooters.size).toBe(1);
   });
 });
 

@@ -389,6 +389,16 @@ export class SessionAudio {
         this.audio.play('vehicle.crash', { at: tuple(ev.p), gain: 0.4 + ev.n * 0.8 });
         break;
       }
+      case 'resupply': {
+        // The Supply Buggy's back: the ammo pickup's sound when it gave something.
+        if (!ev.ok) break;
+        if (ev.s === me) this.audio.play('pickup.ammo');
+        else {
+          const at = poseOf(ev.s);
+          if (at) this.audio.play('pickup.ammo', { at, gain: 0.7 });
+        }
+        break;
+      }
       case 'pickup': {
         const kind = getItem(ev.item)?.effect.kind ?? 'ammo';
         const id = `pickup.${kind}` as SoundId;

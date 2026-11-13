@@ -73,7 +73,7 @@ const USE_LABELS: Record<PathUse, [string, string]> = {
   race: ['Track (NPC traffic)', 'NPC cars lap it in every mode (set how many below), and wrecked ones come back from its pit lane. One track per map'],
   route: ['Route (AI guide)', 'An invisible line for the AI: bots driving vehicles follow it, and NPC squads told to patrol it walk it. Shown dashed here, never drawn in the game'],
 };
-const VEHICLE_LABELS: Record<(typeof RACE_VEHICLES)[number], string> = { hover_bike: 'Hover Bike', speeder: 'Speeder', buggy: 'Buggy' };
+const VEHICLE_LABELS: Record<(typeof RACE_VEHICLES)[number], string> = { hover_bike: 'Hover Bike', speeder: 'Speeder', troop_buggy: 'Troop Buggy' };
 /** A track made when the Go-Kart was a track vehicle still names it (it laps Hover Bikes: map/mountAliases.ts). */
 const RETIRED_LABEL = (v: string): string | null => (isRetiredMount(v) ? `${RETIRED_MOUNT_NAMES[v]} (retired: drives as ${VEHICLE_LABELS[liveMount(v) as (typeof RACE_VEHICLES)[number]] ?? liveMount(v)})` : null);
 

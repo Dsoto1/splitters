@@ -59,6 +59,7 @@ import { RouletteDirector } from './roulette.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { rollPickup } from './pickupRoll.ts';
+import { BOT_RESUPPLY_REACH, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
@@ -208,6 +209,8 @@ interface MountRt {
   alive: boolean;
   respawnAt: number;
   respawnTicks: number;
+  /** Resupplies left (MountDef.resupply: the Supply Buggy's back); 0 without one. */
+  supply: number;
   /** Occupant per seat (actor slot), or null. */
   seats: (number | null)[];
   /** Mounted gun per seat. */
@@ -413,6 +416,8 @@ export interface Combatant {
   prevButtons: number;
   /** Tick this player last pressed Use (E): objective modes read it (Bomb: plant / defuse). */
   useTick?: number;
+  /** Tick from which this player may resupply again (sim/resupply.ts: a short wait between two). */
+  resupplyAt?: number;
   windup: number;
   /** A person on foot in the third-person view (their input's BUTTON_THIRD_PERSON): rounds go toward the crosshair. */
   thirdPerson?: boolean;
@@ -2174,7 +2179,7 @@ export class Match {
         ...(this.smokeClouds().length ? { smoke: this.smokeClouds() } : {}),
         nav: this.nav,
         spawnPoints: orderGoal === undefined ? spawnPoints : npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
-        pickups: npc ? npcPickups : pickups,
+        pickups: npc ? npcPickups : this.withSupplyStops(pickups, c),
         inventory: this.inventoryOf(c),
         throwables: c.throwable?.count ?? 0,
         throwable: c.throwable?.kind ?? null,
@@ -3146,7 +3151,7 @@ export class Match {
         if (c.mount) {
           const ride = this.mounts[c.mount.index];
           if (!ride?.route || this.mayJumpOut(c, ride)) this.leaveMount(c, true);
-        } else if (!this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
+        } else if (!this.resupplyAtMount(c) && !this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
         if (this.phase !== 'playing') break;
       }
       // A mode tool (the Fort Wars Builder) takes the trigger for itself.
@@ -4449,6 +4454,7 @@ export class Match {
       alive: true,
       respawnAt: 0,
       respawnTicks: Math.round((respawnSeconds ?? def.respawnSeconds) * TICK_RATE),
+      supply: def.resupply?.uses ?? 0,
       seats: def.seats.map(() => null),
       guns: def.seats.map((seat) => (seat.weapon ? { def: getWeapon(seat.weapon), mag: 0, reserve: 0, alt: 0, heat: 0, ...(seat.ammo ? { shells: seat.ammo.start ?? seat.ammo.max, shellTicks: 0 } : {}) } : null)),
       ammoGuns: def.seats.some((seat) => !!seat.weapon && !!seat.ammo),
@@ -4544,6 +4550,61 @@ export class Match {
   }
 
   /** Climb into the nearest turret or vehicle in reach with a free seat (driver first, then gunner, then passengers). */
+  /**
+   * The bots' pickups plus the Supply Buggies (MountDef.resupply) a bot may resupply at: its own team's or nobody's,
+   * standing, with stock, within BOT_RESUPPLY_REACH. Each is an Ammo Box pickup at the tailgate (`supply_<entity
+   * index>`) to the bot's pickup choice (BotBrain.bestPickup: worth it when short of ammo), and beside it the bot
+   * presses Use (BotBrain.act).
+   */
+  private withSupplyStops(pickups: PickupView[], c: Combatant): PickupView[] {
+    if (c.mount || restrictedWeapons(this.rules)) return pickups;
+    const item = getItem('core.ammo');
+    if (!item) return pickups;
+    let out: PickupView[] | null = null;
+    for (const m of this.mounts) {
+      const spec = m.def.resupply;
+      if (!spec || !m.alive || m.supply <= 0 || (m.faction !== null && m.faction !== c.faction)) continue;
+      const at = resupplyPoint(spec, m.pos, m.yaw);
+      if (horizontalDistance(at, c.move.pos) > BOT_RESUPPLY_REACH) continue;
+      (out ??= [...pickups]).push({ id: `supply_${m.index}`, item, pos: at, available: true });
+    }
+    return out ?? pickups;
+  }
+
+  /**
+   * On foot at a resupply vehicle's reach point (the Supply Buggy's tailgate): Use resupplies you there instead of
+   * getting in (sim/resupply.ts). True when Use was taken by it: resupplied, or nothing given (full, empty, waiting;
+   * the event says which, so the HUD can).
+   */
+  private resupplyAtMount(c: Combatant): boolean {
+    let best: MountRt | null = null;
+    let bestD = Infinity;
+    for (const m of this.mounts) {
+      if (!m.alive || !m.def.resupply) continue;
+      const d = resupplyReach(m.def.resupply, m.pos, m.yaw, c.move.pos);
+      if (d !== null && d < bestD) {
+        best = m;
+        bestD = d;
+      }
+    }
+    if (!best) return false;
+    const spec = best.def.resupply!;
+    let left = best.supply;
+    let given = false;
+    if (left > 0 && this.tick >= (c.resupplyAt ?? 0)) {
+      const spawn = this.weaponSet && !restrictedWeapons(this.rules) ? (setLoadout(this.weaponSet, this.rules, { seed: this.seed, slot: c.slot, life: 0, sniper: false }).throwable?.kind ?? null) : null;
+      const r = resupplyLoadout(c.weapons.values(), c.throwable, spawn);
+      if (r.given) {
+        given = true;
+        c.throwable = r.throwable;
+        left = --best.supply;
+        c.resupplyAt = this.tick + Math.round(spec.wait * TICK_RATE);
+      }
+    }
+    this.pendingEvents.push({ e: 'resupply', s: c.slot, m: best.index, left, ok: given });
+    return true;
+  }
+
   private enterMount(c: Combatant): boolean {
     let best: MountRt | null = null;
     let bestD = Infinity;
@@ -4803,6 +4864,7 @@ export class Match {
   private respawnMount(m: MountRt): void {
     m.alive = true;
     m.health = m.def.health;
+    m.supply = m.def.resupply?.uses ?? 0;
     m.burning = false;
     m.wreckUntil = 0;
     m.restSince = undefined;
@@ -5409,7 +5471,7 @@ export class Match {
 
   /** Mounts for snapshots (see MountSnapshot). */
   mountSnapshots(): MountSnapshot[] {
-    return this.mounts.map((m) => [m.index, r3(m.pos.x), r3(m.pos.y), r3(m.pos.z), r3(m.yaw), r3(m.aimYaw), r3(m.aimPitch), Math.ceil((Math.max(0, m.health) / m.def.health) * 100), (m.alive ? MOUNT_FLAG_ALIVE : 0) | (this.tick < m.wreckUntil ? MOUNT_FLAG_WRECK : 0) | (m.burning ? MOUNT_FLAG_BURNING : 0) | (m.alive && m.arc ? arcFlags(m) : 0), ...m.seats.map((s) => s ?? -1)]);
+    return this.mounts.map((m) => [m.index, r3(m.pos.x), r3(m.pos.y), r3(m.pos.z), r3(m.yaw), r3(m.aimYaw), r3(m.aimPitch), Math.ceil((Math.max(0, m.health) / m.def.health) * 100), (m.alive ? MOUNT_FLAG_ALIVE : 0) | (this.tick < m.wreckUntil ? MOUNT_FLAG_WRECK : 0) | (m.burning ? MOUNT_FLAG_BURNING : 0) | (m.alive && m.arc ? arcFlags(m) : 0), ...m.seats.map((s) => s ?? -1), ...(m.def.resupply ? [m.supply] : [])]);
   }
 
   // ---------------------------------------------------------------- hazards and status effects

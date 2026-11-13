@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 37,
   "metadata": {
     "id": "verdant_ziggurat",
     "name": "Verdant Ziggurat",
@@ -2435,7 +2435,7 @@
         -17
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null

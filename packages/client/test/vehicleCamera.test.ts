@@ -44,7 +44,7 @@ describe('cockpit view', () => {
   it('is the default for ground vehicles and flyers, with the eye at the driver seat', () => {
     const cam = new VehicleCamera();
     const look = { yaw: 2, pitch: 0.3 };
-    const r = ride(MOUNT_DEFS.buggy, { yaw: 0.5 });
+    const r = ride(MOUNT_DEFS.troop_buggy, { yaw: 0.5 });
     const pose = cam.update(1 / 60, r, look, noWalls, FOV);
     expect(pose.mode).toBe('cockpit');
     expect(pose.pos).toEqual(r.cockpitEye);
@@ -57,13 +57,13 @@ describe('cockpit view', () => {
   it('turns with the vehicle and keeps mouse look within limits', () => {
     const cam = new VehicleCamera();
     const look = { yaw: 0, pitch: 0 };
-    cam.update(1 / 60, ride(MOUNT_DEFS.buggy), look, noWalls, FOV);
+    cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy), look, noWalls, FOV);
     look.yaw += 0.4;
-    cam.update(1 / 60, ride(MOUNT_DEFS.buggy, { yaw: 0.3 }), look, noWalls, FOV);
+    cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy, { yaw: 0.3 }), look, noWalls, FOV);
     expect(look.yaw).toBeCloseTo(0.7);
     look.yaw += 5;
     look.pitch = 1.4;
-    cam.update(1 / 60, ride(MOUNT_DEFS.buggy, { yaw: 0.3 }), look, noWalls, FOV);
+    cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy, { yaw: 0.3 }), look, noWalls, FOV);
     expect(Math.abs(Math.atan2(Math.sin(look.yaw - 0.3), Math.cos(look.yaw - 0.3)))).toBeLessThanOrEqual(DRIVER_LOOK_LIMIT + 1e-9);
     expect(look.pitch).toBeLessThanOrEqual(0.75);
   });
@@ -71,8 +71,8 @@ describe('cockpit view', () => {
   it('follows the vehicle tilt only gently, more in the air, and levels out again', () => {
     const cam = new VehicleCamera();
     const look = { yaw: 0, pitch: 0 };
-    let pose = cam.update(1 / 60, ride(MOUNT_DEFS.buggy), look, noWalls, FOV);
-    for (let i = 0; i < 240; i++) pose = cam.update(1 / 60, ride(MOUNT_DEFS.buggy, { tilt: { pitch: 0.5, roll: -0.6 } }), look, noWalls, FOV);
+    let pose = cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy), look, noWalls, FOV);
+    for (let i = 0; i < 240; i++) pose = cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy, { tilt: { pitch: 0.5, roll: -0.6 } }), look, noWalls, FOV);
     // Steep ground: the view leans a little (clamped), not with the whole car.
     expect(Math.abs(pose.pitch)).toBeLessThanOrEqual(0.1 + 1e-6);
     expect(Math.abs(pose.roll)).toBeLessThanOrEqual(0.07 + 1e-6);
@@ -84,7 +84,7 @@ describe('cockpit view', () => {
     expect(ap.roll).toBeCloseTo(0.18, 2);
     expect(ap.pitch).toBeCloseTo(0.12, 2);
     // Level ground again: back to level.
-    for (let i = 0; i < 240; i++) pose = cam.update(1 / 60, ride(MOUNT_DEFS.buggy), look, noWalls, FOV);
+    for (let i = 0; i < 240; i++) pose = cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy), look, noWalls, FOV);
     expect(Math.abs(pose.roll)).toBeLessThan(1e-3);
     expect(Math.abs(pose.pitch - look.pitch)).toBeLessThan(1e-3);
   });
@@ -101,11 +101,11 @@ describe('cockpit view', () => {
     expect(pose.roll).toBe(0);
     // The Tank's cannon gunner looks all round (its turret turns the full circle, 2026-11-11)...
     expect(look.yaw).toBeCloseTo(1.5);
-    // ...a gun with an arc holds the look within it: the Armored Rover's front gun, 1.3 rad either side of the nose.
-    const front = new VehicleCamera();
-    const held = { yaw: 1.5, pitch: 0 };
-    front.update(1 / 60, ride(MOUNT_DEFS.armored_rover, { seat: 1 }), held, noWalls, FOV);
-    expect(held.yaw).toBeCloseTo(1.3);
+    // ...a gun with an arc holds the look within it: the Armored Rover's rear gun, 1.6 rad either side of the tail.
+    const rear = new VehicleCamera();
+    const held = { yaw: 0, pitch: 0 };
+    rear.update(1 / 60, ride(MOUNT_DEFS.armored_rover, { seat: 2 }), held, noWalls, FOV);
+    expect(Math.abs(held.yaw)).toBeCloseTo(Math.PI - 1.6);
     const roof = new VehicleCamera();
     const free = { yaw: 2.5, pitch: 0 };
     roof.update(1 / 60, ride(tank, { seat: 2 }), free, noWalls, FOV);
@@ -121,21 +121,21 @@ describe('chase camera', () => {
   }
 
   it('sits behind and above the vehicle, outside it', () => {
-    const cam = chase(MOUNT_DEFS.buggy);
+    const cam = chase(MOUNT_DEFS.troop_buggy);
     const look = { yaw: 0, pitch: 0 };
-    const r = ride(MOUNT_DEFS.buggy, { pos: { x: 5, y: 2, z: 5 } });
+    const r = ride(MOUNT_DEFS.troop_buggy, { pos: { x: 5, y: 2, z: 5 } });
     const pose = cam.update(1 / 60, r, look, noWalls, FOV);
     expect(pose.mode).toBe('chase');
     const off = sub(pose.pos, r.pos);
-    expect(off.z).toBeLessThan(-MOUNT_DEFS.buggy.half[2] - 1);
-    expect(off.y).toBeGreaterThan(MOUNT_DEFS.buggy.half[1] * 2);
+    expect(off.z).toBeLessThan(-MOUNT_DEFS.troop_buggy.half[2] - 1);
+    expect(off.y).toBeGreaterThan(MOUNT_DEFS.troop_buggy.half[1] * 2);
   });
 
   it('pulls in when a wall is in the way', () => {
-    const cam = chase(MOUNT_DEFS.buggy);
+    const cam = chase(MOUNT_DEFS.troop_buggy);
     const look = { yaw: 0, pitch: 0 };
-    const r = ride(MOUNT_DEFS.buggy);
-    const pivot = { x: 0, y: MOUNT_DEFS.buggy.half[1] * 2 + 0.5, z: 0 };
+    const r = ride(MOUNT_DEFS.troop_buggy);
+    const pivot = { x: 0, y: MOUNT_DEFS.troop_buggy.half[1] * 2 + 0.5, z: 0 };
     const pose = cam.update(1 / 60, r, look, () => 2, FOV);
     const d = Math.hypot(...Object.values(sub(pose.pos, pivot)));
     expect(d).toBeCloseTo(1.6, 5);
@@ -165,14 +165,14 @@ describe('chase camera', () => {
   });
 
   it('free look swings back behind the vehicle after a moment', () => {
-    const cam = chase(MOUNT_DEFS.buggy);
+    const cam = chase(MOUNT_DEFS.troop_buggy);
     const look = { yaw: 0, pitch: 0 };
-    cam.update(1 / 60, ride(MOUNT_DEFS.buggy), look, noWalls, FOV);
+    cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy), look, noWalls, FOV);
     look.yaw = 1.5;
-    cam.update(1 / 60, ride(MOUNT_DEFS.buggy), look, noWalls, FOV);
-    for (let i = 0; i < Math.floor(CHASE_RECENTRE_DELAY * 60) - 5; i++) cam.update(1 / 60, ride(MOUNT_DEFS.buggy), look, noWalls, FOV);
+    cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy), look, noWalls, FOV);
+    for (let i = 0; i < Math.floor(CHASE_RECENTRE_DELAY * 60) - 5; i++) cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy), look, noWalls, FOV);
     expect(look.yaw).toBeCloseTo(1.5);
-    for (let i = 0; i < 240; i++) cam.update(1 / 60, ride(MOUNT_DEFS.buggy), look, noWalls, FOV);
+    for (let i = 0; i < 240; i++) cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy), look, noWalls, FOV);
     expect(Math.abs(look.yaw)).toBeLessThan(0.01);
   });
 });
@@ -197,8 +197,8 @@ describe('preferences', () => {
     });
     expect(loadVehicleViews()).toEqual({ ground: 'cockpit', air: 'cockpit' });
     const cam = new VehicleCamera();
-    expect(() => cam.toggle(MOUNT_DEFS.buggy)).not.toThrow();
-    expect(cam.viewFor(MOUNT_DEFS.buggy)).toBe('chase');
+    expect(() => cam.toggle(MOUNT_DEFS.troop_buggy)).not.toThrow();
+    expect(cam.viewFor(MOUNT_DEFS.troop_buggy)).toBe('chase');
   });
 });
 
@@ -228,13 +228,13 @@ describe('suspension and look-to-steer', () => {
   it('the cockpit eye follows a bouncing body damped: well under half the bounce, all of a steady lean', () => {
     const cam = new VehicleCamera();
     const look = { yaw: 0, pitch: 0 };
-    const level = mountToWorld({ x: 0, y: 0, z: 0 }, 0, cockpitEye(MOUNT_DEFS.buggy, 0));
+    const level = mountToWorld({ x: 0, y: 0, z: 0 }, 0, cockpitEye(MOUNT_DEFS.troop_buggy, 0));
     let lo = Infinity;
     let hi = -Infinity;
     // The body bounces ±0.15 m at 1.5 Hz (a hard landing on the buggy's springs), drawn at 60 fps.
     for (let f = 0; f < 240; f++) {
       const bounce = 0.15 * Math.sin((f / 60) * 2 * Math.PI * 1.5);
-      const pose = cam.update(1 / 60, ride(MOUNT_DEFS.buggy, { cockpitEye: { ...level, y: level.y + bounce }, levelEye: level }), look, noWalls, FOV);
+      const pose = cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy, { cockpitEye: { ...level, y: level.y + bounce }, levelEye: level }), look, noWalls, FOV);
       if (f > 60) {
         lo = Math.min(lo, pose.pos.y - level.y);
         hi = Math.max(hi, pose.pos.y - level.y);
@@ -242,8 +242,8 @@ describe('suspension and look-to-steer', () => {
     }
     expect(hi - lo).toBeLessThan(0.3 * 0.55);
     // A steady offset (parked on a slope) is followed all the way: the eye stays in the seat.
-    let pose = cam.update(1 / 60, ride(MOUNT_DEFS.buggy, { cockpitEye: { ...level, y: level.y + 0.1 }, levelEye: level }), look, noWalls, FOV);
-    for (let f = 0; f < 120; f++) pose = cam.update(1 / 60, ride(MOUNT_DEFS.buggy, { cockpitEye: { ...level, y: level.y + 0.1 }, levelEye: level }), look, noWalls, FOV);
+    let pose = cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy, { cockpitEye: { ...level, y: level.y + 0.1 }, levelEye: level }), look, noWalls, FOV);
+    for (let f = 0; f < 120; f++) pose = cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy, { cockpitEye: { ...level, y: level.y + 0.1 }, levelEye: level }), look, noWalls, FOV);
     expect(pose.pos.y - level.y).toBeCloseTo(0.1, 3);
   });
 
@@ -251,20 +251,20 @@ describe('suspension and look-to-steer', () => {
     expect(loadSteerMode()).toBe(DEFAULT_STEER);
     saveSteerMode('look');
     const cam = new VehicleCamera();
-    expect(cam.steersByLook(MOUNT_DEFS.buggy, 0)).toBe(true);
-    expect(cam.steersByLook(MOUNT_DEFS.buggy, 1)).toBe(false);
+    expect(cam.steersByLook(MOUNT_DEFS.troop_buggy, 0)).toBe(true);
+    expect(cam.steersByLook(MOUNT_DEFS.troop_buggy, 1)).toBe(false);
     expect(cam.steersByLook(MOUNT_DEFS.skyfighter, 0)).toBe(false);
     const look = { yaw: 0, pitch: 0 };
-    cam.update(1 / 60, ride(MOUNT_DEFS.buggy), look, noWalls, FOV);
+    cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy), look, noWalls, FOV);
     look.yaw = 0.6;
-    for (let f = 1; f <= 30; f++) cam.update(1 / 60, ride(MOUNT_DEFS.buggy, { yaw: (f / 30) * 0.5 }), look, noWalls, FOV);
+    for (let f = 1; f <= 30; f++) cam.update(1 / 60, ride(MOUNT_DEFS.troop_buggy, { yaw: (f / 30) * 0.5 }), look, noWalls, FOV);
     expect(look.yaw).toBeCloseTo(0.6);
     // Classic: the view turns with the vehicle.
     saveSteerMode('classic');
     const classic = new VehicleCamera();
     const l2 = { yaw: 0, pitch: 0 };
-    classic.update(1 / 60, ride(MOUNT_DEFS.buggy), l2, noWalls, FOV);
-    for (let f = 1; f <= 30; f++) classic.update(1 / 60, ride(MOUNT_DEFS.buggy, { yaw: (f / 30) * 0.5 }), l2, noWalls, FOV);
+    classic.update(1 / 60, ride(MOUNT_DEFS.troop_buggy), l2, noWalls, FOV);
+    for (let f = 1; f <= 30; f++) classic.update(1 / 60, ride(MOUNT_DEFS.troop_buggy, { yaw: (f / 30) * 0.5 }), l2, noWalls, FOV);
     expect(l2.yaw).toBeCloseTo(0.5);
   });
 });
