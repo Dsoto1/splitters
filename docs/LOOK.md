@@ -135,6 +135,7 @@ What flickered, and what the setting does to each:
 | The hurt vignette (HUD) | saturated red edge, snapping on with each hit | a duller red (not a saturated red by WCAG's test), reaching less far in, eased in over 0.15 s, held steady under fire, gone over 0.8 s (`hurtVignette.ts`) |
 | Diving into water or another liquid | the haze snaps on and off at the surface | eased over a third of a second |
 | Pickups' floor glows (`lootGlow.ts`, Binbun's Loot VFX) | streaks turning slowly, a slow bob, sparkles drifting up; eased in over a second | held still, no sparkles, 0.5 of its strength instead of 0.8, eased in over two seconds |
+| Status auras on other characters (`statusFx.ts`, Binbun's Stylized Status FX: burning, poisoned, slowed by goo, chilled or frozen) and the plain shell | flames, bubbles and ice crystals drifting at the pack's speed, eased in over a quarter second; the plain shell pulses about twice a second | half speed, 0.65 of its strength instead of 0.8, eased in over about 0.8 s; the plain shell holds still |
 | A portal's swirl and a jump pad's lift (`fixtureFx.ts`, Binbun's Portal VFX and Magic Area VFX) | the swirl turns slowly and draws inward, the lift's streaks rise slowly; eased in over about a second | held still, dimmer (portal 0.7 of its strength, pad 0.6), eased in over about two seconds |
 
 Not changed (nothing flashes there): smoke grenades' haze (already eased), status tints (CSS transitions), the sky (no

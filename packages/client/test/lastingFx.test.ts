@@ -199,4 +199,22 @@ describe('lasting effects (lastingFx.ts)', () => {
     fx.update({ x: 0, y: 0, z: 0 });
     expect(fx.drawn('far') || fx.drawn('odd')).toBe(false);
   });
+  it('starts a slowed effect again when its speed changes (Reduce flashing switched while it plays)', () => {
+    const { vfx, live } = fakeVfx(4);
+    const fx = new LastingFx(vfx);
+    const cam = { x: 0, y: 0, z: 0 };
+    fx.want('s', 'status.burn', { x: 3, y: 0, z: 0 }, { slow: 0.4 });
+    fx.update(cam);
+    expect(live[0]!.opts.slow).toBe(0.4);
+    fx.want('s', 'status.burn', { x: 3, y: 0, z: 0 }, { slow: 0.4 });
+    fx.update(cam);
+    expect(live.length).toBe(1);
+    fx.want('s', 'status.burn', { x: 3, y: 0, z: 0 });
+    fx.update(cam);
+    expect(live[0]!.stopped).toBe(true);
+    fx.want('s', 'status.burn', { x: 3, y: 0, z: 0 });
+    fx.update(cam);
+    expect(live.filter((l) => !l.stopped).length).toBe(1);
+    expect(live.at(-1)!.opts.slow).toBeUndefined();
+  });
 });

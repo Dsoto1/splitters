@@ -562,6 +562,27 @@ export const FX_MAP = {
       "effect": "lift_area_vfx_02",
       "scale": 0.75,
       "fixture": true
+    },
+    "status.burn": {
+      "pack": "status_fx",
+      "effect": "vfx_status_flame",
+      "scale": 0.9
+    },
+    "status.poison": {
+      "pack": "status_fx",
+      "effect": "vfx_status_poison",
+      "scale": 0.9
+    },
+    "status.slow": {
+      "pack": "status_fx",
+      "effect": "vfx_status_rot",
+      "scale": 0.9,
+      "tint": "#ff5ac8"
+    },
+    "status.chill": {
+      "pack": "status_fx",
+      "effect": "vfx_status_ice",
+      "scale": 0.9
     }
   }
 } as const;
