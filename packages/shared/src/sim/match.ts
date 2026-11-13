@@ -2109,6 +2109,15 @@ export class Match {
     }
     // Weapons dropped by the fallen count as weapon pickups.
     for (const d of this.drops) lying.push({ id: `drop_${d.id}`, item: d.item, pos: d.pos, available: true });
+    // Ammo boxes (sim/resupply.ts) are Ammo Box pickups to the bots (`box_<id>`; they press Use beside one): one being
+    // shot (under 60 % health) is off their list, and a cooking one is a hazard to wait out.
+    const boxItem = getItem(AMMO_BOX_ITEM);
+    if (boxItem && !restrictedWeapons(this.rules)) {
+      for (const b of this.boxes) {
+        const up = !!b.body && b.uses > 0;
+        lying.push({ id: `box_${b.id}`, item: boxItem, pos: b.pos, available: up && b.health >= b.max * 0.6, ...(!up && b.kind === 'placed' ? { respawnIn: Math.max(0, (b.until - this.tick) / TICK_RATE) } : {}) });
+      }
+    }
     const pickups: PickupView[] = [...lying, ...this.pickups.filter((p) => !restrictedWeapons(this.rules) || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
     const npcPickups: PickupView[] = [];
     // Team-only doors block other teams; buttons a bot may press can open the doors in its way.
@@ -2120,7 +2129,10 @@ export class Match {
     const doorButtonsFor = (team: string | null) => buttonsBy.get(team) ?? buttonsBy.set(team, this.scenario.doorButtons(team)).get(team)!;
     const lifts = this.scenario.liftViews();
     const portals = this.scenario.portalViews();
-    const hazards = this.scenario.hazards();
+    const hazards = [
+      ...this.scenario.hazards(),
+      ...this.cookOffs.map((k) => ({ min: { x: k.at.x - COOK_OFF.radius, y: k.at.y - 1, z: k.at.z - COOK_OFF.radius }, max: { x: k.at.x + COOK_OFF.radius, y: k.at.y + 2, z: k.at.z + COOK_OFF.radius } })),
+    ];
     const spawnPoints = this.spawnPoints.map((s) => s.pos);
     // Team Deathmatch bots roam toward the other side's spawns, so the teams meet in the middle.
     const teamRoam = new Map<string, Vec3[]>();

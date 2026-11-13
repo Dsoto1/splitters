@@ -331,7 +331,7 @@ describe('the cannon: limited shells, refills and the ammo pickup', () => {
     expect(gun.shells).toBe(10);
   });
 
-  it('a crewed tank over an ammo pickup fills right up and takes the pickup; an empty one leaves it', () => {
+  it('a crewed tank beside an Ammo Box fills right up from it (a use of the crate); an empty one leaves it', () => {
     const match = new Match(yard([mount('tank', 12, 12)], [ammoBox(12, 13)]), rules, 3);
     const pad = new Pad(match);
     const driver = match.addHuman('driver')!;
@@ -342,13 +342,17 @@ describe('the cannon: limited shells, refills and the ammo pickup', () => {
     // Nobody aboard: it stays where it is.
     let events = pad.run(12);
     expect(gun.shells).toBe(2);
-    expect(events.some((e) => e.e === 'pickup')).toBe(false);
+    expect(events.some((e) => e.e === 'resupply')).toBe(false);
     place(driver, 14, 12);
     expect(internals(match).enterMount(driver)).toBe(true);
     events = pad.run(12);
     expect(gun.shells).toBe(10);
-    expect(events.find((e) => e.e === 'pickup')).toMatchObject({ s: driver.slot, id: 'ammo_1', item: 'core.ammo' });
-    // Taken: down a shell again, it doesn't refill until the pickup is back.
+    expect(events.find((e) => e.e === 'resupply')).toMatchObject({ s: driver.slot, m: tank.index, ok: true, left: 9 });
+    // Each refill is one of its ten uses; with none left it is gone till its timer, and the gun stays short.
+    for (const b of (match as unknown as { boxes: { uses: number }[] }).boxes) b.uses = 1;
+    gun.shells = 5;
+    pad.run(12);
+    expect(gun.shells).toBe(10);
     gun.shells = 5;
     pad.run(12);
     expect(gun.shells).toBe(5);
@@ -606,10 +610,11 @@ describe('bots in tanks', () => {
     return { refilled, nearest, bot, tank, crewed };
   }
 
-  it('low on shells (3 of 10) out of a fight, it drives over an Ammo Box 40 m off its way and fills up', () => {
+  it('low on shells (3 of 10) out of a fight, it drives to an Ammo Box 40 m off its way and fills up beside it', () => {
     const r = shortOfShells(3);
     expect(r.refilled).toBeGreaterThan(0);
-    expect(r.nearest).toBeLessThan(4);
+    // The box is a solid crate now (sim/resupply.ts): the tank pulls up beside it, its middle within its own length.
+    expect(r.nearest).toBeLessThan(5);
     expect(r.bot.bot!.tankLog.resupply).toBe(1);
   });
 

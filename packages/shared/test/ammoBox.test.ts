@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_THROW, BUTTON_USE, COOK_OFF, DEFAULT_DEATHMATCH_RULES, DEPLOYED_BOX, PLACED_BOX, TICK_RATE, cookOff, initPhysics, type GameEvent, type MapDocument, type PlayerInput } from '../src/index.ts';
+import { BOT_DIFFICULTIES, BUTTON_THROW, BUTTON_USE, COOK_OFF, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, DEPLOYED_BOX, PLACED_BOX, TICK_RATE, cookOff, initPhysics, type GameEvent, type MapDocument, type PlayerInput } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -124,5 +124,18 @@ describe('ammo boxes (sim/resupply.ts)', () => {
     expect(resupplies(ev)).toMatchObject([{ ok: true, left: DEPLOYED_BOX.uses - 1 }]);
     // A resupply never hands out another kit.
     expect(a.throwable?.kind).not.toBe('ammo_box');
+  });
+
+  it('a bot short of ammo goes to the box and resupplies there (E beside it)', () => {
+    const match = new Match(yard(), rules);
+    const bot = match.addBot('bot', { ...CORE_BOT_PROFILES[3]!, itemGreed: 100 }, BOT_DIFFICULTIES.normal)!;
+    match.step();
+    place(bot, 4, 4);
+    let got: GameEvent | undefined;
+    for (let t = 0; t < 20 * TICK_RATE && !got; t++) {
+      for (const w of bot.weapons.values()) w.reserve = 0;
+      got = match.step().find((e) => e.e === 'resupply' && e.s === bot.slot && e.ok);
+    }
+    expect(got).toBeDefined();
   });
 });
