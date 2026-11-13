@@ -2425,6 +2425,41 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'light', position: [0, 3.1, 16], fixture: 'none', color: '#ffe6b8', intensity: 1, range: 9 },
     ],
   },
+  {
+    id: 'setpiece.tunnel_shaft',
+    displayName: 'Tunnel Shaft',
+    family: 'tunnels',
+    category: 'Tunnels',
+    blurb: 'A concrete tunnel module with a hatch to the surface and the ladder up to it (3.85 m, on the west wall). For a tunnel a level under flat ground: the hatch comes out level with the ground.',
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: 'none',
+    ports: [
+      { side: 'S', cell: [0, 0], level: 0, kind: 'opening' },
+      { side: 'N', cell: [0, 0], level: 0, kind: 'opening' },
+    ],
+    parts: [
+      { kind: 'tile', tile: 'core.tunnel_concrete_shaft', x: 0, y: 0, z: 0, rotation: 0 },
+      { kind: 'ladder', position: [-1.75, 0, 0], yaw: 1.570796, height: 3.85, width: 0.9 },
+    ],
+  },
+  {
+    id: 'setpiece.tunnel_riser',
+    displayName: 'Tunnel Riser',
+    family: 'tunnels',
+    category: 'Tunnels',
+    blurb: 'A capped concrete well joining a tunnel (south) to one a level up (north), the ladder between them (4 m) and a real light at the top: 1 light.',
+    footprint: { cells: [[0, 0]], levels: [0, 1] },
+    mirror: 'none',
+    ports: [
+      { side: 'S', cell: [0, 0], level: 0, kind: 'opening' },
+      { side: 'N', cell: [0, 0], level: 1, kind: 'opening' },
+    ],
+    parts: [
+      { kind: 'tile', tile: 'core.tunnel_concrete_riser', x: 0, y: 0, z: 0, rotation: 0 },
+      { kind: 'ladder', position: [0, 0, 1.75], yaw: 3.141593, height: 4, width: 0.9 },
+      { kind: 'light', position: [0, 7, 0], fixture: 'none', color: '#ffe6b8', intensity: 1, range: 9 },
+    ],
+  },
 ];
 
 /** The role packs (content/setpieces/roles.json): what each role is in one look, and the themes it is the default for. */

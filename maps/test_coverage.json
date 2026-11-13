@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 38,
+  "formatVersion": 37,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_7vh653zczugeixul",
-      "revision": 27,
-      "contentHash": "sha256:49c33f317a5aacaee135c85c7e599175ac28da9457e0769328341b9573d8292a",
-      "schemaVersion": 38,
-      "releasedAt": "2026-11-13T17:07:51.905Z"
+      "versionId": "v_vz5jy6nakd5q3rro",
+      "revision": 26,
+      "contentHash": "sha256:4fbcd9a3f6619e73c19fcd3a5d16deb14790e91b2a5e81ef2c76c7a442ba9317",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T12:34:03.061Z"
     },
     "testOnly": true
   },
@@ -1044,20 +1044,68 @@
         "rotation": 0
       },
       {
-        "id": "tile_m7u828njer",
-        "tile": "core.room",
-        "x": 14,
-        "y": 1,
-        "z": 0,
-        "rotation": 0,
-        "edges": {
-          "0,0,0:N": "shopfront",
-          "0,0,0:E": "window_arched"
-        },
-        "glass": {
-          "0,0,0:N": "breakable",
-          "0,0,0:E": "reinforced"
-        }
+        "id": "tile_tidi0r3or3",
+        "tile": "core.tunnel_concrete_descent",
+        "x": 4,
+        "y": -9,
+        "z": -1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_h80o81sqxp",
+        "tile": "core.tunnel_concrete_chamber",
+        "x": 6,
+        "y": -9,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xnyi2ju9en",
+        "tile": "core.tunnel_concrete_end",
+        "x": 6,
+        "y": -7,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_r070irlj58",
+        "tile": "core.tunnel_concrete_stairs",
+        "x": 6,
+        "y": -10,
+        "z": -2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vks6ubgqs9",
+        "tile": "core.tunnel_concrete_end",
+        "x": 6,
+        "y": -11,
+        "z": -2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_rvl2t1k35v",
+        "tile": "core.tunnel_concrete_slope",
+        "x": 8,
+        "y": -9,
+        "z": -2,
+        "rotation": 3
+      },
+      {
+        "id": "tile_vmrkxsm384",
+        "tile": "core.tunnel_concrete_straight",
+        "x": 9,
+        "y": -9,
+        "z": -2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_zv8fn14qot",
+        "tile": "core.tunnel_concrete_end",
+        "x": 11,
+        "y": -9,
+        "z": -1,
+        "rotation": 1
       }
     ]
   },
@@ -6368,6 +6416,24 @@
       "x": -18,
       "y": 6,
       "z": -1,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_zkm5adexfh",
+      "piece": "setpiece.tunnel_shaft",
+      "x": 5,
+      "y": -9,
+      "z": -1,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_u316tmgh8s",
+      "piece": "setpiece.tunnel_riser",
+      "x": 10,
+      "y": -9,
+      "z": -2,
       "rotation": 1,
       "mirror": false
     }
