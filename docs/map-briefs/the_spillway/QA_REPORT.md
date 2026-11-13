@@ -62,3 +62,15 @@ stair's ten legs out of main's map changes nothing (58 over seeds 1 to 8), so th
 long stair's joints are, and that is open.
 
 Not checked: the flicker check (no new effect).
+
+## The crest's east end meets the ground (2026-11-13; owner's decision)
+The crest ended in a drop: the ground beside it was 1.4 to 8 m under the 28 m crest (19.6 to 26.6 m at x 84.5).
+Raised in MapMaker with the Terrain tab's Flatten, "Flatten to (m)" 28, brush 6 m, over x 84 to 94, z 54 to 70
+(54 ground points; nothing else changed): the east abutment is walked onto from the dam, as the west end. No spawn,
+flag, pickup or the hillside stair is in or near that area; no gatehouses (owner). The ground at the dam's south-east
+corner (x 84, z 54) stays as it was, so the parapet's end still stands over the gorge.
+- `validate-map`: OK, 0 issues. `nav-audit`: 0 traps, 48 islands (main's map 49), 8 drop links, 3,640 polygons.
+- Bots, 48, Team Deathmatch, 150 s, seeds 1 to 4: stuck recoveries 57 / 91 / 78 / 74 (mean 75) against main's map
+  58 / 60 / 102 / 53 (mean 68); no route 0 on every seed (main's map: 3 on seed 4). Within the noise of the earlier
+  16-seed run (88 against 70).
+- Seen in a Play test from the crest looking east: the slab runs on into level ground.
