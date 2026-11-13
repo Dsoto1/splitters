@@ -17,7 +17,7 @@ import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { MapDocument, MapEntity, MapWeather, PropEntity, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
-import { mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
+import { groundCutsKey, mapGroundBores, mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, MOUNT_DEFS, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
@@ -122,6 +122,8 @@ export class EditorView {
   private builtTheme = '';
   private drawnPaths: MapDocument['paths'] | null = null;
   private drawnTerrain: MapDocument['terrain'] | undefined = undefined;
+  /** The cuts the drawn ground was built with (groundCutsKey). */
+  private drawnCuts = '';
   /** The document's ground with its paths laid in (paths.ts), worked out again only when the ground or the paths change. */
   private laid: { from: MapDocument['terrain']; paths: MapDocument['paths']; terrain: MapDocument['terrain'] } | null = null;
   /** The ground as played (paths laid in, kept under every floor): what the terrain, plants and roads are drawn on. */
@@ -355,7 +357,10 @@ export class EditorView {
     this.groundBoxes = all;
     const shown = this.shownTerrain === doc.terrain ? doc : { ...doc, terrain: this.shownTerrain };
     // Terrain, paths and the road, only when they changed (the terrain alone took most of an edit on big maps).
-    if (this.shownTerrain !== this.drawnTerrain || doc.classicStructure.theme !== this.builtTheme) {
+    // (A buried tunnel that moves under a hill changes no height, only what it cuts out of the ground: groundBore.ts.)
+    const cutsKey = this.shownTerrain ? groundCutsKey(mapGroundBores(doc).cuts) : '';
+    if (this.shownTerrain !== this.drawnTerrain || doc.classicStructure.theme !== this.builtTheme || cutsKey !== this.drawnCuts) {
+      this.drawnCuts = cutsKey;
       this.drawnTerrain = this.shownTerrain;
       this.builtTheme = doc.classicStructure.theme;
       this.styler.buildTerrain(shown, 'edmap');

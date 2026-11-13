@@ -120,7 +120,9 @@ function schemas(root, materials) {
     floors: arr(int), ports: arr(port), 'open?': bool, 'edgeDefault?': str, 'edgeDefaults?': map(str), 'configurable?': bool,
     'model?': obj({ file: str, 'lift?': num }), 'solids?': arr(part), 'extraFloors?': arr(part), 'notes?': notes,
     // MapMaker's tile options that are tiles of their own (map/catalog.ts TILE_OPTIONS): this tile is `tile` with `option` on.
-    'optionOf?': obj({ tile: str, option: en(['sideWalls']) }),
+    'optionOf?': obj({ tile: str, option: en(['sideWalls', 'underGround']) }),
+    // A piece buried in terrain (map/groundBore.ts): boxes the ground's surface is cut out of, and mouths it opens at.
+    'bore?': obj({ 'cut?': arr(tup(6), 1), 'open?': arr(tup(6), 1) }),
   });
   return { edge, tile, sides, builders: Object.keys(builders) };
 }

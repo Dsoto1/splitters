@@ -73,6 +73,7 @@ import { BUTTON_AUTO_RELOAD, BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT,
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
+import { mapGroundBores, nearGroundCut, type GroundCut } from '../map/groundBore.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
 import { DEFAULT_DEATHMATCH_RULES, dropsInPlay, isTeamMode, matchPhysics, restrictedWeapons, rouletteOn, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
@@ -726,6 +727,10 @@ export class Match {
   private readonly moveEnv: MoveEnv = { liquids: undefined, jet: false, ladders: undefined, scale: 1, gravity: 1, gravityZones: undefined, airJumps: undefined, jetpack: undefined, glider: undefined, autoChute: undefined, ground: undefined, jump: 1, stamina: 1 };
   /** Where the people (and watchers) are this tick, in big matches only (relaxedMove). */
   private watched: Vec3[] | null = null;
+  /** The cuts buried tunnels make in the ground (groundBore.ts): bots in or over one never move coarsely (relaxedMove). */
+  private get groundBores(): readonly GroundCut[] {
+    return this.map.terrain ? mapGroundBores(this.map).cuts : NO_BORES;
+  }
   /** The terrain's height, for coarse moves (relaxedMove), on maps with terrain. */
   private groundFn: GroundHeight | null | undefined;
   private get groundAt(): GroundHeight | null {
@@ -2013,6 +2018,8 @@ export class Match {
     // Near a portal (stepping through turns and moves you) or in a gravity zone: the exact move.
     for (const g of this.scenario.portals) if ((g.pos.x - p.x) ** 2 + (g.pos.z - p.z) ** 2 < (RELAXED_PORTAL + g.width / 2) ** 2) return 'full';
     if (this.gravityZones.length && gravityAt(this.gravityZones, p) !== 1) return 'full';
+    // In or over a buried tunnel (groundBore.ts): the ground's height there is the hill's, not the tunnel's floor.
+    if (this.groundBores.length && nearGroundCut(this.groundBores, p.x, p.z, RELAXED_BORE)) return 'full';
     for (const w of near) if ((w.x - p.x) ** 2 + (w.z - p.z) ** 2 < RELAXED_RANGE * RELAXED_RANGE) return 'coarse';
     return 'far';
   }
@@ -7356,6 +7363,9 @@ export const BOT_THINK_EVERY = 3;
 const BOT_THINK_SLACK = 6;
 /** In those matches, bots this far (m) from every player move at half rate (Match.relaxedMove). */
 export const RELAXED_RANGE = 45;
+/** Bots this close (m) to a buried tunnel's footprint always make the exact move (Match.relaxedMove). */
+const RELAXED_BORE = 2;
+const NO_BORES: readonly GroundCut[] = [];
 /** Bots this close (m) to a portal's edge always make the exact move (Match.relaxedMove). */
 const RELAXED_PORTAL = 6;
 /** Held buttons a coasting bot keeps (movement stance); fire, use, jump and the rest are one-shot. */

@@ -5,6 +5,7 @@ import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
 import { envCanBreak, envVariant, getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import { terrainBoundary, terrainLowest, terrainTriangles } from './terrain.ts';
+import { mapGroundBores, terrainTrianglesCut } from './groundBore.ts';
 import { resolveBackdrop } from './backdrop.ts';
 import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './border.ts';
 import { pathsExtent } from './paths.ts';
@@ -667,8 +668,11 @@ export function blockBox(e: Extract<MapEntity, { kind: 'block' }>): WorldBox {
 }
 
 /** The terrain's collision mesh, if the map has terrain. */
-export function mapTerrainMesh(map: MapDocument): { positions: Float32Array; indices: Uint32Array } | null {
-  return map.terrain ? terrainTriangles(map.terrain) : null;
+export function mapTerrainMesh(map: MapDocument, catalog: TileCatalog = coreCatalog): { positions: Float32Array; indices: Uint32Array } | null {
+  if (!map.terrain) return null;
+  // Tunnels buried in the ground cut their bores out of its surface (groundBore.ts).
+  const { cuts } = mapGroundBores(map, catalog);
+  return cuts.length ? terrainTrianglesCut(map.terrain, cuts) : terrainTriangles(map.terrain);
 }
 
 /** Lowest point anyone can stand on, minus a margin: falling past it kills. */

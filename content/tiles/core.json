@@ -1436,6 +1436,28 @@
       }
     },
     {
+      "id": "core.tunnel_vault_buried",
+      "category": "Corridors",
+      "displayName": "Vaulted Tunnel (Under Ground)",
+      "blurb": "A barrel-vaulted passage 3.6 m wide running north–south (a hypogeum, a sewer, a crypt), buried: the hill stays on top of it and the ground is cut out only where it crosses the passage",
+      "optionOf": {"tile":"core.tunnel_vault","option":"underGround"},
+      "cells": [[0,0,0]],
+      "floors": [0],
+      "ports": [{"side":"N","level":0},{"side":"S","level":0}],
+      "edgeDefault": "open",
+      "solids": [
+        {"box":[-4,0,-4,-1.8,3.5,4],"kind":"wall"},
+        {"box":[1.8,0,-4,4,3.5,4],"kind":"wall"},
+        {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"box":[-4,3.5,-4,4,3.75,4],"kind":"wall"},
+        {"box":[-0.2,0,-4,0.2,0.02,4],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
+      ],
+      "bore": {"cut":[[-4,-0.5,-4,4,3.75,4]]},
+      "notes": {
+        "design": "Tileset 04, Tunnel Systems, step 1 (owner, 2026-11-13; docs/map-briefs/tunnels/PLAN_2026-11-13.md): the Under ground option of the Vaulted Tunnel (MapMaker's tile inspector; a tile of its own, so maps need no new field). The plain tile's masonry under a cap slab 0.25 m under the level above, so it is a closed shell. Its bore (map/groundBore.ts) takes the ground's surface out of its own cell between its floor slab and its cap: a hill higher than the cap stays on top, ground that crosses the passage is gone, and ground beside the cell meets its masonry. Its floors pull no ground down (settle.ts terrainUnderFloors). An end that comes out of the hill takes a Tunnel Portal."
+      }
+    },
+    {
       "id": "core.tunnel_vault_bend",
       "category": "Corridors",
       "displayName": "Vaulted Tunnel Bend",
@@ -1487,6 +1509,31 @@
       }
     },
     {
+      "id": "core.tunnel_vault_bend_buried",
+      "category": "Corridors",
+      "displayName": "Vaulted Tunnel Bend (Under Ground)",
+      "blurb": "The vaulted passage comes in from the south and turns east, buried: the hill stays on top of it and the ground is cut out only where it crosses the passage",
+      "optionOf": {"tile":"core.tunnel_vault_bend","option":"underGround"},
+      "cells": [[0,0,0]],
+      "floors": [0],
+      "ports": [{"side":"S","level":0},{"side":"E","level":0}],
+      "edgeDefault": "open",
+      "solids": [
+        {"box":[-4,0,-4,-1.8,3.5,4],"kind":"wall"},
+        {"box":[-1.8,0,1.8,4,3.5,4],"kind":"wall"},
+        {"box":[1.8,0,-4,4,3.5,-1.8],"kind":"wall"},
+        {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,1.8],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"vault":{"axis":"x","span":[-1.8,1.8],"along":[-1.8,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"box":[-4,3.5,-4,4,3.75,4],"kind":"wall"},
+        {"box":[-0.2,0,-4,0.2,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[0.2,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
+      ],
+      "bore": {"cut":[[-4,-0.5,-4,4,3.75,4]]},
+      "notes": {
+        "design": "Tileset 04, Tunnel Systems, step 1 (owner, 2026-11-13; docs/map-briefs/tunnels/PLAN_2026-11-13.md): the Under ground option of the Vaulted Tunnel Bend (MapMaker's tile inspector; a tile of its own, so maps need no new field). The plain tile's masonry under a cap slab 0.25 m under the level above, so it is a closed shell. Its bore (map/groundBore.ts) takes the ground's surface out of its own cell between its floor slab and its cap: a hill higher than the cap stays on top, ground that crosses the passage is gone, and ground beside the cell meets its masonry. Its floors pull no ground down (settle.ts terrainUnderFloors). An end that comes out of the hill takes a Tunnel Portal."
+      }
+    },
+    {
       "id": "core.tunnel_vault_t",
       "category": "Corridors",
       "displayName": "Vaulted Tunnel Junction",
@@ -1535,6 +1582,31 @@
       ],
       "notes": {
         "design": "Sandfall follow-up (owner, 2026-11-09): the Side walls option of the Vaulted Tunnel Junction (MapMaker's tile inspector; a tile of its own, so maps need no new field). Its masonry is capped 0.25 m under the level above (a kerb at ground level), and its floors keep the terrain round it at that kerb: the passage's floor is inset 0.3 m from the closed sides, so the ground on the cell's edge there is pulled only to the cap (settle.ts terrainUnderFloors), not down to the passage; a buried floor inside each wall (-0.3 to 0.6 m) carries the ground under the wall down to the passage's floor, so no slope of earth shows in the passage. The ground over the tunnel itself must still be within 3 m of its floor (flattened), as for the plain tile."
+      }
+    },
+    {
+      "id": "core.tunnel_vault_t_buried",
+      "category": "Corridors",
+      "displayName": "Vaulted Tunnel Junction (Under Ground)",
+      "blurb": "The vaulted passage runs east–west with a branch south, buried: the hill stays on top of it and the ground is cut out only where it crosses the passage",
+      "optionOf": {"tile":"core.tunnel_vault_t","option":"underGround"},
+      "cells": [[0,0,0]],
+      "floors": [0],
+      "ports": [{"side":"E","level":0},{"side":"W","level":0},{"side":"S","level":0}],
+      "edgeDefault": "open",
+      "solids": [
+        {"box":[-4,0,1.8,4,3.5,4],"kind":"wall"},
+        {"box":[-4,0,-4,-1.8,3.5,-1.8],"kind":"wall"},
+        {"box":[1.8,0,-4,4,3.5,-1.8],"kind":"wall"},
+        {"vault":{"axis":"x","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,1.8],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"box":[-4,3.5,-4,4,3.75,4],"kind":"wall"},
+        {"box":[-4,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[-0.2,0,-4,0.2,0.02,-0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
+      ],
+      "bore": {"cut":[[-4,-0.5,-4,4,3.75,4]]},
+      "notes": {
+        "design": "Tileset 04, Tunnel Systems, step 1 (owner, 2026-11-13; docs/map-briefs/tunnels/PLAN_2026-11-13.md): the Under ground option of the Vaulted Tunnel Junction (MapMaker's tile inspector; a tile of its own, so maps need no new field). The plain tile's masonry under a cap slab 0.25 m under the level above, so it is a closed shell. Its bore (map/groundBore.ts) takes the ground's surface out of its own cell between its floor slab and its cap: a hill higher than the cap stays on top, ground that crosses the passage is gone, and ground beside the cell meets its masonry. Its floors pull no ground down (settle.ts terrainUnderFloors). An end that comes out of the hill takes a Tunnel Portal."
       }
     },
     {
@@ -1592,6 +1664,72 @@
       ],
       "notes": {
         "design": "Sandfall follow-up (owner, 2026-11-09): the Side walls option of the Vaulted Tunnel Crossing (MapMaker's tile inspector; a tile of its own, so maps need no new field). Its masonry is capped 0.25 m under the level above (a kerb at ground level), and its floors keep the terrain round it at that kerb: the passage's floor is inset 0.3 m from the closed sides, so the ground on the cell's edge there is pulled only to the cap (settle.ts terrainUnderFloors), not down to the passage; a buried floor inside each wall (-0.3 to 0.6 m) carries the ground under the wall down to the passage's floor, so no slope of earth shows in the passage. The ground over the tunnel itself must still be within 3 m of its floor (flattened), as for the plain tile."
+      }
+    },
+    {
+      "id": "core.tunnel_portal",
+      "category": "Corridors",
+      "displayName": "Tunnel Portal",
+      "blurb": "The mouth of a buried vaulted tunnel: a headwall with the arch in it, stepped wing walls and an apron in front (south); the tunnel goes on north. It opens the ground in front of it by itself",
+      "cells": [[0,0,0]],
+      "floors": [0],
+      "ports": [{"side":"N","level":0},{"side":"S","level":0}],
+      "edgeDefault": "open",
+      "solids": [
+        {"box":[-4,0,0.5,-1.8,3.5,4],"kind":"wall"},
+        {"box":[1.8,0,0.5,4,3.5,4],"kind":"wall"},
+        {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-0.62,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"box":[-4,3.5,0.5,4,3.75,4],"kind":"wall"},
+        {"box":[-4,0,-0.5,-1.8,4.75,0.5],"kind":"wall"},
+        {"box":[1.8,0,-0.5,4,4.75,0.5],"kind":"wall"},
+        {"box":[-0.65,3.33,-0.5,0.65,4.75,0.5],"kind":"wall"},
+        {"box":[0.65,3.2,-0.5,1.05,4.75,0.5],"kind":"wall"},
+        {"box":[-1.05,3.2,-0.5,-0.65,4.75,0.5],"kind":"wall"},
+        {"box":[1.05,3.01,-0.5,1.35,4.75,0.5],"kind":"wall"},
+        {"box":[-1.35,3.01,-0.5,-1.05,4.75,0.5],"kind":"wall"},
+        {"box":[1.35,2.79,-0.5,1.6,4.75,0.5],"kind":"wall"},
+        {"box":[-1.6,2.79,-0.5,-1.35,4.75,0.5],"kind":"wall"},
+        {"box":[1.6,2.54,-0.5,1.8,4.75,0.5],"kind":"wall"},
+        {"box":[-1.8,2.54,-0.5,-1.6,4.75,0.5],"kind":"wall"},
+        {"box":[-4,4.75,-0.62,4,4.95,0.62],"kind":"solid"},
+        {"box":[-4,0,-1.7,-3.4,3.75,-0.5],"kind":"wall"},
+        {"box":[-4,0,-2.9,-3.4,2.75,-1.7],"kind":"wall"},
+        {"box":[-4,0,-4,-3.4,1.75,-2.9],"kind":"wall"},
+        {"box":[3.4,0,-1.7,4,3.75,-0.5],"kind":"wall"},
+        {"box":[3.4,0,-2.9,4,2.75,-1.7],"kind":"wall"},
+        {"box":[3.4,0,-4,4,1.75,-2.9],"kind":"wall"},
+        {"box":[-0.2,0,-4,0.2,0.02,4],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
+      ],
+      "bore": {"cut":[[-4,-0.5,-4,4,3.75,4]],"open":[[-3.4,0,-4,3.4,4,-0.5]]},
+      "notes": {
+        "design": "Tileset 04, Tunnel Systems, step 1 (owner, 2026-11-13; docs/map-briefs/tunnels/PLAN_2026-11-13.md): the mouth of a buried tunnel, so no ground is carved by hand. North half: the vaulted passage under its cap, as the buried tunnel. A headwall 1 m thick and 4.75 m high (a metre over the cap, with a coping) across the cell, the arch through it (stepped masonry over the arch ring, which stands 0.12 m proud). South of it an apron between wing walls stepping down from 3.75 m to 1.75 m. Its bore: the cell cut out of the ground up to the cap, and an opening over the apron (map/groundBore.ts): the ground of every grid square the apron touches comes down to its floor, and beyond rises no steeper than 1.5 in 1, so the hill is cut back to the headwall and banks lie either side of the wing walls."
+      }
+    },
+    {
+      "id": "core.tunnel_vault_cross_buried",
+      "category": "Corridors",
+      "displayName": "Vaulted Tunnel Crossing (Under Ground)",
+      "blurb": "Two vaulted passages crossing under a groin vault, buried: the hill stays on top of it and the ground is cut out only where it crosses the passage",
+      "optionOf": {"tile":"core.tunnel_vault_cross","option":"underGround"},
+      "cells": [[0,0,0]],
+      "floors": [0],
+      "ports": [{"allSides":0}],
+      "edgeDefault": "open",
+      "solids": [
+        {"box":[-4,0,-4,-1.8,3.5,-1.8],"kind":"wall"},
+        {"box":[1.8,0,-4,4,3.5,-1.8],"kind":"wall"},
+        {"box":[-4,0,1.8,-1.8,3.5,4],"kind":"wall"},
+        {"box":[1.8,0,1.8,4,3.5,4],"kind":"wall"},
+        {"vault":{"axis":"x","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"box":[-4,3.5,-4,4,3.75,4],"kind":"wall"},
+        {"box":[-4,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[-0.2,0,-4,0.2,0.02,-0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[-0.2,0,0.2,0.2,0.02,4],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
+      ],
+      "bore": {"cut":[[-4,-0.5,-4,4,3.75,4]]},
+      "notes": {
+        "design": "Tileset 04, Tunnel Systems, step 1 (owner, 2026-11-13; docs/map-briefs/tunnels/PLAN_2026-11-13.md): the Under ground option of the Vaulted Tunnel Crossing (MapMaker's tile inspector; a tile of its own, so maps need no new field). The plain tile's masonry under a cap slab 0.25 m under the level above, so it is a closed shell. Its bore (map/groundBore.ts) takes the ground's surface out of its own cell between its floor slab and its cap: a hill higher than the cap stays on top, ground that crosses the passage is gone, and ground beside the cell meets its masonry. Its floors pull no ground down (settle.ts terrainUnderFloors). An end that comes out of the hill takes a Tunnel Portal."
       }
     },
     {

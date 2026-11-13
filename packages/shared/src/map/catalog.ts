@@ -47,7 +47,7 @@ export interface LocalBox {
 }
 
 /** MapMaker's tile options that are tiles of their own (TileDefinition.optionOf), so a map needs no new field for one. */
-export const TILE_OPTIONS = ['sideWalls'] as const;
+export const TILE_OPTIONS = ['sideWalls', 'underGround'] as const;
 export type TileOptionId = (typeof TILE_OPTIONS)[number];
 
 export interface TileDefinition {
@@ -86,6 +86,13 @@ export interface TileDefinition {
    * tile inspector's checkbox swaps between the two, and the palette shows only the plain one. Same cells and ports.
    */
   optionOf?: { tile: string; option: TileOptionId };
+  /**
+   * A piece buried in terrain (a tunnel, its portal; map/groundBore.ts): the ground's surface inside each `cut` box is
+   * taken out (the hill above stays on top), and over each `open` box (a mouth; its lower y is the floor) the ground
+   * comes down to the floor, with banks beyond. Boxes are [x0, y0, z0, x1, y1, z1] in the tile's frame. The piece's
+   * floors don't pull the ground down (settle.ts terrainUnderFloors): its own shell meets the ground.
+   */
+  bore?: { cut?: readonly (readonly number[])[]; open?: readonly (readonly number[])[] };
   /**
    * Drawn with a model (city buildings and streets) centred on the tile's
    * footprint and turned with it; collision comes from `solids` (`prop` boxes

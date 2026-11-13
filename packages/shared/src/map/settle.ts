@@ -7,6 +7,7 @@ import { withPathsLaid } from './paths.ts';
 import { PLAYER } from '../sim/constants.ts';
 import type { LightEntity, LightFixture, MapDocument, PropEntity } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
+import { mapGroundBores, openGroundAtMouths } from './groundBore.ts';
 
 /** What an environment tree stands on when settled on a slope: its trunk, not its crown's spread. */
 const TRUNK_FOOTPRINT = [0.6, 0, 0.6] as const;
@@ -269,15 +270,18 @@ export function hungPropLift(boxes: readonly WorldBox[], e: Pick<PropEntity, 'id
  * was.
  */
 export const FLOOR_REACH = 3;
-export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] = buildMapGeometry(map)): TerrainData | null {
-  const t = map.terrain;
-  if (!t) return t;
+export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] = buildMapGeometry(map), catalog: TileCatalog = coreCatalog): TerrainData | null {
+  if (!map.terrain) return map.terrain;
+  // Buried tunnels (groundBore.ts): the ground comes down at their mouths, and their own floors pull no ground under
+  // them (the hill stays on top; what crosses the bore is cut out of the surface instead).
+  const bores = mapGroundBores(map, catalog);
+  const t = bores.openings.length ? openGroundAtMouths(map.terrain, bores.openings) : map.terrain;
   let heights: number[] | null = null;
   const s = t.spacing;
   const cm = (y: number) => Math.floor((y - t.baseY) * 100);
   // Highest floors first: ground lowered under an upper floor may then reach a lower one, and goes under that
   // too in the same pass (so a second pass changes nothing).
-  const floors = boxes.filter((b) => b.kind === 'floor' && !b.yaw && !b.pitch && !b.roll).sort((a, b) => b.max[1] - a.max[1]);
+  const floors = boxes.filter((b) => b.kind === 'floor' && !b.yaw && !b.pitch && !b.roll && !bores.tiles.has(b.sourceId)).sort((a, b) => b.max[1] - a.max[1]);
   const foot = stepFootVertices(t, boxes);
   for (const b of floors) {
     const top = b.max[1];
@@ -403,7 +407,7 @@ export function withGroundAsPlayed(map: MapDocument, catalog: TileCatalog = core
   const made = map.terrain;
   if (!laid.terrain || !made) return laid;
   const geometry = boxes ?? buildMapGeometry(map, catalog);
-  const ground = terrainUnderFloors(laid, geometry)!;
+  const ground = terrainUnderFloors(laid, geometry, catalog)!;
   const out = ground === made ? laid : rebedProps(laid, made, ground, geometry);
   return out.terrain === ground ? out : { ...out, terrain: ground };
 }
