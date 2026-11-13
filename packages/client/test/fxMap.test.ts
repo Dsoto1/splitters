@@ -24,6 +24,8 @@ describe('fx map (content/vfx.json map)', () => {
     for (const r of mappedEffects()) {
       const fx = shipped(r.pack)[r.effect] as { set?: string; nodes: { type: string; name: string; material_override?: { shader?: { shader?: string } } }[] };
       for (const n of fx.nodes) {
+        // A part the map leaves out (`skip`) is never drawn: a portal's stencil window has no port.
+        if (r.skip?.includes(n.name)) continue;
         const shader = n.material_override?.shader?.shader;
         if ((n.type === 'GPUParticles3D' || n.type === 'MeshInstance3D') && shader && !portName(fx.set, shader)) missing.add(`${r.pack}/${r.effect}/${n.name}: ${fx.set}/${shader}`);
       }

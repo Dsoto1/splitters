@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Portals swirl and jump pads rise.** A portal's frame holds a moving swirl in its pair's colour (the Binbun Portal pack), and a jump pad stands in a column of rising light (Magic Area pack) with its plate, ring and chevrons still showing. Portals and pads are drawn ahead of loot glows when effects run short. With Reduce flashing on both are held still, dimmer and eased in.
 - **Zombies are your zombies.** Every zombie in Zombies mode (and in co-op squads) now wears one of the roster's six zombie characters: the Groaner, Lurcher, Rotter, Shambler and the two Zombie Soldiers. Two in three used to wear a stock zombie body that had no ragdoll, so it tipped over flat like a box when it died; now every zombie falls as a ragdoll, thrown by the shot or blast that killed it, the same as a player.
 - **Guns show on their pickups again.** Fifteen of the older gun models (the Auto Shotgun, Sawed-Off, SMG, LMG, Revolver, Hand Cannon, Marksman and Sniper rifles, Burst Rifle, Machine Pistol and more) drew nothing on a pickup or when dropped: only the glowing ring showed. They were stored in a form the pickup's drawing code dropped. Every gun now shows on its pickup and on the ground.
 - **The Auto Shotgun has a proper model:** a textured steel-and-wood shotgun in place of the thin near-black shape.

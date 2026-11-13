@@ -79,6 +79,26 @@
       "edition": "Vol. 1 pack, purchased by the owner (Drive fx/GodotLootVFX.zip, fetched 2026-11-12); no licence file in the download (the owner's full licence; CLAUDE.md content rules). 12 effects: glows for loot on the ground and floating, in six colours.",
       "dir": "BinbunVFX/loot_effects",
       "file": "loot_fx"
+    },
+    "binbun-portal-vfx": {
+      "title": "Portal VFX (Binbun store licence, purchased by the owner)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "LicenseRef-Purchased",
+      "licenseFile": "assets-src/binbun-portal-vfx/License.txt",
+      "edition": "Vol. 1 pack, full edition, purchased by the owner (Drive fx/PortalVFXFull.zip, fetched 2026-11-12); no licence file in the download (the owner's full licence; CLAUDE.md content rules). 34 effects: round portals, ovals and gates in eleven looks, and a plain one.",
+      "dir": "BinbunVFX/portal_vfx",
+      "file": "portal_fx"
+    },
+    "binbun-magic-area-vfx": {
+      "title": "Magic Area VFX (Binbun store licence, purchased by the owner)",
+      "creator": "Binbun (bun3d.com)",
+      "url": "https://binbun3d.itch.io/",
+      "license": "LicenseRef-Purchased",
+      "licenseFile": "assets-src/binbun-magic-area-vfx/License.txt",
+      "edition": "Vol. 1 pack, purchased by the owner (Drive fx/MagicAreaVFX.zip, fetched 2026-11-12); no licence file in the download (the owner's full licence; CLAUDE.md content rules). 36 effects: areas on the ground (basic, lift, pillar, pulse, rim, ripple) in six colours.",
+      "dir": "BinbunVFX/magic_areas",
+      "file": "magic_area_fx"
     }
   },
   "budgets": { "maxBytes": 400000 },
@@ -173,7 +193,7 @@
       "fence": { "zap": { "pack": "electric_fx", "effect": "vfx_zap_lightning_01", "scale": 0.22 }, "hit": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.3 }, "speed": 2.5 }
     },
     "lasting": {
-      "$comment": "Effects that last while something is so (started and stopped by the game; at most a few at once by graphics quality, the nearest first). charge.<mount>: an arc sentry winding up and holding its lock (scale per metre of its drawn charge ball). fire.zone: a burning patch (molotov, flamethrower, flare, lit oil; scale per metre of its radius, three or four overlapping). fire.vehicle / fire.wreck: a burning vehicle and the wreck smouldering (scale per metre of its size). fire.flare: a flare burning in flight or where it stuck. smoke.flare: the red smoke off an Airstrike Flare's shot, in flight and where it lands to mark the strike. fire.trap: a flame trap's jet (laid along it). cloud.toxic: a toxic gas cloud (scale per metre of its radius). smoke.wreck: the smoke column over a burning vehicle or its wreck (scale per metre of its size). shield.spawn: the faint shimmer round a player under spawn protection, until it drops (scale per metre of the body's size; Reduce flashing: a steady glow on the body instead). aura.damage / aura.speed: a low flame at the feet while a powerup is on (scale per metre of the body's size). flame.<kind>: the open flame of a fire prop (braziers, fire bowls, torches, candles, campfires): content/props.json gives each prop its flame point, size (scale per metre of flame height; the candle effect is half the fire's size, so torches and candles scale 2) and kind; `decor` ones come after every other lasting effect when places are handed out, and aren't drawn on low graphics. loot.<kind>: the glow on the floor under a pickup waiting to be taken (weapon, health, armor, ammo; Binbun's ground loot glows in the pack's gold, green and pale, armor tinted the game's blue), `decor` too: the nearest few pickups within 28 m, at most half the places, and with Reduce flashing on held still, dimmer and without sparkles (game/lootGlow.ts). `skip` leaves parts of an effect out (node names): here the pillars of light, which stood through the pickup itself, and the second rings and flares.",
+      "$comment": "Effects that last while something is so (started and stopped by the game; at most a few at once by graphics quality, the nearest first). charge.<mount>: an arc sentry winding up and holding its lock (scale per metre of its drawn charge ball). fire.zone: a burning patch (molotov, flamethrower, flare, lit oil; scale per metre of its radius, three or four overlapping). fire.vehicle / fire.wreck: a burning vehicle and the wreck smouldering (scale per metre of its size). fire.flare: a flare burning in flight or where it stuck. smoke.flare: the red smoke off an Airstrike Flare's shot, in flight and where it lands to mark the strike. fire.trap: a flame trap's jet (laid along it). cloud.toxic: a toxic gas cloud (scale per metre of its radius). smoke.wreck: the smoke column over a burning vehicle or its wreck (scale per metre of its size). shield.spawn: the faint shimmer round a player under spawn protection, until it drops (scale per metre of the body's size; Reduce flashing: a steady glow on the body instead). aura.damage / aura.speed: a low flame at the feet while a powerup is on (scale per metre of the body's size). flame.<kind>: the open flame of a fire prop (braziers, fire bowls, torches, candles, campfires): content/props.json gives each prop its flame point, size (scale per metre of flame height; the candle effect is half the fire's size, so torches and candles scale 2) and kind; `decor` ones come after every other lasting effect when places are handed out, and aren't drawn on low graphics. loot.<kind>: the glow on the floor under a pickup waiting to be taken (weapon, health, armor, ammo; Binbun's ground loot glows in the pack's gold, green and pale, armor tinted the game's blue), `decor` too: the nearest few pickups within 28 m, at most half the places, and with Reduce flashing on held still, dimmer and without sparkles (game/lootGlow.ts). `skip` leaves parts of an effect out (node names): here the pillars of light, which stood through the pickup itself, and the second rings and flares. portal: the swirl in a portal's frame while it is switched on (Binbun's Portal VFX, a gate; scale per metre of the portal's width over the pack's 2.5, its height fitted by the game; tinted the pair's colour by the game). pad: the column of light rising off a jump pad (Binbun's Magic Area VFX, the blue lift area). Both are `fixture`s: things of the map that matter to play, placed after the effects of the moment (fire, gas, a charge) and before every `decor` one (game/fixtureFx.ts).",
       "charge.sentry_arc": { "pack": "electric_fx", "effect": "vfx_ball_lightning_04", "scale": 0.6 },
       "shield.spawn": { "pack": "electric_fx", "effect": "vfx_ball_lightning_04", "scale": 1.1 },
       "aura.damage": { "pack": "flame_fx", "effect": "vfx_purple_fire_02", "scale": 1.2 },
@@ -193,7 +213,9 @@
       "loot.weapon": { "pack": "loot_fx", "effect": "ground_loot_vfx_legendary", "scale": 1.25, "decor": true, "skip": ["Ring_02", "Flare2", "Pillar_01", "Pillar_02", "ShapeParticles"] },
       "loot.health": { "pack": "loot_fx", "effect": "ground_loot_vfx_uncommon", "scale": 1.25, "decor": true, "skip": ["Ring_02", "Pillar_01"] },
       "loot.armor": { "pack": "loot_fx", "effect": "ground_loot_vfx_rare", "scale": 1.25, "decor": true, "tint": "#3c8dff", "skip": ["Ring_02", "Flare2", "Pillar_01", "Pillar_02"] },
-      "loot.ammo": { "pack": "loot_fx", "effect": "ground_loot_vfx_common", "scale": 1.25, "decor": true, "skip": ["Pillar_01"] }
+      "loot.ammo": { "pack": "loot_fx", "effect": "ground_loot_vfx_common", "scale": 1.25, "decor": true, "skip": ["Pillar_01"] },
+      "portal": { "pack": "portal_fx", "effect": "gate_portal_vfx_01", "scale": 0.4, "fixture": true, "skip": ["StencilMesh", "GPUParticles3D"] },
+      "pad": { "pack": "magic_area_fx", "effect": "lift_area_vfx_02", "scale": 0.75, "fixture": true }
     }
   }
 }
