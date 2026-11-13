@@ -28,7 +28,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
-- M · A · Vehicle line-up: Supply Buggy (2 seats, full resupply at its tailgate), Troop Buggy (6), Gun Buggy (3), Armored Rover (7, front gun gone, rear gunner lowered), bots use the Supply Buggy, `buggy` retired on 19 maps · `wip/vehicles-buggy-split` · next to land
 - M · A · Ammo Box: map Ammo Boxes become solid resupply crates (10 uses, cook-off); "Ammo Box Kit" throwable · `wip/ammo-box` · after the line-up
 - S · A · Effects checks, findings only: Pantry Raid portals, loot rings on bright floors, perf and Low graphics for the new effects, Reduce flashing · `wip/fx-checks` (docs)
 - S · B · Parachute, built in code: a round canopy of 16 panels on lines to risers behind the neck (the owner has seen it and keeps it: "Drop the meshy parachute"); now colour variants, one per player by slot · `wip/mapmaker-parachute` · `packages/client/src/game/canopyVisuals.ts`, the canopy lines in `view.ts` · lands after lane A's line-up
@@ -83,6 +82,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-13 · A · Vehicle line-up: Supply, Troop and Gun Buggy, Armored Rover 7 places, bots resupply at a Supply Buggy, `buggy` retired on 19 maps.
 - 2026-11-13 · A · Paths draw under the roads they join (60d9abd3).
 - 2026-11-13 · A · The Spillway: crest openings closed, wing wall, hillside stair legs, east end raised to the crest (023edfa4). No gatehouses.
 - 2026-11-13 · A · MapMaker editing: two to three times quicker edits, select a path or road, fit the ground to a build (7bb706a8).

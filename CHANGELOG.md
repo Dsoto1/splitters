@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- Vehicles: the Supply Buggy (resupply at its tailgate, bots use it too), the six-seat Troop Buggy, the three-seat Gun Buggy, and a seven-place Armored Rover with its rear gunner at the gun; the old Buggy becomes the Troop Buggy on every map.
 - **Troop Buggy and Supply Buggy.** The Buggy is now two vehicles. The **Troop Buggy** (the Tactical Off-Road Beast, the long sand-coloured one with a roof gun) seats six: a driver, a front passenger, two seated behind and two standing in the back row, their shoulders out of the roof. Every Buggy on the official maps is a Troop Buggy now. The **Supply Buggy** (the dark sci-fi buggy) seats two, and players on foot at its tailgate press Use to resupply (full reserves for every gun you carry, underbarrel rounds, grenades topped up). It holds ten resupplies, each player waits a few seconds between two, and it comes back full when it respawns.
 - **The Gun Jeep is the Gun Buggy** and seats three: the driver and a passenger in the cab and a gunner standing at the roof gun.
 - **The Armored Rover seats seven:** the driver and a passenger in front, two on the bench behind them, one rider hanging on each side, and the rear gunner on the roof. The front gun is gone.
