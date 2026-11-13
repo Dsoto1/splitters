@@ -9,7 +9,7 @@ Spaceships and Tank Pack (all CC0).
 
 | Mount | Seats | What it does |
 |---|---|---|
-| Heavy MG Turret | 1 gunner | A heavy machine gun on a tripod, ±80° arc, overheats instead of reloading. Drawn at twice its model's built size (`scale` 2: 3 m long, the top of the receiver 1.28 m up, chest height to the gunner standing behind it); you see your own gun in front of you when you man it |
+| Heavy MG Turret | 1 gunner | A heavy machine gun on a tripod, ±80° arc, overheats instead of reloading. Drawn at 2.4 times its model's built size (`scale` 2.4: 3.6 m long, the top of the receiver 1.54 m up, chest height to the gunner standing behind it); you see your own gun in front of you when you man it |
 | Rocket Turret | 1 gunner | Slow, heavy rockets, ±70° arc (model: a Meshy community cannon on a pedestal, CC0 per the owner, `guns/arc_cannon_turret.glb`, centred on its pedestal so it turns about it) |
 | Sentry Gun | none | Aims and fires on its own at its team's enemies (no team: everyone) |
 | Arc Turret | none | An auto-turret like the Sentry Gun, with a tell: it winds up (0.75 s, a growing charge ball and a warning sound) on an enemy it can see within 22 m, then locks an energy arc on that hits 5 every 0.1 s and jumps to one enemy within 6 m of them (half damage). Breaking its line of sight or leaving its reach drops the lock and the charge; a 2 s lock ends in a 1.25 s vent. 240 health. Drawn on the Rocket Turret's cannon in its own violet energy colour (`MountDef.glow`). MapMaker warns (`mount.arc_spawn`) when one stands within 12 m of a spawn it would shoot at. See "Arc Turret" below |
@@ -63,7 +63,7 @@ Spaceships and Tank Pack (all CC0).
   (`vehicles/tnr_hover_bike.glb`), the **speeder** Cyber Fang Mk III (`vehicles/cyber_fang.glb`) and the **armored
   rover** Dust Runner (`vehicles/dust_runner.glb`, a closed off-roader). Re-skins only: each keeps its box,
   handling, guns and health; the seats were moved onto the new models (measured on them, notes in
-  `content/vehicles/<id>.json`) and the models they replaced are their `fallback`. The transport plane is the
+  `content/vehicles/<id>.json`) and the models they replaced are their `fallback`. The Drop Carrier is the
   Hauler's model drawn 2.35 times its size (below). The
   **gunship** is the Sky Cruiser (`vehicles/sky_cruiser.glb`, Meshy Community, CC0; 2026-11-12): its box is fitted to
   the hull, the pilot sits in the closed cab and each door gunner sits on their door's sill, feet on the step board
@@ -291,7 +291,7 @@ swim or catch a ladder. Landing under a canopy never does fall damage. With a
 off Frost Basin's cliffs reaches the ridges. With a jetpack on, Space is
 thrust and never pulls the cord.
 
-Jumping out of the transport plane, or out of a flyer high up, arms the
+Jumping out of the Drop Carrier, or out of a flyer high up, arms the
 **automatic opener**: if you haven't opened it by about 28 m above the
 ground, it opens for you. Bots always have it (and never cut away), so they
 come down safely from flyers and the plane. The HUD offers "Open your
@@ -332,18 +332,22 @@ map that names one is still a valid file as written, and as played it has the ve
 A mount can draw its model larger or smaller than it was built (`scale` in `content/vehicles/<id>.json`,
 `MountDef.scale`, 0.25 to 4, default 1): about its footprint's centre, its lowest point still on the ground (or at
 its ride height). Drawing only: `half`, the seats and `cockpitEye` are metres as always and must be fitted to the
-model at that size, and its lower levels of detail come in that many times further off. Two use it: the Transport
-Plane (the Hauler's model at 2.35) and the Heavy MG Turret (2). It costs no download; the texture is that much
+model at that size, and its lower levels of detail come in that many times further off. Two use it: the Drop
+Carrier (the Hauler's model at 2.35) and the Heavy MG Turret (2.4). It costs no download; the texture is that much
 coarser, so for a model seen close up at a much larger size, build it larger in `content/guns.json` instead.
 
-## The transport plane and air drop
+## The Drop Carrier and air drop
+
+Called the Transport Plane until 2026-11-13 (owner: "Drop Carrier"). Only the name people read changed: the map
+entity is still `airplane`, its craft `plane`, the content file `content/vehicles/airplane.json` and the code's names
+(`AirplaneEntity`, `sim/airplane.ts`) as they were, so no map changes.
 
 The craft is the **Hauler's model drawn 2.35 times its size** (owner, 2026-11-12): the Ironbound Voyager at 16 m long,
 a closed hull 4.2 m wide and 5.65 m tall. That is the length the old plane's box had, so riders leave from the same
 place behind it and the chase camera sits where it did. Its 24 riders are in the hold, two columns of twelve, out of
 sight in the closed hull (measurements in `content/vehicles/airplane.json`).
 
-A **Transport Plane** (MapMaker: Entities → Gameplay; map entity `airplane`,
+A **Drop Carrier** (MapMaker: Entities → Gameplay; map entity `airplane`,
 format v19) flies a fixed route over the map: its marker is the route's
 anchor, the route is a list of [x, z] points (metres from the marker, edited
 as a point list in the inspector), flown at an **altitude** above the marker,

@@ -7,19 +7,19 @@ export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'sentry_arc
 
 export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef>> = {
   // model: The owner's toy machine gun on a tripod (Meshy, owned; content/guns.json, centred on its tripod), built 1.5 m long: a 0.57 m receiver and a 0.93 m barrel, its bore 0.55 m off the ground.
-  // scale: Drawn twice its built size (owner, 2026-11-12: "the MG turret should be scaled up"; at its built size its top was 0.64 m up, knee height to a 1.8 m player, and it read as a toy). At 2: 3.0 m long (receiver 1.14 m, barrel 1.86 m), bore 1.1 m up, top of the receiver 1.28 m (a standing player's chest), the spade grips about a metre up, tripod feet 2.2 m apart. The model's tripod is short for its gun, so one scale can't give both a chest-high gun and a 1.2-1.5 m barrel: 1.6 gives a 1.5 m barrel on a gun at hip height (bore 0.88 m), 2.4 a chest-high bore with a 2.2 m barrel. 2 is between them, the height coming first because the gunner stands.
-  // half: The solid part at that size: the receiver and the pintle (1.5 m wide, 1.9 m long, 1.28 m tall). The barrel (to z 2.06) and the tripod's side feet (1.1 m either side) are outside it, like the Tank's barrel.
-  // seats: The gunner stands 1.45 m behind the pintle, half a metre clear of the receiver's back (z -0.94). The seat doesn't move as the gun turns; in the gunner's own view the gun is drawn turning about where they stand, so it stays in front of them (client View.updateMounts).
+  // scale: Drawn 2.4 times its built size (owner, 2026-11-12: "the MG turret should be scaled up"; 2026-11-13, of 2.4: "chest height works"). At its built size its top was 0.64 m up, knee height, and it read as a toy; at 2 the receiver was waist high to the characters as drawn (they stand taller than the 1.8 m capsule). At 2.4: 3.6 m long (receiver 1.37 m, barrel 2.23 m), bore 1.32 m up, top of the receiver 1.54 m, the spade grips about 1.2 m up, tripod feet 2.6 m apart. The model's tripod is short for its gun, so a chest-high gun has a long barrel: the height comes first because the gunner stands.
+  // half: The solid part at that size: the receiver and the pintle (1.8 m wide, 2.28 m long, 1.54 m tall: cover to a crouching player, and a standing one's eye, 1.6 m, just clears it). The barrel (to z 2.47) and the tripod's side feet (1.3 m either side) are outside it, like the Tank's barrel. The gunner's own rounds pass their turret's box (they leave from the eye, standing or ducked).
+  // seats: The gunner stands 1.65 m behind the pintle, half a metre clear of the receiver's back (z -1.13). The seat doesn't move as the gun turns; in the gunner's own view the gun is drawn turning about where they stand, so it stays in front of them (client View.updateMounts), and is left out while they duck below its top (their eye would be behind the receiver).
   turret_mg: {
     id: 'turret_mg',
     displayName: 'Heavy MG Turret',
     kind: 'turret',
     model: 'guns/tripod_mg.glb',
-    scale: 2,
+    scale: 2.4,
     health: 400,
-    half: [0.75, 0.64, 0.95],
-    seats: [{ role: 'gunner', label: 'Gunner', offset: [0, 0, -1.45], weapon: 'core.mount_mg', arc: 1.4 }],
-    enterRadius: 2.8,
+    half: [0.9, 0.77, 1.14],
+    seats: [{ role: 'gunner', label: 'Gunner', offset: [0, 0, -1.65], weapon: 'core.mount_mg', arc: 1.4 }],
+    enterRadius: 3,
     respawnSeconds: 45,
     blast: { radius: 3, damage: 60 },
     blurb: 'A heavy machine gun on a tripod: one gunner, a wide arc, overheats instead of reloading',
@@ -676,13 +676,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
 
 /** The route crafts (`airplane` map entities): not placeable, they fly their entity's route. */
 export const ROUTE_CRAFT_DEFS: Readonly<Record<'airplane' | 'dropship_drop', MountDef>> = {
-  // design: The transport plane (AirplaneEntity, sim/airplane.ts): 24 passenger benches along the hold; it cannot be hurt and nobody flies it. Not placeable: it flies its map entity's route.
+  // design: The Drop Carrier (called the Transport Plane until 2026-11-13; its id, the `airplane` map entity and the code's names are unchanged: AirplaneEntity, sim/airplane.ts): 24 passenger benches along the hold; it cannot be hurt and nobody flies it. Not placeable: it flies its map entity's route.
   // model: The Hauler's model drawn 2.35 times its size (owner, 2026-11-12: "the transport plane can be replaced with a larger scaled version of the hauler"): the Ironbound Voyager (Meshy Community, CC0; content/guns.json vehicles/ironbound_hauler.glb, built 6.8 m long) at 16 m, the length the old plane's box had, so the air drop's exit (half its length and a metre behind, sim/airplane.ts dropOffsets) and the chase camera are where they were. `scale` (MountDef.scale), not a second build: one file serves both craft, and a build at 16 m with the same 2048 texture would look the same (the texels are 2.35 times larger either way: about 100 to the metre, on a craft seen from the ground or from the chase camera 22 m behind).
   // half: The hull at that size, measured on the model's triangles: a closed tube 4.2 m wide (4.7 with the deck rails) and 5.65 m tall from its lowest point, 16 m long. The fins amidships reach 6.5 m either side, outside the box, as on the Hauler. The old plane's box was 10.4 m wide (its wings); nothing collides with a route craft.
   // seats: 24 in the hold, two columns 0.9 m either side of the middle, twelve rows a metre apart from z 6 back to z -5, feet 2 m up: inside the hull everywhere (at a rider's heights it is 1.48 m wide a side at the front row, in the nose, and 1.8 m and more behind; its floor is 0.5 m up and its roof 5.2 m; aft of z -5.6 the tail's underside rises to 2 m, so no row is further back). Riders are out of sight in the closed hull, like the Hauler's pilot; yours is the chase camera.
   airplane: {
     id: 'airplane',
-    displayName: 'Transport Plane',
+    displayName: 'Drop Carrier',
     kind: 'vehicle',
     model: 'vehicles/ironbound_hauler.glb',
     scale: 2.35,

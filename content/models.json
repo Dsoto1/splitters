@@ -392,13 +392,6 @@
       "accent": "#8fe3ff"
     },
     {
-      "out": "vehicles/kart.glb",
-      "pack": "kenney-car-kit",
-      "file": "kart-oopi.glb",
-      "forward": "+z",
-      "length": 2.0
-    },
-    {
       "out": "turrets/mg.glb",
       "pack": "kenney-space-kit",
       "file": "turret_double.glb",
@@ -485,17 +478,6 @@
       }
     },
     {
-      "out": "vehicles/ice_cream_truck.glb",
-      "pack": "kenney-car-kit",
-      "file": "van.glb",
-      "forward": "+z",
-      "length": 4.8,
-      "recolor": {
-        "desaturate": 0.85,
-        "tint": "#ffd6e6"
-      }
-    },
-    {
       "out": "vehicles/hover_bike.glb",
       "pack": "kenney-space-kit",
       "file": "craft_speederA.glb",
@@ -508,13 +490,6 @@
       "file": "craft_cargoB.glb",
       "forward": "+z",
       "length": 8.6
-    },
-    {
-      "out": "vehicles/transport_plane.glb",
-      "pack": "kenney-space-kit",
-      "file": "craft_cargoA.glb",
-      "forward": "+z",
-      "length": 16
     }
   ],
   "budgets": {

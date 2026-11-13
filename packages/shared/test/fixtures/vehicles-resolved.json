@@ -24,12 +24,12 @@
     "displayName": "Heavy MG Turret",
     "kind": "turret",
     "model": "guns/tripod_mg.glb",
-    "scale": 2,
+    "scale": 2.4,
     "health": 400,
     "half": [
-     0.75,
-     0.64,
-     0.95
+     0.9,
+     0.77,
+     1.14
     ],
     "seats": [
      {
@@ -38,13 +38,13 @@
       "offset": [
        0,
        0,
-       -1.45
+       -1.65
       ],
       "weapon": "core.mount_mg",
       "arc": 1.4
      }
     ],
-    "enterRadius": 2.8,
+    "enterRadius": 3,
     "respawnSeconds": 45,
     "blast": {
      "radius": 3,
@@ -57,7 +57,7 @@
     [
      0,
      1,
-     -1.3
+     -1.5
     ]
    ]
   },
@@ -1703,7 +1703,7 @@
  "airplane": {
   "def": {
    "id": "airplane",
-   "displayName": "Transport Plane",
+   "displayName": "Drop Carrier",
    "kind": "vehicle",
    "model": "vehicles/ironbound_hauler.glb",
    "scale": 2.35,

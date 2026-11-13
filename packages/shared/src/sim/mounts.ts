@@ -163,7 +163,7 @@ export interface MountDef {
   model: string;
   /**
    * Drawing only: the model is drawn this many times its built size (default 1), about its footprint's centre, its
-   * lowest point still on the ground (or at its ride height). The transport plane is the Hauler's model drawn larger;
+   * lowest point still on the ground (or at its ride height). The Drop Carrier is the Hauler's model drawn larger;
    * the Heavy MG Turret its tripod gun at a full-size gun's height. `half`, the seats and `cockpitEye` are in metres
    * as always, fitted to the model at this size; its lower levels of detail come in that many times further off.
    */
