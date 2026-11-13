@@ -59,7 +59,7 @@ export interface GroundRim {
   mode: 'both' | 'raise' | 'lower';
 }
 
-/** Cover: over the rectangle the ground is at least `y` high (earth over a buried piece), falling away outside at MOUTH_BANK. */
+/** Cover: over the rectangle the ground is at least `y` high (earth over a buried piece), falling away outside at COVER_BANK. */
 export interface GroundCover {
   x0: number;
   z0: number;
@@ -79,6 +79,8 @@ export interface GroundBores {
 
 /** The steepest the banks of a mouth's cutting rise (rise over run): 56°, too steep to walk, so a mouth is entered by its floor. */
 export const MOUTH_BANK = 1.5;
+/** How steeply earth brought up to a buried piece falls away (a cover's mound, the berm at a rim): 35°, a slope players and bots walk, so a buried tunnel can be crossed over its top. */
+export const COVER_BANK = 0.7;
 /** How far under an opening's floor its ground lies (as open ground meets any floor's edge: settle.ts). */
 const UNDER_FLOOR = 0.05;
 /** A mouth's cutting runs out until the ground as made is no more than this over its floor (daylight), */
@@ -322,7 +324,8 @@ export function nearGroundCut(cuts: readonly GroundCut[], x: number, z: number, 
  *    opening run out to daylight first, and beyond the ground rises no steeper than MOUTH_BANK;
  *  - **rims**: the ground along a rim goes to the rim's height (so earth meets a wing wall's top: no wall stands bare
  *    of its bank, and no hill overhangs it), up or down, and differs from it by at most MOUTH_BANK a metre further out;
- *  - **covers**: the ground over a buried piece is at least its cover (earth over its cap), falling away at MOUTH_BANK.
+ *  - **covers**: the ground over a buried piece is at least its cover (earth over its cap), falling away at COVER_BANK
+ *    (as the earth raised to a rim does): gentle enough to walk, so a mound is crossed over its top.
  *
  * Where they disagree: a mouth's flat ground wins (the way in is never banked up: on a grid that doesn't line up with
  * the piece, a wing wall's last grid square may show a little of its foot instead), then the vertices held at a `both`
@@ -393,10 +396,10 @@ export function shapeGroundAtBores(t: TerrainData, bores: Pick<GroundBores, 'ope
 
   for (const cover of bores.covers) {
     const q = touched(cover.x0, cover.z0, cover.x1, cover.z1);
-    const reach = Math.max(0, cover.y - low) / MOUTH_BANK + s;
+    const reach = Math.max(0, cover.y - low) / COVER_BANK + s;
     const [c0, c1] = cols(cover.x0 - reach, cover.x1 + reach);
     const [r0, r1] = rows(cover.z0 - reach, cover.z1 + reach);
-    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) atLeast(lo, r * t.cols + c, cmUp(cover.y - MOUTH_BANK * away(q, c, r)));
+    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) atLeast(lo, r * t.cols + c, cmUp(cover.y - COVER_BANK * away(q, c, r)));
   }
 
   for (const rim of bores.rims) {
@@ -406,7 +409,7 @@ export function shapeGroundAtBores(t: TerrainData, bores: Pick<GroundBores, 'ope
     if (!(len2 > 0)) continue;
     const yTop = Math.max(rim.y0, rim.y1);
     const yLow = Math.min(rim.y0, rim.y1);
-    const reach = Math.max(rim.mode === 'lower' ? 0 : yTop - low, rim.mode === 'raise' ? 0 : high - yLow, 0) / MOUTH_BANK + s;
+    const reach = Math.max(rim.mode === 'lower' ? 0 : (yTop - low) / COVER_BANK, rim.mode === 'raise' ? 0 : (high - yLow) / MOUTH_BANK, 0) + s;
     const [c0, c1] = cols(Math.min(rim.x0, rim.x1) - reach, Math.max(rim.x0, rim.x1) + reach);
     const [r0, r1] = rows(Math.min(rim.z0, rim.z1) - reach, Math.max(rim.z0, rim.z1) + reach);
     for (let r = r0; r <= r1; r++) {
@@ -422,7 +425,7 @@ export function shapeGroundAtBores(t: TerrainData, bores: Pick<GroundBores, 'ope
         const e = Math.max(0, d - s);
         // Held at the rim: the vertices on the line, or the nearest either side of it (strictly within a square).
         if (rim.mode === 'both' && d < s - 1e-9) atMost(pin, i, Math.round((y - t.baseY) * 100));
-        if (rim.mode !== 'lower') atLeast(lo, i, cmUp(y - MOUTH_BANK * e));
+        if (rim.mode !== 'lower') atLeast(lo, i, cmUp(y - COVER_BANK * e));
         if (rim.mode !== 'raise') atMost(hi, i, cmDown(y + MOUTH_BANK * e));
       }
     }

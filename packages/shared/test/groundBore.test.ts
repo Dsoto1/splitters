@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { NavWorld, initNavigation } from '../src/nav/index.ts';
 import {
+  COVER_BANK,
   MOUTH_BANK,
   PhysicsWorld,
   buildMapGeometry,
@@ -281,7 +282,8 @@ describe('a buried tunnel under a ridge: the hill stays on top and opens at the 
     const t = played(flat).terrain!;
     // Over the three buried cells and the stretch behind each headwall: at least 0.2 m of earth on the 3.75 m cap.
     for (let z = -15; z <= 15; z += 1) for (let x = -4; x <= 4; x += 1) expect(terrainHeightAt(t, x, z), `${x},${z}`).toBeGreaterThanOrEqual(3.95 - 1e-6);
-    // The mound falls away at the bank's slope: 6 m out it is the field again.
+    // The mound falls away at a slope bots walk (COVER_BANK): half way down 3 m out, the field again 8 m out.
+    for (const x of [-7, 7]) expect(terrainHeightAt(t, x, 0)).toBeCloseTo(3.95 - 3 * COVER_BANK, 1);
     for (const x of [-12, 12]) expect(terrainHeightAt(t, x, 0)).toBeCloseTo(-0.15, 6);
     // The wing walls hold earth to their tops, and the way in is open.
     for (const x of [-4.01, 4.01]) expect(terrainHeightAt(t, x, -17.5)!).toBeGreaterThan(2.3);
@@ -290,6 +292,13 @@ describe('a buried tunnel under a ridge: the hill stays on top and opens at the 
     expect(physics.raycastWorld({ x: 0, y: 1.5, z: -26 }, { x: 0, y: 0, z: 1 }, 52)).toBeNull();
     // From the side the mound is in the way of a shot at the tunnel's wall.
     expect(physics.raycastWorld({ x: 12, y: 2, z: 0 }, { x: -1, y: 0, z: 0 }, 20)!).toBeLessThan(7.5);
+    // Bots cross the mound over the tunnel's top (and go through it).
+    const nav = NavWorld.build(buildMapGeometry(map), mapTerrainMesh(map));
+    const over = nav.findPath({ x: -20, y: -0.15, z: 0 }, { x: 0, y: 3.95, z: 0 });
+    expect(over).not.toBeNull();
+    expect(over![over!.length - 1]!.y).toBeGreaterThan(3.8);
+    expect(Math.hypot(over![over!.length - 1]!.x, over![over!.length - 1]!.z)).toBeLessThan(1);
+    nav.destroy();
     physics.free();
   });
 });
