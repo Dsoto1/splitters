@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 37,
+  "formatVersion": 38,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_vz5jy6nakd5q3rro",
-      "revision": 26,
-      "contentHash": "sha256:4fbcd9a3f6619e73c19fcd3a5d16deb14790e91b2a5e81ef2c76c7a442ba9317",
-      "schemaVersion": 37,
-      "releasedAt": "2026-11-13T12:34:03.061Z"
+      "versionId": "v_jkenmdsykexvdy4o",
+      "revision": 28,
+      "contentHash": "sha256:36d946e1f4e9ca56c6cc88ad8910c341f749eb54b4204ee339b4f0d79a0506ea",
+      "schemaVersion": 38,
+      "releasedAt": "2026-11-13T17:49:44.644Z"
     },
     "testOnly": true
   },
@@ -1106,6 +1106,22 @@
         "y": -9,
         "z": -1,
         "rotation": 1
+      },
+      {
+        "id": "tile_869b9nzdhh",
+        "tile": "core.room",
+        "x": 14,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "shopfront",
+          "0,0,0:E": "window_arched"
+        },
+        "glass": {
+          "0,0,0:N": "breakable",
+          "0,0,0:E": "reinforced"
+        }
       }
     ]
   },

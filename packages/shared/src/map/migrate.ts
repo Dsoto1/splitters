@@ -93,6 +93,11 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v36 -> v37: a placed tile's optional `family` (the tunnel kit's material families: the same shape drawn in
   // another family's materials and trim). Absent = the tile's own, as before: v36 data is valid as is.
   [36, (doc) => ({ ...doc })],
+  // v37 -> v38: two more wall styles a side may name, `shopfront` and `window_arched` (Tileset 11, Urban & Civilian;
+  // content/tiles/edges.json). Nothing an older map says changes meaning: v37 data is valid as is. The bump is for
+  // the other direction: a build that only knows v37 refuses a v38 map outright, instead of failing on a style it
+  // has never heard of.
+  [37, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */

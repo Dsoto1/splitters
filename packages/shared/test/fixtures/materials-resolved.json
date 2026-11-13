@@ -3881,6 +3881,106 @@
    "found": true,
    "ballistic": "soil",
    "terrain": "sand"
+  },
+  {
+   "material": {
+    "id": "core.parking_bays",
+    "displayName": "Parking Bays",
+    "category": "Ground",
+    "pattern": "parking_bays",
+    "base": "#4a4b4e",
+    "accent": "#e6e3d8",
+    "scale": 5,
+    "shine": 0.08
+   },
+   "keys": [
+    "id",
+    "displayName",
+    "category",
+    "pattern",
+    "base",
+    "accent",
+    "scale",
+    "shine"
+   ],
+   "found": true,
+   "ballistic": "soil",
+   "terrain": "gravel"
+  },
+  {
+   "material": {
+    "id": "core.tactile_paving",
+    "displayName": "Tactile Paving",
+    "category": "Tile",
+    "pattern": "tactile",
+    "base": "#d6a416",
+    "accent": "#5e4c26",
+    "scale": 0.8,
+    "shine": 0.1
+   },
+   "keys": [
+    "id",
+    "displayName",
+    "category",
+    "pattern",
+    "base",
+    "accent",
+    "scale",
+    "shine"
+   ],
+   "found": true,
+   "ballistic": "stone",
+   "terrain": "sand"
+  },
+  {
+   "material": {
+    "id": "core.graffiti_brick",
+    "displayName": "Graffiti on Brick",
+    "category": "Brick",
+    "pattern": "graffiti",
+    "base": "#8e4a38",
+    "accent": "#b9ad9c",
+    "scale": 4,
+    "shine": 0.05
+   },
+   "keys": [
+    "id",
+    "displayName",
+    "category",
+    "pattern",
+    "base",
+    "accent",
+    "scale",
+    "shine"
+   ],
+   "found": true,
+   "ballistic": "brick",
+   "terrain": "dirt"
+  },
+  {
+   "material": {
+    "id": "core.damaged_plaster",
+    "displayName": "Damaged Plaster",
+    "category": "Stone",
+    "pattern": "spalled_plaster",
+    "base": "#d9d2c0",
+    "accent": "#94503c",
+    "scale": 4,
+    "shine": 0.05
+   },
+   "keys": [
+    "id",
+    "displayName",
+    "category",
+    "pattern",
+    "base",
+    "accent",
+    "scale",
+    "shine"
+   ],
+   "found": true,
+   "ballistic": "drywall",
+   "terrain": "snow"
   }
  ],
  "palette": [
@@ -4033,7 +4133,11 @@
   "core.pbr_white_marble",
   "core.pbr_opus_incertum",
   "core.pbr_sandstone_blocks",
-  "core.pbr_rough_sandstone"
+  "core.pbr_rough_sandstone",
+  "core.parking_bays",
+  "core.tactile_paving",
+  "core.graffiti_brick",
+  "core.damaged_plaster"
  ],
  "themes": [
   {

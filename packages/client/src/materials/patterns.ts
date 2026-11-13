@@ -661,8 +661,177 @@ function sandbagPaint(u: number, v: number, b: RGB, a: RGB): RGB {
   return shade(cloth, light * tie * crease * weave * (0.9 + fbm(u, v, 221) * 0.16));
 }
 
+/**
+ * Urban & Civilian (Tileset 11, plan step B): four painted patterns of our own. Nothing here is copied from a photo or
+ * from anyone's artwork.
+ * Parking bays: asphalt with white bay lines, one repeat two bays wide (lines every half repeat) and one bay deep (a
+ * head line across at the repeat's edge), the paint worn where tyres run.
+ */
+function parkingPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  // Asphalt: fine aggregate, a few pale stones, darker patches of old oil.
+  const grit = hash(Math.floor(u * 256), Math.floor(v * 256), 301);
+  let road = shade(b, 0.86 + grit * 0.2 + fbm(u, v, 303) * 0.12);
+  if (grit > 0.965) road = mix(road, a, 0.28);
+  road = shade(road, 1 - clamp01(noise(u, v, 4, 305) * 0.6 + noise(u, v, 16, 306) * 0.4 - 0.6) * 0.7);
+  const LINE = 0.012;
+  const du = Math.min(u, Math.abs(u - 0.5), 1 - u);
+  const dv = Math.min(v, 1 - v);
+  if (du > LINE && dv > LINE) return road;
+  // Paint: thinner toward its edges and scuffed through in patches.
+  const edge = clamp01((LINE - Math.min(du, dv)) / 0.004);
+  const worn = clamp01((noise(u, v, 16, 307) * 0.6 + noise(u, v, 64, 309) * 0.4 - 0.34) / 0.2);
+  return mix(road, shade(a, 0.9 + fbm(u, v, 311) * 0.1), edge * (0.35 + worn * 0.6));
+}
+
+/** Tactile paving: 2 × 2 slabs a repeat, each with 6 × 6 round studs lit from one side, grime in the joints and round the studs. */
+function tactilePaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const fu = fract(u * 2);
+  const fv = fract(v * 2);
+  const slab = hash(Math.floor(u * 2), Math.floor(v * 2), 321);
+  if (edgeDist(fu, fv) < 0.018) return shade(a, 0.7 + fbm(u, v, 323) * 0.2);
+  const face = shade(b, 0.84 + slab * 0.08 + fbm(u, v, 325) * 0.1);
+  const dx = fract(fu * 6) - 0.5;
+  const dy = fract(fv * 6) - 0.5;
+  const r = Math.hypot(dx, dy) / 0.3;
+  if (r < 1) {
+    // A low dome: brighter on its crown and on the side the light comes from.
+    const crown = Math.sqrt(1 - r * r);
+    return shade(b, 0.9 + slab * 0.06 + crown * 0.14 + (dy - dx) * 0.22);
+  }
+  // Grime gathers against the studs, most on the side away from the light.
+  const ring = clamp01(1 - (r - 1) / 0.45);
+  return mix(face, a, ring * (0.22 + clamp01((dx - dy) * 1.6) * 0.3));
+}
+
+/** A brick wall four courses to the metre (the look of `bricks`, twice as many a repeat); returns the brick and whether this is mortar. */
+function brickUnder(u: number, v: number, brick: RGB, mortar: RGB, seed: number): { c: RGB; joint: boolean; tone: number } {
+  const rows = 16;
+  const row = Math.floor(v * rows);
+  const cu = u * 8 + (row % 2) * 0.5;
+  const joint = fract(cu) < 0.045 || fract(v * rows) < 0.13;
+  if (joint) return { c: shade(mortar, 0.88 + fbm(u, v, seed) * 0.2), joint, tone: 0.8 };
+  const tone = 0.8 + hash(Math.floor(cu) % 8, row, seed + 1) * 0.3 + fbm(u, v, seed + 2) * 0.1;
+  return { c: shade(brick, tone), joint, tone };
+}
+
+/** Distance from (px, py) to the segment a-b; `px` is first brought to the copy of the point nearest `ax` (the pattern wraps in u). */
+function segDist(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
+  const x = ax + (px - ax - Math.round(px - ax));
+  const ex = bx - ax;
+  const ey = by - ay;
+  const t = clamp01(((x - ax) * ex + (py - ay) * ey) / (ex * ex + ey * ey));
+  return Math.hypot(x - ax - ex * t, py - ay - ey * t);
+}
+const lineDist = (px: number, py: number, pts: readonly (readonly [number, number])[]): number => {
+  let d = 9;
+  for (let i = 0; i + 1 < pts.length; i++) d = Math.min(d, segDist(px, py, pts[i]![0], pts[i]![1], pts[i + 1]![0], pts[i + 1]![1]));
+  return d;
+};
+/** Distance to the edge of a union of discs [x, y, r] (negative inside). */
+const blobDist = (px: number, py: number, discs: readonly (readonly [number, number, number])[]): number => {
+  let d = 9;
+  for (const [x, y, r] of discs) d = Math.min(d, Math.hypot(px - x - Math.round(px - x), py - y) - r);
+  return d;
+};
+
+// Spray paint (fixed: a wall is tagged in can colours whatever the brick is).
+const SPRAY = { teal: hex('#2fb0a4'), pink: hex('#d9367f'), yellow: hex('#efc21c'), white: hex('#eeeae0'), blue: hex('#3a62c8'), ink: hex('#17171d') };
+// The pieces, in the repeat's own 0-1 square (v up: the wall's foot is v = 0). Shapes only: no letters, numerals, words or marks.
+const G_CLOUD: readonly (readonly [number, number, number])[] = [[0.17, 0.4, 0.085], [0.26, 0.47, 0.1], [0.36, 0.42, 0.09], [0.3, 0.34, 0.085], [0.21, 0.31, 0.06], [0.42, 0.36, 0.055]];
+const G_SHINE: readonly (readonly [number, number, number])[] = [[0.22, 0.5, 0.018], [0.25, 0.525, 0.012]];
+const G_BOLT: readonly (readonly [number, number])[] = [[0.56, 0.6], [0.66, 0.42], [0.62, 0.42], [0.74, 0.24], [0.7, 0.24], [0.79, 0.12]];
+const G_WAVE: readonly (readonly [number, number])[] = Array.from({ length: 41 }, (_, i) => [0.5 + (i / 40) * 0.44, 0.74 + Math.sin((i / 40) * Math.PI * 5) * 0.035 * (1 - i / 60)] as const);
+/** A scribble: a quick zigzag run left to right, getting smaller, as from shaking the can. It forms no letter. */
+const G_SCRAWL: readonly (readonly [number, number])[] = Array.from({ length: 15 }, (_, i) => [0.06 + (i / 14) * 0.36, 0.665 + (i % 2 === 0 ? -1 : 1) * 0.04 * (1 - i / 22) + (i / 14) * 0.02] as const);
+const G_UNDER: readonly (readonly [number, number])[] = [[0.05, 0.585], [0.2, 0.575], [0.36, 0.59], [0.44, 0.62]];
+const G_DOTS: readonly (readonly [number, number, number])[] = [[0.86, 0.5, 0.034], [0.93, 0.4, 0.022], [0.88, 0.33, 0.014]];
+const G_RING: readonly [number, number, number] = [0.52, 0.27, 0.05];
+// Runs of paint below the pieces: [u, top v, length].
+const G_DRIPS: readonly (readonly [number, number, number, keyof typeof SPRAY])[] = [[0.2, 0.26, 0.09, 'teal'], [0.31, 0.26, 0.15, 'teal'], [0.37, 0.33, 0.06, 'teal'], [0.72, 0.24, 0.07, 'pink'], [0.86, 0.47, 0.11, 'yellow'], [0.52, 0.22, 0.05, 'blue']];
+
+/**
+ * Graffiti on brick: a brick wall (base; mortar in the accent) with spray paint over the middle of each repeat: a
+ * filled cloud with an outline and a highlight, a jagged bolt, a wavy line, a zigzag scribble with an underline, dots, a ring,
+ * and runs of paint below them. Abstract shapes only: no letters, words, logos or real marks. The paint lies thin, so
+ * the courses show through it and it has worn off in places.
+ */
+function graffitiPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const wall = brickUnder(u, v, b, a, 341);
+  // Soot and damp toward the foot of the wall.
+  const under = shade(wall.c, 0.9 + clamp01(v * 3) * 0.1);
+  let paint: RGB | null = null;
+  let cover = 0;
+  const lay = (c: RGB, k: number) => {
+    if (k <= 0) return;
+    paint = paint && k < 1 ? mix(paint, c, k) : c;
+    cover = Math.max(cover, k);
+  };
+  // Overspray: a soft haze round the cloud and the bolt.
+  const cloud = blobDist(u, v, G_CLOUD);
+  const bolt = lineDist(u, v, G_BOLT);
+  lay(SPRAY.teal, clamp01(1 - cloud / 0.05) * 0.3);
+  lay(SPRAY.pink, clamp01(1 - (bolt - 0.024) / 0.035) * 0.3);
+  // Runs.
+  for (const [x, top, len, c] of G_DRIPS) {
+    const dx = Math.abs(u - x - Math.round(u - x));
+    const w = 0.0055 * (0.6 + clamp01((v - (top - len)) / len) * 0.6);
+    if (v < top && v > top - len && dx < w) lay(SPRAY[c], 1);
+    if (Math.hypot(dx, v - (top - len)) < 0.008) lay(SPRAY[c], 1);
+  }
+  // The cloud: outline, fill, highlight.
+  if (cloud < 0.012) lay(SPRAY.ink, 1);
+  if (cloud < 0) lay(mix(SPRAY.teal, SPRAY.blue, clamp01((0.42 - v) * 4)), 1);
+  if (blobDist(u, v, G_SHINE) < 0) lay(SPRAY.white, 1);
+  // The bolt: outline and fill.
+  if (bolt < 0.032) lay(SPRAY.ink, 1);
+  if (bolt < 0.022) lay(SPRAY.pink, 1);
+  // Dots and a ring.
+  const dots = blobDist(u, v, G_DOTS);
+  if (dots < 0.008) lay(SPRAY.ink, 1);
+  if (dots < 0) lay(SPRAY.yellow, 1);
+  const ring = Math.abs(Math.hypot(u - G_RING[0] - Math.round(u - G_RING[0]), v - G_RING[1]) - G_RING[2]);
+  if (ring < 0.009) lay(SPRAY.blue, 1);
+  // The wavy line, the scrawl and its underline: one pass of the can each, soft at the edges.
+  lay(SPRAY.yellow, clamp01((0.011 - lineDist(u, v, G_WAVE)) / 0.004));
+  lay(SPRAY.white, clamp01((0.0085 - lineDist(u, v, G_SCRAWL)) / 0.003));
+  lay(SPRAY.white, clamp01((0.007 - lineDist(u, v, G_UNDER)) / 0.003));
+  if (!paint || cover <= 0) return under;
+  // Paint over brick: the brick's own light and dark show through, the joints stay darker, and it has flaked in spots.
+  const flaked = clamp01((noise(u, v, 32, 343) * 0.6 + noise(u, v, 64, 345) * 0.4 - 0.7) / 0.08);
+  const on = shade(paint, (wall.joint ? 0.72 : 0.78 + wall.tone * 0.22) * (0.94 + fbm(u, v, 347) * 0.1));
+  return mix(under, on, cover * (1 - flaked * 0.85));
+}
+
+/**
+ * Damaged plaster with brick showing: painted plaster (base), stained and hairline-cracked, fallen away in a few
+ * ragged patches to the brick behind (accent), with a band of grey undercoat round each patch (a soft edge, no dark rim).
+ */
+function spalledPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  // Rain streaks run down the wall; the whole coat is a little uneven.
+  const streak = clamp01(noise(u, v * 0.25, 16, 361) - 0.55) * 0.5;
+  let plaster = shade(b, 0.92 + fbm(u, v, 363) * 0.1 - streak * 0.18);
+  const f = noise(u, v, 4, 365) * 0.55 + noise(u, v, 8, 367) * 0.3 + noise(u, v, 32, 369) * 0.15;
+  // Hairline cracks near the patches.
+  const crack = Math.abs(noise(u, v, 8, 371) - 0.5);
+  if (crack < 0.007 && f > 0.47) plaster = shade(plaster, 0.8);
+  const OPEN = 0.66;
+  if (f < OPEN - 0.05) return plaster;
+  // The undercoat: coarse grey render, left standing round the hole.
+  const grit = hash(Math.floor(u * 256), Math.floor(v * 256), 373);
+  const render = shade(mix(b, [128, 124, 116], 0.6), 0.84 + grit * 0.16);
+  if (f < OPEN) return mix(plaster, render, clamp01((f - (OPEN - 0.05)) / 0.012));
+  // Brick, dusted with plaster, the mortar a sandy grey.
+  const wall = brickUnder(u, v, a, mix(b, [120, 112, 100], 0.65), 375);
+  const brick = mix(wall.c, b, 0.1 + fbm(u, v, 379) * 0.14);
+  return mix(render, brick, clamp01((f - OPEN) / 0.012));
+}
+
 const PAINTERS: Record<PatternId, Painter> = {
   sandbags: sandbagPaint,
+  parking_bays: parkingPaint,
+  tactile: tactilePaint,
+  graffiti: graffitiPaint,
+  spalled_plaster: spalledPaint,
   grid: (u, v, b, a) => {
     const e = edgeDist(u, v);
     const mid = Math.min(Math.abs(u - 0.5), Math.abs(v - 0.5));
@@ -866,8 +1035,8 @@ const PAINTERS: Record<PatternId, Painter> = {
 
 const cache = new Map<string, Uint8Array>();
 
-/** Fine patterns (hieroglyphs, mosaics, cobbles, half-timbering, roof tiles, decking, shingle, ice, prefab panels, sandstone ashlar, dome tiles, zellige, rugs, lattices, temple carvings, inlay, roots, slabs) are painted at twice the usual size so their shapes read. */
-const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles', 'decking', 'pebbles', 'ice', 'prefab', 'sandstone_ashlar', 'scales', 'zellige', 'rug', 'lattice', 'fret', 'relief', 'inlay', 'roots', 'slabs', 'sandbags']);
+/** Fine patterns (hieroglyphs, mosaics, cobbles, half-timbering, roof tiles, decking, shingle, ice, prefab panels, sandstone ashlar, dome tiles, zellige, rugs, lattices, temple carvings, inlay, roots, slabs, bay lines, studs, graffiti, fallen plaster) are painted at twice the usual size so their shapes read. */
+const FINE_PATTERNS = new Set<PatternId>(['glyphs', 'glyphs_painted', 'mosaic', 'cobbles', 'timber', 'pantiles', 'decking', 'pebbles', 'ice', 'prefab', 'sandstone_ashlar', 'scales', 'zellige', 'rug', 'lattice', 'fret', 'relief', 'inlay', 'roots', 'slabs', 'sandbags', 'parking_bays', 'tactile', 'graffiti', 'spalled_plaster']);
 export const patternSize = (def: MaterialDefinition): number => (FINE_PATTERNS.has(def.pattern) ? 256 : 128);
 
 /** RGBA pixels for a material's pattern (cached per material). */

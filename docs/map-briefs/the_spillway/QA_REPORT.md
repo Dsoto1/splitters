@@ -24,4 +24,53 @@ A third way up the dam's face, six open flights. validate-map OK (1 note).
 - 150 s: Team Deathmatch Embers 44, Tide 91 (136 kills; 95 before the stair); King of the Hill Embers 28, Tide 5 (227 kills; it was 25 to 38); Capture the Flag still no flag taken (212 kills). The scores swing between single runs; no route 0 in all three.
 - **Capture the Flag over a full match (600 s): 20 takes, 2 captures** (both Tide's), 18 drops, 5 returns; the first take at 156 s, the first capture at 357 s; 751 kills. The 150 s runs above were too short to show a take: the mode works on this layout.
 
-Not checked: a perf bench with the vegetation; the flicker check (no new effect).
+## Crest returns, slab rails, wing wall, hillside stair legs (2026-11-13)
+21 solid concrete blocks placed in MapMaker. `validate-map`: OK, 0 issues. `nav-audit`: 0 traps, 49 islands
+(15,904 m²), 8 drop links, the same as before the blocks (3,641 to 3,644 polygons). MapMaker's own list: the one
+warning it had before (5 coplanar faces, the long stair's slab against its top flight).
+
+## Perf bench (2026-11-13; SwiftShader on a 4-core box, so compare, don't read as absolutes)
+Ten fixed eye-level cameras, bots parked out of view, the same build with the map as on main and as on the branch.
+The blocks change nothing measurable: draw calls and active meshes are identical at every camera.
+
+| Camera | Medium: draws / meshes / triangles / shadow casters | Low: draws / meshes / triangles |
+|---|---|---|
+| Crest middle, looking east | 488 / 234 / 0.49 M / 542 | 226 / 223 / 0.24 M |
+| Crest middle, looking west | 334 / 252 / 0.45 M / 367 | 226 / 227 / 0.21 M |
+| Crest middle, over the south parapet | 600 / 510 / 0.51 M / 382 | 462 / 470 / 0.27 M |
+| Crest west end, looking east | 613 / 488 / 0.58 M / 147 | 476 / 483 / 0.30 M |
+| Toe terrace, looking up the dam | 398 / 286 / 0.43 M / 402 | 262 / 264 / 0.18 M |
+| Valley (z -60), looking north | 685 / 504 / 0.61 M / 466 | 464 / 469 / 0.27 M |
+| River, looking south | 424 / 281 / 0.63 M / 441 | 273 / 274 / 0.31 M |
+| Tide's bench, looking north | 695 / 551 / 0.63 M / 197 | 512 / 521 / 0.29 M |
+| East bench, looking west | 700 / 576 / 0.54 M / 149 | 527 / 538 / 0.28 M |
+| Hillside stair's foot | 317 / 198 / 0.50 M / 431 | 182 / 181 / 0.21 M |
+
+The worst camera is 700 draw calls and 542 shadow casters on medium (the perf budget on Frost Basin is 900 and 600).
+`tools/perf/client-perf.mjs` with 48 players, 10 s, one pass each: 429 to 587 draws, 410 to 688 casters, 0.64 to
+0.79 M triangles on medium, 0.2 to 0.5 fps against Frost Basin's 1.0 on the same box; low 293 to 341 draws, 0.4 fps.
+Those passes sample two to five frames with bots moving, so they swing; one of them read 688 casters, over the 600
+budget. The environment draws all of its 397 to 406 batches (2,239 plants) wherever the player looks. Not measured on
+a real GPU.
+
+## Bots with the new blocks (2026-11-13), 48 bots, Team Deathmatch, 150 s, seeds 1 to 16
+No route 0 on every seed with the blocks (main's map: 3 on one seed). Stuck recoveries a match: main's map 70 on
+average (48 to 102), with the blocks 88 (50 to 139); about two standard errors apart, so probably a small real rise.
+On both maps most of them are on the long stair's landings (cells x 20 to 32, z 20 to 36, at 8, 12 and 16 m), and a
+few at its head by the crest (24, 28, 52), where the new returns and rails are cover bots now use. Taking the long
+stair's ten legs out of main's map changes nothing (58 over seeds 1 to 8), so the legs are not what catches them: the
+long stair's joints are, and that is open.
+
+Not checked: the flicker check (no new effect).
+
+## The crest's east end meets the ground (2026-11-13; owner's decision)
+The crest ended in a drop: the ground beside it was 1.4 to 8 m under the 28 m crest (19.6 to 26.6 m at x 84.5).
+Raised in MapMaker with the Terrain tab's Flatten, "Flatten to (m)" 28, brush 6 m, over x 84 to 94, z 54 to 70
+(54 ground points; nothing else changed): the east abutment is walked onto from the dam, as the west end. No spawn,
+flag, pickup or the hillside stair is in or near that area; no gatehouses (owner). The ground at the dam's south-east
+corner (x 84, z 54) stays as it was, so the parapet's end still stands over the gorge.
+- `validate-map`: OK, 0 issues. `nav-audit`: 0 traps, 48 islands (main's map 49), 8 drop links, 3,640 polygons.
+- Bots, 48, Team Deathmatch, 150 s, seeds 1 to 4: stuck recoveries 57 / 91 / 78 / 74 (mean 75) against main's map
+  58 / 60 / 102 / 53 (mean 68); no route 0 on every seed (main's map: 3 on seed 4). Within the noise of the earlier
+  16-seed run (88 against 70).
+- Seen in a Play test from the crest looking east: the slab runs on into level ground.

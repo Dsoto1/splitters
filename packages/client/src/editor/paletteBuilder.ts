@@ -271,7 +271,7 @@ export class PaletteBuilder {
       const pack = this.stylePack;
       const note = $('ed-pack-note');
       note.hidden = !pack;
-      note.textContent = pack ? `${pack.style}. ${pack.blurb} Dress rooms with the ${pack.facades.map((f) => FACADE_LABELS[f]).join(' or ')} facade in the tile inspector; demo map: ${pack.demo}.` : '';
+      note.textContent = pack ? `${pack.style}. ${pack.blurb} Dress rooms with the ${pack.facades.map((f) => FACADE_LABELS[f]).join(' or ')} facade in the tile inspector${pack.demo ? `; demo map: ${pack.demo}` : ''}.` : '';
       themeBtn.textContent = pack ? `Use theme (${coreThemes.get(pack.themes[0]!)?.displayName ?? pack.themes[0]})` : 'Use theme';
       // Gameplay pieces say what they are for in this pack.
       for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn[data-tool^="scenario:"]')) {

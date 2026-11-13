@@ -168,6 +168,15 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   // section: Style Pack 09 Sands of Egypt
   { id: 'core.pbr_sandstone_blocks', displayName: 'Sandstone Blocks', category: 'Stone', pattern: 'plain', base: '#d8b88e', accent: '#d8b88e', scale: 3, shine: 0.08, texture: 'Tiles142' },
   { id: 'core.pbr_rough_sandstone', displayName: 'Rough Sandstone', category: 'Brick', pattern: 'plain', base: '#b0a27a', accent: '#b0a27a', scale: 2.5, shine: 0.08, texture: 'Bricks083' },
+  // section: Style Pack 14 Urban & Civilian (Tileset 11, docs/map-briefs/urban/URBAN_PLAN.md step B): our own painted patterns, no downloaded artwork.
+  // design: One repeat is 5 m: two bays 2.5 m wide and one 5 m deep, lines 12 cm wide. Lay it on a floor or a block; the lines follow the world grid, not the cell.
+  { id: 'core.parking_bays', displayName: 'Parking Bays', category: 'Ground', pattern: 'parking_bays', base: '#4a4b4e', accent: '#e6e3d8', scale: 5, shine: 0.08 },
+  // design: Slabs 0.4 m square with 6 × 6 studs: the warning strip at a kerb, a crossing or a platform edge. Tint it for the buff or red kinds.
+  { id: 'core.tactile_paving', displayName: 'Tactile Paving', category: 'Tile', pattern: 'tactile', base: '#d6a416', accent: '#5e4c26', scale: 0.8, shine: 0.1 },
+  // design: One storey (4 m) a repeat, the paint across the middle of it. Abstract shapes only (a cloud, a bolt, a wave, a zigzag scribble, dots, a ring, runs of paint): no letters, words, logos or real marks. Base: the brick; accent: the mortar.
+  { id: 'core.graffiti_brick', displayName: 'Graffiti on Brick', category: 'Brick', pattern: 'graffiti', base: '#8e4a38', accent: '#b9ad9c', scale: 4, shine: 0.05 },
+  // design: Painted plaster fallen away in ragged patches to the brick behind, grey undercoat round each patch. Base: the plaster; accent: the brick.
+  { id: 'core.damaged_plaster', displayName: 'Damaged Plaster', category: 'Stone', pattern: 'spalled_plaster', base: '#d9d2c0', accent: '#94503c', scale: 4, shine: 0.05 },
 ];
 
 /** Themes: each surface slot's default material and tint, and the sky colour. */

@@ -10,7 +10,9 @@
 // into the room. The open door's frame stands `back` m behind the prop's centre (−z), so its box is the frame and the
 // leaf and no more (a set piece's footprint must hold a prop's whole box: map/setPieceCheck.ts). Leaves (`leaf`): 'plank' (boards under three iron strap hinges, a
 // ring handle each side, ledges on the room side), 'glazed' (a framed door, reeded glass in its upper half behind
-// glazing bars) and 'panel' (framed, a diamond of mouldings on each panel).
+// glazing bars), 'panel' (framed, a diamond of mouldings on each panel), and for the painted doors of Tileset 11
+// (kit.door.painted): 'framed' (a plain two-panel house door) and 'shop' (a kick plate under one tall pane); their
+// furniture is a knob and a letter plate (`handle: 'knob'`) or an upright pull bar (`'pull'`) instead of the ring.
 //
 // The desk (`deskhutch`) is a pedestal desk with a hutch of shelves along its back, books on them; its front is +z.
 // It collides as two boxes, the desk and the hutch, open over the desk top in front of the hutch. The closet
@@ -53,7 +55,7 @@ const LEAF_T = 0.07;
 
 /**
  * An oak door in its frame. Settings `g`: `swing` (degrees the leaf stands open, toward +z), `leaf` ('plank',
- * 'glazed' or 'panel'), `back` (how far the frame stands behind the prop's centre, m: 0 in the wall's plane). `look`: `wood` (the leaf), `frame` (hex, default the wood, darker), `iron`, `glass` (the
+ * 'glazed', 'panel', 'framed' or 'shop'), `handle` ('ring', 'knob' or 'pull'), `back` (how far the frame stands behind the prop's centre, m: 0 in the wall's plane). `look`: `wood` (the leaf), `frame` (hex, default the wood, darker), `iron`, `glass` (the
  * glazed leaf's pane), `jitter`, `grime`.
  */
 export function doorMesh(seed, size, g, look, level) {
@@ -90,6 +92,7 @@ export function doorMesh(seed, size, g, look, level) {
     return m;
   }
   const fine = level === 0;
+  const st0 = 0.16;
   if (kind === 'plank') {
     // Boards side by side, each its own tone; the outer ones keep their edges.
     const n = fine ? 7 : 1;
@@ -114,7 +117,8 @@ export function doorMesh(seed, size, g, look, level) {
   } else {
     // A framed door: stiles and rails round a panel set back; the lock rail divides it.
     const st = 0.16;
-    const lock = [0.95, 1.17];
+    // (The shop door's lock rail is a kick plate's height up: glass from there to the top rail.)
+    const lock = kind === 'shop' ? [0.34, 0.5] : [0.95, 1.17];
     const rail = tone(wood, 11);
     const field = tone(scale3(wood, 0.86), 12);
     tbox(m, T, [lx, y0, -zf], [lx + st, y1, zf], rail, ['ny']);
@@ -122,6 +126,12 @@ export function doorMesh(seed, size, g, look, level) {
     for (const [ya, yb] of [[y0, y0 + 0.24], lock, [y1 - st, y1]]) tbox(m, T, [lx + st, ya, -zf], [hx - st, yb, zf], rail, ['nx', 'px', ...(ya === y0 ? ['ny'] : [])]);
     const panels = [[y0 + 0.24, lock[0]], [lock[1], y1 - st]];
     panels.forEach(([ya, yb], i) => {
+      if (kind === 'shop' && i === 1) {
+        // One clear pane the leaf's height (drawn as dark glass with the sky's light in its upper part: nothing is seen through a kit prop).
+        const pane = hex(look.glass ?? '#4c6672');
+        tbox(m, T, [lx + st, ya, -0.006], [hx - st, yb, 0.006], (p) => scale3(pane, 0.7 + 0.45 * ((p[1] - ya) / (yb - ya))), ['nx', 'px', 'ny', 'py']);
+        return;
+      }
       const glazed = kind === 'glazed' && i === 1;
       if (glazed) {
         // Reeded glass (a pale pane, opaque), a glazing bar down the middle and one across.
@@ -151,9 +161,34 @@ export function doorMesh(seed, size, g, look, level) {
     // Three butt hinges on the hall side.
     for (const y of [0.3, h * 0.5, y1 - 0.3]) tbox(m, T, [hx - 0.012, y - 0.07, -zf - 0.012], [hx + 0.02, y + 0.07, -zf], iron, ['pz']);
   }
-  // A ring handle each side: a plate, a boss, a ring hanging from it; a keyhole plate under it.
   const rxc = lx + 0.2;
   const ryc = 1.06;
+  if ((g.handle ?? 'ring') !== 'ring') {
+    // A painted door's furniture, each side: a knob on a back plate (`handle: 'knob'`) or a shop door's upright pull bar on two standoffs (`'pull'`).
+    for (const face of [-1, 1]) {
+      const zs = face * zf;
+      const out = (d) => zs + face * d;
+      const span = (a, b) => [Math.min(a, b), Math.max(a, b)];
+      const skip = [face > 0 ? 'nz' : 'pz'];
+      if (g.handle === 'pull') {
+        const x = lx + st0 / 2;
+        const [za, zb] = span(out(0.02), out(0.042));
+        tbox(m, T, [x - 0.014, 0.8, za], [x + 0.014, 1.5, zb], iron);
+        const [zc, zd] = span(zs, out(0.02));
+        for (const y of [0.88, 1.42]) tbox(m, T, [x - 0.012, y - 0.012, zc], [x + 0.012, y + 0.012, zd], iron, skip);
+      } else {
+        const x = lx + 0.085;
+        const [za, zb] = span(zs, out(0.008));
+        tbox(m, T, [x - 0.03, ryc - 0.09, za], [x + 0.03, ryc + 0.09, zb], iron, skip);
+        const [zc, zd] = span(out(0.008), out(0.04));
+        tbox(m, T, [x - 0.026, ryc - 0.026, zc], [x + 0.026, ryc + 0.026, zd], iron, skip);
+      }
+      // A letter plate in the lock rail of a house door (a plain flap: no words).
+      if (fine && g.handle === 'knob' && face < 0) tbox(m, T, [(lx + hx) / 2 - 0.13, 1.03, out(0.006)], [(lx + hx) / 2 + 0.13, 1.09, zs], iron, ['pz']);
+    }
+    return m;
+  }
+  // A ring handle each side: a plate, a boss, a ring hanging from it; a keyhole plate under it.
   for (const face of [-1, 1]) {
     const zs = face * zf;
     const out = (d) => zs + face * d;
