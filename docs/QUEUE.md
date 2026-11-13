@@ -33,6 +33,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · A · Effects checks, findings only: Pantry Raid portals, loot rings on bright floors, perf and Low graphics for the new effects, Reduce flashing · `wip/fx-checks` (docs)
 - M · B · Tileset 11, step D: six set pieces built in MapMaker (porch, bus shelter, parking deck bay and ramp, concrete frame, bandstand, shop unit), with the arched window's neater stones riding along · `wip/mapmaker-urban-setpieces` (on `wip/mapmaker-urban-arch`) · lands after lane A's line-up
 - M · B · St. John's performance, step 1: read the owner's new trace (`Trace-20261113T152743.json.gz`, 2026-11-13) and write findings with a ranked list of fixes; documents only, no code yet · `docs/perf/` · the fixes follow as their own items
+- S · B · Parachute: improve the one built in code first, and show the owner pictures (owner, 2026-11-13: "why not just try and improve the built in code parachute first"); the Drive's parachute model waits on that look · `wip/mapmaker-parachute` · `packages/client/src/game/canopyVisuals.ts`
 
 ## Ready to land
 - (none)
@@ -68,7 +69,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Mobile audit: Character Select phone layout (proposal 4).
 - M · A · Material surface types: 0 of 150 materials set `surface`, so footsteps and impacts can't tell metal from wood (owner: end of queue).
 - M · ? · New characters: several T-pose models in the Drive (owner, 2026-11-13: Meshy Community, CC0). Intake through the character pipeline, recorded as community CC0, Experimental until looked over. Not started; no lane yet (lane A did the last ten).
-- M · ? · Parachute model (owner, 2026-11-13: Meshy Community CC0, in the Drive; it replaces the parachute we draw now, hung from behind the character's neck). Today the canopy is built in code (`packages/client/src/game/canopyVisuals.ts`: a striped dome on rigging lines, placed at the wearer's feet; no model, not tied to the skeleton); the glider is the same file and stays. To do: intake the model (processed output only, provenance as community CC0), swap it in for the parachute kind, and anchor it at the neck or upper spine bone with a fixed shoulder-height point as the fallback for characters whose rig has no such bone. Not checked: the model itself, and whether every character's skeleton exposes a usable neck bone. Not started; no lane yet.
 
 ## Waiting on the owner
 - A hover model for the Hauler (Ironclad Vanguard became the Troop Truck; the Sky Cruiser is the only unused hover model).
