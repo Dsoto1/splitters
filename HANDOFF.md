@@ -901,6 +901,8 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 
 **Owner, 2026-11-13 (to the MapMaker lane's main session):** (1) **Iron Maw is OK for now** (the second build stays a proposal; nothing to do). (2) **"Validation proposals are good":** the weapon and vehicle lane's process proposals 2 to 4 (a check branch reports every failure in one run; a character or prop change runs the flows it can break; `validate-map` and MapMaker fly a player's body off each jump pad) are approved; not started, free for either lane, claim here first. (3) **The MapMaker lane's main session stays on for The Spillway:** the 16 spawns and the other leftovers.
 
+**Claimed: the approved process proposals 2 to 4** (`wip/mapmaker-ci-proposals`, from main; MapMaker lane, the main session, 2026-11-13; owner: "You can do the validation work too"): `.github/workflows/ci.yml` and `tools/ci/stop-on-failure.sh` (a check branch lets every unit and e2e shard finish), `e2e/flowMap.mjs` (character manifests, their models, portraits and the two lock/provenance files map to the character flows plus `offline`), `tools/validate-map` / the shared map checks and MapMaker's check list (a player's body flown off each jump pad, a warning when it lands more than 2.5 m from the prediction).
+
 **Claimed again: The Spillway** (`maps/the_spillway.json`; MapMaker lane, the main session, 2026-11-13; owner: "You can do the spillway 16 spawns and other leftovers"): `wip/mapmaker-spillway-spawns` lands first, then crest railings, legs under the stairs and decks, gatehouses and a perf bench on `wip/mapmaker-spillway-5`.
 
 **The MapMaker lane's main session is wrapping up (owner, 2026-11-13: work moves back to the other account).** State for whoever picks up:
