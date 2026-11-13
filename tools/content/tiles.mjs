@@ -122,7 +122,7 @@ function schemas(root, materials) {
     // MapMaker's tile options that are tiles of their own (map/catalog.ts TILE_OPTIONS): this tile is `tile` with `option` on.
     'optionOf?': obj({ tile: str, option: en(['sideWalls', 'underGround']) }),
     // A piece buried in terrain (map/groundBore.ts): boxes the ground's surface is cut out of, and mouths it opens at.
-    'bore?': obj({ 'cut?': arr(tup(6), 1), 'open?': arr(tup(6), 1) }),
+    'bore?': obj({ 'cut?': arr(tup(6), 1), 'open?': arr(tup(6), 1), 'out?': en(sides) }),
   });
   return { edge, tile, sides, builders: Object.keys(builders) };
 }

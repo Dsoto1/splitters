@@ -1,7 +1,8 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
-import { rotateXZ } from './geometry.ts';
+import { rotateSide, rotateXZ } from './geometry.ts';
+import { SIDE_DIRS } from './tileOptions.ts';
 import type { MapDocument } from './schema.ts';
-import { terrainTriangles, vertexY, type TerrainData } from './terrain.ts';
+import { terrainHeightAt, terrainTriangles, vertexY, type TerrainData } from './terrain.ts';
 
 /**
  * Ground over a tunnel (Tileset 04 step 1; docs/map-briefs/tunnels/PLAN_2026-11-13.md).
@@ -16,7 +17,8 @@ import { terrainTriangles, vertexY, type TerrainData } from './terrain.ts';
  *    not whole grid squares, so no gap opens beside the piece.
  *  - **Openings** (`bore.open`, boxes whose lower y is the floor): a mouth. The ground over the opening comes down to
  *    just under that floor (every grid square the opening touches), and beyond it rises no steeper than MOUTH_BANK:
- *    a cutting with banks, as wide as the hill is high there. It only ever lowers ground.
+ *    a cutting with banks, as wide as the hill is high there. With `bore.out` (the side the mouth faces) the cutting
+ *    runs on that way until the ground as made is down to the floor (daylight). It only ever lowers ground.
  *
  * Neither is stored. Like the ground kept under floors (settle.ts terrainUnderFloors), both are worked out from the
  * map's tiles and its ground as made every time the map is loaded or shown, so a tunnel that moves takes its mouth
@@ -34,6 +36,8 @@ export interface GroundOpening {
   x1: number;
   z1: number;
   y: number;
+  /** The way out of the mouth (a unit step in X/Z), when the piece says: the cutting runs on that way to daylight. */
+  out?: [number, number];
 }
 
 export interface GroundBores {
@@ -47,6 +51,42 @@ export interface GroundBores {
 export const MOUTH_BANK = 1.5;
 /** How far under an opening's floor its ground lies (as open ground meets any floor's edge: settle.ts). */
 const UNDER_FLOOR = 0.05;
+/** A mouth's cutting runs out until the ground as made is no more than this over its floor (daylight), */
+const DAYLIGHT = 0.25;
+/** or this far (m): a mouth facing rising ground can't be dug out for ever (validate-map reports it). */
+export const MOUTH_CUTTING_MAX = 48;
+
+/**
+ * An opening run out to daylight: its rectangle stretched the way out of the mouth until the ground as made, across
+ * its width, is down to its floor (or MOUTH_CUTTING_MAX, or the terrain's edge). The same opening when it has no way out.
+ */
+function toDaylight(t: TerrainData, o: GroundOpening): GroundOpening {
+  if (!o.out) return o;
+  const [dx, dz] = o.out;
+  const step = t.spacing / 2;
+  // Across the mouth: its width, sampled at the grid's own fineness.
+  const across: number[] = [];
+  const [a0, a1] = dx ? [o.z0, o.z1] : [o.x0, o.x1];
+  for (let a = a0; a < a1; a += step) across.push(a);
+  across.push(a1);
+  const edge = dx > 0 ? o.x1 : dx < 0 ? o.x0 : dz > 0 ? o.z1 : o.z0;
+  let run = 0;
+  while (run < MOUTH_CUTTING_MAX) {
+    const at = edge + (dx + dz) * (run + step);
+    let high = -Infinity;
+    let on = false;
+    for (const a of across) {
+      const h = dx ? terrainHeightAt(t, at, a) : terrainHeightAt(t, a, at);
+      if (h === null) continue;
+      on = true;
+      high = Math.max(high, h);
+    }
+    if (!on || high <= o.y + DAYLIGHT) break;
+    run += step;
+  }
+  if (!run) return o;
+  return { ...o, x0: dx < 0 ? o.x0 - run : o.x0, x1: dx > 0 ? o.x1 + run : o.x1, z0: dz < 0 ? o.z0 - run : o.z0, z1: dz > 0 ? o.z1 + run : o.z1 };
+}
 
 const NONE: GroundBores = { cuts: [], openings: [], tiles: new Set() };
 const cache = new WeakMap<readonly unknown[], { catalog: TileCatalog; cellSize: number; levelHeight: number; bores: GroundBores }>();
@@ -76,7 +116,8 @@ export function mapGroundBores(map: Pick<MapDocument, 'classicStructure'>, catal
     }
     for (const b of bore.open ?? []) {
       const w = world(b);
-      bores.openings.push({ x0: w.x0, z0: w.z0, x1: w.x1, z1: w.z1, y: w.y0 });
+      const out = bore.out ? SIDE_DIRS[rotateSide(bore.out, p.rotation)] : null;
+      bores.openings.push({ x0: w.x0, z0: w.z0, x1: w.x1, z1: w.z1, y: w.y0, ...(out ? { out: [out[0], out[1]] as [number, number] } : {}) });
     }
   }
   cache.set(tiles, { catalog, cellSize, levelHeight, bores });
@@ -242,7 +283,9 @@ export function nearGroundCut(cuts: readonly GroundCut[], x: number, z: number, 
 export function openGroundAtMouths(t: TerrainData, openings: readonly GroundOpening[]): TerrainData {
   let heights: number[] | null = null;
   const s = t.spacing;
-  for (const o of openings) {
+  for (const mouth of openings) {
+    // (Daylight is looked for on the ground as made, so two mouths near each other don't depend on their order.)
+    const o = toDaylight(t, mouth);
     const floor = o.y - UNDER_FLOOR;
     // The grid squares the opening touches: their vertices lie flat.
     const fc0 = Math.floor((o.x0 - t.origin[0]) / s + 1e-9);

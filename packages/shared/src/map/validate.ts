@@ -7,11 +7,15 @@ import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { isWeaponSetId } from '../sim/weaponSets.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
-import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, propBoxes, resolveEdge, yawXZ, type WorldBox } from './geometry.ts';
+import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, propBoxes, resolveEdge, rotateSide, yawXZ, type WorldBox } from './geometry.ts';
+import { mapGroundBores } from './groundBore.ts';
+import { withPathsLaid } from './paths.ts';
+import { SIDE_DIRS } from './tileOptions.ts';
+import { PLAYER } from '../sim/constants.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
 import { botHintIssues } from './botHints.ts';
-import { floatingProps, withGroundAsPlayed } from './settle.ts';
+import { floatingProps, terrainUnderFloors, withGroundAsPlayed } from './settle.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
@@ -113,6 +117,42 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   if (map.groups?.length) issues.push(...groupIssues(map));
   // Bot hints (v33): warnings only (map/botHints.ts; the navmesh's own check is the navigation validator's).
   if (map.botHints?.length) issues.push(...botHintIssues(map));
+  return issues;
+}
+
+/**
+ * Buried tunnels (groundBore.ts) whose end comes out into the ground: a port of a piece with a bore that leads to
+ * nothing built, with ground (as played) more than a step over its floor just outside. A Tunnel Portal on the end
+ * opens the ground; a warning, since a dead end in the hill may be meant (it wants an end wall then).
+ */
+function buriedMouthIssues(map: MapDocument, cells: ReturnType<typeof buildOccupancy>['cells'], catalog: TileCatalog): ValidationIssue[] {
+  const made = map.terrain;
+  if (!made || !mapGroundBores(map, catalog).tiles.size) return [];
+  const issues: ValidationIssue[] = [];
+  const { cellSize, levelHeight } = map.classicStructure;
+  let ground: typeof made | null = null;
+  for (const [key, occ] of cells) {
+    if (!occ.def.bore) continue;
+    const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
+    for (const port of occ.def.ports) {
+      if (port.level !== occ.level || (port.cell?.[0] ?? 0) !== occ.local[0] || (port.cell?.[1] ?? 0) !== occ.local[1]) continue;
+      const side = rotateSide(port.side, occ.placement.rotation);
+      const [dx, dy] = SIDE_DIRS[side];
+      if (cells.has(cellKey(gx + dx, gy + dy, gz))) continue;
+      ground ??= terrainUnderFloors(withPathsLaid(map), undefined, catalog)!;
+      const floor = gz * levelHeight;
+      let over = -Infinity;
+      for (const out of [0.4, 1.2, 2]) over = Math.max(over, (terrainHeightAt(ground, (gx + dx * 0.5) * cellSize + dx * out, (gy + dy * 0.5) * cellSize + dy * out) ?? -Infinity) - floor);
+      if (over > PLAYER.maxStepHeight + 0.1) {
+        issues.push({
+          severity: 'warning',
+          code: 'tunnel.mouth_buried',
+          message: `the ${occ.def.displayName} at (${gx}, ${gy}) ends in the ground on its ${side} side (${over.toFixed(1)} m of earth over its floor): put a Tunnel Portal on that end, or close it with a wall`,
+          targetId: occ.placement.id,
+        });
+      }
+    }
+  }
   return issues;
 }
 
@@ -262,6 +302,8 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
       issues.push({ severity: 'warning', code: 'spawn.no_floor', message: `spawn ${s.id} is not above a tile floor`, targetId: s.id });
     }
   }
+
+  issues.push(...buriedMouthIssues(map, cells, catalog));
 
   const pickups = map.entities.filter((e) => e.kind === 'pickup');
   for (const p of pickups) {

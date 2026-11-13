@@ -89,10 +89,10 @@ export interface TileDefinition {
   /**
    * A piece buried in terrain (a tunnel, its portal; map/groundBore.ts): the ground's surface inside each `cut` box is
    * taken out (the hill above stays on top), and over each `open` box (a mouth; its lower y is the floor) the ground
-   * comes down to the floor, with banks beyond. Boxes are [x0, y0, z0, x1, y1, z1] in the tile's frame. The piece's
+   * comes down to the floor, with banks beyond, and on `out` (the side the mouth faces) to daylight. Boxes are [x0, y0, z0, x1, y1, z1] in the tile's frame. The piece's
    * floors don't pull the ground down (settle.ts terrainUnderFloors): its own shell meets the ground.
    */
-  bore?: { cut?: readonly (readonly number[])[]; open?: readonly (readonly number[])[] };
+  bore?: { cut?: readonly (readonly number[])[]; open?: readonly (readonly number[])[]; out?: TilePort['side'] };
   /**
    * Drawn with a model (city buildings and streets) centred on the tile's
    * footprint and turned with it; collision comes from `solids` (`prop` boxes
