@@ -165,6 +165,18 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
   of earth). It is the tile "Vaulted Tunnel (Side Walls)" (and Bend, Junction, Crossing): the palette shows only the
   plain ones, and the checkbox swaps between them in one undo step, keeping paint and walls. The ground over the
   passage itself must still be within 3 m of its floor (Flatten it), as for the plain tunnel.
+- **Under ground** (the same Options box; Tileset 04 step 1, docs/map-briefs/tunnels/PLAN_2026-11-13.md): the tunnel
+  is buried and **the hill stays on top of it**. It is the tile "Vaulted Tunnel (Under Ground)" (and Bend, Junction,
+  Crossing): the plain tunnel's masonry under a cap slab, with a *bore* (shared `map/groundBore.ts`): the ground's
+  surface is cut out of its cell between its floor and its cap, exactly, and nowhere else; its floors pull no ground
+  down. No Flatten, no Cut ground to floors, no roof block. One option at a time: Under ground or Side walls.
+- **Tunnel Portal:** the mouth of a buried tunnel, turned to face out of the hill: a headwall with the arch in it,
+  stepped wing walls, an apron. It opens the ground by itself: the hill is cut back to the headwall, the approach is
+  dug out along the way it faces until the ground as made is down to its floor (at most 48 m), and banks no steeper
+  than 1.5 in 1 lie either side. Nothing is stored: move or delete the portal and the hill is back. A buried end with
+  no portal on it is the validator's warning "ends in the ground" (wall the end up in the inspector for a dead end).
+  A mouth in flat ground (no hill to come out of) needs a ramp or stair piece down to it, which the tunnel kit's later
+  steps add.
 - **Corner Hatch:** open floor with a quarter of a 3.2 m hatch at its north-east corner: four round a corner open a
   hatch on it (a 4 m board square on a cell corner).
 - **Sandbags** (material): our own procedural paint, bags 0.6 m by 0.3 m in stretcher bond.
