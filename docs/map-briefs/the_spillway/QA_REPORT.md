@@ -53,4 +53,12 @@ Those passes sample two to five frames with bots moving, so they swing; one of t
 budget. The environment draws all of its 397 to 406 batches (2,239 plants) wherever the player looks. Not measured on
 a real GPU.
 
+## Bots with the new blocks (2026-11-13), 48 bots, Team Deathmatch, 150 s, seeds 1 to 16
+No route 0 on every seed with the blocks (main's map: 3 on one seed). Stuck recoveries a match: main's map 70 on
+average (48 to 102), with the blocks 88 (50 to 139); about two standard errors apart, so probably a small real rise.
+On both maps most of them are on the long stair's landings (cells x 20 to 32, z 20 to 36, at 8, 12 and 16 m), and a
+few at its head by the crest (24, 28, 52), where the new returns and rails are cover bots now use. Taking the long
+stair's ten legs out of main's map changes nothing (58 over seeds 1 to 8), so the legs are not what catches them: the
+long stair's joints are, and that is open.
+
 Not checked: the flicker check (no new effect).
