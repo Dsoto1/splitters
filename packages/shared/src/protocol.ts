@@ -273,7 +273,8 @@ export const FX_JACKPOT = 1024;
 /**
  * A turret, sentry or vehicle: [map entity index, x, y, z, yaw, aim yaw, aim
  * pitch, health %, state bits (MOUNT_FLAG_ALIVE, MOUNT_FLAG_WRECK,
- * MOUNT_FLAG_BURNING, an arc sentry's MOUNT_FLAG_CHARGING and MOUNT_FLAG_ARC; 0 = gone), ...occupant slot per seat (-1 = empty)]. A
+ * MOUNT_FLAG_BURNING, an arc sentry's MOUNT_FLAG_CHARGING and MOUNT_FLAG_ARC; 0 = gone), ...occupant slot per seat (-1 = empty),
+ * then, for a mount with MountDef.resupply (the Supply Buggy), its resupplies left]. A
  * sentry a player built (Classes) has index BUILT_MOUNT_BASE + their slot.
  */
 export type MountSnapshot = number[];
@@ -312,6 +313,8 @@ export type GameEvent =
   /** Disc Arena: `s`'s disc struck `t` and knocked them about (no damage). */
   | { e: 'knock'; s: number; t: number }
   | { e: 'pickup'; s: number; id: string; item: string }
+  /** `s` used a resupply point (sim/resupply.ts) on mount `m` (map entity index): `ok` resupplied, else nothing given (full, empty or waiting); `left` uses left. */
+  | { e: 'resupply'; s: number; m: number; left: number; ok: boolean }
   | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit (never on a team kill). */ hs?: 1; /** A team kill: the killer downed a teammate (friendly fire); the feed marks it and nothing rewards it. */ tk?: 1 }
   | { e: 'spawn'; s: number; /** Random characters: the look this life plays (sim/randomLooks.ts). */ l?: string;
       /** Roulette: this life's roll (1 jackpot, 2 tiny), and the cards the player is dealt next (the client preloads them). */ j?: 1 | 2; nx?: string[] }

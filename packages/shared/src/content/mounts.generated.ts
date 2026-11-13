@@ -3,7 +3,7 @@
 import type { MountDef } from '../sim/mounts.ts';
 
 /** Placeable mounts, in MapMaker palette order (`order`). Maps name a mount by id: never rename one. */
-export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'sentry_arc', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship', 'tank', 'gun_jeep', 'armored_rover', 'hover_bike', 'gunship', 'snow_sled', 'troop_truck'] as const;
+export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'sentry_arc', 'speeder', 'buggy', 'hauler', 'skyfighter', 'dropship', 'tank', 'gun_jeep', 'armored_rover', 'hover_bike', 'gunship', 'snow_sled', 'troop_truck', 'supply_buggy'] as const;
 
 export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef>> = {
   // model: The owner's toy machine gun on a tripod (Meshy, owned; content/guns.json, centred on its tripod), built 1.5 m long: a 0.57 m receiver and a 0.93 m barrel, its bore 0.55 m off the ground.
@@ -105,63 +105,29 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     vehicle: { maxSpeed: 24, reverseSpeed: 8, accel: 14, turnRate: 2.1, idleBrake: 16, hover: true, grip: 0.07, mass: 0.6 },
     blurb: 'A hovering two-seater: the pilot fires twin blasters ahead, the passenger shoots their own gun',
   },
-  // model: A Meshy Community sci-fi buggy (Meshy_AI__1108120754, CC0; content/guns.json vehicles/sixer_buggy.glb, 2026-11-11): a tube-frame four-wheeler with a cage over the cabin and an open deck behind it. It rides on the owner's Rugged Off-Road Tire (vehicles/offroad_tire.glb), one at each hub (2026-11-12): the body's own tires are cut out of it and dropped (guns.json `parts`, `drop`), since cut out as parts they took bodywork with them and spun off their axles. Hubs and size measured on the body's old tires: 0.5 m radius, 0.45 m wide, hubs 0.5 m up at x ±1.14, z 1.53 and -1.47; the body's lowest point left (its chassis) is 0.258 m up (`rideHeight`). The Tactical Off-Road Beast it replaced is the fallback (vehicles/offroad_buggy.glb).
-  // half: Fitted across the tires (2026-11-11, as the Troop Truck's): 2.9 m wide, so walls stop the tires where they are drawn and rounds that hit a tire hit the buggy. Length and height unchanged: the model is 4.4 m long and 1.98 m tall; its body is about 1.8 m wide and its tires stand out to 2.86 m.
-  // seats: Measured on the model (slices of its triangles): two front seats, cushions 0.82 m up at z 0.08 and 0.4 m either side (the floor 0.6 m up, the wheel on the left); behind the cabin's hoop (z -0.6) an open deck 1.7 m up, clear overhead, from x -0.25 to 0.75 (a rack box stands on its left side, x -0.7 to -0.3, 2.0 m) and z -0.6 to -1.45. The four standing riders stand on it two by two (x -0.15 and 0.45, z -0.7 and -1.3: as near the buggy's middle as the rack lets the left pair's feet go, 0.1 m nearer than at first), like the Gun Jeep's standing gunner. The owner's layout, 2026-11-11: a driver, a seated front passenger and four standing in the back. Owner, 2026-11-11 ("if what I asked for doesn't look normal, normalize"): four standing on the small deck looked top-heavy, so the four ride sitting on its edges facing out, like the Gun Jeep's rail riders: the right pair on the deck's edge (1.7 m), the left pair on the rack box (2.0 m), legs over the side.
-  // cockpitEye: A seated head height (1.5 m), under the cage's front bar (1.6 m at z 0.4), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts), refitted to this body.
-  // vehicle: The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides. The suspension's contact points and hub height are the old buggy's (unchanged handling); the tires are drawn at this body's hubs (`wheels.at`), each riding the nearest contact point's spring.
+  // model: The owner's Tactical Off-Road Beast and its Rugged Off-Road Tire (Meshy Community, content/guns.json): a long tube-frame buggy with a roof gun, its hubs bare, so the tires go on at its hubs at their own size and it rides on them. It was the Buggy until 2026-11-11 and is again from 2026-11-13 (owner: "bring back the other buggy (with the separated wheel), to sit 6 (2 stand up in back seats/row)"); the sci-fi buggy that replaced it is now the Supply Buggy (content/vehicles/supply_buggy.json).
+  // half: Fitted across the tires (as the Gun Jeep's and Troop Truck's): the body is 1.8 m wide, its tires stand out to 2.2 m, so 1.1 m either side; 4.4 m long, 1.48 m tall on 0.24 m of ride height (the standing riders' shoulders stand above it).
+  // seats: Measured on the model (slices of its triangles, 2026-11-13): two rows of cushions 0.8 m up, 0.32 m either side of the middle (front row z 0.3, back row z -0.45; the front footwell 0.18 m under the cushion, the back one 0.28 m); the wheel on the left at z 0.75. Behind the back row's backrests (z -0.6 to -0.7) a third bench, its cushion 0.72 m up from z -0.65 to -1.05, under the roof frame's open bay between the cross bar at z -0.4 and the rear hoop at z -0.95 (the roof gun runs down the middle, |x| < 0.15). The two in the back row stand on that bench either side of the gun (x ±0.3, z -0.8), their shoulders out of the open roof like the Gun Jeep's hatch gunner. The roof gun is not manned.
+  // cockpitEye: A seated head height, under the front roof bar (1.47 m at z 0.55), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts).
+  // vehicle: The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides; the suspension's contact points are the tires (wheels.at).
   buggy: {
     id: 'buggy',
     displayName: 'Buggy',
     kind: 'vehicle',
-    model: 'vehicles/sixer_buggy.glb',
-    fallback: 'vehicles/offroad_buggy.glb',
-    rideHeight: 0.258,
-    wheels: {
-      model: 'vehicles/offroad_tire.glb',
-      radius: 0.5,
-      width: 0.45,
-      at: [[-1.14, 0.5, 1.53], [1.14, 0.5, 1.53], [-1.14, 0.5, -1.47], [1.14, 0.5, -1.47]],
-    },
+    model: 'vehicles/offroad_buggy.glb',
+    rideHeight: 0.24,
+    wheels: { model: 'vehicles/offroad_tire.glb', at: [[-1, 0.42, 1.74], [1, 0.42, 1.74], [-1, 0.42, -1.86], [1, 0.42, -1.86]] },
     health: 450,
-    half: [1.45, 0.8, 2.2],
+    half: [1.1, 0.8, 2.2],
     seats: [
-      { role: 'driver', label: 'Driver', offset: [-0.4, 0.82, 0.08], seated: true, legDrop: 0.2 },
-      { role: 'passenger', label: 'Front passenger', offset: [0.4, 0.82, 0.08], seated: true, legDrop: 0.2 },
-      {
-        role: 'passenger',
-        label: 'Deck, left front',
-        offset: [-0.55, 2, -0.7],
-        seated: true,
-        facing: -1.5707963267948966,
-        legDrop: 0.6,
-      },
-      {
-        role: 'passenger',
-        label: 'Deck, right front',
-        offset: [0.72, 1.7, -0.7],
-        seated: true,
-        facing: 1.5707963267948966,
-        legDrop: 0.55,
-      },
-      {
-        role: 'passenger',
-        label: 'Deck, left back',
-        offset: [-0.55, 2, -1.3],
-        seated: true,
-        facing: -1.5707963267948966,
-        legDrop: 0.6,
-      },
-      {
-        role: 'passenger',
-        label: 'Deck, right back',
-        offset: [0.72, 1.7, -1.3],
-        seated: true,
-        facing: 1.5707963267948966,
-        legDrop: 0.55,
-      },
+      { role: 'driver', label: 'Driver', offset: [-0.32, 0.8, 0.3], seated: true, legDrop: 0.18 },
+      { role: 'passenger', label: 'Front passenger', offset: [0.32, 0.8, 0.3], seated: true, legDrop: 0.18 },
+      { role: 'passenger', label: 'Back left', offset: [-0.32, 0.8, -0.45], seated: true, legDrop: 0.28 },
+      { role: 'passenger', label: 'Back right', offset: [0.32, 0.8, -0.45], seated: true, legDrop: 0.28 },
+      { role: 'passenger', label: 'Standing, back left', offset: [-0.3, 0.72, -0.8] },
+      { role: 'passenger', label: 'Standing, back right', offset: [0.3, 0.72, -0.8] },
     ],
-    cockpitEye: [-0.4, 1.5, 0.12],
+    cockpitEye: [-0.32, 1.36, 0.32],
     enterRadius: 3.2,
     respawnSeconds: 45,
     blast: { radius: 4.5, damage: 90 },
@@ -175,8 +141,6 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       mass: 1.4,
       drift: 0.55,
       suspension: {
-        wheels: [[-1, 1.74], [1, 1.74], [-1, -1.86], [1, -1.86]],
-        hub: 0.42,
         travel: 0.2,
         bump: 0.16,
         freq: 1.5,
@@ -189,7 +153,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
         steer: 0.5,
       },
     },
-    blurb: 'Six aboard: a driver, a front passenger and four riders sitting on the back deck\'s edges, all five shooting their own weapons',
+    blurb: 'Six aboard: a driver, a front passenger, two seated behind them and two standing in the back row, all five riders shooting their own weapons',
   },
   // model: Ironbound Voyager (Meshy Community, CC0; the owner's Drive, Meshy_AI_Ironbound_Voyager_1110213418_texture.glb; content/guns.json vehicles/ironbound_hauler.glb, 2026-11-11; owner: "ironbound voyager is our new hauler"): an armoured hover freighter, a closed tube of a hull 1.8 m wide and 2.2 m tall with a tapering nose, a railed deck on its back half and six engine nozzles at the tail; 6.8 m long, fitted to the box's length. The Dispatcher it replaced is the fallback (vehicles/hauler.glb).
   // half: Unchanged (the re-skin keeps handling): 3.2 m wide, so the hull and its side pods are inside it. The two thin fins amidships reach 2.76 m either side, outside the box: not solid, like the Tank's barrel.
@@ -671,6 +635,62 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       },
     },
     blurb: 'A six-wheeled troop carrier for six: a driver and a passenger in the cab, four standing on the flatbed, every rider shooting their own weapon',
+  },
+  // model: A Meshy Community sci-fi buggy (Meshy_AI__1108120754, CC0; content/guns.json vehicles/sixer_buggy.glb, 2026-11-11): a tube-frame four-wheeler with a cage over the cabin and an open deck behind it. It rides on the owner's Rugged Off-Road Tire (vehicles/offroad_tire.glb), one at each hub (2026-11-12): the body's own tires are cut out of it and dropped (guns.json `parts`, `drop`), since cut out as parts they took bodywork with them and spun off their axles. Hubs and size measured on the body's old tires: 0.5 m radius, 0.45 m wide, hubs 0.5 m up at x ±1.14, z 1.53 and -1.47; the body's lowest point left (its chassis) is 0.258 m up (`rideHeight`). It was the Buggy from 2026-11-11 to 2026-11-13; the owner split it off ("the new buggy should be only a 2 seater, but players can go to the back and resupply from it (limited supply, 10x resupplies?)"). The Tactical Off-Road Beast is the fallback (vehicles/offroad_buggy.glb) and the Buggy again.
+  // half: Fitted across the tires (2026-11-11, as the Troop Truck's): 2.9 m wide, so walls stop the tires where they are drawn and rounds that hit a tire hit the buggy. Length and height unchanged: the model is 4.4 m long and 1.98 m tall; its body is about 1.8 m wide and its tires stand out to 2.86 m.
+  // seats: Measured on the model (slices of its triangles): two front seats, cushions 0.82 m up at z 0.08 and 0.4 m either side (the floor 0.6 m up, the wheel on the left); behind the cabin's hoop (z -0.6) an open deck 1.7 m up from z -0.6 to -1.45, with a rack box on its left side (2.0 m): the supply load. Nobody rides on it; it is where players on foot resupply (`resupply`).
+  // cockpitEye: A seated head height (1.5 m), under the cage's front bar (1.6 m at z 0.4), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts), refitted to this body.
+  // vehicle: The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides. The suspension's contact points and hub height are the old buggy's (unchanged handling); the tires are drawn at this body's hubs (`wheels.at`), each riding the nearest contact point's spring.
+  // resupply: Owner, 2026-11-12: ten resupplies from its back. The reach point is the tailgate (z -2.2, behind the deck's rack, 1 m up); players on foot within 1.6 m of it press Use there (instead of getting in). Each use gives what a resupply gives (sim/resupply.ts: every carried gun's reserve full, underbarrel rounds full, grenades topped up), with a short wait per player.
+  supply_buggy: {
+    id: 'supply_buggy',
+    displayName: 'Supply Buggy',
+    kind: 'vehicle',
+    model: 'vehicles/sixer_buggy.glb',
+    fallback: 'vehicles/offroad_buggy.glb',
+    rideHeight: 0.258,
+    wheels: {
+      model: 'vehicles/offroad_tire.glb',
+      radius: 0.5,
+      width: 0.45,
+      at: [[-1.14, 0.5, 1.53], [1.14, 0.5, 1.53], [-1.14, 0.5, -1.47], [1.14, 0.5, -1.47]],
+    },
+    health: 450,
+    half: [1.45, 0.8, 2.2],
+    seats: [
+      { role: 'driver', label: 'Driver', offset: [-0.4, 0.82, 0.08], seated: true, legDrop: 0.2 },
+      { role: 'passenger', label: 'Front passenger', offset: [0.4, 0.82, 0.08], seated: true, legDrop: 0.2 },
+    ],
+    resupply: { at: [0, 1, -2.2], reach: 1.6, uses: 10, wait: 4 },
+    cockpitEye: [-0.4, 1.5, 0.12],
+    enterRadius: 3.2,
+    respawnSeconds: 45,
+    blast: { radius: 4.5, damage: 90 },
+    vehicle: {
+      maxSpeed: 18,
+      reverseSpeed: 7,
+      accel: 10,
+      turnRate: 1.8,
+      idleBrake: 12,
+      grip: 0.22,
+      mass: 1.4,
+      drift: 0.55,
+      suspension: {
+        wheels: [[-1, 1.74], [1, 1.74], [-1, -1.86], [1, -1.86]],
+        hub: 0.42,
+        travel: 0.2,
+        bump: 0.16,
+        freq: 1.5,
+        damping: 0.32,
+        squat: 0.004,
+        lean: 0.0045,
+        tumble: 1.4,
+        land: 0.5,
+        maxTilt: 0.45,
+        steer: 0.5,
+      },
+    },
+    blurb: 'Two aboard, a driver and a passenger shooting their own weapon; players on foot at its back resupply from it (ammo and grenades, ten times, then it is empty until it respawns)',
   },
 };
 

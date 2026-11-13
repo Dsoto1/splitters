@@ -10,6 +10,7 @@
 
 import { MOUNT_DEFS, MOUNT_MODELS, ROUTE_CRAFT_DEFS } from '../content/mounts.generated.ts';
 import type { SuspensionTuning } from './suspension.ts';
+import type { ResupplySpec } from './resupply.ts';
 
 /**
  * The mounts' tuning (speed, health, seats, mounted weapons, drawing numbers) is data: content/vehicles/<id>.json,
@@ -254,6 +255,11 @@ export interface MountDef {
   armour?: MountArmour;
   /** Bots aboard get out below this share of health (default BAIL_HEALTH, bots/vehicles.ts), or once it is on fire. */
   bailHealth?: number;
+  /**
+   * Players on foot resupply from it (the Supply Buggy's back; sim/resupply.ts): Use at `at` instead of getting in.
+   * It holds `uses` resupplies, back to full when it respawns.
+   */
+  resupply?: ResupplySpec;
   /** One line for MapMaker. */
   blurb: string;
 }

@@ -49,7 +49,8 @@ export function schemas() {
   const mount = obj({
     id: str, 'order?': int, displayName: str, kind: en(['turret', 'sentry', 'vehicle']), model: str, 'scale?': num, health: num, half: vec3, seats: arr(seat),
     enterRadius: num, respawnSeconds: num, blast: obj({ radius: num, damage: num }), 'vehicle?': vehicle, 'sentry?': sentry, 'glow?': str,
-    'airplane?': bool, 'rideHeight?': num, 'wheels?': obj({ model: str, at: arr(vec3, 1), 'radius?': num, 'width?': num }), 'cockpitEye?': vec3, 'turret?': obj({ seat: int, 'pitch?': tup(2), 'traverse?': num }), 'fallback?': str, 'armour?': armour, 'bailHealth?': num, blurb: str, 'notes?': notes,
+    'airplane?': bool, 'rideHeight?': num, 'wheels?': obj({ model: str, at: arr(vec3, 1), 'radius?': num, 'width?': num }), 'cockpitEye?': vec3, 'turret?': obj({ seat: int, 'pitch?': tup(2), 'traverse?': num }), 'fallback?': str, 'armour?': armour,
+    'resupply?': obj({ at: vec3, reach: num, uses: int, wait: num }), 'bailHealth?': num, blurb: str, 'notes?': notes,
   });
   return { mount, seat };
 }
@@ -122,6 +123,8 @@ export function build(content, root = ROOT) {
       if (a.sealed && d.kind !== 'vehicle') problems.push(`${file}: armour.sealed is for vehicles (a crew shut in)`);
     }
     if (d.bailHealth !== undefined && (d.bailHealth <= 0 || d.bailHealth >= 1)) problems.push(`${file}: bailHealth is a share of health, above 0 and under 1`);
+    if (d.resupply && (d.resupply.reach <= 0 || d.resupply.reach > 4 || d.resupply.uses < 1 || d.resupply.wait < 0)) problems.push(`${file}: resupply needs reach above 0 and up to 4 m, uses 1 or more and wait 0 or more (s)`);
+    if (d.resupply && d.kind !== 'vehicle') problems.push(`${file}: resupply is for vehicles (the Supply Buggy); placed boxes are pickups`);
     if (d.seats.filter((s) => s.driverFires).length > 1) problems.push(`${file}: only one seat can be driverFires`);
 
     // Seats by kind.

@@ -55,6 +55,7 @@ export * from './sim/surfaceTypes.ts';
 export * from './sim/impact.ts';
 export * from './sim/trajectory.ts';
 export * from './sim/mounts.ts';
+export * from './sim/resupply.ts';
 export * from './sim/suspension.ts';
 export * from './sim/parachute.ts';
 export * from './sim/airplane.ts';

@@ -48,9 +48,10 @@ describe('turrets, sentries and vehicles', () => {
     expect(match.snapshot([]).mt).toHaveLength(1);
   });
 
-  it('a buggy seats six (a driver, a front passenger and four sitting on the edges of the deck); a seventh player cannot get in', () => {
+  it('a buggy seats six (a driver, a front passenger, two seated behind and two standing in the back row); a seventh player cannot get in', () => {
+    expect(MOUNT_DEFS.buggy.model).toBe('vehicles/offroad_buggy.glb');
     expect(MOUNT_DEFS.buggy.seats.map((s) => s.role)).toEqual(['driver', 'passenger', 'passenger', 'passenger', 'passenger', 'passenger']);
-    expect(MOUNT_DEFS.buggy.seats.map((s) => !!s.seated)).toEqual([true, true, true, true, true, true]);
+    expect(MOUNT_DEFS.buggy.seats.map((s) => !!s.seated)).toEqual([true, true, true, true, false, false]);
     expect(MOUNT_DEFS.buggy.seats.every((s) => !s.weapon)).toBe(true);
     expect(MOUNT_DEFS.hauler.seats).toHaveLength(6);
     const match = new Match(yard([{ position: [10, 0, 10], model: 'buggy', yaw: 0, faction: null, respawnSeconds: null }]), rules);
@@ -61,13 +62,15 @@ describe('turrets, sentries and vehicles', () => {
     // E fills the next free seat: the wheel first, then the passenger seats in order.
     for (const p of players) use(d, p);
     expect(players.map((p) => p.mount?.seat ?? -1)).toEqual([0, 1, 2, 3, 4, 5, -1]);
-    // All six sit: on the cushion or the edge of the deck with the crouching eye, not standing on it.
-    for (const p of players.slice(0, 6)) expect(p.move.stance).toBe(1);
+    // Four sit on cushions with the crouching eye; the back row's two stand.
+    for (const p of players.slice(0, 4)) expect(p.move.stance).toBe(1);
+    for (const p of players.slice(4, 6)) expect(p.move.stance).toBeUndefined();
     // The driver can't shoot; every passenger fires their own weapon, aiming wherever they look (no arc), and
     // their rounds leave through the buggy (aimed down past its side, they don't hit it).
     const buggy = (match as unknown as { mounts: { health: number }[] }).mounts[0]!;
     const health = buggy.health;
-    const aims = [Math.PI, -Math.PI / 2, Math.PI / 2, 0, Math.PI, -Math.PI / 2];
+    // (The two standing fire out of their own side: their rounds don't pass through the buggy.)
+    const aims = [Math.PI, -Math.PI / 2, Math.PI / 2, 0, -Math.PI / 2, Math.PI / 2];
     players.slice(0, 6).forEach((p, i) => {
       const yaw = aims[i]!;
       const ev = d.run(10, () => d.input(p, { yaw, pitch: -0.45, buttons: BUTTON_FIRE }));
@@ -89,6 +92,54 @@ describe('turrets, sentries and vehicles', () => {
     // Now the seventh gets the free seat.
     use(d, players[6]!);
     expect(players[6]!.mount?.seat).toBe(1);
+  });
+
+  it('a supply buggy seats two; on foot at its back, Use resupplies (ten times, a wait between two) instead of getting in', () => {
+    const def = MOUNT_DEFS.supply_buggy;
+    expect(def.seats.map((s) => s.role)).toEqual(['driver', 'passenger']);
+    expect(def.resupply?.uses).toBe(10);
+    const match = new Match(yard([{ position: [10, 0, 10], model: 'supply_buggy', yaw: 0, faction: null, respawnSeconds: null }]), rules);
+    const d = new Driver(match);
+    const [a, b] = [match.addHuman('a')!, match.addHuman('b')!];
+    d.run(2);
+    const buggy = (match as unknown as { mounts: { supply: number }[] }).mounts[0]!;
+    expect(buggy.supply).toBe(10);
+    const empty = (c: Combatant) => {
+      for (const w of c.weapons.values()) w.reserve = 0;
+      c.throwable = null;
+    };
+    const resupplies = (ev: GameEvent[]) => ev.filter((e): e is Extract<GameEvent, { e: 'resupply' }> => e.e === 'resupply');
+    const press = (c: Combatant) => {
+      const ev = d.run(1, () => d.input(c, { buttons: BUTTON_USE }));
+      d.run(1, () => d.input(c, {}));
+      return resupplies(ev);
+    };
+    // Behind the tailgate (z 10 - 2.2 - 0.6): resupplied, not seated.
+    place(a, 10, 7.2);
+    empty(a);
+    expect(press(a)).toEqual([{ e: 'resupply', s: a.slot, m: 0, left: 9, ok: true }]);
+    expect(a.mount).toBeUndefined();
+    expect([...a.weapons.values()].filter((w) => w.def.reserveMax > 0).every((w) => w.reserve === w.def.reserveMax)).toBe(true);
+    expect(a.throwable?.count).toBeGreaterThan(0);
+    // Full: nothing given, no use spent.
+    expect(press(a)).toEqual([{ e: 'resupply', s: a.slot, m: 0, left: 9, ok: false }]);
+    // Emptied again at once: the wait holds it back, then it gives.
+    empty(a);
+    expect(press(a)[0]?.ok).toBe(false);
+    d.run(Math.ceil(def.resupply!.wait * TICK_RATE), () => d.input(a, {}));
+    expect(press(a)[0]).toMatchObject({ ok: true, left: 8 });
+    // Run it dry: after ten, "out of supplies".
+    buggy.supply = 1;
+    place(b, 10.5, 7.2);
+    empty(b);
+    expect(press(b)[0]).toMatchObject({ ok: true, left: 0 });
+    empty(a);
+    d.run(Math.ceil(def.resupply!.wait * TICK_RATE), () => d.input(a, {}));
+    expect(press(a)[0]).toMatchObject({ ok: false, left: 0 });
+    // From its side, Use gets in as ever (the wheel first).
+    place(b, 8, 10);
+    use(d, b);
+    expect(b.mount?.seat).toBe(0);
   });
 
   it('a troop truck seats six (a driver and a passenger sitting in the cab, four standing on the bed); a seventh cannot get in', () => {
