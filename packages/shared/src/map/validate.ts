@@ -7,11 +7,15 @@ import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { isWeaponSetId } from '../sim/weaponSets.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
-import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, propBoxes, resolveEdge, yawXZ, type WorldBox } from './geometry.ts';
+import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, propBoxes, resolveEdge, rotateSide, yawXZ, type WorldBox } from './geometry.ts';
+import { mapGroundBores } from './groundBore.ts';
+import { withPathsLaid } from './paths.ts';
+import { SIDE_DIRS } from './tileOptions.ts';
+import { PLAYER } from '../sim/constants.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
 import { botHintIssues } from './botHints.ts';
-import { floatingProps, withGroundAsPlayed } from './settle.ts';
+import { floatingProps, terrainUnderFloors, withGroundAsPlayed } from './settle.ts';
 import { migrateMapDocument, MapMigrationError } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
@@ -117,6 +121,100 @@ export function validateMap(map: MapDocument, catalog: TileCatalog = coreCatalog
   issues.push(...retiredMountIssues(map));
   // Bot hints (v33): warnings only (map/botHints.ts; the navmesh's own check is the navigation validator's).
   if (map.botHints?.length) issues.push(...botHintIssues(map));
+  return issues;
+}
+
+/**
+ * Buried tunnels (groundBore.ts) whose end comes out into the ground: a port of a piece with a bore that leads to
+ * nothing built, with ground (as played) more than a step over its floor just outside. A Tunnel Portal on the end
+ * opens the ground; a warning, since a dead end in the hill may be meant (it wants an end wall then).
+ */
+function buriedMouthIssues(map: MapDocument, cells: ReturnType<typeof buildOccupancy>['cells'], catalog: TileCatalog): ValidationIssue[] {
+  const made = map.terrain;
+  if (!made || !mapGroundBores(map, catalog).tiles.size) return [];
+  const issues: ValidationIssue[] = [];
+  const { cellSize, levelHeight } = map.classicStructure;
+  let ground: typeof made | null = null;
+  for (const [key, occ] of cells) {
+    if (!occ.def.bore) continue;
+    const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
+    for (const port of occ.def.ports) {
+      if (port.level !== occ.level || (port.cell?.[0] ?? 0) !== occ.local[0] || (port.cell?.[1] ?? 0) !== occ.local[1]) continue;
+      const side = rotateSide(port.side, occ.placement.rotation);
+      const [dx, dy] = SIDE_DIRS[side];
+      if (cells.has(cellKey(gx + dx, gy + dy, gz))) continue;
+      // Closed by the map maker (the side's wall style in the inspector): a dead end, as meant.
+      if (edgeSegments(resolveEdge(cells, gx, gy, gz, side), cellSize / 2, levelHeight).some(([u0, u1, y0, y1]) => u0 < 0 && u1 > 0 && y0 < 1 && y1 > 1)) continue;
+      ground ??= terrainUnderFloors(withPathsLaid(map), undefined, catalog)!;
+      const floor = gz * levelHeight;
+      let over = -Infinity;
+      for (const out of [0.4, 1.2, 2]) over = Math.max(over, (terrainHeightAt(ground, (gx + dx * 0.5) * cellSize + dx * out, (gy + dy * 0.5) * cellSize + dy * out) ?? -Infinity) - floor);
+      if (over > PLAYER.maxStepHeight + 0.1) {
+        issues.push({
+          severity: 'warning',
+          code: 'tunnel.mouth_buried',
+          message: `the ${occ.def.displayName} at (${gx}, ${gy}) ends in the ground on its ${side} side (${over.toFixed(1)} m of earth over its floor): put a Tunnel Portal on that end, or close it with a wall`,
+          targetId: occ.placement.id,
+        });
+      }
+    }
+  }
+  return issues;
+}
+
+/**
+ * A buried run standing as a mound on ground that would cover it a level down: a hint (the mound is a fair choice, a
+ * bunker's berm; a flat surface is one Page Down away). One for the map, naming how many pieces and the first.
+ */
+function moundedRunIssues(map: MapDocument, cells: ReturnType<typeof buildOccupancy>['cells'], catalog: TileCatalog): ValidationIssue[] {
+  const t = map.terrain;
+  if (!t || !mapGroundBores(map, catalog).tiles.size) return [];
+  const { cellSize, levelHeight } = map.classicStructure;
+  const made = withPathsLaid(map).terrain ?? t;
+  const mounded: string[] = [];
+  for (const [key, occ] of cells) {
+    const cover = occ.def.bore?.cover?.[0]?.[4];
+    // (A portal is where a run comes out: it is judged by the pieces behind it.)
+    if (cover === undefined || occ.def.bore?.open) continue;
+    const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
+    if (cells.has(cellKey(gx, gy, gz - 1))) continue;
+    const want = gz * levelHeight + cover;
+    let low = Infinity;
+    let high = -Infinity;
+    for (const [ox, oz] of [[0, 0], [-3, -3], [3, -3], [-3, 3], [3, 3]] as const) {
+      const h = terrainHeightAt(made, gx * cellSize + ox, gy * cellSize + oz);
+      if (h === null) continue;
+      low = Math.min(low, h);
+      high = Math.max(high, h);
+    }
+    // More than half a metre of earth to add here, and none at all a level down, on ground that is near enough flat.
+    if (low < want - 0.5 && low >= want - levelHeight - 0.01 && high - low < 0.5) mounded.push(occ.placement.id);
+  }
+  if (!mounded.length) return [];
+  const ids = [...new Set(mounded)];
+  return [{ severity: 'suggestion', code: 'tunnel.flush_a_level_down', message: `${ids.length} buried tunnel piece${ids.length === 1 ? ' stands' : 's stand'} as a mound on flat ground: a level down (Page Down) the ground already covers ${ids.length === 1 ? 'it' : 'them'} and the surface stays flat, with a ramp down to each portal`, targetId: ids[0]! }];
+}
+
+/**
+ * Liquid in a buried passage: a liquid is a box and knows nothing of walls, so one that reaches into a bore above its
+ * floor floods the tunnel (it is drawn there and waded in). Meant now and then (a flooded sewer); a warning, since a
+ * pond dug over or beside a tunnel does it by accident. The fix is to keep the liquid's box out of the bore.
+ */
+function floodedBoreIssues(map: MapDocument, catalog: TileCatalog): ValidationIssue[] {
+  const bores = mapGroundBores(map, catalog);
+  if (!bores.cuts.length) return [];
+  const issues: ValidationIssue[] = [];
+  for (const e of map.entities) {
+    if (e.kind !== 'water') continue;
+    const [x, y, z] = e.position;
+    const [w, h, d] = e.size;
+    const top = y + h;
+    // (A cut's lower y is its floor slab's underside, half a metre under the floor.)
+    const hit = bores.cuts.find((c) => x - w / 2 < c.max[0] && x + w / 2 > c.min[0] && z - d / 2 < c.max[2] && z + d / 2 > c.min[2] && top > c.min[1] + 0.5 + 0.05 && y < Math.min(c.max[1], c.min[1] + 4.25));
+    if (hit) {
+      issues.push({ severity: 'warning', code: 'tunnel.flooded', message: `the ${e.liquid} ${e.id} reaches into a buried tunnel ${(top - hit.min[1] - 0.5).toFixed(1)} m over its floor: the passage is flooded there (keep the liquid's box out of the tunnel if that isn't meant)`, targetId: e.id });
+    }
+  }
   return issues;
 }
 
@@ -264,6 +362,15 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
     const onProp = !onTerrain && !onBlock && (propTops ??= propBoxes(map)).some((b) => Math.abs(b.max[1] - y) < 1 && pointOnBox(b, x, z));
     if (!onTerrain && !onBlock && !onProp && (!occ || !cellHasFloor(occ))) {
       issues.push({ severity: 'warning', code: 'spawn.no_floor', message: `spawn ${s.id} is not above a tile floor`, targetId: s.id });
+    }
+  }
+
+  issues.push(...buriedMouthIssues(map, cells, catalog));
+  issues.push(...floodedBoreIssues(map, catalog));
+  issues.push(...moundedRunIssues(map, cells, catalog));
+  for (const t of map.classicStructure.tiles) {
+    if (t.family && !catalog.familiesOf(t.tile).some((d) => d.familyOf!.family === t.family)) {
+      issues.push({ severity: 'warning', code: 'tile.family_unknown', message: `tile ${t.id} (${catalog.get(t.tile)?.displayName ?? t.tile}) doesn't come in the "${t.family}" family: it is drawn as its own`, targetId: t.id });
     }
   }
 

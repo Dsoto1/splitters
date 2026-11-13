@@ -7,6 +7,7 @@ import { withPathsLaid } from './paths.ts';
 import { PLAYER } from '../sim/constants.ts';
 import type { LightEntity, LightFixture, MapDocument, PropEntity } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
+import { groundCutAt, mapGroundBores, rememberTerrainCuts, shapeGroundAtBores, terrainCuts } from './groundBore.ts';
 
 /** What an environment tree stands on when settled on a slope: its trunk, not its crown's spread. */
 const TRUNK_FOOTPRINT = [0.6, 0, 0.6] as const;
@@ -160,6 +161,18 @@ export function rebedShift(before: TerrainData, after: TerrainData, e: Pick<Prop
 
 /** Where rebedProps puts one prop's base when the ground goes from `before` to `after`, or null where it stays (held up by what's in `boxes`, or not on the ground). */
 export function rebeddedY(before: TerrainData, after: TerrainData, boxes: readonly WorldBox[], e: Pick<PropEntity, 'id' | 'model' | 'position' | 'yaw' | 'scale'>): number | null {
+  // A prop bedded on ground a buried tunnel cut away (a rock on the hillside where a portal's apron now is) has no
+  // ground to stand on: it goes down onto what is built under it (the apron's floor), as plants there go altogether.
+  const cuts = terrainCuts(after);
+  if (cuts.length) {
+    const [x, y, z] = e.position;
+    const was = settledPropY(before, e);
+    const now = terrainHeightAt(after, x, z);
+    if (was !== null && now !== null && Math.abs(y - was) <= REBED_TOLERANCE && groundCutAt(cuts, x, now, z)) {
+      const floor = supportUnder(boxes, x, z, Math.max(y, now), e.id);
+      return Number.isFinite(floor) && Math.abs(floor - y) > 0.001 ? Math.round(floor * 1000) / 1000 : null;
+    }
+  }
   const dy = rebedShift(before, after, e);
   if (!dy) return null;
   if (supportUnder(boxes, e.position[0], e.position[2], e.position[1], e.id) > e.position[1] - FLOAT_TOLERANCE) return null;
@@ -269,16 +282,20 @@ export function hungPropLift(boxes: readonly WorldBox[], e: Pick<PropEntity, 'id
  * was.
  */
 export const FLOOR_REACH = 3;
-export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] = buildMapGeometry(map)): TerrainData | null {
-  const t = map.terrain;
-  if (!t) return t;
+export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] = buildMapGeometry(map), catalog: TileCatalog = coreCatalog): TerrainData | null {
+  if (!map.terrain) return map.terrain;
+  // Buried tunnels (groundBore.ts): the ground comes down at their mouths, and their own floors pull no ground under
+  // them (the hill stays on top; what crosses the bore is cut out of the surface instead).
+  const bores = mapGroundBores(map, catalog);
+  const t = bores.tiles.size ? shapeGroundAtBores(map.terrain, bores) : map.terrain;
   let heights: number[] | null = null;
   const s = t.spacing;
   const cm = (y: number) => Math.floor((y - t.baseY) * 100);
   // Highest floors first: ground lowered under an upper floor may then reach a lower one, and goes under that
   // too in the same pass (so a second pass changes nothing).
-  const floors = boxes.filter((b) => b.kind === 'floor' && !b.yaw && !b.pitch && !b.roll).sort((a, b) => b.max[1] - a.max[1]);
-  const foot = stepFootVertices(t, boxes);
+  const floors = boxes.filter((b) => b.kind === 'floor' && !b.yaw && !b.pitch && !b.roll && !bores.tiles.has(b.sourceId)).sort((a, b) => b.max[1] - a.max[1]);
+  // (A buried piece's own low parts are no steps to bring the ground up to.)
+  const foot = stepFootVertices(t, bores.tiles.size ? boxes.filter((b) => !bores.tiles.has(b.sourceId)) : boxes);
   for (const b of floors) {
     const top = b.max[1];
     const c0 = Math.max(0, Math.ceil((b.min[0] - 0.01 - t.origin[0]) / s));
@@ -307,7 +324,9 @@ export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] 
     }
   }
   const under = heights ? { ...t, heights } : t;
-  return stepFeet(under, foot, floors) ?? under;
+  const out = stepFeet(under, foot, floors) ?? under;
+  rememberTerrainCuts(out, bores.cuts);
+  return out;
 }
 
 /** Whether (x, z) is within `d` metres of a box's footprint (a turned box by its turn). */
@@ -403,7 +422,7 @@ export function withGroundAsPlayed(map: MapDocument, catalog: TileCatalog = core
   const made = map.terrain;
   if (!laid.terrain || !made) return laid;
   const geometry = boxes ?? buildMapGeometry(map, catalog);
-  const ground = terrainUnderFloors(laid, geometry)!;
+  const ground = terrainUnderFloors(laid, geometry, catalog)!;
   const out = ground === made ? laid : rebedProps(laid, made, ground, geometry);
   return out.terrain === ground ? out : { ...out, terrain: ground };
 }

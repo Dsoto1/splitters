@@ -6,7 +6,7 @@ import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { BaseTexture } from '@babylonjs/core/Materials/Textures/baseTexture';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { TERRAIN_MATERIALS, boxBounds, cellFoliage, envModelFile, getProp, plantShare, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, groundCutAt, terrainCuts, boxBounds, cellFoliage, envModelFile, getProp, plantShare, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { loadGraphicsQuality } from './game/graphicsSettings.ts';
 import { envMaterialsFor } from './environment/envMaterials.ts';
@@ -352,6 +352,7 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, 
   const out = new Map<string, Map<string, number[]>>();
   const rand = seeded(seed);
   const covered = coverage(boxes);
+  const cuts = terrainCuts(t);
   const w = t.cols - 1;
   const m = new Matrix();
   const q = new Quaternion();
@@ -395,7 +396,8 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, 
         const yaw = rand() * Math.PI * 2;
         // Kept low (ankle to shin height; bushes to the waist) so plants never hide a player.
         const size = grassy ? 0.8 + rand() * 0.55 : kind === 'bush' ? 0.5 + rand() * 0.3 : kind === 'reed' ? 0.85 + rand() * 0.45 : kind === 'flower' ? 0.8 + rand() * 0.35 : kind === 'shrub' ? 0.75 + rand() * 0.35 : 0.6 + rand() * 0.3;
-        if (y === null || covered(x, y, z)) continue;
+        // (Nor where a buried tunnel cut the ground away: its apron, its passage. Shared map/groundBore.ts.)
+        if (y === null || covered(x, y, z) || (cuts.length && groundCutAt(cuts, x, y, z, 0.25))) continue;
         // Steep slopes (cliff faces) stay bare.
         const dy = Math.abs((terrainHeightAt(t, x + 0.5, z) ?? y) - y) + Math.abs((terrainHeightAt(t, x, z + 0.5) ?? y) - y);
         if (dy > 0.7) continue;
