@@ -7,7 +7,7 @@
       "displayName": "Crossroads Plaza",
       "category": "Arenas & Plazas",
       "blurb": "Two streets crossing, with a paved square a kerb up on each corner: planter walls along the streets for cover, a bench and a lamp on each, four ways in and out: 3 × 3 cells.",
-      "packs": ["suburban", "neon", "harbor", "collegiate", "medieval", "desert", "military", "snow"],
+      "packs": ["suburban", "neon", "harbor", "collegiate", "medieval", "desert", "military", "snow", "urban"],
       "footprint": { "cells": [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2],[2,2]], "levels": [0,1] },
       "mirror": "none",
       "ports": [

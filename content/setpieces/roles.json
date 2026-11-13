@@ -252,6 +252,25 @@
         "door": "blast",
         "glass": "reinforced"
       }
+    },
+    {
+      "id": "urban",
+      "displayName": "Urban & Civilian",
+      "stylePack": "urban",
+      "themes": [],
+      "roles": {
+        "stone": { "material": "core.pbr_brick_old" },
+        "trim": { "material": "core.pbr_concrete", "tint": "#d6d2c8" },
+        "floor": { "material": "core.pbr_terrazzo" },
+        "paving": { "material": "core.pbr_hex_paving", "tint": "#c4c0b8" },
+        "roof": { "material": "core.pbr_concrete_dark" },
+        "wood": { "material": "core.pbr_planks" },
+        "metal": { "material": "core.pbr_steel", "tint": "#7c8088" },
+        "facade": "brick",
+        "door": "oak",
+        "glass": "breakable"
+      },
+      "notes": { "design": "Tileset 11 (docs/map-briefs/urban/URBAN_PLAN.md, A2): an ordinary present-day town: old brick walls with pale concrete bands and sills, terrazzo floors, grey pavers, flat dark concrete roofs, plank and steel fittings, the brick facade, a wooden door, glass that breaks. It is the default for no theme (`themes` is empty): maps in City Block, Factory and Research Lab place set pieces with no pack named, and those keep the look their theme paints. A set piece takes this look when it is placed with the Urban & Civilian pack picked, or when its inspector names it." }
     }
   ]
 }

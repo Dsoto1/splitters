@@ -417,7 +417,8 @@ Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
 alongside the set), then from the owner's tileset sheets 10 Medieval Village,
-11 Coastal Harbor and 12 Snow Outpost, then 13 Industrial Factory (owner, 2026-11-12: a pack of our own pieces);
+11 Coastal Harbor and 12 Snow Outpost, then 13 Industrial Factory (owner, 2026-11-12: a pack of our own pieces)
+and 14 Urban & Civilian (owner, 2026-11-13: a list of existing pieces, no demo map yet);
 09 is now **Desert City**, which
 replaced Sands of Egypt (owner, 2026-10-31) and still carries all its pieces,
 and 06 Jungle Ruins was refreshed from the Jungle Ruins sheet with the Ancient
@@ -1039,6 +1040,24 @@ sheet, concrete, steel). **Facades**: *Corrugated sheet*, *Bunker concrete*, *Ci
 glass) on the Loading Dock, Power Core Hall, Reactor Room, Server Vault, Catwalk Bridges, Skybridges and Stair
 Towers. **Gameplay pieces**: the Roll-up Door, goods lift, sliding platform, blast door, ladder, alarm light,
 barrier, fence, crates and barrels, gas, the generator, crusher, flames and shock traps.
+
+### 14 Urban & Civilian (present-day town)
+
+Tileset 11, from the owner's universal tileset guide (`docs/map-briefs/urban/`; owner, 2026-11-13: "the guide is
+applied to what we have"). **A list, not a kit**: it has no tiles of its own and copies nothing. It names pieces
+the game already has (the eight Suburban tiles, the five city buildings and streets, the Neon shop and block, the
+seven Industrial tiles, the core house, shop, gas station, street, intersection, warehouse and plaza, rooms, stairs,
+the ramp and the platforms; street lights, traffic lights, signs, benches, bins, dumpsters, barriers, cones, fences,
+the hydrant, vending machines, rooftop units, parked cars, metro and gas station props, shop fittings), and those
+packs keep their lists: a piece in two packs is one piece. Themes: City Block, Suburban Chaos, Factory. Facades:
+*City brick*, *Storefront*, *Plaster*, *Clapboard*, *Suburban brick*, *Glass* and *Corrugated sheet*.
+**It has no demo map yet** (owner, 2026-11-13), so `StylePack.demo` is optional and the picker's note leaves the demo
+out for a pack with none. **Set pieces**: role pack `urban` (old brick, pale concrete trim, terrazzo, grey pavers,
+dark concrete roofs, the brick facade, a wooden door, breakable glass) on the Crossroads Plaza, Loading Dock,
+Skybridges, Stair Towers, Atrium Tower, Catwalk Bridges, Twin-Stair Overlook, Ramp Junction, Server Vault and Sunken
+Arena. The role pack is the default for **no theme**: City Block, Factory and Research Lab maps place set pieces
+with no pack named, and those keep the look their theme paints; a piece takes the urban look when it is placed with
+the pack picked. `test/stylePacksUrban.test.ts`.
 
 ### 06 Jungle Ruins refresh (Ancient Temple folded in)
 
