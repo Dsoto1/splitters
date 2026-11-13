@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_aupshbcamycnf4ds",
-      "revision": 22,
-      "contentHash": "sha256:de9425c181622ce0a93bc66583a305356b47d583ded9ae959822e5d8574dcb20",
+      "versionId": "v_rzmhrrnywrnr67ar",
+      "revision": 23,
+      "contentHash": "sha256:b4111b6657256109503fb182fc4739ec2d94c070751ca3a607244729bb6af4ad",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T18:47:23.577Z"
+      "releasedAt": "2026-11-13T00:04:53.496Z"
     },
     "testOnly": true
   },
@@ -909,14 +909,14 @@
         "y": -51,
         "z": 0,
         "rotation": 0,
-        "glass": {
-          "0,0,0:N": "breakable",
-          "0,0,0:E": "reinforced"
-        },
         "edges": {
           "0,0,0:N": "window_sash",
           "0,0,0:E": "windows_sash",
           "0,0,0:S": "door_room"
+        },
+        "glass": {
+          "0,0,0:N": "breakable",
+          "0,0,0:E": "reinforced"
         }
       },
       {
@@ -1244,19 +1244,6 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_5m402baslv",
-      "position": [
-        -68,
-        0,
-        0
-      ],
-      "kind": "mount",
-      "model": "kart",
-      "yaw": 0,
-      "faction": null,
-      "respawnSeconds": null
-    },
-    {
       "id": "mount_2vxoerzt6j",
       "position": [
         -51,
@@ -1382,19 +1369,6 @@
       ],
       "kind": "mount",
       "model": "gunship",
-      "yaw": 0,
-      "faction": null,
-      "respawnSeconds": null
-    },
-    {
-      "id": "mount_p9gzbpmlkz",
-      "position": [
-        119,
-        0,
-        0
-      ],
-      "kind": "mount",
-      "model": "ice_cream_truck",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
@@ -4960,12 +4934,12 @@
     },
     {
       "id": "prop_6cxnfalctm",
-      "kind": "prop",
       "position": [
         -48,
         0,
         -411.75
       ],
+      "kind": "prop",
       "model": "kit.door.oak",
       "yaw": 0,
       "scale": 1,
@@ -4974,42 +4948,42 @@
     },
     {
       "id": "prop_0oq8h6gd1r",
-      "kind": "prop",
       "position": [
         -38.5,
         0,
         -409
       ],
+      "kind": "prop",
       "model": "kit.door.oak_ajar",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_8jjhk1gerb",
-      "kind": "prop",
       "position": [
         -41.5,
         0,
         -407
       ],
+      "kind": "prop",
       "model": "kit.door.oak_open",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_3h0sqhvq27",
-      "kind": "prop",
       "position": [
         -46.4,
         0,
         -406
       ],
+      "kind": "prop",
       "model": "kit.table.desk_hutch",
       "yaw": 0,
       "scale": 1,
@@ -5018,12 +4992,12 @@
     },
     {
       "id": "prop_lh5drt3v6j",
-      "kind": "prop",
       "position": [
         -50,
         0,
         -405
       ],
+      "kind": "prop",
       "model": "kit.cabinet.closet",
       "yaw": 0,
       "scale": 1,
@@ -5493,120 +5467,6 @@
     "foliage": []
   },
   "bounds": null,
-  "paths": [
-    {
-      "id": "path_bi9y69ohv2",
-      "points": [
-        [
-          -130,
-          -0.15,
-          19.87
-        ],
-        [
-          -40,
-          -0.15,
-          19.87
-        ],
-        [
-          40,
-          -0.15,
-          19.87
-        ],
-        [
-          130,
-          -0.15,
-          19.87
-        ]
-      ],
-      "closed": false,
-      "uses": [
-        "road"
-      ],
-      "width": 3,
-      "style": "dirt",
-      "lay": true
-    },
-    {
-      "id": "route_323etlkoti",
-      "points": [
-        [
-          -130,
-          -0.15,
-          99.87
-        ],
-        [
-          0,
-          -0.15,
-          99.87
-        ],
-        [
-          130,
-          -0.15,
-          99.87
-        ]
-      ],
-      "closed": false,
-      "uses": [
-        "route"
-      ],
-      "width": 3,
-      "style": "dirt",
-      "lay": false
-    },
-    {
-      "id": "race_4ci5piokva",
-      "points": [
-        [
-          -140,
-          -0.15,
-          134.87
-        ],
-        [
-          140,
-          -0.15,
-          134.87
-        ],
-        [
-          148,
-          -0.15,
-          142.87
-        ],
-        [
-          140,
-          -0.15,
-          150.87
-        ],
-        [
-          -140,
-          -0.15,
-          150.87
-        ],
-        [
-          -148,
-          -0.15,
-          142.87
-        ]
-      ],
-      "closed": true,
-      "uses": [
-        "road",
-        "race"
-      ],
-      "width": 8,
-      "style": "asphalt",
-      "lay": true,
-      "race": {
-        "laps": 3,
-        "grid": 8,
-        "vehicle": "kart",
-        "combat": false,
-        "curbs": true,
-        "ambient": 0,
-        "ambientVehicle": "kart",
-        "pit": null
-      }
-    }
-  ],
   "backdrop": null,
   "physics": null,
   "blood": null,
@@ -6241,6 +6101,120 @@
       "rotation": 0,
       "mirror": false,
       "pack": "collegiate"
+    }
+  ],
+  "paths": [
+    {
+      "id": "path_bi9y69ohv2",
+      "points": [
+        [
+          -130,
+          -0.15,
+          19.87
+        ],
+        [
+          -40,
+          -0.15,
+          19.87
+        ],
+        [
+          40,
+          -0.15,
+          19.87
+        ],
+        [
+          130,
+          -0.15,
+          19.87
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "road"
+      ],
+      "width": 3,
+      "style": "dirt",
+      "lay": true
+    },
+    {
+      "id": "route_323etlkoti",
+      "points": [
+        [
+          -130,
+          -0.15,
+          99.87
+        ],
+        [
+          0,
+          -0.15,
+          99.87
+        ],
+        [
+          130,
+          -0.15,
+          99.87
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "route"
+      ],
+      "width": 3,
+      "style": "dirt",
+      "lay": false
+    },
+    {
+      "id": "race_4ci5piokva",
+      "points": [
+        [
+          -140,
+          -0.15,
+          134.87
+        ],
+        [
+          140,
+          -0.15,
+          134.87
+        ],
+        [
+          148,
+          -0.15,
+          142.87
+        ],
+        [
+          140,
+          -0.15,
+          150.87
+        ],
+        [
+          -140,
+          -0.15,
+          150.87
+        ],
+        [
+          -148,
+          -0.15,
+          142.87
+        ]
+      ],
+      "closed": true,
+      "uses": [
+        "road",
+        "race"
+      ],
+      "width": 8,
+      "style": "asphalt",
+      "lay": true,
+      "race": {
+        "laps": 3,
+        "grid": 8,
+        "vehicle": "hover_bike",
+        "combat": false,
+        "curbs": true,
+        "ambient": 0,
+        "ambientVehicle": "hover_bike",
+        "pit": null
+      }
     }
   ]
 }
