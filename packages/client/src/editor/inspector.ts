@@ -113,6 +113,10 @@ export class Inspector {
     }
     if (pieces.length === 1 && tiles.length + entities.length === 0) {
       this.app.pieces.pieceInspector(el, pieces[0]!);
+      // A buried set piece (a Lit Tunnel Run): a portal on each of its open ends, as for buried tiles.
+      const parts = [...this.app.expansion.partOf].filter(([, piece]) => piece === pieces[0]).map(([id]) => id);
+      const tunnel = parts.length ? tunnelPanel(doc, parts, (label, cmd) => this.app.run(label, cmd), 'portals') : null;
+      if (tunnel) el.append(tunnel);
     } else if (tiles.length === 1 && entities.length === 0 && !pieces.length) {
       this.tileInspector(el, doc.classicStructure.tiles.find((x) => x.id === tiles[0])!);
     } else if (entities.length === 1 && tiles.length === 0 && !pieces.length) {

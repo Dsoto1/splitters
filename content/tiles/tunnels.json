@@ -1,5 +1,5 @@
 {
-  "$comment": "The tunnel kit (Tileset 04, Tunnel Systems; docs/map-briefs/tunnels/PLAN_2026-11-13.md): one structural shell a shape, material families applied to it. tools/content/kit/tunnel.mjs makes a kit tile for each family and shape (id core.tunnel_<family>_<shape>), and tools/content/tiles.mjs checks and writes them with content/tiles/core.json's. profiles: the clear opening on a cell edge every family keeps (half its width, its clear height, the top of the cap over it), so any two pieces of the same profile meet without a step. families (the first is the one MapMaker's palette shows; `preview`: a family not finished yet, named so in MapMaker's Family select; a placed piece's `family` (map format v37) picks another): materials (library materials: the masses either side, the soffit, the floor, trim, a portal's headwall and wings), lining (how the bore is dressed: haunch = a cast downstand where wall meets soffit, joints = metres between panel joints) and trim (plinth height, the floor drain, the pipe run on a straight wall, the strip light at the crown, the hazard band at a mouth, a dead end's door). shapes: arms = the sides the passage runs to; mouth = the side a portal opens to the sky (with its headwall and wing walls); door = the side of a dead end's service door. A family changes nothing a player or a bot collides with: trim is drawn only.",
+  "$comment": "The tunnel kit (Tileset 04, Tunnel Systems; docs/map-briefs/tunnels/PLAN_2026-11-13.md): one structural shell a shape, material families applied to it. tools/content/kit/tunnel.mjs makes a kit tile for each family and shape (id core.tunnel_<family>_<shape>), and tools/content/tiles.mjs checks and writes them with content/tiles/core.json's. profiles: the clear opening on a cell edge every family keeps (half its width, its clear height, the top of the cap over it), so any two pieces of the same profile meet without a step. families (the first is the one MapMaker's palette shows; `preview`: a family not finished yet, named so in MapMaker's Family select; a placed piece's `family` (map format v37) picks another): materials (library materials: the masses either side, the soffit, the floor, trim, a portal's headwall and wings), lining (how the bore is dressed: haunch = a cast downstand where wall meets soffit, joints = metres between panel joints) and trim (plinth height, the floor drain, the pipe run on a straight wall, the strip light at the crown, the hazard band at a mouth, a dead end's door). shapes: arms = the sides the passage runs to; mouth = the side a portal opens to the sky (with its headwall and wing walls); door = the side of a dead end's service door; hatch = a shaft's opening in the cap [x0, z0, x1, z1]; kind = a piece of more than one cell or level (flight: one level up on steps or a ramp, buried; descent: the same open to the sky, the way down from flat ground; riser: a well between two levels; chamber: a 2 x 2 room). A family changes nothing a player or a bot collides with: trim is drawn only.",
   "profiles": {
     "S": { "half": 1.8, "clear": 3.3, "cap": 3.75 }
   },
@@ -18,7 +18,7 @@
       "trim": {
         "plinth": 0.45,
         "drain": { "width": 0.3, "material": "core.pbr_tread_plate" },
-        "pipe": { "y": 2.45, "r": 0.09, "material": "core.pbr_rusted_plate" },
+        "pipe": { "y": 2.45, "r": 0.13, "material": "core.pbr_rusted_plate" },
         "light": { "length": 1.4, "material": "core.lamp_glow" },
         "hazard": "core.hazard",
         "door": { "material": "core.pbr_steel" }
@@ -58,6 +58,12 @@
       "mouth": "S",
       "headwall": { "at": 0, "t": 1, "top": 4.75 },
       "wings": { "t": 0.6, "top": 3.75, "low": 1.3, "foot": -3.3, "slab": 1 }
-    }
+    },
+    { "id": "stairs", "name": "Stairs", "kind": "flight", "floor": "steps", "blurb": "The passage climbs one level on steps, from the south (low) to the north (a level up), buried: the soffit and the earth over it climb with the floor." },
+    { "id": "slope", "name": "Slope", "kind": "flight", "floor": "ramp", "blurb": "The passage climbs one level on a ramp (1 in 2), from the south (low) to the north (a level up), buried like the stairs." },
+    { "id": "descent", "name": "Surface Stairs", "kind": "descent", "floor": "steps", "blurb": "Steps down from the surface into a tunnel a level under it: open to the sky between low walls, the tunnel going on south at the bottom, the ground at the top (north). The mouth for flat ground." },
+    { "id": "shaft", "name": "Shaft", "arms": ["N", "S"], "hatch": [-1.8, -0.75, -0.3, 0.75], "blurb": "A straight passage with a hatch up to the surface over its west wall, a kerb round it and its lid standing open. The ground is brought level to the hatch. It wants a ladder on that wall: the Tunnel Shaft set piece has one." },
+    { "id": "riser", "name": "Riser", "kind": "riser", "blurb": "A capped well joining a passage (south) to one a level up (north). It wants a ladder on the well's north wall: the Tunnel Riser set piece has one." },
+    { "id": "chamber", "name": "Chamber", "kind": "chamber", "wall": 1, "columns": [[2.2, 2.2], [5.8, 2.2], [2.2, 5.8], [5.8, 5.8]], "blurb": "A room of 2 x 2 cells (14 m inside) on four columns, a passage-sized opening on each side: south and west in its south-west cell, north in the north-west, east in the south-east. Wall an opening you don't use (Sides), or put a Dead End on it." }
   ]
 }

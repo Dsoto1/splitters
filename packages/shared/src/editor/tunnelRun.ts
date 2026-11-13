@@ -105,8 +105,8 @@ export function openEnds(doc: MapDocument, tileIds?: readonly string[], catalog:
   const want = tileIds ? new Set(tileIds) : null;
   const out: OpenEnd[] = [];
   for (const [key, occ] of cells) {
-    // (A portal's own mouth is no open end: it is the way out.)
-    if (!occ.def.bore || occ.def.bore.open || (want && !want.has(occ.placement.id))) continue;
+    // (A portal's own mouth is no open end: it is the way out. Nor are steps down from the surface.)
+    if (!occ.def.bore || occ.def.bore.open || occ.def.bore.sky || (want && !want.has(occ.placement.id))) continue;
     const [x, y, z] = key.split(',').map(Number) as [number, number, number];
     for (const side of portSides(occ)) {
       const [dx, dy] = SIDE_DIRS[side];

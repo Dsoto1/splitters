@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_6jfkkjbuewiwyxbu",
-      "revision": 25,
-      "contentHash": "sha256:4d60c272363286eac173151acf8efde7e6438e30716104b473e02d3c77cff51c",
+      "versionId": "v_vz5jy6nakd5q3rro",
+      "revision": 26,
+      "contentHash": "sha256:4fbcd9a3f6619e73c19fcd3a5d16deb14790e91b2a5e81ef2c76c7a442ba9317",
       "schemaVersion": 37,
-      "releasedAt": "2026-11-13T09:51:12.552Z"
+      "releasedAt": "2026-11-13T12:34:03.061Z"
     },
     "testOnly": true
   },
@@ -1042,6 +1042,70 @@
         "y": 5,
         "z": -1,
         "rotation": 0
+      },
+      {
+        "id": "tile_tidi0r3or3",
+        "tile": "core.tunnel_concrete_descent",
+        "x": 4,
+        "y": -9,
+        "z": -1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_h80o81sqxp",
+        "tile": "core.tunnel_concrete_chamber",
+        "x": 6,
+        "y": -9,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_xnyi2ju9en",
+        "tile": "core.tunnel_concrete_end",
+        "x": 6,
+        "y": -7,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_r070irlj58",
+        "tile": "core.tunnel_concrete_stairs",
+        "x": 6,
+        "y": -10,
+        "z": -2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_vks6ubgqs9",
+        "tile": "core.tunnel_concrete_end",
+        "x": 6,
+        "y": -11,
+        "z": -2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_rvl2t1k35v",
+        "tile": "core.tunnel_concrete_slope",
+        "x": 8,
+        "y": -9,
+        "z": -2,
+        "rotation": 3
+      },
+      {
+        "id": "tile_vmrkxsm384",
+        "tile": "core.tunnel_concrete_straight",
+        "x": 9,
+        "y": -9,
+        "z": -2,
+        "rotation": 1
+      },
+      {
+        "id": "tile_zv8fn14qot",
+        "tile": "core.tunnel_concrete_end",
+        "x": 11,
+        "y": -9,
+        "z": -1,
+        "rotation": 1
       }
     ]
   },
@@ -6352,6 +6416,24 @@
       "x": -18,
       "y": 6,
       "z": -1,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_zkm5adexfh",
+      "piece": "setpiece.tunnel_shaft",
+      "x": 5,
+      "y": -9,
+      "z": -1,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_u316tmgh8s",
+      "piece": "setpiece.tunnel_riser",
+      "x": 10,
+      "y": -9,
+      "z": -2,
       "rotation": 1,
       "mirror": false
     }

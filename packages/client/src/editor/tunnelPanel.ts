@@ -5,14 +5,16 @@ import { addPortalsCommand, connectedRun, openEnds, setTileFamilyCommand, tileFa
  * selected tiles:
  *  - **Family**: the material family the pieces are drawn in (map format v37), and with "Whole run" ticked every
  *    buried piece joined to them, in one undo step;
- *  - **Add portal**: a portal on each open end of the selected pieces (an end that leads to nothing built).
+ *  - **Add portal**: a portal on each open end of the selected pieces (an end that leads to nothing built). A selected
+ *    set piece gets this for its buried parts (a Lit Tunnel Run's two ends).
  * Null when no selected tile has either.
  */
-export function tunnelPanel(doc: MapDocument, tileIds: readonly string[], run: (label: string, cmd: EditCommand | { error: string }) => unknown): HTMLElement | null {
+export function tunnelPanel(doc: MapDocument, tileIds: readonly string[], run: (label: string, cmd: EditCommand | { error: string }) => unknown, only?: 'portals'): HTMLElement | null {
   const ids = new Set(tileIds);
   const tiles = doc.classicStructure.tiles.filter((t) => ids.has(t.id));
   // The families every selected kit piece comes in (the first piece's list: one kit so far), and those in use.
-  const withFamilies = tiles.filter((t) => tileFamilies(t).length > 1);
+  // (`only: 'portals'`: a set piece's parts, which are the piece's own: their family is not the map's to set.)
+  const withFamilies = only === 'portals' ? [] : tiles.filter((t) => tileFamilies(t).length > 1);
   const ends = openEnds(doc, tileIds);
   if (!withFamilies.length && !ends.length) return null;
   const box = document.createElement('div');

@@ -563,6 +563,15 @@ export function buriedPassageLines(map: Pick<MapDocument, 'classicStructure'>, c
   for (const p of tiles) {
     const def = catalog.get(p.tile);
     if (!def?.bore) continue;
+    if (def.bore.plan) {
+      // A piece that says where its sides are (a stair, a chamber): those lines, turned and placed with it.
+      for (const q of def.bore.plan) {
+        const [ax, az] = rotateXZ(q[0]!, q[1]!, p.rotation);
+        const [bx, bz] = rotateXZ(q[2]!, q[3]!, p.rotation);
+        out.push({ a: [p.x * cellSize + ax, p.y * cellSize + az], b: [p.x * cellSize + bx, p.y * cellSize + bz], y: p.z * levelHeight, tile: p.id });
+      }
+      continue;
+    }
     for (const [dx, dy, dz] of def.cells) {
       const [rx, ry] = rotateXZ(dx, dy, p.rotation);
       const cx = (p.x + rx) * cellSize;

@@ -106,6 +106,10 @@ export interface TileDefinition {
     rim?: readonly { line: readonly number[]; y: readonly number[]; mode: 'both' | 'raise' | 'lower' }[];
     /** Rectangles [x0, z0, x1, z1, y] the ground is at least `y` high over (earth over the piece's cap). */
     cover?: readonly (readonly number[])[];
+    /** The passage's sides as plans draw them, [x0, z0, x1, z1] at the tile's own level, for a piece of more than one cell or level (else they follow the ports of each cell). */
+    plan?: readonly (readonly number[])[];
+    /** Open to the sky (steps down from the surface): a way out itself, so its ports are no open ends to put a portal on. */
+    sky?: boolean;
   };
   /**
    * Drawn with a model (city buildings and streets) centred on the tile's
