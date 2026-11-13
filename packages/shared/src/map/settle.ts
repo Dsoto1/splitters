@@ -7,7 +7,7 @@ import { withPathsLaid } from './paths.ts';
 import { PLAYER } from '../sim/constants.ts';
 import type { LightEntity, LightFixture, MapDocument, PropEntity } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
-import { mapGroundBores, openGroundAtMouths } from './groundBore.ts';
+import { mapGroundBores, shapeGroundAtBores } from './groundBore.ts';
 
 /** What an environment tree stands on when settled on a slope: its trunk, not its crown's spread. */
 const TRUNK_FOOTPRINT = [0.6, 0, 0.6] as const;
@@ -275,7 +275,7 @@ export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] 
   // Buried tunnels (groundBore.ts): the ground comes down at their mouths, and their own floors pull no ground under
   // them (the hill stays on top; what crosses the bore is cut out of the surface instead).
   const bores = mapGroundBores(map, catalog);
-  const t = bores.openings.length ? openGroundAtMouths(map.terrain, bores.openings) : map.terrain;
+  const t = bores.tiles.size ? shapeGroundAtBores(map.terrain, bores) : map.terrain;
   let heights: number[] | null = null;
   const s = t.spacing;
   const cm = (y: number) => Math.floor((y - t.baseY) * 100);

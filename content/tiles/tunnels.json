@@ -1,0 +1,44 @@
+{
+  "$comment": "The tunnel kit (Tileset 04, Tunnel Systems; docs/map-briefs/tunnels/PLAN_2026-11-13.md): one structural shell a shape, material families applied to it. tools/content/kit/tunnel.mjs makes a kit tile for each family and shape (id core.tunnel_<family>_<shape>), and tools/content/tiles.mjs checks and writes them with content/tiles/core.json's. profiles: the clear opening on a cell edge every family keeps (half its width, its clear height, the top of the cap over it), so any two pieces of the same profile meet without a step. families: materials (library materials: the masses either side, the soffit, the floor, trim, a portal's headwall and wings), lining (how the bore is dressed: haunch = a cast downstand where wall meets soffit, joints = metres between panel joints) and trim (plinth height, the floor drain, the pipe run on a straight wall, the strip light at the crown, the hazard band at a mouth, a dead end's door). shapes: arms = the sides the passage runs to; mouth = the side a portal opens to the sky (with its headwall and wing walls); door = the side of a dead end's service door. A family changes nothing a player or a bot collides with: trim is drawn only.",
+  "profiles": {
+    "S": { "half": 1.8, "clear": 3.3, "cap": 3.75 }
+  },
+  "families": {
+    "concrete": {
+      "label": "Concrete Tunnel",
+      "blurb": "Cast concrete with panel joints, a floor drain and a strip light at the crown (utility corridors, culverts, bunkers).",
+      "materials": {
+        "wall": "core.pbr_concrete",
+        "soffit": "core.pbr_concrete",
+        "floor": "core.pbr_concrete_dark",
+        "trim": "core.pbr_concrete_dark",
+        "headwall": "core.pbr_concrete"
+      },
+      "lining": { "haunch": 0.25, "joints": 2 },
+      "trim": {
+        "plinth": 0.45,
+        "drain": { "width": 0.3, "material": "core.pbr_tread_plate" },
+        "pipe": { "y": 2.45, "r": 0.09, "material": "core.pbr_rusted_plate" },
+        "light": { "length": 1.4, "material": "core.glow_trim", "tint": "#fff1cf" },
+        "hazard": "core.hazard",
+        "door": { "material": "core.pbr_steel" }
+      }
+    }
+  },
+  "shapes": [
+    { "id": "straight", "name": "", "blurb": "A 3.6 m passage running north–south, buried: the hill stays on top of it.", "arms": ["N", "S"] },
+    { "id": "curve", "name": "Curve", "blurb": "The passage comes in from the south and turns east.", "arms": ["S", "E"] },
+    { "id": "t", "name": "T-Junction", "blurb": "The passage runs east–west with a branch south.", "arms": ["E", "W", "S"] },
+    { "id": "cross", "name": "Four-Way", "blurb": "Two passages cross.", "arms": ["N", "E", "S", "W"] },
+    { "id": "end", "name": "Dead End", "blurb": "The passage comes in from the south and ends at a service door.", "arms": ["S"], "door": "N" },
+    {
+      "id": "portal",
+      "name": "Portal",
+      "blurb": "The mouth: a headwall, an apron between sloping wing walls (south), the tunnel going on north. It opens the hill and brings the earth to its walls by itself.",
+      "arms": ["N"],
+      "mouth": "S",
+      "headwall": { "at": 0, "t": 1, "top": 4.75 },
+      "wings": { "t": 0.6, "top": 3.75, "low": 1.3, "foot": -3.3, "slab": 1 }
+    }
+  ]
+}

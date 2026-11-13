@@ -19,6 +19,10 @@ import { terrainHeightAt, terrainTriangles, vertexY, type TerrainData } from './
  *    just under that floor (every grid square the opening touches), and beyond it rises no steeper than MOUTH_BANK:
  *    a cutting with banks, as wide as the hill is high there. With `bore.out` (the side the mouth faces) the cutting
  *    runs on that way until the ground as made is down to the floor (daylight). It only ever lowers ground.
+ *  - **Rims** (`bore.rim`) and **covers** (`bore.cover`): the earth brought to the piece, up or down, so no wall of a
+ *    buried piece stands bare and no hill overhangs a wing wall: the ground along a rim line goes to the rim's height
+ *    (a wing wall's sloping top, a headwall's coping), and over a cover it is at least the cover's height (earth over
+ *    the cap). See shapeGroundAtBores.
  *
  * Neither is stored. Like the ground kept under floors (settle.ts terrainUnderFloors), both are worked out from the
  * map's tiles and its ground as made every time the map is loaded or shown, so a tunnel that moves takes its mouth
@@ -40,9 +44,35 @@ export interface GroundOpening {
   out?: [number, number];
 }
 
+/**
+ * A rim: a line the ground is brought to (a wing wall's top, a headwall's coping). Vertices within a grid square of the
+ * line, either side of it, go to its height (`both`), or up to it (`raise`), or down to it (`lower`); further out the
+ * ground may differ from it by MOUTH_BANK a metre. Only square across the line counts, never past its ends.
+ */
+export interface GroundRim {
+  x0: number;
+  z0: number;
+  y0: number;
+  x1: number;
+  z1: number;
+  y1: number;
+  mode: 'both' | 'raise' | 'lower';
+}
+
+/** Cover: over the rectangle the ground is at least `y` high (earth over a buried piece), falling away outside at MOUTH_BANK. */
+export interface GroundCover {
+  x0: number;
+  z0: number;
+  x1: number;
+  z1: number;
+  y: number;
+}
+
 export interface GroundBores {
   cuts: GroundCut[];
   openings: GroundOpening[];
+  rims: GroundRim[];
+  covers: GroundCover[];
   /** The placements that bore (their floors don't pull the ground down: settle.ts terrainUnderFloors). */
   tiles: Set<string>;
 }
@@ -88,7 +118,7 @@ function toDaylight(t: TerrainData, o: GroundOpening): GroundOpening {
   return { ...o, x0: dx < 0 ? o.x0 - run : o.x0, x1: dx > 0 ? o.x1 + run : o.x1, z0: dz < 0 ? o.z0 - run : o.z0, z1: dz > 0 ? o.z1 + run : o.z1 };
 }
 
-const NONE: GroundBores = { cuts: [], openings: [], tiles: new Set() };
+const NONE: GroundBores = { cuts: [], openings: [], rims: [], covers: [], tiles: new Set() };
 const cache = new WeakMap<readonly unknown[], { catalog: TileCatalog; cellSize: number; levelHeight: number; bores: GroundBores }>();
 
 /** The cuts and openings of a map's tiles (its set pieces expanded), cached on its tile list. */
@@ -100,7 +130,7 @@ export function mapGroundBores(map: Pick<MapDocument, 'classicStructure'>, catal
   for (const p of tiles) {
     const bore = catalog.get(p.tile)?.bore;
     if (!bore) continue;
-    if (bores === NONE) bores = { cuts: [], openings: [], tiles: new Set() };
+    if (bores === NONE) bores = { cuts: [], openings: [], rims: [], covers: [], tiles: new Set() };
     bores.tiles.add(p.id);
     const cx = p.x * cellSize;
     const cz = p.y * cellSize;
@@ -118,6 +148,16 @@ export function mapGroundBores(map: Pick<MapDocument, 'classicStructure'>, catal
       const w = world(b);
       const out = bore.out ? SIDE_DIRS[rotateSide(bore.out, p.rotation)] : null;
       bores.openings.push({ x0: w.x0, z0: w.z0, x1: w.x1, z1: w.z1, y: w.y0, ...(out ? { out: [out[0], out[1]] as [number, number] } : {}) });
+    }
+    for (const r of bore.rim ?? []) {
+      const [ax, az] = rotateXZ(r.line[0]!, r.line[1]!, p.rotation);
+      const [bx, bz] = rotateXZ(r.line[2]!, r.line[3]!, p.rotation);
+      bores.rims.push({ x0: cx + ax, z0: cz + az, y0: baseY + r.y[0]!, x1: cx + bx, z1: cz + bz, y1: baseY + r.y[1]!, mode: r.mode });
+    }
+    for (const c of bore.cover ?? []) {
+      const [ax, az] = rotateXZ(c[0]!, c[1]!, p.rotation);
+      const [bx, bz] = rotateXZ(c[2]!, c[3]!, p.rotation);
+      bores.covers.push({ x0: cx + Math.min(ax, bx), z0: cz + Math.min(az, bz), x1: cx + Math.max(ax, bx), z1: cz + Math.max(az, bz), y: baseY + c[4]! });
     }
   }
   cache.set(tiles, { catalog, cellSize, levelHeight, bores });
@@ -276,49 +316,146 @@ export function nearGroundCut(cuts: readonly GroundCut[], x: number, z: number, 
 }
 
 /**
- * The ground opened at the mouths: every vertex of a grid square an opening touches comes down to just under the
- * opening's floor, and vertices beyond come down to a bank rising MOUTH_BANK from the opening's edge. Only lowers;
- * the same terrain when nothing changed.
+ * The ground shaped round the buried pieces (settle.ts terrainUnderFloors calls it on the ground as made, paths laid):
+ *
+ *  - **mouths** (openings): every vertex of a grid square an opening touches comes down to just under its floor, the
+ *    opening run out to daylight first, and beyond the ground rises no steeper than MOUTH_BANK;
+ *  - **rims**: the ground along a rim goes to the rim's height (so earth meets a wing wall's top: no wall stands bare
+ *    of its bank, and no hill overhangs it), up or down, and differs from it by at most MOUTH_BANK a metre further out;
+ *  - **covers**: the ground over a buried piece is at least its cover (earth over its cap), falling away at MOUTH_BANK.
+ *
+ * Where they disagree: a mouth's flat ground wins (the way in is never banked up: on a grid that doesn't line up with
+ * the piece, a wing wall's last grid square may show a little of its foot instead), then the vertices held at a `both`
+ * rim, then raising over lowering. Worked out per vertex
+ * as bounds on the ground as it is, so doing it twice gives the same ground. The same terrain when nothing changed.
  */
-export function openGroundAtMouths(t: TerrainData, openings: readonly GroundOpening[]): TerrainData {
-  let heights: number[] | null = null;
+export function shapeGroundAtBores(t: TerrainData, bores: Pick<GroundBores, 'openings' | 'rims' | 'covers'>): TerrainData {
+  if (!bores.openings.length && !bores.rims.length && !bores.covers.length) return t;
   const s = t.spacing;
-  for (const mouth of openings) {
+  let top = -Infinity;
+  let bottom = Infinity;
+  for (const h of t.heights) {
+    if (h > top) top = h;
+    if (h < bottom) bottom = h;
+  }
+  const high = t.baseY + top / 100;
+  const low = t.baseY + bottom / 100;
+  // Bounds per vertex, in centimetres over baseY (as the heights are): at most `hi`, at least `lo`, exactly `pin`, or flat at `flat`.
+  const hi = new Map<number, number>();
+  const lo = new Map<number, number>();
+  const pin = new Map<number, number>();
+  const flat = new Map<number, number>();
+  const atMost = (m: Map<number, number>, i: number, v: number) => {
+    const was = m.get(i);
+    if (was === undefined || v < was) m.set(i, v);
+  };
+  const atLeast = (m: Map<number, number>, i: number, v: number) => {
+    const was = m.get(i);
+    if (was === undefined || v > was) m.set(i, v);
+  };
+  const cmDown = (y: number) => Math.floor((y - t.baseY) * 100 + 1e-6);
+  const cmUp = (y: number) => Math.ceil((y - t.baseY) * 100 - 1e-6);
+  const cols = (x0: number, x1: number): [number, number] => [Math.max(0, Math.floor((x0 - t.origin[0]) / s)), Math.min(t.cols - 1, Math.ceil((x1 - t.origin[0]) / s))];
+  const rows = (z0: number, z1: number): [number, number] => [Math.max(0, Math.floor((z0 - t.origin[1]) / s)), Math.min(t.rows - 1, Math.ceil((z1 - t.origin[1]) / s))];
+  // The grid squares a rectangle touches, as vertex ranges (their vertices are "on" the rectangle).
+  const touched = (x0: number, z0: number, x1: number, z1: number) => ({
+    c0: Math.floor((x0 - t.origin[0]) / s + 1e-9),
+    c1: Math.ceil((x1 - t.origin[0]) / s - 1e-9),
+    r0: Math.floor((z0 - t.origin[1]) / s + 1e-9),
+    r1: Math.ceil((z1 - t.origin[1]) / s - 1e-9),
+  });
+  // How far a vertex is from a block of touched squares.
+  const away = (q: { c0: number; c1: number; r0: number; r1: number }, c: number, r: number) => Math.hypot(Math.max(q.c0 - c, 0, c - q.c1), Math.max(q.r0 - r, 0, r - q.r1)) * s;
+
+  for (const mouth of bores.openings) {
     // (Daylight is looked for on the ground as made, so two mouths near each other don't depend on their order.)
     const o = toDaylight(t, mouth);
     const floor = o.y - UNDER_FLOOR;
-    // The grid squares the opening touches: their vertices lie flat.
-    const fc0 = Math.floor((o.x0 - t.origin[0]) / s + 1e-9);
-    const fc1 = Math.ceil((o.x1 - t.origin[0]) / s - 1e-9);
-    const fr0 = Math.floor((o.z0 - t.origin[1]) / s + 1e-9);
-    const fr1 = Math.ceil((o.z1 - t.origin[1]) / s - 1e-9);
-    if (fc1 < 0 || fr1 < 0 || fc0 > t.cols - 1 || fr0 > t.rows - 1) continue;
-    // How far the banks can reach: the highest ground over the floor, at MOUTH_BANK.
-    let top = -Infinity;
-    for (const h of t.heights) if (h > top) top = h;
-    const reach = Math.max(0, t.baseY + top / 100 - floor) / MOUTH_BANK + s;
-    const c0 = Math.max(0, Math.floor((o.x0 - reach - t.origin[0]) / s));
-    const c1 = Math.min(t.cols - 1, Math.ceil((o.x1 + reach - t.origin[0]) / s));
-    const r0 = Math.max(0, Math.floor((o.z0 - reach - t.origin[1]) / s));
-    const r1 = Math.min(t.rows - 1, Math.ceil((o.z1 + reach - t.origin[1]) / s));
+    const q = touched(o.x0, o.z0, o.x1, o.z1);
+    if (q.c1 < 0 || q.r1 < 0 || q.c0 > t.cols - 1 || q.r0 > t.rows - 1) continue;
+    const reach = Math.max(0, high - floor) / MOUTH_BANK + s;
+    const [c0, c1] = cols(o.x0 - reach, o.x1 + reach);
+    const [r0, r1] = rows(o.z0 - reach, o.z1 + reach);
     for (let r = r0; r <= r1; r++) {
       const z = t.origin[1] + r * s;
       for (let c = c0; c <= c1; c++) {
         const x = t.origin[0] + c * s;
-        const flat = c >= fc0 && c <= fc1 && r >= fr0 && r <= fr1;
-        // From the flat squares' edge, so the bank starts where the flat ground ends.
-        const dx = Math.max(t.origin[0] + fc0 * s - x, 0, x - (t.origin[0] + fc1 * s));
-        const dz = Math.max(t.origin[1] + fr0 * s - z, 0, z - (t.origin[1] + fr1 * s));
-        const want = Math.floor(((flat ? floor : floor + MOUTH_BANK * Math.hypot(dx, dz)) - t.baseY) * 100);
         const i = r * t.cols + c;
-        if ((heights ?? t.heights)[i]! > want) {
-          heights ??= [...t.heights];
-          heights[i] = want;
-        }
+        let d = away(q, c, r);
+        // A mouth that faces a way is flat across its own width only: a vertex of its squares past its side belongs to
+        // the bank there (or to a wing wall's rim), not to the way in.
+        if (d === 0 && o.out) d = o.out[0] ? Math.max(o.z0 - z, 0, z - o.z1) : Math.max(o.x0 - x, 0, x - o.x1);
+        if (d <= 1e-9) atMost(flat, i, cmDown(floor));
+        else atMost(hi, i, cmDown(floor + MOUTH_BANK * d));
       }
     }
   }
+
+  for (const cover of bores.covers) {
+    const q = touched(cover.x0, cover.z0, cover.x1, cover.z1);
+    const reach = Math.max(0, cover.y - low) / MOUTH_BANK + s;
+    const [c0, c1] = cols(cover.x0 - reach, cover.x1 + reach);
+    const [r0, r1] = rows(cover.z0 - reach, cover.z1 + reach);
+    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) atLeast(lo, r * t.cols + c, cmUp(cover.y - MOUTH_BANK * away(q, c, r)));
+  }
+
+  for (const rim of bores.rims) {
+    const dx = rim.x1 - rim.x0;
+    const dz = rim.z1 - rim.z0;
+    const len2 = dx * dx + dz * dz;
+    if (!(len2 > 0)) continue;
+    const yTop = Math.max(rim.y0, rim.y1);
+    const yLow = Math.min(rim.y0, rim.y1);
+    const reach = Math.max(rim.mode === 'lower' ? 0 : yTop - low, rim.mode === 'raise' ? 0 : high - yLow, 0) / MOUTH_BANK + s;
+    const [c0, c1] = cols(Math.min(rim.x0, rim.x1) - reach, Math.max(rim.x0, rim.x1) + reach);
+    const [r0, r1] = rows(Math.min(rim.z0, rim.z1) - reach, Math.max(rim.z0, rim.z1) + reach);
+    for (let r = r0; r <= r1; r++) {
+      const z = t.origin[1] + r * s;
+      for (let c = c0; c <= c1; c++) {
+        const x = t.origin[0] + c * s;
+        const u = ((x - rim.x0) * dx + (z - rim.z0) * dz) / len2;
+        // Square across the line only: nothing past its ends (a wing's rim raises no earth in front of the mouth).
+        if (u < -1e-9 || u > 1 + 1e-9) continue;
+        const d = Math.hypot(x - (rim.x0 + u * dx), z - (rim.z0 + u * dz));
+        const y = rim.y0 + (rim.y1 - rim.y0) * u;
+        const i = r * t.cols + c;
+        const e = Math.max(0, d - s);
+        // Held at the rim: the vertices on the line, or the nearest either side of it (strictly within a square).
+        if (rim.mode === 'both' && d < s - 1e-9) atMost(pin, i, Math.round((y - t.baseY) * 100));
+        if (rim.mode !== 'lower') atLeast(lo, i, cmUp(y - MOUTH_BANK * e));
+        if (rim.mode !== 'raise') atMost(hi, i, cmDown(y + MOUTH_BANK * e));
+      }
+    }
+  }
+
+  let heights: number[] | null = null;
+  const set = (i: number, want: number) => {
+    const v = Math.max(-5000, Math.min(20000, want));
+    if (t.heights[i] === v) return;
+    heights ??= [...t.heights];
+    heights[i] = v;
+  };
+  const seen = new Set<number>([...flat.keys(), ...pin.keys(), ...hi.keys(), ...lo.keys()]);
+  for (const i of seen) {
+    const h = t.heights[i]!;
+    const f = flat.get(i);
+    if (f !== undefined) {
+      set(i, Math.min(h, f));
+      continue;
+    }
+    const p = pin.get(i);
+    if (p !== undefined) {
+      set(i, p);
+      continue;
+    }
+    set(i, Math.max(Math.min(h, hi.get(i) ?? Infinity), lo.get(i) ?? -Infinity));
+  }
   return heights ? { ...t, heights } : t;
+}
+
+/** The ground opened at the mouths only (no rims or covers): shapeGroundAtBores with just the openings. */
+export function openGroundAtMouths(t: TerrainData, openings: readonly GroundOpening[]): TerrainData {
+  return shapeGroundAtBores(t, { openings: [...openings], rims: [], covers: [] });
 }
 
 /**

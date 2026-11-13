@@ -211,6 +211,6 @@ export const CORNER_LABELS: Record<Corner, string> = {
 };
 
 /** Palette groups in MapMaker (after the reference board's tile browser). */
-export const TILE_CATEGORIES = ['Rooms', 'Large', 'Buildings', 'Curves', 'Corridors', 'Vertical', 'Open', 'Special'] as const;
+export const TILE_CATEGORIES = ['Rooms', 'Large', 'Buildings', 'Curves', 'Corridors', 'Tunnels', 'Vertical', 'Open', 'Special'] as const;
 export type TileCategory = (typeof TILE_CATEGORIES)[number];
 

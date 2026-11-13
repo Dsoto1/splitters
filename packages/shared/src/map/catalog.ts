@@ -92,7 +92,15 @@ export interface TileDefinition {
    * comes down to the floor, with banks beyond, and on `out` (the side the mouth faces) to daylight. Boxes are [x0, y0, z0, x1, y1, z1] in the tile's frame. The piece's
    * floors don't pull the ground down (settle.ts terrainUnderFloors): its own shell meets the ground.
    */
-  bore?: { cut?: readonly (readonly number[])[]; open?: readonly (readonly number[])[]; out?: TilePort['side'] };
+  bore?: {
+    cut?: readonly (readonly number[])[];
+    open?: readonly (readonly number[])[];
+    out?: TilePort['side'];
+    /** Lines the ground is brought to: `line` [x0, z0, x1, z1], `y` its height at each end, and whether the ground goes up to it, down to it or both. */
+    rim?: readonly { line: readonly number[]; y: readonly number[]; mode: 'both' | 'raise' | 'lower' }[];
+    /** Rectangles [x0, z0, x1, z1, y] the ground is at least `y` high over (earth over the piece's cap). */
+    cover?: readonly (readonly number[])[];
+  };
   /**
    * Drawn with a model (city buildings and streets) centred on the tile's
    * footprint and turned with it; collision comes from `solids` (`prop` boxes
@@ -479,7 +487,7 @@ type Pair = readonly [number, number];
  * One part of a kit tile, as content/tiles/core.json lists it: the builder it names and that builder's numbers.
  * `kind` (which theme slot paints it), `yaw` and `surface` (a library material of its own) apply to what it builds.
  */
-export type KitPart = { kind?: NonNullable<LocalBox['kind']>; yaw?: number; surface?: LocalBox['surface'] } & (
+export type KitPart = { kind?: NonNullable<LocalBox['kind']>; yaw?: number; pitch?: number; roll?: number; surface?: LocalBox['surface'] } & (
   | { box: readonly [number, number, number, number, number, number] }
   | { flight: { axis: 'x' | 'z'; dir: 1 | -1; from: number; across: Pair; steps: number; base?: number; run?: number; floor?: number } }
   | { descending: { edge: number; across: Pair; steps: number; top: number; floor?: number; run?: number } }
@@ -522,7 +530,7 @@ function kitPartBoxes(p: KitPart, spec: TileSpec): LocalBox[] {
   if ('box' in p) {
     const [x0, y0, z0, x1, y1, z1] = p.box;
     const b: LocalBox = { min: [x0, y0, z0], max: [x1, y1, z1] };
-    return [{ ...b, ...(p.yaw !== undefined ? { yaw: p.yaw } : {}), ...(p.kind ? { kind: p.kind } : {}), ...(p.surface ? { surface: p.surface } : {}) }];
+    return [{ ...b, ...(p.yaw !== undefined ? { yaw: p.yaw } : {}), ...(p.pitch !== undefined ? { pitch: p.pitch } : {}), ...(p.roll !== undefined ? { roll: p.roll } : {}), ...(p.kind ? { kind: p.kind } : {}), ...(p.surface ? { surface: p.surface } : {}) }];
   } else if ('flight' in p) {
     const f = p.flight;
     out = flight(f.axis, f.dir, f.from, f.across[0], f.across[1], f.steps, f.base ?? 0, f.run ?? 0.5, f.floor ?? 0);
