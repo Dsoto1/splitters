@@ -1,6 +1,6 @@
 {
   "id": "airplane",
-  "displayName": "Transport Plane",
+  "displayName": "Drop Carrier",
   "kind": "vehicle",
   "model": "vehicles/ironbound_hauler.glb",
   "scale": 2.35,
@@ -38,7 +38,7 @@
   "airplane": true,
   "blurb": "Flies a fixed route; jump out with E or jump and parachute down",
   "notes": {
-    "design": "The transport plane (AirplaneEntity, sim/airplane.ts): 24 passenger benches along the hold; it cannot be hurt and nobody flies it. Not placeable: it flies its map entity's route.",
+    "design": "The Drop Carrier (called the Transport Plane until 2026-11-13; its id, the `airplane` map entity and the code's names are unchanged: AirplaneEntity, sim/airplane.ts): 24 passenger benches along the hold; it cannot be hurt and nobody flies it. Not placeable: it flies its map entity's route.",
     "model": "The Hauler's model drawn 2.35 times its size (owner, 2026-11-12: \"the transport plane can be replaced with a larger scaled version of the hauler\"): the Ironbound Voyager (Meshy Community, CC0; content/guns.json vehicles/ironbound_hauler.glb, built 6.8 m long) at 16 m, the length the old plane's box had, so the air drop's exit (half its length and a metre behind, sim/airplane.ts dropOffsets) and the chase camera are where they were. `scale` (MountDef.scale), not a second build: one file serves both craft, and a build at 16 m with the same 2048 texture would look the same (the texels are 2.35 times larger either way: about 100 to the metre, on a craft seen from the ground or from the chase camera 22 m behind).",
     "half": "The hull at that size, measured on the model's triangles: a closed tube 4.2 m wide (4.7 with the deck rails) and 5.65 m tall from its lowest point, 16 m long. The fins amidships reach 6.5 m either side, outside the box, as on the Hauler. The old plane's box was 10.4 m wide (its wings); nothing collides with a route craft.",
     "seats": "24 in the hold, two columns 0.9 m either side of the middle, twelve rows a metre apart from z 6 back to z -5, feet 2 m up: inside the hull everywhere (at a rider's heights it is 1.48 m wide a side at the front row, in the nose, and 1.8 m and more behind; its floor is 0.5 m up and its roof 5.2 m; aft of z -5.6 the tail's underside rises to 2 m, so no row is further back). Riders are out of sight in the closed hull, like the Hauler's pilot; yours is the chase camera."

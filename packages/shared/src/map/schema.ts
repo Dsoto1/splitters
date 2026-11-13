@@ -512,7 +512,7 @@ export type AirdropMode = (typeof AIRDROP_MODES)[number];
  */
 export const AIR_CRAFTS = ['plane', 'dropship'] as const;
 export type AirCraft = (typeof AIR_CRAFTS)[number];
-export const AIR_CRAFT_LABELS: Record<AirCraft, string> = { plane: 'Transport Plane', dropship: 'Dropship' };
+export const AIR_CRAFT_LABELS: Record<AirCraft, string> = { plane: 'Drop Carrier', dropship: 'Dropship' };
 
 /**
  * A transport plane (or dropship, `craft`) flying a fixed route over the

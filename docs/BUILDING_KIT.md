@@ -1194,12 +1194,12 @@ in the same themes and paint slots as straight walls.
   out. MapMaker shows it as an orange outline (see "Where you can build"), and
   spawns outside it are an error.
 
-## Drop routes: transport plane and dropship (`sim/airplane.ts`)
+## Drop routes: Drop Carrier and dropship (`sim/airplane.ts`)
 
-The **Paths, Roads & Routes** group (Terrain pane) has **Plane Drop Route** and
-**Dropship Drop Route**; both place an `airplane` entity (the Transport Plane is
+The **Paths, Roads & Routes** group (Terrain pane) has **Carrier Drop Route** and
+**Dropship Drop Route**; both place an `airplane` entity (the Drop Carrier is
 also in Game Modes & Objectives). Its inspector picks the **Aircraft** (`craft`:
-transport plane, 24 benches, or the Dropship's model, 12), altitude, lap time,
+the Drop Carrier, 24 benches, or the Dropship's model, 12), altitude, lap time,
 loop or one way, and **Air drop** (off / round start / every spawn). **Draw route
 on the map** edits the points with the Paths tool's hands (click adds, drag
 moves, Shift-click inserts, right-click or Del removes). Draw it in and out of

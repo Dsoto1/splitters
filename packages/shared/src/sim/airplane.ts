@@ -279,11 +279,11 @@ export function airplaneIssues(map: MapDocument, groundAt: (x: number, z: number
     const r = airRoute(e);
     const legs = r.at.slice(1).map((d, i) => d - r.at[i]!);
     if (legs.some((l) => l < 10)) {
-      out.push({ severity: 'error', code: 'airplane.route', message: `transport plane ${e.id}: route points closer than 10 m (each leg needs room to fly)`, targetId: e.id });
+      out.push({ severity: 'error', code: 'airplane.route', message: `drop carrier ${e.id}: route points closer than 10 m (each leg needs room to fly)`, targetId: e.id });
       continue;
     }
     const speed = routeSpeed(r);
-    if (speed < 8 || speed > 90) out.push({ severity: 'warning', code: 'airplane.speed', message: `transport plane ${e.id} flies at ${Math.round(speed)} m/s (keep it 8-90: change the lap time)`, targetId: e.id });
+    if (speed < 8 || speed > 90) out.push({ severity: 'warning', code: 'airplane.speed', message: `drop carrier ${e.id} flies at ${Math.round(speed)} m/s (keep it 8-90: change the lap time)`, targetId: e.id });
     let lowest = Infinity;
     for (let i = 0; i < r.points.length - (r.closed ? 0 : 1); i++) {
       const a = r.points[i]!;
@@ -295,12 +295,12 @@ export function airplaneIssues(map: MapDocument, groundAt: (x: number, z: number
         lowest = Math.min(lowest, r.y - Math.max(groundAt(x, z) ?? -Infinity, builtAt(x, z), e.position[1]));
       }
     }
-    if (lowest < 12) out.push({ severity: 'warning', code: 'airplane.low', message: `transport plane ${e.id} passes ${Math.max(0, Math.round(lowest))} m over the ground or buildings (fly it at least 12 m up, 40+ for a parachute drop)`, targetId: e.id });
+    if (lowest < 12) out.push({ severity: 'warning', code: 'airplane.low', message: `drop carrier ${e.id} passes ${Math.max(0, Math.round(lowest))} m over the ground or buildings (fly it at least 12 m up, 40+ for a parachute drop)`, targetId: e.id });
     // The route may run outside the boundary (riders can only jump over the play area), but some of it must be over it.
     const area = dropArea(map);
     if (area && e.airdrop !== 'off') {
       const plan = dropPlan(r, (x, z) => x >= area.x0 && x <= area.x1 && z >= area.z0 && z <= area.z1);
-      if (!plan.any) out.push({ severity: 'warning', code: 'airplane.nodrop', message: `${e.craft === 'dropship' ? 'dropship' : 'transport plane'} ${e.id} never flies over the play area: its riders can't jump out anywhere (draw some of its route over the map)`, targetId: e.id });
+      if (!plan.any) out.push({ severity: 'warning', code: 'airplane.nodrop', message: `${e.craft === 'dropship' ? 'dropship' : 'drop carrier'} ${e.id} never flies over the play area: its riders can't jump out anywhere (draw some of its route over the map)`, targetId: e.id });
     }
   }
   return out;
