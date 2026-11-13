@@ -32,7 +32,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Ammo Box: map Ammo Boxes become solid resupply crates (10 uses, cook-off); "Ammo Box Kit" throwable · `wip/ammo-box` · after the line-up
 - S · A · Effects checks, findings only: Pantry Raid portals, loot rings on bright floors, perf and Low graphics for the new effects, Reduce flashing · `wip/fx-checks` (docs)
 - M · B · Tileset 11, step D: six set pieces built in MapMaker (porch, bus shelter, parking deck bay and ramp, concrete frame, bandstand, shop unit), with the arched window's neater stones riding along · `wip/mapmaker-urban-setpieces` (on `wip/mapmaker-urban-arch`) · lands after lane A's line-up
-- M · B · St. John's performance, step 1: read the owner's new trace (`Trace-20261113T152743.json.gz`, 2026-11-13) and write findings with a ranked list of fixes; documents only, no code yet · `docs/perf/` · the fixes follow as their own items
 - S · B · Parachute: improve the one built in code first, and show the owner pictures (owner, 2026-11-13: "why not just try and improve the built in code parachute first"); the Drive's parachute model waits on that look · `wip/mapmaker-parachute` · `packages/client/src/game/canopyVisuals.ts`
 
 ## Ready to land
@@ -55,6 +54,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · A · Mobile audit: Options in one column on phones (proposal 7).
 - S · A · Mobile audit: Match Setup on phones, sticky header and bigger steppers (proposal 11).
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
+- S · ? · MapMaker speed, from the owner's trace of 2026-11-13 (`docs/PERF_STJOHNS_2026-11-13.md`; the trace is of MapMaker on a big map, not of a match): (1) the Paths tool's markers freeze 110–640 ms a redraw: one shared line material and redraw only the changed path (`pathTool.ts`); (2) Map properties rebuilt on every edit (`inspector.ts`, XS); (3) a forced layout in `pickPlane` on every drag edit: cache the canvas rectangle (`editorView.ts`, XS); (4) the outliner redrawn whole on selection (`outlinerPanel.ts`); (5) a cheaper hover pick (`hover.ts`, `editorView.ts`, M). No lane yet: these are the files lane A's MapMaker editing helper worked in.
 
 ## Features
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
@@ -71,6 +71,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · ? · New characters: several T-pose models in the Drive (owner, 2026-11-13: Meshy Community, CC0). Intake through the character pipeline, recorded as community CC0, Experimental until looked over. Not started; no lane yet (lane A did the last ten).
 
 ## Waiting on the owner
+- St. John's performance in a match: the 2026-11-13 trace turned out to be MapMaker, so whether the character work helped since 2026-11-10 is still unmeasured. Needs a recording of a match on St. John's (Settings → Record performance, or a Chrome trace while playing).
 - A hover model for the Hauler (Ironclad Vanguard became the Troop Truck; the Sky Cruiser is the only unused hover model).
 - Open questions in `docs/MAPMAKER_EDITING_REPORT_2026-11-13.md`.
 - The effects-check proposals, once `wip/fx-checks` reports.
@@ -87,6 +88,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - 2026-11-13 · A · The Spillway: crest openings closed, wing wall, hillside stair legs, east end raised to the crest (023edfa4). No gatehouses.
 - 2026-11-13 · A · MapMaker editing: two to three times quicker edits, select a path or road, fit the ground to a build (7bb706a8).
 - 2026-11-13 · A · Tunnel kit step 4 (73f17583).
+- 2026-11-13 · B · The owner's trace of 2026-11-13 read: it is MapMaker, 45.5 fps overall, 22.8 fps in the Paths tool; findings and five ranked fixes in `docs/PERF_STJOHNS_2026-11-13.md`.
 - 2026-11-13 · B · Tileset 11, first build: Style Pack 14 "Urban & Civilian" (existing pieces by reference, no demo map), shopfront and arched-window wall styles, four materials, painted doors, awning, street pieces and chain-link fences; map format v38 (8000df5).
 - 2026-11-13 · B · Process proposals 2–4, Tileset 11 audit and plan, The Spillway spawns, parapets and stair legs, Binbun FX status auras, portals, pads and loot glows.
 - 2026-11-12 · B · Style Pack 13 Industrial Factory with Ironworks; Orbital Station's research tiles; kit props parts 10 and 11 (the last Kenney pieces on the list); the Desert City dome kit with closed domes; Sandgate's roof domes and card picture (the map pass's first map).
