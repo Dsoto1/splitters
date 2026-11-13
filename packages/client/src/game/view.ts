@@ -22,7 +22,7 @@ import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { createMountNode, mountGun, mountTurret, setMountGlow, wheelsOf } from './mountVisuals.ts';
 import { CockpitInterior, type CockpitDrive } from './cockpitInterior.ts';
 import { createViewCamera, poseCamera } from './cameraPose.ts';
-import { createCanopy, placeCanopy, releaseCanopy } from './canopyVisuals.ts';
+import { canopyHarness, createCanopy, placeCanopy, releaseCanopy, type CanopyHarness } from './canopyVisuals.ts';
 import { BackdropVisuals } from '../backdrop.ts';
 import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
@@ -232,7 +232,7 @@ interface Avatar {
   /** How see-through it is drawn now (Classes: a cloaked Shade); 1 = solid. */
   shown?: number;
   /** Parachute or glider over them, and which. */
-  canopy?: { node: TransformNode; kind: number };
+  canopy?: { node: TransformNode; kind: number; harness?: CanopyHarness };
   /** The zipline trolley over a rider's head (made on first ride). */
   trolley?: TransformNode;
   /** The body after death (until the next spawn): a ragdoll (full or cheap) or laid down (ragdoll.ts, ragdollBudget.ts). */
@@ -2288,7 +2288,7 @@ export class GameView {
       if (a.canopy && a.canopy.kind !== chute) this.dropCanopy(a);
       if (chute) {
         a.canopy ??= { node: createCanopy(this.scene, `canopy_${p.slot}`, chute), kind: chute };
-        placeCanopy(a.canopy.node, a.root.position, p.yaw, now, p.slot);
+        placeCanopy(a.canopy.node, a.root.position, p.yaw, now, p.slot, (a.canopy.harness ??= canopyHarness(hitboxForSpec(want))));
       }
       if (!a.ragdoll) {
         // Gliding: lying forward under the wing, tipped round the hips (not the feet) so the body stays under it.
