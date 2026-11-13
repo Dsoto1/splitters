@@ -332,19 +332,23 @@ function sandstoneAshlarPaint(u: number, v: number, b: RGB, a: RGB): RGB {
   return shade(tone, (0.86 + hash(block, row, 126) * 0.2) * (0.9 + Math.min(1, rim) * 0.1) + tooled + fbm(u, v, 127) * 0.08 - 0.04);
 }
 
-/** Weathered lime plaster (Style Pack 09): sun-faded and blotchy, flaked in patches to coursed stone (the accent) beneath. */
+/**
+ * Weathered lime plaster (Style Pack 09): sun-faded and blotchy, worn thin in a few small places so the coursed stone
+ * (the accent) beneath shows faintly through. (It flaked in hard-edged, dark-rimmed patches over a third of the wall:
+ * on a jamb or a cover block two or three of them read as dirt or a glitch. The owner, 2026-11-12, on Sandgate.)
+ */
 function stuccoPaint(u: number, v: number, b: RGB, a: RGB): RGB {
+  const plaster = shade(mix(b, a, clamp01(fbm(u, v, 134) - 0.45) * 0.5), 0.94 + fbm(u, v, 135) * 0.1);
   const flake = noise(u, v, 4, 131) * 0.6 + noise(u, v, 16, 132) * 0.4;
-  if (flake > 0.68) {
-    // The stone under the plaster: little courses of rubble.
-    const row = Math.floor(v * 16);
-    const su = u * 8 + (row % 2) * 0.5;
-    const joint = fract(su) < 0.08 || fract(v * 16) < 0.12;
-    return joint ? shade(a, 0.62) : shade(a, 0.85 + hash(Math.floor(su), row, 133) * 0.25);
-  }
-  // A darker rim round each flaked patch, then the plaster.
-  if (flake > 0.645) return shade(b, 0.8);
-  return shade(mix(b, a, clamp01(fbm(u, v, 134) - 0.45) * 0.5), 0.94 + fbm(u, v, 135) * 0.1);
+  // How far worn through: nothing under 0.76, fully at 0.86 (a soft edge, no rim), and then only half way to the stone.
+  const worn = clamp01((flake - 0.76) / 0.1);
+  if (worn <= 0) return plaster;
+  // The stone under the plaster: little courses of rubble.
+  const row = Math.floor(v * 16);
+  const su = u * 8 + (row % 2) * 0.5;
+  const joint = fract(su) < 0.08 || fract(v * 16) < 0.12;
+  const stone = joint ? shade(a, 0.8) : shade(a, 0.92 + hash(Math.floor(su), row, 133) * 0.14);
+  return mix(plaster, stone, worn * 0.5);
 }
 
 /** Glazed fish-scale dome tiles (Style Pack 09): rows offset half a tile, each scale lit toward its crown, a few in the accent. */

@@ -224,12 +224,14 @@ describe('variants', () => {
     // Set one by one in Advanced rules: still Lunar.
     expect(on(setup({ gravity: 0.4 }))).toEqual(['lunar']);
     expect(on(setup({ gravity: 0.4, fallDamage: true }))).toEqual([]);
-    // Roulette bodies: random characters with character stats (on unless switched off).
+    // Roulette bodies: random characters. It is the one switch for them (the Rules tab's own was the same thing twice),
+    // so it reads on whenever they are; Character stats is its own rule and is left as the host set it.
     const roulette = setVariant(setup({ stats: false }), 'roulette', true);
-    expect(roulette).toEqual(setup({ randomChars: true }));
+    expect(roulette).toEqual(setup({ stats: false, randomChars: true }));
     expect(on(setup({ randomChars: true }))).toEqual(['roulette']);
-    expect(on(setup({ randomChars: true, stats: false }))).toEqual([]);
-    expect(setVariant(roulette, 'roulette', false)).toEqual(setup());
+    expect(on(setup({ randomChars: true, stats: false }))).toEqual(['roulette']);
+    expect(setVariant(roulette, 'roulette', false)).toEqual(setup({ stats: false }));
+    expect(setVariant(setup({ randomChars: true }), 'roulette', false)).toEqual(setup());
   });
 
   it('conflicting variants switch each other off; Discs only needs a map with edges', () => {

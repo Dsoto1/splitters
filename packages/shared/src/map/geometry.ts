@@ -1417,12 +1417,12 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
       const full = top >= levelHeight - 1e-6;
       switch (facade) {
         case 'concrete':
-          if (ground) add(side, -half, half, 0, 0.45, out0 - 0.08, -base, 'core.pbr_concrete_dark');
+          if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.45, out0 - 0.08, -base, 'core.pbr_concrete_dark');
           if (!roofed && full) add(side, -half, half, top, top + 0.3, out0 - 0.12, TILE_DIMENSIONS.wallThickness, 'core.pbr_concrete');
           break;
         case 'corrugated':
           if (!roofed && full) add(side, -half, half, top - 0.05, top + 0.15, out0 - 0.06, TILE_DIMENSIONS.wallThickness, 'core.pbr_steel');
-          if (ground) add(side, -half, half, 0, 0.2, out0 - 0.03, -base, 'core.pbr_concrete');
+          if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.2, out0 - 0.03, -base, 'core.pbr_concrete');
           break;
         case 'false_front':
           if (STREET_FACES.has(style)) {
@@ -1468,7 +1468,7 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
         }
         case 'manor_brick': {
           // Victorian brick: a stone plinth, stone quoins up the corners, stone sills and lintels, a bracketed cornice.
-          if (ground) add(side, -half, half, 0, 0.5, out0 - 0.08, -base, 'core.pbr_concrete', '#b8b0a4');
+          if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.5, out0 - 0.08, -base, 'core.pbr_concrete', '#b8b0a4');
           if (full) for (let y = 0.5, i = 0; y < levelHeight - 0.1; y += 0.35, i++) for (const sgn of [-1, 1]) {
             const w = i % 2 ? 0.35 : 0.55;
             const u = sgn * half;
@@ -1503,7 +1503,7 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
         case 'overgrown': {
           // Old rock walls swallowed by the jungle: moss along the foot and the top, vines hanging down the face.
           const rnd = seededRandom(`${id}:${key}:${side}`);
-          if (ground) add(side, -half, half, 0, 0.35, out0 - 0.25, -base, 'core.pbr_moss');
+          if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.35, out0 - 0.25, -base, 'core.pbr_moss');
           if (!roofed && full) add(side, -half, half, top - 0.25, top + 0.2, out0 - 0.2, TILE_DIMENSIONS.wallThickness, 'core.pbr_moss');
           const openings = facadeOpenings(segs);
           for (let i = 0; i < 6; i++) {
@@ -1520,7 +1520,7 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
           // Painted trim: corner boards, a block or brick plinth, window shutters and sills, a fascia under the roof.
           const white = 'core.paint_matte';
           const trimTint = '#f2f0ea';
-          if (ground) add(side, -half, half, 0, 0.45, out0 - 0.05, -base, facade === 'clapboard' ? 'core.pbr_brick_red' : 'core.pbr_concrete', facade === 'clapboard' ? '#b08070' : '#c8c4bc');
+          if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.45, out0 - 0.05, -base, facade === 'clapboard' ? 'core.pbr_brick_red' : 'core.pbr_concrete', facade === 'clapboard' ? '#b08070' : '#c8c4bc');
           if (facade === 'clapboard' && full) for (const u of [-half, half - 0.22]) add(side, u, u + 0.22, 0, levelHeight, out0 - 0.04, out0, white, trimTint);
           const shutter = facade === 'clapboard' ? '#2e4a6a' : '#3a5a3a';
           for (const o of facadeOpenings(segs)) {
@@ -1535,13 +1535,13 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
         }
         case 'roman':
           // A plinth, pilasters at the ends of each wall, a marble cornice along the top.
-          if (ground) add(side, -half, half, 0, 0.5, out0 - 0.1, -base, 'core.pbr_travertine');
+          if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.5, out0 - 0.1, -base, 'core.pbr_travertine');
           for (const u of [-half + 0.35, half - 0.35]) add(side, u - 0.3, u + 0.3, ground ? 0.5 : 0, Math.min(top, levelHeight), out0 - 0.14, out0, 'core.pbr_white_marble');
           if (!roofed && full) add(side, -half, half, top - 0.1, top + 0.35, out0 - 0.2, TILE_DIMENSIONS.wallThickness, 'core.pbr_white_marble');
           break;
         case 'egyptian':
           // A painted band of hieroglyphs under a gilded roll and a cavetto cornice; a sandstone plinth.
-          if (ground) add(side, -half, half, 0, 0.4, out0 - 0.08, -base, 'core.pbr_rough_sandstone');
+          if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.4, out0 - 0.08, -base, 'core.pbr_rough_sandstone');
           if (full) add(side, -half, half, levelHeight - 1.5, levelHeight - 0.45, out0 - 0.01, out0, 'core.hieroglyphs_painted');
           if (!roofed && full) {
             add(side, -half, half, top - 0.45, top - 0.3, out0 - 0.08, out0, 'core.gold_leaf');
@@ -1554,7 +1554,7 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
           // at each floor, oak corner posts, shutters beside the windows and an oak eaves board.
           const oakBeam = 'core.oak_beam';
           if (ground && facade === 'timber_frame') add(side, -half, half, 0, Math.min(top, levelHeight), out0 - 0.04, out0, 'core.pbr_castle_stone', '#c8c2b0');
-          else if (ground) add(side, -half, half, 0, 0.45, out0 - 0.08, -base, 'core.pbr_castle_stone', '#a8a090');
+          else if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.45, out0 - 0.08, -base, 'core.pbr_castle_stone', '#a8a090');
           if (full) add(side, -half, half, levelHeight - 0.2, levelHeight + 0.05, out0 - 0.14, out0, oakBeam);
           if (facade === 'village_plaster' && full) for (const u of [-half, half - 0.25]) add(side, u, u + 0.25, 0, levelHeight, out0 - 0.06, out0, oakBeam);
           for (const o of facadeOpenings(segs)) {
@@ -1573,9 +1573,9 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
           // the openings with snow on them; a snow cap along the top.
           const snow = 'core.drift_snow';
           if (facade === 'prefab') {
-            if (ground) add(side, -half, half, 0, 0.35, out0 - 0.06, -base, 'core.pbr_steel', '#8a9098');
+            if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.35, out0 - 0.06, -base, 'core.pbr_steel', '#8a9098');
             if (full) for (const u of [-half, half - 0.2]) add(side, u, u + 0.2, 0, levelHeight, out0 - 0.04, out0, 'core.prefab_white');
-          } else if (ground) add(side, -half, half, 0, 0.6, out0 - 0.3, -base, snow);
+          } else if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.6, out0 - 0.3, -base, snow);
           for (const o of facadeOpenings(segs)) {
             add(side, o.u0 - 0.15, o.u1 + 0.15, o.top, o.top + 0.12, out0 - 0.25, out0, 'core.pbr_steel', '#a8b0b8');
             add(side, o.u0 - 0.15, o.u1 + 0.15, o.top + 0.12, o.top + 0.2, out0 - 0.25, out0, snow);
@@ -1588,7 +1588,7 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
           // Coastal Harbor: a granite plinth, frames and sills round the windows (harbour blue on the render,
           // white on the tarred boards) and a slate drip course under the eaves.
           const frame = facade === 'harbour_render' ? 'core.harbour_paint' : 'core.paint_matte';
-          if (ground) add(side, -half, half, 0, 0.5, out0 - 0.08, -base, 'core.quay_granite');
+          if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.5, out0 - 0.08, -base, 'core.quay_granite');
           for (const o of facadeOpenings(segs)) {
             if (o.sill > 0.3) add(side, o.u0 - 0.1, o.u1 + 0.1, o.sill - 0.1, o.sill, out0 - 0.12, out0, frame);
             if (o.top < levelHeight - 0.3) add(side, o.u0 - 0.1, o.u1 + 0.1, o.top, o.top + 0.14, out0 - 0.08, out0, frame);
@@ -1597,12 +1597,14 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
           if (!roofed && full) add(side, -half, half, top - 0.05, top + 0.2, out0 - 0.25, TILE_DIMENSIONS.wallThickness, 'core.pbr_slate_roof');
           break;
         }
+        // (Every facade's plinth stops at a doorway, like the collegiate one's: it ran the wall's whole width, so it
+        // crossed the doorway as a step-high bar drawn on the floor of the entrance. The owner, 2026-11-12, on Sandgate.)
         case 'desert_ashlar':
         case 'desert_plaster': {
           // Desert City: a sandstone plinth, a carved band (or stone quoins on plaster), lattice screens
           // and cedar lintels at the windows, a stepped parapet over a cornice (cedar beam ends on plaster).
           const stone = 'core.ashlar';
-          if (ground) add(side, -half, half, 0, 0.5, out0 - 0.08, -base, stone, '#c8a878');
+          if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.5, out0 - 0.08, -base, stone, '#c8a878');
           if (facade === 'desert_ashlar' && full) add(side, -half, half, levelHeight - 0.75, levelHeight - 0.45, out0 - 0.06, out0, 'core.zellige');
           if (facade === 'desert_plaster' && full) for (const u of [-half, half - 0.5]) for (let y = 0; y < levelHeight - 0.2; y += 0.8) add(side, u + (y % 1.6 ? 0.1 : 0), u + 0.5, y, y + 0.4, out0 - 0.04, out0, stone);
           for (const o of facadeOpenings(segs)) {

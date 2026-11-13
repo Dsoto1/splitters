@@ -1,9 +1,9 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 33,
+  "formatVersion": 36,
   "metadata": {
     "id": "sandfall_colosseum",
-    "name": "Sandfall Colosseum",
+    "name": "Flavius Rule",
     "author": "Tile Trigger",
     "description": "A Roman arena (Style Pack 03: Imperial Arena). Fight on the sand between spike traps and fire jets, ride the lift cages up from the hypogeum through hatches in the floor, and watch for the beast lift the emperor sends up through a trapdoor from his box. The main gate is a portcullis worked from a winch; the side gates rise as you come. Outer arcades with stairs up to the seating ring the arena; east lies a forum with a temple and a triumphal arch, west an aqueduct. A portal links the hypogeum's west tunnel to the forum, until the emperor seals it.",
     "createdAt": "2026-10-23T00:00:00.000Z",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_czaic5sro5456mlp",
-      "revision": 26,
-      "contentHash": "sha256:3343c06d7a617b136b1b9b254f214fcf60fe0d22b842ce20e050828df2386fb0",
-      "schemaVersion": 33,
-      "releasedAt": "2026-11-09T19:58:10.669Z"
+      "versionId": "v_lf2dudatskomagqc",
+      "revision": 27,
+      "contentHash": "sha256:2b69ea8cd0a46c630ffc9b69fa518ed68acfb4667003e420b095f2d7016ad017",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-12T20:48:58.773Z"
     }
   },
   "classicStructure": {

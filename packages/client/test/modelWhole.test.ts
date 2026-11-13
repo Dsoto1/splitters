@@ -5,7 +5,8 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial';
 import { InstancedMesh } from '@babylonjs/core/Meshes/instancedMesh';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { Matrix } from '@babylonjs/core/Maths/math.vector';
 import { ModelLibrary } from '../src/content/models.ts';
 
@@ -66,5 +67,29 @@ describe('ModelLibrary.instantiateWhole', () => {
     const root = await models.instantiateWhole('guns/one.glb', 'held_3');
     const [inst] = root.getChildMeshes();
     expect((inst as InstancedMesh).sourceMesh).toBe(sources[0]);
+  });
+  it('draws a model whose parts have no index list (the old gun models: they showed only the pickup ring)', async () => {
+    // As the glTF loader makes an unindexed primitive: positions only, three vertices per triangle.
+    const flat = (s: Scene): Mesh[] =>
+      ['metal', 'wood'].map((name, i) => {
+        const m = new Mesh(`static_flat_${i}`, s);
+        const d = new VertexData();
+        d.positions = [0, 0, i, 1, 0, i, 0, 1, i, 1, 0, i, 1, 1, i, 0, 1, i];
+        d.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1];
+        d.applyToMesh(m);
+        m.isUnIndexed = true;
+        m.material = new StandardMaterial(name, s);
+        return m;
+      });
+    const { models } = library(flat);
+    const a = await models.instantiateWhole('weapons/flat.glb', 'pickup_1');
+    const src = (a.getChildMeshes()[0] as InstancedMesh).sourceMesh;
+    expect(src.getTotalIndices()).toBe(12);
+    expect(src.subMeshes.map((q) => [q.verticesStart, q.verticesCount, q.indexStart, q.indexCount])).toEqual([
+      [0, 6, 0, 6],
+      [6, 6, 6, 6],
+    ]);
+    // The second part's triangles point at its own vertices.
+    expect([...src.getIndices()!].slice(6)).toEqual([6, 7, 8, 9, 10, 11]);
   });
 });

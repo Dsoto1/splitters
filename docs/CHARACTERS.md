@@ -534,10 +534,11 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   drops still tracks and stands it 1.8 m tall; its palette is embedded as it
   is. It has no hit or death clip: hits jolt it and death drops and rolls it,
   as for the aliens. Its spec's `gait` gives its own clips' ground speeds
-  (a 0.3 m/s shamble, a 3 m/s run from 1.4 m/s up). The `zombie` NPC role is
-  not a creature role: `zombieHasCreatureBody` puts two in three zombies (in
-  Zombies and in co-op squads) in this body, the rest shamble on the
-  soldiers' rig with their zombie clips.
+  (a 0.3 m/s shamble, a 3 m/s run from 1.4 m/s up). The `zombie` NPC role no
+  longer wears it (owner, 2026-11-12): every zombie, in Zombies and in co-op
+  squads, wears one of the roster's zombie characters (`ZOMBIE_LOOKS`,
+  by NPC id) on the soldiers' rig with the zombie clips, so it dies as a
+  ragdoll like a player. The creature body stays in the library, unused.
 - **The creature originals** (goblin, otter, toad, salamander, hyena: models the
   owner generated on their Meshy subscription and downloaded as textured FBX,
   unrigged) are not creature-library bodies: `prepare-meshy-characters.mjs`
@@ -1141,7 +1142,7 @@ and stamina reach the predicting client in the private state (`bs`).
 
 ## Random characters
 
-The match setting **Random characters** (Off by default on every map; `MatchRules.randomCharacters`, setup
+The match setting **Random characters** (Off by default on every map; in Match Setup it is the **Roulette Bodies** variant, there is no separate Rules row since 2026-11-12; `MatchRules.randomCharacters`, setup
 `randomChars`, host rule `randomchars`): everyone, people and bots, plays a random look each life, any on the roster
 (`PICKABLE_LOOKS`: playable, not retired, core tier; never NPC-only bodies, NPC skins or experimental characters). The pick hashes the match seed, the slot
 and the life (`sim/randomLooks.ts`: the same every replay, never the look just played); the look travels in the

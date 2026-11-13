@@ -8,6 +8,13 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **Portals swirl and jump pads rise.** A portal's frame holds a moving swirl in its pair's colour (the Binbun Portal pack), and a jump pad stands in a column of rising light (Magic Area pack) with its plate, ring and chevrons still showing. Portals and pads are drawn ahead of loot glows when effects run short. With Reduce flashing on both are held still, dimmer and eased in.
+- **Zombies are your zombies.** Every zombie in Zombies mode (and in co-op squads) now wears one of the roster's six zombie characters: the Groaner, Lurcher, Rotter, Shambler and the two Zombie Soldiers. Two in three used to wear a stock zombie body that had no ragdoll, so it tipped over flat like a box when it died; now every zombie falls as a ragdoll, thrown by the shot or blast that killed it, the same as a player.
+- **Guns show on their pickups again.** Fifteen of the older gun models (the Auto Shotgun, Sawed-Off, SMG, LMG, Revolver, Hand Cannon, Marksman and Sniper rifles, Burst Rifle, Machine Pistol and more) drew nothing on a pickup or when dropped: only the glowing ring showed. They were stored in a form the pickup's drawing code dropped. Every gun now shows on its pickup and on the ground.
+- **The Auto Shotgun has a proper model:** a textured steel-and-wood shotgun in place of the thin near-black shape.
+- **Sandgate's doorways are clear.** A facade's plinth ran straight across its doorway, a low bar sticking out of the floor in the entrance. The plinth now stops at each side of a door, on all twelve facade styles.
+- **Calmer Desert City plaster.** The plaster walls had hard, dark-rimmed patches of bare stone. It is now worn thin in a few small, soft places.
+- **Sandfall Colosseum is now Flavius Rule,** after the owner's board game of the same theme and layout.
+- **One switch for random bodies.** The Rules tab's "Random characters" row is gone: it did the same as the Roulette Bodies variant, which now only gives everyone a random character each life (turn on Character stats in Rules if the bodies' stats should count).
 - **Pickups glow.** Weapons, health, armor and ammo sit in a soft ground glow from the Binbun Loot pack, coloured by kind (weapon gold, health green, armor blue, ammo pale), on the nearest pickups within 28 m. Steady and eased in; with Reduce flashing on it is dimmer, held still and has no sparkles.
 - **Fix:** an effect asked for late in a slow frame no longer restarts each frame.
 - **Sandgate's roofs wear the new domes.** Its seven small roof domes are kit domes now, placed in MapMaker: white plaster, and blue tile on the west hall. They are closed domes on solid drums with blind arches, solid as the old ones were.

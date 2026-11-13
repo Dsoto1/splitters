@@ -5429,7 +5429,7 @@ async function setupLayoutFlow(browser) {
   await setupTab(page, 'rules');
   const rulesTab = await read();
   await setupTab(page, 'match');
-  check(owner.advanced === '9 changed · Low gravity · Tactical bots +7' && owner.chips === 0 && owner.badge === '9' && rulesTab.chips === 9, `the changed rules in one line and counted on the Rules tab, their chips inside it ("${owner.advanced}", "${owner.badge}" on the tab, ${owner.chips} chips showing in Match setup, ${rulesTab.chips} in Rules)`);
+  check(owner.advanced === '8 changed · Low gravity · Tactical bots +6' && owner.chips === 0 && owner.badge === '8' && rulesTab.chips === 8, `the changed rules in one line and counted on the Rules tab, their chips inside it ("${owner.advanced}", "${owner.badge}" on the tab, ${owner.chips} chips showing in Match setup, ${rulesTab.chips} in Rules)`);
   check(owner.variants.join() === 'roulette', `a variant shows on when its settings are, however set (${owner.variants.join(', ')})`);
   // The fit indicator: Crowded, its details say why, and the map's own layout is a button.
   await page.evaluate(() => document.getElementById('setup-fit').click());
@@ -6748,10 +6748,15 @@ async function zombiesFlow(browser) {
   await page.waitForFunction(() => window.__cs.view.characterCount() > 3, null, { timeout: T(15000) }).catch(() => {});
   const drawn = await page.evaluate(() => window.__cs.view.characterCount());
   check(drawn > 3, `zombies are drawn as characters (${drawn})`);
-  // Most wear Quaternius' zombie body, walking, running and biting with its own clips.
-  await page.waitForFunction(() => window.__cs.view.creatureCount('zombie') > 0, null, { timeout: T(15000) }).catch(() => {});
-  const bodies = await page.evaluate(() => window.__cs.view.creatureCount('zombie'));
-  check(bodies > 0, `zombies wear the zombie body (${bodies})`);
+  // Every zombie wears one of the roster's zombie characters (never the stock creature body, which had no ragdoll).
+  const worn = await page.evaluate(() => {
+    const ids = new Set(window.__match.actors().filter((a) => a.npc?.role === 'zombie').map((a) => a.slot ?? a.id));
+    const looks = [];
+    for (const [id, a] of window.__cs.view.avatars) if (id >= 1000 || ids.has(id)) looks.push(JSON.parse(String(a.specKey)).look ?? 'none');
+    return { looks, creatures: window.__cs.view.creatureCount('zombie') };
+  });
+  const ZOMBIE = /^core\.(groaner|lurcher|rotter|shambler|zombiesoldier[12])$/;
+  check(worn.looks.length > 0 && worn.looks.every((l) => ZOMBIE.test(l)) && worn.creatures === 0, `zombies wear the zombie characters (${[...new Set(worn.looks)].join(', ')}; ${worn.creatures} creature bodies)`);
   // Co-op: the scoreboard is one list of the squad.
   await page.keyboard.down('Tab');
   await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length === 4, null, { timeout: T(5000) }).catch(() => {});
