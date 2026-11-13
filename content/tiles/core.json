@@ -1667,6 +1667,33 @@
       }
     },
     {
+      "id": "core.tunnel_vault_cross_buried",
+      "category": "Corridors",
+      "displayName": "Vaulted Tunnel Crossing (Under Ground)",
+      "blurb": "Two vaulted passages crossing under a groin vault, buried: the hill stays on top of it and the ground is cut out only where it crosses the passage",
+      "optionOf": {"tile":"core.tunnel_vault_cross","option":"underGround"},
+      "cells": [[0,0,0]],
+      "floors": [0],
+      "ports": [{"allSides":0}],
+      "edgeDefault": "open",
+      "solids": [
+        {"box":[-4,0,-4,-1.8,3.5,-1.8],"kind":"wall"},
+        {"box":[1.8,0,-4,4,3.5,-1.8],"kind":"wall"},
+        {"box":[-4,0,1.8,-1.8,3.5,4],"kind":"wall"},
+        {"box":[1.8,0,1.8,4,3.5,4],"kind":"wall"},
+        {"vault":{"axis":"x","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
+        {"box":[-4,3.5,-4,4,3.75,4],"kind":"wall"},
+        {"box":[-4,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[-0.2,0,-4,0.2,0.02,-0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
+        {"box":[-0.2,0,0.2,0.2,0.02,4],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
+      ],
+      "bore": {"cut":[[-4,-0.5,-4,4,3.75,4]]},
+      "notes": {
+        "design": "Tileset 04, Tunnel Systems, step 1 (owner, 2026-11-13; docs/map-briefs/tunnels/PLAN_2026-11-13.md): the Under ground option of the Vaulted Tunnel Crossing (MapMaker's tile inspector; a tile of its own, so maps need no new field). The plain tile's masonry under a cap slab 0.25 m under the level above, so it is a closed shell. Its bore (map/groundBore.ts) takes the ground's surface out of its own cell between its floor slab and its cap: a hill higher than the cap stays on top, ground that crosses the passage is gone, and ground beside the cell meets its masonry. Its floors pull no ground down (settle.ts terrainUnderFloors). An end that comes out of the hill takes a Tunnel Portal."
+      }
+    },
+    {
       "id": "core.tunnel_portal",
       "category": "Corridors",
       "displayName": "Tunnel Portal",
@@ -1703,33 +1730,6 @@
       "bore": {"cut":[[-4,-0.5,-4,4,3.75,4]],"open":[[-3.4,0,-4,3.4,4,-0.5]],"out":"S"},
       "notes": {
         "design": "Tileset 04, Tunnel Systems, step 1 (owner, 2026-11-13; docs/map-briefs/tunnels/PLAN_2026-11-13.md): the mouth of a buried tunnel, so no ground is carved by hand. North half: the vaulted passage under its cap, as the buried tunnel. A headwall 1 m thick and 4.75 m high (a metre over the cap, with a coping) across the cell, the arch through it (stepped masonry over the arch ring, which stands 0.12 m proud). South of it an apron between wing walls stepping down from 3.75 m to 1.75 m. Its bore: the cell cut out of the ground up to the cap, and an opening over the apron (map/groundBore.ts): the ground of every grid square the apron touches comes down to its floor, and beyond rises no steeper than 1.5 in 1, so the hill is cut back to the headwall and banks lie either side of the wing walls; the cutting runs on south until the ground as made is down to the floor (daylight), at most 48 m."
-      }
-    },
-    {
-      "id": "core.tunnel_vault_cross_buried",
-      "category": "Corridors",
-      "displayName": "Vaulted Tunnel Crossing (Under Ground)",
-      "blurb": "Two vaulted passages crossing under a groin vault, buried: the hill stays on top of it and the ground is cut out only where it crosses the passage",
-      "optionOf": {"tile":"core.tunnel_vault_cross","option":"underGround"},
-      "cells": [[0,0,0]],
-      "floors": [0],
-      "ports": [{"allSides":0}],
-      "edgeDefault": "open",
-      "solids": [
-        {"box":[-4,0,-4,-1.8,3.5,-1.8],"kind":"wall"},
-        {"box":[1.8,0,-4,4,3.5,-1.8],"kind":"wall"},
-        {"box":[-4,0,1.8,-1.8,3.5,4],"kind":"wall"},
-        {"box":[1.8,0,1.8,4,3.5,4],"kind":"wall"},
-        {"vault":{"axis":"x","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
-        {"vault":{"axis":"z","span":[-1.8,1.8],"along":[-4,4],"spring":2.2,"crown":3.28,"pieces":10,"t":0.2}},
-        {"box":[-4,3.5,-4,4,3.75,4],"kind":"wall"},
-        {"box":[-4,0,-0.2,4,0.02,0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
-        {"box":[-0.2,0,-4,0.2,0.02,-0.2],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}},
-        {"box":[-0.2,0,0.2,0.2,0.02,4],"kind":"trim","surface":{"material":"core.pbr_concrete_dark"}}
-      ],
-      "bore": {"cut":[[-4,-0.5,-4,4,3.75,4]]},
-      "notes": {
-        "design": "Tileset 04, Tunnel Systems, step 1 (owner, 2026-11-13; docs/map-briefs/tunnels/PLAN_2026-11-13.md): the Under ground option of the Vaulted Tunnel Crossing (MapMaker's tile inspector; a tile of its own, so maps need no new field). The plain tile's masonry under a cap slab 0.25 m under the level above, so it is a closed shell. Its bore (map/groundBore.ts) takes the ground's surface out of its own cell between its floor slab and its cap: a hill higher than the cap stays on top, ground that crosses the passage is gone, and ground beside the cell meets its masonry. Its floors pull no ground down (settle.ts terrainUnderFloors). An end that comes out of the hill takes a Tunnel Portal."
       }
     },
     {
