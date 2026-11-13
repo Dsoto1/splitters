@@ -59,7 +59,7 @@ import { RouletteDirector } from './roulette.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { rollPickup } from './pickupRoll.ts';
-import { resupplyLoadout, resupplyReach } from './resupply.ts';
+import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, resupplyLoadout, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
@@ -574,6 +574,32 @@ interface Cover {
   max: number;
   body: RAPIER.Collider;
 }
+/**
+ * An ammo box (sim/resupply.ts): a placed one (a map's Ammo Box pickup, as a solid crate) or one deployed from an Ammo
+ * Box Kit. `body` is its collider while it stands (null while a placed one waits to come back).
+ */
+interface AmmoBox {
+  id: number;
+  kind: 'placed' | 'deployed';
+  /** The map pickup it stands for (placed). */
+  pickupId?: string;
+  /** Ground point under its centre. */
+  pos: Vec3;
+  yaw: number;
+  health: number;
+  max: number;
+  uses: number;
+  maxUses: number;
+  body: RAPIER.Collider | null;
+  /** Who set it down (deployed). */
+  owner: number | null;
+  /** Deployed: the tick it goes. Placed, while gone: the tick it is back. */
+  until: number;
+  /** Placed: ticks it stays gone once emptied or destroyed (its pickup's respawn time). */
+  respawnTicks: number;
+  /** Last to hurt it (the cook-off is theirs). */
+  lastHitBy: number | null;
+}
 /** Per-tick damage of hazards and status effects. */
 const BURN_DPS = 12;
 const POISON_DPS = 9;
@@ -688,6 +714,11 @@ export class Match {
   private readonly dropHints = new Map<number, number>();
   private nextProjectileId = 1;
   private covers: Cover[] = [];
+  /** Ammo boxes: placed crates and deployed ones (sim/resupply.ts). */
+  private boxes: AmmoBox[] = [];
+  private nextBoxId = 1;
+  /** Cook-off blasts still to go off: when, where, whose. */
+  private cookOffs: { tick: number; at: Vec3; owner: number | null }[] = [];
   /** UAV sweeps running: side (team, or one player in free-for-all) -> tick it ends. */
   private readonly uavUntil = new Map<string, number>();
   /** Counter-UAVs running: the jamming side -> tick it ends (everyone else's minimap is jammed). */
@@ -789,6 +820,11 @@ export class Match {
       if (e.kind !== 'pickup') continue;
       const item = getItem(e.item);
       if (!item) continue;
+      // A placed Ammo Box is a resupply crate, not a pickup (sim/resupply.ts; not where weapons are restricted).
+      if (e.item === AMMO_BOX_ITEM && !e.random) {
+        if (!restrictedWeapons(rules)) this.addBox('placed', { x: e.position[0], y: e.position[1], z: e.position[2] }, 0, null, e.id, Math.round(Math.max(item.respawnSeconds, e.respawnSeconds ?? 0, 20) * TICK_RATE));
+        continue;
+      }
       const p: PickupState = { id: e.id, item, placed: item, pool: null, rolls: 0, entity: { item: e.item, random: e.random, keepFixed: e.keepFixed }, pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, respawnTicks: Math.round((e.respawnSeconds ?? item.respawnSeconds) * TICK_RATE), availableAt: 0, enabled: true };
       this.pickups.push(p);
       this.repool(p);
@@ -1956,6 +1992,7 @@ export class Match {
       this.stepDrops();
       this.stepBullets();
       this.stepZones();
+      this.stepBoxes();
       this.stepStatuses();
       if (prof) lap('projectiles');
       if (this.phase === 'playing') this.scenario.step();
@@ -3151,7 +3188,7 @@ export class Match {
         if (c.mount) {
           const ride = this.mounts[c.mount.index];
           if (!ride?.route || this.mayJumpOut(c, ride)) this.leaveMount(c, true);
-        } else if (!this.resupplyAtMount(c) && !this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
+        } else if (!this.resupplyAtBox(c) && !this.resupplyAtMount(c) && !this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
         if (this.phase !== 'playing') break;
       }
       // A mode tool (the Fort Wars Builder) takes the trigger for itself.
@@ -4260,6 +4297,7 @@ export class Match {
       this.pendingEvents.push({ e: 'msg', text: 'Airstrike inbound!', secs: 3 });
     }
     if (spec.cover) this.deployCover(p, at, spec.cover);
+    if (spec.ammoBox) this.deployBox(p, at);
   }
 
   /** A sandbag wall on the ground where it landed, square to the thrower; nothing when someone stands in the way. */
@@ -4550,6 +4588,131 @@ export class Match {
   }
 
   /** Climb into the nearest turret or vehicle in reach with a free seat (driver first, then gunner, then passengers). */
+  // ---------------------------------------------------------------- ammo boxes (sim/resupply.ts)
+
+  /** A box standing at `pos` (its ground point), full. Placed ones keep their pickup's id and respawn time. */
+  private addBox(kind: AmmoBox['kind'], pos: Vec3, yaw: number, owner: number | null, pickupId?: string, respawnTicks = 0): AmmoBox {
+    const spec = kind === 'placed' ? PLACED_BOX : DEPLOYED_BOX;
+    const b: AmmoBox = { id: this.nextBoxId++, kind, ...(pickupId ? { pickupId } : {}), pos, yaw, health: spec.health, max: spec.health, uses: spec.uses, maxUses: spec.uses, body: null, owner, until: kind === 'deployed' ? this.tick + Math.round(DEPLOYED_BOX.lifeSeconds * TICK_RATE) : 0, respawnTicks, lastHitBy: null };
+    this.standBox(b);
+    this.boxes.push(b);
+    return b;
+  }
+
+  private standBox(b: AmmoBox): void {
+    const [hx, hy, hz] = AMMO_BOX_HALF;
+    b.body = this.physics.createBox({ x: b.pos.x, y: b.pos.y + hy, z: b.pos.z }, { x: hx, y: hy, z: hz }, b.yaw);
+    this.physics.commit();
+  }
+
+  /** Emptied, destroyed or expired: its collider goes; a placed one comes back full later, a deployed one is gone. */
+  private removeBox(b: AmmoBox): void {
+    if (b.body) {
+      this.physics.removeCollider(b.body);
+      this.physics.commit();
+      b.body = null;
+    }
+    if (b.kind === 'placed') b.until = this.tick + b.respawnTicks;
+    else this.boxes = this.boxes.filter((x) => x !== b);
+  }
+
+  private damageBox(b: AmmoBox, amount: number, attacker: Combatant | null): void {
+    if (!b.body || amount <= 0) return;
+    if (attacker) b.lastHitBy = attacker.slot;
+    b.health -= amount;
+    if (b.health > 0) return;
+    // Destroyed: it cooks off, more of it the more it held.
+    const share = b.uses / b.maxUses;
+    const base = { x: b.pos.x, y: b.pos.y, z: b.pos.z };
+    for (const k of cookOff(share, b.id * 7919 + this.seed, TICK_RATE)) this.cookOffs.push({ tick: this.tick + k.tick, at: { x: base.x + k.dx, y: base.y + k.dy, z: base.z + k.dz }, owner: b.lastHitBy });
+    this.pendingEvents.push({ e: 'boxcook', p: tuple({ x: base.x, y: base.y + AMMO_BOX_HALF[1], z: base.z }), n: Math.round(share * 10) / 10 });
+    b.uses = 0;
+    this.removeBox(b);
+  }
+
+  /** Deployed boxes expire, placed ones come back, and cook-offs go off. */
+  private stepBoxes(): void {
+    for (const b of [...this.boxes]) {
+      if (b.kind === 'deployed' && b.body && this.tick >= b.until) this.removeBox(b);
+      else if (b.kind === 'placed' && !b.body && this.tick >= b.until) {
+        b.health = b.max;
+        b.uses = b.maxUses;
+        b.lastHitBy = null;
+        this.standBox(b);
+      }
+    }
+    if (!this.cookOffs.length) return;
+    const due = this.cookOffs.filter((k) => k.tick <= this.tick);
+    if (!due.length) return;
+    this.cookOffs = this.cookOffs.filter((k) => k.tick > this.tick);
+    for (const k of due) {
+      const owner = k.owner === null ? null : (this.actor(k.owner) ?? null);
+      this.pendingEvents.push({ e: 'explode', s: k.owner ?? -1, p: tuple(k.at), r: COOK_OFF.radius, w: COOK_OFF.weapon });
+      this.splash(k.at, COOK_OFF.radius, COOK_OFF.damage, COOK_OFF.edge, owner, COOK_OFF.weapon, 1, 2);
+    }
+  }
+
+  /** An Ammo Box Kit lands: a box on the ground there, square to the thrower; their older one goes. */
+  private deployBox(p: Projectile, at: Vec3): void {
+    const owner = this.actor(p.owner);
+    const yaw = owner?.yaw ?? Math.atan2(p.vel.x, p.vel.z);
+    const back = { x: -Math.sin(yaw) * 0.4, z: -Math.cos(yaw) * 0.4 };
+    const from = { x: at.x + back.x, y: at.y + 0.4, z: at.z + back.z };
+    const down = this.physics.raycastHit(from, { x: 0, y: -1, z: 0 }, 6);
+    if (!down) return;
+    const pos = { x: from.x, y: from.y - down.dist, z: from.z };
+    const reach = Math.hypot(AMMO_BOX_HALF[0], AMMO_BOX_HALF[2]) + PLAYER.radius;
+    if (this.actors().some((c) => c.alive && hypot(c.move.pos.x - pos.x, c.move.pos.z - pos.z) < reach && c.move.pos.y < pos.y + AMMO_BOX_HALF[1] * 2 && c.move.pos.y + PLAYER.height > pos.y)) {
+      // Someone stands there: the kit goes back to its thrower rather than being wasted.
+      if (owner?.alive && !owner.throwable) owner.throwable = { kind: 'ammo_box', count: 1 };
+      return;
+    }
+    for (const old of this.boxes.filter((b) => b.kind === 'deployed' && b.owner === p.owner)) this.removeBox(old);
+    this.addBox('deployed', pos, yaw, p.owner);
+  }
+
+  /**
+   * On foot beside a standing ammo box: Use resupplies you there (sim/resupply.ts). True when Use was taken by it:
+   * resupplied, or nothing given (full, or waiting; the event says which).
+   */
+  private resupplyAtBox(c: Combatant): boolean {
+    let best: AmmoBox | null = null;
+    let bestD = Infinity;
+    for (const b of this.boxes) {
+      if (!b.body || b.uses <= 0 || Math.abs(c.move.pos.y - b.pos.y) > 1.6) continue;
+      const d = horizontalDistance(c.move.pos, b.pos);
+      if (d <= AMMO_BOX_REACH && d < bestD) {
+        best = b;
+        bestD = d;
+      }
+    }
+    if (!best) return false;
+    let given = false;
+    if (this.tick >= (c.resupplyAt ?? 0)) {
+      const spawn = this.weaponSet && !restrictedWeapons(this.rules) ? (setLoadout(this.weaponSet, this.rules, { seed: this.seed, slot: c.slot, life: 0, sniper: false }).throwable?.kind ?? null) : null;
+      const r = resupplyLoadout(c.weapons.values(), c.throwable, spawn);
+      if (r.given) {
+        given = true;
+        c.throwable = r.throwable;
+        best.uses--;
+        c.resupplyAt = this.tick + Math.round(AMMO_BOX_WAIT * TICK_RATE);
+      }
+    }
+    this.pendingEvents.push({ e: 'resupply', s: c.slot, m: -1, b: best.id, left: best.uses, ok: given });
+    if (best.uses <= 0) this.removeBox(best);
+    return true;
+  }
+
+  /** Standing boxes for the snapshot (`ab`): [id, x, y, z, yaw, health %, uses left, 1 when deployed]. */
+  boxSnapshots(): number[][] {
+    return this.boxes.filter((b) => b.body).map((b) => [b.id, r3(b.pos.x), r3(b.pos.y), r3(b.pos.z), r3(b.yaw), Math.ceil((Math.max(0, b.health) / b.max) * 100), b.uses, b.kind === 'deployed' ? 1 : 0]);
+  }
+
+  /** Standing boxes with stock, for the bots (and the tank refill): where, how many uses, and how hurt. */
+  ammoBoxes(): { id: number; pos: Vec3; uses: number; health: number; placed: boolean }[] {
+    return this.boxes.filter((b) => b.body && b.uses > 0).map((b) => ({ id: b.id, pos: b.pos, uses: b.uses, health: b.health / b.max, placed: b.kind === 'placed' }));
+  }
+
   /**
    * On foot at a resupply vehicle's reach point (the Supply Buggy's tailgate): Use resupplies you there instead of
    * getting in (sim/resupply.ts). True when Use was taken by it: resupplied, or nothing given (full, empty, waiting;
@@ -4779,6 +4942,11 @@ export class Match {
       this.damageCover(cv, amount);
       return true;
     }
+    const box = this.boxes.find((b) => b.body?.handle === handle);
+    if (box) {
+      this.damageBox(box, amount, attacker);
+      return true;
+    }
     const m = this.mountBodies.get(handle);
     if (!m) return false;
     this.damageMount(m, amount, attacker, false, hit, weapon);
@@ -4953,6 +5121,28 @@ export class Match {
     const crew = m.seats.find((s) => s !== null);
     if (crew === undefined || crew === null) return;
     const reach = Math.max(m.def.half[0], m.def.half[2]) + PICKUP_RADIUS;
+    // A map's Ammo Box is a crate now (sim/resupply.ts): pulled up beside one, a crewed vehicle refills from it (a use).
+    for (const b of this.boxes) {
+      if (!b.body || b.uses <= 0 || b.kind !== 'placed' || restrictedWeapons(this.rules)) continue;
+      if (!m.guns.some((g, i) => g?.shells !== undefined && m.def.seats[i]?.ammo && g.shells < m.def.seats[i]!.ammo!.max && ammoRefilledBy(m.def.seats[i]!.ammo!, AMMO_BOX_ITEM))) continue;
+      if (horizontalDistance(b.pos, m.pos) > reach + AMMO_BOX_REACH || Math.abs(b.pos.y - m.pos.y) > 1.5) continue;
+      const s = Math.sin(m.yaw);
+      const c = Math.cos(m.yaw);
+      const dx = b.pos.x - m.pos.x;
+      const dz = b.pos.z - m.pos.z;
+      if (Math.abs(dx * c - dz * s) > m.def.half[0] + AMMO_BOX_REACH || Math.abs(dx * s + dz * c) > m.def.half[2] + AMMO_BOX_REACH) continue;
+      m.guns.forEach((g, i) => {
+        const ammo = m.def.seats[i]?.ammo;
+        if (g && ammo && ammoRefilledBy(ammo, AMMO_BOX_ITEM)) {
+          g.shells = ammo.max;
+          g.shellTicks = 0;
+        }
+      });
+      b.uses--;
+      this.pendingEvents.push({ e: 'resupply', s: crew, m: m.index, b: b.id, left: b.uses, ok: true });
+      if (b.uses <= 0) this.removeBox(b);
+      return;
+    }
     for (const p of this.pickups) {
       if (!p.enabled || this.tick < p.availableAt || p.item.effect.kind !== 'ammo' || restrictedWeapons(this.rules)) continue;
       // Only a pickup that refills a gun running short (SeatAmmo.pickups).
@@ -5620,6 +5810,11 @@ export class Match {
       const centre = { x: m.pos.x, y: m.pos.y + m.def.half[1], z: m.pos.z };
       const d = Math.max(0, distance(at, centre) - Math.min(m.def.half[0], m.def.half[2]));
       if (d <= radius) this.damageMount(m, (damage + (edge - damage) * (d / radius)) * boost, owner, false, 'blast', weapon);
+    }
+    for (const b of [...this.boxes]) {
+      if (!b.body) continue;
+      const d = Math.max(0, distance(at, { x: b.pos.x, y: b.pos.y + AMMO_BOX_HALF[1], z: b.pos.z }) - AMMO_BOX_HALF[2]);
+      if (d <= radius) this.damageBox(b, (damage + (edge - damage) * (d / radius)) * boost, owner);
     }
     for (const cv of [...this.covers]) {
       const d = Math.max(0, distance(at, { x: cv.pos.x, y: cv.pos.y + cv.half.y, z: cv.pos.z }) - cv.half.x);
@@ -6809,6 +7004,7 @@ export class Match {
       ...(this.pickups.some((p) => p.item !== p.placed) ? { pw: this.pickupItems() } : {}),
       ...(this.drops.length ? { dw: this.dropSnapshots() } : {}),
       ...(this.mounts.length ? { mt: this.mountSnapshots() } : {}),
+      ...(this.boxes.some((b) => b.body) ? { ab: this.boxSnapshots() } : {}),
       ...(this.mounts.some((m) => m.susp && m.alive) ? { ms: this.suspensionSnapshots() } : {}),
       ...(this.covers.length ? { cv: this.covers.map((c): CoverSnapshot => [c.id, r3(c.pos.x), r3(c.pos.y), r3(c.pos.z), r3(c.yaw), Math.ceil((Math.max(0, c.health) / c.max) * 100)]) } : {}),
       ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.kind === 'smoke' ? this.smokeNow(z) : z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),

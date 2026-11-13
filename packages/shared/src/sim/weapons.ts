@@ -200,6 +200,8 @@ export interface ProjectileSpec {
   airstrike?: { count: number; spacing: number; height: number; bomb: ProjectileSpec };
   /** Deployable cover: where it lands it becomes a solid wall (half extents, metres) facing the thrower, with its own health. */
   cover?: { half: [number, number, number]; health: number };
+  /** An Ammo Box Kit: where it lands it becomes an ammo box (sim/resupply.ts DEPLOYED_BOX), square to the thrower. */
+  ammoBox?: boolean;
   /**
    * Arena discs (Disc Arena): no damage. A hit shoves the player `push` m/s
    * away (and `lift` m/s up). Then, or when its fuse runs out or it has bounced

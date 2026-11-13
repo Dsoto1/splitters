@@ -25,8 +25,11 @@ export interface ResupplySpec {
 /** How far above or below the reach point your feet may be (m): standing on the ground beside a vehicle's tailgate. */
 export const RESUPPLY_HEIGHT = 1.6;
 
-/** Throwables a resupply never tops up: the airstrike flare is a reward (Lunar Roulette), not stock. */
-const NOT_RESTOCKED: ReadonlySet<ThrowableKind> = new Set(['airstrike']);
+/**
+ * Throwables a resupply never tops up: the airstrike flare is a reward (Lunar Roulette), not stock; sandbags and the
+ * Ammo Box Kit are deployables, not grenades (a box handing out boxes would never run dry).
+ */
+const NOT_RESTOCKED: ReadonlySet<ThrowableKind> = new Set(['airstrike', 'sandbag', 'ammo_box']);
 
 /**
  * Whether feet at `feet` are in reach of a source's point, the source standing at `pos` turned `yaw` (the mount
@@ -80,4 +83,55 @@ export function resupplyLoadout(guns: Iterable<ResupplyGun>, throwable: { kind: 
     }
   }
   return { given, throwable: next };
+}
+
+// ---------------------------------------------------------------- ammo boxes
+
+/**
+ * Ammo boxes (owner, 2026-11-12/13: "a deployable ammo box (resupply) or ones that get automatically placed, the way
+ * Far Cry 2 had an ammo box, where you could get ammo/grenades but also if it gets shot or enough damage would set off
+ * a small round of explosions and pops in that vicinity (damaging slightly)"). Two kinds share this:
+ * - placed: every Ammo Box pickup a map places (`core.ammo`, not a random one) is a solid crate (owner, 2026-11-13:
+ *   "become resupply crates"): Use beside it resupplies; emptied or destroyed, it is gone until its pickup's respawn
+ *   time has passed, then back full;
+ * - deployed: the Ammo Box Kit (a throwable, carried like Sandbags) sets one down where it lands; one each, gone when
+ *   empty, destroyed, or after DEPLOYED_BOX.lifeSeconds.
+ * Shots and blasts damage it; destroyed with stock left it cooks off (cookOff).
+ */
+export const AMMO_BOX_ITEM = 'core.ammo';
+/** The crate drawn and collided (the WWII Ammo Crate prop, props/ww2_ammo_crate.glb: 1.04 × 0.9 × 0.63 m). */
+export const AMMO_BOX_MODEL = 'props/ww2_ammo_crate.glb';
+export const AMMO_BOX_HALF: [number, number, number] = [0.52, 0.45, 0.31];
+/** How near its middle your feet must be to resupply (m, across): beside the crate. */
+export const AMMO_BOX_REACH = 1.5;
+export const PLACED_BOX = { uses: 10, health: 80 } as const;
+export const DEPLOYED_BOX = { uses: 10, health: 60, lifeSeconds: 120 } as const;
+/** Seconds a player waits between two resupplies from boxes (as at the Supply Buggy). */
+export const AMMO_BOX_WAIT = 4;
+
+/**
+ * The cook-off when a box is destroyed: a round of small blasts and pops round it for a few seconds, more of them the
+ * more stock it held (a box with none left only bursts once). Each hurts slightly: about a sixth of a player's health
+ * at its centre, little at its edge. `weapon` names them in the kill feed.
+ */
+export const COOK_OFF = { weapon: 'core.ammo_box', seconds: 2.6, radius: 2.4, damage: 16, edge: 3, spread: 1.6 } as const;
+
+/**
+ * The blasts of one cook-off: when (ticks from now, rising) and where (offset from the box, m), for `share` of its
+ * stock left (0..1). Deterministic: `seed` (the box's) picks the places and the rhythm.
+ */
+export function cookOff(share: number, seed: number, tickRate: number): { tick: number; dx: number; dy: number; dz: number }[] {
+  const count = 1 + Math.round(Math.max(0, Math.min(1, share)) * 7);
+  let s = (seed >>> 0) || 1;
+  const rnd = () => ((s = (Math.imul(s ^ (s >>> 15), 0x2c1b3c6d) + 0x9e3779b9) >>> 0) / 0x100000000);
+  const out: { tick: number; dx: number; dy: number; dz: number }[] = [];
+  const span = COOK_OFF.seconds * tickRate;
+  for (let i = 0; i < count; i++) {
+    // The first at once (where it was hit), the rest scattered through the span, bunching early like popping rounds.
+    const t = i === 0 ? 0 : Math.round(span * Math.pow((i + rnd() * 0.8) / count, 1.4));
+    const a = rnd() * Math.PI * 2;
+    const r = i === 0 ? 0 : COOK_OFF.spread * Math.sqrt(rnd());
+    out.push({ tick: t, dx: Math.sin(a) * r, dy: 0.2 + rnd() * 0.6, dz: Math.cos(a) * r });
+  }
+  return out.sort((a, b) => a.tick - b.tick);
 }

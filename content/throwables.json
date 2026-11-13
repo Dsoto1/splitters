@@ -306,6 +306,29 @@
       "notes": {
         "design": "Owner, 2026-11-06: a cloud a few metres across for about 18 s that hides whoever is behind it (players see the cloud; bots and the match's sight checks treat it as opaque) while bullets still go through. Cover to cross open ground. No flash and no white-out: the cloud is grey and eases in."
       }
+    },
+    {
+      "kind": "ammo_box",
+      "code": 13,
+      "displayName": "Ammo Box Kit",
+      "max": 1,
+      "throwIntervalTicks": 40,
+      "projectile": {
+        "speed": 6,
+        "gravity": 16,
+        "fuseSeconds": 1.2,
+        "splashRadius": 0,
+        "splashDamage": 0,
+        "splashEdgeDamage": 0,
+        "selfDamageScale": 0,
+        "visual": "sandbag",
+        "ammoBox": true
+      },
+      "view": { "model": "props/ww2_ammo_crate.glb" },
+      "notes": {
+        "group": "Deployable, carried like Sandbags (owner, 2026-11-13: a map pickup, anyone may carry one).",
+        "design": "Tossed a couple of metres ahead; where it lands it becomes an ammo box (sim/resupply.ts DEPLOYED_BOX): Use beside it resupplies, ten times, for two minutes; shot or blown up it cooks off. One each: setting down another takes the first away."
+      }
     }
   ]
 }
