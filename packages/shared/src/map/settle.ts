@@ -7,7 +7,7 @@ import { withPathsLaid } from './paths.ts';
 import { PLAYER } from '../sim/constants.ts';
 import type { LightEntity, LightFixture, MapDocument, PropEntity } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
-import { mapGroundBores, rememberTerrainCuts, shapeGroundAtBores } from './groundBore.ts';
+import { groundCutAt, mapGroundBores, rememberTerrainCuts, shapeGroundAtBores, terrainCuts } from './groundBore.ts';
 
 /** What an environment tree stands on when settled on a slope: its trunk, not its crown's spread. */
 const TRUNK_FOOTPRINT = [0.6, 0, 0.6] as const;
@@ -161,6 +161,18 @@ export function rebedShift(before: TerrainData, after: TerrainData, e: Pick<Prop
 
 /** Where rebedProps puts one prop's base when the ground goes from `before` to `after`, or null where it stays (held up by what's in `boxes`, or not on the ground). */
 export function rebeddedY(before: TerrainData, after: TerrainData, boxes: readonly WorldBox[], e: Pick<PropEntity, 'id' | 'model' | 'position' | 'yaw' | 'scale'>): number | null {
+  // A prop bedded on ground a buried tunnel cut away (a rock on the hillside where a portal's apron now is) has no
+  // ground to stand on: it goes down onto what is built under it (the apron's floor), as plants there go altogether.
+  const cuts = terrainCuts(after);
+  if (cuts.length) {
+    const [x, y, z] = e.position;
+    const was = settledPropY(before, e);
+    const now = terrainHeightAt(after, x, z);
+    if (was !== null && now !== null && Math.abs(y - was) <= REBED_TOLERANCE && groundCutAt(cuts, x, now, z)) {
+      const floor = supportUnder(boxes, x, z, Math.max(y, now), e.id);
+      return Number.isFinite(floor) && Math.abs(floor - y) > 0.001 ? Math.round(floor * 1000) / 1000 : null;
+    }
+  }
   const dy = rebedShift(before, after, e);
   if (!dy) return null;
   if (supportUnder(boxes, e.position[0], e.position[2], e.position[1], e.id) > e.position[1] - FLOAT_TOLERANCE) return null;

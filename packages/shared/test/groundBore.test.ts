@@ -15,6 +15,7 @@ import {
   newMapDocument,
   newTerrain,
   openGroundAtMouths,
+  settledPropY,
   stepMovement,
   terrainHeightAt,
   terrainTriangles,
@@ -360,6 +361,26 @@ describe('a buried run a level under flat ground: the surface stays flat, and ea
     expect(nav.findPath({ x: -20, y: -0.15, z: 0 }, { x: 20, y: -0.15, z: 0 })).not.toBeNull();
     nav.destroy();
     physics.free();
+  });
+});
+
+describe('props on ground a tunnel cut away', () => {
+  it('a rock bedded on the hillside where an apron now is stands on the apron\'s floor as played; one on the hill over the tunnel stays on the hill', () => {
+    const doc = ridgeMap();
+    const made = doc.terrain!;
+    const rock = (id: string, x: number, z: number) => {
+      const e = { id, kind: 'prop' as const, model: 'prop.rock_medium', position: [x, 0, z] as [number, number, number], yaw: 0, scale: 1, solid: true, tint: null };
+      return { ...e, position: [x, settledPropY(made, e)!, z] as [number, number, number] };
+    };
+    // On the south portal's apron (cell z -20..-12, apron south of its headwall at -16.5), and over the middle tunnel.
+    const withRocks = { ...doc, entities: [rock('on_apron', 1, -18.5), rock('on_hill', 1, 0)] } as MapDocument;
+    expect(withRocks.entities[0]!.position[1]).toBeGreaterThan(2);
+    const asPlayed = played(withRocks);
+    const y = (id: string) => asPlayed.entities.find((e) => e.id === id)!.position[1];
+    expect(y('on_apron')).toBeCloseTo(0, 2);
+    expect(y('on_hill')).toBeCloseTo(withRocks.entities[1]!.position[1], 6);
+    // The map as made keeps the rock where its maker put it.
+    expect(withRocks.entities[0]!.position[1]).toBeGreaterThan(2);
   });
 });
 
