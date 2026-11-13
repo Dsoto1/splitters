@@ -161,11 +161,23 @@ describe('the Arched window wall style', () => {
     expect(panes[0]!.box.center.y).toBeCloseTo(1.95, 9);
   });
 
-  it('is dressed with nine voussoirs and a keystone, a sill and jambs, and a painted frame by the glass: trim only', () => {
+  it('is dressed with thirteen voussoirs and a keystone, a sill and jambs of pale stone, and a painted frame by the glass: trim only', () => {
     const trim = edgeTrimBoxes('window_arched', 4, 4);
     expect(trim.filter((p) => p.tilt !== undefined).length).toBeGreaterThanOrEqual(8);
     expect(trim.some((p) => p.depth === 0.14 && p.y1 === 0.9)).toBe(true);
-    const frame = trim.filter((p) => p.surface);
+    // The surround is pale dressed stone of its own (not the tile's trim, which is dark on most themes): thin, flat stones.
+    const stone = trim.filter((p) => p.surface?.material === 'core.stone_trim');
+    expect(stone.every((p) => p.surface!.tint === null)).toBe(true);
+    const voussoirs = stone.filter((p) => p.depth !== undefined && p.y0 > 1.9);
+    expect(voussoirs).toHaveLength(13);
+    for (const p of voussoirs) {
+      expect(p.y1 - p.y0).toBeLessThanOrEqual(0.25 + 1e-9);
+      expect(p.depth!).toBeLessThanOrEqual(0.05);
+    }
+    expect(Math.max(...voussoirs.map((p) => p.y1 - p.y0)) - Math.min(...voussoirs.map((p) => p.y1 - p.y0))).toBeCloseTo(0.05, 9);
+    expect(trim.every((p) => p.surface)).toBe(false);
+    expect(trim.filter((p) => !p.surface).every((p) => p.y1 <= 0.16 || p.y0 >= 3.8)).toBe(true);
+    const frame = trim.filter((p) => p.surface && p.surface.material !== 'core.stone_trim');
     expect(frame).toHaveLength(6);
     for (const p of frame) {
       expect(p.surface).toEqual({ material: 'core.paint_matte', tint: '#e6e1d3' });

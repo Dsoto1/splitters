@@ -391,10 +391,11 @@ const ARCH_JOINT = 0.025;
 
 /**
  * A segmental arch's dressing on one face: its voussoirs (the keystone `key` m taller in the middle of an odd count)
- * on the circle through the springing points and the crown, each standing off the face from `v0` by its depth, and
- * (`soffit`) the arch's underside through the wall's thickness `t`, tangent to the curve.
+ * on the circle through the springing points and the crown, each standing off the face from `v0` by its depth (the
+ * keystone `keyDepth` more, 0.04 m unless the style says), and (`soffit`) the arch's underside through the wall's
+ * thickness `t`, tangent to the curve; all of `surface`, when the style gives the arch a material of its own.
  */
-function archTrim(a: EdgeArch, v0: number, outward: boolean, soffit: number): SideTrim[] {
+function archTrim(a: EdgeArch, v0: number, outward: boolean, soffit: number, surface: Pick<SideTrim, 'surface'> = {}): SideTrim[] {
   const [u0, u1] = a.u;
   const [spring, crown] = a.y;
   const c = (u1 - u0) / 2;
@@ -411,13 +412,13 @@ function archTrim(a: EdgeArch, v0: number, outward: boolean, soffit: number): Si
   const piece = (at: number, radius: number, along: number, band: number, va: number, vb: number, depth?: number) => {
     const u = mid + (radius + band / 2) * Math.sin(at);
     const y = centre + (radius + band / 2) * Math.cos(at);
-    out.push({ u0: u - along, u1: u + along, y0: y - band / 2, y1: y + band / 2, v0: va, v1: vb, ...(at ? { tilt: -at } : {}), ...(depth !== undefined ? { depth } : {}) });
+    out.push({ u0: u - along, u1: u + along, y0: y - band / 2, y1: y + band / 2, v0: va, v1: vb, ...(at ? { tilt: -at } : {}), ...(depth !== undefined ? { depth } : {}), ...surface });
   };
   for (let i = 0; i < a.count; i++) {
     const at = -sweep + (i + 0.5) * step;
     const key = a.count % 2 === 1 && i === (a.count - 1) / 2;
     const band = a.band + (key ? (a.key ?? 0) : 0);
-    const d = key ? depth + 0.04 : depth;
+    const d = key ? depth + (a.keyDepth ?? 0.04) : depth;
     piece(at, r, halfLen - ARCH_JOINT / 2, band, outward ? v0 - d : v0, outward ? v0 : v0 + d, outward ? undefined : d);
     if (soffit > 0) piece(at, r, halfLen, ARCH_SOFFIT, 0, soffit);
   }
@@ -456,8 +457,8 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
       at(u0 - 0.1, u0, y0, y1, 0.05);
       at(u1, u1 + 0.1, y0, y1, 0.05);
     } else if ('arch' in p) {
-      out.push(...archTrim(p.arch, from, false, Math.min(from, TILE_DIMENSIONS.wallThickness)));
-      if (outer && p.outside) out.push(...archTrim(p.arch, 0, true, 0));
+      out.push(...archTrim(p.arch, from, false, Math.min(from, TILE_DIMENSIONS.wallThickness), own(p)));
+      if (outer && p.outside) out.push(...archTrim(p.arch, 0, true, 0, own(p)));
     } else if ('v' in p) {
       // Set in the wall itself (a sash's bars by the glass): no face to stand off, so no `depth`.
       out.push({ u0: v(p.u[0]), u1: v(p.u[1]), y0: v(p.y[0]), y1: v(p.y[1]), v0: p.v[0], v1: p.v[1], ...own(p) });
