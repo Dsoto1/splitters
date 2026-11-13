@@ -7760,7 +7760,8 @@ async function coverageFlow(browser) {
     const floor = Math.min(-5, ...file.entities.filter((e) => e.kind === 'spawn').map((e) => e.position[1] - 2));
     const me = await page.evaluate(() => ({ alive: window.__cs.local.alive, y: window.__cs.local.state.pos.y }));
     check(ran && me.alive && me.y > floor, `90 ticks on it, and you stand on solid ground (y ${me.y.toFixed(1)}, floor ${floor.toFixed(1)})`);
-    const got = await sim(page, (m) => ({ pickups: m.pickups.length, mounts: m.mounts.length, ziplines: m.ziplines.length }));
+    // (A placed Ammo Box is a crate in play, not a pickup: sim/resupply.ts. It counts as one of the map's pickups here.)
+    const got = await sim(page, (m) => ({ pickups: m.pickups.length + m.ammoBoxes().filter((b) => b.placed).length, mounts: m.mounts.length, ziplines: m.ziplines.length }));
     // The match also runs the transport plane and the dropship as mounts.
     const want = { pickups: count('pickup'), mounts: count('mount') + count('airplane'), ziplines: count('zipline') };
     check(got.pickups >= want.pickups && got.mounts === want.mounts && got.ziplines === want.ziplines, `every pickup, vehicle, turret and zipline is in the match (${JSON.stringify(got)} of ${JSON.stringify(want)})`);
