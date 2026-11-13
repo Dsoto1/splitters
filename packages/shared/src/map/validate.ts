@@ -163,6 +163,39 @@ function buriedMouthIssues(map: MapDocument, cells: ReturnType<typeof buildOccup
 }
 
 /**
+ * A buried run standing as a mound on ground that would cover it a level down: a hint (the mound is a fair choice, a
+ * bunker's berm; a flat surface is one Page Down away). One for the map, naming how many pieces and the first.
+ */
+function moundedRunIssues(map: MapDocument, cells: ReturnType<typeof buildOccupancy>['cells'], catalog: TileCatalog): ValidationIssue[] {
+  const t = map.terrain;
+  if (!t || !mapGroundBores(map, catalog).tiles.size) return [];
+  const { cellSize, levelHeight } = map.classicStructure;
+  const made = withPathsLaid(map).terrain ?? t;
+  const mounded: string[] = [];
+  for (const [key, occ] of cells) {
+    const cover = occ.def.bore?.cover?.[0]?.[4];
+    // (A portal is where a run comes out: it is judged by the pieces behind it.)
+    if (cover === undefined || occ.def.bore?.open) continue;
+    const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
+    if (cells.has(cellKey(gx, gy, gz - 1))) continue;
+    const want = gz * levelHeight + cover;
+    let low = Infinity;
+    let high = -Infinity;
+    for (const [ox, oz] of [[0, 0], [-3, -3], [3, -3], [-3, 3], [3, 3]] as const) {
+      const h = terrainHeightAt(made, gx * cellSize + ox, gy * cellSize + oz);
+      if (h === null) continue;
+      low = Math.min(low, h);
+      high = Math.max(high, h);
+    }
+    // More than half a metre of earth to add here, and none at all a level down, on ground that is near enough flat.
+    if (low < want - 0.5 && low >= want - levelHeight - 0.01 && high - low < 0.5) mounded.push(occ.placement.id);
+  }
+  if (!mounded.length) return [];
+  const ids = [...new Set(mounded)];
+  return [{ severity: 'suggestion', code: 'tunnel.flush_a_level_down', message: `${ids.length} buried tunnel piece${ids.length === 1 ? ' stands' : 's stand'} as a mound on flat ground: a level down (Page Down) the ground already covers ${ids.length === 1 ? 'it' : 'them'} and the surface stays flat, with a ramp down to each portal`, targetId: ids[0]! }];
+}
+
+/**
  * Liquid in a buried passage: a liquid is a box and knows nothing of walls, so one that reaches into a bore above its
  * floor floods the tunnel (it is drawn there and waded in). Meant now and then (a flooded sewer); a warning, since a
  * pond dug over or beside a tunnel does it by accident. The fix is to keep the liquid's box out of the bore.
@@ -334,6 +367,7 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
 
   issues.push(...buriedMouthIssues(map, cells, catalog));
   issues.push(...floodedBoreIssues(map, catalog));
+  issues.push(...moundedRunIssues(map, cells, catalog));
   for (const t of map.classicStructure.tiles) {
     if (t.family && !catalog.familiesOf(t.tile).some((d) => d.familyOf!.family === t.family)) {
       issues.push({ severity: 'warning', code: 'tile.family_unknown', message: `tile ${t.id} (${catalog.get(t.tile)?.displayName ?? t.tile}) doesn't come in the "${t.family}" family: it is drawn as its own`, targetId: t.id });

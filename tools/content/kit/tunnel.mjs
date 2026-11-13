@@ -212,7 +212,7 @@ export function tunnelTiles(data) {
         floors: [],
         ports,
         edgeDefault: 'open',
-        familyOf: { base: `core.tunnel_${first}_${shape.id}`, family: fid, label: family.label.replace(/ Tunnel$/, '') },
+        familyOf: { base: `core.tunnel_${first}_${shape.id}`, family: fid, label: `${family.label.replace(/ Tunnel$/, '')}${family.preview ? ' (preview)' : ''}` },
         extraFloors: [parts.floor],
         solids: parts.solids,
         bore: parts.bore,

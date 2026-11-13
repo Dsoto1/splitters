@@ -39036,7 +39036,7 @@
    "familyOf": {
     "base": "core.tunnel_concrete_straight",
     "family": "brick",
-    "label": "Brick"
+    "label": "Brick (preview)"
    },
    "extraFloors": [
     {
@@ -39474,7 +39474,7 @@
    "familyOf": {
     "base": "core.tunnel_concrete_curve",
     "family": "brick",
-    "label": "Brick"
+    "label": "Brick (preview)"
    },
    "extraFloors": [
     {
@@ -39916,7 +39916,7 @@
    "familyOf": {
     "base": "core.tunnel_concrete_t",
     "family": "brick",
-    "label": "Brick"
+    "label": "Brick (preview)"
    },
    "extraFloors": [
     {
@@ -40394,7 +40394,7 @@
    "familyOf": {
     "base": "core.tunnel_concrete_cross",
     "family": "brick",
-    "label": "Brick"
+    "label": "Brick (preview)"
    },
    "extraFloors": [
     {
@@ -40892,7 +40892,7 @@
    "familyOf": {
     "base": "core.tunnel_concrete_end",
     "family": "brick",
-    "label": "Brick"
+    "label": "Brick (preview)"
    },
    "extraFloors": [
     {
@@ -41346,7 +41346,7 @@
    "familyOf": {
     "base": "core.tunnel_concrete_portal",
     "family": "brick",
-    "label": "Brick"
+    "label": "Brick (preview)"
    },
    "extraFloors": [
     {

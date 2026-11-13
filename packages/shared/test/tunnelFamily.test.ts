@@ -57,7 +57,7 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
       const base = coreCatalog.get(`core.tunnel_concrete_${shape}`)!;
       const brick = coreCatalog.get(`core.tunnel_brick_${shape}`)!;
       expect(base.familyOf).toEqual({ base: base.id, family: 'concrete', label: 'Concrete' });
-      expect(brick.familyOf).toEqual({ base: base.id, family: 'brick', label: 'Brick' });
+      expect(brick.familyOf).toEqual({ base: base.id, family: 'brick', label: 'Brick (preview)' });
       expect(isTileOptionTwin(base)).toBe(false);
       expect(isTileOptionTwin(brick)).toBe(true);
       expect(brick.cells).toEqual(base.cells);
@@ -90,7 +90,7 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     expect(mapGroundBores(brick)).toEqual(mapGroundBores(plain));
     expect(tileFamilies(brick.classicStructure.tiles[0]!)).toEqual([
       { family: 'concrete', label: 'Concrete', on: false },
-      { family: 'brick', label: 'Brick', on: true },
+      { family: 'brick', label: 'Brick (preview)', on: true },
     ]);
   });
 
@@ -194,5 +194,16 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     const made = addPortalsCommand(placed);
     if ('error' in made) throw new Error(made.error);
     expect(made.placed.map((p) => `${p.tile}@${p.x},${p.y}r${p.rotation}`).sort()).toEqual(['core.tunnel_concrete_portal@0,-2r0', 'core.tunnel_concrete_portal@0,3r2']);
+  });
+
+  it('a hint, not a warning, for a buried run mounded on flat ground that would be flush a level down; none under a hill or a level down', () => {
+    const flat = mapOf([{ tile: 'core.tunnel_concrete_straight', x: 0, y: 0 }, { tile: 'core.tunnel_concrete_straight', x: 0, y: 1 }, { tile: 'core.tunnel_concrete_portal', x: 0, y: -1 }], -0.15);
+    const hints = (m: MapDocument) => validateMap(m).filter((i) => i.code === 'tunnel.flush_a_level_down');
+    expect(hints(flat)).toEqual([expect.objectContaining({ severity: 'suggestion', targetId: 'tile_0' })]);
+    expect(hints(flat)[0]!.message).toMatch(/^2 buried tunnel pieces stand as a mound/);
+    const down = { ...flat, classicStructure: { ...flat.classicStructure, tiles: flat.classicStructure.tiles.map((t) => ({ ...t, z: -1 })) } };
+    expect(hints(down)).toEqual([]);
+    const hill = { ...flat, terrain: { ...flat.terrain!, heights: flat.terrain!.heights.map(() => 800) } };
+    expect(hints(hill)).toEqual([]);
   });
 });
