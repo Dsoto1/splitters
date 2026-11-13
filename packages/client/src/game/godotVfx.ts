@@ -1276,6 +1276,116 @@ PORTS.portal_glow = {
       outAlpha = glow * vExtra.w;`,
 };
 
+// ---- Stylized Status FX (Binbun VFX Vol. 2): auras round a character. Soft blobs of scrolling noise turned to the
+// camera (aura_particle), a noisy shell round the body (aura_sphere), and small pieces drifting up: flecks of
+// noise, bubbles, ice crystals. The pack's proximity fade (it reads the depth buffer) is left out.
+const STATUS_HELPERS = `
+vec3 statusHue(vec3 color, float shift) {
+  vec3 gray = vec3(0.57735);
+  vec3 proj = gray * dot(gray, color);
+  vec3 U = color - proj;
+  vec3 V = cross(gray, U);
+  return U * cos(shift * 6.2831853) + V * sin(shift * 6.2831853) + proj;
+}
+float statusEdge(float a, float pos, float hard) {
+  return clamp((a - pos) / max(1.0 - hard, 1e-3), 0.0, 1.0);
+}`;
+const STATUS_COLOURS = { primary_color: [1, 0.8, 0.2], secondary_color: [1, 0.4, 0.1], tertiary_color: [0.6, 0.1, 0.05], emission: 2, color_curve: 1, hue_variation: 0.1, edge_hardness: 0, edge_position: 0 };
+/** The aura: a soft blob eaten by noise scrolling up it, brightest at its heart. */
+PORTS['StatusFX/aura_particle'] = {
+  uniforms: { ...STATUS_COLOURS, use_secondary: 0, noise_scale: [0.5, 0.5], noise_scroll: [0, 0.1], shape_curve: 2, noise_twist: 0, waviness: 0.2 },
+  samplers: ['noise_texture'],
+  blend: 'mix',
+  helpers: STATUS_HELPERS,
+  fragment: `
+      float r = length(vUV * 2.0 - 1.0);
+      vec2 nuv = (vec2(vUV.x + vUV.y * u_noise_twist, vUV.y) + vColor.r) * u_noise_scale + u_noise_scroll * u_time;
+      nuv.x += sin(vUV.y * 20.0 + u_time * 6.0) * 0.1 * u_waviness;
+      float noise = texture2D(noise_texture, nuv).r;
+      float value = pow(max(noise - r, 0.0), u_shape_curve) * vColor.a;
+      float cv = pow(value, u_color_curve);
+      cv = mix(cv, floor(cv * 6.0) / 5.0, u_edge_hardness);
+      vec3 col = mix(u_tertiary_color, u_use_secondary > 0.5 ? u_secondary_color : u_primary_color, cv);
+      col = statusHue(col, (vColor.r - 0.5) * u_hue_variation) * (0.5 + vColor.r * 0.5);
+      outColor = col * u_emission;
+      outAlpha = statusEdge(value, u_edge_position, u_edge_hardness) * vExtra.w;`,
+};
+/** The shell: a tall ball round the body, its middle band lit by noise twisting up it (light added to the scene). */
+PORTS['StatusFX/aura_sphere'] = {
+  uniforms: { ...STATUS_COLOURS, hue_variation: 0, edge_position: 0.2, noise_scale: [3, 1], noise_scroll: [0.1, 0.4], noise_twist: 1, shape_curve: 2, waviness: 0.2 },
+  samplers: ['noise_texture'],
+  blend: 'add',
+  cull: false,
+  helpers: STATUS_HELPERS,
+  fragment: `
+      vec2 suv = vUV + vec2(sin(vUV.y * 40.0 - u_time) * 0.1 * u_waviness, 0.0);
+      vec2 nuv = vec2(suv.x - suv.y * u_noise_twist, suv.y) * u_noise_scale + u_time * u_noise_scroll;
+      float noise = texture2D(noise_texture, nuv).r;
+      // (Godot's pow of a negative number gives nothing past the band; here it is cut off.)
+      float mask = pow(max((1.0 - abs(suv.y * 2.0 - 1.0) - 0.5) / 0.5, 0.0), 0.2);
+      float value = smoothstep(0.5, 0.8, max(noise * mask, 0.0));
+      vec3 col = gl_FrontFacing ? mix(u_secondary_color, u_primary_color, value) : u_tertiary_color;
+      float hueWave = sin(vUV.x * 25.1327412 + u_time) + sin(vUV.y * 31.4159265 + u_time);
+      col = statusHue(col, hueWave * u_hue_variation);
+      outColor = col * u_emission;
+      outAlpha = statusEdge(value, u_edge_position, u_edge_hardness) * vExtra.w;`,
+};
+/** Flecks drifting up: small discs of the noise. */
+PORTS['StatusFX/noise_particle'] = {
+  uniforms: { primary_color: [1, 0.8, 0.2], secondary_color: [1, 0.4, 0.1], emission: 2, hue_variation: 0.1, noise_scale: [3, 1], noise_scroll: [0.1, 0.4], edge_hardness: 0, edge_position: 0.2 },
+  samplers: ['noise_texture'],
+  blend: 'mix',
+  cull: false,
+  helpers: STATUS_HELPERS,
+  fragment: `
+      float noise = texture2D(noise_texture, (vUV + vColor.r) * 0.3 * u_noise_scale + u_time * u_noise_scroll).r;
+      float shape = smoothstep(0.2, 0.8, (1.0 - length(vUV * 2.0 - 1.0)) * noise);
+      vec3 col = statusHue(mix(u_secondary_color, u_primary_color, noise), (vColor.r - 0.5) * u_hue_variation);
+      outColor = col * u_emission;
+      outAlpha = statusEdge(shape, u_edge_position, u_edge_hardness) * vExtra.w;`,
+};
+/** Bubbles: a wobbling ring, thicker at its rim, with a glint, thinning away as it ages. */
+PORTS['StatusFX/bubble_particle'] = {
+  uniforms: { ...STATUS_COLOURS, edge_position: 0.2, bubble_warp: 0.03 },
+  blend: 'mix',
+  helpers: STATUS_HELPERS,
+  fragment: `
+      vec2 cuv = vUV - 0.5;
+      float angle = atan(cuv.x, cuv.y);
+      float rand1 = floor(vColor.r * 4.0);
+      float rand2 = mod(vExtra.x, 4.0);
+      float wave = cos((angle + u_time) * (3.0 + rand1)) + sin((angle - u_time) * (3.0 + rand2));
+      float r = length(vUV * 2.0 - 1.0);
+      float sr = max(r + wave * u_bubble_warp * r, 0.0);
+      float inside = step(sr, 0.8);
+      float shape = max((0.2 + sr * sr * sr * sr) * inside - (1.0 - vColor.a), 0.0);
+      float shine = max(1.0 - (length(vUV * 2.0 - 0.7) + 0.8) - (1.0 - vColor.a), 0.0);
+      shape += sqrt(shine) * inside;
+      vec3 col = mix(u_secondary_color, u_primary_color, shape);
+      col = statusHue(col, (vColor.r - 0.5) * u_hue_variation) * (0.5 + vColor.r * 0.5);
+      outColor = col * u_emission;
+      outAlpha = statusEdge(shape, u_edge_position, u_edge_hardness) * vExtra.w;`,
+};
+/** Ice crystals: a hard-edged star of five to seven points with rings branching off it, growing and melting with its age. */
+PORTS['StatusFX/ice_particle'] = {
+  uniforms: { primary_color: [1, 0.8, 0.2], secondary_color: [1, 0.4, 0.1], emission: 2, hue_variation: 0.1, edge_hardness: 0, edge_position: 0.2 },
+  blend: 'mix',
+  helpers: STATUS_HELPERS,
+  fragment: `
+      vec2 cuv = vUV * 2.0 - 1.0;
+      float r = length(cuv);
+      float angle = atan(cuv.x, cuv.y);
+      float rand1 = floor(vColor.r * 5.0);
+      float rand2 = mod(vExtra.x, 3.0);
+      float disc = max(1.0 - r, 0.0);
+      float branches = pow(sin(r * 3.14159265 * (3.0 + rand1)) * 0.5 + 0.5, 10.0) * disc;
+      float streaks = cos(angle * (5.0 + rand2)) + disc * disc * disc * disc * 4.0 + branches * 3.0;
+      streaks = step(1.0, streaks * vColor.a);
+      vec3 col = statusHue(mix(u_secondary_color, u_primary_color, 1.0 - vUV.y), (vColor.r - 0.5) * u_hue_variation);
+      outColor = col * u_emission;
+      outAlpha = statusEdge(streaks, u_edge_position, u_edge_hardness) * vExtra.w;`,
+};
+
 const VERTEX = `
 precision highp float;
 attribute vec3 position;
@@ -1489,6 +1599,8 @@ interface Proc {
   radialVel: [number, number];
   velLimit: number[][] | null;
   orbit: number[][] | null;
+  /** Turns a second about Y, each particle its own between the two, where the curve is Godot's three (a CurveXYZTexture: Status FX); else null and the curve is the speed. */
+  orbitVel: [number, number] | null;
   alignY: boolean;
   rotateY: boolean;
 }
@@ -1517,7 +1629,8 @@ function procOf(p: Json): Proc {
     radialCurve: curveOf(p.radial_accel_curve),
     radialVel: [num(p.radial_velocity_min, 0), num(p.radial_velocity_max, 0)],
     velLimit: curveOf(p.velocity_limit_curve),
-    orbit: curveOf(p.orbit_velocity_curve),
+    orbit: (p.orbit_velocity_curve as Json | undefined)?.type === 'CurveXYZTexture' ? curveOf((p.orbit_velocity_curve as Json).curve_y) : curveOf(p.orbit_velocity_curve),
+    orbitVel: (p.orbit_velocity_curve as Json | undefined)?.type === 'CurveXYZTexture' ? [num(p.orbit_velocity_min, 0), num(p.orbit_velocity_max, 0)] : null,
     alignY: bool(p.particle_flag_align_y, false),
     rotateY: bool(p.particle_flag_rotate_y, false),
   };
@@ -1533,6 +1646,7 @@ interface Particle {
   damp: number;
   radial: number;
   radialVel: number;
+  orbit: number;
   init: number[];
   id: number;
   nextSub: number;
@@ -1643,11 +1757,20 @@ class Emitter {
     this.mesh.thinInstanceCount = 0;
   }
 
+  /** Starts as if it had been running (VfxOptions.prefill): most of its particles out already, at every age. */
+  prefill = false;
+
   /** Emitting from `t` (seconds since the effect began) until `until`. */
   start(t: number, until: number): void {
     this.emitFrom = t;
     this.emitTo = until;
     this.spawned = 0;
+    if (this.prefill && !this.oneShot) {
+      const n = Math.floor(this.amount * 0.7);
+      for (let i = 0; i < n; i++) this.spawnAt(t - ((i + Math.random()) / n) * this.lifetime * 0.9, null);
+      // (The count is what the emission loop compares with the time passed: these are extra.)
+      this.spawned = 0;
+    }
   }
 
   /** Stop putting out particles at `t`; those out finish their lives. */
@@ -1690,6 +1813,7 @@ class Emitter {
       damp: rnd(pr.damp[0], pr.damp[1]),
       radial: rnd(pr.radial[0], pr.radial[1]),
       radialVel: rnd(pr.radialVel[0], pr.radialVel[1]),
+      orbit: pr.orbitVel ? rnd(pr.orbitVel[0], pr.orbitVel[1]) : 1,
       init: pr.initRamp ? sampleGradient(pr.initRamp, Math.random(), [1, 1, 1, 1]) : [1, 1, 1, 1],
       id: this.spawned++,
       nextSub: t,
@@ -1743,8 +1867,8 @@ class Emitter {
         const s = p.vel.length();
         if (s > 0) p.vel.scaleInPlace(Math.max(0, s - p.damp * dt) / s);
       }
-      if (pr.orbit) {
-        const w = sampleCurve(pr.orbit, x, 0) * Math.PI * 2 * dt;
+      if (pr.orbit && p.orbit) {
+        const w = sampleCurve(pr.orbit, x, 0) * p.orbit * Math.PI * 2 * dt;
         const c = Math.cos(w);
         const s = Math.sin(w);
         const px = p.pos.x;
@@ -1891,6 +2015,8 @@ interface Playing {
   loop: boolean;
   /** When a lasting effect was told to stop (its own time), or null. */
   stopAt: number | null;
+  /** A slowed play (VfxOptions.slow): gone as soon as it has faded out, where others let their particles finish. */
+  slowed: boolean;
   /** Strength now and wanted (lasting effects fade in and out over FADE seconds). */
   level: number;
   want: number;
@@ -1943,6 +2069,16 @@ export interface VfxOptions extends VfxPlace {
    * twinkles, and its particles are left out. Materials of its own (cached like a tint's).
    */
   steady?: boolean;
+  /**
+   * Slowed (Reduce flashing's calm for an effect that is all motion: an aura of particles): its shaders' clock and
+   * its particles run at this share of the pack's speed (0..1). Materials of its own (cached like a tint's).
+   */
+  slow?: number;
+  /**
+   * Lasting effects: its particles start as if it had been running a while (most of them out, at every age), not
+   * from none: an aura on a status that lasts three seconds is whole at once (its level still fades it in).
+   */
+  prefill?: boolean;
 }
 
 /** A lasting effect playing (GodotVfx.start): move it, fade it, stop it. */
@@ -1985,6 +2121,8 @@ export class GodotVfx {
   private readonly materials = new Map<string, ShaderMaterial>();
   /** Materials of steady plays (VfxOptions.steady): their clock is never advanced. */
   private readonly still = new Set<ShaderMaterial>();
+  /** Materials of slowed plays (VfxOptions.slow) and the share of the clock's speed they run at. */
+  private readonly slowed = new Map<ShaderMaterial, number>();
   private readonly meshes = new Map<string, Mesh>();
   private serial = 0;
   private sun = { dir: new Vector3(-0.4, -1, 0.3).normalize(), color: new Color3(1, 0.97, 0.9), ambient: new Color3(0.45, 0.45, 0.5) };
@@ -2078,7 +2216,8 @@ export class GodotVfx {
     const id = this.serial++;
     const wanted = (name: string) => (!opts.only || opts.only.includes(name)) && !opts.skip?.includes(name);
     // A tinted play draws with materials of its own (cached by tint).
-    const tk = `${opts.tint ? `#t${opts.tint}` : ''}${opts.steady ? '#still' : ''}`;
+    const slow = opts.slow !== undefined && opts.slow > 0 && opts.slow < 1 ? opts.slow : 1;
+    const tk = `${opts.tint ? `#t${opts.tint}` : ''}${opts.steady ? '#still' : ''}${slow < 1 ? `#slow${slow}` : ''}`;
     const byName = new Map(fx.nodes.map((n) => [String(n.name), n]));
     // A node's place in the effect: its own transform under its parents' (Godot nests them).
     const placeOf = (node: Json): Matrix => {
@@ -2106,6 +2245,7 @@ export class GodotVfx {
         const align = num(node.transform_align, 0) === 1 || num(node.transform_align, 0) === 3;
         const material = materialFor(this.scene, matSpec, fx.root, fx.set, align, `${pack}/${effect}/${name}${tk}`, this.materials, 1, opts.tint);
         if (!material) continue;
+        if (slow < 1) this.slowed.set(material, slow);
         const mesh = pieceOf(this.baseMesh(`${pack}/${effect}/${name}`, meshSpec), `gv_${name}_${id}`);
         mesh.metadata = EFFECT;
         mesh.setEnabled(false);
@@ -2116,6 +2256,7 @@ export class GodotVfx {
         const thin = loop && this.caps.density < 1 && num(node.amount, 8) > 4 ? { amount: Math.max(2, Math.round(num(node.amount, 8) * this.caps.density)) } : {};
         const e = new Emitter(mesh, { ...(subTargets.has(name) ? { ...node, __subTarget: true } : node), ...thin }, placeOf(node), material, target ? { emitter: target, freq } : undefined);
         const pass2 = num(node.draw_passes, 1) > 1 ? (node.draw_pass_2 as Json | undefined) : undefined;
+        if (opts.prefill && loop) e.prefill = true;
         if (pass2) {
           const m2 = pieceOf(this.baseMesh(`${pack}/${effect}/${name}#2`, pass2), `gv_${name}2_${id}`);
           m2.metadata = EFFECT;
@@ -2131,6 +2272,7 @@ export class GodotVfx {
         const material = materialFor(this.scene, matSpec, fx.root, fx.set, false, `${pack}/${effect}/${name}${tk}`, this.materials, 1, opts.tint);
         if (!material) continue;
         if (opts.steady) this.still.add(material);
+        else if (slow < 1) this.slowed.set(material, slow);
         const mesh = pieceOf(this.baseMesh(`${pack}/${effect}/${name}`, meshSpec), `gv_${name}_${id}`);
         mesh.metadata = EFFECT;
         mesh.material = material;
@@ -2154,7 +2296,7 @@ export class GodotVfx {
     }
     const level = loop ? 0 : 1;
     const gain = dim ? Math.max(0, Math.min(1, opts.gain ?? 1)) : 1;
-    const p: Playing = { t: 0, length: anim?.length ?? 1, root, emitters, props, tracks, started, speed: opts.speed ?? 1, loop, stopAt: null, level, want: 1, minor: !!opts.minor, gain, fadeIn: dim ? Math.max(0, opts.fadeIn ?? 0) : 0, age: 0, step: GAIN_STEPS, pieces };
+    const p: Playing = { t: 0, length: anim?.length ?? 1, root, emitters, props, tracks, started, speed: (opts.speed ?? 1) * slow, slowed: slow < 1, loop, stopAt: null, level, want: 1, minor: !!opts.minor, gain, fadeIn: dim ? Math.max(0, opts.fadeIn ?? 0) : 0, age: 0, step: GAIN_STEPS, pieces };
     if (dim) this.applyGain(p);
     this.playing.push(p);
     return p;
@@ -2187,7 +2329,7 @@ export class GodotVfx {
     const wall = Math.min(0.05, dtMs / 1000);
     const now = performance.now() / 1000;
     for (const m of this.materials.values()) {
-      m.setFloat('u_time', this.still.has(m) ? 0 : now % 1000);
+      m.setFloat('u_time', this.still.has(m) ? 0 : (now % 1000) * (this.slowed.get(m) ?? 1));
       m.setVector3('u_sunDir', this.sun.dir);
       m.setColor3('u_sunColor', this.sun.color);
       m.setColor3('u_ambient', this.sun.ambient);
@@ -2245,6 +2387,9 @@ export class GodotVfx {
         pr.mesh.setEnabled(showProps);
         pr.update(p.root);
       }
+      // A slowed play's particles live several times longer: once it has faded to nothing (its shaders draw none of
+      // it then) it would hold one of the few lasting places for seconds, unseen.
+      if (p.slowed && p.loop && p.stopAt !== null && p.level <= 0.001) alive = false;
       if (!alive) {
         for (const e of p.emitters.values()) e.dispose();
         for (const pr of p.props) pr.mesh.dispose();

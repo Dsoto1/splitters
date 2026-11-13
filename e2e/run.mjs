@@ -8712,7 +8712,7 @@ async function frameStrip(frames, every = 4, cols = 5) {
  * frame by frame at 30 frames a second of the page's own time (e2e/frameClock.mjs: however slowly this machine draws,
  * a recorded second is a second of play): an arc fight up close, the fence zapping bots in front of you, four
  * grenade blasts in front of the camera, a machine gun firing at a wall in the dark, heavy rain and a blizzard at
- * night, pickups' floor glows coming up, a portal's swirl and a jump pad's lift coming up, the alarm light. With the setting
+ * night, pickups' floor glows coming up, a portal's swirl and a jump pad's lift coming up, status auras coming up on three bots, the alarm light. With the setting
  * on each moment must stay under the thresholds; the same moments with it off are measured and reported as numbers
  * only. Frame strips (every 4th frame) and the numbers go to e2e-artifacts/ (flashing-<moment>-<on|off>.png,
  * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
@@ -8951,6 +8951,36 @@ async function flashingFlow(browser) {
         }),
       sees: (on, s) => s.portal >= 2 && s.pad >= 4 && (on ? s.steady === s.portal + s.pad : s.steady === 0),
       after: () => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality)),
+    },
+    // Status auras (Binbun's Stylized Status FX; game/statusFx.ts): three bots 3.5 m in front of you at night, one
+    // burning, one poisoned, one slowed by goo (the statuses held on for the recording). They are dropped as the
+    // recording starts, so it holds them coming up: with the setting on dimmer, slowed and eased in.
+    {
+      name: 'status',
+      label: 'three bots 3.5 m in front of you at night wearing status auras (burning, poisoned, slowed by goo)',
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 1, 11.5]),
+      bots: [[-1.5, 0, 11.3], [0, 0, 11.8], [1.5, 0, 11.3]],
+      // (As High graphics draws them: on Low the auras dropped as the recording starts would hold its four places.)
+      before: () =>
+        page.evaluate(() => (window.__cs.view.vfx.quality = 'high')).then(() => sim(page, (m) => {
+          const bots = m.combatants().filter((c) => c.bot);
+          if (bots[0]) bots[0].burnTicks = 60 * 30;
+          if (bots[1]) bots[1].poisonTicks = 60 * 30;
+          if (bots[2]) bots[2].slowTicks = 60 * 30;
+        })),
+      at: { 2: () => page.evaluate(() => window.__cs.view.lasting.dispose()) },
+      seen: () =>
+        page.evaluate(() => {
+          const parts = window.__cs.view.scene.meshes.filter((m) => /^gv_(Aura|Particles|Mesh)_/.test(m.name) && m.isEnabled() && /status_fx\//.test(m.material?.name ?? ''));
+          return { auras: parts.filter((m) => /^gv_Aura_/.test(m.name)).length, parts: parts.length, slowed: parts.filter((m) => /#slow/.test(m.material?.name ?? '')).length };
+        }),
+      sees: (on, s) => s.auras >= 3 && s.parts >= 7 && (on ? s.slowed === s.parts : s.slowed === 0),
+      after: () =>
+        sim(page, (m) => {
+          for (const c of m.combatants()) c.burnTicks = c.poisonTicks = c.slowTicks = 0;
+        }).then(() => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality))),
     },
     {
       name: 'alarm',
