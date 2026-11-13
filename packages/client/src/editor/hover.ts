@@ -234,6 +234,8 @@ export class Hover {
     const lines: string[] = [];
     /** Lines in red (why it can't be placed) or amber (a warning), by index in `lines`. */
     const marks = new Map<number, 'bad' | 'warn' | 'note'>();
+    /** The path a click with Select would open (lit while the pointer is on it). */
+    let previewPath: string | null = null;
     let title = '';
     let tone = '';
     const themeName = coreThemes.get(this.app.doc.classicStructure.theme)?.displayName ?? this.app.doc.classicStructure.theme;
@@ -293,8 +295,18 @@ export class Hover {
           }
           lines.push(this.app.tool.kind === 'erase' ? 'Click to erase' : 'Click to select');
         }
+        // Select over a road, trail, track or route with nothing else under the pointer: a click opens it in Paths.
+        const path = !hit && this.app.tool.kind === 'select' && !this.app.input.marquee ? this.app.paths.pathUnder(this.app.hoverPoint) : null;
+        const what = path ? this.app.paths.describe(path) : null;
+        previewPath = what ? path : null;
+        if (what) {
+          title = what.title;
+          tone = 'pick';
+          lines.push(...what.lines, 'Click to edit its points and length');
+        }
       }
     }
+    this.app.paths.preview(previewPath);
     tip.hidden = !title;
     if (!title || !at) return;
     tip.className = `tone-${tone}`;

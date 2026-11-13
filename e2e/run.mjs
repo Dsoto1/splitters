@@ -1068,6 +1068,49 @@ async function editoruxFlow(browser) {
   check(JSON.stringify(reversed) === JSON.stringify([...unreversed].reverse()), 'Reverse direction runs the path the other way');
   await settle(); // the edit's new meshes draw from the next frame
   await shot('paths');
+  // Select picks a path that is already there: over its ribbon the path lights up and the card names it, and a click
+  // opens it in the Paths tool.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'select' }));
+  const laid = (await doc()).paths.find((p) => p.id === road.id);
+  const onRoad = await at(laid.points[1][0], laid.points[1][1], laid.points[1][2]);
+  await page.mouse.move(onRoad.x, onRoad.y);
+  const lit = await page.waitForFunction((id) => /^Path \d+/.test(document.querySelector('#ed-tip b')?.textContent ?? '') && !!window.__editor.view.scene.getMeshByName(`pathPoly_${id}`), road.id, { timeout: T(5000) }).then(() => true, () => false);
+  check(lit && (await page.evaluate(() => /Click to edit/.test(document.getElementById('ed-tip').textContent) && window.__editor.tool.kind === 'select')), `with Select, a path under the pointer lights up and its card says a click edits it (${await page.evaluate(() => document.getElementById('ed-tip').textContent)})`);
+  await shot('path-select-hover');
+  await page.mouse.click(onRoad.x, onRoad.y);
+  const opened = await page.waitForFunction((id) => window.__editor.tool.kind === 'path' && window.__editor.paths.current === id && !!document.getElementById('ed-path-length'), road.id, { timeout: T(5000) }).then(() => true, () => false);
+  check(opened, 'a click on the path with Select opens it in the Paths tool, its length in the pane');
+  // Its length by number: longer runs on from the last point (one more point), shorter cuts it back; one undo step each.
+  const pathNow = () => page.evaluate((id) => {
+    const p = window.__editor.doc.paths?.find((q) => q.id === id);
+    return p && { points: p.points, length: Number(document.getElementById('ed-path-length')?.value) };
+  }, road.id);
+  const setLength = async (v) => {
+    const rev = await page.evaluate(() => window.__editor.history.revision);
+    await page.fill('#ed-path-length', String(v));
+    await page.dispatchEvent('#ed-path-length', 'change');
+    await page.waitForFunction(([r, want]) => window.__editor.history.revision !== r && Math.abs(Number(document.getElementById('ed-path-length')?.value) - want) < 0.6, [rev, v], { timeout: T(5000) }).catch(() => {});
+    return pathNow();
+  };
+  const was = await pathNow();
+  const longer = await setLength(Math.round(was.length) + 20);
+  check(longer.points.length === was.points.length + 1 && Math.abs(longer.length - (Math.round(was.length) + 20)) < 0.6 && JSON.stringify(longer.points.slice(0, was.points.length)) === JSON.stringify(was.points), `a longer length runs the path on from its end with one more point (${was.length} → ${longer.length} m, ${longer.points.length} points)`);
+  await settle();
+  await shot('path-length');
+  const shorter = await setLength(8);
+  check(Math.abs(shorter.length - 8) < 0.6 && shorter.points.length < longer.points.length && JSON.stringify(shorter.points[0]) === JSON.stringify(was.points[0]), `a shorter length cuts the path back from its end (${shorter.length} m, ${shorter.points.length} points)`);
+  await page.keyboard.press('Control+z');
+  await page.waitForFunction((n) => window.__editor.doc.paths?.at(-1)?.points.length === n, longer.points.length, { timeout: T(5000) }).catch(() => {});
+  await page.keyboard.press('Control+z');
+  await page.waitForFunction((n) => window.__editor.doc.paths?.at(-1)?.points.length === n, was.points.length, { timeout: T(5000) }).catch(() => {});
+  check(JSON.stringify((await pathNow()).points) === JSON.stringify(was.points), 'each length change is one undo step');
+  // Points at the start: the next click goes in before the first point.
+  await page.click('#ed-path-extend-start');
+  await clickAt(was.points[0][0] + 3, 0, was.points[0][2] + 6);
+  const led = await pathNow();
+  check(led.points.length === was.points.length + 1 && JSON.stringify(led.points.slice(1)) === JSON.stringify(was.points) && Math.hypot(led.points[0][0] - was.points[0][0] - 3, led.points[0][2] - was.points[0][2] - 6) < 1, `Add points at the start puts the next click before the first point (${JSON.stringify(led.points[0])})`);
+  await page.keyboard.press('Control+z');
+  await page.waitForFunction((n) => window.__editor.doc.paths?.at(-1)?.points.length === n, was.points.length, { timeout: T(5000) }).catch(() => {});
   // Paint from far out: the ground under the pointer, not the invisible wall round the map.
   await page.evaluate(() => window.__editor.setTool({ kind: 'paint' }));
   await page.evaluate(() => {

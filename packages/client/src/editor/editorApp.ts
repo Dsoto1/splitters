@@ -671,7 +671,7 @@ export class EditorApp {
     $('ed-tb-place-what').textContent = this.lastPlace ? this.toolName(this.lastPlace) : '';
     const hints: Record<Tool['kind'], [string, string]> = {
       // One line per tool, in the same order: left-click · right-click (takes back what the tool does) · R · modifiers.
-      select: ['Select', 'Click picks · right-click: menu · drag moves · R turns (Shift+R a little), or drag the ring round it · Shift+click adds · Alt+click one piece of a build · Del deletes'],
+      select: ['Select', 'Click picks (a road or path opens in Paths) · right-click: menu · drag moves · R turns (Shift+R a little), or drag the ring round it · Shift+click adds · Alt+click one piece of a build · Del deletes'],
       erase: ['Erase', 'Click or drag deletes what is outlined in red (a whole moving build; Alt: one piece) · Ctrl+Z brings it back'],
       tile: ['Place', 'Click places the green piece · right-click removes a tile · R turns it 90° · PgUp/PgDn level'],
       setpiece: ['Place', 'Click places the set piece where it shows green (red says why not) · right-click removes a set piece · R turns it 90° · M mirrors it · PgUp/PgDn level'],
@@ -724,6 +724,16 @@ export class EditorApp {
       default:
         return '';
     }
+  }
+
+  /** Open a path (a road, trail, track or route) in the Paths tool: what a click on it with Select does. */
+  editPath(id: string): void {
+    const what = this.paths.describe(id);
+    if (!what) return;
+    this.setTool({ kind: 'path' });
+    this.paths.edit(id);
+    this.showPane('paths');
+    this.toast(`${what.title} · drag a point to move it, click to add one at the end, Shift-click the path to add one in it · Esc: back to Select`);
   }
 
   /** Select: anything in a group brings its whole group (groups.ts), unless `single` (Alt-click: just that one). */

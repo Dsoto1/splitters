@@ -240,6 +240,10 @@ export class EditorInput {
     this.drawMarquee();
     if (!m.moved) {
       if (!m.add) this.app.setSelection(emptySelection());
+      // A plain click on a road, trail, track or route with nothing else under the pointer: that path, opened in
+      // the Paths tool (its points to drag, add and remove; its length and look in the pane).
+      const path = m.add ? null : this.app.paths.pathUnder(this.app.hoverPoint);
+      if (path) this.app.editPath(path);
       return;
     }
     const [x0, x1] = [Math.min(m.x0, m.x1), Math.max(m.x0, m.x1)];
