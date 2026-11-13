@@ -13,6 +13,7 @@
 // So movement, shots and bots are the same in a concrete tunnel and, later, a brick sewer of the same shape.
 
 const SIDES = ['N', 'E', 'S', 'W'];
+const QUARTER = Math.round((Math.PI / 4) * 1000) / 1000;
 const r3 = (v) => Math.round(v * 1000) / 1000;
 
 /** A box [x0, y0, z0, x1, y1, z1] turned `turns` quarter turns clockwise seen from above (N to E), as tiles turn. */
@@ -82,6 +83,8 @@ function moduleParts(profile, family, shape) {
     const p = trim.pipe;
     const z0 = arms.has('S') ? -E : mouth === 'S' ? shape.headwall.at + shape.headwall.t / 2 : -w;
     draw([-w + 0.05, p.y - p.r, z0, -w + 0.05 + 2 * p.r, p.y + p.r, E], p.material, p.tint);
+    // The same bar turned an eighth about its run: an eight-sided pipe.
+    trims.push({ box: [-w + 0.05, p.y - p.r, z0, -w + 0.05 + 2 * p.r, p.y + p.r, E].map(r3), kind: 'trim', roll: QUARTER, ...surf(p.material, p.tint) });
     for (let z = Math.ceil(z0) + 0.5; z < E; z += 2) draw([-w, p.y - p.r - 0.05, z - 0.05, -w + 0.07 + 2 * p.r, p.y + p.r + 0.05, z + 0.05], m.trim);
   }
 
@@ -174,6 +177,7 @@ function moduleParts(profile, family, shape) {
     if (trim.pipe) {
       const p = trim.pipe;
       draw([-w + 0.05, p.y - p.r, from, -w + 0.05 + 2 * p.r, p.y + p.r, E], p.material, p.tint);
+      trims.push({ box: [-w + 0.05, p.y - p.r, from, -w + 0.05 + 2 * p.r, p.y + p.r, E].map(r3), kind: 'trim', roll: QUARTER, ...surf(p.material, p.tint) });
     }
     if (trim.light) {
       const l = trim.light;
@@ -189,6 +193,9 @@ function moduleParts(profile, family, shape) {
 /** Every tunnel tile: one for each family and shape, as content/tiles/core.json's tiles (with `notes`). */
 export function tunnelTiles(data) {
   const out = [];
+  // The first family is the shapes' own (the tile MapMaker's palette shows); the others are reached by a placed
+  // piece's `family` (map format v37), or by their own tile ids.
+  const first = Object.keys(data.families ?? {})[0];
   for (const [fid, family] of Object.entries(data.families ?? {})) {
     for (const shape of data.shapes ?? []) {
       const profile = data.profiles?.[shape.profile ?? 'S'];
@@ -204,6 +211,7 @@ export function tunnelTiles(data) {
         floors: [],
         ports,
         edgeDefault: 'open',
+        familyOf: { base: `core.tunnel_${first}_${shape.id}`, family: fid, label: family.label.replace(/ Tunnel$/, '') },
         extraFloors: [parts.floor],
         solids: parts.solids,
         bore: parts.bore,

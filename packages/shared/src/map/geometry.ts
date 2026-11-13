@@ -729,7 +729,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     boxes.push(...packFacadeBoxes(map, cells));
     // Trim on curved pieces (it never collides).
     for (const placement of map.classicStructure.tiles) {
-      const def = catalog.get(placement.tile);
+      const def = catalog.drawn(placement);
       for (const solid of def?.solids ?? []) {
         if (solid.kind === 'trim') boxes.push(rotateLocalBox(solid, placement.rotation, placement.x * cellSize, placement.z * levelHeight, placement.y * cellSize, placement.id, 'trim'));
       }
@@ -749,7 +749,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
   if (hasBorder(map)) boxes.push(...borderBoxes(map, borderFloor(map, boxes)));
   boxes.push(...electricFenceBoxes(map));
   for (const placement of map.classicStructure.tiles) {
-    const def = catalog.get(placement.tile);
+    const def = catalog.drawn(placement);
     if (!def) continue;
     const cx = placement.x * cellSize;
     const cz = placement.y * cellSize;

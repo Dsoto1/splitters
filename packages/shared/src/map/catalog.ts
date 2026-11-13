@@ -87,6 +87,12 @@ export interface TileDefinition {
    */
   optionOf?: { tile: string; option: TileOptionId };
   /**
+   * The tunnel kit (content/tiles/tunnels.json): this tile is the shape `base` (the tile MapMaker's palette shows,
+   * itself in the kit's first family) in the material family `family`. Same cells, ports, collision and bore as the
+   * base: only materials and drawn trim differ. A placed piece's `family` (map format v37) picks among them.
+   */
+  familyOf?: { base: string; family: string; label: string };
+  /**
    * A piece buried in terrain (a tunnel, its portal; map/groundBore.ts): the ground's surface inside each `cut` box is
    * taken out (the hill above stays on top), and over each `open` box (a mouth; its lower y is the floor) the ground
    * comes down to the floor, with banks beyond, and on `out` (the side the mouth faces) to daylight. Boxes are [x0, y0, z0, x1, y1, z1] in the tile's frame. The piece's
@@ -664,6 +670,33 @@ export class TileCatalog {
 
   all(): TileDefinition[] {
     return [...this.byId.values()];
+  }
+
+  private families: Map<string, TileDefinition[]> | null = null;
+
+  /** The material families a tile comes in (the tunnel kit: the tiles sharing its shape), its own shape's first family first; empty for a tile with none. */
+  familiesOf(tile: string): TileDefinition[] {
+    if (!this.families) {
+      this.families = new Map();
+      for (const d of this.byId.values()) {
+        if (!d.familyOf) continue;
+        const list = this.families.get(d.familyOf.base);
+        if (list) list.push(d);
+        else this.families.set(d.familyOf.base, [d]);
+      }
+    }
+    const base = this.byId.get(tile)?.familyOf?.base;
+    return base ? (this.families.get(base) ?? []) : [];
+  }
+
+  /**
+   * The tile a placement is drawn as: its own, or that shape in the placement's `family` (map format v37). The two
+   * have the same cells, ports, collision and bore, so everything but the drawing can go by `get(placement.tile)`.
+   */
+  drawn(placement: { tile: string; family?: string | undefined }): TileDefinition | undefined {
+    const own = this.byId.get(placement.tile);
+    if (!placement.family || !own?.familyOf || own.familyOf.family === placement.family) return own;
+    return this.familiesOf(placement.tile).find((d) => d.familyOf!.family === placement.family) ?? own;
   }
 }
 

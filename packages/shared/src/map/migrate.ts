@@ -90,6 +90,9 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v35 -> v36: optional `metadata.destruction` (every solid prop can break) and a prop's own `health` and
   // `unbreakable`. Absent = as before: v35 data is valid as is.
   [35, (doc) => ({ ...doc })],
+  // v36 -> v37: a placed tile's optional `family` (the tunnel kit's material families: the same shape drawn in
+  // another family's materials and trim). Absent = the tile's own, as before: v36 data is valid as is.
+  [36, (doc) => ({ ...doc })],
 ]);
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */

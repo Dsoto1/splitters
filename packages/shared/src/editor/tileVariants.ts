@@ -26,8 +26,11 @@ export interface TileOptionState {
   onTile: string;
 }
 
-/** A tile that is another tile with an option on (kept out of the palette). */
-export const isTileOptionTwin = (def: TileDefinition | undefined): boolean => !!def?.optionOf;
+/**
+ * A tile that is another tile with an option on, or the same shape in another material family (the tunnel kit: a
+ * placed piece's `family` reaches it): kept out of the palette.
+ */
+export const isTileOptionTwin = (def: TileDefinition | undefined): boolean => !!def?.optionOf || (!!def?.familyOf && def.familyOf.base !== def.id);
 
 /** The options a tile has (as the plain tile or as one with an option on). */
 export function tileOptionsOf(tile: string, catalog: TileCatalog = coreCatalog): TileOptionState[] {

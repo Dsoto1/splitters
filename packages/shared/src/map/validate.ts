@@ -163,6 +163,29 @@ function buriedMouthIssues(map: MapDocument, cells: ReturnType<typeof buildOccup
 }
 
 /**
+ * Liquid in a buried passage: a liquid is a box and knows nothing of walls, so one that reaches into a bore above its
+ * floor floods the tunnel (it is drawn there and waded in). Meant now and then (a flooded sewer); a warning, since a
+ * pond dug over or beside a tunnel does it by accident. The fix is to keep the liquid's box out of the bore.
+ */
+function floodedBoreIssues(map: MapDocument, catalog: TileCatalog): ValidationIssue[] {
+  const bores = mapGroundBores(map, catalog);
+  if (!bores.cuts.length) return [];
+  const issues: ValidationIssue[] = [];
+  for (const e of map.entities) {
+    if (e.kind !== 'water') continue;
+    const [x, y, z] = e.position;
+    const [w, h, d] = e.size;
+    const top = y + h;
+    // (A cut's lower y is its floor slab's underside, half a metre under the floor.)
+    const hit = bores.cuts.find((c) => x - w / 2 < c.max[0] && x + w / 2 > c.min[0] && z - d / 2 < c.max[2] && z + d / 2 > c.min[2] && top > c.min[1] + 0.5 + 0.05 && y < Math.min(c.max[1], c.min[1] + 4.25));
+    if (hit) {
+      issues.push({ severity: 'warning', code: 'tunnel.flooded', message: `the ${e.liquid} ${e.id} reaches into a buried tunnel ${(top - hit.min[1] - 0.5).toFixed(1)} m over its floor: the passage is flooded there (keep the liquid's box out of the tunnel if that isn't meant)`, targetId: e.id });
+    }
+  }
+  return issues;
+}
+
+/**
  * MapMaker's groups (v31) name the map's own things, each thing in one group at most: anything else is a warning
  * (MapMaker keeps them tidy; play ignores groups).
  */
@@ -310,6 +333,12 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   }
 
   issues.push(...buriedMouthIssues(map, cells, catalog));
+  issues.push(...floodedBoreIssues(map, catalog));
+  for (const t of map.classicStructure.tiles) {
+    if (t.family && !catalog.familiesOf(t.tile).some((d) => d.familyOf!.family === t.family)) {
+      issues.push({ severity: 'warning', code: 'tile.family_unknown', message: `tile ${t.id} (${catalog.get(t.tile)?.displayName ?? t.tile}) doesn't come in the "${t.family}" family: it is drawn as its own`, targetId: t.id });
+    }
+  }
 
   const pickups = map.entities.filter((e) => e.kind === 'pickup');
   for (const p of pickups) {
