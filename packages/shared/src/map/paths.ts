@@ -151,21 +151,41 @@ export function pathsExtent(paths: readonly MapPath[] | null | undefined): { min
 /** Height step (m) between overlapping drawn paths, one per draw rank (pathDrawRanks). */
 export const PATH_RANK_LIFT = 0.03;
 
+/** Width (m) from which a drawn path counts as a road (pathIsRoad): a car lane and more; asphalt lines start here too. */
+export const ROAD_MIN_WIDTH = 5;
+
+/**
+ * Is this drawn path a road rather than a footpath or trail: the race track, an asphalt road, or anything
+ * ROAD_MIN_WIDTH wide or more. Where a path meets a road, the road is drawn on top (pathDrawLevels), so a
+ * footpath running into a road ends under its surface and the join looks seamless (owner, 2026-11-13).
+ */
+export const pathIsRoad = (p: MapPath): boolean => pathUses(p, 'race') || p.style === 'asphalt' || p.width >= ROAD_MIN_WIDTH;
+
+/** How far a drawn path's surface stands above the ground: a boardwalk a little proud of it, everything else just on it. */
+export const pathBaseLift = (p: MapPath): number => (p.style === 'planks' ? 0.12 : 0.04);
+
 /**
  * Which drawn path goes on top where drawn paths overlap (a concrete apron laid
- * over a haul road, a spur joining a road): each drawn path's draw rank, by id.
- * A path that overlaps none drawn before it is rank 0; otherwise one above the
- * highest of those it overlaps, so the later path in the map's list is drawn
- * over the earlier ones. Ribbons with the same rank lie at the same height on
- * the same ground, and where they cross the depth buffer picks a winner pixel
- * by pixel: hard, jagged patches of one through the other. The renderer lifts
- * each rank a little (PATH_RANK_LIFT) and pulls it toward the camera.
+ * over a haul road, a trail joining a road): each drawn path's draw rank and
+ * its surface's lift above the ground, by id. Roads (pathIsRoad) always go over
+ * the footpaths and trails they overlap, whatever the map's list order; among
+ * roads, and among paths, the later one in the list goes over the earlier ones.
+ * A path that overlaps none placed before it is rank 0 at its own lift
+ * (pathBaseLift); otherwise one rank above the highest of those it overlaps,
+ * and at least PATH_RANK_LIFT higher than each of them (so a road stays over a
+ * boardwalk that runs into it). Ribbons with the same rank lie at the same
+ * height on the same ground, and where they cross the depth buffer picks a
+ * winner pixel by pixel: hard, jagged patches of one through the other. The
+ * renderer lifts each by its `lift` and pulls each rank toward the camera.
+ * Worked out once when the paths are built; nothing per frame.
  */
-export function pathDrawRanks(paths: readonly MapPath[] | null | undefined): Map<string, number> {
-  const ranks = new Map<string, number>();
+export function pathDrawLevels(paths: readonly MapPath[] | null | undefined): Map<string, { rank: number; lift: number }> {
+  const levels = new Map<string, { rank: number; lift: number }>();
+  const shown = (paths ?? []).filter((p) => p.points.length >= 2 && pathDrawn(p));
+  // Footpaths and trails first, then roads over them; each group in the map's order.
+  const order = [...shown.filter((p) => !pathIsRoad(p)), ...shown.filter(pathIsRoad)];
   const drawn: { id: string; half: number; pts: { x: number; z: number }[]; box: [number, number, number, number] }[] = [];
-  for (const p of paths ?? []) {
-    if (p.points.length < 2 || !pathDrawn(p)) continue;
+  for (const p of order) {
     const half = p.width / 2;
     const pts = pathGeometry(p).samples.map((s) => ({ x: s.x, z: s.z }));
     const box: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
@@ -176,14 +196,23 @@ export function pathDrawRanks(paths: readonly MapPath[] | null | undefined): Map
       box[3] = Math.max(box[3], q.z + half);
     }
     let rank = 0;
+    let lift = pathBaseLift(p);
     for (const o of drawn) {
       if (box[0] > o.box[2] || o.box[0] > box[2] || box[1] > o.box[3] || o.box[1] > box[3]) continue;
       // Centre-line samples are 2 m apart: a metre of slack so ribbons that just touch count.
       const reach = (half + o.half + 1) ** 2;
-      if (pts.some((a) => o.pts.some((b) => (a.x - b.x) ** 2 + (a.z - b.z) ** 2 < reach))) rank = Math.max(rank, ranks.get(o.id)! + 1);
+      if (!pts.some((a) => o.pts.some((b) => (a.x - b.x) ** 2 + (a.z - b.z) ** 2 < reach))) continue;
+      const under = levels.get(o.id)!;
+      rank = Math.max(rank, under.rank + 1);
+      lift = Math.max(lift, under.lift + PATH_RANK_LIFT);
     }
-    ranks.set(p.id, rank);
+    levels.set(p.id, { rank, lift });
     drawn.push({ id: p.id, half, pts, box });
   }
-  return ranks;
+  return levels;
+}
+
+/** Each drawn path's draw rank, by id (pathDrawLevels). */
+export function pathDrawRanks(paths: readonly MapPath[] | null | undefined): Map<string, number> {
+  return new Map([...pathDrawLevels(paths)].map(([id, l]) => [id, l.rank]));
 }
