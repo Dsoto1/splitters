@@ -1,6 +1,6 @@
 // Everything MapMaker's test worker runs (mapTestWorker.ts loads it with a dynamic import, for the reason
 // game/simWorkerCore.ts gives: Safari gives a chunk imported from a module worker's entry file a second Rapier).
-import { initPhysics, type MapDocument } from '@tiletrigger/shared';
+import { initPhysics, type MapDocument, type ValidationIssue } from '@tiletrigger/shared';
 import type { BotTestOptions, BotTestResult, ExposureResult, validateMapNavigation } from '@tiletrigger/shared/match';
 
 /** The navigation check's answer (MapChecks: the issues, and the bots' own spots when asked for). */
@@ -20,6 +20,8 @@ export type FromMapTest =
   | { k: 'bots'; result: BotTestResult }
   | { k: 'exposure'; result: ExposureResult }
   | { k: 'nav'; token: number; result: NavCheck }
+  /** The jump pads flown, after `nav` (the check is over with this, or with `navFailed`). */
+  | { k: 'pads'; token: number; issues: ValidationIssue[] }
   | { k: 'navFailed'; token: number; error: string }
   | { k: 'failed'; error: string };
 
@@ -37,7 +39,17 @@ export async function runMapTest(m: ToMapTest, post: (m: FromMapTest) => void): 
       post({ k: 'nav', token: m.token, result: mod.validateMapNavigation(m.map, false, { computed: m.computed }) });
     } catch (e) {
       post({ k: 'navFailed', token: m.token, error: (e as Error).message });
+      return;
     }
+    // Then every jump pad flown by a player's body (shared sim/padFlight.ts: the `pad.flight` warning), in a match
+    // of the map: a second answer, so the navigation issues don't wait for it. It ends the check.
+    let issues: ValidationIssue[] = [];
+    try {
+      issues = mod.padFlightIssues(mod.flyPads(m.map));
+    } catch {
+      // A map no match can be made of: the navigation check has said what it could.
+    }
+    post({ k: 'pads', token: m.token, issues });
     return;
   }
   if (m.k === 'exposure') {

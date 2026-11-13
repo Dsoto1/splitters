@@ -1,5 +1,5 @@
-import { buildMapGeometry, type MapDocument } from '@tiletrigger/shared';
-import { drawTerrainPlan, fillBox } from '../frontend/mapPlan.ts';
+import { buildMapGeometry, type MapDocument, type WorldBox } from '@tiletrigger/shared';
+import { buriedTiles, drawBuriedPassages, drawTerrainPlan, fillBox } from '../frontend/mapPlan.ts';
 
 /** Pixels per metre on the minimap's backing image. */
 const PX_PER_M = 5;
@@ -60,12 +60,16 @@ export class Minimap {
       drawTerrainPlan(g, map.terrain, px, py, PX_PER_M);
       g.globalAlpha = 1;
     }
+    // (Buried tunnels: dashed passages over the ground, not floors and walls: frontend/mapPlan.ts.)
+    const buried = buriedTiles(map);
+    const seen = (b: WorldBox) => !buried.has(b.sourceId);
     g.fillStyle = 'rgba(42, 58, 85, 0.95)';
-    for (const b of boxes) if (b.kind === 'floor' && b.max[1] < 1) fillBox(g, b, px, py);
+    for (const b of boxes) if (b.kind === 'floor' && b.max[1] < 1 && seen(b)) fillBox(g, b, px, py);
     g.fillStyle = 'rgba(138, 106, 63, 0.9)';
-    for (const b of boxes) if ((b.kind === 'solid' || b.kind === 'prop') && b.min[1] < 1) fillBox(g, b, px, py);
+    for (const b of boxes) if ((b.kind === 'solid' || b.kind === 'prop') && b.min[1] < 1 && seen(b)) fillBox(g, b, px, py);
     g.fillStyle = '#9fb6d8';
-    for (const b of boxes) if (b.kind === 'wall' && b.min[1] < 1) fillBox(g, b, px, py);
+    for (const b of boxes) if (b.kind === 'wall' && b.min[1] < 1 && seen(b)) fillBox(g, b, px, py);
+    drawBuriedPassages(g, map, px, py, Math.max(1, PX_PER_M * 0.25));
     this.plan = plan;
     this.planImage?.close();
     this.planImage = null;

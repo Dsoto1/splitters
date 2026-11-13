@@ -593,6 +593,15 @@ MapMaker's validator run it on the navmesh as the match builds it, `sim/mapNav.t
   (M4 Outpost's uplink dais, a 0.75 m step 1.5 m from the gate's wall).
 - **Severity**: errors on the official maps (maps/: validate-map and the all-maps test fail), warnings for creators
   in MapMaker. Findings left on official maps for the owner are listed with why in `nav/auditKnown.ts` (warnings).
+- **Jump pads flown by a body** (`pad.flight`, `sim/padFlight.ts`; `pnpm validate-map` and MapMaker's check list,
+  after the navigation check, in the same worker): a pad's predicted landing, the one bots are told, is a thin ray
+  along its arc, so a player is flown off every pad in a match of the map (standing on it, no input, until back on
+  the ground) and a pad warns, by its id and position, when the body comes down more than 2.5 m from the prediction
+  (or 1 m above or below it), dies on the way or never comes down: a roof, beam or ledge over the arc that the ray
+  passes (Iron Maw's first pit pad under Deep Drift's roof: "a player lands 14.2 m from its predicted landing").
+  A warning on every map, official ones too; `packages/shared/test/pads.test.ts` flies the same flights over maps/
+  and fails on a miss. One match flies a map's pads in turn; a flight that misses is flown again in a match of its
+  own, from its first tick, before it counts.
 - **Pictures** (`pnpm nav-audit --pictures=dir`; the nightly scorecard's artifact, with where searches failed): the
   navmesh top-down, the main area shaded by height, one-way areas teal, traps red, islands (patches nobody gets to:
   roofs, prop tops) purple, links yellow, drop links orange, spawn points green, objectives yellow, pickups cyan,
@@ -1308,6 +1317,12 @@ stuck and where routes failed count exactly what the scorecard counts.
   touches the bots, navigation, the sim or its modes, the scorecard itself or one of the maps the check plays
   (`e2e/flowMap.mjs` `BOT_PATHS`, `BOT_CHECK_MAPS`; the plan's `bots` output, so `green_base` and the docs-only skip
   apply to it as to the rest), and the release waits on it.
+- **A changed map's pace** (`pnpm bot-report <map> --base=origin/main`, `tools/paceCompare.ts`): the map as it is
+  here and as it was at the ref, a short match of each (the same seeds, the map's first mode or `--mode`, 120 s
+  unless `--seconds` says), then kills a minute and the time from a spawn to the first fight, before → after. A
+  `WARNING map.pace` line when kills a minute fall below 60% of before, or the first fight comes half as long again
+  and at least 5 s later. It never fails (a warning for whoever changed the map, not a gate) and nothing runs it by
+  itself: run it by hand on a map you changed.
 - **Nightly** (and from Run workflow) CI plays the full suite (`--suite=all`: 199 map and mode pairs, two seeds of
   three minutes, 14 shards of about 28 matches) and the `bots-scorecard` job holds it to `limits`
   (`--judge=a.json+b.json…`), with the report (every match's rows, the scorecard, `pnpm nav-audit`'s output for every
