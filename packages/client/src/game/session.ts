@@ -2443,6 +2443,8 @@ export class GameSession {
       if (e.kind === 'mount') {
         const def = getMountDef(e.model);
         if (def) models.add(def.model);
+        // Its separate tires too (MountDef.wheels: the off-road tire), so a vehicle never stands on bare hubs at the start.
+        if (def?.wheels) models.add(def.wheels.model);
       }
       // The plane or dropship flying a drop route (riders start in it).
       if (e.kind === 'airplane') models.add(airCraftDef(e.craft).model);
