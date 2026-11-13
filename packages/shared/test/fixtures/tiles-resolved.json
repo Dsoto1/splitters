@@ -104,12 +104,24 @@
   "core.tunnel_concrete_cross",
   "core.tunnel_concrete_end",
   "core.tunnel_concrete_portal",
+  "core.tunnel_concrete_stairs",
+  "core.tunnel_concrete_slope",
+  "core.tunnel_concrete_descent",
+  "core.tunnel_concrete_shaft",
+  "core.tunnel_concrete_riser",
+  "core.tunnel_concrete_chamber",
   "core.tunnel_brick_straight",
   "core.tunnel_brick_curve",
   "core.tunnel_brick_t",
   "core.tunnel_brick_cross",
   "core.tunnel_brick_end",
   "core.tunnel_brick_portal",
+  "core.tunnel_brick_stairs",
+  "core.tunnel_brick_slope",
+  "core.tunnel_brick_descent",
+  "core.tunnel_brick_shaft",
+  "core.tunnel_brick_riser",
+  "core.tunnel_brick_chamber",
   "military.barracks",
   "military.guard_tower",
   "military.pillbox",
@@ -39010,6 +39022,3697 @@
    }
   },
   {
+   "id": "core.tunnel_concrete_stairs",
+   "category": "Tunnels",
+   "displayName": "Concrete Tunnel Stairs",
+   "blurb": "The passage climbs one level on steps, from the south (low) to the north (a level up), buried: the soffit and the earth over it climb with the floor. Cast concrete with panel joints, a floor drain and a strip light at the crown (utility corridors, culverts, bunkers).",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "N",
+     "level": 1
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_stairs",
+    "family": "concrete",
+    "label": "Concrete"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -1.8,
+      0,
+      -4
+     ],
+     "max": [
+      1.8,
+      0.25,
+      -3.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -3.5
+     ],
+     "max": [
+      1.8,
+      0.5,
+      -3
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -3
+     ],
+     "max": [
+      1.8,
+      0.75,
+      -2.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -2.5
+     ],
+     "max": [
+      1.8,
+      1,
+      -2
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -2
+     ],
+     "max": [
+      1.8,
+      1.25,
+      -1.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1.5
+     ],
+     "max": [
+      1.8,
+      1.5,
+      -1
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1
+     ],
+     "max": [
+      1.8,
+      1.75,
+      -0.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -0.5
+     ],
+     "max": [
+      1.8,
+      2,
+      0
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      0
+     ],
+     "max": [
+      1.8,
+      2.25,
+      0.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      0.5
+     ],
+     "max": [
+      1.8,
+      2.5,
+      1
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1
+     ],
+     "max": [
+      1.8,
+      2.75,
+      1.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.5
+     ],
+     "max": [
+      1.8,
+      3,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      2
+     ],
+     "max": [
+      1.8,
+      3.25,
+      2.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      2.5
+     ],
+     "max": [
+      1.8,
+      3.5,
+      3
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      3
+     ],
+     "max": [
+      1.8,
+      3.75,
+      3.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      3.5
+     ],
+     "max": [
+      1.8,
+      4,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      4.75,
+      -2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      4.75,
+      -2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2
+     ],
+     "max": [
+      -1.8,
+      5.75,
+      0
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -2
+     ],
+     "max": [
+      4,
+      5.75,
+      0
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      0
+     ],
+     "max": [
+      -1.8,
+      6.75,
+      2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      0
+     ],
+     "max": [
+      4,
+      6.75,
+      2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      2
+     ],
+     "max": [
+      -1.8,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      2
+     ],
+     "max": [
+      4,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      5.276,
+      -4.573
+     ],
+     "max": [
+      4,
+      5.726,
+      4.372
+     ],
+     "pitch": 0.464,
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.73,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      -1.67,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.67,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      1.73,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      5.03,
+      -4.472
+     ],
+     "max": [
+      -1.55,
+      5.28,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      5.03,
+      -4.472
+     ],
+     "max": [
+      1.8,
+      5.28,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -0.14,
+      5.21,
+      -0.78
+     ],
+     "max": [
+      0.14,
+      5.27,
+      0.78
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.06,
+      5.16,
+      -0.7
+     ],
+     "max": [
+      0.06,
+      5.21,
+      0.7
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    }
+   ],
+   "bore": {
+    "cut": [
+     [
+      -4,
+      -0.5,
+      -4,
+      4,
+      4.75,
+      -2
+     ],
+     [
+      -4,
+      0.5,
+      -2,
+      4,
+      5.75,
+      0
+     ],
+     [
+      -4,
+      1.5,
+      0,
+      4,
+      6.75,
+      2
+     ],
+     [
+      -4,
+      2.5,
+      2,
+      4,
+      7.75,
+      4
+     ]
+    ],
+    "cover": [
+     [
+      -4,
+      -4,
+      4,
+      -2,
+      4.85
+     ],
+     [
+      -4,
+      -2,
+      4,
+      0,
+      5.85
+     ],
+     [
+      -4,
+      0,
+      4,
+      2,
+      6.85
+     ],
+     [
+      -4,
+      2,
+      4,
+      4,
+      7.85
+     ]
+    ],
+    "plan": [
+     [
+      -1.8,
+      -4,
+      -1.8,
+      4
+     ],
+     [
+      1.8,
+      -4,
+      1.8,
+      4
+     ]
+    ]
+   }
+  },
+  {
+   "id": "core.tunnel_concrete_slope",
+   "category": "Tunnels",
+   "displayName": "Concrete Tunnel Slope",
+   "blurb": "The passage climbs one level on a ramp (1 in 2), from the south (low) to the north (a level up), buried like the stairs. Cast concrete with panel joints, a floor drain and a strip light at the crown (utility corridors, culverts, bunkers).",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "N",
+     "level": 1
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_slope",
+    "family": "concrete",
+    "label": "Concrete"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -1.8,
+      1.526,
+      -4.36
+     ],
+     "max": [
+      1.8,
+      2.026,
+      4.584
+     ],
+     "pitch": 0.464,
+     "kind": "solid",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      4.75,
+      -2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      4.75,
+      -2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2
+     ],
+     "max": [
+      -1.8,
+      5.75,
+      0
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -2
+     ],
+     "max": [
+      4,
+      5.75,
+      0
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      0
+     ],
+     "max": [
+      -1.8,
+      6.75,
+      2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      0
+     ],
+     "max": [
+      4,
+      6.75,
+      2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      2
+     ],
+     "max": [
+      -1.8,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      2
+     ],
+     "max": [
+      4,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      5.276,
+      -4.573
+     ],
+     "max": [
+      4,
+      5.726,
+      4.372
+     ],
+     "pitch": 0.464,
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.73,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      -1.67,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.67,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      1.73,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      5.03,
+      -4.472
+     ],
+     "max": [
+      -1.55,
+      5.28,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      5.03,
+      -4.472
+     ],
+     "max": [
+      1.8,
+      5.28,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -0.14,
+      5.21,
+      -0.78
+     ],
+     "max": [
+      0.14,
+      5.27,
+      0.78
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.06,
+      5.16,
+      -0.7
+     ],
+     "max": [
+      0.06,
+      5.21,
+      0.7
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    }
+   ],
+   "bore": {
+    "cut": [
+     [
+      -4,
+      -0.5,
+      -4,
+      4,
+      4.75,
+      -2
+     ],
+     [
+      -4,
+      0.5,
+      -2,
+      4,
+      5.75,
+      0
+     ],
+     [
+      -4,
+      1.5,
+      0,
+      4,
+      6.75,
+      2
+     ],
+     [
+      -4,
+      2.5,
+      2,
+      4,
+      7.75,
+      4
+     ]
+    ],
+    "cover": [
+     [
+      -4,
+      -4,
+      4,
+      -2,
+      4.85
+     ],
+     [
+      -4,
+      -2,
+      4,
+      0,
+      5.85
+     ],
+     [
+      -4,
+      0,
+      4,
+      2,
+      6.85
+     ],
+     [
+      -4,
+      2,
+      4,
+      4,
+      7.85
+     ]
+    ],
+    "plan": [
+     [
+      -1.8,
+      -4,
+      -1.8,
+      4
+     ],
+     [
+      1.8,
+      -4,
+      1.8,
+      4
+     ]
+    ]
+   }
+  },
+  {
+   "id": "core.tunnel_concrete_descent",
+   "category": "Tunnels",
+   "displayName": "Concrete Tunnel Surface Stairs",
+   "blurb": "Steps down from the surface into a tunnel a level under it: open to the sky between low walls, the tunnel going on south at the bottom, the ground at the top (north). The mouth for flat ground. Cast concrete with panel joints, a floor drain and a strip light at the crown (utility corridors, culverts, bunkers).",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "N",
+     "level": 1
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_descent",
+    "family": "concrete",
+    "label": "Concrete"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -1.8,
+      0,
+      -4
+     ],
+     "max": [
+      1.8,
+      0.25,
+      -3.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -3.5
+     ],
+     "max": [
+      1.8,
+      0.5,
+      -3
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -3
+     ],
+     "max": [
+      1.8,
+      0.75,
+      -2.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -2.5
+     ],
+     "max": [
+      1.8,
+      1,
+      -2
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -2
+     ],
+     "max": [
+      1.8,
+      1.25,
+      -1.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1.5
+     ],
+     "max": [
+      1.8,
+      1.5,
+      -1
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1
+     ],
+     "max": [
+      1.8,
+      1.75,
+      -0.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -0.5
+     ],
+     "max": [
+      1.8,
+      2,
+      0
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      0
+     ],
+     "max": [
+      1.8,
+      2.25,
+      0.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      0.5
+     ],
+     "max": [
+      1.8,
+      2.5,
+      1
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1
+     ],
+     "max": [
+      1.8,
+      2.75,
+      1.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.5
+     ],
+     "max": [
+      1.8,
+      3,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      2
+     ],
+     "max": [
+      1.8,
+      3.25,
+      2.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      2.5
+     ],
+     "max": [
+      1.8,
+      3.5,
+      3
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      3
+     ],
+     "max": [
+      1.8,
+      3.75,
+      3.5
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      3.5
+     ],
+     "max": [
+      1.8,
+      4,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -2.2,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      4.45,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      2.2,
+      4.45,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.3,
+      -4
+     ],
+     "max": [
+      1.8,
+      4.45,
+      -3.6
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.73,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      -1.67,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.67,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      1.73,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.3,
+      -3.6
+     ],
+     "max": [
+      1.8,
+      3.7,
+      -3.56
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -3.6
+     ],
+     "max": [
+      -1.77,
+      1,
+      -2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.hazard"
+     }
+    },
+    {
+     "min": [
+      1.77,
+      0,
+      -3.6
+     ],
+     "max": [
+      1.8,
+      1,
+      -2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.hazard"
+     }
+    }
+   ],
+   "bore": {
+    "sky": true,
+    "cut": [
+     [
+      -2.2,
+      -0.5,
+      -4,
+      2.2,
+      1000,
+      4
+     ]
+    ],
+    "rim": [
+     {
+      "line": [
+       -2.2,
+       -4,
+       -2.2,
+       4
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       2.2,
+       -4,
+       2.2,
+       4
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       -2.2,
+       -4,
+       2.2,
+       -4
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       -1.8,
+       4,
+       1.8,
+       4
+      ],
+      "y": [
+       3.95,
+       3.95
+      ],
+      "mode": "both"
+     }
+    ],
+    "plan": [
+     [
+      -1.8,
+      -4,
+      -1.8,
+      4
+     ],
+     [
+      1.8,
+      -4,
+      1.8,
+      4
+     ]
+    ]
+   }
+  },
+  {
+   "id": "core.tunnel_concrete_shaft",
+   "category": "Tunnels",
+   "displayName": "Concrete Tunnel Shaft",
+   "blurb": "A straight passage with a hatch up to the surface over its west wall, a kerb round it and its lid standing open. The ground is brought level to the hatch. It wants a ladder on that wall: the Tunnel Shaft set piece has one. Cast concrete with panel joints, a floor drain and a strip light at the crown (utility corridors, culverts, bunkers).",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_shaft",
+    "family": "concrete",
+    "label": "Concrete"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      1.8,
+      0,
+      1.8
+     ],
+     "max": [
+      4,
+      3.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      3.3,
+      -1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      -1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      1.8
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -1.8
+     ],
+     "max": [
+      4,
+      3.3,
+      1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -1.8
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.3,
+      -4
+     ],
+     "max": [
+      4,
+      3.75,
+      -0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.3,
+      0.75
+     ],
+     "max": [
+      4,
+      3.75,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.3,
+      -0.75
+     ],
+     "max": [
+      -1.8,
+      3.75,
+      0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -0.3,
+      3.3,
+      -0.75
+     ],
+     "max": [
+      4,
+      3.75,
+      0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.75,
+      -0.9
+     ],
+     "max": [
+      -0.15,
+      4.05,
+      -0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.75,
+      0.75
+     ],
+     "max": [
+      -0.15,
+      4.05,
+      0.9
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.3,
+      3.75,
+      -0.75
+     ],
+     "max": [
+      -0.15,
+      4.05,
+      0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.15,
+      3.85,
+      -0.75
+     ],
+     "max": [
+      -0.09,
+      5.2,
+      0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.8
+     ],
+     "max": [
+      -1.76,
+      0.45,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.05,
+      1.8
+     ],
+     "max": [
+      -1.55,
+      3.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      2.78
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      2.82
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      0,
+      1.8
+     ],
+     "max": [
+      1.8,
+      0.45,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      3.05,
+      1.8
+     ],
+     "max": [
+      1.8,
+      3.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      2.78
+     ],
+     "max": [
+      1.8,
+      3.05,
+      2.82
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.55,
+      3.285,
+      2.78
+     ],
+     "max": [
+      1.55,
+      3.3,
+      2.82
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.15,
+      0,
+      0
+     ],
+     "max": [
+      0.15,
+      0.02,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_tread_plate"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      0,
+      -4
+     ],
+     "max": [
+      1.8,
+      0.45,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      3.05,
+      -4
+     ],
+     "max": [
+      1.8,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      -2.82
+     ],
+     "max": [
+      1.8,
+      3.05,
+      -2.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -4
+     ],
+     "max": [
+      -1.76,
+      0.45,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.05,
+      -4
+     ],
+     "max": [
+      -1.55,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      -2.82
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      -2.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.55,
+      3.285,
+      -2.82
+     ],
+     "max": [
+      1.55,
+      3.3,
+      -2.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.15,
+      0,
+      -4
+     ],
+     "max": [
+      0.15,
+      0.02,
+      "-0"
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_tread_plate"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      0,
+      -1.8
+     ],
+     "max": [
+      1.8,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      3.05,
+      -1.8
+     ],
+     "max": [
+      1.8,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      -0.82
+     ],
+     "max": [
+      1.8,
+      3.05,
+      -0.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      1.18
+     ],
+     "max": [
+      1.8,
+      3.05,
+      1.22
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1.8
+     ],
+     "max": [
+      -1.76,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.05,
+      -1.8
+     ],
+     "max": [
+      -1.55,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      -0.82
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      -0.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      1.18
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      1.22
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.14,
+      3.25,
+      -0.78
+     ],
+     "max": [
+      0.14,
+      3.3,
+      0.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.06,
+      3.2,
+      -0.7
+     ],
+     "max": [
+      0.06,
+      3.25,
+      0.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -0.55
+     ],
+     "max": [
+      -1.77,
+      3.75,
+      0.55
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    }
+   ],
+   "bore": {
+    "cut": [
+     [
+      -4,
+      -0.5,
+      -4,
+      4,
+      3.75,
+      4
+     ],
+     [
+      -1.8,
+      3.75,
+      -0.75,
+      -0.3,
+      1000,
+      0.75
+     ]
+    ],
+    "cover": [
+     [
+      -4,
+      -4,
+      4,
+      4,
+      3.85
+     ]
+    ],
+    "rim": [
+     {
+      "line": [
+       -1.8,
+       -0.9,
+       -0.15,
+       -0.9
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       -1.8,
+       0.9,
+       -0.15,
+       0.9
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       -1.8,
+       -0.9,
+       -1.8,
+       0.9
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       -0.15,
+       -0.9,
+       -0.15,
+       0.9
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     }
+    ]
+   }
+  },
+  {
+   "id": "core.tunnel_concrete_riser",
+   "category": "Tunnels",
+   "displayName": "Concrete Tunnel Riser",
+   "blurb": "A capped well joining a passage (south) to one a level up (north). It wants a ladder on the well's north wall: the Tunnel Riser set piece has one. Cast concrete with panel joints, a floor drain and a strip light at the crown (utility corridors, culverts, bunkers).",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "N",
+     "level": 1
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_riser",
+    "family": "concrete",
+    "label": "Concrete"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.5,
+      1.8
+     ],
+     "max": [
+      1.8,
+      4,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.3,
+      -4
+     ],
+     "max": [
+      1.8,
+      7.3,
+      -1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.8
+     ],
+     "max": [
+      1.8,
+      3.5,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      7.3,
+      -4
+     ],
+     "max": [
+      4,
+      7.75,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -4
+     ],
+     "max": [
+      -1.76,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      4,
+      1.8
+     ],
+     "max": [
+      -1.76,
+      4.45,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      7.05,
+      -1.8
+     ],
+     "max": [
+      -1.55,
+      7.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      0,
+      -4
+     ],
+     "max": [
+      1.8,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      4,
+      1.8
+     ],
+     "max": [
+      1.8,
+      4.45,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      7.05,
+      -1.8
+     ],
+     "max": [
+      1.8,
+      7.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -0.5,
+      0,
+      1.77
+     ],
+     "max": [
+      0.5,
+      4,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      4,
+      1.8
+     ],
+     "max": [
+      1.8,
+      4.02,
+      2.1
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.hazard"
+     }
+    },
+    {
+     "min": [
+      -0.14,
+      7.25,
+      -0.78
+     ],
+     "max": [
+      0.14,
+      7.3,
+      0.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.06,
+      7.2,
+      -0.7
+     ],
+     "max": [
+      0.06,
+      7.25,
+      0.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      -0.14,
+      3.25,
+      -3.35
+     ],
+     "max": [
+      0.14,
+      3.3,
+      -2.65
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.06,
+      3.2,
+      -3.3
+     ],
+     "max": [
+      0.06,
+      3.25,
+      -2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    }
+   ],
+   "bore": {
+    "cut": [
+     [
+      -4,
+      -0.5,
+      -4,
+      4,
+      7.75,
+      4
+     ]
+    ],
+    "cover": [
+     [
+      -4,
+      -4,
+      4,
+      4,
+      7.85
+     ]
+    ],
+    "plan": [
+     [
+      -1.8,
+      -4,
+      -1.8,
+      4
+     ],
+     [
+      1.8,
+      -4,
+      1.8,
+      4
+     ],
+     [
+      -1.8,
+      1.8,
+      1.8,
+      1.8
+     ],
+     [
+      -1.8,
+      -1.8,
+      1.8,
+      -1.8
+     ]
+    ]
+   }
+  },
+  {
+   "id": "core.tunnel_concrete_chamber",
+   "category": "Tunnels",
+   "displayName": "Concrete Tunnel Chamber",
+   "blurb": "A room of 2 x 2 cells (14 m inside) on four columns, a passage-sized opening on each side: south and west in its south-west cell, north in the north-west, east in the south-east. Wall an opening you don't use (Sides), or put a Dead End on it. Cast concrete with panel joints, a floor drain and a strip light at the crown (utility corridors, culverts, bunkers).",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     0
+    ],
+    [
+     1,
+     1,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0,
+     "cell": [
+      0,
+      0
+     ]
+    },
+    {
+     "side": "W",
+     "level": 0,
+     "cell": [
+      0,
+      0
+     ]
+    },
+    {
+     "side": "N",
+     "level": 0,
+     "cell": [
+      0,
+      1
+     ]
+    },
+    {
+     "side": "E",
+     "level": 0,
+     "cell": [
+      1,
+      0
+     ]
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_chamber",
+    "family": "concrete",
+    "label": "Concrete"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      12,
+      0,
+      12
+     ],
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      -3
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      12,
+      3.3,
+      -3
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      11
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      12
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      11
+     ],
+     "max": [
+      12,
+      3.3,
+      12
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -3,
+      3.3,
+      -1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      1.8
+     ],
+     "max": [
+      -3,
+      3.3,
+      12
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      11,
+      0,
+      -4
+     ],
+     "max": [
+      12,
+      3.3,
+      -1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      11,
+      0,
+      1.8
+     ],
+     "max": [
+      12,
+      3.3,
+      12
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      1.8
+     ],
+     "max": [
+      2.6,
+      3.3,
+      2.6
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      5.4,
+      0,
+      1.8
+     ],
+     "max": [
+      6.2,
+      3.3,
+      2.6
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      5.4
+     ],
+     "max": [
+      2.6,
+      3.3,
+      6.2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      5.4,
+      0,
+      5.4
+     ],
+     "max": [
+      6.2,
+      3.3,
+      6.2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.3,
+      -4
+     ],
+     "max": [
+      12,
+      3.75,
+      12
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -3,
+      0,
+      -3
+     ],
+     "max": [
+      -1.8,
+      0.45,
+      -2.96
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -3,
+      3.05,
+      -3
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      -2.75
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -3
+     ],
+     "max": [
+      11,
+      0.45,
+      -2.96
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      3.05,
+      -3
+     ],
+     "max": [
+      11,
+      3.3,
+      -2.75
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -3,
+      0,
+      10.96
+     ],
+     "max": [
+      -1.8,
+      0.45,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -3,
+      3.05,
+      10.75
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      10.96
+     ],
+     "max": [
+      11,
+      0.45,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      3.05,
+      10.75
+     ],
+     "max": [
+      11,
+      3.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -3,
+      0,
+      -3
+     ],
+     "max": [
+      -2.96,
+      0.45,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -3,
+      3.05,
+      -3
+     ],
+     "max": [
+      -2.75,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -3,
+      0,
+      1.8
+     ],
+     "max": [
+      -2.96,
+      0.45,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -3,
+      3.05,
+      1.8
+     ],
+     "max": [
+      -2.75,
+      3.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      10.96,
+      0,
+      -3
+     ],
+     "max": [
+      11,
+      0.45,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      10.75,
+      3.05,
+      -3
+     ],
+     "max": [
+      11,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      10.96,
+      0,
+      1.8
+     ],
+     "max": [
+      11,
+      0.45,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      10.75,
+      3.05,
+      1.8
+     ],
+     "max": [
+      11,
+      3.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.7,
+      0,
+      1.7
+     ],
+     "max": [
+      2.7,
+      0.45,
+      2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.7,
+      3.05,
+      1.7
+     ],
+     "max": [
+      2.7,
+      3.3,
+      2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      5.3,
+      0,
+      1.7
+     ],
+     "max": [
+      6.3,
+      0.45,
+      2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      5.3,
+      3.05,
+      1.7
+     ],
+     "max": [
+      6.3,
+      3.3,
+      2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.7,
+      0,
+      5.3
+     ],
+     "max": [
+      2.7,
+      0.45,
+      6.3
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.7,
+      3.05,
+      5.3
+     ],
+     "max": [
+      2.7,
+      3.3,
+      6.3
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      5.3,
+      0,
+      5.3
+     ],
+     "max": [
+      6.3,
+      0.45,
+      6.3
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      5.3,
+      3.05,
+      5.3
+     ],
+     "max": [
+      6.3,
+      3.3,
+      6.3
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -0.15,
+      0,
+      -4
+     ],
+     "max": [
+      0.15,
+      0.02,
+      12
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_tread_plate"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -0.15
+     ],
+     "max": [
+      12,
+      0.02,
+      0.15
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_tread_plate"
+     }
+    },
+    {
+     "min": [
+      3.86,
+      3.25,
+      -0.28
+     ],
+     "max": [
+      4.14,
+      3.3,
+      1.28
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      3.94,
+      3.2,
+      -0.2
+     ],
+     "max": [
+      4.06,
+      3.25,
+      1.2
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      3.86,
+      3.25,
+      6.72
+     ],
+     "max": [
+      4.14,
+      3.3,
+      8.28
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      3.94,
+      3.2,
+      6.8
+     ],
+     "max": [
+      4.06,
+      3.25,
+      8.2
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      0.36,
+      3.25,
+      3.22
+     ],
+     "max": [
+      0.64,
+      3.3,
+      4.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      0.44,
+      3.2,
+      3.3
+     ],
+     "max": [
+      0.56,
+      3.25,
+      4.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      7.36,
+      3.25,
+      3.22
+     ],
+     "max": [
+      7.64,
+      3.3,
+      4.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      7.44,
+      3.2,
+      3.3
+     ],
+     "max": [
+      7.56,
+      3.25,
+      4.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      3.86,
+      3.25,
+      3.22
+     ],
+     "max": [
+      4.14,
+      3.3,
+      4.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      3.94,
+      3.2,
+      3.3
+     ],
+     "max": [
+      4.06,
+      3.25,
+      4.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    }
+   ],
+   "bore": {
+    "cut": [
+     [
+      -4,
+      -0.5,
+      -4,
+      12,
+      3.75,
+      12
+     ]
+    ],
+    "cover": [
+     [
+      -4,
+      -4,
+      12,
+      12,
+      3.85
+     ]
+    ],
+    "plan": [
+     [
+      -3,
+      -3,
+      -1.8,
+      -3
+     ],
+     [
+      1.8,
+      -3,
+      11,
+      -3
+     ],
+     [
+      -1.8,
+      -4,
+      -1.8,
+      -3
+     ],
+     [
+      1.8,
+      -4,
+      1.8,
+      -3
+     ],
+     [
+      -3,
+      11,
+      -1.8,
+      11
+     ],
+     [
+      1.8,
+      11,
+      11,
+      11
+     ],
+     [
+      -1.8,
+      12,
+      -1.8,
+      11
+     ],
+     [
+      1.8,
+      12,
+      1.8,
+      11
+     ],
+     [
+      -3,
+      -3,
+      -3,
+      -1.8
+     ],
+     [
+      -3,
+      1.8,
+      -3,
+      11
+     ],
+     [
+      -4,
+      -1.8,
+      -3,
+      -1.8
+     ],
+     [
+      -4,
+      1.8,
+      -3,
+      1.8
+     ],
+     [
+      11,
+      -3,
+      11,
+      -1.8
+     ],
+     [
+      11,
+      1.8,
+      11,
+      11
+     ],
+     [
+      12,
+      -1.8,
+      11,
+      -1.8
+     ],
+     [
+      12,
+      1.8,
+      11,
+      1.8
+     ]
+    ]
+   }
+  },
+  {
    "id": "core.tunnel_brick_straight",
    "category": "Tunnels",
    "displayName": "Brick Tunnel",
@@ -41890,6 +45593,3489 @@
       ],
       "mode": "both"
      }
+    ]
+   }
+  },
+  {
+   "id": "core.tunnel_brick_stairs",
+   "category": "Tunnels",
+   "displayName": "Brick Tunnel Stairs",
+   "blurb": "The passage climbs one level on steps, from the south (low) to the north (a level up), buried: the soffit and the earth over it climb with the floor. Old brick on a flagstone floor with a drain and a lamp at the crown (sewers, cellars, old works). Its arched lining and water channel come with the sewer family's own step.",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "N",
+     "level": 1
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_stairs",
+    "family": "brick",
+    "label": "Brick (preview)"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -1.8,
+      0,
+      -4
+     ],
+     "max": [
+      1.8,
+      0.25,
+      -3.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -3.5
+     ],
+     "max": [
+      1.8,
+      0.5,
+      -3
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -3
+     ],
+     "max": [
+      1.8,
+      0.75,
+      -2.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -2.5
+     ],
+     "max": [
+      1.8,
+      1,
+      -2
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -2
+     ],
+     "max": [
+      1.8,
+      1.25,
+      -1.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1.5
+     ],
+     "max": [
+      1.8,
+      1.5,
+      -1
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1
+     ],
+     "max": [
+      1.8,
+      1.75,
+      -0.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -0.5
+     ],
+     "max": [
+      1.8,
+      2,
+      0
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      0
+     ],
+     "max": [
+      1.8,
+      2.25,
+      0.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      0.5
+     ],
+     "max": [
+      1.8,
+      2.5,
+      1
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1
+     ],
+     "max": [
+      1.8,
+      2.75,
+      1.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.5
+     ],
+     "max": [
+      1.8,
+      3,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      2
+     ],
+     "max": [
+      1.8,
+      3.25,
+      2.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      2.5
+     ],
+     "max": [
+      1.8,
+      3.5,
+      3
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      3
+     ],
+     "max": [
+      1.8,
+      3.75,
+      3.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      3.5
+     ],
+     "max": [
+      1.8,
+      4,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      4.75,
+      -2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      4.75,
+      -2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2
+     ],
+     "max": [
+      -1.8,
+      5.75,
+      0
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -2
+     ],
+     "max": [
+      4,
+      5.75,
+      0
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      0
+     ],
+     "max": [
+      -1.8,
+      6.75,
+      2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      0
+     ],
+     "max": [
+      4,
+      6.75,
+      2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      2
+     ],
+     "max": [
+      -1.8,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      2
+     ],
+     "max": [
+      4,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      5.276,
+      -4.573
+     ],
+     "max": [
+      4,
+      5.726,
+      4.372
+     ],
+     "pitch": 0.464,
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -1.73,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      -1.67,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.67,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      1.73,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      4.98,
+      -4.472
+     ],
+     "max": [
+      -1.5,
+      5.28,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.5,
+      4.98,
+      -4.472
+     ],
+     "max": [
+      1.8,
+      5.28,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -0.14,
+      5.21,
+      -0.33
+     ],
+     "max": [
+      0.14,
+      5.27,
+      0.33
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -0.06,
+      5.16,
+      -0.25
+     ],
+     "max": [
+      0.06,
+      5.21,
+      0.25
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    }
+   ],
+   "bore": {
+    "cut": [
+     [
+      -4,
+      -0.5,
+      -4,
+      4,
+      4.75,
+      -2
+     ],
+     [
+      -4,
+      0.5,
+      -2,
+      4,
+      5.75,
+      0
+     ],
+     [
+      -4,
+      1.5,
+      0,
+      4,
+      6.75,
+      2
+     ],
+     [
+      -4,
+      2.5,
+      2,
+      4,
+      7.75,
+      4
+     ]
+    ],
+    "cover": [
+     [
+      -4,
+      -4,
+      4,
+      -2,
+      4.85
+     ],
+     [
+      -4,
+      -2,
+      4,
+      0,
+      5.85
+     ],
+     [
+      -4,
+      0,
+      4,
+      2,
+      6.85
+     ],
+     [
+      -4,
+      2,
+      4,
+      4,
+      7.85
+     ]
+    ],
+    "plan": [
+     [
+      -1.8,
+      -4,
+      -1.8,
+      4
+     ],
+     [
+      1.8,
+      -4,
+      1.8,
+      4
+     ]
+    ]
+   }
+  },
+  {
+   "id": "core.tunnel_brick_slope",
+   "category": "Tunnels",
+   "displayName": "Brick Tunnel Slope",
+   "blurb": "The passage climbs one level on a ramp (1 in 2), from the south (low) to the north (a level up), buried like the stairs. Old brick on a flagstone floor with a drain and a lamp at the crown (sewers, cellars, old works). Its arched lining and water channel come with the sewer family's own step.",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "N",
+     "level": 1
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_slope",
+    "family": "brick",
+    "label": "Brick (preview)"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -1.8,
+      1.526,
+      -4.36
+     ],
+     "max": [
+      1.8,
+      2.026,
+      4.584
+     ],
+     "pitch": 0.464,
+     "kind": "solid",
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      4.75,
+      -2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      4.75,
+      -2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -2
+     ],
+     "max": [
+      -1.8,
+      5.75,
+      0
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -2
+     ],
+     "max": [
+      4,
+      5.75,
+      0
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      0
+     ],
+     "max": [
+      -1.8,
+      6.75,
+      2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      0
+     ],
+     "max": [
+      4,
+      6.75,
+      2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      2
+     ],
+     "max": [
+      -1.8,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      2
+     ],
+     "max": [
+      4,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      5.276,
+      -4.573
+     ],
+     "max": [
+      4,
+      5.726,
+      4.372
+     ],
+     "pitch": 0.464,
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -1.73,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      -1.67,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.67,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      1.73,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      4.98,
+      -4.472
+     ],
+     "max": [
+      -1.5,
+      5.28,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.5,
+      4.98,
+      -4.472
+     ],
+     "max": [
+      1.8,
+      5.28,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -0.14,
+      5.21,
+      -0.33
+     ],
+     "max": [
+      0.14,
+      5.27,
+      0.33
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -0.06,
+      5.16,
+      -0.25
+     ],
+     "max": [
+      0.06,
+      5.21,
+      0.25
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    }
+   ],
+   "bore": {
+    "cut": [
+     [
+      -4,
+      -0.5,
+      -4,
+      4,
+      4.75,
+      -2
+     ],
+     [
+      -4,
+      0.5,
+      -2,
+      4,
+      5.75,
+      0
+     ],
+     [
+      -4,
+      1.5,
+      0,
+      4,
+      6.75,
+      2
+     ],
+     [
+      -4,
+      2.5,
+      2,
+      4,
+      7.75,
+      4
+     ]
+    ],
+    "cover": [
+     [
+      -4,
+      -4,
+      4,
+      -2,
+      4.85
+     ],
+     [
+      -4,
+      -2,
+      4,
+      0,
+      5.85
+     ],
+     [
+      -4,
+      0,
+      4,
+      2,
+      6.85
+     ],
+     [
+      -4,
+      2,
+      4,
+      4,
+      7.85
+     ]
+    ],
+    "plan": [
+     [
+      -1.8,
+      -4,
+      -1.8,
+      4
+     ],
+     [
+      1.8,
+      -4,
+      1.8,
+      4
+     ]
+    ]
+   }
+  },
+  {
+   "id": "core.tunnel_brick_descent",
+   "category": "Tunnels",
+   "displayName": "Brick Tunnel Surface Stairs",
+   "blurb": "Steps down from the surface into a tunnel a level under it: open to the sky between low walls, the tunnel going on south at the bottom, the ground at the top (north). The mouth for flat ground. Old brick on a flagstone floor with a drain and a lamp at the crown (sewers, cellars, old works). Its arched lining and water channel come with the sewer family's own step.",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "N",
+     "level": 1
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_descent",
+    "family": "brick",
+    "label": "Brick (preview)"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -1.8,
+      0,
+      -4
+     ],
+     "max": [
+      1.8,
+      0.25,
+      -3.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -3.5
+     ],
+     "max": [
+      1.8,
+      0.5,
+      -3
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -3
+     ],
+     "max": [
+      1.8,
+      0.75,
+      -2.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -2.5
+     ],
+     "max": [
+      1.8,
+      1,
+      -2
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -2
+     ],
+     "max": [
+      1.8,
+      1.25,
+      -1.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1.5
+     ],
+     "max": [
+      1.8,
+      1.5,
+      -1
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1
+     ],
+     "max": [
+      1.8,
+      1.75,
+      -0.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -0.5
+     ],
+     "max": [
+      1.8,
+      2,
+      0
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      0
+     ],
+     "max": [
+      1.8,
+      2.25,
+      0.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      0.5
+     ],
+     "max": [
+      1.8,
+      2.5,
+      1
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1
+     ],
+     "max": [
+      1.8,
+      2.75,
+      1.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.5
+     ],
+     "max": [
+      1.8,
+      3,
+      2
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      2
+     ],
+     "max": [
+      1.8,
+      3.25,
+      2.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      2.5
+     ],
+     "max": [
+      1.8,
+      3.5,
+      3
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      3
+     ],
+     "max": [
+      1.8,
+      3.75,
+      3.5
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      3.5
+     ],
+     "max": [
+      1.8,
+      4,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -2.2,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      4.45,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      2.2,
+      4.45,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.3,
+      -4
+     ],
+     "max": [
+      1.8,
+      4.45,
+      -3.6
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -1.73,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      -1.67,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.67,
+      2.95,
+      -4.472
+     ],
+     "max": [
+      1.73,
+      3.01,
+      4.472
+     ],
+     "pitch": 0.464,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.3,
+      -3.6
+     ],
+     "max": [
+      1.8,
+      3.7,
+      -3.56
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    }
+   ],
+   "bore": {
+    "sky": true,
+    "cut": [
+     [
+      -2.2,
+      -0.5,
+      -4,
+      2.2,
+      1000,
+      4
+     ]
+    ],
+    "rim": [
+     {
+      "line": [
+       -2.2,
+       -4,
+       -2.2,
+       4
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       2.2,
+       -4,
+       2.2,
+       4
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       -2.2,
+       -4,
+       2.2,
+       -4
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       -1.8,
+       4,
+       1.8,
+       4
+      ],
+      "y": [
+       3.95,
+       3.95
+      ],
+      "mode": "both"
+     }
+    ],
+    "plan": [
+     [
+      -1.8,
+      -4,
+      -1.8,
+      4
+     ],
+     [
+      1.8,
+      -4,
+      1.8,
+      4
+     ]
+    ]
+   }
+  },
+  {
+   "id": "core.tunnel_brick_shaft",
+   "category": "Tunnels",
+   "displayName": "Brick Tunnel Shaft",
+   "blurb": "A straight passage with a hatch up to the surface over its west wall, a kerb round it and its lid standing open. The ground is brought level to the hatch. It wants a ladder on that wall: the Tunnel Shaft set piece has one. Old brick on a flagstone floor with a drain and a lamp at the crown (sewers, cellars, old works). Its arched lining and water channel come with the sewer family's own step.",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_shaft",
+    "family": "brick",
+    "label": "Brick (preview)"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      1.8,
+      0,
+      1.8
+     ],
+     "max": [
+      4,
+      3.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      3.3,
+      -1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      -1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      1.8
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -1.8
+     ],
+     "max": [
+      4,
+      3.3,
+      1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -1.8
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.3,
+      -4
+     ],
+     "max": [
+      4,
+      3.75,
+      -0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.3,
+      0.75
+     ],
+     "max": [
+      4,
+      3.75,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.3,
+      -0.75
+     ],
+     "max": [
+      -1.8,
+      3.75,
+      0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -0.3,
+      3.3,
+      -0.75
+     ],
+     "max": [
+      4,
+      3.75,
+      0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.75,
+      -0.9
+     ],
+     "max": [
+      -0.15,
+      4.05,
+      -0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.75,
+      0.75
+     ],
+     "max": [
+      -0.15,
+      4.05,
+      0.9
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -0.3,
+      3.75,
+      -0.75
+     ],
+     "max": [
+      -0.15,
+      4.05,
+      0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -0.15,
+      3.85,
+      -0.75
+     ],
+     "max": [
+      -0.09,
+      5.2,
+      0.75
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_rusted_plate"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.8
+     ],
+     "max": [
+      -1.76,
+      0.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3,
+      1.8
+     ],
+     "max": [
+      -1.5,
+      3.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      0,
+      1.8
+     ],
+     "max": [
+      1.8,
+      0.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.5,
+      3,
+      1.8
+     ],
+     "max": [
+      1.8,
+      3.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -0.2,
+      0,
+      0
+     ],
+     "max": [
+      0.2,
+      0.02,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_mossy_cobble"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      0,
+      -4
+     ],
+     "max": [
+      1.8,
+      0.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.5,
+      3,
+      -4
+     ],
+     "max": [
+      1.8,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -4
+     ],
+     "max": [
+      -1.76,
+      0.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3,
+      -4
+     ],
+     "max": [
+      -1.5,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -0.2,
+      0,
+      -4
+     ],
+     "max": [
+      0.2,
+      0.02,
+      "-0"
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_mossy_cobble"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      0,
+      -1.8
+     ],
+     "max": [
+      1.8,
+      0.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.5,
+      3,
+      -1.8
+     ],
+     "max": [
+      1.8,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1.8
+     ],
+     "max": [
+      -1.76,
+      0.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3,
+      -1.8
+     ],
+     "max": [
+      -1.5,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -0.14,
+      3.25,
+      -0.33
+     ],
+     "max": [
+      0.14,
+      3.3,
+      0.33
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -0.06,
+      3.2,
+      -0.25
+     ],
+     "max": [
+      0.06,
+      3.25,
+      0.25
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -0.55
+     ],
+     "max": [
+      -1.77,
+      3.75,
+      0.55
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    }
+   ],
+   "bore": {
+    "cut": [
+     [
+      -4,
+      -0.5,
+      -4,
+      4,
+      3.75,
+      4
+     ],
+     [
+      -1.8,
+      3.75,
+      -0.75,
+      -0.3,
+      1000,
+      0.75
+     ]
+    ],
+    "cover": [
+     [
+      -4,
+      -4,
+      4,
+      4,
+      3.85
+     ]
+    ],
+    "rim": [
+     {
+      "line": [
+       -1.8,
+       -0.9,
+       -0.15,
+       -0.9
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       -1.8,
+       0.9,
+       -0.15,
+       0.9
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       -1.8,
+       -0.9,
+       -1.8,
+       0.9
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     },
+     {
+      "line": [
+       -0.15,
+       -0.9,
+       -0.15,
+       0.9
+      ],
+      "y": [
+       3.85,
+       3.85
+      ],
+      "mode": "both"
+     }
+    ]
+   }
+  },
+  {
+   "id": "core.tunnel_brick_riser",
+   "category": "Tunnels",
+   "displayName": "Brick Tunnel Riser",
+   "blurb": "A capped well joining a passage (south) to one a level up (north). It wants a ladder on the well's north wall: the Tunnel Riser set piece has one. Old brick on a flagstone floor with a drain and a lamp at the crown (sewers, cellars, old works). Its arched lining and water channel come with the sewer family's own step.",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "N",
+     "level": 1
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_riser",
+    "family": "brick",
+    "label": "Brick (preview)"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      4,
+      0,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.5,
+      1.8
+     ],
+     "max": [
+      1.8,
+      4,
+      4
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      7.3,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.3,
+      -4
+     ],
+     "max": [
+      1.8,
+      7.3,
+      -1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.8
+     ],
+     "max": [
+      1.8,
+      3.5,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      7.3,
+      -4
+     ],
+     "max": [
+      4,
+      7.75,
+      4
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -4
+     ],
+     "max": [
+      -1.76,
+      0.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      4,
+      1.8
+     ],
+     "max": [
+      -1.76,
+      4.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      7,
+      -1.8
+     ],
+     "max": [
+      -1.5,
+      7.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      0,
+      -4
+     ],
+     "max": [
+      1.8,
+      0.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      4,
+      1.8
+     ],
+     "max": [
+      1.8,
+      4.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.5,
+      7,
+      -1.8
+     ],
+     "max": [
+      1.8,
+      7.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -0.5,
+      0,
+      1.77
+     ],
+     "max": [
+      0.5,
+      4,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -0.14,
+      7.25,
+      -0.33
+     ],
+     "max": [
+      0.14,
+      7.3,
+      0.33
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -0.06,
+      7.2,
+      -0.25
+     ],
+     "max": [
+      0.06,
+      7.25,
+      0.25
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      -0.14,
+      3.25,
+      -3.125
+     ],
+     "max": [
+      0.14,
+      3.3,
+      -2.875
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -0.06,
+      3.2,
+      -3.075
+     ],
+     "max": [
+      0.06,
+      3.25,
+      -2.925
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    }
+   ],
+   "bore": {
+    "cut": [
+     [
+      -4,
+      -0.5,
+      -4,
+      4,
+      7.75,
+      4
+     ]
+    ],
+    "cover": [
+     [
+      -4,
+      -4,
+      4,
+      4,
+      7.85
+     ]
+    ],
+    "plan": [
+     [
+      -1.8,
+      -4,
+      -1.8,
+      4
+     ],
+     [
+      1.8,
+      -4,
+      1.8,
+      4
+     ],
+     [
+      -1.8,
+      1.8,
+      1.8,
+      1.8
+     ],
+     [
+      -1.8,
+      -1.8,
+      1.8,
+      -1.8
+     ]
+    ]
+   }
+  },
+  {
+   "id": "core.tunnel_brick_chamber",
+   "category": "Tunnels",
+   "displayName": "Brick Tunnel Chamber",
+   "blurb": "A room of 2 x 2 cells (14 m inside) on four columns, a passage-sized opening on each side: south and west in its south-west cell, north in the north-west, east in the south-east. Wall an opening you don't use (Sides), or put a Dead End on it. Old brick on a flagstone floor with a drain and a lamp at the crown (sewers, cellars, old works). Its arched lining and water channel come with the sewer family's own step.",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     0
+    ],
+    [
+     1,
+     1,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0,
+     "cell": [
+      0,
+      0
+     ]
+    },
+    {
+     "side": "W",
+     "level": 0,
+     "cell": [
+      0,
+      0
+     ]
+    },
+    {
+     "side": "N",
+     "level": 0,
+     "cell": [
+      0,
+      1
+     ]
+    },
+    {
+     "side": "E",
+     "level": 0,
+     "cell": [
+      1,
+      0
+     ]
+    }
+   ],
+   "edgeDefault": "open",
+   "familyOf": {
+    "base": "core.tunnel_concrete_chamber",
+    "family": "brick",
+    "label": "Brick (preview)"
+   },
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -0.5,
+      -4
+     ],
+     "max": [
+      12,
+      0,
+      12
+     ],
+     "surface": {
+      "material": "core.pbr_flagstone"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      -3
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -4
+     ],
+     "max": [
+      12,
+      3.3,
+      -3
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      11
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      12
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      11
+     ],
+     "max": [
+      12,
+      3.3,
+      12
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -3,
+      3.3,
+      -1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      1.8
+     ],
+     "max": [
+      -3,
+      3.3,
+      12
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      11,
+      0,
+      -4
+     ],
+     "max": [
+      12,
+      3.3,
+      -1.8
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      11,
+      0,
+      1.8
+     ],
+     "max": [
+      12,
+      3.3,
+      12
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      1.8
+     ],
+     "max": [
+      2.6,
+      3.3,
+      2.6
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      5.4,
+      0,
+      1.8
+     ],
+     "max": [
+      6.2,
+      3.3,
+      2.6
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      5.4
+     ],
+     "max": [
+      2.6,
+      3.3,
+      6.2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      5.4,
+      0,
+      5.4
+     ],
+     "max": [
+      6.2,
+      3.3,
+      6.2
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.3,
+      -4
+     ],
+     "max": [
+      12,
+      3.75,
+      12
+     ],
+     "kind": "wall",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -3,
+      0,
+      -3
+     ],
+     "max": [
+      -1.8,
+      0.3,
+      -2.96
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -3,
+      3,
+      -3
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      -2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      -3
+     ],
+     "max": [
+      11,
+      0.3,
+      -2.96
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      3,
+      -3
+     ],
+     "max": [
+      11,
+      3.3,
+      -2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -3,
+      0,
+      10.96
+     ],
+     "max": [
+      -1.8,
+      0.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -3,
+      3,
+      10.7
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      0,
+      10.96
+     ],
+     "max": [
+      11,
+      0.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.8,
+      3,
+      10.7
+     ],
+     "max": [
+      11,
+      3.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -3,
+      0,
+      -3
+     ],
+     "max": [
+      -2.96,
+      0.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -3,
+      3,
+      -3
+     ],
+     "max": [
+      -2.7,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      -3,
+      0,
+      1.8
+     ],
+     "max": [
+      -2.96,
+      0.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -3,
+      3,
+      1.8
+     ],
+     "max": [
+      -2.7,
+      3.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      10.96,
+      0,
+      -3
+     ],
+     "max": [
+      11,
+      0.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      10.7,
+      3,
+      -3
+     ],
+     "max": [
+      11,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      10.96,
+      0,
+      1.8
+     ],
+     "max": [
+      11,
+      0.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      10.7,
+      3,
+      1.8
+     ],
+     "max": [
+      11,
+      3.3,
+      11
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_brick_old"
+     }
+    },
+    {
+     "min": [
+      1.7,
+      0,
+      1.7
+     ],
+     "max": [
+      2.7,
+      0.3,
+      2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.7,
+      3.05,
+      1.7
+     ],
+     "max": [
+      2.7,
+      3.3,
+      2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      5.3,
+      0,
+      1.7
+     ],
+     "max": [
+      6.3,
+      0.3,
+      2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      5.3,
+      3.05,
+      1.7
+     ],
+     "max": [
+      6.3,
+      3.3,
+      2.7
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.7,
+      0,
+      5.3
+     ],
+     "max": [
+      2.7,
+      0.3,
+      6.3
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      1.7,
+      3.05,
+      5.3
+     ],
+     "max": [
+      2.7,
+      3.3,
+      6.3
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      5.3,
+      0,
+      5.3
+     ],
+     "max": [
+      6.3,
+      0.3,
+      6.3
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      5.3,
+      3.05,
+      5.3
+     ],
+     "max": [
+      6.3,
+      3.3,
+      6.3
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      -0.2,
+      0,
+      -4
+     ],
+     "max": [
+      0.2,
+      0.02,
+      12
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_mossy_cobble"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -0.2
+     ],
+     "max": [
+      12,
+      0.02,
+      0.2
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_mossy_cobble"
+     }
+    },
+    {
+     "min": [
+      3.86,
+      3.25,
+      0.17
+     ],
+     "max": [
+      4.14,
+      3.3,
+      0.83
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      3.94,
+      3.2,
+      0.25
+     ],
+     "max": [
+      4.06,
+      3.25,
+      0.75
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      3.86,
+      3.25,
+      7.17
+     ],
+     "max": [
+      4.14,
+      3.3,
+      7.83
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      3.94,
+      3.2,
+      7.25
+     ],
+     "max": [
+      4.06,
+      3.25,
+      7.75
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      0.36,
+      3.25,
+      3.67
+     ],
+     "max": [
+      0.64,
+      3.3,
+      4.33
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      0.44,
+      3.2,
+      3.75
+     ],
+     "max": [
+      0.56,
+      3.25,
+      4.25
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      7.36,
+      3.25,
+      3.67
+     ],
+     "max": [
+      7.64,
+      3.3,
+      4.33
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      7.44,
+      3.2,
+      3.75
+     ],
+     "max": [
+      7.56,
+      3.25,
+      4.25
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    },
+    {
+     "min": [
+      3.86,
+      3.25,
+      3.67
+     ],
+     "max": [
+      4.14,
+      3.3,
+      4.33
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_castle_stone"
+     }
+    },
+    {
+     "min": [
+      3.94,
+      3.2,
+      3.75
+     ],
+     "max": [
+      4.06,
+      3.25,
+      4.25
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.lamp_glow"
+     }
+    }
+   ],
+   "bore": {
+    "cut": [
+     [
+      -4,
+      -0.5,
+      -4,
+      12,
+      3.75,
+      12
+     ]
+    ],
+    "cover": [
+     [
+      -4,
+      -4,
+      12,
+      12,
+      3.85
+     ]
+    ],
+    "plan": [
+     [
+      -3,
+      -3,
+      -1.8,
+      -3
+     ],
+     [
+      1.8,
+      -3,
+      11,
+      -3
+     ],
+     [
+      -1.8,
+      -4,
+      -1.8,
+      -3
+     ],
+     [
+      1.8,
+      -4,
+      1.8,
+      -3
+     ],
+     [
+      -3,
+      11,
+      -1.8,
+      11
+     ],
+     [
+      1.8,
+      11,
+      11,
+      11
+     ],
+     [
+      -1.8,
+      12,
+      -1.8,
+      11
+     ],
+     [
+      1.8,
+      12,
+      1.8,
+      11
+     ],
+     [
+      -3,
+      -3,
+      -3,
+      -1.8
+     ],
+     [
+      -3,
+      1.8,
+      -3,
+      11
+     ],
+     [
+      -4,
+      -1.8,
+      -3,
+      -1.8
+     ],
+     [
+      -4,
+      1.8,
+      -3,
+      1.8
+     ],
+     [
+      11,
+      -3,
+      11,
+      -1.8
+     ],
+     [
+      11,
+      1.8,
+      11,
+      11
+     ],
+     [
+      12,
+      -1.8,
+      11,
+      -1.8
+     ],
+     [
+      12,
+      1.8,
+      11,
+      1.8
+     ]
     ]
    }
   }
