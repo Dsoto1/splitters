@@ -22,7 +22,8 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * a pickup's `random` category and `keepFixed`, v25 the `zipline` entity, v27 set pieces, v28 the weapon set, v29 Breakthrough's
  * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`, v30 the menu card shot's camera,
  * `metadata.cardCamera`, v31 MapMaker's groups and note pins, `groups` and `editorNotes`, v32 a terrain up to 321 vertices a side and the border
- * style `coast`, v33 bot hints, `botHints`, v34 the time of day and weather, `timeOfDay` and `weather`).
+ * style `coast`, v33 bot hints, `botHints`, v34 the time of day and weather, `timeOfDay` and `weather`, v37 a placed tile's
+ * material `family`: the tunnel kit).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -192,6 +193,12 @@ export const TilePlacement = z.object({
   z: z.number().int().min(-MAX_TILE_LEVEL).max(MAX_TILE_LEVEL),
   rotation: Rotation.default(0),
   surfaces: TileSurfaces.optional(),
+  /**
+   * The material family the piece is drawn in (format v37; the tunnel kit, content/tiles/tunnels.json: concrete,
+   * brick…): the same shape, ports, collision and bore, another family's materials and trim. Absent: the tile's own.
+   * A family the tile doesn't come in is ignored (and a validator warning).
+   */
+  family: z.string().regex(/^[a-z][a-z0-9_]*$/).max(32).optional(),
   /** Per-side wall choices (window, archway, half wall, no wall…); absent sides are `auto`. */
   edges: z.record(EdgeKey, z.enum(EDGE_STYLES)).optional(),
   /** Glass in window edges (window, twin windows, firing slit), per side; absent sides have none. */

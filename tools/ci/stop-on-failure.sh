@@ -5,7 +5,10 @@
 # seconds (default 40) with GITHUB_TOKEN (actions: read); API errors are ignored (the command just runs on).
 #   tools/ci/stop-on-failure.sh pnpm e2e
 # Outside GitHub Actions (no GITHUB_RUN_ID) it just runs the command.
+# STOP_ON_FAILURE=off also just runs the command: ci.yml sets it for the unit and e2e shards of a check/ branch, so
+# one check push reports every failure (the job's own exit status still fails the run).
 set -u
+if [ "${STOP_ON_FAILURE:-on}" = off ]; then exec "$@"; fi
 if [ -z "${GITHUB_RUN_ID:-}" ] || [ -z "${GH_TOKEN:-}" ]; then exec "$@"; fi
 poll="${STOP_POLL_S:-40}"
 failed_job() {

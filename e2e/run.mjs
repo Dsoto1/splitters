@@ -1477,6 +1477,70 @@ async function editortoolsFlow(browser) {
   await editorTerrainGridChecks(browser);
   await editorBotHintChecks(browser);
   await editorTileOptionChecks(browser);
+  await editorBuriedPickChecks(browser);
+}
+
+/**
+ * Buried pieces in MapMaker (Tileset 04 step 4): with Select, a click on the ground over a tunnel a level down selects
+ * it (Erase does not reach under the ground); a buried set piece is picked the same way, as one, and its inspector
+ * offers a portal on each of its open ends.
+ */
+async function editorBuriedPickChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // A tunnel module and a Lit Tunnel Run a level under the field (as the palette would place them), MapMaker on level 0.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Place', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addTiles', tiles: [{ id: 'tile_deep', tile: 'core.tunnel_concrete_straight', x: -3, y: 0, z: -1, rotation: 0 }] },
+        { kind: 'addSetPieces', setPieces: [{ id: 'piece_deep', piece: 'setpiece.tunnel_lit_run', x: 2, y: -1, z: -1, rotation: 0, mirror: false }] },
+      ],
+    });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 0 });
+  });
+  await frames(page, 4);
+  const level = await page.evaluate(() => window.__editor.level);
+  const pointAt = async (x, z) => {
+    // (The view centred there first: clear of the panels either side.)
+    await page.evaluate((p) => window.__editor.view.focus(p), { x, y: 0, z });
+    await frames(page, 3);
+    const q = await page.evaluate((p) => window.__editor.view.project(p), { x, y: -0.15, z });
+    await page.mouse.move(q.x, q.y);
+    await frames(page, 2);
+    return q;
+  };
+  let q = await pointAt(-24.6, 0.6);
+  const hover = await page.evaluate(() => ({ pick: window.__editor.pick(), target: document.getElementById('ed-target')?.textContent ?? '' }));
+  await page.mouse.click(q.x, q.y);
+  await frames(page, 2);
+  const picked = await page.evaluate(() => ({ tiles: [...window.__editor.selection.tiles], level: window.__editor.level, family: !!document.getElementById('ed-tunnel-family') }));
+  check(level === 0 && hover.pick?.kind === 'tile' && hover.pick.id === 'tile_deep' && picked.tiles.join() === 'tile_deep' && picked.family, `on level 0 a click on the ground over a tunnel a level down selects it, its Tunnel box in the inspector (${JSON.stringify({ level, hover, picked })})`);
+  // Erase takes what is seen: nothing under the pointer on the ground there.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'erase' }));
+  q = await pointAt(-24.6, 0.6);
+  const erase = await page.evaluate(() => ({ tool: window.__editor.tool.kind, pick: window.__editor.pick() }));
+  check(erase.tool === 'erase' && erase.pick === null, `Erase does not reach under the ground (${JSON.stringify(erase)})`);
+  await page.evaluate(() => window.__editor.setTool({ kind: 'select' }));
+  // The buried set piece: picked as one, and a portal offered on each of its two open ends.
+  q = await pointAt(16.6, 0.6);
+  await page.mouse.click(q.x, q.y);
+  await frames(page, 2);
+  const piece = await page.evaluate(() => ({ pieces: [...(window.__editor.selection.setPieces ?? [])], portal: document.getElementById('ed-tunnel-portal')?.textContent ?? null, family: !!document.getElementById('ed-tunnel-family') }));
+  check(piece.pieces.join() === 'piece_deep' && piece.portal === 'Add portals at the 2 open ends' && !piece.family, `a click on the ground over a buried Lit Tunnel Run selects the piece; its inspector offers portals on its open ends (${JSON.stringify(piece)})`);
+  if (piece.portal) await page.click('#ed-tunnel-portal');
+  await frames(page, 2);
+  const added = await page.evaluate(() => ({ portals: window.__editor.doc.classicStructure.tiles.filter((t) => t.tile === 'core.tunnel_concrete_portal').map((t) => `${t.x},${t.y},${t.z} turn ${t.rotation}`), undo: window.__editor.history.undoLabel, left: document.getElementById('ed-tunnel-portal')?.textContent ?? null }));
+  check(added.portals.join('; ') === '2,-2,-1 turn 0; 2,2,-1 turn 2' && added.undo === 'Add portals' && added.left === null, `the two portals go on the run's ends, facing out, in one undo step (${JSON.stringify(added)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -7700,6 +7764,31 @@ async function coverageFlow(browser) {
     // The match also runs the transport plane and the dropship as mounts.
     const want = { pickups: count('pickup'), mounts: count('mount') + count('airplane'), ziplines: count('zipline') };
     check(got.pickups >= want.pickups && got.mounts === want.mounts && got.ziplines === want.ziplines, `every pickup, vehicle, turret and zipline is in the match (${JSON.stringify(got)} of ${JSON.stringify(want)})`);
+    // Tileset 04 (shared map/groundBore.ts): the buried tunnels under the hill at (-140, 68): the vaulted run along
+    // z = 64 from its west portal at x = -156, the concrete kit's run beside it along z = 72. A shot along each passage
+    // isn't stopped by the hill (the bend's and the curve's far walls are 30 m in), the hill is whole over them
+    // (straight down from the sky meets earth over the 3.75 m caps), and beside the mouths the earth stops a shot.
+    const bore = await sim(page, (m) => {
+      const ray = (o, d, max) => m.physics.raycastWorld(o, d, max);
+      return {
+        vault: ray({ x: -157, y: 1.5, z: 64 }, { x: 1, y: 0, z: 0 }, 28),
+        concrete: ray({ x: -157, y: 1.5, z: 72 }, { x: 1, y: 0, z: 0 }, 28),
+        top: 40 - (ray({ x: -140, y: 40, z: 68 }, { x: 0, y: -1, z: 0 }, 60) ?? 99),
+        beside: ray({ x: -157, y: 1.5, z: 58 }, { x: 1, y: 0, z: 0 }, 36),
+        // The run a level under flat ground (the Lit Tunnel Run along z = 48): clear inside, and the field over it as it was.
+        sunk: ray({ x: -150, y: -2.5, z: 48 }, { x: 1, y: 0, z: 0 }, 24),
+        field: 10 - (ray({ x: -136, y: 10, z: 48 }, { x: 0, y: -1, z: 0 }, 30) ?? 99),
+        // Step 4's pieces, a level under the flat field round (52, -72): down the shaft's hatch from the sky to the
+        // tunnel's floor, up the surface stairs from the tunnel to the sky, across the chamber wall to wall, and the
+        // field whole over the chamber.
+        hatch: 10 - (ray({ x: 40, y: 10, z: -70.95 }, { x: 0, y: -1, z: 0 }, 30) ?? 99),
+        stairs: ray({ x: 37, y: -2.4, z: -72 }, { x: -0.894, y: 0.447, z: 0 }, 20),
+        chamber: ray({ x: 45.2, y: -2.5, z: -64 }, { x: 1, y: 0, z: 0 }, 30),
+        over: 10 - (ray({ x: 52, y: 10, z: -68 }, { x: 0, y: -1, z: 0 }, 30) ?? 99),
+      };
+    }).catch((e) => ({ error: String(e) }));
+    check(bore.vault === null && bore.concrete === null && bore.top > 4.5 && bore.beside !== null && bore.beside < 25 && bore.sunk === null && Math.abs(bore.field + 0.15) < 0.02, `the buried tunnels: a shot passes through each mouth and passage, the hill is whole on top of them and solid beside them (${JSON.stringify(bore)})`);
+    check(Math.abs(bore.hatch + 4) < 0.05 && bore.stairs === null && Math.abs(bore.chamber - 13.8) < 0.1 && Math.abs(bore.over + 0.15) < 0.02, `the tunnel kit's shaft, surface stairs and chamber: the hatch is open from the sky to the tunnel's floor, the stairs to the sky, the chamber 14 m wall to wall under a field left as it was (${JSON.stringify({ hatch: bore.hatch, stairs: bore.stairs, chamber: bore.chamber, over: bore.over })})`);
     // The Tank turns its own gun (content/guns.json `parts`, MountDef.turret): its model's turret and barrel are parts,
     // each with its own lower level of detail, and a manned cannon seat's aim turns the turret and pitches the barrel.
     // The match runs in a worker: the tank's place in it (`at`) and its entity index (its node's name) from there.
@@ -8699,12 +8788,71 @@ async function frameStrip(frames, every = 4, cols = 5) {
  * on each moment must stay under the thresholds; the same moments with it off are measured and reported as numbers
  * only. Frame strips (every 4th frame) and the numbers go to e2e-artifacts/ (flashing-<moment>-<on|off>.png,
  * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
+ *
+ * Then a second scene by day (FLASHING_DAY: flashing-day.json), for the bright moments daylight makes: sprinting out
+ * of a lit tunnel into the day, turning round and sprinting back in.
  */
 async function flashingFlow(browser) {
+  await flashingScene(browser);
+  await flashingScene(browser, FLASHING_DAY);
+}
+
+/**
+ * The flicker check's scene by day (Tileset 04, Tunnel Systems): a lit concrete tunnel (a portal, three modules with a
+ * light under each strip fixture, a portal), as MapMaker edits. The moment: from 3 m inside the south portal's
+ * headwall you sprint out to 5 m beyond it looking out (the dim bore opening onto daylight: a brightness step over
+ * much of the picture), turn round in one frame and sprint back in looking into the tunnel.
+ */
+const FLASHING_DAY = {
+  name: 'day',
+  what: "the check's day scene: a lit concrete tunnel 40 m long (two portals, three modules, three lights)",
+  make: (page) =>
+    page.evaluate(() => {
+      const ed = window.__editor;
+      // (Three cells east of the new map's own starting room.)
+      const tile = (id, tile, y, rotation) => ({ id, tile, x: 3, y, z: 0, rotation });
+      const tiles = [tile('day_portal_s', 'core.tunnel_concrete_portal', -2, 0), ...[-1, 0, 1].map((y) => tile(`day_run_${y + 1}`, 'core.tunnel_concrete_straight', y, 0)), tile('day_portal_n', 'core.tunnel_concrete_portal', 2, 2)];
+      const entities = [-8, 0, 8].map((z, i) => ({ id: `day_light_${i}`, kind: 'light', position: [24, 3.1, z], yaw: 0, color: '#ffe6b8', intensity: 1, range: 9, fixture: 'none' }));
+      const ok = ed.run('Flicker check day scene', { kind: 'batch', commands: [{ kind: 'addTiles', tiles }, { kind: 'addEntities', entities }] });
+      return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
+    }),
+  made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.sky !== 'night',
+  moments: ({ page, stage }) => {
+    // Sprinting (8 m/s): out over the first second, back in over the second.
+    const zAt = (f) => (f < 30 ? -13 - (8 * f) / 30 : -21 + (8 * (f - 30)) / 30);
+    const at = {};
+    for (let f = 0; f < 60; f++) {
+      at[f] = async () => {
+        if (f === 30) await page.evaluate(() => Object.assign(window.__cs.input, { yaw: 0, pitch: 0 }));
+        await stage({ me: [24, 0, zAt(f)], bots: [] });
+      };
+    }
+    return [
+      {
+        name: 'tunnel',
+        label: 'sprinting out of a lit tunnel into daylight, turning round and sprinting back in',
+        weapon: 'core.arc_caster',
+        me: [24, 0, -13],
+        look: { yaw: Math.PI, pitch: 0 },
+        bots: [],
+        before: () => page.evaluate(() => Object.assign(window.__cs.input, { yaw: Math.PI, pitch: 0 })),
+        at,
+        seen: () => page.evaluate(() => ({ z: +window.__cs.local.state.pos.z.toFixed(1), y: +window.__cs.local.state.pos.y.toFixed(1) })),
+        // Back inside at the end, on the tunnel's floor.
+        sees: (_on, s) => s.z > -14.5 && s.z < -12.5 && Math.abs(s.y) < 0.3,
+      },
+    ];
+  },
+};
+
+async function flashingScene(browser, scene) {
   const FPS = 30;
   const [W, H] = [160, 90];
   const RECORD = 2 * FPS;
   const only = process.env.E2E_FLASH_MOMENTS?.split(',').filter(Boolean);
+  // (A scene none of whose moments are asked for is not made.)
+  if (only && scene && !scene.moments({}).some((mo) => only.includes(mo.name))) return;
+  if (only && !scene && only.every((name) => FLASHING_DAY.moments({}).some((mo) => mo.name === name))) return;
   const ctx = await browser.newContext({ viewport: { width: 480, height: 270 }, deviceScaleFactor: 1 });
   await ctx.addInitScript(installFrameClock);
   const page = await ctx.newPage();
@@ -8716,7 +8864,7 @@ async function flashingFlow(browser) {
   await newMap(page, 96);
   // The scene, as MapMaker edits (one undo step): a night sky, two closed rooms of dark blocks (the second lit by the
   // alarm light), an Arc Turret and a 12 m electric fence.
-  const made = await page.evaluate(() => {
+  const made = scene ? await scene.make(page) : await page.evaluate(() => {
     const ed = window.__editor;
     const block = (id, at, size) => ({ id, kind: 'block', position: at, size, yaw: 0, material: null, tint: '#2a2a2f', behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
     const room = (name, x, z) => [
@@ -8744,7 +8892,8 @@ async function flashingFlow(browser) {
     const ok = ed.run('Flicker check scene', { kind: 'batch', commands: [{ kind: 'setBackdrop', before, after }, { kind: 'addEntities', entities }] });
     return { ok, entities: ed.doc.entities.length, sky: ed.doc.backdrop?.sky };
   });
-  check(made.ok && made.sky === 'night', `MapMaker makes the check's night scene: two dark rooms (one with a red alarm light blinking 4 times a second), an Arc Turret, an electric fence, six pickups, a pair of portals and a jump pad (${JSON.stringify(made)})`);
+  if (scene) check(scene.made(made), `MapMaker makes ${scene.what} (${JSON.stringify(made)})`);
+  else check(made.ok && made.sky === 'night', `MapMaker makes the check's night scene: two dark rooms (one with a red alarm light blinking 4 times a second), an Arc Turret, an electric fence, six pickups, a pair of portals and a jump pad (${JSON.stringify(made)})`);
   await page.keyboard.press('F5');
   const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(60000) }).then(() => true, () => false);
   check(playing, 'the scene plays (MapMaker TEST)');
@@ -8804,7 +8953,7 @@ async function flashingFlow(browser) {
   };
   const blast = (at) => sim(page, (m, _me, at) => m.scenario.host.blast({ x: at[0], y: at[1], z: at[2] }, 4.5, 100, 15, null, 'core.launcher'), at);
   // The moments (a few metres apart in the scene; 2 s each, setting on then off).
-  const moments = [
+  const moments = scene ? scene.moments({ page, stage, aim }) : [
     {
       name: 'arc',
       label: 'an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you)',
@@ -9029,7 +9178,7 @@ async function flashingFlow(browser) {
     check(on.frames === RECORD && off.frames === RECORD && off.activity > 0.003, `${mo.name}: the moment was recorded, every frame, and it happened (${on.frames} + ${off.frames} frames; up to ${(off.activity * 100).toFixed(1)} % of the picture changed between two frames with the setting off, ${(on.activity * 100).toFixed(1)} % on)`);
     check(on.pass, `${mo.label}, Reduce flashing on: ${flickerSummary(on)}${on.reasons.length ? ` (FAILS: ${on.reasons.join('; ')})` : ''}`);
   }
-  writeFileSync(`${ARTIFACTS}/flashing.json`, JSON.stringify(report));
+  writeFileSync(`${ARTIFACTS}/flashing${scene ? `-${scene.name}` : ''}.json`, JSON.stringify(report));
   check(clockErrors.length === 0 && errors.length === 0, `no page errors while recording (${[...clockErrors, ...errors].slice(0, 4).join(' | ')})`);
   await ctx.close();
 }

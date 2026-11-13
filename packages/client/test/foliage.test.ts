@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TERRAIN_MATERIALS, buildMapDecor, buildMapGeometry, type TerrainData } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, buildMapDecor, buildMapGeometry, mapGroundBores, terrainCuts, withGroundAsPlayed, type TerrainData } from '@tiletrigger/shared';
 import { makeMap } from '../../shared/test/helpers.ts';
 import { place } from '../src/foliage.ts';
 
@@ -97,5 +97,40 @@ describe('terrain plants', () => {
     t.foliage = new Array(t.materials.length).fill(0);
     const shallow = { min: { x: -20, y: -1, z: -20 }, max: { x: 20, y: 0.3, z: 20 } };
     expect(place(t, [], 'seed', [shallow]).size).toBe(0);
+  });
+
+  it('never grow where a buried tunnel cut the ground away: a portal\'s apron and passage stay clear, its banks and the hill over the tunnel grow', () => {
+    // A 6 m rise with a portal coming out of it (mouth south), a buried tunnel behind it, overgrown everywhere.
+    const t = flat();
+    t.foliage = new Array(t.materials.length).fill(4);
+    for (let r = 0; r < t.rows; r++) for (let c = 0; c < t.cols; c++) t.heights[r * t.cols + c] = Math.round(Math.max(0, Math.min(6, (t.origin[1] + r * t.spacing + 10) * 0.6)) * 100);
+    const tile = (id: string, y: number, kind: string) => ({ id, tile: kind, x: 0, y, z: 0, rotation: 0 as const });
+    const made = { ...makeMap([tile('p', 0, 'core.tunnel_concrete_portal'), tile('s', 1, 'core.tunnel_concrete_straight')]), terrain: t };
+    const map = withGroundAsPlayed(made);
+    const cuts = mapGroundBores(map).cuts;
+    expect(terrainCuts(map.terrain!)).toBe(cuts);
+    const out = place(map.terrain!, [...buildMapGeometry(map), ...buildMapDecor(map)], 'tunnel');
+    let n = 0;
+    let onBanks = 0;
+    for (const byModel of out.values()) {
+      for (const m of byModel.values()) {
+        for (let i = 0; i < m.length; i += 16) {
+          n++;
+          const [x, y, z] = [m[i + 12]!, m[i + 13]!, m[i + 14]!];
+          // Nothing over the apron (the portal's cell south of its headwall), at any height.
+          expect(Math.abs(x) < 4 && z > -4 && z < -0.5, `a plant on the apron at ${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}`).toBe(false);
+          // Nothing inside either cell below the caps.
+          expect(Math.abs(x) < 4 && z > -4 && z < 12 && y < 3.7, `a plant in the tunnel at ${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}`).toBe(false);
+          if (Math.abs(x) > 4.3 && Math.abs(x) < 8 && z > -4 && z < 12) onBanks++;
+        }
+      }
+    }
+    expect(n).toBeGreaterThan(100);
+    expect(onBanks).toBeGreaterThan(10);
+    // Without the cuts remembered (a terrain that never went through the ground as played) plants would stand on the apron.
+    const raw = place({ ...map.terrain! }, [...buildMapGeometry(map), ...buildMapDecor(map)], 'tunnel');
+    let onApron = 0;
+    for (const byModel of raw.values()) for (const m of byModel.values()) for (let i = 0; i < m.length; i += 16) if (Math.abs(m[i + 12]!) < 3.3 && m[i + 14]! > -3.8 && m[i + 14]! < -0.7) onApron++;
+    expect(onApron).toBeGreaterThan(0);
   });
 });

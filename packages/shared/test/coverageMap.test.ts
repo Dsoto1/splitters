@@ -36,7 +36,12 @@ describe('the coverage map', () => {
   });
 
   it('has every core kit tile, and a tile of every style pack', () => {
-    expect(missing(KIT_TILES.map((t) => t.id), tiles)).toEqual([]);
+    // (A tunnel shape in another material family is the same tile with a `family`: each family is on the map by one
+    // piece drawn in it.)
+    const twin = (id: string) => { const f = coreCatalog.get(id)?.familyOf; return !!f && f.base !== id; };
+    expect(missing(KIT_TILES.map((t) => t.id).filter((id) => !twin(id)), tiles)).toEqual([]);
+    const families = new Set(map.classicStructure.tiles.map((t) => coreCatalog.drawn(t)?.familyOf?.family).filter(Boolean));
+    expect(missing([...new Set(coreCatalog.all().flatMap((d) => (d.familyOf ? [d.familyOf.family] : [])))], families as Set<string>)).toEqual([]);
     const kit = new Set(KIT_TILES.map((t) => t.id));
     const packsWithout = STYLE_PACKS.filter((p) => p.tiles.some((t) => !kit.has(t) && coreCatalog.get(t)) && !p.tiles.some((t) => !kit.has(t) && tiles.has(t)));
     expect(packsWithout.map((p) => p.id)).toEqual([]);

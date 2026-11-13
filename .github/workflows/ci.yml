@@ -35,6 +35,9 @@ permissions:
 # Fail fast: the long steps (unit tests, e2e shards, perf) run under tools/ci/stop-on-failure.sh, which stops them as
 # soon as any other job of the run has failed; they fail too, so the run reads "failure" (not "cancelled") and
 # land/train refuse it as before.
+# Not on a check/ branch's unit and e2e shards (STOP_ON_FAILURE=off there): every shard runs to its end, so one check
+# push shows every failure instead of the first (each shard still fails by its own result, so the run reads "failure").
+# Perf and the bots check stop as before, and so does everything on main, nightly, tags and Run workflow.
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'schedule' && 'nightly' || 'push' }}
   cancel-in-progress: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/check/') }}
@@ -417,6 +420,8 @@ jobs:
       - env:
           ARGS: ${{ matrix.job.args }}
           GH_TOKEN: ${{ github.token }}
+          # A check branch reports every failure in one run (see the note at `concurrency`).
+          STOP_ON_FAILURE: ${{ startsWith(github.ref, 'refs/heads/check/') && 'off' || 'on' }}
         run: |
           # shellcheck disable=SC2086 # vitest's arguments, one word each
           tools/ci/stop-on-failure.sh pnpm exec vitest run $ARGS
@@ -474,6 +479,8 @@ jobs:
       - run: tools/ci/stop-on-failure.sh pnpm e2e
         env:
           GH_TOKEN: ${{ github.token }}
+          # A check branch reports every failure in one run (see the note at `concurrency`).
+          STOP_ON_FAILURE: ${{ startsWith(github.ref, 'refs/heads/check/') && 'off' || 'on' }}
           E2E_ONLY: ${{ matrix.shard.flows }}
           # A change to a few maps: the 'maps' flow tours just those (empty: its whole part).
           E2E_MAPS: ${{ matrix.shard.maps }}

@@ -18,6 +18,7 @@ export * from './nav/index.ts';
 export * from './nav/audit.ts';
 export * from './nav/corridors.ts';
 export * from './sim/mapNav.ts';
+export * from './sim/padFlight.ts';
 export * from './sim/encounters.ts';
 export * from './sim/modes/index.ts';
 export * from './sim/profile.ts';

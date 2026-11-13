@@ -1,4 +1,4 @@
-import { MAX_TEAMS, TERRAIN_MATERIALS, boxFootprint, buildMapGeometry, fitBounds, mapTeams, vertexY, type MapDocument, type TerrainData, type WorldBox } from '@tiletrigger/shared';
+import { MAX_TEAMS, TERRAIN_MATERIALS, boxFootprint, buildMapGeometry, buriedPassageLines, fitBounds, mapGroundBores, mapTeams, vertexY, type MapDocument, type TerrainData, type WorldBox } from '@tiletrigger/shared';
 
 /** Fill a box's top-down outline (turned boxes as a quad). */
 export function fillBox(g: CanvasRenderingContext2D, b: WorldBox, px: (x: number) => number, py: (z: number) => number): void {
@@ -11,6 +11,29 @@ export function fillBox(g: CanvasRenderingContext2D, b: WorldBox, px: (x: number
   g.closePath();
   g.fill();
 }
+
+/**
+ * Buried tunnels on a plan (shared map/groundBore.ts): the passages' sides, dashed. A tunnel under a hill is not seen
+ * from above, so its pieces are left out of the plan's floors and walls (`buriedTiles`) and drawn like this instead.
+ */
+export function drawBuriedPassages(g: CanvasRenderingContext2D, map: MapDocument, px: (x: number) => number, py: (z: number) => number, lineWidth: number, color = 'rgba(190, 215, 255, 0.9)'): void {
+  const lines = buriedPassageLines(map);
+  if (!lines.length) return;
+  g.save();
+  g.lineWidth = lineWidth;
+  g.strokeStyle = color;
+  g.setLineDash([lineWidth * 3, lineWidth * 2]);
+  g.beginPath();
+  for (const l of lines) {
+    g.moveTo(px(l.a[0]), py(l.a[1]));
+    g.lineTo(px(l.b[0]), py(l.b[1]));
+  }
+  g.stroke();
+  g.restore();
+}
+
+/** The placements whose pieces are buried (not drawn as floors and walls on a plan). */
+export const buriedTiles = (map: MapDocument): ReadonlySet<string> => mapGroundBores(map).tiles;
 
 /** Outline a box's top-down footprint. */
 function strokeBox(g: CanvasRenderingContext2D, b: WorldBox, px: (x: number) => number, py: (z: number) => number): void {
@@ -128,7 +151,9 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
   const h = (canvas.height = Math.round(canvas.clientHeight * dpr || 170 * dpr));
   const g = canvas.getContext('2d');
   if (!g) return;
-  const boxes = buildMapGeometry(map);
+  // (Buried tunnels are drawn as dashed passages, not as the floors and walls nobody sees from above.)
+  const buried = buriedTiles(map);
+  const boxes = buildMapGeometry(map).filter((b) => !buried.has(b.sourceId));
   // Frame the play area (the boundary, else what's built), not the terrain round it.
   const area = map.bounds ? { min: map.bounds.min, max: map.bounds.max } : fitBounds(map, 2);
   let [x0, z0, x1, z1] = area ? [area.min[0], area.min[1], area.max[0], area.max[1]] : [Infinity, Infinity, -Infinity, -Infinity];
@@ -216,6 +241,7 @@ export function drawMapPlan(canvas: HTMLCanvasElement, map: MapDocument): void {
   }
   g.fillStyle = '#a9c0e0';
   for (const b of boxes) if (b.kind === 'wall' && b.min[1] < 1) fillBox(g, b, px, py);
+  drawBuriedPassages(g, map, px, py, Math.max(1, 0.9 * dpr));
 
   // Placements: dots and rings, each with a dark edge so it reads on any floor.
   const teams = mapTeams(map, MAX_TEAMS);
