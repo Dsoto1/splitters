@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_jkenmdsykexvdy4o",
-      "revision": 28,
-      "contentHash": "sha256:36d946e1f4e9ca56c6cc88ad8910c341f749eb54b4204ee339b4f0d79a0506ea",
+      "versionId": "v_deqbxsl7nlixfkis",
+      "revision": 29,
+      "contentHash": "sha256:669540eebd4cc6bc33c0b5bb8bd125e9e3ea296814b605462029ce0d5a04808a",
       "schemaVersion": 38,
-      "releasedAt": "2026-11-13T17:49:44.644Z"
+      "releasedAt": "2026-11-13T21:21:43.218Z"
     },
     "testOnly": true
   },
@@ -6452,6 +6452,86 @@
       "z": -2,
       "rotation": 1,
       "mirror": false
+    },
+    {
+      "id": "setpiece_f3mclpn5hr",
+      "piece": "setpiece.porch",
+      "x": -2,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_jmt1mrm48r",
+      "piece": "setpiece.bus_shelter",
+      "x": 0,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_c1g13ac3ew",
+      "piece": "setpiece.parking_deck_ramp",
+      "x": 2,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_gzovv4wfvl",
+      "piece": "setpiece.parking_deck_bay",
+      "x": 4,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_lumwhm1jgt",
+      "piece": "setpiece.concrete_frame",
+      "x": 6,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_zkqesr2kqb",
+      "piece": "setpiece.concrete_frame_2",
+      "x": 8,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_v6p7ojol44",
+      "piece": "setpiece.bandstand",
+      "x": 11,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_tbgcrznyfn",
+      "piece": "setpiece.shop_unit",
+      "x": 14,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
     }
   ]
 }
