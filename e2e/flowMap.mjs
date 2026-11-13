@@ -122,6 +122,8 @@ const RULES = [
   // CI's own tests and the perf tool (the perf job reads PERF changes itself).
   [/^tools\/ci\/test\//, NONE, ['tools']],
   [/^tools\/perf\//, NONE, []],
+  // The read-only asset inventory (docs/map-briefs/urban/ASSET_AUDIT.md): it reads the registries and writes a document.
+  [/^tools\/content\/asset-inventory\.mjs$/, NONE, []],
   // Screenshot baselines.
   [/^e2e\/baselines\//, ['visual'], []],
   [/^e2e\/timings\.json$/, NONE, []],
