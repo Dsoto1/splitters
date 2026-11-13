@@ -255,5 +255,9 @@ describe('a buried tunnel under a ridge: the hill stays on top and opens at the 
     const open = validateMap(ridgeMap(2, [['core.tunnel_vault_buried', 0, -2, 0], ['core.tunnel_vault_buried', 0, -1, 0]]));
     expect(open.filter((i) => i.code === 'tunnel.mouth_buried').length).toBe(2);
     expect(validateMap(ridgeMap()).filter((i) => i.code === 'tunnel.mouth_buried')).toEqual([]);
+    // An end the map maker walls up (the side's wall style) is a dead end, not a buried mouth.
+    const walled = ridgeMap(2, [['core.tunnel_vault_buried', 0, 0, 0]]);
+    walled.classicStructure.tiles[0]!.edges = { '0,0,0:N': 'wall', '0,0,0:S': 'wall' };
+    expect(validateMap(walled).filter((i) => i.code === 'tunnel.mouth_buried')).toEqual([]);
   });
 });

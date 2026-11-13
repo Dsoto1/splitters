@@ -7,7 +7,7 @@ import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { isWeaponSetId } from '../sim/weaponSets.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
-import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, propBoxes, resolveEdge, rotateSide, yawXZ, type WorldBox } from './geometry.ts';
+import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, propBoxes, resolveEdge, rotateSide, yawXZ, type WorldBox } from './geometry.ts';
 import { mapGroundBores } from './groundBore.ts';
 import { withPathsLaid } from './paths.ts';
 import { SIDE_DIRS } from './tileOptions.ts';
@@ -139,6 +139,8 @@ function buriedMouthIssues(map: MapDocument, cells: ReturnType<typeof buildOccup
       const side = rotateSide(port.side, occ.placement.rotation);
       const [dx, dy] = SIDE_DIRS[side];
       if (cells.has(cellKey(gx + dx, gy + dy, gz))) continue;
+      // Closed by the map maker (the side's wall style in the inspector): a dead end, as meant.
+      if (edgeSegments(resolveEdge(cells, gx, gy, gz, side), cellSize / 2, levelHeight).some(([u0, u1, y0, y1]) => u0 < 0 && u1 > 0 && y0 < 1 && y1 > 1)) continue;
       ground ??= terrainUnderFloors(withPathsLaid(map), undefined, catalog)!;
       const floor = gz * levelHeight;
       let over = -Infinity;
