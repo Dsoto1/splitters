@@ -3044,6 +3044,8 @@ export class GameView {
         const longest = Math.max(size.max.x - size.min.x, size.max.y - size.min.y, size.max.z - size.min.z);
         if (!(longest > 0.05 && longest < 5)) return m.dispose();
         m.parent = node;
+        // The Ammo Box Kit flies as the small crate it is in the hand (its model is the full-size one).
+        if (model === AMMO_BOX_MODEL) m.scaling.setAll(AMMO_BOX_KIT_SCALE);
         // A sheep's position is on the ground (arsenalVisuals SHEEP_LIFT): its model, centred on its bounds, is raised.
         if (look === 'sheep') m.position.y = (THROWABLE_DEFS.sheep.view?.fit ?? 0) / 2;
         for (const s of shapes) s.setEnabled(false);

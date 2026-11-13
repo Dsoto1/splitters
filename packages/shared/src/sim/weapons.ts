@@ -23,12 +23,14 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
 /**
  * How a projectile looks on the client (index sent in snapshots: new ones go last). `vortexNade` is the Vortex
  * Grenade's own look (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade; `flareShot` the Airstrike
- * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`).
+ * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`); `ammoBox` the Ammo
+ * Box Kit in flight (its crate, small).
  */
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
   'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'vortexNade', 'smoke', 'flareShot',
+  'ammoBox',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 

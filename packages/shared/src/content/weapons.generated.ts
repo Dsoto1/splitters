@@ -2198,7 +2198,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       splashDamage: 0,
       splashEdgeDamage: 0,
       selfDamageScale: 0,
-      visual: 'sandbag',
+      visual: 'ammoBox',
       ammoBox: true,
     },
     view: { model: 'props/ww2_ammo_crate.glb' },
