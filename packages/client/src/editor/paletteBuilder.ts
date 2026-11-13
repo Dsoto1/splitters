@@ -10,6 +10,7 @@ import {
   envModelFile,
   kitModelFile,
   FACADE_LABELS,
+  getKitFamily,
   getProp,
   getStylePack,
   GLASS_KIND_LABELS,
@@ -574,7 +575,8 @@ export class PaletteBuilder {
     }
     if (kind === 'prop') {
       const def = getProp(id);
-      return def ? this.app.thumbs.get(def.file, 'three-quarter', size) : null;
+      // A part of a larger build (the dome kit's) is framed by its own outline, not the build's box.
+      return def ? this.app.thumbs.get(def.file, 'three-quarter', size, getKitFamily(id)?.within ? 'mesh' : 'box') : null;
     }
     if (kind === 'mount') {
       const def = MOUNT_DEFS[id as MountModel];

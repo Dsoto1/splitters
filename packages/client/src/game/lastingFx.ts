@@ -13,12 +13,16 @@ export interface LastingPlace {
   up?: Vec3;
   /** Held still, without its particles (Reduce flashing's steady glow; GodotVfx `steady`). Changing it starts the effect again. */
   steady?: boolean;
+  /** Slowed to this share of its speed (Reduce flashing's calm for an aura of particles; GodotVfx `slow`). Changing it starts the effect again. */
+  slow?: number;
   /** Turned about its up by this much (radians): the way a portal faces. */
   yaw?: number;
   /** Recoloured (#rrggbb; GodotVfx `tint`): a portal pair's colour. Changing it starts the effect again. */
   tint?: string;
   /** These parts stretched along their Y (GodotVfx `stretch`): a portal's swirl fitted to its frame. Read when the effect starts. */
   stretch?: { nodes: readonly string[]; by: number };
+  /** Its particles start as if it had been running a while (GodotVfx `prefill`). Read when the effect starts. */
+  prefill?: boolean;
   /** Not drawn further than this from the camera (metres; never past RANGE). */
   range?: number;
 }
@@ -52,7 +56,7 @@ const LOOT_SHARE = 0.5;
  */
 export class LastingFx {
   private readonly wants = new Map<string, Want>();
-  private readonly live = new Map<string, { h: VfxHandle; fx: string; steady: boolean; tint: string }>();
+  private readonly live = new Map<string, { h: VfxHandle; fx: string; steady: boolean; tint: string; slow: number }>();
 
   /** When `update` last ran (ms). */
   private updated = 0;
@@ -107,7 +111,7 @@ export class LastingFx {
     }
     for (const [id, l] of this.live) {
       const w = this.wants.get(id);
-      if (!w || !keep.has(w) || l.h.done || l.fx !== w.key || l.steady !== !!w.place.steady || l.tint !== (w.place.tint ?? '')) {
+      if (!w || !keep.has(w) || l.h.done || l.fx !== w.key || l.steady !== !!w.place.steady || l.slow !== (w.place.slow ?? 1) || l.tint !== (w.place.tint ?? '')) {
         l.h.stop();
         this.live.delete(id);
       }
@@ -124,9 +128,9 @@ export class LastingFx {
       let l = this.live.get(id);
       if (!l) {
         const steady = !!w.place.steady;
-        const h = this.vfx.start(ref.pack, ref.effect, at, { ...place, ...tint, ...(ref.skip ? { skip: ref.skip } : {}), ...(steady ? { steady } : {}), ...(w.place.stretch ? { stretch: w.place.stretch } : {}) });
+        const h = this.vfx.start(ref.pack, ref.effect, at, { ...place, ...tint, ...(ref.skip ? { skip: ref.skip } : {}), ...(steady ? { steady } : {}), ...(w.place.slow !== undefined ? { slow: w.place.slow } : {}), ...(w.place.prefill ? { prefill: true } : {}), ...(w.place.stretch ? { stretch: w.place.stretch } : {}) });
         if (!h) continue;
-        this.live.set(id, (l = { h, fx: w.key, steady, tint: w.place.tint ?? '' }));
+        this.live.set(id, (l = { h, fx: w.key, steady, tint: w.place.tint ?? '', slow: w.place.slow ?? 1 }));
       } else l.h.move(at, place);
       l.h.setLevel(w.place.level ?? 1);
     }

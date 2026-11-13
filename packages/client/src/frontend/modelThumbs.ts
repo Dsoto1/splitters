@@ -19,6 +19,12 @@ const SIZE = 96;
 /** How to frame a thumbnail: three-quarter (props) or a side-on strip (weapons, barrel to the right). */
 export type ThumbView = 'three-quarter' | 'side';
 export type AnyThumbView = ThumbView | 'tile' | 'piece';
+/**
+ * How the camera is fitted: round the sphere about the meshes' bounding box (`box`: every picture but the ones below),
+ * or close on the outline the model itself draws from that side (`mesh`: a part of a larger build modelled where it
+ * stands in it, the dome kit's panels, drum quarters, trims and cap, which is thin and far from square in its box).
+ */
+export type ThumbFit = 'box' | 'mesh';
 const VIEWS: Record<AnyThumbView, { dir: [number, number, number]; width: number; height: number }> = {
   'three-quarter': { dir: [0.75, 0.6, -1], width: SIZE, height: SIZE },
   // Building pieces: steeper, so you see into rooms over their walls.
@@ -67,11 +73,11 @@ export class ModelThumbnails {
   }
 
   /** A thumbnail (PNG data URL) of a model file; cached. `size` (square views) is in pixels. */
-  get(path: string, view: ThumbView = 'three-quarter', size = SIZE): Promise<string> {
-    const key = `${view}:${size}:${path}`;
+  get(path: string, view: ThumbView = 'three-quarter', size = SIZE, fit: ThumbFit = 'box'): Promise<string> {
+    const key = `${view}:${size}:${fit === 'box' ? '' : `${fit}:`}${path}`;
     let p = this.cache.get(key);
     if (!p) {
-      p = (this.queue = this.queue.then(() => this.render(path, view, size))) as Promise<string>;
+      p = (this.queue = this.queue.then(() => this.render(path, view, size, fit))) as Promise<string>;
       p.catch(() => this.cache.delete(key));
       this.cache.set(key, p);
     }
@@ -150,17 +156,17 @@ export class ModelThumbnails {
     }
   }
 
-  private async render(path: string, view: ThumbView, size: number): Promise<string> {
+  private async render(path: string, view: ThumbView, size: number, fit: ThumbFit): Promise<string> {
     const node = await this.models.instantiate(path, 'thumb');
     try {
       node.getHierarchyBoundingVectors(true); // brings every world matrix in the model up to date
-      return await this.renderMeshes(node.getChildMeshes(), view, size);
+      return await this.renderMeshes(node.getChildMeshes(), view, size, 8000, fit);
     } finally {
       node.dispose();
     }
   }
 
-  private async renderMeshes(meshes: AbstractMesh[], view: AnyThumbView, size: number, readyMs = 8000): Promise<string> {
+  private async renderMeshes(meshes: AbstractMesh[], view: AnyThumbView, size: number, readyMs = 8000, fit: ThumbFit = 'box'): Promise<string> {
     const { dir: d } = VIEWS[view];
     const W = view === 'side' ? VIEWS.side.width : size;
     const H = view === 'side' ? VIEWS.side.height : size;
@@ -181,8 +187,14 @@ export class ModelThumbnails {
       const dir = new Vector3(d[0], d[1], d[2]).normalize();
       // Long, thin models (side view) fill the width: frame by the horizontal half-angle.
       const half = view === 'side' ? Math.atan(Math.tan(0.3) * aspect) : 0.3;
-      this.camera.position.copyFrom(centre.add(dir.scale((radius / Math.tan(half)) * 1.05)));
-      this.camera.setTarget(centre);
+      const tight = fit === 'mesh' ? fitOutline(meshes, dir, Math.tan(0.3) * aspect, Math.tan(0.3)) : null;
+      if (tight) {
+        this.camera.position.copyFrom(tight.target.add(dir.scale(tight.distance * 1.08)));
+        this.camera.setTarget(tight.target);
+      } else {
+        this.camera.position.copyFrom(centre.add(dir.scale((radius / Math.tan(half)) * 1.05)));
+        this.camera.setTarget(centre);
+      }
       const deadline = performance.now() + readyMs;
       while (!meshes.every((m) => m.isReady(true)) && performance.now() < deadline) {
         this.scene.render();
@@ -213,4 +225,65 @@ export class ModelThumbnails {
       return canvas.toDataURL('image/png');
     }
   }
+}
+
+/**
+ * Where a camera looking along -`dir` stands to hold the meshes' own outline (every vertex, not their box) centred and
+ * just inside the frame: the point it looks at and its distance from it. `tanX` and `tanY` are the tangents of the
+ * frame's half-angles. Null when the meshes have no vertices to read.
+ */
+function fitOutline(meshes: readonly AbstractMesh[], dir: Vector3, tanX: number, tanY: number): { target: Vector3; distance: number } | null {
+  // The camera's axes, as FreeCamera.setTarget lays them (up is +Y).
+  const right = Vector3.Cross(Vector3.Up(), dir.scale(-1)).normalize();
+  const up = Vector3.Cross(dir.scale(-1), right).normalize();
+  // Every vertex as [across, up, toward the camera].
+  const pts: number[] = [];
+  const p = new Vector3();
+  for (const m of meshes) {
+    const data = m.getVerticesData('position');
+    if (!data) continue;
+    const world = m.getWorldMatrix();
+    for (let i = 0; i + 2 < data.length; i += 3) {
+      Vector3.TransformCoordinatesFromFloatsToRef(data[i]!, data[i + 1]!, data[i + 2]!, world, p);
+      pts.push(Vector3.Dot(p, right), Vector3.Dot(p, up), Vector3.Dot(p, dir));
+    }
+  }
+  if (!pts.length) return null;
+  // Start on the middle of the outline as seen from far away, then settle: the distance that holds every vertex, and
+  // the sideways shift that centres what the lens then shows (nearer parts spread wider).
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z1 = -Infinity;
+  for (let i = 0; i < pts.length; i += 3) {
+    x0 = Math.min(x0, pts[i]!);
+    x1 = Math.max(x1, pts[i]!);
+    y0 = Math.min(y0, pts[i + 1]!);
+    y1 = Math.max(y1, pts[i + 1]!);
+    z1 = Math.max(z1, pts[i + 2]!);
+  }
+  let cx = (x0 + x1) / 2;
+  let cy = (y0 + y1) / 2;
+  let cam = z1;
+  for (let pass = 0; pass < 6; pass++) {
+    cam = -Infinity;
+    for (let i = 0; i < pts.length; i += 3) cam = Math.max(cam, pts[i + 2]! + Math.abs(pts[i]! - cx) / tanX, pts[i + 2]! + Math.abs(pts[i + 1]! - cy) / tanY);
+    cam = Math.max(cam, z1 + 0.05);
+    let l = Infinity, r = -Infinity, b = Infinity, t = -Infinity, depth = 0;
+    for (let i = 0; i < pts.length; i += 3) {
+      const d = cam - pts[i + 2]!;
+      const sx = (pts[i]! - cx) / d;
+      const sy = (pts[i + 1]! - cy) / d;
+      if (sx < l) l = sx;
+      if (sx > r) r = sx;
+      if (sy < b) b = sy;
+      if (sy > t) t = sy;
+      depth += d;
+    }
+    depth /= pts.length / 3;
+    cx += ((l + r) / 2) * depth;
+    cy += ((b + t) / 2) * depth;
+  }
+  // The look-at point: on the camera's line, at the vertices' middle depth.
+  let za = Infinity;
+  for (let i = 2; i < pts.length; i += 3) za = Math.min(za, pts[i]!);
+  const zc = (za + z1) / 2;
+  return { target: right.scale(cx).add(up.scale(cy)).add(dir.scale(zc)), distance: Math.max(0.1, cam - zc) };
 }

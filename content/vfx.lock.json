@@ -11,6 +11,7 @@
     {"file":"vfx/muzzle_flash.webp","source":"binbun-muzzle-flash","src":"shared/texture/*/*.png","title":"flash textures (atlas)","bytes":20480,"sha256":"9cedf59420ed172a"},
     {"file":"vfx/poison_fx.json","source":"binbun-poison-vfx","src":"BinbunVFX/poison_effects/effects/**/*.tscn","title":"poison effect scenes","bytes":11248,"sha256":"1cf24ca1050fbcda"},
     {"file":"vfx/portal_fx.json","source":"binbun-portal-vfx","src":"BinbunVFX/portal_vfx/effects/**/*.tscn","title":"portal effect scenes","bytes":8153,"sha256":"741d7d203e9c19b3"},
-    {"file":"vfx/smoke_fx.json","source":"binbun-smoke-vfx","src":"BinbunVFX/smoke_effects/effects/**/*.tscn","title":"smoke effect scenes","bytes":4126,"sha256":"23852bdc3251048f"}
+    {"file":"vfx/smoke_fx.json","source":"binbun-smoke-vfx","src":"BinbunVFX/smoke_effects/effects/**/*.tscn","title":"smoke effect scenes","bytes":4126,"sha256":"23852bdc3251048f"},
+    {"file":"vfx/status_fx.json","source":"binbun-status-fx","src":"BinbunVFX_Vol2/StatusFX/effects/**/*.tscn","title":"status effect scenes","bytes":27310,"sha256":"a7b73c61e115af68"}
   ]
 }

@@ -186,6 +186,8 @@ const RULES = [
   [/^packages\/client\/src\/game\/lootGlow\.ts$/, ['offline', 'physicsfx', 'visual', 'flashing'], ['client']],
   // Portals' swirls and jump pads' lifts (Binbun's Portal and Magic Area VFX): the flicker check records them; the
   // flows that walk through portals and over pads (the coverage map has both), and the pictures.
+  // Status auras (Binbun's Stylized Status FX on burning, poisoned, slowed and chilled characters).
+  [/^packages\/client\/src\/game\/statusFx\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/fixtureFx\.ts$/, ['offline', 'coverage', 'visual', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies', ...CHARACTER_FLOWS, 'flashing'], ['client']],
   [/^packages\/client\/src\/(backdrop|borderVisuals|foliage|mapMeshes|playlists)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'visual', 'flashing'], ['client']],

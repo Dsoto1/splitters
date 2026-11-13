@@ -36,6 +36,11 @@ export interface KitFamilyData {
   /** The most triangles any variant has at each level. */
   readonly triangles: readonly number[];
   readonly variants: readonly KitVariantData[];
+  /**
+   * A part of a larger build, drawn where it stands in it (content/kitprops `bounds: "within"`: the dome kit's parts):
+   * its size is the box round the whole build, so its palette picture frames the part itself (frontend/modelThumbs.ts).
+   */
+  readonly within?: boolean;
 }
 
 /** A retired catalogue prop and what takes its place as played. */
