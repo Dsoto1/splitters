@@ -679,7 +679,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       ladder: 'Ladder up to a roof',
       'light:sign': 'Shop sign: lit words; logic switches and recolours it',
     },
-    mounts: ['buggy', 'hauler', 'troop_truck'],
+    mounts: ['troop_buggy', 'hauler', 'troop_truck'],
     pickups: ['core.weapon_smg', 'core.weapon_shotgun', 'core.weapon_rifle', 'core.weapon_burst_rifle', 'core.weapon_marksman', 'core.weapon_launcher', 'core.grenades', 'core.health_small', 'core.health_large', 'core.armor_small', 'core.armor_large'],
   },
 ];
