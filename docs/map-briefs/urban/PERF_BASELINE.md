@@ -4,7 +4,7 @@ Taken on 2026-11-13 from a build of main at `6dcff3d` (after the tunnel kit, bef
 
 **How:** `pnpm build`, then `tools/perf/client-perf.mjs` with `PERF_BOTS=32 PERF_SECONDS=8`, Team Deathmatch, at medium and low graphics, in headless Chromium on the software renderer (SwiftShader) of a 4-core cloud container, while another job was using the machine.
 
-**How to read it:** draw calls, meshes, triangles, shadow casters and materials are properties of the scene and compare cleanly before and after. **The frame rates do not predict play:** the software renderer runs at about one frame a second. Load is seconds to a playable scene on this machine. No memory figure was taken (the script does not report one).
+**How to read it (corrected after the second run below):** these are samples of a live 8-second bot match from wherever the camera's player happens to be, so draw calls, meshes drawn, triangles and shadow casters **move a lot from run to run on an unchanged map** (see the second table: Riot Junction's draw calls at low graphics read 344 and then 164). A single run per map cannot show that a change cost nothing or something; it shows the order of magnitude. To compare properly, fix the view (a still camera, no bots) or average several runs. **The frame rates do not predict play:** the software renderer runs at about one frame a second. Load is seconds to a playable scene on this machine. No memory figure was taken (the script does not report one).
 
 | Map | Graphics | Draw calls | Active / all meshes | Triangles drawn | Lights | Shadow casters | Materials | Load (s) |
 |---|---|---|---|---|---|---|---|---|
@@ -21,4 +21,21 @@ Taken on 2026-11-13 from a build of main at `6dcff3d` (after the tunnel kit, bef
 
 **Not taken:** frame rate, memory and load time on a real graphics card or a phone; a 64 or 96 player run.
 
-To compare after a change: the same command on the same maps, and the same table.
+## The same table after Tileset 11's first build
+
+Taken on 2026-11-13 from a build of `wip/mapmaker-urban-1` just before it landed (Style Pack 14, map format v38; no map uses the new pieces, so none of these four maps changed). Same command, same machine, one run.
+
+| Map | Graphics | Draw calls | Active / all meshes | Triangles drawn | Lights | Shadow casters | Materials | Load (s) |
+|---|---|---|---|---|---|---|---|---|
+| riot_junction | medium | 425 | 667 / 4360 | 0.97 M | 3 (+128 clustered) | 209 | 799 | 4.0 |
+| neon_spire | medium | 392 | 375 / 2411 | 0.45 M | 3 (+72 clustered) | 539 | 826 | 4.4 |
+| ironworks | medium | 220 | 274 / 2771 | 0.33 M | 2 (+0 clustered) | 339 | 591 | 4.4 |
+| frost_basin | medium | 299 | 297 / 1379 | 0.68 M | 3 (+3 clustered) | 83 | 779 | 4.2 |
+| riot_junction | low | 164 | 259 / 4273 | 0.36 M | 3 (+128 clustered) | 0 | 872 | 4.0 |
+| neon_spire | low | 234 | 348 / 2486 | 0.32 M | 3 (+72 clustered) | 0 | 859 | 4.4 |
+| ironworks | low | 160 | 238 / 2459 | 0.21 M | 2 (+0 clustered) | 0 | 558 | 4.2 |
+| frost_basin | low | 220 | 257 / 1130 | 0.46 M | 3 (+3 clustered) | 0 | 704 | 4.0 |
+
+**What it shows:** the differences from the first table go both ways (Riot Junction and Ironworks lower, Neon Spire and Frost Basin higher at medium) on maps that did not change, which is the sampling noise described above, not an effect of Tileset 11. Load times are 4.0 to 4.4 s against 4.0 to 5.6 s before. **It does not establish** that the pack costs nothing; it could not, with one run each. What is known from the build itself: the script bundle is unchanged at 729.3 kB gzip, and no playable map places a new piece.
+
+**Before the next comparison:** make the measurement repeatable first (a fixed camera and no bots, or the mean of several runs).
