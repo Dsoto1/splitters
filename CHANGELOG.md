@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **The Spillway: parapets on the crest and legs under the long stair.** A 1 m concrete parapet runs along both edges of the dam's crest, open where the two tower bridges and the long stair come up, and the long stair stands on pairs of concrete legs. Built in MapMaker from solid blocks.
 - **The Spillway seats 64.** Eight more spawns a side, placed in MapMaker: Embers between their two rows on the dam's crest, Tide beside theirs in the valley.
 - **The dome kit's parts read in the palette.** The cap, panels, broken panels and drum quarters fill their palette pictures now (they were small slivers framed by the whole dome's size).
 - **Status auras.** A burning character is wrapped in twisting flame streaks, a poisoned one in green haze and bubbles, a slowed one in pink goo wisps and a chilled one in pale ice crystals (the Binbun Status FX pack), on the nearest three characters within 40 m; others keep the plain coloured shell. Nothing changes in damage or timing, and you see no aura on yourself. With Reduce flashing on the auras move at half speed, dimmer, and the plain shell no longer pulses.
