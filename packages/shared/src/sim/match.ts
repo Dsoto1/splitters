@@ -59,7 +59,7 @@ import { RouletteDirector } from './roulette.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { rollPickup } from './pickupRoll.ts';
-import { resupplyLoadout, resupplyReach } from './resupply.ts';
+import { BOT_RESUPPLY_REACH, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
@@ -2179,7 +2179,7 @@ export class Match {
         ...(this.smokeClouds().length ? { smoke: this.smokeClouds() } : {}),
         nav: this.nav,
         spawnPoints: orderGoal === undefined ? spawnPoints : npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
-        pickups: npc ? npcPickups : pickups,
+        pickups: npc ? npcPickups : this.withSupplyStops(pickups, c),
         inventory: this.inventoryOf(c),
         throwables: c.throwable?.count ?? 0,
         throwable: c.throwable?.kind ?? null,
@@ -4550,6 +4550,27 @@ export class Match {
   }
 
   /** Climb into the nearest turret or vehicle in reach with a free seat (driver first, then gunner, then passengers). */
+  /**
+   * The bots' pickups plus the Supply Buggies (MountDef.resupply) a bot may resupply at: its own team's or nobody's,
+   * standing, with stock, within BOT_RESUPPLY_REACH. Each is an Ammo Box pickup at the tailgate (`supply_<entity
+   * index>`) to the bot's pickup choice (BotBrain.bestPickup: worth it when short of ammo), and beside it the bot
+   * presses Use (BotBrain.act).
+   */
+  private withSupplyStops(pickups: PickupView[], c: Combatant): PickupView[] {
+    if (c.mount || restrictedWeapons(this.rules)) return pickups;
+    const item = getItem('core.ammo');
+    if (!item) return pickups;
+    let out: PickupView[] | null = null;
+    for (const m of this.mounts) {
+      const spec = m.def.resupply;
+      if (!spec || !m.alive || m.supply <= 0 || (m.faction !== null && m.faction !== c.faction)) continue;
+      const at = resupplyPoint(spec, m.pos, m.yaw);
+      if (horizontalDistance(at, c.move.pos) > BOT_RESUPPLY_REACH) continue;
+      (out ??= [...pickups]).push({ id: `supply_${m.index}`, item, pos: at, available: true });
+    }
+    return out ?? pickups;
+  }
+
   /**
    * On foot at a resupply vehicle's reach point (the Supply Buggy's tailgate): Use resupplies you there instead of
    * getting in (sim/resupply.ts). True when Use was taken by it: resupplied, or nothing given (full, empty, waiting;

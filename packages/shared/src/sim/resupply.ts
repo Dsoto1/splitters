@@ -81,3 +81,13 @@ export function resupplyLoadout(guns: Iterable<ResupplyGun>, throwable: { kind: 
   }
   return { given, throwable: next };
 }
+
+/** Where a source's reach point is in the world (its `at`, the mount standing at `pos` turned `yaw`). */
+export function resupplyPoint(spec: Pick<ResupplySpec, 'at'>, pos: { x: number; y: number; z: number }, yaw: number): { x: number; y: number; z: number } {
+  const s = Math.sin(yaw);
+  const c = Math.cos(yaw);
+  const [ax, ay, az] = spec.at;
+  return { x: pos.x + ax * c + az * s, y: pos.y + Math.max(0, ay - 1), z: pos.z - ax * s + az * c };
+}
+/** How far a bot goes out of its way to a Supply Buggy's tailgate (m). */
+export const BOT_RESUPPLY_REACH = 60;
