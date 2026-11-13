@@ -1464,6 +1464,8 @@ export class GameView {
   }
 
   private localCanopy?: { node: TransformNode; kind: number };
+  /** Your own slot (from updateAvatars): your first-person parachute wears its colours, as others see it. */
+  private canopySlot = 0;
 
   /** Your own canopy in first person (overhead, where looking up shows it); null packs it away. */
   updateLocalCanopy(pos: Vec3 | null, yaw: number, kind: number): void {
@@ -1472,7 +1474,7 @@ export class GameView {
       this.localCanopy = undefined;
     }
     if (!pos || !kind) return;
-    this.localCanopy ??= { node: createCanopy(this.scene, 'canopy_local', kind), kind };
+    this.localCanopy ??= { node: createCanopy(this.scene, 'canopy_local', kind, this.canopySlot), kind };
     placeCanopy(this.localCanopy.node, pos, yaw, performance.now(), 0);
   }
 
@@ -2015,6 +2017,7 @@ export class GameView {
    */
   updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => AvatarSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set(), sitting: ReadonlyMap<number, { yaw: number; legDrop: number; straddle?: number }> = new Map()): void {
     const now = performance.now();
+    this.canopySlot = localSlot;
     this.avatarFrame++;
     const crowd = poses.length > ANIM_LOD_CROWD;
     this.crowd = crowd;
@@ -2287,7 +2290,7 @@ export class GameView {
       const chute = p.alive && !seated.has(p.slot) ? (p.chute ?? 0) : 0;
       if (a.canopy && a.canopy.kind !== chute) this.dropCanopy(a);
       if (chute) {
-        a.canopy ??= { node: createCanopy(this.scene, `canopy_${p.slot}`, chute), kind: chute };
+        a.canopy ??= { node: createCanopy(this.scene, `canopy_${p.slot}`, chute, p.slot), kind: chute };
         placeCanopy(a.canopy.node, a.root.position, p.yaw, now, p.slot, (a.canopy.harness ??= canopyHarness(hitboxForSpec(want))));
       }
       if (!a.ragdoll) {

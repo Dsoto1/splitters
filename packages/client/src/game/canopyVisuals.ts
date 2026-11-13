@@ -10,36 +10,50 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { CHUTE_GLIDER, type LookHitbox } from '@tiletrigger/shared';
 import { reduceFlashing } from './reduceFlashing.ts';
 
-/** Canopies put away for reuse, by scene and kind (a big match drops dozens of players at once, and again on every respawn). */
+/** Canopies put away for reuse, by scene, kind and colour scheme (a big match drops dozens of players at once, and again on every respawn). */
 const spare = new WeakMap<Scene, Map<number, TransformNode[]>>();
 /** Canopy materials, shared by every canopy in a scene. */
 const materials = new WeakMap<Scene, Map<string, StandardMaterial>>();
 /** Canopies of a kind kept for reuse at most. */
 const MAX_SPARE = 32;
+/** Parachutes of one colour scheme kept for reuse at most (a 96-player drop is twelve of each). */
+const MAX_SPARE_SCHEME = 12;
+/** A put-away canopy's list: its kind, and for a parachute its colour scheme. */
+const spareKey = (kind: number, scheme: number): number => kind * 64 + scheme;
 
 /**
  * Canopies drawn over anyone under a parachute or a glider (see
  * shared/sim/parachute.ts), built in code: a round canopy of sixteen gores
  * on suspension lines and four risers that meet behind the wearer's neck,
  * or a delta wing with a control bar. The root sits at the wearer's feet
- * and turns with them. Done with one: releaseCanopy.
+ * and turns with them. A parachute's colours go by its wearer's `slot`
+ * (canopySchemeOf): the same on every client, for the whole match. Done
+ * with one: releaseCanopy.
  */
-export function createCanopy(scene: Scene, name: string, kind: number): TransformNode {
-  const reused = spare.get(scene)?.get(kind)?.pop();
+export function createCanopy(scene: Scene, name: string, kind: number, slot = 0): TransformNode {
+  const scheme = kind === CHUTE_GLIDER ? 0 : canopySchemeOf(slot);
+  const reused = spare.get(scene)?.get(spareKey(kind, scheme))?.pop();
   if (reused) {
     reused.setEnabled(true);
     return reused;
   }
-  return buildCanopy(scene, name, kind);
+  return buildCanopy(scene, name, kind, scheme);
+}
+
+/** The parachute colour scheme a slot wears (an index into the schemes): the slot alone decides, so everyone sees the same. */
+export function canopySchemeOf(slot: number): number {
+  return ((Math.trunc(slot) % SCHEMES.length) + SCHEMES.length) % SCHEMES.length;
 }
 
 /** Put a canopy away for the next one of its kind (hidden), or dispose it if enough are put away. */
 export function releaseCanopy(scene: Scene, node: TransformNode, kind: number): void {
   let byKind = spare.get(scene);
   if (!byKind) spare.set(scene, (byKind = new Map()));
-  let list = byKind.get(kind);
-  if (!list) byKind.set(kind, (list = []));
-  if (list.length >= MAX_SPARE || node.isDisposed()) {
+  const scheme = (node.metadata as { scheme?: number } | null)?.scheme;
+  const key = spareKey(kind, scheme ?? 0);
+  let list = byKind.get(key);
+  if (!list) byKind.set(key, (list = []));
+  if (list.length >= (scheme === undefined ? MAX_SPARE : MAX_SPARE_SCHEME) || node.isDisposed()) {
     // Its materials are shared: they stay.
     node.dispose(false, false);
     return;
@@ -48,7 +62,7 @@ export function releaseCanopy(scene: Scene, node: TransformNode, kind: number): 
   list.push(node);
 }
 
-function buildCanopy(scene: Scene, name: string, kind: number): TransformNode {
+function buildCanopy(scene: Scene, name: string, kind: number, scheme: number): TransformNode {
   const root = new TransformNode(name, scene);
   let mats = materials.get(scene);
   if (!mats) materials.set(scene, (mats = new Map()));
@@ -92,11 +106,11 @@ function buildCanopy(scene: Scene, name: string, kind: number): TransformNode {
     hang.position.set(0, HARNESS.up, -HARNESS.back);
     const shape = parachuteShape();
     const fabric = new Mesh(`${name}_dome`, scene);
-    shape.fabric.applyToMesh(fabric);
+    parachuteFabric(scheme).applyToMesh(fabric);
     fabric.parent = hang;
     let cloth = mats.get('fabric');
     if (!cloth) {
-      // One material for the whole canopy: the panels' colours are in the vertices. Outside and inside are separate
+      // One material for every canopy of every colour scheme: the colours are in the vertices. Outside and inside are separate
       // faces (the inside darker), so back faces are culled.
       cloth = new StandardMaterial('canopy_fabric', scene);
       cloth.diffuseColor = Color3.White();
@@ -107,7 +121,7 @@ function buildCanopy(scene: Scene, name: string, kind: number): TransformNode {
     fabric.material = cloth;
     const rigging = CreateLineSystem(`${name}_lines`, { lines: shape.lines, colors: shape.lines.map(() => [LINE, LINE]) }, scene);
     rigging.parent = hang;
-    root.metadata = { rig: hang };
+    root.metadata = { rig: hang, scheme };
   }
   for (const m of root.getChildMeshes()) m.isPickable = false;
   return root;
@@ -170,31 +184,69 @@ const ACROSS = [1, 1, 1, 2, 4];
 /** How far the middle of a gore billows out past its seams at each ring, and how far the hem rises there (the scallops; m). */
 const BILLOW = [0, 0, 0, 0, 0.09, 0.15];
 const SCALLOP = 0.24;
-/** Panel colours: orange and cream gores under a navy crown; the seams, the webbing, and how dark the inside is. */
-const PANELS = ['#e8552b', '#f4ecd9'].map((h) => Color3.FromHexString(h));
-const CROWN_COLOR = Color3.FromHexString('#23375c');
-const SEAM = Color3.FromHexString('#3a2a26');
+/**
+ * The parachute colour schemes, one per wearer by slot: two panel colours round the canopy, the crown's, and the seam
+ * tapes'. Each is two tones under a contrasting crown, told apart from far away, and none is one flat team hue (teams
+ * can be any colour: a canopy says nothing about sides).
+ */
+const SCHEMES = (
+  [
+    // Sunset: orange-red and cream under navy.
+    ['#e8552b', '#f4ecd9', '#23375c', '#3a2a26'],
+    // Harbour: deep navy and white under amber.
+    ['#22386b', '#f1f1ec', '#e0962e', '#141c33'],
+    // Field: olive and sand under dark olive.
+    ['#6b7a3a', '#dccb9c', '#39411f', '#2c3018'],
+    // Hazard: yellow and black under black.
+    ['#f0c22e', '#27282c', '#27282c', '#141416'],
+    // Lagoon: teal and white under deep teal.
+    ['#1f9a94', '#f2f4ef', '#0f5458', '#0c3a3d'],
+    // Regal: purple and gold under dark purple.
+    ['#6d3fa0', '#e8b93c', '#38205a', '#2a1845'],
+    // Plain: white and pale grey under slate.
+    ['#f4f2eb', '#d9d8d2', '#7d8792', '#8a8d93'],
+    // Kite: orange and blue under cream.
+    ['#ef8a2a', '#2d63b0', '#f4ecd9', '#2a2523'],
+  ] as const
+).map((hexes) => hexes.map((h) => Color3.FromHexString(h)));
+/** What a vertex of the fabric is coloured as: a scheme's four colours in order, then the webbing. */
+const PANEL_A = 0;
+const CROWN_PART = 2;
+const SEAM_PART = 3;
+const WEBBING_PART = 4;
 const WEBBING = Color3.FromHexString('#2a2d33');
 const INSIDE = 0.7;
 /** Where the four risers end and the lines begin, from the harness point: this far to each side, up, and front / back. */
 const LINK = { x: 0.34, y: 0.85, front: 0.02, back: -0.26 };
 
-let parachute: { fabric: VertexData; lines: Vector3[][] } | undefined;
+/** The fabric without its colours: each vertex's part of a scheme (PANEL_A…) and how dark it is drawn (the inside). */
+interface Fabric {
+  positions: number[];
+  normals: number[];
+  indices: number[];
+  parts: number[];
+  shades: number[];
+}
+let parachute: { fabric: Fabric; lines: Vector3[][] } | undefined;
+const fabrics: VertexData[] = [];
 
 /**
  * The parachute's shape, worked out once and shared by every canopy: the fabric (outside, inside, seams, risers and
- * the harness yoke in one mesh, coloured by vertex) and the suspension lines, about the harness point.
+ * the harness yoke in one mesh, each vertex marked with the part of a colour scheme it wears) and the suspension
+ * lines, about the harness point.
  */
-function parachuteShape(): { fabric: VertexData; lines: Vector3[][] } {
+function parachuteShape(): { fabric: Fabric; lines: Vector3[][] } {
   if (parachute) return parachute;
   const positions: number[] = [];
   const normals: number[] = [];
-  const colors: number[] = [];
+  const parts: number[] = [];
+  const shades: number[] = [];
   const indices: number[] = [];
-  const vert = (p: Vector3, n: Vector3, c: Color3, shade = 1): number => {
+  const vert = (p: Vector3, n: Vector3, part: number, shade = 1): number => {
     positions.push(p.x, p.y, p.z);
     normals.push(n.x, n.y, n.z);
-    colors.push(c.r * shade, c.g * shade, c.b * shade, 1);
+    parts.push(part);
+    shades.push(shade);
     return positions.length / 3 - 1;
   };
   /** A triangle whose front faces along `out` (whichever way round its corners were given). */
@@ -249,7 +301,7 @@ function parachuteShape(): { fabric: VertexData; lines: Vector3[][] } {
   for (const n of smooth.values()) n.normalize();
   const normalAt = (p: Vector3) => smooth.get(key(p))!;
   for (const { corners, gore, band } of quads) {
-    const color = band === 0 ? CROWN_COLOR : PANELS[gore % PANELS.length]!;
+    const color = band === 0 ? CROWN_PART : PANEL_A + (gore % 2);
     // Outside, then inside (the same cloth facing down, darker).
     for (const side of [1, -1]) {
       const v = corners.map((p) => vert(p, normalAt(p).scale(side), color, side > 0 ? 1 : INSIDE));
@@ -267,7 +319,7 @@ function parachuteShape(): { fabric: VertexData; lines: Vector3[][] } {
       const p = seamAt(gore, ring);
       const n = normalAt(p);
       const mid = p.add(n.scale(0.012));
-      const pair = [vert(mid.subtract(across), n, SEAM), vert(mid.add(across), n, SEAM)];
+      const pair = [vert(mid.subtract(across), n, SEAM_PART), vert(mid.add(across), n, SEAM_PART)];
       if (last) {
         tri(last[0]!, last[1]!, pair[1]!, n);
         tri(last[0]!, pair[1]!, pair[0]!, n);
@@ -281,7 +333,7 @@ function parachuteShape(): { fabric: VertexData; lines: Vector3[][] } {
     const along = to.subtract(from).normalize();
     const u = Vector3.Cross(along, Math.abs(along.y) > 0.9 ? Vector3.Right() : Vector3.Up()).normalize();
     const w = Vector3.Cross(along, u);
-    const ring = (p: Vector3, n: Vector3) => vert(p.add(n.scale(wide)), n, WEBBING);
+    const ring = (p: Vector3, n: Vector3) => vert(p.add(n.scale(wide)), n, WEBBING_PART);
     for (let i = 0; i < sides; i++) {
       const [a0, a1] = [(i / sides) * Math.PI * 2, ((i + 1) / sides) * Math.PI * 2];
       const [n0, n1] = [a0, a1].map((t) => u.scale(Math.cos(t)).add(w.scale(Math.sin(t))));
@@ -294,11 +346,7 @@ function parachuteShape(): { fabric: VertexData; lines: Vector3[][] } {
   for (const link of links) prism(new Vector3(Math.sign(link.x) * 0.05, 0, 0), link, 0.012, 3);
   // The yoke: a short bar of webbing across the back of the neck.
   prism(new Vector3(-0.09, 0, 0), new Vector3(0.09, 0, 0), 0.03, 4);
-  const fabric = new VertexData();
-  fabric.positions = positions;
-  fabric.normals = normals;
-  fabric.colors = colors;
-  fabric.indices = indices;
+  const fabric: Fabric = { positions, normals, indices, parts, shades };
   // Lines: from every seam's end on the skirt to the nearest riser's link.
   const lines: Vector3[][] = [];
   for (let gore = 0; gore < GORES; gore++) {
@@ -308,4 +356,25 @@ function parachuteShape(): { fabric: VertexData; lines: Vector3[][] } {
   }
   parachute = { fabric, lines };
   return parachute;
+}
+
+/** The fabric in one colour scheme's colours (made once per scheme; every canopy of that scheme is built from it). */
+function parachuteFabric(scheme: number): VertexData {
+  const made = fabrics[scheme];
+  if (made) return made;
+  const { fabric } = parachuteShape();
+  const colours = SCHEMES[scheme] ?? SCHEMES[0]!;
+  const colors: number[] = [];
+  for (let i = 0; i < fabric.parts.length; i++) {
+    const c = colours[fabric.parts[i]!] ?? WEBBING;
+    const shade = fabric.shades[i]!;
+    colors.push(c.r * shade, c.g * shade, c.b * shade, 1);
+  }
+  const data = new VertexData();
+  data.positions = fabric.positions;
+  data.normals = fabric.normals;
+  data.indices = fabric.indices;
+  data.colors = colors;
+  fabrics[scheme] = data;
+  return data;
 }
