@@ -18,7 +18,7 @@
       "trim": {
         "plinth": 0.45,
         "drain": { "width": 0.3, "material": "core.pbr_tread_plate" },
-        "pipe": { "y": 2.45, "r": 0.09, "material": "core.pbr_rusted_plate" },
+        "pipe": { "y": 2.45, "r": 0.13, "material": "core.pbr_rusted_plate" },
         "light": { "length": 1.4, "material": "core.lamp_glow" },
         "hazard": "core.hazard",
         "door": { "material": "core.pbr_steel" }

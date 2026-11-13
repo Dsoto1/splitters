@@ -13,7 +13,7 @@
 // So movement, shots and bots are the same in a concrete tunnel and, later, a brick sewer of the same shape.
 
 const SIDES = ['N', 'E', 'S', 'W'];
-const QUARTER = Math.round((Math.PI / 4) * 1000) / 1000;
+const TWELFTHS = [Math.round((Math.PI / 6) * 1000) / 1000, Math.round((Math.PI / 3) * 1000) / 1000];
 const r3 = (v) => Math.round(v * 1000) / 1000;
 
 /** A box [x0, y0, z0, x1, y1, z1] turned `turns` quarter turns clockwise seen from above (N to E), as tiles turn. */
@@ -83,8 +83,8 @@ function moduleParts(profile, family, shape) {
     const p = trim.pipe;
     const z0 = arms.has('S') ? -E : mouth === 'S' ? shape.headwall.at + shape.headwall.t / 2 : -w;
     draw([-w + 0.05, p.y - p.r, z0, -w + 0.05 + 2 * p.r, p.y + p.r, E], p.material, p.tint);
-    // The same bar turned an eighth about its run: an eight-sided pipe.
-    trims.push({ box: [-w + 0.05, p.y - p.r, z0, -w + 0.05 + 2 * p.r, p.y + p.r, E].map(r3), kind: 'trim', roll: QUARTER, ...surf(p.material, p.tint) });
+    // The same bar turned a twelfth and a sixth about its run: twelve sides, which reads as round at this size.
+    for (const roll of TWELFTHS) trims.push({ box: [-w + 0.05, p.y - p.r, z0, -w + 0.05 + 2 * p.r, p.y + p.r, E].map(r3), kind: 'trim', roll, ...surf(p.material, p.tint) });
     for (let z = Math.ceil(z0) + 0.5; z < E; z += 2) draw([-w, p.y - p.r - 0.05, z - 0.05, -w + 0.07 + 2 * p.r, p.y + p.r + 0.05, z + 0.05], m.trim);
   }
 
@@ -178,7 +178,7 @@ function moduleParts(profile, family, shape) {
     if (trim.pipe) {
       const p = trim.pipe;
       draw([-w + 0.05, p.y - p.r, from, -w + 0.05 + 2 * p.r, p.y + p.r, E], p.material, p.tint);
-      trims.push({ box: [-w + 0.05, p.y - p.r, from, -w + 0.05 + 2 * p.r, p.y + p.r, E].map(r3), kind: 'trim', roll: QUARTER, ...surf(p.material, p.tint) });
+      for (const roll of TWELFTHS) trims.push({ box: [-w + 0.05, p.y - p.r, from, -w + 0.05 + 2 * p.r, p.y + p.r, E].map(r3), kind: 'trim', roll, ...surf(p.material, p.tint) });
     }
     if (trim.light) {
       const l = trim.light;

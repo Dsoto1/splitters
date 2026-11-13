@@ -175,8 +175,8 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
   dug out along the way it faces until the ground as made is down to its floor (at most 48 m), and banks no steeper
   than 1.5 in 1 lie either side. Nothing is stored: move or delete the portal and the hill is back. A buried end with
   no portal on it is the validator's warning "ends in the ground" (wall the end up in the inspector for a dead end).
-  A mouth in flat ground (no hill to come out of) needs a ramp or stair piece down to it, which the tunnel kit's later
-  steps add.
+  A mouth in flat ground (no hill to come out of): a portal a level down digs its own earth ramp, or use the kit's
+  Surface Stairs (below).
 - **Earth comes to a buried piece.** Every buried tunnel keeps at least 0.2 m of earth over its cap, and the earth
   beside a portal's wing walls goes to their sloping tops, up where the hill is low and down where it is high. So a
   buried run on flat ground is a mound with its mouths open, and no outer wall of a buried piece stands bare. It
@@ -191,6 +191,25 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
   On level 0 of flat ground a buried run is an earth mound instead.
 - **Lit Tunnel Run** (Set pieces, Tunnels): three concrete modules with a real light under each fixture (3 lights).
   Single modules only glow.
+- **Up, down and out (the Tunnels group; Tileset 04 step 4).** All in every family, all the same 3.6 m passage:
+  - *Stairs* and *Slope*: the passage climbs one level over one cell, from the south (low) to the north (a level up),
+    on 16 steps or a 1 in 2 ramp. They take two levels of their cell. Buried: the soffit climbs with the floor and so
+    does the earth kept over it, so between two buried levels the field stays as it is, and up to ground level the
+    top end is under a mound (it is meant to come up into something in a hillside: a cellar).
+  - *Surface Stairs*: the same steps open to the sky between low walls, from the field (north, top) down to a tunnel a
+    level under it (south): the mouth for flat ground where a portal's 13 m ramp has no room. The field is brought
+    level to its walls and its top step.
+  - *Shaft*: a straight module with a hatch to the surface over its west wall (kerb on three sides, the lid standing
+    open); the ground is brought level to the hatch, so it suits a run a level under flat ground (under a hill it
+    digs a pit down to the hatch). *Riser*: a capped well joining a passage to one a level up. Both want a ladder:
+    the set pieces **Tunnel Shaft** and **Tunnel Riser** have it (and the riser a light). Bots climb them like any
+    ladder, up and down; it is a one-at-a-time way, so don't make it the only way into a place bots must fight over.
+  - *Chamber*: a room of 2 x 2 cells (14 m inside, 3.3 m clear, four columns), an opening on each side: south and
+    west in its south-west cell, north in the north-west, east in the south-east, so a passage can run straight
+    through along its south or west side. Wall an opening you don't use (Sides) or put a Dead End on it.
+- **Picking what is under the ground.** With Select, a click on the ground over a buried piece a level or more down
+  selects it (the hover label says which level); what is on the level being edited still wins. Erase never reaches
+  under the ground. A buried set piece is picked the same way, as one, and offers *Add a portal* on its open ends.
 - **The tunnel kit (the Tunnels group; Tileset 04 step 2).** Concrete Tunnel, Curve, T-Junction, Four-Way, Dead End
   and Portal: the same 3.6 m passage as the vaulted tunnels (they join with no step), 3.3 m clear under a flat
   soffit, always buried. Cast concrete with panel joints, a floor drain, a pipe run on straight walls, a strip light
