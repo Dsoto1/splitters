@@ -110,6 +110,9 @@ function terrainStyle(material: TerrainMaterial): ResolvedStyle {
 const BLEND_SHARPNESS = 1.5;
 const BLEND_CUTS = 3;
 
+/** MapMaker's level meshes are cut into ground squares this wide (m), so an edit rebuilds only the squares it touched. */
+const KEEP_SQUARE = 48;
+
 export class MapStyler {
   private readonly textures: Map<string, RawTexture>;
   private readonly materials: Map<string, StandardMaterial>;
@@ -142,43 +145,57 @@ export class MapStyler {
    * the build-time pass that ended the z-fighting flicker). `faces`: those faces, already worked
    * out (MapMaker clips every level against all of them, then draws them in two sets).
    */
-  buildBoxes(doc: MapDocument, boxes: readonly WorldBox[], name = 'map', faces: readonly RenderFace[] = visibleFaces(boxes), keep = false): Mesh[] {
+  buildBoxes(doc: MapDocument, boxes: readonly WorldBox[], name = 'map', faces: readonly RenderFace[] = visibleFaces(boxes), keep: string | false = false): Mesh[] {
     const tiles = new Map<string, TilePlacement>(doc.classicStructure.tiles.map((t) => [t.id, t]));
-    // `keep` (MapMaker, which builds again after every edit): a style whose faces are the ones its mesh was built
-    // from keeps that mesh; only the styles an edit touched are built and sent to the graphics card again.
+    // `keep` (MapMaker, which builds again after every edit): a mesh whose faces are the ones it was built from
+    // stays; only what an edit touched is built and sent to the graphics card again. The meshes are cut by style and
+    // by ground square (KEEP_SQUARE m), so an edit to one block of a town's thousand rebuilds a street's worth.
+    // What each face is styled as and adds to its mesh's signature is kept with the face (faces an edit leaves alone
+    // are the same objects: map/facesUpdate.ts), for as long as the map is styled the same (`keep`: what MapMaker
+    // styles it by, its theme and painted surfaces, as text).
+    if (keep !== false && this.faceInfoFor !== keep) {
+      this.faceInfoFor = keep;
+      this.faceInfo = new WeakMap();
+    }
     const groups = new Map<string, { style: ResolvedStyle; faces: RenderFace[]; h1: number; h2: number }>();
     for (const f of faces) {
-      const b = boxes[f.box]!;
-      const tile = tiles.get(b.sourceId);
-      // Free blocks carry their own material on every face.
-      const own = b.surface ? { material: coreMaterials.get(b.surface.material), tint: b.surface.tint } : null;
-      const style = own?.material ? (own as ResolvedStyle) : resolveSurface(doc, tile, faceSlot(b, f.normal));
-      const key = styleKey(style);
-      let g = groups.get(key);
-      if (!g) groups.set(key, (g = { style, faces: [], h1: 0, h2: 0 }));
-      g.faces.push(f);
-      if (keep) {
-        // The face as two numbers, added up over the style's faces (whatever order they come in).
+      let info = keep !== false ? this.faceInfo.get(f) : undefined;
+      if (!info) {
+        const b = boxes[f.box]!;
+        const tile = tiles.get(b.sourceId);
+        // Free blocks carry their own material on every face.
+        const own = b.surface ? { material: coreMaterials.get(b.surface.material), tint: b.surface.tint } : null;
+        const style = own?.material ? (own as ResolvedStyle) : resolveSurface(doc, tile, faceSlot(b, f.normal));
+        let key = styleKey(style);
         let a = 0x811c9dc5;
         let c = 0x01000193;
-        const mix = (n: number) => {
-          const v = Math.round(n * 1000) | 0;
-          a = Math.imul(a ^ v, 16777619);
-          c = (Math.imul(c + v, 2246822519) ^ (c >>> 13)) | 0;
-        };
-        for (const p of f.corners) mix(p[0]), mix(p[1]), mix(p[2]);
-        for (const p of f.flat) mix(p[0]), mix(p[1]), mix(p[2]);
-        mix(f.normal[0]), mix(f.normal[1]), mix(f.normal[2]);
-        mix(f.flatNormal[0]), mix(f.flatNormal[1]), mix(f.flatNormal[2]);
-        g.h1 = (g.h1 + a) | 0;
-        g.h2 = (g.h2 + c) | 0;
+        if (keep !== false) {
+          key += `@${Math.floor((b.min[0] + b.max[0]) / 2 / KEEP_SQUARE)},${Math.floor((b.min[2] + b.max[2]) / 2 / KEEP_SQUARE)}`;
+          // The face as two numbers, added up over the mesh's faces (whatever order they come in).
+          const mix = (n: number) => {
+            const v = Math.round(n * 1000) | 0;
+            a = Math.imul(a ^ v, 16777619);
+            c = (Math.imul(c + v, 2246822519) ^ (c >>> 13)) | 0;
+          };
+          for (const p of f.corners) mix(p[0]), mix(p[1]), mix(p[2]);
+          for (const p of f.flat) mix(p[0]), mix(p[1]), mix(p[2]);
+          mix(f.normal[0]), mix(f.normal[1]), mix(f.normal[2]);
+          mix(f.flatNormal[0]), mix(f.flatNormal[1]), mix(f.flatNormal[2]);
+        }
+        info = { key, style, a, c };
+        if (keep !== false) this.faceInfo.set(f, info);
       }
+      let g = groups.get(info.key);
+      if (!g) groups.set(info.key, (g = { style: info.style, faces: [], h1: 0, h2: 0 }));
+      g.faces.push(f);
+      g.h1 = (g.h1 + info.a) | 0;
+      g.h2 = (g.h2 + info.c) | 0;
     }
     const kept = new Map<string, { mesh: Mesh; sig: string }>();
     const old = this.meshes;
     this.meshes = [...groups.entries()].map(([key, g]) => {
       const sig = `${g.faces.length}:${g.h1}:${g.h2}`;
-      const had = keep ? this.boxMeshes.get(key) : undefined;
+      const had = keep !== false ? this.boxMeshes.get(key) : undefined;
       if (had && had.sig === sig && !had.mesh.isDisposed()) {
         kept.set(key, had);
         return had.mesh;
@@ -200,8 +217,10 @@ export class MapStyler {
     return this.meshes;
   }
 
-  /** The box meshes by style, and what each was built from (buildBoxes with `keep`). */
+  /** The box meshes by style (and ground square), and what each was built from (buildBoxes with `keep`). */
   private boxMeshes = new Map<string, { mesh: Mesh; sig: string }>();
+  private faceInfo = new WeakMap<RenderFace, { key: string; style: ResolvedStyle; a: number; c: number }>();
+  private faceInfoFor: string | null = null;
 
   /**
    * Terrain: one mesh per ground material holding that material's cells, with

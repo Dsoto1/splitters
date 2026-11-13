@@ -397,8 +397,8 @@ export class EditorView {
   private faceCache: FaceCache | null = null;
 
   private buildLevelMeshes(visible: MapDocument, drawn: readonly WorldBox[], faces: readonly RenderFace[], onLevel: (b: WorldBox) => boolean): void {
-    this.mapMeshes = this.styler.buildBoxes(visible, drawn, 'edmap', faces.filter((f) => onLevel(drawn[f.box]!)), true);
-    this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn, 'edmapdim', faces.filter((f) => !onLevel(drawn[f.box]!)), true);
+    this.mapMeshes = this.styler.buildBoxes(visible, drawn, 'edmap', faces.filter((f) => onLevel(drawn[f.box]!)), this.builtStyle);
+    this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn, 'edmapdim', faces.filter((f) => !onLevel(drawn[f.box]!)), this.builtStyle);
     for (const m of this.dimMeshes) m.visibility = 0.4;
     this.applyTileLayer();
   }
