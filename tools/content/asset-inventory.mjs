@@ -425,6 +425,7 @@ for (const m of shared.CORE_MATERIALS) {
     name: m.displayName,
     source: { file: 'content/materials.json', ...(m.texture ? { texture: m.texture, licence: licenceClass(tex?.license ?? 'CC0-1.0 (ambientCG)', tex?.creator) } : { pattern: m.pattern, licence: 'owned (made in code)' }) },
     surface: shared.materialSurfaceOf(m.id) ?? `guessed: ${shared.materialSurface(m.id)}`,
+    ...(typeof shared.surfaceMaterial === 'function' ? { ballistic: shared.surfaceMaterial(m.id) } : {}),
     paletteCategory: m.category,
     ...(m.emissive ? { emissive: true } : {}),
     inThemes: sorted(materialInThemes.get(m.id) ?? []),
