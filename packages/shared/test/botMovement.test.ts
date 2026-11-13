@@ -147,7 +147,7 @@ describe('bot movement smoothness', () => {
 });
 
 /** An open TDM yard 48 × 32 m with a buggy (or another vehicle) parked at the west end, facing east. */
-function rideYard(model: 'buggy' | 'gun_jeep' = 'buggy'): MapDocument {
+function rideYard(model: 'troop_buggy' | 'gun_jeep' = 'troop_buggy'): MapDocument {
   const tiles: MapDocument['classicStructure']['tiles'] = [];
   for (let x = 0; x < 6; x++) for (let z = 0; z < 4; z++) tiles.push({ id: `y${x}_${z}`, tile: 'core.yard', x, y: z, z: 0, rotation: 0 });
   const map = makeMap(tiles, [[0, 0, 4], [0, 0, 20], [40, 0, 4], [40, 0, 20]]);
@@ -166,7 +166,7 @@ describe('bots ride with a teammate', () => {
   // The gun jeep's free roof gun first; the buggy has no gun seat, so a passenger seat and the bot's own weapon.
   it.each([
     ['gun_jeep', 1, (w: string) => w === 'core.mount_mg'],
-    ['buggy', 1, (w: string) => !w.startsWith('core.mount_')],
+    ['troop_buggy', 1, (w: string) => !w.startsWith('core.mount_')],
   ] as const)('hops into the free seat of a %s a human drives by (seat %i), fires at an enemy, and gets out when the driver does', (model, wantSeat, gunOk) => {
     const match = new Match(rideYard(model), { ...DEFAULT_TDM_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 3);
     const me = match.addHuman('me')!;

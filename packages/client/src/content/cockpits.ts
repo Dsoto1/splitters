@@ -114,13 +114,13 @@ export interface CockpitDef {
 }
 
 /**
- * The Supply Buggy (MOUNT_DEFS.supply_buggy, the owner's Tactical Off-Road Beast, the Buggy until 2026-11-11; this cockpit back from git history, 2026-11-13): the cage measured on the model (slices of its
+ * The Troop Buggy (MOUNT_DEFS.troop_buggy, the owner's Tactical Off-Road Beast, the Buggy until 2026-11-11; this cockpit back from git history, 2026-11-13): the cage measured on the model (slices of its
  * triangles): a flat roof frame at 1.47 m on rails 0.46 m either side of the middle from the rear hoop (z -1.0) to
  * z 0.45, a hoop behind the front seats (z 0.05), A-pillars falling to the hood at z 1.15, a front bar with lamps at
  * z 0.6; three rows of seats (the crease at z 0.28, -0.53 and -0.94, 0.32 m either side), the wheel on
  * the left at z 0.78.
  */
-const SUPPLY_BUGGY: CockpitDef = {
+const TROOP_BUGGY: CockpitDef = {
   hide: [
     // The cabin, inside the tub's walls: seats, floor, wheel and dash.
     [
@@ -210,14 +210,14 @@ const SUPPLY_BUGGY: CockpitDef = {
 };
 
 /**
- * The buggy (MOUNT_DEFS.buggy, the Meshy Community sci-fi buggy of the vehicle refresh, 2026-11-11): the cage measured
+ * The Supply Buggy (MOUNT_DEFS.supply_buggy, the Meshy Community sci-fi buggy of the vehicle refresh, 2026-11-11; the six-seat Buggy until 2026-11-13): the cage measured
  * on the model (slices of its triangles): a roof frame about 1.65 m up on rails 0.58 m either side of the middle from
  * the hoop behind the cabin (z -0.6, where the rear deck starts) to the front bar with its lamps (z 0.4), a hoop behind
  * the seats (z -0.15), A-pillars falling to the hood at z 1.0; one row of seats (the crease at z 0.06, 0.4 m either
  * side; the four in the back stand on the deck), the wheel on the left at z 0.58. Refitted from the old body's
  * cockpit (the Tactical Off-Road Beast's, git history): wider, taller and 0.2 m further back.
  */
-const BUGGY: CockpitDef = {
+const SUPPLY_BUGGY: CockpitDef = {
   hide: [
     // The cabin, inside the tub's walls: seats, floor, wheel and dash.
     [
@@ -421,4 +421,4 @@ const HAULER: CockpitDef = {
 };
 
 /** In-house cockpits by mount id. */
-export const COCKPITS: Readonly<Record<string, CockpitDef>> = { buggy: BUGGY, supply_buggy: SUPPLY_BUGGY, troop_truck: TROOP_TRUCK, armored_rover: ARMORED_ROVER, hauler: HAULER };
+export const COCKPITS: Readonly<Record<string, CockpitDef>> = { troop_buggy: TROOP_BUGGY, supply_buggy: SUPPLY_BUGGY, troop_truck: TROOP_TRUCK, armored_rover: ARMORED_ROVER, hauler: HAULER };

@@ -1,7 +1,7 @@
 {
   "id": "gun_jeep",
   "order": 11,
-  "displayName": "Gun Jeep",
+  "displayName": "Gun Buggy",
   "kind": "vehicle",
   "model": "vehicles/recon_jeep.glb",
   "fallback": "vehicles/gun_jeep.glb",
@@ -17,23 +17,7 @@
   "seats": [
     { "role": "driver", "label": "Driver", "offset": [-0.4, 0.92, -0.05], "seated": true, "legDrop": 0.25 },
     { "role": "gunner", "label": "Roof gun", "offset": [0, 1.05, -0.45], "weapon": "core.mount_mg" },
-    { "role": "passenger", "label": "Passenger", "offset": [0.4, 0.92, -0.05], "seated": true, "legDrop": 0.25 },
-    {
-      "role": "passenger",
-      "label": "Left rail",
-      "offset": [-0.88, 1.12, -1.6],
-      "seated": true,
-      "facing": -1.5707963267948966,
-      "legDrop": 0.7
-    },
-    {
-      "role": "passenger",
-      "label": "Right rail",
-      "offset": [0.88, 1.12, -1.6],
-      "seated": true,
-      "facing": 1.5707963267948966,
-      "legDrop": 0.7
-    }
+    { "role": "passenger", "label": "Passenger", "offset": [0.4, 0.92, -0.05], "seated": true, "legDrop": 0.25 }
   ],
   "cockpitEye": [-0.4, 1.82, 0.2],
   "enterRadius": 3.2,
@@ -63,11 +47,11 @@
       "steer": 0.45
     }
   },
-  "blurb": "A light pickup with a machine gun on the back: a driver, a gunner who fires all round and three passengers with their own weapons",
+  "blurb": "A light four-wheeler with a machine gun on the roof: a seated driver, a seated passenger with their own weapon and a standing gunner who fires all round",
   "notes": {
     "model": "Recon Trike (Meshy Community, CC0; content/guns.json vehicles/recon_jeep.glb, 2026-11-10): a Warthog-style four-wheeler with a pintle machine gun on the roll cage over the cab and an open bed behind. It rides on the owner's Rugged Off-Road Tire (vehicles/offroad_tire.glb), one at each hub (2026-11-12): the body's own tires are cut out of it and dropped (guns.json `parts`, `drop`), since cut out as parts they took bodywork with them and spun off their axles. Hubs and size measured on the body's old tires: 0.56 m radius, 0.56 m wide, hubs 0.56 m up at x ±1.12, z 1.58 and -1.63; the body's lowest point left is 0.327 m up (`rideHeight`). The Car Kit pickup it replaced is the fallback (vehicles/gun_jeep.glb).",
     "half": "Fitted across the tires (2026-11-11, as the Troop Truck's): 2.9 m wide, so walls stop the tires where they are drawn and rounds that hit a tire hit the jeep. Length and height unchanged: the model is 4.4 m long and 2.44 m tall at the gun; its body is about 2.2 m wide and its tires stand out to 2.88 m.",
-    "seats": "Measured on the model (slices of its triangles): two cab seats with cushions 0.92 m up at z -0.05 (backrests at z -0.3, the floor 0.7 m up under the dash); the gun's ring on the cage roof at z 0.3, 2.3 m up, so the gunner stands behind its breech on the console between the cab and the bed (feet 1.05 m), shoulders out of the roof like a hatch gunner; the bed (floor 0.7 m) runs from z -1.2 to -2.0 between walls 1.1 m high at x ±0.9, where the two rail riders sit facing out. Roles, weapon and arcs unchanged.",
+    "seats": "Measured on the model (slices of its triangles): two cab seats with cushions 0.92 m up at z -0.05 (backrests at z -0.3, the floor 0.7 m up under the dash); the gun's ring on the cage roof at z 0.3, 2.3 m up, so the gunner stands behind its breech on the console between the cab and the bed (feet 1.05 m), shoulders out of the roof like a hatch gunner; the bed (floor 0.7 m) runs from z -1.2 to -2.0 between walls 1.1 m high at x ±0.9, where the two rail riders sit facing out. Roles, weapon and arcs unchanged. Owner, 2026-11-13: the Gun Buggy (it was called the Gun Jeep; its id stays `gun_jeep`) seats three, the driver and passenger in the cab and the gunner standing at the roof gun; the two rail riders on the bed are gone.",
     "cockpitEye": "A seated head height over the driver's cushion, under the cage roof (2.0 m).",
     "vehicle": "Stiffer springs than the buggy's: a pickup. The suspension's contact points and hub height are unchanged (the handling is); the tires are drawn at this body's hubs (`wheels.at`), each riding the nearest contact point's spring."
   }

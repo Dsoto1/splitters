@@ -278,7 +278,7 @@ describe('bot vehicle sense in a match', () => {
   });
 
   it('switches to its launcher against an enemy in a vehicle and hits the vehicle', () => {
-    const match = new Match(yard([{ position: [8, 0, 12], model: 'buggy', yaw: Math.PI / 2, faction: null, respawnSeconds: null }], [[0, 0, 0], [30, 0, 24]]), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 7);
+    const match = new Match(yard([{ position: [8, 0, 12], model: 'troop_buggy', yaw: Math.PI / 2, faction: null, respawnSeconds: null }], [[0, 0, 0], [30, 0, 24]]), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 7);
     const human = match.addHuman('driver')!;
     const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.hard)!;
     match.step();
@@ -311,10 +311,10 @@ describe('bot drivers on loose, sprung vehicles', () => {
     const tiles = [];
     for (let x = 0; x < 14; x++) for (let y = 0; y < 14; y++) tiles.push({ id: `y${x}_${y}`, tile: 'core.yard', x, y, z: 0, rotation: 0 as const });
     const map = makeMap(tiles, [[0, 0, 0]]);
-    return { ...map, entities: [...map.entities, { id: 'mount_0', kind: 'mount' as const, position: [20, 0, 20], model: model as 'buggy', yaw: 0, faction: null, respawnSeconds: null }] };
+    return { ...map, entities: [...map.entities, { id: 'mount_0', kind: 'mount' as const, position: [20, 0, 20], model: model as 'troop_buggy', yaw: 0, faction: null, respawnSeconds: null }] };
   }
   // The Troop Truck too: six wheels on stiff springs, heavy (owner, 2026-11-11).
-  for (const model of ['buggy', 'gun_jeep', 'troop_truck'] as const) {
+  for (const model of ['troop_buggy', 'gun_jeep', 'troop_truck'] as const) {
     it(`${model}: round the course without spinning out`, () => {
       const match = new Match(field(model), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 }, 1);
       const c = match.addHuman('driver')!;

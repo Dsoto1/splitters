@@ -22,7 +22,7 @@ describe('drawn tire size (MountDef.wheels radius and width)', () => {
   });
 
   it('the buggy, gun jeep, troop truck and armored rover ride on the separate tire, on the ground at each hub', () => {
-    for (const id of ['buggy', 'gun_jeep', 'troop_truck', 'armored_rover'] as const) {
+    for (const id of ['troop_buggy', 'gun_jeep', 'troop_truck', 'armored_rover'] as const) {
       const def = MOUNT_DEFS[id];
       const wheels = def.wheels!;
       expect(wheels.model).toBe('vehicles/offroad_tire.glb');
@@ -42,6 +42,6 @@ describe('drawn tire size (MountDef.wheels radius and width)', () => {
       expect(def.vehicle!.suspension!.wheels).toHaveLength(wheels.at.length);
     }
     // The truck's tires are bigger than the buggy's.
-    expect(MOUNT_DEFS.troop_truck.wheels!.radius!).toBeGreaterThan(MOUNT_DEFS.buggy.wheels!.radius!);
+    expect(MOUNT_DEFS.troop_truck.wheels!.radius!).toBeGreaterThan(MOUNT_DEFS.troop_buggy.wheels!.radius!);
   });
 });

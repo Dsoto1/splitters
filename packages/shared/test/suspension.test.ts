@@ -14,7 +14,7 @@ function strip(model: string, blocks: MapEntity[] = []): MapDocument {
   const tiles = [];
   for (let x = 0; x < 16; x++) for (let y = 0; y < 5; y++) tiles.push({ id: `y${x}_${y}`, tile: 'core.yard', x, y, z: 0, rotation: 0 as const });
   const map = makeMap(tiles, [[0, 0, 0]]);
-  const m: MountEntity = { position: [8, 0, 16], model: model as 'buggy', yaw: Math.PI / 2, faction: null, respawnSeconds: null };
+  const m: MountEntity = { position: [8, 0, 16], model: model as 'troop_buggy', yaw: Math.PI / 2, faction: null, respawnSeconds: null };
   return { ...map, entities: [...map.entities, { id: 'mount_0', kind: 'mount' as const, ...m }, ...blocks] };
 }
 const block = (id: string, x: number, z: number, size: [number, number, number], pitch = 0): MapEntity =>
@@ -64,7 +64,7 @@ function drive(model: string, blocks: MapEntity[] = []) {
 
 describe('raycast suspension (sim/suspension.ts)', () => {
   it('buggy, gun jeep and armored rover have it; tank, hover and flyers do not', () => {
-    expect(suspensionOf(MOUNT_DEFS.buggy)?.points).toHaveLength(4);
+    expect(suspensionOf(MOUNT_DEFS.troop_buggy)?.points).toHaveLength(4);
     expect(suspensionOf(MOUNT_DEFS.gun_jeep)?.points).toHaveLength(4);
     expect(suspensionOf(MOUNT_DEFS.armored_rover)?.points).toHaveLength(4);
     for (const id of ['tank', 'speeder', 'hover_bike', 'skyfighter', 'dropship'] as const) expect(suspensionOf(MOUNT_DEFS[id])).toBeNull();
@@ -121,7 +121,7 @@ describe('raycast suspension (sim/suspension.ts)', () => {
   });
 
   it('squats under power, dives under the brakes, leans out of a turn', () => {
-    const d = drive('buggy');
+    const d = drive('troop_buggy');
     d.run(30);
     expect(Math.abs(d.m.susp!.h)).toBeLessThan(0.01);
     d.run(25, { forward: 1 });
@@ -142,7 +142,7 @@ describe('raycast suspension (sim/suspension.ts)', () => {
   });
 
   it('bounces over a bump and settles again', () => {
-    const d = drive('buggy', [block('bump', 30, 16, [0.6, 0.12, 6])]);
+    const d = drive('troop_buggy', [block('bump', 30, 16, [0.6, 0.12, 6])]);
     let lo = 0;
     let hi = 0;
     for (let k = 0; k < 200; k++) {
@@ -158,7 +158,7 @@ describe('raycast suspension (sim/suspension.ts)', () => {
   });
 
   it('a ramp jump: air time, a little tumble, a bouncy landing; never NaN', () => {
-    const d = drive('buggy', [block('ramp', 40, 16, [4, 0.3, 6], 0.32)]);
+    const d = drive('troop_buggy', [block('ramp', 40, 16, [4, 0.3, 6], 0.32)]);
     let air = 0;
     let lowH = 0;
     let takeoff: number | null = null;
@@ -195,7 +195,7 @@ describe('raycast suspension (sim/suspension.ts)', () => {
   });
 
   it('snapshots carry only suspension vehicles, and a parked one stops casting rays once settled', () => {
-    const d = drive('buggy');
+    const d = drive('troop_buggy');
     const ms = d.match.snapshot([]).ms!;
     expect(ms).toHaveLength(1);
     expect(ms[0]).toHaveLength(5 + 4);
@@ -214,21 +214,21 @@ describe('raycast suspension (sim/suspension.ts)', () => {
   });
 
   it('look-to-steer turns the vehicle toward where the driver looks', () => {
-    const d = drive('buggy');
+    const d = drive('troop_buggy');
     d.run(60, { forward: 1 });
     const want = Math.PI / 2 + 0.8;
     d.run(150, { forward: 1, yaw: want, buttons: BUTTON_STEER_LOOK });
     const off = Math.atan2(Math.sin(want - d.m.yaw), Math.cos(want - d.m.yaw));
     expect(Math.abs(off)).toBeLessThan(0.12);
     // Without the button the same look does nothing.
-    const e = drive('buggy');
+    const e = drive('troop_buggy');
     e.run(210, { forward: 1, yaw: want });
     expect(Math.abs(e.m.yaw - Math.PI / 2)).toBeLessThan(0.01);
   });
 
   it('is loose at speed: a hard turn flat out slides more than the same turn slow', () => {
     const slip = (forward: number) => {
-      const d = drive('buggy');
+      const d = drive('troop_buggy');
       d.run(150, { forward });
       let most = 0;
       for (let k = 0; k < 40; k++) {
@@ -244,7 +244,7 @@ describe('raycast suspension (sim/suspension.ts)', () => {
   });
 
   it('the springs alone ring down from any start and stay bounded', () => {
-    const t = suspensionOf(MOUNT_DEFS.buggy)!;
+    const t = suspensionOf(MOUNT_DEFS.troop_buggy)!;
     const s = newSuspension(t);
     s.h = -0.3;
     s.p = 0.4;

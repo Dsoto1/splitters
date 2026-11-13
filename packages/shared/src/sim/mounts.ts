@@ -26,14 +26,17 @@ export type MountModel = (typeof MOUNT_MODELS)[number];
  * the ids stay readable for good (map/mountAliases.ts): a map that names one is still a valid file, and plays with
  * the replacement. Never reuse a retired id.
  * - `kart` (Go-Kart: one seat, quick, no gun) -> `hover_bike` (one rider, quick, no gun).
- * - `ice_cream_truck` (a van for four, no mounted gun, riders shoot their own weapons) -> `buggy` (the same idea
- *   for six), so a map gains no mounted weapon it was not made with.
+ * - `ice_cream_truck` (a van for four, no mounted gun, riders shoot their own weapons) -> `troop_buggy` (the same
+ *   idea for six), so a map gains no mounted weapon it was not made with.
+ * - `buggy` (owner, 2026-11-13: one id per body; the id had been the Off-Road Beast, then the sci-fi buggy) ->
+ *   `troop_buggy` (the Off-Road Beast, six aboard), so a map's buggies stay troop carriers. The sci-fi body is the
+ *   Supply Buggy, `supply_buggy`.
  */
-export const RETIRED_MOUNTS = { kart: 'hover_bike', ice_cream_truck: 'buggy' } as const satisfies Readonly<Record<string, MountModel>>;
+export const RETIRED_MOUNTS = { kart: 'hover_bike', ice_cream_truck: 'troop_buggy', buggy: 'troop_buggy' } as const satisfies Readonly<Record<string, MountModel>>;
 export type RetiredMountModel = keyof typeof RETIRED_MOUNTS;
-export const RETIRED_MOUNT_MODELS = ['kart', 'ice_cream_truck'] as const satisfies readonly RetiredMountModel[];
+export const RETIRED_MOUNT_MODELS = ['kart', 'ice_cream_truck', 'buggy'] as const satisfies readonly RetiredMountModel[];
 /** What the retired ones were called (MapMaker says what a map still names). */
-export const RETIRED_MOUNT_NAMES: Readonly<Record<RetiredMountModel, string>> = { kart: 'Go-Kart', ice_cream_truck: 'Ice Cream Truck' };
+export const RETIRED_MOUNT_NAMES: Readonly<Record<RetiredMountModel, string>> = { kart: 'Go-Kart', ice_cream_truck: 'Ice Cream Truck', buggy: 'Buggy' };
 /** A vehicle id as a map file may name it: a placeable one, or a retired one. */
 export type PlacedMountModel = MountModel | RetiredMountModel;
 export const isRetiredMount = (id: unknown): id is RetiredMountModel => typeof id === 'string' && Object.hasOwn(RETIRED_MOUNTS, id);
