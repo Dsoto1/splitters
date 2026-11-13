@@ -106,19 +106,24 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     blurb: 'A hovering two-seater: the pilot fires twin blasters ahead, the passenger shoots their own gun',
   },
   // model: The owner's Tactical Off-Road Beast and its Rugged Off-Road Tire (Meshy Community, content/guns.json): a long tube-frame buggy with a roof gun, its hubs bare, so the tires go on at its hubs at their own size and it rides on them. It was the Buggy until 2026-11-11 and is again from 2026-11-13 (owner: "bring back the other buggy (with the separated wheel), to sit 6 (2 stand up in back seats/row)"); the sci-fi buggy that replaced it is now the Supply Buggy (content/vehicles/supply_buggy.json).
-  // half: Fitted across the tires (as the Gun Jeep's and Troop Truck's): the body is 1.8 m wide, its tires stand out to 2.2 m, so 1.1 m either side; 4.4 m long, 1.48 m tall on 0.24 m of ride height (the standing riders' shoulders stand above it).
+  // half: Fitted across the tires (as the Gun Jeep's and Troop Truck's): the body is 1.8 m wide and 4.4 m long; the tires (0.42 m radius, 0.33 m wide: the tire model's own size, 0.41 by 0.32 m, a touch larger so each hub, 0.42 m up, has its tire on the ground) stand out to 1.17 m either side and 2.28 m behind the middle (the rear hubs at z -1.86). 1.48 m tall on 0.24 m of ride height (the standing riders' shoulders stand above it).
   // seats: Measured on the model (slices of its triangles, 2026-11-13): two rows of cushions 0.8 m up, 0.32 m either side of the middle (front row z 0.3, back row z -0.45; the front footwell 0.18 m under the cushion, the back one 0.28 m); the wheel on the left at z 0.75. Behind the back row's backrests (z -0.6 to -0.7) a third bench, its cushion 0.72 m up from z -0.65 to -1.05, under the roof frame's open bay between the cross bar at z -0.4 and the rear hoop at z -0.95 (the roof gun runs down the middle, |x| < 0.15). The two in the back row stand on that bench either side of the gun (x ±0.3, z -0.8), their shoulders out of the open roof like the Gun Jeep's hatch gunner. The roof gun is not manned.
   // cockpitEye: A seated head height, under the front roof bar (1.47 m at z 0.55), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts).
-  // vehicle: The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides; the suspension's contact points are the tires (wheels.at).
+  // vehicle: The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides; the suspension's contact points are the hubs (`wheels`, `hub` 0.42 m).
   buggy: {
     id: 'buggy',
     displayName: 'Buggy',
     kind: 'vehicle',
     model: 'vehicles/offroad_buggy.glb',
     rideHeight: 0.24,
-    wheels: { model: 'vehicles/offroad_tire.glb', at: [[-1, 0.42, 1.74], [1, 0.42, 1.74], [-1, 0.42, -1.86], [1, 0.42, -1.86]] },
+    wheels: {
+      model: 'vehicles/offroad_tire.glb',
+      radius: 0.42,
+      width: 0.33,
+      at: [[-1, 0.42, 1.74], [1, 0.42, 1.74], [-1, 0.42, -1.86], [1, 0.42, -1.86]],
+    },
     health: 450,
-    half: [1.1, 0.8, 2.2],
+    half: [1.17, 0.8, 2.28],
     seats: [
       { role: 'driver', label: 'Driver', offset: [-0.32, 0.8, 0.3], seated: true, legDrop: 0.18 },
       { role: 'passenger', label: 'Front passenger', offset: [0.32, 0.8, 0.3], seated: true, legDrop: 0.18 },
@@ -141,6 +146,8 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       mass: 1.4,
       drift: 0.55,
       suspension: {
+        wheels: [[-1, 1.74], [1, 1.74], [-1, -1.86], [1, -1.86]],
+        hub: 0.42,
         travel: 0.2,
         bump: 0.16,
         freq: 1.5,

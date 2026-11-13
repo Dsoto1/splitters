@@ -117,12 +117,12 @@ describe('turrets, sentries and vehicles', () => {
     // Behind the tailgate (z 10 - 2.2 - 0.6): resupplied, not seated.
     place(a, 10, 7.2);
     empty(a);
-    expect(press(a)).toEqual([{ e: 'resupply', s: a.slot, m: 0, left: 9, ok: true }]);
+    expect(press(a)).toEqual([{ e: 'resupply', s: a.slot, m: 1, left: 9, ok: true }]);
     expect(a.mount).toBeUndefined();
     expect([...a.weapons.values()].filter((w) => w.def.reserveMax > 0).every((w) => w.reserve === w.def.reserveMax)).toBe(true);
     expect(a.throwable?.count).toBeGreaterThan(0);
     // Full: nothing given, no use spent.
-    expect(press(a)).toEqual([{ e: 'resupply', s: a.slot, m: 0, left: 9, ok: false }]);
+    expect(press(a)).toEqual([{ e: 'resupply', s: a.slot, m: 1, left: 9, ok: false }]);
     // Emptied again at once: the wait holds it back, then it gives.
     empty(a);
     expect(press(a)[0]?.ok).toBe(false);
