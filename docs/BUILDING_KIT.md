@@ -177,6 +177,16 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
   no portal on it is the validator's warning "ends in the ground" (wall the end up in the inspector for a dead end).
   A mouth in flat ground (no hill to come out of) needs a ramp or stair piece down to it, which the tunnel kit's later
   steps add.
+- **Earth comes to a buried piece.** Every buried tunnel keeps at least 0.2 m of earth over its cap, and the earth
+  beside a portal's wing walls goes to their sloping tops, up where the hill is low and down where it is high. So a
+  buried run on flat ground is a mound with its mouths open, and no outer wall of a buried piece stands bare. It
+  can raise ground a few metres round the piece: keep things that must stay on flat ground a cell away.
+- **The tunnel kit (the Tunnels group; Tileset 04 step 2).** Concrete Tunnel, Curve, T-Junction, Four-Way, Dead End
+  and Portal: the same 3.6 m passage as the vaulted tunnels (they join with no step), 3.3 m clear under a flat
+  soffit, always buried. Cast concrete with panel joints, a floor drain, a pipe run on straight walls, a strip light
+  at the crown (a glowing fixture, not a light: nothing against the lights budget), a service door on the dead end
+  and hazard bands at the mouth. The shapes and the family are data (`content/tiles/tunnels.json`,
+  `tools/content/kit/tunnel.mjs`): the next family (brick sewer, mine, cave, road) is a new entry there.
 - **Corner Hatch:** open floor with a quarter of a 3.2 m hatch at its north-east corner: four round a corner open a
   hatch on it (a 4 m board square on a cell corner).
 - **Sandbags** (material): our own procedural paint, bags 0.6 m by 0.3 m in stretcher bond.
