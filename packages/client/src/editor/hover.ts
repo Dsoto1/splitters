@@ -96,6 +96,19 @@ export class Hover {
    * entity near the pointer, then the tile in the hovered cell.
    */
   pick(): Hit | null {
+    // One look per hover update (the outline and the card ask the same question of the same pointer and map).
+    if (this.hoverPick) return this.hoverPick.hit;
+    const hit = this.pickNow();
+    if (this.hovering) this.hoverPick = { hit };
+    return hit;
+  }
+
+  private hovering = false;
+  private hoverPick: { hit: Hit | null } | null = null;
+  /** The drawn map's entities by id, per document as drawn (built once, not on every pointer move). */
+  private readonly entitiesById = new WeakMap<object, Map<string, MapEntity>>();
+
+  private pickNow(): Hit | null {
     // The map as drawn: a set piece's parts (tiles and entities of the expansion) pick their placement, as one.
     const view = this.app.viewDoc;
     const partOf = this.app.expansion.partOf;
@@ -103,7 +116,8 @@ export class Hover {
       const placement = partOf.get(h.id);
       return placement ? { kind: 'setpiece', id: placement } : { kind: h.kind, id: h.id };
     };
-    const byId = new Map(view.entities.map((e) => [e.id, e]));
+    let byId = this.entitiesById.get(view.entities);
+    if (!byId) this.entitiesById.set(view.entities, (byId = new Map(view.entities.map((e) => [e.id, e]))));
     // What the outliner hides or locks (editor-only) can't be picked: a set piece's parts follow their placement.
     const blocked = this.app.outliner.blocked;
     const free = (id: string) => !blocked.size || !(blocked.has(id) || blocked.has(partOf.get(id) ?? ''));
@@ -224,8 +238,15 @@ export class Hover {
   }
 
   updateHover(): void {
-    this.updateHoverTarget();
-    this.updateHoverCard();
+    this.hovering = true;
+    this.hoverPick = null;
+    try {
+      this.updateHoverTarget();
+      this.updateHoverCard();
+    } finally {
+      this.hovering = false;
+      this.hoverPick = null;
+    }
   }
 
   /**
@@ -238,6 +259,8 @@ export class Hover {
     const lines: string[] = [];
     /** Lines in red (why it can't be placed) or amber (a warning), by index in `lines`. */
     const marks = new Map<number, 'bad' | 'warn' | 'note'>();
+    /** The path a click with Select would open (lit while the pointer is on it). */
+    let previewPath: string | null = null;
     let title = '';
     let tone = '';
     const themeName = coreThemes.get(this.app.doc.classicStructure.theme)?.displayName ?? this.app.doc.classicStructure.theme;
@@ -299,8 +322,18 @@ export class Hover {
           }
           lines.push(this.app.tool.kind === 'erase' ? 'Click to erase' : 'Click to select');
         }
+        // Select over a road, trail, track or route with nothing else under the pointer: a click opens it in Paths.
+        const path = !hit && this.app.tool.kind === 'select' && !this.app.input.marquee ? this.app.paths.pathUnder(this.app.hoverPoint) : null;
+        const what = path ? this.app.paths.describe(path) : null;
+        previewPath = what ? path : null;
+        if (what) {
+          title = what.title;
+          tone = 'pick';
+          lines.push(...what.lines, 'Click to edit its points and length');
+        }
       }
     }
+    this.app.paths.preview(previewPath);
     tip.hidden = !title;
     if (!title || !at) return;
     tip.className = `tone-${tone}`;

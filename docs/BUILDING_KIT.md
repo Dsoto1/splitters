@@ -22,6 +22,18 @@ matches and the dedicated server alike.
   MapMaker's view (not picked either); the padlock keeps it from being picked or selected. Hide and lock are kept per map
   in this browser and never go in the map file: a test match and the game play everything. The list draws only the rows
   in view, so a map with 4,096 things stays quick.
+- **Select opens a path** (owner, 2026-11-11: "need way to easily select an already created path/road"). With the
+  Select tool, a road, trail, track or route under the pointer (and nothing else there) lights up, its hover card
+  names it, and a click opens it in the Paths tool: its points to drag, Shift-click the path to add one in it,
+  right-click or Del to remove one. The Paths pane has its **Length** by number (longer runs straight on from the last
+  point with one more point, shorter ends where the path was that far along; shared `editor/pathEdit.ts`) and **Add
+  points at the end / at the start**.
+- **What an edit costs on a big map** (owner, 2026-11-11: selecting and editing lagged). After an edit MapMaker
+  clips again only the level boxes near what changed (`map/facesUpdate.ts`; a full pass on St. John's 2,500 blocks
+  took a third of a second), rebuilds only the level meshes the edit touched (cut by style and 48 m ground square),
+  puts an entity's marker again only when it or what it stands on changed, and runs the map's own checks and the
+  overlaps check in a worker (`mapTestWorkerCore.ts`, a `check` job), the issues list following a moment later.
+  `node tools/perf/editor-edit.mjs` measures a click, a move and an undo on a map: the page's script time, frames apart.
 - **Favourites and recent:** the quick row over the palette puts the current mode's favourites (or recent pieces) first
   and the rest after; **This mode only** shows just the mode's.
 
@@ -1229,6 +1241,19 @@ small and exact.
   it (a free block of rock). New terrain sits 0.15 m under a level, which with a flight's first 0.25 m step makes a lip
   bots can't climb: Flatten the ground at a stair's foot to the floor's height. Flatten levels at a steady rate a
   frame, so hold the brush on each spot; two flattened areas side by side need to overlap or a ditch stays between them.
+- **Fit ground to this, and Settle onto the ground** (owner, 2026-11-12: foundations hung over slopes; shared
+  `editor/groundFit.ts`). With a build selected (tiles, a set piece, blocks, props) on a map with terrain, the
+  inspector's **Ground** section and the selection menu (right-click) have both; a path has them in the Paths pane.
+  **Fit ground** changes the ground as made (the stored heights) and leaves the build where it is: under its footprint
+  and one terrain cell round it the ground goes to the build's base (the top of its lowest floor slab, or its lowest
+  bottom where it has none; only the parts within a metre of that count, so a roof or an upper floor brings nothing
+  up), and from there it is eased back into the ground about over **Blend** metres (6 by default, 0 to 40; where the
+  ground is far above or below, the bank runs further, two metres out for every metre of height, so it can be walked).
+  It raises and lowers. For a path the ground goes to the path's line across its width. **Settle onto the ground** is
+  the reverse and leaves the ground alone: blocks and props move straight down or up until their base is on the lowest
+  ground under them (as Settle on ground beds a prop); a selection with tiles or set pieces moves by whole levels to
+  the level nearest the ground; a path's points each go to the ground's height there. One undo step each. What a floor
+  or a tunnel does to the ground as played is still worked out from these heights, never stored.
 - **MapMaker, Terrain → Change grid…** (format v32; `editor/changeGrid.ts`).
   Resamples the terrain to vertices 1, 1.25, 1.5, 2, 2.5, 3 or 4 m apart (a
   380 m map can go to 1.25 m: 305 × 257), in one undo step. The dialog shows

@@ -4,6 +4,8 @@ import {
   copySelection,
   coreCatalog,
   cutGroundToFloorsCommand,
+  fitGroundToSelectionCommand,
+  settleSelectionOnGroundCommand,
   deleteCommand,
   duplicateCommand,
   emptySelection,
@@ -170,6 +172,20 @@ export class SelectionEdits {
     const r = cutGroundToFloorsCommand(this.app.doc, this.app.selection, coreCatalog, this.app.placeLib);
     if ('error' in r) return this.app.toast(`Can't cut the ground: ${r.error}`, true);
     if (this.app.run('Cut ground to floors', r.command)) this.app.toast(`The ground cut down to the floors: ${r.vertices} point${r.vertices === 1 ? '' : 's'}, up to ${r.deepest} m · Ctrl+Z to undo`);
+  }
+
+  /** Fit ground to this (groundFit.ts): the ground as made raised or lowered to meet the selection's base, eased into the ground about. */
+  fitGround(): void {
+    const r = fitGroundToSelectionCommand(this.app.doc, this.app.selection, this.app.groundBlend, coreCatalog, this.app.placeLib);
+    if ('error' in r) return this.app.toast(`Can't fit the ground: ${r.error}`, true);
+    if (this.app.run('Fit ground to build', r.command)) this.app.toast(`The ground fitted to it: ${r.raised} point${r.raised === 1 ? '' : 's'} raised, ${r.lowered} lowered, up to ${r.most} m · Ctrl+Z to undo`);
+  }
+
+  /** Settle onto the ground (groundFit.ts): the selection moved down or up onto the ground as made. */
+  settleOnGround(): void {
+    const r = settleSelectionOnGroundCommand(this.app.doc, this.app.selection, coreCatalog, this.app.placeLib);
+    if ('error' in r) return this.app.toast(`Can't settle it: ${r.error}`, true);
+    if (this.app.run('Settle onto the ground', r.command)) this.app.toast(`Moved ${Math.abs(r.by)} m ${r.by < 0 ? 'down' : 'up'} onto the ground · Ctrl+Z to undo`);
   }
 
   /** Shift+M: Mirror… (mirrorDialog.ts), the selection or half the map. */
