@@ -83,7 +83,17 @@ export const MOUTH_BANK = 1.5;
 export const COVER_BANK = 0.7;
 /** How far under an opening's floor its ground lies (as open ground meets any floor's edge: settle.ts). */
 const UNDER_FLOOR = 0.05;
-/** A mouth's cutting runs out until the ground as made is no more than this over its floor (daylight), */
+/**
+ * The way in to a mouth: level with its floor for MOUTH_LANDING metres out from its edge, then rising at MOUTH_RAMP
+ * (19°, a slope players, bots and wheels take) until it meets the ground as made. So a mouth in a hillside gets a
+ * short level cutting, and a mouth a level under flat ground gets an earth ramp down to it (11 m for 4 m of depth plus
+ * the landing), not a trench with no way out.
+ */
+export const MOUTH_LANDING = 2;
+export const MOUTH_RAMP = 0.35;
+/** How high the way in is over the mouth's floor, `out` metres from the mouth's edge. */
+export const mouthRamp = (out: number): number => Math.max(0, out - MOUTH_LANDING) * MOUTH_RAMP;
+/** A mouth's cutting runs out until the ground as made is no more than this over the way in (daylight), */
 const DAYLIGHT = 0.25;
 /** or this far (m): a mouth facing rising ground can't be dug out for ever (validate-map reports it). */
 export const MOUTH_CUTTING_MAX = 48;
@@ -113,7 +123,7 @@ function toDaylight(t: TerrainData, o: GroundOpening): GroundOpening {
       on = true;
       high = Math.max(high, h);
     }
-    if (!on || high <= o.y + DAYLIGHT) break;
+    if (!on || high <= o.y + DAYLIGHT + mouthRamp(run + step)) break;
     run += step;
   }
   if (!run) return o;
@@ -336,8 +346,9 @@ export function nearGroundCut(cuts: readonly GroundCut[], x: number, z: number, 
 /**
  * The ground shaped round the buried pieces (settle.ts terrainUnderFloors calls it on the ground as made, paths laid):
  *
- *  - **mouths** (openings): every vertex of a grid square an opening touches comes down to just under its floor, the
- *    opening run out to daylight first, and beyond the ground rises no steeper than MOUTH_BANK;
+ *  - **mouths** (openings): every vertex of a grid square an opening touches comes down to the way in (level with
+ *    the floor for a landing, then a ramp up: mouthRamp), the opening run out to daylight first, and beyond the ground
+ *    rises no steeper than MOUTH_BANK;
  *  - **rims**: the ground along a rim goes to the rim's height (so earth meets a wing wall's top: no wall stands bare
  *    of its bank, and no hill overhangs it), up or down, and differs from it by at most MOUTH_BANK a metre further out;
  *  - **covers**: the ground over a buried piece is at least its cover (earth over its cap), falling away at COVER_BANK
@@ -404,8 +415,18 @@ export function shapeGroundAtBores(t: TerrainData, bores: Pick<GroundBores, 'ope
         // A mouth that faces a way is flat across its own width only: a vertex of its squares past its side belongs to
         // the bank there (or to a wing wall's rim), not to the way in.
         if (d === 0 && o.out) d = o.out[0] ? Math.max(o.z0 - z, 0, z - o.z1) : Math.max(o.x0 - x, 0, x - o.x1);
-        if (d <= 1e-9) atMost(flat, i, cmDown(floor));
-        else atMost(hi, i, cmDown(floor + MOUTH_BANK * d));
+        // How far out from the mouth's own edge this vertex is, along the way in (no further than the cutting runs).
+        let out = 0;
+        if (mouth.out) {
+          const [ox, oz] = mouth.out;
+          const edge = ox > 0 ? mouth.x1 : ox < 0 ? mouth.x0 : oz > 0 ? mouth.z1 : mouth.z0;
+          const far = ox ? o.x1 - o.x0 - (mouth.x1 - mouth.x0) : o.z1 - o.z0 - (mouth.z1 - mouth.z0);
+          // (A grid square past the cutting's end still counts: its vertices are on the way in.)
+          out = Math.max(0, Math.min(far + s, ox ? (x - edge) * ox : (z - edge) * oz));
+        }
+        const way = floor + mouthRamp(out);
+        if (d <= 1e-9) atMost(flat, i, cmDown(way));
+        else atMost(hi, i, cmDown(way + MOUTH_BANK * d));
       }
     }
   }

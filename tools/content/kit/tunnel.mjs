@@ -103,7 +103,8 @@ function moduleParts(profile, family, shape) {
     draw(turnBox([-0.55, 0.9, w - 0.11, 0.55, 1.12, w - 0.09], k), trim.hazard ?? trim.door.material);
   }
 
-  const bore = { cut: [[-E, -0.5, -E, E, cap, E]], cover: [[-E, -E, E, E, r3(cap + 0.2)]] };
+  // (Cover: a hand of earth over the cap, 0.1 m: a level under new flat ground, which lies 0.15 m under a level, that is the ground as it is.)
+  const bore = { cut: [[-E, -0.5, -E, E, cap, E]], cover: [[-E, -E, E, E, r3(cap + 0.1)]] };
   let capBox = [-E, clear, -E, E, cap, E];
 
   // --- a portal: the passage's last stretch, a headwall across the cell and an apron between wing walls.
@@ -156,7 +157,7 @@ function moduleParts(profile, family, shape) {
       [-E, -0.5, front, E, cap, E],
       [-E, -0.5, -E, E, 1000, front],
     ];
-    bore.cover = [[-E, back, E, E, r3(cap + 0.2)]];
+    bore.cover = [[-E, back, E, E, r3(cap + 0.1)]];
     // (A line along the cell's south edge: the ground in front of it is the way in.)
     bore.open = [[-(E - g.t), 0, -E, E - g.t, 4, -E]];
     bore.out = 'S';

@@ -3,6 +3,7 @@ import { NavWorld, initNavigation } from '../src/nav/index.ts';
 import {
   COVER_BANK,
   MOUTH_BANK,
+  mouthRamp,
   PhysicsWorld,
   buildMapGeometry,
   coreCatalog,
@@ -150,8 +151,10 @@ describe('a buried tunnel under a ridge: the hill stays on top and opens at the 
       // (Flat across the mouth's own width at the grid's fineness: on a coarse grid the banks' toes reach in from the
       // sides, at most a low step's height at the passage's edge on a 4 m grid.)
       for (const z of [-23.5, -22, -20.5, 20.5, 22, 23.5]) {
-        expect(terrainHeightAt(t, 0, z)).toBeLessThanOrEqual(-0.05 + 1e-6);
-        for (const x of [-1.7, 1.7]) expect(terrainHeightAt(t, x, z)!).toBeLessThanOrEqual(spacing > 2.5 ? 0.6 : spacing > 2 ? 0.25 : -0.05 + 1e-6);
+        // The way in: level with the floor for the landing, then the ramp up to where the ridge ends.
+        const way = -0.05 + mouthRamp(Math.abs(z) - 20);
+        expect(terrainHeightAt(t, 0, z)).toBeLessThanOrEqual(way + 0.2 + 1e-6);
+        for (const x of [-1.7, 1.7]) expect(terrainHeightAt(t, x, z)!).toBeLessThanOrEqual(way + (spacing > 2.5 ? 0.6 : spacing > 2 ? 0.3 : 0.2));
       }
       // The earth meets each wing wall at its sloping top (3.6 m at the headwall to 1.2 m at its foot): never bare
       // masonry under it, never a hill hanging over it.
@@ -205,7 +208,7 @@ describe('a buried tunnel under a ridge: the hill stays on top and opens at the 
       const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
       // A shot along the passage, 1.5 m over its floor, from outside one mouth to outside the other.
       expect(physics.raycastWorld({ x: 0, y: 1.5, z: -26 }, { x: 0, y: 0, z: 1 }, 52)).toBeNull();
-      expect(physics.raycastWorld({ x: 0.9, y: 0.4, z: -26 }, { x: 0, y: 0, z: 1 }, 52)).toBeNull();
+      expect(physics.raycastWorld({ x: 0.9, y: 0.7, z: -26 }, { x: 0, y: 0, z: 1 }, 52)).toBeNull();
       // Beside the tunnel the hill stops it: at 1.5 m the ridge's face is 21 m from its middle.
       const hill = physics.raycastWorld({ x: 12, y: 1.5, z: -30 }, { x: 0, y: 0, z: 1 }, 60)!;
       expect(hill).toBeCloseTo(30 - 21, 0);
@@ -281,9 +284,9 @@ describe('a buried tunnel under a ridge: the hill stays on top and opens at the 
     const flat = { ...doc, terrain: { ...doc.terrain!, heights: doc.terrain!.heights.map(() => -15) } };
     const t = played(flat).terrain!;
     // Over the three buried cells and the stretch behind each headwall: at least 0.2 m of earth on the 3.75 m cap.
-    for (let z = -15; z <= 15; z += 1) for (let x = -4; x <= 4; x += 1) expect(terrainHeightAt(t, x, z), `${x},${z}`).toBeGreaterThanOrEqual(3.95 - 1e-6);
+    for (let z = -15; z <= 15; z += 1) for (let x = -4; x <= 4; x += 1) expect(terrainHeightAt(t, x, z), `${x},${z}`).toBeGreaterThanOrEqual(3.85 - 1e-6);
     // The mound falls away at a slope bots walk (COVER_BANK): half way down 3 m out, the field again 8 m out.
-    for (const x of [-7, 7]) expect(terrainHeightAt(t, x, 0)).toBeCloseTo(3.95 - 3 * COVER_BANK, 1);
+    for (const x of [-7, 7]) expect(terrainHeightAt(t, x, 0)).toBeCloseTo(3.85 - 3 * COVER_BANK, 1);
     for (const x of [-12, 12]) expect(terrainHeightAt(t, x, 0)).toBeCloseTo(-0.15, 6);
     // The wing walls hold earth to their tops, and the way in is open.
     for (const x of [-4.01, 4.01]) expect(terrainHeightAt(t, x, -17.5)!).toBeGreaterThan(2.3);
@@ -294,10 +297,67 @@ describe('a buried tunnel under a ridge: the hill stays on top and opens at the 
     expect(physics.raycastWorld({ x: 12, y: 2, z: 0 }, { x: -1, y: 0, z: 0 }, 20)!).toBeLessThan(7.5);
     // Bots cross the mound over the tunnel's top (and go through it).
     const nav = NavWorld.build(buildMapGeometry(map), mapTerrainMesh(map));
-    const over = nav.findPath({ x: -20, y: -0.15, z: 0 }, { x: 0, y: 3.95, z: 0 });
+    const over = nav.findPath({ x: -20, y: -0.15, z: 0 }, { x: 0, y: 3.85, z: 0 });
     expect(over).not.toBeNull();
     expect(over![over!.length - 1]!.y).toBeGreaterThan(3.8);
     expect(Math.hypot(over![over!.length - 1]!.x, over![over!.length - 1]!.z)).toBeLessThan(1);
+    nav.destroy();
+    physics.free();
+  });
+});
+
+describe('a buried run a level under flat ground: the surface stays flat, and each mouth has a ramp down to it', () => {
+  /** New flat terrain (0.15 m under level 0) with a concrete run on level -1: a portal at each end, three tunnels between. */
+  function sunkMap(): MapDocument {
+    const doc = ridgeMap(2, [
+      ['core.tunnel_concrete_portal', 0, -2, 0],
+      ['core.tunnel_concrete_straight', 0, -1, 0],
+      ['core.tunnel_concrete_cross', 0, 0, 0],
+      ['core.tunnel_concrete_straight', 0, 1, 0],
+      ['core.tunnel_concrete_portal', 0, 2, 2],
+    ]);
+    return {
+      ...doc,
+      terrain: { ...doc.terrain!, baseY: -0.15, heights: doc.terrain!.heights.map(() => 0) },
+      classicStructure: { ...doc.classicStructure, tiles: doc.classicStructure.tiles.map((t) => ({ ...t, z: -1 })) },
+    };
+  }
+
+  it('nothing is added over the run: the field is as made over the three tunnels and beside them', () => {
+    const doc = sunkMap();
+    const t = played(doc).terrain!;
+    for (let z = -12; z <= 12; z += 1) for (let x = -20; x <= 20; x += 1) expect(terrainHeightAt(t, x, z), `${x},${z}`).toBeCloseTo(-0.15, 6);
+    // Nothing anywhere is raised (the caps are 0.1 m under the field).
+    for (let i = 0; i < t.heights.length; i++) expect(t.heights[i]!).toBeLessThanOrEqual(0);
+  });
+
+  it('each mouth is a cutting with a ramp up to the field: 2 m level, then 0.35 in 1, out within 14 m; walked and routed', () => {
+    const map = played(sunkMap());
+    const t = map.terrain!;
+    // The way in, on the centre line south of the south portal's edge (z = -20).
+    for (const out of [1, 2, 4, 6, 8, 10, 12]) expect(terrainHeightAt(t, 0, -20 - out)!, `out ${out}`).toBeCloseTo(-4.05 + mouthRamp(out), 0);
+    expect(terrainHeightAt(t, 0, -36)).toBeCloseTo(-0.15, 6);
+    // The cutting's banks are back at the field within 3 m of its sides at the mouth.
+    for (const x of [-8, 8]) expect(terrainHeightAt(t, x, -21)!).toBeGreaterThan(-0.2);
+    const geometry = buildMapGeometry(map);
+    const physics = new PhysicsWorld(geometry, mapTerrainMesh(map));
+    // From the field, down the ramp, through the run, up the other ramp, out onto the field.
+    const collider = physics.createPlayerCollider();
+    let state = { pos: { x: 0.6, y: 0.5, z: -40 }, velY: 0, grounded: false };
+    let low = Infinity;
+    for (let i = 0; i < 1500 && state.pos.z < 40; i++) {
+      state = stepMovement(physics, collider, state, { seq: i, forward: 1, right: 0, yaw: 0, pitch: 0, buttons: 0 });
+      low = Math.min(low, state.pos.y);
+    }
+    expect(state.pos.z).toBeGreaterThan(39.9);
+    expect(state.pos.y).toBeCloseTo(-0.15, 1);
+    expect(low).toBeLessThan(-3.9);
+    const nav = NavWorld.build(geometry, mapTerrainMesh(map));
+    const through = nav.findPath({ x: 0, y: -0.15, z: -40 }, { x: 0, y: -4, z: 0 })!;
+    expect(through).not.toBeNull();
+    expect(through[through.length - 1]!.y).toBeLessThan(-3.8);
+    // Over the top is plain field.
+    expect(nav.findPath({ x: -20, y: -0.15, z: 0 }, { x: 20, y: -0.15, z: 0 })).not.toBeNull();
     nav.destroy();
     physics.free();
   });
