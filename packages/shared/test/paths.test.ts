@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { applyCommand, buildMapGeometry, invertCommand, layPathsIntoTerrain, pathDrawLevels, pathDrawRanks, pathIsRoad, pathGeometry, pathsExtent, terrainRaycast, loadMap, newMapDocument, newTerrain, serializeMap, terrainHeightAt, withPathsLaid, type MapDocument, type MapPath } from '../src/index.ts';
+import { applyCommand, buildMapGeometry, invertCommand, layPathsIntoTerrain, pathDrawLevels, pathDrawRanks, pathIsRoad, pathRoadTier, pathGeometry, pathsExtent, terrainRaycast, loadMap, newMapDocument, newTerrain, serializeMap, terrainHeightAt, withPathsLaid, type MapDocument, type MapPath } from '../src/index.ts';
 
 /** A map on a slope (rising 1 m every 4 m east) with one dirt path across it, west to east. */
 function sloped(path: Partial<MapPath> = {}): MapDocument {
@@ -138,19 +138,26 @@ describe('pathDrawRanks', () => {
     expect(pathDrawRanks([walk, walk2]).get('walk2')).toBe(1);
     // A gravel track 5 m wide is a road; a 3 m dirt trail onto it goes under (Backwoods).
     expect(pathIsRoad(road('track', [[0, 0, 0], [1, 0, 0]], { width: 5, style: 'gravel' }))).toBe(true);
+    // A concrete way 5 m wide that crosses the street, placed after it, goes under the street too (St. John's).
+    const way = road('way', [[10, 0, 20], [10, 0, -20]], { width: 5, style: 'concrete' });
+    expect(pathRoadTier(way)).toBeLessThan(pathRoadTier(street));
+    const lv = pathDrawLevels([street, way, walk]);
+    expect(lv.get('way')!.lift).toBeLessThan(lv.get('street')!.lift);
+    expect(lv.get('way')!.rank).toBeLessThan(lv.get('street')!.rank);
   });
 
-  it('puts St. John\'s cobbled paths under the streets they join', () => {
+  it('puts St. John\'s cobbled paths and concrete ways under the streets they join', () => {
     const loaded = loadMap(readFileSync(new URL('../../../maps/st_johns.json', import.meta.url), 'utf8'));
     if (!loaded.ok) throw new Error("St. John's does not load");
     const paths = loaded.map.paths ?? [];
     const lv = pathDrawLevels(paths);
-    const roads = paths.filter((p) => lv.has(p.id) && pathIsRoad(p));
-    const walks = paths.filter((p) => lv.has(p.id) && !pathIsRoad(p));
-    expect(walks.length).toBeGreaterThan(0);
+    // Footpaths under the concrete ways and streets, the concrete ways under the streets.
+    const shown = paths.filter((p) => lv.has(p.id));
+    expect(shown.some((p) => !pathIsRoad(p))).toBe(true);
     let joins = 0;
-    for (const w of walks) {
-      for (const r of roads) {
+    for (const w of shown) {
+      for (const r of shown.filter(pathIsRoad)) {
+        if (pathRoadTier(r) <= pathRoadTier(w)) continue;
         // Do these two overlap? (On their own, the second goes a rank up only if they do.)
         if (pathDrawLevels([w, r]).get(r.id)!.rank === 0) continue;
         joins++;

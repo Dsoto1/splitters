@@ -155,11 +155,15 @@ export const PATH_RANK_LIFT = 0.03;
 export const ROAD_MIN_WIDTH = 5;
 
 /**
- * Is this drawn path a road rather than a footpath or trail: the race track, an asphalt road, or anything
- * ROAD_MIN_WIDTH wide or more. Where a path meets a road, the road is drawn on top (pathDrawLevels), so a
- * footpath running into a road ends under its surface and the join looks seamless (owner, 2026-11-13).
+ * Where a drawn path stands among the others it overlaps (pathDrawLevels): 2 for a street (the race track or an
+ * asphalt road), 1 for another road (anything ROAD_MIN_WIDTH wide or more: a gravel track, a concrete way, a haul
+ * road), 0 for a footpath, trail or boardwalk. A higher tier is drawn over a lower one where they meet, so a path
+ * running into a road ends under its surface and the join looks seamless (owner, 2026-11-13).
  */
-export const pathIsRoad = (p: MapPath): boolean => pathUses(p, 'race') || p.style === 'asphalt' || p.width >= ROAD_MIN_WIDTH;
+export const pathRoadTier = (p: MapPath): number => (pathUses(p, 'race') || p.style === 'asphalt' ? 2 : p.width >= ROAD_MIN_WIDTH ? 1 : 0);
+
+/** Is this drawn path a road (pathRoadTier above 0) rather than a footpath, trail or boardwalk? */
+export const pathIsRoad = (p: MapPath): boolean => pathRoadTier(p) > 0;
 
 /** How far a drawn path's surface stands above the ground: a boardwalk a little proud of it, everything else just on it. */
 export const pathBaseLift = (p: MapPath): number => (p.style === 'planks' ? 0.12 : 0.04);
@@ -167,9 +171,10 @@ export const pathBaseLift = (p: MapPath): number => (p.style === 'planks' ? 0.12
 /**
  * Which drawn path goes on top where drawn paths overlap (a concrete apron laid
  * over a haul road, a trail joining a road): each drawn path's draw rank and
- * its surface's lift above the ground, by id. Roads (pathIsRoad) always go over
- * the footpaths and trails they overlap, whatever the map's list order; among
- * roads, and among paths, the later one in the list goes over the earlier ones.
+ * its surface's lift above the ground, by id. A street goes over the other roads
+ * and a road over the footpaths and trails it overlaps (pathRoadTier), whatever
+ * the map's list order; within a tier the later one in the list goes over the
+ * earlier ones.
  * A path that overlaps none placed before it is rank 0 at its own lift
  * (pathBaseLift); otherwise one rank above the highest of those it overlaps,
  * and at least PATH_RANK_LIFT higher than each of them (so a road stays over a
@@ -182,8 +187,8 @@ export const pathBaseLift = (p: MapPath): number => (p.style === 'planks' ? 0.12
 export function pathDrawLevels(paths: readonly MapPath[] | null | undefined): Map<string, { rank: number; lift: number }> {
   const levels = new Map<string, { rank: number; lift: number }>();
   const shown = (paths ?? []).filter((p) => p.points.length >= 2 && pathDrawn(p));
-  // Footpaths and trails first, then roads over them; each group in the map's order.
-  const order = [...shown.filter((p) => !pathIsRoad(p)), ...shown.filter(pathIsRoad)];
+  // Footpaths and trails first, then roads, then streets over them; each tier in the map's order.
+  const order = [0, 1, 2].flatMap((tier) => shown.filter((p) => pathRoadTier(p) === tier));
   const drawn: { id: string; half: number; pts: { x: number; z: number }[]; box: [number, number, number, number] }[] = [];
   for (const p of order) {
     const half = p.width / 2;

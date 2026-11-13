@@ -194,6 +194,8 @@ const RULES = [
   [/^packages\/client\/src\/game\/spectatorCam\.ts$/, ['offline', 'teams', 'hostgame'], ['client']],
   [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera|riderPlacement|ownBody)\.ts$/, ['vehicles', 'traffic'], ['client']],
   [/^packages\/client\/src\/roadMeshes\.ts$/, ['traffic'], ['client']],
+  // Drawn paths (roads, trails), shared with MapMaker's path tool.
+  [/^packages\/client\/src\/pathMeshes\.ts$/, ['traffic', 'editorux'], ['client']],
   [/^packages\/client\/src\/game\/fortsClient\.ts$/, ['forts'], ['client']],
   // Fireteams' squad HUD (the order line, its CTF role, the squadmates' cards).
   [/^packages\/client\/src\/game\/squadHud\.ts$/, ['fireteams', 'ctf'], ['client']],
