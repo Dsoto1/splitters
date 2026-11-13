@@ -20,6 +20,8 @@ export class MapChecks {
   constructor(readonly app: EditorApp) {}
 
   navIssues: ValidationIssue[] = [];
+  /** Jump pads whose flight misses its predicted landing (`pad.flight`, shared sim/padFlight.ts): flown after the navigation check, in the same worker. */
+  padIssues: ValidationIssue[] = [];
   navTimer?: number;
   /** Coplanar overlaps (geometry.coplanar), worked out a moment after each edit like navigation. */
   zIssues: ValidationIssue[] = [];
@@ -67,6 +69,7 @@ export class MapChecks {
     const doc = ground && ground !== this.app.viewDoc.terrain ? { ...this.app.viewDoc, terrain: ground } : this.app.viewDoc;
     if (this.app.issues.some((i) => i.severity === 'error')) {
       this.navIssues = [];
+      this.padIssues = [];
       this.renderIssues();
       return;
     }
@@ -98,16 +101,27 @@ export class MapChecks {
       }
       worker.onmessage = (e: MessageEvent<FromMapTest>) => {
         const m = e.data;
-        if (m.k !== 'nav' && m.k !== 'navFailed' && m.k !== 'failed') return;
-        this.navBusy = false;
+        if (m.k !== 'nav' && m.k !== 'pads' && m.k !== 'navFailed' && m.k !== 'failed') return;
         const latest = m.k !== 'failed' && m.token === this.navToken;
-        if (m.k === 'nav' && latest) {
-          this.navIssues = m.result.issues;
-          // "What bots know" (bot hints): the bots' own spots, worked out on the same navmesh.
-          this.app.hints.setComputed(m.result.computed ?? null);
-          this.renderIssues();
-        } else if (m.k !== 'nav' && (m.k === 'failed' || latest)) {
+        if (m.k === 'nav') {
+          if (latest) {
+            this.navIssues = m.result.issues;
+            // "What bots know" (bot hints): the bots' own spots, worked out on the same navmesh.
+            this.app.hints.setComputed(m.result.computed ?? null);
+            this.renderIssues();
+          }
+          // The check goes on: the jump pads are flown next (`pads` ends it).
+          return;
+        }
+        this.navBusy = false;
+        if (m.k === 'pads') {
+          if (latest) {
+            this.padIssues = m.issues;
+            this.renderIssues();
+          }
+        } else if (m.k === 'failed' || latest) {
           this.navIssues = [{ severity: 'warning', code: 'nav.failed', message: `navigation could not be generated: ${m.error}` }];
+          this.padIssues = [];
           this.renderIssues();
         }
         const next = this.navNext;
@@ -132,15 +146,17 @@ export class MapChecks {
 
   private noNavWorker = false;
 
-  /** The check on the page (no worker): the navmesh as the match builds it, and the navigation audit. */
+  /** The check on the page (no worker): the navmesh as the match builds it, the navigation audit, and the jump pads flown (`pad.flight`). */
   private async checkNavigationHere(doc: MapDocument, token: number): Promise<void> {
-    const { initNavigation, validateMapNavigation } = await import('@tiletrigger/shared/match');
+    const { initNavigation, validateMapPlay } = await import('@tiletrigger/shared/match');
     await initNavigation();
     if (token !== this.navToken) return;
     try {
       await initPhysics();
-      const nav = validateMapNavigation(doc, false, { computed: this.app.hints.computedOn });
+      const nav = validateMapPlay(doc, false, { computed: this.app.hints.computedOn });
+      // (validateMapPlay: the pads' flights are in its issues.)
       this.navIssues = nav.issues;
+      this.padIssues = [];
       this.app.hints.setComputed(nav.computed ?? null);
     } catch (e) {
       this.navIssues = [{ severity: 'warning', code: 'nav.failed', message: `navigation could not be generated: ${(e as Error).message}` }];
@@ -182,7 +198,7 @@ export class MapChecks {
 
   allIssues(): ValidationIssue[] {
     const order = { error: 0, warning: 1, suggestion: 2 } as const;
-    return [...this.app.issues, ...this.navIssues, ...this.zIssues, ...this.app.mapTest.issues()].sort((a, b) => order[a.severity] - order[b.severity]);
+    return [...this.app.issues, ...this.navIssues, ...this.padIssues, ...this.zIssues, ...this.app.mapTest.issues()].sort((a, b) => order[a.severity] - order[b.severity]);
   }
 
   renderIssues(): void {

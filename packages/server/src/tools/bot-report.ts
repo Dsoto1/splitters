@@ -1,10 +1,12 @@
+import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { cpus, loadavg } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOT_DIFFICULTIES, CHARACTER_PROFILES, bodyClass, getLook, getMountDef, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getItem, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
+import { BOT_DIFFICULTIES, CHARACTER_PROFILES, bodyClass, getLook, getMountDef, CORE_BOT_PROFILES, CORE_WEAPONS, THROWABLE_DEFS, TICK_RATE, WEAPON_SET_IDS, getItem, getWeaponSet, hasTag, initPhysics, isGameMode, isWeaponSetId, loadMap, mapCanRun, matchWeaponSet, rulesForMap, rulesForMode, setThrowables, setWeaponIds, throwableWeaponId, type BotProfile, type GameEvent, type GameMode, type MapDocument } from '@tiletrigger/shared';
 import { BOT_SWITCHES, BotTrace, BreakthroughMode, CtfMode, FortsMode, KothMode, Match, ctfRoleOf, initNavigation, placeOn, simProfile } from '@tiletrigger/shared/match';
 import { Behaviour } from './botMeasures.ts';
+import { paceLines, type Pace } from './paceCompare.ts';
 import { SquadMeter, squadScoreText, squadText, squadTotals, type SquadRow } from './squadMeasures.ts';
 import { drawNavPictures } from './navPictures.ts';
 
@@ -36,6 +38,9 @@ for (const k of (process.env.BOT_OFF ?? '').split(',')) if (k in BOT_SWITCHES) B
  *   pnpm bot-report --suite=all --seeds=1,2 --seconds=180 --shard=0/8 --json=s0.json (every scorecard mode, its maps)
  *   pnpm bot-report fernwood_moon --mode=core.tdm --players=32 --spells        (idle spells listed)
  *   pnpm bot-report --compare=before.json,after.json                          (before and after, per map)
+ *   pnpm bot-report iron_maw --base=origin/main  (a changed map against the map at that ref: a short match of each,
+ *                                                  kills a minute and the time to the first fight before and after,
+ *                                                  a warning when the map got slower; never fails: paceCompare.ts)
  *   pnpm bot-report --check                       (the quick scorecard: a few maps, one seed, short matches, held to
  *                                                  bot-limits.json's checkLimits; exits 1 when bots got worse)
  *   pnpm bot-report --judge=s0.json+s1.json [--pictures=dir] [--summary=file.md]
@@ -282,8 +287,10 @@ const SCOPED = new Set(['core.sniper', 'core.marksman', 'core.railgun']);
 /** The modes the scorecard plays (docs/BOTS.md, "Scorecard"), each on the maps that list it. */
 export const SCORECARD_MODES: readonly GameMode[] = ['core.ctf', 'core.koth', 'core.bomb', 'core.hostage', 'core.elim', 'core.forts', 'core.tdm'];
 
-const flags = process.argv.slice(2).filter((a) => a.startsWith('--'));
-const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+// (`--base origin/main` is taken as `--base=origin/main`.)
+const argv = process.argv.slice(2).flatMap((a, i, all) => (a === '--base' && all[i + 1] ? [`--base=${all[i + 1]}`] : all[i - 1] === '--base' ? [] : [a]));
+const flags = argv.filter((a) => a.startsWith('--'));
+const args = argv.filter((a) => !a.startsWith('--'));
 const opt = (k: string) => flags.find((f) => f.startsWith(`--${k}=`))?.slice(k.length + 3);
 const here = (p: string) => resolve(process.env.INIT_CWD ?? process.cwd(), p);
 const mapsDir = fileURLToPath(new URL('../../../../maps/', import.meta.url));
@@ -359,6 +366,11 @@ async function main(): Promise<void> {
     process.exitCode = ok ? 0 : 1;
     return;
   }
+  const base = opt('base');
+  if (base) {
+    await comparePace(base);
+    return;
+  }
   const check = flags.includes('--check');
   const limits = check ? (JSON.parse(readFileSync(limitsPath, 'utf8')) as Limits) : null;
   // --shard=k/n: every n-th match from the k-th (several processes share a suite).
@@ -393,6 +405,55 @@ async function main(): Promise<void> {
   const pictures = opt('pictures');
   if (pictures) await drawNavPictures(here(pictures), mapsDir, rows);
   if (limits) process.exitCode = printScorecard(rows, limits.checkLimits, 'check') ? 0 : 1;
+}
+
+/**
+ * --base=<git ref>: each map named, as it is here and as it was at the ref (`git show <ref>:maps/<id>.json`), in a
+ * short match each (the same seeds; --mode, or the map's own first mode; 120 s unless --seconds says), then kills a
+ * minute and the time to the first fight before and after, with a warning when the map got slower (paceCompare.ts).
+ * Never fails: a warning for whoever changed the map, not a gate.
+ */
+async function comparePace(base: string): Promise<void> {
+  await Promise.all([initPhysics(), initNavigation()]);
+  const root = fileURLToPath(new URL('../../../../', import.meta.url));
+  const runSeconds = opt('seconds') ? seconds : 120;
+  for (const id of args) {
+    let now: string;
+    let was: string;
+    try {
+      now = readFileSync(`${mapsDir}${id}.json`, 'utf8');
+    } catch {
+      console.log(`${id}: no such map in maps/: nothing to compare`);
+      continue;
+    }
+    try {
+      was = execFileSync('git', ['show', `${base}:maps/${id}.json`], { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'ignore'] });
+    } catch {
+      console.log(`${id}: not in ${base} (a new map): nothing to compare`);
+      continue;
+    }
+    if (was === now) {
+      console.log(`${id}: the same as in ${base}: nothing to compare`);
+      continue;
+    }
+    const before = loadMap(was);
+    const after = loadMap(now);
+    if (!before.ok || !after.ok) {
+      console.log(`${id}: ${before.ok ? 'the map here' : `the map in ${base}`} failed validation: nothing to compare`);
+      continue;
+    }
+    const m = opt('mode') ? mode : rulesForMap(after.map).mode;
+    if (!mapCanRun(before.map, m) || !mapCanRun(after.map, m)) {
+      console.log(`${id}: can't run ${m} both before and after: nothing to compare`);
+      continue;
+    }
+    const paceOf = (map: MapDocument): Pace => {
+      const p = measure(seeds.map((seed) => play(map, m, seed, runSeconds)));
+      // (0: no life got to a fight, so there is no time to give.)
+      return { killsMin: p.killsMin, firstFight: p.firstFight || undefined };
+    };
+    for (const line of paceLines(`${id} (${m.slice(5)}, ${seeds.length} × ${runSeconds} s)`, base, paceOf(before.map), paceOf(after.map))) console.log(line);
+  }
 }
 
 function readRows(files: string): MatchRow[] {

@@ -72,8 +72,8 @@ describe('change-based selection', () => {
   });
 
   it.each([
-    ['content/characters/soldier.json', ['designer', ...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
-    ['content/characters.lock.json', ['designer', ...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
+    ['content/characters/soldier.json', ['offline', 'designer', ...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
+    ['content/characters.lock.json', ['offline', 'designer', ...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
     ['content/clip-sets/rifle.json', [...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
     ['content/props.json', ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
     ['content/props/kenney-survival-kit.json', ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
@@ -85,6 +85,43 @@ describe('change-based selection', () => {
   ])('a content manifest (%s) runs the flows that look at it', (p, flows, unit) => {
     const s = sel(p);
     expect(s).toMatchObject({ full: false, flows, unit, perf: true, docsOnly: false });
+  });
+
+  describe('a character change runs the character flows and offline, not everything', () => {
+    const manifest = 'content/characters/meshy_octobuddy.json';
+    const built = ['packages/client/public/characters/meshy_octobuddy.glb', 'packages/client/public/characters/meshy_octobuddy_fparms.glb', 'packages/client/public/portraits/core.octobuddy.webp'];
+    const ledgers = ['content/provenance.json', 'content/meshy.lock.json'];
+    it('a model or a portrait alone: the character flows and offline', () => {
+      for (const p of built) expect(sel(p), p).toMatchObject({ full: false, flows: ['offline', ...CHARACTER_FLOWS], unit: ['client', 'content', 'shared'] });
+    });
+    it('manifest, models, portrait, provenance and the Meshy lock together: no full suite', () => {
+      const s = selectForPaths([manifest, ...built, ...ledgers], mapIds);
+      expect(s).toMatchObject({ full: false, flows: ['offline', 'designer', ...CHARACTER_FLOWS, 'visual'], unit: ['client', 'content', 'shared'], reasons: [] });
+      // Without the manifest (a rebuilt model): the proposal's flows exactly.
+      expect(selectForPaths([...built, ...ledgers], mapIds)).toMatchObject({ full: false, flows: ['offline', ...CHARACTER_FLOWS] });
+    });
+    it('provenance or the Meshy lock without a character file still run everything', () => {
+      for (const p of ledgers) expect(sel(p), p).toMatchObject({ full: true, unit: 'all' });
+      expect(selectForPaths(ledgers, mapIds).full).toBe(true);
+      // Next to a narrowly mapped change that is no character: still everything.
+      expect(selectForPaths(['content/props/kenney-survival-kit.json', 'content/provenance.json'], mapIds).full).toBe(true);
+      expect(selectForPaths(['content/sounds.json', 'content/provenance.json'], mapIds).full).toBe(true);
+    });
+    it('a character change that also touches shared code or another kind of built content still runs everything', () => {
+      for (const other of ['packages/shared/src/content/characters.generated.ts', 'packages/shared/src/sim/match.ts', 'packages/client/public/models/vehicles/sky_cruiser.glb', 'packages/client/public/sounds/shot.ogg', 'content/vehicles/gunship.json']) {
+        const s = selectForPaths([manifest, ...built, ...ledgers, other], mapIds);
+        expect(s.full, other).toBe(true);
+        expect(s.unit, other).toBe('all');
+      }
+    });
+    it('with another narrowly mapped change, both sets of flows run', () => {
+      const s = selectForPaths([manifest, ...ledgers, 'content/guns.json'], mapIds);
+      expect(s.full).toBe(false);
+      expect(s.flows).toEqual(expect.arrayContaining(['arsenal', 'vehicles', 'offline', ...CHARACTER_FLOWS]));
+    });
+    it('other files under the client\'s public folder keep running everything', () => {
+      for (const p of ['packages/client/public/models/guns/rifle.glb', 'packages/client/public/props/crate.glb', 'packages/client/public/auth-config.js']) expect(sel(p).full, p).toBe(true);
+    });
   });
 
   it('skies and city run the coverage map and the map flows (the tour itself nightly), not the online ones', () => {
