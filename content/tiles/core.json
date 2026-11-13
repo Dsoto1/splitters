@@ -1697,7 +1697,7 @@
       "id": "core.tunnel_portal",
       "category": "Corridors",
       "displayName": "Tunnel Portal",
-      "blurb": "The mouth of a buried vaulted tunnel: a headwall with the arch in it, stepped wing walls and an apron in front (south); the tunnel goes on north. It opens the ground in front of it by itself",
+      "blurb": "The mouth of a buried vaulted tunnel: a headwall with the arch in it, sloping wing walls and an apron in front (south); the tunnel goes on north. It opens the hill and brings the earth to its walls by itself",
       "cells": [[0,0,0]],
       "floors": [0],
       "ports": [{"side":"N","level":0},{"side":"S","level":0}],
