@@ -161,8 +161,9 @@ function moduleParts(profile, family, shape) {
       [-E, -0.5, -E, E, 1000, front],
     ];
     bore.cover = [[-E, back, E, E, r3(cap + 0.1)]];
-    // (A line along the cell's south edge: the ground in front of it is the way in.)
-    bore.open = [[-(E - g.t), 0, -E, E - g.t, 4, -E]];
+    // (A line along the cell's south edge, the cell's whole width: the ground in front of it is the way in. Between
+    // the wing walls' ends too: earth standing there would end in a cut edge at the apron, open to the underside.)
+    bore.open = [[-E, 0, -E, E, 4, -E]];
     bore.out = 'S';
     bore.rim = [
       { line: [-E, front, E, front], y: [r3(h.top - 0.1), r3(h.top - 0.1)], mode: 'lower' },

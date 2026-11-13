@@ -132,8 +132,8 @@ describe('a buried tunnel under a ridge: the hill stays on top and opens at the 
     expect(b.cuts.length).toBe(7);
     expect(b.openings.length).toBe(2);
     // The south portal's mouth (its south edge, facing south), and the north one's turned round.
-    expect(b.openings[0]).toEqual({ x0: -3.4, z0: -20, x1: 3.4, z1: -20, y: 0, out: [0, -1] });
-    expect(b.openings[1]).toEqual({ x0: -3.4, z0: 20, x1: 3.4, z1: 20, y: 0, out: [0, 1] });
+    expect(b.openings[0]).toEqual({ x0: -4, z0: -20, x1: 4, z1: -20, y: 0, out: [0, -1] });
+    expect(b.openings[1]).toEqual({ x0: -4, z0: 20, x1: 4, z1: 20, y: 0, out: [0, 1] });
     // Rims: the headwall's coping and two a wing wall; covers: earth over every cap.
     expect(b.rims.length).toBe(10);
     expect(b.covers.length).toBe(5);
