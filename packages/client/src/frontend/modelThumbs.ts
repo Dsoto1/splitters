@@ -142,7 +142,11 @@ export class ModelThumbnails {
     const base = newMapDocument('thumb');
     const doc = { ...base, classicStructure: { ...base.classicStructure, tiles: [{ id: 'thumb_tile', tile: def.id, x: 0, y: 0, z: 0, rotation: 0 as const }] } };
     this.styler ??= new MapStyler(this.scene);
-    const meshes = this.styler.build(doc, buildMapGeometry(doc), 'thumbtile');
+    // A buried tunnel piece (shared map/groundBore.ts) is drawn with its cap off: from above every one is the same slab,
+    // and what tells a curve from a junction is the passage under it.
+    const boxes = buildMapGeometry(doc);
+    const shown = def.bore ? boxes.filter((b) => !(b.kind !== 'floor' && b.min[1] >= 3.25 && b.max[1] <= 3.8 && b.max[0] - b.min[0] >= 3.4 && b.max[2] - b.min[2] >= 3.4)) : boxes;
+    const meshes = this.styler.build(doc, shown, 'thumbtile');
     try {
       return await this.renderMeshes(meshes, 'tile', size);
     } finally {
