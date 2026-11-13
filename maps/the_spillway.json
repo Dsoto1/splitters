@@ -27,11 +27,11 @@
     },
     "release": {
       "mapId": "m_fxtilvssrdvznevx",
-      "versionId": "v_eg2y3ux5aytl73xu",
-      "revision": 174,
-      "contentHash": "sha256:6b3400b989e7b21d3693fa18946111ee5710feed76b937f37df155ee7cf5f9fd",
+      "versionId": "v_4t3tvoovi2u6cek2",
+      "revision": 178,
+      "contentHash": "sha256:ef97940086bd5c50ccf137b1fc3eae84c1a7b9f21641e379c0a55211f6a4bffe",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T02:42:57.008Z"
+      "releasedAt": "2026-11-13T09:42:46.746Z"
     },
     "tier": "experimental"
   },
@@ -32769,6 +32769,182 @@
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
       "health": 120
+    },
+    {
+      "id": "spawn_4o1hup3psf",
+      "position": [
+        96,
+        4.83,
+        -74
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_fynw21q9yr",
+      "position": [
+        96,
+        4.76,
+        -98
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_n4p5agc9dm",
+      "position": [
+        100,
+        4.28,
+        -98
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_mety8pdthv",
+      "position": [
+        104,
+        4.53,
+        -98
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_g7hazyvb9h",
+      "position": [
+        -60,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_vm5jnobpm1",
+      "position": [
+        -48,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_hb15ukbsgm",
+      "position": [
+        -36,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_vg259f4q4q",
+      "position": [
+        -24,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_c3yof9tgxq",
+      "position": [
+        24,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_uf7skk9dp3",
+      "position": [
+        36,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_pzltdsoq4e",
+      "position": [
+        48,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_7rkfubqpo4",
+      "position": [
+        60,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_v73e0q5sld",
+      "position": [
+        92,
+        3.79,
+        -74
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_56u0eovk81",
+      "position": [
+        88,
+        3.88,
+        -74
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_a75lnugpl8",
+      "position": [
+        108,
+        4.41,
+        -98
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_ht600tp5cy",
+      "position": [
+        112,
+        5.59,
+        -98
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
     }
   ],
   "factions": [],

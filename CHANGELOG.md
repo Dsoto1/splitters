@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **The Spillway seats 64.** Eight more spawns a side, placed in MapMaker: Embers between their two rows on the dam's crest, Tide beside theirs in the valley.
 - **The dome kit's parts read in the palette.** The cap, panels, broken panels and drum quarters fill their palette pictures now (they were small slivers framed by the whole dome's size).
 - **Status auras.** A burning character is wrapped in twisting flame streaks, a poisoned one in green haze and bubbles, a slowed one in pink goo wisps and a chilled one in pale ice crystals (the Binbun Status FX pack), on the nearest three characters within 40 m; others keep the plain coloured shell. Nothing changes in damage or timing, and you see no aura on yourself. With Reduce flashing on the auras move at half speed, dimmer, and the plain shell no longer pulses.
 - **Portals swirl and jump pads rise.** A portal's frame holds a moving swirl in its pair's colour (the Binbun Portal pack), and a jump pad stands in a column of rising light (Magic Area pack) with its plate, ring and chevrons still showing. Portals and pads are drawn ahead of loot glows when effects run short. With Reduce flashing on both are held still, dimmer and eased in.
