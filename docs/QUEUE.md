@@ -32,7 +32,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Ammo Box: map Ammo Boxes become solid resupply crates (10 uses, cook-off); "Ammo Box Kit" throwable · `wip/ammo-box` · after the line-up
 - S · A · Effects checks, findings only: Pantry Raid portals, loot rings on bright floors, perf and Low graphics for the new effects, Reduce flashing · `wip/fx-checks` (docs)
 - M · B · Tileset 11, step D: six set pieces built in MapMaker (porch, bus shelter, parking deck bay and ramp, concrete frame, bandstand, shop unit), with the arched window's neater stones riding along · `wip/mapmaker-urban-setpieces` (on `wip/mapmaker-urban-arch`) · lands after lane A's line-up
-- S · B · Parachute: improve the one built in code first, and show the owner pictures (owner, 2026-11-13: "why not just try and improve the built in code parachute first"); the Drive's parachute model waits on that look · `wip/mapmaker-parachute` · `packages/client/src/game/canopyVisuals.ts`
+- S · B · Parachute, built in code: a round canopy of 16 panels on lines to risers behind the neck (the owner has seen it and keeps it: "Drop the meshy parachute"); now colour variants, one per player by slot · `wip/mapmaker-parachute` · `packages/client/src/game/canopyVisuals.ts`, the canopy lines in `view.ts` · lands after lane A's line-up
 
 ## Ready to land
 - (none)
