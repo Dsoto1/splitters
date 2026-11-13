@@ -59,7 +59,7 @@ import { RouletteDirector } from './roulette.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { rollPickup } from './pickupRoll.ts';
-import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, resupplyLoadout, resupplyReach } from './resupply.ts';
+import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
@@ -821,7 +821,7 @@ export class Match {
       const item = getItem(e.item);
       if (!item) continue;
       // A placed Ammo Box is a resupply crate, not a pickup (sim/resupply.ts; not where weapons are restricted).
-      if (e.item === AMMO_BOX_ITEM && !e.random) {
+      if (isAmmoBoxPickup(e)) {
         if (!restrictedWeapons(rules)) this.addBox('placed', { x: e.position[0], y: e.position[1], z: e.position[2] }, 0, null, e.id, Math.round(Math.max(item.respawnSeconds, e.respawnSeconds ?? 0, 20) * TICK_RATE));
         continue;
       }

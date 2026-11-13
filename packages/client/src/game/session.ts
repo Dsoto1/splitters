@@ -140,6 +140,8 @@ import {
   type VoteCandidate,
   type VoteState,
   propBreakLook,
+  AMMO_BOX_MODEL,
+  isAmmoBoxPickup,
 } from '@tiletrigger/shared';
 import { MapVoteHud } from './mapVoteHud.ts';
 import { myParty } from './party.ts';
@@ -172,6 +174,7 @@ import { PauseMenu } from './pauseMenu.ts';
 import type { ScreenMarker } from './hud.ts';
 import type { BoardData } from './scoreBoard.ts';
 import { CoverState } from './coverState.ts';
+import { AmmoBoxState } from './ammoBoxState.ts';
 import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
 import type { MinimapBlip } from './minimap.ts';
@@ -439,6 +442,7 @@ export class GameSession {
   /** Where riders are drawn (on their seats, see riderPlacement.ts). */
   private readonly riderPlacement = new RiderPlacement();
   private covers?: CoverState;
+  private ammoBoxes?: AmmoBoxState;
   /** Seconds of UAV sweep left for your side: enemies show on the minimap. */
   private uav = 0;
   /** H: a camera over your shoulder, to see your own character. */
@@ -1931,6 +1935,7 @@ export class GameSession {
         if (this.local.portals.length) this.local.portalOn = this.scenario.portalOn;
         this.mounts = new MountState(loaded.map, physics);
         this.covers = new CoverState(this.view.scene, physics, (at) => this.view.debris(at, '#b39b6b', 0.7), this.view.models);
+        this.ammoBoxes = new AmmoBoxState(this.view.scene, physics, this.view.models);
         if (teams && msg.rules.mode === 'core.forts') this.forts = new FortsClient(this.view, physics, loaded.map, teams, () => this.hud.team(this.slot)?.id ?? null, this.opts.audio);
         this.scenario.apply(msg.sc);
         this.hud.show();
@@ -1992,6 +1997,7 @@ export class GameSession {
         for (const at of this.mounts?.takeCharges() ?? []) this.sfx.sentryCharge(at);
         this.mounts?.applySuspension(msg.ms);
         this.covers?.apply(msg.cv);
+        this.ammoBoxes?.apply(msg.ab);
         this.seat = msg.me?.mo ?? null;
         this.uav = msg.me?.uv ?? 0;
         this.jam = msg.me?.jm ?? 0;
@@ -2209,7 +2215,7 @@ export class GameSession {
             if (near > 0) this.view.shake(near * ev.n * 0.6);
           } else if (ev.e === 'resupply') {
             // The Supply Buggy's back (sim/resupply.ts): what you got, or why nothing.
-            if (ev.s === this.slot) this.hud.pickup(ev.ok ? `Resupplied (${ev.left} left)` : ev.left > 0 ? 'Nothing to resupply' : 'Out of supplies');
+            if (ev.s === this.slot) this.hud.pickup(ev.ok ? `Resupplied (${ev.left} left)` : ev.left > 0 ? 'Nothing to resupply yet' : 'Out of supplies');
             const at = ev.ok ? this.view.chestOf(ev.s) : null;
             if (at) this.view.playGameplayFx('pickup.ammo', at, { size: this.view.farSize(at) });
           } else if (ev.e === 'pickup') {
@@ -2426,6 +2432,7 @@ export class GameSession {
     for (const m of thrown) models.add(m);
     for (const e of map.entities) {
       if (e.kind === 'pickup') {
+        if (isAmmoBoxPickup(e)) models.add(AMMO_BOX_MODEL);
         const fx = getItem(e.item)?.effect;
         // Whatever a random (or mixed-up, or weapon set's) weapon pickup may roll, so a respawn never loads a model
         // mid-fight; the weapon placed there only while it stays as placed.
@@ -2575,8 +2582,9 @@ export class GameSession {
     const myTeam = this.hud.team(this.slot)?.id ?? (this.rules?.mode === 'core.coop' ? 'players' : null);
     const target = local.alive ? pickUsable(map, local.eye, this.input.yaw, this.input.pitch, (i) => sc.usable(i, myTeam)) : null;
     const e = target === null ? undefined : map.entities[target];
-    const supply = local.alive && !this.seat ? (this.mounts?.resupplyInReach(local.state.pos) ?? null) : null;
-    const enter = local.alive && !this.seat && !supply ? this.mounts?.enterable(local.state.pos) : null;
+    const box = local.alive && !this.seat ? (this.ammoBoxes?.inReach(local.state.pos) ?? null) : null;
+    const supply = local.alive && !this.seat && !box ? (this.mounts?.resupplyInReach(local.state.pos) ?? null) : null;
+    const enter = local.alive && !this.seat && !supply && !box ? this.mounts?.enterable(local.state.pos) : null;
     let full: { def: { displayName: string } } | null = null;
     if (local.alive && this.seat) {
       const m = this.mounts?.mounts.get(this.seat[0]);
@@ -2587,6 +2595,9 @@ export class GameSession {
       this.hud.setPrompt(two ? 'Zipline: Space or E to let go (sidearm or blade to shoot)' : 'Zipline: Space or E to let go');
     } else if (local.alive && !this.seat && !enter && local.ziplines.length && grabZipline(local.ziplines, local.state.pos, this.input.yaw, local.team())) {
       this.hud.setPrompt('Grab the zipline');
+    } else if (box) {
+      // Beside an ammo box: Use resupplies (the server's rule, Match.resupplyAtBox).
+      this.hud.setPrompt(`Resupply from the ammo box (${box.uses} left)`);
     } else if (supply) {
       // At the Supply Buggy's back: Use resupplies instead of getting in (the server's rule, Match.resupplyAtMount).
       this.hud.setPrompt(supply.supply > 0 ? `Resupply from the ${supply.def.displayName} (${supply.supply} left)` : `The ${supply.def.displayName} is out of supplies`, supply.supply <= 0);

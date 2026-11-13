@@ -135,3 +135,6 @@ export function cookOff(share: number, seed: number, tickRate: number): { tick: 
   }
   return out.sort((a, b) => a.tick - b.tick);
 }
+
+/** A map pickup that plays as an ammo box crate (a placed Ammo Box, not a random one). */
+export const isAmmoBoxPickup = (e: { item: string; random?: unknown }): boolean => e.item === AMMO_BOX_ITEM && !e.random;

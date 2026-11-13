@@ -8987,6 +8987,26 @@ async function flashingScene(browser, scene) {
       at: { 6: () => blast([-1.2, 0.3, 11.5]), 14: () => blast([1, 0.3, 12.5]), 22: () => blast([0, 0.3, 11]), 30: () => blast([-0.4, 0.3, 13]) },
     },
     {
+      // An ammo box cooking off (sim/resupply.ts COOK_OFF): a full one destroyed 3.5 m in front, its round of small
+      // blasts and pops over the next 2.6 s.
+      name: 'cookoff',
+      label: 'a full ammo box destroyed 3.5 m in front of the camera, cooking off in small blasts for 2.6 s',
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 0.5, 11.5]),
+      bots: [],
+      at: {
+        4: () =>
+          sim(page, (m, _me, at) => {
+            const b = m.addBox('deployed', { x: at[0], y: at[1], z: at[2] }, 0, null);
+            m.damageBox(b, 10000, null);
+          }, [0, 0, 11.5]),
+      },
+      seen: () => sim(page, (m) => m.cookOffs.length),
+      // Still going off at the end of the 2 s recording (it lasts 2.6 s).
+      sees: (_on, left) => left > 0,
+    },
+    {
       name: 'muzzle',
       label: 'a machine gun firing at a wall 3.5 m off in the dark room',
       weapon: 'core.lmg',

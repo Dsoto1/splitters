@@ -97,6 +97,7 @@ import {
   type MapWeather,
   type SkyDefinition,
   isBreakableProp,
+  isAmmoBoxPickup,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
@@ -649,7 +650,8 @@ export class GameView {
     // Water bakes its depth (clear shallows, foam on the shore) from the level under it.
     this.scenario.liquids.levelBoxes = boxes;
     void this.foliage.grow(doc.terrain, boxes, doc.metadata.id, this.liquids.filter((l) => l.liquid === 'water' || l.liquid === 'swamp'));
-    for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
+    // (A placed Ammo Box is a crate now, drawn from the snapshot: game/ammoBoxState.ts.)
+    for (const e of doc.entities) if (e.kind === 'pickup' && !isAmmoBoxPickup(e)) this.addPickup(e);
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
     const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
     // Environment species (`env.*`) with the environment renderer (on unless ?env=0): chunked thin instances, not a node each.
