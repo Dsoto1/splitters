@@ -142,10 +142,11 @@ export class MapStyler {
    * the build-time pass that ended the z-fighting flicker). `faces`: those faces, already worked
    * out (MapMaker clips every level against all of them, then draws them in two sets).
    */
-  buildBoxes(doc: MapDocument, boxes: readonly WorldBox[], name = 'map', faces: readonly RenderFace[] = visibleFaces(boxes)): Mesh[] {
-    for (const m of this.meshes) m.dispose();
+  buildBoxes(doc: MapDocument, boxes: readonly WorldBox[], name = 'map', faces: readonly RenderFace[] = visibleFaces(boxes), keep = false): Mesh[] {
     const tiles = new Map<string, TilePlacement>(doc.classicStructure.tiles.map((t) => [t.id, t]));
-    const groups = new Map<string, { style: ResolvedStyle; buf: FaceBuffer }>();
+    // `keep` (MapMaker, which builds again after every edit): a style whose faces are the ones its mesh was built
+    // from keeps that mesh; only the styles an edit touched are built and sent to the graphics card again.
+    const groups = new Map<string, { style: ResolvedStyle; faces: RenderFace[]; h1: number; h2: number }>();
     for (const f of faces) {
       const b = boxes[f.box]!;
       const tile = tiles.get(b.sourceId);
@@ -154,20 +155,53 @@ export class MapStyler {
       const style = own?.material ? (own as ResolvedStyle) : resolveSurface(doc, tile, faceSlot(b, f.normal));
       const key = styleKey(style);
       let g = groups.get(key);
-      if (!g) groups.set(key, (g = { style, buf: new FaceBuffer() }));
-      g.buf.add(f.corners, f.normal, 1 / style.material.scale, f.flat, f.flatNormal);
+      if (!g) groups.set(key, (g = { style, faces: [], h1: 0, h2: 0 }));
+      g.faces.push(f);
+      if (keep) {
+        // The face as two numbers, added up over the style's faces (whatever order they come in).
+        let a = 0x811c9dc5;
+        let c = 0x01000193;
+        const mix = (n: number) => {
+          const v = Math.round(n * 1000) | 0;
+          a = Math.imul(a ^ v, 16777619);
+          c = (Math.imul(c + v, 2246822519) ^ (c >>> 13)) | 0;
+        };
+        for (const p of f.corners) mix(p[0]), mix(p[1]), mix(p[2]);
+        for (const p of f.flat) mix(p[0]), mix(p[1]), mix(p[2]);
+        mix(f.normal[0]), mix(f.normal[1]), mix(f.normal[2]);
+        mix(f.flatNormal[0]), mix(f.flatNormal[1]), mix(f.flatNormal[2]);
+        g.h1 = (g.h1 + a) | 0;
+        g.h2 = (g.h2 + c) | 0;
+      }
     }
+    const kept = new Map<string, { mesh: Mesh; sig: string }>();
+    const old = this.meshes;
     this.meshes = [...groups.entries()].map(([key, g]) => {
+      const sig = `${g.faces.length}:${g.h1}:${g.h2}`;
+      const had = keep ? this.boxMeshes.get(key) : undefined;
+      if (had && had.sig === sig && !had.mesh.isDisposed()) {
+        kept.set(key, had);
+        return had.mesh;
+      }
+      const buf = new FaceBuffer();
+      for (const f of g.faces) buf.add(f.corners, f.normal, 1 / g.style.material.scale, f.flat, f.flatNormal);
       const mesh = new Mesh(`${name}_${key}`, this.scene);
-      g.buf.toVertexData().applyToMesh(mesh);
+      buf.toVertexData().applyToMesh(mesh);
       mesh.material = this.material(g.style);
       mesh.isPickable = false;
       mesh.freezeWorldMatrix();
       this.styleOf.set(mesh, g.style);
+      kept.set(key, { mesh, sig });
       return mesh;
     });
+    const staying = new Set(this.meshes);
+    for (const m of old) if (!staying.has(m)) m.dispose();
+    this.boxMeshes = kept;
     return this.meshes;
   }
+
+  /** The box meshes by style, and what each was built from (buildBoxes with `keep`). */
+  private boxMeshes = new Map<string, { mesh: Mesh; sig: string }>();
 
   /**
    * Terrain: one mesh per ground material holding that material's cells, with

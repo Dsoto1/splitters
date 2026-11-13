@@ -96,6 +96,19 @@ export class Hover {
    * entity near the pointer, then the tile in the hovered cell.
    */
   pick(): Hit | null {
+    // One look per hover update (the outline and the card ask the same question of the same pointer and map).
+    if (this.hoverPick) return this.hoverPick.hit;
+    const hit = this.pickNow();
+    if (this.hovering) this.hoverPick = { hit };
+    return hit;
+  }
+
+  private hovering = false;
+  private hoverPick: { hit: Hit | null } | null = null;
+  /** The drawn map's entities by id, per document as drawn (built once, not on every pointer move). */
+  private readonly entitiesById = new WeakMap<object, Map<string, MapEntity>>();
+
+  private pickNow(): Hit | null {
     // The map as drawn: a set piece's parts (tiles and entities of the expansion) pick their placement, as one.
     const view = this.app.viewDoc;
     const partOf = this.app.expansion.partOf;
@@ -103,7 +116,8 @@ export class Hover {
       const placement = partOf.get(h.id);
       return placement ? { kind: 'setpiece', id: placement } : { kind: h.kind, id: h.id };
     };
-    const byId = new Map(view.entities.map((e) => [e.id, e]));
+    let byId = this.entitiesById.get(view.entities);
+    if (!byId) this.entitiesById.set(view.entities, (byId = new Map(view.entities.map((e) => [e.id, e]))));
     // What the outliner hides or locks (editor-only) can't be picked: a set piece's parts follow their placement.
     const blocked = this.app.outliner.blocked;
     const free = (id: string) => !blocked.size || !(blocked.has(id) || blocked.has(partOf.get(id) ?? ''));
@@ -199,8 +213,15 @@ export class Hover {
   }
 
   updateHover(): void {
-    this.updateHoverTarget();
-    this.updateHoverCard();
+    this.hovering = true;
+    this.hoverPick = null;
+    try {
+      this.updateHoverTarget();
+      this.updateHoverCard();
+    } finally {
+      this.hovering = false;
+      this.hoverPick = null;
+    }
   }
 
   /**

@@ -16,8 +16,8 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
-import type { MapDocument, MapEntity, MapWeather, PropEntity, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
-import { mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, placedMountDef, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
+import type { FaceCache, MapDocument, MapEntity, MapWeather, PropEntity, RenderFace, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
+import { mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, placedMountDef, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, updateVisibleFaces, propFlushLifts } from '@tiletrigger/shared';
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
@@ -56,6 +56,10 @@ interface EntityMarker {
   node: TransformNode;
   /** Selection outline for pickups. */
   ring?: Mesh;
+  /** The entity the node was last put for, and what it stood on then (EditorView.placeEpoch). */
+  placed?: MapEntity;
+  placedEpoch?: number;
+  placedLift?: number;
 }
 
 /** A set piece as MapMaker outlines it (placing or selected): the grid cells it claims and its ports. */
@@ -118,7 +122,6 @@ export class EditorView {
   private roadMeshes: Mesh[] = [];
   private dimMeshes: Mesh[] = [];
   /** What the meshes were last built from: an edit rebuilds only what it changed (a prop moved: no tile, terrain or road meshes). */
-  private builtBoxes = '';
   private builtTheme = '';
   private drawnPaths: MapDocument['paths'] | null = null;
   private drawnTerrain: MapDocument['terrain'] | undefined = undefined;
@@ -329,16 +332,13 @@ export class EditorView {
     const onLevel = (b: WorldBox) => levelOf(b) === level;
     // The level meshes, only when the boxes (or how they're styled) changed.
     const theme = JSON.stringify([doc.classicStructure.theme, doc.classicStructure.tiles.map((t) => t.surfaces ?? null), level]);
-    const boxKey = `${boxesFingerprint(drawn)}|${theme}`;
-    if (boxKey !== this.builtBoxes) {
-      this.builtBoxes = boxKey;
-      // Faces clipped against every level (a wall's top still gives way to the floor above it), then drawn in two sets.
-      const faces = visibleFaces(drawn);
-      this.mapMeshes = this.styler.buildBoxes(visible, drawn, 'edmap', faces.filter((f) => onLevel(drawn[f.box]!)));
-      this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn, 'edmapdim', faces.filter((f) => !onLevel(drawn[f.box]!)));
-      for (const m of this.dimMeshes) m.visibility = 0.4;
-      this.applyTileLayer();
-    }
+    const restyled = theme !== this.builtStyle;
+    this.builtStyle = theme;
+    // Faces clipped against every level (a wall's top still gives way to the floor above it), then drawn in two sets.
+    // After an edit only the boxes near it are clipped again (facesUpdate.ts: on St. John's, 2,500 blocks, the whole
+    // pass took a third of a second per edit), and where no drawn box changed (a prop moved) the meshes stay.
+    this.faceCache = updateVisibleFaces(this.faceCache, drawn);
+    if (restyled || this.faceCache.changed) this.buildLevelMeshes(visible, drawn, this.faceCache.faces, onLevel);
     // The ground as played (what loadMap plays, settle.ts withGroundAsPlayed): the paths laid in (paths.ts) and the
     // terrain kept under every floor (terrainUnderFloors), worked out after every edit from the document's own ground,
     // which only sculpting changes: a path or a floor that moves takes its dip with it, and the ground comes back.
@@ -385,11 +385,22 @@ export class EditorView {
     this.area.setMap(doc, level, this.shownTerrain);
     // Light fixtures and hung props are drawn fastened to the ceiling over them (settle.ts fixtureGap, hungPropLift).
     this.scenario.ceilings = boxes;
-    this.setEntities(doc, level, showAll, new Set());
+    this.setEntities(doc, level, showAll, this.selectedShown);
     // Glass in glazed windows (after the backdrop, whose sky it reflects).
     this.scenario.glass.build(visible, { windowsOnly: true });
     // Trim is pickable too, so it can be painted.
     return drawn;
+  }
+
+  /** What the level meshes were last styled by (theme, painted surfaces, level), and the faces they were built from. */
+  private builtStyle = '';
+  private faceCache: FaceCache | null = null;
+
+  private buildLevelMeshes(visible: MapDocument, drawn: readonly WorldBox[], faces: readonly RenderFace[], onLevel: (b: WorldBox) => boolean): void {
+    this.mapMeshes = this.styler.buildBoxes(visible, drawn, 'edmap', faces.filter((f) => onLevel(drawn[f.box]!)), true);
+    this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn, 'edmapdim', faces.filter((f) => !onLevel(drawn[f.box]!)), true);
+    for (const m of this.dimMeshes) m.visibility = 0.4;
+    this.applyTileLayer();
   }
 
   /** The ground as drawn (paths laid in, kept under floors), or null on a map with no terrain. */
@@ -523,15 +534,52 @@ export class EditorView {
   /** Props drawn a hair apart where they lie flush on other props (propFlushLifts), worked out again when the props change. */
   private flush: { key: string; lifts: Map<string, [number, number, number]> } = { key: '', lifts: new Map() };
 
+  /** The lists the lifts were last worked out from: the same lists again need no second look (a click to select). */
+  private flushFor: { entities: readonly MapEntity[]; ceilings: readonly WorldBox[] } | null = null;
+
   private flushLifts(doc: MapDocument): Map<string, [number, number, number]> {
+    if (this.flushFor?.entities === doc.entities && this.flushFor.ceilings === this.scenario.ceilings) return this.flush.lifts;
+    this.flushFor = { entities: doc.entities, ceilings: this.scenario.ceilings };
     const key = this.scenario.ceilings.length + JSON.stringify(doc.entities.filter((e) => e.kind === 'prop' || e.kind === 'mover').map((e) => (e.kind === 'prop' ? [e.id, e.model, e.position, e.yaw, e.scale] : [e.id, e.props ?? []])));
     if (key !== this.flush.key) this.flush = { key, lifts: propFlushLifts(doc, PROP_CONTACTS, this.scenario.ceilings) };
     return this.flush.lifts;
   }
 
+  /**
+   * What each entity's marker is rebuilt on (its kind, item and every scenario property), kept per entity: the
+   * document's entities are never changed in place, so an entity seen before has the key it had (with the colour and
+   * the "driven by a mover" it had then).
+   */
+  private readonly markerKeys = new WeakMap<MapEntity, { key: string; color: string | null; driven: boolean }>();
+
+  private markerKey(e: MapEntity, color: string | null, driven: boolean): string {
+    const had = this.markerKeys.get(e);
+    if (had && had.color === color && had.driven === driven) return had.key;
+    const key = JSON.stringify({ ...e, position: null, name: null, color, driven });
+    this.markerKeys.set(e, { key, color, driven });
+    return key;
+  }
+
+  /**
+   * Where the markers were last put: an entity that has not changed is put again only when what it stands on or
+   * hangs from has (the ground as shown, the ceilings), or its own lift off a prop it lies flush on. On St. John's (3,400
+   * entities) every pointer step of a drag and every click to select placed them all again.
+   */
+  private placedOn: { ground: MapDocument['terrain']; made: MapDocument['terrain']; docGround: MapDocument['terrain']; ceilings: readonly WorldBox[]; rebed: unknown } | null = null;
+  private placeEpoch = 0;
+  /** The selection last drawn (setMap draws the entities again with it). */
+  private selectedShown: ReadonlySet<string> = new Set();
+
   setEntities(doc: MapDocument, level: number, showAll: boolean, selected: ReadonlySet<string>): void {
     const { levelHeight } = doc.classicStructure;
-    this.flushLifts(doc);
+    this.selectedShown = selected;
+    const lifts = this.flushLifts(doc);
+    const on = this.placedOn;
+    if (!on || on.ground !== this.shownTerrain || on.made !== this.groundMade || on.docGround !== doc.terrain || on.ceilings !== this.scenario.ceilings || on.rebed !== this.rebedCache) {
+      this.placedOn = { ground: this.shownTerrain, made: this.groundMade, docGround: doc.terrain, ceilings: this.scenario.ceilings, rebed: this.rebedCache };
+      this.placeEpoch++;
+    }
+    const epoch = this.placeEpoch;
     const seen = new Set<string>();
     const factions = mapFactions(doc);
     const factionColor = (id: string) => factions.find((f) => f.id === id)?.color ?? '#888888';
@@ -547,7 +595,7 @@ export class EditorView {
       if (this.outlinerHidden(e.id)) continue;
       seen.add(e.id);
       // Rebuild a marker when the entity changed kind, item or any scenario property.
-      const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : JSON.stringify({ ...e, position: null, name: null, color: e.kind === 'encounter' ? factionColor(e.faction) : e.kind === 'flag' ? this.scenario.teamColor(e.team) : null, driven: dynamic.has(e.id) });
+      const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : this.markerKey(e, e.kind === 'encounter' ? factionColor(e.faction) : e.kind === 'flag' ? this.scenario.teamColor(e.team) : null, dynamic.has(e.id));
       let m = this.markers.get(e.id);
       if (m && m.key !== key) {
         this.nodeEntity.delete(m.node);
@@ -569,7 +617,14 @@ export class EditorView {
         // Breakthrough spawn groups: the attackers' orange, the defenders' blue (the inspector says which sector).
         (m.node as Mesh).material = selected.has(e.id) ? this.mat.spawnSel : e.side ? this.teamMaterial(e.side === 'attack' ? '#ff8a3a' : '#5ab0ff') : e.faction ? this.teamMaterial(teams.find((t) => t.id === e.faction)?.color ?? '#888888') : this.mat.spawn;
       } else {
-        this.placeEntityNode(m.node as TransformNode, e, doc);
+        const lift = lifts.get(e.id);
+        const liftKey = lift ? lift[0] * 1e6 + lift[1] * 1e3 + lift[2] : 0;
+        if (m.placed !== e || m.placedEpoch !== epoch || m.placedLift !== liftKey) {
+          this.placeEntityNode(m.node as TransformNode, e, doc);
+          m.placed = e;
+          m.placedEpoch = epoch;
+          m.placedLift = liftKey;
+        }
         if (selected.has(e.id) && !m.ring) {
           m.ring = CreateCylinder(`edsel_${e.id}`, { diameter: selectionSize(e), height: 1.2, tessellation: 24 }, this.scene);
           m.ring.material = this.mat.outline;
@@ -740,21 +795,44 @@ export class EditorView {
     return this.markers.get(id)?.node.isEnabled() ?? false;
   }
 
+  /** The entity each drawn mesh belongs to ('' for a mesh that is no entity's), found once per mesh. */
+  private readonly meshOwner = new WeakMap<object, string>();
+
   /** Entity under a ray, by its drawn meshes: every visible entity hit, nearest first. */
   pickEntities(origin: Vec3, dir: Vec3): { id: string; distance: number }[] {
     const ray = new Ray(new Vector3(origin.x, origin.y, origin.z), new Vector3(dir.x, dir.y, dir.z), 10000);
-    const owner = (mesh: { parent: unknown }): string | undefined => {
-      for (let n = mesh.parent as TransformNode | null; n; n = n.parent as TransformNode | null) {
-        const id = this.nodeEntity.get(n);
-        if (id) return id;
-      }
-      return undefined;
+    const owner = (mesh: { parent: unknown }): string => {
+      let id = this.meshOwner.get(mesh);
+      if (id !== undefined) return id;
+      id = this.nodeEntity.get(mesh as unknown as TransformNode) ?? '';
+      for (let n = mesh.parent as TransformNode | null; n && !id; n = n.parent as TransformNode | null) id = this.nodeEntity.get(n) ?? '';
+      this.meshOwner.set(mesh, id);
+      return id;
     };
-    const hits = this.scene.multiPickWithRay(ray, (m) => m.isEnabled() && m.isVisible && (this.nodeEntity.has(m as unknown as TransformNode) || owner(m) !== undefined)) ?? [];
+    // A block or a prop the ray passes well clear of is left out before its meshes are tried (thousands of them on a
+    // big map, on every pointer move): by where it is and the most it can reach, with room for a lean or a lift.
+    const dl = Math.hypot(dir.x, dir.y, dir.z) || 1;
+    const clear = (id: string): boolean => {
+      const e = this.markers.get(id)?.placed;
+      if (!e || (e.kind !== 'block' && e.kind !== 'prop')) return false;
+      const size = e.kind === 'block' ? e.size : (getProp(e.model)?.size ?? [4, 4, 4]).map((v) => v * e.scale);
+      const r = Math.hypot(size[0]!, size[1]!, size[2]!) + 1.5;
+      const ox = e.position[0] - origin.x;
+      const oy = e.position[1] + size[1]! / 2 - origin.y;
+      const oz = e.position[2] - origin.z;
+      const along = (ox * dir.x + oy * dir.y + oz * dir.z) / dl;
+      return ox * ox + oy * oy + oz * oz - along * along > r * r;
+    };
+    const hits =
+      this.scene.multiPickWithRay(ray, (m) => {
+        if (!m.isEnabled() || !m.isVisible) return false;
+        const id = owner(m);
+        return id !== '' && !clear(id);
+      }) ?? [];
     const best = new Map<string, number>();
     for (const h of hits) {
       if (!h.hit || !h.pickedMesh) continue;
-      const id = this.nodeEntity.get(h.pickedMesh as unknown as TransformNode) ?? owner(h.pickedMesh);
+      const id = owner(h.pickedMesh);
       if (id && (best.get(id) ?? Infinity) > h.distance) best.set(id, h.distance);
     }
     return [...best].map(([id, distance]) => ({ id, distance })).sort((a, b) => a.distance - b.distance);
@@ -1113,35 +1191,6 @@ function selectionSize(e: MapEntity): number {
     default:
       return 1.1;
   }
-}
-
-/** A quick fingerprint of a box list (positions, kinds, sources, materials): equal lists, equal strings. */
-function boxesFingerprint(boxes: readonly WorldBox[]): string {
-  let h1 = 0x811c9dc5;
-  let h2 = 0x01000193;
-  const mix = (n: number) => {
-    const v = Math.round(n * 1000) | 0;
-    h1 = Math.imul(h1 ^ v, 16777619);
-    h2 = Math.imul(h2 + v, 2246822519) ^ (h2 >>> 13);
-  };
-  const str = (t: string) => {
-    for (let i = 0; i < t.length; i++) mix(t.charCodeAt(i));
-  };
-  for (const b of boxes) {
-    mix(b.min[0]);
-    mix(b.min[1]);
-    mix(b.min[2]);
-    mix(b.max[0]);
-    mix(b.max[1]);
-    mix(b.max[2]);
-    mix(b.yaw ?? 0);
-    mix(b.pitch ?? 0);
-    mix(b.roll ?? 0);
-    str(b.kind);
-    str(b.sourceId);
-    if (b.surface) str(`${b.surface.material}${b.surface.tint ?? ''}`);
-  }
-  return `${boxes.length}:${(h1 >>> 0).toString(36)}${(h2 >>> 0).toString(36)}`;
 }
 
 /** Two grounds with the same heights, vertex for vertex. */

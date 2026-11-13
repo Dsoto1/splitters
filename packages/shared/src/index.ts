@@ -6,6 +6,7 @@ export * from './map/materials.ts';
 export * from './map/surfaces.ts';
 export * from './map/geometry.ts';
 export * from './map/faces.ts';
+export * from './map/facesUpdate.ts';
 export * from './map/zfight.ts';
 export * from './map/propFaces.ts';
 export * from './map/terrain.ts';

@@ -232,7 +232,19 @@ export class EditorApp {
   hoverCell: [number, number, number] | null = null;
   looking: { x: number; y: number; moved: boolean; travel: number; button: number } | null = null;
   keys = new Set<string>();
-  issues: ValidationIssue[] = [];
+  /** The map's own issues as last worked out (MapChecks: a moment after each edit, in a worker). */
+  issuesNow: ValidationIssue[] = [];
+
+  /** The map's own issues, up to date with the document (worked out on the spot if an edit has not been checked yet). */
+  get issues(): ValidationIssue[] {
+    this.checks.settle();
+    return this.issuesNow;
+  }
+
+  set issues(v: ValidationIssue[]) {
+    this.issuesNow = v;
+  }
+
   private renderedRevision = -1;
   private renderedLevel = -1;
   private renderedShowAll = false;
