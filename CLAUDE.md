@@ -1,6 +1,6 @@
 # Tile Trigger: notes for Claude sessions
 
-Start with `HANDOFF.md` (current state, open items, pitfalls) and keep it current when you finish work.
+Start with `docs/QUEUE.md` (the short list: in flight, bugs, easy wins, features, waiting on the owner; keep it current in the commit that lands an item), then `HANDOFF.md` (current state, claims, the landing lock, history) and keep it current when you finish work.
 
 Session memory: at the end of a session, write `.control-center/session-summary.json` (title, summary, decisions, tasks; no secrets); the session hook sends it to the Project Control Center.
 
