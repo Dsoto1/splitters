@@ -141,6 +141,8 @@ export const isAmmoBoxPickup = (e: { item: string; random?: unknown }): boolean 
 
 /** How much smaller than its model the Ammo Box Kit is drawn as a pickup and in the hand (the crate model is 1 m long). */
 export const AMMO_BOX_KIT_SCALE = 0.42;
+/** In your hands (first person, G held): smaller again, held where a grenade is (at 0.42 it filled half the screen). */
+export const AMMO_BOX_KIT_HAND_SCALE = 0.2;
 
 /** Where a source's reach point is in the world (its `at`, the mount standing at `pos` turned `yaw`). */
 export function resupplyPoint(spec: Pick<ResupplySpec, 'at'>, pos: { x: number; y: number; z: number }, yaw: number): { x: number; y: number; z: number } {

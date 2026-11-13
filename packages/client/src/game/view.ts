@@ -98,6 +98,7 @@ import {
   type SkyDefinition,
   isBreakableProp,
   isAmmoBoxPickup,
+  AMMO_BOX_KIT_HAND_SCALE,
   AMMO_BOX_KIT_SCALE,
   AMMO_BOX_MODEL,
 } from '@tiletrigger/shared';
@@ -1726,7 +1727,7 @@ export class GameView {
         (node) => {
           node.parent = root;
           // (The Ammo Box Kit's model is the full-size crate: in the hand it is a small one.)
-          if (path === AMMO_BOX_MODEL) node.scaling.setAll(AMMO_BOX_KIT_SCALE);
+          if (path === AMMO_BOX_MODEL) node.scaling.setAll(AMMO_BOX_KIT_HAND_SCALE);
           // Drawn over the world like the gun, so it never clips into a wall in front of you.
           for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
           node.setEnabled(false);
