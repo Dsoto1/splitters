@@ -27,11 +27,11 @@
     },
     "release": {
       "mapId": "m_fxtilvssrdvznevx",
-      "versionId": "v_eg2y3ux5aytl73xu",
-      "revision": 174,
-      "contentHash": "sha256:6b3400b989e7b21d3693fa18946111ee5710feed76b937f37df155ee7cf5f9fd",
+      "versionId": "v_mu6pssvgw3uushg5",
+      "revision": 180,
+      "contentHash": "sha256:85fdcb949a6e9941362e80c875080c9be37efbf093c23afa85acfd007a34cc33",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T02:42:57.008Z"
+      "releasedAt": "2026-11-13T12:14:01.726Z"
     },
     "tier": "experimental"
   },
@@ -32762,6 +32762,556 @@
         2.4
       ],
       "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "spawn_4o1hup3psf",
+      "position": [
+        96,
+        4.83,
+        -74
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_fynw21q9yr",
+      "position": [
+        96,
+        4.76,
+        -98
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_n4p5agc9dm",
+      "position": [
+        100,
+        4.28,
+        -98
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_mety8pdthv",
+      "position": [
+        104,
+        4.53,
+        -98
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_g7hazyvb9h",
+      "position": [
+        -60,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_vm5jnobpm1",
+      "position": [
+        -48,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_hb15ukbsgm",
+      "position": [
+        -36,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_vg259f4q4q",
+      "position": [
+        -24,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_c3yof9tgxq",
+      "position": [
+        24,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_uf7skk9dp3",
+      "position": [
+        36,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_pzltdsoq4e",
+      "position": [
+        48,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_7rkfubqpo4",
+      "position": [
+        60,
+        28,
+        64.5
+      ],
+      "kind": "spawn",
+      "yaw": 3.142,
+      "faction": "embers"
+    },
+    {
+      "id": "spawn_v73e0q5sld",
+      "position": [
+        92,
+        3.79,
+        -74
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_56u0eovk81",
+      "position": [
+        88,
+        3.88,
+        -74
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_a75lnugpl8",
+      "position": [
+        108,
+        4.41,
+        -98
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "spawn_ht600tp5cy",
+      "position": [
+        112,
+        5.59,
+        -98
+      ],
+      "kind": "spawn",
+      "yaw": 0,
+      "faction": "tide"
+    },
+    {
+      "id": "block_cjhgvfrblu",
+      "kind": "block",
+      "position": [
+        -64,
+        28,
+        54.25
+      ],
+      "yaw": 0,
+      "size": [
+        40,
+        1,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_jfwd8l9j23",
+      "kind": "block",
+      "position": [
+        -8,
+        28,
+        54.25
+      ],
+      "yaw": 0,
+      "size": [
+        56,
+        1,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_j4hxlmehfy",
+      "kind": "block",
+      "position": [
+        32,
+        28,
+        54.25
+      ],
+      "yaw": 0,
+      "size": [
+        8,
+        1,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_d64g1rz5y7",
+      "kind": "block",
+      "position": [
+        64,
+        28,
+        54.25
+      ],
+      "yaw": 0,
+      "size": [
+        40,
+        1,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_vbugexhp0z",
+      "kind": "block",
+      "position": [
+        -56,
+        28,
+        69.75
+      ],
+      "yaw": 0,
+      "size": [
+        56,
+        1,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_d3l7l0yu2p",
+      "kind": "block",
+      "position": [
+        0,
+        28,
+        69.75
+      ],
+      "yaw": 0,
+      "size": [
+        56,
+        1,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_o5khfzqdbf",
+      "kind": "block",
+      "position": [
+        56,
+        28,
+        69.75
+      ],
+      "yaw": 0,
+      "size": [
+        56,
+        1,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ur4koip9xj",
+      "kind": "block",
+      "position": [
+        21.5,
+        4.1000000000000005,
+        12
+      ],
+      "yaw": 0,
+      "size": [
+        0.5,
+        3.6,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_4z2f5s7mpt",
+      "kind": "block",
+      "position": [
+        26.5,
+        3.9000000000000004,
+        12
+      ],
+      "yaw": 0,
+      "size": [
+        0.5,
+        3.8,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_oicfkgzbvb",
+      "kind": "block",
+      "position": [
+        21.5,
+        3.8,
+        20
+      ],
+      "yaw": 0,
+      "size": [
+        0.5,
+        7.9,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_03o8cpquoh",
+      "kind": "block",
+      "position": [
+        26.5,
+        3.7,
+        20
+      ],
+      "yaw": 0,
+      "size": [
+        0.5,
+        8,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_ou4m2bywss",
+      "kind": "block",
+      "position": [
+        21.5,
+        3.6,
+        28
+      ],
+      "yaw": 0,
+      "size": [
+        0.5,
+        12.1,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_pqw5263pn4",
+      "kind": "block",
+      "position": [
+        26.5,
+        3.6,
+        28
+      ],
+      "yaw": 0,
+      "size": [
+        0.5,
+        12.1,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_zit64kvnr8",
+      "kind": "block",
+      "position": [
+        21.5,
+        3.5,
+        36
+      ],
+      "yaw": 0,
+      "size": [
+        0.5,
+        16.2,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_hn4f2tpb2n",
+      "kind": "block",
+      "position": [
+        26.5,
+        3.5,
+        36
+      ],
+      "yaw": 0,
+      "size": [
+        0.5,
+        16.2,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_io27li94go",
+      "kind": "block",
+      "position": [
+        21.5,
+        3.6,
+        44
+      ],
+      "yaw": 0,
+      "size": [
+        0.5,
+        20.1,
+        0.5
+      ],
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_y9te89b5an",
+      "kind": "block",
+      "position": [
+        26.5,
+        3.5,
+        44
+      ],
+      "yaw": 0,
+      "size": [
+        0.5,
+        20.2,
+        0.5
+      ],
       "material": "core.pbr_concrete",
       "tint": null,
       "behaviour": "solid",
