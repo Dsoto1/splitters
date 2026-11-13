@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_du5xxa7isvhi2bdk",
-      "revision": 29,
-      "contentHash": "sha256:4195ea725d49e4b93e92c2b92f2d5f9adca066d1cebd7076e2f32b0b4a5b8c57",
+      "versionId": "v_bioxhqvaxhvjkwof",
+      "revision": 30,
+      "contentHash": "sha256:64d281dd2671d70b3c623a792aff75bbaf2404f5d79b967a512fa2372ed9f286",
       "schemaVersion": 38,
-      "releasedAt": "2026-11-13T20:30:23.391Z"
+      "releasedAt": "2026-11-13T22:21:28.851Z"
     },
     "testOnly": true
   },
@@ -5216,12 +5216,12 @@
     },
     {
       "id": "mount_95h2qo8jbg",
-      "kind": "mount",
       "position": [
         -68,
         0,
         0
       ],
+      "kind": "mount",
       "model": "supply_buggy",
       "yaw": 0,
       "faction": null,
@@ -6465,6 +6465,86 @@
       "z": -2,
       "rotation": 1,
       "mirror": false
+    },
+    {
+      "id": "setpiece_5rvb6dlsou",
+      "piece": "setpiece.porch",
+      "x": -2,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_rca301406m",
+      "piece": "setpiece.bus_shelter",
+      "x": 0,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_4p6sm7lgyw",
+      "piece": "setpiece.parking_deck_ramp",
+      "x": 2,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_ybq0qzvwa6",
+      "piece": "setpiece.parking_deck_bay",
+      "x": 4,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_0p31wmz06r",
+      "piece": "setpiece.concrete_frame",
+      "x": 6,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_6k1tnq0myj",
+      "piece": "setpiece.concrete_frame_2",
+      "x": 8,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_d7j0u95sb0",
+      "piece": "setpiece.bandstand",
+      "x": 11,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_unuok927p7",
+      "piece": "setpiece.shop_unit",
+      "x": 14,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
     }
   ]
 }
