@@ -538,3 +538,46 @@ export function terrainTrianglesCut(t: TerrainData, cuts: readonly GroundCut[]):
   indices.set(tris, o);
   return { positions, indices };
 }
+
+/** Half the width of a buried passage as it is drawn on plans (the 3.6 m bore every tunnel piece has so far). */
+const PLAN_PASSAGE_HALF = 1.8;
+
+/** A stretch of a buried passage's side on the plan: world X/Z ends, and the floor's height. */
+export interface BuriedLine {
+  a: [number, number];
+  b: [number, number];
+  y: number;
+  tile: string;
+}
+
+/**
+ * The buried passages of a map as plan lines (the menu's map plan, the minimap, MapMaker's overlay draw them dashed:
+ * a tunnel under a hill is otherwise not to be seen from above): for every cell of a piece with a bore, the two sides
+ * of the passage out to each port, and the middle square closed on the sides without one.
+ */
+export function buriedPassageLines(map: Pick<MapDocument, 'classicStructure'>, catalog: TileCatalog = coreCatalog): BuriedLine[] {
+  const { tiles, cellSize, levelHeight } = map.classicStructure;
+  const out: BuriedLine[] = [];
+  const w = PLAN_PASSAGE_HALF;
+  const half = cellSize / 2;
+  for (const p of tiles) {
+    const def = catalog.get(p.tile);
+    if (!def?.bore) continue;
+    for (const [dx, dy, dz] of def.cells) {
+      const [rx, ry] = rotateXZ(dx, dy, p.rotation);
+      const cx = (p.x + rx) * cellSize;
+      const cz = (p.y + ry) * cellSize;
+      const y = (p.z + dz) * levelHeight;
+      const open = new Set(def.ports.filter((q) => q.level === dz && (q.cell?.[0] ?? 0) === dx && (q.cell?.[1] ?? 0) === dy).map((q) => rotateSide(q.side, p.rotation)));
+      for (const side of ['N', 'E', 'S', 'W'] as const) {
+        const [sx, sz] = SIDE_DIRS[side];
+        // Across the side: the unit step a quarter turn on.
+        const [ax, az] = [-sz, sx];
+        const at = (along: number, across: number): [number, number] => [cx + sx * along + ax * across, cz + sz * along + az * across];
+        if (open.has(side)) for (const s of [-1, 1]) out.push({ a: at(w, s * w), b: at(half, s * w), y, tile: p.id });
+        else out.push({ a: at(w, -w), b: at(w, w), y, tile: p.id });
+      }
+    }
+  }
+  return out;
+}
