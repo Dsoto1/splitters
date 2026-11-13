@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_nrfxczl6m2zcqbew",
-      "versionId": "v_4422dsjubyiz3r6x",
-      "revision": 8,
-      "contentHash": "sha256:03f42cd324da1e3b9e90021bd3561478681709bcb4f3d4d0bad05bc26c096cf8",
+      "versionId": "v_6rsccgy4truc7neh",
+      "revision": 9,
+      "contentHash": "sha256:79630a3eac9f4180998ec638486aefc76220552979a811e4cd2cf412c07e2ec6",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:18:55.001Z"
+      "releasedAt": "2026-11-12T21:09:31.683Z"
     }
   },
   "classicStructure": {
@@ -15798,7 +15798,7 @@
         4
       ],
       "kind": "mount",
-      "model": "kart",
+      "model": "hover_bike",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
@@ -15811,7 +15811,7 @@
         52
       ],
       "kind": "mount",
-      "model": "kart",
+      "model": "hover_bike",
       "yaw": 3.141592653589793,
       "faction": null,
       "respawnSeconds": null

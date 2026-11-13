@@ -8,7 +8,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: a double bed, a frame on short legs with a headboard, a mattress, pillows and a blanket turned back, the size of the Kenney double bed (1.657 \u00d7 0.65 \u00d7 1.95 m); two collision boxes, as it had."
+        "1": "First version: a double bed, a frame on short legs with a headboard, a mattress, pillows and a blanket turned back, the size of the Kenney double bed (1.657 × 0.65 × 1.95 m); two collision boxes, as it had."
       },
       "size": [
         1.657,
@@ -119,7 +119,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: two bunks between four broad posts, head and foot boards, a rail along one side and a ladder at the foot, the size of the Kenney bunk bed (1.142 \u00d7 1.7 \u00d7 2.19 m); twelve collision boxes, as it had."
+        "1": "First version: two bunks between four broad posts, head and foot boards, a rail along one side and a ladder at the foot, the size of the Kenney bunk bed (1.142 × 1.7 × 2.19 m); twelve collision boxes, as it had."
       },
       "size": [
         1.142,
@@ -235,6 +235,19 @@
             "jitter": 0.14,
             "grime": 0.5,
             "sheet": "#b8ad92"
+          }
+        },
+        {
+          "index": 5,
+          "name": "cadet",
+          "seed": 9536,
+          "look": {
+            "wood": "#a67c4e",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "blanket": "#27324a",
+            "fold": "#3a4662",
+            "sheet": "#d8d6ce"
           }
         }
       ]

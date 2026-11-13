@@ -29,7 +29,6 @@ const LINEUP: [MountModel, 'wheeled' | 'hover' | 'flying'][] = [
   ['armored_rover', 'wheeled'],
   ['hover_bike', 'hover'],
   ['gunship', 'flying'],
-  ['ice_cream_truck', 'wheeled'],
   ['snow_sled', 'hover'],
   ['troop_truck', 'wheeled'],
 ];

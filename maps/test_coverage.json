@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_rbau6um53slvaio3",
-      "revision": 21,
-      "contentHash": "sha256:3cff97b57b48aa38791328f9bbc765ef7776368566492b67e19d88bab135ff57",
+      "versionId": "v_ssz3upj5dkhxk6e7",
+      "revision": 24,
+      "contentHash": "sha256:3af85d0b79851a56382410fd15e78b4826d4ab8412124ae297a5462a73d4ec57",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T13:27:23.364Z"
+      "releasedAt": "2026-11-13T00:18:26.891Z"
     },
     "testOnly": true
   },
@@ -901,6 +901,31 @@
         "y": 2,
         "z": 0,
         "rotation": 0
+      },
+      {
+        "id": "tile_30vxpf9a5x",
+        "tile": "core.room",
+        "x": -6,
+        "y": -51,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "window_sash",
+          "0,0,0:E": "windows_sash",
+          "0,0,0:S": "door_room"
+        },
+        "glass": {
+          "0,0,0:N": "breakable",
+          "0,0,0:E": "reinforced"
+        }
+      },
+      {
+        "id": "tile_jhpaq7fvzb",
+        "tile": "core.yard",
+        "x": -5,
+        "y": -51,
+        "z": 0,
+        "rotation": 0
       }
     ]
   },
@@ -1219,19 +1244,6 @@
       "respawnSeconds": null
     },
     {
-      "id": "mount_5m402baslv",
-      "position": [
-        -68,
-        0,
-        0
-      ],
-      "kind": "mount",
-      "model": "kart",
-      "yaw": 0,
-      "faction": null,
-      "respawnSeconds": null
-    },
-    {
       "id": "mount_2vxoerzt6j",
       "position": [
         -51,
@@ -1357,19 +1369,6 @@
       ],
       "kind": "mount",
       "model": "gunship",
-      "yaw": 0,
-      "faction": null,
-      "respawnSeconds": null
-    },
-    {
-      "id": "mount_p9gzbpmlkz",
-      "position": [
-        119,
-        0,
-        0
-      ],
-      "kind": "mount",
-      "model": "ice_cream_truck",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
@@ -4932,6 +4931,92 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "prop_6cxnfalctm",
+      "position": [
+        -48,
+        0,
+        -411.75
+      ],
+      "kind": "prop",
+      "model": "kit.door.oak",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0oq8h6gd1r",
+      "position": [
+        -38.5,
+        0,
+        -409
+      ],
+      "kind": "prop",
+      "model": "kit.door.oak_ajar",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "variant": 1,
+      "tint": null
+    },
+    {
+      "id": "prop_8jjhk1gerb",
+      "position": [
+        -41.5,
+        0,
+        -407
+      ],
+      "kind": "prop",
+      "model": "kit.door.oak_open",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "variant": 2,
+      "tint": null
+    },
+    {
+      "id": "prop_3h0sqhvq27",
+      "position": [
+        -46.4,
+        0,
+        -406
+      ],
+      "kind": "prop",
+      "model": "kit.table.desk_hutch",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_lh5drt3v6j",
+      "position": [
+        -50,
+        0,
+        -405
+      ],
+      "kind": "prop",
+      "model": "kit.cabinet.closet",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_bb3iujf9mb",
+      "kind": "prop",
+      "position": [
+        -37.5,
+        0,
+        -406
+      ],
+      "model": "kit.cabinet.closet_front",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -5501,11 +5586,11 @@
       "race": {
         "laps": 3,
         "grid": 8,
-        "vehicle": "kart",
+        "vehicle": "hover_bike",
         "combat": false,
         "curbs": true,
         "ambient": 0,
-        "ambientVehicle": "kart",
+        "ambientVehicle": "hover_bike",
         "pit": null
       }
     }
@@ -6064,6 +6149,86 @@
       "z": 0,
       "rotation": 0,
       "mirror": false
+    },
+    {
+      "id": "setpiece_tnfowf5qby",
+      "piece": "setpiece.stair_end_bay",
+      "x": -18,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_z90kcythx2",
+      "piece": "setpiece.dorm_bay",
+      "x": -17,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_wecckxjpuw",
+      "piece": "setpiece.dorm_bay",
+      "x": -17,
+      "y": -51,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_3fai89yi9l",
+      "piece": "setpiece.dorm_office_bay",
+      "x": -16,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_wx68e90fpn",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -13,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_teh85v3v8t",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -13,
+      "y": -51,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_568q9ezup3",
+      "piece": "setpiece.stair_end_bay",
+      "x": -12,
+      "y": -50,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_fkb6bs3lkb",
+      "piece": "setpiece.stair_end_bay_3",
+      "x": -9,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
     }
   ]
 }

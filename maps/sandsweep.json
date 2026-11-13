@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 36,
   "metadata": {
     "id": "sandsweep",
     "name": "Sandsweep Circuit",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_o42gqpw3ur6gmf5v",
-      "versionId": "v_fk2zkb5jso6mqiwb",
-      "revision": 2,
-      "contentHash": "sha256:5684c3385ba8f66d8e40c2821c9b10f21449979654b1fd7382faa0b69b4bca42",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:30:34.320Z"
+      "versionId": "v_d5ju7v2vmzzdpsvy",
+      "revision": 3,
+      "contentHash": "sha256:d1b6cf4dfc37ba73b88c1c3142f2f3b61c5c8fcafd31c85b3d6951df05d25e4a",
+      "schemaVersion": 36,
+      "releasedAt": "2026-11-12T21:11:40.401Z"
     }
   },
   "classicStructure": {
@@ -2048,6 +2048,16 @@
     "foliage": []
   },
   "bounds": null,
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "mesas",
+    "ground": "sand",
+    "haze": 0.4
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": null,
+  "dependencies": [],
   "paths": [
     {
       "id": "race_track",
@@ -2183,20 +2193,10 @@
         "combat": true,
         "curbs": true,
         "ambient": 0,
-        "ambientVehicle": "kart",
+        "ambientVehicle": "hover_bike",
         "pit": null
       },
       "curve": "classic"
     }
-  ],
-  "backdrop": {
-    "sky": "clear",
-    "scenery": "mesas",
-    "ground": "sand",
-    "haze": 0.4
-  },
-  "physics": null,
-  "blood": null,
-  "teamSetup": null,
-  "dependencies": []
+  ]
 }

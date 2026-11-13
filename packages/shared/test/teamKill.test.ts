@@ -109,15 +109,15 @@ const SOURCES: Record<string, (r: Rig, target: Combatant) => void> = {
     hold(r, 240, [r.me, t]);
   },
   'a vehicle (run over)'(r, t) {
-    const kart = inner(r.match).mounts.find((m) => m.def.id === 'kart')!;
-    r.park(r.me, kart.pos.x + 1, kart.pos.z);
+    const jeep = inner(r.match).mounts.find((m) => m.def.id === 'gun_jeep')!;
+    r.park(r.me, jeep.pos.x + 1, jeep.pos.z);
     expect(inner(r.match).enterMount(r.me)).toBe(true);
     t.health = 5;
     for (let i = 0; i < 120 && t.alive; i++) {
-      r.match.queueInputs(r.me.slot, [{ seq: 2000 + i, forward: 1, right: 0, yaw: kart.yaw, pitch: 0, buttons: 0 }]);
-      kart.speed = Math.max(kart.speed, 12);
+      r.match.queueInputs(r.me.slot, [{ seq: 2000 + i, forward: 1, right: 0, yaw: jeep.yaw, pitch: 0, buttons: 0 }]);
+      jeep.speed = Math.max(jeep.speed, 12);
       // Always just ahead of the bonnet.
-      r.park(t, kart.pos.x + Math.sin(kart.yaw) * 1.2, kart.pos.z + Math.cos(kart.yaw) * 1.2);
+      r.park(t, jeep.pos.x + Math.sin(jeep.yaw) * 1.2, jeep.pos.z + Math.cos(jeep.yaw) * 1.2);
       r.step();
     }
   },
@@ -156,7 +156,7 @@ const SOURCES: Record<string, (r: Rig, target: Combatant) => void> = {
 };
 
 const PROPS: Record<string, MapEntity[]> = {
-  'a vehicle (run over)': [{ id: 'mount_kart', kind: 'mount', model: 'kart', position: [20, 0, 12], yaw: 0, faction: null, respawnSeconds: null } as MapEntity],
+  'a vehicle (run over)': [{ id: 'mount_kart', kind: 'mount', model: 'gun_jeep', position: [20, 0, 12], yaw: 0, faction: null, respawnSeconds: null } as MapEntity],
   'a turret': [{ id: 'mount_mg', kind: 'mount', model: 'turret_mg', position: [20, 0, 8], yaw: 0, faction: null, respawnSeconds: null } as MapEntity],
   'a barrel set off': [{ id: 'barrel', kind: 'destructible', model: 'barrel', position: [10, 0, 10], yaw: 0, health: null, explosiveOnly: false } as MapEntity],
 };

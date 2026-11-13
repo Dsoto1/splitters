@@ -25,8 +25,12 @@ export function createMountNode(scene: Scene, models: ModelLibrary, model: strin
   void models.instantiate(def.model, `${name}_model`).then((node) => {
     if (root.isDisposed()) return node.dispose();
     node.parent = body;
-    // Its lower levels of detail (content/guns.json `lod`), per part, before the paint goes on.
-    models.attachLods(def.model, `${name}_model`, node);
+    // Drawn larger or smaller than it was built (MountDef.scale), before it is stood on the ground below.
+    const scale = def.scale ?? 1;
+    if (scale !== 1) node.scaling.scaleInPlace(scale);
+    // Its lower levels of detail (content/guns.json `lod`), per part, before the paint goes on: as much further off
+    // as it is drawn larger.
+    models.attachLods(def.model, `${name}_model`, node, scale);
     const { min } = node.getHierarchyBoundingVectors(true);
     const ride = def.rideHeight ?? (def.vehicle?.hover ? 0.35 : 0);
     node.position.y -= min.y - root.position.y - ride;

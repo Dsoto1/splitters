@@ -40,6 +40,10 @@ const NO_COLLISION = new Set([
   'kit.sign.cone', 'kit.sign.cone_slim',
   // The dome kit's ring trims: mouldings 0.2 m proud of the drum's wall, which is what collides.
   'kit.dome.trim_top', 'kit.dome.trim_middle', 'kit.dome.trim_bottom',
+  // The Oak Door standing open (docs/map-briefs/st_johns, step 1): the doorway it stands in stays clear.
+  'kit.door.oak_open',
+  // The built-in closet's front: the wall it is set in is the closet, and collides.
+  'kit.cabinet.closet_front',
 ]);
 
 describe('kit families', () => {

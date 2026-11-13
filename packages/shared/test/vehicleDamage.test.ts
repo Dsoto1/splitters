@@ -151,7 +151,7 @@ describe('vehicle damage states, fire, wrecks and crashes', () => {
   });
 
   it('a short respawn delay cuts the wreck short so it is gone before the vehicle is back', () => {
-    const match = new Match(yard([mount('kart', 10, 10, 0, 5)]), rules);
+    const match = new Match(yard([mount('gun_jeep', 10, 10, 0, 5)]), rules);
     const d = new Driver(match);
     d.run(2);
     const m = internals(match).mounts[0]!;
@@ -183,7 +183,7 @@ describe('vehicle damage states, fire, wrecks and crashes', () => {
 
   it('chain reaction: a barrel blast finishes a burning vehicle, which goes up and credits the shooter', () => {
     const barrel: MapEntity = { id: 'barrel_1', kind: 'destructible', model: 'barrel', position: [10, 0, 13], yaw: 0, health: null, explosiveOnly: false } as MapEntity;
-    const match = new Match(yard([mount('kart', 10, 10)], [barrel]), rules);
+    const match = new Match(yard([mount('hover_bike', 10, 10)], [barrel]), rules);
     const d = new Driver(match);
     const a = match.addHuman('a')!;
     d.run(2);
@@ -198,23 +198,23 @@ describe('vehicle damage states, fire, wrecks and crashes', () => {
     expect(events.some((e) => e.e === 'explode' && e.m === m.index)).toBe(true);
   });
 
-  it('ramming: a kart driven into a parked buggy hurts both, the light kart far worse, credited to the drivers, with a crash', () => {
-    const match = new Match(yard([mount('kart', 4, 10, Math.PI / 2), mount('buggy', 20, 10, 0)]), rules);
+  it('ramming: a hover bike driven into a parked buggy hurts both, the light bike far worse, credited to the drivers, with a crash', () => {
+    const match = new Match(yard([mount('hover_bike', 4, 10, Math.PI / 2), mount('buggy', 20, 10, 0)]), rules);
     const d = new Driver(match);
     const a = match.addHuman('a')!;
     d.run(2);
     place(a, 4, 12);
     use(d, a);
     expect(a.mount?.index).toBe(0);
-    const [kart, buggy] = internals(match).mounts;
+    const [bike, buggy] = internals(match).mounts;
     const events = d.run(TICK_RATE * 2, () => d.input(a, { forward: 1 }));
     const crash = events.find((e) => e.e === 'crash');
     expect(crash).toBeDefined();
     expect(buggy!.health).toBeLessThan(buggy!.def.health);
     expect(buggy!.lastHitBy).toBe(a.slot);
-    const kartLoss = 1 - Math.max(0, kart!.health) / kart!.def.health;
+    const bikeLoss = 1 - Math.max(0, bike!.health) / bike!.def.health;
     const buggyLoss = 1 - buggy!.health / buggy!.def.health;
-    expect(kartLoss).toBeGreaterThan(buggyLoss * 2);
+    expect(bikeLoss).toBeGreaterThan(buggyLoss * 2);
   });
 
   it('footprints: the gap between two boxes and the normal from one to the other', () => {

@@ -365,7 +365,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'light:ceiling': 'Ceiling light: rooms, the store, the gas station canopy',
       'light:wall': 'Porch lamp',
     },
-    mounts: ['ice_cream_truck', 'kart', 'buggy'],
+    mounts: ['buggy', 'hover_bike'],
     pickups: ['core.weapon_smg', 'core.weapon_shotgun', 'core.weapon_rifle', 'core.weapon_burst_rifle', 'core.weapon_launcher', 'core.grenades', 'core.health_small', 'core.health_large', 'core.armor_small', 'core.armor_large'],
     demo: 'cedar_lane',
   },
