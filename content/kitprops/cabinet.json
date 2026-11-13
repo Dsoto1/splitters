@@ -8,7 +8,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: a kitchen base unit, doors under a drawer each and a worktop, the size of the Kenney kitchen cabinet (0.908 \u00d7 0.95 \u00d7 0.95 m)."
+        "1": "First version: a kitchen base unit, doors under a drawer each and a worktop, the size of the Kenney kitchen cabinet (0.908 × 0.95 × 0.95 m)."
       },
       "size": [
         0.908,
@@ -127,7 +127,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version: a low, wide media unit with an open shelf bay between doors, the size of the Kenney TV cabinet (1.548 \u00d7 0.6 \u00d7 0.484 m)."
+        "1": "First version: a low, wide media unit with an open shelf bay between doors, the size of the Kenney TV cabinet (1.548 × 0.6 × 0.484 m)."
       },
       "size": [
         1.548,
@@ -258,6 +258,166 @@
             "grime": 0.25,
             "door": "#8a9a8c",
             "metal": "#6f7377"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.cabinet.closet",
+      "displayName": "Slim Closet",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a slim closet 0.6 × 2.1 × 0.6 m, one framed door with a pull, a cap on top (two stand either side of a dormitory room's door: docs/map-briefs/st_johns). Collides as its box."
+      },
+      "size": [
+        0.6,
+        2.1,
+        0.6
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "closet",
+        "plinth": 0.09,
+        "cap": 0.06,
+        "panels": 2,
+        "pull": "right"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 9995,
+          "look": {
+            "wood": "#a67c4e",
+            "metal": "#2a2c30",
+            "jitter": 0.07,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "oak_left",
+          "seed": 9996,
+          "set": {
+            "pull": "left"
+          },
+          "look": {
+            "wood": "#a67c4e",
+            "metal": "#2a2c30",
+            "jitter": 0.07,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "walnut",
+          "seed": 9997,
+          "look": {
+            "wood": "#6b4a30",
+            "metal": "#b59a55",
+            "jitter": 0.07,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 3,
+          "name": "painted",
+          "seed": 9998,
+          "set": {
+            "panels": 3
+          },
+          "look": {
+            "wood": "#d9d4c4",
+            "door": "#cfc9b6",
+            "metal": "#3a3c40",
+            "jitter": 0.03,
+            "grime": 0.2
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.cabinet.closet_front",
+      "displayName": "Built-in Closet Front",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the front of a closet built into a wall, 0.8 × 2.3 m and 12 mm thick: a face frame, one framed door with a pull, a kick board. Stand it against a wall's face (its back is left out): the wall is the closet. No collision of its own: the wall behind it collides (the dormitory bays' entry walls: docs/map-briefs/st_johns)."
+      },
+      "size": [
+        0.8,
+        2.3,
+        0.012
+      ],
+      "collide": "none",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "closetfront",
+        "panels": 2,
+        "pull": "right",
+        "kick": 0.1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 10001,
+          "look": {
+            "wood": "#a67c4e",
+            "metal": "#2a2c30",
+            "jitter": 0.07,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "walnut",
+          "seed": 10002,
+          "look": {
+            "wood": "#6b4a30",
+            "metal": "#b59a55",
+            "jitter": 0.07,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 2,
+          "name": "painted",
+          "seed": 10003,
+          "set": {
+            "panels": 3
+          },
+          "look": {
+            "wood": "#d9d4c4",
+            "door": "#cfc9b6",
+            "metal": "#3a3c40",
+            "jitter": 0.03,
+            "grime": 0.2
           }
         }
       ]

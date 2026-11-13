@@ -141,7 +141,7 @@ describe('turrets, sentries and vehicles', () => {
   });
 
   it('drives forward, turns, and runs enemies over; getting out puts you beside it', () => {
-    const match = new Match(yard([{ position: [4, 0, 4], model: 'kart', yaw: Math.PI / 2, faction: null, respawnSeconds: null }]), rules);
+    const match = new Match(yard([{ position: [4, 0, 4], model: 'hover_bike', yaw: Math.PI / 2, faction: null, respawnSeconds: null }]), rules);
     const d = new Driver(match);
     const a = match.addHuman('a')!;
     const b = match.addHuman('b')!;
@@ -201,10 +201,10 @@ describe('turrets, sentries and vehicles', () => {
       });
       return most;
     };
-    const kart = slideOf('kart', false);
+    const jeep = slideOf('gun_jeep', false);
     const speeder = slideOf('speeder', false);
-    expect(speeder).toBeGreaterThan(kart * 2);
-    expect(slideOf('kart', true)).toBeGreaterThan(kart * 1.5);
+    expect(speeder).toBeGreaterThan(jeep * 2);
+    expect(slideOf('gun_jeep', true)).toBeGreaterThan(jeep * 1.5);
   });
 
   it("a turret's aim is held within its arc", () => {

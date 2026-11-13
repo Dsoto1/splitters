@@ -404,6 +404,104 @@
         "design": "A fortified gate in one side, two storeys high (MAP 21's gatehouse on the grand stair: docs/SET_PIECES_PLAN.md): a round arch 5 m wide springing at 3.2 m to its crown at 5.7 m through a wall 1.2 m thick, the wall up to the top of the storey above (8 m on 4 m levels) and crenellated over it (merlons 1.1 m wide and 0.9 m high, four a side, the end ones meeting their neighbours' as one). Its collision steps over the curve and never dips below it (10° steps); eleven voussoirs and a keystone, impost blocks and a string course under the battlements dress it. Two side by side make a twin gate on a central pier 3 m wide. No facade: the gate dresses itself."
       }
     },
+    {
+      "id": "window_sash",
+      "label": "Sash window",
+      "segments": [
+        { "u": ["-half", -0.6], "y": [0, "height"] },
+        { "u": [0.6, "half"], "y": [0, "height"] },
+        { "u": [-0.6, 0.6], "y": [0, 0.9] },
+        { "u": [-0.6, 0.6], "y": ["min(3,height)", "height"] }
+      ],
+      "trim": [
+        { "base": ["-half", "half"] },
+        { "cornice": ["-half", "half"] },
+        { "u": [-0.8, 0.8], "y": [0.78, 0.9], "depth": 0.14, "outside": true },
+        { "u": [-0.8, 0.8], "y": [3, 3.16], "depth": 0.07, "outside": true },
+        { "u": [-0.76, -0.6], "y": [0.9, 3], "depth": 0.05, "outside": true },
+        { "u": [0.6, 0.76], "y": [0.9, 3], "depth": 0.05, "outside": true },
+        { "u": [-0.6, -0.53], "y": [0.9, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [0.53, 0.6], "y": [0.9, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-0.53, 0.53], "y": [0.9, 0.99], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-0.53, 0.53], "y": [2.93, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-0.53, 0.53], "y": [1.91, 1.99], "v": [0.18, 0.32], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-0.02, 0.02], "y": [0.99, 1.91], "v": [0.225, 0.275], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-0.02, 0.02], "y": [1.99, 2.93], "v": [0.225, 0.275], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } }
+      ],
+      "openings": [[-0.6, 0.6, 0.9, 3]],
+      "glass": true,
+      "corner": true,
+      "facade": true,
+      "dressing": { "kind": "window", "span": 1.2 },
+      "notes": { "design": "One tall sash window, 1.2 m wide, sill 0.9 m, head 3 m (a dormitory or classroom window: docs/map-briefs/st_johns). A stone sill, head and jambs dress the inner face (the sill stands 0.14 m into the room under the 0.5 m reveal: a deep sill) and the outer face where nothing is built beyond; a facade frames the opening itself. The sash is drawn in the wall by the glass: stiles, top and bottom rails, a meeting rail half way up and a glazing bar in each sash, painted. Trim only: with the glass broken the sash stays and a player still climbs through (jump and crouch, as the Window)." }
+    },
+    {
+      "id": "windows_sash",
+      "label": "Twin sash windows",
+      "segments": [
+        { "u": ["-half", -2.6], "y": [0, "height"] },
+        { "u": [-1.4, 1.4], "y": [0, "height"] },
+        { "u": [2.6, "half"], "y": [0, "height"] },
+        { "u": [-2.6, -1.4], "y": [0, 0.9] },
+        { "u": [-2.6, -1.4], "y": ["min(3,height)", "height"] },
+        { "u": [1.4, 2.6], "y": [0, 0.9] },
+        { "u": [1.4, 2.6], "y": ["min(3,height)", "height"] }
+      ],
+      "trim": [
+        { "base": ["-half", "half"] },
+        { "cornice": ["-half", "half"] },
+        { "u": [-2.8, -1.2], "y": [0.78, 0.9], "depth": 0.14, "outside": true },
+        { "u": [-2.8, -1.2], "y": [3, 3.16], "depth": 0.07, "outside": true },
+        { "u": [-2.76, -2.6], "y": [0.9, 3], "depth": 0.05, "outside": true },
+        { "u": [-1.4, -1.24], "y": [0.9, 3], "depth": 0.05, "outside": true },
+        { "u": [-2.6, -2.53], "y": [0.9, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-1.47, -1.4], "y": [0.9, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-2.53, -1.47], "y": [0.9, 0.99], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-2.53, -1.47], "y": [2.93, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-2.53, -1.47], "y": [1.91, 1.99], "v": [0.18, 0.32], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-2.02, -1.98], "y": [0.99, 1.91], "v": [0.225, 0.275], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [-2.02, -1.98], "y": [1.99, 2.93], "v": [0.225, 0.275], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [1.2, 2.8], "y": [0.78, 0.9], "depth": 0.14, "outside": true },
+        { "u": [1.2, 2.8], "y": [3, 3.16], "depth": 0.07, "outside": true },
+        { "u": [1.24, 1.4], "y": [0.9, 3], "depth": 0.05, "outside": true },
+        { "u": [2.6, 2.76], "y": [0.9, 3], "depth": 0.05, "outside": true },
+        { "u": [1.4, 1.47], "y": [0.9, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [2.53, 2.6], "y": [0.9, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [1.47, 2.53], "y": [0.9, 0.99], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [1.47, 2.53], "y": [2.93, 3], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [1.47, 2.53], "y": [1.91, 1.99], "v": [0.18, 0.32], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [1.98, 2.02], "y": [0.99, 1.91], "v": [0.225, 0.275], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
+        { "u": [1.98, 2.02], "y": [1.99, 2.93], "v": [0.225, 0.275], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } }
+      ],
+      "openings": [[-2.6, -1.4, 0.9, 3], [1.4, 2.6, 0.9, 3]],
+      "glass": true,
+      "corner": true,
+      "facade": true,
+      "street": true,
+      "dressing": { "kind": "window", "span": 5.2 },
+      "notes": { "design": "Two Sash windows, their middles 2 m either side of the side's middle: one for each of two rooms half a cell wide (the dormitory bays), clear of a facade's buttresses." }
+    },
+    {
+      "id": "door_room",
+      "label": "Room doorway",
+      "segments": [
+        { "u": ["-half", -1], "y": [0, "height"] },
+        { "u": [1, "half"], "y": [0, "height"] },
+        { "u": [-1, 1], "y": ["min(2.6,height)", "height"] }
+      ],
+      "trim": [
+        { "base": ["-half", -1.16] },
+        { "base": [1.16, "half"] },
+        { "cornice": ["-half", "half"] },
+        { "frame": { "half": 1, "top": 2.6 }, "surface": { "material": "core.oak_beam" } }
+      ],
+      "openings": [[-1, 1, 0, 2.6]],
+      "corner": true,
+      "facade": true,
+      "street": true,
+      "dressing": { "kind": "door", "span": 2 },
+      "notes": { "design": "A room's doorway, 2 m wide and 2.6 m high, in an oak frame (a library material of its own on the frame, whatever the theme's trim). 2 m, not 1 m: bots keep 0.8 m off walls (NAV_RADIUS_CELLS, 4 cells of 0.2 m), so a narrower door is closed to them. The Oak Door kit props (kit.door.oak, shut; kit.door.oak_ajar; kit.door.oak_open) fit it." }
+    },
     { "id": "open", "label": "No wall", "rule": "open" }
   ]
 }

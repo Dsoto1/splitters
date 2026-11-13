@@ -2,6 +2,7 @@ import type { ValidationIssue } from './validate.ts';
 import { type RaceSettings, type MapDocument, type MapEntity, type MapPath, type MountEntity, type PathUse, type Track } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
 import { hypot } from '../math.ts';
+import { liveMount } from '../sim/mounts.ts';
 
 /**
  * Path curves and race tracks. Every path (schema.ts MapPath: roads, the
@@ -315,14 +316,16 @@ function centreLine(track: Track, loop: boolean, shape: CurveShape): TrackSample
  * written out so the menu (raceTrack) doesn't run the zod schemas
  * (test/menuSplit.test.ts checks they match RaceSettings.parse({})).
  */
-export const DEFAULT_RACE: RaceSettings = { laps: 3, grid: 8, vehicle: 'kart', combat: false, curbs: true, ambient: 0, ambientVehicle: 'kart', pit: null };
+export const DEFAULT_RACE: RaceSettings = { laps: 3, grid: 8, vehicle: 'hover_bike', combat: false, curbs: true, ambient: 0, ambientVehicle: 'hover_bike', pit: null };
 
 /** How a smooth path's centre line is drawn through its points (see CurveShape). */
 const SMOOTH_CURVE = { step: 1, centripetal: true } as const;
 
 /** A path as the curve code reads it: its points, width and loop, with its race settings (the defaults when it has none). */
 export function pathTrack(p: MapPath): Track {
-  return { ...DEFAULT_RACE, ...p.race, points: p.points, width: p.width, loop: p.closed, surface: p.style === 'dirt' ? 'dirt' : 'asphalt' };
+  const race = { ...DEFAULT_RACE, ...p.race };
+  // A retired vehicle a track still names is its replacement here, so MapMaker's view of the map as made agrees with play.
+  return { ...race, vehicle: liveMount(race.vehicle), ambientVehicle: liveMount(race.ambientVehicle), points: p.points, width: p.width, loop: p.closed, surface: p.style === 'dirt' ? 'dirt' : 'asphalt' };
 }
 
 const geometry = new WeakMap<MapPath, TrackGeometry>();
@@ -383,7 +386,7 @@ export function ambientCarEntities(map: MapDocument): { entity: MountEntity; pit
     // Out on the road, clear of the start grid.
     const p = g.at(g.start + span * (0.2 + (0.6 * (i + 0.5)) / t.ambient));
     const off = (i % 2 ? 1 : -1) * Math.min(3, g.width / 4);
-    const entity: MountEntity = { id: `${AMBIENT_CAR_PREFIX}${String(i).padStart(2, '0')}`, kind: 'mount', model: t.ambientVehicle, position: [r(p.x + p.dz * off), r(p.y), r(p.z - p.dx * off)], yaw: r(Math.atan2(p.dx, p.dz)), faction: null, respawnSeconds: null };
+    const entity: MountEntity = { id: `${AMBIENT_CAR_PREFIX}${String(i).padStart(2, '0')}`, kind: 'mount', model: liveMount(t.ambientVehicle), position: [r(p.x + p.dz * off), r(p.y), r(p.z - p.dx * off)], yaw: r(Math.atan2(p.dx, p.dz)), faction: null, respawnSeconds: null };
     return { entity, pit: [r(pit[0] - line.dx * 6 * i), r(pit[1]), r(pit[2] - line.dz * 6 * i)], pitYaw: r(pitYaw) };
   });
 }

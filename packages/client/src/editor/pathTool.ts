@@ -11,6 +11,10 @@ import {
   PATH_LOOKS,
   PATH_STYLES,
   RACE_VEHICLES,
+  RETIRED_MOUNT_NAMES,
+  isRetiredMount,
+  liveMount,
+  replaceRetiredMountCommand,
   newId,
   pathGeometry,
   pathUses,
@@ -61,7 +65,9 @@ const USE_LABELS: Record<PathUse, [string, string]> = {
   race: ['Track (NPC traffic)', 'NPC cars lap it in every mode (set how many below), and wrecked ones come back from its pit lane. One track per map'],
   route: ['Route (AI guide)', 'An invisible line for the AI: bots driving vehicles follow it, and NPC squads told to patrol it walk it. Shown dashed here, never drawn in the game'],
 };
-const VEHICLE_LABELS: Record<(typeof RACE_VEHICLES)[number], string> = { kart: 'Go-Kart', speeder: 'Speeder', buggy: 'Buggy' };
+const VEHICLE_LABELS: Record<(typeof RACE_VEHICLES)[number], string> = { hover_bike: 'Hover Bike', speeder: 'Speeder', buggy: 'Buggy' };
+/** A track made when the Go-Kart was a track vehicle still names it (it laps Hover Bikes: map/mountAliases.ts). */
+const RETIRED_LABEL = (v: string): string | null => (isRetiredMount(v) ? `${RETIRED_MOUNT_NAMES[v]} (retired: drives as ${VEHICLE_LABELS[liveMount(v) as (typeof RACE_VEHICLES)[number]] ?? liveMount(v)})` : null);
 
 /** A short name for a path (the pane's list, the encounter inspector's route picker). */
 export function pathLabel(p: MapPath, i: number): string {
@@ -666,10 +672,23 @@ export class PathTool {
     h.style.fontWeight = '600';
     h.textContent = racePath(this.host.doc())?.id === path.id ? 'Track: NPC traffic (the green point is where the cars start)' : 'Track (no traffic: another path is the track)';
     el.append(h);
-    const vehicles = RACE_VEHICLES.map((v) => [v, VEHICLE_LABELS[v]] as const);
+    const kept = RETIRED_LABEL(r.ambientVehicle);
+    const vehicles = [...(kept ? [[r.ambientVehicle, kept] as const] : []), ...RACE_VEHICLES.map((v) => [v, VEHICLE_LABELS[v]] as const)];
     check('ed-path-curbs', 'Red and white curbs', 'Curbs along both edges of the track', r.curbs, (v) => setRace('Curbs', { curbs: v }));
     row('NPC cars (lap the track in every mode)', num('ed-path-ambient', r.ambient, 0, 12, 1, (v) => v !== undefined && setRace('NPC cars', { ambient: v })));
     if (r.ambient) row('NPC car', select('ed-path-ambient-vehicle', vehicles, r.ambientVehicle, (v) => setRace('NPC car', { ambientVehicle: v as RaceSettings['vehicle'] })));
+    // The track still names a retired vehicle (its cars, or the race vehicle it had when Race was a mode): one
+    // button puts the vehicle it drives as in the map, with every one of them placed on it.
+    const old = ([r.ambientVehicle, r.vehicle] as string[]).find(isRetiredMount);
+    if (old) {
+      const to = VEHICLE_LABELS[liveMount(old) as (typeof RACE_VEHICLES)[number]] ?? liveMount(old);
+      buttons([
+        ['ed-path-replace-retired', `Replace the ${RETIRED_MOUNT_NAMES[old]} with ${to}`, `The ${RETIRED_MOUNT_NAMES[old]} is retired: this track's cars drive as ${to}. Puts that in the map (and every ${RETIRED_MOUNT_NAMES[old]} placed on it), one undo step`, () => {
+          const c = replaceRetiredMountCommand(this.host.doc(), old);
+          if (this.host.run(`Replace all ${RETIRED_MOUNT_NAMES[old]}`, c.command)) this.host.toast(`The track's cars are ${to}${c.placed ? `, and ${c.placed} placed on the map` : ''}`);
+        }],
+      ]);
+    }
     buttons([
       ['ed-path-start', 'Start here', 'Move where the NPC cars start (and the default pit lane) to the selected point', () => {
         const i = this.selected;

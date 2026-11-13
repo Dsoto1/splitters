@@ -52,7 +52,9 @@ export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?:
       const keys = [...Object.keys(part.edges ?? {}), ...Object.keys(part.glass ?? {})].map((k) => k.split(':')[0]!);
       for (const k of [...keys, ...(part.upperFloors ?? [])]) if (!own.has(k)) out.push(`${where}: ${k} is not one of ${t.id}'s own cells (edge, glass and floor keys are in the tile's frame)`);
       for (const [slot, s] of Object.entries(part.surfaces ?? {})) if (s && 'material' in s) material(s.material, `${where}.surfaces.${slot}`);
-      if (part.options && !t.configurable) out.push(`${where}: ${t.id} takes no room options`);
+      // A facade dresses the outer walls of any tile's cells (map/geometry.ts packFacadeBoxes): a stairwell in a hall's
+      // front wears the hall's stone. Layouts, floor inserts, ceilings and corners are a Room's alone.
+      if (part.options && !t.configurable && Object.keys(part.options).some((k) => k !== 'facade')) out.push(`${where}: ${t.id} takes no room options (a facade only)`);
       return;
     }
     const [px, py, pz] = part.position;
@@ -73,9 +75,10 @@ export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?:
       const prop = getProp(part.model);
       if (!prop) out.push(`${where}: ${part.model} is not a prop`);
       else {
+        // Its own box, turned as it stands (a bed against the wall at the footprint's edge is inside it).
         const [w, h, d] = prop.size.map((v) => v * part.scale) as [number, number, number];
-        const r = Math.hypot(w, d) / 2;
-        if (![[-r, -r], [r, -r], [r, r], [-r, r]].every(([ox, oz]) => inside(px + ox!, py, pz + oz!) && inside(px + ox!, py + h, pz + oz!))) out.push(`${where}: ${part.model} reaches outside the footprint`);
+        const corners = ([[-1, -1], [1, -1], [1, 1], [-1, 1]] as const).map(([sx, sz]) => yawXZ((sx * w) / 2, (sz * d) / 2, part.yaw));
+        if (!corners.every(([ox, oz]) => inside(px + ox, py, pz + oz) && inside(px + ox, py + h, pz + oz))) out.push(`${where}: ${part.model} reaches outside the footprint`);
       }
       return;
     }

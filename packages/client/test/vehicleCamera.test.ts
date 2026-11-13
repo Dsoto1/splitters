@@ -185,7 +185,7 @@ describe('preferences', () => {
     expect(new VehicleCamera().viewFor(MOUNT_DEFS.gunship)).toBe('chase');
     expect(new VehicleCamera().viewFor(MOUNT_DEFS.tank)).toBe('cockpit');
     expect(vehicleClass(MOUNT_DEFS.skyfighter)).toBe('air');
-    expect(vehicleClass(MOUNT_DEFS.kart)).toBe('ground');
+    expect(vehicleClass(MOUNT_DEFS.gun_jeep)).toBe('ground');
   });
 
   it('fall back to the defaults when storage is blocked', () => {

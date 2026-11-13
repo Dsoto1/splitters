@@ -138,7 +138,7 @@ export class RouteTool {
   pointerDown(p: Vec3 | null, shift: boolean): void {
     const e = this.entity;
     if (!p) return;
-    if (!e) return this.host.toast('Select a mover, transport plane or dropship, then "Draw route"', true);
+    if (!e) return this.host.toast('Select a mover, drop carrier or dropship, then "Draw route"', true);
     const hit = this.pointAt(p);
     if (hit >= 0) {
       this.selected = hit;

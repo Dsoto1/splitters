@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_5x4zlanrxgtdua3l",
-      "versionId": "v_ikhxo6sg6q3awpij",
-      "revision": 10,
-      "contentHash": "sha256:df4d9e1418fa3c42dff1de8cb8406a1e2690ec808d5bcfda8843f8ffad754c51",
+      "versionId": "v_tfvvjsrkn5z2qfi2",
+      "revision": 11,
+      "contentHash": "sha256:a6617fb58e467c39a45cc17a677d6063a6f3fadbf0bf99de7e6185b97a19e743",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-12T13:13:14.470Z"
+      "releasedAt": "2026-11-12T21:10:49.633Z"
     }
   },
   "classicStructure": {
@@ -5508,7 +5508,7 @@
         22
       ],
       "kind": "mount",
-      "model": "ice_cream_truck",
+      "model": "buggy",
       "yaw": 3.141592653589793,
       "faction": null,
       "respawnSeconds": null

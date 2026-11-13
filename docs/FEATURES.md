@@ -145,7 +145,7 @@ Match setting **Weapons**: Normal / Spears only / Discs only (any mode).
 ## Other features
 
 ### Vehicles
-- 17 kinds (the Arc Turret, new, on no official map yet; the rest all used on maps): MG and rocket turrets, sentry, arc turret, kart, speeder, buggy, hauler, skyfighter, dropship, tank, gun jeep, armored rover, hover bike, gunship, ice cream truck, snow sled.
+- 16 kinds (the Arc Turret, new, on no official map yet; the rest all used on maps): MG and rocket turrets, sentry, arc turret, speeder, buggy, hauler, skyfighter, dropship, tank, gun jeep, armored rover, hover bike, gunship, snow sled, troop truck. The Go-Kart and the Ice Cream Truck were retired on 2026-11-12: maps that name them get a Hover Bike and a Buggy (VEHICLES.md, "Retired vehicles").
 - Vehicles have skins.
 - Airdrop plane with parachutes and gliders (eagle_spires, frost_basin, runway_nine).
 

@@ -5,7 +5,7 @@
     "id": "frost_basin",
     "name": "Frost Basin",
     "author": "Tile Trigger",
-    "description": "A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder, a hauler, a skyfighter that flies and a tank below the cliff, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Snow sleds wait on the plateau flanks and a glider on each roof; every round starts in a transport plane looping over the basin, so pick your drop and parachute in. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west.",
+    "description": "A wide snowy basin ringed by mountains. Embers hold the southern hilltop hall, Tide the northern one: each has a railed roof with turrets and a sniper rifle, a buggy, a speeder, a hauler, a skyfighter that flies and a tank below the cliff, and a cliff out front that only jump pads climb, and its flag behind the dais in the hall. Snow sleds wait on the plateau flanks and a glider on each roof; every round starts in a Drop Carrier looping over the basin, so pick your drop and parachute in. Two rocky ridges cross the field with a pass in the middle (hills in King of the Hill, with the outpost roof); the three-storey outpost at the centre hides the railgun on its roof, with rockets out on the east flank and double damage on the west.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-10-23T00:00:00.000Z",
     "parentId": null,
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_wm4ypl2enajhiaqu",
-      "versionId": "v_es46z5wyoyaij653",
-      "revision": 5,
-      "contentHash": "sha256:62860fd4d1894390aaa76eba84a144aaa6234be19cb53bcc58b5829f6c0c5ea9",
+      "versionId": "v_k5bsop6k3g6og2or",
+      "revision": 6,
+      "contentHash": "sha256:80008c46e9b3d9910be3b736c6a7be08ed01af4876752ec9fe33631e89e21006",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-11T17:01:54.288Z"
+      "releasedAt": "2026-11-13T03:54:22.817Z"
     }
   },
   "classicStructure": {
