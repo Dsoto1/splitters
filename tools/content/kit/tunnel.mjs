@@ -48,24 +48,33 @@ function moduleParts(profile, family, shape) {
     solid(turnBox([-w, 0, w, w, clear, E], k), m.wall);
   }
 
-  // --- the lining and trim of one open arm, written for the north arm.
-  const armTrim = (k, from, to) => {
+  // --- the lining and trim of a wall: the stretch of the wall at x = sx × half the width, from z = `from` to `to`,
+  // in the north arm's frame turned k quarter turns.
+  const wallTrim = (k, sx, from, to) => {
     const put = (b, material, tint) => draw(turnBox(b, k), material, tint);
-    // A plinth along both walls.
-    if (trim.plinth) for (const sx of [-1, 1]) put([Math.min(sx * w, sx * (w - 0.04)), 0, from, Math.max(sx * w, sx * (w - 0.04)), trim.plinth, to], m.trim);
+    const face = (d) => [Math.min(sx * w, sx * (w - d)), Math.max(sx * w, sx * (w - d))];
+    // A plinth along the wall.
+    if (trim.plinth) put([face(0.04)[0], 0, from, face(0.04)[1], trim.plinth, to], m.trim);
     // The cast downstand where wall meets soffit (a flat-soffit lining's haunch).
-    if (lining.haunch) for (const sx of [-1, 1]) put([Math.min(sx * w, sx * (w - lining.haunch)), clear - lining.haunch, from, Math.max(sx * w, sx * (w - lining.haunch)), clear, to], m.soffit);
-    // Panel joints: a rib round the bore every `joints` metres.
-    if (lining.joints) {
-      for (let z = from + lining.joints / 2; z < to - 0.05; z += lining.joints) {
-        for (const sx of [-1, 1]) put([Math.min(sx * w, sx * (w - 0.03)), trim.plinth ?? 0, z - 0.04, Math.max(sx * w, sx * (w - 0.03)), clear - (lining.haunch ?? 0), z + 0.04], m.trim);
-        put([-(w - (lining.haunch ?? 0)), clear - 0.03, z - 0.04, w - (lining.haunch ?? 0), clear, z + 0.04], m.trim);
-      }
-    }
-    // The drain down the middle of the floor.
-    if (trim.drain) put([-trim.drain.width / 2, 0, from, trim.drain.width / 2, 0.02, to], trim.drain.material);
+    if (lining.haunch) put([face(lining.haunch)[0], clear - lining.haunch, from, face(lining.haunch)[1], clear, to], m.soffit);
+    // Panel joints: a thin rib up the wall every `joints` metres.
+    if (lining.joints) for (let z = from + lining.joints / 2; z < to - 0.05; z += lining.joints) put([face(0.015)[0], trim.plinth ?? 0, z - 0.02, face(0.015)[1], clear - (lining.haunch ?? 0), z + 0.02], m.trim);
   };
-  for (const [k, side] of SIDES.entries()) if (arms.has(side)) armTrim(k, 0, E);
+  // An open arm: both its walls from the middle square out to the cell's edge, the joints carried across the soffit,
+  // and the drain down the middle of the floor from the cell's centre.
+  const armTrim = (k, from, to) => {
+    for (const sx of [-1, 1]) wallTrim(k, sx, from, to);
+    if (lining.joints) for (let z = from + lining.joints / 2; z < to - 0.05; z += lining.joints) draw(turnBox([-(w - (lining.haunch ?? 0)), clear - 0.015, z - 0.02, w - (lining.haunch ?? 0), clear, z + 0.02], k), m.trim);
+    if (trim.drain) draw(turnBox([-trim.drain.width / 2, 0, 0, trim.drain.width / 2, 0.02, to], k), trim.drain.material);
+  };
+  for (const [k, side] of SIDES.entries()) if (arms.has(side)) armTrim(k, w, E);
+  // The middle square: a wall only on a closed side (the east side's wall is the north frame's east wall, and so on).
+  if (!mouth) {
+    if (!arms.has('E')) wallTrim(0, 1, -w, w);
+    if (!arms.has('W')) wallTrim(0, -1, -w, w);
+    if (!arms.has('N')) wallTrim(1, -1, -w, w);
+    if (!arms.has('S')) wallTrim(1, 1, -w, w);
+  }
 
   // --- a pipe run on the west wall of a passage that runs straight through north to south (or to a dead end or a mouth).
   const through = arms.has('N') && !arms.has('E') && !arms.has('W');
@@ -141,7 +150,7 @@ function moduleParts(profile, family, shape) {
         const topAtLow = g.low + (rise * (zLow - g.foot)) / run;
         solid([x0, g.low, zLow, x1, topAtLow - 0.12, front], m.headwall);
       }
-      solids.push({ box: [x0 - (sx < 0 ? 0 : 0.04), cy - T / 2, cz - len / 2, x1 + (sx < 0 ? 0.04 : 0), cy + T / 2, cz + len / 2].map(r3), kind: 'wall', pitch: r3(a), ...surf(m.trim) });
+      solids.push({ box: [x0 - (sx < 0 ? 0 : 0.02), cy - T / 2, cz - len / 2, x1 + (sx < 0 ? 0.02 : 0), cy + T / 2, cz + len / 2].map(r3), kind: 'wall', pitch: r3(a), ...surf(m.headwall) });
     }
     bore.cut = [
       [-E, -0.5, front, E, cap, E],

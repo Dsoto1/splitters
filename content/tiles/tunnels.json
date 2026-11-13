@@ -10,7 +10,7 @@
       "materials": {
         "wall": "core.pbr_concrete",
         "soffit": "core.pbr_concrete",
-        "floor": "core.pbr_concrete_dark",
+        "floor": "core.pbr_concrete",
         "trim": "core.pbr_concrete_dark",
         "headwall": "core.pbr_concrete"
       },
@@ -19,7 +19,7 @@
         "plinth": 0.45,
         "drain": { "width": 0.3, "material": "core.pbr_tread_plate" },
         "pipe": { "y": 2.45, "r": 0.09, "material": "core.pbr_rusted_plate" },
-        "light": { "length": 1.4, "material": "core.glow_trim", "tint": "#fff1cf" },
+        "light": { "length": 1.4, "material": "core.light_strip", "tint": "#ffe2b0" },
         "hazard": "core.hazard",
         "door": { "material": "core.pbr_steel" }
       }

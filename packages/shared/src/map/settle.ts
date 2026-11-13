@@ -7,7 +7,7 @@ import { withPathsLaid } from './paths.ts';
 import { PLAYER } from '../sim/constants.ts';
 import type { LightEntity, LightFixture, MapDocument, PropEntity } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
-import { mapGroundBores, shapeGroundAtBores } from './groundBore.ts';
+import { mapGroundBores, rememberTerrainCuts, shapeGroundAtBores } from './groundBore.ts';
 
 /** What an environment tree stands on when settled on a slope: its trunk, not its crown's spread. */
 const TRUNK_FOOTPRINT = [0.6, 0, 0.6] as const;
@@ -312,7 +312,9 @@ export function terrainUnderFloors(map: MapDocument, boxes: readonly WorldBox[] 
     }
   }
   const under = heights ? { ...t, heights } : t;
-  return stepFeet(under, foot, floors) ?? under;
+  const out = stepFeet(under, foot, floors) ?? under;
+  rememberTerrainCuts(out, bores.cuts);
+  return out;
 }
 
 /** Whether (x, z) is within `d` metres of a box's footprint (a turned box by its turn). */

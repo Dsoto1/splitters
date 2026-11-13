@@ -35066,7 +35066,7 @@
       4
      ],
      "surface": {
-      "material": "core.pbr_concrete_dark"
+      "material": "core.pbr_concrete"
      }
     }
    ],
@@ -35187,7 +35187,7 @@
      "min": [
       -1.8,
       0,
-      0
+      1.8
      ],
      "max": [
       -1.76,
@@ -35201,9 +35201,41 @@
     },
     {
      "min": [
+      -1.8,
+      3.05,
+      1.8
+     ],
+     "max": [
+      -1.55,
+      3.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      2.78
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      2.82
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
       1.76,
       0,
-      0
+      1.8
      ],
      "max": [
       1.8,
@@ -35217,25 +35249,9 @@
     },
     {
      "min": [
-      -1.8,
-      3.05,
-      0
-     ],
-     "max": [
-      -1.55,
-      3.3,
-      4
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
-     }
-    },
-    {
-     "min": [
       1.55,
       3.05,
-      0
+      1.8
      ],
      "max": [
       1.8,
@@ -35249,30 +35265,14 @@
     },
     {
      "min": [
-      -1.8,
+      1.785,
       0.45,
-      0.96
-     ],
-     "max": [
-      -1.77,
-      3.05,
-      1.04
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.77,
-      0.45,
-      0.96
+      2.78
      ],
      "max": [
       1.8,
       3.05,
-      1.04
+      2.82
      ],
      "kind": "trim",
      "surface": {
@@ -35282,61 +35282,13 @@
     {
      "min": [
       -1.55,
-      3.27,
-      0.96
+      3.285,
+      2.78
      ],
      "max": [
       1.55,
       3.3,
-      1.04
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.8,
-      0.45,
-      2.96
-     ],
-     "max": [
-      -1.77,
-      3.05,
-      3.04
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.77,
-      0.45,
-      2.96
-     ],
-     "max": [
-      1.8,
-      3.05,
-      3.04
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.55,
-      3.27,
-      2.96
-     ],
-     "max": [
-      1.55,
-      3.3,
-      3.04
+      2.82
      ],
      "kind": "trim",
      "surface": {
@@ -35368,7 +35320,39 @@
      "max": [
       1.8,
       0.45,
-      "-0"
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      3.05,
+      -4
+     ],
+     "max": [
+      1.8,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      -2.82
+     ],
+     "max": [
+      1.8,
+      3.05,
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -35384,27 +35368,11 @@
      "max": [
       -1.76,
       0.45,
-      "-0"
+      -1.8
      ],
      "kind": "trim",
      "surface": {
       "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.55,
-      3.05,
-      -4
-     ],
-     "max": [
-      1.8,
-      3.3,
-      "-0"
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
      }
     },
     {
@@ -35416,7 +35384,7 @@
      "max": [
       -1.55,
       3.3,
-      "-0"
+      -1.8
      ],
      "kind": "trim",
      "surface": {
@@ -35425,30 +35393,14 @@
     },
     {
      "min": [
-      1.77,
-      0.45,
-      -1.04
-     ],
-     "max": [
-      1.8,
-      3.05,
-      -0.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
       -1.8,
       0.45,
-      -1.04
+      -2.82
      ],
      "max": [
-      -1.77,
+      -1.785,
       3.05,
-      -0.96
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -35458,61 +35410,13 @@
     {
      "min": [
       -1.55,
-      3.27,
-      -1.04
+      3.285,
+      -2.82
      ],
      "max": [
       1.55,
       3.3,
-      -0.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.77,
-      0.45,
-      -3.04
-     ],
-     "max": [
-      1.8,
-      3.05,
-      -2.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.8,
-      0.45,
-      -3.04
-     ],
-     "max": [
-      -1.77,
-      3.05,
-      -2.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.55,
-      3.27,
-      -3.04
-     ],
-     "max": [
-      1.55,
-      3.3,
-      -2.96
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -35533,6 +35437,134 @@
      "kind": "trim",
      "surface": {
       "material": "core.pbr_tread_plate"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      0,
+      -1.8
+     ],
+     "max": [
+      1.8,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      3.05,
+      -1.8
+     ],
+     "max": [
+      1.8,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      -0.82
+     ],
+     "max": [
+      1.8,
+      3.05,
+      -0.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      1.18
+     ],
+     "max": [
+      1.8,
+      3.05,
+      1.22
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1.8
+     ],
+     "max": [
+      -1.76,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.05,
+      -1.8
+     ],
+     "max": [
+      -1.55,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      -0.82
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      -0.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      1.18
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      1.22
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
      }
     },
     {
@@ -35644,8 +35676,8 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.glow_trim",
-      "tint": "#fff1cf"
+      "material": "core.light_strip",
+      "tint": "#ffe2b0"
      }
     }
    ],
@@ -35708,7 +35740,7 @@
       4
      ],
      "surface": {
-      "material": "core.pbr_concrete_dark"
+      "material": "core.pbr_concrete"
      }
     }
    ],
@@ -35827,7 +35859,7 @@
     },
     {
      "min": [
-      0,
+      1.8,
       0,
       1.76
      ],
@@ -35843,7 +35875,39 @@
     },
     {
      "min": [
-      0,
+      1.8,
+      3.05,
+      1.55
+     ],
+     "max": [
+      4,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      2.78,
+      0.45,
+      1.785
+     ],
+     "max": [
+      2.82,
+      3.05,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.8,
       0,
       -1.8
      ],
@@ -35859,23 +35923,7 @@
     },
     {
      "min": [
-      0,
-      3.05,
-      1.55
-     ],
-     "max": [
-      4,
-      3.3,
-      1.8
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
-     }
-    },
-    {
-     "min": [
-      0,
+      1.8,
       3.05,
       -1.8
      ],
@@ -35891,30 +35939,14 @@
     },
     {
      "min": [
-      0.96,
-      0.45,
-      1.77
-     ],
-     "max": [
-      1.04,
-      3.05,
-      1.8
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      0.96,
+      2.78,
       0.45,
       -1.8
      ],
      "max": [
-      1.04,
+      2.82,
       3.05,
-      -1.77
+      -1.785
      ],
      "kind": "trim",
      "surface": {
@@ -35923,60 +35955,12 @@
     },
     {
      "min": [
-      0.96,
-      3.27,
+      2.78,
+      3.285,
       -1.55
      ],
      "max": [
-      1.04,
-      3.3,
-      1.55
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      2.96,
-      0.45,
-      1.77
-     ],
-     "max": [
-      3.04,
-      3.05,
-      1.8
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      2.96,
-      0.45,
-      -1.8
-     ],
-     "max": [
-      3.04,
-      3.05,
-      -1.77
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      2.96,
-      3.27,
-      -1.55
-     ],
-     "max": [
-      3.04,
+      2.82,
       3.3,
       1.55
      ],
@@ -36010,7 +35994,39 @@
      "max": [
       1.8,
       0.45,
-      "-0"
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      3.05,
+      -4
+     ],
+     "max": [
+      1.8,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      -2.82
+     ],
+     "max": [
+      1.8,
+      3.05,
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -36026,27 +36042,11 @@
      "max": [
       -1.76,
       0.45,
-      "-0"
+      -1.8
      ],
      "kind": "trim",
      "surface": {
       "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.55,
-      3.05,
-      -4
-     ],
-     "max": [
-      1.8,
-      3.3,
-      "-0"
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
      }
     },
     {
@@ -36058,7 +36058,7 @@
      "max": [
       -1.55,
       3.3,
-      "-0"
+      -1.8
      ],
      "kind": "trim",
      "surface": {
@@ -36067,30 +36067,14 @@
     },
     {
      "min": [
-      1.77,
-      0.45,
-      -1.04
-     ],
-     "max": [
-      1.8,
-      3.05,
-      -0.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
       -1.8,
       0.45,
-      -1.04
+      -2.82
      ],
      "max": [
-      -1.77,
+      -1.785,
       3.05,
-      -0.96
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -36100,61 +36084,13 @@
     {
      "min": [
       -1.55,
-      3.27,
-      -1.04
+      3.285,
+      -2.82
      ],
      "max": [
       1.55,
       3.3,
-      -0.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.77,
-      0.45,
-      -3.04
-     ],
-     "max": [
-      1.8,
-      3.05,
-      -2.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.8,
-      0.45,
-      -3.04
-     ],
-     "max": [
-      -1.77,
-      3.05,
-      -2.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.55,
-      3.27,
-      -3.04
-     ],
-     "max": [
-      1.55,
-      3.3,
-      -2.96
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -36175,6 +36111,134 @@
      "kind": "trim",
      "surface": {
       "material": "core.pbr_tread_plate"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1.8
+     ],
+     "max": [
+      -1.76,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.05,
+      -1.8
+     ],
+     "max": [
+      -1.55,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      -0.82
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      -0.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      1.18
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      1.22
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.76
+     ],
+     "max": [
+      1.8,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.05,
+      1.55
+     ],
+     "max": [
+      1.8,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -0.82,
+      0.45,
+      1.785
+     ],
+     "max": [
+      -0.78,
+      3.05,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.18,
+      0.45,
+      1.785
+     ],
+     "max": [
+      1.22,
+      3.05,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
      }
     },
     {
@@ -36206,8 +36270,8 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.glow_trim",
-      "tint": "#fff1cf"
+      "material": "core.light_strip",
+      "tint": "#ffe2b0"
      }
     }
    ],
@@ -36274,7 +36338,7 @@
       4
      ],
      "surface": {
-      "material": "core.pbr_concrete_dark"
+      "material": "core.pbr_concrete"
      }
     }
    ],
@@ -36377,7 +36441,7 @@
     },
     {
      "min": [
-      0,
+      1.8,
       0,
       1.76
      ],
@@ -36393,7 +36457,39 @@
     },
     {
      "min": [
-      0,
+      1.8,
+      3.05,
+      1.55
+     ],
+     "max": [
+      4,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      2.78,
+      0.45,
+      1.785
+     ],
+     "max": [
+      2.82,
+      3.05,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.8,
       0,
       -1.8
      ],
@@ -36409,23 +36505,7 @@
     },
     {
      "min": [
-      0,
-      3.05,
-      1.55
-     ],
-     "max": [
-      4,
-      3.3,
-      1.8
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
-     }
-    },
-    {
-     "min": [
-      0,
+      1.8,
       3.05,
       -1.8
      ],
@@ -36441,30 +36521,14 @@
     },
     {
      "min": [
-      0.96,
-      0.45,
-      1.77
-     ],
-     "max": [
-      1.04,
-      3.05,
-      1.8
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      0.96,
+      2.78,
       0.45,
       -1.8
      ],
      "max": [
-      1.04,
+      2.82,
       3.05,
-      -1.77
+      -1.785
      ],
      "kind": "trim",
      "surface": {
@@ -36473,60 +36537,12 @@
     },
     {
      "min": [
-      0.96,
-      3.27,
+      2.78,
+      3.285,
       -1.55
      ],
      "max": [
-      1.04,
-      3.3,
-      1.55
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      2.96,
-      0.45,
-      1.77
-     ],
-     "max": [
-      3.04,
-      3.05,
-      1.8
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      2.96,
-      0.45,
-      -1.8
-     ],
-     "max": [
-      3.04,
-      3.05,
-      -1.77
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      2.96,
-      3.27,
-      -1.55
-     ],
-     "max": [
-      3.04,
+      2.82,
       3.3,
       1.55
      ],
@@ -36560,7 +36576,39 @@
      "max": [
       1.8,
       0.45,
-      "-0"
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      3.05,
+      -4
+     ],
+     "max": [
+      1.8,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      -2.82
+     ],
+     "max": [
+      1.8,
+      3.05,
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -36576,27 +36624,11 @@
      "max": [
       -1.76,
       0.45,
-      "-0"
+      -1.8
      ],
      "kind": "trim",
      "surface": {
       "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.55,
-      3.05,
-      -4
-     ],
-     "max": [
-      1.8,
-      3.3,
-      "-0"
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
      }
     },
     {
@@ -36608,7 +36640,7 @@
      "max": [
       -1.55,
       3.3,
-      "-0"
+      -1.8
      ],
      "kind": "trim",
      "surface": {
@@ -36617,30 +36649,14 @@
     },
     {
      "min": [
-      1.77,
-      0.45,
-      -1.04
-     ],
-     "max": [
-      1.8,
-      3.05,
-      -0.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
       -1.8,
       0.45,
-      -1.04
+      -2.82
      ],
      "max": [
-      -1.77,
+      -1.785,
       3.05,
-      -0.96
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -36650,61 +36666,13 @@
     {
      "min": [
       -1.55,
-      3.27,
-      -1.04
+      3.285,
+      -2.82
      ],
      "max": [
       1.55,
       3.3,
-      -0.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.77,
-      0.45,
-      -3.04
-     ],
-     "max": [
-      1.8,
-      3.05,
-      -2.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.8,
-      0.45,
-      -3.04
-     ],
-     "max": [
-      -1.77,
-      3.05,
-      -2.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.55,
-      3.27,
-      -3.04
-     ],
-     "max": [
-      1.55,
-      3.3,
-      -2.96
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -36734,9 +36702,41 @@
       -1.8
      ],
      "max": [
-      "-0",
+      -1.8,
       0.45,
       -1.76
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.05,
+      -1.8
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      -1.55
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -2.82,
+      0.45,
+      -1.8
+     ],
+     "max": [
+      -2.78,
+      3.05,
+      -1.785
      ],
      "kind": "trim",
      "surface": {
@@ -36750,7 +36750,7 @@
       1.76
      ],
      "max": [
-      "-0",
+      -1.8,
       0.45,
       1.8
      ],
@@ -36763,26 +36763,10 @@
      "min": [
       -4,
       3.05,
-      -1.8
-     ],
-     "max": [
-      "-0",
-      3.3,
-      -1.55
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
-     }
-    },
-    {
-     "min": [
-      -4,
-      3.05,
       1.55
      ],
      "max": [
-      "-0",
+      -1.8,
       3.3,
       1.8
      ],
@@ -36793,28 +36777,12 @@
     },
     {
      "min": [
-      -1.04,
+      -2.82,
       0.45,
-      -1.8
+      1.785
      ],
      "max": [
-      -0.96,
-      3.05,
-      -1.77
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.04,
-      0.45,
-      1.77
-     ],
-     "max": [
-      -0.96,
+      -2.78,
       3.05,
       1.8
      ],
@@ -36825,60 +36793,12 @@
     },
     {
      "min": [
-      -1.04,
-      3.27,
+      -2.82,
+      3.285,
       -1.55
      ],
      "max": [
-      -0.96,
-      3.3,
-      1.55
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -3.04,
-      0.45,
-      -1.8
-     ],
-     "max": [
-      -2.96,
-      3.05,
-      -1.77
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -3.04,
-      0.45,
-      1.77
-     ],
-     "max": [
-      -2.96,
-      3.05,
-      1.8
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -3.04,
-      3.27,
-      -1.55
-     ],
-     "max": [
-      -2.96,
+      -2.78,
       3.3,
       1.55
      ],
@@ -36901,6 +36821,70 @@
      "kind": "trim",
      "surface": {
       "material": "core.pbr_tread_plate"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.76
+     ],
+     "max": [
+      1.8,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.05,
+      1.55
+     ],
+     "max": [
+      1.8,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -0.82,
+      0.45,
+      1.785
+     ],
+     "max": [
+      -0.78,
+      3.05,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.18,
+      0.45,
+      1.785
+     ],
+     "max": [
+      1.22,
+      3.05,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
      }
     },
     {
@@ -36932,8 +36916,8 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.glow_trim",
-      "tint": "#fff1cf"
+      "material": "core.light_strip",
+      "tint": "#ffe2b0"
      }
     }
    ],
@@ -37004,7 +36988,7 @@
       4
      ],
      "surface": {
-      "material": "core.pbr_concrete_dark"
+      "material": "core.pbr_concrete"
      }
     }
    ],
@@ -37093,7 +37077,7 @@
      "min": [
       -1.8,
       0,
-      0
+      1.8
      ],
      "max": [
       -1.76,
@@ -37107,9 +37091,41 @@
     },
     {
      "min": [
+      -1.8,
+      3.05,
+      1.8
+     ],
+     "max": [
+      -1.55,
+      3.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      2.78
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      2.82
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
       1.76,
       0,
-      0
+      1.8
      ],
      "max": [
       1.8,
@@ -37123,25 +37139,9 @@
     },
     {
      "min": [
-      -1.8,
-      3.05,
-      0
-     ],
-     "max": [
-      -1.55,
-      3.3,
-      4
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
-     }
-    },
-    {
-     "min": [
       1.55,
       3.05,
-      0
+      1.8
      ],
      "max": [
       1.8,
@@ -37155,30 +37155,14 @@
     },
     {
      "min": [
-      -1.8,
+      1.785,
       0.45,
-      0.96
-     ],
-     "max": [
-      -1.77,
-      3.05,
-      1.04
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.77,
-      0.45,
-      0.96
+      2.78
      ],
      "max": [
       1.8,
       3.05,
-      1.04
+      2.82
      ],
      "kind": "trim",
      "surface": {
@@ -37188,61 +37172,13 @@
     {
      "min": [
       -1.55,
-      3.27,
-      0.96
+      3.285,
+      2.78
      ],
      "max": [
       1.55,
       3.3,
-      1.04
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.8,
-      0.45,
-      2.96
-     ],
-     "max": [
-      -1.77,
-      3.05,
-      3.04
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.77,
-      0.45,
-      2.96
-     ],
-     "max": [
-      1.8,
-      3.05,
-      3.04
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.55,
-      3.27,
-      2.96
-     ],
-     "max": [
-      1.55,
-      3.3,
-      3.04
+      2.82
      ],
      "kind": "trim",
      "surface": {
@@ -37267,7 +37203,7 @@
     },
     {
      "min": [
-      0,
+      1.8,
       0,
       1.76
      ],
@@ -37283,7 +37219,39 @@
     },
     {
      "min": [
-      0,
+      1.8,
+      3.05,
+      1.55
+     ],
+     "max": [
+      4,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      2.78,
+      0.45,
+      1.785
+     ],
+     "max": [
+      2.82,
+      3.05,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.8,
       0,
       -1.8
      ],
@@ -37299,23 +37267,7 @@
     },
     {
      "min": [
-      0,
-      3.05,
-      1.55
-     ],
-     "max": [
-      4,
-      3.3,
-      1.8
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
-     }
-    },
-    {
-     "min": [
-      0,
+      1.8,
       3.05,
       -1.8
      ],
@@ -37331,30 +37283,14 @@
     },
     {
      "min": [
-      0.96,
-      0.45,
-      1.77
-     ],
-     "max": [
-      1.04,
-      3.05,
-      1.8
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      0.96,
+      2.78,
       0.45,
       -1.8
      ],
      "max": [
-      1.04,
+      2.82,
       3.05,
-      -1.77
+      -1.785
      ],
      "kind": "trim",
      "surface": {
@@ -37363,60 +37299,12 @@
     },
     {
      "min": [
-      0.96,
-      3.27,
+      2.78,
+      3.285,
       -1.55
      ],
      "max": [
-      1.04,
-      3.3,
-      1.55
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      2.96,
-      0.45,
-      1.77
-     ],
-     "max": [
-      3.04,
-      3.05,
-      1.8
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      2.96,
-      0.45,
-      -1.8
-     ],
-     "max": [
-      3.04,
-      3.05,
-      -1.77
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      2.96,
-      3.27,
-      -1.55
-     ],
-     "max": [
-      3.04,
+      2.82,
       3.3,
       1.55
      ],
@@ -37450,7 +37338,39 @@
      "max": [
       1.8,
       0.45,
-      "-0"
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      3.05,
+      -4
+     ],
+     "max": [
+      1.8,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      -2.82
+     ],
+     "max": [
+      1.8,
+      3.05,
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -37466,27 +37386,11 @@
      "max": [
       -1.76,
       0.45,
-      "-0"
+      -1.8
      ],
      "kind": "trim",
      "surface": {
       "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.55,
-      3.05,
-      -4
-     ],
-     "max": [
-      1.8,
-      3.3,
-      "-0"
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
      }
     },
     {
@@ -37498,7 +37402,7 @@
      "max": [
       -1.55,
       3.3,
-      "-0"
+      -1.8
      ],
      "kind": "trim",
      "surface": {
@@ -37507,30 +37411,14 @@
     },
     {
      "min": [
-      1.77,
-      0.45,
-      -1.04
-     ],
-     "max": [
-      1.8,
-      3.05,
-      -0.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
       -1.8,
       0.45,
-      -1.04
+      -2.82
      ],
      "max": [
-      -1.77,
+      -1.785,
       3.05,
-      -0.96
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -37540,61 +37428,13 @@
     {
      "min": [
       -1.55,
-      3.27,
-      -1.04
+      3.285,
+      -2.82
      ],
      "max": [
       1.55,
       3.3,
-      -0.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.77,
-      0.45,
-      -3.04
-     ],
-     "max": [
-      1.8,
-      3.05,
-      -2.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.8,
-      0.45,
-      -3.04
-     ],
-     "max": [
-      -1.77,
-      3.05,
-      -2.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.55,
-      3.27,
-      -3.04
-     ],
-     "max": [
-      1.55,
-      3.3,
-      -2.96
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -37624,9 +37464,41 @@
       -1.8
      ],
      "max": [
-      "-0",
+      -1.8,
       0.45,
       -1.76
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.05,
+      -1.8
+     ],
+     "max": [
+      -1.8,
+      3.3,
+      -1.55
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -2.82,
+      0.45,
+      -1.8
+     ],
+     "max": [
+      -2.78,
+      3.05,
+      -1.785
      ],
      "kind": "trim",
      "surface": {
@@ -37640,7 +37512,7 @@
       1.76
      ],
      "max": [
-      "-0",
+      -1.8,
       0.45,
       1.8
      ],
@@ -37653,26 +37525,10 @@
      "min": [
       -4,
       3.05,
-      -1.8
-     ],
-     "max": [
-      "-0",
-      3.3,
-      -1.55
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
-     }
-    },
-    {
-     "min": [
-      -4,
-      3.05,
       1.55
      ],
      "max": [
-      "-0",
+      -1.8,
       3.3,
       1.8
      ],
@@ -37683,28 +37539,12 @@
     },
     {
      "min": [
-      -1.04,
+      -2.82,
       0.45,
-      -1.8
+      1.785
      ],
      "max": [
-      -0.96,
-      3.05,
-      -1.77
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.04,
-      0.45,
-      1.77
-     ],
-     "max": [
-      -0.96,
+      -2.78,
       3.05,
       1.8
      ],
@@ -37715,60 +37555,12 @@
     },
     {
      "min": [
-      -1.04,
-      3.27,
+      -2.82,
+      3.285,
       -1.55
      ],
      "max": [
-      -0.96,
-      3.3,
-      1.55
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -3.04,
-      0.45,
-      -1.8
-     ],
-     "max": [
-      -2.96,
-      3.05,
-      -1.77
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -3.04,
-      0.45,
-      1.77
-     ],
-     "max": [
-      -2.96,
-      3.05,
-      1.8
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -3.04,
-      3.27,
-      -1.55
-     ],
-     "max": [
-      -2.96,
+      -2.78,
       3.3,
       1.55
      ],
@@ -37822,8 +37614,8 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.glow_trim",
-      "tint": "#fff1cf"
+      "material": "core.light_strip",
+      "tint": "#ffe2b0"
      }
     }
    ],
@@ -37882,7 +37674,7 @@
       4
      ],
      "surface": {
-      "material": "core.pbr_concrete_dark"
+      "material": "core.pbr_concrete"
      }
     }
    ],
@@ -38024,7 +37816,39 @@
      "max": [
       1.8,
       0.45,
-      "-0"
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      3.05,
+      -4
+     ],
+     "max": [
+      1.8,
+      3.3,
+      -1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      -2.82
+     ],
+     "max": [
+      1.8,
+      3.05,
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -38040,27 +37864,11 @@
      "max": [
       -1.76,
       0.45,
-      "-0"
+      -1.8
      ],
      "kind": "trim",
      "surface": {
       "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.55,
-      3.05,
-      -4
-     ],
-     "max": [
-      1.8,
-      3.3,
-      "-0"
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
      }
     },
     {
@@ -38072,7 +37880,7 @@
      "max": [
       -1.55,
       3.3,
-      "-0"
+      -1.8
      ],
      "kind": "trim",
      "surface": {
@@ -38081,30 +37889,14 @@
     },
     {
      "min": [
-      1.77,
-      0.45,
-      -1.04
-     ],
-     "max": [
-      1.8,
-      3.05,
-      -0.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
       -1.8,
       0.45,
-      -1.04
+      -2.82
      ],
      "max": [
-      -1.77,
+      -1.785,
       3.05,
-      -0.96
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -38114,61 +37906,13 @@
     {
      "min": [
       -1.55,
-      3.27,
-      -1.04
+      3.285,
+      -2.82
      ],
      "max": [
       1.55,
       3.3,
-      -0.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.77,
-      0.45,
-      -3.04
-     ],
-     "max": [
-      1.8,
-      3.05,
-      -2.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.8,
-      0.45,
-      -3.04
-     ],
-     "max": [
-      -1.77,
-      3.05,
-      -2.96
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.55,
-      3.27,
-      -3.04
-     ],
-     "max": [
-      1.55,
-      3.3,
-      -2.96
+      -2.78
      ],
      "kind": "trim",
      "surface": {
@@ -38189,6 +37933,198 @@
      "kind": "trim",
      "surface": {
       "material": "core.pbr_tread_plate"
+     }
+    },
+    {
+     "min": [
+      1.76,
+      0,
+      -1.8
+     ],
+     "max": [
+      1.8,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.55,
+      3.05,
+      -1.8
+     ],
+     "max": [
+      1.8,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      -0.82
+     ],
+     "max": [
+      1.8,
+      3.05,
+      -0.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.785,
+      0.45,
+      1.18
+     ],
+     "max": [
+      1.8,
+      3.05,
+      1.22
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      -1.8
+     ],
+     "max": [
+      -1.76,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.05,
+      -1.8
+     ],
+     "max": [
+      -1.55,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      -0.82
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      -0.78
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      1.18
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      1.22
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0,
+      1.76
+     ],
+     "max": [
+      1.8,
+      0.45,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      3.05,
+      1.55
+     ],
+     "max": [
+      1.8,
+      3.3,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -0.82,
+      0.45,
+      1.785
+     ],
+     "max": [
+      -0.78,
+      3.05,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      1.18,
+      0.45,
+      1.785
+     ],
+     "max": [
+      1.22,
+      3.05,
+      1.8
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
      }
     },
     {
@@ -38220,8 +38156,8 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.glow_trim",
-      "tint": "#fff1cf"
+      "material": "core.light_strip",
+      "tint": "#ffe2b0"
      }
     },
     {
@@ -38332,7 +38268,7 @@
       4
      ],
      "surface": {
-      "material": "core.pbr_concrete_dark"
+      "material": "core.pbr_concrete"
      }
     }
    ],
@@ -38504,14 +38440,14 @@
       -3.431
      ],
      "max": [
-      -3.36,
+      -3.38,
       2.674,
       0.29
      ],
      "pitch": 0.719,
      "kind": "wall",
      "surface": {
-      "material": "core.pbr_concrete_dark"
+      "material": "core.pbr_concrete"
      }
     },
     {
@@ -38580,7 +38516,7 @@
     },
     {
      "min": [
-      3.36,
+      3.38,
       1.674,
       -3.431
      ],
@@ -38592,7 +38528,7 @@
      "pitch": 0.719,
      "kind": "wall",
      "surface": {
-      "material": "core.pbr_concrete_dark"
+      "material": "core.pbr_concrete"
      }
     },
     {
@@ -38629,6 +38565,54 @@
     },
     {
      "min": [
+      -1.8,
+      3.05,
+      0.5
+     ],
+     "max": [
+      -1.55,
+      3.3,
+      4
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      1.48
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      1.52
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
+      -1.8,
+      0.45,
+      3.48
+     ],
+     "max": [
+      -1.785,
+      3.05,
+      3.52
+     ],
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_concrete_dark"
+     }
+    },
+    {
+     "min": [
       1.76,
       0,
       0.5
@@ -38645,22 +38629,6 @@
     },
     {
      "min": [
-      -1.8,
-      3.05,
-      0.5
-     ],
-     "max": [
-      -1.55,
-      3.3,
-      4
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete"
-     }
-    },
-    {
-     "min": [
       1.55,
       3.05,
       0.5
@@ -38677,14 +38645,14 @@
     },
     {
      "min": [
-      -1.8,
+      1.785,
       0.45,
-      1.46
+      1.48
      ],
      "max": [
-      -1.77,
+      1.8,
       3.05,
-      1.54
+      1.52
      ],
      "kind": "trim",
      "surface": {
@@ -38693,14 +38661,14 @@
     },
     {
      "min": [
-      1.77,
+      1.785,
       0.45,
-      1.46
+      3.48
      ],
      "max": [
       1.8,
       3.05,
-      1.54
+      3.52
      ],
      "kind": "trim",
      "surface": {
@@ -38710,45 +38678,13 @@
     {
      "min": [
       -1.55,
-      3.27,
-      1.46
+      3.285,
+      1.48
      ],
      "max": [
       1.55,
       3.3,
-      1.54
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      -1.8,
-      0.45,
-      3.46
-     ],
-     "max": [
-      -1.77,
-      3.05,
-      3.54
-     ],
-     "kind": "trim",
-     "surface": {
-      "material": "core.pbr_concrete_dark"
-     }
-    },
-    {
-     "min": [
-      1.77,
-      0.45,
-      3.46
-     ],
-     "max": [
-      1.8,
-      3.05,
-      3.54
+      1.52
      ],
      "kind": "trim",
      "surface": {
@@ -38758,13 +38694,13 @@
     {
      "min": [
       -1.55,
-      3.27,
-      3.46
+      3.285,
+      3.48
      ],
      "max": [
       1.55,
       3.3,
-      3.54
+      3.52
      ],
      "kind": "trim",
      "surface": {
@@ -38775,7 +38711,7 @@
      "min": [
       -0.15,
       0,
-      0.5
+      0
      ],
      "max": [
       0.15,
@@ -38832,8 +38768,8 @@
      ],
      "kind": "trim",
      "surface": {
-      "material": "core.glow_trim",
-      "tint": "#fff1cf"
+      "material": "core.light_strip",
+      "tint": "#ffe2b0"
      }
     },
     {
