@@ -60,7 +60,8 @@ export interface EdgeSegment {
 /**
  * A segmental arch's dressing: `count` voussoirs (an odd count has a keystone `key` m taller in the middle) on the
  * circle through the springing points (u[0] and u[1] at height y[0]) and the crown (y[1] over the middle), each
- * `band` m deep and standing `depth` off the wall, and a soffit under the curve through the wall's thickness.
+ * `band` m deep and standing `depth` off the wall (0.06 m unless given; the keystone `keyDepth` more, 0.04 m unless
+ * given), and a soffit under the curve through the wall's thickness.
  */
 export interface EdgeArch {
   u: readonly [number, number];
@@ -69,6 +70,7 @@ export interface EdgeArch {
   band: number;
   key?: number;
   depth?: number;
+  keyDepth?: number;
 }
 /**
  * Trim on a side's inner face: a baseboard, a cornice (levels 3 m or more), a door frame (when the level is 0.2 m
@@ -81,7 +83,7 @@ export type EdgeTrim =
   | { cornice: readonly [EdgeValue, EdgeValue] }
   | { frame: { half: number; top: number }; surface?: EdgeTrimSurface }
   | { window: { u: readonly [number, number]; y: readonly [number, number] } }
-  | { arch: EdgeArch; outside?: boolean }
+  | { arch: EdgeArch; outside?: boolean; surface?: EdgeTrimSurface }
   | { u: readonly [EdgeValue, EdgeValue]; y: readonly [EdgeValue, EdgeValue]; depth: number; repeat?: EdgeRepeat; outside?: boolean; surface?: EdgeTrimSurface }
   | { u: readonly [EdgeValue, EdgeValue]; y: readonly [EdgeValue, EdgeValue]; v: readonly [number, number]; surface?: EdgeTrimSurface };
 /** A library material of its own for a trim piece (a door's oak frame, a sash's painted bars), instead of the tile's trim surface. */

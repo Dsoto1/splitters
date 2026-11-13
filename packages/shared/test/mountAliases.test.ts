@@ -109,17 +109,17 @@ describe('retired vehicles (Go-Kart, Ice Cream Truck)', () => {
   });
 
   it('each stands for a vehicle that exists: the Hover Bike (one seat, no gun) and the Buggy (no mounted gun)', () => {
-    expect(RETIRED_MOUNTS).toEqual({ kart: 'hover_bike', ice_cream_truck: 'buggy' });
+    expect(RETIRED_MOUNTS).toEqual({ kart: 'hover_bike', ice_cream_truck: 'troop_buggy', buggy: 'troop_buggy' });
     for (const to of Object.values(RETIRED_MOUNTS)) expect(MOUNT_MODELS).toContain(to);
     expect(MOUNT_DEFS.hover_bike.seats).toHaveLength(1);
     // Neither replacement brings a mounted weapon the retired vehicle didn't have.
     for (const to of Object.values(RETIRED_MOUNTS)) expect(MOUNT_DEFS[to].seats.some((s) => s.weapon)).toBe(false);
     expect(liveMount('kart')).toBe('hover_bike');
-    expect(liveMount('ice_cream_truck')).toBe('buggy');
+    expect(liveMount('ice_cream_truck')).toBe('troop_buggy');
     expect(liveMount('tank')).toBe('tank');
     // Whoever asks for a retired vehicle's definition gets its replacement's.
     expect(getMountDef('kart')).toBe(MOUNT_DEFS.hover_bike);
-    expect(placedMountDef('ice_cream_truck')).toBe(MOUNT_DEFS.buggy);
+    expect(placedMountDef('ice_cream_truck')).toBe(MOUNT_DEFS.troop_buggy);
     expect(getMountDef('unicycle')).toBeUndefined();
   });
 
@@ -135,13 +135,13 @@ describe('retired vehicles (Go-Kart, Ice Cream Truck)', () => {
     if (!r.ok) return;
     expect(r.issues.filter((i) => i.severity === 'error')).toEqual([]);
     const mounts = r.map.entities.filter((e) => e.kind === 'mount');
-    expect(mounts.map((e) => [e.id, e.model])).toEqual([['mount_kart', 'hover_bike'], ['mount_van', 'buggy']]);
+    expect(mounts.map((e) => [e.id, e.model])).toEqual([['mount_kart', 'hover_bike'], ['mount_van', 'troop_buggy']]);
     expect(mounts[1]).toMatchObject({ position: [20, 0, 20], yaw: 0, respawnSeconds: 90, skin: 'desert' });
     // MapMaker's checks say so, once per retired vehicle, as a warning.
     const told = r.issues.filter((i) => i.code === 'mount.retired');
     expect(told.map((i) => i.severity)).toEqual(['warning', 'warning']);
     expect(told[0]!.message).toMatch(/Go-Kart is retired .*plays as the Hover Bike/);
-    expect(told[1]!.message).toMatch(/Ice Cream Truck is retired .*plays as the Buggy/);
+    expect(told[1]!.message).toMatch(/Ice Cream Truck is retired .*plays as the Troop Buggy/);
     // The played map has nothing left to say about it; a map that names neither is untouched (the same object).
     expect(validateMap(r.map).filter((i) => i.code === 'mount.retired')).toEqual([]);
     expect(withMountAliases(r.map)).toBe(r.map);
@@ -169,7 +169,7 @@ describe('retired vehicles (Go-Kart, Ice Cream Truck)', () => {
     const me = match.addHuman('me')!;
     d.run(2);
     const [bike, buggy] = mountsOf(match);
-    expect([bike!.def.id, buggy!.def.id]).toEqual(['hover_bike', 'buggy']);
+    expect([bike!.def.id, buggy!.def.id]).toEqual(['hover_bike', 'troop_buggy']);
     expect(bike!.alive && buggy!.alive).toBe(true);
     me.move = { pos: { x: bike!.pos.x, y: 0, z: bike!.pos.z + 1.5 }, velY: 0, grounded: true };
     d.run(1, () => d.input(me, { buttons: BUTTON_USE }));
@@ -180,7 +180,7 @@ describe('retired vehicles (Go-Kart, Ice Cream Truck)', () => {
     expect(Math.hypot(bike!.pos.x - from.x, bike!.pos.z - from.z)).toBeGreaterThan(8);
     // A match made straight from the file as written (no loadMap) plays the same vehicles.
     const direct = new Match(MapDocument.parse(oldFile()), { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 100_000 });
-    expect(mountsOf(direct).map((m) => m.def.id)).toEqual(['hover_bike', 'buggy']);
+    expect(mountsOf(direct).map((m) => m.def.id)).toEqual(['hover_bike', 'troop_buggy']);
   });
 
   it("an old track whose NPC cars are karts laps hover bikes; a track that doesn't say gets them too", () => {
@@ -225,7 +225,7 @@ describe('retired vehicles (Go-Kart, Ice Cream Truck)', () => {
     expect(retiredMountUses(next)).toEqual([{ model: 'ice_cream_truck', entities: ['mount_van'], paths: [] }]);
     expect(applyCommand(next, invertCommand(r.command))).toEqual(doc);
     const both = applyCommand(next, replaceRetiredMountCommand(next, 'ice_cream_truck').command);
-    expect(both.entities.find((e) => e.id === 'mount_van')).toMatchObject({ model: 'buggy', respawnSeconds: 90, skin: 'desert' });
+    expect(both.entities.find((e) => e.id === 'mount_van')).toMatchObject({ model: 'troop_buggy', respawnSeconds: 90, skin: 'desert' });
     expect(retiredMountUses(both)).toEqual([]);
     expect(validateMap(both).filter((i) => i.code === 'mount.retired')).toEqual([]);
     // Another vehicle than the usual one: the placed ones only (a track has its own list).
@@ -251,11 +251,11 @@ describe('retired vehicles (Go-Kart, Ice Cream Truck)', () => {
     const editing = loadMap(text, undefined, { forEditing: true });
     expect(editing.ok && raw.metadata.release && mapIdentity(editing.map).versionId).toBe(raw.metadata.release?.versionId);
     const now = r.map.entities.find((e) => e.id === was[0]!.id);
-    expect(now).toMatchObject({ kind: 'mount', model: 'buggy', position: was[0]!.position });
+    expect(now).toMatchObject({ kind: 'mount', model: 'troop_buggy', position: was[0]!.position });
     const match = new Match(r.map, { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 100_000 });
     match.addHuman('me');
     for (let i = 0; i < TICK_RATE * 3; i++) match.step();
-    const buggy = mountsOf(match).find((m) => Math.hypot(m.pos.x - was[0]!.position[0]!, m.pos.z - was[0]!.position[2]!) < 3 && m.def.id === 'buggy');
+    const buggy = mountsOf(match).find((m) => Math.hypot(m.pos.x - was[0]!.position[0]!, m.pos.z - was[0]!.position[2]!) < 3 && m.def.id === 'troop_buggy');
     expect(buggy?.alive).toBe(true);
   });
 

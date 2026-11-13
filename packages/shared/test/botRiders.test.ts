@@ -47,7 +47,7 @@ function boarded(seed: number) {
     drive();
     match.step();
   }
-  const buggy = (match as unknown as { mounts: MountState[] }).mounts.find((m) => m.def.id === 'buggy')!;
+  const buggy = (match as unknown as { mounts: MountState[] }).mounts.find((m) => m.def.id === 'troop_buggy')!;
   const at = (c: Combatant, dx: number, dz: number) => (c.move = { pos: { x: buggy.pos.x + dx, y: buggy.pos.y, z: buggy.pos.z + dz }, velY: 0, grounded: true });
   at(me, 2.2, 0);
   riders.forEach((r, i) => at(r, 6 + i * 2, 4));

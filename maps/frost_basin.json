@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "frost_basin",
     "name": "Frost Basin",
@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_wm4ypl2enajhiaqu",
-      "versionId": "v_k5bsop6k3g6og2or",
-      "revision": 6,
-      "contentHash": "sha256:80008c46e9b3d9910be3b736c6a7be08ed01af4876752ec9fe33631e89e21006",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-13T03:54:22.817Z"
+      "versionId": "v_5frsdviynthgsfvq",
+      "revision": 7,
+      "contentHash": "sha256:d174567a544abf4c16b442d25cfbc4ece3c3fc96a91dece2a4de6da42263be18",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T17:54:00.477Z"
     }
   },
   "classicStructure": {
@@ -392,7 +392,7 @@
         -96
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
@@ -872,7 +872,7 @@
         96
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.141592653589793,
       "faction": null,
       "respawnSeconds": null

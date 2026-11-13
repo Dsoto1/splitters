@@ -1,5 +1,6 @@
 /**
- * Retired vehicles in maps (sim/mounts.ts RETIRED_MOUNTS: the Go-Kart and the Ice Cream Truck, owner 2026-11-12).
+ * Retired vehicles in maps (sim/mounts.ts RETIRED_MOUNTS: the Go-Kart and the Ice Cream Truck, owner 2026-11-12;
+ * the Buggy's id, owner 2026-11-13).
  * The same idea as retired props (propAliases.ts) and tiles (setPieceAliases.ts):
  *
  * - A map file that names one is still valid as written: the schema accepts the retired ids on a placed `mount` and

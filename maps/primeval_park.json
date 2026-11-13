@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "primeval_park",
     "name": "Primeval Park",
@@ -4691,7 +4691,7 @@
         -106
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0,
       "faction": "embers",
       "respawnSeconds": null
@@ -4717,7 +4717,7 @@
         76
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.141592653589793,
       "faction": "tide",
       "respawnSeconds": null
@@ -4730,7 +4730,7 @@
         -12
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
@@ -4743,7 +4743,7 @@
         70
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0.3,
       "faction": null,
       "respawnSeconds": null

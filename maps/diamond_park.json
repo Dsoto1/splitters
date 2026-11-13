@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "diamond_park",
     "name": "Diamond Park",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_gkegta35ah54zd5g",
-      "versionId": "v_kwt67eb5er3b4mas",
-      "revision": 8,
-      "contentHash": "sha256:742f80af7f48a3049fa2f5556e1ee58225dba8d5e9bb77ae3305bf076bfb54f3",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T21:08:06.537Z"
+      "versionId": "v_j7qetbvebzxw4lo6",
+      "revision": 9,
+      "contentHash": "sha256:8d57d87160747fe6b786a3840ad91828d7dfcffeb3aa8b2927460be5bae35491",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T17:52:59.896Z"
     }
   },
   "classicStructure": {
@@ -30394,7 +30394,7 @@
         -78
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": null,
       "respawnSeconds": null
@@ -30809,7 +30809,7 @@
         66
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": null,
       "respawnSeconds": null

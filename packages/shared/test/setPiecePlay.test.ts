@@ -45,7 +45,8 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
  * setPieces4.test.ts the command bunker's gates and the gatehouse's arches (MAP 21), and setPieces5.test.ts the
  * brainstorm list's open ones (catwalks, the overlook, the dock, the arena, the bunker cluster, the plaza, the ramp
  * junction) and MAP 21's sea wall and its breach; setPiecesAcademy.test.ts the dormitory bays; tunnelFamily.test.ts
- * the Lit Tunnel Run.
+ * the Lit Tunnel Run; setPiecesUrban.test.ts the Urban family (the porch, the bus shelter, the parking deck, the concrete
+ * frames, the bandstand, the shop unit with its open pavement).
  */
 const OPEN_SIDED = [
   'setpiece.arena_arcade',
@@ -53,7 +54,9 @@ const OPEN_SIDED = [
   'setpiece.arena_bay_podium',
   'setpiece.arena_bay_tier',
   'setpiece.arena_vomitorium',
+  'setpiece.bandstand',
   'setpiece.bunker_cluster',
+  'setpiece.bus_shelter',
   'setpiece.cage_block',
   'setpiece.cage_lift',
   'setpiece.catwalk_bridge_2',
@@ -63,6 +66,8 @@ const OPEN_SIDED = [
   'setpiece.cliff_stair_gate',
   'setpiece.cliff_stair_grand',
   'setpiece.command_bunker',
+  'setpiece.concrete_frame',
+  'setpiece.concrete_frame_2',
   'setpiece.courtyard_gate_wall',
   'setpiece.crossroads_plaza',
   // The dormitory bays (setPiecesAcademy.test.ts): the hall runs out of each end between partitions, no doorway of a tile's.
@@ -71,9 +76,13 @@ const OPEN_SIDED = [
   'setpiece.dorm_office_bay',
   'setpiece.landing_craft_beached',
   'setpiece.loading_dock',
+  'setpiece.parking_deck_bay',
+  'setpiece.parking_deck_ramp',
+  'setpiece.porch',
   'setpiece.ramp_junction',
   'setpiece.sea_wall',
   'setpiece.sea_wall_breach',
+  'setpiece.shop_unit',
   'setpiece.stair_end_bay',
   'setpiece.stair_end_bay_3',
   'setpiece.sunken_arena',

@@ -2207,6 +2207,11 @@ export class GameSession {
             const cam = this.view.cameraPosition();
             const near = 1 - Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) / 12;
             if (near > 0) this.view.shake(near * ev.n * 0.6);
+          } else if (ev.e === 'resupply') {
+            // The Supply Buggy's back (sim/resupply.ts): what you got, or why nothing.
+            if (ev.s === this.slot) this.hud.pickup(ev.ok ? `Resupplied (${ev.left} left)` : ev.left > 0 ? 'Nothing to resupply' : 'Out of supplies');
+            const at = ev.ok ? this.view.chestOf(ev.s) : null;
+            if (at) this.view.playGameplayFx('pickup.ammo', at, { size: this.view.farSize(at) });
           } else if (ev.e === 'pickup') {
             if (ev.s === this.slot) this.hud.pickup(getItem(ev.item)?.displayName ?? 'Item');
             if (ev.s === this.slot && getItem(ev.item)?.effect.kind === 'armor') this.tips?.trigger('armor', performance.now() / 1000);
@@ -2570,7 +2575,8 @@ export class GameSession {
     const myTeam = this.hud.team(this.slot)?.id ?? (this.rules?.mode === 'core.coop' ? 'players' : null);
     const target = local.alive ? pickUsable(map, local.eye, this.input.yaw, this.input.pitch, (i) => sc.usable(i, myTeam)) : null;
     const e = target === null ? undefined : map.entities[target];
-    const enter = local.alive && !this.seat ? this.mounts?.enterable(local.state.pos) : null;
+    const supply = local.alive && !this.seat ? (this.mounts?.resupplyInReach(local.state.pos) ?? null) : null;
+    const enter = local.alive && !this.seat && !supply ? this.mounts?.enterable(local.state.pos) : null;
     let full: { def: { displayName: string } } | null = null;
     if (local.alive && this.seat) {
       const m = this.mounts?.mounts.get(this.seat[0]);
@@ -2581,6 +2587,9 @@ export class GameSession {
       this.hud.setPrompt(two ? 'Zipline: Space or E to let go (sidearm or blade to shoot)' : 'Zipline: Space or E to let go');
     } else if (local.alive && !this.seat && !enter && local.ziplines.length && grabZipline(local.ziplines, local.state.pos, this.input.yaw, local.team())) {
       this.hud.setPrompt('Grab the zipline');
+    } else if (supply) {
+      // At the Supply Buggy's back: Use resupplies instead of getting in (the server's rule, Match.resupplyAtMount).
+      this.hud.setPrompt(supply.supply > 0 ? `Resupply from the ${supply.def.displayName} (${supply.supply} left)` : `The ${supply.def.displayName} is out of supplies`, supply.supply <= 0);
     } else if (enter) {
       const seat = enter.mount.def.seats[enter.seat]!;
       const verb = seat.role === 'driver' ? (enter.mount.def.kind === 'vehicle' ? 'Drive' : 'Use') : seat.role === 'gunner' ? 'Man the gun on' : 'Ride in';

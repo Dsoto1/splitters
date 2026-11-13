@@ -872,8 +872,9 @@ export const TRACK_SURFACES = ['asphalt', 'dirt'] as const;
  * first and the default until it was retired (2026-11-12): a track may still name `kart`, and its cars are then
  * Hover Bikes (mountAliases.ts); a track that doesn't say gets Hover Bikes.
  */
-export const RACE_VEHICLES = ['hover_bike', 'speeder', 'buggy'] as const;
-const RaceVehicleId = z.enum(['kart', ...RACE_VEHICLES]).default('hover_bike');
+export const RACE_VEHICLES = ['hover_bike', 'speeder', 'troop_buggy'] as const;
+/** Retired ids a track may still name (sim/mounts.ts RETIRED_MOUNTS): `kart`, and `buggy` (the Troop Buggy now). */
+const RaceVehicleId = z.enum(['kart', 'buggy', ...RACE_VEHICLES]).default('hover_bike');
 
 /**
  * A race track as the curve code reads it (track.ts): ordered control points

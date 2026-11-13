@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "riot_junction",
     "name": "Riot Junction",
@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_ruc3fnxenmg4ganz",
-      "versionId": "v_bqplneeekor7qjv4",
-      "revision": 8,
-      "contentHash": "sha256:34e38244fa1d4f357b88d3f9eaa4e287c8d8dd4aa2d1f207ef0750fe180de027",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T13:10:48.612Z"
+      "versionId": "v_cvet2v565yv7qafn",
+      "revision": 9,
+      "contentHash": "sha256:de188ed7bc7e0c7175e70d288dbdd8bb0c1b02b989b7a2aaa135c75652c741d3",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T17:58:41.871Z"
     }
   },
   "classicStructure": {
@@ -16259,7 +16259,7 @@
         46
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": -1.5707963267948966,
       "faction": "tide",
       "respawnSeconds": null,
@@ -16286,7 +16286,7 @@
         100
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": "embers",
       "respawnSeconds": null
@@ -16299,7 +16299,7 @@
         156
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": "embers",
       "respawnSeconds": null

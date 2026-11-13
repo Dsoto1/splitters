@@ -559,10 +559,10 @@
       "trim": [
         { "base": ["-half", "half"] },
         { "cornice": ["-half", "half"] },
-        { "u": [-1.2, 1.2], "y": [0.78, 0.9], "depth": 0.14, "outside": true },
-        { "u": [-1.16, -1], "y": [0.9, 2], "depth": 0.05, "outside": true },
-        { "u": [1, 1.16], "y": [0.9, 2], "depth": 0.05, "outside": true },
-        { "arch": { "u": [-1, 1], "y": [2, 3], "count": 9, "band": 0.3, "key": 0.2 }, "outside": true },
+        { "u": [-1.24, 1.24], "y": [0.83, 0.9], "depth": 0.14, "outside": true, "surface": { "material": "core.stone_trim" } },
+        { "u": [-1.2, -1], "y": [0.9, 2], "depth": 0.03, "outside": true, "surface": { "material": "core.stone_trim" } },
+        { "u": [1, 1.2], "y": [0.9, 2], "depth": 0.03, "outside": true, "surface": { "material": "core.stone_trim" } },
+        { "arch": { "u": [-1, 1], "y": [2, 3], "count": 13, "band": 0.2, "key": 0.05, "depth": 0.03, "keyDepth": 0.015 }, "outside": true, "surface": { "material": "core.stone_trim" } },
         { "u": [-1, -0.93], "y": [0.9, 2], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
         { "u": [0.93, 1], "y": [0.9, 2], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
         { "u": [-0.93, 0.93], "y": [0.9, 0.99], "v": [0.2, 0.3], "surface": { "material": "core.paint_matte", "tint": "#e6e1d3" } },
@@ -575,7 +575,7 @@
       "corner": true,
       "facade": true,
       "dressing": { "kind": "window", "span": 2 },
-      "notes": { "design": "An arched window (Tileset 11, Urban & Civilian: URBAN_PLAN.md C2; map format v38): 2 m wide, sill 0.9 m, a semicircular head springing at 2 m to its crown at 3 m. Its collision steps over the curve and never dips below it (10° steps, as the Round arch); nine voussoirs and a keystone dress both faces (the outer one where nothing is built beyond the side), with a stone sill and jambs. It takes glass like the Window (the pane is the opening's rectangle; its corners are inside the stone over the curve), and a painted frame is drawn in the wall by the glass: stiles, a bottom rail, a transom at the springing, a mullion and a bar in the fanlight (trim only). Open, it is climbed through as the Window is: jump and crouch." }
+      "notes": { "design": "An arched window (Tileset 11, Urban & Civilian: URBAN_PLAN.md C2; map format v38): 2 m wide, sill 0.9 m, a semicircular head springing at 2 m to its crown at 3 m. Its collision steps over the curve and never dips below it (10° steps, as the Round arch); thirteen thin voussoirs and a modest keystone dress both faces (the outer one where nothing is built beyond the side), with a slim sill and jambs, all of pale dressed stone (their own material, core.stone_trim, whatever the tile's trim: a neat surround on plaster, brick or panels; 0.2 m wide, as the arch's soffit is thick, and 0.03 m proud). It takes glass like the Window (the pane is the opening's rectangle; its corners are inside the stone over the curve), and a painted frame is drawn in the wall by the glass: stiles, a bottom rail, a transom at the springing, a mullion and a bar in the fanlight (trim only). Open, it is climbed through as the Window is: jump and crouch." }
     },
     { "id": "open", "label": "No wall", "rule": "open" }
   ]

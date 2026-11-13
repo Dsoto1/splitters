@@ -67,7 +67,9 @@ describe('Style Pack 14 Urban & Civilian', () => {
     expect(placementPack({}, 'core.suburban', library)?.id).toBe('suburban');
     const suits = [...library.pieces.values()].filter((d) => d.packs.includes('urban')).map((d) => d.id);
     expect(suits).toEqual(expect.arrayContaining(['setpiece.crossroads_plaza', 'setpiece.loading_dock', 'setpiece.skybridge_2', 'setpiece.stair_tower_4', 'setpiece.atrium_tower', 'setpiece.catwalk_bridge_3']));
-    expect(suits).toHaveLength(16);
+    // Plan step D: the eight town pieces made in MapMaker (content/setpieces/urban.json; setPiecesUrban.test.ts).
+    expect(suits).toEqual(expect.arrayContaining(['setpiece.porch', 'setpiece.bus_shelter', 'setpiece.parking_deck_bay', 'setpiece.parking_deck_ramp', 'setpiece.concrete_frame', 'setpiece.concrete_frame_2', 'setpiece.bandstand', 'setpiece.shop_unit']));
+    expect(suits).toHaveLength(24);
   });
 
   // Plan step B: materials and looks made for the pack. Same shapes: four painted patterns, painted leaves on the Oak

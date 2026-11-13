@@ -122,7 +122,7 @@ describe('the Tank data', () => {
     expect(armourScale(TANK, 'melee')).toBe(0);
     expect(armourScale(TANK, 'other')).toBe(1);
     // Other vehicles keep full damage of every kind.
-    expect(armourScale(MOUNT_DEFS.buggy, 'bullet')).toBe(1);
+    expect(armourScale(MOUNT_DEFS.troop_buggy, 'bullet')).toBe(1);
   });
 
   it('the cannon has 10 shells, one back every 15 s, and the driver fires it while its seat is empty', () => {
@@ -132,13 +132,13 @@ describe('the Tank data', () => {
     expect(firingSeat(TANK, driver, (i) => i === CANNON)).toBeNull();
     expect(firingSeat(TANK, CANNON, () => true)).toBe(CANNON);
     // A buggy's driver still has no gun.
-    expect(firingSeat(MOUNT_DEFS.buggy, 0, () => false)).toBeNull();
+    expect(firingSeat(MOUNT_DEFS.troop_buggy, 0, () => false)).toBeNull();
   });
 });
 
 describe('the crew is sealed in', () => {
   it('nobody aboard a tank can be shot, blasted or struck from outside; a buggy driver can', () => {
-    const match = new Match(yard([mount('tank', 12, 12), mount('buggy', 26, 12)]), rules, 3);
+    const match = new Match(yard([mount('tank', 12, 12), mount('troop_buggy', 26, 12)]), rules, 3);
     const pad = new Pad(match);
     const shooter = match.addHuman('shooter')!;
     const crew = match.addHuman('crew')!;
@@ -207,7 +207,7 @@ describe('the crew is sealed in', () => {
   });
 
   it('a buggy blowing up still throws its riders out into the blast instead', () => {
-    const match = new Match(yard([mount('buggy', 12, 12)]), rules, 3);
+    const match = new Match(yard([mount('troop_buggy', 12, 12)]), rules, 3);
     const pad = new Pad(match);
     const driver = match.addHuman('driver')!;
     pad.run(2);
@@ -261,7 +261,7 @@ describe('armour: rockets against bullets', () => {
   });
 
   it('bullets fired at it really do a tenth: an assault rifle emptied into the hull', () => {
-    const match = new Match(yard([mount('tank', 12, 12), mount('buggy', 26, 12)]), rules, 3);
+    const match = new Match(yard([mount('tank', 12, 12), mount('troop_buggy', 26, 12)]), rules, 3);
     const pad = new Pad(match);
     const a = match.addHuman('a')!;
     pad.run(2);
@@ -479,7 +479,7 @@ describe('bots duck in standing places (owner, 2026-11-11)', () => {
 
 describe('tracks', () => {
   it('a tank turns on the spot; a buggy standing still does not', () => {
-    const match = new Match(yard([mount('tank', 12, 12), mount('buggy', 28, 12)]), rules, 3);
+    const match = new Match(yard([mount('tank', 12, 12), mount('troop_buggy', 28, 12)]), rules, 3);
     const pad = new Pad(match);
     const a = match.addHuman('a')!;
     const b = match.addHuman('b')!;
@@ -631,7 +631,7 @@ describe('bots in tanks', () => {
   });
 
   it('a bot alone at the wheel fires the cannon at an enemy vehicle and keeps its shells for targets worth one', () => {
-    const match = new Match(yard([mount('tank', 12, 6), mount('buggy', 12, 42)], [], 5, 7, [[0, 0, 0], [30, 0, 48]]), rules, 7);
+    const match = new Match(yard([mount('tank', 12, 6), mount('troop_buggy', 12, 42)], [], 5, 7, [[0, 0, 0], [30, 0, 48]]), rules, 7);
     const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.hard)!;
     const enemy = match.addHuman('enemy')!;
     match.step();

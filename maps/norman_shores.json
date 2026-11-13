@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "norman_shores",
     "name": "Norman Shores",
@@ -11215,7 +11215,7 @@
         80
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.141592653589793,
       "faction": null,
       "respawnSeconds": null
@@ -11228,7 +11228,7 @@
         80
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.141592653589793,
       "faction": null,
       "respawnSeconds": null
