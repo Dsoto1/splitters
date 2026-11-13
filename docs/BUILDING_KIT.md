@@ -1059,6 +1059,17 @@ Arena. The role pack is the default for **no theme**: City Block, Factory and Re
 with no pack named, and those keep the look their theme paints; a piece takes the urban look when it is placed with
 the pack picked. `test/stylePacksUrban.test.ts`.
 
+**Made for the pack (plan step B: same shapes, new looks).** Four materials, each a pattern of our own in
+`client/materials/patterns.ts` (no downloaded artwork, no texture file): *Parking Bays* (`core.parking_bays`: asphalt
+with white lines, one repeat 5 m: two bays 2.5 m wide, one 5 m deep), *Tactile Paving* (`core.tactile_paving`: 0.4 m
+slabs of 6 x 6 studs; tint it), *Graffiti on Brick* (`core.graffiti_brick`: one storey a repeat, spray paint across
+its middle; abstract shapes only, no letters, words, logos or real marks) and *Damaged Plaster*
+(`core.damaged_plaster`: plaster fallen away in patches to brick). None sets a surface type (that is a separate
+decision). Two kit looks: **Painted Door** (`kit.door.painted`, `kit.door.painted_open`: the Oak Door's frame, size and
+collision; red, blue, white half-glazed and a glazed shop door) and **Shop Awning** (`kit.shop.awning`: 3.2 m wide,
+1.3 m out, 1 m high; red, green, blue, yellow and faded stripes; no collision, raise it over a shop window).
+`client/test/patternsUrban.test.ts`.
+
 ### 06 Jungle Ruins refresh (Ancient Temple folded in)
 
 From the owner's concept sheets "Tileset 04 – Jungle Ruins" (weathered mossy stone, overgrown temple

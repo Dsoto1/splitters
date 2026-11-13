@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FACADES, SCENARIO_PALETTE, STYLE_PACKS, builtInSetPieces, coreCatalog, coreMaterials, coreThemes, getItem, getProp, getStylePack, isKitModel, placementPack, propAlias, stylePackHas } from '../src/index.ts';
+import { CORE_MATERIALS, FACADES, SCENARIO_PALETTE, STYLE_PACKS, builtInSetPieces, coreCatalog, coreMaterials, coreThemes, getItem, getKitFamily, getProp, getStylePack, isKitModel, placementPack, propAlias, stylePackHas, surfaceMaterial } from '../src/index.ts';
 
 /**
  * Style Pack 14 Urban & Civilian (Tileset 11; docs/map-briefs/urban/URBAN_PLAN.md). It is a list of pieces the game
@@ -68,5 +68,41 @@ describe('Style Pack 14 Urban & Civilian', () => {
     const suits = [...library.pieces.values()].filter((d) => d.packs.includes('urban')).map((d) => d.id);
     expect(suits).toEqual(expect.arrayContaining(['setpiece.crossroads_plaza', 'setpiece.loading_dock', 'setpiece.skybridge_2', 'setpiece.stair_tower_4', 'setpiece.atrium_tower', 'setpiece.catwalk_bridge_3']));
     expect(suits).toHaveLength(16);
+  });
+
+  // Plan step B: materials and looks made for the pack. Same shapes: four painted patterns, painted leaves on the Oak
+  // Door's frame, a striped awning.
+  it('lists the four materials painted for it, each a pattern of our own (no texture file)', () => {
+    const made = ['core.parking_bays', 'core.tactile_paving', 'core.graffiti_brick', 'core.damaged_plaster'];
+    for (const id of made) {
+      expect(pack.materials, id).toContain(id);
+      const m = coreMaterials.get(id)!;
+      expect(m.texture, id).toBeUndefined();
+      expect(m.emissive ?? false, id).toBe(false);
+      expect(m.surface, `${id}: surface types are not part of this work`).toBeUndefined();
+    }
+    expect(made.map((id) => coreMaterials.get(id)!.pattern)).toEqual(['parking_bays', 'tactile', 'graffiti', 'spalled_plaster']);
+    // They come last in the library, so MapMaker's palette order is unchanged before them.
+    expect(CORE_MATERIALS.slice(-4).map((m) => m.id)).toEqual(made);
+    // What a round does to them: asphalt as the game's other asphalt, paving as stone, brick, plaster.
+    expect(made.map((id) => surfaceMaterial(id))).toEqual([surfaceMaterial('core.pbr_asphalt'), 'stone', 'brick', 'drywall']);
+  });
+
+  it('lists the painted doors and the shop awning: looks on families, one collision each', () => {
+    for (const id of ['kit.door.painted', 'kit.door.painted_open', 'kit.shop.awning']) expect(pack.props, id).toContain(id);
+    const names = (id: string) => getKitFamily(id)!.variants.map((v) => v.name);
+    expect(names('kit.door.painted')).toEqual(['red', 'blue', 'white', 'shop']);
+    expect(names('kit.door.painted_open')).toEqual(['red', 'blue', 'white', 'shop']);
+    expect(names('kit.shop.awning')).toEqual(['red', 'green', 'blue', 'yellow', 'faded']);
+    // The painted door is the Oak Door's size and collides as it does: shut closes the doorway, open leaves it clear.
+    const [oak, shut, open] = [getProp('kit.door.oak')!, getProp('kit.door.painted')!, getProp('kit.door.painted_open')!];
+    expect(shut.size).toEqual(oak.size);
+    expect(shut.collision).toEqual(oak.collision);
+    expect(shut.boxes).toEqual(oak.boxes);
+    expect(open.size).toEqual(getProp('kit.door.oak_open')!.size);
+    expect(open.collision).toBeNull();
+    // The awning hangs over a shop window: nothing to walk into or to stop a round, as the game's other awnings.
+    expect(getProp('kit.shop.awning')).toMatchObject({ size: [3.2, 1, 1.3], collision: null, category: 'Shop' });
+    expect(getProp('prop.awning')!.collision).toBeNull();
   });
 });

@@ -610,8 +610,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
     demo: 'ironworks',
   },
   {
-    // Tileset 11 (docs/map-briefs/urban/URBAN_PLAN.md, step A): a list of what the game already has, by reference. It has
-    // no tiles of its own and copies nothing: the Suburban, Neon and Industrial packs keep their lists, and a piece listed
+    // Tileset 11 (docs/map-briefs/urban/URBAN_PLAN.md, step A): a list of what the game already has, by reference, and
+    // the few pieces made for it (steps B and C: materials, kit families). It has no tiles of its own and copies nothing: the Suburban, Neon and Industrial packs keep their lists, and a piece listed
     // here is the same piece there. No demo map yet (owner, 2026-11-13).
     id: 'urban',
     number: '14',
@@ -649,6 +649,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
       // The gas station and the shop.
       'gs_fuel_pump', 'gs_fuel_pump_slim', 'sb_gas_pump', 'gs_shop_counter', 'gs_shop_shelving', 'gs_ice_chest', 'gs_drinks_fridge', 'gs_coffee_machine', 'gs_slush_machine',
       'kit.shelf.gondola', 'kit.shop.checkout', 'kit.shop.cart', 'kit.box.carton',
+      // Made for the pack (plan step B): painted doors on the Oak Door's frame, the striped shop awning.
+      'kit.door.painted', 'kit.door.painted_open', 'kit.shop.awning',
       // Warehouses and building sites.
       'kit.crate.wood', 'kit.drum.steel', 'kit.container.shipping', 'pallet', 'cargo_gantry_crane', 'dc_scaffold',
     ),
@@ -656,6 +658,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'core.pbr_asphalt', 'core.pbr_wet_asphalt', 'core.pbr_concrete', 'core.pbr_concrete_dark', 'core.pbr_hex_paving', 'core.pbr_flagstone', 'core.pbr_walkway', 'core.white_tiles',
       'core.pbr_brick_red', 'core.pbr_brick_old', 'core.dark_brick', 'core.stucco', 'core.pbr_plaster', 'core.pbr_plaster_white', 'core.pbr_siding', 'core.pbr_clapboard', 'core.pbr_weathered_siding',
       'core.pbr_corrugated', 'core.pbr_grey_corrugated', 'core.pbr_glass_facade', 'core.pbr_slate_roof', 'core.pbr_roof', 'core.roof_tiles_red', 'core.hazard',
+      // Made for the pack (plan step B): our own painted patterns.
+      'core.parking_bays', 'core.tactile_paving', 'core.graffiti_brick', 'core.damaged_plaster',
     ],
     facades: ['brick', 'storefront', 'plaster', 'clapboard', 'suburban_brick', 'glass', 'corrugated'],
     gameplay: ['door', 'mover:garage_door', 'mover:rollup_door', 'mover:lift', 'mover:elevator', 'glass', 'block:fence', 'block:barrier', 'block:roof', 'ladder', 'button', 'crate', 'barrel', 'gas', 'light:ceiling', 'light:wall', 'light:sign'],
