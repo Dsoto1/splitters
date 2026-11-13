@@ -5133,6 +5133,31 @@
      }
     }
    }
+  },
+  {
+   "code": 13,
+   "kind": "ammo_box",
+   "weaponId": "core.ammo_box",
+   "def": {
+    "kind": "ammo_box",
+    "displayName": "Ammo Box Kit",
+    "max": 1,
+    "throwIntervalTicks": 40,
+    "projectile": {
+     "speed": 6,
+     "gravity": 16,
+     "fuseSeconds": 1.2,
+     "splashRadius": 0,
+     "splashDamage": 0,
+     "splashEdgeDamage": 0,
+     "selfDamageScale": 0,
+     "visual": "sandbag",
+     "ammoBox": true
+    },
+    "view": {
+     "model": "props/ww2_ammo_crate.glb"
+    }
+   }
   }
  ],
  "classes": [
