@@ -608,8 +608,8 @@ pieces a dormitory floor is built from, in a new family `academy.json`. St. John
 
 | Piece | Cells, levels | Mirror | What it is |
 |---|---|---|---|
-| Dorm Bay (`setpiece.dorm_bay`) | 1 × 2, level 0 | free | 8 m of a dormitory floor: a hall 2.4 m wide down the middle, two rooms each side (3.88 × 6.18 m). Each room: an Oak Door standing open, a slim closet either side of it, a sink unit on the left just inside, a desk with a hutch and a chair, a bunk on the right by the window. One light, in the hall. |
-| Dorm Bay (two rooms shut) (`setpiece.dorm_bay_closed`) | 1 × 2, level 0 | free | The same with the north rooms closed: one door shut, one ajar (both collide), a bunk and a desk seen through reinforced glass. Turn it half round to shut the other side. |
+| Dorm Bay (`setpiece.dorm_bay`) | 1 × 2, level 0 | free | 8 m of a dormitory floor: a hall 2.4 m wide down the middle between walls a closet deep (0.72 m), two rooms each side (3.88 m wide, 6.18 m from the hall wall to the window). Each room: an Oak Door standing open in a reveal between two built-in closets (the wall is the closet; a Built-in Closet Front in its face each side), a sink unit on the left, two desks with hutches along the left wall (the second by the window) with a chair pushed in at each, a bunk on the right by the window. One light, in the hall. |
+| Dorm Bay (two rooms shut) (`setpiece.dorm_bay_closed`) | 1 × 2, level 0 | free | The same with the north rooms closed: one door shut, one ajar (both collide); the bunk, both desks and the closets' fronts seen through reinforced glass (no chairs, no sink). Turn it half round to shut the other side. |
 | Stair End Bay (`setpiece.stair_end_bay`) | 1 × 2, levels 0-1 | none | A hall's end on two floors: a half-turn Stairwell south, a lobby with the outside door north (a Room doorway, an Oak Door standing open in it), a landing room over the lobby. |
 | Stair End Bay (3 floors) (`setpiece.stair_end_bay_3`) | 1 × 2, levels 0-2 | none | The same a floor taller: the second Stairwell stands over the lobby, turned to face the first one's landing; a landing room at the top. |
 | Dorm Office Bay (`setpiece.dorm_office_bay`) | 3 × 2, levels 0-1 | none | The middle of a hall on two floors: a straight Stairs tile south with a stair hall at its foot and its head, the officer's quarters behind a shut diamond-panelled door beside it; north of the hall an office (a half-glazed door, a desk, bookcases) directly across from the stair, between two bathrooms (toilets in stalls, showers, basins). |
@@ -645,34 +645,46 @@ New for these pieces, usable by any map:
   hall's stone; the other room options stay a Room's).
 
 No door entity in any of them: every door is a still prop, so a hall adds nothing to the active pieces. The rooms'
-furniture is `unbreakable` where the catalogue would let it break (the bunk, the chair): breakable props are simulated
+furniture is `unbreakable` where the catalogue would let it break (the bunk): breakable props are simulated
 and sent to players, and a hall has hundreds.
 
 ### Budgets (one piece as expanded, Collegiate look)
 
 | Piece | Tiles | Blocks | Props (models) | Lights | Doors | Collision boxes | Trim boxes | Glass panes | Surface styles |
 |---|---|---|---|---|---|---|---|---|---|
-| Dorm Bay | 2 | 16 | 28 (6) | 1 | 0 | 110 | 130 | 4 | 8 |
-| Dorm Bay (two rooms shut) | 2 | 16 | 20 (8) | 1 | 0 | 102 | 130 | 4 | 8 |
+| Dorm Bay | 2 | 14 | 36 (7) | 1 | 0 | 100 | 130 | 4 | 8 |
+| Dorm Bay (two rooms shut) | 2 | 14 | 30 (9) | 1 | 0 | 100 | 130 | 4 | 8 |
 | Stair End Bay | 3 | 9 | 2 (2) | 2 | 0 | 55 | 215 | 4 | 12 |
 | Stair End Bay (3 floors) | 4 | 14 | 2 (2) | 3 | 0 | 86 | 272 | 5 | 12 |
 | Dorm Office Bay | 11 | 40 | 50 (14) | 8 | 0 | 262 | 584 | 18 | 11 |
 
-A Dorm Bay's 110 collision boxes are 34 of structure (the walls round the windows, slabs, roofs, 16 partitions) and
-76 of furniture (a bunk is 12, so the four bunks are 48 of them). Its 130 trim boxes are the four sashes and their
-stone surrounds (15 a window), the baseboards and cornices, and the facade's dressing (plinth, buttresses, string
-course, hood moulds, battlements).
+A Dorm Bay's 100 collision boxes are 32 of structure (the walls round the windows, slabs, roofs; 8 entry-wall blocks,
+2 room partitions, 4 end partitions) and 68 of furniture (a bunk is 12, so the four bunks are 48 of them; a desk 2,
+the sink 1). The closets cost none: they are the entry walls, and their fronts do not collide. The chairs are not
+solid (pushed in, a back 0.15 m out of a desk). Its 130 trim boxes are the four sashes and their stone surrounds (15
+a window), the baseboards and cornices, and the facade's dressing (plinth, buttresses, string course, hood moulds,
+battlements).
 
-**A 20-bay hall on one floor** (ten open bays, ten with two rooms shut; 160 m of hall, 80 rooms): 40 tiles, 320
-blocks, 480 props of 8 models, 20 lights, no doors, 2,120 collision boxes (1,440 of them furniture), 2,600 trim boxes,
+**The room, 2026-11-13 (the owner: a second desk for the bunkmate by the window; the closets built into the wall,
+flush).** The hall's walls are 0.72 m thick on each side: three piers to the doors' heads (2.6 m) and one beam over
+them and the doorways, so a room's 2 m doorway is a reveal 0.6 m deep and the wall either side of it is a closet, with
+no gap over, beside or behind it. A closet's front is `kit.cabinet.closet_front` (a face frame and a door 0.8 × 2.3 m,
+12 mm proud of the plaster, its back left out; no collision). The sink stands 0.9 m past the left closet's front, so
+its door has room. Clear floor for a bot (it needs 1.6 m): the doorway and its reveal 2.0 m; past the sink 3.22 m to
+the open door's side wall; between the desks and the bunk 2.08 m (1.93 m between a chair's back and the bunk, and the
+chairs are not solid). Before this the closets were free-standing props (a box each) in front of a 0.12 m partition,
+with one desk a room: 110 collision boxes and 28 props a bay.
+
+**A 20-bay hall on one floor** (ten open bays, ten with two rooms shut; 160 m of hall, 80 rooms): 40 tiles, 280
+blocks, 660 props of 9 models, 20 lights, no doors, 2,000 collision boxes (1,360 of them furniture), 2,600 trim boxes,
 80 glass panes. What it draws: tiles, blocks and trim merge by surface style (8 styles: the count does not grow with
-the bays); untinted props are GPU instances, one draw per model part and level of detail (8 models; 119,000 triangles
-if every one were at its finest level, which a 160 m hall never shows at once: the levels step down at 10 to 14 m);
-glass panes are batched; the lights are clustered. Against MAP_BUDGETS: tiles 1,500, blocks 3,000, props 1,500, prop
-models 80, lights 256, active pieces 300. St. John's needs about 35 bays (140 rooms): 70 tiles, 560 blocks, about 840
-props, 35 lights and 3,700 collision boxes, before the blocks it removes are taken off (the map has 3,915 collision
-boxes today). If the collision count has to come down, the bunks are where it is (a bunk family that collides as
-three or four boxes would take 1,100 off).
+the bays); untinted props are GPU instances, one draw per model part and level of detail (9 models); glass panes are
+batched; the lights are clustered. Against MAP_BUDGETS: tiles 1,500, blocks 3,000, props 1,500, prop models 80, lights
+256, active pieces 300. St. John's needs about 35 bays (140 rooms): 70 tiles, 490 blocks, about 1,150 props, 35
+lights and 3,500 collision boxes, before the blocks and props it removes are taken off (the map has 733 props and
+3,915 collision boxes today: the props budget is the one to watch; `overrides.hide` drops a room's second desk and
+chair by part index where a hall should be sparser). If the collision count has to come down, the bunks are where it
+is (a bunk family that collides as three or four boxes would take 1,100 off).
 
 Tests: `packages/shared/test/setPiecesAcademy.test.ts` (each piece walked in every turn: the hall, every open room
 and back, the stairs, shut rooms stay shut; five bays end to end on one floor, and the demonstration hall on two and

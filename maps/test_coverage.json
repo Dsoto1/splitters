@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_rzmhrrnywrnr67ar",
-      "revision": 23,
-      "contentHash": "sha256:b4111b6657256109503fb182fc4739ec2d94c070751ca3a607244729bb6af4ad",
+      "versionId": "v_ssz3upj5dkhxk6e7",
+      "revision": 24,
+      "contentHash": "sha256:3af85d0b79851a56382410fd15e78b4826d4ab8412124ae297a5462a73d4ec57",
       "schemaVersion": 36,
-      "releasedAt": "2026-11-13T00:04:53.496Z"
+      "releasedAt": "2026-11-13T00:18:26.891Z"
     },
     "testOnly": true
   },
@@ -5003,6 +5003,20 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "prop_bb3iujf9mb",
+      "kind": "prop",
+      "position": [
+        -37.5,
+        0,
+        -406
+      ],
+      "model": "kit.cabinet.closet_front",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -5467,6 +5481,120 @@
     "foliage": []
   },
   "bounds": null,
+  "paths": [
+    {
+      "id": "path_bi9y69ohv2",
+      "points": [
+        [
+          -130,
+          -0.15,
+          19.87
+        ],
+        [
+          -40,
+          -0.15,
+          19.87
+        ],
+        [
+          40,
+          -0.15,
+          19.87
+        ],
+        [
+          130,
+          -0.15,
+          19.87
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "road"
+      ],
+      "width": 3,
+      "style": "dirt",
+      "lay": true
+    },
+    {
+      "id": "route_323etlkoti",
+      "points": [
+        [
+          -130,
+          -0.15,
+          99.87
+        ],
+        [
+          0,
+          -0.15,
+          99.87
+        ],
+        [
+          130,
+          -0.15,
+          99.87
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "route"
+      ],
+      "width": 3,
+      "style": "dirt",
+      "lay": false
+    },
+    {
+      "id": "race_4ci5piokva",
+      "points": [
+        [
+          -140,
+          -0.15,
+          134.87
+        ],
+        [
+          140,
+          -0.15,
+          134.87
+        ],
+        [
+          148,
+          -0.15,
+          142.87
+        ],
+        [
+          140,
+          -0.15,
+          150.87
+        ],
+        [
+          -140,
+          -0.15,
+          150.87
+        ],
+        [
+          -148,
+          -0.15,
+          142.87
+        ]
+      ],
+      "closed": true,
+      "uses": [
+        "road",
+        "race"
+      ],
+      "width": 8,
+      "style": "asphalt",
+      "lay": true,
+      "race": {
+        "laps": 3,
+        "grid": 8,
+        "vehicle": "hover_bike",
+        "combat": false,
+        "curbs": true,
+        "ambient": 0,
+        "ambientVehicle": "hover_bike",
+        "pit": null
+      }
+    }
+  ],
   "backdrop": null,
   "physics": null,
   "blood": null,
@@ -6101,120 +6229,6 @@
       "rotation": 0,
       "mirror": false,
       "pack": "collegiate"
-    }
-  ],
-  "paths": [
-    {
-      "id": "path_bi9y69ohv2",
-      "points": [
-        [
-          -130,
-          -0.15,
-          19.87
-        ],
-        [
-          -40,
-          -0.15,
-          19.87
-        ],
-        [
-          40,
-          -0.15,
-          19.87
-        ],
-        [
-          130,
-          -0.15,
-          19.87
-        ]
-      ],
-      "closed": false,
-      "uses": [
-        "road"
-      ],
-      "width": 3,
-      "style": "dirt",
-      "lay": true
-    },
-    {
-      "id": "route_323etlkoti",
-      "points": [
-        [
-          -130,
-          -0.15,
-          99.87
-        ],
-        [
-          0,
-          -0.15,
-          99.87
-        ],
-        [
-          130,
-          -0.15,
-          99.87
-        ]
-      ],
-      "closed": false,
-      "uses": [
-        "route"
-      ],
-      "width": 3,
-      "style": "dirt",
-      "lay": false
-    },
-    {
-      "id": "race_4ci5piokva",
-      "points": [
-        [
-          -140,
-          -0.15,
-          134.87
-        ],
-        [
-          140,
-          -0.15,
-          134.87
-        ],
-        [
-          148,
-          -0.15,
-          142.87
-        ],
-        [
-          140,
-          -0.15,
-          150.87
-        ],
-        [
-          -140,
-          -0.15,
-          150.87
-        ],
-        [
-          -148,
-          -0.15,
-          142.87
-        ]
-      ],
-      "closed": true,
-      "uses": [
-        "road",
-        "race"
-      ],
-      "width": 8,
-      "style": "asphalt",
-      "lay": true,
-      "race": {
-        "laps": 3,
-        "grid": 8,
-        "vehicle": "hover_bike",
-        "combat": false,
-        "curbs": true,
-        "ambient": 0,
-        "ambientVehicle": "hover_bike",
-        "pit": null
-      }
     }
   ]
 }

@@ -15,6 +15,9 @@
 // The desk (`deskhutch`) is a pedestal desk with a hutch of shelves along its back, books on them; its front is +z.
 // It collides as two boxes, the desk and the hutch, open over the desk top in front of the hutch. The closet
 // (`closet`) is a tall narrow cupboard, one framed door on +z with a pull, a cap on top; it collides as its box.
+// The built-in closet's front (`closetfront`) is what shows of a closet that is in a wall: a face frame and a door,
+// 12 mm thick, set against the wall's face (its back is left out); the wall behind it is the closet and collides, it
+// does not (`collide: "none"`).
 //
 // Level 1 keeps the outline (frame, leaf, straps; desk, hutch and shelves; case and door); level 2 is a few boxes.
 
@@ -312,6 +315,66 @@ export function closetMesh(seed, size, g, look, level) {
   if (fine) {
     const hxa = right ? xa : xb - 0.02;
     for (const y of [ya + 0.2, yb - 0.26]) box(m, [hxa, y, front], [hxa + 0.02, y + 0.07, front + 0.006], metal, ['nz']);
+  }
+  return m;
+}
+
+// ---------------------------------------------------------------- the built-in closet's front
+
+/**
+ * The front of a closet built into a wall: a face frame round one door of framed panels, a pull, two hinges, a kick
+ * board. It fills [-w/2, w/2] × [0, h] × [-d/2, d/2] (d about 12 mm) and faces +z; its back, against the wall, is
+ * left out. Settings `g`: `panels` (in the door, one over another), `pull` ('left' or 'right'), `kick` (the kick
+ * board's height). `look`: `wood`, `door` (hex), `metal`, `jitter`, `grime`.
+ */
+export function closetFrontMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const X = w / 2;
+  const Z = d / 2;
+  const wood = hex(look.wood);
+  const doorC = hex(look.door ?? look.wood);
+  const m = new Mesh();
+  if (level >= 2) {
+    box(m, [-X, 0, -Z], [X, h, Z], scale3(doorC, 0.85), ['ny', 'nz']);
+    return m;
+  }
+  const r = rng(seed);
+  const tone = (c, k) => woodTone(c, r, look, seed + k);
+  const fine = level === 0;
+  const fr = 0.07;
+  const kick = g.kick ?? 0.1;
+  const frame = tone(scale3(wood, 0.9), 1);
+  // The face frame: two stiles, a head, the kick board; the full depth, so the piece fills its box.
+  box(m, [-X, 0, -Z], [-X + fr, h, Z], frame, ['ny', 'nz']);
+  box(m, [X - fr, 0, -Z], [X, h, Z], frame, ['ny', 'nz']);
+  box(m, [-X + fr, h - fr, -Z], [X - fr, h, Z], frame, ['nz', 'nx', 'px']);
+  box(m, [-X + fr, 0, -Z], [X - fr, kick, Z], tone(scale3(wood, 0.7), 2), ['ny', 'nz', 'nx', 'px']);
+  // The door, a shade back from the frame's face: stiles and rails round panels set back again.
+  const [xa, xb, ya, yb] = [-X + fr + 0.004, X - fr - 0.004, kick + 0.004, h - fr - 0.004];
+  const zd = Z - 0.003;
+  const st = 0.075;
+  const rail = tone(doorC, 3);
+  if (!fine) box(m, [xa, ya, -Z], [xb, yb, zd], rail, ['nz']);
+  else {
+    box(m, [xa, ya, -Z], [xa + st, yb, zd], rail, ['nz']);
+    box(m, [xb - st, ya, -Z], [xb, yb, zd], rail, ['nz']);
+    const n = Math.max(1, g.panels ?? 2);
+    const split = [ya, ...Array.from({ length: n - 1 }, (_, i) => lerp(ya, yb, n === 2 ? 0.42 : (i + 1) / n)), yb];
+    for (let i = 0; i <= n; i++) {
+      const y = split[i];
+      const [r0, r1] = i === 0 ? [y, y + st * 1.3] : i === n ? [y - st, y] : [y - st / 2, y + st / 2];
+      box(m, [xa + st, r0, -Z], [xb - st, r1, zd], rail, ['nz', 'nx', 'px']);
+    }
+    box(m, [xa + st, ya, -Z], [xb - st, yb, zd - 0.005], tone(scale3(doorC, 0.88), 4), ['nz', 'nx', 'px', 'ny', 'py']);
+  }
+  // The pull, and two hinges on the other side.
+  const metal = hex(look.metal ?? '#2a2c30');
+  const right = (g.pull ?? 'right') === 'right';
+  const px = right ? xb - st / 2 : xa + st / 2;
+  box(m, [px - 0.01, h * 0.45, zd], [px + 0.01, h * 0.45 + 0.14, Z], metal, ['nz']);
+  if (fine) {
+    const hx = right ? xa : xb - 0.02;
+    for (const y of [ya + 0.2, yb - 0.26]) box(m, [hx, y, zd], [hx + 0.02, y + 0.07, Z], metal, ['nz']);
   }
   return m;
 }

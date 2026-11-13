@@ -762,7 +762,8 @@ barrels and boxes first; fences and walls, then containers, come next.
   `pipes.mjs` (the station's coolant pipe and its pipe junction: pipes along z, the bore open from end to end),
   `dome.mjs` (the Desert City dome kit: "The dome kit" below), `academy.mjs` (the dormitory pieces: the Oak Door
   in its frame, shut, ajar and open as three families, since a family has one collision; the desk with a hutch; the
-  slim closet: "Doors as props" below), `glb.mjs` (the writer).
+  slim closet, and the front of a closet built into a wall, 12 mm thick, no collision: the wall is the closet:
+  "Doors as props" below), `glb.mjs` (the writer).
   `geom.mjs` also has square bars between any two points, wire panels (flat strips seen from both sides), and
   cylinders and rings along any axis.
   Randomness only from `env/rng.mjs` streams.

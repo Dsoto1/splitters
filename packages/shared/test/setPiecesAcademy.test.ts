@@ -77,6 +77,8 @@ const v = ([x, y, z]: P3): Vec3 => ({ x, y, z });
 
 /** The middle of a dorm room's open floor (between the desk and the bunk), by its door's x and its side of the hall. */
 const roomFloor = (cx: number, north: boolean, y = 0): P3 => [cx + (north ? 0 : 0), y, north ? 8.3 : -0.3];
+/** By a dorm room's window, past both desks, between the second desk and the bunk. */
+const byWindow = (cx: number, north: boolean, y = 0): P3 => [cx + (north ? -0.25 : 0.25), y, north ? 10.6 : -2.6];
 
 /**
  * Each piece's ways through, in its own frame (anchor cell's centre on its floor = 0, 0, 0; +z north; the hall's
@@ -84,11 +86,11 @@ const roomFloor = (cx: number, north: boolean, y = 0): P3 => [cx + (north ? 0 : 
  */
 const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; climbs?: { from: P3; yaw: number; ticks: number; up: number }[] }> = {
   'setpiece.dorm_bay': {
-    // Along the hall; into each of the four rooms and out again.
-    chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], ...[-2, 2].flatMap((cx) => [true, false].map((north): P3[] => [[0, 0, 4], roomFloor(cx, north), [0, 0, 4]]))],
+    // Along the hall; into each of the four rooms, on between the second desk and the bunk to the window, and out again.
+    chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], ...[-2, 2].flatMap((cx) => [true, false].map((north): P3[] => [[0, 0, 4], roomFloor(cx, north), byWindow(cx, north), [0, 0, 4]]))],
   },
   'setpiece.dorm_bay_closed': {
-    chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], ...[-2, 2].map((cx): P3[] => [[0, 0, 4], roomFloor(cx, false), [0, 0, 4]])],
+    chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], ...[-2, 2].map((cx): P3[] => [[0, 0, 4], roomFloor(cx, false), byWindow(cx, false), [0, 0, 4]])],
     shut: { from: [0, 0, 4], to: [roomFloor(-2, true), roomFloor(2, true)] },
   },
   'setpiece.stair_end_bay': {
@@ -257,9 +259,9 @@ describe('what the bays are made of, and what they cost', () => {
     return { tiles: tiles.length, blocks: n('block'), props: n('prop'), doors: n('door'), lights: n('light'), tileIds: [...new Set(tiles.map((t) => t.tile))].sort(), models };
   };
   it('each is made of the kit tiles, blocks, props and lights it says', () => {
-    expect(made('setpiece.dorm_bay')).toMatchObject({ tiles: 2, blocks: 16, props: 28, doors: 0, lights: 1, tileIds: ['core.room'] });
-    expect(made('setpiece.dorm_bay').models).toEqual(['kit.bed.bunk', 'kit.cabinet.closet', 'kit.door.oak_open', 'kit.seat.chair', 'kit.table.desk_hutch', 'prop.hh_cupboard_sink']);
-    expect(made('setpiece.dorm_bay_closed')).toMatchObject({ tiles: 2, blocks: 16, props: 20, doors: 0, lights: 1 });
+    expect(made('setpiece.dorm_bay')).toMatchObject({ tiles: 2, blocks: 14, props: 36, doors: 0, lights: 1, tileIds: ['core.room'] });
+    expect(made('setpiece.dorm_bay').models).toEqual(['kit.bed.bunk', 'kit.cabinet.closet_front', 'kit.door.oak_open', 'kit.seat.chair', 'kit.table.desk_hutch', 'prop.hh_cupboard_sink']);
+    expect(made('setpiece.dorm_bay_closed')).toMatchObject({ tiles: 2, blocks: 14, props: 30, doors: 0, lights: 1 });
     expect(made('setpiece.stair_end_bay')).toMatchObject({ tiles: 3, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.stair_end_bay_3')).toMatchObject({ tiles: 4, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.dorm_office_bay')).toMatchObject({ tiles: 11, doors: 0, tileIds: ['core.room', 'core.stairs'] });
@@ -282,12 +284,41 @@ describe('what the bays are made of, and what they cost', () => {
       };
     };
     const one = cost([{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
-    // Measured 2026-11-12: 110 collision boxes (walls, slabs and roofs 18, partitions 16, furniture 76: a bunk is 12),
-    // 130 trim boxes (two thirds of them the four sashes), 4 panes. 20 bays, half of them with two rooms shut: 2,120 and 2,600.
-    expect(one.collision).toBeLessThanOrEqual(115);
+    // Measured 2026-11-13: 100 collision boxes (walls, slabs and roofs 18, entry walls and partitions 14, furniture 68:
+    // a bunk is 12, a desk 2, the sink 1; the closets are the entry walls, the chairs are not solid), 130 trim boxes,
+    // 4 panes. (2026-11-12, with free-standing closets and one desk a room: 110.)
+    expect(one.collision).toBeLessThanOrEqual(104);
     expect(one.trim).toBeLessThanOrEqual(135);
     expect(one.panes).toBe(4);
-    expect(one.props).toBe(28);
+    expect(one.props).toBe(36);
+  });
+
+  it('the closets are in the entry wall: its face and the closet fronts line up, nothing behind, beside or over them is open', () => {
+    const map = mapOf([{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
+    const fronts = map.entities.filter((e) => e.kind === 'prop' && e.model === 'kit.cabinet.closet_front');
+    expect(fronts).toHaveLength(8);
+    expect(getProp('kit.cabinet.closet_front')!.collision).toBeNull();
+    const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+    for (const f of fronts) {
+      const [x, , z] = f.position;
+      const north = z > 4;
+      const into = north ? 1 : -1;
+      // The front's back is on the wall's face (6 mm behind its middle): a ray from the room, from half a metre out
+      // (nothing stands in front of a closet), meets the wall there, at the front's foot, middle and top, over it to
+      // the ceiling, and beside it.
+      const face = z - into * 0.006;
+      for (const [dx, y] of [[0, 0.2], [0, 1.2], [0, 2.25], [0, 3.3], [-0.45, 1.2], [0.45, 1.2]] as const) {
+        const hit = physics.raycastHit({ x: x + dx, y, z: face + into * 0.5 }, { x: 0, y: 0, z: -into }, 3);
+        expect(hit?.dist, `the wall behind the closet front at ${x}, ${z} (${dx}, ${y})`).toBeCloseTo(0.5, 2);
+      }
+      // The wall is solid from that face to the hall (0.72 m): a ray from the hall meets it at the hall's side.
+      const hall = physics.raycastHit({ x, y: 1.2, z: 4 }, { x: 0, y: 0, z: into }, 3);
+      expect(hall?.dist).toBeCloseTo(1.2, 2);
+      expect(Math.abs(face - 4)).toBeCloseTo(1.92, 2);
+    }
+    // No two entry-wall boxes overlap (z-fighting is audited over every piece in setPiecePlay.test.ts).
+    const walls = map.entities.filter((e) => e.kind === 'block' && /^Entry wall/.test(e.name ?? ''));
+    expect(walls).toHaveLength(8);
   });
 
   it("a set piece's footprint holds a prop's own box as it stands (a bunk against the wall at its edge)", () => {
