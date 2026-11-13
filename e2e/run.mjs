@@ -1089,7 +1089,8 @@ async function editoruxFlow(browser) {
     const rev = await page.evaluate(() => window.__editor.history.revision);
     await page.fill('#ed-path-length', String(v));
     await page.dispatchEvent('#ed-path-length', 'change');
-    await page.waitForFunction(([r, want]) => window.__editor.history.revision !== r && Math.abs(Number(document.getElementById('ed-path-length')?.value) - want) < 0.6, [rev, v], { timeout: T(5000) }).catch(() => {});
+    // (Until the pane is drawn again for the edit: the field typed in is gone then, and Ctrl+Z is MapMaker's.)
+    await page.waitForFunction(([r, want]) => window.__editor.history.revision !== r && window.__editor.renderedRevision === window.__editor.history.revision && Math.abs(Number(document.getElementById('ed-path-length')?.value) - want) < 0.6, [rev, v], { timeout: T(5000) }).catch(() => {});
     return pathNow();
   };
   const was = await pathNow();
@@ -1111,6 +1112,110 @@ async function editoruxFlow(browser) {
   check(led.points.length === was.points.length + 1 && JSON.stringify(led.points.slice(1)) === JSON.stringify(was.points) && Math.hypot(led.points[0][0] - was.points[0][0] - 3, led.points[0][2] - was.points[0][2] - 6) < 1, `Add points at the start puts the next click before the first point (${JSON.stringify(led.points[0])})`);
   await page.keyboard.press('Control+z');
   await page.waitForFunction((n) => window.__editor.doc.paths?.at(-1)?.points.length === n, was.points.length, { timeout: T(5000) }).catch(() => {});
+  {
+    // Fit ground to a path, and the path onto the ground (the Paths pane's Ground buttons): one undo step each.
+    // The ground as made at a point (between the terrain's vertices), and the edit count.
+    const groundAt = (x, z) => page.evaluate(([x, z]) => {
+      const t = window.__editor.doc.terrain;
+      const fx = Math.max(0, Math.min(t.cols - 1.001, (x - t.origin[0]) / t.spacing));
+      const fz = Math.max(0, Math.min(t.rows - 1.001, (z - t.origin[1]) / t.spacing));
+      const c = Math.floor(fx);
+      const r = Math.floor(fz);
+      const h = (cc, rr) => t.heights[rr * t.cols + cc] / 100;
+      const u = fx - c;
+      const v = fz - r;
+      return t.baseY + (h(c, r) * (1 - u) + h(c + 1, r) * u) * (1 - v) + (h(c, r + 1) * (1 - u) + h(c + 1, r + 1) * u) * v;
+    }, [x, z]);
+    const revision = () => page.evaluate(() => window.__editor.history.revision);
+    const edited = (rev) => page.waitForFunction((r) => window.__editor.history.revision !== r && window.__editor.renderedRevision === window.__editor.history.revision, rev, { timeout: T(10000) }).then(() => true, () => false);
+    // The path lifted 2 m off the ground it was drawn on (as a road is after the ground under it was sculpted).
+    await page.evaluate((id) => {
+      const ed = window.__editor;
+      const before = ed.doc.paths;
+      ed.run('Lift path', { kind: 'setPaths', before, after: before.map((p) => (p.id === id ? { ...p, points: p.points.map((q) => [q[0], q[1] + 2, q[2]]) } : p)) });
+    }, road.id);
+    await page.waitForSelector('#ed-path-fit-ground', { timeout: T(5000) }).catch(() => {});
+    const lifted = (await doc()).paths.find((p) => p.id === road.id).points;
+    const mid = lifted[1];
+    const groundBefore = await groundAt(mid[0], mid[2]);
+    let rev = await revision();
+    await page.click('#ed-path-fit-ground');
+    await edited(rev);
+    const groundFitted = await groundAt(mid[0], mid[2]);
+    check(Math.abs(groundBefore - (mid[1] - 2)) < 0.6 && Math.abs(groundFitted - mid[1]) < 0.3 && JSON.stringify((await doc()).paths.find((p) => p.id === road.id).points) === JSON.stringify(lifted), `Fit ground to this path raises the ground to the path's line, the path where it was (ground ${groundBefore.toFixed(2)} → ${groundFitted.toFixed(2)} m, path at ${mid[1]})`);
+    await settle();
+    await shot('path-fit-ground');
+    rev = await revision();
+    await page.keyboard.press('Control+z');
+    await edited(rev);
+    check(Math.abs((await groundAt(mid[0], mid[2])) - groundBefore) < 1e-6, 'one undo gives the ground back');
+    rev = await revision();
+    await page.click('#ed-path-on-ground');
+    await edited(rev);
+    const settledPath = (await doc()).paths.find((p) => p.id === road.id).points;
+    check(settledPath.every((q, i) => Math.abs(q[1] - (lifted[i][1] - 2)) < 0.05 && q[0] === lifted[i][0] && q[2] === lifted[i][2]) && Math.abs((await groundAt(mid[0], mid[2])) - groundBefore) < 1e-6, `Settle onto the ground puts the path's points back on the ground, the ground untouched (${settledPath.map((q) => q[1]).join(', ')})`);
+    // Fit ground to a build: a slab of a block hung 1.5 m over the ground (a foundation over a slope), selected.
+    const padAt = [mid[0] + 30, 0, mid[2] - 30];
+    const padGround = await groundAt(padAt[0], padAt[2]);
+    await page.evaluate(([x, y, z]) => {
+      const ed = window.__editor;
+      ed.setTool({ kind: 'select' });
+      ed.run('Add block', { kind: 'addEntities', entities: [{ id: 'fit_slab', kind: 'block', position: [x, y, z], size: [8, 0.5, 8], yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 }] });
+      ed.setSelection({ tiles: [], entities: ['fit_slab'] }, true);
+      ed.view.focus({ x, y, z });
+    }, [padAt[0], Math.round((padGround + 1.5) * 100) / 100, padAt[2]]);
+    await settle();
+    await page.waitForSelector('#ed-fit-ground', { timeout: T(5000) }).catch(() => {});
+    const slabTop = (await doc()).entities.find((e) => e.id === 'fit_slab').position[1] + 0.5;
+    await shot('fit-ground-before');
+    rev = await revision();
+    await page.click('#ed-fit-ground');
+    await edited(rev);
+    const under = await Promise.all([[0, 0], [-4, -4], [4, 4], [5, 0]].map(([dx, dz]) => groundAt(padAt[0] + dx, padAt[2] + dz)));
+    const farOff = await groundAt(padAt[0] + 40, padAt[2]);
+    check(under.every((g) => Math.abs(g - slabTop) < 0.02) && Math.abs(slabTop - padGround - 2) < 0.1, `Fit ground to this brings the ground up to the slab's top under and just round it (${under.map((g) => g.toFixed(2)).join(', ')} at a top of ${slabTop})`);
+    const eased = await groundAt(padAt[0] + 9, padAt[2]);
+    check(eased < slabTop - 0.05 && eased > padGround - 0.5 && (await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'fit_slab').position[1] + 0.5)) === slabTop, `the ground eases back into the ground about, and the slab has not moved (${eased.toFixed(2)} m, 5 m out)`);
+    await settle();
+    await shot('fit-ground-after');
+    rev = await revision();
+    await page.keyboard.press('Control+z');
+    await edited(rev);
+    check(Math.abs((await groundAt(padAt[0], padAt[2])) - padGround) < 1e-6 && Math.abs((await groundAt(padAt[0] + 40, padAt[2])) - farOff) < 1e-6, 'one undo gives the ground back');
+    // The reverse: the slab moved down onto the ground (the ground stays), from the selection menu.
+    const slabPx = await at(padAt[0], slabTop, padAt[2]);
+    await page.mouse.click(slabPx.x, slabPx.y, { button: 'right' });
+    const menu = await page.waitForSelector('#ed-ctx', { timeout: T(5000) }).then(() => page.$$eval('#ed-ctx button', (bs) => bs.map((b) => b.textContent)), () => []);
+    check(menu.some((t) => /Fit ground to this/.test(t)) && menu.some((t) => /Settle onto the ground/.test(t)), `the selection menu has Fit ground to this and Settle onto the ground (${menu.length} items)`);
+    const levelMeshes = () => page.evaluate(() => window.__editor.view.scene.meshes.filter((m) => m.name.startsWith('edmap_') && !m.name.startsWith('edmap_terrain') && !m.isDisposed()).map((m) => m.uniqueId));
+    const meshesBefore = await levelMeshes();
+    rev = await revision();
+    await page.locator('#ed-ctx button', { hasText: 'Settle onto the ground' }).click();
+    await edited(rev);
+    // An edit to one block clips only the boxes near it again and rebuilds only the level meshes it touched; the
+    // map's own checks come back from their worker.
+    const faces = await page.evaluate(() => {
+      const c = window.__editor.view.faceCache;
+      return c && { full: c.full, redone: c.redone, boxes: c.boxes.length };
+    });
+    const meshesAfter = await levelMeshes();
+    const keptMeshes = meshesAfter.filter((id) => meshesBefore.includes(id)).length;
+    check(faces && !faces.full && faces.redone >= 1 && faces.redone < Math.max(12, faces.boxes / 4) && (meshesBefore.length < 2 || keptMeshes >= 1), `moving one block clips ${faces?.redone} of ${faces?.boxes} boxes again and keeps ${keptMeshes} of ${meshesBefore.length} level meshes`);
+    const checkedInWorker = await page.waitForFunction(() => window.__editor.checks.stale === false && (!!window.__editor.checks.checkWorker || window.__editor.checks.noCheckWorker), null, { timeout: T(20000) }).then(() => true, () => false);
+    check(checkedInWorker && (await page.evaluate(() => !!window.__editor.checks.checkWorker && Array.isArray(window.__editor.issues))), 'the map is checked after the edit in the checks worker, and the issues list is there');
+    const settledSlab = (await doc()).entities.find((e) => e.id === 'fit_slab').position[1] + 0.5;
+    const lowest = Math.min(...(await Promise.all([[-4, -4], [4, -4], [4, 4], [-4, 4], [0, 0]].map(([dx, dz]) => groundAt(padAt[0] + dx, padAt[2] + dz)))));
+    check(Math.abs(settledSlab - lowest) < 0.06 && Math.abs((await groundAt(padAt[0], padAt[2])) - padGround) < 1e-6, `Settle onto the ground moves the slab down until its top is on the lowest ground under it, the ground untouched (${settledSlab} at ${lowest.toFixed(2)})`);
+    rev = await revision();
+    await page.keyboard.press('Control+z');
+    await edited(rev);
+    check((await doc()).entities.find((e) => e.id === 'fit_slab').position[1] + 0.5 === slabTop, 'one undo puts it back');
+    await page.evaluate(() => {
+      const ed = window.__editor;
+      ed.run('Remove block', { kind: 'removeEntities', entities: ed.doc.entities.filter((e) => e.id === 'fit_slab') });
+      ed.setSelection({ tiles: [], entities: [] });
+    });
+  }
   // Paint from far out: the ground under the pointer, not the invisible wall round the map.
   await page.evaluate(() => window.__editor.setTool({ kind: 'paint' }));
   await page.evaluate(() => {

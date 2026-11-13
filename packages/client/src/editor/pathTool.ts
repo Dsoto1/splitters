@@ -7,6 +7,10 @@ import { CreateDashedLines, CreateLineSystem, CreateLines } from '@babylonjs/cor
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import {
   DEFAULT_RACE,
+  GROUND_FIT_BLEND,
+  GROUND_FIT_BLEND_RANGE,
+  fitGroundToPathCommand,
+  settlePathOnGroundCommand,
   MapPath as PathSchema,
   PATH_LOOKS,
   PATH_STYLES,
@@ -43,6 +47,9 @@ export interface PathToolHost {
   /** Screen position of a world point (null behind the camera) and of the pointer: handles are grabbed by how near they look. */
   screen(p: Vec3): { x: number; y: number } | null;
   pointer(): { x: number; y: number } | null;
+  /** Fit ground to this: how far the ground is eased (the inspector's Blend; absent: the default), and setting it. */
+  blend?(): number;
+  setBlend?(v: number): void;
 }
 
 /** A handle is grabbed within this many pixels of where it is drawn, or this many metres of its point (close up). */
@@ -687,6 +694,24 @@ export class PathTool {
         if (this.commit('Remove path', this.paths.filter((q) => q.id !== path.id))) this.startNew();
       }],
     ]);
+    // The ground and the path (groundFit.ts): the ground brought to the path, or the path's points onto the ground.
+    if (this.host.doc().terrain) {
+      heading('Ground');
+      const blend = () => this.host.blend?.() ?? GROUND_FIT_BLEND;
+      buttons([
+        ['ed-path-fit-ground', 'Fit ground to this path', 'Raise or lower the ground under and beside the path to meet its line, eased into the ground about (the ground changes; the path stays). One undo step', () => {
+          const r = fitGroundToPathCommand(this.host.doc(), path.id, blend());
+          if ('error' in r) return this.host.toast(`Can't fit the ground: ${r.error}`, true);
+          if (this.host.run('Fit ground to path', r.command)) this.host.toast(`The ground fitted to the path: ${r.raised} point${r.raised === 1 ? '' : 's'} raised, ${r.lowered} lowered, up to ${r.most} m · Ctrl+Z to undo`);
+        }],
+        ['ed-path-on-ground', 'Settle onto the ground', 'Put each of the path\'s points at the height of the ground there (the path moves; the ground stays). One undo step', () => {
+          const r = settlePathOnGroundCommand(this.host.doc(), path.id);
+          if ('error' in r) return this.host.toast(`Can't settle the path: ${r.error}`, true);
+          if (this.host.run('Settle path onto the ground', r.command)) this.host.toast(`${r.moved} point${r.moved === 1 ? '' : 's'} put on the ground, up to ${r.most} m · Ctrl+Z to undo`);
+        }],
+      ]);
+      row('Blend (m)', num('ed-path-fit-blend', blend(), GROUND_FIT_BLEND_RANGE.min, GROUND_FIT_BLEND_RANGE.max, 1, (v) => v !== undefined && this.host.setBlend?.(v))).title = 'How far from the path the ground is eased back into the ground about (0: only under it)';
+    }
     row('Width (m)', num('ed-path-width', path.width, 0.5, 30, 0.5, (v) => v !== undefined && ((this.width = v), set('Path width', { width: v }))));
     check('ed-path-oneway', 'One-way (in the arrows’ direction)', 'Traffic only the way the arrows point: driving bots never take it the other way, and patrols never turn back on it', !!path.oneWay, (v) => set(v ? 'Make path one-way' : 'Make path two-way', { oneWay: v || undefined }));
     row('Speed limit (m/s, for driving bots)', num('ed-path-speed', path.speed, 2, 80, 1, (v) => set('Path speed limit', { speed: v }), true));

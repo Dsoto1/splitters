@@ -7,6 +7,9 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **MapMaker: fit the ground to a build.** Select a building, a set piece, blocks or props and press **Fit ground to this** (the inspector's Ground section, or right-click): the ground rises or drops to meet its base and eases back into the ground about, so foundations no longer hang over a slope. **Settle onto the ground** does the reverse and moves the build onto the ground instead. A path has both in the Paths pane. One undo step each.
+- **MapMaker: click a road to edit it.** With the Select tool, a road, trail, track or route lights up under the pointer and a click opens it in Paths, its points ready to drag, add and remove. The Paths pane sets its length by number and adds points at either end.
+- **MapMaker is quicker on big maps.** Moving, placing or undoing a piece on a map of thousands of blocks no longer rebuilds the whole level: on St. John's an edit takes about a third of the time on the page it did, and the map's checks run in the background.
 - **The Spillway: parapets on the crest and legs under the long stair.** A 1 m concrete parapet runs along both edges of the dam's crest, open where the two tower bridges and the long stair come up, and the long stair stands on pairs of concrete legs. Built in MapMaker from solid blocks.
 - **The Spillway seats 64.** Eight more spawns a side, placed in MapMaker: Embers between their two rows on the dam's crest, Tide beside theirs in the valley.
 - **The dome kit's parts read in the palette.** The cap, panels, broken panels and drum quarters fill their palette pictures now (they were small slivers framed by the whole dome's size).

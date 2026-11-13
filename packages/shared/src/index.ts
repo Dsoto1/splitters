@@ -121,6 +121,7 @@ export * from './editor/raycast.ts';
 export * from './editor/surfaceSnap.ts';
 export * from './editor/measure.ts';
 export * from './editor/pathEdit.ts';
+export * from './editor/groundFit.ts';
 export * from './editor/propRandom.ts';
 export * from './editor/turnRing.ts';
 export * from './editor/playFromHere.ts';

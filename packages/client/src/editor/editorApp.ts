@@ -2,6 +2,7 @@ import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
   applyCommand,
   blockBoxes,
+  GROUND_FIT_BLEND,
   budgetCulprits,
   BudgetTracker,
   BUILD_LEVELS,
@@ -232,6 +233,9 @@ export class EditorApp {
   hoverCell: [number, number, number] | null = null;
   looking: { x: number; y: number; moved: boolean; travel: number; button: number } | null = null;
   keys = new Set<string>();
+  /** Fit ground to this: how far the ground is eased back into the ground about (m; the inspector's and the Paths pane's Blend). */
+  groundBlend = GROUND_FIT_BLEND;
+
   /** The map's own issues as last worked out (MapChecks: a moment after each edit, in a worker). */
   issuesNow: ValidationIssue[] = [];
 
@@ -286,6 +290,8 @@ export class EditorApp {
       ground: () => this.view.ground,
       screen: (p) => this.view.projectInView(p),
       pointer: () => this.pointerAt,
+      blend: () => this.groundBlend,
+      setBlend: (v) => (this.groundBlend = v),
     });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
     this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor'), world: () => ({ boxes: this.placing.surfaceBoxes(), ground: this.shownGround }) });

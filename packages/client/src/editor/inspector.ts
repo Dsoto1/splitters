@@ -73,6 +73,7 @@ import {
   RETIRED_PROPS
 } from './paletteCatalog.ts';
 import { quickFacings } from './quickFacings.ts';
+import { groundFitSection } from './groundFitPanel.ts';
 import { replaceTilePanel } from './retiredTiles.ts';
 import { tileOptionPanel } from './tileOptionPanel.ts';
 
@@ -157,6 +158,8 @@ export class Inspector {
       settle.title = 'Bed the selected props into the terrain under them (no floating corners on slopes)';
       el.append(settle);
     }
+    // Fit ground to this / Settle onto the ground (groundFitPanel.ts).
+    if (doc.terrain) el.append(groundFitSection(this.app));
   }
 
   /** One tile selected: its type, place, walls, room options, upper floors, dressing and surfaces. */

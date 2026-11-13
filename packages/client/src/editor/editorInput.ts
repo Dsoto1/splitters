@@ -130,7 +130,11 @@ export class EditorInput {
     item('Delete', 'Del', () => this.app.edits.deleteSelection());
     if (pieces.length === 1 && this.app.selCount() === 1) item('Explode to tiles', '', () => this.app.pieces.explode(pieces[0]!));
     item('Save as set piece…', '', () => this.app.pieces.saveSelectionDialog());
-    if (this.app.doc.terrain) item('Cut ground to floors', '', () => this.app.edits.cutGround());
+    if (this.app.doc.terrain) {
+      item('Fit ground to this', '', () => this.app.edits.fitGround());
+      item('Settle onto the ground', '', () => this.app.edits.settleOnGround());
+      item('Cut ground to floors', '', () => this.app.edits.cutGround());
+    }
     item('Select none', 'Esc', () => this.app.setSelection(emptySelection()));
     $('editor').append(menu);
     const r = menu.getBoundingClientRect();
