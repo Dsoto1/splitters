@@ -907,6 +907,8 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 
 **Landing now: The Spillway's crest parapets and stair legs** (`check/mapmaker-spillway-5`, one map file; MapMaker lane, the main session, 2026-11-13). Hold code pushes to main until this line comes down. Next after it, this lane's own: the approved process proposals (`wip/mapmaker-ci-proposals`).
 
+**Next in line after that: the tunnel kit, steps 1 to 3** (weapon and vehicle lane, 2026-11-13; green on `check/tunnels-1` at c1aed5a0, run 43422775628, but main has since gained The Spillway's map changes, so it merges main again once the parapets have landed and goes round a check branch once more, `check/tunnels-2`). It takes map format v37; the next bump is v38.
+
 **Claimed again: The Spillway** (`maps/the_spillway.json`; MapMaker lane, the main session, 2026-11-13; owner: "You can do the spillway 16 spawns and other leftovers"): `wip/mapmaker-spillway-spawns` lands first, then crest railings, legs under the stairs and decks, gatehouses and a perf bench on `wip/mapmaker-spillway-5`.
 
 **The MapMaker lane's main session is wrapping up (owner, 2026-11-13: work moves back to the other account).** State for whoever picks up:
