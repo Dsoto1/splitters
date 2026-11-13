@@ -7,6 +7,10 @@ import { CreateDashedLines, CreateLineSystem, CreateLines } from '@babylonjs/cor
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import {
   DEFAULT_RACE,
+  GROUND_FIT_BLEND,
+  GROUND_FIT_BLEND_RANGE,
+  fitGroundToPathCommand,
+  settlePathOnGroundCommand,
   MapPath as PathSchema,
   PATH_LOOKS,
   PATH_STYLES,
@@ -18,6 +22,7 @@ import {
   newId,
   pathGeometry,
   pathUses,
+  pathWithLength,
   racePath,
   trackPointAt,
   type EditCommand,
@@ -42,6 +47,9 @@ export interface PathToolHost {
   /** Screen position of a world point (null behind the camera) and of the pointer: handles are grabbed by how near they look. */
   screen(p: Vec3): { x: number; y: number } | null;
   pointer(): { x: number; y: number } | null;
+  /** Fit ground to this: how far the ground is eased (the inspector's Blend; absent: the default), and setting it. */
+  blend?(): number;
+  setBlend?(v: number): void;
 }
 
 /** A handle is grabbed within this many pixels of where it is drawn, or this many metres of its point (close up). */
@@ -105,6 +113,10 @@ export class PathTool {
   private markers: Mesh[] = [];
   private lines: LinesMesh[] = [];
   private active = false;
+  /** New points go in before the first one (the pane's "Add points at the start"), until a point is picked. */
+  private prepend = false;
+  /** With another tool (Select): the path under the pointer, drawn lit so a click on it is known to open it. */
+  private previewId: string | null = null;
   /** The pane last rendered, redrawn when a click picks another path. */
   private pane: HTMLElement | null = null;
   private readonly mats: Record<'point' | 'other' | 'sel' | 'hover' | 'start', StandardMaterial>;
@@ -262,6 +274,7 @@ export class PathTool {
     this.current = id;
     this.selected = index;
     this.pending = null;
+    this.prepend = false;
     if (changed && this.pane) this.renderPane(this.pane);
   }
 
@@ -270,6 +283,7 @@ export class PathTool {
     this.current = null;
     this.selected = -1;
     this.pending = null;
+    this.prepend = false;
     this.drawMarkers();
   }
 
@@ -279,6 +293,27 @@ export class PathTool {
     this.pick(id, -1);
     if (this.pane) this.renderPane(this.pane);
     this.drawMarkers();
+  }
+
+  /** The path whose ribbon (or a route's line) is at this point of the ground, for the Select tool: a click there opens it. */
+  pathUnder(p: Vec3 | null): string | null {
+    return p ? this.pathAt(p) : null;
+  }
+
+  /** A path by name, for the hover card and the toast: what it is, and how long. */
+  describe(id: string): { title: string; lines: string[] } | null {
+    const i = this.paths.findIndex((q) => q.id === id);
+    const p = this.paths[i];
+    if (!p) return null;
+    const what = p.uses.map((u) => (u === 'road' ? PATH_LOOKS[p.style].label : u === 'race' ? 'Track' : 'Route')).join(' + ');
+    return { title: `Path ${i + 1}: ${what}`, lines: [`${Math.round(pathGeometry(p).length)} m · ${p.points.length} points · ${p.closed ? 'a loop' : 'open'}${pathUses(p, 'road') ? ` · ${p.width} m wide` : ''}`] };
+  }
+
+  /** Light this path while another tool is in hand (null: none). */
+  preview(id: string | null): void {
+    if (id === this.previewId) return;
+    this.previewId = id;
+    if (!this.active) this.drawMarkers();
   }
 
   pointerDown(p: Vec3 | null, shift: boolean): void {
@@ -321,7 +356,7 @@ export class PathTool {
       }
       return;
     }
-    let index = this.selected >= 0 && this.selected < path.points.length ? this.selected + 1 : path.points.length;
+    let index = this.prepend ? 0 : this.selected >= 0 && this.selected < path.points.length ? this.selected + 1 : path.points.length;
     // Shift-click on the path: a point in the stretch under the pointer.
     if (shift) {
       const g = pathGeometry(path);
@@ -333,7 +368,10 @@ export class PathTool {
       }
     }
     const points = [...path.points.slice(0, index), at, ...path.points.slice(index)];
+    const before = this.prepend;
     if (this.commit('Add path point', this.replace({ ...path, points }))) this.selected = index;
+    // (Still adding at the start: the next click goes in before this one.)
+    this.prepend = before && !shift;
   }
 
   /** A new path of the pane's kind through these points. */
@@ -442,7 +480,7 @@ export class PathTool {
     for (const l of this.lines) l.dispose();
     this.markers = [];
     this.lines = [];
-    if (!this.active) return;
+    if (!this.active && !this.previewId) return;
     const ground = this.host.ground();
     const ball = (name: string, at: Vec3, size: number, mat: StandardMaterial) => {
       const s = CreateSphere(name, { diameter: size, segments: 8 }, this.host.scene);
@@ -453,12 +491,14 @@ export class PathTool {
       this.markers.push(s);
     };
     for (const path of this.paths) {
-      const mine = path.id === this.current;
+      // With another tool in hand, only the path under the pointer shows, as one about to be picked.
+      if (!this.active && path.id !== this.previewId) continue;
+      const mine = this.active && path.id === this.current;
       const dragged = this.drag && this.drag.id === path.id && this.drag.moved ? this.drag : null;
       // The path as it will be once the drag ends.
       const shown = dragged ? { ...path, points: path.points.map((q, i) => (i === dragged.index ? dragged.at : q)) } : path;
       const line = pathLine(shown, ground, 0.05);
-      const hoverPath = this.hovered?.id === path.id && this.hovered.index < 0;
+      const hoverPath = !this.active || (this.hovered?.id === path.id && this.hovered.index < 0);
       const color = Color3.FromHexString(mine ? '#5fd0ff' : hoverPath ? '#d6f4ff' : '#8aa2b2');
       const l = pathUses(path, 'road')
         ? CreateLines(`pathPoly_${path.id}`, { points: line }, this.host.scene)
@@ -479,7 +519,7 @@ export class PathTool {
         ball(`pathPt${i}`, this.handleAt(shown, q, d), d, mat);
       });
     }
-    if (this.pending) {
+    if (this.active && this.pending) {
       const q = this.pending;
       const y = pathSurfaceY(ground, q[1], q[0], q[2]) + 0.05 + HANDLE * 0.3;
       ball('pathPending', { x: q[0], y, z: q[2] }, HANDLE * 1.25, this.mats.sel);
@@ -592,6 +632,33 @@ export class PathTool {
     info.id = 'ed-path-info';
     info.textContent = `${path.points.length} points · ${Math.round(g.length)} m · ${path.closed ? 'a loop' : 'open (two ends)'}${path.oneWay ? ' · one-way' : ''}`;
     el.append(info);
+    // Its length by number, and which end the next clicks add to.
+    if (!path.closed) {
+      const length = num('ed-path-length', Math.round(g.length * 10) / 10, 2, 5000, 0.1, (v) => {
+        if (v === undefined) return;
+        const next = pathWithLength(path, v, this.host.doc().terrain ?? null);
+        if ('error' in next) {
+          this.host.toast(`Can't set the length: ${next.error}`, true);
+          return this.renderPane(el);
+        }
+        if (next !== path && this.commit('Path length', this.replace(next))) this.selected = next.points.length - 1;
+      });
+      row('Length (m)', length).title = 'Type a length: longer runs straight on from the last point, shorter ends where the path was that far along (Reverse direction works on the other end)';
+      buttons([
+        ['ed-path-extend-end', 'Add points at the end', 'The next clicks carry the path on from its last point', () => {
+          this.prepend = false;
+          this.selected = path.points.length - 1;
+          this.drawMarkers();
+          this.host.toast('Click the ground to carry the path on from its end');
+        }],
+        ['ed-path-extend-start', 'Add points at the start', 'The next clicks carry the path on backwards from its first point (green)', () => {
+          this.selected = 0;
+          this.prepend = true;
+          this.drawMarkers();
+          this.host.toast('Click the ground to carry the path on from its start');
+        }],
+      ]);
+    }
     // Uses: one path can be several things at once.
     heading('Used as');
     for (const use of ['road', 'race', 'route'] as const) {
@@ -627,6 +694,24 @@ export class PathTool {
         if (this.commit('Remove path', this.paths.filter((q) => q.id !== path.id))) this.startNew();
       }],
     ]);
+    // The ground and the path (groundFit.ts): the ground brought to the path, or the path's points onto the ground.
+    if (this.host.doc().terrain) {
+      heading('Ground');
+      const blend = () => this.host.blend?.() ?? GROUND_FIT_BLEND;
+      buttons([
+        ['ed-path-fit-ground', 'Fit ground to this path', 'Raise or lower the ground under and beside the path to meet its line, eased into the ground about (the ground changes; the path stays). One undo step', () => {
+          const r = fitGroundToPathCommand(this.host.doc(), path.id, blend());
+          if ('error' in r) return this.host.toast(`Can't fit the ground: ${r.error}`, true);
+          if (this.host.run('Fit ground to path', r.command)) this.host.toast(`The ground fitted to the path: ${r.raised} point${r.raised === 1 ? '' : 's'} raised, ${r.lowered} lowered, up to ${r.most} m · Ctrl+Z to undo`);
+        }],
+        ['ed-path-on-ground', 'Settle onto the ground', 'Put each of the path\'s points at the height of the ground there (the path moves; the ground stays). One undo step', () => {
+          const r = settlePathOnGroundCommand(this.host.doc(), path.id);
+          if ('error' in r) return this.host.toast(`Can't settle the path: ${r.error}`, true);
+          if (this.host.run('Settle path onto the ground', r.command)) this.host.toast(`${r.moved} point${r.moved === 1 ? '' : 's'} put on the ground, up to ${r.most} m · Ctrl+Z to undo`);
+        }],
+      ]);
+      row('Blend (m)', num('ed-path-fit-blend', blend(), GROUND_FIT_BLEND_RANGE.min, GROUND_FIT_BLEND_RANGE.max, 1, (v) => v !== undefined && this.host.setBlend?.(v))).title = 'How far from the path the ground is eased back into the ground about (0: only under it)';
+    }
     row('Width (m)', num('ed-path-width', path.width, 0.5, 30, 0.5, (v) => v !== undefined && ((this.width = v), set('Path width', { width: v }))));
     check('ed-path-oneway', 'One-way (in the arrows’ direction)', 'Traffic only the way the arrows point: driving bots never take it the other way, and patrols never turn back on it', !!path.oneWay, (v) => set(v ? 'Make path one-way' : 'Make path two-way', { oneWay: v || undefined }));
     row('Speed limit (m/s, for driving bots)', num('ed-path-speed', path.speed, 2, 80, 1, (v) => set('Path speed limit', { speed: v }), true));

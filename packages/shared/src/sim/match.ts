@@ -59,7 +59,7 @@ import { RouletteDirector } from './roulette.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import { rollPickup } from './pickupRoll.ts';
-import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyReach } from './resupply.ts';
+import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPPLY_REACH, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
@@ -2228,7 +2228,7 @@ export class Match {
         ...(this.smokeClouds().length ? { smoke: this.smokeClouds() } : {}),
         nav: this.nav,
         spawnPoints: orderGoal === undefined ? spawnPoints : npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
-        pickups: npc ? npcPickups : pickups,
+        pickups: npc ? npcPickups : this.withSupplyStops(pickups, c),
         inventory: this.inventoryOf(c),
         throwables: c.throwable?.count ?? 0,
         throwable: c.throwable?.kind ?? null,
@@ -4723,6 +4723,27 @@ export class Match {
   /** Standing boxes with stock, for the bots (and the tank refill): where, how many uses, and how hurt. */
   ammoBoxes(): { id: number; pos: Vec3; uses: number; health: number; placed: boolean }[] {
     return this.boxes.filter((b) => b.body && b.uses > 0).map((b) => ({ id: b.id, pos: b.pos, uses: b.uses, health: b.health / b.max, placed: b.kind === 'placed' }));
+  }
+
+  /**
+   * The bots' pickups plus the Supply Buggies (MountDef.resupply) a bot may resupply at: its own team's or nobody's,
+   * standing, with stock, within BOT_RESUPPLY_REACH. Each is an Ammo Box pickup at the tailgate (`supply_<entity
+   * index>`) to the bot's pickup choice (BotBrain.bestPickup: worth it when short of ammo), and beside it the bot
+   * presses Use (BotBrain.act).
+   */
+  private withSupplyStops(pickups: PickupView[], c: Combatant): PickupView[] {
+    if (c.mount || restrictedWeapons(this.rules)) return pickups;
+    const item = getItem('core.ammo');
+    if (!item) return pickups;
+    let out: PickupView[] | null = null;
+    for (const m of this.mounts) {
+      const spec = m.def.resupply;
+      if (!spec || !m.alive || m.supply <= 0 || (m.faction !== null && m.faction !== c.faction)) continue;
+      const at = resupplyPoint(spec, m.pos, m.yaw);
+      if (horizontalDistance(at, c.move.pos) > BOT_RESUPPLY_REACH) continue;
+      (out ??= [...pickups]).push({ id: `supply_${m.index}`, item, pos: at, available: true });
+    }
+    return out ?? pickups;
   }
 
   /**

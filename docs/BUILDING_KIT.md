@@ -22,6 +22,18 @@ matches and the dedicated server alike.
   MapMaker's view (not picked either); the padlock keeps it from being picked or selected. Hide and lock are kept per map
   in this browser and never go in the map file: a test match and the game play everything. The list draws only the rows
   in view, so a map with 4,096 things stays quick.
+- **Select opens a path** (owner, 2026-11-11: "need way to easily select an already created path/road"). With the
+  Select tool, a road, trail, track or route under the pointer (and nothing else there) lights up, its hover card
+  names it, and a click opens it in the Paths tool: its points to drag, Shift-click the path to add one in it,
+  right-click or Del to remove one. The Paths pane has its **Length** by number (longer runs straight on from the last
+  point with one more point, shorter ends where the path was that far along; shared `editor/pathEdit.ts`) and **Add
+  points at the end / at the start**.
+- **What an edit costs on a big map** (owner, 2026-11-11: selecting and editing lagged). After an edit MapMaker
+  clips again only the level boxes near what changed (`map/facesUpdate.ts`; a full pass on St. John's 2,500 blocks
+  took a third of a second), rebuilds only the level meshes the edit touched (cut by style and 48 m ground square),
+  puts an entity's marker again only when it or what it stands on changed, and runs the map's own checks and the
+  overlaps check in a worker (`mapTestWorkerCore.ts`, a `check` job), the issues list following a moment later.
+  `node tools/perf/editor-edit.mjs` measures a click, a move and an undo on a map: the page's script time, frames apart.
 - **Favourites and recent:** the quick row over the palette puts the current mode's favourites (or recent pieces) first
   and the rest after; **This mode only** shows just the mode's.
 
@@ -73,14 +85,22 @@ wall, a visor and stepped cheeks outside), Half wall, Railing, High wall,
 Towering wall, Tall fence, Broken wall (a ragged hole with rubble), Bars
 (floor-to-ceiling, see and shoot through), Barred gate (bars either side of a 3 m
 gateway: hang a Portcullis door in it), Shutter (a wide opening with its
-shutter stuck 1.35 m up: crouch under; bots don't path through it) or No wall.
+shutter stuck 1.35 m up: crouch under; bots don't path through it), Shopfront (a stall
+riser 0.45 m high between two 1 m piers and one opening 6 m wide up to a head at
+3 m: give it Glass; bots don't path through it), Arched window (2 m wide, sill
+0.9 m, a round head from 2 m to 3 m, voussoirs and a keystone; takes Glass like
+the Window) or No wall. Shopfront and Arched window came with **map format v38**
+(Tileset 11, Urban & Civilian; owner-approved 2026-11-13): a map that uses one
+needs a build that knows v38, and every older map loads as it was (the v37 to
+v38 step changes nothing).
 Use the **Walls & Openings** tool (O cycles styles; right-click resets) or the
 tile inspector. Choices are stored on the tile in its own frame (they turn with
 it) and apply to both halves of a shared wall.
 
 ### Glass (glass panes)
 
-Windows can hold real glass. Window, Twin windows and Firing slit sides take a
+Windows can hold real glass. Window, Twin windows, Firing slit, the sash windows,
+Shopfront and Arched window sides take a
 **Glass** setting (the select under the wall styles in **Walls & Openings**:
 *Glass: none / breakable / reinforced*; stored per side in the tile's `glass`,
 `MapBuilder.glass(x, y, z, side, kind)` in map scripts). Free blocks take the
@@ -436,7 +456,8 @@ Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
 alongside the set), then from the owner's tileset sheets 10 Medieval Village,
-11 Coastal Harbor and 12 Snow Outpost, then 13 Industrial Factory (owner, 2026-11-12: a pack of our own pieces);
+11 Coastal Harbor and 12 Snow Outpost, then 13 Industrial Factory (owner, 2026-11-12: a pack of our own pieces)
+and 14 Urban & Civilian (owner, 2026-11-13: a list of existing pieces, no demo map yet);
 09 is now **Desert City**, which
 replaced Sands of Egypt (owner, 2026-10-31) and still carries all its pieces,
 and 06 Jungle Ruins was refreshed from the Jungle Ruins sheet with the Ancient
@@ -1059,6 +1080,55 @@ glass) on the Loading Dock, Power Core Hall, Reactor Room, Server Vault, Catwalk
 Towers. **Gameplay pieces**: the Roll-up Door, goods lift, sliding platform, blast door, ladder, alarm light,
 barrier, fence, crates and barrels, gas, the generator, crusher, flames and shock traps.
 
+### 14 Urban & Civilian (present-day town)
+
+Tileset 11, from the owner's universal tileset guide (`docs/map-briefs/urban/`; owner, 2026-11-13: "the guide is
+applied to what we have"). **A list, not a kit**: it has no tiles of its own and copies nothing. It names pieces
+the game already has (the eight Suburban tiles, the five city buildings and streets, the Neon shop and block, the
+seven Industrial tiles, the core house, shop, gas station, street, intersection, warehouse and plaza, rooms, stairs,
+the ramp and the platforms; street lights, traffic lights, signs, benches, bins, dumpsters, barriers, cones, fences,
+the hydrant, vending machines, rooftop units, parked cars, metro and gas station props, shop fittings), and those
+packs keep their lists: a piece in two packs is one piece. Themes: City Block, Suburban Chaos, Factory. Facades:
+*City brick*, *Storefront*, *Plaster*, *Clapboard*, *Suburban brick*, *Glass* and *Corrugated sheet*.
+**It has no demo map yet** (owner, 2026-11-13), so `StylePack.demo` is optional and the picker's note leaves the demo
+out for a pack with none. **Set pieces**: role pack `urban` (old brick, pale concrete trim, terrazzo, grey pavers,
+dark concrete roofs, the brick facade, a wooden door, breakable glass) on the Crossroads Plaza, Loading Dock,
+Skybridges, Stair Towers, Atrium Tower, Catwalk Bridges, Twin-Stair Overlook, Ramp Junction, Server Vault and Sunken
+Arena. The role pack is the default for **no theme**: City Block, Factory and Research Lab maps place set pieces
+with no pack named, and those keep the look their theme paints; a piece takes the urban look when it is placed with
+the pack picked. `test/stylePacksUrban.test.ts`.
+
+**Made for the pack (plan step B: same shapes, new looks).** Four materials, each a pattern of our own in
+`client/materials/patterns.ts` (no downloaded artwork, no texture file): *Parking Bays* (`core.parking_bays`: asphalt
+with white lines, one repeat 5 m: two bays 2.5 m wide, one 5 m deep), *Tactile Paving* (`core.tactile_paving`: 0.4 m
+slabs of 6 x 6 studs; tint it), *Graffiti on Brick* (`core.graffiti_brick`: one storey a repeat, spray paint across
+its middle; abstract shapes only, no letters, words, logos or real marks) and *Damaged Plaster*
+(`core.damaged_plaster`: plaster fallen away in patches to brick). None sets a surface type (that is a separate
+decision). Two kit looks: **Painted Door** (`kit.door.painted`, `kit.door.painted_open`: the Oak Door's frame, size and
+collision; red, blue, white half-glazed and a glazed shop door) and **Shop Awning** (`kit.shop.awning`: 3.2 m wide,
+1.3 m out, 1 m high; red, green, blue, yellow and faded stripes; no collision, raise it over a shop window).
+`client/test/patternsUrban.test.ts`.
+
+**Made for the pack (plan step C: small new shapes).** Two wall styles, *Shopfront* and *Arched window* (above, "Walls
+and openings"; map format v38; `test/urbanWallStyles.test.ts`). A shopfront with **Glass: none** is an open shop front:
+its 0.45 m riser is more than a walking step (0.3 m), so players jump it and bots do not path through; with glass it
+is closed to players, and to shots as the glass kind says. Kit families, each with looks and one collision:
+
+| Family | Size (m) | Looks | Collision |
+|---|---|---|---|
+| `kit.barrier.bollard` Street Bollard | 0.24 x 0.95 x 0.24 | yellow, steel, concrete, striped | its box |
+| `kit.street.bike_rack` Bike Rack | 2 x 0.85 x 0.7 | steel, black, green, red | its three hoops only (5 cm tube): shots and sight pass |
+| `kit.street.mailbox` Street Mailbox | 0.56 x 1.22 x 0.5 | blue, red, green, yellow | its box (crouch cover) |
+| `kit.street.newsbox` Newspaper Box | 0.5 x 1.2 x 0.46 | red, blue, yellow, green, white | its box (crouch cover) |
+| `kit.spool.cable` Cable Spool | 0.9 x 1.4 x 1.4 | wood, weathered, empty, orange | its box |
+| `kit.fence.chainlink` Chain-link Fence | 3 x 2.4 x 0.08 | galvanised, green, rusty | posts, rails, an upright bar every 0.25 m |
+| `kit.fence.chainlink_gate` Chain-link Gate (shut, a still prop) | 3 x 2.4 x 0.08 | galvanised, green, rusty | posts, leaf frames, bars |
+| `kit.fence.site_panel` Site Fence Panel | 3.4 x 2 x 0.6 | galvanised, green, rusty | two block feet, frame, bars |
+
+The mailbox and the newspaper box are plain paint: no postal service's or publisher's name, sign or livery. Nothing
+glows or blinks. **No curb drop wedge** (plan C8): a vehicle moves on the same controller as a player (autostep 0.3 m)
+and rides up the street tiles' 0.15 m sidewalks (`test/urbanKerb.test.ts`).
+
 ### 06 Jungle Ruins refresh (Ancient Temple folded in)
 
 From the owner's concept sheets "Tileset 04 – Jungle Ruins" (weathered mossy stone, overgrown temple
@@ -1171,6 +1241,19 @@ small and exact.
   it (a free block of rock). New terrain sits 0.15 m under a level, which with a flight's first 0.25 m step makes a lip
   bots can't climb: Flatten the ground at a stair's foot to the floor's height. Flatten levels at a steady rate a
   frame, so hold the brush on each spot; two flattened areas side by side need to overlap or a ditch stays between them.
+- **Fit ground to this, and Settle onto the ground** (owner, 2026-11-12: foundations hung over slopes; shared
+  `editor/groundFit.ts`). With a build selected (tiles, a set piece, blocks, props) on a map with terrain, the
+  inspector's **Ground** section and the selection menu (right-click) have both; a path has them in the Paths pane.
+  **Fit ground** changes the ground as made (the stored heights) and leaves the build where it is: under its footprint
+  and one terrain cell round it the ground goes to the build's base (the top of its lowest floor slab, or its lowest
+  bottom where it has none; only the parts within a metre of that count, so a roof or an upper floor brings nothing
+  up), and from there it is eased back into the ground about over **Blend** metres (6 by default, 0 to 40; where the
+  ground is far above or below, the bank runs further, two metres out for every metre of height, so it can be walked).
+  It raises and lowers. For a path the ground goes to the path's line across its width. **Settle onto the ground** is
+  the reverse and leaves the ground alone: blocks and props move straight down or up until their base is on the lowest
+  ground under them (as Settle on ground beds a prop); a selection with tiles or set pieces moves by whole levels to
+  the level nearest the ground; a path's points each go to the ground's height there. One undo step each. What a floor
+  or a tunnel does to the ground as played is still worked out from these heights, never stored.
 - **MapMaker, Terrain → Change grid…** (format v32; `editor/changeGrid.ts`).
   Resamples the terrain to vertices 1, 1.25, 1.5, 2, 2.5, 3 or 4 m apart (a
   380 m map can go to 1.25 m: 305 × 257), in one undo step. The dialog shows

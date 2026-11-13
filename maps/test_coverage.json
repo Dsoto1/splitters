@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 37,
+  "formatVersion": 38,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_yc4x26um44jsr67y",
-      "revision": 28,
-      "contentHash": "sha256:cafe5a7bb534b96b51ad92b351dc48cedde53274d4206dbf6ddf131f3f9c58f7",
-      "schemaVersion": 37,
-      "releasedAt": "2026-11-13T19:38:51.836Z"
+      "versionId": "v_du5xxa7isvhi2bdk",
+      "revision": 29,
+      "contentHash": "sha256:4195ea725d49e4b93e92c2b92f2d5f9adca066d1cebd7076e2f32b0b4a5b8c57",
+      "schemaVersion": 38,
+      "releasedAt": "2026-11-13T20:30:23.391Z"
     },
     "testOnly": true
   },
@@ -1106,6 +1106,22 @@
         "y": -9,
         "z": -1,
         "rotation": 1
+      },
+      {
+        "id": "tile_869b9nzdhh",
+        "tile": "core.room",
+        "x": 14,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "shopfront",
+          "0,0,0:E": "window_arched"
+        },
+        "glass": {
+          "0,0,0:N": "breakable",
+          "0,0,0:E": "reinforced"
+        }
       }
     ]
   },
@@ -5200,26 +5216,15 @@
     },
     {
       "id": "mount_95h2qo8jbg",
+      "kind": "mount",
       "position": [
         -68,
         0,
         0
       ],
-      "kind": "mount",
       "model": "supply_buggy",
       "yaw": 0,
       "faction": null,
-      "respawnSeconds": null
-    },
-    {
-      "id": "pickup_95h2qo8jbg",
-      "kind": "pickup",
-      "position": [
-        -103,
-        0,
-        12
-      ],
-      "item": "core.ammo_box_kit",
       "respawnSeconds": null
     }
   ],

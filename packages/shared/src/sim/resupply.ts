@@ -141,3 +141,13 @@ export const isAmmoBoxPickup = (e: { item: string; random?: unknown }): boolean 
 
 /** How much smaller than its model the Ammo Box Kit is drawn as a pickup and in the hand (the crate model is 1 m long). */
 export const AMMO_BOX_KIT_SCALE = 0.42;
+
+/** Where a source's reach point is in the world (its `at`, the mount standing at `pos` turned `yaw`). */
+export function resupplyPoint(spec: Pick<ResupplySpec, 'at'>, pos: { x: number; y: number; z: number }, yaw: number): { x: number; y: number; z: number } {
+  const s = Math.sin(yaw);
+  const c = Math.cos(yaw);
+  const [ax, ay, az] = spec.at;
+  return { x: pos.x + ax * c + az * s, y: pos.y + Math.max(0, ay - 1), z: pos.z - ax * s + az * c };
+}
+/** How far a bot goes out of its way to a Supply Buggy's tailgate (m). */
+export const BOT_RESUPPLY_REACH = 60;

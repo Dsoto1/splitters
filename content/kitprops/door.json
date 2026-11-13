@@ -1,5 +1,5 @@
 {
-  "$comment": "Doors as still props (tools/content/kit/academy.mjs; docs/map-briefs/st_johns): a thick oak door in its frame, made for the Room doorway (content/tiles/edges.json door_room, 2 m × 2.6 m) and for a 2 m gap in a partition. Nothing moves in play, so a hall of them costs nothing each tick. One family is one collision, so each swing is a family: shut and ajar collide as the frame's slab (a closed room), open has no collision (the doorway stays clear). The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. The open door's centre is 0.92 m inside the room from the wall's middle (its box is the frame and the leaf standing out from it).",
+  "$comment": "Doors as still props (tools/content/kit/academy.mjs; docs/map-briefs/st_johns): a thick oak door in its frame, made for the Room doorway (content/tiles/edges.json door_room, 2 m × 2.6 m) and for a 2 m gap in a partition. Nothing moves in play, so a hall of them costs nothing each tick. One family is one collision, so each swing is a family: shut and ajar collide as the frame's slab (a closed room), open has no collision (the doorway stays clear). The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. The open door's centre is 0.92 m inside the room from the wall's middle (its box is the frame and the leaf standing out from it). Tileset 11 (Urban & Civilian) adds painted leaves on the same frame (kit.door.painted, shut and open): red, blue, white half-glazed and a glazed shop door.",
   "type": "door",
   "props": [
     {
@@ -269,6 +269,207 @@
             "iron": "#1c1e21",
             "jitter": 0.07,
             "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.painted",
+      "displayName": "Painted Door (shut)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (Tileset 11, Urban & Civilian): the Oak Door's frame and size (2 × 2.6 × 0.16 m, made for the Room doorway) with painted leaves: a red and a blue two-panel house door with a brass knob and a letter plate, a white half-glazed door, and a glazed shop door (a kick plate under one tall pane, an upright pull bar). Collides as its box: a closed room. A still prop: a door that opens by itself is the Door entity."
+      },
+      "size": [
+        2,
+        2.6,
+        0.16
+      ],
+      "surface": "wood",
+      "detail": "painted_wood",
+      "generator": {
+        "kind": "door",
+        "swing": 0,
+        "leaf": "framed"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 12201,
+          "look": {
+            "wood": "#a3281f",
+            "frame": "#e6e2d6",
+            "iron": "#b08d3c",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "framed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 1,
+          "name": "blue",
+          "seed": 12202,
+          "look": {
+            "wood": "#27508a",
+            "frame": "#e6e2d6",
+            "iron": "#b08d3c",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "framed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 2,
+          "name": "white",
+          "seed": 12203,
+          "look": {
+            "wood": "#e2dfd4",
+            "frame": "#cfccc0",
+            "iron": "#8a8d90",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "glazed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 3,
+          "name": "shop",
+          "seed": 12204,
+          "look": {
+            "wood": "#3a3d42",
+            "frame": "#3a3d42",
+            "iron": "#b9bcc0",
+            "jitter": 0.03,
+            "grime": 0.2,
+            "glass": "#4c6672"
+          },
+          "set": {
+            "leaf": "shop",
+            "handle": "pull"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.painted_open",
+      "displayName": "Painted Door (open)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the Painted Door standing open at 90° into the room (+z) on its +x jamb, the same four leaves. No collision: the doorway is clear for players, bots and shots. Its frame stands 0.92 m behind the prop's centre, as the open Oak Door's does."
+      },
+      "size": [
+        2,
+        2.6,
+        2
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "surface": "wood",
+      "detail": "painted_wood",
+      "generator": {
+        "kind": "door",
+        "swing": 90,
+        "leaf": "framed",
+        "back": 0.92
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 12211,
+          "look": {
+            "wood": "#a3281f",
+            "frame": "#e6e2d6",
+            "iron": "#b08d3c",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "framed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 1,
+          "name": "blue",
+          "seed": 12212,
+          "look": {
+            "wood": "#27508a",
+            "frame": "#e6e2d6",
+            "iron": "#b08d3c",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "framed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 2,
+          "name": "white",
+          "seed": 12213,
+          "look": {
+            "wood": "#e2dfd4",
+            "frame": "#cfccc0",
+            "iron": "#8a8d90",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "glazed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 3,
+          "name": "shop",
+          "seed": 12214,
+          "look": {
+            "wood": "#3a3d42",
+            "frame": "#3a3d42",
+            "iron": "#b9bcc0",
+            "jitter": 0.03,
+            "grime": 0.2,
+            "glass": "#4c6672"
+          },
+          "set": {
+            "leaf": "shop",
+            "handle": "pull"
           }
         }
       ]

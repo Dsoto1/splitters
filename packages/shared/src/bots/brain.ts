@@ -1666,7 +1666,7 @@ export class BotBrain {
     return c.score * 2.4 * (health ? 1.6 : 1);
   }
 
-  /** Short enough to resupply at a box: the gun in hand (or any gun) under half its reserve, or no grenades. */
+  /** Short enough to resupply (an ammo box, a Supply Buggy): any gun under half its reserve, or no grenades. */
   private wantsResupply(view: BotWorldView): boolean {
     if (view.inventory.some((w) => w.def.reserveMax > 0 && w.reserve < w.def.reserveMax / 2)) return true;
     return view.throwable === null;
@@ -2375,10 +2375,11 @@ export class BotBrain {
     }
     if (this.zipPress || me.riding) doing = 'zip';
     this.zipPress = false;
-    // Beside an ammo box (a `box_` pickup, sim/resupply.ts) and short: E there resupplies (once a second while short).
+    // Beside an ammo box (a `box_` pickup, sim/resupply.ts) or at a Supply Buggy's tailgate (a `supply_` pickup:
+    // Match.withSupplyStops) and short: E there resupplies (once a second while short).
     if (!me.riding && !pressNow && tick - this.lastUseTick > TICK_RATE && this.wantsResupply(view)) {
-      const box = view.pickups.find((p) => p.available && p.id.startsWith('box_') && Math.hypot(p.pos.x - me.pos.x, p.pos.z - me.pos.z) < AMMO_BOX_REACH - 0.2 && Math.abs(p.pos.y - me.pos.y) < 1.2);
-      if (box) {
+      const stop = view.pickups.find((p) => p.available && (p.id.startsWith('box_') || p.id.startsWith('supply_')) && Math.hypot(p.pos.x - me.pos.x, p.pos.z - me.pos.z) < (p.id.startsWith('box_') ? AMMO_BOX_REACH - 0.2 : 1.3) && Math.abs(p.pos.y - me.pos.y) < 1.2);
+      if (stop) {
         buttons |= BUTTON_USE;
         this.lastUseTick = tick;
       }

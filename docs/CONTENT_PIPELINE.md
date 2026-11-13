@@ -763,7 +763,12 @@ barrels and boxes first; fences and walls, then containers, come next.
   `dome.mjs` (the Desert City dome kit: "The dome kit" below), `academy.mjs` (the dormitory pieces: the Oak Door
   in its frame, shut, ajar and open as three families, since a family has one collision; the desk with a hutch; the
   slim closet, and the front of a closet built into a wall, 12 mm thick, no collision: the wall is the closet:
-  "Doors as props" below), `glb.mjs` (the writer).
+  "Doors as props" below; the Painted Door's leaves), `street.mjs` (Tileset 11, Urban & Civilian: the striped Shop
+  Awning, no collision; the Street Bollard, the Street Mailbox, the Newspaper Box and the Cable Spool, each colliding as
+  its box; the Bike Rack, colliding as its hoops only), `fence.mjs` `chainlinkMesh` (the Chain-link Fence, the
+  Chain-link Gate and the Site Fence Panel on feet: each collides as its posts, rails, frames and feet and an upright
+  bar every 0.25 m across the mesh, as the Iron Fence does, so nobody walks through and most rounds pass), `glb.mjs`
+  (the writer).
   `geom.mjs` also has square bars between any two points, wire panels (flat strips seen from both sides), and
   cylinders and rings along any axis.
   Randomness only from `env/rng.mjs` streams.
@@ -813,6 +818,12 @@ The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into 
 (boards under three iron strap hinges, a ring handle each side), `glazed` (a half-glazed office door), `diamond` (a
 diamond of mouldings on each panel), `dark`. They fit the wall style `door_room` (Room doorway, 2 × 2.6 m, an oak
 frame of its own) and a 2 m gap in a partition of blocks (0.12 m: the frame stands 2 cm proud each side).
+
+**Painted doors** (Tileset 11, Urban & Civilian): `kit.door.painted` (shut) and `kit.door.painted_open` are the same
+frame, size and collision as the Oak Door's shut and open families, with painted leaves as variants: `red` and
+`blue` (a two-panel house door, a brass knob, a letter plate), `white` (half-glazed) and `shop` (a kick plate under
+one tall pane, an upright pull bar). Generator settings `leaf: 'framed' | 'shop'` and `handle: 'knob' | 'pull'`.
+A door that opens by itself is still the Door entity; a new door style there would be a schema change.
 
 #### The dome kit
 
