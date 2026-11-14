@@ -8,6 +8,7 @@ import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../
 import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
 import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
+import { AMMO_BOX_REACH } from '../sim/resupply.ts';
 import { THROWABLE_DEFS, getWeapon, smokeBlocks, weaponCode, type AltFire, type ProjectileSpec, type SmokeCloud, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
@@ -1665,7 +1666,7 @@ export class BotBrain {
     return c.score * 2.4 * (health ? 1.6 : 1);
   }
 
-  /** Short enough to resupply (a Supply Buggy): any gun under half its reserve, or no grenades. */
+  /** Short enough to resupply (an ammo box, a Supply Buggy): any gun under half its reserve, or no grenades. */
   private wantsResupply(view: BotWorldView): boolean {
     if (view.inventory.some((w) => w.def.reserveMax > 0 && w.reserve < w.def.reserveMax / 2)) return true;
     return view.throwable === null;
@@ -2374,10 +2375,10 @@ export class BotBrain {
     }
     if (this.zipPress || me.riding) doing = 'zip';
     this.zipPress = false;
-    // At a Supply Buggy's tailgate (a `supply_` pickup: Match.withSupplyStops) and short: E there resupplies (once a
-    // second while short).
+    // Beside an ammo box (a `box_` pickup, sim/resupply.ts) or at a Supply Buggy's tailgate (a `supply_` pickup:
+    // Match.withSupplyStops) and short: E there resupplies (once a second while short).
     if (!me.riding && !pressNow && tick - this.lastUseTick > TICK_RATE && this.wantsResupply(view)) {
-      const stop = view.pickups.find((p) => p.available && p.id.startsWith('supply_') && Math.hypot(p.pos.x - me.pos.x, p.pos.z - me.pos.z) < 1.3 && Math.abs(p.pos.y - me.pos.y) < 1.2);
+      const stop = view.pickups.find((p) => p.available && (p.id.startsWith('box_') || p.id.startsWith('supply_')) && Math.hypot(p.pos.x - me.pos.x, p.pos.z - me.pos.z) < (p.id.startsWith('box_') ? AMMO_BOX_REACH - 0.2 : 1.3) && Math.abs(p.pos.y - me.pos.y) < 1.2);
       if (stop) {
         buttons |= BUTTON_USE;
         this.lastUseTick = tick;
@@ -3504,7 +3505,10 @@ export class BotBrain {
         // the route it has (that one fitted: where it set off for), or with none, gets out here and goes on foot,
         // rather than steering in and wedging or plugging it. (Getting out wherever a new route didn't fit left
         // vehicles parked at the foot of the narrow bit, in everyone's way.)
-        const fits = next.length < 2 || vehicleRouteFits(view.physics, m, next, FIT_AHEAD);
+        // (An ammo box is a solid crate, sim/resupply.ts: the vehicle refills pulled up beside it, so the route only has to
+        // fit up to a stop short of it.)
+        const fitPath = resupply && next.length >= 2 ? trimRouteEnd(next, Math.max(m.half?.[0] ?? 0, m.half?.[2] ?? 0) + 1.2) : next;
+        const fits = fitPath.length < 2 || vehicleRouteFits(view.physics, m, fitPath, FIT_AHEAD);
         // An ammo pickup it can't drive to (on a gallery, through a door): left alone a while; it isn't a reason to
         // get out. Next time round the goal is the next one, or where it was going.
         if (!fits && resupply) this.ammoSkip.set(`${resupply.x},${resupply.z}`, tick + TICK_RATE * NO_FIT_SECONDS * 3);
@@ -5049,4 +5053,23 @@ function nearestOf(points: readonly Vec3[] | null | undefined, from: Vec3): Vec3
 export function arenaHop(always: boolean, fighting: boolean, strafing: boolean, running: boolean): [number, number] | null {
   if (always) return strafing || running ? [0.5, 1.1] : null;
   return fighting && strafing ? [1.3, 2.4] : null;
+}
+
+/** The route with its last `d` metres cut off (where a vehicle stops short of a solid goal); its start kept. */
+function trimRouteEnd(path: readonly Vec3[], d: number): Vec3[] {
+  const out = [...path];
+  let left = d;
+  while (out.length >= 2 && left > 0) {
+    const a = out[out.length - 2]!;
+    const b = out[out.length - 1]!;
+    const len = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
+    if (len > left) {
+      const k = (len - left) / len;
+      out[out.length - 1] = { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, z: a.z + (b.z - a.z) * k };
+      return out;
+    }
+    left -= len;
+    out.pop();
+  }
+  return out;
 }

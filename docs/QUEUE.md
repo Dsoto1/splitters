@@ -28,7 +28,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
-- M · A · Ammo Box: map Ammo Boxes become solid resupply crates (10 uses, cook-off); "Ammo Box Kit" throwable · `wip/ammo-box` · after the line-up
 - S · A · Effects checks, findings only: Pantry Raid portals, loot rings on bright floors, perf and Low graphics for the new effects, Reduce flashing · `wip/fx-checks` (docs)
 - M · B (session splitters22, Opus 5.5 medium; owner, 2026-11-13) · New characters: the T-pose models in the owner's Drive (Meshy Community, CC0; files `Meshy_AI_*_20261113_animated_mixamo_All_animation.glb` and the like, added 2026-11-13). Intake through the character pipeline, recorded as community CC0, Experimental until looked over · claims in HANDOFF first
 - S · B · In flight (owner: "1 2 3") · Tileset 11: reshape the bandstand (it reads as a squat pavilion); a label for the Urban set-piece family; a bus stop sign.
@@ -77,11 +76,14 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
 ## Parked
+- M · ? · MapMaker declutter (owner, 2026-11-13: on hold, "I don't see how this is improved"): map settings out of the right panel, theme filter by default, per-tab tools, View menu, short status bar, favourites on 1 to 0. Mock-up: https://claude.ai/artifact/94tejprHC5XeP4EKRuaQRT (private to the owner).
 - L · A · A full weapon release: Stormvolt Blaster plus any other new guns (new weapon types are paused by the owner).
 - S · A · Sound pass 2 (paused by the owner).
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-14 · A · Ammo Box: solid resupply crates with cook-off, the Ammo Box Kit throwable, tanks refill beside a crate.
+- 2026-11-13 · A · MapMaker Fit ground, the owner's answers: lone platforms stand on the ground, props on moved ground re-bedded in the same undo (fcbd08e0).
 - 2026-11-13 · A · Vehicle line-up: Supply, Troop and Gun Buggy, Armored Rover 7 places, bots resupply at a Supply Buggy, `buggy` retired on 19 maps.
 - 2026-11-13 · A · Paths draw under the roads they join (60d9abd3).
 - 2026-11-13 · A · The Spillway: crest openings closed, wing wall, hillside stair legs, east end raised to the crest (023edfa4). No gatehouses.

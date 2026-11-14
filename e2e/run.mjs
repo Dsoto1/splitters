@@ -1154,34 +1154,41 @@ async function editoruxFlow(browser) {
     await edited(rev);
     const settledPath = (await doc()).paths.find((p) => p.id === road.id).points;
     check(settledPath.every((q, i) => Math.abs(q[1] - (lifted[i][1] - 2)) < 0.05 && q[0] === lifted[i][0] && q[2] === lifted[i][2]) && Math.abs((await groundAt(mid[0], mid[2])) - groundBefore) < 1e-6, `Settle onto the ground puts the path's points back on the ground, the ground untouched (${settledPath.map((q) => q[1]).join(', ')})`);
-    // Fit ground to a build: a slab of a block hung 1.5 m over the ground (a foundation over a slope), selected.
+    // Fit ground to a build: a lone slab of a block (nothing built on it) hung 1.5 m over the ground, selected, and a
+    // crate standing on the ground 7 m east of it.
     const padAt = [mid[0] + 30, 0, mid[2] - 30];
     const padGround = await groundAt(padAt[0], padAt[2]);
-    await page.evaluate(([x, y, z]) => {
+    const crateAt = [padAt[0] + 7, padAt[2]];
+    const crateY = Math.round(((await groundAt(crateAt[0], crateAt[1])) - 0.03) * 100) / 100;
+    await page.evaluate(([x, y, z, cx, cz, cy]) => {
       const ed = window.__editor;
       ed.setTool({ kind: 'select' });
-      ed.run('Add block', { kind: 'addEntities', entities: [{ id: 'fit_slab', kind: 'block', position: [x, y, z], size: [8, 0.5, 8], yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 }] });
+      ed.run('Add block', { kind: 'addEntities', entities: [{ id: 'fit_slab', kind: 'block', position: [x, y, z], size: [8, 0.5, 8], yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 }, { id: 'fit_crate', kind: 'prop', model: 'kit.crate.wood', position: [cx, cy, cz], yaw: 0, scale: 1, solid: true, tint: null }] });
       ed.setSelection({ tiles: [], entities: ['fit_slab'] }, true);
       ed.view.focus({ x, y, z });
-    }, [padAt[0], Math.round((padGround + 1.5) * 100) / 100, padAt[2]]);
+    }, [padAt[0], Math.round((padGround + 1.5) * 100) / 100, padAt[2], crateAt[0], crateAt[1], crateY]);
     await settle();
     await page.waitForSelector('#ed-fit-ground', { timeout: T(5000) }).catch(() => {});
     const slabTop = (await doc()).entities.find((e) => e.id === 'fit_slab').position[1] + 0.5;
+    const crateNow = async () => (await doc()).entities.find((e) => e.id === 'fit_crate').position[1];
     await shot('fit-ground-before');
     rev = await revision();
     await page.click('#ed-fit-ground');
     await edited(rev);
     const under = await Promise.all([[0, 0], [-4, -4], [4, 4], [5, 0]].map(([dx, dz]) => groundAt(padAt[0] + dx, padAt[2] + dz)));
     const farOff = await groundAt(padAt[0] + 40, padAt[2]);
-    check(under.every((g) => Math.abs(g - slabTop) < 0.02) && Math.abs(slabTop - padGround - 2) < 0.1, `Fit ground to this brings the ground up to the slab's top under and just round it (${under.map((g) => g.toFixed(2)).join(', ')} at a top of ${slabTop})`);
+    check(under.every((g) => Math.abs(g - (slabTop - 0.5)) < 0.02) && Math.abs(slabTop - padGround - 2) < 0.1, `Fit ground to this brings the ground up to a lone slab's underside under and just round it (${under.map((g) => g.toFixed(2)).join(', ')} under a top of ${slabTop})`);
+    const crateFitted = await crateNow();
+    const crateGround = await groundAt(crateAt[0], crateAt[1]);
+    check(crateFitted > crateY + 0.1 && Math.abs(crateFitted - crateGround) < 0.3, `the crate on the raised ground is re-bedded on it in the same step (${crateY} → ${crateFitted} m, ground ${crateGround.toFixed(2)})`);
     const eased = await groundAt(padAt[0] + 9, padAt[2]);
-    check(eased < slabTop - 0.05 && eased > padGround - 0.5 && (await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'fit_slab').position[1] + 0.5)) === slabTop, `the ground eases back into the ground about, and the slab has not moved (${eased.toFixed(2)} m, 5 m out)`);
+    check(eased < slabTop - 0.55 && eased > padGround - 0.5 && (await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'fit_slab').position[1] + 0.5)) === slabTop, `the ground eases back into the ground about, and the slab has not moved (${eased.toFixed(2)} m, 5 m out)`);
     await settle();
     await shot('fit-ground-after');
     rev = await revision();
     await page.keyboard.press('Control+z');
     await edited(rev);
-    check(Math.abs((await groundAt(padAt[0], padAt[2])) - padGround) < 1e-6 && Math.abs((await groundAt(padAt[0] + 40, padAt[2])) - farOff) < 1e-6, 'one undo gives the ground back');
+    check(Math.abs((await groundAt(padAt[0], padAt[2])) - padGround) < 1e-6 && Math.abs((await groundAt(padAt[0] + 40, padAt[2])) - farOff) < 1e-6 && (await crateNow()) === crateY, 'one undo gives the ground back and the crate with it');
     // The reverse: the slab moved down onto the ground (the ground stays), from the selection menu.
     const slabPx = await at(padAt[0], slabTop, padAt[2]);
     await page.mouse.click(slabPx.x, slabPx.y, { button: 'right' });
@@ -1212,7 +1219,7 @@ async function editoruxFlow(browser) {
     check((await doc()).entities.find((e) => e.id === 'fit_slab').position[1] + 0.5 === slabTop, 'one undo puts it back');
     await page.evaluate(() => {
       const ed = window.__editor;
-      ed.run('Remove block', { kind: 'removeEntities', entities: ed.doc.entities.filter((e) => e.id === 'fit_slab') });
+      ed.run('Remove block', { kind: 'removeEntities', entities: ed.doc.entities.filter((e) => e.id === 'fit_slab' || e.id === 'fit_crate') });
       ed.setSelection({ tiles: [], entities: [] });
     });
   }
@@ -7908,7 +7915,8 @@ async function coverageFlow(browser) {
     const floor = Math.min(-5, ...file.entities.filter((e) => e.kind === 'spawn').map((e) => e.position[1] - 2));
     const me = await page.evaluate(() => ({ alive: window.__cs.local.alive, y: window.__cs.local.state.pos.y }));
     check(ran && me.alive && me.y > floor, `90 ticks on it, and you stand on solid ground (y ${me.y.toFixed(1)}, floor ${floor.toFixed(1)})`);
-    const got = await sim(page, (m) => ({ pickups: m.pickups.length, mounts: m.mounts.length, ziplines: m.ziplines.length }));
+    // (A placed Ammo Box is a crate in play, not a pickup: sim/resupply.ts. It counts as one of the map's pickups here.)
+    const got = await sim(page, (m) => ({ pickups: m.pickups.length + m.ammoBoxes().filter((b) => b.placed).length, mounts: m.mounts.length, ziplines: m.ziplines.length }));
     // The match also runs the transport plane and the dropship as mounts.
     const want = { pickups: count('pickup'), mounts: count('mount') + count('airplane'), ziplines: count('zipline') };
     check(got.pickups >= want.pickups && got.mounts === want.mounts && got.ziplines === want.ziplines, `every pickup, vehicle, turret and zipline is in the match (${JSON.stringify(got)} of ${JSON.stringify(want)})`);
@@ -9133,6 +9141,26 @@ async function flashingScene(browser, scene) {
       look: aim([0, 0, 8], [0, 0.5, 13]),
       bots: [],
       at: { 6: () => blast([-1.2, 0.3, 11.5]), 14: () => blast([1, 0.3, 12.5]), 22: () => blast([0, 0.3, 11]), 30: () => blast([-0.4, 0.3, 13]) },
+    },
+    {
+      // An ammo box cooking off (sim/resupply.ts COOK_OFF): a full one destroyed 3.5 m in front, its round of small
+      // blasts and pops over the next 2.6 s.
+      name: 'cookoff',
+      label: 'a full ammo box destroyed 3.5 m in front of the camera, cooking off in small blasts for 2.6 s',
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 0.5, 11.5]),
+      bots: [],
+      at: {
+        4: () =>
+          sim(page, (m, _me, at) => {
+            const b = m.addBox('deployed', { x: at[0], y: at[1], z: at[2] }, 0, null);
+            m.damageBox(b, 10000, null);
+          }, [0, 0, 11.5]),
+      },
+      seen: () => sim(page, (m) => m.cookOffs.length),
+      // Still going off at the end of the 2 s recording (it lasts 2.6 s).
+      sees: (_on, left) => left > 0,
     },
     {
       name: 'muzzle',

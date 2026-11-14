@@ -12,7 +12,7 @@ export function groundFitSection(app: EditorApp): HTMLElement {
   box.className = 'ed-ground-fit';
   const fit = button('Fit ground to this', () => app.edits.fitGround());
   fit.id = 'ed-fit-ground';
-  fit.title = 'Raise or lower the ground under and round this to meet its base, eased into the ground about (the ground changes; this stays). One undo step';
+  fit.title = 'Raise or lower the ground under and round this to meet its base, eased into the ground about (the ground changes; this stays). A floor slab with walls on it gets the ground flush with its top; a lone platform stands on it. Props on the moved ground are re-bedded. One undo step';
   const settle = button('Settle onto the ground', () => app.edits.settleOnGround());
   settle.id = 'ed-settle-ground';
   settle.title = 'Move this down or up onto the ground under it (this moves; the ground stays): blocks and props until nothing hangs, tiles and set pieces by whole levels. One undo step';
@@ -35,4 +35,9 @@ export function groundFitSection(app: EditorApp): HTMLElement {
   blendRow.title = 'How far from it the ground is eased back into the ground about (0: only under it). Where the ground is far above or below, the bank runs further so it can be walked';
   box.append(small('Ground'), buttons, blendRow);
   return box;
+}
+
+/** The end of Fit's toast: how many props on the moved ground were re-bedded with it (groundFit.ts). */
+export function groundFitRebedNote(n: number): string {
+  return n ? `; ${n} prop${n === 1 ? '' : 's'} on it re-bedded` : '';
 }

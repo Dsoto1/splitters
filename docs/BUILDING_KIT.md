@@ -1246,11 +1246,17 @@ small and exact.
   `editor/groundFit.ts`). With a build selected (tiles, a set piece, blocks, props) on a map with terrain, the
   inspector's **Ground** section and the selection menu (right-click) have both; a path has them in the Paths pane.
   **Fit ground** changes the ground as made (the stored heights) and leaves the build where it is: under its footprint
-  and one terrain cell round it the ground goes to the build's base (the top of its lowest floor slab, or its lowest
-  bottom where it has none; only the parts within a metre of that count, so a roof or an upper floor brings nothing
-  up), and from there it is eased back into the ground about over **Blend** metres (6 by default, 0 to 40; where the
-  ground is far above or below, the bank runs further, two metres out for every metre of height, so it can be walked).
-  It raises and lowers. For a path the ground goes to the path's line across its width. **Settle onto the ground** is
+  and one terrain cell round it the ground goes to the build's base (its lowest bottom; only the parts within a metre
+  of that count, so a roof or an upper floor brings nothing up), and from there it is eased back into the ground about
+  over **Blend** metres (6 by default, 0 to 40; where the ground is far above or below, the bank runs further, two
+  metres out for every metre of height, so it can be walked). It raises and lowers. A thin floor slab (1 m or less)
+  is the one exception (owner, 2026-11-13): a **foundation** slab, with a wall, block, tile or set piece part standing
+  on its top (its bottom between the slab's bottom and 0.15 m over its top, rising at least 0.25 m over it, its middle
+  over the slab; selected or not; props do not count), has the ground brought flush with its top; a **lone platform**,
+  with nothing built on it, stands on the ground with its underside. Props standing on the ground Fit moved (within
+  0.25 m of it, or sunk up to 1.5 m, and not held up by a floor, block or another prop) are re-bedded on it by the
+  settle rule, each on the lowest ground under it, in the same undo step; the ground is not repainted. For a path
+  the ground goes to the path's line across its width (props beside it re-bedded the same way). **Settle onto the ground** is
   the reverse and leaves the ground alone: blocks and props move straight down or up until their base is on the lowest
   ground under them (as Settle on ground beds a prop); a selection with tiles or set pieces moves by whole levels to
   the level nearest the ground; a path's points each go to the ground's height there. One undo step each. What a floor

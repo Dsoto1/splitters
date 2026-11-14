@@ -274,6 +274,11 @@ export const FX_MAP = {
       "effect": "vfx_burst_explosion_03",
       "scale": 0.4
     },
+    "core.ammo_box": {
+      "pack": "explosion_fx",
+      "effect": "vfx_burst_explosion_01",
+      "scale": 0.28
+    },
     "trap": {
       "pack": "explosion_fx",
       "effect": "vfx_ground_explosion_02",

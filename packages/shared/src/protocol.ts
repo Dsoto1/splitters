@@ -313,8 +313,13 @@ export type GameEvent =
   /** Disc Arena: `s`'s disc struck `t` and knocked them about (no damage). */
   | { e: 'knock'; s: number; t: number }
   | { e: 'pickup'; s: number; id: string; item: string }
-  /** `s` used a resupply point (sim/resupply.ts) on mount `m` (map entity index): `ok` resupplied, else nothing given (full, empty or waiting); `left` uses left. */
-  | { e: 'resupply'; s: number; m: number; left: number; ok: boolean }
+  /**
+   * `s` used a resupply point (sim/resupply.ts): on mount `m` (map entity index), or ammo box `b` (`m` -1). `ok`
+   * resupplied, else nothing given (full, empty or waiting); `left` uses left.
+   */
+  | { e: 'resupply'; s: number; m: number; b?: number; left: number; ok: boolean }
+  /** An ammo box was destroyed at `p` and cooks off (its blasts follow as `explode` events); `n` the share of stock it held. */
+  | { e: 'boxcook'; p: Tuple3; n: number }
   | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit (never on a team kill). */ hs?: 1; /** A team kill: the killer downed a teammate (friendly fire); the feed marks it and nothing rewards it. */ tk?: 1 }
   | { e: 'spawn'; s: number; /** Random characters: the look this life plays (sim/randomLooks.ts). */ l?: string;
       /** Roulette: this life's roll (1 jackpot, 2 tiny), and the cards the player is dealt next (the client preloads them). */ j?: 1 | 2; nx?: string[] }
@@ -619,6 +624,11 @@ export type ServerMessage =
       ms?: number[][];
       /** Deployed cover walls, when any stand (absent means none). */
       cv?: CoverSnapshot[];
+      /**
+       * Ammo boxes standing (sim/resupply.ts): [id, x, y (ground), z, yaw, health %, uses left, 1 when deployed (0:
+       * a map's Ammo Box)]. Absent: none stands. Older clients ignore it.
+       */
+      ab?: number[][];
       /** Receiving player's private state (absent while not in the match). */
       me?: PrivateState;
       /** Scenario state changes (absent when nothing changed). */

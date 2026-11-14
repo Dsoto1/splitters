@@ -173,6 +173,7 @@
       "plasma": { "pack": "hit_fx", "effect": "vfx_impact_04", "scale": 0.35 },
       "flare": { "pack": "hit_fx", "effect": "vfx_impact_05", "scale": 0.4 },
       "barrel": { "pack": "explosion_fx", "effect": "vfx_burst_explosion_03", "scale": 0.4 },
+      "core.ammo_box": { "pack": "explosion_fx", "effect": "vfx_burst_explosion_01", "scale": 0.28 },
       "trap": { "pack": "explosion_fx", "effect": "vfx_ground_explosion_02", "scale": 0.38 },
       "bomb": { "pack": "explosion_fx", "effect": "vfx_nuke_explosion_01", "scale": 0.3 },
       "vehicle": { "pack": "explosion_fx", "effect": "vfx_ground_explosion_04", "scale": 0.5 },
