@@ -35,7 +35,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Waiting on lane A's lead's review** (owner: "this account reviews"); `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. Owner questions on the dock width, the rail, renaming and Dress/Settle all are with the owner.
 
 ## Bugs
-- XS · A · Match start: one 185 ms frame about 5 s in, all 34 nearby characters animated in the same frame (charAnim 157 ms); spread first poses over frames (`docs/PERF_STJOHNS_2026-11-14.md`).
 - S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
 - XS · B · MapMaker: the top bar is cut off at 1440 px (map name, Snap, bot skill truncated) (UI audit; UI Phase 1 fixes it).
 - XS · A · Low graphics: a patch of painted ground cells beside a path end on St. John's (ground paint, not the path fix).
@@ -72,6 +71,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-14 · A · The match-start animation spike: one torso measurement a frame (it skinned the torso on the CPU, 10-33 ms a character, all at once as a crowd settled into its aim), and a crowd coming into view posed over its band's frames (never-posed characters hidden until their first pose); in a crowd-into-view repro max animated a frame 38-47 → 13-15, charAnim 195-333 → 39-52 ms (e361f045).
 - 2026-11-14 · A · The owner's St. John's match recording read: about 34 fps (25 on 11-10), characters 5.5 ms (13.6), hitches 28 in 164 s (546 in 204 s); rendering is now about 21 of 29 ms and the draw count (1,519) hasn't moved (`docs/PERF_STJOHNS_2026-11-14.md`).
 - 2026-11-14 · A · Effects-check fixes: Pantry Raid's mouse holes walkable and painted (portal Swirl option), loot rings outlined, Low's lasting places by view, the lootlight and fixtures checks, pickup guns 1.4x (ec003538).
 - 2026-11-14 · A · Easy wins batch 1: the Heavy MG Turret at 2.1x (a hip carry: the ground shows under the crosshair), vehicle palette pictures with their tires, Steampunk Warrior's hands, The Spillway's long stair cheeks (bots' stuck recoveries about 80 to 50 a match); the buggy tires were already inside their boxes (fitted 2026-11-11, measured as drawn). Flavius Rule's corners moved to Features (not an easy win).
