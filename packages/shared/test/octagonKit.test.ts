@@ -42,7 +42,7 @@ const EIGHTH = Math.PI / 4;
 
 /** A kit tile of one cell with these parts. */
 const spec = (id: string, solids: KitPart[]): TileSpec => ({ id, displayName: id, category: 'Special', cells: [[0, 0, 0]], floors: [0], ports: [], solids });
-const partBoxes = (...parts: KitPart[]): LocalBox[] => resolveKitTile(spec('test.parts', parts)).solids ?? [];
+const partBoxes = (...parts: KitPart[]): readonly LocalBox[] => resolveKitTile(spec('test.parts', parts)).solids ?? [];
 
 /** A box's corners, rounded and sorted, so two boxes (or sets of boxes) built different ways compare as shapes. */
 const corners = (b: Pick<WorldBox, 'min' | 'max' | 'yaw' | 'pitch' | 'roll'>): string =>
