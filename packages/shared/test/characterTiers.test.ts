@@ -30,7 +30,8 @@ import { CLIP_SET_CLIPS as TOOL_CLIPS, TIERS } from '../../../tools/content/char
 // in for one (no real manifest carries a tier yet): the roster with it added is what a build with one would give.
 const trial: CharacterLook = { id: 'core.trialbot', name: 'Trial Bot', body: 'male', head: '', parts: ['meshy_trialbot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_trialbot_fparms' }, group: 'creatures', nameTheme: 'robot', tier: 'experimental' };
 const ROSTER: readonly CharacterLook[] = [trial, ...CORE_LOOKS];
-// The roster's own tiers (since 2026-11-11 it has experimental characters of its own: the ten of that day's intake).
+// The roster's own tiers (experimental characters of its own come and go: the ten of 2026-11-11 until 2026-11-12, the twelve
+// of 2026-11-13 since then).
 const CORE_TIER = CORE_LOOKS.filter((l) => characterTier(l) === 'core');
 const EXPERIMENTAL = CORE_LOOKS.filter((l) => characterTier(l) === 'experimental');
 

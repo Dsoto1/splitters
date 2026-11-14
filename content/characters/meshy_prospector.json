@@ -1,0 +1,39 @@
+{
+  "id": "meshy_prospector",
+  "kind": "character",
+  "use": "player",
+  "order": 133,
+  "name": "The Prospector",
+  "look": "core.prospector",
+  "group": "folk",
+  "tier": "experimental",
+  "nameTheme": "cowboy",
+  "bio": "Forty years digging for gold. Found a rifle instead, and kept it.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-13 (\"wild west prospector 3d\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner has looked at it in game (new characters start there, like maps). Name and bio are ours (the name suggested by the owner's session, 2026-11-14; the owner can rename it). Licence: Meshy Community, CC0 per the owner (CLAUDE.md, Content rules: Meshy models the owner shares are Meshy Community CC0 unless the owner says they made them).",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "wild west prospector 3d"
+    },
+    "date": "2026-11-13",
+    "url": null,
+    "file": "^Meshy_AI_wild_west_prospector_3d_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "firstPerson": {
+    "arms": "own"
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

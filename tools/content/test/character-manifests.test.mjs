@@ -152,7 +152,7 @@ describe('character manifests', () => {
     const good = JSON.parse(readFileSync(join(MANIFEST_DIR, 'meshy_cat.json'), 'utf8'));
     expect(TIERS).toEqual(['core', 'experimental']);
     // A manifest names a tier only to say experimental (core is the one left out); the ten of 2026-11-11 were promoted
-    // by the owner on 2026-11-12, so today none does.
+    // by the owner on 2026-11-12. Today the twelve of 2026-11-13 are experimental, until the owner has looked at them.
     expect(list.filter((m) => m.tier !== undefined && m.tier !== 'experimental').map((m) => m.id)).toEqual([]);
     for (const tier of TIERS) expect(manifestProblems({ ...good, tier }, 'meshy_cat.json')).toEqual([]);
     for (const tier of ['beta', 'Experimental', '', null, true]) expect(manifestProblems({ ...good, tier }, 'meshy_cat.json').join('\n')).toMatch(/tier: core or experimental/);
