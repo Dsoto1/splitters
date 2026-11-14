@@ -3519,7 +3519,7 @@ async function offlineFlow(browser) {
   await until(async () => Math.abs(await yaw()) < 0.01, T(3000));
   check(Math.abs(await yaw()) < 0.01, 'and leaving Character Select faces them forward again');
   check((await page.evaluate(() => window.__front.screen)) === 'profile', 'Back from Character Select returns to Profile, where it was opened');
-  // One grid in sections by what a character is (experimental characters under their own, before yours: the ten of 2026-11-14) (a compact header each), a jump strip that lights the
+  // One grid in sections by what a character is (experimental characters under their own, before yours: the twelve of 2026-11-14) (a compact header each), a jump strip that lights the
   // section in view; Q / E scroll to the next / previous one, and so does scrolling with the wheel.
   await openChars();
   const layout = await page.evaluate(() => ({

@@ -153,7 +153,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.suitedman', name: 'Mister Lanky', body: 'male', head: '', parts: ['meshy_suitedman'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_suitedman_fparms' }, group: 'folk', tier: 'experimental', nameTheme: 'townsfolk' },
   { id: 'core.alienexplorer', name: 'Reef Wanderer', body: 'male', head: '', parts: ['meshy_alienexplorer'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_alienexplorer_fparms' }, group: 'creatures', tier: 'experimental', nameTheme: 'alien' },
   { id: 'core.bronzer', name: 'Bronzer', body: 'male', head: '', parts: ['meshy_bronzer'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_bronzer_fparms' }, group: 'legends', tier: 'experimental', nameTheme: 'myth' },
-  { id: 'core.hollowpilgrim', name: 'The Hollow Pilgrim', body: 'male', head: '', parts: ['meshy_hollowpilgrim'], hair: [], colorways: [], skin: null, hairColor: null, locomotion: 'roll', whole: { arms: 'meshy_hollowpilgrim_fparms' }, group: 'legends', tier: 'experimental', nameTheme: 'myth' },
+  { id: 'core.hollowpilgrim', name: 'The Hollow Pilgrim', body: 'male', head: '', parts: ['meshy_hollowpilgrim'], hair: [], colorways: [], skin: null, hairColor: null, locomotion: 'roll', whole: { arms: 'meshy_hollowpilgrim_fparms', hold: { forward: -0.15 }, grip: { supportLong: [0, 0.04, 0.1] } }, group: 'legends', tier: 'experimental', nameTheme: 'myth' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
