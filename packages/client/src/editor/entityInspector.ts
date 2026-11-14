@@ -80,7 +80,7 @@ import {
 import { envRendererOn } from '../environment/envFlag.ts';
 import { LIQUID_LOOKS } from '../game/scenarioVisuals.ts';
 import type { EditorApp } from './editorApp.ts';
-import { button, h2, numberInput, row, small } from './editorDom.ts';
+import { button, fillWhenOpened, h2, numberInput, row, small, type ChoiceGroups } from './editorDom.ts';
 import { pathLabel } from './pathTool.ts';
 
 /** The inspector for one entity: spawns, pickups, props, doors, lights, movers, triggers, traps, NPC squads, vehicles, objectives and the rest (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
@@ -137,20 +137,11 @@ export class EntityInspector {
     switch (e.kind) {
       case 'prop': {
         const model = document.createElement('select');
-        for (const category of PROP_CATEGORIES) {
-          const group = document.createElement('optgroup');
-          group.label = category;
-          for (const def of CORE_PROPS.filter((d) => d.category === category)) group.append(new Option(def.displayName, def.id, false, def.id === e.model));
-          model.append(group);
-        }
+        const models: ChoiceGroups = PROP_CATEGORIES.map((category) => [category, CORE_PROPS.filter((d) => d.category === category).map((def) => [def.displayName, def.id])]);
         // Environment species (the procedural environment's preview): listed when the map has one or with ?env=1.
         const species = getEnvSpecies(e.model);
-        if (species || envRendererOn()) {
-          const group = document.createElement('optgroup');
-          group.label = 'Environment (preview)';
-          for (const s of ENV_SPECIES) group.append(new Option(s.displayName, s.id, false, s.id === e.model));
-          model.append(group);
-        }
+        if (species || envRendererOn()) models.push(['Environment (preview)', ENV_SPECIES.map((s) => [s.displayName, s.id])]);
+        fillWhenOpened(model, models, e.model);
         // A species' variant is kept only while it stays an environment species (a kit family's starts at its first).
         model.addEventListener('change', () => update('Change prop', { model: model.value, variant: getEnvSpecies(model.value) ? e.variant : undefined }));
         el.append(row('Model', model));

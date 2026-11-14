@@ -225,3 +225,34 @@ The owner supplied this spec and a mock-up image. The image is a reference only 
 **Coordination:**
 - This account's lane does Phase 0 now. The audit is docs only.
 - Phase 1 and later touch the same editor files as the MapMaker lane's Tileset 11 work. Agree who builds each phase in HANDOFF and `docs/QUEUE.md` before code starts, and never have two sessions in `packages/client/src/editor/**` at once.
+
+## Owner's answers to the Phase 0 audit (2026-11-14: "all recs")
+
+These are the recommended options from `docs/MAPMAKER_UI_AUDIT.md` §10. They are binding for Phases 1–4.
+
+1. **Keys**
+   - Shift+\ cycles the right dock: expanded, compact (minimap only), hidden.
+   - Double-click or Enter on a selection opens Tile View.
+   - The minimap gets no key of its own.
+2. **Tool bar**
+   - Paint, Terrain and the Environment brush sit on the Environment tab's tool bar only.
+   - Every tab's overflow menu lists them too.
+3. **Empty inspector**
+   - With nothing selected, it shows one line, "Nothing selected · Map settings…".
+   - Below that, the tab's own section, where the tab has one.
+4. **Map settings placement**
+   - Map settings opens in the right dock, not as a modal dialog. This replaces the spec's "dialog".
+   - The 3D view stays live, for time-of-day previews and for framing the card shot.
+5. **Top bar**
+   - The title opens Map settings.
+   - The theme picker and the test-match bot count and skill stay on the bar (the bot count and skill are not saved with the map).
+   - Grid, full grid and overlaps go into a View menu.
+6. **Level changes:** keep the selection and show "N selected on other levels".
+7. **Narrow windows:** under 900 px wide, the right dock starts compact instead of disappearing.
+8. **Tile View focus:** it can focus a tile, a set piece or a group, with a box region as the fallback. 14 of 89 maps have no tiles.
+9. **Phase 4b:** parked until 4a is in use. After that come stable part keys and the index-to-key migration, using the map format number after the tunnel kit's v39.
+10. **Who builds Phase 1**
+    - The MapMaker lane builds it, after Tileset 11 and its editor-speed branch land.
+    - This account reviews.
+    - Phase 1 starts by giving the 11 flows that reach map settings through Esc an `openMapSettings` helper.
+    - Phase 1 also adds `coverage` to the editor's flow mapping.
