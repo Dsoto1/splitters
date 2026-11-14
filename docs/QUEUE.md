@@ -73,6 +73,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-14 · A · Twelve new characters from the owner's Drive (Meshy Community CC0, Experimental until the owner looks them over), Azure Sentinel and Spud Marshal recoloured, The Hollow Pilgrim glides; Coffee Brown recorded as Meshy, owned.
 - 2026-11-14 · A · The match-start animation spike: one torso measurement a frame (it skinned the torso on the CPU, 10-33 ms a character, all at once as a crowd settled into its aim), and a crowd coming into view posed over its band's frames (never-posed characters hidden until their first pose); in a crowd-into-view repro max animated a frame 38-47 → 13-15, charAnim 195-333 → 39-52 ms (e361f045).
 - 2026-11-14 · A · The owner's St. John's match recording read: about 34 fps (25 on 11-10), characters 5.5 ms (13.6), hitches 28 in 164 s (546 in 204 s); rendering is now about 21 of 29 ms and the draw count (1,519) hasn't moved (`docs/PERF_STJOHNS_2026-11-14.md`).
 - 2026-11-14 · A · Effects-check fixes: Pantry Raid's mouse holes walkable and painted (portal Swirl option), loot rings outlined, Low's lasting places by view, the lootlight and fixtures checks, pickup guns 1.4x (ec003538).
