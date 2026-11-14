@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- Ammo Boxes: map ammo boxes are solid crates you resupply at (10 uses), a throwable Ammo Box Kit sets one down, and a shot-up box cooks off.
 - **Ammo boxes you can shoot.** Every Ammo Box on the maps is now a solid crate: press Use beside it to resupply (full reserves for every gun you carry, underbarrel rounds and grenades). Each holds ten resupplies, and you wait a few seconds between two. Shoot one or blow it up and it cooks off in a round of small blasts and pops that hurt anyone close, a bigger round the fuller it was. Emptied or destroyed, it comes back after a while. Tanks refill beside one.
 - **The Ammo Box Kit.** A new pickup: carry it like Sandbags and throw it to set down an ammo box of your own (ten resupplies, two minutes, one at a time).
 - **MapMaker: Fit ground, the owner's answers.** A lone platform (a slab with nothing built on it) now stands on the ground: Fit brings the ground up to its underside, while a foundation with walls or pieces on it keeps the ground flush with its top. Props standing on the ground a Fit moves are set back on it in the same step, so one undo takes back both.
