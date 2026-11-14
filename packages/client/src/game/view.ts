@@ -1381,7 +1381,12 @@ export class GameView {
     let t = prof ? now : 0;
     this.propFlames.want(this.camera.globalPosition);
     if (prof) t = perfProbe.add(SYS.flames, t);
-    this.lasting.update(this.camera.globalPosition);
+    {
+      // Effects out of the camera's view are ranked after the fixtures in it (lastingFx.ts).
+      const cam = this.scene.activeCamera;
+      const planes = cam ? Frustum.GetPlanes(cam.getTransformationMatrix()) : null;
+      this.lasting.update(this.camera.globalPosition, planes ? (at, r) => inView(planes, at.x, at.y, at.z, r) : undefined);
+    }
     if (prof) t = perfProbe.add(SYS.fx, t);
     this.propFlames.show();
     if (prof) t = perfProbe.add(SYS.flames, t);

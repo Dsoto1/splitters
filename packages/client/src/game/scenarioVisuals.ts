@@ -632,7 +632,8 @@ export class ScenarioVisuals {
       tex.wAng += dt * 1.8;
       const pulse = 0.85 + Math.sin(performance.now() / 260) * 0.15;
       const calm = reduceFlashing();
-      if (this.lasting) {
+      // `swirl: painted` (a mouse hole) keeps the painted spiral and never asks for the pack's.
+      if (this.lasting && e.swirl !== 'painted') {
         level = fixtureLevel('portal', level, on > 0 && this.lasting.drawn(fxId), dt, calm);
         if (on > 0) {
           const m = root.getWorldMatrix();

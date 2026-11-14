@@ -523,6 +523,7 @@ export class EntityInspector {
           glow.addEventListener('change', () => update('Colour portal', { color: glow.value.toLowerCase() }));
           el.append(row('Colour', glow));
         }
+        choose('Swirl', [['pack', 'Pack effect'], ['painted', 'Painted']], e.swirl ?? 'pack', (v) => ({ swirl: v === 'painted' ? 'painted' : undefined }));
         toggle('Starts on', e.startEnabled, (v) => ({ startEnabled: v }));
         el.append(small(partner ? `Leads to ${entityLabel(doc, partner)}: walk (or shoot) into its front and you come out of the other, moving the same way relative to it. Turning one portal turns where you face coming out.` : crowd > 2 ? `Pair "${e.pair}" has ${crowd} portals: a pair links exactly two.` : `No other end yet: give a second portal the pair "${e.pair}" (the Portal Pair tool places both).`));
         el.append(small('Logic switches portals on and off (Enable / Disable): a pair works only while both are on. Bots take portals as shortcuts. Leave room to stand in front of both.'));
