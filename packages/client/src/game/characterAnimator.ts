@@ -452,8 +452,14 @@ export class CharacterAnimator {
   }
 
   private readonly gate: AnimGate = { skip: false };
-  /** Evaluated awake at least once (its bones hold a real pose, not the bind pose): see StepClock.due's `posed`. */
-  private posed = false;
+  private posedOnce = false;
+  /** Evaluated awake at least once, or due to be this frame: its bones hold a real pose, not the bind pose. */
+  get posed(): boolean {
+    return this.posedOnce;
+  }
+  private set posed(on: boolean) {
+    this.posedOnce = on;
+  }
   /** Animation LOD: when the clips are next evaluated (animLod.ts). */
   private readonly clock = new StepClock();
   /** Animation LOD's after-clip detail for the evaluations from now on (animLod.ts AnimStep.detail). */
@@ -473,12 +479,14 @@ export class CharacterAnimator {
     b.now = now;
     if (this.dead) {
       this.gate.skip = false;
+      this.posed = true;
       b.on = false;
       this.clock.due(now, frame, EVERY_FRAME);
       return true;
     }
-    // A character that has been posed in view waits for its own frame of a stepped band; one never posed goes at once.
-    const run = this.clock.due(now, frame, step, phase, this.posed);
+    // Fresh in a stepped band (come into view, or from near), it waits for its own frame of the band (a crowd coming
+    // into view together is spread over frames); GameView keeps one never posed hidden until then (`posed`).
+    const run = this.clock.due(now, frame, step, phase, true);
     if (run && !this.dormant) this.posed = true;
     this.gate.skip = !run;
     b.on = step.smooth && !this.fp && !this.external;

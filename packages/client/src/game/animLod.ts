@@ -114,25 +114,24 @@ export function blendAt(now: number, prev: number, last: number, maxGapMs = 400)
 
 /**
  * The step gate of one character: due when both its time and its frame step have passed since its last evaluation.
- * `phase` (ms, and as a whole number of frames) spreads a crowd's steps over frames. The first evaluation in a
- * stepped band (after a reset: near, or out of view) is at once for a character never posed; one that already holds a
- * pose (`posed`) waits for its own frame of the band's frame grid, so a crowd that comes into view together (a camera
- * cut at a match's start, a respawn, turning round) is spread over the band's frames instead of all evaluated in one
- * (docs/PERF_STJOHNS_2026-11-14.md, the match-start spike).
+ * `phase` (ms, and as a whole number of frames) spreads a crowd's steps over frames. With `spread`, the first
+ * evaluation in a stepped band (after a reset: near before, or out of view) waits for the character's own frame of the
+ * band's frame grid (now, or up to frames-1 frames away), so a crowd that comes into view together (the camera cut at a
+ * match's start, a respawn, turning round) is spread over the band's frames instead of all evaluated in one
+ * (docs/PERF_STJOHNS_2026-11-14.md, the match-start spike); without it, at once.
  */
 export class StepClock {
   private nextMs = 0;
   private nextFrame = 0;
 
   /** Whether frame `frame` at `now` (ms) evaluates under `step`; resets to every frame for a 1-frame step. */
-  due(now: number, frame: number, step: AnimStep, phase = 0, posed = false): boolean {
+  due(now: number, frame: number, step: AnimStep, phase = 0, spread = false): boolean {
     if (step.ms <= 0 && step.frames <= 1) {
       this.nextMs = 0;
       this.nextFrame = 0;
       return true;
     }
-    if (posed && this.nextMs === 0 && this.nextFrame === 0) {
-      // Fresh in a stepped band with a pose to show: from its own frame of the grid (now, or up to frames-1 away).
+    if (spread && this.nextMs === 0 && this.nextFrame === 0) {
       const f = Math.max(1, step.frames);
       this.nextFrame = frame + ((f - (((frame + Math.round(phase)) % f) + f) % f) % f);
     }

@@ -154,15 +154,15 @@ describe('character animation LOD', () => {
 
 describe('a crowd coming into view together (the match-start spike, docs/PERF_STJOHNS_2026-11-14.md)', () => {
   /** How many of `n` characters (phases as GameView gives them: slot * 37 % 100) evaluate in each of `frames` frames. */
-  function perFrame(n: number, share: number, posed: boolean, frames = 12, frameMs = 33): number[] {
+  function perFrame(n: number, share: number, spread: boolean, frames = 12, frameMs = 33): number[] {
     const clocks = Array.from({ length: n }, () => new StepClock());
     const step = animStepByShare(share);
     const out: number[] = [];
-    for (let f = 100; f < 100 + frames; f++) out.push(clocks.filter((c, i) => c.due(f * frameMs, f, step, (i * 37) % 100, posed)).length);
+    for (let f = 100; f < 100 + frames; f++) out.push(clocks.filter((c, i) => c.due(f * frameMs, f, step, (i * 37) % 100, spread)).length);
     return out;
   }
 
-  it('spreads characters that already hold a pose over the band\'s frames', () => {
+  it('spreads the first evaluations over the band\'s frames', () => {
     // 34 characters 40-80 m away (every 4th frame) all come into view in one frame.
     const counts = perFrame(34, (ANIM_SHARE_NEAR + ANIM_SHARE_FAR) / 2, true);
     expect(Math.max(...counts)).toBeLessThanOrEqual(Math.ceil(34 / 4) + 2);
@@ -170,7 +170,7 @@ describe('a crowd coming into view together (the match-start spike, docs/PERF_ST
     expect(counts.slice(0, 4).reduce((a, b) => a + b, 0)).toBe(34);
   });
 
-  it('still poses a character never posed (no bind pose shown) at once', () => {
+  it('without spreading (creatures), all at once as before', () => {
     const counts = perFrame(34, (ANIM_SHARE_NEAR + ANIM_SHARE_FAR) / 2, false);
     expect(counts[0]).toBe(34);
   });
@@ -179,7 +179,7 @@ describe('a crowd coming into view together (the match-start spike, docs/PERF_ST
     expect(perFrame(5, ANIM_SHARE_FINE * 2, true, 4)).toEqual([5, 5, 5, 5]);
   });
 
-  it('a posed character waits at most the band\'s frame step', () => {
+  it('waits at most the band\'s frame step', () => {
     for (let phase = 0; phase < 100; phase += 7) {
       const c = new StepClock();
       const step = animStepByShare(ANIM_SHARE_TINY / 2);
