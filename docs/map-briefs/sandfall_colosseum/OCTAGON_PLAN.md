@@ -228,6 +228,16 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
 - Phases 1-3 can be checked on the coverage map and a scratch map before Flavius Rule is touched. The owner can look at a corner in MapMaker after phase 2.
 - Phase 1 is small enough to go with phase 2 if the landing slot is short.
 
+### Phase 1: as built (2026-11-14, `wip/flavius-octagon-1`, lane B's splitters22)
+- **`turned`** (`map/catalog.ts` `TurnedPart`, `turnBoxes`): a group of any parts turned by `turns` (quarter turns: 0.5 = 45°) or `yaw` (radians) about `pivot` (default [0, 0]). Centres turn, yaws add, sizes stay; on whole quarter turns plain boxes stay plain (so 90° is exactly the parts built the other way, and two 45° groups nested make a plain 90° one). Groups nest.
+- **`wallRun`** (`WallRunPart`, `wallRunBoxes`): an edge style along any segment, `bays` along it; the segment is the outer face, the thickness `left` (default, as a cell side), `right` or `centre`; `y`, `height` (default 4), `outer` (default true). Along a cell's side, at every quarter turn, its collision and trim equal what that side builds (tested for wall, Round arch, Grand arch and window on all four sides).
+- `edgeSegments` and `edgeTrimBoxes` moved, unchanged, from `map/geometry.ts` to a new `map/edgeShapes.ts` (geometry re-exports them), so the catalog can build from them while it loads (geometry imports the catalog).
+- **Plain arch collision** (`wallRun.plain`): piers plus one lintel from the crown up; the steps over the curve become trim drawn in the walls' paint (new `LocalBox.paint` / `WorldBox.paint: 'walls'`, read by `faceSlot`), so the arch looks the same. Round and Grand arch: 19 collision boxes → 3. Near each pier the stone between the curve and the crown is drawn but passable (up to about 1.3 m on a Round arch, 1.8 m on a Grand arch, right at the pier).
+- **Oriented doors:** `Aabb.obox` (sim/scenarioDefs.ts `orientedAabb`) carries the turned slab for a door off the grid; `segmentHitsAabb` (bot blockers, the button's door), `bodyInAabb` (`Scenario.inShutDoor`, the spawn check) and `NavWorld.markOpenings` (13 × 2 samples over the slab, not 10 × 10 over its 2.4 m square) use it. On-grid doors carry none and run exactly the old code.
+- `tools/content/tiles.mjs` checks both parts (and the parts in a group); `tools/content/test/tiles.test.mjs` covers it.
+- **No shipped map changed:** every map's collision boxes, drawn trim and door planes hash the same as on origin/main dc504c9e (89 maps, 157,199 boxes, 105,100 trim, 296 doors; none off the grid); `octagonKit.test.ts` also checks every map's doors.
+- Visual check: a scratch tile (not committed) with a 45° `turned` flight, a 45° plain Grand arch run and a 45° Round arch run of two bays, in the game's renderer; physics probes through the plain arch (opening clear at 2 and 6 m, the lintel and piers solid).
+
 ## 8. The owner's decisions
 
 1. **How big is the octagon?**
