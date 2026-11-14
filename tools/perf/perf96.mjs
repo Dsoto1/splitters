@@ -19,11 +19,13 @@
 //   effects physics and posing the ragdolls, timed in the page; CPU rendering doesn't inflate it),
 //   PERF_MAX_MASS_DRAWS=n (exit 1 when frames after the blast average more draws), PERF_MAX_MASS_BODIES=n
 //   (exit 1 when more ragdoll bodies are awake at once than n).
-// A map may name its own scenarios and players: `pantry_raid:fixtures:12` plays Pantry Raid with 12 players and
+// A map may name its own scenarios and players: `pantry_raid:fixtures:1` plays Pantry Raid with you alone (no bots:
+//   a fight in view would rightly outrank the fixtures and make the check hang on where it happened) and
 //   runs only `fixtures`: you held where a portal, two jump pads and pickups are in view (FIXTURE_VIEWS), so the
 //   map's lasting effects (the pads' lift, pickups' glows: game/lastingFx.ts) are drawn and counted. With a budget it
 //   fails when the frames go over the draw or caster budget, an effect is in the shadow pass, or one of the view's
-//   `kinds` isn't drawn in most frames (on Low too: 4 lasting places).
+//   `kinds` isn't drawn in most frames (on Low too: 4 lasting places). It judges frames, not seconds: it waits for
+//   PERF_FIXTURE_WARM=24 drawn frames after placing you (the effects ease in), then judges PERF_FIXTURE_FRAMES=16.
 // SwiftShader renders on the CPU, so render times are far above a real GPU's: compare runs
 // on the same machine, and read the sim and JS columns as the portable part.
 import { spawn } from 'node:child_process';
@@ -158,6 +160,30 @@ const FIXTURES_PLACE = `(m, me, at) => {
   return [pos.x, pos.y, pos.z];
 }`;
 const FIXTURES_END = `() => clearInterval(globalThis.__fixHold)`;
+/** The fixtures view: frames drawn after you are placed before it is judged (the effects eased in), and frames judged. */
+const FIXTURE_WARM_FRAMES = Number(process.env.PERF_FIXTURE_WARM ?? 24);
+const FIXTURE_FRAMES = Number(process.env.PERF_FIXTURE_FRAMES ?? 16);
+/** How long each of those waits may take (a CPU-rendered CI page draws under one frame a second here). */
+const FIXTURE_WAIT_MS = 150000;
+
+/** Waits until the page has drawn `n` more frames, or `ms` has passed; returns how many it drew. */
+async function waitFrames(page, n, ms) {
+  return page.evaluate(
+    ([n, ms]) =>
+      new Promise((done) => {
+        const sc = window.__cs.view.scene;
+        let k = 0;
+        const t0 = performance.now();
+        const o = sc.onAfterRenderObservable.add(() => {
+          if (++k < n && performance.now() - t0 < ms) return;
+          sc.onAfterRenderObservable.remove(o);
+          done(k);
+        });
+        setTimeout(() => (sc.onAfterRenderObservable.remove(o), done(k)), ms);
+      }),
+    [n, ms],
+  );
+}
 /** Runs inside the match: the blast (after MASS_PLACE). */
 const MASS = `(m) => {
   clearInterval(globalThis.__massHold);
@@ -357,8 +383,10 @@ for (const spec of specs) {
               const [x, y, z] = row.placed;
               const d = [view.look[0] - x, view.look[1] - y - 1.6, view.look[2] - z];
               await page.evaluate((look) => Object.assign(window.__cs.input, look), { yaw: Math.atan2(d[0], d[2]), pitch: Math.atan2(d[1], Math.hypot(d[0], d[2])) });
-              // The effects come up (eased in: two seconds with Reduce flashing on, the default).
-              await sleep(4000);
+              // The effects come up, judged by drawn frames, not wall time: the game steps at most 0.1 s a frame, and eased in
+              // over about two seconds (Reduce flashing on, the default) they need some 20 frames, which a CPU-rendered CI
+              // page under 1 fps takes half a minute or more to draw.
+              await waitFrames(page, FIXTURE_WARM_FRAMES, FIXTURE_WAIT_MS);
             }
             if (scenario === 'mass') {
               row.mass = await measureMass(page, sim);
@@ -396,9 +424,11 @@ for (const spec of specs) {
               return window.__perf.frames;
             });
             if (scenario === 'rows') await sim(ROWS_END);
-            if (scenario === 'fixtures') await sim(FIXTURES_END);
-            // What rendering draws now (2 s of frames): draw calls, active meshes, triangles, skinned characters, particles.
-            const scene = await page.evaluate(async () => {
+            // What rendering draws now (2 s of frames, and at least `minFrames`): draw calls, active meshes, triangles,
+            // skinned characters, particles. The fixtures view judges shares of frames, so it waits for FIXTURE_FRAMES of
+            // them (held where it stands until then).
+            const minFrames = scenario === 'fixtures' ? FIXTURE_FRAMES : 1;
+            const scene = await page.evaluate(async ([minFrames, waitMs]) => {
               const sc = window.__cs.view.scene;
               const engine = sc.getEngine();
               const counter = engine._drawCalls;
@@ -448,8 +478,8 @@ for (const spec of specs) {
                 if (live) s.lasting.push([...live.values()].filter((l) => !l.h.done).map((l) => l.fx.split('.')[0]));
               });
               await new Promise((r) => setTimeout(r, 2000));
-              // A CPU-rendered page (CI) can draw fewer than one frame in 2 s: wait for one, up to 30 s more.
-              for (let waited = 0; s.draws.length === 0 && waited < 30000; waited += 250) await new Promise((r) => setTimeout(r, 250));
+              // A CPU-rendered page (CI) can draw fewer than one frame in 2 s: wait for `minFrames`, up to `waitMs` more.
+              for (let waited = 0; s.draws.length < minFrames && waited < waitMs; waited += 250) await new Promise((r) => setTimeout(r, 250));
               sc.onBeforeRenderObservable.remove(before);
               sc.onAfterRenderObservable.remove(after);
               sc.onAfterAnimationsObservable.remove(anim);
@@ -500,7 +530,8 @@ for (const spec of specs) {
               for (const f of s.lasting) for (const k of new Set(f)) lastingShare[k] = (lastingShare[k] ?? 0) + 1 / Math.max(1, s.lasting.length);
               for (const k of Object.keys(lastingShare)) lastingShare[k] = +lastingShare[k].toFixed(2);
               return { lasting: Math.max(0, ...s.lasting.map((f) => f.length)), lastingShare, frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), casters: avg(s.casters), effectCasters, shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length, posed: avg(s.posed), animated: avg(s.animated), bands, activeByKind: kinds, casterKinds, castingCharacters, otherCasters: Object.entries(otherNames).sort((a, b) => b[1] - a[1]).slice(0, 6), shaders: window.__cs.view.shaderCount?.() ?? Object.keys(engine._compiledEffects ?? {}).length };
-            });
+            }, [minFrames, scenario === 'fixtures' ? FIXTURE_WAIT_MS : 30000]);
+            if (scenario === 'fixtures') await sim(FIXTURES_END);
             const prof = await sim(PROFILE, false);
             const wall = (Date.now() - t0) / 1000;
             const avg = (k) => frames.reduce((s, f) => s + f[k], 0) / Math.max(1, frames.length);
@@ -634,6 +665,7 @@ for (const r of results.filter((x) => !x.stalled)) {
   // The fixtures view: its casters within budget, and the portal, the pads and a pickup's glow drawn in most frames
   // (a place lost to an effect out of sight, or handed back and forth, shows as a share under FIXTURE_SHARE).
   const fx = r.fixtures?.scene;
+  if (checking && fx && fx.frames > 0 && fx.frames < FIXTURE_FRAMES / 2) fails.push(`${r.map} ${r.graphics} fixtures: only ${fx.frames} frames drawn in ${FIXTURE_WAIT_MS / 1000} s (wanted ${FIXTURE_FRAMES})`);
   if (checking && fx && fx.frames > 0) {
     if (casterBudget && fx.casters > casterBudget) fails.push(`${r.map} ${r.graphics} fixtures: ${fx.casters} shadow casters > ${casterBudget}`);
     for (const k of FIXTURE_VIEWS[r.map]?.kinds ?? []) if ((fx.lastingShare?.[k] ?? 0) < FIXTURE_SHARE) fails.push(`${r.map} ${r.graphics} fixtures: the ${k} effect was drawn in ${Math.round((fx.lastingShare?.[k] ?? 0) * 100)} % of frames (< ${FIXTURE_SHARE * 100} %; ${JSON.stringify(fx.lastingShare)})`);
