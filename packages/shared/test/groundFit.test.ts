@@ -11,6 +11,7 @@ import {
   newTerrain,
   settlePathOnGroundCommand,
   settleSelectionOnGroundCommand,
+  settledPropY,
   terrainHeightAt,
   terrainUnderFloors,
   type MapDocument,
@@ -174,5 +175,108 @@ describe('Fit ground to a path, and a path onto the ground', () => {
     expect(down.terrain).toBe(d.terrain);
     expect(applyCommand(down, invertCommand(r.command)).paths).toEqual(d.paths);
     expect(settlePathOnGroundCommand(down, 'road')).toEqual({ error: expect.stringMatching(/on the ground already/) });
+  });
+});
+
+describe('Fit ground: a lone platform and a foundation slab (owner, 2026-11-13)', () => {
+  // A slab 12 m square on the slope, 0.5 m thick: its underside at 1.5 m, its top at 2 m.
+  const slab = block('slab', [0, 1.5, 0], [12, 0.5, 12]);
+  const fitted = (entities: MapEntity[], ids = ['slab']) => {
+    const d = slope();
+    const doc = { ...d, entities: [...d.entities, ...entities] };
+    return applyCommand(doc, ok(fitGroundToSelectionCommand(doc, { tiles: [], entities: ids }, 6)).command);
+  };
+
+  it('fits a lone platform to its underside, so it stands on the ground', () => {
+    const fit = fitted([slab]);
+    for (const [x, z] of [[-6, 0], [6, 0], [0, 0], [5, 5]] as const) expect(ground(fit, x, z), `${x},${z}`).toBeCloseTo(1.5, 5);
+  });
+
+  it('fits a foundation (a wall standing on its top) flush with its top, whether or not the wall is selected', () => {
+    const wall = block('wall', [-5.75, 2, 0], [0.5, 3, 12]);
+    for (const ids of [['slab', 'wall'], ['slab']]) {
+      const fit = fitted([slab, wall], ids);
+      for (const [x, z] of [[-6, 0], [6, 0], [0, 0]] as const) expect(ground(fit, x, z), `${ids} ${x},${z}`).toBeCloseTo(2, 5);
+    }
+  });
+
+  it('does not count props on the platform, or a wall beside it, as built on it', () => {
+    const crate = MapEntity.parse({ id: 'crate', kind: 'prop', model: 'kit.crate.wood', position: [0, 2, 0], yaw: 0, scale: 1 });
+    const beside = block('beside', [12, 0, 0], [0.5, 3, 12]);
+    const fit = fitted([slab, crate, beside]);
+    expect(ground(fit, 0, 0)).toBeCloseTo(1.5, 5);
+  });
+
+  it('keeps a room of tiles (walls on its floor) flush with its floor', () => {
+    const d = slope();
+    const room = { ...d, classicStructure: { ...d.classicStructure, tiles: [{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 as const }] } };
+    const fit = applyCommand(room, ok(fitGroundToSelectionCommand(room, { tiles: ['room'], entities: [] })).command);
+    expect(ground(fit, 4, 0)).toBeCloseTo(0, 5);
+  });
+});
+
+describe('Fit ground re-beds the props on the ground it moved (owner, 2026-11-13)', () => {
+  const prop = (id: string, x: number, z: number, y?: number) => MapEntity.parse({ id, kind: 'prop', model: 'kit.crate.wood', position: [x, y ?? 0, z], yaw: 0, scale: 1 });
+  /** The house of the first tests, with props: two settled on the slope beside it, one far off, one on the slab, one hung high. */
+  const yard = (): MapDocument => {
+    const d = slope();
+    const t = d.terrain!;
+    const onGround = (id: string, x: number, z: number) => {
+      const p = prop(id, x, z);
+      return prop(id, x, z, settledPropY(t, p as never)!);
+    };
+    return {
+      ...d,
+      entities: [
+        block('slab', [0, 1.5, 0], [12, 0.5, 12]),
+        block('wall', [-5.75, 2, 0], [0.5, 3, 12]),
+        onGround('west', -9, 0),
+        onGround('east', 9, 2),
+        onGround('farr', 0, 34),
+        prop('onSlab', 2, 0, 2),
+        prop('lamp', -9, 4, settledPropY(t, prop('probe', -9, 4) as never)! + 3),
+      ],
+    };
+  };
+  const at = (d: MapDocument, id: string) => d.entities.find((e) => e.id === id)!.position[1];
+
+  it('puts each prop standing on the moved ground back on it by the settle rule, in the same step as the fit', () => {
+    const d = yard();
+    const r = ok(fitGroundToSelectionCommand(d, { tiles: [], entities: ['slab', 'wall'] }, 6));
+    expect(r.command.kind).toBe('batch');
+    expect(r.rebedded).toBe(2);
+    const fit = applyCommand(d, r.command);
+    // The ground moved under both (raised to the west, cut to the east), and each sits on it again: nothing floats or sinks.
+    for (const id of ['west', 'east']) {
+      const e = fit.entities.find((x) => x.id === id)!;
+      expect(at(fit, id), id).not.toBeCloseTo(at(d, id), 1);
+      expect(at(fit, id), id).toBeCloseTo(settledPropY(fit.terrain!, e as never)!, 5);
+    }
+    // Out of reach, held by the slab, or hung well above the ground: as they were.
+    for (const id of ['farr', 'onSlab', 'lamp']) expect(at(fit, id), id).toBe(at(d, id));
+    // The blocks fitted to stay where they are.
+    expect(at(fit, 'slab')).toBe(1.5);
+  });
+
+  it('undoes the fit and the re-bedded props together', () => {
+    const d = yard();
+    const r = ok(fitGroundToSelectionCommand(d, { tiles: [], entities: ['slab', 'wall'] }, 6));
+    const fit = applyCommand(d, r.command);
+    const back = applyCommand(fit, invertCommand(r.command));
+    expect(back.terrain).toEqual(d.terrain);
+    expect(back.entities).toEqual(d.entities);
+  });
+
+  it('re-beds the props beside a path the ground is fitted to', () => {
+    const d = slope();
+    const path = MapPath.parse({ id: 'p', width: 3, lay: false, points: [[-20, 2, 0], [20, 2, 0]] });
+    const t = d.terrain!;
+    const p = prop('bush', -12, 3);
+    const doc = { ...d, paths: [path], entities: [prop('bush', -12, 3, settledPropY(t, p as never)!)] };
+    const r = ok(fitGroundToPathCommand(doc, 'p', 6));
+    expect(r.rebedded).toBe(1);
+    const fit = applyCommand(doc, r.command);
+    expect(at(fit, 'bush')).toBeCloseTo(settledPropY(fit.terrain!, fit.entities[0] as never)!, 5);
+    expect(at(fit, 'bush')).toBeGreaterThan(at(doc, 'bush'));
   });
 });

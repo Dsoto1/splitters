@@ -1154,34 +1154,41 @@ async function editoruxFlow(browser) {
     await edited(rev);
     const settledPath = (await doc()).paths.find((p) => p.id === road.id).points;
     check(settledPath.every((q, i) => Math.abs(q[1] - (lifted[i][1] - 2)) < 0.05 && q[0] === lifted[i][0] && q[2] === lifted[i][2]) && Math.abs((await groundAt(mid[0], mid[2])) - groundBefore) < 1e-6, `Settle onto the ground puts the path's points back on the ground, the ground untouched (${settledPath.map((q) => q[1]).join(', ')})`);
-    // Fit ground to a build: a slab of a block hung 1.5 m over the ground (a foundation over a slope), selected.
+    // Fit ground to a build: a lone slab of a block (nothing built on it) hung 1.5 m over the ground, selected, and a
+    // crate standing on the ground 7 m east of it.
     const padAt = [mid[0] + 30, 0, mid[2] - 30];
     const padGround = await groundAt(padAt[0], padAt[2]);
-    await page.evaluate(([x, y, z]) => {
+    const crateAt = [padAt[0] + 7, padAt[2]];
+    const crateY = Math.round(((await groundAt(crateAt[0], crateAt[1])) - 0.03) * 100) / 100;
+    await page.evaluate(([x, y, z, cx, cz, cy]) => {
       const ed = window.__editor;
       ed.setTool({ kind: 'select' });
-      ed.run('Add block', { kind: 'addEntities', entities: [{ id: 'fit_slab', kind: 'block', position: [x, y, z], size: [8, 0.5, 8], yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 }] });
+      ed.run('Add block', { kind: 'addEntities', entities: [{ id: 'fit_slab', kind: 'block', position: [x, y, z], size: [8, 0.5, 8], yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 }, { id: 'fit_crate', kind: 'prop', model: 'kit.crate.wood', position: [cx, cy, cz], yaw: 0, scale: 1, solid: true, tint: null }] });
       ed.setSelection({ tiles: [], entities: ['fit_slab'] }, true);
       ed.view.focus({ x, y, z });
-    }, [padAt[0], Math.round((padGround + 1.5) * 100) / 100, padAt[2]]);
+    }, [padAt[0], Math.round((padGround + 1.5) * 100) / 100, padAt[2], crateAt[0], crateAt[1], crateY]);
     await settle();
     await page.waitForSelector('#ed-fit-ground', { timeout: T(5000) }).catch(() => {});
     const slabTop = (await doc()).entities.find((e) => e.id === 'fit_slab').position[1] + 0.5;
+    const crateNow = async () => (await doc()).entities.find((e) => e.id === 'fit_crate').position[1];
     await shot('fit-ground-before');
     rev = await revision();
     await page.click('#ed-fit-ground');
     await edited(rev);
     const under = await Promise.all([[0, 0], [-4, -4], [4, 4], [5, 0]].map(([dx, dz]) => groundAt(padAt[0] + dx, padAt[2] + dz)));
     const farOff = await groundAt(padAt[0] + 40, padAt[2]);
-    check(under.every((g) => Math.abs(g - slabTop) < 0.02) && Math.abs(slabTop - padGround - 2) < 0.1, `Fit ground to this brings the ground up to the slab's top under and just round it (${under.map((g) => g.toFixed(2)).join(', ')} at a top of ${slabTop})`);
+    check(under.every((g) => Math.abs(g - (slabTop - 0.5)) < 0.02) && Math.abs(slabTop - padGround - 2) < 0.1, `Fit ground to this brings the ground up to a lone slab's underside under and just round it (${under.map((g) => g.toFixed(2)).join(', ')} under a top of ${slabTop})`);
+    const crateFitted = await crateNow();
+    const crateGround = await groundAt(crateAt[0], crateAt[1]);
+    check(crateFitted > crateY + 0.1 && Math.abs(crateFitted - crateGround) < 0.3, `the crate on the raised ground is re-bedded on it in the same step (${crateY} → ${crateFitted} m, ground ${crateGround.toFixed(2)})`);
     const eased = await groundAt(padAt[0] + 9, padAt[2]);
-    check(eased < slabTop - 0.05 && eased > padGround - 0.5 && (await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'fit_slab').position[1] + 0.5)) === slabTop, `the ground eases back into the ground about, and the slab has not moved (${eased.toFixed(2)} m, 5 m out)`);
+    check(eased < slabTop - 0.55 && eased > padGround - 0.5 && (await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'fit_slab').position[1] + 0.5)) === slabTop, `the ground eases back into the ground about, and the slab has not moved (${eased.toFixed(2)} m, 5 m out)`);
     await settle();
     await shot('fit-ground-after');
     rev = await revision();
     await page.keyboard.press('Control+z');
     await edited(rev);
-    check(Math.abs((await groundAt(padAt[0], padAt[2])) - padGround) < 1e-6 && Math.abs((await groundAt(padAt[0] + 40, padAt[2])) - farOff) < 1e-6, 'one undo gives the ground back');
+    check(Math.abs((await groundAt(padAt[0], padAt[2])) - padGround) < 1e-6 && Math.abs((await groundAt(padAt[0] + 40, padAt[2])) - farOff) < 1e-6 && (await crateNow()) === crateY, 'one undo gives the ground back and the crate with it');
     // The reverse: the slab moved down onto the ground (the ground stays), from the selection menu.
     const slabPx = await at(padAt[0], slabTop, padAt[2]);
     await page.mouse.click(slabPx.x, slabPx.y, { button: 'right' });
@@ -1212,7 +1219,7 @@ async function editoruxFlow(browser) {
     check((await doc()).entities.find((e) => e.id === 'fit_slab').position[1] + 0.5 === slabTop, 'one undo puts it back');
     await page.evaluate(() => {
       const ed = window.__editor;
-      ed.run('Remove block', { kind: 'removeEntities', entities: ed.doc.entities.filter((e) => e.id === 'fit_slab') });
+      ed.run('Remove block', { kind: 'removeEntities', entities: ed.doc.entities.filter((e) => e.id === 'fit_slab' || e.id === 'fit_crate') });
       ed.setSelection({ tiles: [], entities: [] });
     });
   }

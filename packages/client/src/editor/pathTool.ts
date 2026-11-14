@@ -37,6 +37,7 @@ import {
   type Vec3,
 } from '@tiletrigger/shared';
 import { pathArrows, pathLift, pathLine, pathSurfaceY } from '../pathMeshes.ts';
+import { groundFitRebedNote } from './groundFitPanel.ts';
 
 /** What the path tool needs from MapMaker. */
 export interface PathToolHost {
@@ -774,10 +775,10 @@ export class PathTool {
       heading('Ground');
       const blend = () => this.host.blend?.() ?? GROUND_FIT_BLEND;
       buttons([
-        ['ed-path-fit-ground', 'Fit ground to this path', 'Raise or lower the ground under and beside the path to meet its line, eased into the ground about (the ground changes; the path stays). One undo step', () => {
+        ['ed-path-fit-ground', 'Fit ground to this path', 'Raise or lower the ground under and beside the path to meet its line, eased into the ground about (the ground changes; the path stays; props on the moved ground are re-bedded). One undo step', () => {
           const r = fitGroundToPathCommand(this.host.doc(), path.id, blend());
           if ('error' in r) return this.host.toast(`Can't fit the ground: ${r.error}`, true);
-          if (this.host.run('Fit ground to path', r.command)) this.host.toast(`The ground fitted to the path: ${r.raised} point${r.raised === 1 ? '' : 's'} raised, ${r.lowered} lowered, up to ${r.most} m · Ctrl+Z to undo`);
+          if (this.host.run('Fit ground to path', r.command)) this.host.toast(`The ground fitted to the path: ${r.raised} point${r.raised === 1 ? '' : 's'} raised, ${r.lowered} lowered, up to ${r.most} m${groundFitRebedNote(r.rebedded)} · Ctrl+Z to undo`);
         }],
         ['ed-path-on-ground', 'Settle onto the ground', 'Put each of the path\'s points at the height of the ground there (the path moves; the ground stays). One undo step', () => {
           const r = settlePathOnGroundCommand(this.host.doc(), path.id);

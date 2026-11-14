@@ -2,9 +2,10 @@ import { coreCatalog, type TileCatalog } from '../map/catalog.ts';
 import { boxFootprint, buildMapGeometry, type WorldBox } from '../map/geometry.ts';
 import { expandSetPieces, setPiecePartId, type SetPieceLibrary } from '../map/setPieces.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
-import type { MapDocument, MapPath } from '../map/schema.ts';
+import type { MapDocument, MapEntity, MapPath } from '../map/schema.ts';
 import { terrainHeightAt, type TerrainData } from '../map/terrain.ts';
 import { pathGeometry, pathUses, trackPointAt } from '../map/track.ts';
+import { FLOAT_TOLERANCE, settledPropY, supportBoxes, supportUnder } from '../map/settle.ts';
 import type { EditCommand } from './commands.ts';
 import { moveCommand, moveEntitiesCommand, type Selection } from './operations.ts';
 
@@ -15,7 +16,8 @@ import { moveCommand, moveEntitiesCommand, type Selection } from './operations.t
  * Fit: the ground as made (the stored heights; what a tunnel or a floor does to the ground as played is worked out
  * from them, not stored) is brought to the build's base under its footprint and a cell round it, and from there eased
  * back into the ground about over `blend` metres (further where the ground is far above or below, so the bank stays
- * walkable). It raises and lowers. One undo step.
+ * walkable). It raises and lowers. Props standing on the ground it moved are re-bedded by the settle rule (each on the
+ * lowest ground under it), in the same undo step; the ground's paint stays (owner, 2026-11-13).
  * Settle: the build is moved down or up onto the ground instead; the ground stays.
  */
 
@@ -24,8 +26,15 @@ export const GROUND_FIT_BLEND = 6;
 export const GROUND_FIT_BLEND_RANGE = { min: 0, max: 40 } as const;
 /** The bank left where the ground is far from the build's height: this many metres out for every metre up or down. */
 const BANK = 2;
-/** A floor box this thin is a slab the ground comes up to the top of; anything taller stands on the ground with its bottom. */
+/**
+ * A floor box this thin is a slab. A foundation slab (walls, blocks, tiles or a set piece standing on its top) has the
+ * ground brought flush with its top; a lone platform (nothing built on it; props do not count) stands on the ground
+ * with its underside, as anything taller does (owner, 2026-11-13).
+ */
 const SLAB = 1;
+/** What counts as built on a slab's top: its bottom no lower than the slab's and at most this far over its top (m), rising at least STANDS above it. */
+const ON_TOP = 0.15;
+const STANDS = 0.25;
 /** Parts of a build this far above its base (m) are not what stands on the ground (upper floors, roofs, overhangs). */
 const GROUNDED = 1;
 
@@ -103,17 +112,66 @@ export function fitGround(t: TerrainData, want: Want, blend: number, bounds: { m
   return heights && under ? { heights, raised, lowered, most: Math.round(most * 100) / 100 } : null;
 }
 
-/** What of a selection stands on the ground: its boxes near its base, and the base (the lowest slab's top, or the lowest bottom). */
-function groundedBoxes(doc: MapDocument, sel: Selection, catalog: TileCatalog, library: SetPieceLibrary): { boxes: WorldBox[]; base: number } | { error: string } {
+/** Whether anything is built on a thin slab's top: a wall, block, tile or set piece part (not a prop) standing on it. */
+function builtOn(slab: WorldBox, geo: readonly WorldBox[]): boolean {
+  const top = slab.max[1];
+  const outline = boxFootprint(slab);
+  return geo.some((b) => {
+    if (b === slab || b.kind === 'prop' || b.kind === 'barrier' || b.kind === 'trim') return false;
+    if (b.min[1] > top + ON_TOP || b.min[1] < slab.min[1] - 0.05 || b.max[1] < top + STANDS) return false;
+    return outlineDistance(outline, (b.min[0] + b.max[0]) / 2, (b.min[2] + b.max[2]) / 2) <= 0.3;
+  });
+}
+
+/**
+ * What of a selection stands on the ground: its boxes near its base, and the base (the lowest bottom; a thin slab's
+ * top instead where it is a foundation, and for Settle every thin slab's top). `lone`: a slab with nothing built on it
+ * goes by its underside (Fit).
+ */
+function groundedBoxes(doc: MapDocument, sel: Selection, catalog: TileCatalog, library: SetPieceLibrary, lone = false): { boxes: WorldBox[]; base: number } | { error: string } {
   const ids = new Set([...sel.tiles, ...sel.entities]);
   const pieces = sel.setPieces ?? [];
   if (!ids.size && !pieces.length) return { error: 'nothing selected' };
   const mine = (id: string) => ids.has(id) || pieces.some((p) => id.startsWith(setPiecePartId(p, 0).slice(0, -1)));
-  const all = buildMapGeometry(expandSetPieces(doc, library, catalog).map, catalog).filter((b) => b.kind !== 'barrier' && b.kind !== 'trim' && mine(b.sourceId));
+  const geo = buildMapGeometry(expandSetPieces(doc, library, catalog).map, catalog);
+  const all = geo.filter((b) => b.kind !== 'barrier' && b.kind !== 'trim' && mine(b.sourceId));
   if (!all.length) return { error: 'the selection has nothing that stands on the ground (select tiles, a set piece, blocks or props)' };
-  const baseOf = (b: WorldBox) => (b.kind === 'floor' && b.max[1] - b.min[1] <= SLAB ? b.max[1] : b.min[1]);
+  const baseOf = (b: WorldBox) => (b.kind === 'floor' && b.max[1] - b.min[1] <= SLAB && (!lone || builtOn(b, geo)) ? b.max[1] : b.min[1]);
   const base = Math.min(...all.map(baseOf));
   return { boxes: all.filter((b) => baseOf(b) <= base + GROUNDED), base };
+}
+
+/**
+ * Props standing on the ground a fit moved, put back on it by the settle rule (the lowest ground under each). A prop
+ * counts as standing on the ground when it was within the settle tolerance of it before (or a little sunk) and nothing
+ * else holds it up; `skip`: what was fitted to. With none, the terrain command as it is; else one batch, one undo step.
+ */
+function rebedProps(doc: MapDocument, terrainCmd: EditCommand & { kind: 'setTerrain' }, skip: ReadonlySet<string>): { command: EditCommand; rebedded: number } {
+  const was = terrainCmd.before!;
+  const now = terrainCmd.after!;
+  const moved: { e: MapEntity; from: number; to: number }[] = [];
+  for (const e of doc.entities) {
+    if (e.kind !== 'prop' || skip.has(e.id)) continue;
+    const from = settledPropY(was, e);
+    const to = settledPropY(now, e);
+    if (from === null || to === null || Math.abs(to - from) < 0.01) continue;
+    const above = e.position[1] - from;
+    if (above > FLOAT_TOLERANCE + 0.05 || above < -1.5) continue;
+    moved.push({ e, from, to });
+  }
+  if (!moved.length) return { command: terrainCmd, rebedded: 0 };
+  const boxes = supportBoxes(doc);
+  const before: MapEntity[] = [];
+  const after: MapEntity[] = [];
+  for (const { e, from, to } of moved) {
+    // Held up by a floor, block or another prop above the ground: it stays where it stands.
+    const held = supportUnder(boxes, e.position[0], e.position[2], e.position[1], e.id);
+    if (held > from + 0.05 && held >= e.position[1] - FLOAT_TOLERANCE) continue;
+    before.push(e);
+    after.push({ ...e, position: [e.position[0], to, e.position[2]] } as MapEntity);
+  }
+  if (!after.length) return { command: terrainCmd, rebedded: 0 };
+  return { command: { kind: 'batch', commands: [terrainCmd, { kind: 'updateEntities', before, after }] }, rebedded: after.length };
 }
 
 function outlineBounds(outlines: readonly (readonly (readonly [number, number])[])[]): { min: [number, number]; max: [number, number] } {
@@ -128,13 +186,15 @@ export interface GroundFitResult {
   raised: number;
   lowered: number;
   most: number;
+  /** Props standing on the moved ground, re-bedded on it in the same step. */
+  rebedded: number;
 }
 
 /** Fit the ground to the selection: tiles, set pieces, blocks and props (their parts that stand on the ground). */
 export function fitGroundToSelectionCommand(doc: MapDocument, sel: Selection, blend = GROUND_FIT_BLEND, catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): GroundFitResult | { error: string } {
   const t = doc.terrain;
   if (!t) return { error: 'this map has no terrain' };
-  const g = groundedBoxes(doc, sel, catalog, library);
+  const g = groundedBoxes(doc, sel, catalog, library, true);
   if ('error' in g) return g;
   const outlines = g.boxes.map((b) => boxFootprint(b));
   const want: Want = (x, z) => {
@@ -147,7 +207,8 @@ export function fitGroundToSelectionCommand(doc: MapDocument, sel: Selection, bl
   };
   const fit = fitGround(t, want, blend, outlineBounds(outlines));
   if (!fit) return { error: 'the ground already meets it (for another blend: undo, then fit again)' };
-  return { command: { kind: 'setTerrain', before: t, after: { ...t, heights: fit.heights } }, raised: fit.raised, lowered: fit.lowered, most: fit.most };
+  const r = rebedProps(doc, { kind: 'setTerrain', before: t, after: { ...t, heights: fit.heights } }, new Set(sel.entities));
+  return { ...r, raised: fit.raised, lowered: fit.lowered, most: fit.most };
 }
 
 /**
@@ -213,7 +274,8 @@ export function fitGroundToPathCommand(doc: MapDocument, pathId: string, blend =
   const pad = half + 4;
   const fit = fitGround(t, want, blend, { min: [Math.min(...xs) - pad, Math.min(...zs) - pad], max: [Math.max(...xs) + pad, Math.max(...zs) + pad] });
   if (!fit) return { error: 'the ground already meets it (for another blend: undo, then fit again)' };
-  return { command: { kind: 'setTerrain', before: t, after: { ...t, heights: fit.heights } }, raised: fit.raised, lowered: fit.lowered, most: fit.most };
+  const r = rebedProps(doc, { kind: 'setTerrain', before: t, after: { ...t, heights: fit.heights } }, new Set());
+  return { ...r, raised: fit.raised, lowered: fit.lowered, most: fit.most };
 }
 
 /** Settle a path onto the ground as made: each of its points at the ground's height there. */

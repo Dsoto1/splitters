@@ -69,8 +69,8 @@ single stretch of MapMaker's own work: the hang that is felt.
   map. The unit test and the e2e checks measure the heights.
 - **Limits.** A second Fit on a build the ground already meets is refused (undo, then fit with another Blend). One
   base height per selection (terraced buildings: one at a time). The ground is level for one terrain cell round the
-  footprint, so the cell size limits how tight the fit is. It does not repaint the ground or re-bed props standing on
-  the ground it moved.
+  footprint, so the cell size limits how tight the fit is. It does not repaint the ground (by the owner's answer);
+  props standing on the ground it moved are now re-bedded ("The owner's answers", below).
 
 ## Checks (at 07fc683)
 
@@ -94,6 +94,24 @@ single stretch of MapMaker's own work: the hang that is felt.
    or steeper?
 4. Should Fit also repaint the ground it raised, or re-bed the props on it?
 5. A new recording on a real GPU once this lands.
+
+### The owner's answers (2026-11-13: "I'll take your recs")
+
+1. **Settle: kept as built, no change.** Free blocks and props sit on the lowest ground under them (nothing hangs,
+   the uphill side is buried); tiles and set pieces move by whole levels to the level nearest the ground.
+2. **A thin floor slab: built** (`wip/fit-ground-answers`). Fit tells the two apart by what sits on the slab's top:
+   - a **foundation** (a wall, block, tile or set piece part standing on its top, selected or not; props do not
+     count) keeps the ground flush with its top;
+   - a **lone platform** (nothing built on it) has the ground fitted to its underside, so it stands on the ground.
+   - The rule: `builtOn` in `shared/src/editor/groundFit.ts`; docs/BUILDING_KIT.md, "Fit ground to this".
+   - Settle is unchanged: it still goes by a thin slab's top.
+3. **Blend: kept** (6 m by default, the bank 2 m out for every 1 m up). No change.
+4. **After a Fit: built.** Props standing on the ground it raised or lowered are re-bedded by the settle rule (each
+   on the lowest ground under it), in the same undo step as the fit (a `batch`). The ground is not repainted.
+   - Also for Fit ground to a path.
+   - Left alone: props held up by a floor, block or another prop, and props more than 0.25 m over the ground.
+   - The toast says how many were re-bedded.
+5. A recording on a real GPU: still open.
 
 ## State when work stopped (2026-11-13, about 17:40 UTC, at the owner's word)
 

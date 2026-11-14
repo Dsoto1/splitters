@@ -30,6 +30,7 @@ import {
 import { readClipboard, writeClipboard } from './clipboardStore.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
+import { groundFitRebedNote } from './groundFitPanel.ts';
 import { openMirrorDialog } from './mirrorDialog.ts';
 
 /** Edits to the selection: turn, nudge, delete, duplicate, group and ungroup, copy and paste, mirror and flip, cut the ground to the floors and settle props on the ground (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
@@ -178,7 +179,7 @@ export class SelectionEdits {
   fitGround(): void {
     const r = fitGroundToSelectionCommand(this.app.doc, this.app.selection, this.app.groundBlend, coreCatalog, this.app.placeLib);
     if ('error' in r) return this.app.toast(`Can't fit the ground: ${r.error}`, true);
-    if (this.app.run('Fit ground to build', r.command)) this.app.toast(`The ground fitted to it: ${r.raised} point${r.raised === 1 ? '' : 's'} raised, ${r.lowered} lowered, up to ${r.most} m · Ctrl+Z to undo`);
+    if (this.app.run('Fit ground to build', r.command)) this.app.toast(`The ground fitted to it: ${r.raised} point${r.raised === 1 ? '' : 's'} raised, ${r.lowered} lowered, up to ${r.most} m${groundFitRebedNote(r.rebedded)} · Ctrl+Z to undo`);
   }
 
   /** Settle onto the ground (groundFit.ts): the selection moved down or up onto the ground as made. */
