@@ -264,9 +264,10 @@ function ammoBoxes(scene: Scene, root: TransformNode, name: string, ammo: AmmoTy
 const outlineSources = new WeakMap<Scene, Map<string, Mesh>>();
 
 /**
- * The dark outline under a pickup's floor glow (game/lootGlow.ts LOOT_OUTLINE): a flat ring from `inner` to `outer`
- * metres, black, soft at both edges, lying 1.5 cm over the floor. Its darkness is the mesh's `visibility` (set each
- * frame from the glow's level); unlit, casts no shadow, not pickable. One geometry per size, shared by its copies.
+ * The dark outline round a pickup's floor glow (game/lootGlow.ts LOOT_OUTLINE): two thin flat black lines lying 1.5 cm
+ * over the floor, one just inside the ring's `inner` edge and one just past its `outer` edge (metres), soft at their
+ * edges. Its darkness is the mesh's `visibility` (set each frame from the glow's level); unlit, casts no shadow, not
+ * pickable. One geometry per size, shared by its copies.
  */
 export function createLootOutline(scene: Scene, inner: number, outer: number, name: string): Mesh {
   let cache = outlineSources.get(scene);
@@ -274,22 +275,29 @@ export function createLootOutline(scene: Scene, inner: number, outer: number, na
   const key = `${inner.toFixed(3)}|${outer.toFixed(3)}`;
   let src = cache.get(key);
   if (!src || src.isDisposed()) {
-    const f = Math.min(LOOT_OUTLINE.feather, (outer - inner) / 3);
-    const radii = [inner, inner + f, outer - f, outer];
+    const { width: w, feather: f } = LOOT_OUTLINE;
+    // Each line as four rings (clear, dark, dark, clear) across its width.
+    const lines = [
+      [Math.max(0.01, inner - w), Math.max(0.01, inner - w) + f, inner - f, inner],
+      [outer, outer + f, outer + w - f, outer + w],
+    ];
     const alpha = [0, 1, 1, 0];
     const SEG = 48;
     const positions: number[] = [];
     const colors: number[] = [];
     const indices: number[] = [];
-    for (let i = 0; i <= SEG; i++) {
-      const a = (i / SEG) * Math.PI * 2;
-      for (let k = 0; k < 4; k++) {
-        positions.push(Math.cos(a) * radii[k]!, 0, Math.sin(a) * radii[k]!);
-        colors.push(0, 0, 0, alpha[k]!);
-      }
-      if (i < SEG) for (let k = 0; k < 3; k++) {
-        const v = i * 4 + k;
-        indices.push(v, v + 1, v + 5, v, v + 5, v + 4);
+    for (const radii of lines) {
+      const first = positions.length / 3;
+      for (let i = 0; i <= SEG; i++) {
+        const a = (i / SEG) * Math.PI * 2;
+        for (let k = 0; k < 4; k++) {
+          positions.push(Math.cos(a) * radii[k]!, 0, Math.sin(a) * radii[k]!);
+          colors.push(0, 0, 0, alpha[k]!);
+        }
+        if (i < SEG) for (let k = 0; k < 3; k++) {
+          const v = first + i * 4 + k;
+          indices.push(v, v + 1, v + 5, v, v + 5, v + 4);
+        }
       }
     }
     const vd = new VertexData();

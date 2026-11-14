@@ -48,22 +48,21 @@ export const LOOT_RING: Readonly<Record<string, readonly [number, number]>> = {
 };
 
 /**
- * The thin dark outline under the glow's ring (owner's pick 3a, 2026-11-14: docs/FX_CHECKS_2026-11-13.md, section 2).
+ * The thin dark outline round the glow's ring (owner's pick 3a, 2026-11-14: docs/FX_CHECKS_2026-11-13.md, section 2).
  * The glow only adds light, so on a pale floor (sand, snow, white tile) white plus a pale glow stayed near white:
- * 1.06-1.18 contrast on average. A darkened band from just inside the ring to just past it gives the ring an edge
- * on any floor and changes nothing you'd see on a dark one. It adds no brightness, so Reduce flashing keeps it as
- * it is: it follows the glow's own eased level (as a share of that level's full strength), so it comes and goes
- * with the glow, held still.
- * `inset` / `outset`: metres inside the ring's inner edge and past its outer edge; `feather`: the soft part at each
- * edge; `alpha`: how much it darkens at most.
+ * 1.06-1.18 contrast on average. Two thin dark lines, one just inside the ring's inner edge and one just past its
+ * outer edge, give the ring an edge on any floor and change nothing you'd see on a dark one. They add no brightness,
+ * so Reduce flashing keeps them as they are: they follow the glow's own eased level (as a share of that level's full
+ * strength), so they come and go with the glow, held still.
+ * `width`: each line's width in metres, its soft edges (`feather`) included; `alpha`: how much it darkens at most.
  */
-export const LOOT_OUTLINE = { inset: 0.03, outset: 0.07, feather: 0.035, alpha: 0.5 } as const;
+export const LOOT_OUTLINE = { width: 0.05, feather: 0.015, alpha: 0.6 } as const;
 
-/** The outline's [inner, outer] radius in metres for a glow drawn at `scale` (null: that glow has no ring). */
+/** The ring's [inner, outer] edge in metres for a glow drawn at `scale`, which the outline's lines hug (null: that glow has no ring). */
 export function lootOutlineRadii(key: string, scale: number): [number, number] | null {
   const ring = LOOT_RING[key];
   if (!ring) return null;
-  return [Math.max(0.02, ring[0] * scale - LOOT_OUTLINE.inset), ring[1] * scale + LOOT_OUTLINE.outset];
+  return [ring[0] * scale, ring[1] * scale];
 }
 
 /** How dark the outline is (0..LOOT_OUTLINE.alpha) for the glow's level: the share of the glow's full level, either setting. */

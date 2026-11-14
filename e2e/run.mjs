@@ -8989,7 +8989,7 @@ const FLASHING_DAY = {
       // A white-tiled floor out in the day with four pickups on it (the `lootlight` moment: their floor glows on the
       // brightest floor, where the glow alone barely shows; docs/FX_CHECKS_2026-11-13.md, section 2).
       entities.push({ id: 'day_tiles', kind: 'block', position: [-24.4, 0, -25], size: [6, 0.1, 6], yaw: 0, material: 'core.white_tiles', tint: '#ffffff', behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
-      for (const [i, [item, x, z]] of [['ammo', -25.2, -24.2], ['armor_small', -23.6, -24.2], ['health_small', -25.2, -25.8], ['weapon_rifle', -23.6, -25.8]].entries()) entities.push({ id: `day_pickup_${i}`, kind: 'pickup', item: `core.${item}`, position: [x, 0.1, z], respawnSeconds: null });
+      for (const [i, [item, x, z]] of [['ammo_light', -25.2, -24.2], ['armor_small', -23.6, -24.2], ['health_small', -25.2, -25.8], ['weapon_rifle', -23.6, -25.8]].entries()) entities.push({ id: `day_pickup_${i}`, kind: 'pickup', item: `core.${item}`, position: [x, 0.1, z], respawnSeconds: null });
       const ok = ed.run('Flicker check day scene', { kind: 'batch', commands: [{ kind: 'addTiles', tiles }, { kind: 'addEntities', entities }] });
       return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, pickups: ed.doc.entities.filter((e) => e.id.startsWith('day_pickup_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
     }),
@@ -9024,7 +9024,7 @@ const FLASHING_DAY = {
       // glow alone made 1.06-1.18 on pale floors, and its dark outline (game/lootGlow.ts LOOT_OUTLINE) is what lifts it.
       {
         name: 'lootlight',
-        label: "four pickups' floor glows coming up 3.5-5 m in front of you on white tiles by day (ammo, armor, health, a rifle)",
+        label: "four pickups' floor glows coming up 3.5-5 m in front of you on white tiles by day (light ammo, armor, health, a rifle)",
         weapon: 'core.arc_caster',
         me: [-24.4, 0, -20.7],
         look: { yaw: Math.PI, pitch: -0.42 },
@@ -9050,80 +9050,82 @@ const LOOT_RING_MIN = 1.3;
  * pixels, mean and 90th-percentile contrast, the floor's mean luminance. `step(n)` moves the page's frozen clock.
  */
 async function lootRingContrast(page, step, ids) {
-  const grab = () =>
-    page.evaluate(() => {
+  // The next drawn frame's relative luminance, kept in the page as `slot` (a frame read back as it ends).
+  const grab = (slot) =>
+    page.evaluate((slot) => {
       const g = (window.__ringGrab ??= (() => {
         const engine = window.__cs.view.scene.getEngine();
         const c = engine.getRenderingCanvas();
         const out = document.createElement('canvas');
         const ctx = out.getContext('2d', { willReadFrequently: true });
-        const me = { want: false, img: null, w: 0, h: 0 };
+        const lin = (v) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+        const me = { want: null, w: 0, h: 0 };
         engine.onEndFrameObservable.add(() => {
           if (!me.want) return;
-          me.want = false;
+          const into = me.want;
+          me.want = null;
           [out.width, out.height] = [c.width, c.height];
           ctx.drawImage(c, 0, 0);
-          me.img = Array.from(ctx.getImageData(0, 0, c.width, c.height).data);
+          const d = ctx.getImageData(0, 0, c.width, c.height).data;
+          const L = new Float32Array(c.width * c.height);
+          for (let k = 0; k < L.length; k++) L[k] = 0.2126 * lin(d[k * 4]) + 0.7152 * lin(d[k * 4 + 1]) + 0.0722 * lin(d[k * 4 + 2]);
+          me[into] = L;
           [me.w, me.h] = [c.width, c.height];
         });
         return me;
       })());
-      g.img = null;
-      g.want = true;
-    });
-  const take = () => page.evaluate(() => ({ img: window.__ringGrab.img, w: window.__ringGrab.w, h: window.__ringGrab.h }));
+      g[slot] = null;
+      g.want = slot;
+    }, slot);
   await page.evaluate(() => (window.__cs.view.hidePickupModels = true));
   await step(45);
-  await grab();
+  await grab('lit');
   await step(1);
-  const lit = await take();
-  // Each pickup's box on the canvas: its base and a 1.1 m circle round it, projected (canvas pixels).
-  const boxes = await page.evaluate((ids) => {
-    const v = window.__cs.view;
-    const c = v.scene.getEngine().getRenderingCanvas();
-    const k = c.width / c.clientWidth;
-    return ids.map((id) => {
-      const pk = v.pickups.get(id);
-      if (!pk) return null;
-      // (Its base: the floor under it, PICKUP_HOVER below its centre.)
-      const e = { position: [pk.root.position.x, pk.baseY - 0.55, pk.root.position.z] };
-      const pts = [];
-      for (let a = 0; a < 16; a++) {
-        const p = v.project({ x: e.position[0] + Math.cos((a / 16) * Math.PI * 2) * 1.1, y: e.position[1], z: e.position[2] + Math.sin((a / 16) * Math.PI * 2) * 1.1 });
-        if (p) pts.push([p.x * k, p.y * k]);
-      }
-      if (!pts.length) return null;
-      return [Math.max(0, Math.floor(Math.min(...pts.map((p) => p[0])))), Math.max(0, Math.floor(Math.min(...pts.map((p) => p[1])))), Math.min(c.width - 1, Math.ceil(Math.max(...pts.map((p) => p[0])))), Math.min(c.height - 1, Math.ceil(Math.max(...pts.map((p) => p[1]))))];
-    });
-  }, ids);
   await page.evaluate(() => (window.__cs.view.holdLootGlows = true));
   await step(30);
-  await grab();
+  await grab('bare');
   await step(1);
-  const bare = await take();
-  await page.evaluate(() => Object.assign(window.__cs.view, { holdLootGlows: false, hidePickupModels: false }));
-  const lin = (v) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
-  const lum = (d, i) => 0.2126 * lin(d[i]) + 0.7152 * lin(d[i + 1]) + 0.0722 * lin(d[i + 2]);
-  const rings = [];
-  for (const [n, box] of boxes.entries()) {
-    if (!box || !lit.img || !bare.img) continue;
-    const ratios = [];
-    let floor = 0;
-    let all = 0;
-    for (let y = box[1]; y <= box[3]; y++) {
-      for (let x = box[0]; x <= box[2]; x++) {
-        const i = (y * lit.w + x) * 4;
-        const a = lum(lit.img, i);
-        const b = lum(bare.img, i);
-        floor += b;
-        all++;
-        if (Math.abs(a - b) >= 0.02 * Math.max(b, 0.01)) ratios.push((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05));
+  const rings = await page.evaluate((ids) => {
+    const v = window.__cs.view;
+    const g = window.__ringGrab;
+    Object.assign(v, { holdLootGlows: false, hidePickupModels: false });
+    if (!g?.lit || !g?.bare) return [];
+    const c = v.scene.getEngine().getRenderingCanvas();
+    const k = c.width / c.clientWidth;
+    const out = [];
+    for (const id of ids) {
+      const pk = v.pickups.get(id);
+      if (!pk) continue;
+      // Its base (the floor under it, PICKUP_HOVER below its centre) and a 1.1 m circle round it, projected.
+      const at = [pk.root.position.x, pk.baseY - 0.55, pk.root.position.z];
+      const pts = [];
+      for (let a = 0; a < 16; a++) {
+        const p = v.project({ x: at[0] + Math.cos((a / 16) * Math.PI * 2) * 1.1, y: at[1], z: at[2] + Math.sin((a / 16) * Math.PI * 2) * 1.1 });
+        if (p) pts.push([p.x * k, p.y * k]);
       }
+      if (!pts.length) continue;
+      const x0 = Math.max(0, Math.floor(Math.min(...pts.map((p) => p[0]))));
+      const y0 = Math.max(0, Math.floor(Math.min(...pts.map((p) => p[1]))));
+      const x1 = Math.min(g.w - 1, Math.ceil(Math.max(...pts.map((p) => p[0]))));
+      const y1 = Math.min(g.h - 1, Math.ceil(Math.max(...pts.map((p) => p[1]))));
+      const ratios = [];
+      let floor = 0;
+      let all = 0;
+      for (let y = y0; y <= y1; y++) {
+        for (let x = x0; x <= x1; x++) {
+          const a = g.lit[y * g.w + x];
+          const b = g.bare[y * g.w + x];
+          floor += b;
+          all++;
+          if (Math.abs(a - b) >= 0.02 * Math.max(b, 0.01)) ratios.push((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05));
+        }
+      }
+      ratios.sort((p, q) => p - q);
+      const mean = ratios.reduce((s, r) => s + r, 0) / Math.max(1, ratios.length);
+      out.push({ id, px: ratios.length, mean: +mean.toFixed(2), p90: +(ratios[Math.floor(ratios.length * 0.9)] ?? 1).toFixed(2), floorL: +(floor / Math.max(1, all)).toFixed(2) });
     }
-    ratios.sort((p, q) => p - q);
-    const mean = ratios.reduce((s, r) => s + r, 0) / Math.max(1, ratios.length);
-    rings.push({ id: ids[n], px: ratios.length, mean: +mean.toFixed(2), p90: +(ratios[Math.floor(ratios.length * 0.9)] ?? 1).toFixed(2), floorL: +(floor / Math.max(1, all)).toFixed(2) });
-  }
+    return out;
+  }, ids);
   return { rings };
 }
 
@@ -9139,7 +9141,6 @@ async function flashingScene(browser, scene) {
   await ctx.addInitScript(installFrameClock);
   const page = await ctx.newPage();
   const errors = [];
-  page.on('framenavigated', (f) => console.log('DBGNAV', f.url())); page.on('crash', () => console.log('DBGCRASH')); page.on('console', (m) => m.type() === 'error' && console.log('DBGCONSOLE', m.text().slice(0, 300)));
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?mode=editor&test=1`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });

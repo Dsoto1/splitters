@@ -49,14 +49,14 @@ describe("pickups' floor glows (lootGlow.ts)", () => {
     expect(down).toBeCloseTo(LOOT_GLOW.calmLevel, 5);
   });
 
-  it("puts the dark outline round each glow's own ring, and makes it as dark with Reduce flashing on as off", () => {
+  it("puts the thin dark outline round each glow's own ring, and makes it as dark with Reduce flashing on as off", () => {
+    expect(LOOT_OUTLINE.width).toBeLessThanOrEqual(0.06);
     const effects = JSON.parse(readFileSync(new URL('../public/vfx/loot_fx.json', import.meta.url), 'utf8')).effects as Record<string, { nodes: { name: string; mesh?: { inner_radius?: number; outer_radius?: number } }[] }>;
     for (const [key, [inner, outer]] of Object.entries(LOOT_RING)) {
       const ring = effects[lastingFx(key)!.effect]!.nodes.find((n) => n.name === 'Ring_01')!.mesh!;
       expect([ring.inner_radius, ring.outer_radius], key).toEqual([inner, outer]);
-      const [a, b] = lootOutlineRadii(key, lastingFx(key)!.scale)!;
-      expect(a).toBeLessThan(inner * lastingFx(key)!.scale);
-      expect(b).toBeGreaterThan(outer * lastingFx(key)!.scale);
+      // The outline's lines hug the ring's edges as drawn (times the effect's scale), and are thin.
+      expect(lootOutlineRadii(key, lastingFx(key)!.scale)).toEqual([inner * lastingFx(key)!.scale, outer * lastingFx(key)!.scale]);
     }
     expect(lootOutlineRadii('loot.none', 1)).toBeNull();
     // Full with the glow full, either setting; nothing without a glow; steady (it follows the eased level only).
