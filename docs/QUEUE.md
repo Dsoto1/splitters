@@ -40,6 +40,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · A · Low graphics: a patch of painted ground cells beside a path end on St. John's (ground paint, not the path fix).
 - ? · A · Unconfirmed: the player's own third-person body drawn in first person after a teleport. Check a normal portal and respawn first.
 - ? · A · Unconfirmed: a large flat blue shape seen twice in software pictures (tunnels, The Spillway's long stair).
+- XS · A · Status auras: a fourth afflicted character past the three-aura limit (`STATUS_FX_MAX`) wears a flat see-through yellow slab the size of its box; it reads as a placeholder (Spillway helper, SwiftShader, `wip/spillway-finish` `docs/EFFECTS_CHECKS_2026-11-13.md` section 5).
+- XS · A · Status auras: poison and goo are faint in daylight with Reduce flashing on (a light green haze, a trace of pink; the pink stays faint with it off too). Burning reads on every setting.
 
 ## Easy wins
 - S · A · Mobile audit: Options in one column on phones (proposal 7).
