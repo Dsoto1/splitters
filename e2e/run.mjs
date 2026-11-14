@@ -170,8 +170,16 @@ async function waitForHttp(url, ms = 20000) {
  * for them. Every flow that reads or edits Map settings goes through here, so a change to where they live is one edit.
  */
 async function openMapSettings(page) {
-  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
-  await page.waitForSelector('#ed-prop-name', { state: 'attached', timeout: T(10000) });
+  // The top bar's title opens them in the right dock (MapMaker UI spec Phase 1); a second click would close them.
+  if (await page.evaluate(() => document.getElementById('ed-map-settings')?.hidden !== false)) await page.click('#ed-title');
+  await page.waitForSelector('#ed-prop-name', { state: 'visible', timeout: T(10000) });
+}
+
+/** Tick or untick an item of MapMaker's View menu (grid, full grid, overlaps, plan view, map layers): open, click, close. */
+async function viewItem(page, id) {
+  if ((await page.getAttribute('#ed-view-btn', 'aria-expanded')) !== 'true') await page.click('#ed-view-btn');
+  await page.click(`#${id}`);
+  if ((await page.getAttribute('#ed-view-btn', 'aria-expanded')) === 'true') await page.click('#ed-view-btn');
 }
 
 /** Click a MapMaker palette tool, opening the palette tab that holds it first. */
@@ -384,8 +392,9 @@ async function editorFlow(browser) {
   await page.keyboard.press('Control+KeyS');
   const id = (await doc()).metadata.id;
   // An edit after saving: Quit asks first (in-game dialog), and the change is kept as a draft.
-  await page.fill('#ed-name', 'Draft Edit');
-  await page.press('#ed-name', 'Enter');
+  await openMapSettings(page);
+  await page.fill('#ed-prop-name', 'Draft Edit');
+  await page.press('#ed-prop-name', 'Tab');
   await page.waitForFunction(() => window.__editor.doc.metadata.name === 'Draft Edit', null, { timeout: T(10000) });
   await page.click('#ed-home');
   const quitAsk = await page.evaluate(() => ({
@@ -940,18 +949,18 @@ async function editoruxFlow(browser) {
   const limitRefusal = (await page.textContent('#ed-toast')) ?? '';
   check((await doc()).classicStructure.tiles.length === areaTiles + 1 && /build limit/.test(limitRefusal), `a room past the build limit is refused, naming it (${limitRefusal})`);
   check(/Past the build limit/.test(beyondNote ?? ''), `hovering past it says so (${beyondNote})`);
-  await page.click('#ed-grid-full');
+  await viewItem(page, 'ed-grid-full');
   await settle();
   const a2 = await area();
-  check(a2.gridOn && a2.reach > 2000 && (await page.getAttribute('#ed-grid-full', 'aria-pressed')) === 'true', `Full grid covers the whole build area (${JSON.stringify(a2)})`);
-  await page.click('#ed-grid-full');
+  check(a2.gridOn && a2.reach > 2000 && (await page.getAttribute('#ed-grid-full', 'aria-checked')) === 'true', `View → Full grid covers the whole build area (${JSON.stringify(a2)})`);
+  await viewItem(page, 'ed-grid-full');
   await settle();
   check((await area()).reach < 400, 'and off again it is local');
-  await page.click('#ed-grid');
+  await viewItem(page, 'ed-grid');
   await settle();
   const a3 = await area();
-  check(!a3.gridOn && a3.limit && a3.bounds, `Grid off hides the grid, not the boundary or the build limit (${JSON.stringify(a3)})`);
-  await page.click('#ed-grid');
+  check(!a3.gridOn && a3.limit && a3.bounds && (await page.getAttribute('#ed-grid', 'aria-checked')) === 'false', `View → Grid off hides the grid, not the boundary or the build limit (${JSON.stringify(a3)})`);
+  await viewItem(page, 'ed-grid');
   await page.keyboard.press('Control+KeyZ');
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).classicStructure.tiles.length === areaTiles && JSON.stringify((await doc()).bounds) === JSON.stringify(boundsBefore), 'undo takes the room and the boundary back out');
@@ -1288,14 +1297,14 @@ async function editoruxFlow(browser) {
   check((await doc()).entities.length === before, 'a stroke undoes in one step');
   await editorPhase1aChecks(page, { doc, at, clickAt, settle, shot });
   await editorInspectorKeepChecks(page, { doc, clickAt, settle });
-  // At 1400 px the top bar keeps Export and Import (and the owner's Publish) beside the Bot test button.
+  // At 1400 px the top bar keeps Export and Import (and the owner's Publish), the View menu and the bots' skill.
   await settle();
   const bar1400 = await page.evaluate(() => {
     const t = document.getElementById('ed-top');
     const shown = (id) => getComputedStyle(document.getElementById(id)).display !== 'none';
-    return { fits: t.scrollWidth <= t.clientWidth + 1, shown: ['ed-export', 'ed-import', 'ed-maptest', 'ed-skill'].filter(shown), cls: t.className, width: innerWidth };
+    return { fits: t.scrollWidth <= t.clientWidth + 1, shown: ['ed-export', 'ed-import', 'ed-view-btn', 'ed-skill'].filter(shown), cls: t.className, width: innerWidth };
   });
-  check(bar1400.fits && bar1400.shown.length === 4, `at 1400 px the top bar fits with Export, Import, Bot test and the bots' skill shown (${JSON.stringify(bar1400)})`);
+  check(bar1400.fits && bar1400.shown.length === 4, `at 1400 px the top bar fits with Export, Import, View and the bots' skill shown (${JSON.stringify(bar1400)})`);
   await shot('topbar-1400');
   // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
   await page.setViewportSize({ width: 1280, height: 720 });
@@ -1307,6 +1316,7 @@ async function editoruxFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await editorInterfaceChecks(browser);
+  await editorLayoutChecks(browser);
   await editorTourChecks(browser);
 }
 
@@ -1477,7 +1487,7 @@ async function editorInterfaceChecks(browser) {
   await shot('mode-paths');
   await page.click('#ed-modes [data-ws="props"]');
   await frames(page, 2);
-  check(await page.isVisible('#ed-pal-tabs [data-pane="lights"]') && !(await page.$('#ed-mode-section')), 'the Props mode has props and lights; its inspector is Map properties');
+  check(await page.isVisible('#ed-pal-tabs [data-pane="lights"]') && !(await page.$('#ed-mode-section')) && (await page.isVisible('#ed-insp-empty')) && !(await page.$('#ed-inspector #ed-prop-name')), 'the Props mode has props and lights; its inspector is the one empty line (Map settings are in their own view)');
   // A tool picked from another mode's card (here by key) moves the tabs to its mode.
   await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
   await frames(page, 2);
@@ -1569,6 +1579,294 @@ async function editorInterfaceChecks(browser) {
   await page.click('#ed-pal-quick [data-q="only"]');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+}
+
+/**
+ * MapMaker UI spec Phase 1 (docs/MAPMAKER_UI_SPEC.md, the owner's answers to the Phase 0 audit): the top bar at
+ * 1440 px with nothing cut off; the inspector's one empty line; Map settings in the right dock from the title, the
+ * rail's Map entry and the empty line (one view, the 3D view live beside it, a field of each group edited and undone,
+ * the card shot framed from it); the dock's three states on Shift+\ and its buttons, each kept across a reload, a
+ * hidden dock left hidden by a selection, compact under 900 px; the View menu (and its keys); each tab's tool bar and
+ * the ⋯ menu reaching every tool in every tab; the short status bar; and the old controls' actions from their places.
+ */
+async function editorLayoutChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-layout-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await frames(page, 3);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const undoLabel = () => page.evaluate(() => window.__editor.history.undoLabel ?? null);
+
+  // ---- The top bar at 1440 px: it fits, and the map name, Snap, the theme and the bots' skill show whole.
+  await page.evaluate(() => window.__editor.run('Rename map', { kind: 'setMetadata', before: { name: window.__editor.doc.metadata.name }, after: { name: 'Flatpack Depot Nights' } }));
+  await frames(page, 3);
+  const bar = await page.evaluate(() => {
+    const t = document.getElementById('ed-top');
+    const name = document.getElementById('ed-title-name');
+    const probe = document.createElement('span');
+    document.body.append(probe);
+    // A select shows its option whole when the option's text, in the select's font, fits inside it with the arrow.
+    const whole = (id) => {
+      const el = document.getElementById(id);
+      probe.style.font = getComputedStyle(el).font;
+      probe.textContent = el.selectedOptions[0]?.textContent ?? '';
+      return getComputedStyle(el).display !== 'none' && probe.getBoundingClientRect().width + 18 <= el.clientWidth;
+    };
+    const r = { fits: t.scrollWidth <= t.clientWidth + 1, cls: t.className, name: name.scrollWidth <= name.clientWidth + 1 && name.textContent === 'Flatpack Depot Nights', snap: whole('ed-snap'), theme: whole('ed-theme'), skill: whole('ed-skill'), bots: whole('ed-bots') };
+    probe.remove();
+    return r;
+  });
+  check(bar.fits && bar.name && bar.snap && bar.theme && bar.skill && bar.bots && !/fit-[345]/.test(bar.cls), `at 1440 px the top bar fits with the map name, Snap, theme, bots and skill whole (${JSON.stringify(bar)})`);
+  await shot('1440');
+
+  // ---- The inspector shows only the selection: nothing selected is one line.
+  const empty = await page.evaluate(() => ({ text: document.getElementById('ed-insp-empty')?.textContent, fields: document.querySelectorAll('#ed-inspector input, #ed-inspector select, #ed-inspector textarea').length, settings: !!document.querySelector('#ed-inspector #ed-prop-name') }));
+  check(empty.text === 'Nothing selected · Map settings…' && !empty.settings && empty.fields === 0, `with nothing selected the inspector is one line, "Nothing selected · Map settings…" (${JSON.stringify(empty)})`);
+
+  // ---- Map settings: in the right dock, from the title; the view beside it stays live.
+  await page.click('#ed-title');
+  await page.waitForSelector('#ed-prop-name', { state: 'visible', timeout: T(5000) });
+  const ms = await page.evaluate(() => {
+    const dock = document.getElementById('ed-right').getBoundingClientRect();
+    const at = document.elementFromPoint(dock.left - 200, innerHeight / 2);
+    return {
+      inDock: document.getElementById('ed-right').contains(document.getElementById('ed-map-settings')) && !document.getElementById('ed-map-settings').hidden,
+      panels: document.getElementById('ed-dock-panels').hidden,
+      expanded: document.getElementById('ed-title').getAttribute('aria-expanded'),
+      rail: document.getElementById('ed-rail-map').getAttribute('aria-pressed'),
+      groups: [...document.querySelectorAll('#ed-ms-body h3.ed-ms-group')].map((h) => h.textContent),
+      modal: !!document.querySelector('dialog[open]'),
+      view: at?.tagName,
+    };
+  });
+  check(ms.inDock && ms.panels && ms.expanded === 'true' && ms.rail === 'true' && JSON.stringify(ms.groups) === '["General","Gameplay","Presentation","Advanced"]' && !ms.modal && ms.view === 'CANVAS', `the title opens Map settings in the right dock (General, Gameplay, Presentation, Advanced), not a modal: the view beside it takes the pointer (${JSON.stringify(ms)})`);
+  await shot('map-settings');
+  // One field of each group, each one undo step.
+  const theme0 = (await doc()).classicStructure.theme;
+  const otherTheme = await page.evaluate((t) => [...document.querySelectorAll('#ed-prop-theme option')].map((o) => o.value).find((v) => v !== t), theme0);
+  await page.selectOption('#ed-prop-theme', otherTheme);
+  await page.waitForFunction((t) => window.__editor.doc.classicStructure.theme === t, otherTheme, { timeout: T(5000) }).catch(() => {});
+  const general = { theme: (await doc()).classicStructure.theme, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  await page.selectOption('#ed-gravity', '0.5');
+  const gameplay = { gravity: (await doc()).physics?.gravity, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  await page.selectOption('#ed-blood-amount', 'heavy');
+  const presentation = { blood: (await doc()).blood?.amount, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  await page.click('#ed-prop-testonly');
+  const advanced = { testOnly: (await doc()).metadata.testOnly, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  const back = await doc();
+  check(general.theme === otherTheme && general.undo === 'Change theme' && gameplay.gravity === 0.5 && presentation.blood === 'heavy' && advanced.testOnly === true && back.classicStructure.theme === theme0 && !back.physics && !back.blood && !back.metadata.testOnly, `a field of each group edits the map in one undo step, and undo takes it back (${JSON.stringify({ general, gameplay, presentation, advanced })})`);
+  check(await page.isVisible('#ed-map-settings'), 'Map settings stay open through edits and undo');
+  // The card shot is framed from inside Map settings (the frame keeps clear of the dock); they are still there after.
+  await page.click('#ed-card-set');
+  await page.waitForSelector('.ed-card-frame', { timeout: T(5000) });
+  const frame = await page.evaluate(() => ({ crop: document.querySelector('.ed-card-crop').getBoundingClientRect().right, dock: document.getElementById('ed-right').getBoundingClientRect().left }));
+  await page.click('#ed-card-save');
+  await page.waitForFunction(() => !!window.__editor.doc.metadata.cardCamera, null, { timeout: T(5000) }).catch(() => {});
+  await page.waitForSelector('#ed-card-preview:not([disabled])', { timeout: T(5000) }).catch(() => {});
+  check(frame.crop <= frame.dock + 1 && !!(await doc()).metadata.cardCamera && (await page.isVisible('#ed-map-settings')) && !(await page.isDisabled('#ed-card-preview')), `Set card shot… frames the view beside the dock and saves; Map settings are still open with Preview live (${JSON.stringify(frame)})`);
+  await page.click('#ed-undo');
+  // Close, then the rail's Map entry and the empty line's link open the same view.
+  await page.click('#ed-ms-close');
+  check(!(await page.isVisible('#ed-map-settings')) && (await page.isVisible('#ed-inspector')) && (await page.getAttribute('#ed-title', 'aria-expanded')) === 'false', 'its close button gives the dock back to the Outliner and Properties');
+  await page.click('#ed-rail-map');
+  const fromRail = await page.isVisible('#ed-map-settings #ed-prop-name');
+  await page.click('#ed-rail-map');
+  const railCloses = !(await page.isVisible('#ed-map-settings'));
+  await page.click('#ed-insp-map-settings');
+  const fromLine = await page.isVisible('#ed-map-settings #ed-prop-name');
+  check(fromRail && railCloses && fromLine, `the rail's Map entry and the inspector's "Map settings…" open the same view (rail ${fromRail}, again closes ${railCloses}, line ${fromLine})`);
+  // Selecting something shows it: Map settings step aside.
+  const spawn = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'spawn')?.id);
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id] }), spawn);
+  await frames(page, 2);
+  check(!(await page.isVisible('#ed-map-settings')) && (await page.isVisible('#ed-inspector')) && !(await page.$('#ed-insp-empty')) && (await page.textContent('#ed-sel')) === '1 selected', `selecting a spawn closes Map settings and the inspector shows it; the status bar says 1 selected (${await page.textContent('#ed-sel')})`);
+
+  // ---- The status bar: the selection on other levels; the problems pill opens the list.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.run('Spawn up', { kind: 'addEntities', entities: [{ id: 'lay_up', kind: 'spawn', position: [4, 4.2, 4], yaw: 0, team: null }] });
+  });
+  await frames(page, 2);
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id, 'lay_up'] }), spawn);
+  await frames(page, 2);
+  const sel2 = await page.textContent('#ed-sel');
+  await page.keyboard.press('PageUp');
+  await frames(page, 2);
+  const sel3 = await page.textContent('#ed-sel');
+  await page.keyboard.press('PageDown');
+  check(sel2 === '2 selected · 1 on another level' && sel3 === '2 selected · 1 on another level' && (await page.evaluate(() => window.__editor.selection.entities.length)) === 2, `a level change keeps the selection and the status bar says how much is on other levels (${sel2} / ${sel3})`);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+
+  // ---- The right dock's three states: Shift+\ cycles them, each kept across a reload; the view gains the width.
+  const viewRight = () => page.evaluate(() => Math.round(document.getElementById('ed-overlay').getBoundingClientRect().right));
+  const dockState = () => page.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, right: !!document.getElementById('ed-right').offsetParent, panels: !!document.getElementById('ed-dock-panels').offsetParent, mini: !!document.getElementById('ed-dock-mini').offsetParent, toggle: document.getElementById('ed-right-toggle').getAttribute('aria-expanded'), stored: localStorage.getItem('tiletrigger.editor.dock') }));
+  const r0 = await viewRight();
+  await page.keyboard.press('Shift+Backslash');
+  await frames(page, 2);
+  const compact = { ...(await dockState()), view: await viewRight() };
+  await shot('dock-compact');
+  await page.keyboard.press('Shift+Backslash');
+  await frames(page, 2);
+  const hidden = { ...(await dockState()), view: await viewRight() };
+  await shot('dock-hidden');
+  check(compact.state === 'compact' && compact.right && compact.mini && !compact.panels && compact.view > r0, `Shift+\\ makes the dock compact: the minimap's card only, the view wider (${JSON.stringify(compact)}, view ${r0} → ${compact.view})`);
+  check(hidden.state === 'hidden' && !hidden.right && hidden.toggle === 'false' && hidden.view > compact.view && JSON.parse(hidden.stored).right === 'hidden', `again hides it, an edge tab left to bring it back, the view wider still (${JSON.stringify(hidden)})`);
+  // Selecting never opens a hidden dock.
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id] }), spawn);
+  await frames(page, 2);
+  check((await dockState()).state === 'hidden' && (await page.textContent('#ed-sel')) === '1 selected', 'selecting with the dock hidden leaves it hidden; the status bar shows the selection');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const afterReload = await dockState();
+  await page.click('#ed-right-toggle');
+  const shown = await dockState();
+  await page.click('#ed-dock-compact');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const compactKept = await dockState();
+  await page.click('#ed-dock-expand');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const expandedKept = await dockState();
+  check(afterReload.state === 'hidden' && shown.state === 'expanded' && shown.panels && compactKept.state === 'compact' && expandedKept.state === 'expanded' && expandedKept.panels, `each state is kept across a reload, and the edge tab, Compact and Expand buttons switch them (${[afterReload, shown, compactKept, expandedKept].map((d) => d.state).join(' → ')})`);
+  // Shift+\ while Map settings are open: they come back with the dock.
+  await page.click('#ed-title');
+  await page.keyboard.press('Shift+Backslash');
+  await page.keyboard.press('Shift+Backslash');
+  await page.keyboard.press('Shift+Backslash');
+  await frames(page, 2);
+  check((await dockState()).state === 'expanded' && (await page.isVisible('#ed-map-settings #ed-prop-name')), 'three presses of Shift+\\ come back round to the expanded dock, Map settings still open');
+  await page.click('#ed-ms-close');
+
+  // ---- The View menu: grid, full grid, overlaps, plan view, map layers; a menu button with its keys.
+  await page.focus('#ed-view-btn');
+  await page.keyboard.press('ArrowDown');
+  const firstFocus = await page.evaluate(() => document.activeElement?.id);
+  await page.keyboard.press('ArrowDown');
+  const secondFocus = await page.evaluate(() => document.activeElement?.id);
+  const menuShown = await page.evaluate(() => ({ open: !document.getElementById('ed-view-menu').hidden, expanded: document.getElementById('ed-view-btn').getAttribute('aria-expanded'), items: [...document.querySelectorAll('#ed-view-menu [role="menuitemcheckbox"]')].map((b) => `${b.id}:${b.getAttribute('aria-checked')}`) }));
+  await shot('view-menu');
+  await page.keyboard.press('Escape');
+  const closed = await page.evaluate(() => ({ open: !document.getElementById('ed-view-menu').hidden, focus: document.activeElement?.id, tool: window.__editor.tool.kind }));
+  check(menuShown.open && menuShown.expanded === 'true' && firstFocus === 'ed-grid' && secondFocus === 'ed-grid-full' && JSON.stringify(menuShown.items) === JSON.stringify(['ed-grid:true', 'ed-grid-full:false', 'ed-overlaps:false', 'ed-plan:false', 'ed-layer-tile:true', 'ed-layer-prop:true', 'ed-layer-pickup:true', 'ed-layer-logic:true', 'ed-layer-spawn:true']) && !closed.open && closed.focus === 'ed-view-btn', `the View menu opens from its button with the arrow keys, lists grid, full grid, overlaps, plan view and the map layers, and Esc closes it to its button (${JSON.stringify({ menuShown, firstFocus, secondFocus, closed })})`);
+  await viewItem(page, 'ed-overlaps');
+  const overlapsOn = await page.evaluate(() => window.__editor.checks.overlapsOn && document.getElementById('ed-overlaps').getAttribute('aria-checked') === 'true');
+  await viewItem(page, 'ed-overlaps');
+  await viewItem(page, 'ed-layer-spawn');
+  const spawnHidden = await page.evaluate((id) => window.__editor.view.hiddenLayers.has('spawn') && !window.__editor.view.entityShown(id), spawn);
+  await viewItem(page, 'ed-layer-spawn');
+  const spawnBack = await page.evaluate((id) => !window.__editor.view.hiddenLayers.has('spawn') && window.__editor.view.entityShown(id) && JSON.stringify(window.__editor.doc).indexOf('hiddenLayers') < 0, spawn);
+  await viewItem(page, 'ed-plan');
+  const planOn = await page.evaluate(() => window.__editor.plan.on);
+  await page.keyboard.press('KeyK');
+  check(overlapsOn && spawnHidden && spawnBack && planOn && !(await page.evaluate(() => window.__editor.plan.on)), `View → Overlaps, a map layer (MapMaker only, not in the map) and Plan view do what their old places did (overlaps ${overlapsOn}, layer ${spawnHidden}/${spawnBack}, plan ${planOn})`);
+
+  // ---- The tool bar: each tab its own tools (Paint, Terrain and the Environment brush on Environment's only); the
+  // ⋯ menu lists every tool and action in every tab.
+  const want = {
+    build: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-walls', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    props: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    entities: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-bothints', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    environment: ['ed-tb-select', 'ed-tb-erase', 'ed-tb-paint', 'ed-tb-terrain', 'ed-tb-envbrush', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    paths: ['ed-tb-select', 'ed-tb-erase', 'ed-tb-paths', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    test: ['ed-tb-select', 'ed-tb-bothints', 'ed-tb-measure', 'ed-tb-notes', 'ed-tb-plan', 'ed-maptest', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+  };
+  const everyTool = ['select', 'place', 'erase', 'walls', 'paint', 'terrain', 'envbrush', 'paths', 'bothints', 'measure', 'notes', 'rotate', 'delete', 'mirror', 'mirror-dialog', 'duplicate', 'group', 'ungroup', 'plan', 'dress-all', 'settle-all', 'keys', 'help'].map((t) => `ed-tb-${t}`).concat('ed-maptest');
+  const bars = {};
+  const menus = {};
+  await page.keyboard.press('KeyV');
+  for (const ws of Object.keys(want)) {
+    await page.click(`#ed-modes [data-ws="${ws}"]`);
+    await frames(page, 2);
+    bars[ws] = await page.evaluate(() => [...document.querySelectorAll('#ed-toolbar .tb-btn')].filter((b) => b.offsetParent).map((b) => b.id));
+    await page.click('#ed-tb-more');
+    menus[ws] = await page.evaluate(() => [...document.querySelectorAll('#ed-tb-menu [data-tool-item]')].filter((b) => b.offsetParent).map((b) => b.dataset.toolItem));
+    if (ws === 'build') await shot('overflow');
+    await page.click('#ed-tb-more');
+  }
+  const badBars = Object.keys(want).filter((ws) => JSON.stringify(bars[ws]) !== JSON.stringify(want[ws]));
+  const badMenus = Object.keys(want).filter((ws) => everyTool.some((id) => !menus[ws].includes(id)));
+  check(!badBars.length, `each tab's tool bar shows its own tools (wrong: ${badBars.map((ws) => `${ws} ${JSON.stringify(bars[ws])}`).join('; ') || 'none'})`);
+  check(!badMenus.length && Object.values(menus).every((m) => m.length === everyTool.length), `every tab's ⋯ menu lists all ${everyTool.length} tools and actions (short: ${badMenus.join(', ') || 'none'})`);
+  // From the Build tab, the menu reaches the Environment tools: each picks its tool (and its tab), lit on the bar.
+  await page.click('#ed-modes [data-ws="build"]');
+  const picked = {};
+  for (const [item, kind] of [['ed-tb-paint', 'paint'], ['ed-tb-terrain', 'terrain'], ['ed-tb-envbrush', 'envbrush'], ['ed-tb-measure', 'measure'], ['ed-tb-notes', 'note'], ['ed-tb-paths', 'path'], ['ed-tb-walls', 'edge'], ['ed-tb-bothints', 'bothint'], ['ed-tb-erase', 'erase'], ['ed-tb-select', 'select']]) {
+    await page.click('#ed-tb-more');
+    await page.click(`#${item}-item`);
+    await frames(page, 1);
+    picked[item] = await page.evaluate(([id, k]) => window.__editor.tool.kind === k && !!document.getElementById(id)?.offsetParent && document.getElementById(id).classList.contains('active'), [item, kind]);
+  }
+  check(Object.values(picked).every(Boolean), `each tool picked from the ⋯ menu is the tool in hand, lit on the bar (${JSON.stringify(picked)})`);
+  // Its actions too: Keys opens the key list, Mirror… its dialog, Bot test its panel, Plan view the plan.
+  await page.click('#ed-tb-more');
+  await page.click('#ed-tb-keys-item');
+  const keysOpen = await page.evaluate(() => document.getElementById('ed-keys')?.open);
+  await page.keyboard.press('Escape');
+  await page.click('#ed-tb-more');
+  await page.click('#ed-maptest-item');
+  const mtOpen = await page.evaluate(() => window.__editor.mapTest.isShown);
+  await page.evaluate(() => window.__editor.mapTest.show(false));
+  await page.click('#ed-tb-more');
+  await page.click('#ed-tb-plan-item');
+  const planFromMenu = await page.evaluate(() => window.__editor.plan.on);
+  await page.keyboard.press('KeyK');
+  check(keysOpen && mtOpen && planFromMenu, `the ⋯ menu's Keys, Bot test and Plan view work (${keysOpen}, ${mtOpen}, ${planFromMenu})`);
+  // Delete is off with nothing selected, on the bar and in the menu.
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.click('#ed-tb-more');
+  const delOff = await page.evaluate(() => document.getElementById('ed-tb-delete').disabled && document.getElementById('ed-tb-delete-item').disabled);
+  await page.click('#ed-tb-more');
+  check(delOff, 'Delete waits for a selection, on the bar and in the menu');
+
+  // ---- The old controls from their places: the top bar's theme and Snap, the rail's collapse, the problems pill.
+  await page.selectOption('#ed-theme', otherTheme);
+  const themeTop = (await doc()).classicStructure.theme === otherTheme && (await undoLabel()) === 'Change theme';
+  await page.click('#ed-undo');
+  await page.selectOption('#ed-snap', 'coarse');
+  const snap = await page.evaluate(() => window.__editor.snapMode);
+  await page.selectOption('#ed-snap', 'normal');
+  await page.click('#ed-pal-toggle');
+  const folded = await page.evaluate(() => ({ cls: document.getElementById('editor').classList.contains('pal-collapsed'), pal: !!document.getElementById('ed-palette').offsetParent, rail: !!document.getElementById('ed-rail').offsetParent, stored: JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}').left }));
+  await page.click('#ed-rail-assets');
+  const reopened = await page.evaluate(() => !!document.getElementById('ed-palette').offsetParent);
+  await page.keyboard.press('Backslash');
+  const byKey = await page.evaluate(() => !document.getElementById('ed-palette').offsetParent);
+  await page.keyboard.press('Backslash');
+  check(themeTop && snap === 'coarse' && folded.cls && !folded.pal && folded.rail && folded.stored === 'rail' && reopened && byKey, `the top bar's theme and Snap work; the rail folds the asset browser and Assets (and \\) brings it back (${JSON.stringify({ themeTop, snap, folded, reopened, byKey })})`);
+  await page.keyboard.press('Shift+Backslash');
+  await page.keyboard.press('Shift+Backslash');
+  await page.click('#ed-status');
+  await frames(page, 3);
+  const problems = await page.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, list: !!document.getElementById('ed-issues').offsetParent, inBar: document.getElementById('ed-status').parentElement.id }));
+  check(problems.state === 'expanded' && problems.list && problems.inBar === 'ed-bottom', `the problems pill, now in the status bar, opens the dock on the problems list (${JSON.stringify(problems)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
+
+  // ---- Under 900 px wide the dock starts compact (the expanded state is still the one kept).
+  const narrow = await browser.newContext({ viewport: { width: 860, height: 700 } });
+  const small = await narrow.newPage();
+  await small.goto(`${CLIENT}/?mode=editor&test=1`);
+  await small.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const n = await small.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, card: !!document.getElementById('ed-dock-mini').offsetParent, fits: document.getElementById('ed-top').scrollWidth <= document.getElementById('ed-top').clientWidth + 1 }));
+  await small.click('#ed-title');
+  const nOpen = await small.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, settings: !!document.getElementById('ed-prop-name')?.offsetParent }));
+  check(n.state === 'compact' && n.card && n.fits && nOpen.state === 'expanded' && nOpen.settings, `at 860 px the dock starts compact and the top bar fits; the title still opens Map settings, expanding it (${JSON.stringify({ n, nOpen })})`);
+  await narrow.close();
 }
 
 /**
@@ -1984,6 +2282,8 @@ async function editorMapTestChecks(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   await page.setInputFiles('#ed-import-file', fileURLToPath(new URL('../maps/skyward.json', import.meta.url)));
   await page.waitForFunction(() => window.__editor.doc.metadata.id === 'skyward', null, { timeout: T(30000) });
+  // Bot test is on the Test tab's tool bar (MapMaker UI spec Phase 1).
+  await page.click('#ed-modes [data-ws="test"]');
   await page.click('#ed-maptest');
   const opened = await page.evaluate(() => ({ shown: !document.getElementById('ed-maptest-panel').hidden, modes: [...document.querySelectorAll('#ed-mt-mode option')].map((o) => o.value), pressed: document.getElementById('ed-maptest').getAttribute('aria-pressed') }));
   check(opened.shown && opened.pressed === 'true' && opened.modes[0] === 'core.deathmatch' && opened.modes.includes('core.tdm'), `Bot test opens the Test panel with the modes the map plays, its main one first (${JSON.stringify(opened)})`);
@@ -2050,13 +2350,13 @@ async function editorMapTestChecks(browser) {
   await page.click('#ed-mt-layers input[data-layer="went"]');
   const on = await page.evaluate(() => !!window.__editor.view.scene.getMeshByName('edMapTest_went'));
   check(off && on, `a heatmap layer turns off and on (${off}, ${on})`);
-  // The plan view shows them too, from above.
-  await page.click('#ed-plan');
+  // The plan view shows them too, from above (the Test tab's Plan button).
+  await page.click('#ed-tb-plan');
   await frames(page, 4);
   const plan = await page.evaluate(() => ({ plan: window.__editor.plan.on, went: !!window.__editor.view.scene.getMeshByName('edMapTest_went')?.isEnabled() }));
   check(plan.plan && plan.went, `the heatmaps show in the plan view (${JSON.stringify(plan)})`);
   await shot('bottest-plan');
-  await page.click('#ed-plan');
+  await page.click('#ed-tb-plan');
   // Spawn exposure: a label on every spawn, sightlines, warnings for the exposed ones.
   await page.click('#ed-mt-exposure');
   await page.waitForFunction(() => window.__editor.mapTest.exposure, null, { timeout: T(60000) }).catch(() => {});
@@ -2811,7 +3111,7 @@ async function editorWorkflowChecks(browser) {
   await page.mouse.move(700, 400);
   await page.keyboard.press('KeyK');
   await frames(page, 3);
-  const plan = await page.evaluate(() => ({ on: window.__editor.plan.on, mode: window.__editor.view.camera.mode, pressed: document.getElementById('ed-plan').getAttribute('aria-pressed'), title: document.getElementById('ed-plan-title')?.textContent, overlay: !!document.getElementById('ed-plan-overlay'), clip: !!window.__editor.view.scene.clipPlane }));
+  const plan = await page.evaluate(() => ({ on: window.__editor.plan.on, mode: window.__editor.view.camera.mode, pressed: document.getElementById('ed-plan').getAttribute('aria-checked'), title: document.getElementById('ed-plan-title')?.textContent, overlay: !!document.getElementById('ed-plan-overlay'), clip: !!window.__editor.view.scene.clipPlane }));
   check(plan.on && plan.mode === 1 && plan.pressed === 'true' && plan.title === 'Plan · Ground' && plan.overlay && plan.clip, `K switches to the plan view: an orthographic camera from above, cut above the floor, its icons over it (${JSON.stringify(plan)})`);
   // North is up and east is right on screen.
   const n = await at(0, 0, 10);
@@ -2853,10 +3153,10 @@ async function editorWorkflowChecks(browser) {
   const png = file ? readFileSync(file) : null;
   if (png && process.env.E2E_SHOTS) writeFileSync(`${process.env.E2E_SHOTS}/editorux-plan-export.png`, png);
   check(download?.suggestedFilename() === 'untitled_map-ground-plan.png' && png && png.subarray(1, 4).toString() === 'PNG' && png.length > 20000, `Export PNG downloads the plan (${download?.suggestedFilename()}, ${png?.length ?? 0} bytes)`);
-  await page.click('#ed-plan');
+  await viewItem(page, 'ed-plan');
   await frames(page, 2);
   const after = await camera();
-  check(!(await page.evaluate(() => window.__editor.plan.on || !!document.getElementById('ed-plan-overlay') || !!window.__editor.view.scene.clipPlane)) && JSON.stringify(after) === JSON.stringify(view3d), `the Plan button goes back to the 3D view as it was (${JSON.stringify(after)})`);
+  check(!(await page.evaluate(() => window.__editor.plan.on || !!document.getElementById('ed-plan-overlay') || !!window.__editor.view.scene.clipPlane)) && JSON.stringify(after) === JSON.stringify(view3d), `View → Plan view goes back to the 3D view as it was (${JSON.stringify(after)})`);
 
   // ---- The card shot: Map properties → Set card shot…, eye level by default, Enter saves; Preview in the frame.
   await openMapSettings(page);

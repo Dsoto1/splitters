@@ -58,6 +58,12 @@ export function popupMenu(button: HTMLButtonElement, menu: HTMLElement, opts: { 
   };
   button.addEventListener('click', () => (api.isOpen ? api.close() : api.open(button.matches(':focus-visible'))));
   button.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && api.isOpen) {
+      e.preventDefault();
+      e.stopPropagation();
+      api.close();
+      return;
+    }
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
       e.stopPropagation();
