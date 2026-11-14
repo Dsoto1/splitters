@@ -840,6 +840,25 @@ export class EditorView {
   /** The entity each drawn mesh belongs to ('' for a mesh that is no entity's), found once per mesh. */
   private readonly meshOwner = new WeakMap<object, string>();
 
+  /**
+   * Where a block or a prop is and the most it can reach, for `pickEntities` (its middle, and its reach squared), or
+   * null for anything else; worked out once per entity as placed (the document's entities are never changed in place).
+   */
+  private readonly reach = new WeakMap<MapEntity, readonly number[] | null>();
+
+  private reachOf(e: MapEntity): readonly number[] | null {
+    let reach = this.reach.get(e);
+    if (reach !== undefined) return reach;
+    reach = null;
+    if (e.kind === 'block' || e.kind === 'prop') {
+      const size = e.kind === 'block' ? e.size : (getProp(e.model)?.size ?? [4, 4, 4]).map((v) => v * e.scale);
+      const r = Math.hypot(size[0]!, size[1]!, size[2]!) + 1.5;
+      reach = [e.position[0], e.position[1] + size[1]! / 2, e.position[2], r * r];
+    }
+    this.reach.set(e, reach);
+    return reach;
+  }
+
   /** Entity under a ray, by its drawn meshes: every visible entity hit, nearest first. */
   pickEntities(origin: Vec3, dir: Vec3): { id: string; distance: number }[] {
     const ray = new Ray(new Vector3(origin.x, origin.y, origin.z), new Vector3(dir.x, dir.y, dir.z), 10000);
@@ -856,20 +875,21 @@ export class EditorView {
     const dl = Math.hypot(dir.x, dir.y, dir.z) || 1;
     const clear = (id: string): boolean => {
       const e = this.markers.get(id)?.placed;
-      if (!e || (e.kind !== 'block' && e.kind !== 'prop')) return false;
-      const size = e.kind === 'block' ? e.size : (getProp(e.model)?.size ?? [4, 4, 4]).map((v) => v * e.scale);
-      const r = Math.hypot(size[0]!, size[1]!, size[2]!) + 1.5;
-      const ox = e.position[0] - origin.x;
-      const oy = e.position[1] + size[1]! / 2 - origin.y;
-      const oz = e.position[2] - origin.z;
+      const reach = e && this.reachOf(e);
+      if (!reach) return false;
+      const ox = reach[0]! - origin.x;
+      const oy = reach[1]! - origin.y;
+      const oz = reach[2]! - origin.z;
       const along = (ox * dir.x + oy * dir.y + oz * dir.z) / dl;
-      return ox * ox + oy * oy + oz * oz - along * along > r * r;
+      return ox * ox + oy * oy + oz * oz - along * along > reach[3]!;
     };
+    // (Whose mesh it is and whether the ray comes near it first: the two that rule out nearly every mesh. The same
+    // answer in any order.)
     const hits =
       this.scene.multiPickWithRay(ray, (m) => {
-        if (!m.isEnabled() || !m.isVisible) return false;
         const id = owner(m);
-        return id !== '' && !clear(id);
+        if (id === '' || clear(id)) return false;
+        return m.isEnabled() && m.isVisible;
       }) ?? [];
     const best = new Map<string, number>();
     for (const h of hits) {
