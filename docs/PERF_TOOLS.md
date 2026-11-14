@@ -133,3 +133,51 @@ tick, against a 16.7 ms tick):
 posed and characters animated a frame (counted from Babylon's own state, so they compare against builds
 without these tools), characters in view by distance band, active meshes by kind, and the shader programs
 built after the loading gate.
+
+## A map's render counts, repeatably (still cameras)
+
+`tools/perf/client-perf.mjs` plays a map offline in headless Chromium and prints a table row for it. It has two ways
+of measuring:
+
+- **Live (the default):** a bot match (`PERF_BOTS`, `PERF_MODE`, `PERF_SECONDS`), sampled from wherever the player
+  happens to be while the view turns. It gives a frame rate and shows a busy match's order of magnitude, but its
+  counts swing by half from run to run on an unchanged map (docs/map-briefs/urban/PERF_BASELINE.md has two such runs),
+  so it cannot show what a change to a map cost.
+- **Still (`PERF_STILL=1`):** fixed cameras and nobody else in the map. Use this to compare a map before and after a
+  change, or one map against another.
+
+```
+pnpm build
+PERF_STILL=1 node tools/perf/client-perf.mjs riot_junction neon_spire          # medium graphics
+PERF_STILL=1 PERF_GRAPHICS=low node tools/perf/client-perf.mjs riot_junction
+PERF_STILL=1 PERF_SHOTS=/tmp/views node tools/perf/client-perf.mjs ironworks   # also a picture of each view
+```
+
+What still mode does, per map:
+
+1. Starts the deterministic match (`?test=1`: seed 1, the map's own mode) on the page's own thread and takes every
+   other player out before each frame, so no bot, body or gunfire is drawn. The local player stays where it spawned
+   (its body is not drawn in first person; its weapon is, the same one every run).
+2. Holds the game's own camera at four viewpoints in turn. They come from the map file alone, so there is no per-map
+   table and a new map needs nothing: **overview SW** and **overview NE** look at the middle of the play area (the
+   map's boundary, else what its tiles and spawns cover) from a tenth of the way in from two opposite corners, a
+   quarter of the diagonal up (12 to 60 m above the highest spawn); **eye, middle spawn** stands at the spawn nearest
+   the middle, at eye height (1.7 m), looking at the spawn farthest from it; **eye, far spawn** stands at that farthest
+   spawn looking at the middle. The camera is placed through the game's own `setCamera`, so plants, the environment
+   renderer, shadows and prop flames follow it as they do in play.
+3. Effects are left out (`PERF_STILL_FX=1` keeps them): a fire prop's flame sprites and particle bursts animate, so
+   their draws never stop changing. At each view it first gives the models and textures the view asks for up to 20 s
+   to arrive (a prop's full detail comes in after its stand-in), then waits until the counts have stopped changing: the middle
+   reading of the last `PERF_STILL_FRAMES` frames (default 8) agrees within 1% with that of the frames before them,
+   on every count. It gives up after `PERF_STILL_WAIT` seconds (default 90) and says so in the row's last column.
+4. Prints one row a view (the middle reading of those frames; the range too when the frames differed) and the
+   map's mean: draw calls, meshes drawn / all meshes, triangles drawn, shadow casters, materials.
+
+What it does not give: a frame rate (nothing is timed; the software renderer's is meaningless anyway), the cost of
+players, effects and gunfire (use the live mode or `pnpm perf:budget` for those), memory, or load time.
+
+How repeatable it is, and what still varies: the urban baseline (docs/map-briefs/urban/PERF_BASELINE.md, "Still-camera
+baseline") ran four maps twice at medium and low. Draw calls agreed within about 3% on every row (1% on each map's mean),
+meshes drawn and triangles within 1%; at low graphics almost every count repeated exactly. Shadow casters are a rough
+count (the shadow cache draws its static casters only on some frames). `PERF_DEBUG=1` prints each view's camera, and
+names the meshes that came and went under a row whose frames differed.
