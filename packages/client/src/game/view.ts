@@ -39,6 +39,8 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import {
   armsLookFor,
+  blockBoxes,
+  propBoxes,
   PLAYER,
   POWERUP_DAMAGE_BIT,
   angleDelta,
@@ -133,8 +135,8 @@ import { MapStyler } from '../mapMeshes.ts';
 import { buildRoadMeshes } from '../roadMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { disposeTree } from '../content/disposeTree.ts';
-import { DROP_LIE_HEIGHT, PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
-import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel } from './lootGlow.ts';
+import { DROP_LIE_HEIGHT, PICKUP_HOVER, createLootOutline, createPickupVisual, pickupRoom } from './pickupVisuals.ts';
+import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel, lootOutlineAlpha, lootOutlineRadii } from './lootGlow.ts';
 import { StatusFx, plainStatus } from './statusFx.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
@@ -395,6 +397,11 @@ interface PickupVisual {
   /** Its floor glow (lootGlow.ts): the lasting effect it asks for (none for some kinds) and its level now. */
   glowKey: string | null;
   glow: number;
+  /** How far the nearest wall is (pickupVisuals.ts pickupRoom): a bigger gun keeps clear of it. */
+  room: number;
+  /** The dark outline under the glow's ring (lootGlow.ts LOOT_OUTLINE), made the first time the glow shows, and its key. */
+  outline?: Mesh;
+  outlineKey?: string;
 }
 
 /** First-person match scene: map, viewmodel, remote avatars, pickups, projectiles and effects. */
@@ -654,7 +661,13 @@ export class GameView {
     this.scenario.liquids.levelBoxes = boxes;
     void this.foliage.grow(doc.terrain, boxes, doc.metadata.id, this.liquids.filter((l) => l.liquid === 'water' || l.liquid === 'swamp'));
     // (A placed Ammo Box is a crate now, drawn from the snapshot: game/ammoBoxState.ts.)
-    for (const e of doc.entities) if (e.kind === 'pickup' && !isAmmoBoxPickup(e)) this.addPickup(e);
+    {
+      // Weapon pickups are drawn bigger, short of the nearest wall (pickupVisuals.ts pickupRoom): the map's own boxes,
+      // its blocks and props.
+      const pickups = doc.entities.filter((e): e is PickupEntity => e.kind === 'pickup' && !isAmmoBoxPickup(e));
+      const solid = pickups.length ? [...boxes, ...blockBoxes(doc), ...propBoxes(doc)] : [];
+      for (const e of pickups) this.addPickup(e, e.item, pickupRoom(e.position, solid));
+    }
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
     const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
     // Environment species (`env.*`) with the environment renderer (on unless ?env=0): chunked thin instances, not a node each.
@@ -1381,7 +1394,12 @@ export class GameView {
     let t = prof ? now : 0;
     this.propFlames.want(this.camera.globalPosition);
     if (prof) t = perfProbe.add(SYS.flames, t);
-    this.lasting.update(this.camera.globalPosition);
+    {
+      // Effects out of the camera's view are ranked after the fixtures in it (lastingFx.ts).
+      const cam = this.scene.activeCamera;
+      const planes = cam ? Frustum.GetPlanes(cam.getTransformationMatrix()) : null;
+      this.lasting.update(this.camera.globalPosition, planes ? (at, r) => inView(planes, at.x, at.y, at.z, r) : undefined);
+    }
     if (prof) t = perfProbe.add(SYS.fx, t);
     this.propFlames.show();
     if (prof) t = perfProbe.add(SYS.flames, t);
@@ -2812,11 +2830,37 @@ export class GameView {
 
   // ---------------------------------------------------------------- pickups
 
-  private addPickup(e: PickupEntity, item = e.item): void {
-    const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true, false, this.setLook);
+  private addPickup(e: PickupEntity, item = e.item, room = Infinity): void {
+    const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true, false, this.setLook, room);
     const baseY = e.position[1] + PICKUP_HOVER;
     root.position.set(e.position[0], baseY, e.position[2]);
-    this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2), item, placed: e.item, glowKey: lootGlowKey(item), glow: 0 });
+    this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2), item, placed: e.item, glowKey: lootGlowKey(item), glow: 0, room });
+  }
+
+  /** Tests (the flicker check's ring contrast, the effects checks): no pickup asks for a floor glow while this is set. */
+  holdLootGlows = false;
+  /** Tests: draw no dark outline under the glows (how they looked before it). */
+  lootOutlines = true;
+  /** Tests (ring contrast): pickups' own models hidden, their glows and outlines kept. */
+  hidePickupModels = false;
+
+  /** The glow's dark outline (lootGlow.ts): as dark as the glow is up, at the floor under the pickup; hidden with no glow. */
+  private placeLootOutline(id: string, p: PickupVisual, calm: boolean): void {
+    const a = this.lootOutlines && p.glowKey ? lootOutlineAlpha(p.glow, calm) : 0;
+    if (a <= 0.005) {
+      if (p.outline?.isEnabled()) p.outline.setEnabled(false);
+      return;
+    }
+    if (!p.outline || p.outlineKey !== p.glowKey) {
+      p.outline?.dispose(false, false);
+      const radii = lootOutlineRadii(p.glowKey!, lastingFx(p.glowKey!)?.scale ?? 1);
+      if (!radii) return;
+      p.outline = createLootOutline(this.scene, radii[0], radii[1], `lootOutline_${id}`);
+      p.outlineKey = p.glowKey!;
+    }
+    p.outline.setEnabled(true);
+    p.outline.position.set(p.root.position.x, p.baseY - PICKUP_HOVER + 0.015, p.root.position.z);
+    p.outline.visibility = a;
   }
 
   /** How many pickups' floor glows are drawn now (tests). */
@@ -2847,19 +2891,20 @@ export class GameView {
         // Not its materials: they are shared (the model library's, the ring colours' cache), and disposing them
         // drew every other copy of that gun, your own first-person one included, in plain white.
         p.root.dispose(false, false);
-        p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true, false, this.setLook);
+        p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true, false, this.setLook, p.room);
         p.root.position.copyFrom(at);
         p.item = want;
         p.glowKey = lootGlowKey(want);
       }
-      p.root.setEnabled(!taken.has(id));
+      p.root.setEnabled(!taken.has(id) && !this.hidePickupModels);
       // The glow on the floor under it while it waits (the nearest few; the rest look as they always did).
       const pos = p.root.position;
       const glowId = `loot:${id}`;
-      if (p.glowKey && !taken.has(id) && (pos.x - cam.x) ** 2 + (p.baseY - cam.y) ** 2 + (pos.z - cam.z) ** 2 < LOOT_GLOW_RANGE ** 2) {
+      if (p.glowKey && !this.holdLootGlows && !taken.has(id) && (pos.x - cam.x) ** 2 + (p.baseY - cam.y) ** 2 + (pos.z - cam.z) ** 2 < LOOT_GLOW_RANGE ** 2) {
         p.glow = lootGlowLevel(p.glow, this.lasting.drawn(glowId), dt, calm);
         this.lasting.want(glowId, p.glowKey, { x: pos.x, y: p.baseY - PICKUP_HOVER + 0.02, z: pos.z }, { level: p.glow, steady: calm });
       } else p.glow = 0;
+      this.placeLootOutline(id, p, calm);
       p.root.rotation.y = now * 0.0015 + p.phase;
       p.root.position.y = p.baseY + Math.sin(now * 0.003 + p.phase) * 0.08;
     }

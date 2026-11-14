@@ -34,3 +34,39 @@ export function lootGlowLevel(level: number, drawn: boolean, dt: number, calm: b
   if (!drawn) return 0;
   return ease(level, calm ? LOOT_GLOW.calmLevel : LOOT_GLOW.level, dt, calm ? LOOT_GLOW.calmRise : LOOT_GLOW.rise, 4);
 }
+
+/**
+ * The glow's ring on the floor (the pack's Ring_01 torus, inner and outer radius in metres at scale 1:
+ * public/vfx/loot_fx.json), per glow. Times the effect's scale (content/vfx.json, 1.25) it is where the dark outline
+ * goes (LOOT_OUTLINE).
+ */
+export const LOOT_RING: Readonly<Record<string, readonly [number, number]>> = {
+  'loot.ammo': [0.2, 0.35],
+  'loot.health': [0.25, 0.4],
+  'loot.armor': [0.35, 0.55],
+  'loot.weapon': [0.35, 0.55],
+};
+
+/**
+ * The thin dark outline round the glow's ring (owner's pick 3a, 2026-11-14: docs/FX_CHECKS_2026-11-13.md, section 2).
+ * The glow only adds light, so on a pale floor (sand, snow, white tile) white plus a pale glow stayed near white:
+ * 1.06-1.18 contrast on average. Two thin dark lines, one just inside the ring's inner edge and one just past its
+ * outer edge, give the ring an edge on any floor and change nothing you'd see on a dark one. They add no brightness,
+ * so Reduce flashing keeps them as they are: they follow the glow's own eased level (as a share of that level's full
+ * strength), so they come and go with the glow, held still.
+ * `width`: each line's width in metres, its soft edges (`feather`) included; `alpha`: how much it darkens at most.
+ */
+export const LOOT_OUTLINE = { width: 0.05, feather: 0.015, alpha: 0.6 } as const;
+
+/** The ring's [inner, outer] edge in metres for a glow drawn at `scale`, which the outline's lines hug (null: that glow has no ring). */
+export function lootOutlineRadii(key: string, scale: number): [number, number] | null {
+  const ring = LOOT_RING[key];
+  if (!ring) return null;
+  return [ring[0] * scale, ring[1] * scale];
+}
+
+/** How dark the outline is (0..LOOT_OUTLINE.alpha) for the glow's level: the share of the glow's full level, either setting. */
+export function lootOutlineAlpha(level: number, calm: boolean): number {
+  const full = calm ? LOOT_GLOW.calmLevel : LOOT_GLOW.level;
+  return LOOT_OUTLINE.alpha * Math.max(0, Math.min(1, level / full));
+}

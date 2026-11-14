@@ -1608,6 +1608,23 @@ async function editorInspectorKeepChecks(page, { doc, clickAt, settle }) {
   check(moved?.position[2] === -7, `typed into the inspector straight after placing with the mouse, the edit lands (z ${moved?.position[2]})`);
   await page.evaluate(() => document.activeElement?.blur());
   await page.keyboard.press('Escape');
+  // A portal's Swirl row (pack effect / painted: Pantry Raid's mouse holes are painted), one undo step each way.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.run('Place portals', { kind: 'addEntities', entities: [{ id: 'gate_keep_a', kind: 'portal', position: [-8, 0, 4], yaw: 0, size: [2.4, 3.2], pair: 'keep', startEnabled: true }, { id: 'gate_keep_b', kind: 'portal', position: [-14, 0, 4], yaw: 0, size: [2.4, 3.2], pair: 'keep', startEnabled: true }] });
+    ed.setSelection({ tiles: [], entities: ['gate_keep_a'] });
+  });
+  await settle();
+  const swirlRow = '#ed-inspector .row:has(> span:text-is("Swirl")) select';
+  const shown = await page.$eval(swirlRow, (s) => [s.value, [...s.options].map((o) => o.textContent)]).catch(() => null);
+  await page.selectOption(swirlRow, 'painted');
+  await settle();
+  const painted = (await doc()).entities.find((e) => e.id === 'gate_keep_a')?.swirl;
+  await page.evaluate(() => window.__editor.undo());
+  await settle();
+  const undone = (await doc()).entities.find((e) => e.id === 'gate_keep_a');
+  check(JSON.stringify(shown) === JSON.stringify(['pack', ['Pack effect', 'Painted']]) && painted === 'painted' && undone && !('swirl' in undone), `a portal's inspector picks its swirl (pack effect or painted), one undo step (${JSON.stringify({ shown, painted, undone: undone?.swirl ?? null })})`);
+  await page.keyboard.press('Escape');
 }
 
 /**
@@ -8969,11 +8986,15 @@ const FLASHING_DAY = {
       const tile = (id, tile, y, rotation) => ({ id, tile, x: 3, y, z: 0, rotation });
       const tiles = [tile('day_portal_s', 'core.tunnel_concrete_portal', -2, 0), ...[-1, 0, 1].map((y) => tile(`day_run_${y + 1}`, 'core.tunnel_concrete_straight', y, 0)), tile('day_portal_n', 'core.tunnel_concrete_portal', 2, 2)];
       const entities = [-8, 0, 8].map((z, i) => ({ id: `day_light_${i}`, kind: 'light', position: [24, 3.1, z], yaw: 0, color: '#ffe6b8', intensity: 1, range: 9, fixture: 'none' }));
+      // A white-tiled floor out in the day with four pickups on it (the `lootlight` moment: their floor glows on the
+      // brightest floor, where the glow alone barely shows; docs/FX_CHECKS_2026-11-13.md, section 2).
+      entities.push({ id: 'day_tiles', kind: 'block', position: [-24.4, 0, -25], size: [6, 0.1, 6], yaw: 0, material: 'core.white_tiles', tint: '#ffffff', behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
+      for (const [i, [item, x, z]] of [['ammo_light', -25.2, -24.2], ['armor_small', -23.6, -24.2], ['health_small', -25.2, -25.8], ['weapon_rifle', -23.6, -25.8]].entries()) entities.push({ id: `day_pickup_${i}`, kind: 'pickup', item: `core.${item}`, position: [x, 0.1, z], respawnSeconds: null });
       const ok = ed.run('Flicker check day scene', { kind: 'batch', commands: [{ kind: 'addTiles', tiles }, { kind: 'addEntities', entities }] });
-      return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
+      return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, pickups: ed.doc.entities.filter((e) => e.id.startsWith('day_pickup_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
     }),
-  made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.sky !== 'night',
-  moments: ({ page, stage }) => {
+  made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.pickups === 4 && m.sky !== 'night',
+  moments: ({ page, stage, step }) => {
     // Sprinting (8 m/s): out over the first second, back in over the second.
     const zAt = (f) => (f < 30 ? -13 - (8 * f) / 30 : -21 + (8 * (f - 30)) / 30);
     const at = {};
@@ -8997,9 +9018,116 @@ const FLASHING_DAY = {
         // Back inside at the end, on the tunnel's floor.
         sees: (_on, s) => s.z > -14.5 && s.z < -12.5 && Math.abs(s.y) < 0.3,
       },
+      // Pickups' floor glows on white tiles by day, as High graphics draws them, dropped as the recording starts (so it
+      // holds them coming up, as the night `loot` moment does). Then the rings must read: each ring's WCAG contrast
+      // against the floor without it (lootRingContrast) at least LOOT_RING_MIN on average with the setting on; the
+      // glow alone made 1.06-1.18 on pale floors, and its dark outline (game/lootGlow.ts LOOT_OUTLINE) is what lifts it.
+      {
+        name: 'lootlight',
+        label: "four pickups' floor glows coming up 3.5-5 m in front of you on white tiles by day (light ammo, armor, health, a rifle)",
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -20.7],
+        look: { yaw: Math.PI, pitch: -0.42 },
+        bots: [],
+        before: () => page.evaluate(() => (window.__cs.view.vfx.quality = 'high')),
+        at: { 2: () => page.evaluate(() => window.__cs.view.lasting.dispose()) },
+        seen: () => lootRingContrast(page, step, ['day_pickup_0', 'day_pickup_1', 'day_pickup_2', 'day_pickup_3']),
+        sees: (on, s) => s.rings.length === 4 && s.rings.every((r) => r.px >= 150 && (!on || r.mean >= LOOT_RING_MIN)),
+        after: () => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality)),
+      },
     ];
   },
 };
+
+/** The `lootlight` moment's floor for a ring that reads: WCAG contrast on average over its pixels. */
+const LOOT_RING_MIN = 1.3;
+
+/**
+ * Pickups' floor rings against the floor (docs/FX_CHECKS_2026-11-13.md, section 2's method): the pickups' own models
+ * hidden, the glows held up for 1.5 s (full, either setting), a frame taken; then the glows held back (outlines with
+ * them) and the same frame again. Over a box round each pickup's base, a ring pixel is one the glow changes by 2 % or
+ * more either way; its contrast is WCAG's (lighter + 0.05) / (darker + 0.05) of the two frames. Per pickup: ring
+ * pixels, mean and 90th-percentile contrast, the floor's mean luminance. `step(n)` moves the page's frozen clock.
+ */
+async function lootRingContrast(page, step, ids) {
+  // The next drawn frame's relative luminance, kept in the page as `slot` (a frame read back as it ends).
+  const grab = (slot) =>
+    page.evaluate((slot) => {
+      const g = (window.__ringGrab ??= (() => {
+        const engine = window.__cs.view.scene.getEngine();
+        const c = engine.getRenderingCanvas();
+        const out = document.createElement('canvas');
+        const ctx = out.getContext('2d', { willReadFrequently: true });
+        const lin = (v) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+        const me = { want: null, w: 0, h: 0 };
+        engine.onEndFrameObservable.add(() => {
+          if (!me.want) return;
+          const into = me.want;
+          me.want = null;
+          [out.width, out.height] = [c.width, c.height];
+          ctx.drawImage(c, 0, 0);
+          const d = ctx.getImageData(0, 0, c.width, c.height).data;
+          const L = new Float32Array(c.width * c.height);
+          for (let k = 0; k < L.length; k++) L[k] = 0.2126 * lin(d[k * 4]) + 0.7152 * lin(d[k * 4 + 1]) + 0.0722 * lin(d[k * 4 + 2]);
+          me[into] = L;
+          [me.w, me.h] = [c.width, c.height];
+        });
+        return me;
+      })());
+      g[slot] = null;
+      g.want = slot;
+    }, slot);
+  await page.evaluate(() => (window.__cs.view.hidePickupModels = true));
+  await step(45);
+  await grab('lit');
+  await step(1);
+  await page.evaluate(() => (window.__cs.view.holdLootGlows = true));
+  await step(30);
+  await grab('bare');
+  await step(1);
+  const rings = await page.evaluate((ids) => {
+    const v = window.__cs.view;
+    const g = window.__ringGrab;
+    Object.assign(v, { holdLootGlows: false, hidePickupModels: false });
+    if (!g?.lit || !g?.bare) return [];
+    const c = v.scene.getEngine().getRenderingCanvas();
+    const k = c.width / c.clientWidth;
+    const out = [];
+    for (const id of ids) {
+      const pk = v.pickups.get(id);
+      if (!pk) continue;
+      // Its base (the floor under it, PICKUP_HOVER below its centre) and a 1.1 m circle round it, projected.
+      const at = [pk.root.position.x, pk.baseY - 0.55, pk.root.position.z];
+      const pts = [];
+      for (let a = 0; a < 16; a++) {
+        const p = v.project({ x: at[0] + Math.cos((a / 16) * Math.PI * 2) * 1.1, y: at[1], z: at[2] + Math.sin((a / 16) * Math.PI * 2) * 1.1 });
+        if (p) pts.push([p.x * k, p.y * k]);
+      }
+      if (!pts.length) continue;
+      const x0 = Math.max(0, Math.floor(Math.min(...pts.map((p) => p[0]))));
+      const y0 = Math.max(0, Math.floor(Math.min(...pts.map((p) => p[1]))));
+      const x1 = Math.min(g.w - 1, Math.ceil(Math.max(...pts.map((p) => p[0]))));
+      const y1 = Math.min(g.h - 1, Math.ceil(Math.max(...pts.map((p) => p[1]))));
+      const ratios = [];
+      let floor = 0;
+      let all = 0;
+      for (let y = y0; y <= y1; y++) {
+        for (let x = x0; x <= x1; x++) {
+          const a = g.lit[y * g.w + x];
+          const b = g.bare[y * g.w + x];
+          floor += b;
+          all++;
+          if (Math.abs(a - b) >= 0.02 * Math.max(b, 0.01)) ratios.push((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05));
+        }
+      }
+      ratios.sort((p, q) => p - q);
+      const mean = ratios.reduce((s, r) => s + r, 0) / Math.max(1, ratios.length);
+      out.push({ id, px: ratios.length, mean: +mean.toFixed(2), p90: +(ratios[Math.floor(ratios.length * 0.9)] ?? 1).toFixed(2), floorL: +(floor / Math.max(1, all)).toFixed(2) });
+    }
+    return out;
+  }, ids);
+  return { rings };
+}
 
 async function flashingScene(browser, scene) {
   const FPS = 30;
@@ -9109,7 +9237,7 @@ async function flashingScene(browser, scene) {
   };
   const blast = (at) => sim(page, (m, _me, at) => m.scenario.host.blast({ x: at[0], y: at[1], z: at[2] }, 4.5, 100, 15, null, 'core.launcher'), at);
   // The moments (a few metres apart in the scene; 2 s each, setting on then off).
-  const moments = scene ? scene.moments({ page, stage, aim }) : [
+  const moments = scene ? scene.moments({ page, stage, aim, step }) : [
     {
       name: 'arc',
       label: 'an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you)',
