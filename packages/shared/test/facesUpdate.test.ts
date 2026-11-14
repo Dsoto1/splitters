@@ -33,7 +33,7 @@ const drawnArea = (faces: readonly RenderFace[]) => {
   const sum = new Map<string, number>();
   for (const f of faces) {
     const p = f.corners;
-    const n = [0, 0, 0];
+    const n: [number, number, number] = [0, 0, 0];
     for (let i = 1; i + 1 < p.length; i++) {
       const u = [0, 1, 2].map((k) => p[i]![k]! - p[0]![k]!);
       const v = [0, 1, 2].map((k) => p[i + 1]![k]! - p[0]![k]!);
