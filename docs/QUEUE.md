@@ -28,7 +28,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
-- S · A · Effects checks, findings only: Pantry Raid portals, loot rings on bright floors, perf and Low graphics for the new effects, Reduce flashing · `wip/fx-checks` (docs)
+- S · A · MapMaker UI spec, Phase 0: audit (docs only; `docs/MAPMAKER_UI_SPEC.md`, owner's spec with the lead's notes) · `wip/mapmaker-ui-audit`
+- S · A · Effects-check fixes, the owner's picks (2026-11-14, option a everywhere): Pantry Raid's mouse holes walkable and painted, loot rings outlined, Low's lasting places, the checks; pickup guns drawn bigger · `wip/fx-fixes` (findings: `docs/FX_CHECKS_2026-11-13.md`)
 - S · B · MapMaker: the Roads tool (`routeTool.ts`) redraws its markers the slow way the Paths tool did; the same fix applies. · `wip/mapmaker-editor-speed-2`
 - S · B · MapMaker: a forced layout still costs about 50 ms on each edit and selection (it moved, it did not go); find what dirties the layout. · `wip/mapmaker-editor-speed-2`
 
@@ -48,12 +49,14 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · A · Vehicle palette pictures without tires.
 - S · A · Steampunk Warrior's fingers.
 - S · A · Flavius Rule's corners.
-- S · A · Loot-ring and effect tweaks, from the effects-check findings once the owner picks.
 - S · A · Mobile audit: Options in one column on phones (proposal 7).
 - S · A · Mobile audit: Match Setup on phones, sticky header and bigger steppers (proposal 11).
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
 
 ## Features
+- M · ? · MapMaker UI spec Phase 1: map settings dialog, an inspector that shows only the selection, a 3-state right dock, a contextual tool bar, a short status bar (lane to agree; after Tileset 11) · `docs/MAPMAKER_UI_SPEC.md`
+- M · ? · MapMaker UI spec Phases 2 and 3: synced selection and numeric transforms; live minimap.
+- M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
 - L · A · St. John's step 2: Smythe Hall (corner piece, side entry, about 1,150 props, perf run), then the chapel's spiral stair and our own crest.
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
@@ -66,14 +69,13 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Waiting on the owner
 - St. John's performance in a match: the 2026-11-13 trace turned out to be MapMaker, so whether the character work helped since 2026-11-10 is still unmeasured. Needs a recording of a match on St. John's (Settings → Record performance, or a Chrome trace while playing).
-- A hover model for the Hauler (Ironclad Vanguard became the Troop Truck; the Sky Cruiser is the only unused hover model).
 - Open questions in `docs/MAPMAKER_EDITING_REPORT_2026-11-13.md`.
 - The effects-check proposals, once `wip/fx-checks` reports.
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
 ## Parked
-- M · ? · MapMaker declutter (owner, 2026-11-13: on hold, "I don't see how this is improved"): map settings out of the right panel, theme filter by default, per-tab tools, View menu, short status bar, favourites on 1 to 0. Mock-up: https://claude.ai/artifact/94tejprHC5XeP4EKRuaQRT (private to the owner).
+- ? · ? · A hover model for the Hauler (owner, 2026-11-14: "leave hauler for now"; the Sky Cruiser is the only unused hover model).
 - L · A · A full weapon release: Stormvolt Blaster plus any other new guns (new weapon types are paused by the owner).
 - S · A · Sound pass 2 (paused by the owner).
 - ? · A · Packed inputs to cut upload bandwidth.

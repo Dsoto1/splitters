@@ -3502,7 +3502,7 @@ async function offlineFlow(browser) {
   await until(async () => Math.abs(await yaw()) < 0.01, T(3000));
   check(Math.abs(await yaw()) < 0.01, 'and leaving Character Select faces them forward again');
   check((await page.evaluate(() => window.__front.screen)) === 'profile', 'Back from Character Select returns to Profile, where it was opened');
-  // One grid in sections by what a character is (experimental characters under their own, before yours: the twelve of 2026-11-13) (a compact header each), a jump strip that lights the
+  // One grid in sections by what a character is (an experimental character would sit under its own section, before yours; today none is) (a compact header each), a jump strip that lights the
   // section in view; Q / E scroll to the next / previous one, and so does scrolling with the wheel.
   await openChars();
   const layout = await page.evaluate(() => ({
@@ -3511,7 +3511,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,legends,folk,horror,animals,creatures,experimental,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,legends,folk,horror,animals,creatures,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
