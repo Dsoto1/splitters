@@ -666,6 +666,12 @@ at 60c0c184, run 42677907883; waits for the owner's review, not landed).**
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 - Claimed: map format v35 (`metadata.tier`: quality tiers for maps, `wip/mapmaker-quality-gates`), MapMaker lane, 2026-11-11.
 - Claimed: `packages/client/src/editor/**` (except `editor/paletteBuilder.ts` until easy wins batch 1 lands), the editor's e2e flows and baselines, `e2e/flowMap.mjs` (adding `coverage` to the editor's mapping), `docs/BUILDING_KIT.md` and `docs/MAPMAKER_UI_SPEC.md` (As built notes): **MapMaker UI spec Phase 1** (map settings in the right dock, an inspector that shows only the selection, the 3-state right dock on Shift+\, a contextual tool bar with overflow, a short status bar, the View menu; the owner's answers in the spec). Lane B's splitters22, `wip/mapmaker-ui-1`, 2026-11-14. Lane A's lead reviews (owner). (Three stale MapMaker-lane claims from 2026-11-08/09 removed: their work landed.)
+  - **Built, not landed (`wip/mapmaker-ui-1`; CI on `check/mapmaker-ui-1`):** Map settings are a view in the right dock (`mapSettingsView.ts`), opened by the title, the rail's Map entry or the inspector's empty line. The inspector shows only the selection. The right dock has three states on Shift+\ (`rightDock.ts`, `dockPrefs.ts`), kept in `tiletrigger.editor.dock`. Also new: the left rail (`leftRail.ts`), a contextual tool bar with ⋯ (`toolBar.ts`, `toolBarTools.ts`), the View menu (`viewMenu.ts`), the short status bar (`statusBar.ts`) and `popupMenu.ts`. Details: the spec's Phase 1 "As built"; the how-to is BUILDING_KIT's "MapMaker's layout".
+  - **Pitfalls for the next phase:**
+    - The flows reach Map settings only through `openMapSettings(page)` and the View menu only through `viewItem(page, id)` (e2e/run.mjs).
+    - `#ed-name` is gone: the name is edited in Map settings (`#ed-prop-name`). `#ed-grid`, `#ed-grid-full`, `#ed-overlaps` and `#ed-plan` are now View menu checkbox items (`aria-checked`).
+    - `#ed-maptest` is the Test tab's bar button. `#ed-status` is in the status bar.
+    - `paletteBuilder.ts` was not touched (it still calls `topBar.buildToolbar()` and `topBar.syncWorkspaceTabs()`).
 
 **MapMaker: time of day and weather (`wip/mapmaker-p5`, map format v34, MapMaker lane, 2026-11-09).** Overhaul Phase 5
 (docs/MAPMAKER_OVERHAUL_PLAN.md "As built"), chained after v33 (bot hints). Lands in a train.
