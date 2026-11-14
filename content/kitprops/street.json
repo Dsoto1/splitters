@@ -1,5 +1,5 @@
 {
-  "$comment": "Street furniture (tools/content/kit/street.mjs; Tileset 11, Urban & Civilian: docs/map-briefs/urban/URBAN_PLAN.md step C): a bike rack, a street mailbox and a newspaper box, generated in code. They replace nothing. No real marks: the mailbox and the newspaper box are plain paint, with no service's or publisher's name, sign or livery. The bollard is kit.barrier.bollard, the cable spool kit.spool.cable, the awning kit.shop.awning.",
+  "$comment": "Street furniture (tools/content/kit/street.mjs; Tileset 11, Urban & Civilian: docs/map-briefs/urban/URBAN_PLAN.md step C): a bike rack, a street mailbox, a newspaper box and a bus stop sign, generated in code. They replace nothing. No real marks: the mailbox and the newspaper box are plain paint, with no service's or publisher's name, sign or livery; the bus stop sign is a plain picture of a bus, with no words, no route number and no operator's mark. The bollard is kit.barrier.bollard, the cable spool kit.spool.cable, the awning kit.shop.awning.",
   "type": "street",
   "props": [
     {
@@ -55,6 +55,24 @@
         { "index": 2, "name": "yellow", "seed": 12293, "look": { "body": "#d6a51c", "grime": 0.25, "wear": 0.2, "rust": 0.12 } },
         { "index": 3, "name": "green", "seed": 12294, "look": { "body": "#2f6b45", "grime": 0.25, "wear": 0.2, "rust": 0.12 } },
         { "index": 4, "name": "white", "seed": 12295, "look": { "body": "#dedbd0", "grime": 0.35, "wear": 0.2, "rust": 0.12 } }
+      ]
+    },
+    {
+      "id": "kit.street.bus_stop",
+      "displayName": "Bus Stop Sign",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Tileset 11 follow-up: the bus shelter had only a street-name sign): a 6 cm pole 2.7 m high on a base plate, a flag sign 0.5 m square at its top reaching to one side with a plain picture of a bus on both faces, and a timetable case with a blank sheet. No words, no route number, no operator's mark or livery. Looks: blue, yellow and green plates, and red. It collides as its pole and its flag only (2.14 m of clear height under the flag): a player walks under the flag, shots pass beside the pole." },
+      "size": [0.66, 2.7, 0.16],
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": { "kind": "busstop", "flag": 0.5 },
+      "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 40 }],
+      "variants": [
+        { "index": 0, "name": "blue", "seed": 12301, "look": { "plate": "#24508f", "picture": "#f2f0e8", "pole": "#8f9498", "grime": 0.25, "wear": 0.15, "rust": 0.08 } },
+        { "index": 1, "name": "yellow", "seed": 12302, "look": { "plate": "#dba81e", "picture": "#1d1f22", "pole": "#8f9498", "grime": 0.25, "wear": 0.15, "rust": 0.08 } },
+        { "index": 2, "name": "green", "seed": 12303, "look": { "plate": "#2c6a48", "picture": "#f2f0e8", "pole": "#2a2d30", "grime": 0.25, "wear": 0.15, "rust": 0.08 } },
+        { "index": 3, "name": "red", "seed": 12304, "look": { "plate": "#b02a22", "picture": "#f2f0e8", "pole": "#dedbd0", "grime": 0.3, "wear": 0.2, "rust": 0.12 } }
       ]
     }
   ]

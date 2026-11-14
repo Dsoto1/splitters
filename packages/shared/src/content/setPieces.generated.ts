@@ -2488,7 +2488,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'block', position: [0, 3.1, 2.3], size: [7.6, 0.14, 3.3], material: { role: 'roof' }, pitch: 0.20944 },
     ],
   },
-  // design: 4.2 m wide, 1.55 m deep, the canopy 2.45 m up with a slight fall to the back. The three panes are glass blocks (the glass role: breakable in a town, so shots open it; players do not pass an unbroken pane). Platform Seats and a Street Sign from the town pack. Posts and canopy are the metal role.
+  // design: 4.2 m wide, 1.55 m deep, the canopy 2.45 m up with a slight fall to the back. The three panes are glass blocks (the glass role: breakable in a town, so shots open it; players do not pass an unbroken pane). Platform Seats from the town pack and a Bus Stop Sign (kit.street.bus_stop: a pole with a flag, a plain picture of a bus, no words or marks), which took the place of the street-name sign that stood there (the same part, in the same place). Posts and canopy are the metal role.
   {
     id: 'setpiece.bus_shelter',
     displayName: 'Bus Shelter',
@@ -2507,7 +2507,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'block', position: [-2, 0.25, 0.65], size: [0.06, 2.05, 1.2], yaw: 1.570796, material: null, trigger: 'logic', respawnSeconds: null, glass: { role: 'glass' } },
       { kind: 'block', position: [2, 0.25, 0.65], size: [0.06, 2.05, 1.2], yaw: 1.570796, material: null, trigger: 'logic', respawnSeconds: null, glass: { role: 'glass' } },
       { kind: 'prop', position: [0, 0, 0.85], model: 'prop.mt_bench', yaw: 0, scale: 1, solid: true, tint: null },
-      { kind: 'prop', position: [3.1, 0, -0.3], model: 'prop.nc_street_sign', yaw: 0, scale: 1, solid: true, tint: null },
+      { kind: 'prop', position: [3.1, 0, -0.3], model: 'kit.street.bus_stop', yaw: 0, scale: 1, solid: true, tint: null },
       { kind: 'block', position: [0, 2.45, 0.55], size: [4.5, 0.12, 2], material: { role: 'metal' }, pitch: -0.087266 },
     ],
   },
