@@ -114,19 +114,26 @@ export function blendAt(now: number, prev: number, last: number, maxGapMs = 400)
 
 /**
  * The step gate of one character: due when both its time and its frame step have passed since its last evaluation.
- * `phase` (ms, and as a whole number of frames) spreads a crowd's steps over frames; the first evaluation in a
- * stepped band is at once.
+ * `phase` (ms, and as a whole number of frames) spreads a crowd's steps over frames. With `spread`, the first
+ * evaluation in a stepped band (after a reset: near before, or out of view) waits for the character's own frame of the
+ * band's frame grid (now, or up to frames-1 frames away), so a crowd that comes into view together (the camera cut at a
+ * match's start, a respawn, turning round) is spread over the band's frames instead of all evaluated in one
+ * (docs/PERF_STJOHNS_2026-11-14.md, the match-start spike); without it, at once.
  */
 export class StepClock {
   private nextMs = 0;
   private nextFrame = 0;
 
   /** Whether frame `frame` at `now` (ms) evaluates under `step`; resets to every frame for a 1-frame step. */
-  due(now: number, frame: number, step: AnimStep, phase = 0): boolean {
+  due(now: number, frame: number, step: AnimStep, phase = 0, spread = false): boolean {
     if (step.ms <= 0 && step.frames <= 1) {
       this.nextMs = 0;
       this.nextFrame = 0;
       return true;
+    }
+    if (spread && this.nextMs === 0 && this.nextFrame === 0) {
+      const f = Math.max(1, step.frames);
+      this.nextFrame = frame + ((f - (((frame + Math.round(phase)) % f) + f) % f) % f);
     }
     if (now < this.nextMs || frame < this.nextFrame) return false;
     // On the character's own phase (in time and in frames), so a crowd's evaluations spread over frames.
@@ -137,3 +144,31 @@ export class StepClock {
     return true;
   }
 }
+
+/**
+ * A per-frame allowance shared by every character: at most `max` takes in one frame (by the scene's frame id), the
+ * rest wait for the next frames. For first-time work that costs whole milliseconds a character (TorsoSurface.measure
+ * skins every torso vertex on the CPU, 3-30 ms), which a crowd otherwise does in the same frame when everyone
+ * settles into the aim together at a match's start (docs/PERF_STJOHNS_2026-11-14.md: 157 ms in one frame).
+ */
+export class FrameCap {
+  private frame = Number.NaN;
+  private used = 0;
+
+  constructor(readonly max: number) {}
+
+  /** Whether one more may go in frame `frame` (counted when it may). */
+  take(frame: number): boolean {
+    if (frame !== this.frame) {
+      this.frame = frame;
+      this.used = 0;
+    }
+    if (this.used >= this.max) return false;
+    this.used++;
+    return true;
+  }
+}
+
+/** Torso measurements (a character's first settled long-gun pose) a frame, across all characters. */
+export const TORSO_MEASURES_PER_FRAME = 1;
+export const torsoMeasures = new FrameCap(TORSO_MEASURES_PER_FRAME);
