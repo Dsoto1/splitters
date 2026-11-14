@@ -22,6 +22,8 @@
 // timed. PERF_BOTS, PERF_SECONDS and PERF_MODE are not used (the map's own mode runs).
 // Effects are left out (flame sprites and particle bursts animate, so their draws never stop changing):
 // PERF_STILL_FX=1 keeps them. PERF_SHOTS=<folder> also saves a picture of each view (to check what a camera sees).
+// PERF_STILL_EXTRA adds views (JSON, see stillViews). PERF_BREAKDOWN=1 also prints each view's draws by pass (main view,
+// shadow map, sun shafts, reflections) and by the mesh drawing them (names, digits stripped; PERF_BREAKDOWN_TOP=40).
 //
 // SwiftShader renders on the CPU, so its frame rate is far below a real GPU's;
 // compare runs on the same machine, and lean on draw calls, meshes and triangles.
@@ -81,6 +83,9 @@ function stillViews(map) {
     views.push({ name: 'eye, middle spawn', spawn: near.index, toSpawn: far.index });
     views.push({ name: 'eye, far spawn', spawn: far.index, target: [cx, mid + 1.7, cz] });
   }
+  // PERF_STILL_EXTRA: more views for one map, as JSON: [{ "name", "spawn" (index) or "eye" [x, y, z], and "target"
+  // [x, y, z], "toSpawn" (index) or "look" [dx, dy, dz] from the eye }] (e.g. a view into the sun for its shafts).
+  if (process.env.PERF_STILL_EXTRA) views.push(...JSON.parse(process.env.PERF_STILL_EXTRA));
   return views;
 }
 
@@ -217,7 +222,7 @@ async function measureStill(id, ctx, page, errors) {
       const ents = window.__match.map.entities;
       const at = (i) => ents[i].position;
       const eye = v.eye ?? [at(v.spawn)[0], at(v.spawn)[1] + 1.7, at(v.spawn)[2]];
-      const t = v.target ?? [at(v.toSpawn)[0], at(v.toSpawn)[1] + 1.7, at(v.toSpawn)[2]];
+      const t = v.look ? eye.map((x, i) => x + v.look[i]) : (v.target ?? [at(v.toSpawn)[0], at(v.toSpawn)[1] + 1.7, at(v.toSpawn)[2]]);
       const dx = t[0] - eye[0];
       const dy = t[1] - eye[1];
       const dz = t[2] - eye[2];
@@ -254,7 +259,7 @@ async function measureStill(id, ctx, page, errors) {
       // The middle reading of the last frames (the same as every one of them when settled).
       return { last: f[0].map((_, j) => col(j)[Math.floor(f.length / 2)]), lo: f[0].map((_, j) => col(j)[0]), hi: f[0].map((_, j) => col(j)[f.length - 1]) };
     }, STILL_FRAMES);
-    if (process.env.PERF_SHOTS) await page.screenshot({ path: `${process.env.PERF_SHOTS}/${id}-${GRAPHICS}-${v.name.replace(/[^a-z]+/gi, '_')}.png` }).catch(() => {});
+    if (process.env.PERF_SHOTS) await page.screenshot({ path: `${process.env.PERF_SHOTS}/${id}-${GRAPHICS}-${v.name.replace(/[^a-z]+/gi, '_')}.png`, timeout: 180000 }).catch(() => {});
     const span = lo[0] === hi[0] && lo[1] === hi[1] && lo[4] === hi[4] ? '' : ` (draws ${lo[0]} to ${hi[0]}, meshes ${lo[1]} to ${hi[1]}, casters ${lo[4]} to ${hi[4]})`;
     const range = `${settled ? 'yes' : 'no'}${span}`;
     // PERF_DEBUG: what came and went between the last two frames (by mesh name, digits stripped).
