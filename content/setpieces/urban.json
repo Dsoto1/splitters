@@ -1,0 +1,209 @@
+{
+  "$comment": "Urban family (Tileset 11, docs/map-briefs/urban/URBAN_PLAN.md, step D): small town pieces made from what the game already has. Each was built in MapMaker (tiles, blocks and props placed and set in the inspector), saved with \"Save selection as set piece\" and exported; here each has its shipped id, name and looks, and the block materials MapMaker could not turn into a role by itself (a role with a tint: a block has no tint in the inspector) are named as roles. Road markings and the road surface stay what they are in every look. Parts as in carriageway.json; parts are only ever added at the end. Edit, then run `node tools/content/setpieces.mjs`.",
+  "family": "urban",
+  "pieces": [
+    {
+      "id": "setpiece.porch",
+      "displayName": "Porch",
+      "category": "Town",
+      "blurb": "A covered porch for the front of a house, one cell: a plank deck one step up (two low risers, walked both ways), four posts, a picket rail with a gap at the steps and a lean-to roof. The house stands to its north; turn it to suit.",
+      "packs": ["urban", "suburban"],
+      "footprint": { "cells": [[0, 0]], "levels": [0, 0] },
+      "mirror": "free",
+      "parts": [
+        { "kind": "block", "position": [0, 0, 2.72], "size": [7.24, 0.3, 2.56], "material": { "role": "wood" } },
+        { "kind": "block", "position": [0, 0, 1.14], "size": [1.8, 0.15, 0.6], "material": { "role": "wood" } },
+        { "kind": "block", "position": [-3.52, 0.3, 1.56], "size": [0.2, 2.64, 0.2], "material": { "role": "wood" } },
+        { "kind": "block", "position": [-1, 0.3, 1.56], "size": [0.2, 2.64, 0.2], "material": { "role": "wood" } },
+        { "kind": "block", "position": [1, 0.3, 1.56], "size": [0.2, 2.64, 0.2], "material": { "role": "wood" } },
+        { "kind": "block", "position": [3.52, 0.3, 1.56], "size": [0.2, 2.64, 0.2], "material": { "role": "wood" } },
+        { "kind": "prop", "position": [-2.84, 0.3, 1.56], "model": "kit.fence.board", "yaw": 0, "scale": 1, "solid": true, "variant": 1, "tint": null },
+        { "kind": "prop", "position": [-1.68, 0.3, 1.56], "model": "kit.fence.board", "yaw": 0, "scale": 1, "solid": true, "variant": 1, "tint": null },
+        { "kind": "prop", "position": [1.68, 0.3, 1.56], "model": "kit.fence.board", "yaw": 0, "scale": 1, "solid": true, "variant": 1, "tint": null },
+        { "kind": "prop", "position": [2.84, 0.3, 1.56], "model": "kit.fence.board", "yaw": 0, "scale": 1, "solid": true, "variant": 1, "tint": null },
+        { "kind": "prop", "position": [-3.52, 0.3, 2.24], "model": "kit.fence.board", "yaw": 1.571, "scale": 1, "solid": true, "variant": 1, "tint": null },
+        { "kind": "prop", "position": [-3.52, 0.3, 3.4], "model": "kit.fence.board", "yaw": 1.571, "scale": 1, "solid": true, "variant": 1, "tint": null },
+        { "kind": "prop", "position": [3.52, 0.3, 2.24], "model": "kit.fence.board", "yaw": 1.571, "scale": 1, "solid": true, "variant": 1, "tint": null },
+        { "kind": "prop", "position": [3.52, 0.3, 3.4], "model": "kit.fence.board", "yaw": 1.571, "scale": 1, "solid": true, "variant": 1, "tint": null },
+        { "kind": "block", "position": [0, 3.1, 2.3], "size": [7.6, 0.14, 3.3], "material": { "role": "roof" }, "pitch": 0.20944 }
+      ],
+      "notes": { "design": "The deck is 7.24 m wide and 2.56 m deep, against the cell's north edge, its top 0.3 m up: a 0.15 m step in front, so a player walks up and down without jumping and the house's door at ground level stays in reach. Posts 0.2 m square (a block is at least that wide) carry a roof tilted 12 degrees, high at the house, 2.9 m over the deck at its eaves. The rail is eight Board Fence panels (pickets), 1.2 m: cover for a crouching player on the deck. Wood and roof are roles." }
+    },
+    {
+      "id": "setpiece.bus_shelter",
+      "displayName": "Bus Shelter",
+      "category": "Town",
+      "blurb": "A bus stop, one cell: a steel canopy on four posts, glass at the back and both ends (it shatters when shot), a row of seats under it and a stop sign beside it. Open to the south.",
+      "packs": ["urban", "suburban"],
+      "footprint": { "cells": [[0, 0]], "levels": [0, 0] },
+      "mirror": "free",
+      "parts": [
+        { "kind": "block", "position": [-2, 0, 1.3], "size": [0.2, 2.45, 0.2], "material": { "role": "metal" } },
+        { "kind": "block", "position": [-2, 0, -0.05], "size": [0.2, 2.45, 0.2], "material": { "role": "metal" } },
+        { "kind": "block", "position": [2, 0, 1.3], "size": [0.2, 2.45, 0.2], "material": { "role": "metal" } },
+        { "kind": "block", "position": [2, 0, -0.05], "size": [0.2, 2.45, 0.2], "material": { "role": "metal" } },
+        { "kind": "block", "position": [0, 0.25, 1.3], "size": [3.9, 2.05, 0.06], "material": null, "trigger": "logic", "respawnSeconds": null, "glass": { "role": "glass" } },
+        { "kind": "block", "position": [-2, 0.25, 0.65], "size": [0.06, 2.05, 1.2], "yaw": 1.570796, "material": null, "trigger": "logic", "respawnSeconds": null, "glass": { "role": "glass" } },
+        { "kind": "block", "position": [2, 0.25, 0.65], "size": [0.06, 2.05, 1.2], "yaw": 1.570796, "material": null, "trigger": "logic", "respawnSeconds": null, "glass": { "role": "glass" } },
+        { "kind": "prop", "position": [0, 0, 0.85], "model": "prop.mt_bench", "yaw": 0, "scale": 1, "solid": true, "tint": null },
+        { "kind": "prop", "position": [3.1, 0, -0.3], "model": "prop.nc_street_sign", "yaw": 0, "scale": 1, "solid": true, "tint": null },
+        { "kind": "block", "position": [0, 2.45, 0.55], "size": [4.5, 0.12, 2], "material": { "role": "metal" }, "pitch": -0.087266 }
+      ],
+      "notes": { "design": "4.2 m wide, 1.55 m deep, the canopy 2.45 m up with a slight fall to the back. The three panes are glass blocks (the glass role: breakable in a town, so shots open it; players do not pass an unbroken pane). Platform Seats and a Street Sign from the town pack. Posts and canopy are the metal role." }
+    },
+    {
+      "id": "setpiece.parking_deck_bay",
+      "displayName": "Parking Deck Bay",
+      "category": "Town",
+      "blurb": "One bay of a parking deck, one cell, two levels: marked bays on the ground and on an open deck 4 m up, on two columns, a half-wall parapet along its south side, two bollards. Place bays side by side; the Parking Deck Ramp climbs to them.",
+      "packs": ["urban", "industrial"],
+      "footprint": { "cells": [[0, 0]], "levels": [0, 1] },
+      "mirror": "free",
+      "ports": [
+        { "side": "N", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "S", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [0, 0], "level": 1, "kind": "opening" },
+        { "side": "E", "cell": [0, 0], "level": 1, "kind": "opening" },
+        { "side": "W", "cell": [0, 0], "level": 1, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.platform", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "material": "core.parking_bays", "tint": null } } },
+        { "kind": "tile", "tile": "core.platform", "x": 0, "y": 0, "z": 1, "rotation": 0, "surfaces": { "floor": { "material": "core.parking_bays", "tint": null }, "walls": { "role": "trim" } }, "edges": { "0,0,0:S": "half" } },
+        { "kind": "block", "position": [-3.7, 0, -2.4], "size": [0.6, 3.5, 0.6], "material": { "role": "trim" } },
+        { "kind": "block", "position": [-3.7, 0, 2.4], "size": [0.6, 3.5, 0.6], "material": { "role": "trim" } },
+        { "kind": "prop", "position": [-3.7, 0, -1.5], "model": "kit.barrier.bollard", "yaw": 0, "scale": 1, "solid": true, "tint": null },
+        { "kind": "prop", "position": [-3.7, 0, 1.5], "model": "kit.barrier.bollard", "yaw": 0, "scale": 1, "solid": true, "tint": null }
+      ],
+      "notes": { "design": "Two Platforms (the deck's south wall style Half Wall, 1.1 m: cover to crouch behind, shot over standing), both floored with Parking Bays (kept in every look). Columns 0.6 m square under the deck's west edge, so a row of bays has one pair every 8 m; the last bay's east edge hangs free. Columns and parapet are the trim role (pale concrete in a town)." }
+    },
+    {
+      "id": "setpiece.parking_deck_ramp",
+      "displayName": "Parking Deck Ramp",
+      "category": "Town",
+      "blurb": "A ramp up to a parking deck, two cells: an asphalt slab climbing east from the ground to 4 m, a parapet each side, two columns under its head. Its top meets a Parking Deck Bay (or any floor one level up) placed against its east end.",
+      "packs": ["urban", "industrial"],
+      "footprint": { "cells": [[0, 0], [1, 0]], "levels": [0, 1] },
+      "mirror": "free",
+      "ports": [
+        { "side": "N", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "S", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [1, 0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [1, 0], "level": 0, "kind": "opening" },
+        { "side": "S", "cell": [1, 0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.platform", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "material": "core.pbr_asphalt", "tint": null } } },
+        { "kind": "tile", "tile": "core.platform", "x": 1, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "material": "core.pbr_asphalt", "tint": null } } },
+        { "kind": "block", "position": [10.4, 0, -2.9], "size": [0.5, 3.25, 0.5], "material": { "role": "trim" } },
+        { "kind": "block", "position": [10.4, 0, 2.9], "size": [0.5, 3.25, 0.5], "material": { "role": "trim" } },
+        { "kind": "block", "position": [4.68, 1.608, 0], "size": [14.5, 0.4, 7], "material": "core.pbr_asphalt", "roll": 0.279253 },
+        { "kind": "block", "position": [11.7, 3.6, 0], "size": [0.6, 0.4, 7], "material": "core.pbr_asphalt" },
+        { "kind": "block", "position": [4.487, 1.981, -3.375], "size": [14.5, 1, 0.25], "material": { "role": "trim" }, "roll": 0.279253 },
+        { "kind": "block", "position": [4.487, 1.981, 3.375], "size": [14.5, 1, 0.25], "material": { "role": "trim" }, "roll": 0.279253 }
+      ],
+      "notes": { "design": "A tilted block (MapMaker's Roll, 16 degrees), 7 m wide, 6.5 m between its parapets: it leaves the ground 1.65 m inside the west edge and reaches 4.0 m 0.4 m short of the east edge, where a level strip carries on to the edge. Walked up and down on foot and by the vehicle probe (setPiecesUrban.test.ts). The parapets are 1 m, tilted with it. The footprint claims the level above as well (the parapets' heads stand in it). Open underneath: the space under the slab is walked into from either side and narrows to nothing, never shut. The slab and the ground under it are asphalt in every look." }
+    },
+    {
+      "id": "setpiece.concrete_frame",
+      "displayName": "Concrete Frame",
+      "category": "Town",
+      "blurb": "A bare concrete frame, one cell, one storey: a slab on four columns, every side open, a cable spool and a pallet left on the floor. Place frames side by side for a building site.",
+      "packs": ["urban", "industrial", "military"],
+      "footprint": { "cells": [[0, 0]], "levels": [0, 0] },
+      "mirror": "free",
+      "ports": [
+        { "side": "N", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "S", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0, 0], "level": 0, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "trim" }, "solids": { "role": "trim" } }, "edges": { "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, "options": { "layout": "column_rows", "ceiling": "roof" } },
+        { "kind": "prop", "position": [2.6, 0, -0.2], "model": "kit.spool.cable", "yaw": 0.349, "scale": 1, "solid": true, "tint": null },
+        { "kind": "prop", "position": [-2.7, 0, 2.9], "model": "prop.pallet", "yaw": 0, "scale": 1, "solid": true, "tint": null }
+      ],
+      "notes": { "design": "A Room with every wall style Open, the Column rows layout and a roof slab; floor and columns the trim role (pale concrete in a town). Walk and shoot through it in every direction; the columns (0.7 m) are the cover." }
+    },
+    {
+      "id": "setpiece.concrete_frame_2",
+      "displayName": "Concrete Frame (2 storeys)",
+      "category": "Town",
+      "blurb": "A bare concrete frame of two storeys with its stair, two cells: Open Stairs climb east onto the upper floor of a two-storey frame, slabs on columns, every side open (mind the edge). A site fence panel on the ground floor.",
+      "packs": ["urban", "industrial", "military"],
+      "footprint": { "cells": [[0, 0], [1, 0]], "levels": [0, 1] },
+      "mirror": "none",
+      "ports": [
+        { "side": "W", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [1, 0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [1, 0], "level": 0, "kind": "opening" },
+        { "side": "S", "cell": [1, 0], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [1, 0], "level": 1, "kind": "opening" },
+        { "side": "E", "cell": [1, 0], "level": 1, "kind": "opening" },
+        { "side": "S", "cell": [1, 0], "level": 1, "kind": "opening" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.stairs_open", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "solids": { "role": "trim" } } },
+        { "kind": "tile", "tile": "core.room", "x": 1, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "trim" }, "solids": { "role": "trim" } }, "edges": { "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, "options": { "layout": "column_rows", "ceiling": "roof" } },
+        { "kind": "tile", "tile": "core.room", "x": 1, "y": 0, "z": 1, "rotation": 0, "surfaces": { "floor": { "role": "trim" }, "solids": { "role": "trim" } }, "edges": { "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, "options": { "layout": "column_rows", "ceiling": "roof" } },
+        { "kind": "prop", "position": [8.2, 0, 2.9], "model": "kit.fence.site_panel", "yaw": 0, "scale": 1, "solid": true, "tint": null }
+      ],
+      "notes": { "design": "Open Stairs and two Rooms, one over the other, as the Concrete Frame. The upper floor is reached by the stair and left by it or by dropping 4 m off an open side." }
+    },
+    {
+      "id": "setpiece.bandstand",
+      "displayName": "Bandstand",
+      "category": "Town",
+      "blurb": "A round bandstand for a park or a square, 2 x 2 cells: twelve arches in a ring 15.5 m across under a stepped roof, a low plank stage in the middle. Walk in through any arch.",
+      "packs": ["urban", "suburban", "gothic"],
+      "footprint": { "cells": [[0, 0], [1, 0], [0, 1], [1, 1]], "levels": [0, 1] },
+      "mirror": "none",
+      "parts": [
+        { "kind": "tile", "tile": "core.round_arcade_s", "x": 1, "y": 1, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "trim" } }, "edges": { "0,0,0:S": "open", "0,0,0:W": "open" } },
+        { "kind": "tile", "tile": "core.round_arcade_s", "x": 1, "y": 0, "z": 0, "rotation": 1, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "trim" } }, "edges": { "0,0,0:S": "open" } },
+        { "kind": "tile", "tile": "core.round_arcade_s", "x": 0, "y": 0, "z": 0, "rotation": 2, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "trim" } }, "edges": { "0,0,0:S": "open" } },
+        { "kind": "tile", "tile": "core.round_arcade_s", "x": 0, "y": 1, "z": 0, "rotation": 3, "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "trim" } } },
+        { "kind": "block", "position": [4, 0, 4], "size": [5, 0.3, 5], "material": { "role": "wood" } },
+        { "kind": "block", "position": [4, 4, 4], "size": [15.6, 0.3, 15.6], "material": { "role": "roof" } },
+        { "kind": "block", "position": [4, 4.28, 4], "size": [11, 0.4, 11], "material": { "role": "roof" } },
+        { "kind": "block", "position": [4, 4.66, 4], "size": [6.4, 0.4, 6.4], "material": { "role": "roof" } },
+        { "kind": "block", "position": [4, 5.04, 4], "size": [2, 0.6, 2], "material": { "role": "roof" } }
+      ],
+      "notes": { "design": "Four Round Arcades (Small) turned to make a ring, floored with paving, their piers and arch heads the trim role. The stage is a square 0.3 m high (one step up). The roof is four slabs, stepped: a square over the whole ring at 4 m, two smaller ones and a cap (the roof role). The piers (1 m) are standing cover; the ring is open between them." }
+    },
+    {
+      "id": "setpiece.shop_unit",
+      "displayName": "Shop Unit",
+      "category": "Town",
+      "blurb": "A small shop and its pavement, 2 x 2 cells: a front of glass that shatters under striped awnings, a door beside it under a lit sign, a counter and a shelf inside, a back door; a newspaper box and two bollards outside. Street to the south.",
+      "packs": ["urban", "suburban"],
+      "footprint": { "cells": [[0, 0], [1, 0], [0, 1], [1, 1]], "levels": [0, 0] },
+      "mirror": "free",
+      "ports": [
+        { "side": "S", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "W", "cell": [0, 0], "level": 0, "kind": "opening" },
+        { "side": "E", "cell": [1, 0], "level": 0, "kind": "opening" },
+        { "side": "S", "cell": [1, 0], "level": 0, "kind": "opening" },
+        { "side": "N", "cell": [1, 1], "level": 0, "kind": "door" }
+      ],
+      "parts": [
+        { "kind": "tile", "tile": "core.platform", "x": 0, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "paving" } } },
+        { "kind": "tile", "tile": "core.platform", "x": 1, "y": 0, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "paving" } } },
+        { "kind": "tile", "tile": "core.room", "x": 0, "y": 1, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "floor" } }, "edges": { "0,0,0:N": "wall", "0,0,0:W": "wall", "0,0,0:S": "shopfront" }, "glass": { "0,0,0:S": { "role": "glass" } }, "options": { "ceiling": "roof", "facade": { "role": "facade" } } },
+        { "kind": "tile", "tile": "core.room", "x": 1, "y": 1, "z": 0, "rotation": 0, "surfaces": { "floor": { "role": "floor" } }, "edges": { "0,0,0:N": "door", "0,0,0:E": "wall", "0,0,0:W": "open", "0,0,0:S": "door" }, "options": { "ceiling": "roof", "facade": { "role": "facade" } } },
+        { "kind": "door", "position": [8, 0, 4], "yaw": 0, "style": { "role": "door" }, "startOpen": false, "locked": false, "auto": true },
+        { "kind": "prop", "position": [-1, 0, 9], "model": "kit.stall.counter", "yaw": 1.571, "scale": 1, "solid": true, "tint": null },
+        { "kind": "prop", "position": [1.6, 0, 6.6], "model": "kit.shelf.gondola", "yaw": 0, "scale": 1, "solid": true, "tint": null },
+        { "kind": "prop", "position": [4.5, 0, 3.2], "model": "kit.street.newsbox", "yaw": 0, "scale": 1, "solid": true, "tint": null },
+        { "kind": "prop", "position": [-3, 0, -3.4], "model": "kit.barrier.bollard", "yaw": 0, "scale": 1, "solid": true, "variant": 1, "tint": null },
+        { "kind": "prop", "position": [3, 0, -3.4], "model": "kit.barrier.bollard", "yaw": 0, "scale": 1, "solid": true, "variant": 1, "tint": null },
+        { "kind": "prop", "position": [-1.6, 3, 2.85], "model": "kit.shop.awning", "yaw": 3.142, "scale": 1, "solid": true, "tint": null },
+        { "kind": "prop", "position": [1.6, 3, 2.85], "model": "kit.shop.awning", "yaw": 3.142, "scale": 1, "solid": true, "tint": null },
+        { "kind": "light", "position": [8, 3.5, 3.49], "yaw": 3.142, "color": "#ff4fd8", "intensity": 1.2, "range": 8, "fixture": "sign", "text": "OPEN" }
+      ],
+      "notes": { "design": "Two Rooms open to each other (wall styles Shopfront with glass and Door at the front, a doorway at the back of the second), a roof, the facade role; two Platforms of paving in front, which the awnings (no collision) and the sign hang over. The door is the door role, opening as a player comes close. Floors, facade, glass, door and paving are roles." }
+    }
+  ]
+}

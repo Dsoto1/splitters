@@ -87,7 +87,7 @@ function schemas(root, materials) {
   const segment = obj({ u: pair, y: pair, 't?': num, 'repeat?': repeat });
   const trimPiece = obj({
     'base?': pair, 'cornice?': pair, 'frame?': obj({ half: num, top: num }), 'window?': obj({ u: tup(2), y: tup(2) }),
-    'arch?': obj({ u: tup(2), y: tup(2), count: int, band: num, 'key?': num, 'depth?': num }),
+    'arch?': obj({ u: tup(2), y: tup(2), count: int, band: num, 'key?': num, 'depth?': num, 'keyDepth?': num }),
     'u?': pair, 'y?': pair, 'depth?': num, 'v?': tup(2), 'repeat?': repeat, 'outside?': bool,
     'surface?': obj({ material: en(materials), 'tint?': str }),
   });
@@ -263,7 +263,7 @@ export function build(content, root = ROOT) {
       if (t.base) return { base: pair(t.base, uValue, `${path}.base`) };
       if (t.cornice) return { cornice: pair(t.cornice, uValue, `${path}.cornice`) };
       const own = t.surface ? { surface: t.surface } : {};
-      if (t.surface && !t.frame && !t.u) problems.push(`${where}: ${path}: surface goes on a frame or a trim box`);
+      if (t.surface && !t.frame && !t.arch && !t.u) problems.push(`${where}: ${path}: surface goes on a frame, an arch or a trim box`);
       if (t.surface?.tint !== undefined && !/^#[0-9a-f]{6}$/.test(t.surface.tint)) problems.push(`${where}: ${path}.surface.tint must be #rrggbb`);
       if (t.frame) return { frame: t.frame, ...own };
       if (t.window) return { window: t.window };
@@ -273,7 +273,8 @@ export function build(content, root = ROOT) {
         if (!(a.y[0] < a.y[1])) problems.push(`${where}: ${path}.arch.y: [springing, crown] with the crown higher`);
         if (!(a.count >= 1) || !(a.band > 0)) problems.push(`${where}: ${path}.arch: count at least 1 and band (the voussoirs' depth, m) above 0`);
         if (a.y[1] - a.y[0] > (a.u[1] - a.u[0]) / 2) problems.push(`${where}: ${path}.arch: a segmental arch rises at most half its span`);
-        return { arch: a, ...(t.outside ? { outside: true } : {}) };
+        if (a.keyDepth !== undefined && !(a.keyDepth >= 0)) problems.push(`${where}: ${path}.arch.keyDepth (how much prouder the keystone stands, m) must be 0 or more`);
+        return { arch: a, ...(t.outside ? { outside: true } : {}), ...own };
       }
       if (t.v !== undefined) {
         // A box set in the wall itself (a sash's bars by the glass): from and to, in from the cell's boundary.

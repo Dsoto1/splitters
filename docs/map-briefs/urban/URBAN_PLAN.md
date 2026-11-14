@@ -64,6 +64,21 @@ After step A a builder can pick "Urban & Civilian" and build five of the six set
 
 Each new set piece family also gets a label in `SET_PIECE_FAMILIES` (`packages/client/src/editor/paletteCatalog.ts`).
 
+**As built (2026-11-13):** one family, `content/setpieces/urban.json` (category Town), eight pieces, each built in MapMaker, saved with "Save selection as set piece", exported, and given its id, name and roles in the file (a block has no tint in the inspector, so roles that carry a tint, trim and metal, are named there). All suit the `urban` role pack first.
+
+| Piece | Cells | Made of | Differs from the plan |
+|---|---|---|---|
+| `setpiece.porch` | 1 | 7 blocks (deck, step, four posts, tilted roof), 8 Board Fence panels | The deck is 0.3 m up (a 0.15 m step), not higher: a house's door is at ground level and a player steps 0.3 m. |
+| `setpiece.bus_shelter` | 1 | 8 blocks (four posts, three glass panes, canopy), Platform Seats, Street Sign | Posts are 0.2 m (a block's least width). The sign is the street-name sign: there is no bus stop sign. |
+| `setpiece.parking_deck_bay` | 1, two levels | 2 Platforms (Parking Bays floors, the deck's south side Half Wall), 2 columns, 2 bollards | Columns on the west edge only, so a row has one pair every 8 m. |
+| `setpiece.parking_deck_ramp` | 2, two levels | 2 Platforms (asphalt), 6 blocks (tilted slab, level head, two tilted parapets, two columns) | A tilted block, not `core.ramp`: that tile is a walled flight of steps with no wall styles to set. Vehicles climb it (the vehicle probe, `setPiecesUrban.test.ts`). |
+| `setpiece.concrete_frame` | 1 | 1 Room (open sides, column rows, roof slab), a cable spool, a pallet | A Room, not a Platform: only a Room takes the column rows layout. |
+| `setpiece.concrete_frame_2` | 2, two levels | Open Stairs, 2 Rooms, a site fence panel | Its stair is part of it, so the upper floor is reached. |
+| `setpiece.bandstand` | 2 x 2, two levels | 4 Round Arcades (Small) in a ring, 5 blocks (stage, four stepped roof slabs) | The roof is square and stepped (blocks cannot make a cone); the ring is 15.5 m across, the tile's size. |
+| `setpiece.shop_unit` | 2 x 2 | 2 Rooms (Shopfront with glass, doorways), 2 Platforms of pavement, a door, 2 awnings, a lit sign, counter, shelf, newspaper box, 2 bollards | It carries its pavement: the awnings hang over it, and a set piece's props must stand inside its footprint. |
+
+Not done here: the family's label in `SET_PIECE_FAMILIES` (MapMaker's code was held by another session; the tab shows the family as "Urban").
+
 ### Step E. New tiles (only where nothing else will do)
 
 | # | Item | Type | Unlocks | Effort | How it is built here |
