@@ -285,8 +285,9 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
    of large thumbnail cards, workspace tabs in the top bar, sub-tabs over
    the palette, Map properties on the right, a hover card in the view.
    ------------------------------------------------------------------ */
-#editor { --ed-rail-w: 44px; --ed-pal-w: 364px; --ed-right-w: var(--ed-dock-w, 268px); }
-/* --ed-pal-w is everything on the left: the rail and the asset browser beside it (UI Phase 1). */
+#editor { --ed-rail-w: 44px; --ed-pal-w: 320px; --ed-right-w: var(--ed-dock-w, 268px); }
+/* --ed-pal-w is everything on the left: the rail and the asset browser beside it (UI Phase 1: the rail takes its
+   44 px from the asset browser, not from the view). */
 #ed-palette { left: var(--ed-rail-w); width: calc(var(--ed-pal-w) - var(--ed-rail-w)); box-sizing: border-box; padding: 10px 10px 16px; }
 #ed-right { width: var(--ed-right-w); box-sizing: border-box; }
 #ed-logic { right: var(--ed-right-w); width: min(620px, calc(100vw - var(--ed-pal-w) - var(--ed-right-w))); }
@@ -336,7 +337,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 
 
 @media (max-width: 1400px) {
-  #editor { --ed-pal-w: 344px; --ed-right-w: var(--ed-dock-w, 244px); }
+  #editor { --ed-pal-w: 300px; --ed-right-w: var(--ed-dock-w, 244px); }
   #ed-top .wide { display: none; }
   #ed-top .narrow { display: inline; }
   #ed-modes .tab { padding: 5px 7px; }
@@ -345,11 +346,11 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
   #ed-bots, #ed-skill { max-width: 76px; }
 }
 @media (max-width: 1100px) {
-  #editor { --ed-pal-w: 304px; --ed-right-w: var(--ed-dock-w, 220px); }
+  #editor { --ed-pal-w: 260px; --ed-right-w: var(--ed-dock-w, 220px); }
   #ed-top .ed-file button:nth-child(n + 4) { display: none; }
 }
 @media (max-width: 900px) {
-  #editor { --ed-pal-w: 234px; }
+  #editor { --ed-pal-w: 220px; }
   #ed-palette .tiles { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -544,6 +545,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-top.fit-6 #ed-title { max-width: 110px; }
 #ed-top.fit-6 #ed-modes .tab { padding: 4px 3px; font-size: 10px; }
 #ed-top.fit-7 #ed-bots { display: none; }
+#ed-top.fit-7 #ed-snap { max-width: 80px; }
 #ed-tr-edit .ed-tr-swap { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0; }
 #ed-tr-edit .ed-tr-swap label { flex: 1; margin: 0; }
 #ed-tr-edit .ed-tr-swap button { flex: none; margin: 0; }

@@ -294,8 +294,10 @@ async function editorFlow(browser) {
   check((await tileOf()).y === 1, 'redo reapplies the move');
   await page.keyboard.press('Control+KeyZ');
 
-  // Paint: brick walls on the start room, then checker floors on every room via scope.
-  await page.click('[data-tool="paint"]');
+  // Paint: brick walls on the start room, then checker floors on every room via scope. (Paint is on the Environment
+  // tab's tool bar, UI Phase 1.)
+  await page.click('#ed-modes [data-ws="environment"]');
+  await page.click('#ed-tb-paint');
   await page.click('[data-material="core.red_brick"]');
   const wall = await page.evaluate(() => window.__editor.view.project({ x: 0, y: 2, z: 3.5 }));
   await page.mouse.move(wall.x, wall.y);
@@ -656,7 +658,9 @@ async function editoruxFlow(browser) {
   check(await page.isVisible('#ed-toolbar #ed-tb-erase') && (await page.textContent('#ed-tb-erase')).includes('X'), 'tool bar shows Erase with its key');
   check((await page.getAttribute('#ed-tb-select', 'class')).includes('active') && (await page.textContent('#ed-toolhint')).includes('Select'), 'Select is the lit tool and the hint says what it does');
 
-  check(parseFloat(await page.evaluate(() => getComputedStyle(document.getElementById('ed-palette')).width)) >= 300, 'the palette is wide (300 px or more)');
+  // (The left rail, UI Phase 1, takes its 44 px from the palette, not from the view.)
+  const leftSide = await page.evaluate(() => ({ pal: document.getElementById('ed-palette').getBoundingClientRect().right, cols: getComputedStyle(document.querySelector('#ed-palette .tiles')).gridTemplateColumns.split(' ').length }));
+  check(leftSide.pal >= 300 && leftSide.cols === 3, `the rail and palette are wide (300 px or more), three cards a row (${JSON.stringify(leftSide)})`);
   // Palette pictures come from the prebuilt atlases, one image per content source (a Style Pack's tiles, a content
   // pack's props), loaded as their pieces are shown.
   await page.waitForFunction(() => document.querySelector('#ed-tiles .thumb.atlas .spr'), null, { timeout: T(30000) }).catch(() => {});
@@ -1624,7 +1628,8 @@ async function editorLayoutChecks(browser) {
     probe.remove();
     return r;
   });
-  check(bar.fits && bar.name && bar.snap && bar.theme && bar.skill && bar.bots && !/fit-[345]/.test(bar.cls), `at 1440 px the top bar fits with the map name, Snap, theme, bots and skill whole (${JSON.stringify(bar)})`);
+  // (fit-3 only draws gaps and paddings closer; from fit-4 things go.)
+  check(bar.fits && bar.name && bar.snap && bar.theme && bar.skill && bar.bots && !/fit-[4-7]/.test(bar.cls), `at 1440 px the top bar fits with the map name, Snap, theme, bots and skill whole (${JSON.stringify(bar)})`);
   await shot('1440');
 
   // ---- The inspector shows only the selection: nothing selected is one line.
@@ -2310,7 +2315,7 @@ async function editorMapTestChecks(browser) {
   const cancelled = await page.evaluate(() => ({ running: window.__editor.mapTest.running, progress: !document.getElementById('ed-mt-progress').hidden, result: !!window.__editor.mapTest.result, run: !document.getElementById('ed-mt-run').disabled, frames: window.__editor.mapTest.frames.count }));
   check(during.running && !during.grid && during.bar > 0, `the bot test run goes on in the background, its progress shown, while MapMaker draws and takes a click (${JSON.stringify(during)}, ${cancelled.frames} frames drawn meanwhile)`);
   check(!cancelled.running && !cancelled.progress && !cancelled.result && cancelled.run, `Cancel ends the run at once, with no result (${JSON.stringify(cancelled)})`);
-  await page.click('#ed-grid');
+  await viewItem(page, 'ed-grid');
   if (process.env.E2E_SHOTS) {
     // The picture of a run going: another, cancelled after the shot.
     await page.click('#ed-mt-run');
