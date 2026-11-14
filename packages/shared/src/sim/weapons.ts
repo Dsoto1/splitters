@@ -23,12 +23,14 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
 /**
  * How a projectile looks on the client (index sent in snapshots: new ones go last). `vortexNade` is the Gravity
  * Grenade's own look (id `vortex`) (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade; `flareShot` the Airstrike
- * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`).
+ * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`); `ammoBox` the Ammo
+ * Box Kit in flight (its crate, small).
  */
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
   'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'vortexNade', 'smoke', 'flareShot',
+  'ammoBox',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
@@ -200,6 +202,8 @@ export interface ProjectileSpec {
   airstrike?: { count: number; spacing: number; height: number; bomb: ProjectileSpec };
   /** Deployable cover: where it lands it becomes a solid wall (half extents, metres) facing the thrower, with its own health. */
   cover?: { half: [number, number, number]; health: number };
+  /** An Ammo Box Kit: where it lands it becomes an ammo box (sim/resupply.ts DEPLOYED_BOX), square to the thrower. */
+  ammoBox?: boolean;
   /**
    * Arena discs (Disc Arena): no damage. A hit shoves the player `push` m/s
    * away (and `lift` m/s up). Then, or when its fuse runs out or it has bounced

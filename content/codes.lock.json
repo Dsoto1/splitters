@@ -64,7 +64,8 @@
     "airstrike": 9,
     "sandbag": 10,
     "dynamite": 11,
-    "smoke": 12
+    "smoke": 12,
+    "ammo_box": 13
   },
   "classes": {
     "runner": 0,

@@ -7,7 +7,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { THROWABLE_DEFS, getItem, getWeapon, throwableModel, type AmmoType, type DiscPower } from '@tiletrigger/shared';
+import { AMMO_BOX_KIT_SCALE, THROWABLE_DEFS, getItem, getWeapon, throwableModel, type AmmoType, type DiscPower } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 import { castSmall } from './shadowFlags.ts';
 
@@ -117,8 +117,10 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
       }
     };
     if (model) {
-      const scale = fx.throwable === 'mine' ? 0.7 : 1.5;
-      for (const [i, [x, z, yaw]] of ([[-0.09, 0, 0.5], [0.09, 0.03, -0.7]] as const).entries()) {
+      // (The Ammo Box Kit: one small crate, its model being the full-size one.)
+      const kit = fx.throwable === 'ammo_box';
+      const scale = kit ? AMMO_BOX_KIT_SCALE : fx.throwable === 'mine' ? 0.7 : 1.5;
+      for (const [i, [x, z, yaw]] of ((kit ? [[0, 0, 0.3]] : [[-0.09, 0, 0.5], [0.09, 0.03, -0.7]]) as readonly (readonly [number, number, number])[]).entries()) {
         void copy(model, `nade${i}`).then(
           (m) => {
             if (root.isDisposed()) return m.dispose();

@@ -1897,7 +1897,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
 export const WEAPON_CODES: Readonly<Record<string, number>> = { 'core.knife': 1, 'core.pistol': 2, 'core.rifle': 3, 'core.shotgun': 4, 'core.sniper': 5, 'core.launcher': 6, 'core.smg': 7, 'core.rockets': 8, 'core.plasma': 9, 'core.pulse_pistol': 10, 'core.hand_cannon': 11, 'core.gilded_pistol': 12, 'core.flare_gun': 13, 'core.machine_pistol': 14, 'core.burst_rifle': 15, 'core.laser_rifle': 16, 'core.marksman': 17, 'core.sawed_off': 18, 'core.auto_shotgun': 19, 'core.flak': 20, 'core.railgun': 21, 'core.disc_launcher': 22, 'core.bubble_blaster': 23, 'core.goo_gun': 24, 'core.oil_slicker': 25, 'core.lmg': 26, 'core.nailgun': 27, 'core.swarm': 28, 'core.guided': 29, 'core.singularity': 30, 'core.arc_caster': 31, 'core.flamethrower': 32, 'core.freeze_ray': 33, 'core.mount_mg': 34, 'core.mount_rockets': 35, 'core.tank_cannon': 36, 'core.speeder_guns': 37, 'core.sentry_gun': 38, 'core.sentry_arc': 39, 'core.medkit': 40, 'core.grapple': 41, 'core.spear': 42, 'core.builder': 43, 'core.arena_disc': 44, 'core.blast_rockets': 45, 'core.medi_beam': 46, 'core.revolver': 47, 'core.battle_axe': 48, 'core.battle_rifle': 49 };
 
 /** Thrown equipment (G), in code order: a snapshot sends the code (its index here). */
-export const THROWABLES = ['frag', 'mine', 'sticky', 'incendiary', 'toxic', 'vortex', 'holy', 'cluster', 'sheep', 'airstrike', 'sandbag', 'dynamite', 'smoke'] as const;
+export const THROWABLES = ['frag', 'mine', 'sticky', 'incendiary', 'toxic', 'vortex', 'holy', 'cluster', 'sheep', 'airstrike', 'sandbag', 'dynamite', 'smoke', 'ammo_box'] as const;
 export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], ThrowableDefinition>> = {
   frag: {
     kind: 'frag',
@@ -2182,6 +2182,26 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       zone: { kind: 'smoke', radius: 5, seconds: 18 },
     },
     view: { model: 'guns/smoke_m18.glb', looks: { scifi: 'guns/smoke_scifi.glb' } },
+  },
+  // group: Deployable, carried like Sandbags (owner, 2026-11-13: a map pickup, anyone may carry one).
+  // design: Tossed a couple of metres ahead; where it lands it becomes an ammo box (sim/resupply.ts DEPLOYED_BOX): Use beside it resupplies, ten times, for two minutes; shot or blown up it cooks off. One each: setting down another takes the first away.
+  ammo_box: {
+    kind: 'ammo_box',
+    displayName: 'Ammo Box Kit',
+    max: 1,
+    throwIntervalTicks: 40,
+    projectile: {
+      speed: 6,
+      gravity: 16,
+      fuseSeconds: 1.2,
+      splashRadius: 0,
+      splashDamage: 0,
+      splashEdgeDamage: 0,
+      selfDamageScale: 0,
+      visual: 'ammoBox',
+      ammoBox: true,
+    },
+    view: { model: 'props/ww2_ammo_crate.glb' },
   },
 };
 

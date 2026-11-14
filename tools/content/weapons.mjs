@@ -61,7 +61,7 @@ export function schemas(root = ROOT, families = []) {
     'cluster?': obj({ count: int, speed: num, spec: lazy(() => projectile) }),
     'walker?': obj({ speed: num }), 'retrievable?': bool,
     'airstrike?': obj({ count: int, spacing: num, height: num, bomb: lazy(() => projectile) }),
-    'cover?': obj({ half: vec3, health: num }), 'disc?': obj({ push: num, lift: num, 'split?': bool }),
+    'cover?': obj({ half: vec3, health: num }), 'ammoBox?': bool, 'disc?': obj({ push: num, lift: num, 'split?': bool }),
   });
   const kick = { pitch: arr(num, 1), yaw: arr(num), variance: num, delay: int, settle: num, rate: num, visual: num };
   const accuracy = { base: num, move: num, air: num, perShot: num, tight: int, max: num, recovery: num, ads: num, adsTicks: int };
@@ -200,7 +200,8 @@ export function build(content, root = ROOT) {
 
   const sounds = new Set(Object.keys(readJson(root, 'content/sounds.json').sounds));
   const procedural = new Set([...readFileSync(join(root, 'packages/client/src/content/models.ts'), 'utf8').matchAll(/path === '(procedural\/[\w-]+)'/g)].map((m) => m[1]));
-  const modelExists = (p) => procedural.has(p) || existsSync(join(root, 'packages/client/public/models', p));
+  // Models under public/models, or a prop under public/props (the Ammo Box Kit's crate: content/props, `props/…`).
+  const modelExists = (p) => procedural.has(p) || existsSync(join(root, /^props\//.test(p) ? 'packages/client/public' : 'packages/client/public/models', p));
 
   // Other sections (npcRoles: tools/content/npcs.mjs) are kept as they are.
   const { $comment: _lc, ...others } = content.lock;

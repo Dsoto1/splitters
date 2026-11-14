@@ -88,4 +88,5 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   { id: 'core.weapon_revolver', displayName: 'Heavy Revolver', effect: { kind: 'weapon', weapon: 'core.revolver' }, respawnSeconds: 20, botValue: 0.6 },
   { id: 'core.weapon_battle_axe', displayName: 'Battle Axe', effect: { kind: 'weapon', weapon: 'core.battle_axe' }, respawnSeconds: 20, botValue: 0.5 },
   { id: 'core.smoke_grenades', displayName: 'Smoke Grenades', effect: { kind: 'throwable', throwable: 'smoke', count: 2 }, respawnSeconds: 25, botValue: 0.35 },
+  { id: 'core.ammo_box_kit', displayName: 'Ammo Box Kit', effect: { kind: 'throwable', throwable: 'ammo_box', count: 1 }, respawnSeconds: 45, botValue: 0.3 },
 ];

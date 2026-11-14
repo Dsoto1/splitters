@@ -92,10 +92,27 @@ lines the top of the front and rear sights up under the eye.
 `maps/training_range.json`): the gunplay test arena
 of GUNPLAY_DIRECTION.md, described in [GUNPLAY_AUDIT.md](GUNPLAY_AUDIT.md#gunplay-test-arena).
 
-**Ammo pickups.** The general Ammo Box gives half a pickup to every weapon and
-one underbarrel grenade. Typed boxes (Light, Rifle, Shells, Sniper, Explosives,
+**Ammo boxes** (2026-11-13; `sim/resupply.ts`). A map's Ammo Box (`core.ammo`,
+placed as a pickup in MapMaker) is a solid crate in play, the WWII Ammo Crate:
+press Use beside it (within 1.5 m) to resupply, which fills every carried gun's
+reserve and underbarrel rounds and tops your grenades up to their kind's most
+(none carried: the weapon set's first kind; never sandbags, the airstrike flare or
+another kit). Each crate holds 10 resupplies; each player waits 4 s between two.
+Emptied or destroyed, it is gone until its pickup's respawn time (at least 20 s)
+has passed, then back full. The **Ammo Box Kit** (`core.ammo_box_kit`, a
+throwable carried like Sandbags, one at a time) sets one down where it lands: 10
+resupplies for 2 minutes, one per player (setting down another takes the first
+away). Shots and blasts hurt a box (80 health placed, 60 deployed); destroyed, it
+**cooks off**: a round of small blasts round it over 2.6 s (16 at the centre, 3 at
+the 2.4 m edge), from one for an empty box to eight for a full one, credited to
+whoever destroyed it. Tanks refill their cannon pulled up beside a placed crate
+(a use). Bots short of ammo walk to a box and press Use; a box being shot (under
+60 % health) is off their list, and a cook-off is a hazard they wait out.
+**Ammo pickups.** Typed boxes (Light, Rifle, Shells, Sniper, Explosives,
 Energy Cells; told apart by their stripe colour) fill every weapon of that type
-with a full pickup; Explosives also refill underbarrel grenades.
+with a full pickup; Explosives also refill underbarrel grenades. (A random
+pickup that rolls the general Ammo Box stays a walk-over pickup: half a pickup
+to every weapon and one underbarrel grenade.)
 
 **Throwables (G).** One kind is carried at a time, with a count shown beside
 the ammo. Frag grenades bounce and go off after 2.5 s (everyone spawns with

@@ -97,6 +97,10 @@ import {
   type MapWeather,
   type SkyDefinition,
   isBreakableProp,
+  isAmmoBoxPickup,
+  AMMO_BOX_KIT_HAND_SCALE,
+  AMMO_BOX_KIT_SCALE,
+  AMMO_BOX_MODEL,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
@@ -649,7 +653,8 @@ export class GameView {
     // Water bakes its depth (clear shallows, foam on the shore) from the level under it.
     this.scenario.liquids.levelBoxes = boxes;
     void this.foliage.grow(doc.terrain, boxes, doc.metadata.id, this.liquids.filter((l) => l.liquid === 'water' || l.liquid === 'swamp'));
-    for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
+    // (A placed Ammo Box is a crate now, drawn from the snapshot: game/ammoBoxState.ts.)
+    for (const e of doc.entities) if (e.kind === 'pickup' && !isAmmoBoxPickup(e)) this.addPickup(e);
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
     const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
     // Environment species (`env.*`) with the environment renderer (on unless ?env=0): chunked thin instances, not a node each.
@@ -1723,6 +1728,8 @@ export class GameView {
       p = this.models.instantiate(path, `throwHold_${this.throwModels.size}`).then(
         (node) => {
           node.parent = root;
+          // (The Ammo Box Kit's model is the full-size crate: in the hand it is a small one.)
+          if (path === AMMO_BOX_MODEL) node.scaling.setAll(AMMO_BOX_KIT_HAND_SCALE);
           // Drawn over the world like the gun, so it never clips into a wall in front of you.
           for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
           node.setEnabled(false);
@@ -3041,6 +3048,8 @@ export class GameView {
         const longest = Math.max(size.max.x - size.min.x, size.max.y - size.min.y, size.max.z - size.min.z);
         if (!(longest > 0.05 && longest < 5)) return m.dispose();
         m.parent = node;
+        // The Ammo Box Kit flies as the small crate it is in the hand (its model is the full-size one).
+        if (model === AMMO_BOX_MODEL) m.scaling.setAll(AMMO_BOX_KIT_SCALE);
         // A sheep's position is on the ground (arsenalVisuals SHEEP_LIFT): its model, centred on its bounds, is raised.
         if (look === 'sheep') m.position.y = (THROWABLE_DEFS.sheep.view?.fit ?? 0) / 2;
         for (const s of shapes) s.setEnabled(false);

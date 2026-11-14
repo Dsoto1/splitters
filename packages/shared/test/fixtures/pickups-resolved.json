@@ -1061,6 +1061,21 @@
    },
    "category": null,
    "found": true
+  },
+  {
+   "item": {
+    "id": "core.ammo_box_kit",
+    "displayName": "Ammo Box Kit",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "ammo_box",
+     "count": 1
+    },
+    "respawnSeconds": 45,
+    "botValue": 0.3
+   },
+   "category": null,
+   "found": true
   }
  ],
  "rules": {

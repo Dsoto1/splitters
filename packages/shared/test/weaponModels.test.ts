@@ -9,7 +9,8 @@ import { CORE_WEAPONS, MODEL_FALLBACKS, THROWABLE_DEFS, THROWABLES, heldModel, t
  * and the throwables still drawn in code are the ones listed here (no model fits them yet: docs/ARSENAL.md).
  */
 const PUBLIC = join(__dirname, '../../client/public/models');
-const exists = (path: string) => path.startsWith('procedural/') || existsSync(join(PUBLIC, path));
+// (A prop under public/props: the Ammo Box Kit's crate, `props/…`, as the model loader and tools/content/weapons.mjs take it.)
+const exists = (path: string) => path.startsWith('procedural/') || existsSync(path.startsWith('props/') ? join(PUBLIC, '..', path) : join(PUBLIC, path));
 const lock = JSON.parse(readFileSync(join(__dirname, '../../../content/guns.lock.json'), 'utf8')) as { files: { file: string; triangles: number; tier?: string; heldOf?: string; bytes: number }[] };
 const locked = new Map(lock.files.map((f) => [f.file, f]));
 /** Throwables drawn in code (arsenalVisuals.ts): no model for them in the intake. */
