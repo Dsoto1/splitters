@@ -1352,6 +1352,9 @@ export class FrontEnd {
       { class: 'setup-facts', id: 'setup-summary' },
       el('span', { class: 'fact-players', title: `Made for ${rec.min}–${rec.max} players. Bots fill every place you don't.` }, setupSummary(s, map, 1, cap.max)),
       el('span', { class: 'fact-time', title: coop ? 'Ends through the mission' : 'How long it runs' }, length),
+      // The mode, in the header that stays while the setup scrolls: a phone only (style.css; docs/MOBILE_AUDIT.md,
+      // proposal 11), where the mode tiles scroll out of sight.
+      el('span', { class: 'fact-mode', id: 'setup-mode-fact', title: MODE_LABEL[s.mode] }, MODE_SHORT[s.mode]),
       // The mode's player caps on this map (MapMaker's, else from its size and spawn points).
       ...(coop ? [] : [((c) => el('span', { class: 'fact-caps', id: 'setup-caps', title: `${MODE_LABELS[s.mode]} on this map: ${c.recommended} players recommended, ${c.max} at most${c.auto ? ' (worked out from its size and spawn points)' : " (set in the map's properties)"}.` }, capsLine(c)))(mapPlayerCaps(map, s.mode))]),
       ...(factSet && factSet.id !== 'standard' ? [el('span', { class: 'fact-weapons', id: 'setup-weapons-fact', title: `${factSet.blurb} (${s.weaponSet === undefined ? "the map's default" : 'your choice'}; Advanced rules → Weapons)` }, `${factSet.name} weapons`)] : []),
@@ -2842,9 +2845,13 @@ export class FrontEnd {
     allySel.addEventListener('change', saveMarks);
     enemySel.addEventListener('change', saveMarks);
     // One section at a time beside a list of sections; every setting a row: what it is (and what it does) on
-    // the left, its control on the right.
-    const row = (label: string, control: HTMLElement, help?: string) =>
-      el('div', { class: 'opt-row' }, el('div', { class: 'opt-label' }, el('span', { textContent: label }), ...(help ? [el('small', { textContent: help })] : [])), el('div', { class: 'opt-control' }, control));
+    // the left, its control on the right. On a phone (style.css) the sections are chips over one column, and
+    // the description hides behind an (i) beside the name (docs/MOBILE_AUDIT.md, proposal 7).
+    const row = (label: string, control: HTMLElement, help?: string) => {
+      const info = help ? infoTip(help) : null;
+      info?.classList.add('opt-info');
+      return el('div', { class: 'opt-row' }, el('div', { class: 'opt-label' }, el('span', { textContent: label }, ...(info ? [info] : [])), ...(help ? [el('small', { textContent: help })] : [])), el('div', { class: 'opt-control' }, control));
+    };
     const toggle = (input: HTMLInputElement) => el('label', { class: 'switch' }, input, el('span', { class: 'switch-track' }));
     const volumeVal = el('output', { textContent: `${volume.value}%` });
     volume.addEventListener('input', () => (volumeVal.textContent = `${volume.value}%`));
