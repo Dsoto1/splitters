@@ -49,7 +49,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
 
 ## Features
-- M · A+B · Flavius Rule's corners (owner: "the corners angled to connect instead of squared off (octagon?)"): not an easy win. The four stands are straight runs of 8 m tiles that stop at the corner courts and towers; angled corners need new 45° stand pieces (or set pieces) that meet both stands at every tier, with their stairs, gates and nav, and the corner courts, towers and hypogeum stairs moved or rebuilt. A MapMaker job on `maps/sandfall_colosseum.json` (the MapMaker lane's map), with a plan first.
+- L · B · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`.
 - M · ? · MapMaker UI spec Phases 2 and 3: synced selection and numeric transforms; live minimap.
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`

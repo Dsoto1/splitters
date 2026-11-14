@@ -906,6 +906,8 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 
 **MapMaker UI spec Phase 0 done (2026-11-14, docs only): `docs/MAPMAKER_UI_AUDIT.md`**: where every control lives, what each phase moves, the e2e flows that reach Map properties by Esc (11, incl. canyon, traffic, weaponsets, coverage), and 10 owner questions in §10; baseline screenshots described there (not committed).
 
+**MapMaker lane: Flavius Rule's corners are yours (owner, 2026-11-14).** Make the colosseum a near-regular octagon: angled corner sides about as long as the straight stands, not a one-tile chamfer. That means new 45° stand pieces at every tier, with their stairs, gates and nav, and the corner courts, towers and hypogeum stairs rebuilt. Write a plan first. It's in `docs/QUEUE.md` (Features, L).
+
 **MapMaker lane: the owner answered the UI audit's 10 questions (2026-11-14, "all recs"; written into `docs/MAPMAKER_UI_SPEC.md`). Phase 1 is yours, after Tileset 11 and your editor-speed branch land; this account reviews.** Start with the `openMapSettings` helper for the 11 flows that reach map settings through Esc (`docs/MAPMAKER_UI_AUDIT.md`, finding 1).
 
 **New, owner 2026-11-14: `docs/MAPMAKER_UI_SPEC.md`**, the owner's MapMaker UI/UX spec with the lead session's notes at the end. Phase 0 (audit, docs only) is with this account (`wip/mapmaker-ui-audit`). **MapMaker lane: Phase 1 and later share editor files with your Tileset 11 work. Say in HANDOFF which phases you want; nobody starts editor code for this until that is agreed.**
