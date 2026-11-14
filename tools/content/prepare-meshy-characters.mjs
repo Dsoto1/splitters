@@ -838,6 +838,53 @@ async function scrub(image, spec) {
   return sharp(data, { raw: { width: info.width, height: info.height, channels: 3 } }).png().toBuffer();
 }
 
+/**
+ * `fixes.recolor`: shift colours of the download's colour map by rule, so a model can be told apart from a look it
+ * resembles (Azure Sentinel's black coat to navy, its teal lenses to amber). Each rule picks pixels by `hue` (degrees
+ * [from, to], wrapping past 360), `sat` and `light` (HSL, 0–1 [from, to]); a pixel's share fades out over `feather`
+ * (default 0.06, in the same units; hue in degrees × 1/360) past each bound, so no hard edge shows at a seam or along
+ * a gradient. A picked pixel gets `toHue` (degrees), its saturation `toSat` (or times `satScale`) and its lightness
+ * times `lightScale`, mixed by `amount` (0–1, default 1) times its share. Applied in order, after scrubBlue.
+ */
+export function recolorPixels(data, rules) {
+  const f = (v, [a, b], fe) => (v < a ? Math.max(0, 1 - (a - v) / fe) : v > b ? Math.max(0, 1 - (v - b) / fe) : 1);
+  for (let i = 0; i < data.length; i += 3) {
+    let r = data[i] / 255, g = data[i + 1] / 255, b = data[i + 2] / 255;
+    for (const rule of rules) {
+      const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+      const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+      let h = 0;
+      if (d) h = 60 * (max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4);
+      const fe = rule.feather ?? 0.06;
+      let w = (rule.amount ?? 1) * (rule.sat ? f(s, rule.sat, fe) : 1) * (rule.light ? f(l, rule.light, fe) : 1);
+      if (rule.hue && w > 0) {
+        const [a, bb] = rule.hue;
+        const inside = a <= bb ? h >= a && h <= bb : h >= a || h <= bb;
+        const dist = inside ? 0 : Math.min(...[a, bb].map((e) => Math.min(Math.abs(h - e), 360 - Math.abs(h - e))));
+        w *= Math.max(0, 1 - dist / (fe * 360));
+      }
+      if (w <= 0) continue;
+      const nh = rule.toHue ?? h;
+      const ns = Math.min(1, rule.toSat ?? s * (rule.satScale ?? 1));
+      const nl = Math.min(1, l * (rule.lightScale ?? 1));
+      const c = (1 - Math.abs(2 * nl - 1)) * ns, x = c * (1 - Math.abs(((nh / 60) % 2) - 1)), m = nl - c / 2;
+      const [rr, gg, bb2] = nh < 60 ? [c, x, 0] : nh < 120 ? [x, c, 0] : nh < 180 ? [0, c, x] : nh < 240 ? [0, x, c] : nh < 300 ? [x, 0, c] : [c, 0, x];
+      r += (rr + m - r) * w; g += (gg + m - g) * w; b += (bb2 + m - b) * w;
+    }
+    data[i] = Math.round(Math.min(1, Math.max(0, r)) * 255);
+    data[i + 1] = Math.round(Math.min(1, Math.max(0, g)) * 255);
+    data[i + 2] = Math.round(Math.min(1, Math.max(0, b)) * 255);
+  }
+  return data;
+}
+
+async function recolor(image, rules) {
+  if (!rules?.length) return image;
+  const { data, info } = await sharp(Buffer.from(image)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  recolorPixels(data, rules);
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 3 } }).png().toBuffer();
+}
+
 /** The colour map a rebaked character is painted at (px). */
 const REBAKE_SIZE = 1024;
 /** Its charts: grown while each triangle faces within this many degrees of the chart's first (meshy-mesh.mjs rebake). */
@@ -1059,7 +1106,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(buffer);
   // The download's own layout: its gutters filled before it is shrunk (padCharts; a rebake fills its own).
   const padded = (image) => (src.ownNormalMap ? Buffer.from(image) : padCharts(image, src.uv, src.indices));
-  const jpeg = await sharp(await scrub(await padded(src.baseColor), c.scrubBlue)).resize(1024, 1024).jpeg({ quality: 86 }).toBuffer();
+  const jpeg = await sharp(await recolor(await scrub(await padded(src.baseColor), c.scrubBlue), c.recolor)).resize(1024, 1024).jpeg({ quality: 86 }).toBuffer();
   const tex = doc.createTexture(`${c.id}_albedo`).setImage(new Uint8Array(jpeg)).setMimeType('image/jpeg');
   // The game leaves materials it doesn't recognise as they are (textureFor), so this one keeps its texture.
   const material = doc.createMaterial(`MI_Meshy_${c.id}`).setBaseColorTexture(tex).setMetallicFactor(c.metallic).setRoughnessFactor(c.roughness);
