@@ -65,13 +65,13 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Waiting on the owner
 - St. John's performance in a match: the 2026-11-13 trace turned out to be MapMaker, so whether the character work helped since 2026-11-10 is still unmeasured. Needs a recording of a match on St. John's (Settings → Record performance, or a Chrome trace while playing).
-- A hover model for the Hauler (Ironclad Vanguard became the Troop Truck; the Sky Cruiser is the only unused hover model).
 - Open questions in `docs/MAPMAKER_EDITING_REPORT_2026-11-13.md`.
 - The effects-check proposals, once `wip/fx-checks` reports.
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
 ## Parked
+- ? · ? · A hover model for the Hauler (owner, 2026-11-14: "leave hauler for now"; the Sky Cruiser is the only unused hover model).
 - M · ? · MapMaker declutter (owner, 2026-11-13: on hold, "I don't see how this is improved"): map settings out of the right panel, theme filter by default, per-tab tools, View menu, short status bar, favourites on 1 to 0. Mock-up: https://claude.ai/artifact/94tejprHC5XeP4EKRuaQRT (private to the owner).
 - L · A · A full weapon release: Stormvolt Blaster plus any other new guns (new weapon types are paused by the owner).
 - S · A · Sound pass 2 (paused by the owner).
