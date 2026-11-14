@@ -7,8 +7,9 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## How to use it
 
 **Lanes**
-- **A** is this account's lead session and its helpers: Opus 5.5 at medium effort, never Fable (owner, 2026-11-13).
-- **B** is the other account's MapMaker lane, the main session for the week.
+- **A** is the lead session of the owner's first account and its helpers: Opus 5.5 at medium effort, never Fable (owner, 2026-11-13).
+- **B** is the owner's second account: the MapMaker lane. Its main session ("Splitters FABLE 5.2") is paused from 2026-11-14; **lane B's splitters22** (Opus 5.5, medium) leads lane B and resumes its work (owner, 2026-11-14).
+- **Both accounts have a session called "splitters22".** Always write "lane A's splitters22" or "lane B's splitters22".
 
 **One line per item:** `size · lane · item · branch or plan`.
 
@@ -29,8 +30,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## In flight
 - S · A · Effects-check fixes, the owner's picks (2026-11-14, option a everywhere): Pantry Raid's mouse holes walkable and painted, loot rings outlined, Low's lasting places, the checks; pickup guns drawn bigger · `wip/fx-fixes` (findings: `docs/FX_CHECKS_2026-11-13.md`)
-- S · B · MapMaker: the Roads tool (`routeTool.ts`) redraws its markers the slow way the Paths tool did; the same fix applies. · `wip/mapmaker-editor-speed-2`
-- S · B · MapMaker: a forced layout still costs about 50 ms on each edit and selection (it moved, it did not go); find what dirties the layout. · `wip/mapmaker-editor-speed-2`
 
 ## Ready to land
 - (none)
@@ -90,6 +89,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - 2026-11-13 · A · The Spillway: crest openings closed, wing wall, hillside stair legs, east end raised to the crest (023edfa4). No gatehouses.
 - 2026-11-13 · A · MapMaker editing: two to three times quicker edits, select a path or road, fit the ground to a build (7bb706a8).
 - 2026-11-13 · A · Tunnel kit step 4 (73f17583).
+- 2026-11-14 · B · MapMaker speed, part 2: the prop inspector's two long lists fill when opened (selecting a prop costs less than half the page work), and the route tool keeps its markers (d84124a).
 - 2026-11-14 · B · Tileset 11: fire escape and scaffold bay tiles, a bus stop sign, the bandstand rebuilt, the "Town pieces" tab; a repeatable performance measurement (`PERF_STILL=1`, two runs agree) with a new baseline (78a0b5f).
 - 2026-11-14 · B · MapMaker speed from the owner's trace: the Paths tool about 20 times quicker to drag and hover, Map properties no longer rebuilt on every edit, the hover pick halved (c929d7e). Two of the five fixes only moved a layout.
 - 2026-11-13 · B · A new parachute built in code (round canopy, lines to risers behind the neck, eight colour schemes by player; the Meshy model dropped); Tileset 11's eight urban set pieces built in MapMaker; the arched window's neater stones (train 5, 87ca152).
