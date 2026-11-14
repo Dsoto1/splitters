@@ -79,7 +79,7 @@ const value = { t: 'num|str' };
 
 // ---------------------------------------------------------------- schema
 
-function schemas(root, materials) {
+function schemas(root, materials, edgeIds = []) {
   const sides = tsList(root, OPTIONS_TS, 'SIDES');
   const categories = tsList(root, OPTIONS_TS, 'TILE_CATEGORIES');
   const pair = tup(2, value);
@@ -118,6 +118,16 @@ function schemas(root, materials) {
     ...Object.fromEntries(Object.entries(builders).map(([k, s]) => [`${k}?`, s])),
     'kind?': en(['solid', 'wall', 'floor', 'trim', 'prop']), 'yaw?': num, 'pitch?': num, 'roll?': num, 'surface?': surface,
   });
+  // Builders that hold parts or name an edge style (map/catalog.ts TurnedPart, WallRunPart): a turned group of any
+  // parts (itself a part, so groups nest) and a wall run of an edge style along any segment.
+  const grouped = {
+    turned: obj({ 'yaw?': num, 'turns?': num, 'pivot?': at2, parts: arr(part, 1) }),
+    wallRun: obj({ from: at2, to: at2, style: en(edgeIds), 'bays?': int, 'y?': num, 'height?': num, 'side?': en(['left', 'right', 'centre']), 'outer?': bool, 'plain?': bool }),
+  };
+  for (const [k, sch] of Object.entries(grouped)) {
+    builders[k] = sch;
+    part.shape[`${k}?`] = sch;
+  }
   const port = obj({ 'side?': en(sides), 'level?': int, 'cell?': tup(2, int), 'allSides?': int, 'perimeter?': tup(2, int), 'levels?': arr(int, 1) });
   const tile = obj({
     id: str, displayName: str, category: en(categories), 'blurb?': str, 'cells?': arr(tup(3, int), 1), 'footprint?': arr(int, 2),
@@ -200,7 +210,7 @@ function codePackPrefixes(root) {
 export function build(content, root = ROOT) {
   const problems = [];
   const materials = readJson(root, 'content/materials.json').materials.map((m) => m.id);
-  const S = schemas(root, materials);
+  const S = schemas(root, materials, (Array.isArray(content.edges?.edges) ? content.edges.edges : []).filter((e) => e && !e.rule).map((e) => e.id));
 
   // Edge styles.
   const top = content.edges;
@@ -361,16 +371,30 @@ export function build(content, root = ROOT) {
       if (!built.has(s) || s === 'auto') problems.push(`${where}: edgeDefaults ${k}: ${s} is not an edge style in ${EDGES}`);
     }
     if (t.model && !existsSync(join(root, PUBLIC, t.model.file))) problems.push(`${where}: model ${PUBLIC}/${t.model.file} not found`);
-    for (const field of ['solids', 'extraFloors']) {
-      for (const [j, p] of (t[field] ?? []).entries()) {
-        const named = S.builders.filter((b) => p[b] !== undefined);
-        if (named.length !== 1) problems.push(`${where}: ${field}[${j}]: name one builder (${S.builders.join(', ')})`);
-        if (p.box && !(p.box[0] <= p.box[3] && p.box[1] <= p.box[4] && p.box[2] <= p.box[5])) problems.push(`${where}: ${field}[${j}]: box is [x0, y0, z0, x1, y1, z1] with each min at most its max`);
-        if ((p.yaw !== undefined || p.pitch !== undefined || p.roll !== undefined) && !p.box) problems.push(`${where}: ${field}[${j}]: yaw, pitch and roll go on a box`);
-        if (p.surface?.tint !== undefined && !/^#[0-9a-f]{6}$/.test(p.surface.tint)) problems.push(`${where}: ${field}[${j}]: surface.tint is a #rrggbb colour (lower case)`);
-        if (p.block && !t.footprint) problems.push(`${where}: ${field}[${j}]: a block is centred on a footprint`);
-        if (p.vault && !(p.vault.span[0] < p.vault.span[1] && p.vault.along[0] < p.vault.along[1] && p.vault.spring < p.vault.crown)) problems.push(`${where}: ${field}[${j}]: a vault spans [a0, a1] across and [b0, b1] along (each a0 < a1), its crown over its springing`);
+    // Each part, and the parts inside a turned group (path: solids[2].turned.parts[0]).
+    const checkPart = (p, path) => {
+      if (!p || typeof p !== 'object') return;
+      const named = S.builders.filter((b) => p[b] !== undefined);
+      if (named.length !== 1) problems.push(`${where}: ${path}: name one builder (${S.builders.join(', ')})`);
+      if (p.box && !(p.box[0] <= p.box[3] && p.box[1] <= p.box[4] && p.box[2] <= p.box[5])) problems.push(`${where}: ${path}: box is [x0, y0, z0, x1, y1, z1] with each min at most its max`);
+      if ((p.yaw !== undefined || p.pitch !== undefined || p.roll !== undefined) && !p.box) problems.push(`${where}: ${path}: yaw, pitch and roll go on a box`);
+      if (p.surface?.tint !== undefined && !/^#[0-9a-f]{6}$/.test(p.surface.tint)) problems.push(`${where}: ${path}: surface.tint is a #rrggbb colour (lower case)`);
+      if (p.block && !t.footprint) problems.push(`${where}: ${path}: a block is centred on a footprint`);
+      if (p.vault && !(p.vault.span[0] < p.vault.span[1] && p.vault.along[0] < p.vault.along[1] && p.vault.spring < p.vault.crown)) problems.push(`${where}: ${path}: a vault spans [a0, a1] across and [b0, b1] along (each a0 < a1), its crown over its springing`);
+      if (p.turned) {
+        const g = p.turned;
+        if ((g.yaw === undefined) === (g.turns === undefined)) problems.push(`${where}: ${path}: a turned group has one of yaw (radians) or turns (quarter turns)`);
+        for (const [k, q] of (Array.isArray(g.parts) ? g.parts : []).entries()) checkPart(q, `${path}.turned.parts[${k}]`);
       }
+      if (p.wallRun) {
+        const w = p.wallRun;
+        if (Array.isArray(w.from) && Array.isArray(w.to) && !(Math.hypot(w.to[0] - w.from[0], w.to[1] - w.from[1]) > 0)) problems.push(`${where}: ${path}: a wall run goes from one point to another`);
+        if (w.bays !== undefined && !(w.bays >= 1)) problems.push(`${where}: ${path}: a wall run has at least 1 bay`);
+        if (w.height !== undefined && !(w.height > 0)) problems.push(`${where}: ${path}: a wall run's level height is over 0`);
+      }
+    };
+    for (const field of ['solids', 'extraFloors']) {
+      for (const [j, p] of (t[field] ?? []).entries()) checkPart(p, `${field}[${j}]`);
     }
     const { notes: tn, $comment: _c, ...spec } = t;
     tiles.push({ spec, notes: tn });

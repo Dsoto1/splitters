@@ -36,7 +36,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 /** The rig's body joints (no fingers): what a hard part can ride (`fixes.skin.rigid`). */
@@ -175,6 +175,11 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   const scrubBox = (b) => Array.isArray(b) && b.length === 4 && b.every((v) => typeof v === 'number' && v >= 0 && v <= 1) && b[0] < b[2] && b[1] < b[3];
   const sb = x.scrubBlue;
   need(sb === undefined || (typeof sb === 'string' && HEX.test(sb)) || (sb && typeof sb === 'object' && Object.keys(sb).every((k) => k === 'color' || k === 'within') && HEX.test(sb.color ?? '') && Array.isArray(sb.within) && sb.within.length > 0 && sb.within.every(scrubBox) && x.surface !== 'rebake'), 'fixes.scrubBlue: #rrggbb, or { color: #rrggbb, within: [[u0, v0, u1, v1], …] } (boxes in the download\'s colour map, 0–1; not with surface rebake)');
+  // `recolor`: colour shifts on the colour map by rule (prepare-meshy-characters.mjs recolorPixels).
+  const range = (r, hi) => Array.isArray(r) && r.length === 2 && r.every((v) => typeof v === 'number' && v >= 0 && v <= hi);
+  const RECOLOR = new Set(['hue', 'sat', 'light', 'feather', 'toHue', 'toSat', 'satScale', 'lightScale', 'amount']);
+  const rule = (q) => q && typeof q === 'object' && Object.keys(q).every((k) => RECOLOR.has(k)) && (q.hue === undefined || range(q.hue, 360)) && (q.sat === undefined || (range(q.sat, 1) && q.sat[0] <= q.sat[1])) && (q.light === undefined || (range(q.light, 1) && q.light[0] <= q.light[1])) && ['feather', 'toSat', 'amount'].every((k) => q[k] === undefined || (typeof q[k] === 'number' && q[k] >= 0 && q[k] <= 1)) && (q.toHue === undefined || (typeof q.toHue === 'number' && q.toHue >= 0 && q.toHue < 360)) && ['satScale', 'lightScale'].every((k) => q[k] === undefined || (typeof q[k] === 'number' && q[k] > 0 && q[k] <= 3));
+  need(x.recolor === undefined || (Array.isArray(x.recolor) && x.recolor.length > 0 && x.recolor.every(rule)), 'fixes.recolor: [{ hue: [deg, deg], sat: [0–1, 0–1], light: [0–1, 0–1], feather, toHue: deg, toSat, satScale, lightScale, amount }, …]');
   need(x.headShare === undefined || (typeof x.headShare === 'number' && x.headShare > 0 && x.headShare <= 0.3), 'fixes.headShare: 0–0.3 (the share of the triangle budget the head keeps; 0.12 unless set)');
   need(x.handsShare === undefined || (typeof x.handsShare === 'number' && x.handsShare > 0 && x.handsShare <= 0.2), 'fixes.handsShare: 0–0.2 (the share of the triangle budget the hands keep)');
   need(x.surface === undefined || x.surface === 'rebake', 'fixes.surface: rebake (the cut mesh laid out afresh and its colour painted from the download) or left out');
@@ -388,6 +393,7 @@ export function buildSpec(m) {
     feet: x.feet,
     centre: x.centre,
     scrubBlue: x.scrubBlue,
+    recolor: x.recolor,
     hands: x.hands,
     skin: x.skin,
     handsShare: x.handsShare,
