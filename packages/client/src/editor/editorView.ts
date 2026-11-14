@@ -202,6 +202,7 @@ export class EditorView {
       pickFill: flat('pickFill', '#00d1ff', 0.12),
     };
     this.applyCamera();
+    this.watchCanvasRect();
   }
 
   // ---------- camera ----------
@@ -255,9 +256,42 @@ export class EditorView {
     this.camera.position.set(target.x - d.x * dist, target.y - d.y * dist, target.z - d.z * dist);
   }
 
+  /**
+   * Where the canvas is on the page, read once a frame instead of on every pointer question. Asking the browser
+   * straight after the panels were rewritten (the hover update inside an edit's refresh) made it lay the whole page
+   * out there and then: 25 ms of every edit on a big map. It is read again after each frame is drawn (the layout the
+   * browser is about to do anyway), dropped when the window is resized or scrolled or the canvas changes size, and
+   * never trusted for longer than a frame (MapMaker left and come back to, a zoom: the next question reads it afresh).
+   */
+  private canvasRect: { rect: DOMRect | null; frame: number } | null = null;
+
+  private readCanvasRect(): DOMRect | null {
+    const engine = this.scene.getEngine();
+    const rect = (engine.getRenderingCanvasClientRect() as DOMRect | null) ?? null;
+    this.canvasRect = { rect, frame: engine.frameId };
+    return rect;
+  }
+
+  private viewRect(): DOMRect | null {
+    const kept = this.canvasRect;
+    if (kept && this.scene.getEngine().frameId - kept.frame <= 1) return kept.rect;
+    return this.readCanvasRect();
+  }
+
+  /** The canvas rectangle is asked for afresh when anything may have moved it. */
+  private watchCanvasRect(): void {
+    if (typeof window === 'undefined') return;
+    const drop = () => (this.canvasRect = null);
+    window.addEventListener('resize', drop);
+    window.addEventListener('scroll', drop, true);
+    window.visualViewport?.addEventListener('resize', drop);
+    const canvas = this.scene.getEngine().getRenderingCanvas();
+    if (canvas && typeof ResizeObserver !== 'undefined') new ResizeObserver(drop).observe(canvas);
+  }
+
   /** World-space ray under the pointer. */
   pointerRay(clientX: number, clientY: number): { origin: Vec3; dir: Vec3 } | null {
-    const rect = this.scene.getEngine().getRenderingCanvasClientRect();
+    const rect = this.viewRect();
     if (!rect) return null;
     const ray = this.scene.createPickingRay(clientX - rect.left, clientY - rect.top, null, this.camera);
     return { origin: { x: ray.origin.x, y: ray.origin.y, z: ray.origin.z }, dir: { x: ray.direction.x, y: ray.direction.y, z: ray.direction.z } };
@@ -265,7 +299,7 @@ export class EditorView {
 
   /** Intersect the pointer ray with the horizontal plane y = planeY. */
   pickPlane(clientX: number, clientY: number, planeY: number): Vec3 | null {
-    const rect = this.scene.getEngine().getRenderingCanvasClientRect();
+    const rect = this.viewRect();
     if (!rect) return null;
     const ray = this.scene.createPickingRay(clientX - rect.left, clientY - rect.top, null, this.camera);
     if (Math.abs(ray.direction.y) < 1e-6) return null;
@@ -276,8 +310,7 @@ export class EditorView {
 
   /** Screen (client) coordinates of a world point; used by automation and future tooltips. */
   project(p: Vec3): { x: number; y: number } {
-    const engine = this.scene.getEngine();
-    const rect = engine.getRenderingCanvasClientRect()!;
+    const rect = this.viewRect()!;
     const v = Vector3.Project(new Vector3(p.x, p.y, p.z), Matrix.Identity(), this.scene.getTransformMatrix(), this.camera.viewport.toGlobal(rect.width, rect.height));
     return { x: rect.left + v.x, y: rect.top + v.y };
   }
@@ -807,6 +840,25 @@ export class EditorView {
   /** The entity each drawn mesh belongs to ('' for a mesh that is no entity's), found once per mesh. */
   private readonly meshOwner = new WeakMap<object, string>();
 
+  /**
+   * Where a block or a prop is and the most it can reach, for `pickEntities` (its middle, and its reach squared), or
+   * null for anything else; worked out once per entity as placed (the document's entities are never changed in place).
+   */
+  private readonly reach = new WeakMap<MapEntity, readonly number[] | null>();
+
+  private reachOf(e: MapEntity): readonly number[] | null {
+    let reach = this.reach.get(e);
+    if (reach !== undefined) return reach;
+    reach = null;
+    if (e.kind === 'block' || e.kind === 'prop') {
+      const size = e.kind === 'block' ? e.size : (getProp(e.model)?.size ?? [4, 4, 4]).map((v) => v * e.scale);
+      const r = Math.hypot(size[0]!, size[1]!, size[2]!) + 1.5;
+      reach = [e.position[0], e.position[1] + size[1]! / 2, e.position[2], r * r];
+    }
+    this.reach.set(e, reach);
+    return reach;
+  }
+
   /** Entity under a ray, by its drawn meshes: every visible entity hit, nearest first. */
   pickEntities(origin: Vec3, dir: Vec3): { id: string; distance: number }[] {
     const ray = new Ray(new Vector3(origin.x, origin.y, origin.z), new Vector3(dir.x, dir.y, dir.z), 10000);
@@ -823,20 +875,21 @@ export class EditorView {
     const dl = Math.hypot(dir.x, dir.y, dir.z) || 1;
     const clear = (id: string): boolean => {
       const e = this.markers.get(id)?.placed;
-      if (!e || (e.kind !== 'block' && e.kind !== 'prop')) return false;
-      const size = e.kind === 'block' ? e.size : (getProp(e.model)?.size ?? [4, 4, 4]).map((v) => v * e.scale);
-      const r = Math.hypot(size[0]!, size[1]!, size[2]!) + 1.5;
-      const ox = e.position[0] - origin.x;
-      const oy = e.position[1] + size[1]! / 2 - origin.y;
-      const oz = e.position[2] - origin.z;
+      const reach = e && this.reachOf(e);
+      if (!reach) return false;
+      const ox = reach[0]! - origin.x;
+      const oy = reach[1]! - origin.y;
+      const oz = reach[2]! - origin.z;
       const along = (ox * dir.x + oy * dir.y + oz * dir.z) / dl;
-      return ox * ox + oy * oy + oz * oz - along * along > r * r;
+      return ox * ox + oy * oy + oz * oz - along * along > reach[3]!;
     };
+    // (Whose mesh it is and whether the ray comes near it first: the two that rule out nearly every mesh. The same
+    // answer in any order.)
     const hits =
       this.scene.multiPickWithRay(ray, (m) => {
-        if (!m.isEnabled() || !m.isVisible) return false;
         const id = owner(m);
-        return id !== '' && !clear(id);
+        if (id === '' || clear(id)) return false;
+        return m.isEnabled() && m.isVisible;
       }) ?? [];
     const best = new Map<string, number>();
     for (const h of hits) {
@@ -1204,6 +1257,8 @@ export class EditorView {
 
   render(): void {
     this.scene.render();
+    // The frame's own look at where the canvas is (see `canvasRect`).
+    this.readCanvasRect();
   }
 }
 

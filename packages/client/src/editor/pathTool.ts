@@ -1,9 +1,11 @@
 import type { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateDashedLines, CreateLineSystem, CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
+import type { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import {
   DEFAULT_RACE,
@@ -60,6 +62,14 @@ const GRAB_M = 1;
 const HANDLE = 1;
 const HANDLE_OTHER = 0.7;
 
+/** One path's markers (its line, arrows and balls) as drawn, and what they were drawn for: the path, the ground under it, and how it is lit. */
+interface DrawnPath {
+  as: string;
+  path: MapPath | null;
+  ground: TerrainData | null;
+  meshes: Mesh[];
+}
+
 /** What a new path is drawn as (the pane's choice, or the palette card / Shift+G that opened the tool). */
 export type PathKind = 'road' | 'race' | 'route';
 const KIND_LABELS: Record<PathKind, string> = { road: 'Road, street or trail', race: 'Track (NPC traffic)', route: 'Route (AI guide line)' };
@@ -111,8 +121,6 @@ export class PathTool {
   private drag: { id: string; index: number; moved: boolean; at: [number, number, number]; join: boolean } | null = null;
   /** The handle, or else the path, under the pointer (index -1: the path's ribbon; null: neither). */
   private hovered: { id: string; index: number } | null = null;
-  private markers: Mesh[] = [];
-  private lines: LinesMesh[] = [];
   private active = false;
   /** New points go in before the first one (the pane's "Add points at the start"), until a point is picked. */
   private prepend = false;
@@ -475,56 +483,123 @@ export class PathTool {
    * of the ribbon), the edited path's bright, a hovered one lighter, dashed
    * for a path that isn't drawn in the game (a route), with arrows the way
    * the path runs. While a point is dragged the line shows where it will go.
+   *
+   * Only what changed is drawn again: each path's line, arrows and balls are kept with what they were drawn for
+   * (`shownAs`), so a pointer step redraws the one path it lights or drags, not all of them (on a big map every
+   * redraw of every path took over a tenth of a second).
    */
   private drawMarkers(): void {
-    for (const m of this.markers) m.dispose();
-    for (const l of this.lines) l.dispose();
-    this.markers = [];
-    this.lines = [];
-    if (!this.active && !this.previewId) return;
     const ground = this.host.ground();
-    const ball = (name: string, at: Vec3, size: number, mat: StandardMaterial) => {
-      const s = CreateSphere(name, { diameter: size, segments: 8 }, this.host.scene);
+    const scene = this.host.scene;
+    const kept = this.drawn;
+    const next = new Map<string, DrawnPath>();
+    /** The meshes in the order they were always made in (path by path: line, arrows, balls; then the pending point). */
+    const order: Mesh[][] = [];
+    /** The first set drawn again: every set after it goes back behind it in the scene's list (see below). */
+    let redrawnFrom = -1;
+    const show = (id: string, as: string, path: MapPath | null, build: (meshes: Mesh[]) => void) => {
+      const had = kept.get(id);
+      let meshes: Mesh[];
+      if (had && had.as === as && had.path === path && had.ground === ground) {
+        meshes = had.meshes;
+        kept.delete(id);
+      } else {
+        meshes = [];
+        build(meshes);
+        if (redrawnFrom < 0) redrawnFrom = order.length;
+      }
+      next.set(id, { as, path, ground, meshes });
+      order.push(meshes);
+    };
+    const ball = (into: Mesh[], name: string, at: Vec3, size: number, mat: StandardMaterial) => {
+      const s = CreateSphere(name, { diameter: size, segments: 8 }, scene);
       s.position.set(at.x, at.y, at.z);
       s.material = mat;
       s.isPickable = false;
       s.renderingGroupId = 1;
-      this.markers.push(s);
+      into.push(s);
     };
-    for (const path of this.paths) {
-      // With another tool in hand, only the path under the pointer shows, as one about to be picked.
-      if (!this.active && path.id !== this.previewId) continue;
-      const mine = this.active && path.id === this.current;
-      const dragged = this.drag && this.drag.id === path.id && this.drag.moved ? this.drag : null;
-      // The path as it will be once the drag ends.
-      const shown = dragged ? { ...path, points: path.points.map((q, i) => (i === dragged.index ? dragged.at : q)) } : path;
-      const line = pathLine(shown, ground, 0.05);
-      const hoverPath = !this.active || (this.hovered?.id === path.id && this.hovered.index < 0);
-      const color = Color3.FromHexString(mine ? '#5fd0ff' : hoverPath ? '#d6f4ff' : '#8aa2b2');
-      const l = pathUses(path, 'road')
-        ? CreateLines(`pathPoly_${path.id}`, { points: line }, this.host.scene)
-        : CreateDashedLines(`pathPoly_${path.id}`, { points: line, dashSize: 3, gapSize: 2, dashNb: Math.max(8, Math.round(pathGeometry(shown).length / 2)) }, this.host.scene);
-      const arrows = CreateLineSystem(`pathArrows_${path.id}`, { lines: pathArrows(shown, ground, 0.06, mine ? 1.4 : 1) }, this.host.scene);
-      for (const m of [l, arrows]) {
-        m.color = color;
-        m.isPickable = false;
-        m.renderingGroupId = 1;
-        this.lines.push(m);
+    if (this.active || this.previewId) {
+      for (const path of this.paths) {
+        // With another tool in hand, only the path under the pointer shows, as one about to be picked.
+        if (!this.active && path.id !== this.previewId) continue;
+        const mine = this.active && path.id === this.current;
+        const dragged = this.drag && this.drag.id === path.id && this.drag.moved ? this.drag : null;
+        const hoverPath = !this.active || (this.hovered?.id === path.id && this.hovered.index < 0);
+        const hotIndex = this.hovered?.id === path.id ? this.hovered.index : -1;
+        const as = `${mine ? `mine:${this.selected}` : ''}|${hoverPath ? 'lit' : ''}|${hotIndex}|${dragged ? `${dragged.index}:${dragged.at.join(',')}` : ''}`;
+        // (Two paths with one id, should a map ever hold them: each its own set.)
+        show(next.has(`path:${path.id}`) ? `path:${path.id}#${order.length}` : `path:${path.id}`, as, path, (meshes) => {
+          // The path as it will be once the drag ends.
+          const shown = dragged ? { ...path, points: path.points.map((q, i) => (i === dragged.index ? dragged.at : q)) } : path;
+          const line = pathLine(shown, ground, 0.05);
+          const hex = mine ? '#5fd0ff' : hoverPath ? '#d6f4ff' : '#8aa2b2';
+          const color = Color3.FromHexString(hex);
+          const material = this.lineMaterial(hex);
+          const l = pathUses(path, 'road')
+            ? CreateLines(`pathPoly_${path.id}`, { points: line, material }, scene)
+            : CreateDashedLines(`pathPoly_${path.id}`, { points: line, dashSize: 3, gapSize: 2, dashNb: Math.max(8, Math.round(pathGeometry(shown).length / 2)), material }, scene);
+          const arrows = CreateLineSystem(`pathArrows_${path.id}`, { lines: pathArrows(shown, ground, 0.06, mine ? 1.4 : 1), material }, scene);
+          for (const m of [l, arrows]) {
+            m.color = color;
+            m.isPickable = false;
+            m.renderingGroupId = 1;
+            meshes.push(m);
+          }
+          const size = mine ? HANDLE : HANDLE_OTHER;
+          shown.points.forEach((q, i) => {
+            const hot = hotIndex === i;
+            const sel = mine && i === this.selected;
+            const mat = hot ? this.mats.hover : sel ? this.mats.sel : mine && i === 0 ? this.mats.start : mine ? this.mats.point : this.mats.other;
+            const d = hot || sel ? size * 1.25 : size;
+            ball(meshes, `pathPt${i}`, this.handleAt(shown, q, d), d, mat);
+          });
+        });
       }
-      const size = mine ? HANDLE : HANDLE_OTHER;
-      shown.points.forEach((q, i) => {
-        const hot = this.hovered?.id === path.id && this.hovered.index === i;
-        const sel = mine && i === this.selected;
-        const mat = hot ? this.mats.hover : sel ? this.mats.sel : mine && i === 0 ? this.mats.start : mine ? this.mats.point : this.mats.other;
-        const d = hot || sel ? size * 1.25 : size;
-        ball(`pathPt${i}`, this.handleAt(shown, q, d), d, mat);
-      });
+      if (this.active && this.pending) {
+        const q = this.pending;
+        show('pending', q.join(','), null, (meshes) => {
+          const y = pathSurfaceY(ground, q[1], q[0], q[2]) + 0.05 + HANDLE * 0.3;
+          ball(meshes, 'pathPending', { x: q[0], y, z: q[2] }, HANDLE * 1.25, this.mats.sel);
+        });
+      }
     }
-    if (this.active && this.pending) {
-      const q = this.pending;
-      const y = pathSurfaceY(ground, q[1], q[0], q[2]) + 0.05 + HANDLE * 0.3;
-      ball('pathPending', { x: q[0], y, z: q[2] }, HANDLE * 1.25, this.mats.sel);
+    for (const gone of kept.values()) for (const m of gone.meshes) m.dispose();
+    this.drawn = next;
+    // The scene lists the markers as it always did, path by path in the map's order (what is found by name, and
+    // drawn first, is the first path's): the sets kept from before that come after one drawn again go back behind it.
+    if (redrawnFrom >= 0 && redrawnFrom < order.length - 1) {
+      const tail = order.slice(redrawnFrom).flat();
+      const moved = new Set<unknown>(tail);
+      const all = scene.meshes;
+      let n = 0;
+      for (const m of all) if (!moved.has(m)) all[n++] = m;
+      all.length = n;
+      for (const m of tail) all.push(m);
     }
+  }
+
+  /** What is drawn now, by path (and the pending point), with what each was drawn for. */
+  private drawn = new Map<string, DrawnPath>();
+
+  /**
+   * One line material per colour, shared by every line and arrow drawn in it. A line mesh left to itself makes a
+   * material of its own, and every new material has Babylon look through every mesh in the scene (`markAsDirty`):
+   * three quarters of a redraw on a big map. Each is the material of a line mesh kept (unseen) for it, so it is the
+   * very material Babylon gives a line; the colour is still each mesh's own `color`.
+   */
+  private readonly lineMats = new Map<string, LinesMesh>();
+
+  private lineMaterial(hex: string): Material {
+    let holder = this.lineMats.get(hex);
+    if (!holder) {
+      holder = CreateLines(`pathLineMat_${hex}`, { points: [Vector3.Zero(), Vector3.Zero()] }, this.host.scene);
+      holder.color = Color3.FromHexString(hex);
+      holder.isPickable = false;
+      holder.setEnabled(false);
+      this.lineMats.set(hex, holder);
+    }
+    return holder.material!;
   }
 
   /** The Paths pane: the list, a new path, and the selected one's uses and settings. */
