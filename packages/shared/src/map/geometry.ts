@@ -44,6 +44,8 @@ export interface WorldBox {
   surface?: { material: string; tint: string | null };
   /** A room's roof slab (room option Ceiling): its top is painted as the tile's `roof` surface. */
   roof?: true;
+  /** A trim box drawn in the walls' paint (LocalBox.paint: a plain arch's spandrels). */
+  paint?: 'walls';
 }
 
 /** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
@@ -987,7 +989,7 @@ function sideTrimBox(side: Side, cx: number, cz: number, half: number, baseY: nu
 
 function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string, kind: BoxKind): WorldBox {
   // Style Pack pieces keep their own material in any theme.
-  const surface = box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {};
+  const surface = { ...(box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {}), ...(box.paint ? { paint: box.paint } : {}) };
   if (box.yaw || box.pitch || box.roll) {
     // Turned (and tilted) boxes keep their size; the centre turns with the tile and the yaw adds the tile's quarter turns.
     const hx = (box.max[0] - box.min[0]) / 2;
