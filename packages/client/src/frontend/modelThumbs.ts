@@ -9,7 +9,7 @@ import { offscreenCamera, offscreenProjection } from './offscreen.ts';
 import { RenderTargetTexture } from '@babylonjs/core/Materials/Textures/renderTargetTexture';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Vector3 as V3 } from '@babylonjs/core/Maths/math.vector';
-import type { MapDocument, TileDefinition } from '@tiletrigger/shared';
+import type { MapDocument, MountDef, TileDefinition } from '@tiletrigger/shared';
 import { ModelLibrary } from '../content/models.ts';
 import type { MapStyler } from '../mapMeshes.ts';
 import { loadMapContent } from '../mapContentLoader.ts';
@@ -111,6 +111,22 @@ export class ModelThumbnails {
     return p;
   }
 
+  /**
+   * A thumbnail of a vehicle or turret as the game draws it (game/mountVisuals.ts createMountNode): its body at its
+   * drawn size, and a body without tires of its own with its tire model on every hub (`wheels`); cached.
+   */
+  getMount(def: Pick<MountDef, 'id' | 'model' | 'scale' | 'rideHeight' | 'wheels'>, size = SIZE): Promise<string> {
+    if (!def.wheels) return this.get(def.model, 'three-quarter', size);
+    const key = `mount:${size}:${def.id}`;
+    let p = this.cache.get(key);
+    if (!p) {
+      p = (this.queue = this.queue.then(() => this.renderMount(def, size))) as Promise<string>;
+      p.catch(() => this.cache.delete(key));
+      this.cache.set(key, p);
+    }
+    return p;
+  }
+
   /** How many pictures have been rendered here (MapMaker's palette uses its prebuilt atlas instead where it can). */
   get rendered(): number {
     return this.cache.size;
@@ -157,6 +173,35 @@ export class ModelThumbnails {
       return await this.renderMeshes(meshes, 'tile', size);
     } finally {
       for (const m of meshes) m.setEnabled(false);
+    }
+  }
+
+  private async renderMount(def: Pick<MountDef, 'model' | 'scale' | 'rideHeight' | 'wheels'>, size: number): Promise<string> {
+    const { tireScale } = await import('../game/mountVisuals.ts');
+    const wheels = def.wheels!;
+    const body = await this.models.instantiate(def.model, 'thumbbody');
+    const tires = await Promise.all(wheels.at.map((_, i) => this.models.instantiate(wheels.model, `thumbtire${i}`)));
+    try {
+      // The body at its drawn size, its lowest point at its ride height over the ground (y 0), as createMountNode does.
+      const scale = def.scale ?? 1;
+      if (scale !== 1) body.scaling.scaleInPlace(scale);
+      const { min } = body.getHierarchyBoundingVectors(true);
+      body.position.y -= min.y - (def.rideHeight ?? 0);
+      tires.forEach((tire, i) => {
+        const [x, y, z] = wheels.at[i]!;
+        // The tire model is built with its axle along Z: sized to `wheels.radius` / `width`, turned across the body.
+        const own = tire.getHierarchyBoundingVectors(true);
+        const [across, , along] = tireScale({ radius: (own.max.y - own.min.y) / 2, width: own.max.z - own.min.z }, wheels);
+        tire.scaling.set(tire.scaling.x * across, tire.scaling.y * across, tire.scaling.z * along);
+        tire.rotation.y = x < 0 ? -Math.PI / 2 : Math.PI / 2;
+        tire.position.set(x, y, z);
+      });
+      const nodes = [body, ...tires];
+      for (const n of nodes) n.getHierarchyBoundingVectors(true);
+      return await this.renderMeshes(nodes.flatMap((n) => n.getChildMeshes()), 'three-quarter', size);
+    } finally {
+      body.dispose();
+      for (const t of tires) t.dispose();
     }
   }
 
