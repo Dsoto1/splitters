@@ -71,6 +71,45 @@ Every climbable piece is tested for bot paths in all four rotations
 (narrower runs fall foul of the navmesh's ledge filter), and flights need
 clear space at both ends.
 
+### Parts at any angle: `turned` and `wallRun` (octagon kit, phase 1)
+
+A kit tile is a list of parts, each naming one builder (`box`, `flight`, `rail`, `columns`, `vault`, `arc`…). Two
+builders put pieces off the grid; only a plain `box` takes `yaw` (docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md
+§3.1). No shipped tile uses them yet; phase 2 builds the Arena Corner pieces with them.
+
+- **`turned`**: a group of any parts (flights, vaults, columns, rails, boxes, wall runs, other groups) turned about
+  `pivot` ([x, z] in the tile's frame, default the first cell's centre) by `turns` (quarter turns, so 0.5 is 45°) or
+  `yaw` (radians), the same way round as a tile's R. Each box's centre turns and the turn adds to its own yaw, so it
+  keeps its size; on whole quarter turns a plain box stays a plain box, so `turns: 1` is exactly the same parts built
+  the other way. A `kind` on the group goes on what it builds (its trim stays trim).
+
+  ```json
+  { "turned": { "turns": 0.5, "pivot": [8, 8], "parts": [
+      { "flight": { "axis": "x", "dir": 1, "from": 4, "across": [7, 9], "steps": 12 } },
+      { "box": [10, 0, 7, 12.5, 3, 9] } ] } }
+  ```
+
+- **`wallRun`**: a wall in any edge style (Solid wall, Round arch, Grand arch, Window…) along any segment `from` →
+  `to`, not only a cell's side: the style's collision and trim (`map/edgeShapes.ts`, the same pieces a cell side
+  builds), `bays` times along it (each bay a side of its own: "half" is half a bay). The segment is the wall's outer
+  face, its thickness on the `side` of it looking from `from` to `to`: `left` (the default; a cell's side has the cell
+  on its left), `right`, or `centre`. `y` lifts it, `height` is the level height (default 4; a Grand arch is two of
+  them), `outer: false` leaves the outer face undressed. Along a cell's side it builds exactly what that side does.
+- **`plain: true`** (on a `wallRun`; new pieces only, owner 2026-11-14): an arch collides as its two piers and one
+  lintel from the crown up, not one slice for every step over the curve (a Round or Grand arch: 19 boxes become 3).
+  The steps are still drawn, in the walls' paint (`LocalBox.paint`), so the arch looks the same; shots and bodies
+  pass the stone between the curve and the crown near each pier. Styles with one piece over the opening (Window,
+  Doorway, Archway) are the same either way.
+
+  ```json
+  { "wallRun": { "from": [10, -3], "to": [18, 5], "style": "arch_grand", "side": "centre", "plain": true } }
+  ```
+
+`tools/content/tiles.mjs` checks both (one of `yaw` or `turns`; a built edge style; a segment longer than 0; at least
+one bay), and the parts inside a group like any part. Doors placed off the grid (a 45° portcullis) block bots, mark
+the navmesh and keep spawns out by their own turned slab (`Aabb.obox`); doors on the grid are as before. Tests:
+`packages/shared/test/octagonKit.test.ts`.
+
 ## Walls and openings (edge styles, `content/tiles/edges.json`)
 
 Any side of any cell can be built as: Auto, Solid wall, Doorway, Wide doorway,
