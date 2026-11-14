@@ -106,10 +106,14 @@ const WALKS: Record<string, { chains: [number, number, number][][]; walks?: { fr
     chains: [[[-7, 0, 0], [8, 4, 0], [10.5, 4, 2.8]], [[8, 4, 0], [-7, 0, 0]], [[8, 0, -7], [8, 0, 0], [8, 0, 7]], [[8, 0, 0], [15, 0, 0]]],
     walks: [{ from: [-6, 0.02, 0], yaw: EAST, ticks: 203, to: [9.6, 4, 0] }],
   },
-  // In through an arch on each side, onto the stage and off it.
+  // Up the step and onto the stage from each open side, across it and off; a picket rail on a diagonal side stops a walk.
   'setpiece.bandstand': {
-    chains: [[[4, 0, -7], [4, 0.3, 4], [4, 0, 15]], [[-7, 0, 4], [4, 0.3, 4], [15, 0, 4]]],
-    walks: [{ from: [4, 0.02, -0.5], yaw: NORTH, ticks: 50, to: [4, 0.3, 3.8] }],
+    chains: [[[4, 0, -4], [4, 0.5, 4], [4, 0, 12]], [[-4, 0, 4], [4, 0.5, 4], [12, 0, 4]]],
+    walks: [
+      { from: [4, 0.02, -2.5], yaw: NORTH, ticks: 50, to: [4, 0.5, 1.8] },
+      { from: [4, 0.52, 4], yaw: SOUTH, ticks: 80, to: [4, 0, -2.9] },
+      { from: [4, 0.52, 4], yaw: Math.PI / 4, ticks: 90, to: [6.68, 0.49, 6.68] },
+    ],
   },
   // From the pavement in by the front door, and out by the back door; round behind the counter; round the pavement.
   'setpiece.shop_unit': {
@@ -224,10 +228,11 @@ describe('the Urban family is made of what it says, and stands on the ground', (
     expect(kinds('setpiece.parking_deck_ramp')).toMatchObject({ tiles: 2, blocks: 6, props: 0, tileIds: ['core.platform'] });
     expect(kinds('setpiece.concrete_frame')).toMatchObject({ tiles: 1, blocks: 0, props: 2, tileIds: ['core.room'] });
     expect(kinds('setpiece.concrete_frame_2')).toMatchObject({ tiles: 3, blocks: 0, props: 1, tileIds: ['core.room', 'core.stairs_open'] });
-    expect(kinds('setpiece.bandstand')).toMatchObject({ tiles: 4, blocks: 5, props: 0, tileIds: ['core.round_arcade_s'] });
+    // The bandstand: four slabs for the stage, four steps, eight posts, four roof slabs; a picket panel on each diagonal side.
+    expect(kinds('setpiece.bandstand')).toMatchObject({ tiles: 0, blocks: 20, props: 4, tileIds: [] });
     expect(kinds('setpiece.shop_unit')).toMatchObject({ tiles: 4, blocks: 0, props: 7, doors: 1, lights: 1, tileIds: ['core.platform', 'core.room'] });
-    // Modest: none has more than 16 parts.
-    for (const id of IDS) expect(library.pieces.get(id)!.parts.length, id).toBeLessThanOrEqual(16);
+    // Modest: none has more than 16 parts, but the bandstand (24: an octagon, its posts and a pitched roof out of blocks).
+    for (const id of IDS) expect(library.pieces.get(id)!.parts.length, id).toBeLessThanOrEqual(id === 'setpiece.bandstand' ? 24 : 16);
   });
 
   it('they take the look of the pack they are placed with: roles, not fixed materials', () => {
