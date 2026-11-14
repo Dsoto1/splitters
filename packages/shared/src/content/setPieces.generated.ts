@@ -448,7 +448,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'light', position: [8.7, 3.3, 6], fixture: 'ceiling', color: '#ffe9c4', intensity: 0.9, range: 9 },
     ],
   },
-  // design: A side entry for a hall's long side (photo 16 of the brief): the south half of a Dorm Bay is an entrance hall, 8 m across, under a Round arch (3.2 m, voussoirs on both faces) in the outer wall, open to the hall through a 6 m opening between two short piers (the hall's wall is a closet deep, as in a Dorm Bay); benches either side, a rug, two plants. North of the hall, the Dorm Bay's two rooms as they are. Half partitions at its ends, as a Dorm Bay's. Turn it half round for an entry on the other side; a Dorm Bay goes over it on the floor above.
+  // design: A side entry for a hall's long side (photo 16 of the brief): the south half of a Dorm Bay is an entrance hall, 8 m across, under a Round arch (3.2 m, voussoirs on both faces) in the outer wall, its walls the look's stone inside and out (an arch has no facade to clad it), open to the hall through a 6 m opening between two short piers (the hall's wall is a closet deep, as in a Dorm Bay); benches either side, a rug, two plants. North of the hall, the Dorm Bay's two rooms as they are. Half partitions at its ends, as a Dorm Bay's. Turn it half round for an entry on the other side; a Dorm Bay goes over it on the floor above.
   {
     id: 'setpiece.dorm_entry_bay',
     displayName: 'Dorm Entry Bay',
@@ -466,7 +466,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { side: 'S', cell: [0, 0], level: 0, kind: 'door' },
     ],
     parts: [
-      { kind: 'tile', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0, edges: { '0,0,0:S': 'arch_round', '0,0,0:N': 'open', '0,0,0:E': 'open', '0,0,0:W': 'open' }, glass: {  }, surfaces: { floor: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, walls: { material: 'core.pbr_plaster_white' }, solids: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, underside: { material: 'core.pbr_plaster_white' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { facade: { role: 'facade' }, ceiling: 'roof' } },
+      { kind: 'tile', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0, edges: { '0,0,0:S': 'arch_round', '0,0,0:N': 'open', '0,0,0:E': 'open', '0,0,0:W': 'open' }, glass: {  }, surfaces: { floor: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, walls: { role: 'stone' }, solids: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, underside: { material: 'core.pbr_plaster_white' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { facade: { role: 'facade' }, ceiling: 'roof' } },
       { kind: 'tile', tile: 'core.room', x: 0, y: 1, z: 0, rotation: 0, edges: { '0,0,0:N': 'windows_sash', '0,0,0:S': 'open', '0,0,0:E': 'open', '0,0,0:W': 'open' }, glass: { '0,0,0:N': { role: 'glass' } }, surfaces: { floor: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, walls: { material: 'core.pbr_plaster_white' }, solids: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, underside: { material: 'core.pbr_plaster_white' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { facade: { role: 'facade' }, ceiling: 'roof' } },
       { kind: 'block', name: 'Entry wall', position: [-3.5, 0, 5.56], size: [1, 2.6, 0.72], material: 'core.pbr_plaster_white' },
       { kind: 'block', name: 'Entry wall', position: [0, 0, 5.56], size: [2, 2.6, 0.72], material: 'core.pbr_plaster_white' },
@@ -509,7 +509,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'light', position: [0, 3.3, -0.6], fixture: 'ceiling', color: '#ffe9c4', intensity: 0.9, range: 9 },
     ],
   },
-  // design: The Stair End Bay with a Round arch (3.2 m, voussoirs and a keystone on both faces) for the lobby's outside door instead of a Room doorway, and no door leaf in it. Everything else as the Stair End Bay.
+  // design: The Stair End Bay with a Round arch (3.2 m, voussoirs and a keystone on both faces) for the lobby's outside door instead of a Room doorway, and no door leaf in it; the lobby's walls are the look's stone inside and out (an arch has no facade to clad it). Everything else as the Stair End Bay.
   {
     id: 'setpiece.stair_end_bay_arched',
     displayName: 'Stair End Bay (arched door)',
@@ -528,7 +528,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     ],
     parts: [
       { kind: 'tile', tile: 'core.stairwell', x: 0, y: 0, z: 0, rotation: 1, edges: { '0,0,0:W': 'open', '0,0,0:N': 'open', '0,0,0:E': 'wall', '0,0,0:S': 'wall', '0,0,1:W': 'open', '0,0,1:N': 'open', '0,0,1:E': 'window_sash', '0,0,1:S': 'wall' }, glass: { '0,0,1:E': { role: 'glass' } }, surfaces: { floor: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, walls: { role: 'stone' }, solids: { role: 'trim' }, underside: { material: 'core.pbr_plaster_white' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { facade: { role: 'facade' } } },
-      { kind: 'tile', tile: 'core.room', x: 0, y: 1, z: 0, rotation: 0, edges: { '0,0,0:W': 'arch_round', '0,0,0:N': 'window_sash', '0,0,0:E': 'open', '0,0,0:S': 'open' }, glass: { '0,0,0:N': { role: 'glass' } }, surfaces: { floor: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, walls: { material: 'core.pbr_plaster_white' }, solids: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, underside: { material: 'core.pbr_plaster_white' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { facade: { role: 'facade' }, ceiling: 'roof' } },
+      { kind: 'tile', tile: 'core.room', x: 0, y: 1, z: 0, rotation: 0, edges: { '0,0,0:W': 'arch_round', '0,0,0:N': 'window_sash', '0,0,0:E': 'open', '0,0,0:S': 'open' }, glass: { '0,0,0:N': { role: 'glass' } }, surfaces: { floor: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, walls: { role: 'stone' }, solids: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, underside: { material: 'core.pbr_plaster_white' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { facade: { role: 'facade' }, ceiling: 'roof' } },
       { kind: 'tile', tile: 'core.room', x: 0, y: 1, z: 1, rotation: 0, edges: { '0,0,0:W': 'window_sash', '0,0,0:N': 'window_sash', '0,0,0:E': 'open', '0,0,0:S': 'open' }, glass: { '0,0,0:W': { role: 'glass' }, '0,0,0:N': { role: 'glass' } }, surfaces: { floor: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, walls: { material: 'core.pbr_plaster_white' }, solids: { material: 'core.pbr_terrazzo', tint: '#b0b3b2' }, underside: { material: 'core.pbr_plaster_white' }, trim: { role: 'trim' }, roof: { role: 'roof' } }, options: { facade: { role: 'facade' }, ceiling: 'roof' } },
       { kind: 'block', name: 'East wall', position: [3.75, 0, -0.35], size: [0.5, 3.5, 6.3], material: 'core.pbr_plaster_white' },
       { kind: 'block', name: 'East wall', position: [3.75, 0, 8.35], size: [0.5, 3.5, 6.3], material: 'core.pbr_plaster_white' },
