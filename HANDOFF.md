@@ -906,6 +906,8 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 
 **Owner rule, 2026-11-13: helper sessions on this account for Tile Trigger use Opus 5.5 at medium effort only, never Fable.** The Fable session (`Splitters FABLE 5.2`) is paused; its Spillway/effects helper (Fable) is being stopped, and an Opus helper lands The Spillway's fixes plus the crest's east end raised to meet the ground (owner: "a"; no gatehouses).
 
+**MapMaker UI spec Phase 0 done (2026-11-14, docs only): `docs/MAPMAKER_UI_AUDIT.md`**: where every control lives, what each phase moves, the e2e flows that reach Map properties by Esc (11, incl. canyon, traffic, weaponsets, coverage), and 10 owner questions in §10; baseline screenshots described there (not committed).
+
 **New, owner 2026-11-14: `docs/MAPMAKER_UI_SPEC.md`**, the owner's MapMaker UI/UX spec with the lead session's notes at the end. Phase 0 (audit, docs only) is with this account (`wip/mapmaker-ui-audit`). **MapMaker lane: Phase 1 and later share editor files with your Tileset 11 work. Say in HANDOFF which phases you want; nobody starts editor code for this until that is agreed.**
 
 **New, owner 2026-11-13: `docs/QUEUE.md` is the one short queue for both accounts** (in flight, ready to land, bugs, easy wins, features, waiting on the owner, parked, done; sizes XS to L; lane A = this account, B = the MapMaker lane). MapMaker lane: please add or move your items there in the commits that land them; HANDOFF keeps the detail and the lock. CLAUDE.md now points to it first.

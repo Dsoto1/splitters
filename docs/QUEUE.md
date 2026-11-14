@@ -28,7 +28,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
-- S · A · MapMaker UI spec, Phase 0: audit (docs only; `docs/MAPMAKER_UI_SPEC.md`, owner's spec with the lead's notes) · `wip/mapmaker-ui-audit`
 - S · A · Effects-check fixes, the owner's picks (2026-11-14, option a everywhere): Pantry Raid's mouse holes walkable and painted, loot rings outlined, Low's lasting places, the checks; pickup guns drawn bigger · `wip/fx-fixes` (findings: `docs/FX_CHECKS_2026-11-13.md`)
 - S · B · MapMaker: the Roads tool (`routeTool.ts`) redraws its markers the slow way the Paths tool did; the same fix applies. · `wip/mapmaker-editor-speed-2`
 - S · B · MapMaker: a forced layout still costs about 50 ms on each edit and selection (it moved, it did not go); find what dirties the layout. · `wip/mapmaker-editor-speed-2`
@@ -70,6 +69,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Waiting on the owner
 - St. John's performance in a match: the 2026-11-13 trace turned out to be MapMaker, so whether the character work helped since 2026-11-10 is still unmeasured. Needs a recording of a match on St. John's (Settings → Record performance, or a Chrome trace while playing).
 - Open questions in `docs/MAPMAKER_EDITING_REPORT_2026-11-13.md`.
+- MapMaker UI spec: 10 questions in `docs/MAPMAKER_UI_AUDIT.md` §10 (keys, the contextual tool bar, the empty inspector, Map settings' form, who builds Phase 1…).
 - The effects-check proposals, once `wip/fx-checks` reports.
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
@@ -81,6 +81,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-14 · A · MapMaker UI spec Phase 0: the audit, `docs/MAPMAKER_UI_AUDIT.md` (component tree, tools and keys, Map settings fields, selection, undo, data for Tile Detail, minimap, preferences, the e2e baseline, 10 owner questions).
 - 2026-11-14 · B · Twelve new characters from the owner's Drive (Meshy Community CC0, Experimental until the owner looks them over); the Vortex Grenade is now the Gravity Grenade.
 - 2026-11-14 · A · Ammo Box: solid resupply crates with cook-off, the Ammo Box Kit throwable, tanks refill beside a crate.
 - 2026-11-13 · A · MapMaker Fit ground, the owner's answers: lone platforms stand on the ground, props on moved ground re-bedded in the same undo (fcbd08e0).
