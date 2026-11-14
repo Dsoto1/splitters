@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_yutqnazzrsrqob2y",
-      "revision": 31,
-      "contentHash": "sha256:0ed8c13fb076d0ee4d51e59689758dece575a9e51c788bb195dbc3adfe56d975",
+      "versionId": "v_c5hr5tyeq4wpcsk3",
+      "revision": 32,
+      "contentHash": "sha256:f8db04fb6c5cdfb7abdf52d6df8f46f912d671b3c8d55cafe6b490ceac33b8e4",
       "schemaVersion": 38,
-      "releasedAt": "2026-11-14T00:15:19.341Z"
+      "releasedAt": "2026-11-14T02:17:40.574Z"
     },
     "testOnly": true
   },
@@ -1122,6 +1122,22 @@
           "0,0,0:N": "breakable",
           "0,0,0:E": "reinforced"
         }
+      },
+      {
+        "id": "tile_70gz8uj00m",
+        "tile": "core.fire_escape",
+        "x": 17,
+        "y": -51,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_g2tjfna6aj",
+        "tile": "core.scaffold_bay",
+        "x": 19,
+        "y": -51,
+        "z": 0,
+        "rotation": 0
       }
     ]
   },
@@ -5229,14 +5245,28 @@
     },
     {
       "id": "pickup_95h2qo8jbg",
-      "kind": "pickup",
       "position": [
         -103,
         0,
         12
       ],
+      "kind": "pickup",
       "item": "core.ammo_box_kit",
       "respawnSeconds": null
+    },
+    {
+      "id": "prop_3jkgg80j04",
+      "kind": "prop",
+      "position": [
+        150,
+        0,
+        112
+      ],
+      "model": "kit.street.bus_stop",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
