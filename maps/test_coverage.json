@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_bioxhqvaxhvjkwof",
-      "revision": 30,
-      "contentHash": "sha256:64d281dd2671d70b3c623a792aff75bbaf2404f5d79b967a512fa2372ed9f286",
+      "versionId": "v_tfej6aemml4sb7oj",
+      "revision": 31,
+      "contentHash": "sha256:82e23863dce56911db3f8ce9d0a2666189c097aa0b37a54c5aae342c83a28fb6",
       "schemaVersion": 38,
-      "releasedAt": "2026-11-13T22:21:28.851Z"
+      "releasedAt": "2026-11-14T00:53:52.097Z"
     },
     "testOnly": true
   },
@@ -1122,6 +1122,22 @@
           "0,0,0:N": "breakable",
           "0,0,0:E": "reinforced"
         }
+      },
+      {
+        "id": "tile_ll4mrd5pll",
+        "tile": "core.fire_escape",
+        "x": 17,
+        "y": -51,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7u8dei0pny",
+        "tile": "core.scaffold_bay",
+        "x": 19,
+        "y": -51,
+        "z": 0,
+        "rotation": 0
       }
     ]
   },
@@ -5226,6 +5242,20 @@
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
+    },
+    {
+      "id": "prop_rm1xcu2c30",
+      "kind": "prop",
+      "position": [
+        150,
+        0,
+        112
+      ],
+      "model": "kit.street.bus_stop",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
