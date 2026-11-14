@@ -565,8 +565,8 @@ function quarterOf(yaw: number): number | null {
   return Math.abs(q - r) < 1e-9 ? ((r % 4) + 4) % 4 : null;
 }
 
-/** Tidy a coordinate: round off the last bits a turn leaves (1e-9 m) and -0, so turned copies compare exactly. */
-const tidy = (v: number): number => Math.round(v * 1e9) / 1e9 + 0;
+/** Tidy a coordinate: round off what turning leaves (to the micrometre) and -0, so turned copies compare exactly. */
+const tidy = (v: number): number => Math.round(v * 1e6) / 1e6 + 0;
 
 /**
  * Boxes turned by `yaw` about (px, pz): each centre turns and the yaw adds to its own (the kit's `turned`). A plain
@@ -590,7 +590,11 @@ export function turnBoxes(boxes: readonly LocalBox[], yaw: number, px = 0, pz = 
     const [mx, mz] = turn((b.min[0] + b.max[0]) / 2, (b.min[2] + b.max[2]) / 2);
     const own = (b.yaw ?? 0) + yaw;
     const { yaw: _y, ...rest } = b;
-    return { ...rest, min: [tidy(mx - hx), b.min[1], tidy(mz - hz)], max: [tidy(mx + hx), b.max[1], tidy(mz + hz)], ...(quarterOf(own) === 0 ? {} : { yaw: own }) };
+    // A box that ends on a whole number of quarter turns (two 45° turns) is a plain box again, its sides swapped on an odd one.
+    const ends = b.pitch || b.roll ? null : quarterOf(own);
+    const [ex, ez] = ends !== null && ends % 2 === 1 ? [hz, hx] : [hx, hz];
+    if (ends !== null) return { ...rest, min: [tidy(mx - ex), b.min[1], tidy(mz - ez)], max: [tidy(mx + ex), b.max[1], tidy(mz + ez)] };
+    return { ...rest, min: [mx - hx, b.min[1], mz - hz], max: [mx + hx, b.max[1], mz + hz], yaw: own };
   });
 }
 
