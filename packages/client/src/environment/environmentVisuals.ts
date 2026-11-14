@@ -8,8 +8,10 @@ import { loadEnvModel, partMesh, type EnvModel } from './envModels.ts';
 
 /**
  * The environment renderer (docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §9.3), behind `?env=1` until Phase 4: every placed
- * `env.*` species drawn as thin instances, batched by (species variant, level of detail, material, 64 m sector), so
- * each batch is culled on its own and there is never a map-wide batch. Each copy picks its level of detail from its
+ * `env.*` species drawn as thin instances, batched by (species variant, level of detail, material, sector), so
+ * each batch is culled on its own and there is never a map-wide batch. Sectors grow with the level (64 m for the
+ * nearest, twice as wide a level: `sectorSize`): far copies are small on screen and few to a square, so a fine grid
+ * made a draw (and a shadow and light-shaft draw) for every one or two of them (St. John's 139 trees were 133 batches). Each copy picks its level of detail from its
  * distance to the camera (hysteresis ±10 %) whenever the camera has moved a metre; a batch's buffer is rebuilt only
  * when a copy joins or leaves it. Babylon's mesh LOD is not used (it doesn't see thin instances).
  *
@@ -18,8 +20,16 @@ import { loadEnvModel, partMesh, type EnvModel } from './envModels.ts';
  * grown by foliage.ts from the terrain's painted plants, thinned there.
  */
 
-/** Side of the squares copies are batched by (m); the border's and backdrop's scatters use bigger ones (fewer batches). */
+/** Side of the squares the nearest copies are batched by (m); the border's and backdrop's scatters use bigger ones (fewer batches). */
 const SECTOR = 64;
+/** Each level's squares are this many times as wide as the level before's, up to MAX_GROWTH times the nearest's. */
+const GROWTH = 2;
+const MAX_GROWTH = 8;
+
+/** Side of the squares a level's copies are batched by: the nearest level's `sector`, doubling a level, at most 8 times. */
+export function sectorSize(sector: number, level: number): number {
+  return sector * Math.min(MAX_GROWTH, GROWTH ** Math.max(0, level));
+}
 /** A copy changes level only once it is this share past the boundary (no flicker at the edge). */
 const HYSTERESIS = 0.1;
 
@@ -29,15 +39,22 @@ interface Copy {
   y: number;
   z: number;
   level: number;
-  group: Group;
 }
 
-/** The copies of one species variant in one sector, and the batches drawing them (per level, per part). */
+/** The copies of one species variant. */
 interface Group {
   file: string;
-  sector: string;
   copies: Copy[];
-  batches: Map<number, { meshes: Mesh[]; buffer: Float32Array; dirty: boolean }>;
+}
+
+/** The meshes (one per part) drawing one species variant's copies at one level in one square of that level's size. */
+interface Batch {
+  level: number;
+  /** Every copy of the variant in the square, at whatever level (those at this level are drawn). */
+  copies: Copy[];
+  meshes: Mesh[];
+  buffer: Float32Array;
+  dirty: boolean;
 }
 
 export interface EnvStats {
@@ -57,6 +74,8 @@ export class EnvironmentVisuals {
   private loaded = new Map<string, EnvModel>();
   private templates = new Map<string, Mesh[][]>();
   private groups: Group[] = [];
+  /** Batches by `<file>|<level>|<square>`, made on first use. */
+  private batches = new Map<string, Batch>();
   private build = 0;
   private lastX = Infinity;
   private lastZ = Infinity;
@@ -79,7 +98,7 @@ export class EnvironmentVisuals {
   /** Show or hide every copy (the bench's border-off comparison). */
   setVisible(on: boolean): void {
     this.visible = on;
-    for (const g of this.groups) for (const b of g.batches.values()) for (const m of b.meshes) m.isVisible = on;
+    for (const b of this.batches.values()) for (const m of b.meshes) m.isVisible = on;
   }
 
   /** Whether a placement is drawn here (an env species), not as a prop node. */
@@ -91,22 +110,19 @@ export class EnvironmentVisuals {
   async setPlacements(entities: readonly PropEntity[], terrain: TerrainData | null): Promise<void> {
     const build = ++this.build;
     this.clearBatches();
-    const bySector = new Map<string, Group>();
+    const byFile = new Map<string, Group>();
     for (const e of entities) {
       const species = getEnvSpecies(e.model);
       if (!species) continue;
       const file = envModelFile(e.model, e.variant)!;
       const matrix = placementMatrix(e, species, terrain);
-      const sector = `${Math.floor(e.position[0] / this.sector)}:${Math.floor(e.position[2] / this.sector)}`;
-      const key = `${file}|${sector}`;
-      let g = bySector.get(key);
-      if (!g) bySector.set(key, (g = { file, sector, copies: [], batches: new Map() }));
-      g.copies.push({ matrix, x: e.position[0], y: e.position[1], z: e.position[2], level: -1, group: g });
+      let g = byFile.get(file);
+      if (!g) byFile.set(file, (g = { file, copies: [] }));
+      g.copies.push({ matrix, x: e.position[0], y: e.position[1], z: e.position[2], level: -1 });
     }
-    const files = [...new Set([...bySector.values()].map((g) => g.file))];
-    await Promise.all(files.map((f) => this.model(f)));
+    await Promise.all([...byFile.keys()].map((f) => this.model(f)));
     if (build !== this.build) return;
-    this.groups = [...bySector.values()].filter((g) => this.loaded.has(g.file));
+    this.groups = [...byFile.values()].filter((g) => this.loaded.has(g.file));
     this.lastX = this.lastY = this.lastZ = Infinity;
   }
 
@@ -173,37 +189,51 @@ export class EnvironmentVisuals {
           }
         }
         if (level === c.level) continue;
-        if (c.level >= 0) this.batch(g, c.level).dirty = true;
-        this.batch(g, level).dirty = true;
+        if (c.level >= 0) this.dirty(this.batch(g, c.level, c));
+        this.dirty(this.batch(g, level, c));
         c.level = level;
       }
-      for (const [level, b] of g.batches) {
-        if (!b.dirty) continue;
-        b.dirty = false;
-        let count = 0;
-        for (const c of g.copies) if (c.level === level) b.buffer.set(c.matrix, 16 * count++);
-        for (const mesh of b.meshes) {
-          mesh.setEnabled(count > 0);
-          if (!count) continue;
-          mesh.thinInstanceCount = count;
-          mesh.thinInstanceBufferUpdated('matrix');
-          // Bounds over the copies drawn, so the batch is culled on its own.
-          mesh.thinInstanceRefreshBoundingInfo(false);
-        }
+    }
+    for (const b of this.changed.splice(0)) {
+      b.dirty = false;
+      let count = 0;
+      for (const c of b.copies) if (c.level === b.level) b.buffer.set(c.matrix, 16 * count++);
+      for (const mesh of b.meshes) {
+        mesh.setEnabled(count > 0);
+        if (!count) continue;
+        mesh.thinInstanceCount = count;
+        mesh.thinInstanceBufferUpdated('matrix');
+        // Bounds over the copies drawn, so the batch is culled on its own.
+        mesh.thinInstanceRefreshBoundingInfo(false);
       }
     }
   }
 
-  /** The batch of a group at a level (made on first use: one clone of each part's template). */
-  private batch(g: Group, level: number): { meshes: Mesh[]; buffer: Float32Array; dirty: boolean } {
-    let b = g.batches.get(level);
+  /** Batches a copy joined or left this update. */
+  private readonly changed: Batch[] = [];
+
+  private dirty(b: Batch): void {
+    if (b.dirty) return;
+    b.dirty = true;
+    this.changed.push(b);
+  }
+
+  /** The batch drawing copy `c` of group `g` at `level` (made on first use: one clone of each part's template). */
+  private batch(g: Group, level: number, c: Copy): Batch {
+    const size = sectorSize(this.sector, level);
+    const sx = Math.floor(c.x / size);
+    const sz = Math.floor(c.z / size);
+    const sector = `${sx}:${sz}`;
+    const key = `${g.file}|${level}|${sector}`;
+    let b = this.batches.get(key);
     if (b) return b;
-    const buffer = new Float32Array(g.copies.length * 16);
+    const copies = g.copies.filter((o) => Math.floor(o.x / size) === sx && Math.floor(o.z / size) === sz);
+    const buffer = new Float32Array(copies.length * 16);
     const species = g.file.slice(4, -4);
     const far = level >= Math.max(2, (this.loaded.get(g.file)?.levels.length ?? 0) - 1);
     const meshes = (this.templates.get(g.file)?.[level] ?? []).map((tpl, pi) => {
       // Instance buffers live on the geometry: each batch has its own copy.
-      const mesh = tpl.clone(`env_${species}_l${level}_p${pi}_${g.sector}`, null, true)!;
+      const mesh = tpl.clone(`env_${species}_l${level}_p${pi}_${sector}`, null, true)!;
       mesh.makeGeometryUnique();
       mesh.thinInstanceSetBuffer('matrix', buffer, 16, false);
       mesh.freezeWorldMatrix();
@@ -214,8 +244,8 @@ export class EnvironmentVisuals {
       if (far) mesh.metadata = { ...(mesh.metadata as object | null), castsNoShadow: true };
       return mesh;
     });
-    b = { meshes, buffer, dirty: true };
-    g.batches.set(level, b);
+    b = { level, copies, meshes, buffer, dirty: false };
+    this.batches.set(key, b);
     return b;
   }
 
@@ -237,16 +267,18 @@ export class EnvironmentVisuals {
         perLevel[c.level] = (perLevel[c.level] ?? 0) + 1;
         triangles += m.triangles[c.level] ?? 0;
       }
-      for (const b of g.batches.values()) {
-        batches += b.meshes.length;
-        drawn += b.meshes.filter((x) => x.isEnabled() && x.isVisible).length;
-      }
+    }
+    for (const b of this.batches.values()) {
+      batches += b.meshes.length;
+      drawn += b.meshes.filter((x) => x.isEnabled() && x.isVisible).length;
     }
     return { batches, drawnBatches: drawn, copies, perLevel: [...perLevel].map((v) => v ?? 0), lastLevel: [...lastLevel].map((v) => v ?? 0), triangles };
   }
 
   private clearBatches(): void {
-    for (const g of this.groups) for (const b of g.batches.values()) for (const m of b.meshes) m.dispose();
+    for (const b of this.batches.values()) for (const m of b.meshes) m.dispose();
+    this.batches.clear();
+    this.changed.length = 0;
     this.groups = [];
   }
 

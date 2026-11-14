@@ -1,5 +1,5 @@
 import type { Scene } from '@babylonjs/core/scene';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
@@ -95,6 +95,56 @@ export function buildPathMeshes(scene: Scene, doc: MapDocument, terrain: Terrain
   for (const m of out) {
     m.isPickable = false;
     m.freezeWorldMatrix();
+  }
+  return out;
+}
+
+/** Paths are merged per material in squares this wide (m) in the game: far squares cull as a whole. */
+export const PATH_MERGE_SQUARE = 128;
+
+/**
+ * The game's paths merged: every path was its own mesh (and an asphalt road four, with its paint lines), a draw each
+ * in the view (St. John's 31 paths were about 50). Ribbons with the same material (style and rank, so their order on
+ * the ground is kept) in the same PATH_MERGE_SQUARE square, by their middle, become one mesh: the same triangles and
+ * material. MapMaker keeps one mesh a path (it picks and redraws them one by one).
+ */
+export function mergePathMeshes(meshes: readonly Mesh[]): Mesh[] {
+  const groups = new Map<string, Mesh[]>();
+  const out: Mesh[] = [];
+  for (const m of meshes) {
+    if (!m.material || !m.getTotalVertices()) {
+      out.push(m);
+      continue;
+    }
+    const c = m.getBoundingInfo().boundingBox.centerWorld;
+    const key = `${m.material.uniqueId}|${Math.floor(c.x / PATH_MERGE_SQUARE)}:${Math.floor(c.z / PATH_MERGE_SQUARE)}`;
+    let list = groups.get(key);
+    if (!list) groups.set(key, (list = []));
+    list.push(m);
+  }
+  for (const list of groups.values()) {
+    const first = list[0]!;
+    if (list.length < 2) {
+      out.push(first);
+      continue;
+    }
+    const mat = first.material;
+    let one: Mesh | null = null;
+    try {
+      one = Mesh.MergeMeshes(list as Mesh[], false, true);
+    } catch {
+      // Meshes that can't be merged (different vertex layouts) stay as they are.
+    }
+    if (!one) {
+      out.push(...list);
+      continue;
+    }
+    for (const m of list) m.dispose();
+    one.name = `${first.name}_merged`;
+    one.material = mat;
+    one.isPickable = false;
+    one.freezeWorldMatrix();
+    out.push(one);
   }
   return out;
 }

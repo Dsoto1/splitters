@@ -124,7 +124,7 @@ import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
 import { PropFlames } from './propFlames.ts';
 import { ACCENT_RANGE, arcFx, explosionFor, farFxSize, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
-import { buildPathMeshes } from '../pathMeshes.ts';
+import { buildPathMeshes, mergePathMeshes } from '../pathMeshes.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
 const DEBRIS_LIFE = 6;
@@ -634,7 +634,7 @@ export class GameView {
     }
     buildRoadMeshes(this.scene, doc, styler);
     // Paths (MapMaker's roads, streets and trails), on the ground as played (loadMap laid them in).
-    buildPathMeshes(this.scene, doc, doc.terrain, styler);
+    mergePathMeshes(buildPathMeshes(this.scene, doc, doc.terrain, styler));
     const backdropVisuals = new BackdropVisuals(this.scene, styler, this.models);
     const backdrop = backdropVisuals.build(doc, boxes);
     if (backdropVisuals.sky) this.skyEffects.apply(doc, backdrop, backdropVisuals.sky);

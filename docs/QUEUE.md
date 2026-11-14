@@ -31,6 +31,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## In flight
 - L · B (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 landed 2026-11-14 (the `turned`/`wallRun` parts, plain arch collision, oriented doors); phase 2 next: the corner tiles.
 
+- M · A · Flaky tests made sturdy by root cause (Arsenal damage numbers, dedicated host, all-maps terrain, characters3 Imp grip, mobile pad tap, the load-16 timeouts and bench) · `wip/flaky-1114` (a helper of lane A's lead)
+
 ## Ready to land
 - M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Waiting on lane A's lead's review** (owner: "this account reviews"); `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. Owner questions on the dock width, the rail, renaming and Dress/Settle all are with the owner.
 
@@ -75,6 +77,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Done (last week)
 - 2026-11-14 · A · St. John's step 2: Smythe Hall rebuilt in MapMaker from dorm bays (two floors, the L on the grid), with five new pieces: Dorm Corner Bay, Dorm Entry Bay, Stair End Bay (arched door / upper door), Square Corner Tower; perf before/after in `docs/map-briefs/st_johns/PLAN_2026-11-12.md` 4b.
+- 2026-11-14 · A · St. John's render cost, step 1: draw calls on High about 1,490 to 550 on St. John's (Norman Shores 2,210 to 1,060, Backwoods 1,690 to 850, Capitol Mall 970 to 530), looks unchanged: the sun shafts draw only what can hide the sun, far trees and props batch over wider squares, cascades cull batches, doors and paths merged (fb595302).
 - 2026-11-14 · A · Twelve new characters from the owner's Drive (Meshy Community CC0, Experimental until the owner looks them over), Azure Sentinel and Spud Marshal recoloured, The Hollow Pilgrim glides; Coffee Brown recorded as Meshy, owned.
 - 2026-11-14 · A · The match-start animation spike: one torso measurement a frame (it skinned the torso on the CPU, 10-33 ms a character, all at once as a crowd settled into its aim), and a crowd coming into view posed over its band's frames (never-posed characters hidden until their first pose); in a crowd-into-view repro max animated a frame 38-47 → 13-15, charAnim 195-333 → 39-52 ms (e361f045).
 - 2026-11-14 · A · The owner's St. John's match recording read: about 34 fps (25 on 11-10), characters 5.5 ms (13.6), hitches 28 in 164 s (546 in 204 s); rendering is now about 21 of 29 ms and the draw count (1,519) hasn't moved (`docs/PERF_STJOHNS_2026-11-14.md`).
