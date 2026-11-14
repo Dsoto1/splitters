@@ -86,6 +86,31 @@ const SUNNY = new Set(['clear', 'cloudy', 'sunrise', 'sunset', 'dusk', 'misty', 
 const OCCLUDER_RADIUS = 2;
 /** How often the shafts' occluders are gathered again (ms). */
 const OCCLUDER_REFRESH_MS = 2000;
+/** The sun's disc: its size and how far out along the way to the sun it rides (m). */
+const SUN_DIAMETER = 36;
+const SUN_DISTANCE = 900;
+/**
+ * Half-angle (radians) of the cone from the camera to the sun inside which an occluder can hide the disc: the disc's
+ * own (its radius over its distance, about 1.1 degrees) twice over, and the half-size pass's pixels (a few
+ * thousandths): generous, as a false "covers" only costs a draw.
+ */
+const SUN_CONE = (2 * (SUN_DIAMETER / 2)) / SUN_DISTANCE + 0.01;
+const SUN_CONE_TAN = Math.tan(SUN_CONE);
+const SUN_CONE_COS = Math.cos(SUN_CONE);
+
+/** Whether a mesh's bounding sphere reaches the cone from `eye` along `toSun` (unit), SUN_CONE wide. */
+export function coversSun(m: AbstractMesh, eye: Vector3, toSun: Vector3): boolean {
+  const b = m.getBoundingInfo().boundingSphere;
+  const c = b.centerWorld;
+  const r = b.radiusWorld;
+  const vx = c.x - eye.x;
+  const vy = c.y - eye.y;
+  const vz = c.z - eye.z;
+  const t = vx * toSun.x + vy * toSun.y + vz * toSun.z;
+  if (t < -r) return false;
+  const off = Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - t * t));
+  return off <= Math.max(t, 0) * SUN_CONE_TAN + r / SUN_CONE_COS;
+}
 /**
  * Margin (radians) past the view's corner within which the sun counts as in view: the disc's own size (about a degree)
  * and a fast turn between this frame's test and the camera the pass draws with.
@@ -201,7 +226,7 @@ export class SkyEffects {
     if (!sun) return;
     // A round sun (the default source is a square card).
     const disc = CreateSphere('sunDisc', { diameter: 1, segments: 12 }, this.scene);
-    disc.scaling.setAll(36);
+    disc.scaling.setAll(SUN_DIAMETER);
     disc.isPickable = false;
     const mat = new StandardMaterial('sunDiscMat', this.scene);
     mat.disableLighting = true;
@@ -218,41 +243,52 @@ export class SkyEffects {
     // shadow map's): the post-process's includedMeshes filter lost instanced meshes (trees, props) from
     // the main view.
     //
-    // Static geometry merged into shadow proxies (shadowProxy.ts: the level, paths, props that never move, one mesh per
-    // square) goes in through the proxies, not mesh by mesh: the same triangles, a few draws. The proxies are in the
-    // list whatever their size, and what they stand in for is left out.
-    //
-    // The shafts start at the sun's disc: the pass is black where nothing is drawn, so with the disc out of view it is
-    // all black and the post-process adds nothing (whatever was drawn into it). Then the pass draws the disc alone,
-    // not its occluders (hundreds of draws for a black square): the same picture.
+    // Only what covers the sun's disc matters. The pass is cleared to black and occluders draw black, so an occluder
+    // changes a pixel only where it hides the disc: everything else is black on black. Each frame the pass draws the
+    // disc and only the occluders whose bounds reach the narrow cone from the camera to the disc (SUN_CONE: the disc's
+    // own size and a margin), and with the disc out of view the disc alone. The same picture, without the hundreds of
+    // draws the whole list was (St. John's: about 700 a frame, as many as the main view).
     const pass = rays.getPass();
+    const scene = this.scene;
+    const camera = this.camera;
+    let occluders: AbstractMesh[] = [disc];
+    const near: AbstractMesh[] = [disc];
     const sunOnly: AbstractMesh[] = [disc];
-    let inView = true;
-    pass.getCustomRenderList = () => (inView ? null : sunOnly);
-    const collect = () => {
-      const occluders: AbstractMesh[] = [disc];
-      for (const m of this.scene.meshes) {
-        if (m === disc || !m.isEnabled() || m.renderingGroupId !== 0) continue;
-        const meta = m.metadata as { effect?: boolean; shadowProxy?: boolean; shadowProxied?: boolean } | null;
-        if (meta?.effect || meta?.shadowProxied) continue;
-        if (meta?.shadowProxy || m.getBoundingInfo().boundingSphere.radiusWorld >= OCCLUDER_RADIUS) occluders.push(m);
-      }
-      pass.renderList = occluders;
-    };
     const toSun = new Vector3();
+    let inView = true;
+    let nearFrame = -1;
+    pass.getCustomRenderList = () => {
+      if (!inView) return sunOnly;
+      const frame = scene.getFrameId();
+      if (frame === nearFrame) return near;
+      nearFrame = frame;
+      near.length = 1;
+      const p = camera.globalPosition;
+      for (const m of occluders) if (m !== disc && !m.isDisposed() && coversSun(m, p, toSun)) near.push(m);
+      return near;
+    };
+    const collect = () => {
+      const list: AbstractMesh[] = [disc];
+      for (const m of scene.meshes) {
+        if (m === disc || !m.isEnabled() || m.renderingGroupId !== 0 || (m.metadata as { effect?: boolean } | null)?.effect) continue;
+        if (m.getBoundingInfo().boundingSphere.radiusWorld >= OCCLUDER_RADIUS) list.push(m);
+      }
+      occluders = list;
+      pass.renderList = list;
+    };
     let next = 0;
     // The disc rides with the camera, far out along the way to the sun.
-    this.observer = this.scene.onBeforeRenderObservable.add(() => {
+    this.observer = scene.onBeforeRenderObservable.add(() => {
       sun.direction.normalizeToRef(toSun).scaleInPlace(-1);
-      disc.position.copyFrom(this.camera.globalPosition).addInPlace(toSun.scale(900));
-      // The level is built over the first seconds and doors, destructibles and shadow proxies change it: look again
-      // every couple of seconds (by the clock: 120 frames was a minute in a slow software render).
+      disc.position.copyFrom(camera.globalPosition).addInPlace(toSun.scale(SUN_DISTANCE));
+      // The level is built over the first seconds and doors and destructibles change it: look again every couple of
+      // seconds (by the clock: every 120 frames was a minute in a slow software render).
       const now = performance.now();
       if (now >= next) {
         next = now + OCCLUDER_REFRESH_MS;
         collect();
       }
-      inView = sunInView(this.camera, toSun);
+      inView = sunInView(camera, toSun);
     });
     this.rays = rays;
   }

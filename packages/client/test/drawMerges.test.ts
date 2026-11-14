@@ -9,7 +9,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { mergeRigidParts } from '../src/game/scenarioVisuals.ts';
 import { mergePathMeshes, PATH_MERGE_SQUARE } from '../src/pathMeshes.ts';
-import { sunInView } from '../src/game/skyEffects.ts';
+import { coversSun, sunInView } from '../src/game/skyEffects.ts';
 import { sectorSize } from '../src/environment/environmentVisuals.ts';
 
 const engines: NullEngine[] = [];
@@ -104,5 +104,21 @@ describe('draw merges', () => {
 
   it('batches far environment copies by wider squares', () => {
     expect([0, 1, 2, 3, 4].map((l) => sectorSize(64, l))).toEqual([64, 128, 256, 512, 512]);
+  });
+  it('lets only what reaches the cone toward the sun hide its disc', () => {
+    const s = scene();
+    const eye = new Vector3(0, 2, 0);
+    const toSun = new Vector3(0, 1, 1).normalize();
+    const at = (x: number, y: number, z: number, size: number) => {
+      const b = CreateBox('b', { size }, s);
+      b.position.set(x, y, z);
+      b.computeWorldMatrix(true);
+      return b;
+    };
+    // In the way (a tower 20 m along the sun's line), beside it, behind the camera, and around the camera.
+    expect(coversSun(at(0, 2 + 20 * toSun.y, 20 * toSun.z, 4), eye, toSun)).toBe(true);
+    expect(coversSun(at(30, 2 + 20 * toSun.y, 20 * toSun.z, 4), eye, toSun)).toBe(false);
+    expect(coversSun(at(0, 2, -30, 4), eye, toSun)).toBe(false);
+    expect(coversSun(at(0, 2, 0, 400), eye, toSun)).toBe(true);
   });
 });
