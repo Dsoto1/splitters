@@ -630,6 +630,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
       // Rooms to dress with a facade, and the ways up: stairs, ramp, platforms (parking decks, bare frames).
       'core.room', 'core.room_long', 'core.room_tall', 'core.stairs', 'core.stairs_open', 'core.stairwell', 'snow.metal_stair', 'core.ramp', 'core.platform', 'core.platform_rail',
       'core.balcony', 'core.terrace', 'core.bridge', 'core.yard', 'core.yard_wall',
+      // Made for the pack (plan step E): the fire escape and the scaffold bay, both data tiles (content/tiles/core.json).
+      'core.fire_escape', 'core.scaffold_bay',
     ],
     props: /* @__PURE__ */ props(
       // The street: lights, signals, signs.
