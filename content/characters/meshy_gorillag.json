@@ -10,7 +10,7 @@
   "bio": "Big chain, bigger arms. Peels bananas and enemies the same way.",
   "body": "male",
   "size": "large",
-  "notes": "Drive intake of 2026-11-13 (\"Gorilla G Style T Pose\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Core since 2026-11-14 (the owner, after looking at the twelve of 2026-11-13: promote all twelve). Name and bio are ours (the name suggested by the owner's session, 2026-11-14; the owner can rename it). Licence: Meshy Community, CC0 per the owner (CLAUDE.md, Content rules: Meshy models the owner shares are Meshy Community CC0 unless the owner says they made them).",
+  "notes": "Drive intake of 2026-11-13 (\"Gorilla G Style T Pose\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Core since 2026-11-14 (the owner, after looking at the twelve of 2026-11-13: promote all twelve). Name and bio are ours (the name suggested by the owner's session, 2026-11-14; the owner can rename it). Licence: Meshy Community, CC0 per the owner (CLAUDE.md, Content rules: Meshy models the owner shares are Meshy Community CC0 unless the owner says they made them). Grip (owner, 2026-11-14: fix the rifle support hand): its long arms left the support hand short of the handguard, at the magazine; the gun held 15 cm nearer (`hold.forward`), the support point 10 cm along the guard, the shooting palm onto the grip, and its fingers re-fitted from the mesh (`fingers: fit`: its own finger joints curled the hands away from the grip). Grip audit 9 -> 3 (rifle flat only).",
   "source": {
     "license": "CC0",
     "author": "Meshy Community (CC0 per the owner)",
@@ -34,6 +34,22 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "hold": {
+      "forward": -0.15
+    },
+    "grip": {
+      "supportLong": [
+        0,
+        0.04,
+        0.1
+      ],
+      "gripLong": [
+        -0.04,
+        0.04,
+        -0.02
+      ]
+    },
+    "fingers": "fit"
   }
 }

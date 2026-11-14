@@ -141,7 +141,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.botney', name: 'Botney Mullz', body: 'male', head: '', parts: ['meshy_botney'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_botney_fparms' }, group: 'creatures', nameTheme: 'robot' },
   { id: 'core.cyberlion', name: 'Cyber Lion', body: 'male', head: '', parts: ['meshy_cyberlion'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_cyberlion_fparms' }, group: 'animals', nameTheme: 'cat' },
   { id: 'core.lionsuit', name: 'Lion in a Suit', body: 'male', head: '', parts: ['meshy_lionsuit'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_lionsuit_fparms' }, group: 'animals', nameTheme: 'cat' },
-  { id: 'core.gorillag', name: 'Gorilla G', body: 'male', head: '', parts: ['meshy_gorillag'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_gorillag_fparms' }, group: 'animals', nameTheme: 'monkey' },
+  { id: 'core.gorillag', name: 'Gorilla G', body: 'male', head: '', parts: ['meshy_gorillag'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'meshy_gorillag_fparms', hold: { forward: -0.15 }, grip: { supportLong: [0, 0.04, 0.1], gripLong: [-0.04, 0.04, -0.02] } }, group: 'animals', nameTheme: 'monkey' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
