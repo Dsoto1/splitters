@@ -134,7 +134,7 @@ What flickered, and what the setting does to each:
 | Small blinking indicators (a mine's light, a thrown mine, a sticky grenade, the bomb, a laser trap's warning) | blink 1-12 times a second | a gentle pulse at most once a second; the laser warning shows its beams faint and steady |
 | The hurt vignette (HUD) | saturated red edge, snapping on with each hit | a duller red (not a saturated red by WCAG's test), reaching less far in, eased in over 0.15 s, held steady under fire, gone over 0.8 s (`hurtVignette.ts`) |
 | Diving into water or another liquid | the haze snaps on and off at the surface | eased over a third of a second |
-| Pickups' floor glows (`lootGlow.ts`, Binbun's Loot VFX) | streaks turning slowly, a slow bob, sparkles drifting up; eased in over a second | held still, no sparkles, 0.5 of its strength instead of 0.8, eased in over two seconds |
+| Pickups' floor glows (`lootGlow.ts`, Binbun's Loot VFX) | streaks turning slowly, a slow bob, sparkles drifting up; eased in over a second | held still, no sparkles, 0.5 of its strength instead of 0.8, eased in over two seconds; its dark outline as dark as with the setting off (it adds no light) |
 | Status auras on other characters (`statusFx.ts`, Binbun's Stylized Status FX: burning, poisoned, slowed by goo, chilled or frozen) and the plain shell | flames, bubbles and ice crystals drifting at the pack's speed, eased in over a quarter second; the plain shell pulses about twice a second | half speed, 0.65 of its strength instead of 0.8, eased in over about 0.8 s; the plain shell holds still |
 | A portal's swirl and a jump pad's lift (`fixtureFx.ts`, Binbun's Portal VFX and Magic Area VFX) | the swirl turns slowly and draws inward, the lift's streaks rise slowly; eased in over about a second | held still, dimmer (portal 0.7 of its strength, pad 0.6), eased in over about two seconds |
 
@@ -154,7 +154,10 @@ with the HUD's hurt tint drawn over it, at 160 × 90:
 - four grenade blasts 3-5 m in front of the camera in 0.8 s;
 - a machine gun firing at a wall 3.5 m off in the dark room;
 - six pickups' floor glows coming up 2-4 m in front of you at night, as High graphics draws them;
-- the alarm light in its dark room.
+- the alarm light in its dark room;
+- by day (its second scene): sprinting out of a lit tunnel and back, and four pickups' glows coming up on white tiles
+  (`lootlight`), where the rings must read too: WCAG contrast at least 1.3 on average over each ring with the setting
+  on (`lootRingContrast`: the pickups' models hidden, the frame with the glows against the frame without).
 
 The measure is WCAG 2.3.1 ("Three Flashes or Below Threshold"), the way photosensitivity analysers apply it:
 - relative luminance per pixel; a frame's change is the largest change at least **a quarter of the screen** made

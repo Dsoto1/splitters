@@ -157,9 +157,20 @@ new machine, never committed); `node tools/content/vfx-map.mjs` after editing th
   and no bob, and no sparkles), at 0.5 of its strength instead of 0.8, eased in over two seconds. The pack counts
   on Godot's glow pass; without one its flare (20 % opaque at most) and thin rings could not be seen, so they are
   lifted three times and the flare adds its light (`LOOT_LIFT`). It is light added to the scene: clear on dark and
-  mid floors, fainter on a sunlit pale one (the Range's). Cost: four draws a glow (three held still), so at most
-  8 / 20 / 32 draws on low / medium / high; not measured with `pnpm perf:budget`. The e2e flow `flashing` records
-  six of them coming up at night (moment `loot`).
+  mid floors, and on its own near invisible on pale ones (1.06-1.18 contrast on sand, snow and white tile:
+  docs/FX_CHECKS_2026-11-13.md). So each glow has a **thin dark outline** (`LOOT_OUTLINE`, owner's pick 2026-11-14): a
+  black band from just inside the pack's ring to 7 cm past it, soft at both edges, up to half dark
+  (`pickupVisuals.ts createLootOutline`), as dark as the glow is up as a share of its full level, so it comes and
+  goes with the glow and holds still; Reduce flashing leaves it as it is (it adds no light). Cost: four draws a glow
+  (three held still) and one for its outline, so at most 10 / 25 / 40 draws on low / medium / high. `pnpm
+  perf:budget`'s `fixtures` view (Pantry Raid) has pickups in view. The e2e flow `flashing` records six of them
+  coming up at night (moment `loot`) and four on white tiles by day (moment `lootlight`, which fails a ring under 1.3
+  contrast on average with the setting on). Low graphics draws them too (at most 2): only prop flames are off on Low.
+- **Pickup guns are drawn 1.4x** (`pickupVisuals.ts PICKUP_GUN_SCALE`, owner 2026-11-14; the MapMaker lane agreed),
+  so they read at a distance: never longer than 1.3 m (the weapon glow's ring is 1.375 m across), and short of the
+  nearest wall or prop at the height they turn at (`pickupRoom`, with 4 cm to spare), never smaller than in the hand.
+  Looks only: what you can reach to take is unchanged. Dropped guns lie at their own size. MapMaker draws them 1.4x
+  without the wall check.
 - **Portals and jump pads** (`game/fixtureFx.ts`, map.lasting `portal` and `pad`; asked for by
   `scenarioVisuals.ts`). A portal that is switched on wears the gate of Binbun's **Portal VFX**
   (`gate_portal_vfx_01`: sheets of cloud turning slowly and drawn back into the frame, with a glow licking round
@@ -167,14 +178,20 @@ new machine, never committed); `node tools/content/vfx-map.mjs` after editing th
   metre of width; the swirl and glow quads are stretched to the frame's height) and set 4 cm proud of the frame's
   face. It comes up over the painted swirl in about 0.8 s and the painted one fades as it does (`portalCover`); a
   portal with no place, or switched off, shows the painted swirl as before; the stone frame and the rim in the
-  pair's colour never change. A jump pad wears the blue lift area of Binbun's **Magic Area VFX**
+  pair's colour never change. A portal's **Swirl** (MapMaker's inspector: Pack effect / Painted; `PortalEntity.swirl`,
+  optional, no format bump) set to Painted never asks for the pack's gate: it keeps the painted spiral in the pair's
+  colour, which for a dark colour reads as a dark hole (Pantry Raid's mouse holes, owner 2026-11-14). A jump pad wears the blue lift area of Binbun's **Magic Area VFX**
   (`lift_area_vfx_02`: a column of pale blue streaks rising 2.3 m off the plate, a faint ring round it), at 0.75 of
   the pack's size so it stands on the 2.2 m plate; it is light added over the pad, so the plate, the glowing ring
   and the chevrons that show which way it throws you stay as they are and show through it. **Places:** both are
   `fixture`s, a tier of their own in `lastingFx.ts`: after the effects of the moment (fire, gas, a charge ball, a
   shield: tier 0) and before every `decor` one (pickup glows, prop flames), nearest first within a tier. So when
   places run out, pickup glows and prop flames go first, then the far pads and portals; pickup glows still take
-  at most half the places of what is left to them. Portals ask within 60 m, pads within 36 m (a map with many pads
+  at most half the places of what is left to them. **Out of view** (behind the camera, or off the side: the camera's
+  frustum, 4 m round the camera always counting as seen) an effect of the moment or a fixture comes after the
+  fixtures in view, and out-of-view decoration after everything; and an effect that was stopped and is fading out
+  (0.2-0.6 s) no longer holds a place (`GodotVfx.loopRoom` counts the live ones). Before both (2026-11-14), Low's four
+  places went to Pantry Raid's oven burners cycling out of sight, and the counter pads' lift faded in and out. Portals ask within 60 m, pads within 36 m (a map with many pads
   does not hold places for ones across the map). **Reduce flashing on:** both are held still (`steady`: the swirl
   does not turn, the streaks do not rise), dimmer (portal 0.7 of its strength, pad 0.6) and eased in over about two
   seconds; off, the motion is a slow turn and a slow rise, nothing blinks or pulses. The swirl is drawn unlit and in its own colours (the
