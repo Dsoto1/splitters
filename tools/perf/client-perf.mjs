@@ -113,7 +113,7 @@ async function measureStill(id, ctx, page, errors) {
   if (!ok) return void console.log(`${id}: match did not start ${errors.join('; ')}`);
   // Pictures of the views (PERF_SHOTS=<folder>) without the menus over them.
   if (process.env.PERF_SHOTS) await page.addStyleTag({ content: '#hud, #pause, #crosshair, #countdown, #loading-screen, #toast, .toast { display: none !important; }' });
-  await page.evaluate((fx) => {
+  await page.evaluate(([fx, bdOn]) => {
     const m = window.__match;
     const view = window.__cs.view;
     const me = m.slots[window.__cs.slot];
@@ -137,7 +137,52 @@ async function measureStill(id, ctx, page, errors) {
     const still = (window.__still = { pose: null, frames: [], draws: 0 });
     const counter = engine._drawCalls;
     const add = counter?.addCount?.bind(counter);
-    if (counter && add) counter.addCount = (n, f) => ((still.draws += n), add(n, f));
+    // PERF_BREAKDOWN=1: each draw put down to its pass (the main view, a shadow map, a reflection) and to the mesh
+    // drawing it (by name, digits stripped), so a view's draws can be traced to what makes them.
+    const bd = bdOn ? { pass: '', mesh: null, frame: new Map(), last: new Map() } : null;
+    still.bd = bd;
+    if (counter && add) counter.addCount = (n, f) => {
+      still.draws += n;
+      if (bd) {
+        const k = `${bd.pass || 'main'}|${bd.mesh ? bd.mesh.name.replace(/[0-9]+/g, '#').slice(0, 48) : '(no mesh: post, sprites, layers)'}`;
+        bd.frame.set(k, (bd.frame.get(k) ?? 0) + n);
+      }
+      return add(n, f);
+    };
+    if (bd) {
+      const own = (o, key) => {
+        for (let p = Object.getPrototypeOf(o); p; p = Object.getPrototypeOf(p)) if (Object.prototype.hasOwnProperty.call(p, key)) return p;
+        return null;
+      };
+      // A mesh's draws all go through _processRendering: the main view's (render) and each pass's own (shadow maps,
+      // the sun's rays) that skip render.
+      const meshProto = own(scene.meshes.find((m) => typeof m._processRendering === 'function' && !m.isAnInstance), '_processRendering');
+      const draw = meshProto._processRendering;
+      meshProto._processRendering = function (...a) {
+        const was = bd.mesh;
+        bd.mesh = a[0]?.getClassName ? a[0] : this;
+        try {
+          return draw.apply(this, a);
+        } finally {
+          bd.mesh = was;
+        }
+      };
+      const rtts = [];
+      for (const l of scene.lights) { const sm = l.getShadowGenerator?.()?.getShadowMap(); if (sm) rtts.push(sm); }
+      const rttProto = rtts.length ? own(rtts[0], 'render') : null;
+      if (rttProto) {
+        const render = rttProto.render;
+        rttProto.render = function (...a) {
+          const was = bd.pass;
+          bd.pass = this.name.replace(/[0-9]+/g, '#').slice(0, 32);
+          try {
+            return render.apply(this, a);
+          } finally {
+            bd.pass = was;
+          }
+        };
+      }
+    }
     const setCamera = view.setCamera.bind(view);
     view.setCamera = (eye, yaw, pitch, fov, roll) => (still.pose ? setCamera(still.pose.eye, still.pose.yaw, still.pose.pitch, still.pose.fov, 0) : setCamera(eye, yaw, pitch, fov, roll));
     // Effects animate (a fire's flame sprites, particle bursts), so their draws never stop changing: left out, unless
@@ -149,6 +194,10 @@ async function measureStill(id, ctx, page, errors) {
       clear();
       if (noFx) for (const mesh of scene.meshes) if (mesh.isEnabled(false) && /^(gv_|sc_flame)/.test(mesh.name)) mesh.setEnabled(false);
       still.draws = 0;
+      if (bd) {
+        if (bd.frame.size) bd.last = bd.frame;
+        bd.frame = new Map();
+      }
     });
     scene.onAfterRenderObservable.add(() => {
       let casters = 0;
@@ -160,7 +209,7 @@ async function measureStill(id, ctx, page, errors) {
       still.frames.push([still.draws, scene.getActiveMeshes().length, scene.meshes.length, scene.getActiveIndices() / 3, casters, scene.materials.length]);
       if (still.frames.length > 400) still.frames.splice(0, 200);
     });
-  }, process.env.PERF_STILL_FX === '1');
+  }, [process.env.PERF_STILL_FX === '1', process.env.PERF_BREAKDOWN === '1']);
   const sums = [0, 0, 0, 0, 0, 0];
   let n = 0;
   for (const v of stillViews(map)) {
@@ -226,6 +275,17 @@ async function measureStill(id, ctx, page, errors) {
       }
       return [...seen].filter(([, [a, b]]) => a !== b).map(([k, [a, b]]) => `${k} ${a}-${b}`).join(', ') || 'no mesh (draws only)';
     })}`);
+    if (process.env.PERF_BREAKDOWN === '1') console.log(await page.evaluate((top) => {
+      const last = window.__still.bd?.last ?? new Map();
+      const passes = new Map();
+      for (const [k, n] of last) { const p = k.split('|')[0]; passes.set(p, (passes.get(p) ?? 0) + n); }
+      const lines = [`  passes: ${[...passes].sort((a, b) => b[1] - a[1]).map(([p, n]) => `${p} ${n}`).join(', ')}`];
+      for (const [p] of [...passes].sort((a, b) => b[1] - a[1])) {
+        const rows = [...last].filter(([k]) => k.split('|')[0] === p).sort((a, b) => b[1] - a[1]).slice(0, top);
+        lines.push(`  ${p}: ${rows.map(([k, n]) => `${k.split('|')[1]} ${n}`).join(' | ')}`);
+      }
+      return lines.join('\n');
+    }, Number(process.env.PERF_BREAKDOWN_TOP ?? 40)));
     const row = `| ${id} | ${GRAPHICS} | ${v.name} | ${last[0]} | ${last[1]} / ${last[2]} | ${(last[3] / 1e6).toFixed(3)} M | ${last[4]} | ${last[5]} | ${range} |`;
     console.log(row, process.env.PERF_DEBUG ? JSON.stringify(pose) : '');
     rows.push(row);

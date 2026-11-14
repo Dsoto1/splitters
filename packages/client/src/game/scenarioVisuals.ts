@@ -186,6 +186,7 @@ export class ScenarioVisuals {
       if (!isScenarioEntity(e)) return;
       const v = this.create(e, `sc_${e.id}`);
       placeScenarioNode(v.root, e);
+      if (!this.opts.editor && e.kind === 'door') mergeRigidParts(v.root);
       for (const m of v.root.getChildMeshes()) m.isPickable = false;
       if (this.fixedLights.has(e.id)) for (const m of v.root.getChildMeshes()) if (m instanceof Mesh && !m.skeleton) fixtures.push(m);
       // Decorations nothing ever changes (a ladder's rails and rungs, a jump pad, a bomb site's ring): merged below.
@@ -297,6 +298,8 @@ export class ScenarioVisuals {
    * In the game their plain meshes are merged in world space per material and STILL_SECTOR square (each square culled
    * on its own); billboards, skinned and instanced parts stay as they are. Nothing collides with these meshes.
    */
+  // mergeRigidParts (below the class) does the same for a door's parts that move together.
+
   private mergeStill(meshes: Mesh[]): void {
     const groups = new Map<string, Mesh[]>();
     for (const m of meshes) {
@@ -2142,4 +2145,45 @@ function dropBoxTop(box: Mesh): void {
     if (!top) keep.push(a, b, c);
   }
   box.setIndices(keep);
+}
+
+/**
+ * A door is a dozen or more boxes (planks, straps, a frame, posts and a lintel), each its own draw in the view and in
+ * every shadow cascade: St. John's oak doors were about 50 draws in view and as many again in the shadows. Parts that
+ * move together (the same parent node: a leaf, a hinge, the frame) and share a material are merged into one mesh under
+ * that node, in its space: the same triangles, moving the same way. The game only; MapMaker keeps the parts.
+ */
+export function mergeRigidParts(root: TransformNode): void {
+  const groups = new Map<string, Mesh[]>();
+  for (const m of root.getChildMeshes(false)) {
+    if (!(m instanceof Mesh) || !m.parent || !m.material || m.skeleton || m.morphTargetManager || m.hasInstances || m.hasThinInstances) continue;
+    if (m.billboardMode !== Mesh.BILLBOARDMODE_NONE || !m.getTotalVertices()) continue;
+    const key = `${m.parent.uniqueId}|${m.material.uniqueId}`;
+    let list = groups.get(key);
+    if (!list) groups.set(key, (list = []));
+    list.push(m);
+  }
+  for (const list of groups.values()) {
+    if (list.length < 2) continue;
+    const first = list[0]!;
+    const parent = first.parent as TransformNode;
+    const mat = first.material;
+    const name = first.name;
+    const toParent = parent.computeWorldMatrix(true).clone().invert();
+    for (const m of list) m.computeWorldMatrix(true);
+    let one: Mesh | null = null;
+    try {
+      one = Mesh.MergeMeshes(list, false, true);
+    } catch {
+      // Parts that can't be merged (different vertex layouts) stay as they are.
+    }
+    if (!one) continue;
+    for (const m of list) m.dispose();
+    // Merged in world space: back into the parent's space, under the parent, so it moves with it.
+    one.bakeTransformIntoVertices(toParent);
+    one.parent = parent;
+    one.name = `${name}_parts`;
+    one.material = mat;
+    one.isPickable = false;
+  }
 }

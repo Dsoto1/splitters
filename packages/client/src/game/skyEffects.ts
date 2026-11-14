@@ -84,6 +84,29 @@ const SUNNY = new Set(['clear', 'cloudy', 'sunrise', 'sunset', 'dusk', 'misty', 
  */
 /** Things at least this big (bounding radius, m) block the sun's shafts. */
 const OCCLUDER_RADIUS = 2;
+/** How often the shafts' occluders are gathered again (ms). */
+const OCCLUDER_REFRESH_MS = 2000;
+/**
+ * Margin (radians) past the view's corner within which the sun counts as in view: the disc's own size (about a degree)
+ * and a fast turn between this frame's test and the camera the pass draws with.
+ */
+const SUN_VIEW_MARGIN = 0.35;
+
+/**
+ * Whether the sun (the direction `toSun`, unit) may be in the camera's view: within the view's corner half-angle
+ * (vertical field of view and aspect) plus SUN_VIEW_MARGIN of where the camera looks. Generous on purpose: a false
+ * "in view" only costs the pass's draws; a false "out of view" would lose shafts.
+ */
+export function sunInView(camera: Camera, toSun: Vector3): boolean {
+  const engine = camera.getEngine();
+  const aspect = engine.getAspectRatio(camera);
+  const vertical = camera.fovMode === 0 ? camera.fov : 2 * Math.atan(Math.tan(camera.fov / 2) / Math.max(aspect, 1e-3));
+  const t = Math.tan(vertical / 2);
+  const corner = Math.atan(t * Math.sqrt(1 + aspect * aspect));
+  const forward = camera.getDirection(Vector3.Forward());
+  const cos = Vector3.Dot(forward, toSun) / Math.max(forward.length(), 1e-6);
+  return Math.acos(Math.max(-1, Math.min(1, cos))) <= corner + SUN_VIEW_MARGIN;
+}
 
 export class SkyEffects {
   private fog: PostProcess | null = null;
@@ -194,23 +217,42 @@ export class SkyEffects {
     // fight; people, props and effects barely dent a shaft. They go in as the pass's own render list (as a
     // shadow map's): the post-process's includedMeshes filter lost instanced meshes (trees, props) from
     // the main view.
-    let refresh = 0;
-    const occluders = () => {
-      const list: AbstractMesh[] = [disc];
+    //
+    // Static geometry merged into shadow proxies (shadowProxy.ts: the level, paths, props that never move, one mesh per
+    // square) goes in through the proxies, not mesh by mesh: the same triangles, a few draws. The proxies are in the
+    // list whatever their size, and what they stand in for is left out.
+    //
+    // The shafts start at the sun's disc: the pass is black where nothing is drawn, so with the disc out of view it is
+    // all black and the post-process adds nothing (whatever was drawn into it). Then the pass draws the disc alone,
+    // not its occluders (hundreds of draws for a black square): the same picture.
+    const pass = rays.getPass();
+    const sunOnly: AbstractMesh[] = [disc];
+    let inView = true;
+    pass.getCustomRenderList = () => (inView ? null : sunOnly);
+    const collect = () => {
+      const occluders: AbstractMesh[] = [disc];
       for (const m of this.scene.meshes) {
-        if (m === disc || !m.isEnabled() || m.renderingGroupId !== 0 || (m.metadata as { effect?: boolean } | null)?.effect) continue;
-        if (m.getBoundingInfo().boundingSphere.radiusWorld >= OCCLUDER_RADIUS) list.push(m);
+        if (m === disc || !m.isEnabled() || m.renderingGroupId !== 0) continue;
+        const meta = m.metadata as { effect?: boolean; shadowProxy?: boolean; shadowProxied?: boolean } | null;
+        if (meta?.effect || meta?.shadowProxied) continue;
+        if (meta?.shadowProxy || m.getBoundingInfo().boundingSphere.radiusWorld >= OCCLUDER_RADIUS) occluders.push(m);
       }
-      rays.getPass().renderList = list;
+      pass.renderList = occluders;
     };
+    const toSun = new Vector3();
+    let next = 0;
     // The disc rides with the camera, far out along the way to the sun.
     this.observer = this.scene.onBeforeRenderObservable.add(() => {
-      disc.position.copyFrom(this.camera.globalPosition).subtractInPlace(sun.direction.normalizeToNew().scale(900));
-      // The level is built over the first frames and doors and destructibles change it: look again now and then.
-      if (--refresh <= 0) {
-        refresh = 120;
-        occluders();
+      sun.direction.normalizeToRef(toSun).scaleInPlace(-1);
+      disc.position.copyFrom(this.camera.globalPosition).addInPlace(toSun.scale(900));
+      // The level is built over the first seconds and doors, destructibles and shadow proxies change it: look again
+      // every couple of seconds (by the clock: 120 frames was a minute in a slow software render).
+      const now = performance.now();
+      if (now >= next) {
+        next = now + OCCLUDER_REFRESH_MS;
+        collect();
       }
+      inView = sunInView(this.camera, toSun);
     });
     this.rays = rays;
   }
