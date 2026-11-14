@@ -2171,7 +2171,7 @@ export class GodotVfx {
    * the pack isn't in or as many lasting effects play as the quality allows (callers keep their plain look).
    */
   start(pack: string, effect: string, at: Vector3, opts: VfxOptions = {}): VfxHandle | null {
-    if (this.loopCount >= this.caps.loops) return null;
+    if (this.liveLoops >= this.caps.loops) return null;
     const p = this.begin(pack, effect, at, opts, true);
     if (!p) return null;
     const self = this;
@@ -2191,9 +2191,20 @@ export class GodotVfx {
     };
   }
 
-  /** How many more lasting effects may start now (by graphics quality). */
+  /**
+   * How many more lasting effects may start now (by graphics quality). One that was stopped and is fading out no
+   * longer counts: it is on its way out (0.2-0.6 s), and on Low a flame trap cycling out of sight held one of the four
+   * places through every fade, so the pads and portals in view lost theirs and faded in and out.
+   */
   get loopRoom(): number {
-    return Math.max(0, this.caps.loops - this.loopCount);
+    return Math.max(0, this.caps.loops - this.liveLoops);
+  }
+
+  /** Lasting effects playing now and not stopped (the ones fading out after a stop are left out). */
+  get liveLoops(): number {
+    let n = 0;
+    for (const p of this.playing) if (p.loop && p.stopAt === null) n++;
+    return n;
   }
 
   /** Lasting effects playing now. */

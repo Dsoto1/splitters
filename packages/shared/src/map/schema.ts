@@ -796,6 +796,12 @@ export const PortalEntity = EntityBase.extend({
     .string()
     .regex(/^#[0-9a-f]{6}$/)
     .optional(),
+  /**
+   * How its swirl is drawn: `pack` (absent: the pack's gate effect in the pair's colour, where it has a place) or
+   * `painted` (always the game's own painted spiral, in the pair's colour: a dark hole for a dark colour, such as
+   * Pantry Raid's mouse holes). Looks only; optional, so no format bump (an older client drops it and draws `pack`).
+   */
+  swirl: z.enum(['pack', 'painted']).optional(),
 });
 
 /**

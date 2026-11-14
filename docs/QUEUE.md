@@ -29,12 +29,12 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
-- S · A · Effects-check fixes, the owner's picks (2026-11-14, option a everywhere): Pantry Raid's mouse holes walkable and painted, loot rings outlined, Low's lasting places, the checks; pickup guns drawn bigger · `wip/fx-fixes` (findings: `docs/FX_CHECKS_2026-11-13.md`)
 
 ## Ready to land
 - M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Waiting on lane A's lead's review** (owner: "this account reviews"); `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. Owner questions on the dock width, the rail, renaming and Dress/Settle all are with the owner.
 
 ## Bugs
+- XS · A · Match start: one 185 ms frame about 5 s in, all 34 nearby characters animated in the same frame (charAnim 157 ms); spread first poses over frames (`docs/PERF_STJOHNS_2026-11-14.md`).
 - S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
 - XS · B · MapMaker: the top bar is cut off at 1440 px (map name, Snap, bot skill truncated) (UI audit; UI Phase 1 fixes it).
 - XS · A · Low graphics: a patch of painted ground cells beside a path end on St. John's (ground paint, not the path fix).
@@ -42,7 +42,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Unconfirmed: a large flat blue shape seen twice in software pictures (tunnels, The Spillway's long stair).
 
 ## Easy wins
-- S · A+B · Pickup guns drawn 1.3–1.5x so they read at a distance (`pickupVisuals.ts`, beside the loot glows). Lane B agrees (2026-11-13): the glow's ring is sized to the pickup's footprint in `game/lootGlow.ts`, so check a bigger gun still sits inside it.
 - S · A · Mobile audit: Options in one column on phones (proposal 7).
 - S · A · Mobile audit: Match Setup on phones, sticky header and bigger steppers (proposal 11).
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
@@ -62,9 +61,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Material surface types: 0 of 150 materials set `surface`, so footsteps and impacts can't tell metal from wood (owner: end of queue).
 
 ## Waiting on the owner
-- St. John's performance in a match: the 2026-11-13 trace turned out to be MapMaker, so whether the character work helped since 2026-11-10 is still unmeasured. Needs a recording of a match on St. John's (Settings → Record performance, or a Chrome trace while playing).
 - Open questions in `docs/MAPMAKER_EDITING_REPORT_2026-11-13.md`.
-- The effects-check proposals, once `wip/fx-checks` reports.
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
@@ -75,6 +72,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-14 · A · The owner's St. John's match recording read: about 34 fps (25 on 11-10), characters 5.5 ms (13.6), hitches 28 in 164 s (546 in 204 s); rendering is now about 21 of 29 ms and the draw count (1,519) hasn't moved (`docs/PERF_STJOHNS_2026-11-14.md`).
+- 2026-11-14 · A · Effects-check fixes: Pantry Raid's mouse holes walkable and painted (portal Swirl option), loot rings outlined, Low's lasting places by view, the lootlight and fixtures checks, pickup guns 1.4x (ec003538).
 - 2026-11-14 · A · Easy wins batch 1: the Heavy MG Turret at 2.1x (a hip carry: the ground shows under the crosshair), vehicle palette pictures with their tires, Steampunk Warrior's hands, The Spillway's long stair cheeks (bots' stuck recoveries about 80 to 50 a match); the buggy tires were already inside their boxes (fitted 2026-11-11, measured as drawn). Flavius Rule's corners moved to Features (not an easy win).
 - 2026-11-14 · B · Twelve new characters from the owner's Drive (Meshy Community CC0, Experimental until the owner looks them over); the Vortex Grenade is now the Gravity Grenade.
 - 2026-11-14 · A · Ammo Box: solid resupply crates with cook-off, the Ammo Box Kit throwable, tanks refill beside a crate.
