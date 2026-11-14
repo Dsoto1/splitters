@@ -1789,7 +1789,8 @@ weapons (Rocket Launcher, Guided Rocket, Swarm Launcher, Blast Rockets, Mounted 
 hit on a tank's side is 400 of its 1200 (3 kill it, 4 at an angle; 6 before), its armour (blasts 1.25) unchanged. A
 heavy launcher is the tank's counter (§32: power weapons balanced by placement, ammunition and their counters): bots
 without one fetch one when a tank is about, draw one they carry and aim it at the hull. The cannon refills only from
-the general Ammo Box (seat `ammo.pickups`), and the driver keeps firing it while its seat is empty (owner kept it).
+the general Ammo Box (seat `ammo.pickups`; since 2026-11-13 a solid crate, so the tank refills pulled up beside it, a
+use of its ten: sim/resupply.ts), and the driver keeps firing it while its seat is empty (owner kept it).
 
 ---
 
