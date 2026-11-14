@@ -21,8 +21,8 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
 };
 
 /**
- * How a projectile looks on the client (index sent in snapshots: new ones go last). `vortexNade` is the Vortex
- * Grenade's own look (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade; `flareShot` the Airstrike
+ * How a projectile looks on the client (index sent in snapshots: new ones go last). `vortexNade` is the Gravity
+ * Grenade's own look (id `vortex`) (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade; `flareShot` the Airstrike
  * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`).
  */
 export const PROJECTILE_VISUALS = [

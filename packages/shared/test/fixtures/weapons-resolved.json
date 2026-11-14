@@ -4881,7 +4881,7 @@
    "weaponId": "core.vortex",
    "def": {
     "kind": "vortex",
-    "displayName": "Vortex Grenade",
+    "displayName": "Gravity Grenade",
     "max": 2,
     "throwIntervalTicks": 60,
     "projectile": {

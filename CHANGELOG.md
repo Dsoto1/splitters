@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **The Vortex Grenade is now the Gravity Grenade.** Only the name changes: the grenade, its pickup (Gravity Grenades) and the maps that place it are as before.
 - **MapMaker: Fit ground, the owner's answers.** A lone platform (a slab with nothing built on it) now stands on the ground: Fit brings the ground up to its underside, while a foundation with walls or pieces on it keeps the ground flush with its top. Props standing on the ground a Fit moves are set back on it in the same step, so one undo takes back both.
 - **A new parachute.** The canopy is a round dome of sixteen fabric panels with a scalloped edge and a vent, on lines that run to four risers behind your neck (it was a flat red disc on lines from your feet). Eight colour schemes, one per player for the whole match: Sunset, Harbour, Field, Hazard, Lagoon, Regal, Plain and Kite. It sways slowly, more gently with Reduce flashing on, and costs half the triangles of the old one. The glider is unchanged.
 - **Urban set pieces** for Style Pack 14, built in MapMaker: a porch, a bus shelter, a parking deck bay and its ramp (vehicles drive up it), a bare concrete frame of one and two storeys, a bandstand, and a shop unit with the shopfront, awning and painted door. They are under the Urban tab of the set pieces. No map uses them yet.

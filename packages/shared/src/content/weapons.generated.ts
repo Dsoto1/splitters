@@ -1994,7 +1994,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
   },
   vortex: {
     kind: 'vortex',
-    displayName: 'Vortex Grenade',
+    displayName: 'Gravity Grenade',
     max: 2,
     throwIntervalTicks: 60,
     projectile: {

@@ -102,7 +102,7 @@
     {
       "kind": "vortex",
       "code": 5,
-      "displayName": "Vortex Grenade",
+      "displayName": "Gravity Grenade",
       "max": 2,
       "throwIntervalTicks": 60,
       "projectile": {

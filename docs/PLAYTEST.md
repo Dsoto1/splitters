@@ -69,7 +69,7 @@ distinct, reloads (or overheats), and that the recoil feels right.
 - [ ] Pistols: hands wrap round the grip (no fingers through the slide), in first person and on other players.
 - [ ] Shotguns: `core.sawed_off`, `core.auto_shotgun`. Pistols: `core.hand_cannon` (big kick), `core.gilded_pistol`, `core.machine_pistol`.
 - [ ] Status effects show as a tint on screen: burning, poisoned, slowed, frozen.
-- [ ] Grenades (G): sticky, incendiary, toxic and vortex grenades from pickups.
+- [ ] Grenades (G): sticky, incendiary, toxic and gravity grenades from pickups.
 
 ## 3. Maps
 

@@ -707,7 +707,7 @@
   {
    "item": {
     "id": "core.vortex_grenades",
-    "displayName": "Vortex Grenades",
+    "displayName": "Gravity Grenades",
     "effect": {
      "kind": "throwable",
      "throwable": "vortex",

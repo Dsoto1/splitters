@@ -63,7 +63,7 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   { id: 'core.sticky_grenades', displayName: 'Sticky Grenades', effect: { kind: 'throwable', throwable: 'sticky', count: 2 }, respawnSeconds: 25, botValue: 0.45 },
   { id: 'core.incendiaries', displayName: 'Incendiaries', effect: { kind: 'throwable', throwable: 'incendiary', count: 2 }, respawnSeconds: 25, botValue: 0.45 },
   { id: 'core.gas_grenades', displayName: 'Gas Grenades', effect: { kind: 'throwable', throwable: 'toxic', count: 2 }, respawnSeconds: 25, botValue: 0.4 },
-  { id: 'core.vortex_grenades', displayName: 'Vortex Grenades', effect: { kind: 'throwable', throwable: 'vortex', count: 1 }, respawnSeconds: 35, botValue: 0.5 },
+  { id: 'core.vortex_grenades', displayName: 'Gravity Grenades', effect: { kind: 'throwable', throwable: 'vortex', count: 1 }, respawnSeconds: 35, botValue: 0.5 },
   { id: 'core.weapon_medkit', displayName: 'Medkit', effect: { kind: 'weapon', weapon: 'core.medkit' }, respawnSeconds: 30, botValue: 0.5 },
   { id: 'core.weapon_spear', displayName: 'Spear', effect: { kind: 'weapon', weapon: 'core.spear' }, respawnSeconds: 20, botValue: 0.5 },
   { id: 'core.weapon_grapple', displayName: 'Grapple Hook', effect: { kind: 'weapon', weapon: 'core.grapple' }, respawnSeconds: 30, botValue: 0.3 },

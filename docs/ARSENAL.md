@@ -166,7 +166,7 @@ Grenades (the owner's picks, 2026-11-06), one model each in the hand, in flight 
 |---|---|---|
 | Globe Grenade (`guns/globe_grenade.glb`) | Frag; the 3DModelsCC0 frag (`guns/frag_m67.glb`) is its look in the Military weapon set | Styloo frag (the fallback) |
 | Countdown Sphere (`guns/countdown_sphere.glb`; the blinking light kept on top) | Sticky | shapes in code |
-| "just a grenade" (`guns/vortex_grenade.glb`, its own projectile look `vortexNade`: the Singularity Cannon keeps `vortex`) | Vortex | shapes in code |
+| "just a grenade" (`guns/vortex_grenade.glb`, its own projectile look `vortexNade`: the Singularity Cannon keeps `vortex`) | Gravity Grenade (id `vortex`) | shapes in code |
 | Emergency Flare (`guns/dynamite.glb`; Meshy Community CC0, Drive file `Meshy_AI_Emergency_Flare_1110164645_texture.glb`, 2026-11-10; red stick with a fuse) | Dynamite (hand, flight and pickup; mechanics unchanged) | shapes in code |
 | Gold and silver toned orb (`guns/holy_bomb.glb`; Meshy Community CC0, Drive file `Meshy_AI__Gold_Silver_Toned_Hi_1110164632_texture.glb`, 2026-11-10; an ornate gold grenade with a cross gem) | Holy Bomb (hand, flight and pickup; mechanics unchanged) | shapes in code |
 | mur de sacs 12 (`guns/sandbags.glb` small, for hand, flight and pickup; `guns/sandbag_wall.glb` the deployed 1.9 x 0.64 x 1 m wall; Meshy Community CC0, Drive file `Meshy_AI_mur_de_sacs_12_1110164725_texture.glb`, 2026-11-10) | Sandbags (`view.cover` is the wall's model, `CoverState`) | stacked capsules in code |
@@ -395,7 +395,7 @@ server's `set` rule (`MatchRules.weaponSet`).
 |---|---|---|---|---|
 | **Standard** | the mode's own (knife, pistol; co-op, Zombies, Bomb and Hostage add a rifle) | frag | as placed on the map | as placed |
 | **Military** | knife, pistol, assault rifle; sniper-role bots a marksman rifle instead | frag | rifle, burst rifle, SMG, machine pistol, spin gun, shotgun, auto shotgun, sawed-off, sniper, marksman, grenade launcher, rockets, pistol, revolver, hand cannon | frag, mine, smoke |
-| **Sci-fi** | knife, pulse pistol, plasma rifle; sniper-role bots the railgun instead | sticky | plasma, laser rifle, railgun, pulse pistol, arc caster, disc launcher, swarm, guided | sticky, vortex, smoke |
+| **Sci-fi** | knife, pulse pistol, plasma rifle; sniper-role bots the railgun instead | sticky | plasma, laser rifle, railgun, pulse pistol, arc caster, disc launcher, swarm, guided | sticky, gravity, smoke |
 | **Medieval** | knife, spear | incendiary | spear, battle axe, knife | incendiary, holy bomb |
 | **Chaos** | knife, pistol, a random oddball each life | sheep | swarm, singularity, freeze ray, goo gun, bubble blaster, oil slicker, flare gun, nailgun, flak, blast rockets, gilded pistol | sheep, holy bomb, cluster bomb |
 | **Mixed bag** | knife, pistol, a random main gun each life | frag | every weapon a pickup can hold | every grenade |
@@ -450,7 +450,7 @@ are unchanged; each has a pickup like every weapon):
 | 1 | Medi-Beam | Medkit | Heals the teammate in your sights 6 HP five times a second, 9 m (Medic) |
 
 **Grenades (G):** frag, proximity mine, sticky (rides on whoever it hits),
-incendiary (a pool of fire), gas (a toxic cloud), vortex (a small
+incendiary (a pool of fire), gas (a toxic cloud), the Gravity Grenade (id `vortex`: a small
 singularity) and dynamite (Style Pack 02 Frontier Dust: a 3 s fuse, a 6 m
 blast that throws people about; pickup `core.dynamite`). And the Smoke Grenade (a cloud that hides whoever is
 behind it, 18 s; pickup `core.smoke_grenades`): see "Weapons intake of 2026-11-06".

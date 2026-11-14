@@ -79,7 +79,7 @@ MapMaker's pickup palette lists every item, so **anything below can be placed in
 | Sandbag | 2 pickups |
 | Sheep | 1 pickup (primeval_park) |
 | Airstrike | 1 pickup (iron_compound); 9-kill streak |
-| **Sticky, Vortex, Holy, Cluster** | **MapMaker only** |
+| **Sticky, Gravity, Holy, Cluster** | **MapMaker only** |
 
 ## Pickups, power-ups and abilities (`content/pickups.json`, `sim/items.ts`)
 

@@ -48,7 +48,7 @@ step 2" and "Intake of 2026-11-06".
 **Grenades: the owner's picks** (2026-11-06; picture `nadeview/grenades-sheet.jpg` in the session scratchpad):
 - Countdown Sphere → sticky;
 - Globe → frag (the 3DModelsCC0 frag as the realistic alternative);
-- "just a grenade" (blue swirl) → vortex;
+- "just a grenade" (blue swirl) → vortex (the Gravity Grenade since 2026-11-14);
 - Sunburst → cluster bomb;
 - Toxic Splash → gas;
 - **the 3DModelsCC0 smoke grenade → a new Smoke grenade**, with the sci-fi canister as its Sci-fi set look. The smoke
@@ -89,7 +89,7 @@ Grenade. Still wanted: the holy bomb, airstrike flare, dynamite, sheep and sandb
 - holy bomb (a gold orb with a cross);
 - cluster bomb;
 - airstrike flare (a smoke flare);
-- vortex grenade (sci-fi).
+- vortex grenade (sci-fi; now named the Gravity Grenade).
 
 **Budget:** each about 3,000 triangles or fewer, one material, real size (a frag is about 10 cm).
 The same model is used in the hand, in flight, and as the pickup on the ground.
