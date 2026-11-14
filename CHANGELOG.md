@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Twelve characters join the roster** (Meshy Community, CC0; they were under Experimental): Neon Guardian, Star Voyager, Neon Shadow Ninja, The Mechanic, The Prospector, Warrior of the Skies, Astronaut Explorer, The Racer, Botney Mullz, Cyber Lion, Lion in a Suit and Gorilla G. They now sit in their own Character Select sections, and bots, random picks and Roulette can wear them. Gorilla G holds a rifle with both hands on it.
 - **The Vortex Grenade is now the Gravity Grenade.** Only the name changes: the grenade, its pickup (Gravity Grenades) and the maps that place it are as before.
 - **More for Style Pack 14.** Two new tiles: a **fire escape** (a steel switchback stair on a building's face, stackable by storey; its landing meets the west part of the wall, so use an Arch there) and a **scaffold bay** (two plank decks on tube frames with a stair). A **bus stop sign** in four looks, now on the bus shelter. The **bandstand** is rebuilt as one: an octagonal plank stage with steps, posts, picket rails and a pitched roof. The set pieces' tab reads "Town pieces".
 - **For map makers and agents:** `PERF_STILL=1` makes `tools/perf/client-perf.mjs` measure from fixed cameras with no bots, so two runs on an unchanged map agree (`docs/PERF_TOOLS.md`).
