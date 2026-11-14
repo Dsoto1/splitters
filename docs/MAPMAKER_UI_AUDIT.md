@@ -525,4 +525,25 @@ interface checks):
 Taken 2026-11-14 from a local build of main at 45ff59c4 (vite preview, Chromium with SwiftShader, 1440 × 900), in
 the session's scratchpad (`mm-audit/`), not committed:
 
-SCREENSHOTS_PLACEHOLDER
+Each is Flatpack Depot (240 tiles, 1,045 entities, imported through Import).
+1. `1-build-nothing-selected.png`: the Build tab with nothing selected.
+   - The top bar is already squeezed at 1440 px: the name reads "Flatpack De", "Snap 50 c" and "Norm" are cut off,
+     and the mode tabs are at their shortest.
+   - The tool bar has 11 buttons and the tool hint runs past its row.
+   - The level strip lists Level 1–4 with counts.
+   - The status bar holds the counts, the budget pill ("Near: Models 79 / 80") and the permanent keys line, cut off at
+     the right.
+   - The side panel shows the Outliner (Tiles 240, Ground 195) above an Inspector that is Map properties: picture and
+     plan, Set thumbnail, Card shot, Notes, Name, Theme.
+2. `2-tile-selected.png`: a Room selected (yellow outline, gizmo, rotate ring).
+   - The side panel has scrolled as a whole, so the Outliner is off the top.
+   - The inspector shows Replace all with a set piece, Type (its select overflows the panel), X, Y, Level, Rotation,
+     the quick facings, Walls (one select per side, plus the glass select for the window), and Room options (Layout,
+     Floor, Ceiling, Corners, Facade, with a note), then Dress room.
+3. `3-map-properties.png`: the Inspector scrolled to Map properties.
+   - Picture and plan, Card shot, Notes, Name, Theme.
+   - Size "15 × 13 cells · 2 levels" counts tiles only: the level strip shows content up to Level 4.
+   - Min and Max players, Mode with its long help text, Also offered, Teams.
+4. `4-plan-view.png`: the plan view (K) of the ground level: orthographic, tile grid, team-coloured spawn arrows,
+   pickups and objective markers, the plan bar (Plan · Ground, Export PNG, Back to 3D (K)). The palette, tool bar,
+   level strip and side panel stay over it, as in 3D.
