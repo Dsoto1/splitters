@@ -68,7 +68,7 @@ import {
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
 import { modeSection } from './modeInspector.ts';
-import { $, button, h2, numberInput, row, small, text } from './editorDom.ts';
+import { $, button, fillWhenOpened, h2, numberInput, row, small, text, type ChoiceGroups } from './editorDom.ts';
 import { dressable, dressTag } from './editorParts.ts';
 import { groupSection, type GroupHost } from './groupPanel.ts';
 import { rebuildKeepingEdit } from './inspectorKeep.ts';
@@ -325,27 +325,28 @@ export class Inspector {
     const target = document.createElement('select');
     target.id = 'ed-replace-with';
     const suggested = REPLACEMENTS[model];
-    const species = document.createElement('optgroup');
-    species.label = 'Our species';
+    // Every prop and every look of it, by group, in the list's order: [label, value] pairs.
+    const groups: ChoiceGroups = [];
+    const species: [string, string][] = [];
     for (const s of ENV_SPECIES)
       for (const v of s.variants) {
         const value = v.index ? `${s.id}#${v.index}` : s.id;
-        if (value !== model) species.append(new Option(`${s.displayName} (${v.name})`, value, false, value === suggested));
+        if (value !== model) species.push([`${s.displayName} (${v.name})`, value]);
       }
-    target.append(species);
+    groups.push(['Our species', species]);
     for (const category of PROP_CATEGORIES) {
-      const group = document.createElement('optgroup');
-      group.label = category;
+      const group: [string, string][] = [];
       for (const def of CORE_PROPS.filter((d) => d.category === category && d.id !== model && !RETIRED_PROPS.has(d.id))) {
-        group.append(new Option(def.displayName, def.id, false, def.id === suggested));
+        group.push([def.displayName, def.id]);
         // A kit family's other looks (content/kitProps.ts), each its own choice: a retired piece's replacement can
         // be one of them (the striped barrier, the blue container).
         for (const v of getKitFamily(def.id)?.variants ?? []) {
-          if (v.index) group.append(new Option(`${def.displayName} (${v.name.replace(/_/g, ' ')})`, `${def.id}#${v.index}`, false, `${def.id}#${v.index}` === suggested));
+          if (v.index) group.push([`${def.displayName} (${v.name.replace(/_/g, ' ')})`, `${def.id}#${v.index}`]);
         }
       }
-      if (group.children.length) target.append(group);
+      if (group.length) groups.push([category, group]);
     }
+    fillWhenOpened(target, groups, suggested);
     el.append(row('With', target));
     const size = document.createElement('select');
     size.id = 'ed-replace-size';

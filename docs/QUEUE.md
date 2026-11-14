@@ -7,8 +7,9 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## How to use it
 
 **Lanes**
-- **A** is this account's lead session and its helpers: Opus 5.5 at medium effort, never Fable (owner, 2026-11-13).
-- **B** is the other account's MapMaker lane, the main session for the week.
+- **A** is the lead session of the owner's first account and its helpers: Opus 5.5 at medium effort, never Fable (owner, 2026-11-13).
+- **B** is the owner's second account: the MapMaker lane. Its main session ("Splitters FABLE 5.2") is paused from 2026-11-14; **lane B's splitters22** (Opus 5.5, medium) leads lane B and resumes its work (owner, 2026-11-14).
+- **Both accounts have a session called "splitters22".** Always write "lane A's splitters22" or "lane B's splitters22".
 
 **One line per item:** `size · lane · item · branch or plan`.
 
@@ -28,14 +29,15 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
+- M · B (lane B's splitters22) · MapMaker UI spec Phase 1 (owner: the MapMaker lane builds it after Tileset 11 and its speed branch; this account reviews; the owner's answers are in the spec): map settings in the right dock, an inspector that shows only the selection, a 3-state right dock, a contextual tool bar, a short status bar, View menu · `docs/MAPMAKER_UI_SPEC.md` · `wip/mapmaker-ui-1`
 - S · A · Effects-check fixes, the owner's picks (2026-11-14, option a everywhere): Pantry Raid's mouse holes walkable and painted, loot rings outlined, Low's lasting places, the checks; pickup guns drawn bigger · `wip/fx-fixes` (findings: `docs/FX_CHECKS_2026-11-13.md`)
-- S · B · MapMaker: the Roads tool (`routeTool.ts`) redraws its markers the slow way the Paths tool did; the same fix applies. · `wip/mapmaker-editor-speed-2`
-- S · B · MapMaker: a forced layout still costs about 50 ms on each edit and selection (it moved, it did not go); find what dirties the layout. · `wip/mapmaker-editor-speed-2`
 
 ## Ready to land
 - (none)
 
 ## Bugs
+- S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
+- XS · B · MapMaker: the top bar is cut off at 1440 px (map name, Snap, bot skill truncated) (UI audit; UI Phase 1 fixes it).
 - S · A · Gun Buggy and Troop Buggy tires stand 0.3–0.4 m outside their collision boxes.
 - S · A · The Spillway: bots snag on the long stair's landings (stuck recoveries about 70–88 a match).
 - S · A · Heavy MG sits at upper-belly height on drawn characters and hides the ground about 6° under the crosshair.
@@ -53,6 +55,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
 
 ## Features
+- M · ? · MapMaker UI spec Phases 2 and 3: synced selection and numeric transforms; live minimap.
+- M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
 - L · A · St. John's step 2: Smythe Hall (corner piece, side entry, about 1,150 props, perf run), then the chapel's spiral stair and our own crest.
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
@@ -65,14 +69,13 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Waiting on the owner
 - St. John's performance in a match: the 2026-11-13 trace turned out to be MapMaker, so whether the character work helped since 2026-11-10 is still unmeasured. Needs a recording of a match on St. John's (Settings → Record performance, or a Chrome trace while playing).
-- A hover model for the Hauler (Ironclad Vanguard became the Troop Truck; the Sky Cruiser is the only unused hover model).
 - Open questions in `docs/MAPMAKER_EDITING_REPORT_2026-11-13.md`.
 - The effects-check proposals, once `wip/fx-checks` reports.
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
 ## Parked
-- M · ? · MapMaker declutter (owner, 2026-11-13: on hold, "I don't see how this is improved"): map settings out of the right panel, theme filter by default, per-tab tools, View menu, short status bar, favourites on 1 to 0. Mock-up: https://claude.ai/artifact/94tejprHC5XeP4EKRuaQRT (private to the owner).
+- ? · ? · A hover model for the Hauler (owner, 2026-11-14: "leave hauler for now"; the Sky Cruiser is the only unused hover model).
 - L · A · A full weapon release: Stormvolt Blaster plus any other new guns (new weapon types are paused by the owner).
 - S · A · Sound pass 2 (paused by the owner).
 - ? · A · Packed inputs to cut upload bandwidth.
@@ -86,6 +89,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - 2026-11-13 · A · The Spillway: crest openings closed, wing wall, hillside stair legs, east end raised to the crest (023edfa4). No gatehouses.
 - 2026-11-13 · A · MapMaker editing: two to three times quicker edits, select a path or road, fit the ground to a build (7bb706a8).
 - 2026-11-13 · A · Tunnel kit step 4 (73f17583).
+- 2026-11-14 · B · MapMaker speed, part 2: the prop inspector's two long lists fill when opened (selecting a prop costs less than half the page work), and the route tool keeps its markers (d84124a).
 - 2026-11-14 · B · Tileset 11: fire escape and scaffold bay tiles, a bus stop sign, the bandstand rebuilt, the "Town pieces" tab; a repeatable performance measurement (`PERF_STILL=1`, two runs agree) with a new baseline (78a0b5f).
 - 2026-11-14 · B · MapMaker speed from the owner's trace: the Paths tool about 20 times quicker to drag and hover, Map properties no longer rebuilt on every edit, the hover pick halved (c929d7e). Two of the five fixes only moved a layout.
 - 2026-11-13 · B · A new parachute built in code (round canopy, lines to risers behind the neck, eight colour schemes by player; the Meshy model dropped); Tileset 11's eight urban set pieces built in MapMaker; the arched window's neater stones (train 5, 87ca152).

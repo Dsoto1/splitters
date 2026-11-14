@@ -6,11 +6,10 @@
   "name": "Neon Shadow Ninja",
   "look": "core.neonninja",
   "group": "legends",
-  "tier": "experimental",
   "nameTheme": "ninja",
   "bio": "A shadow that lights up. Nobody told him that defeats the point.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-13 (\"Neon Shadow Ninja\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner has looked at it in game (new characters start there, like maps). Name and bio are ours (the name suggested by the owner's session, 2026-11-14; the owner can rename it). Licence: Meshy Community, CC0 per the owner (CLAUDE.md, Content rules: Meshy models the owner shares are Meshy Community CC0 unless the owner says they made them).",
+  "notes": "Drive intake of 2026-11-13 (\"Neon Shadow Ninja\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Core since 2026-11-14 (the owner, after looking at the twelve of 2026-11-13: promote all twelve). Name and bio are ours (the name suggested by the owner's session, 2026-11-14; the owner can rename it). Licence: Meshy Community, CC0 per the owner (CLAUDE.md, Content rules: Meshy models the owner shares are Meshy Community CC0 unless the owner says they made them).",
   "source": {
     "license": "CC0",
     "author": "Meshy Community (CC0 per the owner)",
