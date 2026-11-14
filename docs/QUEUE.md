@@ -28,7 +28,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
-- S · A · MapMaker UI spec, Phase 0: audit (docs only; `docs/MAPMAKER_UI_SPEC.md`, owner's spec with the lead's notes) · `wip/mapmaker-ui-audit`
 - S · A · Effects-check fixes, the owner's picks (2026-11-14, option a everywhere): Pantry Raid's mouse holes walkable and painted, loot rings outlined, Low's lasting places, the checks; pickup guns drawn bigger · `wip/fx-fixes` (findings: `docs/FX_CHECKS_2026-11-13.md`)
 - S · B · MapMaker: the Roads tool (`routeTool.ts`) redraws its markers the slow way the Paths tool did; the same fix applies. · `wip/mapmaker-editor-speed-2`
 - S · B · MapMaker: a forced layout still costs about 50 ms on each edit and selection (it moved, it did not go); find what dirties the layout. · `wip/mapmaker-editor-speed-2`
@@ -37,6 +36,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - (none)
 
 ## Bugs
+- S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
+- XS · B · MapMaker: the top bar is cut off at 1440 px (map name, Snap, bot skill truncated) (UI audit; UI Phase 1 fixes it).
 - S · A · Gun Buggy and Troop Buggy tires stand 0.3–0.4 m outside their collision boxes.
 - S · A · The Spillway: bots snag on the long stair's landings (stuck recoveries about 70–88 a match).
 - S · A · Heavy MG sits at upper-belly height on drawn characters and hides the ground about 6° under the crosshair.
@@ -54,7 +55,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
 
 ## Features
-- M · ? · MapMaker UI spec Phase 1: map settings dialog, an inspector that shows only the selection, a 3-state right dock, a contextual tool bar, a short status bar (lane to agree; after Tileset 11) · `docs/MAPMAKER_UI_SPEC.md`
+- M · B · MapMaker UI spec Phase 1 (owner: the MapMaker lane builds it after Tileset 11 and its speed branch; this account reviews; the owner's answers are in the spec): map settings in the right dock, an inspector that shows only the selection, a 3-state right dock, a contextual tool bar, a short status bar, View menu · `docs/MAPMAKER_UI_SPEC.md`
 - M · ? · MapMaker UI spec Phases 2 and 3: synced selection and numeric transforms; live minimap.
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
