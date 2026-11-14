@@ -29,7 +29,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## In flight
 - S · A · Effects checks, findings only: Pantry Raid portals, loot rings on bright floors, perf and Low graphics for the new effects, Reduce flashing · `wip/fx-checks` (docs)
-- M · B (session splitters22, Opus 5.5 medium; owner, 2026-11-13) · New characters: the T-pose models in the owner's Drive (Meshy Community, CC0; files `Meshy_AI_*_20261113_animated_mixamo_All_animation.glb` and the like, added 2026-11-13). Intake through the character pipeline, recorded as community CC0, Experimental until looked over · claims in HANDOFF first
 
 ## Ready to land
 - (none)
@@ -80,6 +79,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-14 · B · Twelve new characters from the owner's Drive (Meshy Community CC0, Experimental until the owner looks them over); the Vortex Grenade is now the Gravity Grenade.
 - 2026-11-14 · A · Ammo Box: solid resupply crates with cook-off, the Ammo Box Kit throwable, tanks refill beside a crate.
 - 2026-11-13 · A · MapMaker Fit ground, the owner's answers: lone platforms stand on the ground, props on moved ground re-bedded in the same undo (fcbd08e0).
 - 2026-11-13 · A · Vehicle line-up: Supply, Troop and Gun Buggy, Armored Rover 7 places, bots resupply at a Supply Buggy, `buggy` retired on 19 maps.
