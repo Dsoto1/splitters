@@ -88,7 +88,14 @@ export class OutlinerPanel {
     this.spacer = document.createElement('div');
     this.spacer.className = 'ed-ol-spacer';
     this.list.append(this.spacer);
-    this.list.addEventListener('scroll', () => this.draw());
+    this.list.addEventListener('scroll', () => {
+      this.inView = false;
+      this.draw();
+    });
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(() => (this.inView = false)).observe(this.list);
+      this.watchesSize = true;
+    }
     this.list.addEventListener('click', (e) => this.onClick(e));
     root.append(this.search, this.list);
   }
@@ -156,15 +163,33 @@ export class OutlinerPanel {
     this.draw(true);
   }
 
-  /** Draw the rows in view (and a few either side). */
+  /**
+   * Draw the rows in view (and a few either side). `force`: something the rows show changed. When that is only what
+   * is selected, hidden or locked (the same rows, the same stretch of them in view), the rows already there are
+   * marked afresh, not made again: on a click to select, making them again also had the browser lay the page out
+   * on the spot (the list's height and scroll are read straight after the inspector was rewritten).
+   */
   draw(force = false): void {
     if (!this.open) return;
-    const { start, end } = outlineWindow(this.list.scrollTop, this.list.clientHeight || 240, ROW, this.rows.length);
     const sel = this.app.selection;
     const picked = new Set([...sel.tiles, ...sel.entities, ...(sel.setPieces ?? [])]);
+    const itemClass = (id: string) => `ed-ol-item${picked.has(id) ? ' on' : ''}${this.hidden.has(id) ? ' hidden' : ''}${this.locked.has(id) ? ' locked' : ''}`;
+    if (force && this.inView && this.drawnRows === this.rows) {
+      for (const el of this.list.children) {
+        const r = el === this.spacer ? undefined : this.rows[Number((el as HTMLElement).dataset.row)];
+        if (r?.type !== 'item') continue;
+        const cls = itemClass(r.entry.id);
+        if (el.className !== cls) el.className = cls;
+      }
+      return;
+    }
+    const { start, end } = outlineWindow(this.list.scrollTop, this.list.clientHeight || 240, ROW, this.rows.length);
     const key = `${start}:${end}:${this.rows.length}`;
+    // (Read from the page just now: the stretch in view stands until the list scrolls or changes size.)
+    this.inView = this.watchesSize;
     if (!force && key === this.drawn) return;
     this.drawn = key;
+    this.drawnRows = this.rows;
     const frag = document.createDocumentFragment();
     for (let i = start; i < end; i++) {
       const r = this.rows[i]!;
@@ -173,7 +198,7 @@ export class OutlinerPanel {
       el.dataset.row = String(i);
       if (r.type === 'item') {
         const e = r.entry;
-        el.className = `ed-ol-item${picked.has(e.id) ? ' on' : ''}${this.hidden.has(e.id) ? ' hidden' : ''}${this.locked.has(e.id) ? ' locked' : ''}`;
+        el.className = itemClass(e.id);
         el.dataset.id = e.id;
         el.setAttribute('role', 'treeitem');
         el.innerHTML = `<span class="nm"></span><span class="lv"></span><button type="button" class="ed-ol-eye" data-act="hide" title="Hide in MapMaker (editor only)" aria-label="Hide"></button><button type="button" class="ed-ol-lock" data-act="lock" title="Lock: can't be picked or selected (editor only)" aria-label="Lock"></button>`;
@@ -189,6 +214,12 @@ export class OutlinerPanel {
     for (const old of [...this.list.children]) if (old !== this.spacer) old.remove();
     this.list.append(frag);
   }
+
+  /** The rows the list was last drawn from, and whether the stretch of them in view is still the one drawn. */
+  private drawnRows: OutlineRow[] | null = null;
+  private inView = false;
+  /** The list's size is watched (a browser without ResizeObserver: every forced draw reads the page, as before). */
+  private watchesSize = false;
 
   private onClick(e: MouseEvent): void {
     const target = e.target as HTMLElement;

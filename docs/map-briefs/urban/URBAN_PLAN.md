@@ -87,6 +87,17 @@ Not done here: the family's label in `SET_PIECE_FAMILIES` (MapMaker's code was h
 | E2 | Scaffold bay: two decks on tube frames with a ladder side, 1 cell, 2 levels | New geometry (tile) | Con | M | Same preference: a data tile first. |
 | E3 | Gable as a room ceiling choice, with end walls | New geometry (room option) | Res | M to L | A new value in `CEILINGS` (`map/tileOptions.ts`) and its builder in `map/geometry.ts`, reusing `gableRoof` from `packTilesMedieval.ts`. A schema value: decision 5. The "Pitched Roof" block covers most needs today. |
 
+**As built (2026-11-14):** E1 and E2 are data tiles in `content/tiles/core.json` (category Vertical), in pack 14; `packages/shared/test/tilesUrban.test.ts` walks them. E3 is not built (decision 5).
+
+| Tile | Cells | What it is | Differs from the plan |
+|---|---|---|---|
+| `core.fire_escape` Fire Escape | 1, one level | A steel switchback against the building on its south side: eight steps east up the outer lane to a half landing at 2 m, eight back west up the lane by the wall to a railed landing at 4 m at the west end, where the next one up starts. Stack one a storey. Treads and landings are steel grating, rails two thin bars on posts (shots pass). | It is 5.2 m deep, not narrow: the bots' navmesh keeps 0.8 m from every edge, so a lane under 2.4 m is not pathed (2 m was tried). The storey's landing is the west 2.4 m of the wall, so a centred Door misses it: use an Arch, a Wide doorway or an open side there. A balcony along the whole wall with one straight flight does not fit a cell (16 steps need 6.4 m). The top landing and its rail stand in the level above. |
+| `core.scaffold_bay` Scaffold Bay | 1, two levels | Plank decks 2.8 m deep along the south edge at 2 m and 4 m on steel tubes, a switchback stair outside them (a landing at each deck). Deck ends are open: bays side by side are one long deck. Shots pass between tubes and rail bars; planks stop them. | A stair, not a ladder (ladders are entities, not tile parts). It fills 7.6 m of the cell's depth, for the same navmesh reason. The upper deck is 6 cm thick: with 10 cm the 1.9 m between the decks was read as too low for a bot. |
+
+Both are painted with library materials of their own (steel, grating, planks), not the theme's paint, so they read as steel in every theme and do not follow a repaint; that is the one way they fall short of "can be repainted".
+
+**Follow-ups to step D, done the same day:** the bandstand is reshaped (an octagonal plank stage 0.5 m up with a step on four sides, eight posts, a picket rail on the four diagonal sides, a pitched roof with a gable over each open side; 24 parts, built in MapMaker); the family's tab reads "Town pieces"; `kit.street.bus_stop` (a pole with a flag sign, a plain picture of a bus, four looks) stands where the bus shelter's street-name sign stood.
+
 ### Step F. Prove it (guide Phase 5)
 
 | # | Item | Effort | How |

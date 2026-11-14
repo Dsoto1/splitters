@@ -1120,6 +1120,7 @@ is closed to players, and to shots as the glass kind says. Kit families, each wi
 | `kit.street.bike_rack` Bike Rack | 2 x 0.85 x 0.7 | steel, black, green, red | its three hoops only (5 cm tube): shots and sight pass |
 | `kit.street.mailbox` Street Mailbox | 0.56 x 1.22 x 0.5 | blue, red, green, yellow | its box (crouch cover) |
 | `kit.street.newsbox` Newspaper Box | 0.5 x 1.2 x 0.46 | red, blue, yellow, green, white | its box (crouch cover) |
+| `kit.street.bus_stop` Bus Stop Sign | 0.66 x 2.7 x 0.16 | blue, yellow, green, red | its pole and its flag only: walked under, shots pass beside the pole |
 | `kit.spool.cable` Cable Spool | 0.9 x 1.4 x 1.4 | wood, weathered, empty, orange | its box |
 | `kit.fence.chainlink` Chain-link Fence | 3 x 2.4 x 0.08 | galvanised, green, rusty | posts, rails, an upright bar every 0.25 m |
 | `kit.fence.chainlink_gate` Chain-link Gate (shut, a still prop) | 3 x 2.4 x 0.08 | galvanised, green, rusty | posts, leaf frames, bars |

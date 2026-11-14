@@ -630,6 +630,8 @@ export const STYLE_PACKS: readonly StylePack[] = [
       // Rooms to dress with a facade, and the ways up: stairs, ramp, platforms (parking decks, bare frames).
       'core.room', 'core.room_long', 'core.room_tall', 'core.stairs', 'core.stairs_open', 'core.stairwell', 'snow.metal_stair', 'core.ramp', 'core.platform', 'core.platform_rail',
       'core.balcony', 'core.terrace', 'core.bridge', 'core.yard', 'core.yard_wall',
+      // Made for the pack (plan step E): the fire escape and the scaffold bay, both data tiles (content/tiles/core.json).
+      'core.fire_escape', 'core.scaffold_bay',
     ],
     props: /* @__PURE__ */ props(
       // The street: lights, signals, signs.
@@ -652,7 +654,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       // Made for the pack (plan step B): painted doors on the Oak Door's frame, the striped shop awning.
       'kit.door.painted', 'kit.door.painted_open', 'kit.shop.awning',
       // Made for the pack (plan step C): street furniture and wire fencing.
-      'kit.barrier.bollard', 'kit.street.bike_rack', 'kit.street.mailbox', 'kit.street.newsbox', 'kit.spool.cable',
+      'kit.barrier.bollard', 'kit.street.bike_rack', 'kit.street.mailbox', 'kit.street.newsbox', 'kit.street.bus_stop', 'kit.spool.cable',
       'kit.fence.chainlink', 'kit.fence.chainlink_gate', 'kit.fence.site_panel',
       // Warehouses and building sites.
       'kit.crate.wood', 'kit.drum.steel', 'kit.container.shipping', 'pallet', 'cargo_gantry_crane', 'dc_scaffold',

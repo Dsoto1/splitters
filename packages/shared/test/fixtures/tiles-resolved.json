@@ -98,6 +98,8 @@
   "core.arena_pit",
   "core.arena_tiers",
   "core.arena_tiers_corner",
+  "core.fire_escape",
+  "core.scaffold_bay",
   "core.tunnel_concrete_straight",
   "core.tunnel_concrete_curve",
   "core.tunnel_concrete_t",
@@ -35044,6 +35046,1656 @@
       -2.3,
       3.7
      ]
+    }
+   ]
+  },
+  {
+   "id": "core.fire_escape",
+   "category": "Vertical",
+   "displayName": "Fire Escape",
+   "blurb": "A steel switchback stair on a building face (its south side): up 4 m to a railed landing at its west end; stack one a storey, each starting on the landing below",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "S",
+     "level": 0
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "extraFloors": [
+    {
+     "min": [
+      1.6,
+      1.9,
+      -4
+     ],
+     "max": [
+      4,
+      2,
+      1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.9,
+      -4
+     ],
+     "max": [
+      -1.6,
+      4,
+      1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -1.6,
+      0,
+      -1.2
+     ],
+     "max": [
+      -1.2,
+      0.25,
+      1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      -1.2,
+      0.2,
+      -1.2
+     ],
+     "max": [
+      -0.8,
+      0.5,
+      1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      -0.8,
+      0.45,
+      -1.2
+     ],
+     "max": [
+      -0.4,
+      0.75,
+      1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      -0.4,
+      0.7,
+      -1.2
+     ],
+     "max": [
+      0,
+      1,
+      1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      0,
+      0.95,
+      -1.2
+     ],
+     "max": [
+      0.4,
+      1.25,
+      1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      0.4,
+      1.2,
+      -1.2
+     ],
+     "max": [
+      0.8,
+      1.5,
+      1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      0.8,
+      1.45,
+      -1.2
+     ],
+     "max": [
+      1.2,
+      1.75,
+      1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      1.2,
+      1.7,
+      -1.2
+     ],
+     "max": [
+      1.6,
+      2,
+      1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      1.2,
+      2,
+      -4
+     ],
+     "max": [
+      1.6,
+      2.25,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      0.8,
+      2.2,
+      -4
+     ],
+     "max": [
+      1.2,
+      2.5,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      0.4,
+      2.45,
+      -4
+     ],
+     "max": [
+      0.8,
+      2.75,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      0,
+      2.7,
+      -4
+     ],
+     "max": [
+      0.4,
+      3,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      -0.4,
+      2.95,
+      -4
+     ],
+     "max": [
+      0,
+      3.25,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      -0.8,
+      3.2,
+      -4
+     ],
+     "max": [
+      -0.4,
+      3.5,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      -1.2,
+      3.45,
+      -4
+     ],
+     "max": [
+      -0.8,
+      3.75,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      -1.6,
+      3.7,
+      -4
+     ],
+     "max": [
+      -1.2,
+      4,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.steel_grating"
+     }
+    },
+    {
+     "min": [
+      -1.887,
+      1.47,
+      1.12
+     ],
+     "max": [
+      1.887,
+      1.53,
+      1.18
+     ],
+     "roll": 0.559,
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.887,
+      1.97,
+      1.12
+     ],
+     "max": [
+      1.887,
+      2.03,
+      1.18
+     ],
+     "roll": 0.559,
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.59,
+      0,
+      1.1099999999999999
+     ],
+     "max": [
+      -1.51,
+      1,
+      1.19
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.179,
+      3.267,
+      -1.23
+     ],
+     "max": [
+      1.829,
+      3.327,
+      -1.17
+     ],
+     "roll": -0.559,
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.179,
+      3.767,
+      -1.23
+     ],
+     "max": [
+      1.829,
+      3.827,
+      -1.17
+     ],
+     "roll": -0.559,
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      1.6099999999999999,
+      2,
+      -1.24
+     ],
+     "max": [
+      1.69,
+      3,
+      -1.16
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -0.9400000000000001,
+      3.594,
+      -1.24
+     ],
+     "max": [
+      -0.86,
+      4.594,
+      -1.16
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      1.6,
+      2.44,
+      1.12
+     ],
+     "max": [
+      4,
+      2.5,
+      1.18
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      1.6,
+      2.94,
+      1.12
+     ],
+     "max": [
+      4,
+      3,
+      1.18
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      3.92,
+      2.44,
+      -4
+     ],
+     "max": [
+      3.98,
+      2.5,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      3.92,
+      2.94,
+      -4
+     ],
+     "max": [
+      3.98,
+      3,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      1.6099999999999999,
+      2,
+      1.1099999999999999
+     ],
+     "max": [
+      1.69,
+      3,
+      1.19
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      3.91,
+      2,
+      1.1099999999999999
+     ],
+     "max": [
+      3.99,
+      3,
+      1.19
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      3.91,
+      2,
+      -3.99
+     ],
+     "max": [
+      3.99,
+      3,
+      -3.91
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      4.44,
+      1.12
+     ],
+     "max": [
+      -1.6,
+      4.5,
+      1.18
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      4.94,
+      1.12
+     ],
+     "max": [
+      -1.6,
+      5,
+      1.18
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -3.98,
+      4.44,
+      -4
+     ],
+     "max": [
+      -3.92,
+      4.5,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -3.98,
+      4.94,
+      -4
+     ],
+     "max": [
+      -3.92,
+      5,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.69,
+      4,
+      1.1099999999999999
+     ],
+     "max": [
+      -1.6099999999999999,
+      5,
+      1.19
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -3.99,
+      4,
+      1.1099999999999999
+     ],
+     "max": [
+      -3.91,
+      5,
+      1.19
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -3.99,
+      4,
+      -3.99
+     ],
+     "max": [
+      -3.91,
+      5,
+      -3.91
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      1.62,
+      1.41,
+      -4
+     ],
+     "max": [
+      1.68,
+      1.49,
+      1.2
+     ],
+     "pitch": 0.171,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      3.92,
+      1.41,
+      -4
+     ],
+     "max": [
+      3.98,
+      1.49,
+      1.2
+     ],
+     "pitch": 0.171,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.68,
+      3.41,
+      -4
+     ],
+     "max": [
+      -1.62,
+      3.49,
+      1.2
+     ],
+     "pitch": 0.171,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -3.98,
+      3.41,
+      -4
+     ],
+     "max": [
+      -3.92,
+      3.49,
+      1.2
+     ],
+     "pitch": 0.171,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    }
+   ]
+  },
+  {
+   "id": "core.scaffold_bay",
+   "category": "Vertical",
+   "displayName": "Scaffold Bay",
+   "blurb": "Two plank decks on steel tubes along a building face (its south side), 2 m and 4 m up, with a switchback stair on the outside; bays join end to end",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 1
+    },
+    {
+     "side": "E",
+     "level": 1
+    },
+    {
+     "side": "W",
+     "level": 1
+    }
+   ],
+   "open": true,
+   "edgeDefault": "open",
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      1.9,
+      -4
+     ],
+     "max": [
+      4,
+      2,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.94,
+      -4
+     ],
+     "max": [
+      4,
+      4,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      1.6,
+      1.9,
+      -1.2
+     ],
+     "max": [
+      4,
+      2,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.9,
+      -1.2
+     ],
+     "max": [
+      -1.6,
+      4,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    }
+   ],
+   "solids": [
+    {
+     "min": [
+      -1.6,
+      0,
+      -1.2
+     ],
+     "max": [
+      -1.2,
+      0.25,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -1.2,
+      0.2,
+      -1.2
+     ],
+     "max": [
+      -0.8,
+      0.5,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -0.8,
+      0.45,
+      -1.2
+     ],
+     "max": [
+      -0.4,
+      0.75,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -0.4,
+      0.7,
+      -1.2
+     ],
+     "max": [
+      0,
+      1,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      0,
+      0.95,
+      -1.2
+     ],
+     "max": [
+      0.4,
+      1.25,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      0.4,
+      1.2,
+      -1.2
+     ],
+     "max": [
+      0.8,
+      1.5,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      0.8,
+      1.45,
+      -1.2
+     ],
+     "max": [
+      1.2,
+      1.75,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      1.2,
+      1.7,
+      -1.2
+     ],
+     "max": [
+      1.6,
+      2,
+      1.2
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      1.2,
+      2,
+      1.2
+     ],
+     "max": [
+      1.6,
+      2.25,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      0.8,
+      2.2,
+      1.2
+     ],
+     "max": [
+      1.2,
+      2.5,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      0.4,
+      2.45,
+      1.2
+     ],
+     "max": [
+      0.8,
+      2.75,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      0,
+      2.7,
+      1.2
+     ],
+     "max": [
+      0.4,
+      3,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -0.4,
+      2.95,
+      1.2
+     ],
+     "max": [
+      0,
+      3.25,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -0.8,
+      3.2,
+      1.2
+     ],
+     "max": [
+      -0.4,
+      3.5,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -1.2,
+      3.45,
+      1.2
+     ],
+     "max": [
+      -0.8,
+      3.75,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -1.6,
+      3.7,
+      1.2
+     ],
+     "max": [
+      -1.2,
+      4,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_weathered_planks"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -4
+     ],
+     "max": [
+      -3.9000000000000004,
+      5,
+      -3.9000000000000004
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -0.05,
+      0,
+      -4
+     ],
+     "max": [
+      0.05,
+      5,
+      -3.9000000000000004
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      3.9000000000000004,
+      0,
+      -4
+     ],
+     "max": [
+      4,
+      5,
+      -3.9000000000000004
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      -1.3
+     ],
+     "max": [
+      -3.9000000000000004,
+      5,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -0.05,
+      0,
+      -1.3
+     ],
+     "max": [
+      0.05,
+      5,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      3.9000000000000004,
+      0,
+      -1.3
+     ],
+     "max": [
+      4,
+      5,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      3.9000000000000004,
+      0,
+      3.5
+     ],
+     "max": [
+      4,
+      3,
+      3.5999999999999996
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      1.5999999999999999,
+      0,
+      3.5
+     ],
+     "max": [
+      1.7,
+      3,
+      3.5999999999999996
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      0,
+      3.5
+     ],
+     "max": [
+      -3.9000000000000004,
+      5,
+      3.5999999999999996
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.7,
+      0,
+      3.5
+     ],
+     "max": [
+      -1.5999999999999999,
+      5,
+      3.5999999999999996
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      1.84,
+      -4
+     ],
+     "max": [
+      4,
+      1.9,
+      -3.9
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      1.84,
+      -1.3
+     ],
+     "max": [
+      4,
+      1.9,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.88,
+      -4
+     ],
+     "max": [
+      4,
+      3.94,
+      -3.9
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.88,
+      -1.3
+     ],
+     "max": [
+      4,
+      3.94,
+      -1.2
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      1.6,
+      1.84,
+      -1.2
+     ],
+     "max": [
+      1.7,
+      1.9,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      3.9,
+      1.84,
+      -1.2
+     ],
+     "max": [
+      4,
+      1.9,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      3.84,
+      -1.2
+     ],
+     "max": [
+      -3.9,
+      3.9,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.7,
+      3.84,
+      -1.2
+     ],
+     "max": [
+      -1.6,
+      3.9,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      2.44,
+      -1.28
+     ],
+     "max": [
+      1.6,
+      2.5,
+      -1.22
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      2.94,
+      -1.28
+     ],
+     "max": [
+      1.6,
+      3,
+      -1.22
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.6,
+      4.44,
+      -1.28
+     ],
+     "max": [
+      4,
+      4.5,
+      -1.22
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.6,
+      4.94,
+      -1.28
+     ],
+     "max": [
+      4,
+      5,
+      -1.22
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      1.6,
+      2.44,
+      3.52
+     ],
+     "max": [
+      4,
+      2.5,
+      3.58
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      1.6,
+      2.94,
+      3.52
+     ],
+     "max": [
+      4,
+      3,
+      3.58
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      3.92,
+      2.44,
+      -1.2
+     ],
+     "max": [
+      3.98,
+      2.5,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      3.92,
+      2.94,
+      -1.2
+     ],
+     "max": [
+      3.98,
+      3,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      4.44,
+      3.52
+     ],
+     "max": [
+      -1.6,
+      4.5,
+      3.58
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4,
+      4.94,
+      3.52
+     ],
+     "max": [
+      -1.6,
+      5,
+      3.58
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -3.98,
+      4.44,
+      -1.2
+     ],
+     "max": [
+      -3.92,
+      4.5,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -3.98,
+      4.94,
+      -1.2
+     ],
+     "max": [
+      -3.92,
+      5,
+      3.6
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.887,
+      3.47,
+      3.52
+     ],
+     "max": [
+      1.887,
+      3.53,
+      3.58
+     ],
+     "roll": -0.559,
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.887,
+      3.97,
+      3.52
+     ],
+     "max": [
+      1.887,
+      4.03,
+      3.58
+     ],
+     "roll": -0.559,
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.887,
+      3.47,
+      1.17
+     ],
+     "max": [
+      1.887,
+      3.53,
+      1.23
+     ],
+     "roll": -0.559,
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.887,
+      3.97,
+      1.17
+     ],
+     "max": [
+      1.887,
+      4.03,
+      1.23
+     ],
+     "roll": -0.559,
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      1.6099999999999999,
+      2,
+      1.16
+     ],
+     "max": [
+      1.69,
+      3,
+      1.24
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -1.69,
+      4,
+      1.16
+     ],
+     "max": [
+      -1.6099999999999999,
+      5,
+      1.24
+     ],
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4.193,
+      0.87,
+      -3.98
+     ],
+     "max": [
+      0.193,
+      0.93,
+      -3.92
+     ],
+     "roll": -0.423,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -4.193,
+      0.87,
+      -3.98
+     ],
+     "max": [
+      0.193,
+      0.93,
+      -3.92
+     ],
+     "roll": 0.423,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -0.193,
+      0.87,
+      -3.98
+     ],
+     "max": [
+      4.193,
+      0.93,
+      -3.92
+     ],
+     "roll": -0.423,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_steel"
+     }
+    },
+    {
+     "min": [
+      -0.193,
+      0.87,
+      -3.98
+     ],
+     "max": [
+      4.193,
+      0.93,
+      -3.92
+     ],
+     "roll": 0.423,
+     "kind": "trim",
+     "surface": {
+      "material": "core.pbr_steel"
+     }
     }
    ]
   },

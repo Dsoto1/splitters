@@ -1,6 +1,6 @@
 // Street furniture (kit-prop families of Tileset 11, Urban & Civilian: docs/map-briefs/urban/URBAN_PLAN.md steps B6
 // and C3 to C6): a striped shop awning (`awning`), a street bollard (`bollard`), a bike rack of hoops (`bikerack`), a
-// street mailbox (`mailbox`), a newspaper box (`newsbox`) and a cable spool (`spool`). All generated here from seeds:
+// street mailbox (`mailbox`), a newspaper box (`newsbox`), a cable spool (`spool`) and a bus stop sign (`busstop`). All generated here from seeds:
 // nothing downloaded, nothing drawn from a photograph. Each fills its bounds, [-w/2, w/2] × [0, h] × [-d/2, d/2].
 //
 // Sizes are for the game's scale (a player stands about 1.8 m): the bollard is knee-to-hip cover for nobody and
@@ -12,7 +12,8 @@
 // valance's hem.
 //
 // No marks: the mailbox and the newspaper box carry no postal service's or publisher's name, sign or colours scheme
-// (plain paint, a blank plate, a blank sheet behind the window). Nothing glows or blinks (CLAUDE.md, "Accessibility").
+// (plain paint, a blank plate, a blank sheet behind the window); the bus stop sign is a plain picture of a bus, with
+// no words, no route number and no operator's mark or livery. Nothing glows or blinks (CLAUDE.md, "Accessibility").
 //
 // Level 1 keeps the outline with far fewer triangles; level 2 is a stand-in of a few faces.
 
@@ -140,6 +141,84 @@ export function bikeRackMesh(seed, size, g, look, level) {
   }
   // The ground rails (drawn only: 3 cm high, nothing to stop a foot or a round).
   if (level < 2) for (const s of [-1, 1]) box(m, [-X, 0, Math.min(s * Z, s * (Z - 0.07))], [X, 0.03, Math.max(s * Z, s * (Z - 0.07))], rail, ['ny']);
+  return m;
+}
+
+// ---------------------------------------------------------------- the bus stop sign
+
+/**
+ * A bus stop sign: a round pole on a base plate at the piece's west side (−x), a flag sign at its top reaching east
+ * (a plate in the x–y plane, read from both sides, ±z) with a plain picture of a bus, and a timetable case lower on
+ * the pole with a blank sheet. No words, no route number, no operator's mark. Settings `g`: `flag` (the plate's
+ * height, m), `shape` ('square', or 'round' for a disc), `case` (false for no timetable case). `look`: `pole`,
+ * `plate`, `picture`, `rim`, `paper`, `grime`, `wear`, `rust`. It collides as its pole and its flag only (the
+ * family's own boxes, the same for every look), so a player walks under the flag and shots pass beside the pole.
+ */
+export function busStopMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const X = w / 2;
+  const Z = d / 2;
+  const pr = 0.03;
+  const px = -X + Z;
+  const fh = g.flag ?? 0.5;
+  const ft = 0.012;
+  const [fx0, fx1, fy0, fy1] = [px + pr, X, h - 0.06 - fh, h - 0.06];
+  const m = new Mesh();
+  // Solid: the pole and the flag. Open: under the flag, and all round the pole.
+  m.boxes = [[px - pr, 0, -pr, px + pr, h, pr], [fx0, fy0, -ft, fx1, fy1, ft]];
+  const poleC = hex(look.pole ?? '#8f9498');
+  const plateC = hex(look.plate);
+  const pictC = hex(look.picture ?? '#f2f0e8');
+  const rimC = hex(look.rim ?? look.picture ?? '#f2f0e8');
+  if (level >= 2) {
+    box(m, [px - pr, 0, -pr], [px + pr, h, pr], (p) => scale3(poleC, groundShade(p[1], 0.3, 0.75)), ['ny']);
+    box(m, [fx0, fy0, -ft], [fx1, fy1, ft], scale3(plateC, 0.9), []);
+    return m;
+  }
+  const fine = level === 0;
+  const pole = painted(seed, poleC, look, round);
+  const plate = painted(seed + 7, plateC, { ...look, wear: (look.wear ?? 0.2) * 0.5 });
+  // The base plate out to the bounds in z, the pole, its cap.
+  box(m, [px - Z, 0, -Z], [px + Z, 0.02, Z], painted(seed + 3, scale3(poleC, 0.8), look), ['ny']);
+  cyl(m, 1, 0, px, 0.02, h - 0.02, pr, fine ? 8 : 4, pole);
+  box(m, [px - pr, h - 0.02, -pr], [px + pr, h, pr], scale3(poleC, 0.85), ['ny']);
+  // The flag, and two clamps holding it to the pole.
+  box(m, [fx0, fy0, -ft], [fx1, fy1, ft], plate, []);
+  if (fine) for (const y of [fy0 + 0.08, fy1 - 0.08]) box(m, [px - pr - 0.008, y - 0.02, -pr - 0.008], [fx0 + 0.03, y + 0.02, pr + 0.008], scale3(poleC, 0.7), []);
+  // The picture, the same on both faces: a rim, and a bus seen from its side (body, a band of windows, a door, two wheels).
+  const fw = fx1 - fx0;
+  const cx = (fx0 + fx1) / 2;
+  const cy = (fy0 + fy1) / 2;
+  const u = Math.min(fw, fh);
+  for (const s of [-1, 1]) {
+    const z = s * ft;
+    const q = (x0, y0, x1, y1, c) => onZ(m, cx + x0 * u, cy + y0 * u, cx + x1 * u, cy + y1 * u, z, s, c);
+    if (fine) {
+      const e = 0.035;
+      q(-fw / u / 2 + e, fh / u / 2 - 2 * e, fw / u / 2 - e, fh / u / 2 - e, rimC);
+      q(-fw / u / 2 + e, -fh / u / 2 + e, fw / u / 2 - e, -fh / u / 2 + 2 * e, rimC);
+      q(-fw / u / 2 + e, -fh / u / 2 + 2 * e, -fw / u / 2 + 2 * e, fh / u / 2 - 2 * e, rimC);
+      q(fw / u / 2 - 2 * e, -fh / u / 2 + 2 * e, fw / u / 2 - e, fh / u / 2 - 2 * e, rimC);
+    }
+    // Body (its roof a little narrower), then what is cut out of it in the plate's colour.
+    q(-0.34, -0.14, 0.34, 0.16, pictC);
+    q(-0.31, 0.16, 0.31, 0.2, pictC);
+    if (fine) {
+      for (const x of [-0.29, -0.13, 0.03]) q(x, 0.02, x + 0.13, 0.13, plateC);
+      q(0.2, -0.1, 0.3, 0.13, plateC);
+      q(-0.34, -0.05, 0.17, -0.03, plateC);
+    }
+    for (const x of [-0.2, 0.18]) {
+      q(x - 0.06, -0.21, x + 0.06, -0.09, pictC);
+      if (fine) q(x - 0.025, -0.175, x + 0.025, -0.125, plateC);
+    }
+  }
+  // The timetable case: a shallow box on the pole's east side with a blank sheet on both faces.
+  if (g.case !== false) {
+    const [cx0, cx1, cy0, cy1] = [px + pr, px + pr + 0.3, 1.05, 1.5];
+    box(m, [cx0, cy0, -0.02], [cx1, cy1, 0.02], painted(seed + 9, scale3(poleC, 0.75), look), []);
+    if (fine) for (const s of [-1, 1]) onZ(m, cx0 + 0.025, cy0 + 0.025, cx1 - 0.025, cy1 - 0.025, s * 0.02, s, scale3(hex(look.paper ?? '#e9e6da'), 0.95));
+  }
   return m;
 }
 

@@ -36,13 +36,14 @@ import {
   type PlacementCheck,
   type TerrainBrush,
   type TileDefinition,
+  type TilePlacement,
   type Vec3,
   type WorldBox
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
 import { $, escapeHtml } from './editorDom.ts';
 import { pickRadius, type Hit } from './editorParts.ts';
-import { raycastBoxes } from './raycast.ts';
+import { raycastBoxes, type BoxHit } from './raycast.ts';
 
 /** What's under the pointer: the pointer's ray onto the level, the ground and surfaces, picking, the hover card and status line, and the placing ghosts with why one is refused (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class Hover {
@@ -122,25 +123,30 @@ export class Hover {
     const blocked = this.app.outliner.blocked;
     const free = (id: string) => !blocked.size || !(blocked.has(id) || blocked.has(partOf.get(id) ?? ''));
     const ok = (e: MapEntity | undefined): e is MapEntity => !!e && free(e.id) && this.reachable(e) && this.app.view.entityShown(e.id);
-    const tilesHere = new Set(view.classicStructure.tiles.filter((t) => free(t.id) && (placementCells(t) ?? []).some((c) => c[2] === this.app.level)).map((t) => t.id));
+    // A tile with a cell on this level (asked only of the few tiles the ray meets, not of every tile on every move).
+    let tilesById = this.tilesById.get(view.classicStructure.tiles);
+    if (!tilesById) {
+      this.tilesById.set(view.classicStructure.tiles, (tilesById = new Map()));
+      for (const t of view.classicStructure.tiles) tilesById.set(t.id, [...(tilesById.get(t.id) ?? []), t]);
+    }
+    const tileHere = (id: string): boolean => free(id) && (tilesById.get(id) ?? []).some((t) => (placementCells(t) ?? []).some((c) => c[2] === this.app.level));
     let best: { kind: 'tile' | 'entity'; id: string; d: number } | null = null;
     const ray = this.app.ray;
     if (ray) {
       const ent = this.app.view.pickEntities(ray.origin, ray.dir).find((h) => ok(byId.get(h.id)));
       if (ent) best = { kind: 'entity', id: ent.id, d: ent.distance };
-      const boxes = this.app.visibleBoxes.filter((b) => b.kind !== 'barrier' && (tilesHere.has(b.sourceId) || ok(byId.get(b.sourceId))));
-      const hit = raycastBoxes(ray.origin, ray.dir, boxes);
+      const hit = this.nearestBox(ray, (b) => b.kind !== 'barrier' && (tileHere(b.sourceId) || ok(byId.get(b.sourceId))));
       // A model a hair behind the box it stands in still counts (crates in a doorway, props on a floor).
-      if (hit && (!best || hit.distance < best.d - 0.05)) best = { kind: tilesHere.has(hit.box.sourceId) ? 'tile' : 'entity', id: hit.box.sourceId, d: hit.distance };
+      if (hit && (!best || hit.distance < best.d - 0.05)) best = { kind: tileHere(hit.box.sourceId) ? 'tile' : 'entity', id: hit.box.sourceId, d: hit.distance };
     }
     if (best?.kind === 'entity') return whole(best);
     const p = this.app.hoverPoint;
     if (p) {
       let near: { id: string; d: number } | null = null;
       for (const e of view.entities) {
-        if (!ok(e)) continue;
+        // (Near enough first: that rules out nearly all of them before the dearer questions are asked.)
         const d = Math.hypot(e.position[0] - p.x, e.position[2] - p.z);
-        if (d < pickRadius(e) && (!near || d < near.d)) near = { id: e.id, d };
+        if (d < pickRadius(e) && (!near || d < near.d) && ok(e)) near = { id: e.id, d };
       }
       // Flat markers (zones, squads, pads) on the floor under the pointer win over the floor itself.
       if (near && (!best || best.kind === 'tile')) return whole({ kind: 'entity', id: near.id });
@@ -157,6 +163,44 @@ export class Hover {
     // tunnel a level or more down, with nothing of this level there. The piece nearest under the ground wins.
     const under = this.app.tool.kind === 'select' ? this.buriedUnderPointer(free) : null;
     return under ? whole({ kind: 'tile', id: under }) : null;
+  }
+
+  /** The drawn map's tiles by id, per list of tiles (as `entitiesById`). */
+  private readonly tilesById = new WeakMap<object, Map<string, TilePlacement[]>>();
+  /** Each drawn box's middle and reach (squared, with a little to spare), for the list of boxes as last drawn. */
+  private boxReach: { from: readonly WorldBox[]; at: Float64Array } | null = null;
+
+  /**
+   * The nearest of the drawn boxes the ray hits that `wanted` takes: the same box as raycastBoxes over the wanted
+   * ones, found without sorting every box into wanted or not on every pointer move. A box the ray passes clear of
+   * (outside the ball round it) is never tried, and `wanted` is asked only of a box hit nearer than the best so far.
+   */
+  private nearestBox(ray: { origin: Vec3; dir: Vec3 }, wanted: (b: WorldBox) => boolean): BoxHit | null {
+    const boxes = this.app.visibleBoxes;
+    if (this.boxReach?.from !== boxes) {
+      const at = new Float64Array(boxes.length * 4);
+      boxes.forEach((b, i) => {
+        const r = Math.hypot(b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]) / 2 + 0.05;
+        at.set([(b.min[0] + b.max[0]) / 2, (b.min[1] + b.max[1]) / 2, (b.min[2] + b.max[2]) / 2, r * r], i * 4);
+      });
+      this.boxReach = { from: boxes, at };
+    }
+    const at = this.boxReach.at;
+    const { origin, dir } = ray;
+    const dd = dir.x * dir.x + dir.y * dir.y + dir.z * dir.z || 1;
+    const one: WorldBox[] = [boxes[0]!];
+    let best: BoxHit | null = null;
+    for (let i = 0; i < boxes.length; i++) {
+      const ox = at[i * 4]! - origin.x;
+      const oy = at[i * 4 + 1]! - origin.y;
+      const oz = at[i * 4 + 2]! - origin.z;
+      const along = ox * dir.x + oy * dir.y + oz * dir.z;
+      if (ox * ox + oy * oy + oz * oz - (along * along) / dd > at[i * 4 + 3]!) continue;
+      one[0] = boxes[i]!;
+      const hit = raycastBoxes(origin, dir, one);
+      if (hit && (!best || hit.distance < best.distance) && wanted(hit.box)) best = hit;
+    }
+    return best;
   }
 
   /** The buried piece (a tile with a bore: map/groundBore.ts) under the place on the ground the pointer is on, if any. */

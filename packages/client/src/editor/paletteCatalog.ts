@@ -227,6 +227,7 @@ export const SET_PIECE_FAMILIES: readonly (readonly [family: string, label: stri
   ['sunkenarena', 'Sunken arenas'],
   ['plaza', 'Plazas'],
   ['seawall', 'Sea walls'],
+  ['urban', 'Town pieces'],
 ];
 
 /** A family's label in the Set pieces tab. */
