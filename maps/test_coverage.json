@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_c5hr5tyeq4wpcsk3",
-      "revision": 32,
-      "contentHash": "sha256:f8db04fb6c5cdfb7abdf52d6df8f46f912d671b3c8d55cafe6b490ceac33b8e4",
+      "versionId": "v_uy3n3ig77rtli7vg",
+      "revision": 33,
+      "contentHash": "sha256:5f3bd22b8c73ff712091e5b96d53f21574f0790d0d382e1048fbc7b88a64456a",
       "schemaVersion": 38,
-      "releasedAt": "2026-11-14T02:17:40.574Z"
+      "releasedAt": "2026-11-14T22:15:41.863Z"
     },
     "testOnly": true
   },
@@ -5256,12 +5256,12 @@
     },
     {
       "id": "prop_3jkgg80j04",
-      "kind": "prop",
       "position": [
         150,
         0,
         112
       ],
+      "kind": "prop",
       "model": "kit.street.bus_stop",
       "yaw": 0,
       "scale": 1,
@@ -6586,6 +6586,15 @@
       "rotation": 0,
       "mirror": false,
       "pack": "urban"
+    },
+    {
+      "id": "setpiece_hymephh0he",
+      "piece": "setpiece.arena_corner",
+      "x": -4,
+      "y": 21,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
     }
   ]
 }
