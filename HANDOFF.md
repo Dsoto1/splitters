@@ -665,6 +665,7 @@ at 60c0c184, run 42677907883; waits for the owner's review, not landed).**
 
 - Claimed: map format v34 (Phase 5: time of day and weather, `wip/mapmaker-p5`), MapMaker lane, 2026-11-09.
 - Claimed: map format v35 (`metadata.tier`: quality tiers for maps, `wip/mapmaker-quality-gates`), MapMaker lane, 2026-11-11.
+- Claimed: the Meshy characters of 2026-11-14 (owner's Drive, Meshy Community CC0 per owner): new manifests `content/characters/meshy_*.json` for them, their processed models and portraits, the generated character tables, locks and provenance their intake rewrites, and Coffee Brown's (`meshy_vintagepro`) provenance as Meshy, owned (owner, 2026-11-14). A helper of lane A's lead, `wip/characters-1114`, 2026-11-14.
 - Claimed: `packages/client/src/editor/**` (except `editor/paletteBuilder.ts` until easy wins batch 1 lands), the editor's e2e flows and baselines, `e2e/flowMap.mjs` (adding `coverage` to the editor's mapping), `docs/BUILDING_KIT.md` and `docs/MAPMAKER_UI_SPEC.md` (As built notes): **MapMaker UI spec Phase 1** (map settings in the right dock, an inspector that shows only the selection, the 3-state right dock on Shift+\, a contextual tool bar with overflow, a short status bar, the View menu; the owner's answers in the spec). Lane B's splitters22, `wip/mapmaker-ui-1`, 2026-11-14. Lane A's lead reviews (owner). (Three stale MapMaker-lane claims from 2026-11-08/09 removed: their work landed.)
 
 **MapMaker: time of day and weather (`wip/mapmaker-p5`, map format v34, MapMaker lane, 2026-11-09).** Overhaul Phase 5
