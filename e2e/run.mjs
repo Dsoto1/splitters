@@ -1765,10 +1765,14 @@ async function editorLayoutChecks(browser) {
   await viewItem(page, 'ed-overlaps');
   const overlapsOn = await page.evaluate(() => window.__editor.checks.overlapsOn && document.getElementById('ed-overlaps').getAttribute('aria-checked') === 'true');
   await viewItem(page, 'ed-overlaps');
+  // (The reloads above started a fresh map: its own spawn.)
+  const spawnNow = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'spawn')?.id);
   await viewItem(page, 'ed-layer-spawn');
-  const spawnHidden = await page.evaluate((id) => window.__editor.view.hiddenLayers.has('spawn') && !window.__editor.view.entityShown(id), spawn);
+  await frames(page, 1);
+  const spawnHidden = await page.evaluate((id) => window.__editor.view.hiddenLayers.has('spawn') && !window.__editor.view.entityShown(id), spawnNow);
   await viewItem(page, 'ed-layer-spawn');
-  const spawnBack = await page.evaluate((id) => !window.__editor.view.hiddenLayers.has('spawn') && window.__editor.view.entityShown(id) && JSON.stringify(window.__editor.doc).indexOf('hiddenLayers') < 0, spawn);
+  await frames(page, 1);
+  const spawnBack = await page.evaluate((id) => !window.__editor.view.hiddenLayers.has('spawn') && window.__editor.view.entityShown(id) && JSON.stringify(window.__editor.doc).indexOf('hiddenLayers') < 0, spawnNow);
   await viewItem(page, 'ed-plan');
   const planOn = await page.evaluate(() => window.__editor.plan.on);
   await page.keyboard.press('KeyK');

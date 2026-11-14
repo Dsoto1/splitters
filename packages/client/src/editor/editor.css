@@ -285,7 +285,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
    of large thumbnail cards, workspace tabs in the top bar, sub-tabs over
    the palette, Map properties on the right, a hover card in the view.
    ------------------------------------------------------------------ */
-#editor { --ed-rail-w: 44px; --ed-pal-w: 344px; --ed-right-w: var(--ed-dock-w, 268px); }
+#editor { --ed-rail-w: 44px; --ed-pal-w: 364px; --ed-right-w: var(--ed-dock-w, 268px); }
 /* --ed-pal-w is everything on the left: the rail and the asset browser beside it (UI Phase 1). */
 #ed-palette { left: var(--ed-rail-w); width: calc(var(--ed-pal-w) - var(--ed-rail-w)); box-sizing: border-box; padding: 10px 10px 16px; }
 #ed-right { width: var(--ed-right-w); box-sizing: border-box; }
@@ -336,7 +336,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 
 
 @media (max-width: 1400px) {
-  #editor { --ed-pal-w: 324px; --ed-right-w: var(--ed-dock-w, 244px); }
+  #editor { --ed-pal-w: 344px; --ed-right-w: var(--ed-dock-w, 244px); }
   #ed-top .wide { display: none; }
   #ed-top .narrow { display: inline; }
   #ed-modes .tab { padding: 5px 7px; }
@@ -345,7 +345,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
   #ed-bots, #ed-skill { max-width: 76px; }
 }
 @media (max-width: 1100px) {
-  #editor { --ed-pal-w: 284px; --ed-right-w: var(--ed-dock-w, 220px); }
+  #editor { --ed-pal-w: 304px; --ed-right-w: var(--ed-dock-w, 220px); }
   #ed-top .ed-file button:nth-child(n + 4) { display: none; }
 }
 @media (max-width: 900px) {
@@ -538,7 +538,12 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-top.fit-3 .ed-file button, #ed-top.fit-3 #ed-view-btn { padding: 5px; }
 #ed-top.fit-4 .ed-file button:nth-child(n + 4) { display: none; }
 #ed-top.fit-5 #ed-skill { display: none; }
-#ed-top.fit-5 #ed-title { max-width: 120px; }
+#ed-top.fit-5 #ed-title { max-width: 140px; }
+/* Under about 1000 px: the theme picker goes (it is in Map settings → General too), then TEST's bot count (3 bots). */
+#ed-top.fit-6 .ed-pick { display: none; }
+#ed-top.fit-6 #ed-title { max-width: 110px; }
+#ed-top.fit-6 #ed-modes .tab { padding: 4px 3px; font-size: 10px; }
+#ed-top.fit-7 #ed-bots { display: none; }
 #ed-tr-edit .ed-tr-swap { display: flex; align-items: flex-end; gap: 6px; margin: 6px 0; }
 #ed-tr-edit .ed-tr-swap label { flex: 1; margin: 0; }
 #ed-tr-edit .ed-tr-swap button { flex: none; margin: 0; }
@@ -842,7 +847,7 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
    rail, the right dock's three states (rightDock.ts) with Map settings in it, the empty inspector line, and the
    short status bar. Text keeps at least 4.5:1 against its ground; every control shows its keyboard focus.
    ------------------------------------------------------------------ */
-#ed-title { display: flex; align-items: center; gap: 6px; max-width: 220px; min-width: 0; padding: 5px 8px !important; font: 600 15px var(--font-display) !important; text-transform: none; letter-spacing: 0.01em; color: var(--fg); background: transparent; border: 1px solid transparent; }
+#ed-title { display: flex; align-items: center; gap: 6px; max-width: 280px; min-width: 0; flex-shrink: 0; padding: 5px 8px !important; font: 600 15px var(--font-display) !important; text-transform: none; letter-spacing: 0.01em; color: var(--fg); background: transparent; border: 1px solid transparent; }
 #ed-title > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #ed-title svg { width: 15px; height: 15px; flex: none; color: var(--muted); }
 #ed-title:hover, #ed-title:focus-visible, #ed-title.on { border-color: rgba(0, 209, 255, 0.45); background: var(--deep-space); }

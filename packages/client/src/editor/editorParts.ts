@@ -56,10 +56,10 @@ export function mainGround(t: TerrainData): number {
   return best;
 }
 
-/** The top bar's compact layouts (editor.css, fit-1..5): the fewest that make its contents fit its width. */
+/** The top bar's compact layouts (editor.css, fit-1..7): the fewest that make its contents fit its width. */
 export function fitTopBar(top: HTMLElement): void {
   if (top.offsetParent === null) return;
-  const levels = ['fit-1', 'fit-2', 'fit-3', 'fit-4', 'fit-5'];
+  const levels = ['fit-1', 'fit-2', 'fit-3', 'fit-4', 'fit-5', 'fit-6', 'fit-7'];
   top.classList.remove(...levels);
   for (const c of levels) {
     if (top.scrollWidth <= top.clientWidth + 1) break;
