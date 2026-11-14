@@ -31,7 +31,7 @@ import { CLIP_SET_CLIPS as TOOL_CLIPS, TIERS } from '../../../tools/content/char
 const trial: CharacterLook = { id: 'core.trialbot', name: 'Trial Bot', body: 'male', head: '', parts: ['meshy_trialbot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_trialbot_fparms' }, group: 'creatures', nameTheme: 'robot', tier: 'experimental' };
 const ROSTER: readonly CharacterLook[] = [trial, ...CORE_LOOKS];
 // The roster's own tiers (experimental characters of its own come and go: the ten of 2026-11-11 until 2026-11-12, the twelve
-// of 2026-11-13 since then).
+// of 2026-11-13 until 2026-11-14; today none).
 const CORE_TIER = CORE_LOOKS.filter((l) => characterTier(l) === 'core');
 const EXPERIMENTAL = CORE_LOOKS.filter((l) => characterTier(l) === 'experimental');
 
