@@ -150,7 +150,7 @@ describe('change-based selection', () => {
   it('MapMaker code runs the editor flows and client unit tests only', () => {
     const s = sel('packages/client/src/editor/palette.ts');
     expect(s.full).toBe(false);
-    expect(s.flows).toEqual(expect.arrayContaining(['editor', 'editorux', 'editorpieces', 'editortools', 'editorenv', 'scenery', 'visual']));
+    expect(s.flows).toEqual(expect.arrayContaining(['editor', 'editorux', 'editorpieces', 'editortools', 'editorenv', 'scenery', 'coverage', 'visual']));
     expect(s.flows).not.toContain('online');
     expect(s.flows.some((f) => MAP_FLOWS.includes(f))).toBe(false);
     expect(s.unit).toEqual(['client']);

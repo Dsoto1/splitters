@@ -165,6 +165,15 @@ async function waitForHttp(url, ms = 20000) {
   throw new Error(`timed out waiting for ${url}`);
 }
 
+/**
+ * Open MapMaker's Map settings (the map's name, theme, players, modes, picture, card shot, time and weather…) and wait
+ * for them. Every flow that reads or edits Map settings goes through here, so a change to where they live is one edit.
+ */
+async function openMapSettings(page) {
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.waitForSelector('#ed-prop-name', { state: 'attached', timeout: T(10000) });
+}
+
 /** Click a MapMaker palette tool, opening the palette tab that holds it first. */
 async function clickTool(page, selector) {
   await page.evaluate((sel) => {
@@ -408,7 +417,7 @@ async function editorFlow(browser) {
   check(await page.evaluate(() => document.getElementById('ed-dirty').classList.contains('on')), 'an opened draft still counts as unsaved');
 
   // Set thumbnail: frame the editor camera's view and capture it as the map's own picture.
-  await page.keyboard.press('Escape');
+  await openMapSettings(page);
   await page.waitForSelector('#ed-thumb-set', { timeout: T(5000) }).catch(() => {});
   check(await page.evaluate(() => document.querySelector('.ed-map-thumbs .pic')?.classList.contains('none')), 'Map properties: a new map has no picture yet');
   check(await planDrawn(page, '.ed-map-thumbs .plan canvas'), 'Map properties shows the plan, separate from the picture');
@@ -431,7 +440,7 @@ async function editorFlow(browser) {
   const kept = await page.waitForFunction((p) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(p.slice(0, 200)), pic ?? '-', { timeout: T(10000) }).then(() => true, () => false);
   check(kept, 'the picture is saved with the map');
   // Map properties → Bots → Bot characters: tick Soldiers, the map keeps it (one undo step).
-  await page.keyboard.press('Escape');
+  await openMapSettings(page);
   await page.waitForSelector('#ed-cast', { state: 'attached', timeout: T(10000) });
   await page.evaluate(() => (document.getElementById('ed-cast').open = true));
   await page.click('#ed-cast input[data-cast="soldiers"]');
@@ -1770,6 +1779,7 @@ async function editorSkyWeatherChecks(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   page.once('dialog', (d) => d.accept());
   await newMap(page, 96);
+  await openMapSettings(page);
   const sun = () =>
     page.evaluate(() => {
       const l = window.__editor.view.scene.getLightByName('sun');
@@ -2849,7 +2859,7 @@ async function editorWorkflowChecks(browser) {
   check(!(await page.evaluate(() => window.__editor.plan.on || !!document.getElementById('ed-plan-overlay') || !!window.__editor.view.scene.clipPlane)) && JSON.stringify(after) === JSON.stringify(view3d), `the Plan button goes back to the 3D view as it was (${JSON.stringify(after)})`);
 
   // ---- The card shot: Map properties → Set card shot…, eye level by default, Enter saves; Preview in the frame.
-  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await openMapSettings(page);
   await page.waitForSelector('#ed-card-set', { timeout: T(5000) });
   check(await page.isDisabled('#ed-card-preview'), 'no card camera yet: Preview is off');
   await setCamera(-10, 12, -18, 0.6, -0.15);
@@ -4294,9 +4304,10 @@ async function canyonFlow(browser) {
   const oblong = await page.evaluate(() => { const t = window.__editor.doc.terrain; return t && { cols: t.cols, rows: t.rows, spacing: t.spacing, label: document.getElementById('ed-tr-size').textContent }; });
   check(oblong?.cols === 153 && oblong.rows === 129 && oblong.spacing === 2.5, `Create terrain makes a 380 x 320 m terrain at 2.5 m (${JSON.stringify(oblong)})`);
   // Map properties: the modes a map also offers besides its main one. (Escape leaves the tool, again lets go of the
-  // spawn placed above: nothing selected shows the map's properties.)
+  // spawn placed above.)
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
+  await openMapSettings(page);
   // (At this width the inspector may be folded away: the box is clicked where it is.)
   await page.waitForSelector('#ed-prop-also input[data-mode="core.tdm"]', { state: 'attached', timeout: T(5000) });
   await page.evaluate(() => document.querySelector('#ed-prop-also input[data-mode="core.tdm"]').click());
@@ -4339,6 +4350,7 @@ async function sceneryFlow(browser) {
   await page.waitForFunction(() => window.__editor.doc.backdrop?.sky === 'sunset' && window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky'), null, { timeout: T(5000) }).catch(() => {});
   const bd = await page.evaluate(() => ({ sky: window.__editor.doc.backdrop?.sky, mesh: window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky') }));
   check(bd.sky === 'sunset' && bd.mesh, `MapMaker sets the map's sky (${bd.sky})`);
+  await openMapSettings(page);
   await page.click('#ed-blood-amount');
   await page.selectOption('#ed-blood-amount', 'heavy');
   await page.click('.ed-row-buttons button:has-text("Alien")');
@@ -5970,6 +5982,7 @@ async function weaponsetsFlow(browser) {
   await ed.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   ed.once('dialog', (d) => d.accept());
   await newMap(ed, 96);
+  await openMapSettings(ed);
   await ed.waitForSelector('#ed-prop-weapons', { timeout: T(10000) });
   const field = await ed.evaluate(() => ({ value: document.getElementById('ed-prop-weapons').value, options: [...document.querySelectorAll('#ed-prop-weapons option')].map((o) => o.value), set: window.__editor.doc.weaponSet ?? null }));
   check(field.value === 'standard' && field.options.join() === 'standard,military,scifi,medieval,chaos,mixed' && field.set === null, `MapMaker's Map properties offer a weapon set, Standard by default (${JSON.stringify(field)})`);
@@ -7853,6 +7866,7 @@ async function trafficFlow(browser) {
   await page.keyboard.press('Escape');
   // Map properties: Race is no longer a mode. It isn't offered, and a map that still lists it can drop it (undo puts it back).
   await page.keyboard.press('Escape');
+  await openMapSettings(page);
   await page.evaluate(() => window.__editor.run('Old modes', { kind: 'setMetadata', before: { supportedModes: window.__editor.doc.metadata.supportedModes }, after: { supportedModes: ['core.race', 'core.tdm'] } }));
   await page.waitForSelector('#ed-prop-drop-race', { state: 'attached', timeout: T(5000) });
   const raceOffered = await page.evaluate(() => !!document.querySelector('option[value="core.race"]'));
@@ -8008,7 +8022,7 @@ async function coverageFlow(browser) {
   const r = opened ? await ed.evaluate(() => ({ errors: window.__editor.issues.filter((i) => i.severity === 'error').map((i) => i.message), entities: window.__editor.doc.entities.length, tiles: window.__editor.doc.classicStructure.tiles.length, setPieces: window.__editor.doc.setPieces?.length ?? 0, testOnly: !!window.__editor.doc.metadata.testOnly })) : null;
   check(!!r && !r.errors.length && r.entities === file.entities.length && r.tiles === file.classicStructure.tiles.length && r.setPieces === (file.setPieces?.length ?? 0) && r.testOnly, `the coverage map opens in MapMaker whole (its set pieces kept as placements), marked as a test map (${JSON.stringify(r)})`);
   // Map properties show it as a test map.
-  if (opened) await ed.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  if (opened) await openMapSettings(ed);
   const box = opened && (await ed.evaluate(() => document.getElementById('ed-prop-testonly')?.checked ?? null));
   check(box === true, `Map properties: "Test map" is ticked (${box})`);
   check(edErrors.length === 0, `no page errors in MapMaker (${edErrors.join('; ')})`);
@@ -8275,7 +8289,7 @@ async function editorPartBChecks(browser) {
   await frames(page, 2);
   check((await doc()).editorNotes[0].text === 'Sniper line: add a wall', 'clicking the pin opens it to edit');
   await page.keyboard.press('KeyV');
-  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await openMapSettings(page);
   await frames(page, 2);
   check((await page.textContent('#ed-notes-list')).includes('Notes (1)') && (await page.textContent('#ed-notes-list')).includes('Sniper line: add a wall'), 'Map properties lists the notes');
   await shot('notes');
