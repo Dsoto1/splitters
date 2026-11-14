@@ -580,7 +580,8 @@ export class PaletteBuilder {
     }
     if (kind === 'mount') {
       const def = MOUNT_DEFS[id as MountModel];
-      return def ? this.app.thumbs.get(def.model, 'three-quarter', size) : null;
+      // Drawn as the game draws it: a body without tires of its own gets its tire model on every hub.
+      return def ? this.app.thumbs.getMount(def, size) : null;
     }
     if (kind === 'setpiece') {
       const def = this.app.pieceDef(id);

@@ -9,7 +9,7 @@ Spaceships and Tank Pack (all CC0).
 
 | Mount | Seats | What it does |
 |---|---|---|
-| Heavy MG Turret | 1 gunner | A heavy machine gun on a tripod, ±80° arc, overheats instead of reloading. Drawn at 2.4 times its model's built size (`scale` 2.4: 3.6 m long, the top of the receiver 1.54 m up, chest height to the gunner standing behind it); you see your own gun in front of you when you man it |
+| Heavy MG Turret | 1 gunner | A heavy machine gun on a tripod, ±80° arc, overheats instead of reloading. Drawn at 2.1 times its model's built size (`scale` 2.1: 3.15 m long, the top of the receiver 1.35 m up, a quarter of a metre under the gunner's eye, so the ground shows from about 26 degrees under the crosshair; a hip carry to the characters as drawn; 2.4 until 2026-11-14 hid the ground within about 6 degrees); you see your own gun in front of you when you man it |
 | Rocket Turret | 1 gunner | Slow, heavy rockets, ±70° arc (model: a Meshy community cannon on a pedestal, CC0 per the owner, `guns/arc_cannon_turret.glb`, centred on its pedestal so it turns about it) |
 | Sentry Gun | none | Aims and fires on its own at its team's enemies (no team: everyone) |
 | Arc Turret | none | An auto-turret like the Sentry Gun, with a tell: it winds up (0.75 s, a growing charge ball and a warning sound) on an enemy it can see within 22 m, then locks an energy arc on that hits 5 every 0.1 s and jumps to one enemy within 6 m of them (half damage). Breaking its line of sight or leaving its reach drops the lock and the charge; a 2 s lock ends in a 1.25 s vent. 240 health. Drawn on the Rocket Turret's cannon in its own violet energy colour (`MountDef.glow`). MapMaker warns (`mount.arc_spawn`) when one stands within 12 m of a spawn it would shoot at. See "Arc Turret" below |
