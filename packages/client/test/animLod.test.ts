@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ANIM_LOD_FAR, ANIM_LOD_FULL, ANIM_LOD_NEAR, ANIM_SHARE_FAR, ANIM_SHARE_FINE, ANIM_SHARE_FULL, ANIM_SHARE_MID, ANIM_SHARE_NEAR, ANIM_SHARE_TINY, EVERY_FRAME, StepClock, animStep, animStepByShare, blendAt } from '../src/game/animLod.ts';
+import { ANIM_LOD_FAR, ANIM_LOD_FULL, ANIM_LOD_NEAR, ANIM_SHARE_FAR, ANIM_SHARE_FINE, ANIM_SHARE_FULL, ANIM_SHARE_MID, ANIM_SHARE_NEAR, ANIM_SHARE_TINY, EVERY_FRAME, FrameCap, StepClock, TORSO_MEASURES_PER_FRAME, animStep, animStepByShare, blendAt } from '../src/game/animLod.ts';
 import { screenShare } from '../src/game/ragdollBudget.ts';
 import { DEFAULT_FOV } from '../src/game/view.ts';
 
@@ -149,5 +149,56 @@ describe('character animation LOD', () => {
     expect(clock.due(16, 1, far)).toBe(false);
     expect(clock.due(33, 2, EVERY_FRAME)).toBe(true);
     expect(clock.due(50, 3, EVERY_FRAME)).toBe(true);
+  });
+});
+
+describe('a crowd coming into view together (the match-start spike, docs/PERF_STJOHNS_2026-11-14.md)', () => {
+  /** How many of `n` characters (phases as GameView gives them: slot * 37 % 100) evaluate in each of `frames` frames. */
+  function perFrame(n: number, share: number, spread: boolean, frames = 12, frameMs = 33): number[] {
+    const clocks = Array.from({ length: n }, () => new StepClock());
+    const step = animStepByShare(share);
+    const out: number[] = [];
+    for (let f = 100; f < 100 + frames; f++) out.push(clocks.filter((c, i) => c.due(f * frameMs, f, step, (i * 37) % 100, spread)).length);
+    return out;
+  }
+
+  it('spreads the first evaluations over the band\'s frames', () => {
+    // 34 characters 40-80 m away (every 4th frame) all come into view in one frame.
+    const counts = perFrame(34, (ANIM_SHARE_NEAR + ANIM_SHARE_FAR) / 2, true);
+    expect(Math.max(...counts)).toBeLessThanOrEqual(Math.ceil(34 / 4) + 2);
+    // Everyone is evaluated within the band's first 4 frames.
+    expect(counts.slice(0, 4).reduce((a, b) => a + b, 0)).toBe(34);
+  });
+
+  it('without spreading (creatures), all at once as before', () => {
+    const counts = perFrame(34, (ANIM_SHARE_NEAR + ANIM_SHARE_FAR) / 2, false);
+    expect(counts[0]).toBe(34);
+  });
+
+  it('keeps every frame for near characters', () => {
+    expect(perFrame(5, ANIM_SHARE_FINE * 2, true, 4)).toEqual([5, 5, 5, 5]);
+  });
+
+  it('waits at most the band\'s frame step', () => {
+    for (let phase = 0; phase < 100; phase += 7) {
+      const c = new StepClock();
+      const step = animStepByShare(ANIM_SHARE_TINY / 2);
+      let f = 50;
+      while (!c.due(f * 16, f, step, phase, true)) f++;
+      expect(f - 50).toBeLessThan(step.frames);
+    }
+  });
+
+  it('caps first-time work a frame (FrameCap) and lets the rest through on later frames', () => {
+    const cap = new FrameCap(TORSO_MEASURES_PER_FRAME);
+    const waiting = new Set(Array.from({ length: 29 }, (_, i) => i));
+    let frames = 0;
+    for (let frame = 1; waiting.size && frame < 100; frame++, frames++) {
+      let taken = 0;
+      for (const w of [...waiting]) if (cap.take(frame)) (waiting.delete(w), taken++);
+      expect(taken).toBeLessThanOrEqual(TORSO_MEASURES_PER_FRAME);
+    }
+    expect(waiting.size).toBe(0);
+    expect(frames).toBe(Math.ceil(29 / TORSO_MEASURES_PER_FRAME));
   });
 });

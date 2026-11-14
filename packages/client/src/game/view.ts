@@ -267,6 +267,8 @@ interface Avatar {
   glowKey?: string;
   /** Roulette's outline and glow last applied (GameView.auraOf), only set again when it changes. */
   auraKey?: string;
+  /** Its character held hidden until its first pose (a crowd come into view is posed over a few frames). */
+  awaitingPose?: boolean;
   /** Crowds: left out of drawing while outside the view (see updateAvatars). */
   culled?: boolean;
   /** Your own body while you look through your own eyes: kept loaded, not drawn. */
@@ -2254,6 +2256,13 @@ export class GameView {
           run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100);
           stepped = step.frames > 1;
           if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
+          // A crowd come into view together is posed over a few frames (StepClock's spread); one never posed yet stays
+          // hidden until its first pose instead of showing its bind pose (the match-start spike, PERF_STJOHNS_2026-11-14).
+          const unposed = !a.anim.posed;
+          if (unposed !== !!a.awaitingPose) {
+            a.awaitingPose = unposed;
+            a.anim.ch.root.setEnabled(!unposed);
+          }
         } else if (a.anim instanceof CreatureAnimator && perfOn('animlod2')) {
           // Creatures: their clips and bones step by distance as characters' do (round 2; they were evaluated every
           // frame and only the state machine stepped), and not at all out of view; the state machine runs with them.
