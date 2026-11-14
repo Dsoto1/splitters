@@ -208,7 +208,7 @@ const cornerKey = (corners: readonly (readonly number[])[]) =>
     .sort()
     .join(' ');
 const boxShape = (b: LocalBox, swap: boolean) => {
-  const corners = boxCorners(b).map(([x, y, z]) => (swap ? [z, y, x] : [x, y, z]));
+  const corners = boxCorners({ ...b, min: [...b.min], max: [...b.max] }).map(([x, y, z]) => (swap ? [z, y, x] : [x, y, z]));
   return `${cornerKey(corners)} ${b.kind ?? 'solid'} ${b.paint ?? '-'} ${b.surface ? `${b.surface.material}|${b.surface.tint ?? '-'}` : '-'}`;
 };
 /**

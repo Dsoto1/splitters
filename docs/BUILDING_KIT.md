@@ -110,6 +110,44 @@ one bay), and the parts inside a group like any part. Doors placed off the grid 
 the navmesh and keep spawns out by their own turned slab (`Aabb.obox`); doors on the grid are as before. Tests:
 `packages/shared/test/octagonKit.test.ts`.
 
+### The Arena Corner (octagon kit, phase 2)
+
+A 45° corner of the colosseum's stands for an octagonal arena (docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md
+§2, §3.2): **`setpiece.arena_corner`** (Arena stands family) stacks four big tiles, one a storey band, each claiming
+its cells only on its own two levels: **Arena Corner (Ground)** `core.arena_corner_ground` (levels 0-1), **(Middle)**
+`_mid` (2-3), **(Upper)** `_upper` (4-5) and **(Attic)** `_attic` (6-7), in the palette under Vertical and themed by
+the slots like the Seating Tier (seats in solids, lips in trim, walls, vaults and cheeks in walls, walkways and slabs in
+floor).
+
+- **Where it goes:** its anchor is the sand's corner cell; the tile covers the 9 × 9 cells east and north of it (less
+  the sand and the outer court), with straight Arena Bays meeting it to the west (the north stand, arena to the south)
+  and to the south (the east stand, turned one). R turns it to the other corners. The diagonal front runs |x| + |z| =
+  40 m from the arena's centre (22.6 m long, on cell corners), so with three straight bays a side the octagon is within
+  1% of regular. The two half-sand cells either side of the diagonal's front are left free at level 0: a map's sand
+  tiles stay there under the podium's edge.
+- **What is in it:** the podium (2 m wall, walkway, eight rows of 0.25 m, the top walkway at 4 m, as Arena Seating),
+  40 rows of the Seating Tier's (0.5 m by 1 m) from 4 m to 24 m, each one long box between aisles; an aisle up each
+  mitre (2.4 m clear between cheek walls 0.5 m thick that hide both sides' row ends) and one up the diagonal's centre
+  line; a vomitorium on the upper tier's centre line (as the Seating Tier (Vomitorium): a passage 3.2 m wide from the
+  top gallery out under the top rows, an aisle stair either side); the vaulted galleries behind the seats at levels 0,
+  2 and 4 continuing round the corner (blind round arches at the back of the lower two, open into the facade's arcade
+  from the top one); solid fill under the tiers; two-storey Grand arcades round the facade at levels 0, 2 and 4; the
+  attic walk with windows, its roof and parapet. Every arch collides plain (`wallRun.plain`).
+- **How it is made:** `tools/content/kit/arenaCorner.mjs` writes the four tiles from these numbers with the kit's parts
+  (boxes, flights, `wallRun`, `turned`), and `tools/content/tiles.mjs` checks them with the rest of the kit. The north
+  wedge (from the straight bays to the mitre) is written out, the east wedge is its mirror image across the diagonal,
+  and the diagonal is built in its own frame and turned 45°; where two sectors meet at a mitre each box runs to the
+  mitre at its deeper edge, so the bit past it lies inside its neighbour's box of the same band.
+- **Mirror:** each tile is its own mirror image across its diagonal (`tileDiagonalMirror`, map/setPieces.ts), so a
+  mirrored corner (M) is placed as the same tiles turned (three quarter turns more, at the mirrored anchor). The
+  selection Mirror tool (Shift+M) still refuses the four tiles once exploded (it knows only east-west symmetry).
+- **Budget:** a whole corner collides as 1,296 boxes (343, 428, 456 and 69), with 6,795 trim boxes, and brings 13
+  lights (candles in the galleries, chandeliers in the attic).
+- **Bots:** they walk each gallery round the corner, up each mitre aisle from the podium's walkway to the attic, up the
+  centre aisle to the vomitorium's mouth and through it into the top gallery (`packages/shared/test/arenaCorner.test.ts`,
+  every turn). As in the straight Vomitorium bay, the stairs either side of its mouth start from a 1 m row the navmesh
+  does not hold, so bots reach the centre aisle over the top gallery from the attic.
+
 ## Walls and openings (edge styles, `content/tiles/edges.json`)
 
 Any side of any cell can be built as: Auto, Solid wall, Doorway, Wide doorway,
