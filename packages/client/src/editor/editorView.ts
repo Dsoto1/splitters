@@ -202,6 +202,7 @@ export class EditorView {
       pickFill: flat('pickFill', '#00d1ff', 0.12),
     };
     this.applyCamera();
+    this.watchCanvasRect();
   }
 
   // ---------- camera ----------
@@ -255,9 +256,42 @@ export class EditorView {
     this.camera.position.set(target.x - d.x * dist, target.y - d.y * dist, target.z - d.z * dist);
   }
 
+  /**
+   * Where the canvas is on the page, read once a frame instead of on every pointer question. Asking the browser
+   * straight after the panels were rewritten (the hover update inside an edit's refresh) made it lay the whole page
+   * out there and then: 25 ms of every edit on a big map. It is read again after each frame is drawn (the layout the
+   * browser is about to do anyway), dropped when the window is resized or scrolled or the canvas changes size, and
+   * never trusted for longer than a frame (MapMaker left and come back to, a zoom: the next question reads it afresh).
+   */
+  private canvasRect: { rect: DOMRect | null; frame: number } | null = null;
+
+  private readCanvasRect(): DOMRect | null {
+    const engine = this.scene.getEngine();
+    const rect = (engine.getRenderingCanvasClientRect() as DOMRect | null) ?? null;
+    this.canvasRect = { rect, frame: engine.frameId };
+    return rect;
+  }
+
+  private viewRect(): DOMRect | null {
+    const kept = this.canvasRect;
+    if (kept && this.scene.getEngine().frameId - kept.frame <= 1) return kept.rect;
+    return this.readCanvasRect();
+  }
+
+  /** The canvas rectangle is asked for afresh when anything may have moved it. */
+  private watchCanvasRect(): void {
+    if (typeof window === 'undefined') return;
+    const drop = () => (this.canvasRect = null);
+    window.addEventListener('resize', drop);
+    window.addEventListener('scroll', drop, true);
+    window.visualViewport?.addEventListener('resize', drop);
+    const canvas = this.scene.getEngine().getRenderingCanvas();
+    if (canvas && typeof ResizeObserver !== 'undefined') new ResizeObserver(drop).observe(canvas);
+  }
+
   /** World-space ray under the pointer. */
   pointerRay(clientX: number, clientY: number): { origin: Vec3; dir: Vec3 } | null {
-    const rect = this.scene.getEngine().getRenderingCanvasClientRect();
+    const rect = this.viewRect();
     if (!rect) return null;
     const ray = this.scene.createPickingRay(clientX - rect.left, clientY - rect.top, null, this.camera);
     return { origin: { x: ray.origin.x, y: ray.origin.y, z: ray.origin.z }, dir: { x: ray.direction.x, y: ray.direction.y, z: ray.direction.z } };
@@ -265,7 +299,7 @@ export class EditorView {
 
   /** Intersect the pointer ray with the horizontal plane y = planeY. */
   pickPlane(clientX: number, clientY: number, planeY: number): Vec3 | null {
-    const rect = this.scene.getEngine().getRenderingCanvasClientRect();
+    const rect = this.viewRect();
     if (!rect) return null;
     const ray = this.scene.createPickingRay(clientX - rect.left, clientY - rect.top, null, this.camera);
     if (Math.abs(ray.direction.y) < 1e-6) return null;
@@ -276,8 +310,7 @@ export class EditorView {
 
   /** Screen (client) coordinates of a world point; used by automation and future tooltips. */
   project(p: Vec3): { x: number; y: number } {
-    const engine = this.scene.getEngine();
-    const rect = engine.getRenderingCanvasClientRect()!;
+    const rect = this.viewRect()!;
     const v = Vector3.Project(new Vector3(p.x, p.y, p.z), Matrix.Identity(), this.scene.getTransformMatrix(), this.camera.viewport.toGlobal(rect.width, rect.height));
     return { x: rect.left + v.x, y: rect.top + v.y };
   }
@@ -1204,6 +1237,8 @@ export class EditorView {
 
   render(): void {
     this.scene.render();
+    // The frame's own look at where the canvas is (see `canvasRect`).
+    this.readCanvasRect();
   }
 }
 
