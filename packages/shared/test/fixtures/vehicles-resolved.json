@@ -25,12 +25,12 @@
     "displayName": "Heavy MG Turret",
     "kind": "turret",
     "model": "guns/tripod_mg.glb",
-    "scale": 2.4,
+    "scale": 2.1,
     "health": 400,
     "half": [
-     0.9,
-     0.77,
-     1.14
+     0.79,
+     0.67,
+     1
     ],
     "seats": [
      {
@@ -39,7 +39,7 @@
       "offset": [
        0,
        0,
-       -1.65
+       -1.5
       ],
       "weapon": "core.mount_mg",
       "arc": 1.4
@@ -58,7 +58,7 @@
     [
      0,
      1,
-     -1.5
+     -1.35
     ]
    ]
   },
