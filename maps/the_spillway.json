@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 37,
+  "formatVersion": 38,
   "metadata": {
     "id": "the_spillway",
     "name": "The Spillway",
@@ -27,11 +27,11 @@
     },
     "release": {
       "mapId": "m_fxtilvssrdvznevx",
-      "versionId": "v_w7y6lxcgf7utkmtg",
-      "revision": 182,
-      "contentHash": "sha256:562d1ffb4aa031f4731e6dd9dc123587ab3aa2adc40a8ec49fbd5fc605ff9797",
-      "schemaVersion": 37,
-      "releasedAt": "2026-11-13T18:08:55.980Z"
+      "versionId": "v_rdke2bctlrkfy62p",
+      "revision": 183,
+      "contentHash": "sha256:d23584d323db03ea1fd77a9bf61d4a2e0cf486bfcd1c9251262b8c1853d79d5b",
+      "schemaVersion": 38,
+      "releasedAt": "2026-11-14T12:20:17.412Z"
     },
     "tier": "experimental"
   },
@@ -33781,6 +33781,712 @@
       "delaySeconds": 0.8,
       "respawnSeconds": 8,
       "health": 120
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_cheek_w",
+      "position": [
+        21,
+        17.7764,
+        32.1118
+      ],
+      "size": [
+        2,
+        0.5,
+        44.721
+      ],
+      "pitch": 0.46365
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_cheek_e",
+      "position": [
+        27,
+        17.7764,
+        32.1118
+      ],
+      "size": [
+        2,
+        0.5,
+        44.721
+      ],
+      "pitch": 0.46365
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w21",
+      "position": [
+        21,
+        8,
+        15
+      ],
+      "size": [
+        2,
+        1.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w22",
+      "position": [
+        21,
+        8,
+        17
+      ],
+      "size": [
+        2,
+        2.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w23",
+      "position": [
+        21,
+        8,
+        19
+      ],
+      "size": [
+        2,
+        3.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e21",
+      "position": [
+        27,
+        8,
+        15
+      ],
+      "size": [
+        2,
+        1.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e22",
+      "position": [
+        27,
+        8,
+        17
+      ],
+      "size": [
+        2,
+        2.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e23",
+      "position": [
+        27,
+        8,
+        19
+      ],
+      "size": [
+        2,
+        3.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w31",
+      "position": [
+        21,
+        12,
+        23
+      ],
+      "size": [
+        2,
+        1.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w32",
+      "position": [
+        21,
+        12,
+        25
+      ],
+      "size": [
+        2,
+        2.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w33",
+      "position": [
+        21,
+        12,
+        27
+      ],
+      "size": [
+        2,
+        3.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e31",
+      "position": [
+        27,
+        12,
+        23
+      ],
+      "size": [
+        2,
+        1.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e32",
+      "position": [
+        27,
+        12,
+        25
+      ],
+      "size": [
+        2,
+        2.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e33",
+      "position": [
+        27,
+        12,
+        27
+      ],
+      "size": [
+        2,
+        3.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w41",
+      "position": [
+        21,
+        16,
+        31
+      ],
+      "size": [
+        2,
+        1.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w42",
+      "position": [
+        21,
+        16,
+        33
+      ],
+      "size": [
+        2,
+        2.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w43",
+      "position": [
+        21,
+        16,
+        35
+      ],
+      "size": [
+        2,
+        3.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e41",
+      "position": [
+        27,
+        16,
+        31
+      ],
+      "size": [
+        2,
+        1.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e42",
+      "position": [
+        27,
+        16,
+        33
+      ],
+      "size": [
+        2,
+        2.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e43",
+      "position": [
+        27,
+        16,
+        35
+      ],
+      "size": [
+        2,
+        3.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w51",
+      "position": [
+        21,
+        20,
+        39
+      ],
+      "size": [
+        2,
+        1.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w52",
+      "position": [
+        21,
+        20,
+        41
+      ],
+      "size": [
+        2,
+        2.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w53",
+      "position": [
+        21,
+        20,
+        43
+      ],
+      "size": [
+        2,
+        3.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e51",
+      "position": [
+        27,
+        20,
+        39
+      ],
+      "size": [
+        2,
+        1.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e52",
+      "position": [
+        27,
+        20,
+        41
+      ],
+      "size": [
+        2,
+        2.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e53",
+      "position": [
+        27,
+        20,
+        43
+      ],
+      "size": [
+        2,
+        3.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w61",
+      "position": [
+        21,
+        24,
+        47
+      ],
+      "size": [
+        2,
+        1.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w62",
+      "position": [
+        21,
+        24,
+        49
+      ],
+      "size": [
+        2,
+        2.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_w63",
+      "position": [
+        21,
+        24,
+        51
+      ],
+      "size": [
+        2,
+        3.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e61",
+      "position": [
+        27,
+        24,
+        47
+      ],
+      "size": [
+        2,
+        1.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e62",
+      "position": [
+        27,
+        24,
+        49
+      ],
+      "size": [
+        2,
+        2.25,
+        2
+      ]
+    },
+    {
+      "kind": "block",
+      "yaw": 0,
+      "material": "core.pbr_concrete",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "id": "block_stair_fill_e63",
+      "position": [
+        27,
+        24,
+        51
+      ],
+      "size": [
+        2,
+        3.25,
+        2
+      ]
     }
   ],
   "factions": [],

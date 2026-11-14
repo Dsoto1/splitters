@@ -38,9 +38,17 @@
     "lod": 0.25,
     "feet": true,
     "fingers": "fit",
+    "skin": {
+      "knuckle": 0.18,
+      "joints": 0.16,
+      "lanes": 0.6
+    },
     "hands": {
       "curl": 1,
-      "together": 1
+      "together": 1,
+      "l": {
+        "curl": 0.55
+      }
     },
     "hold": {
       "forward": 0.08,

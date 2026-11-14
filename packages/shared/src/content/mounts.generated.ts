@@ -7,18 +7,18 @@ export const MOUNT_MODELS = ['turret_mg', 'turret_rocket', 'sentry', 'sentry_arc
 
 export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef>> = {
   // model: The owner's toy machine gun on a tripod (Meshy, owned; content/guns.json, centred on its tripod), built 1.5 m long: a 0.57 m receiver and a 0.93 m barrel, its bore 0.55 m off the ground.
-  // scale: Drawn 2.4 times its built size (owner, 2026-11-12: "the MG turret should be scaled up"; 2026-11-13, of 2.4: "chest height works"). At its built size its top was 0.64 m up, knee height, and it read as a toy; at 2 the receiver was waist high to the characters as drawn (they stand taller than the 1.8 m capsule). At 2.4: 3.6 m long (receiver 1.37 m, barrel 2.23 m), bore 1.32 m up, top of the receiver 1.54 m, the spade grips about 1.2 m up, tripod feet 2.6 m apart. The model's tripod is short for its gun, so a chest-high gun has a long barrel: the height comes first because the gunner stands.
-  // half: The solid part at that size: the receiver and the pintle (1.8 m wide, 2.28 m long, 1.54 m tall: cover to a crouching player, and a standing one's eye, 1.6 m, just clears it). The barrel (to z 2.47) and the tripod's side feet (1.3 m either side) are outside it, like the Tank's barrel. The gunner's own rounds pass their turret's box (they leave from the eye, standing or ducked).
-  // seats: The gunner stands 1.65 m behind the pintle, half a metre clear of the receiver's back (z -1.13). The seat doesn't move as the gun turns; in the gunner's own view the gun is drawn turning about where they stand, so it stays in front of them (client View.updateMounts), and is left out while they duck below its top (their eye would be behind the receiver).
+  // scale: Drawn 2.1 times its built size (owner, 2026-11-12: "the MG turret should be scaled up"; 2.4 from 2026-11-13, "chest height works"; 2.1 from 2026-11-14, owner's fixes list: at 2.4 the receiver's top, 1.54 m, stood level with the gunner's eye, 1.6 m, half a metre in front of it, so the gun hid the ground about 6 degrees under the crosshair, and drawn characters held it at upper-belly height). At 2.1, a hip carry: 3.15 m long (receiver 1.2 m, barrel 1.95 m), bore 1.16 m up, top of the receiver 1.35 m, the spade grips about 1.05 m up (a drawn character's hip), tripod feet 2.3 m apart; from the standing eye the ground shows from about 26 degrees under the crosshair (0.25 m under the eye, 0.5 m in front). At its built size its top was 0.64 m up, knee height, and it read as a toy.
+  // half: The solid part at that size: the receiver and the pintle (1.58 m wide, 2 m long, 1.34 m tall: cover to a crouching player; a standing one's eye, 1.6 m, clears it). The barrel (to z 2.16) and the tripod's side feet (1.15 m either side) are outside it, like the Tank's barrel. The gunner's own rounds pass their turret's box (they leave from the eye, standing or ducked).
+  // seats: The gunner stands 1.5 m behind the pintle, half a metre clear of the receiver's back (z -0.99). The seat doesn't move as the gun turns; in the gunner's own view the gun is drawn turning about where they stand, so it stays in front of them (client View.updateMounts), and is left out while they duck below its top (their eye would be behind the receiver).
   turret_mg: {
     id: 'turret_mg',
     displayName: 'Heavy MG Turret',
     kind: 'turret',
     model: 'guns/tripod_mg.glb',
-    scale: 2.4,
+    scale: 2.1,
     health: 400,
-    half: [0.9, 0.77, 1.14],
-    seats: [{ role: 'gunner', label: 'Gunner', offset: [0, 0, -1.65], weapon: 'core.mount_mg', arc: 1.4 }],
+    half: [0.79, 0.67, 1],
+    seats: [{ role: 'gunner', label: 'Gunner', offset: [0, 0, -1.5], weapon: 'core.mount_mg', arc: 1.4 }],
     enterRadius: 3,
     respawnSeconds: 45,
     blast: { radius: 3, damage: 60 },
