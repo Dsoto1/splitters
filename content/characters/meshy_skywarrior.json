@@ -5,10 +5,10 @@
   "order": 134,
   "name": "Warrior of the Skies",
   "look": "core.skywarrior",
-  "group": "legends",
+  "group": "animals",
   "tier": "experimental",
   "nameTheme": "myth",
-  "bio": "Came down from the clouds for this fight. Plans to go back up after.",
+  "bio": "An eagle in gold armour. Came down from the clouds for this fight.",
   "body": "male",
   "notes": "Drive intake of 2026-11-13 (\"Warrior of the Skies\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner has looked at it in game (new characters start there, like maps). Name and bio are ours (the name suggested by the owner's session, 2026-11-14; the owner can rename it). Licence: Meshy Community, CC0 per the owner (CLAUDE.md, Content rules: Meshy models the owner shares are Meshy Community CC0 unless the owner says they made them).",
   "source": {
