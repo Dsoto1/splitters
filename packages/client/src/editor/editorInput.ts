@@ -466,8 +466,9 @@ export class EditorInput {
     redo: () => this.app.redo(),
     save: () => this.app.saving.save(),
     duplicate: () => this.app.edits.duplicate(),
-    togglePalette: () => this.app.topBar.toggleSidebar('pal'),
-    toggleSidePanel: () => this.app.topBar.toggleSidebar('right'),
+    // The left rail's collapse (\) and the right dock's three states (Shift+\): MapMaker UI spec Phase 1.
+    togglePalette: () => this.app.rail.toggle(),
+    toggleSidePanel: () => this.app.dock.cycle(),
     rotate: () => this.app.edits.rotate(false),
     rotateFine: () => this.app.edits.rotate(true),
     mirror: () => this.app.edits.mirror(),

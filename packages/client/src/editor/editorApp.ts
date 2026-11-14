@@ -75,7 +75,6 @@ import { MapChecks } from './mapChecks.ts';
 import { MapProperties } from './mapProperties.ts';
 import { MapSaving } from './mapSaving.ts';
 import { OutlinerPanel } from './outlinerPanel.ts';
-import { mountPanels } from './panels.ts';
 import { MapTestPanel } from './mapTestPanel.ts';
 import { MeasureTool } from './measureTool.ts';
 import { NoteTool } from './noteTool.ts';
@@ -99,6 +98,12 @@ import {
 import { SurfaceBoxes } from './surfaceBoxes.ts';
 import { TerrainTools } from './terrainTools.ts';
 import { TopBar } from './topBar.ts';
+import { LeftRail } from './leftRail.ts';
+import { MapSettingsView } from './mapSettingsView.ts';
+import { RightDock } from './rightDock.ts';
+import { StatusBar } from './statusBar.ts';
+import { ToolBar } from './toolBar.ts';
+import { ViewMenu } from './viewMenu.ts';
 import { EditorTour } from './tour.ts';
 
 export interface TestRequest {
@@ -154,6 +159,13 @@ export class EditorApp {
   readonly saving: MapSaving;
   /** Everything in the map in one list; hide and lock, editor-only (outlinerPanel.ts). */
   readonly outliner: OutlinerPanel;
+  /** MapMaker UI spec Phase 1: the right dock's three states (rightDock.ts), Map settings in it (mapSettingsView.ts), the left rail (leftRail.ts), the contextual tool bar (toolBar.ts), the View menu (viewMenu.ts) and the short status bar (statusBar.ts). */
+  readonly dock: RightDock;
+  readonly mapSettings: MapSettingsView;
+  readonly rail: LeftRail;
+  readonly toolBar: ToolBar;
+  readonly viewMenu: ViewMenu;
+  readonly statusBar: StatusBar;
 
   // ---------------------------------------------------------------- the editor's state
 
@@ -277,8 +289,17 @@ export class EditorApp {
     this.checks = new MapChecks(this);
     this.saving = new MapSaving(this);
     this.outliner = new OutlinerPanel(this, $('ed-outliner'));
-    // The side panel's Outliner, Inspector and Validation fold from their headings, as each person left them.
-    this.outliner.open = mountPanels($('ed-right'), (id, open) => id === 'outliner' && this.outliner.setOpen(open)).isOpen('outliner');
+    this.dock = new RightDock(this);
+    this.mapSettings = new MapSettingsView(this);
+    this.rail = new LeftRail(this);
+    this.toolBar = new ToolBar(this);
+    this.viewMenu = new ViewMenu(this);
+    this.statusBar = new StatusBar(this);
+    this.dock.mount();
+    this.rail.mount();
+    this.mapSettings.mount();
+    this.viewMenu.mount();
+    this.statusBar.mount();
     this.view = new EditorView(host.engine);
     this.view.outlinerHidden = (id) => this.outliner.hidden.size > 0 && (this.outliner.hidden.has(id) || this.outliner.hidden.has(this.expansion.partOf.get(id) ?? ''));
     this.thumbs = new ModelThumbnails(host.engine);
@@ -386,9 +407,7 @@ export class EditorApp {
       setShowAll: (on) => this.setShowAll(on, true),
       toast: (t, bad) => this.toast(t, bad),
       changed: (on) => {
-        const b = $('ed-plan');
-        b.classList.toggle('on', on);
-        b.setAttribute('aria-pressed', String(on));
+        this.viewMenu.planChanged(on);
         this.hover.updateHover();
       },
     });
@@ -396,7 +415,7 @@ export class EditorApp {
     // The top bar steps through its compact layouts until it fits, whenever its width or contents change.
     const top = $('ed-top');
     new ResizeObserver(() => fitTopBar(top)).observe(top);
-    new MutationObserver(() => fitTopBar(top)).observe($('ed-status'), { childList: true, characterData: true, subtree: true });
+    new MutationObserver(() => fitTopBar(top)).observe($('ed-title-name'), { childList: true, characterData: true, subtree: true });
     void document.fonts?.ready.then(() => fitTopBar(top));
     this.history = new EditHistory(starterMap(STARTER_TERRAIN, 'grass'));
     // The live budget bar: counters kept from each edit (budgetCounters.ts), drawn when the document changes.
@@ -571,6 +590,7 @@ export class EditorApp {
       this.updateSelectionVisuals();
       this.topBar.updateCounts();
       this.renderLevels();
+      this.statusBar.update();
     }
     if (docChanged) {
       this.renderedRevision = rev;
@@ -586,6 +606,8 @@ export class EditorApp {
       this.checks.validate();
       this.budgetBar.update(this.budgets.counts);
       this.inspector.renderInspector();
+      this.mapSettings.refresh();
+      this.statusBar.update();
       this.topBar.updateTopBar();
       this.hover.updateHover();
       this.logic.render();
@@ -704,7 +726,7 @@ export class EditorApp {
     const hintEl = $('ed-toolhint');
     hintEl.className = `tool-${tool.kind === 'erase' ? 'erase' : PLACING.has(tool.kind) ? 'place' : 'other'}`;
     hintEl.innerHTML = `<b>${escapeHtml(name + what)}</b> ${escapeHtml(hint)}`;
-    $('ed-hint').textContent = 'Right-drag look · WASD/QE fly · wheel zoom · V select · P place · X erase · B paint · O walls · T terrain · N plants · G paths · U measure · Esc: Select tool · ? every key';
+    this.toolBar.syncTool();
     this.hover.updateHover();
   }
 
@@ -747,10 +769,13 @@ export class EditorApp {
     if (!keepHint) this.hints.deselect();
     // Locked things (the outliner's padlock, editor-only) can't be selected.
     this.selection = this.outliner.selectable(single ? sel : withGroups(this.doc, sel));
+    // Something selected: the dock shows it (Map settings step aside). A hidden or compact dock stays as it is.
+    if (this.selCount()) this.mapSettings.close();
     this.updateSelectionVisuals();
     this.inspector.renderInspector();
     this.topBar.syncToolbar();
     this.outliner.draw(true);
+    this.statusBar.update();
   }
 
   updateSelectionVisuals(offset?: [number, number, number], bad = false): void {
@@ -861,7 +886,6 @@ export class EditorApp {
     $('ed-level').textContent = levelName(this.level);
     $<HTMLButtonElement>('ed-level-up').disabled = this.level >= 16;
     $<HTMLButtonElement>('ed-level-down').disabled = this.level <= -16;
-    $('ed-level-name-bottom').textContent = `${levelName(this.level)} · ${this.level * this.doc.classicStructure.levelHeight} m`;
   }
 
   /** Home: the starting overview of the level being edited. */
