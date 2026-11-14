@@ -1,0 +1,261 @@
+# Flavius Rule as an octagon: plan
+
+| | |
+|---|---|
+| Map | `maps/sandfall_colosseum.json`. Its display name is **Flavius Rule** (`metadata.name`, checked on origin/main 5a63efc4); the file name and id stay `sandfall_colosseum`. |
+| Asked by | The owner, 2026-11-14: a near-regular octagon, angled corner sides about as long as the straight stands, not a one-tile chamfer ("1 b"); the MapMaker lane builds it ("2 a"); a plan first. `docs/QUEUE.md` Features (L). |
+| Written by | A helper of lane B's splitters22, 2026-11-14. Plan only: no map or code changes. |
+| Rules | CLAUDE.md "Maps": the map changes only in MapMaker, through its own tools; every new piece goes into MapMaker for everyone; no map scripts. |
+| Pictures | `octagon/plan-today.png` (the map today, plan view) and `octagon/plan-octagon-proposal.png` (the proposal drawn over it). |
+
+## Summary
+
+- Clip the sand's corners on the 8 m grid. Keep the three middle bays of each straight stand (24 m). Add four 45° corner stands. Their front on the sand is 22.6 m long. The octagon is nearly regular at every depth: 24 / 22.6 m at the sand, 70.4 / 69.0 m at the facade.
+- The stands, the hypogeum and the village stay where they are. Only the corners and the end bays change.
+- MapMaker gets a family of **Arena Corner** pieces: one tile per storey band, turned in quarter turns like any tile, with their 45° geometry inside. Two set pieces stack them, one plain and one with a gate. Any arena built from the Arena stands pieces can use them.
+- The gates move to the middle of the diagonals, where the board has them. They keep their portcullis, winch, chain and rules. A gatehouse tower stands over each gate's outer end.
+- Five phases, about six landings. The new pieces land and are tested before the map is touched.
+
+## 1. Today, measured
+
+Measured on origin/main 5a63efc4 with the game's own geometry (`buildMapGeometry`, the same boxes physics uses).
+
+### Footprint and grid
+- Standard grid: 8 m cells, 4 m levels. A board square is 4 m, half a cell. The arena's centre is the origin.
+- Sand: cells -3..3, 56 × 56 m (±28 m). The 13 × 13 board (52 m) sits in it with a 2 m margin. The podium wall is at ±28 m.
+- Stands: four straight stands, seven radial bay lines each (N/S: x = -3..3; E/W: y = -3..3), from the sand out to ±84 m.
+- Outside: the ring street, sixteen insulae (cells 13-14 out), the main square south. Terrain 320 m. Boundary x ±148, z -158..148.
+
+### Stand tiers (each straight bay line, depth in cells from the centre)
+| Depth | Distance | Level | Piece | Top |
+|---|---|---|---|---|
+| 4-5 | 28-44 m | 0 | Arena Bay (Podium): 2 m podium wall, walkway, seats, gallery behind | 8 m |
+| 6-7 | 44-60 m | 2 | Arena Bay (Upper Tier), gallery under its back half | 16 m |
+| 8-9 | 60-76 m | 4 | Upper Tier, or Vomitorium on every other line | 24 m |
+| 10 | 76-84 m | 6 | Arena Attic (walk, windows, roof) | 28 m |
+| 6-9 | under the tiers | 0-3 | limestone "Stand fill" Sky Blocks (10), except the gate lines' Grand Arcades | |
+| 10 | facade | 0, 2, 4 | Grand Arcades on N/S; a plain limestone wall (fill block) on E/W | |
+
+### The corners today
+- The stands are straight, so each corner is an open court of 7 × 7 cells (56 × 56 m) at ground level.
+- The sand's corner cell, (±4, ±4), is open paving (a Platform tile over the hypogeum ring's corner). So the sand opens into each court through an 8 m gap.
+- A Stair Tower (8 levels, 3 × 1 cells, 32 m lookout) stands in each court against the end of the north or south stand, at x ±4, y ±8..10. Its hall opens into that stand's galleries at every level.
+- An Open Stairs tile at (±4, ±5), level -1, climbs from the ring's corner up into each court.
+- Gates 1-4 are the north and south stands' end lines (x ±3): a Gladiator Gate tile at depth 4, then Grand Arcades out to the facade. Portcullis doors at (±24, ±29), start raised. Winch buttons in the passages, chain buttons on the sand. Eight rules (toggle door, buzzer).
+
+### Collision boxes, lights, nav
+| What | Boxes |
+|---|---|
+| Whole map | 22,240 (the test's cap is 23,000) |
+| Straight stands, three middle lines a side (kept) | 4,569 |
+| Straight stands, the two end lines each side of each stand (x or y = ±2, ±3) | 7,856 |
+| Corner courts (the four towers 3,136, paving 4) | 3,140 |
+| Hypogeum | 1,670 |
+| Village, sand and the rest | 4,844 |
+
+- By piece: Upper Tier 103 a placement, Vomitorium 119, Podium 79, Grand Arcade 58, Attic 6, Stair Tower 784.
+- Lights: 253 of 256. About 80 of them are in the end lines and the towers.
+- Nav (2026-11-09): validate-map 0 issues; nav audit 0 traps (islands under the stands and on insula roofs, unreachable). Stuck spots left: the court stairs down into the hypogeum, (±36, -2, ±36) and (-28, -2, -40).
+- Bots (24, 240 s, seed 1): TDM 136 kills, stuck recoveries 160; CTF 7 captures, 223; KotH 70 s held, 98; DM 275 kills. Bench: 3.85 ms a tick (p95 9.45) of 16.7.
+
+### Modes and spawns
+- TDM (default), CTF (gates 1/2 against gates 3/4), King of the Hill (the five medallions), Deathmatch. 12 v 12, 8-24 players. Medieval weapons.
+- Flags at (0, ±18). Hills at (0, 0), (0, ±12), (±12, 0).
+- Embers (north), 12: four in each north gate passage, (±24, 0, 44..68); two in each north court, (±56, 0, 64) and (±68, 0, 48). Tide mirrored south.
+- Shared: main square, east and west streets, north street, two in the ring tunnel.
+- The map's description is out of date: it still mentions lift cages, a beast lift, an aqueduct and a portal.
+
+![Today](octagon/plan-today.png)
+
+## 2. The target octagon
+
+### Shape
+- Inner vertices at (±12, ±28) and (±28, ±12). Straight fronts 24 m (x or y from -12 to 12). Diagonal fronts 22.6 m, on the line |x| + |y| = 40, which runs through cell corners.
+- Apothems: 28 m to the straight fronts, 28.3 m to the diagonals. That is within 1% of a regular octagon.
+- Each tier keeps its depth (16 m) all the way round. The tiers meet at mitres, lines at 22.5° from each inner vertex out to the facade.
+- So the octagon stays nearly regular at every depth. Straight / diagonal side at 44 m out: 37.3 / 35.9 m; at 60 m: 50.5 / 49.1 m; at 76 m: 63.8 / 62.4 m. At the facade: 70.4 / 69.0 m.
+- Outside the diagonal facades, each corner keeps a triangular **outer court** (legs about 49 m). The towers stand there.
+
+![Proposal](octagon/plan-octagon-proposal.png)
+
+### Sizes considered
+| Option | Straight / diagonal at the sand | What moves | Size |
+|---|---|---|---|
+| **A. Clip the sand's corners (recommended)** | 24 / 22.6 m | the end bays and the corners; sand -16% | L |
+| B. Grow the arena: stands move out 2 cells, the whole board stays | 40 / 33.9 m | all four stands, the hypogeum ring, the village | XL |
+| C. Octagon only at the back: the sand stays square, the corner stands fan out from its corners | 56 / 0 m (79 m at the facade) | the corners only | L |
+
+- A is the only one that is near-regular where players fight and keeps the stands, the hypogeum and the village.
+- B doubles the work and moves every other part of the map.
+- C does not change what you see from the sand: it still looks square.
+
+### On the grid
+- MapMaker's grid is square, and tiles and set pieces turn only in quarter turns. A 45° tier 16 m deep is not a whole number of cells (16 m across is 2.83 cell diagonals), so 45° pieces cannot be small cell tiles.
+- So each corner is a few **big tiles**, one per storey band (levels 0-1, 2-3, 4-5, 6-7). Each covers the whole corner and claims its cells only on its own levels, so the four stack with no overlap.
+- The boxes inside can turn to any angle. Turned boxes already work in physics, the navmesh, rendering, picking and the plan view (Round Corner pieces, format v8).
+- The corner pieces turn in quarter turns, so one piece serves all four corners. Each is its own mirror image across its diagonal, so Mirror gives a turned copy.
+- A corner covers cells 2..10 both ways from the centre, less the sand's triangle and the outer court: about 50 cells a storey band.
+- The wedges between the end of the kept straight bays (x = 12 m) and the mitres belong to the corner pieces. Their rows run straight, then meet the diagonal rows at the mitre.
+
+### The arena floor
+- Sand: 3,136 m² today, 2,624 m² as an octagon (-16%).
+- The board loses its corner squares. Per corner, three squares go whole, (20, 24), (24, 20), (24, 24), and three are halved, (16, 24), (20, 20), (24, 16). On the board these are the gate squares, so the gates go to the diagonal. Nothing else stands on them today.
+- The twelve pillars, the four hatches, the five medallions, the beast pit and both flags are inside the octagon. They do not move.
+- Three sand cells per corner, (±3, ±3), (±2, ±3), (±3, ±2), are under or half under the new podium. Twelve of the 49 Courtyard tiles change (see step 3 in section 4).
+
+### Lines of sight
+- On the sand, the longest line falls from 79 m (corner to corner) to 61 m (vertex to vertex). Across the flats it stays 56 m.
+- Today you can also see out of the sand's open corners into the courts. That goes, so the sand becomes a closed bowl. That is good for the Medieval weapons and for the look.
+- The corner stands add high positions over the sand on the diagonals. They look across at the straight stands, as the straight stands look at each other today.
+- The mitre aisles are new climbing lines at each vertex (see 3.2). The corner galleries are covered routes, out of sight of the sand.
+
+### Team balance
+- The map stays an exact north-south mirror. Each team keeps two gates and its spawns behind them.
+- Gates come closer to the centre: from the gate mouth to the centre hill, 37.6 m today and 29.3 m after. Spawns in the passages are about 45-70 m from the centre (about 50 m today). Fights start a little sooner.
+- CTF: a flag at (0, 18) is 26.4 m from its nearer gate today and 20.9 m after. Both teams change alike.
+- Ways off the sand: today 4 open corners, 4 gates and 4 hatch ladders. After: 4 gates and 4 ladders. A lowered portcullis would leave only ladders. Question 4 offers podium stairs to keep 8+ ways out.
+- King of the Hill and Deathmatch need no changes beyond the spawns.
+
+## 3. What MapMaker needs
+
+All new pieces are general: any map can use them from the palette.
+
+### 3.1 Builders (`packages/shared/src/map/catalog.ts`, data parts)
+1. **`turned`**: a group of any parts turned by any yaw about a pivot. It turns each box's centre and adds the yaw, so flights, vaults, columns and rails can stand at 45°. Today only a plain box takes `yaw`; a flight or a vault cannot turn.
+2. **`wallRun`**: a wall built from an edge style (wall, Round arch, Grand arch, window) along any segment, not only a cell side. It reuses `edgeSegments`. This puts arches on 45° gallery walls and facades.
+3. **A plain collision option for arches** in these new pieces: the voussoirs are drawn as trim, and collision is the piers and one lintel. A Grand arch is about 17 slices today. New pieces only, so no shipped map changes (question 6).
+- `tools/content/tiles.mjs` checks the new parts. Kit unit tests cover them.
+
+### 3.2 The corner tiles (`content/tiles/core.json`, palette group Vertical, themed by the slots floor, walls, solids and trim like the Seating Tier)
+
+| Id (proposed) | Levels | Contents |
+|---|---|---|
+| `core.arena_corner_ground` | 0-1 | podium wall 2 m on the diagonal, its walkway and first seats, the gallery behind (a 45° vaulted corridor with Round arches, joining the straight bays' podium galleries), solid fill under the upper tiers, the facade's ground storey |
+| `core.arena_corner_ground_gate` | 0-1 | the same with a Gladiator Gate on the diagonal's centre line: a 3.2 m passage onto the sand (a portcullis opening), out under the stand to the facade; a stair well off it down to level -1 |
+| `core.arena_corner_mid` | 2-3 | the Upper Tier round the corner (rows, aisles, gallery under its back half), the podium seats' top, the facade's second storey |
+| `core.arena_corner_upper` | 4-5 | the second tier with a vomitorium on the diagonal's centre line, the facade's third storey |
+| `core.arena_corner_attic` | 6-7 | the attic walk round the corner, its windows and roof |
+
+- The gate version is a tile option (`optionOf`, as the tunnels' Side walls): an inspector checkbox swaps the tile and keeps its paint.
+- **Mitre aisles**: an aisle stair 2.4 m wide along each mitre line. The rows of both sides end under its cheek walls, so no row ends show. Along the mitre the seats climb 0.5 m every 1.08 m, so the steps are 0.25 m high with 0.54 m runs (the kit's rule: at least 0.45 m). The diagonal also gets an aisle on its centre line, or two on the long upper tiers, so no row runs more than about 24 m between aisles.
+- Rows can be single long boxes between aisles. That is fewer boxes per square metre than the straight bays, which split every row at each 8 m bay's aisle.
+- The galleries continue round the corners at levels 0, 2 and 4, so each storey becomes a ring behind the seats (question 5).
+
+### 3.3 The tower (`core.arena_corner_tower`, levels 0-8, or a part of the gate option)
+- A gatehouse over the gate's outer end, turned 45°, straddling the facade. Two switchback stairs either side of the passage, landings onto the galleries at 8, 16 and 24 m and the attic, a lookout at 32 m as today.
+- It reuses the stairwell's flights inside a `turned` group. Today's Stair Tower (8) cannot be used: set pieces turn only in quarter turns.
+
+### 3.4 Set pieces (`content/setpieces/arena.json`, family "Arena stands")
+- `setpiece.arena_corner`: the four storey tiles and their lights (at most 18).
+- `setpiece.arena_corner_gate`: the gate and tower versions, the portcullis door (yaw 45°), its lights.
+- Buttons and rules are map logic, not set-piece parts. In the map they stay as they are and move with the gates.
+- Explode gives ordinary tiles, doors and lights, as for the straight stands.
+
+### 3.5 Nav and bots
+- Aisles 2.4 m clear, as the straight Seating Tier: the navmesh keeps 0.8 m of path. Galleries and the gate passage at least 3.2 m.
+- If 45° steps make a ledge for the navmesh, the fallback is the cliff-stair trick: collide as one pitched ramp (26.6°, walkable) and draw the steps as trim.
+- **Doors at 45° need a small general fix.** Bot blockers, nav openings and the spawn check use a door's axis-aligned bounds (`sim/scenario.ts` `doorPlane` → `oboxAabb`; `NavWorld.markOpenings` samples that box). A 45° portcullis would block a 2.4 m square, not a 0.2 m slab. Fix: an oriented box for the spawn check, and the oriented footprint for `markOpenings`. Every map with a turned door gains from it.
+- Bots press the winch or chain button when a gate is down, as today. Test it at 45°.
+
+### 3.6 Code that changes
+- `shared/src/map/catalog.ts` (two parts, the arch option), `tools/content/tiles.mjs`, the generated kit tiles, the palette atlas (`pnpm content:rebuild`).
+- `shared/src/sim/scenario.ts` and `shared/src/nav/index.ts` (oriented doors).
+- No editor UI code. That keeps clear of the MapMaker UI spec's Phases 2-3 (`packages/client/src/editor/**`). The palette, ghost, inspector, Mirror and Explode already handle big tiles.
+- No map format bump is expected: new tile ids are content. If one turns out to be needed, it takes the number after the tunnel kit's v39.
+- Shared files: lane A's tunnel kit (steps 5-8) also edits `catalog.ts` and `content/tiles/`. Agree the order in HANDOFF.
+
+### 3.7 Tests
+- Kit: `turned` and `wallRun` boxes; plain arch collision.
+- Corner tiles (a new `arenaCorner.test.ts`, like `tilesUrban.test.ts` and the bay-line test in `setPieces3.test.ts`): in all four turns, bots path along the galleries from one straight bay through the corner to the next, up each mitre aisle and the centre aisle, through the gate passage onto the sand, down the stair well and up the tower to every level. Mirror equals a turn. The stacked tiles overlap nowhere. The rows meet the straight bays' rows flush.
+- z-fight: the stacked corner and its neighbours have no coplanar overlaps left (`coplanarOverlaps` already compares faces across different yaws).
+- Doors: a 45° door's blocker and opening are its own slab.
+- The coverage map (`maps/test_coverage.json`, placed in MapMaker) carries one corner, one gate corner and the tower; its unit test fails if they are missing.
+- `stylePacksAncient.test.ts`: update Flavius Rule's checks in phase 4 (the gates' tiles and doors, the sand's cells, the box cap, the fill blocks).
+
+### 3.8 What is reused
+- The Seating Tier's row and aisle numbers, the Gladiator Gate's passage, the stairwell's flights, the vault and arch builders, the edge styles, tile options (`optionOf`), the Arena stands family, the portcullis door, the button rules, the hypogeum as it is, the Stair Tower's layout.
+- Not reused: Arena Seating Corner (`imperial.seating_corner`). It is a square L for one cell, not a 45° side.
+
+## 4. The map edits, in MapMaker
+
+Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker of a `vite preview` build the way a person does, as for the 2026-11-08 rebuild: Import, select, Delete, the palette, R, PgUp/PgDn, the inspector, Map properties, Export. Commit after each step.
+
+1. **Clear the end bays.** On every level, drag-select the two end lines of each stand (x or y = ±2, ±3, depths 4-10) and delete them. This removes the gate lines and the facade arcades on them. Keep the gate doors, buttons and rules for step 5.
+2. **Clear the courts.** Delete the four Stair Towers, the four Platform tiles over the ring's corners, and the four Open Stairs at (±4, ±5), level -1.
+3. **Sand.** Delete the twelve Courtyard tiles under the new podium (or keep them if Phase 2 lets the podium stand on them). The other 37 stay.
+4. **Place the corners.** Place `setpiece.arena_corner_gate` at each corner, turned with R (NE, NW, SW, SE). Check the ghost is green and the ports meet the straight bays' galleries.
+5. **Gates.** Move each Portcullis ("Gate 1" to "Gate 4") into its corner's opening: about (±20.7, 0, ±20.7), yaw 45° steps, still starting raised. Move each winch into the passage and each chain onto the sand beside it, within 4 m of the door. The eight rules stay as they are (they name the same ids). Gate numbers stay by corner: 1 SE, 2 SW, 3 NW, 4 NE.
+6. **Hypogeum stairs.** Put each stair down from the gate's stair well to the ring's corner. If the well lands beside the ring corner, turn the ring's corner tile into a T (`core.tunnel_vault_t`) toward it. Flatten the ground there if the nav audit finds the tunnel closed.
+7. **Fill blocks.** In the inspector, shorten the ten "Stand fill" blocks from 40 or 56 m to 24 m, so they stop at the kept bays.
+8. **Spawns.** Per corner: four along the gate passage, about 45, 53, 62 and 70 m out on the diagonal, facing the sand; two in the outer court. Twelve a team as today. Keep them 2 m or more from the portcullis. The shared spawns stay.
+9. **Lights.** Keep the total at or under 256. The corners' set pieces bring at most 18 each, about the 80 freed in steps 1-2.
+10. **Map properties.** Rewrite the description (no lift cages, beast lift, aqueduct or portal). Set a card camera that shows the octagon from above at 45°.
+11. **Kept:** the 4 m squares, the board's pillars, hatches, medallions and beast pit, the emperor's box, the portcullis logic, 12 v 12, TDM/CTF/KotH/DM, the hypogeum, the village, the volcano, open courts (now outside the facade, reached from the gates and the towers).
+12. **Publishing.** The file carries a release (revision 27). After it lands, the owner publishes it again from MapMaker (docs/HOSTING.md, "Publishing maps").
+
+## 5. Risks
+- **Collision boxes.** Steps 1-2 remove about 11,000 (7,856 end lines, 3,140 towers and paving). Target: each corner with its tower 2,700 or fewer, so the map stays at or under today's 22,240 (the cap is 23,000). By area each corner is about 8.6 straight bay lines' worth, about 2,600 boxes built the old way. So long rows and plain arch collision are needed to keep it.
+- **Lights.** 253 of 256 today. Count the corners' lights before placing them.
+- **Performance on the owner's M1.** More seating faces the sand. Box count stays level, but draw calls and shadow casters in the stands may rise. Compare `PERF_STILL=1` before and after. Ask the owner for a short recording on the M1.
+- **Nav and stuck spots.** 45° steps, the mitre aisles' ends, the gate stair well, the tower's switchbacks and the passage past a lowered portcullis. The court stairs are today's stuck spots, and they go.
+- **Z-fighting** at the mitres (rows of equal height at two yaws), at the sand's half cells and where the corner wedges meet the straight rows. The renderer clips coplanar faces across yaws, and the z-fight audit checks them.
+- **Doors at 45°.** Without the oriented door fix, bots treat the gate as a 2.4 m square block, and spawns near it fail the spawn check.
+- **Driving MapMaker.** It took 60-80 s a placement on this map in software rendering. About 30 placements and moves; plan for a long session and commit often.
+- **The card shot.** The tool picked an aerial from the west. A card camera keeps the octagon readable on the map card.
+- **Shared files.** Lane A's tunnel kit touches `catalog.ts` and `content/tiles/`. The MapMaker UI phases touch editor code; this plan does not.
+
+## 6. Checks
+- `pnpm validate-map maps/sandfall_colosseum.json`: 0 issues.
+- `pnpm nav-audit sandfall_colosseum --pictures=<dir>`: 0 traps, 0 errors, only the known islands.
+- z-fight audit (`packages/shared/test/zfight.test.ts`) and `stylePacksAncient.test.ts`.
+- `pnpm bot-report sandfall_colosseum --mode=<mode> --seeds=1,2,3 --seconds=240` for TDM, CTF, KotH and DM, compared with the 2026-11-09 numbers. Watch stuck recoveries, captures, hill time, spawn deaths, and idle spells at the gates and stairs (`--spells`). Also `--base=origin/main` for pace.
+- `pnpm bench` (24 bots, TDM): stays well under 16.7 ms a tick.
+- `PERF_STILL=1 node tools/perf/client-perf.mjs sandfall_colosseum`, low and medium, before and after.
+- Card shot: `node tools/content/capture-map-shots.mjs <url> sandfall_colosseum`.
+- `pnpm typecheck`, `pnpm test:changed`, `pnpm build` then `pnpm e2e:changed`. Content and shared-map changes may map to many flows; `pnpm ci:plan` shows which. The `flashing` flow is not affected (no new effects).
+- The full suite on a `check/` branch before `main`.
+
+## 7. Phases
+
+| # | What | Size | Lands alone? |
+|---|---|---|---|
+| 1 | Builders `turned` and `wallRun`, plain arch collision, oriented doors; their tests | M | Yes: nothing uses them yet |
+| 2 | Corner tiles `ground` / `mid` / `upper` / `attic`, `setpiece.arena_corner`, palette, coverage map, nav tests in four turns | L (1 landing, maybe 2) | Yes: new pieces only |
+| 3 | Gate option, stair well, tower, `setpiece.arena_corner_gate`; their tests | M | Yes |
+| 4 | Flavius Rule in MapMaker (section 4), its checks, the test updates, the card shot | L (1 landing) | Needs 2 and 3 |
+| 5 | Tuning from the bot reports (stuck spots, spawns, lights) | S | After 4 |
+
+- Phases 1-3 can be checked on the coverage map and a scratch map before Flavius Rule is touched. The owner can look at a corner in MapMaker after phase 2.
+- Phase 1 is small enough to go with phase 2 if the landing slot is short.
+
+## 8. The owner's decisions
+
+1. **How big is the octagon?**
+   - a) Clip the sand's corners: three straight bays a side (24 m) and 22.6 m diagonals. The sand loses 16% and the board its corner squares. Stands, hypogeum and village stay. **Recommended.**
+   - b) Grow the arena: the stands move 16 m out so the whole board stays. 40 m straight and 34 m diagonal. The stands, the hypogeum ring and the village are rebuilt.
+   - c) Only the back is octagonal: the sand stays square, the corner stands fan out from its corners.
+2. **Towers?**
+   - a) A gatehouse tower over each gate's outer end, turned 45°, stairs to every tier, a 32 m lookout (the seating chart's dark towers over the gates). **Recommended.**
+   - b) Today's Stair Tower, square-on in each outer court, joined to the stand by a short passage.
+   - c) No towers: stairs inside the corner stands only.
+3. **Hypogeum stairs from the corners?**
+   - a) A stair well off each gate passage, down to the ring's corner, inside the stand. **Recommended.**
+   - b) Out in the new outer courts, with tunnels run on under the corner stands.
+   - c) None: the four branch stairs and the four hatches are enough.
+4. **Ways onto the sand?**
+   - a) Gates and hatches only, as on the board.
+   - b) Also a short stair up the podium wall either side of each gate (eight more ways off the sand, open even when a portcullis is down). **Recommended.**
+   - c) Also a stair up the podium wall at each of the eight vertices.
+5. **Galleries round the corners?**
+   - a) Yes: at levels 0, 2 and 4 the galleries continue round the corners, so each storey is a ring behind the seats. **Recommended.**
+   - b) No: solid fill under the corner seats, galleries stop at the corners (fewer boxes, fewer routes).
+6. **Collision for the new arches?**
+   - a) Plain collision (piers and lintel; the voussoirs only drawn), new pieces only. **Recommended.**
+   - b) Plain collision for every Grand arch in the game too: about 7,000 boxes off this map, and other maps change.
+   - c) Full collision, like today's pieces.
+7. **Spawns?**
+   - a) Four along each gate passage and two in each outer court: twelve a team, as today. **Recommended.**
+   - b) All in the outer courts, none in the passages.
+8. **Order?**
+   - a) The pieces first (phases 1-3, each landing alone), then the map. **Recommended.**
+   - b) Everything in one landing.
