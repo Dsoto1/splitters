@@ -43,11 +43,13 @@ describe('status auras (statusFx.ts)', () => {
     expect(statusFxKind(0)).toBeNull();
   });
 
-  it("keeps the plain shell where no aura is drawn, and a frozen one's block of ice either way", () => {
+  it("keeps the plain look where no aura is drawn, a frozen one's block of ice either way, and the outline under poison and goo", () => {
     expect(plainStatus(STATUS_BURN, false)).toBe(STATUS_BURN);
     expect(plainStatus(STATUS_BURN | STATUS_POISON, true)).toBe(0);
     expect(plainStatus(STATUS_FROZEN | STATUS_BURN, true)).toBe(STATUS_FROZEN);
     expect(plainStatus(STATUS_CHILL, true)).toBe(0);
+    expect(plainStatus(STATUS_POISON, true)).toBe(STATUS_POISON);
+    expect(plainStatus(STATUS_SLOW | STATUS_CHILL, true)).toBe(STATUS_SLOW);
   });
 
   it('asks for the nearest few within range only, at the middle of the body, sized with it', () => {
