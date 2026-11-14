@@ -36,6 +36,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - (none)
 
 ## Bugs
+- S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
+- XS · B · MapMaker: the top bar is cut off at 1440 px (map name, Snap, bot skill truncated) (UI audit; UI Phase 1 fixes it).
 - S · A · Gun Buggy and Troop Buggy tires stand 0.3–0.4 m outside their collision boxes.
 - S · A · The Spillway: bots snag on the long stair's landings (stuck recoveries about 70–88 a match).
 - S · A · Heavy MG sits at upper-belly height on drawn characters and hides the ground about 6° under the crosshair.
@@ -53,7 +55,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
 
 ## Features
-- M · ? · MapMaker UI spec Phase 1: map settings dialog, an inspector that shows only the selection, a 3-state right dock, a contextual tool bar, a short status bar (lane to agree; after Tileset 11) · `docs/MAPMAKER_UI_SPEC.md`
+- M · B · MapMaker UI spec Phase 1 (owner: the MapMaker lane builds it after Tileset 11 and its speed branch; this account reviews; the owner's answers are in the spec): map settings in the right dock, an inspector that shows only the selection, a 3-state right dock, a contextual tool bar, a short status bar, View menu · `docs/MAPMAKER_UI_SPEC.md`
 - M · ? · MapMaker UI spec Phases 2 and 3: synced selection and numeric transforms; live minimap.
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
@@ -69,7 +71,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Waiting on the owner
 - St. John's performance in a match: the 2026-11-13 trace turned out to be MapMaker, so whether the character work helped since 2026-11-10 is still unmeasured. Needs a recording of a match on St. John's (Settings → Record performance, or a Chrome trace while playing).
 - Open questions in `docs/MAPMAKER_EDITING_REPORT_2026-11-13.md`.
-- MapMaker UI spec: 10 questions in `docs/MAPMAKER_UI_AUDIT.md` §10 (keys, the contextual tool bar, the empty inspector, Map settings' form, who builds Phase 1…).
 - The effects-check proposals, once `wip/fx-checks` reports.
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
@@ -81,7 +82,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
-- 2026-11-14 · A · MapMaker UI spec Phase 0: the audit, `docs/MAPMAKER_UI_AUDIT.md` (component tree, tools and keys, Map settings fields, selection, undo, data for Tile Detail, minimap, preferences, the e2e baseline, 10 owner questions).
 - 2026-11-14 · B · Twelve new characters from the owner's Drive (Meshy Community CC0, Experimental until the owner looks them over); the Vortex Grenade is now the Gravity Grenade.
 - 2026-11-14 · A · Ammo Box: solid resupply crates with cook-off, the Ammo Box Kit throwable, tanks refill beside a crate.
 - 2026-11-13 · A · MapMaker Fit ground, the owner's answers: lone platforms stand on the ground, props on moved ground re-bedded in the same undo (fcbd08e0).
