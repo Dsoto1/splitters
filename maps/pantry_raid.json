@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 38,
   "metadata": {
     "id": "pantry_raid",
     "name": "Pantry Raid",
@@ -20,11 +20,11 @@
     ],
     "release": {
       "mapId": "m_vx3sswecmzrnbp7e",
-      "versionId": "v_a6dagbbdua5gyqxw",
-      "revision": 4,
-      "contentHash": "sha256:b4e05d35ab4a8924e5269392cc7c86c496c37ccd627ac5942d58742d2247579a",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:25:49.455Z"
+      "versionId": "v_gmevveeakcyux6yh",
+      "revision": 5,
+      "contentHash": "sha256:32e3cfaeb13759f7b26fe17baa369ea27d920195c8b150f3270e886a213d7f1b",
+      "schemaVersion": 38,
+      "releasedAt": "2026-11-14T11:12:52.188Z"
     }
   },
   "classicStructure": {
@@ -323,13 +323,13 @@
     {
       "id": "block_014",
       "position": [
-        72,
+        58.3,
         0,
         0.2
       ],
       "kind": "block",
       "size": [
-        48,
+        20.6,
         0.9,
         0.4
       ],
@@ -347,13 +347,13 @@
       "position": [
         0.2,
         0,
-        25.2
+        13.5
       ],
       "kind": "block",
       "size": [
         0.4,
         0.9,
-        49.6
+        26.2
       ],
       "yaw": 0,
       "material": "core.paint_gloss",
@@ -7739,7 +7739,8 @@
       ],
       "pair": "mousehole",
       "startEnabled": true,
-      "color": "#3a2a1a"
+      "color": "#3a2a1a",
+      "swirl": "painted"
     },
     {
       "id": "mousehole_s",
@@ -7757,7 +7758,8 @@
       ],
       "pair": "mousehole",
       "startEnabled": true,
-      "color": "#3a2a1a"
+      "color": "#3a2a1a",
+      "swirl": "painted"
     },
     {
       "id": "btn_knob",
@@ -8545,6 +8547,50 @@
       "intensity": 0.8,
       "range": 8,
       "fixture": "none"
+    },
+    {
+      "id": "block_p8yqfxcgjm",
+      "position": [
+        0.2,
+        0,
+        39.7
+      ],
+      "kind": "block",
+      "size": [
+        0.4,
+        0.9,
+        20.6
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#f4f1ea",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "block_jb9l4ney54",
+      "position": [
+        83.7,
+        0,
+        0.2
+      ],
+      "kind": "block",
+      "size": [
+        24.6,
+        0.9,
+        0.4
+      ],
+      "yaw": 0,
+      "material": "core.paint_gloss",
+      "tint": "#f4f1ea",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
     }
   ],
   "factions": [],

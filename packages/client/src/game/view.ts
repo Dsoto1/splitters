@@ -133,8 +133,8 @@ import { MapStyler } from '../mapMeshes.ts';
 import { buildRoadMeshes } from '../roadMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { disposeTree } from '../content/disposeTree.ts';
-import { DROP_LIE_HEIGHT, PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
-import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel } from './lootGlow.ts';
+import { DROP_LIE_HEIGHT, PICKUP_HOVER, createLootOutline, createPickupVisual } from './pickupVisuals.ts';
+import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel, lootOutlineAlpha, lootOutlineRadii } from './lootGlow.ts';
 import { StatusFx, plainStatus } from './statusFx.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
@@ -395,6 +395,9 @@ interface PickupVisual {
   /** Its floor glow (lootGlow.ts): the lasting effect it asks for (none for some kinds) and its level now. */
   glowKey: string | null;
   glow: number;
+  /** The dark outline under the glow's ring (lootGlow.ts LOOT_OUTLINE), made the first time the glow shows, and its key. */
+  outline?: Mesh;
+  outlineKey?: string;
 }
 
 /** First-person match scene: map, viewmodel, remote avatars, pickups, projectiles and effects. */
@@ -2824,6 +2827,30 @@ export class GameView {
     this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2), item, placed: e.item, glowKey: lootGlowKey(item), glow: 0 });
   }
 
+  /** Tests (the flicker check's ring contrast, the effects checks): no pickup asks for a floor glow while this is set. */
+  holdLootGlows = false;
+  /** Tests: draw no dark outline under the glows (how they looked before it). */
+  lootOutlines = true;
+
+  /** The glow's dark outline (lootGlow.ts): as dark as the glow is up, at the floor under the pickup; hidden with no glow. */
+  private placeLootOutline(id: string, p: PickupVisual, calm: boolean): void {
+    const a = this.lootOutlines && p.glowKey ? lootOutlineAlpha(p.glow, calm) : 0;
+    if (a <= 0.005) {
+      if (p.outline?.isEnabled()) p.outline.setEnabled(false);
+      return;
+    }
+    if (!p.outline || p.outlineKey !== p.glowKey) {
+      p.outline?.dispose(false, false);
+      const radii = lootOutlineRadii(p.glowKey!, lastingFx(p.glowKey!)?.scale ?? 1);
+      if (!radii) return;
+      p.outline = createLootOutline(this.scene, radii[0], radii[1], `lootOutline_${id}`);
+      p.outlineKey = p.glowKey!;
+    }
+    p.outline.setEnabled(true);
+    p.outline.position.set(p.root.position.x, p.baseY - PICKUP_HOVER + 0.015, p.root.position.z);
+    p.outline.visibility = a;
+  }
+
   /** How many pickups' floor glows are drawn now (tests). */
   pickupGlows(): number {
     let n = 0;
@@ -2861,10 +2888,11 @@ export class GameView {
       // The glow on the floor under it while it waits (the nearest few; the rest look as they always did).
       const pos = p.root.position;
       const glowId = `loot:${id}`;
-      if (p.glowKey && !taken.has(id) && (pos.x - cam.x) ** 2 + (p.baseY - cam.y) ** 2 + (pos.z - cam.z) ** 2 < LOOT_GLOW_RANGE ** 2) {
+      if (p.glowKey && !this.holdLootGlows && !taken.has(id) && (pos.x - cam.x) ** 2 + (p.baseY - cam.y) ** 2 + (pos.z - cam.z) ** 2 < LOOT_GLOW_RANGE ** 2) {
         p.glow = lootGlowLevel(p.glow, this.lasting.drawn(glowId), dt, calm);
         this.lasting.want(glowId, p.glowKey, { x: pos.x, y: p.baseY - PICKUP_HOVER + 0.02, z: pos.z }, { level: p.glow, steady: calm });
       } else p.glow = 0;
+      this.placeLootOutline(id, p, calm);
       p.root.rotation.y = now * 0.0015 + p.phase;
       p.root.position.y = p.baseY + Math.sin(now * 0.003 + p.phase) * 0.08;
     }

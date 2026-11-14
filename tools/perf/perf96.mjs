@@ -19,6 +19,11 @@
 //   effects physics and posing the ragdolls, timed in the page; CPU rendering doesn't inflate it),
 //   PERF_MAX_MASS_DRAWS=n (exit 1 when frames after the blast average more draws), PERF_MAX_MASS_BODIES=n
 //   (exit 1 when more ragdoll bodies are awake at once than n).
+// A map may name its own scenarios and players: `pantry_raid:fixtures:12` plays Pantry Raid with 12 players and
+//   runs only `fixtures`: you held where a portal, two jump pads and pickups are in view (FIXTURE_VIEWS), so the
+//   map's lasting effects (a portal's swirl, the pads' lift, pickups' glows: game/lastingFx.ts) are drawn and
+//   counted. With a budget it fails when the frames go over the draw or caster budget, an effect is in the shadow
+//   pass, or the portal, a pad or a pickup's glow isn't drawn in most frames (on Low too: 4 lasting places).
 // SwiftShader renders on the CPU, so render times are far above a real GPU's: compare runs
 // on the same machine, and read the sim and JS columns as the portable part.
 import { spawn } from 'node:child_process';
@@ -27,7 +32,10 @@ import { loadavg } from 'node:os';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium } from 'playwright';
 
-const maps = process.argv.slice(2).length ? process.argv.slice(2) : ['norman_shores', 'frost_basin'];
+const specs = (process.argv.slice(2).length ? process.argv.slice(2) : ['norman_shores', 'frost_basin']).map((a) => {
+  const [id, scen, bots] = a.split(':');
+  return { id, scenarios: scen ? scen.split('+') : null, bots: bots ? Number(bots) : null };
+});
 const PORT = process.env.PERF_PORT ?? '4296';
 const GRAPHICS = (process.env.PERF_GRAPHICS ?? 'medium,low').split(',');
 const SECONDS = Number(process.env.PERF_SECONDS ?? 8);
@@ -130,6 +138,23 @@ const ROWS_PLACE = `(m, me, arg) => {
   return held.length;
 }`;
 const ROWS_END = `() => clearInterval(globalThis.__rowsHold)`;
+/**
+ * Scenario `fixtures`: where you stand on each map that has it, and the spot you look at (eye 1.6 m up). Pantry Raid:
+ * on the floor between the south mouse hole (a portal, 51 m off) and the two counter pads (29-34 m), looking between
+ * them, with pickups 15-28 m off in view (an armor, a health, ammo, a rifle).
+ */
+const FIXTURE_VIEWS = { pantry_raid: { at: [55, 0, 55], look: [76, 2, 22] } };
+/** Runs inside the match: you held at a spot (arg: [x, y, z]) on the navmesh, unhurt; FIXTURES_END lets you go. */
+const FIXTURES_PLACE = `(m, me, at) => {
+  const p = m.nav.closestPoint({ x: at[0], y: at[1], z: at[2] }, { x: 4, y: 10, z: 4 }) ?? { x: at[0], y: at[1], z: at[2] };
+  const pos = { x: p.x, y: p.y + 0.05, z: p.z };
+  globalThis.__fixHold = setInterval(() => {
+    me.move = { ...me.move, pos: { ...pos }, velY: 0, vx: 0, vz: 0, grounded: true };
+    me.health = Math.max(me.health, 100);
+  }, 5);
+  return [pos.x, pos.y, pos.z];
+}`;
+const FIXTURES_END = `() => clearInterval(globalThis.__fixHold)`;
 /** Runs inside the match: the blast (after MASS_PLACE). */
 const MASS = `(m) => {
   clearInterval(globalThis.__massHold);
@@ -267,7 +292,9 @@ function watch(page) {
 }
 
 const results = [];
-for (const id of maps) {
+for (const spec of specs) {
+  const id = spec.id;
+  const scenarios = spec.scenarios ?? SCENARIOS;
   for (const graphics of GRAPHICS) {
     const ctx = await browser.newContext({ viewport: { width: 960, height: 540 } });
     await ctx.addInitScript(
@@ -285,7 +312,7 @@ for (const id of maps) {
     const page = await ctx.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
-    await page.goto(`${CLIENT}/?offline=${id}&gamemode=core.tdm&bots=${BOTS}`);
+    await page.goto(`${CLIENT}/?offline=${id}&gamemode=core.tdm&bots=${spec.bots ?? BOTS}`);
     const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && window.__sim, null, { timeout: 600000 }).then(() => true, () => false);
     if (!ok) {
       console.log(`${id}/${graphics}: match did not start ${errors.join('; ')}`);
@@ -319,7 +346,17 @@ for (const id of maps) {
           // Let streaming props, textures and shaders settle, and the bots spread out.
           await sleep(5000);
           const row = { map: id, graphics, players, sim: mode, load: loadavg()[0] };
-          for (const scenario of SCENARIOS) {
+          for (const scenario of scenarios) {
+            if (scenario === 'fixtures') {
+              const view = FIXTURE_VIEWS[id];
+              if (!view) throw new Error(`no fixtures view for ${id} (FIXTURE_VIEWS)`);
+              row.placed = await sim(FIXTURES_PLACE, view.at);
+              const [x, y, z] = row.placed;
+              const d = [view.look[0] - x, view.look[1] - y - 1.6, view.look[2] - z];
+              await page.evaluate((look) => Object.assign(window.__cs.input, look), { yaw: Math.atan2(d[0], d[2]), pitch: Math.atan2(d[1], Math.hypot(d[0], d[2])) });
+              // The effects come up (eased in: two seconds with Reduce flashing on, the default).
+              await sleep(4000);
+            }
             if (scenario === 'mass') {
               row.mass = await measureMass(page, sim);
               const r = row.mass;
@@ -356,6 +393,7 @@ for (const id of maps) {
               return window.__perf.frames;
             });
             if (scenario === 'rows') await sim(ROWS_END);
+            if (scenario === 'fixtures') await sim(FIXTURES_END);
             // What rendering draws now (2 s of frames): draw calls, active meshes, triangles, skinned characters, particles.
             const scene = await page.evaluate(async () => {
               const sc = window.__cs.view.scene;
@@ -363,7 +401,7 @@ for (const id of maps) {
               const counter = engine._drawCalls;
               const add = counter?.addCount;
               let frameDraws = 0;
-              const s = { draws: [], meshes: [], tris: [], skinned: [], casters: [], posed: [], animated: [], kinds: {} };
+              const s = { draws: [], meshes: [], tris: [], skinned: [], casters: [], posed: [], animated: [], kinds: {}, lasting: [] };
               if (counter && add) counter.addCount = (n, f) => ((frameDraws += n), add.call(counter, n, f));
               // Timing-free counts that work on any build: skeletons posed this frame (Babylon stamps each with the
               // render id it was prepared in) and characters whose clips were evaluated (their animation gate open).
@@ -402,6 +440,9 @@ for (const id of maps) {
                 s.tris.push(sc.getActiveIndices() / 3);
                 s.skinned.push(skinned);
                 s.casters.push(window.__cs.view.atmosphere?.casterCount ?? 0);
+                // The lasting effects drawn this frame, by kind (portal, pad, loot, fire …).
+                const live = window.__cs.view.lasting?.live;
+                if (live) s.lasting.push([...live.values()].filter((l) => !l.h.done).map((l) => l.fx.split('.')[0]));
               });
               await new Promise((r) => setTimeout(r, 2000));
               // A CPU-rendered page (CI) can draw fewer than one frame in 2 s: wait for one, up to 30 s more.
@@ -451,7 +492,11 @@ for (const id of maps) {
               }
               const n = Math.max(1, s.draws.length);
               const kinds = Object.fromEntries(Object.entries(s.kinds).map(([k, v]) => [k, Math.round(v / n)]));
-              return { frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), casters: avg(s.casters), effectCasters, shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length, posed: avg(s.posed), animated: avg(s.animated), bands, activeByKind: kinds, casterKinds, castingCharacters, otherCasters: Object.entries(otherNames).sort((a, b) => b[1] - a[1]).slice(0, 6), shaders: window.__cs.view.shaderCount?.() ?? Object.keys(engine._compiledEffects ?? {}).length };
+              // Lasting effects: the most drawn at once, and the share of frames that drew each kind.
+              const lastingShare = {};
+              for (const f of s.lasting) for (const k of new Set(f)) lastingShare[k] = (lastingShare[k] ?? 0) + 1 / Math.max(1, s.lasting.length);
+              for (const k of Object.keys(lastingShare)) lastingShare[k] = +lastingShare[k].toFixed(2);
+              return { lasting: Math.max(0, ...s.lasting.map((f) => f.length)), lastingShare, frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), casters: avg(s.casters), effectCasters, shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length, posed: avg(s.posed), animated: avg(s.animated), bands, activeByKind: kinds, casterKinds, castingCharacters, otherCasters: Object.entries(otherNames).sort((a, b) => b[1] - a[1]).slice(0, 6), shaders: window.__cs.view.shaderCount?.() ?? Object.keys(engine._compiledEffects ?? {}).length };
             });
             const prof = await sim(PROFILE, false);
             const wall = (Date.now() - t0) / 1000;
@@ -488,7 +533,7 @@ for (const id of maps) {
             };
             const r = row[scenario];
             console.log(
-              `${id} ${graphics} ${mode} ${scenario}:${r.sys ? ` split [avatars, anim, skin, fx, ragdoll, flames, hud, shadow, post, cull] ${JSON.stringify(r.sys)} counts [animated, skinned, ragdolls, lasting, effects, built] ${JSON.stringify(r.counts)} |` : ''} ${r.fps.toFixed(1)} fps, frame ${r.dt.toFixed(1)} ms (p50 ${r.p50.toFixed(1)}, p95 ${r.p95.toFixed(1)}, max ${r.max.toFixed(0)}) = sim ${r.sim.toFixed(1)} (${r.ticksPerFrame.toFixed(2)} ticks, max ${r.maxBatch}; ${r.simShare.toFixed(0)} ms/s) + msg ${r.msg.toFixed(1)} (${r.msgShare.toFixed(0)} ms/s) + js ${r.js.toFixed(1)} + render ${r.render.toFixed(1)} + other ${r.other.toFixed(1)} | ${r.tickRate.toFixed(1)} ticks/s, tick ${r.tick.total.toFixed(2)} ms = bots ${r.tick.bots.toFixed(2)} + physics ${r.tick.physics.toFixed(2)} + rest ${r.tick.rest.toFixed(2)}${prof.wake ? ` | worker wakes: ${JSON.stringify(prof.wake)}` : ''}${scenario === 'clump' || scenario === 'rows' ? ` | ${row.placed} placed` : ''} | scene ${JSON.stringify(scene)}`,
+              `${id} ${graphics} ${mode} ${scenario}:${r.sys ? ` split [avatars, anim, skin, fx, ragdoll, flames, hud, shadow, post, cull] ${JSON.stringify(r.sys)} counts [animated, skinned, ragdolls, lasting, effects, built] ${JSON.stringify(r.counts)} |` : ''} ${r.fps.toFixed(1)} fps, frame ${r.dt.toFixed(1)} ms (p50 ${r.p50.toFixed(1)}, p95 ${r.p95.toFixed(1)}, max ${r.max.toFixed(0)}) = sim ${r.sim.toFixed(1)} (${r.ticksPerFrame.toFixed(2)} ticks, max ${r.maxBatch}; ${r.simShare.toFixed(0)} ms/s) + msg ${r.msg.toFixed(1)} (${r.msgShare.toFixed(0)} ms/s) + js ${r.js.toFixed(1)} + render ${r.render.toFixed(1)} + other ${r.other.toFixed(1)} | ${r.tickRate.toFixed(1)} ticks/s, tick ${r.tick.total.toFixed(2)} ms = bots ${r.tick.bots.toFixed(2)} + physics ${r.tick.physics.toFixed(2)} + rest ${r.tick.rest.toFixed(2)}${prof.wake ? ` | worker wakes: ${JSON.stringify(prof.wake)}` : ''}${scenario === 'clump' || scenario === 'rows' || scenario === 'fixtures' ? ` | ${row.placed} placed` : ''} | scene ${JSON.stringify(scene)}`,
             );
           }
           // What starting each effect costs now, mid-fight: an explosion, both hits, a muzzle flash of every kind
@@ -565,20 +610,31 @@ if (process.env.PERF_JSON) writeFileSync(process.env.PERF_JSON, JSON.stringify(r
 await Promise.race([browser.close(), sleep(10000)]);
 stop();
 const budget = Number(process.env.PERF_MAX_DRAWS ?? 0);
-const over = budget ? results.filter((r) => (r.clump?.scene.draws ?? 0) > budget) : [];
-for (const r of over) console.log(`OVER BUDGET: ${r.map} ${r.graphics} clumped draws ${r.clump.scene.draws} > ${budget}`);
+const over = budget ? results.filter((r) => (r.clump?.scene.draws ?? 0) > budget || (r.fixtures?.scene.draws ?? 0) > budget) : [];
+for (const r of over) console.log(`OVER BUDGET: ${r.map} ${r.graphics} ${(r.clump?.scene.draws ?? 0) > budget ? `clumped draws ${r.clump.scene.draws}` : `fixtures draws ${r.fixtures.scene.draws}`} > ${budget}`);
 // A budget check needs something measured: a map that never started, or no frame drawn in the window, fails it.
-const unmeasured = budget ? maps.flatMap((id) => GRAPHICS.filter((g) => !results.some((r) => r.map === id && r.graphics === g && (r.stalled || r.clump?.scene.frames > 0))).map((g) => `${id}/${g}`)) : [];
-for (const u of unmeasured) console.log(`NOT MEASURED: ${u} (the match didn't start or no clumped frame was drawn)`);
+// (Its gate scenario: `clump`, or `fixtures` for a map run for that alone.)
+const gateOf = (spec) => ((spec.scenarios ?? SCENARIOS).includes('fixtures') && !(spec.scenarios ?? SCENARIOS).includes('clump') ? 'fixtures' : 'clump');
+const unmeasured = budget ? specs.flatMap((spec) => GRAPHICS.filter((g) => !results.some((r) => r.map === spec.id && r.graphics === g && (r.stalled || r[gateOf(spec)]?.scene.frames > 0))).map((g) => `${spec.id}/${g}`)) : [];
+for (const u of unmeasured) console.log(`NOT MEASURED: ${u} (the match didn't start or no gate frame was drawn)`);
 const stalled = results.filter((r) => r.stalled);
 // Shadow casters (clumped frames), effects in the shadow pass, and what starting an effect costs.
 const casterBudget = Number(process.env.PERF_MAX_CASTERS ?? 0);
 const fxBudget = Number(process.env.PERF_MAX_FX_MS ?? 0);
 const checking = budget || casterBudget || fxBudget;
 const fails = [];
+/** The fixtures view: each kind (portal, pad, loot) drawn in at least this share of its frames. */
+const FIXTURE_SHARE = 0.8;
 for (const r of results.filter((x) => !x.stalled)) {
   if (casterBudget && (r.clump?.scene.casters ?? 0) > casterBudget) fails.push(`${r.map} ${r.graphics}: clumped frames average ${r.clump.scene.casters} shadow casters > ${casterBudget} (${r.clump.scene.shown} characters in view)`);
-  for (const sc of ['spread', 'clump']) if (checking && r[sc]?.scene.effectCasters) fails.push(`${r.map} ${r.graphics} ${sc}: ${r[sc].scene.effectCasters} effect meshes in the shadow pass`);
+  for (const sc of ['spread', 'clump', 'fixtures']) if (checking && r[sc]?.scene.effectCasters) fails.push(`${r.map} ${r.graphics} ${sc}: ${r[sc].scene.effectCasters} effect meshes in the shadow pass`);
+  // The fixtures view: its casters within budget, and the portal, the pads and a pickup's glow drawn in most frames
+  // (a place lost to an effect out of sight, or handed back and forth, shows as a share under FIXTURE_SHARE).
+  const fx = r.fixtures?.scene;
+  if (checking && fx && fx.frames > 0) {
+    if (casterBudget && fx.casters > casterBudget) fails.push(`${r.map} ${r.graphics} fixtures: ${fx.casters} shadow casters > ${casterBudget}`);
+    for (const k of ['portal', 'pad', 'loot']) if ((fx.lastingShare?.[k] ?? 0) < FIXTURE_SHARE) fails.push(`${r.map} ${r.graphics} fixtures: the ${k} effect was drawn in ${Math.round((fx.lastingShare?.[k] ?? 0) * 100)} % of frames (< ${FIXTURE_SHARE * 100} %; ${JSON.stringify(fx.lastingShare)})`);
+  }
   for (const [k, ms] of Object.entries(r.fx ?? {})) if (fxBudget && ms > fxBudget) fails.push(`${r.map} ${r.graphics}: starting ${k} took ${ms} ms > ${fxBudget}`);
 }
 // Mass casualty: the worst frame after the blast, its draws, and ragdoll bodies awake at once.
@@ -598,8 +654,9 @@ for (const r of results.filter((x) => !x.stalled)) {
 }
 if ((massMs || massDraws || massBodies) && SCENARIOS.includes('mass')) console.log(`mass casualty: ${results.filter((r) => r.mass).map((r) => `${r.map} ${r.graphics} ${r.mass.killed} killed, worst frame's ragdoll work ${r.mass.workMax.toFixed(1)} ms, ${r.mass.draws} draws`).join('; ')}`);
 for (const f of fails) console.log(`OVER BUDGET: ${f}`);
+if (checking && !fails.length && results.some((r) => r.fixtures)) console.log(`fixtures view: ${results.filter((r) => r.fixtures).map((r) => `${r.map} ${r.graphics} ${r.fixtures.scene.draws} draws, ${r.fixtures.scene.casters} casters, up to ${r.fixtures.scene.lasting} lasting effects ${JSON.stringify(r.fixtures.scene.lastingShare)}`).join('; ')}`);
 if (checking && !fails.length && results.some((r) => r.clump)) console.log(`shadow and effects budget: ${results.filter((r) => r.clump).map((r) => `${r.map} ${r.graphics} ${r.clump.scene.casters} casters, slowest effect ${Math.max(0, ...Object.values(r.fx ?? {}))} ms`).join('; ')}`);
-if (budget && !over.length && !unmeasured.length && !stalled.length) console.log(`draw budget: every clumped frame within ${budget} draws (${results.map((r) => `${r.map} ${r.graphics} ${r.clump.scene.draws}`).join(', ')})`);
+if (budget && !over.length && !unmeasured.length && !stalled.length) console.log(`draw budget: every gate frame within ${budget} draws (${results.filter((r) => r.clump || r.fixtures).map((r) => `${r.map} ${r.graphics} ${(r.clump ?? r.fixtures).scene.draws}`).join(', ')})`);
 // On GitHub, each failure is also an annotation, readable through the API without the log.
 if (process.env.GITHUB_ACTIONS) {
   for (const r of over) console.log(`::error title=perf over budget::${r.map} ${r.graphics} clumped draws ${r.clump.scene.draws} > ${budget}`);

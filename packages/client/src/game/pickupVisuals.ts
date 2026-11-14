@@ -10,6 +10,8 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { AMMO_BOX_KIT_SCALE, THROWABLE_DEFS, getItem, getWeapon, throwableModel, type AmmoType, type DiscPower } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 import { castSmall } from './shadowFlags.ts';
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
+import { LOOT_OUTLINE } from './lootGlow.ts';
 
 /** The small health pickup's model: the medkit (it falls back to the boxes-in-code case when it can't load). */
 const HEALTH_MODEL = 'guns/medkit.glb';
@@ -17,6 +19,27 @@ const HEALTH_MODEL = 'guns/medkit.glb';
 const HEALTH_LARGE_MODEL = 'pickups/health_large.glb';
 /** The rifle rounds pickup's model: an ammo box (Meshy community, content/guns.json), built to its size (0.5 m long). */
 const AMMO_RIFLE_MODEL = 'pickups/ammo_rifle.glb';
+
+/**
+ * Guns waiting on the map are drawn this much bigger than in the hand, so they read at a distance (owner, 2026-11-14;
+ * the MapMaker lane agreed 2026-11-13), but never longer than PICKUP_GUN_MAX_LENGTH: the weapon glow's ring is 1.375 m
+ * across (lootGlow.ts LOOT_RING times its scale 1.25), and a long gun turning on the spot stays inside it. Looks only:
+ * a pickup's reach is unchanged.
+ */
+export const PICKUP_GUN_SCALE = 1.4;
+export const PICKUP_GUN_MAX_LENGTH = 1.3;
+
+/** How much bigger a gun `length` metres long (its longest side) is drawn on the map: PICKUP_GUN_SCALE, less for long guns, never smaller than in the hand. */
+export function pickupGunScale(length: number): number {
+  if (!(length > 0)) return PICKUP_GUN_SCALE;
+  return Math.max(1, Math.min(PICKUP_GUN_SCALE, PICKUP_GUN_MAX_LENGTH / length));
+}
+
+/** A loaded model's longest side (metres; read before it is parented, while it stands unturned at its own scale). */
+function modelLength(model: TransformNode): number {
+  const { min, max } = model.getHierarchyBoundingVectors(true);
+  return Math.max(max.x - min.x, max.y - min.y, max.z - min.z);
+}
 
 /** Height of a pickup's centre above the floor. */
 export const PICKUP_HOVER = 0.55;
@@ -70,10 +93,14 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
   } else if (fx.kind === 'weapon') {
     void copy(getWeapon(fx.weapon).view.model, 'gun').then((model) => {
       if (root.isDisposed()) return model.dispose();
+      // (Measured before it is placed: the root turns, and a turned box reads longer.)
+      const length = lying ? 0 : modelLength(model);
       model.parent = root;
       model.rotation.y = Math.PI / 2;
       // Rolled onto its side about the barrel.
       if (lying) model.rotation.z = Math.PI / 2;
+      // Waiting on the map, drawn bigger so it reads at a distance (dropped ones lie at their own size).
+      else model.scaling.setAll(pickupGunScale(length));
     });
     if (lying) part(CreateCylinder(`${name}_ring`, { diameter: 0.6, height: 0.02, tessellation: 20 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -DROP_LIE_HEIGHT + 0.01;
     else part(CreateCylinder(`${name}_ring`, { diameter: 0.9, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -0.5;
@@ -197,6 +224,67 @@ function ammoBoxes(scene: Scene, root: TransformNode, name: string, ammo: AmmoTy
     });
   add(CreateBox(`${name}_ammo`, { width: 0.5, height: 0.3, depth: 0.32 }, scene), mat(scene, '#6b7048'));
   add(CreateBox(`${name}_stripe`, { width: 0.51, height: 0.06, depth: 0.33 }, scene), mat(scene, ammo ? AMMO_COLORS[ammo] : '#f2c14e', 0.4)).position.y = 0.05;
+}
+
+const outlineSources = new WeakMap<Scene, Map<string, Mesh>>();
+
+/**
+ * The dark outline under a pickup's floor glow (game/lootGlow.ts LOOT_OUTLINE): a flat ring from `inner` to `outer`
+ * metres, black, soft at both edges, lying 1.5 cm over the floor. Its darkness is the mesh's `visibility` (set each
+ * frame from the glow's level); unlit, casts no shadow, not pickable. One geometry per size, shared by its copies.
+ */
+export function createLootOutline(scene: Scene, inner: number, outer: number, name: string): Mesh {
+  let cache = outlineSources.get(scene);
+  if (!cache) outlineSources.set(scene, (cache = new Map()));
+  const key = `${inner.toFixed(3)}|${outer.toFixed(3)}`;
+  let src = cache.get(key);
+  if (!src || src.isDisposed()) {
+    const f = Math.min(LOOT_OUTLINE.feather, (outer - inner) / 3);
+    const radii = [inner, inner + f, outer - f, outer];
+    const alpha = [0, 1, 1, 0];
+    const SEG = 48;
+    const positions: number[] = [];
+    const colors: number[] = [];
+    const indices: number[] = [];
+    for (let i = 0; i <= SEG; i++) {
+      const a = (i / SEG) * Math.PI * 2;
+      for (let k = 0; k < 4; k++) {
+        positions.push(Math.cos(a) * radii[k]!, 0, Math.sin(a) * radii[k]!);
+        colors.push(0, 0, 0, alpha[k]!);
+      }
+      if (i < SEG) for (let k = 0; k < 3; k++) {
+        const v = i * 4 + k;
+        indices.push(v, v + 1, v + 5, v, v + 5, v + 4);
+      }
+    }
+    const vd = new VertexData();
+    vd.positions = positions;
+    vd.colors = colors;
+    vd.indices = indices;
+    const normals: number[] = [];
+    VertexData.ComputeNormals(positions, indices, normals);
+    vd.normals = normals;
+    src = new MeshClass(`lootOutline_${key}`, scene);
+    vd.applyToMesh(src);
+    src.hasVertexAlpha = true;
+    const m = new StandardMaterial(`lootOutline_${key}`, scene);
+    m.diffuseColor = Color3.Black();
+    m.specularColor = Color3.Black();
+    m.emissiveColor = Color3.Black();
+    m.disableLighting = true;
+    m.backFaceCulling = false;
+    m.zOffset = -2;
+    src.material = m;
+    src.isPickable = false;
+    src.setEnabled(false);
+    cache.set(key, src);
+  }
+  const mesh = src.clone(name, null, true, false)!;
+  mesh.setEnabled(true);
+  mesh.isPickable = false;
+  mesh.receiveShadows = false;
+  mesh.hasVertexAlpha = true;
+  return mesh;
 }
 
 const sources = new WeakMap<Scene, Map<string, Mesh>>();
