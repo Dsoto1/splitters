@@ -29,11 +29,10 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
-- M · B (lane B's splitters22) · MapMaker UI spec Phase 1 (owner: the MapMaker lane builds it after Tileset 11 and its speed branch; this account reviews; the owner's answers are in the spec): map settings in the right dock, an inspector that shows only the selection, a 3-state right dock, a contextual tool bar, a short status bar, View menu · `docs/MAPMAKER_UI_SPEC.md` · `wip/mapmaker-ui-1`
 - S · A · Effects-check fixes, the owner's picks (2026-11-14, option a everywhere): Pantry Raid's mouse holes walkable and painted, loot rings outlined, Low's lasting places, the checks; pickup guns drawn bigger · `wip/fx-fixes` (findings: `docs/FX_CHECKS_2026-11-13.md`)
 
 ## Ready to land
-- (none)
+- M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Waiting on lane A's lead's review** (owner: "this account reviews"); `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. Owner questions on the dock width, the rail, renaming and Dress/Settle all are with the owner.
 
 ## Bugs
 - S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
