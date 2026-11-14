@@ -5,12 +5,11 @@
   "order": 148,
   "name": "Spud Marshal",
   "look": "core.potatomarshal",
-  "tier": "experimental",
   "group": "creatures",
   "nameTheme": "alien",
   "bio": "Bred for battle, built like a boulder, and very proud of his helmet-shaped head.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-14 (a helmeted alien trooper; the download's file name, kept in provenance as its src, names a species from a TV franchise, so the character's name, model label and bio are our own; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner has looked at it. Name and bio are ours (the owner can rename it). Licence: Meshy Community, CC0 per the owner (owner, 2026-11-14: all of this Drive batch are Meshy Community CC0). Recoloured (owner, 2026-11-14: less like the download's source; `fixes.recolor`): the blue armour olive drab with ochre trim, the skin a cool grey-green.",
+  "notes": "Drive intake of 2026-11-14 (a helmeted alien trooper; the download's file name, kept in provenance as its src, names a species from a TV franchise, so the character's name, model label and bio are our own; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Core: the owner approved it on 2026-11-14 (\"mark all twelve as finished\"). Name and bio are ours (the owner can rename it). Licence: Meshy Community, CC0 per the owner (owner, 2026-11-14: all of this Drive batch are Meshy Community CC0). Recoloured (owner, 2026-11-14: less like the download's source; `fixes.recolor`): the blue armour olive drab with ochre trim, the skin a cool grey-green.",
   "source": {
     "license": "CC0",
     "author": "Meshy Community (CC0 per the owner)",
