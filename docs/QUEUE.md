@@ -29,6 +29,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
+- L · B (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 (builders `turned`/`wallRun`, plain arch collision, oriented doors) on `wip/flavius-octagon-1`.
 
 ## Ready to land
 - M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Waiting on lane A's lead's review** (owner: "this account reviews"); `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. Owner questions on the dock width, the rail, renaming and Dress/Settle all are with the owner.
@@ -47,7 +48,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
 
 ## Features
-- L · B · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`.
 - M · ? · MapMaker UI spec Phases 2 and 3: synced selection and numeric transforms; live minimap.
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
