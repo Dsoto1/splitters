@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_bioxhqvaxhvjkwof",
-      "revision": 30,
-      "contentHash": "sha256:64d281dd2671d70b3c623a792aff75bbaf2404f5d79b967a512fa2372ed9f286",
+      "versionId": "v_yutqnazzrsrqob2y",
+      "revision": 31,
+      "contentHash": "sha256:0ed8c13fb076d0ee4d51e59689758dece575a9e51c788bb195dbc3adfe56d975",
       "schemaVersion": 38,
-      "releasedAt": "2026-11-13T22:21:28.851Z"
+      "releasedAt": "2026-11-14T00:15:19.341Z"
     },
     "testOnly": true
   },
@@ -5225,6 +5225,17 @@
       "model": "supply_buggy",
       "yaw": 0,
       "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_95h2qo8jbg",
+      "kind": "pickup",
+      "position": [
+        -103,
+        0,
+        12
+      ],
+      "item": "core.ammo_box_kit",
       "respawnSeconds": null
     }
   ],
