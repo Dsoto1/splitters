@@ -69,10 +69,10 @@
       "generator": { "kind": "busstop", "flag": 0.5 },
       "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 40 }],
       "variants": [
-        { "index": 0, "name": "blue", "seed": 12301, "look": { "plate": "#24508f", "picture": "#f2f0e8", "pole": "#8f9498", "grime": 0.25, "wear": 0.15, "rust": 0.08 } },
-        { "index": 1, "name": "yellow", "seed": 12302, "look": { "plate": "#dba81e", "picture": "#1d1f22", "pole": "#8f9498", "grime": 0.25, "wear": 0.15, "rust": 0.08 } },
-        { "index": 2, "name": "green", "seed": 12303, "look": { "plate": "#2c6a48", "picture": "#f2f0e8", "pole": "#2a2d30", "grime": 0.25, "wear": 0.15, "rust": 0.08 } },
-        { "index": 3, "name": "red", "seed": 12304, "look": { "plate": "#b02a22", "picture": "#f2f0e8", "pole": "#dedbd0", "grime": 0.3, "wear": 0.2, "rust": 0.12 } }
+        { "index": 0, "name": "blue", "seed": 12411, "look": { "plate": "#24508f", "picture": "#f2f0e8", "pole": "#8f9498", "grime": 0.25, "wear": 0.15, "rust": 0.08 } },
+        { "index": 1, "name": "yellow", "seed": 12412, "look": { "plate": "#dba81e", "picture": "#1d1f22", "pole": "#8f9498", "grime": 0.25, "wear": 0.15, "rust": 0.08 } },
+        { "index": 2, "name": "green", "seed": 12413, "look": { "plate": "#2c6a48", "picture": "#f2f0e8", "pole": "#2a2d30", "grime": 0.25, "wear": 0.15, "rust": 0.08 } },
+        { "index": 3, "name": "red", "seed": 12414, "look": { "plate": "#b02a22", "picture": "#f2f0e8", "pole": "#dedbd0", "grime": 0.3, "wear": 0.2, "rust": 0.12 } }
       ]
     }
   ]
