@@ -29,6 +29,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
+- M · B (lane B's splitters22) · MapMaker UI spec Phase 1 (owner: the MapMaker lane builds it after Tileset 11 and its speed branch; this account reviews; the owner's answers are in the spec): map settings in the right dock, an inspector that shows only the selection, a 3-state right dock, a contextual tool bar, a short status bar, View menu · `docs/MAPMAKER_UI_SPEC.md` · `wip/mapmaker-ui-1`
 - S · A · Effects-check fixes, the owner's picks (2026-11-14, option a everywhere): Pantry Raid's mouse holes walkable and painted, loot rings outlined, Low's lasting places, the checks; pickup guns drawn bigger · `wip/fx-fixes` (findings: `docs/FX_CHECKS_2026-11-13.md`)
 
 ## Ready to land
@@ -54,7 +55,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
 
 ## Features
-- M · B · MapMaker UI spec Phase 1 (owner: the MapMaker lane builds it after Tileset 11 and its speed branch; this account reviews; the owner's answers are in the spec): map settings in the right dock, an inspector that shows only the selection, a 3-state right dock, a contextual tool bar, a short status bar, View menu · `docs/MAPMAKER_UI_SPEC.md`
 - M · ? · MapMaker UI spec Phases 2 and 3: synced selection and numeric transforms; live minimap.
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
