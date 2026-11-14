@@ -29,6 +29,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## In flight
 - S · A · Effects checks, findings only: Pantry Raid portals, loot rings on bright floors, perf and Low graphics for the new effects, Reduce flashing · `wip/fx-checks` (docs)
+- S · B · MapMaker: the Roads tool (`routeTool.ts`) redraws its markers the slow way the Paths tool did; the same fix applies. · `wip/mapmaker-editor-speed-2`
+- S · B · MapMaker: a forced layout still costs about 50 ms on each edit and selection (it moved, it did not go); find what dirties the layout. · `wip/mapmaker-editor-speed-2`
 
 ## Ready to land
 - (none)
@@ -50,8 +52,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · A · Mobile audit: Options in one column on phones (proposal 7).
 - S · A · Mobile audit: Match Setup on phones, sticky header and bigger steppers (proposal 11).
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
-- S · ? · MapMaker: the Roads tool (`routeTool.ts`) redraws its markers the slow way the Paths tool did; the same fix applies.
-- S · ? · MapMaker: a forced layout still costs about 50 ms on each edit and selection (it moved, it did not go); find what dirties the layout.
 
 ## Features
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
