@@ -795,6 +795,7 @@ The MapMaker lane (other account) is **the main session for the rest of the week
   - About 1,540 draw calls and 740 meshes.
   - Server tick 1.6 ms, so the sim isn't the problem.
 - **Hitches:** most are frame time outside our measured code ("outside" about 20 ms, i.e. GPU or browser) on top of about 40 ms busy.
+- **Re-recorded 2026-11-14 (TDM, 65 players): about 34 fps, characters 5.5 ms, 28 hitches in 164 s; rendering is now the frame (scene 11.2, shadows 6.9, cull 3.3 ms; 1,519 draws, unchanged).** Read: `docs/PERF_STJOHNS_2026-11-14.md`. Next: cut draws (step 1); the match-start charAnim spike is lane A's (QUEUE Bugs).
 - **Treat it as a bug** (it jumps the queue). Use the perf toolset (docs/PERF_96.md, `?perf=1` recordings) and the far-copies / LOD work. Re-record on St. John's after each fix.
 
 #### Your queue, in order (owner decisions in brackets)
