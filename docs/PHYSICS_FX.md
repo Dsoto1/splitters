@@ -188,10 +188,11 @@ new machine, never committed); `node tools/content/vfx-map.mjs` after editing th
   shield: tier 0) and before every `decor` one (pickup glows, prop flames), nearest first within a tier. So when
   places run out, pickup glows and prop flames go first, then the far pads and portals; pickup glows still take
   at most half the places of what is left to them. **Out of view** (behind the camera, or off the side: the camera's
-  frustum, 4 m round the camera always counting as seen) an effect of the moment or a fixture comes after the
-  fixtures in view, and out-of-view decoration after everything; and an effect that was stopped and is fading out
+  frustum, 4 m round the camera always counting as seen) every effect comes after everything in view, tier by tier;
+  and an effect that was stopped and is fading out
   (0.2-0.6 s) no longer holds a place (`GodotVfx.loopRoom` counts the live ones). Before both (2026-11-14), Low's four
-  places went to Pantry Raid's oven burners cycling out of sight, and the counter pads' lift faded in and out. Portals ask within 60 m, pads within 36 m (a map with many pads
+  places went to Pantry Raid's oven burners cycling out of sight, and the counter pads' lift faded in and out; now the
+  pads and the nearest two pickups' glows keep them (`pnpm perf:budget`'s `fixtures` view checks it). Portals ask within 60 m, pads within 36 m (a map with many pads
   does not hold places for ones across the map). **Reduce flashing on:** both are held still (`steady`: the swirl
   does not turn, the streaks do not rise), dimmer (portal 0.7 of its strength, pad 0.6) and eased in over about two
   seconds; off, the motion is a slow turn and a slow rise, nothing blinks or pulses. The swirl is drawn unlit and in its own colours (the

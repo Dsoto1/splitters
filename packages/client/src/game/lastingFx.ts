@@ -50,11 +50,12 @@ const NEAR = 4;
 /** An effect's reach for the view test, metres per unit of its `size`. */
 const VIEW_RADIUS = 2;
 /**
- * The order places are handed out in, by tier (0 the effects of the moment, 1 fixtures, 2 decoration): in view,
- * moment then fixtures; then the moment and fixtures out of view; then decoration in view, then out of view.
+ * The order places are handed out in, by tier (0 the effects of the moment, 1 fixtures, 2 decoration): everything in
+ * view first, by tier; then everything out of view, by tier. Nothing the camera can't see takes a place from
+ * something it can (on Low, Pantry Raid's oven burners behind you held the pads' and the pickups' places).
  */
-const RANK_IN_VIEW = [0, 1, 4] as const;
-const RANK_OUT_OF_VIEW = [2, 3, 5] as const;
+const RANK_IN_VIEW = [0, 1, 2] as const;
+const RANK_OUT_OF_VIEW = [3, 4, 5] as const;
 /** Pickup glows take at most this share of the lasting effects the graphics quality allows (low 2, medium 5, high 8). */
 const LOOT_SHARE = 0.5;
 
@@ -92,8 +93,8 @@ export class LastingFx {
 
   /**
    * Draw the nearest wanted effects, stop the rest. `inView` (the camera's frustum: a spot and a radius in metres)
-   * ranks what the camera can't see after the fixtures it can: a flame trap behind a closed oven door or behind
-   * the camera no longer takes a pad's or a portal's place on Low (4 places). Without it everything counts as seen.
+   * ranks what the camera can't see after everything it can: a flame trap behind the camera or off to the side no
+   * longer takes a pad's, a portal's or a pickup's place on Low (4 places). Without it everything counts as seen.
    */
   update(cam: Vec3, inView?: (at: Vec3, radius: number) => boolean): void {
     const now = performance.now();
@@ -108,8 +109,8 @@ export class LastingFx {
       // pad's lift: `fixture`). Last the decoration (`decor`: a pickup's glow, a fire prop's flame), where a glow
       // counts as LOOT_FAR times as far off. So when places run out, glows and prop flames go first, then the far
       // pads and portals; every one of them has a plain look that stands in.
-      // Out of view, an effect of the moment or a fixture comes after the fixtures in view, and before the decoration
-      // (OUT_OF_VIEW); decoration out of view comes last of all. One within NEAR of the camera always counts as seen.
+      // Out of view, every tier comes after everything in view (RANK_OUT_OF_VIEW). One within NEAR of the camera always
+      // counts as seen.
       .map((x) => {
         const ref = lastingFx(x.w.key);
         const tier = ref?.decor ? 2 : ref?.fixture ? 1 : 0;

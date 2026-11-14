@@ -218,7 +218,7 @@ describe('lasting effects (lastingFx.ts)', () => {
     expect(live.at(-1)!.opts.slow).toBeUndefined();
   });
 
-  it('ranks effects out of view after the fixtures in view, and loot in view after both (Low: 4 places)', () => {
+  it('ranks every effect out of view after everything in view (Low: 4 places)', () => {
     const { vfx } = fakeVfx(4);
     const fx = new LastingFx(vfx);
     const cam = { x: 0, y: 0, z: 0 };
@@ -233,9 +233,9 @@ describe('lasting effects (lastingFx.ts)', () => {
     };
     ask();
     fx.update(cam, inView);
-    expect([fx.drawn('pad1'), fx.drawn('pad2'), fx.drawn('gate')]).toEqual([true, true, true]);
-    expect([0, 1, 2, 3].filter((i) => fx.drawn(`trap${i}`)).length).toBe(1);
-    expect(fx.drawn('loot')).toBe(false);
+    // The pads, the portal and the pickup's glow in view; the jets out of sight get none of the four places.
+    expect([fx.drawn('pad1'), fx.drawn('pad2'), fx.drawn('gate'), fx.drawn('loot')]).toEqual([true, true, true, true]);
+    expect([0, 1, 2, 3].filter((i) => fx.drawn(`trap${i}`)).length).toBe(0);
     // Without the view test the jets, nearer than the portal, take its place as before.
     const plain = new LastingFx(fakeVfx(4).vfx);
     for (let i = 0; i < 4; i++) plain.want(`trap${i}`, 'fire.trap', { x: -2 - i, y: 0, z: 0 });

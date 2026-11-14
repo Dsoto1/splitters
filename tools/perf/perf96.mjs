@@ -21,9 +21,9 @@
 //   (exit 1 when more ragdoll bodies are awake at once than n).
 // A map may name its own scenarios and players: `pantry_raid:fixtures:12` plays Pantry Raid with 12 players and
 //   runs only `fixtures`: you held where a portal, two jump pads and pickups are in view (FIXTURE_VIEWS), so the
-//   map's lasting effects (a portal's swirl, the pads' lift, pickups' glows: game/lastingFx.ts) are drawn and
-//   counted. With a budget it fails when the frames go over the draw or caster budget, an effect is in the shadow
-//   pass, or the portal, a pad or a pickup's glow isn't drawn in most frames (on Low too: 4 lasting places).
+//   map's lasting effects (the pads' lift, pickups' glows: game/lastingFx.ts) are drawn and counted. With a budget it
+//   fails when the frames go over the draw or caster budget, an effect is in the shadow pass, or one of the view's
+//   `kinds` isn't drawn in most frames (on Low too: 4 lasting places).
 // SwiftShader renders on the CPU, so render times are far above a real GPU's: compare runs
 // on the same machine, and read the sim and JS columns as the portable part.
 import { spawn } from 'node:child_process';
@@ -139,11 +139,14 @@ const ROWS_PLACE = `(m, me, arg) => {
 }`;
 const ROWS_END = `() => clearInterval(globalThis.__rowsHold)`;
 /**
- * Scenario `fixtures`: where you stand on each map that has it, and the spot you look at (eye 1.6 m up). Pantry Raid:
- * on the floor between the south mouse hole (a portal, 51 m off) and the two counter pads (29-34 m), looking between
- * them, with pickups 15-28 m off in view (an armor, a health, ammo, a rifle).
+ * Scenario `fixtures`: where you stand on each map that has it, the spot you look at (eye 1.6 m up), and the lasting
+ * effects that must be drawn in most frames (`kinds`, by key before the dot). Pantry Raid: on the floor between the
+ * south mouse hole (a portal, 51 m off) and the two counter pads (29-34 m), looking between them, with pickups 15-28 m
+ * off in view (an armor, a health, a rifle), and the oven's four flame jets cycling out of sight beside you. The mouse
+ * holes' swirl is painted (no pack effect), so the pads and the pickups' glows are what it checks: out-of-sight jets
+ * must not take their places, on Low's four either.
  */
-const FIXTURE_VIEWS = { pantry_raid: { at: [55, 0, 55], look: [76, 2, 22] } };
+const FIXTURE_VIEWS = { pantry_raid: { at: [55, 0, 55], look: [76, 2, 22], kinds: ['pad', 'loot'] } };
 /** Runs inside the match: you held at a spot (arg: [x, y, z]) on the navmesh, unhurt; FIXTURES_END lets you go. */
 const FIXTURES_PLACE = `(m, me, at) => {
   const p = m.nav.closestPoint({ x: at[0], y: at[1], z: at[2] }, { x: 4, y: 10, z: 4 }) ?? { x: at[0], y: at[1], z: at[2] };
@@ -623,7 +626,7 @@ const casterBudget = Number(process.env.PERF_MAX_CASTERS ?? 0);
 const fxBudget = Number(process.env.PERF_MAX_FX_MS ?? 0);
 const checking = budget || casterBudget || fxBudget;
 const fails = [];
-/** The fixtures view: each kind (portal, pad, loot) drawn in at least this share of its frames. */
+/** The fixtures view: each of its kinds drawn in at least this share of its frames. */
 const FIXTURE_SHARE = 0.8;
 for (const r of results.filter((x) => !x.stalled)) {
   if (casterBudget && (r.clump?.scene.casters ?? 0) > casterBudget) fails.push(`${r.map} ${r.graphics}: clumped frames average ${r.clump.scene.casters} shadow casters > ${casterBudget} (${r.clump.scene.shown} characters in view)`);
@@ -633,7 +636,7 @@ for (const r of results.filter((x) => !x.stalled)) {
   const fx = r.fixtures?.scene;
   if (checking && fx && fx.frames > 0) {
     if (casterBudget && fx.casters > casterBudget) fails.push(`${r.map} ${r.graphics} fixtures: ${fx.casters} shadow casters > ${casterBudget}`);
-    for (const k of ['portal', 'pad', 'loot']) if ((fx.lastingShare?.[k] ?? 0) < FIXTURE_SHARE) fails.push(`${r.map} ${r.graphics} fixtures: the ${k} effect was drawn in ${Math.round((fx.lastingShare?.[k] ?? 0) * 100)} % of frames (< ${FIXTURE_SHARE * 100} %; ${JSON.stringify(fx.lastingShare)})`);
+    for (const k of FIXTURE_VIEWS[r.map]?.kinds ?? []) if ((fx.lastingShare?.[k] ?? 0) < FIXTURE_SHARE) fails.push(`${r.map} ${r.graphics} fixtures: the ${k} effect was drawn in ${Math.round((fx.lastingShare?.[k] ?? 0) * 100)} % of frames (< ${FIXTURE_SHARE * 100} %; ${JSON.stringify(fx.lastingShare)})`);
   }
   for (const [k, ms] of Object.entries(r.fx ?? {})) if (fxBudget && ms > fxBudget) fails.push(`${r.map} ${r.graphics}: starting ${k} took ${ms} ms > ${fxBudget}`);
 }
