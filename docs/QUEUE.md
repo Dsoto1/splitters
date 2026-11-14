@@ -30,9 +30,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## In flight
 - S · A · Effects checks, findings only: Pantry Raid portals, loot rings on bright floors, perf and Low graphics for the new effects, Reduce flashing · `wip/fx-checks` (docs)
 - M · B (session splitters22, Opus 5.5 medium; owner, 2026-11-13) · New characters: the T-pose models in the owner's Drive (Meshy Community, CC0; files `Meshy_AI_*_20261113_animated_mixamo_All_animation.glb` and the like, added 2026-11-13). Intake through the character pipeline, recorded as community CC0, Experimental until looked over · claims in HANDOFF first
-- S · B · In flight (owner: "1 2 3") · Tileset 11: reshape the bandstand (it reads as a squat pavilion); a label for the Urban set-piece family; a bus stop sign.
-- M · B · Tileset 11, step E: two tiles, a fire escape and a scaffold bay (data tiles first) · `docs/map-briefs/urban/URBAN_PLAN.md`
-- S · B · In flight · A repeatable performance measurement (a fixed camera with no bots, or the mean of several runs): one run of `tools/perf/client-perf.mjs` swings by half on an unchanged map · `docs/map-briefs/urban/PERF_BASELINE.md`. Do it before the first map uses urban pieces.
 
 ## Ready to land
 - (none)
@@ -90,6 +87,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - 2026-11-13 · A · The Spillway: crest openings closed, wing wall, hillside stair legs, east end raised to the crest (023edfa4). No gatehouses.
 - 2026-11-13 · A · MapMaker editing: two to three times quicker edits, select a path or road, fit the ground to a build (7bb706a8).
 - 2026-11-13 · A · Tunnel kit step 4 (73f17583).
+- 2026-11-14 · B · Tileset 11: fire escape and scaffold bay tiles, a bus stop sign, the bandstand rebuilt, the "Town pieces" tab; a repeatable performance measurement (`PERF_STILL=1`, two runs agree) with a new baseline (78a0b5f).
 - 2026-11-14 · B · MapMaker speed from the owner's trace: the Paths tool about 20 times quicker to drag and hover, Map properties no longer rebuilt on every edit, the hover pick halved (c929d7e). Two of the five fixes only moved a layout.
 - 2026-11-13 · B · A new parachute built in code (round canopy, lines to risers behind the neck, eight colour schemes by player; the Meshy model dropped); Tileset 11's eight urban set pieces built in MapMaker; the arched window's neater stones (train 5, 87ca152).
 - 2026-11-13 · B · The owner's trace of 2026-11-13 read: it is MapMaker, 45.5 fps overall, 22.8 fps in the Paths tool; findings and five ranked fixes in `docs/PERF_STJOHNS_2026-11-13.md`.
