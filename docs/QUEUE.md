@@ -36,23 +36,18 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - (none)
 
 ## Bugs
-- S · A · Gun Buggy and Troop Buggy tires stand 0.3–0.4 m outside their collision boxes.
-- S · A · The Spillway: bots snag on the long stair's landings (stuck recoveries about 70–88 a match).
-- S · A · Heavy MG sits at upper-belly height on drawn characters and hides the ground about 6° under the crosshair.
 - XS · A · Low graphics: a patch of painted ground cells beside a path end on St. John's (ground paint, not the path fix).
 - ? · A · Unconfirmed: the player's own third-person body drawn in first person after a teleport. Check a normal portal and respawn first.
 - ? · A · Unconfirmed: a large flat blue shape seen twice in software pictures (tunnels, The Spillway's long stair).
 
 ## Easy wins
 - S · A+B · Pickup guns drawn 1.3–1.5x so they read at a distance (`pickupVisuals.ts`, beside the loot glows). Lane B agrees (2026-11-13): the glow's ring is sized to the pickup's footprint in `game/lootGlow.ts`, so check a bigger gun still sits inside it.
-- XS · A · Vehicle palette pictures without tires.
-- S · A · Steampunk Warrior's fingers.
-- S · A · Flavius Rule's corners.
 - S · A · Mobile audit: Options in one column on phones (proposal 7).
 - S · A · Mobile audit: Match Setup on phones, sticky header and bigger steppers (proposal 11).
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
 
 ## Features
+- M · A+B · Flavius Rule's corners (owner: "the corners angled to connect instead of squared off (octagon?)"): not an easy win. The four stands are straight runs of 8 m tiles that stop at the corner courts and towers; angled corners need new 45° stand pieces (or set pieces) that meet both stands at every tier, with their stairs, gates and nav, and the corner courts, towers and hypogeum stairs moved or rebuilt. A MapMaker job on `maps/sandfall_colosseum.json` (the MapMaker lane's map), with a plan first.
 - M · ? · MapMaker UI spec Phase 1: map settings dialog, an inspector that shows only the selection, a 3-state right dock, a contextual tool bar, a short status bar (lane to agree; after Tileset 11) · `docs/MAPMAKER_UI_SPEC.md`
 - M · ? · MapMaker UI spec Phases 2 and 3: synced selection and numeric transforms; live minimap.
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
@@ -81,6 +76,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-14 · A · Easy wins batch 1: the Heavy MG Turret at 2.1x (a hip carry: the ground shows under the crosshair), vehicle palette pictures with their tires, Steampunk Warrior's hands, The Spillway's long stair cheeks (bots' stuck recoveries about 80 to 50 a match); the buggy tires were already inside their boxes (fitted 2026-11-11, measured as drawn). Flavius Rule's corners moved to Features (not an easy win).
 - 2026-11-14 · A · MapMaker UI spec Phase 0: the audit, `docs/MAPMAKER_UI_AUDIT.md` (component tree, tools and keys, Map settings fields, selection, undo, data for Tile Detail, minimap, preferences, the e2e baseline, 10 owner questions).
 - 2026-11-14 · B · Twelve new characters from the owner's Drive (Meshy Community CC0, Experimental until the owner looks them over); the Vortex Grenade is now the Gravity Grenade.
 - 2026-11-14 · A · Ammo Box: solid resupply crates with cook-off, the Ammo Box Kit throwable, tanks refill beside a crate.
