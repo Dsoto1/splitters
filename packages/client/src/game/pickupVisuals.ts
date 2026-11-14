@@ -8,6 +8,7 @@ import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder'
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { AMMO_BOX_KIT_SCALE, THROWABLE_DEFS, getItem, getWeapon, throwableModel, type AmmoType, type DiscPower } from '@tiletrigger/shared';
+import type { WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 import { castSmall } from './shadowFlags.ts';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
@@ -29,10 +30,43 @@ const AMMO_RIFLE_MODEL = 'pickups/ammo_rifle.glb';
 export const PICKUP_GUN_SCALE = 1.4;
 export const PICKUP_GUN_MAX_LENGTH = 1.3;
 
-/** How much bigger a gun `length` metres long (its longest side) is drawn on the map: PICKUP_GUN_SCALE, less for long guns, never smaller than in the hand. */
-export function pickupGunScale(length: number): number {
+/** Room kept between a turning pickup gun's tip and a wall (metres). */
+const PICKUP_GUN_WALL_GAP = 0.04;
+
+/**
+ * How much bigger a gun `length` metres long (its longest side) is drawn on the map: PICKUP_GUN_SCALE, less for long
+ * guns, and less where a wall stands within `room` metres of the pickup's middle (pickupRoom), so turning it never
+ * passes into the wall where its own size didn't; never smaller than in the hand.
+ */
+export function pickupGunScale(length: number, room = Infinity): number {
   if (!(length > 0)) return PICKUP_GUN_SCALE;
-  return Math.max(1, Math.min(PICKUP_GUN_SCALE, PICKUP_GUN_MAX_LENGTH / length));
+  const most = Math.min(PICKUP_GUN_MAX_LENGTH, 2 * (room - PICKUP_GUN_WALL_GAP));
+  return Math.max(1, Math.min(PICKUP_GUN_SCALE, most / length));
+}
+
+/**
+ * How far a pickup standing at `at` (its floor point) is from the nearest solid box across, at the height its gun
+ * turns at (0.35-0.8 m over the floor; PICKUP_HOVER and the bob): the room a bigger gun may take (pickupGunScale).
+ */
+export function pickupRoom(at: readonly [number, number, number], boxes: Iterable<WorldBox>): number {
+  const [x, y, z] = at;
+  let room = Infinity;
+  for (const b of boxes) {
+    if (b.max[1] < y + 0.35 || b.min[1] > y + 0.8) continue;
+    const hx = (b.max[0] - b.min[0]) / 2;
+    const hz = (b.max[2] - b.min[2]) / 2;
+    let dx = x - (b.min[0] + b.max[0]) / 2;
+    let dz = z - (b.min[2] + b.max[2]) / 2;
+    // (An unturned box further off along either axis than the room found so far can't be nearer.)
+    if (!b.yaw && (Math.abs(dx) - hx > room || Math.abs(dz) - hz > room)) continue;
+    if (b.yaw) {
+      const c = Math.cos(b.yaw);
+      const s = Math.sin(b.yaw);
+      [dx, dz] = [dx * c - dz * s, dx * s + dz * c];
+    }
+    room = Math.min(room, Math.hypot(Math.max(0, Math.abs(dx) - hx), Math.max(0, Math.abs(dz) - hz)));
+  }
+  return room;
 }
 
 /** A loaded model's longest side (metres; read before it is parented, while it stands unturned at its own scale). */
@@ -73,8 +107,9 @@ function mat(scene: Scene, hex: string, glow = 0): StandardMaterial {
  * The returned root is centred on the item; place it PICKUP_HOVER above the floor.
  * `lying`: a weapon dropped by the fallen, on its side on a small ring (place it DROP_LIE_HEIGHT above the ground).
  * `look`: the match's weapon set, whose looks grenades wear (the Military frag, the Sci-fi smoke canister).
+ * `room`: how far the nearest wall is (pickupRoom), which a bigger gun keeps clear of.
  */
-export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false, lying = false, look?: string): TransformNode {
+export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false, lying = false, look?: string, room = Infinity): TransformNode {
   const root = new TransformNode(name, scene);
   // Small and floating: its shadow is cast only near the camera (Atmosphere).
   castSmall(root);
@@ -100,7 +135,7 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
       // Rolled onto its side about the barrel.
       if (lying) model.rotation.z = Math.PI / 2;
       // Waiting on the map, drawn bigger so it reads at a distance (dropped ones lie at their own size).
-      else model.scaling.setAll(pickupGunScale(length));
+      else model.scaling.setAll(pickupGunScale(length, room));
     });
     if (lying) part(CreateCylinder(`${name}_ring`, { diameter: 0.6, height: 0.02, tessellation: 20 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -DROP_LIE_HEIGHT + 0.01;
     else part(CreateCylinder(`${name}_ring`, { diameter: 0.9, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -0.5;
