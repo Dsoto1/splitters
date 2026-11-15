@@ -25,8 +25,9 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
  *
  * - **Breakable props** (a destruction map's, a log given health: shared `isBreakableProp`) are copies too, in batches of
  *   their own (`breakable`): a broken one leaves its batch's buffer (`shown`, from its root switched off: GameView's
- *   breakProp and applyPropStates) and comes back with the next round, the batch's meshes kept. Their batches cast as
- *   they draw, never merged into the shadow proxies, so a broken prop's shadow goes with it.
+ *   breakProp and applyPropStates) and comes back with the next round, the batch's meshes kept. Their batches are never
+ *   merged into the shadow proxies, so a broken prop's shadow goes with it; they count their changes (`thinVersion`),
+ *   so the static shadow cache (shadowCache.ts) keeps them while none breaks, as it keeps a door standing still.
  *
  * Models that can't be merged (animated, skinned, morphing) or carry a billboard level stay on the instance path, as do
  * props that ride movers (the caller keeps those out). `?perfoff=breakbatch` keeps breakable props out too (GameView).
@@ -321,8 +322,9 @@ export class PropBatches {
       if (colors) mesh.thinInstanceSetBuffer('color', colors, 4, false);
       // Never changing (no levels of detail, nothing that breaks): merged into the shadow proxies like the instances were
       // (shadowProxy.ts). Small clutter casts through its shadow-only batch near the camera instead. Breakable copies
-      // cast as they draw: a merged proxy would keep a broken prop's shadow.
-      mesh.metadata = allSmall ? { castsNoShadow: true, propBatch: true, ...(c.breakable ? { breakable: true } : {}) } : lod || c.breakable ? { propBatch: true, ...(c.breakable ? { breakable: true } : {}) } : { staticThin: true, propBatch: true };
+      // are never merged: a proxy would keep a broken prop's shadow.
+      // They say when their copies change (`thinVersion`), so the static shadow cache keeps them while they don't.
+      mesh.metadata = allSmall ? { castsNoShadow: true, propBatch: true, ...(c.breakable ? { breakable: true } : {}) } : c.breakable ? { propBatch: true, breakable: true, thinVersion: 0 } : lod ? { propBatch: true } : { staticThin: true, propBatch: true };
       return mesh;
     });
     b = { level, copies, meshes, matrices, colors, dirty: true };
@@ -359,6 +361,8 @@ export class PropBatches {
       mesh.thinInstanceCount = count;
       mesh.thinInstanceBufferUpdated('matrix');
       if (b.colors) mesh.thinInstanceBufferUpdated('color');
+      const meta = mesh.metadata as { thinVersion?: number } | null;
+      if (meta?.thinVersion !== undefined) meta.thinVersion++;
       // Bounds over the copies drawn, so the batch is culled on its own.
       mesh.thinInstanceRefreshBoundingInfo(false);
     }

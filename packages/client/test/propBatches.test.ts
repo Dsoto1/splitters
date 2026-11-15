@@ -198,9 +198,13 @@ describe('static prop batches', () => {
       return Array.from({ length: m.thinInstanceCount }, (_, i) => Math.round(data[16 * i + 12]!));
     };
     expect(at(before[0]!)).toEqual([5, 9, 13]);
-    // Broken (GameView.breakProp: the root off, then shown): no camera move needed, no batch made again.
+    // Broken (GameView.breakProp: the root off, then shown): no camera move needed, no batch made again. The batch
+    // counts the change, so the static shadow cache draws it again (shadowCache.ts thinVersion).
+    const version = () => (before[0]!.metadata as { thinVersion: number }).thinVersion;
+    const v0 = version();
     roots[1]!.setEnabled(false);
     batches.shown(roots[1]!);
+    expect(version()).toBeGreaterThan(v0);
     const after = batchMeshes(s);
     expect(after).toEqual(before);
     expect(after.every((m) => !m.isDisposed() && m.thinInstanceCount === 2)).toBe(true);

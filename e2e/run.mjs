@@ -5434,6 +5434,37 @@ async function destructionChecks(browser) {
   await page.waitForFunction(() => window.__cs.view.props.get(window.__containerIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
   const broken = await page.evaluate(() => ({ alive: window.__container.alive, drawn: window.__cs.view.props.get(window.__containerIndex)?.isEnabled(), debris: window.__cs.view.debrisBodies.length - window.__debrisBefore }));
   check(!broken.alive && broken.drawn === false && broken.debris > 0, `broken, the container is gone from the yard and its debris flies (${JSON.stringify(broken)})`);
+  // Breakable props drawn in the prop batches while intact (propBatches.ts): the yard's eight framed crates are copies in
+  // a batch of breakables; one broken leaves that batch's buffer at once, the batch kept and its other copies drawn.
+  const batched = await page.evaluate(() => {
+    const m = window.__match, sc = m.scenario, ents = m.map.entities, view = window.__cs.view;
+    const crates = ents.map((e, i) => [e, i]).filter(([e]) => e.kind === 'prop' && e.model === 'kit.crate.framed').map(([, i]) => i);
+    const states = crates.map((i) => view.propBatches?.copyState(view.props.get(i)) ?? null);
+    const k = states.findIndex((st, j) => st?.drawnHere && st.drawn > 1 && states.some((o, n) => n !== j && o?.drawnHere && o.meshes[0] === st.meshes[0]));
+    window.__crateIndex = crates[k];
+    window.__crate = [...sc.destructibles.values()].find((d) => d.i === crates[k]);
+    window.__crateMate = crates.find((i, n) => n !== k && states[n]?.meshes[0] === states[k]?.meshes[0]);
+    window.__crateBatch = states[k];
+    return { crates: crates.length, batched: states.filter((st) => st?.breakable && st.drawnHere).length, at: states[k], breakable: !!window.__crate, stats: view.propBatches?.stats() };
+  });
+  check(batched.crates === 8 && batched.batched === 8 && batched.breakable && batched.at?.drawn > 1, `intact, the framed crates are breakables drawn in a prop batch (${JSON.stringify(batched)})`);
+  if (batched.breakable) {
+    await page.evaluate(() => window.__match.scenario.damageDestructible(window.__crate, 1e6, true, null));
+    await page.waitForFunction(() => window.__cs.view.props.get(window.__crateIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
+    const out = await page.evaluate(() => {
+      const view = window.__cs.view;
+      const st = view.propBatches.copyState(view.props.get(window.__crateIndex));
+      const mate = view.propBatches.copyState(view.props.get(window.__crateMate));
+      const meshes = st.meshes.map((n) => view.scene.getMeshByName(n));
+      return { st, mate, kept: meshes.every((x) => x && !x.isDisposed()), was: window.__crateBatch.drawn, alive: window.__crate.alive, hidden: view.propBatches.stats().hidden };
+    });
+    check(!out.alive && !out.st.drawnHere && out.st.drawn === out.was - 1 && out.mate.drawnHere && out.kept && out.st.meshes.join() === batched.at.meshes.join(), `broken, the crate is gone from its batch and the batch still draws the others (${JSON.stringify(out)})`);
+    // A new round (Scenario.reset, as the match runs it between rounds): back in its batch.
+    await page.evaluate(() => window.__match.scenario.reset());
+    await page.waitForFunction(() => window.__cs.view.props.get(window.__crateIndex)?.isEnabled() === true, null, { timeout: T(10000) }).catch(() => {});
+    const back = await page.evaluate(() => ({ alive: window.__match.scenario.destructibles.get(window.__crateIndex)?.alive, st: window.__cs.view.propBatches.copyState(window.__cs.view.props.get(window.__crateIndex)) }));
+    check(back.alive && back.st.drawnHere && back.st.drawn === out.was, `a new round brings the crate back into its batch (${JSON.stringify(back)})`);
+  }
   // Fallen logs (owner: "not breakable unless toggled as such"): the one given Health in MapMaker breaks, its node gone
   // and wood debris thrown; the other is no breakable, even on this map where everything else is.
   const logs = await page.evaluate(() => {
