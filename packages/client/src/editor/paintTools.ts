@@ -6,6 +6,9 @@ import {
   EDGE_STYLES,
   edgeGlassAt,
   emptyPaint,
+  faceSlot,
+  GROUND_REFUSAL,
+  groundLayerAt,
   GLASS_EDGES,
   GLASS_KIND_LABELS,
   materialRefusal,
@@ -14,20 +17,25 @@ import {
   setEdgeGlassCommand,
   structurePaintCommand,
   structurePaintTarget,
+  surfaceLayer,
   SURFACE_SLOT_LABELS,
   targetName,
+  TERRAIN_MATERIAL_LABELS,
   type EdgeStyle,
   type EdgeTarget,
   type GlassKind,
+  type GroundLayer,
   type PaintRefusal,
   type PaintScope,
   type PieceScope,
   type ResolvedStyle,
   type StructureTarget,
+  type SurfaceLayers,
   type SurfaceStyle,
   type TilePlacement,
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
+import { escapeHtml } from './editorDom.ts';
 
 /** The Paint and Walls tools: painting surfaces and the ground, building a cell side as a wall, door or window with its glass, and picking a style up (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class PaintTools {
@@ -58,20 +66,73 @@ export class PaintTools {
     if (t.kind === 'part' && t.slot) return resolveSurface(doc, t.drawn as TilePlacement, t.slot);
     const block = t.kind === 'block' ? t.block : (t.drawn as Extract<StructureTarget, { kind: 'block' }>['block']);
     const own = block.material ? coreMaterials.get(block.material) : undefined;
-    return own ? { material: own, tint: block.tint ?? null } : { ...resolveSurface(doc, undefined, 'solids'), tint: block.tint ?? null };
+    // An unpainted block shows the theme's floor on top and its underside elsewhere (as it is drawn).
+    const face = this.app.hoverFace;
+    return own ? { material: own, tint: block.tint ?? null } : resolveSurface(doc, undefined, face ? faceSlot(face.box, face.normal) : 'solids');
   }
 
-  /** The status line for Structure paint: what is under the cursor, what it shows now, and what a click does. */
-  label(): string {
+  /** The layers under the cursor: base Structure theme → set piece look → your paint, the one shown marked (painting Phase 2). */
+  layers(t: StructureTarget): SurfaceLayers {
+    const face = this.app.hoverFace;
+    return surfaceLayer(this.app.doc, this.app.setPieceLib, t, face ? faceSlot(face.box, face.normal) : undefined);
+  }
+
+  /**
+   * What Structure paint says about the pointer: what is under it, the layers its look comes from, and what a click
+   * does (or why not). The status line and the card by the cursor both show it.
+   */
+  describe(): { name: string; layers: SurfaceLayers | null; click: string; bad: boolean } {
     const t = this.paintTarget();
-    if (t.kind === 'refused') return t.message;
-    const now = this.currentLook(t).material.displayName;
+    if (t.kind === 'refused') {
+      if (t.reason === 'ground') {
+        const ground = this.groundUnder();
+        return { name: ground ? `Ground · ${ground}` : 'Ground', layers: null, click: `Structure paint doesn't paint the ground. A click does nothing. ${GROUND_REFUSAL.replace("Structure paint doesn't paint the ground. ", '')}`, bad: true };
+      }
+      return { name: t.message.split(':')[0]!, layers: null, click: t.message, bad: true };
+    }
+    const layers = this.layers(t);
+    const name = targetName(t, (id) => coreCatalog.get(id)?.displayName ?? id);
     const brush = coreMaterials.get(this.paintStyle.material)?.displayName ?? this.paintStyle.material;
     const refusal = materialRefusal(t, this.paintStyle.material);
-    const name = targetName(t, (id) => coreCatalog.get(id)?.displayName ?? id);
-    if (refusal) return `${name} · now ${now} · ${refusal}`;
-    const where = t.kind === 'part' ? (this.pieceScope === 'part' ? 'this part only' : `across this ${t.def.displayName}`) : t.kind === 'block' ? (this.paintScope === 'surface' ? 'this block' : 'these blocks') : SCOPE_WORDS[this.paintScope];
-    return `${name} · now ${now} · click paints ${brush} ${where}`;
+    if (refusal) return { name, layers, click: refusal, bad: true };
+    const where = t.kind === 'part' ? (this.pieceScope === 'part' ? 'on this surface only' : `across this ${t.def.displayName}`) : t.kind === 'block' ? (this.paintScope === 'surface' ? 'on this block' : 'on these blocks') : SCOPE_WORDS[this.paintScope];
+    const shown = layerStyle(layers);
+    // Right-click takes your paint off: the look below shows (the set piece's look, else the theme).
+    const below = layers.look.style ? 'the look' : 'the theme';
+    return { name, layers, click: `Click paints ${brush} ${where}. Alt+click picks up ${shown}. Right-click resets to ${below}.`, bad: false };
+  }
+
+  /** The ground layer under the pointer (Structure paint over bare ground names it), as "Gravel (the map's main ground)". */
+  groundUnder(): string | null {
+    const t = this.app.doc.terrain;
+    const p = this.app.hoverPoint;
+    const g = t && p ? groundLayerAt(t, p.x, p.z) : null;
+    return g ? groundWords(g) : null;
+  }
+
+  /** The status line for Structure paint: what is under the cursor, its layers (the one shown ✓), and what a click does. */
+  label(): string {
+    const d = this.describe();
+    if (!d.layers) return d.name.startsWith('Ground') ? `${d.name} · ${GROUND_REFUSAL}` : d.click;
+    return `${d.name} · ${chainText(d.layers)} · ${d.click}`;
+  }
+
+  /** The card by the cursor (HTML): the surface, the three layers as chips with the shown one marked, and the click. */
+  card(): { title: string; html: string; tone: string } {
+    const d = this.describe();
+    const [first, ...rest] = d.name.split(' · ');
+    const what = d.layers ? d.layers.surface : first;
+    const head = `<b><span class="ed-surface">${escapeHtml(what!)}</span>${rest.length ? ` · ${escapeHtml(rest.join(' · '))}` : ''}</b>`;
+    const chain = d.layers
+      ? `<div class="ed-chain">${(['base', 'look', 'paint'] as const)
+          .map((k) => {
+            const l = d.layers![k];
+            const value = l.style ? `${l.style.material.displayName}${l.style.tint ? ` (${l.style.tint})` : ''}` : 'none';
+            return `<span class="ed-layer ${k}${d.layers!.winner === k ? ' shown' : ''}${l.style ? '' : ' none'}" data-layer="${k}"><small>${escapeHtml(l.title)}</small><small>${escapeHtml(l.source)}</small><em>${escapeHtml(value)}</em></span>`;
+          })
+          .join('<i>→</i>')}</div>`
+      : '';
+    return { title: d.name, html: `${head}${chain}<span class="ed-click${d.bad ? ' bad' : ''}">${escapeHtml(d.click)}</span>`, tone: d.bad ? 'bad' : 'pick' };
   }
 
   paintAtHover(clear: boolean, first = true): void {
@@ -134,6 +195,29 @@ export class PaintTools {
     const next = cycle ? styles[(styles.indexOf(now as (typeof styles)[number]) + 1) % styles.length]! : now;
     this.app.setTool({ kind: 'edge', style: next });
   }
+}
+
+/** The shown layer's material name. */
+const layerStyle = (l: SurfaceLayers): string => {
+  const s = l[l.winner].style;
+  return s?.material.displayName ?? 'its look';
+};
+
+/** The chain as words: "Structure theme Imperial Arena: Opus → Set piece look Imperial (the theme's): Marble ✓ → Your paint: none". */
+export function chainText(l: SurfaceLayers): string {
+  return (['base', 'look', 'paint'] as const)
+    .map((k) => {
+      const step = l[k];
+      const value = step.style?.material.displayName ?? 'none';
+      const from = k === 'paint' ? '' : ` ${step.source}`;
+      return `${step.title}${from}: ${value}${l.winner === k ? ' ✓' : ''}`;
+    })
+    .join(' → ');
+}
+
+/** A ground layer as words: "Gravel (the map's main ground)" or "Sand (painted; main ground Gravel)". */
+export function groundWords(g: GroundLayer): string {
+  return g.painted ? `${TERRAIN_MATERIAL_LABELS[g.material]} (painted; main ground ${TERRAIN_MATERIAL_LABELS[g.base]})` : `${TERRAIN_MATERIAL_LABELS[g.material]} (the map's main ground)`;
 }
 
 const SCOPE_WORDS: Record<PaintScope, string> = { surface: 'on this surface', sameType: 'on every piece of this type', level: 'on this level', all: 'on the whole map' };

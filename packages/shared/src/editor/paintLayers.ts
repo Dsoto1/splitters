@@ -405,20 +405,23 @@ export function surfaceLayer(doc: MapDocument, library: SetPieceLibrary, target:
 /** Ground paint's cursor: the ground layer under it and whether it is the map's base ground or painted. */
 export interface GroundLayer {
   material: TerrainMaterial;
-  /** The map's base ground: its most common layer (Phase 4 makes it the Ground theme's base). */
+  /** The map's base ground: its main ground, the most common layer (Phase 4 makes it the Ground theme's base). */
   base: TerrainMaterial;
   painted: boolean;
 }
 
 const baseCache = new WeakMap<readonly number[], TerrainMaterial>();
 
-/** The map's base ground: the layer most of its cells are. */
+/** The map's base ground: the layer most of its cells are (MapMaker's "main ground"; the first such, on a tie). */
 export function baseGround(t: Pick<TerrainData, 'materials'>): TerrainMaterial {
   const hit = baseCache.get(t.materials);
   if (hit) return hit;
-  const counts = new Array<number>(TERRAIN_MATERIALS.length).fill(0);
-  for (const m of t.materials) counts[m] = (counts[m] ?? 0) + 1;
-  const base = TERRAIN_MATERIALS[counts.indexOf(Math.max(...counts))] ?? 'grass';
+  const counts = new Map<number, number>();
+  for (const m of t.materials) counts.set(m, (counts.get(m) ?? 0) + 1);
+  let best = 0;
+  let most = -1;
+  for (const [m, n] of counts) if (n > most) [best, most] = [m, n];
+  const base = TERRAIN_MATERIALS[best] ?? 'grass';
   baseCache.set(t.materials, base);
   return base;
 }

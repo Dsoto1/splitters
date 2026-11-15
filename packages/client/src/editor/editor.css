@@ -928,3 +928,30 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 #ed-sel[hidden] { display: none; }
 #ed-counts { flex-shrink: 1 !important; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 #ed-bottom #ed-status { margin-left: auto; height: 24px; flex-shrink: 0; font: 600 12px var(--font-body); }
+
+/* The warning before a Structure theme change (painting Phase 2): steady colours, nothing flashes. */
+.ed-theme-warn { max-width: 560px; }
+.ed-theme-warn h2 { margin: 0 0 4px; }
+.ed-theme-counts { list-style: none; padding: 0; margin: 10px 0 14px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.ed-theme-counts li { position: relative; padding-left: 24px; color: var(--muted); }
+.ed-theme-counts li b { color: var(--text); }
+.ed-theme-counts li::before { position: absolute; left: 2px; top: 0; width: 18px; text-align: center; font-weight: 700; }
+.ed-theme-counts li.change::before { content: '↻'; color: var(--orange); }
+.ed-theme-counts li.stay::before { content: '✓'; color: var(--success); }
+.ed-theme-counts li.info::before { content: 'i'; color: var(--info); font-style: italic; }
+.ed-theme-warn .ed-dialog-actions { justify-content: flex-start; }
+.ed-theme-warn button.keep { border-color: rgba(46, 204, 113, 0.6); background: rgba(46, 204, 113, 0.14); }
+.ed-theme-warn #ed-theme-keep-note { margin: 12px 0 0; font-size: 12px; }
+
+/* Structure paint's card by the cursor: the layers, base theme → set piece look → your paint, the one shown marked. */
+#ed-tip.ed-paint-card { min-width: 300px; max-width: 520px; gap: 6px; }
+#ed-tip .ed-chain { display: flex; align-items: stretch; gap: 4px; }
+#ed-tip .ed-chain > i { align-self: center; font-style: normal; color: var(--muted); }
+#ed-tip .ed-layer { flex: 1; display: flex; flex-direction: column; padding: 4px 7px; border: 1px solid var(--line); border-radius: 4px; background: rgba(255, 255, 255, 0.03); line-height: 1.3; min-width: 0; }
+#ed-tip .ed-layer small { color: var(--muted); font-size: 11px; }
+#ed-tip .ed-layer em { font-style: normal; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#ed-tip .ed-layer.none em { color: var(--muted); }
+#ed-tip .ed-layer.shown { border-color: var(--success); background: rgba(46, 204, 113, 0.16); }
+#ed-tip .ed-layer.shown em::after { content: ' ✓'; color: var(--success); }
+#ed-tip .ed-click { color: var(--text); }
+#ed-tip .ed-click.bad { color: #ff8a80; }

@@ -1,13 +1,13 @@
 import {
   coreThemes,
-  emptySelection,
-  setThemeCommand
+  emptySelection
 } from '@tiletrigger/shared';
 import { isBuiltInMap } from '../mapIndex.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
 import { firstPane } from './editorModes.ts';
 import { rememberedShowAll } from './showAllSetting.ts';
+import { changeStructureTheme } from './themeChangeDialog.ts';
 import { openPublishDialog } from './ownerPublish.ts';
 import {
   exportMap,
@@ -108,7 +108,8 @@ export class TopBar {
     $<HTMLSelectElement>('ed-snap').addEventListener('change', (e) => (this.app.snapMode = (e.target as HTMLSelectElement).value as typeof this.app.snapMode));
     const theme = $<HTMLSelectElement>('ed-theme');
     for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id));
-    theme.addEventListener('change', () => this.app.run('Change theme', setThemeCommand(this.app.doc, theme.value)));
+    // Through the warning (painting Phase 2), as Map settings' Structure theme.
+    theme.addEventListener('change', () => changeStructureTheme(this.app, theme.value, () => (theme.value = this.app.doc.classicStructure.theme)));
   }
 
   updateTopBar(): void {

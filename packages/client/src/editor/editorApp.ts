@@ -6,7 +6,10 @@ import {
   budgetCulprits,
   BudgetTracker,
   BUILD_LEVELS,
+  buildMapDecor,
   buildMapGeometry,
+  themeChangeImpact,
+  type ThemeChangeImpact,
   builtInSetPieces,
   coreCatalog,
   EDGE_STYLE_LABELS,
@@ -479,6 +482,16 @@ export class EditorApp {
     const doc = this.viewDoc;
     if (this.boxesFor?.doc !== doc) this.boxesFor = { doc, boxes: buildMapGeometry(doc) };
     return this.boxesFor.boxes;
+  }
+
+  /** The map's boxes as drawn (collision and trim), for the theme warning's counts. */
+  drawnBoxes(): WorldBox[] {
+    return [...this.mapBoxes(), ...buildMapDecor(this.viewDoc)];
+  }
+
+  /** What changing the Structure theme to `to` would do: the warning's counts (painting Phase 2; shared editor/paintLayers.ts). */
+  themeImpact(to: string): ThemeChangeImpact {
+    return themeChangeImpact(this.doc, this.setPieceLib, to, this.drawnBoxes());
   }
 
   /**
