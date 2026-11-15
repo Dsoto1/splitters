@@ -128,6 +128,9 @@
   "core.arena_corner_mid",
   "core.arena_corner_upper",
   "core.arena_corner_attic",
+  "core.arena_corner_ground_gate",
+  "core.arena_corner_attic_gate",
+  "core.arena_corner_tower",
   "military.barracks",
   "military.guard_tower",
   "military.pillbox",
@@ -50965,7 +50968,7 @@
   },
   {
    "id": "core.arena_corner_ground",
-   "hash": "030d28052c664b353704c96f"
+   "hash": "aead814e82a796381bb96384"
   },
   {
    "id": "core.arena_corner_mid",
@@ -50978,6 +50981,18 @@
   {
    "id": "core.arena_corner_attic",
    "hash": "03d3d87bcb926b5017c600b5"
+  },
+  {
+   "id": "core.arena_corner_ground_gate",
+   "hash": "c1dbbb5b6d366697ddf49395"
+  },
+  {
+   "id": "core.arena_corner_attic_gate",
+   "hash": "27f6d9891c438af4ff319650"
+  },
+  {
+   "id": "core.arena_corner_tower",
+   "hash": "bfe040b4047158239fa2991e"
   }
  ],
  "dimensions": {

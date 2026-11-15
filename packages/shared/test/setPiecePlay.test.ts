@@ -55,6 +55,7 @@ const OPEN_SIDED = [
   'setpiece.arena_bay_podium',
   'setpiece.arena_bay_tier',
   'setpiece.arena_corner',
+  'setpiece.arena_corner_gate',
   'setpiece.arena_vomitorium',
   'setpiece.bandstand',
   'setpiece.bunker_cluster',
