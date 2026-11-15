@@ -148,6 +148,57 @@ floor).
   every turn). As in the straight Vomitorium bay, the stairs either side of its mouth start from a 1 m row the navmesh
   does not hold, so bots reach the centre aisle over the top gallery from the attic.
 
+### The Arena Corner's gate and gatehouse (octagon kit, phase 3)
+
+**`setpiece.arena_corner_gate`** (Arena Corner (Gate), Arena stands family) is the Arena Corner with its gate
+(docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md §3.2-§3.5; owner 2a, 3a, 4b): the ground and attic storeys' gate
+option, the middle and upper storeys as they are, the gatehouse tower, a 45° portcullis and 18 lights. Anchor and
+turn it like the plain corner. Buttons and rules for the portcullis are the map's own (a winch in the passage, a chain
+on the sand within 4 m of the door, each with a Toggle door rule), as on Flavius Rule today.
+
+- **The Gate option** (the tile inspector's **Gate** checkbox on `core.arena_corner_ground` and `_attic`; their twins
+  `core.arena_corner_ground_gate` and `core.arena_corner_attic_gate`, `optionOf` with the new option id `gate`, same
+  cells and ports, hidden from the palette). Switching it keeps the tile's place, turn and paint.
+  - **Ground, Gate:** a Gladiator Gate on the diagonal's centre line. The passage is 3.2 m wide: 3 m clear under the
+    gatehouse block at the podium's face (hang the portcullis 1 m in, yaw 45° plus the corner's turn), roofed at 3.2 m
+    through the podium, across the gallery (a lintel in its front wall, a Round arch on the centre line of its back
+    wall: five bays instead of four), 3.4 m high through the fill and out through the facade's middle Grand arch (the
+    ground arcade's inner face has nine bays instead of eight, so an arch stands on the centre line).
+  - **Stair wells** (3a), one either side of the passage, 2.4 m wide: from a door off the passage 29 m in, sixteen steps
+    down along the passage toward the sand to level -1, where a landing square to the grid meets the north side (and
+    the east side) of tile cell (2, 2, -1), the hypogeum ring's corner under the stand, through a 3.6 m opening, the
+    width of a Vaulted Tunnel. Put the hypogeum's tunnels there: a Vaulted Tunnel Crossing on that cell takes both
+    wells (or a Junction turned toward one). The wells hang a level under the tile's cells: no cell at level -1 is
+    claimed, so MapMaker doesn't stop a tile being put where they are. The tile has a `bore` that takes the ground's
+    surface out round both wells, so they work on terrain.
+  - **Podium stairs** (4b): eight steps up from the sand against the podium wall either side of the gate's mouth (from
+    3 m to 7 m off the centre line, 2.4 m out onto the sand) and a landing at 2 m, level with the wall's top and the
+    walkway; the parapet is left off over the top of each. They stay open with the portcullis down.
+  - **Attic, Gate:** no windows or parapet over the facade's middle three bays, so the walk (24 m) and its roof (28 m)
+    open into the tower.
+- **The gatehouse tower** `core.arena_corner_tower` (Arena Corner Gatehouse, Vertical; its own tile, not part of the
+  option, whose cells must stay the plain tile's): turned 45°, 23 m wide (the facade's middle three bays, its sides on
+  the piers between bays) from the facade's outer face (56 m) out to 66.1 m, 33.2 m to its parapet. The gate passage
+  runs through its foot to the outer court; a hall across the tower on the facade side, then a switchback either side
+  of the passage (lane A by the passage climbs 2 m outward, a half landing, lane B climbs 2 m back), so a landing
+  crosses the tower every 4 m: through the facade's arches into the arcade storeys at 8 and 16 m, onto the attic walk
+  at 24 m and its roof at 28 m, and the lookout at 32 m. It claims only the cells the corner leaves free: the outer
+  court's cells under it at levels 0-7 and all of level 8. It stands against the facade rather than through it, so the
+  middle and upper storeys keep their facade; the arches open into its landings.
+- **Ports:** the ground storey (plain and Gate) now has ports on the sides of its cells that face the two half-sand
+  cells, so the sand's Courtyard tiles build no wall there (before, their walls rose up through the podium; with the
+  gate they would close its mouth).
+- **Budget:** collision 448 (ground, Gate) + 428 + 456 + 58 (attic, Gate) + 291 (tower) = **1,681 boxes** for the
+  whole gate corner (the plain corner 1,296); trim 2,122 + 2,230 + 2,453 + 72 + 40 = 6,917; 18 lights (the plain
+  corner's 13, one moved onto the gallery's lintel, and a chandelier in the passage, a candle at each well's head and
+  two on the tower's core).
+- **Bots** (`packages/shared/test/arenaCornerGate.test.ts`, every turn, with the hypogeum's corner as a Crossing): from
+  the sand through the passage out through the facade and the tower's foot, down each well to the hypogeum and back,
+  up the tower to every landing and the lookout and off it onto the arcades, the attic walk and its roof, up both
+  podium stairs to the walkway and the top walkway. The shut portcullis blocks its own slab and keeps spawns out of
+  it only; open, bots go through; a bot raises it with its chain button to reach a gun behind it. Mirrored equals
+  turned; the five tiles overlap nowhere; no coplanar faces; exploded equals placed; on terrain the wells stay clear.
+
 ## Walls and openings (edge styles, `content/tiles/edges.json`)
 
 Any side of any cell can be built as: Auto, Solid wall, Doorway, Wide doorway,

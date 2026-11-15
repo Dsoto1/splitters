@@ -288,6 +288,61 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
   (as in the straight Vomitorium bay, they start from a 1 m row the navmesh doesn't hold; bots reach the upper centre
   aisle from the attic), a match on a map with corners, the M1.
 
+### Phase 3: as built (2026-11-15, `wip/flavius-octagon-3`, lane B's splitters22)
+- **The Gate option** (§3.2's gate row): `core.arena_corner_ground_gate` and `core.arena_corner_attic_gate`, MapMaker
+  tile options of the ground and attic storeys (`optionOf`, new option id `gate`: label "Gate" in
+  `shared/editor/tileVariants.ts`, `map/catalog.ts` TILE_OPTIONS, `tools/content/tiles.mjs`); same cells and ports,
+  hidden from the palette, the inspector's checkbox swaps them keeping place, turn and paint. No map format change.
+- **The gate** (ground, Gate): a Gladiator Gate on the diagonal's centre line, its passage 3.2 m wide: 3 m clear under
+  the gatehouse block at the podium's face (the portcullis hangs 1 m in), roofed at 3.2 m through the podium (timber
+  beams as trim), across the podium gallery (a lintel in the front wall; the back wall has five Round-arch bays, one
+  on the centre line), 3.4 m high through the fill (carved out of the fill bands: `carvedBand`, a greedy box merge)
+  and out through the facade's middle Grand arch (the ground arcade's inner face has nine bays, one on the centre line).
+- **Stair wells** (3a): one either side of the passage, 2.4 m wide; a door off the passage 29-31.4 m in, sixteen steps
+  down toward the sand to level -1, a foot landing square to the grid that meets tile cell (2, 2, -1) (the hypogeum
+  ring's corner, today a Junction toward the court stairs) on its north and east sides through 3.6 m openings, the
+  width of a Vaulted Tunnel. Both, so the tile stays its own mirror image: §4 step 6 then wants a Vaulted Tunnel
+  Crossing at the ring's corner (or a Junction toward one well, the other ending at a wall). The wells hang a level
+  under the tile's cells (no cell at level -1 is claimed: a set piece's levels are one range, so claiming -1 would
+  claim it under the whole corner, where the hypogeum is). A `bore` cut takes the ground's surface out round them.
+- **Podium stairs** (4b): eight steps against the podium wall on the sand either side of the mouth (3 to 7 m off the
+  centre line, 2.4 m out onto the sand) and a landing level with the wall's top (2 m); the parapet is left off over
+  their tops. Recessed into the podium (first built that way) the navmesh lost them: a 2.6 m recess walled at both
+  ends leaves no foot it can reach.
+- **The gatehouse tower** (2a): its own tile, `core.arena_corner_tower` (Vertical), not part of the gate option (the
+  option's cells must be the plain tile's, and the tower stands in the outer court up to level 8). It stands against
+  the facade's outer face from depth 56 to 66.1 m, turned 45°, as wide as the facade's middle three bays (23 m, its
+  sides on the piers), so the middle and upper storeys keep their facade and their Grand arches open into its landings;
+  only the attic needed the option (no windows or parapet over those bays). The passage runs through its foot; a hall
+  on the facade side, then a switchback either side of the passage (lane A up 2 m outward, a half landing, lane B up
+  2 m back); a landing crosses the tower every 4 m: the arcade storeys at 8 and 16 m (through the arches), the attic
+  walk at 24 m and its roof at 28 m, the lookout at 32 m with a 1.2 m parapet (merlons drawn only). Steps 0.25 by 0.5 m,
+  4.45 m wide, each 0.6 m deep under its tread so the flight 4 m below keeps 3.4 m of headroom. Built with `turned`
+  like the corner. It claims the outer court's cells under it at levels 0-7 and all of level 8.
+- **`setpiece.arena_corner_gate`** (Arena stands family, `content/setpieces/arena.json`): the ground and attic Gate
+  tiles, the middle and upper tiles, the tower, a portcullis door at (4.707, 0, 4.707), yaw 45° (phase 1's oriented
+  doors; starts raised, opened by logic only) and 18 lights (the plain corner's 13, its diagonal gallery candle moved up
+  onto the lintel, a chandelier in the passage, a candle at each well's head, two on the tower's core). Footprint: the
+  plain corner's cells and the tower's five, levels 0-8. Buttons and rules stay map logic.
+- **A phase-2 fix:** the ground storey (plain and Gate) has ports on the four sides of its cells that face the two
+  half-sand cells, (1, 1) west and south, (0, 2) south, (2, 0) west. Before, the sand's Courtyard tiles there built
+  their auto walls on those sides, 4 m high, up through the podium's walkway and seats (unseen in phase 2's tests,
+  which never walked the podium walkway); with the gate they closed its mouth. Open ground now meets open ground.
+- **Budget:** collision 448 + 428 + 456 + 58 + 291 = **1,681 boxes** for a gate corner with its tower (target: well
+  under 2,700); trim 2,122 + 2,230 + 2,453 + 72 + 40 = 6,917; 18 lights. A plain corner stays 1,296.
+- **Tests** (`packages/shared/test/arenaCornerGate.test.ts`, its map in `arenaCornerGateMap.ts`: the gate corner between
+  straight bay lines with the fill blocks, the hypogeum's corner a Crossing a level down, in all four turns): bots path
+  from the sand through the passage out through the facade and the tower's foot (staying on the ground, at most 1.15
+  times the straight line); down each well from its head to the ring's corner and back; up the tower to every landing
+  and the lookout, and off the landings onto the arcades (8, 16 m), the attic walk and its roof; up both podium stairs
+  (on their steps) to the walkway and the top walkway. The shut portcullis blocks its own slab (the podium stair's foot
+  beside it stays clear) and keeps spawns out of the slab only; open, bots go through; shut, a bot after a gun behind it
+  presses its chain button and goes through (all four turns). The Gate checkbox swaps and keeps paint. Mirrored equals
+  turned (boxes, trim, lights, door); the five tiles overlap nowhere; no coplanar faces; exploded equals placed; on
+  terrain the bore keeps the wells clear (without it the ground lies across the flight). The coverage map carries one
+  gate corner (placed in MapMaker); its unit test requires every set piece and kit tile, option twins included.
+- **Not done (phase 4):** Flavius Rule itself. Not checked: a match on a map with the gate corner, the M1.
+
 ## 8. The owner's decisions
 
 1. **How big is the octagon?**
