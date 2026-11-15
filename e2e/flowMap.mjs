@@ -208,6 +208,8 @@ const RULES = [
   // Reduce flashing (the setting, steady lightning, the hurt vignette): its check, and where else they show.
   // Weather (map format v34): MapMaker's preview and TEST (editorenv), its moments in the flicker check.
   [/^packages\/client\/src\/(weatherVisuals|game\/weatherAudio)\.ts$/, ['editorenv', 'flashing'], ['client']],
+  // Hold to use (the ring) and the low-health warning: its check in `arsenal` (holdUseChecks), and its moment in the flicker check.
+  [/^packages\/client\/src\/game\/lowHealth\.ts$/, ['arsenal', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(reduceFlashing|steadyArcs|hurtVignette)\.ts$/, ['offline', 'physicsfx', 'arsenal', 'visual', 'flashing'], ['client']],
   // Pickups' floor glows (Binbun's Loot VFX): the flicker check records them; the flows that walk over pickups.
   [/^packages\/client\/src\/game\/lootGlow\.ts$/, ['offline', 'physicsfx', 'visual', 'flashing'], ['client']],

@@ -7422,6 +7422,103 @@ async function classesFlow(browser) {
   await frames(arena, 5);
   check(errs.length === 0, `no page errors (${errs.join('; ')})`);
   await arena.context().close();
+  await holdUseChecks(browser);
+}
+
+/**
+ * Hold to use (sim/holdUse.ts) and the low-health warning (game/lowHealth.ts), in MapMaker TEST on a map with an Ammo
+ * Box: beside it, short of ammo, the prompt says "Hold"; E pressed and held shows the ring round the crosshair
+ * ("Resupplying") and gives nothing until the hold has run, then fills you up; let go early and it stops and says
+ * so. At 10 % health the screen's edges darken and the HUD points at the nearest health pack. `HOLD_SHOTS=<dir>`:
+ * pictures (device scale 2) of the ring and of the warning at 30 % and 10 %, Reduce flashing on and off.
+ */
+async function holdUseChecks(browser) {
+  const shots = process.env.HOLD_SHOTS;
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 }, deviceScaleFactor: shots ? 2 : 1 })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // An Ammo Box crate and a health pack 12 m off, as MapMaker places them (one undo step).
+  const made = await page.evaluate(() => {
+    const ed = window.__editor;
+    const entities = [
+      { id: 'hold_box', kind: 'pickup', item: 'core.ammo', position: [6, 0, 10], respawnSeconds: 30 },
+      { id: 'hold_health', kind: 'pickup', item: 'core.health_large', position: [-8, 0, 16], respawnSeconds: 30 },
+    ];
+    return ed.run('Hold to use check', { kind: 'addEntities', entities });
+  });
+  check(!!made, 'MapMaker places an Ammo Box and a health pack');
+  await page.keyboard.press('F5');
+  const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(playing, 'the map plays (MapMaker TEST)');
+  if (!playing) return void (await page.context().close());
+  await holdBots(page);
+  const stand = () =>
+    sim(page, (m, me) => {
+      me.move = { pos: { x: 7.2, y: 0, z: 10 }, velY: 0, grounded: true };
+      me.yaw = -Math.PI / 2;
+      for (const w of me.weapons.values()) w.reserve = 0;
+      me.resupplyAt = 0;
+    });
+  await stand();
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const prompt = await page.waitForFunction(() => /Hold to resupply/.test(document.getElementById('prompt')?.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(prompt, `beside the box the prompt says to hold E (${await page.textContent('#prompt')})`);
+  // E pressed and held (BUTTON_USE once, BUTTON_USE_HOLD while down).
+  await page.evaluate(() => (window.__autoInput = { buttons: 32768, once: 16 }));
+  const ring = await page.waitForFunction(() => {
+    const el = document.getElementById('hold-ring');
+    return !!el && !el.hidden && /Resupplying/.test(el.textContent ?? '') && Number(el.querySelector('circle.fill')?.getAttribute('stroke-dashoffset')) < 150;
+  }, null, { timeout: T(10000) }).then(() => true, () => false);
+  const midway = await sim(page, (m, me) => ({ hold: me.hold?.kind ?? null, empty: [...me.weapons.values()].some((w) => w.def.reserveMax > 0 && w.reserve === 0) }));
+  check(ring && midway.hold === 'resupply' && midway.empty, `held, a ring round the crosshair fills ("Resupplying") and nothing is given yet (${JSON.stringify(midway)})`);
+  if (shots) await page.screenshot({ path: `${shots}/hold-ring.png` });
+  const filled = await meWait(page, (m, me) => !me.hold && [...me.weapons.values()].filter((w) => w.def.reserveMax > 0).every((w) => w.reserve === w.def.reserveMax), null, 4, T(30000));
+  const gone = await page.waitForFunction(() => document.getElementById('hold-ring')?.hidden !== false, null, { timeout: T(10000) }).then(() => true, () => false);
+  check(filled && gone, `once the hold has run you are resupplied and the ring goes (filled ${filled}, ring gone ${gone})`);
+  // Again, let go early: it stops and says why.
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await stand();
+  await page.evaluate(() => (window.__autoInput = { buttons: 32768, once: 16 }));
+  await simWait(page, (m, me) => me.hold?.kind === 'resupply', null, T(10000));
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const stopped = await page.waitForFunction(() => /Resupply stopped: let go too soon/.test(document.getElementById('pickup-msg')?.textContent ?? document.body.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  const still = await sim(page, (m, me) => [...me.weapons.values()].some((w) => w.def.reserveMax > 0 && w.reserve === 0));
+  check(stopped && still, `let go early, it stops, says so and gives nothing (note ${stopped}, still empty ${still})`);
+
+  // The low-health warning: at 10 % the edges darken and the HUD points at the health pack; back to full, it goes.
+  const setFlashing = (on) =>
+    page.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (!box || box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  const health = (hp) => sim(page, (m, me, hp) => void (me.health = hp), hp);
+  const settle = (min) => page.waitForFunction((min) => window.__cs.lowHealth().level >= min, min, { timeout: T(15000) }).then(() => true, () => false);
+  await sim(page, (m, me) => void (me.yaw = Math.PI));
+  for (const on of [true, false]) {
+    await setFlashing(on);
+    for (const hp of [30, 10]) {
+      await health(hp);
+      const up = await settle(hp === 10 ? 0.75 : 0.3);
+      const s = await page.evaluate(() => ({ ...window.__cs.lowHealth(), hint: document.querySelector('#hint-markers [data-id="health"]')?.textContent ?? null }));
+      if (hp === 10) check(up && s.edge > 0.5 && /Health \d+ m/.test(s.hint ?? ''), `at 10 % health (Reduce flashing ${on ? 'on' : 'off'}) the edges darken and the HUD points at the nearest health pack (${JSON.stringify(s)})`);
+      if (shots) await page.screenshot({ path: `${shots}/low-health-${hp}-flashing-${on ? 'reduced' : 'off'}.png` });
+    }
+    await health(100);
+    const calm = await page.waitForFunction(() => window.__cs.lowHealth().level === 0 && !document.querySelector('#hint-markers [data-id="health"]'), null, { timeout: T(15000) }).then(() => true, () => false);
+    check(calm, `back to full health the warning eases away (Reduce flashing ${on ? 'on' : 'off'})`);
+  }
+  await setFlashing(true);
+  await page.evaluate(() => delete window.__autoInput);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await page.context().close();
 }
 
 async function vehiclesFlow(browser) {
@@ -9306,6 +9403,13 @@ function installFrameGrab(size) {
         ctx.drawImage(heavy.image, 0, 0, out.width, out.height);
         ctx.globalAlpha = 1;
       }
+      // The low-health warning's darkened edge (HTML too: hud.ts lowHealthOverlay).
+      const low = window.__cs.hud.lowHealthOverlay?.();
+      if (low && low.opacity > 0.002) {
+        ctx.globalAlpha = Math.min(1, low.opacity);
+        ctx.drawImage(low.image, 0, 0, out.width, out.height);
+        ctx.globalAlpha = 1;
+      }
       // Roulette's jackpot glow (HTML too: rouletteHud.ts glowOverlay).
       const glow = window.__cs.rouletteGlow?.();
       if (glow && glow.opacity > 0.002) {
@@ -9827,6 +9931,21 @@ async function flashingScene(browser, scene) {
         sim(page, (m) => {
           for (const c of m.combatants()) c.burnTicks = c.poisonTicks = c.slowTicks = 0;
         }).then(() => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality))),
+    },
+    // The low-health warning (game/lowHealth.ts): your health dropped to 10 % as the recording starts, so it holds the
+    // warning coming up (the edges darkening, the world greying) and its heartbeat pulse, in the dark room's doorway.
+    {
+      name: 'lowhealth',
+      label: 'the low-health warning coming up at 10 % health (edges darkening, the world greying, the heartbeat), at night',
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 1, 11.5]),
+      bots: [],
+      before: () => sim(page, (m) => void m.combatants().filter((c) => c.kind === 'human').forEach((c) => (c.health = 100))),
+      at: { 2: () => sim(page, (m) => void m.combatants().filter((c) => c.kind === 'human').forEach((c) => (c.health = 10))) },
+      seen: () => page.evaluate(() => window.__cs.lowHealth()),
+      sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
+      after: () => sim(page, (m) => void m.combatants().filter((c) => c.kind === 'human').forEach((c) => (c.health = 100))),
     },
     {
       name: 'alarm',
