@@ -497,3 +497,16 @@ export function arcSentryIssues(entities: readonly { kind: string; id: string; p
   }
   return out;
 }
+
+/** Look-to-steer's gain: steering (-1..1) per radian between where the driver looks and where the vehicle points. */
+export const LOOK_STEER_GAIN = 2.2;
+
+/**
+ * Look-to-steer (the Warthog way): the wheel turns toward where the driver looks (`lookYaw`), on top of A/D
+ * (`right`); backing up it steers the other way round, so the nose still swings toward the look. The match and the
+ * driver's own prediction of a rigid vehicle (client vehiclePrediction.ts) both use it.
+ */
+export function lookSteer(right: number, lookYaw: number, vehicleYaw: number, speed: number): number {
+  const off = Math.atan2(Math.sin(lookYaw - vehicleYaw), Math.cos(lookYaw - vehicleYaw));
+  return Math.max(-1, Math.min(1, right + off * LOOK_STEER_GAIN * (speed < -0.5 ? -1 : 1)));
+}

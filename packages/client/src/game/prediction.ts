@@ -67,6 +67,7 @@ import {
   oneHanded,
   thirdPersonAim,
 } from '@tiletrigger/shared';
+import type { VehiclePrediction } from './vehiclePrediction.ts';
 
 const MAX_PENDING = 120;
 const ORDER = new Map(WEAPONS_BY_SLOT.map((w) => [w.id, weaponCode(w)]));
@@ -120,6 +121,8 @@ export class LocalPlayer {
   glider = false;
   /** Seated in a turret or vehicle: the server moves you, so movement isn't predicted. */
   mounted = false;
+  /** Driving a rigid vehicle: it is predicted (vehiclePrediction.ts; the session sets it up from PrivateState.vp). */
+  vehicle: VehiclePrediction | null = null;
   /** The seat's gun (set by the session while seated), its heat, and whether the seat can't shoot at all (driving). */
   seatGun: WeaponDefinition | null = null;
   private seatAmmo: [number, number, number, number] = [0, 0, 0, 0];
@@ -279,6 +282,7 @@ export class LocalPlayer {
         this.rounds = 0;
       }
       if (!this.mounted) this.state = this.move(this.state, input, this.predTick + 1, true);
+      else this.vehicle?.step(input);
       if (this.fireCooldown > 0) this.fireCooldown--;
       if (this.raiseTicks > 0) this.raiseTicks--;
       this.advanceReload();
@@ -511,6 +515,7 @@ export class LocalPlayer {
     this.health = server.hp;
     this.armor = server.ar;
     this.pending = this.pending.filter((i) => i.seq > ack);
+    if (this.vehicle && me?.vp && me.vp[0] === this.vehicle.mount) this.vehicle.reconcile(me.vp, this.pending);
     if (me) {
       this.inventory = new Map(me.inv.map(([code, mag, reserve, alt, heat]) => [code, [mag, reserve, alt ?? 0, heat ?? 0]]));
       this.statusSpeed = (me.ms ?? 1000) / 1000;

@@ -19,6 +19,7 @@ import { add, createRng, distance, dot, horizontalDistance, lookAngles, normaliz
 import {
   MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
   airCraftDef, BUILT_MOUNT_BASE, enterReach, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole, ammoRefillTicks, ammoRefilledBy, armourScale, firingSeat, sealedMount, type MountHit,
+  lookSteer,
 } from './mounts.ts';
 import { airRoute, botDropIndex, canDrop, dropArea, dropIndex, dropOffsets, dropPlan, dropStretchEnds, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute, type DropPlan } from './airplane.ts';
 import { CHUTE, heightAboveGround } from './parachute.ts';
@@ -153,6 +154,8 @@ function lyingItem(p: Projectile): ItemDefinition | undefined {
 export const START_WAIT_SECONDS = 30;
 export const COUNTDOWN_SECONDS = 3;
 /** Vehicle crashes: closing speed (m/s) below which nothing is hurt, and damage per m/s over it (split by weight). */
+/** Most ticks a driven rigid vehicle waits for its driver's next input before it goes on without (MountRt.driveWait): a lost packet's resend at 150 ms. */
+const DRIVE_WAIT_MAX = 12;
 const RAM_MIN_SPEED = 5;
 /** A vehicle nobody drives brakes at this rate (m/s²) when its data has no `vehicle.idleBrake`. */
 const DEFAULT_IDLE_BRAKE = 10;
@@ -256,6 +259,14 @@ interface MountRt {
   rigidSetup?: RigidSetup;
   rigid?: RigidState;
   chassisProbe?: RAPIER.Collider;
+  /**
+   * The driver's inputs applied this tick: a driven rigid vehicle steps once for each, as the driver's own prediction
+   * steps once per input (Match.driveRigid).
+   */
+  driveQueue?: MountRt['drive'][];
+  /** Ticks waited for the driver's next input, and whether the driver is sending them (not just got in, not gone quiet). */
+  driveWait?: number;
+  driveFed?: boolean;
   rigidSeen?: { pos: Vec3; yaw: number; speed: number };
   cooldown: number;
   /** Who damaged it last (credit for the explosion). */
@@ -647,8 +658,6 @@ function arcFlags(m: MountRt): number {
   if (!arc || st.target === null || st.vent > 0) return 0;
   return st.charge < Math.round(arc.windUpSeconds * TICK_RATE) ? MOUNT_FLAG_CHARGING : MOUNT_FLAG_ARC;
 }
-/** Look-to-steer: steering (-1..1) per radian the driver looks off the nose. */
-const LOOK_STEER_GAIN = 2.2;
 /** The vehicle probe's feet ride this far over the ground (the character controller's skin): the wheels' rest. */
 const VEHICLE_SKIN = 0.02;
 /** Suspension rays a tick before vehicles start reusing last tick's ground (24 four-wheelers). */
@@ -3127,12 +3136,10 @@ export class Match {
           const down = !!(input.buttons & BUTTON_CROUCH);
           // Look-to-steer (the Warthog way): the wheel turns toward where the driver looks, on top of A/D; backing up
           // it steers the other way round, so the nose still swings toward the look.
-          let right = input.right;
-          if (input.buttons & BUTTON_STEER_LOOK && m.def.vehicle && !m.def.vehicle.fly) {
-            const off = Math.atan2(Math.sin(c.yaw - m.yaw), Math.cos(c.yaw - m.yaw));
-            right = Math.max(-1, Math.min(1, right + off * LOOK_STEER_GAIN * (m.speed < -0.5 ? -1 : 1)));
-          }
+          const right = input.buttons & BUTTON_STEER_LOOK && m.def.vehicle && !m.def.vehicle.fly ? lookSteer(input.right, c.yaw, m.yaw, m.speed) : input.right;
           m.drive = m.def.vehicle?.fly ? { forward: input.forward, right, lift: (up ? 1 : 0) - (down ? 1 : 0) } : { forward: input.forward, right, brake: up };
+          // A rigid vehicle steps once per driver input, as the driver's prediction does (driveRigid).
+          if (m.rigid) (m.driveQueue ??= []).push(m.drive);
         }
         if (seat.arc !== undefined) {
           const centre = m.yaw + (seat.facing ?? 0);
@@ -5643,7 +5650,10 @@ export class Match {
     const seen = m.rigidSeen!;
     let s = m.rigid!;
     // Put somewhere from outside (a respawn, a test, a teleport): it starts again there, upright and still.
-    if (m.pos !== seen.pos || m.yaw !== seen.yaw) s = m.rigid = newRigid(t, m.pos, m.yaw);
+    if (m.pos !== seen.pos || m.yaw !== seen.yaw) {
+      s = m.rigid = newRigid(t, m.pos, m.yaw);
+      m.driveWait = 0;
+    }
     else if (m.speed !== seen.speed) {
       // Its speed changed from outside (stopped dead, or a crash's loss): the body's horizontal speed follows.
       const k = seen.speed !== 0 ? m.speed / seen.speed : 0;
@@ -5659,15 +5669,34 @@ export class Match {
     const piloted = m.def.seats.some((seat, i) => seat.role === 'driver' && m.seats[i] !== null) || !!m.ambient;
     const road = roadHandling(this.road, m.pos, false);
     const world = this.physics.chassisWorld(m.chassisProbe!, m.body);
-    const { forward, right, brake } = m.drive;
     const before = { ...m.pos };
     let landing = 0;
     let blocked = 0;
-    for (let k = 0; k < ticks; k++) {
-      const r = stepRigid(s, t, world, { forward, right, brake: !!brake, piloted, grip: road.grip, speed: road.speed }, TICK_DT);
+    // Driven, it steps once per driver input, as the driver's prediction does (and as players move: one move per
+    // input), so the host runs exactly what the driver predicted however the link bunches the inputs. A tick with
+    // none in waits for them (DRIVE_WAIT_MAX ticks at most: then it goes on with the last controls).
+    const queue = m.driveQueue ?? [];
+    m.driveQueue = [];
+    const driven = m.def.seats.some((seat, i) => seat.role === 'driver' && m.seats[i] !== null);
+    const run = (drive: MountRt['drive']) => {
+      const r = stepRigid(s, t, world, { forward: drive.forward, right: drive.right, brake: !!drive.brake, piloted, grip: road.grip, speed: road.speed }, TICK_DT);
       landing = Math.max(landing, r.landing);
       blocked = Math.max(blocked, r.blocked);
+    };
+    if (!driven || ticks > 1) {
+      for (let k = 0; k < ticks; k++) run(m.drive);
+      m.driveWait = 0;
+      m.driveFed = false;
+    } else if (queue.length) {
+      for (const drive of queue) run(drive);
+      m.driveWait = 0;
+      m.driveFed = true;
+    } else {
+      m.driveWait = (m.driveWait ?? 0) + 1;
+      if (m.driveWait > DRIVE_WAIT_MAX) m.driveFed = false;
+      if (!m.driveFed) run(m.drive);
     }
+    const forward = m.drive.forward;
     const pose = yawPitchRoll(s.q);
     const speeds = rigidSpeeds(s);
     m.pos = { ...s.pos };
