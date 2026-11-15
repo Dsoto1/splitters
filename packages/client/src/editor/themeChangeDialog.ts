@@ -34,11 +34,11 @@ export function changeStructureTheme(app: EditorApp, to: string, done: () => voi
   const fmt = (v: number) => v.toLocaleString('en-GB');
   const plural = (v: number, one: string, many = `${one}s`) => `${fmt(v)} ${v === 1 ? one : many}`;
   const lines: { cls: string; id: string; html: string }[] = [];
-  if (impact.surfacesChange) lines.push({ cls: 'change', id: 'surfaces', html: `<b>${plural(impact.surfacesChange, 'surface')}</b> follow${impact.surfacesChange === 1 ? 's' : ''} the theme and will change.` });
-  if (impact.piecesChange) lines.push({ cls: 'change', id: 'pieces', html: `<b>${plural(impact.piecesChange, 'set piece')}</b> use${impact.piecesChange === 1 ? 's' : ''} the theme's look and will change.` });
-  lines.push({ cls: 'stay', id: 'painted', html: `<b>${plural(impact.surfacesPainted, 'surface')} you painted</b> stay${impact.surfacesPainted === 1 ? 's' : ''} as ${impact.surfacesPainted === 1 ? 'it is' : 'they are'}.` });
-  if (impact.piecesOwnLook) lines.push({ cls: 'stay', id: 'ownlook', html: `<b>${plural(impact.piecesOwnLook, 'set piece')}</b> with a look of ${impact.piecesOwnLook === 1 ? 'its' : 'their'} own stay${impact.piecesOwnLook === 1 ? 's' : ''}.` });
-  if (impact.skyFollows) lines.push({ cls: 'info', id: 'sky', html: 'The sky and backdrop follow the theme too.' });
+  if (impact.surfacesChange) lines.push({ cls: 'tw-change', id: 'surfaces', html: `<b>${plural(impact.surfacesChange, 'surface')}</b> follow${impact.surfacesChange === 1 ? 's' : ''} the theme and will change.` });
+  if (impact.piecesChange) lines.push({ cls: 'tw-change', id: 'pieces', html: `<b>${plural(impact.piecesChange, 'set piece')}</b> use${impact.piecesChange === 1 ? 's' : ''} the theme's look and will change.` });
+  lines.push({ cls: 'tw-stay', id: 'painted', html: `<b>${plural(impact.surfacesPainted, 'surface')} you painted</b> stay${impact.surfacesPainted === 1 ? 's' : ''} as ${impact.surfacesPainted === 1 ? 'it is' : 'they are'}.` });
+  if (impact.piecesOwnLook) lines.push({ cls: 'tw-stay', id: 'ownlook', html: `<b>${plural(impact.piecesOwnLook, 'set piece')}</b> with a look of ${impact.piecesOwnLook === 1 ? 'its' : 'their'} own stay${impact.piecesOwnLook === 1 ? 's' : ''}.` });
+  if (impact.skyFollows) lines.push({ cls: 'tw-info', id: 'sky', html: 'The sky and backdrop follow the theme too.' });
   const approx = keep.approximate.length;
   const keepNote = `Keep current look: the theme changes for new pieces and the palette; what is built now keeps today's look (it becomes your paint)${approx ? `, but ${plural(approx, 'block')} that showed two of the theme's materials (top and sides) keep${approx === 1 ? 's' : ''} the one ${approx === 1 ? 'it shows' : 'they show'} most: a block is one material` : ''}. Either way it is one undo step.`;
   dialog.innerHTML = `

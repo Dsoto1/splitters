@@ -128,7 +128,9 @@ export class PaintTools {
           .map((k) => {
             const l = d.layers![k];
             const value = l.style ? `${l.style.material.displayName}${l.style.tint ? ` (${l.style.tint})` : ''}` : 'none';
-            return `<span class="ed-layer ${k}${d.layers!.winner === k ? ' shown' : ''}${l.style ? '' : ' none'}" data-layer="${k}"><small>${escapeHtml(l.title)}</small><small>${escapeHtml(l.source)}</small><em>${escapeHtml(value)}</em></span>`;
+            // A layer that gives nothing says only "none" (or why: not a set piece).
+            const source = l.style || k === 'look' ? l.source : '';
+            return `<span class="ed-layer ${k}${d.layers!.winner === k ? ' shown' : ''}${l.style ? '' : ' none'}" data-layer="${k}"><small>${escapeHtml(l.title)}</small>${source && source !== 'none' ? `<small>${escapeHtml(source)}</small>` : ''}<em>${escapeHtml(value)}</em></span>`;
           })
           .join('<i>→</i>')}</div>`
       : '';
@@ -209,7 +211,7 @@ export function chainText(l: SurfaceLayers): string {
     .map((k) => {
       const step = l[k];
       const value = step.style?.material.displayName ?? 'none';
-      const from = k === 'paint' ? '' : ` ${step.source}`;
+      const from = k === 'paint' || !step.style ? '' : ` ${step.source}`;
       return `${step.title}${from}: ${value}${l.winner === k ? ' ✓' : ''}`;
     })
     .join(' → ');

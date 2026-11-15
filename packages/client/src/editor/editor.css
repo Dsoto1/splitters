@@ -936,9 +936,9 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-theme-counts li { position: relative; padding-left: 24px; color: var(--muted); }
 .ed-theme-counts li b { color: var(--text); }
 .ed-theme-counts li::before { position: absolute; left: 2px; top: 0; width: 18px; text-align: center; font-weight: 700; }
-.ed-theme-counts li.change::before { content: '↻'; color: var(--orange); }
-.ed-theme-counts li.stay::before { content: '✓'; color: var(--success); }
-.ed-theme-counts li.info::before { content: 'i'; color: var(--info); font-style: italic; }
+.ed-theme-counts li.tw-change::before { content: '↻'; color: var(--orange); }
+.ed-theme-counts li.tw-stay::before { content: '✓'; color: var(--success); }
+.ed-theme-counts li.tw-info::before { content: 'i'; color: var(--info); font-style: italic; }
 .ed-theme-warn .ed-dialog-actions { justify-content: flex-start; }
 .ed-theme-warn button.keep { border-color: rgba(46, 204, 113, 0.6); background: rgba(46, 204, 113, 0.14); }
 .ed-theme-warn #ed-theme-keep-note { margin: 12px 0 0; font-size: 12px; }
