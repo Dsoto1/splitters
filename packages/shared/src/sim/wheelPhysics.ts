@@ -510,7 +510,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
       }
       const sx = dot(s.spin, rgt);
       const sz = dot(s.spin, fwd);
-      alpha = sub(alpha, add(scale(rgt, sx * 2.5), scale(fwd, sz * 2.5)));
+      alpha = sub(alpha, add(scale(rgt, sx * 4), scale(fwd, sz * 4)));
     }
     if (flying && input.piloted) {
       // Air control: W noses down, S up; A/D roll it (a right roll: the right side down).

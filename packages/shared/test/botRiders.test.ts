@@ -36,7 +36,9 @@ interface MountState {
 /** A player at the wheel of one of Iron Maw's buggies and two teammate bots beside it, who get in by themselves. */
 function boarded(seed: number) {
   const m0 = map();
-  const match = new Match(m0, { ...rulesForMode(m0, 'core.tdm'), scoreLimit: 0, timeLimitSeconds: 0 }, seed);
+  // Classic driving: the blind weave below noses into a wall a second in, where a rigid buggy (drivePhysics.test.ts)
+  // stays until it is backed out, as a real one would; what is tested here is the riders, not the driving.
+  const match = new Match(m0, { ...rulesForMode(m0, 'core.tdm'), scoreLimit: 0, timeLimitSeconds: 0 }, seed, { drive: 'classic' });
   const team = (match as unknown as { teams: { id: string }[] }).teams[0]!.id;
   const me = match.addHuman('me', undefined, team)!;
   // Explicit looks: how they walk to the doors and fit the seats doesn't move with the roster.

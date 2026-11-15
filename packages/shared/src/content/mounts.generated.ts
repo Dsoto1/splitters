@@ -168,7 +168,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
         corner: [9, 8],
         inertia: 0.8,
         airLevel: 5,
-        airPitch: 8,
+        airPitch: 10,
         airRoll: 6,
         rightAfter: [1.2, 4],
         launch: 1.7,

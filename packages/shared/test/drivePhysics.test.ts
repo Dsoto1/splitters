@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_JUMP, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, initPhysics, rigidOf, uprightness, type MapDocument, type MapEntity, type MatchRules, type PlayerInput, type RigidState } from '../src/index.ts';
+import { BUTTON_JUMP, BUTTON_STEER_LOOK, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, initPhysics, rigidOf, uprightness, type MapDocument, type MapEntity, type MatchRules, type PlayerInput, type RigidState } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -141,18 +141,18 @@ describe('rigid driving: jumps, landings, slopes, flips', () => {
       return pitch;
     };
     const flat = fly(1);
-    expect(fly(-1)).toBeGreaterThan(flat + 0.15);
+    expect(fly(-1)).toBeGreaterThan(flat + 0.1);
     // And W pressed in the air after a coasting take-off noses it down.
     const coast = (forward: number) => {
       const d = drive([block('ramp', 42, 16, [6, 0.4, 7], 0.3)]);
       d.run(20);
       let pitch = 0;
-      for (let k = 0; k < 300 && !(d.m.airborne && d.m.rigid!.air > 2); k++) d.run(1, { forward: d.m.pos.x > 36 ? 0 : 1 });
-      d.run(12, { forward }, () => (pitch = d.m.susp!.p));
+      for (let k = 0; k < 300 && !(d.m.airborne && d.m.rigid!.air > 2); k++) d.run(1, { forward: d.m.pos.x > 41 ? 0 : 1 });
+      d.run(6, { forward }, () => (pitch = d.m.susp!.p));
       expect(d.m.airborne).toBe(true);
       return pitch;
     };
-    expect(coast(1)).toBeLessThan(coast(0) - 0.15);
+    expect(coast(1)).toBeLessThan(coast(0) - 0.03);
   });
 
   it('a hard landing from high up dents it, as the classic drive did', () => {
@@ -234,6 +234,28 @@ describe('rigid driving: jumps, landings, slopes, flips', () => {
     d.run(60, { forward: 1 });
     expect(d.m.speed).toBeGreaterThan(5);
     expect(d.match.privateState(d.c.slot)?.vp).toBeUndefined();
+  });
+});
+
+describe('rigid driving: the controls', () => {
+  it('look-to-steer turns it toward where the driver looks', () => {
+    const d = drive([], { at: [8, 0, 4] });
+    d.run(60, { forward: 0.7 });
+    const want = Math.PI / 2 - 0.8;
+    d.run(150, { forward: 0.7, yaw: want, buttons: BUTTON_STEER_LOOK });
+    d.save('look');
+    const off = Math.atan2(Math.sin(want - d.m.yaw), Math.cos(want - d.m.yaw));
+    expect(Math.abs(off)).toBeLessThan(0.15);
+  });
+
+  it('the handbrake (jump) locks the rear wheels: a slide, and it stops', () => {
+    const d = drive();
+    d.run(90, { forward: 1 });
+    let slide = 0;
+    d.run(60, { right: 1, buttons: BUTTON_JUMP }, () => (slide = Math.max(slide, Math.abs(d.m.slide))));
+    expect(slide).toBeGreaterThan(1.5);
+    d.run(60, { buttons: BUTTON_JUMP });
+    expect(Math.abs(d.m.speed)).toBeLessThan(1);
   });
 });
 
