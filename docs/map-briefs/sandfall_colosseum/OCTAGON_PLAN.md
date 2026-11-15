@@ -400,6 +400,39 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
   ((40, −2, −35), 98 recoveries of a flag runner), the hatch halls as before. The towers and podium stairs barely show.
 - **Not done (phase 5):** the stuck spots above; the middle gallery's way in; the M1.
 
+### Phase 5: as built (2026-11-15, `wip/flavius-octagon-5`, lane B's splitters22)
+- **The gallery stairs** (owner's phase-4 answer 1a): in `tools/content/kit/arenaCorner.mjs` ("the gallery stairs",
+  `GSTAIR`), so the plain corner and the gate corner both have them, in every turn. Two a corner, one in each half of
+  the diagonal (each tile stays its own mirror image), in the diagonal's frame at u ±(4.95..15.35): through the ground
+  gallery's back wall at its second arch from each mitre (u ±14.35, 3.2 m opening), 16 steps (0.25 by 0.5 m, 2.4 m
+  wide) up along the depth through the fill (16 → 24 m) to a landing at 4 m under the middle gallery's front wall, then
+  16 steps along the gallery toward the centre line (depth 24.5-26.9) up through a hole in the middle gallery's floor,
+  arriving level with it at u ±4.95. A 1 m parapet, 0.2 m thick, runs along the hole's gallery side and across its foot;
+  the gallery keeps 4.4 m clear beside it. The lower flight stays 0.25 m clear of the north wedge's fill (which reaches
+  u -15.6 at depth 18.3) and the upper one clear of the gate's stair wells (u ±2.1..5, under level 0).
+- **The plain corner's ground gallery back wall** now has five bays like the gate corner's (it had four), so the stair's
+  arch stands in the same place on both; the plain ground storey's trim 2,022 → 2,066.
+- **How:** the flights are kit `flight`s; the fill bands are carved round them with `carvedBand` (holes `STAIR_HOLES`,
+  with the gate's `GATE_HOLES` on the gate option), the middle floor slab likewise (`STAIR_TOP`); the parapet is two
+  boxes in the mid tile. No new part kinds, no map format change, no editor code.
+- **Budget:** collision a plain corner 343 + 428 + 456 + 69 = 1,296 → 420 + 437 + 456 + 69 = **1,382**; a gate corner with
+  its tower 1,681 → 524 + 437 + 456 + 58 + 291 = **1,766**. Flavius Rule **17,900 → 18,240** (trim 43,379 and lights 245
+  unchanged); the coverage map 14,782. No lights added (the map has 245 of 256): the stairs are lit by the galleries'.
+- **Tests:** `arenaCorner.test.ts` (all four turns): bots go from the ground gallery up each stair into the middle
+  gallery and back down, by that stair (under 40 m, never over 8.6 m), and the parapet stops a fall into the hole.
+  `arenaCornerGate.test.ts` (all four turns): bots go from the sand through the gate passage up each stair into the
+  middle gallery and back, on that stair's flights. Re-hashed on purpose: `tiles-resolved.json`'s
+  `core.arena_corner_ground`, `_mid` and `_ground_gate`; the tower's collision hash is unchanged. Palette pictures
+  re-rendered (`pnpm content:rebuild`).
+- **Flavius Rule:** no map edit (its corners are set pieces). validate-map 0 issues; nav audit 0 traps, 0 errors, islands
+  15 (11,017 m²) → 14 (9,025 m²): the middle gallery ring joined; z-fight audit passes.
+- **Bots** (bot-report, 24 bots, 240 s, seeds 1/2; before → after): TDM stuck recoveries 86/47 → 111/87, kills 156/112
+  → 184/160, idle 20.0/29.1 % → 12.1/14.6 %; King of the Hill stuck recoveries 126/95 → 103/90, hill held 77/94 →
+  65/77 s, kills 192/233 → 196/205. None of the listed stuck spots is on the new stairs (they are the gate passage by the
+  podium gallery and the hatch halls, as in phase 4).
+- **Pictures** (session scratchpad `oct5-shots/`, device scale 2): the stair from the ground gallery, the middle gallery
+  with the stair's opening and parapet, looking down the stair from the top.
+
 ## 8. The owner's decisions
 
 1. **How big is the octagon?**
