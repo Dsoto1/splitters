@@ -79,7 +79,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · A · Scaling 4: bot path search budget by time (order 4).
 - M · A · Scaling 5: spawn-first build order, no unloading (owner 1b; order 5).
 - L · A · Later: tiled navmesh, when breakable walls should open bot routes (owner 5a). Foliage: nothing until a profile says it costs (owner 6a).
-- L · A · Eventually (owner 7, 2026-11-15): one large open map (a "Far Cry island") with every feature, tile set and theme; plan real streaming, the region graph and budgets past 400 m once the small maps work great.
+- S · A · **Island plan, planning only, back of the queue** (owner, 2026-11-15): written, `docs/ISLAND_PLAN.md` for one large open map with every feature, tile set and theme ("like a Far Cry island"), to keep with the scaling study. Lead's recommended target about 1 km × 1 km, 32-64 players; sizes, budgets (entities, memory, bandwidth, host CPU), what each needs (tiled navmesh, far stand-ins, interest management, spawn-first build, region editing in MapMaker; real streaming only past that), steps. A plan only: no work starts from it without the owner.
 
 ## Waiting on the owner
 - A long-session recording (owner said yes, 2026-11-15): after an hour of MapMaker with several Tests, 20 s of a Test, then reload and the same Test again, ad blocker off for the site. After the memory readout (fix 3a) lands. The next St. John's match recording after the main-scene work.
