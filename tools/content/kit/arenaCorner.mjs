@@ -20,6 +20,8 @@
 // The north wedge (x 12 to the mitre) is written out; the east wedge is its mirror image across the diagonal (`D`);
 // the diagonal sector is built in its own frame (u along the rows, v the depth) and turned 45°; so each tile is its
 // own mirror image across the diagonal, and a mirrored corner is a turned one (map/setPieces.ts tileDiagonalMirror).
+//
+// Phase 3 adds the gate: the ground and attic storeys' gate option and the gatehouse tower (see "the gate" below).
 
 const R2 = Math.SQRT2;
 const T = Math.tan(Math.PI / 8);
@@ -224,11 +226,16 @@ function gallery(t, f, b, y, opts = {}) {
   if (opts.vomitorium) {
     diagRun(t, f, um(f + WALL), -VOMIT[1], 'wall', y);
     diagRun(t, f, -VOMIT[1], VOMIT[1], 'arch_round', y, { plain: true });
+  } else if (opts.gate) {
+    // The gate passage through it: the wall either side, a lintel over the passage level with its roof.
+    diagRun(t, f, um(f + WALL), -PASS, 'wall', y);
+    t.axis.push(diagBox(f, f + WALL, y + 3.2, y + 4, -PASS, PASS, 'wall'));
   } else diagRun(t, f, um(f + WALL), -um(f + WALL), 'wall', y);
   // Back: Round arches (blind against the fill, or open into the facade's arcade), thickness in front of the line.
   const end = opts.backTo ?? b;
   wedgeRun(t, b, xm(end), 12, 'arch_round', y, { plain: true });
-  diagRun(t, b, -um(end), um(end), 'arch_round', y, { plain: true });
+  // (With the gate, five bays: one arch on the centre line, the passage's way on into the fill.)
+  diagRun(t, b, -um(end), um(end), 'arch_round', y, { plain: true, ...(opts.gate ? { bays: 5 } : {}) });
   // The vault (as a vaulted room's: springing 3.02 m, crown 3.29 m, 0.5 m in from each wall).
   for (const s of vaultStrips(f + WALL, b - WALL, y + 3.02, y + 3.29)) {
     const mid = (s.y0 + s.y1) / 2;
@@ -243,11 +250,12 @@ function gallery(t, f, b, y, opts = {}) {
 }
 
 /** Two storeys of the facade's arcade from y: grand arches on both faces, its vault, its floor slab. */
-function arcade(t, y, floor) {
+function arcade(t, y, floor, opts = {}) {
   const [f, b] = FACADE;
-  // The inner face (on depth 48, thickness behind it) runs to the mitre at 48.8, as the upper gallery's back.
+  // The inner face (on depth 48, thickness behind it) runs to the mitre at 48.8, as the upper gallery's back (the gate's
+  // ground storey: nine bays, so an arch stands on the centre line where the passage comes out of the fill).
   wedgeRun(t, f, 12, xm(f + GRAND), 'arch_grand', y, { plain: true });
-  diagRun(t, f, um(f + GRAND), -um(f + GRAND), 'arch_grand', y, { plain: true });
+  diagRun(t, f, um(f + GRAND), -um(f + GRAND), 'arch_grand', y, { plain: true, ...(opts.innerBays ? { bays: opts.innerBays } : {}) });
   // The outer face (on depth 56, dressed outside).
   wedgeRun(t, b, xm(b), 12, 'arch_grand', y, { plain: true, outer: true });
   diagRun(t, b, -um(b), um(b), 'arch_grand', y, { plain: true, outer: true });
@@ -264,21 +272,202 @@ function arcade(t, y, floor) {
   else band(t, f + GRAND, b - GRAND, y - 0.5, y, 'floor');
 }
 
+// ---------------------------------------------------------------- the gate (phase 3)
+
+// The gate corner (plan §3.2 gate row, §3.3, owner 3a, 4b): a Gladiator Gate on the diagonal's centre line, its
+// passage 3.2 m wide from the sand out under the stand to the facade; a stair well either side of it down to level -1
+// (to the hypogeum ring's corner); a short stair up the podium wall either side of the gate's mouth. All in the
+// diagonal's frame (u along the front, v the depth), west half written out, the east half its mirror (flipU).
+
+/** Half the passage, and its headroom through the fill. */
+const PASS = 1.6;
+const PASS_H = 3.4;
+/**
+ * The podium stairs: against the podium wall on the sand, `out` m deep; eight steps from u `foot` (by the gate's pier)
+ * climb away from the gate to a landing at 2 m (to `end`), level with the wall's top and the walkway behind it; the
+ * parapet is left off over the top of the flight and the landing (from `gap`).
+ */
+const PODIUM_STAIR = { foot: 3.0, top: 7.0, end: 8.0, gap: 6.0, out: 2.4 };
+/**
+ * The stair wells (west one; u negative): a flight 2.4 m wide beside the passage, from the passage's floor (its head at
+ * depth `top`, a landing to `land` opening into the passage) down to level -1 at depth `foot`, where a landing (in the
+ * tile's own frame, square to the grid) leads into the cell side of the hypogeum's corner cell (tile cell 2, 2, -1).
+ */
+const WELL = { a: 2.1, b: 4.5, wall: 0.5, foot: 21, top: 29, land: 31.4 };
+/** Holes in the fill: the passage, each well's headroom over its upper flight, and the well's door onto the passage. */
+const GATE_HOLES = [
+  { u0: -PASS, u1: 0, v0: 16, v1: FACADE[0], y0: 0, y1: PASS_H },
+  { u0: -WELL.b, u1: -WELL.a, v0: WELL.foot + 3, v1: WELL.land, y0: 0, y1: PASS_H },
+  { u0: -WELL.a, u1: -PASS, v0: WELL.top, v1: WELL.land, y0: 0, y1: PASS_H },
+];
+/**
+ * The gatehouse tower (owner 2a), turned 45° with the diagonal and standing against the facade's outer face over the
+ * gate's outer end: as wide as the facade's middle three bays (its sides on the piers between bays), from depth 56 out
+ * to 66.1. The passage runs through its foot; a switchback either side (lane A by the passage climbs outward, lane B
+ * comes back), a landing across the whole tower at every 4 m on the facade side (through the facade's arches into the
+ * arcade storeys at 8 and 16 m, onto the attic walk at 24 m and its roof at 28 m), the lookout at 32 m.
+ */
+const TOWER = { half: -um(FACADE[1]) / 3, v0: FACADE[1], l1: 58.8, l2: 62.8, back: 65.6, v1: 66.1, top: 32, parapet: 1.2 };
+
+/** Diagonal (u, v) to the tile's frame (x, z). */
+const D2T = (u, v) => [r4(4 + (u + v) / R2), r4(4 + (v - u) / R2)];
+
+/** A podium band; with the gate cut by the passage, and the parapet left off over the top of each podium stair. */
+function podiumBand(t, d0, d1, y0, y1, kind, gate) {
+  if (!gate) return band(t, d0, d1, y0, y1, kind);
+  t.wedge.push(wedgeBox(d0, d1, y0, y1, xm(d1), kind));
+  const parapet = y0 >= PARAPET[2] - 1e-9;
+  const spans = parapet ? [[um(d1), -PODIUM_STAIR.end], [-PODIUM_STAIR.gap, -PASS]] : [[um(d1), -PASS]];
+  for (const [u0, u1] of spans) t.diag.push(diagBox(d0, d1, y0, y1, u0, u1, kind));
+}
+
+/**
+ * A band of fill (as band()) with holes carved out of its diagonal part: holes are boxes in the diagonal's west half
+ * ({u0, u1, v0, v1, y0, y1}, mirrored for the east half). The rest is cut into as few boxes as a greedy merge finds
+ * (along u, then v, then y); a box reaching the centre line is one box across it. With no holes, exactly band().
+ */
+function carvedBand(t, d0, d1, y0, y1, kind, holes) {
+  t.wedge.push(wedgeBox(d0, d1, y0, y1, xm(d1), kind));
+  const U0 = um(d1);
+  const hs = holes
+    .map((h) => ({ u0: Math.max(h.u0, U0), u1: Math.min(h.u1, 0), v0: Math.max(h.v0, d0), v1: Math.min(h.v1, d1), y0: Math.max(h.y0, y0), y1: Math.min(h.y1, y1) }))
+    .filter((h) => h.u1 - h.u0 > 1e-9 && h.v1 - h.v0 > 1e-9 && h.y1 - h.y0 > 1e-9);
+  if (!hs.length) return void t.axis.push(diagBox(d0, d1, y0, y1, U0, -U0, kind));
+  const cuts = (lo, hi, k0, k1) => [...new Set([lo, hi, ...hs.flatMap((h) => [h[k0], h[k1]])])].sort((a, b) => a - b);
+  const U = cuts(U0, 0, 'u0', 'u1');
+  const V = cuts(d0, d1, 'v0', 'v1');
+  const Y = cuts(y0, y1, 'y0', 'y1');
+  const mid = (A, i) => (A[i] + A[i + 1]) / 2;
+  const solid = (i, j, k) => !hs.some((h) => mid(U, i) > h.u0 && mid(U, i) < h.u1 && mid(V, j) > h.v0 && mid(V, j) < h.v1 && mid(Y, k) > h.y0 && mid(Y, k) < h.y1);
+  const used = new Set();
+  const free = (i, j, k) => i < U.length - 1 && j < V.length - 1 && k < Y.length - 1 && solid(i, j, k) && !used.has(`${i},${j},${k}`);
+  for (let k = 0; k < Y.length - 1; k++) for (let j = 0; j < V.length - 1; j++) for (let i = 0; i < U.length - 1; i++) {
+    if (!free(i, j, k)) continue;
+    let i1 = i;
+    while (free(i1 + 1, j, k)) i1++;
+    const row = (jj, kk) => Array.from({ length: i1 - i + 1 }, (_, n) => free(i + n, jj, kk)).every(Boolean);
+    let j1 = j;
+    while (row(j1 + 1, k)) j1++;
+    let k1 = k;
+    while (Array.from({ length: j1 - j + 1 }, (_, n) => row(j + n, k1 + 1)).every(Boolean)) k1++;
+    for (let kk = k; kk <= k1; kk++) for (let jj = j; jj <= j1; jj++) for (let ii = i; ii <= i1; ii++) used.add(`${ii},${jj},${kk}`);
+    const [u0, u1] = [U[i], U[i1 + 1]];
+    if (Math.abs(u1) < 1e-9) t.axis.push(diagBox(V[j], V[j1 + 1], Y[k], Y[k1 + 1], u0, -u0, kind));
+    else t.diag.push(diagBox(V[j], V[j1 + 1], Y[k], Y[k1 + 1], u0, u1, kind));
+  }
+}
+
+/** The gate's own parts: the passage's roof and floors, the gatehouse over its mouth, the podium stairs, the wells. */
+function gateParts(t) {
+  // The passage roof through the podium (level with the top walkway), the gatehouse block over the opening (3 m clear:
+  // a portcullis hangs in it, 1 m in from the podium's face), its marble lip and the timber beams under the roof: the
+  // Gladiator Gate's.
+  t.axis.push(diagBox(2.0, 8.0, 3.2, 4.0, -PASS, PASS, 'solid'));
+  t.axis.push(diagBox(0.1, 2.0, 3.0, 4.0, -2.2, 2.2, 'solid'));
+  t.axis.push(diagBox(0, 0.1, 3.6, 4.0, -2.3, 2.3, 'trim'));
+  for (const v of [3, 5, 7]) t.axis.push(diagBox(v - 0.12, v + 0.12, 2.95, 3.2, -PASS, PASS, 'trim'));
+  // Its floor (the gallery's and the arcade's floors carry it across those): 2 cm low at the mouth, where its corners
+  // lie over the sand tiles in the half cells either side.
+  t.axis.push(diagBox(0, PASS, -0.52, -0.02, -PASS, PASS, 'floor'));
+  t.axis.push(diagBox(PASS, 8, -0.5, 0, -PASS, PASS, 'floor'));
+  t.axis.push(diagBox(16, FACADE[0], -0.5, 0, -PASS, PASS, 'floor'));
+  // The podium stair (owner 4b): eight steps of 0.25 m up from the sand along the wall, and a landing level with its top.
+  const s = PODIUM_STAIR;
+  t.diag.push({ flight: { axis: 'x', dir: -1, from: DU(-s.foot), across: [DV(-s.out), DV(0)], steps: 8 } });
+  t.diag.push(diagBox(-s.out, 0, 0, 2, -s.end, -s.top, 'solid'));
+  // The stair well (owner 3a): the flight from level -1 up to the passage's floor, its head landing, its walls.
+  const w = WELL;
+  t.diag.push({ flight: { axis: 'z', dir: 1, from: DV(w.foot), across: [DU(-w.b), DU(-w.a)], steps: 16, base: -4, floor: -4 } });
+  t.diag.push(diagBox(w.top, w.land, -4, 0, -w.b, -w.a, 'floor'));
+  t.diag.push(diagBox(w.foot, w.land, -4, 0, -w.b - w.wall, -w.b, 'wall'));
+  t.diag.push(diagBox(w.foot + 0.2, w.land, -4, 0, -w.a, -PASS, 'wall'));
+  // The foot landing, square to the grid in the tile's frame (the cell north of the hypogeum's corner cell, 2, 2, -1,
+  // whose north side it meets: x 14.2 to 17.8 is that side's 3.6 m opening), and its walls up to the fill.
+  t.wedge.push(box(14.2, -4.2, 20, 17.8, -4, 22.6, 'floor'));
+  t.wedge.push(box(13.7, -4, 20, 14.2, 0, 23.1, 'wall'));
+  t.wedge.push(box(14.2, -4, 22.6, 16.5, 0, 23.1, 'wall'));
+  // (Under the passage's floor slab, which is its ceiling there.)
+  t.wedge.push(box(17.8, -4, 20, 18.3, -0.5, 20.8, 'wall'));
+}
+
+/** The ground's surface taken out round each stair well (map/groundBore.ts), and the wells drawn on plans. */
+function gateBore() {
+  const cut = [13.7, -4.5, 20, 25.1, 0.5, 29.8];
+  const w = WELL;
+  const lines = [
+    [...D2T(-w.b, w.foot), ...D2T(-w.b, w.land)],
+    [...D2T(-w.a, w.foot + 0.2), ...D2T(-w.a, w.land)],
+    [14.2, 20, 14.2, 22.6],
+    // (Where the landing's north wall meets the flight's west side.)
+    [14.2, 22.6, r4(22.6 - 2 * w.b / R2), 22.6],
+  ];
+  const swap = (q) => [q[1], q[0], q[3], q[2]];
+  return {
+    cut: [cut, [cut[2], cut[1], cut[0], cut[5], cut[4], cut[3]]],
+    plan: [...lines, ...lines.map(swap)].map((q) => q.map(r4)),
+  };
+}
+
+/** The gatehouse tower's parts (its own tile, in the same frame as the corner's). */
+function towerParts() {
+  const t = sectors();
+  const { half: H, v0: V0, l1: L1, l2: L2, back: VB, v1: V1, top: TOP, parapet: PH } = TOWER;
+  const IN = H - WALL;
+  const MID = (WELL.a + IN) / 2;
+  const PH0 = 3.5;
+  // The ground floor, the gate's way out through the outer wall.
+  t.axis.push(diagBox(V0, VB, -0.5, 0, -IN, IN, 'floor'));
+  t.axis.push(diagBox(VB, V1, -0.5, 0, -PASS, PASS, 'floor'));
+  // The side walls (on the facade's piers), the outer wall with the passage's arch, the passage's walls, the core
+  // between the two switchbacks over the passage, the parapet on the arena side of the lookout.
+  t.diag.push(diagBox(V0, V1, 0, TOP + PH, -H, -IN, 'wall'));
+  t.diag.push(diagBox(VB, V1, 0, TOP + PH, -IN, -PASS, 'wall'));
+  t.axis.push(diagBox(VB, V1, PH0, TOP + PH, -PASS, PASS, 'wall'));
+  t.diag.push(diagBox(L1, VB, 0, PH0, -WELL.a, -PASS, 'wall'));
+  t.axis.push(diagBox(L1, VB, PH0, TOP, -WELL.a, WELL.a, 'solid'));
+  t.axis.push(diagBox(V0, V0 + WALL, TOP, TOP + PH, -IN, IN, 'wall'));
+  // Eight storeys of 4 m: lane A (by the passage) up 2 m outward, the half landing, lane B up 2 m back, the landing
+  // across the tower. Steps 0.25 by 0.5 m, each 0.6 m deep under its tread (3.4 m clear over the flight below); the
+  // ground storey's are solid to the floor.
+  for (let k = 0; k < 8; k++) {
+    const y = 4 * k;
+    for (let i = 0; i < 8; i++) {
+      const a = y + 0.25 * (i + 1);
+      t.diag.push(diagBox(L1 + 0.5 * i, L1 + 0.5 * (i + 1), k ? a - 0.6 : 0, a, -MID, -WELL.a, 'solid'));
+      const b = y + 2 + 0.25 * (i + 1);
+      t.diag.push(diagBox(L2 - 0.5 * (i + 1), L2 - 0.5 * i, k ? b - 0.6 : 0, b, -IN, -MID, 'solid'));
+    }
+    t.diag.push(diagBox(L2, VB, k ? y + 1.5 : 0, y + 2, -IN, -WELL.a, 'floor'));
+    // (At 28 m the landing reaches over the attic's parapet line to its roof.)
+    t.axis.push(diagBox(y + 4 === 28 ? FACADE[1] - WALL : V0, L1, y + 3.5, y + 4, -IN, IN, 'floor'));
+  }
+  // Merlons on the lookout's parapets (drawn only).
+  for (let u = 0.8; u < IN - 0.3; u += 1.6) {
+    t.diag.push(diagBox(V0, V0 + WALL, TOP + PH, TOP + PH + 0.6, -u - 0.35, -u + 0.35, 'trim'));
+    t.diag.push(diagBox(VB, V1, TOP + PH, TOP + PH + 0.6, -u - 0.35, -u + 0.35, 'trim'));
+  }
+  for (let v = V0 + 0.8; v < V1 - 0.3; v += 1.6) t.diag.push(diagBox(v - 0.35, v + 0.35, TOP + PH, TOP + PH + 0.6, -H, -IN, 'trim'));
+  return t;
+}
+
 // ---------------------------------------------------------------- the four tiles
 
-function groundParts() {
+function groundParts(gate = false) {
   const t = sectors();
   // The podium, the parapet on its wall.
-  for (const [d0, d1, top, kind] of PODIUM) band(t, d0, d1, 0, top, kind);
-  band(t, PARAPET[0], PARAPET[1], PARAPET[2], PARAPET[3], 'wall');
+  for (const [d0, d1, top, kind] of PODIUM) podiumBand(t, d0, d1, 0, top, kind, gate);
+  podiumBand(t, PARAPET[0], PARAPET[1], PARAPET[2], PARAPET[3], 'wall', gate);
   // The podium's gallery and the first tier of rows over it.
-  gallery(t, 8, 16, 0, { floor: true });
+  gallery(t, 8, 16, 0, { floor: true, gate });
   rows(t, 0, 7);
-  // Fill under the upper tiers (the mid gallery's floor slab is the mid tile's).
-  band(t, 16, 24, 0, 8, 'solid');
-  band(t, 24, 32, 0, 7.5, 'solid');
-  band(t, 32, 48, 0, 8, 'solid');
-  arcade(t, 0, 'ground');
+  // Fill under the upper tiers (the mid gallery's floor slab is the mid tile's); the gate's passage and stair wells are
+  // carved out of it.
+  const holes = gate ? GATE_HOLES : [];
+  carvedBand(t, 16, 24, 0, 8, 'solid', holes);
+  carvedBand(t, 24, 32, 0, 7.5, 'solid', holes);
+  carvedBand(t, 32, 48, 0, 8, 'solid', holes);
+  arcade(t, 0, 'ground', gate ? { innerBays: 9 } : {});
+  if (gate) gateParts(t);
   return t;
 }
 
@@ -302,16 +491,22 @@ function upperParts() {
   return t;
 }
 
-function atticParts() {
+function atticParts(gate = false) {
   const t = sectors();
   const [f, b] = FACADE;
   // The walk's floor between the arcade's walls (their tops make the rest), the outer wall with its windows, the roof
   // and a parapet round it.
   band(t, f + GRAND, b - GRAND, 23.5, 24, 'floor');
   wedgeRun(t, b, xm(b), 12, 'window', 24, { outer: true });
-  diagRun(t, b, -um(b), um(b), 'window', 24, { outer: true });
+  // With the gate the walk and the roof open into the gatehouse tower over the middle three of the facade's nine bays
+  // (the tower's sides stand on the piers between bays, so the windows either side stay where they were).
+  if (gate) diagRun(t, b, -TOWER.half, um(b), 'window', 24, { outer: true, bays: 3 });
+  else diagRun(t, b, -um(b), um(b), 'window', 24, { outer: true });
   band(t, f, b - WALL, 27.5, 28, 'floor');
-  band(t, b - WALL, b, 28, 28.6, 'wall');
+  if (gate) {
+    t.wedge.push(wedgeBox(b - WALL, b, 28, 28.6, xm(b), 'wall'));
+    t.diag.push(diagBox(b - WALL, b, 28, 28.6, um(b), -TOWER.half, 'wall'));
+  } else band(t, b - WALL, b, 28, 28.6, 'wall');
   return t;
 }
 
@@ -347,12 +542,17 @@ function cellsOf(levels) {
   return out;
 }
 
-/** Ports on the sides that meet the straight stands (west of the first column, south of the first row). */
+/**
+ * Ports on the sides that meet the straight stands (west of the first column, south of the first row), and on the
+ * ground the sides that face the two half-sand cells (0, 1) and (1, 0), the gate's mouth among them: open ground meets
+ * open ground there with no wall between (else the sand's Courtyard tiles wall them off, up through the podium).
+ */
 function portsOf(cells) {
   const out = [];
+  const facesSand = (dx, dy, side) => (side === 'W' ? (dx === 1 && dy === 1) || (dx === 2 && dy === 0) : (dx === 1 && dy === 1) || (dx === 0 && dy === 2));
   for (const [dx, dy, level] of cells) {
-    if (dx === 0) out.push({ side: 'W', level, cell: [dx, dy] });
-    if (dy === 0) out.push({ side: 'S', level, cell: [dx, dy] });
+    if (dx === 0 || (level === 0 && facesSand(dx, dy, 'W'))) out.push({ side: 'W', level, cell: [dx, dy] });
+    if (dy === 0 || (level === 0 && facesSand(dx, dy, 'S'))) out.push({ side: 'S', level, cell: [dx, dy] });
   }
   return out;
 }
@@ -380,26 +580,83 @@ const TILES = [
   ['attic', 'Arena Corner (Attic)', 'The attic walk round a 45° corner of the stands (levels 6-7): the walkway behind the highest seats, windows in the outer wall, the roof', atticParts],
 ];
 
-/** The Arena Corner kit tiles, in content/tiles/core.json's form. */
-export function arenaCornerTiles() {
-  return TILES.map(([key, displayName, blurb, parts]) => {
-    const levels = LEVELS[key];
-    const base = levels[0][0];
-    const cells = cellsOf(levels).map(([x, y, z]) => [x, y, z - base]);
-    return {
-      id: `core.arena_corner_${key}`,
-      category: 'Vertical',
-      displayName,
-      blurb: `${blurb}. Stack the four (setpiece.arena_corner) between straight Arena Bays to the west and south.`,
-      cells,
-      floors: [],
-      ports: portsOf(cells),
-      open: true,
-      edgeDefault: 'open',
-      solids: assemble(parts()).map((p) => lower(p, base * 4)),
-      notes: {
-        design: 'Flavius Rule\'s octagon, phase 2 (docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md): made by tools/content/kit/arenaCorner.mjs. The anchor cell is the corner of the sand (the tile covers the cells 0..8 east and north of it). The rows are the Seating Tier\'s (0.5 m by 1 m) and the podium Arena Seating\'s, so they meet the straight bays flush; seats in the solids slot, lips in trim, walls and vaults in walls, walkways and slabs in floor. Arches collide plain (piers and lintel; owner 2026-11-14, 6a).',
-      },
-    };
-  });
+const DESIGN = 'Flavius Rule\'s octagon (docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md): made by tools/content/kit/arenaCorner.mjs. The anchor cell is the corner of the sand (the tile covers the cells 0..8 east and north of it). The rows are the Seating Tier\'s (0.5 m by 1 m) and the podium Arena Seating\'s, so they meet the straight bays flush; seats in the solids slot, lips in trim, walls and vaults in walls, walkways and slabs in floor. Arches collide plain (piers and lintel; owner 2026-11-14, 6a).';
+
+/** A storey tile (plain, or with the gate option). */
+function storeyTile(key, displayName, blurb, parts, gate = false) {
+  const levels = LEVELS[key];
+  const base = levels[0][0];
+  const cells = cellsOf(levels).map(([x, y, z]) => [x, y, z - base]);
+  return {
+    id: `core.arena_corner_${key}${gate ? '_gate' : ''}`,
+    category: 'Vertical',
+    displayName,
+    blurb: `${blurb}. Stack the four (setpiece.arena_corner${gate ? '_gate' : ''}) between straight Arena Bays to the west and south.`,
+    ...(gate ? { optionOf: { tile: `core.arena_corner_${key}`, option: 'gate' } } : {}),
+    cells,
+    floors: [],
+    ports: portsOf(cells),
+    open: true,
+    edgeDefault: 'open',
+    solids: assemble(parts(gate)).map((p) => lower(p, base * 4)),
+    ...(gate && key === 'ground' ? { bore: gateBore() } : {}),
+    notes: { design: gate ? `${DESIGN} The gate option (phase 3, MapMaker's tile inspector: a tile of its own, so maps need no new field): ${GATE_NOTES[key]}` : DESIGN.replace("octagon (", "octagon, phase 2 (") },
+  };
 }
+
+const GATE_NOTES = {
+  ground: 'a Gladiator Gate on the diagonal (passage 3.2 m wide and 3 m clear under the gatehouse, where a portcullis hangs 1 m in from the podium\'s face, then 3.4 m through the fill), out through the facade\'s middle arch; a stair well either side of it from the passage down to level -1, whose foot landing meets the north side (and, mirrored, the east side) of tile cell 2, 2, -1, the hypogeum ring\'s corner, through a 3.6 m opening; a short stair of eight steps up the podium wall either side of the mouth, open with the portcullis down (owner 4b). The wells hang a level under the tile\'s cells (no cell at level -1 is claimed: put the hypogeum\'s tunnels there); its bore takes the ground out round them.',
+  attic: 'the walk and the roof open into the gatehouse tower (core.arena_corner_tower) over the facade\'s middle three bays: no windows or parapet there.',
+};
+
+/** The tower's cells: those of levels 0-7 the corner leaves free (wholly past the facade) and all of level 8, under its footprint. */
+function towerCells() {
+  const out = [];
+  const inTower = (x, z) => Math.abs((x - z) / R2) <= TOWER.half && (x + z - 40) / R2 >= TOWER.v0 && (x + z - 40) / R2 <= TOWER.v1;
+  for (let level = 0; level <= 8; level++) {
+    for (let dy = 0; dy <= 8; dy++) {
+      for (let dx = 0; dx <= 8; dx++) {
+        let tower = 0;
+        let corner = 0;
+        for (let i = 0; i < 16; i++) for (let j = 0; j < 16; j++) {
+          const x = 12 + dx * 8 + (i + 0.5) / 2;
+          const z = 12 + dy * 8 + (j + 0.5) / 2;
+          if (inTower(x, z)) tower++;
+          if (depthAt(x, z) < FACADE[1]) corner++;
+        }
+        if (tower > 0 && (level === 8 || corner === 0)) out.push([dx, dy, level]);
+      }
+    }
+  }
+  return out;
+}
+
+function towerTile() {
+  return {
+    id: 'core.arena_corner_tower',
+    category: 'Vertical',
+    displayName: 'Arena Corner Gatehouse',
+    blurb: "A gatehouse tower turned 45° against the facade of an Arena Corner, over its gate's outer end: the gate passage through its foot, a switchback either side up to a landing at every 4 m (the arcade storeys at 8 and 16 m, the attic walk at 24 m and its roof at 28 m) and a lookout at 32 m. In setpiece.arena_corner_gate; anchor on the sand's corner cell like the corner",
+    cells: towerCells(),
+    floors: [],
+    ports: [],
+    open: true,
+    edgeDefault: 'open',
+    solids: assemble(towerParts()),
+    notes: { design: `${DESIGN.replace(' The rows are', ' Its own tile (not part of the gate option, whose cells are the plain corner\'s), so it claims only what the corner leaves free: the outer court\'s cells under it at levels 0-7 and all of level 8; it stands with its inner face on the facade\'s outer face (depth 56 m), so the storey tiles keep the facade, and only the attic needs the gate option (the walk and roof open into it). The rows are')}` },
+  };
+}
+
+/** The Arena Corner kit tiles, in content/tiles/core.json's form: the four storeys, the gate options of the ground and the attic, the gatehouse tower. */
+export function arenaCornerTiles() {
+  const plain = TILES.map(([key, displayName, blurb, parts]) => storeyTile(key, displayName, blurb, parts));
+  const gate = TILES.filter(([key]) => key === 'ground' || key === 'attic').map(([key, displayName, , parts]) =>
+    storeyTile(key, displayName.replace(')', ', Gate)'), GATE_BLURBS[key], parts, true),
+  );
+  return [...plain, ...gate, towerTile()];
+}
+
+const GATE_BLURBS = {
+  ground: 'The ground storeys of a 45° corner of the stands with a Gladiator Gate on its diagonal: a passage 3.2 m wide from the sand out under the stand and through the facade (hang a portcullis in its mouth), a stair well either side of it down to the hypogeum a level below, a short stair up the podium wall either side of the gate',
+  attic: 'The attic walk round a 45° corner of the stands, open in the middle into the gatehouse tower over the gate (core.arena_corner_tower)',
+};

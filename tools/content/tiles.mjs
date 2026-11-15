@@ -135,7 +135,7 @@ function schemas(root, materials, edgeIds = []) {
     floors: arr(int), ports: arr(port), 'open?': bool, 'edgeDefault?': str, 'edgeDefaults?': map(str), 'configurable?': bool,
     'model?': obj({ file: str, 'lift?': num }), 'solids?': arr(part), 'extraFloors?': arr(part), 'notes?': notes,
     // MapMaker's tile options that are tiles of their own (map/catalog.ts TILE_OPTIONS): this tile is `tile` with `option` on.
-    'optionOf?': obj({ tile: str, option: en(['sideWalls', 'underGround']) }),
+    'optionOf?': obj({ tile: str, option: en(['sideWalls', 'underGround', 'gate']) }),
     // The tunnel kit (kit/tunnel.mjs): this tile is the shape `base` in the material family `family`.
     'familyOf?': obj({ base: str, family: str, label: str }),
     // A piece buried in terrain (map/groundBore.ts): boxes the ground's surface is cut out of, and mouths it opens at.

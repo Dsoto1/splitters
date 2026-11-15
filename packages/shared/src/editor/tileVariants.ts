@@ -10,11 +10,13 @@ import type { EditCommand } from './commands.ts';
 export const TILE_OPTION_LABELS: Record<TileOptionId, string> = {
   sideWalls: 'Side walls',
   underGround: 'Under ground',
+  gate: 'Gate',
 };
 
 export const TILE_OPTION_HELP: Record<TileOptionId, string> = {
   sideWalls: 'Masonry up to ground level on the closed sides, so the ground round the tunnel meets a kerb instead of sloping down to it',
   underGround: 'Buried: the hill stays on top of the tunnel and only what crosses its passage is cut out of the ground. Put a Tunnel Portal on each end that comes out of the hill',
+  gate: "The Arena Corner's gate: on the ground storeys a Gladiator Gate on the diagonal (a passage under the stand with a portcullis opening, a stair well either side down to the level below, short stairs up the podium); on the attic the walk opens into the gatehouse tower",
 };
 
 /** One option a tile offers: whether it is on for that tile, and the tile it is with the option off and on. */

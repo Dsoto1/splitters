@@ -53,7 +53,7 @@ export interface LocalBox {
 }
 
 /** MapMaker's tile options that are tiles of their own (TileDefinition.optionOf), so a map needs no new field for one. */
-export const TILE_OPTIONS = ['sideWalls', 'underGround'] as const;
+export const TILE_OPTIONS = ['sideWalls', 'underGround', 'gate'] as const;
 export type TileOptionId = (typeof TILE_OPTIONS)[number];
 
 export interface TileDefinition {
