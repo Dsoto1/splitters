@@ -13,6 +13,7 @@ import type { FromMapTest, ToMapTest } from './mapTestWorkerCore.ts';
 import type { PrebuiltNav } from '@tiletrigger/shared/match';
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
+import { perfOn } from '../game/perfSwitches.ts';
 
 /** Navigation is checked this long after the last edit (ms): not between the clicks of someone placing or deleting in a row. */
 const NAV_DELAY_MS = 900;
@@ -182,7 +183,8 @@ export class MapChecks {
 
   private checkNavigation(doc: MapDocument, token: number): void {
     if (token !== this.navToken) return;
-    if (this.navBusy) {
+    // While a Test runs: checked when MapMaker is back (`resume`).
+    if (this.paused || this.navBusy) {
       this.navNext = { doc, token };
       return;
     }
@@ -197,6 +199,8 @@ export class MapChecks {
       }
       worker.onmessage = (e: MessageEvent<FromMapTest>) => {
         const m = e.data;
+        // (A worker stopped by `pause` says nothing more.)
+        if (worker !== this.navWorker) return;
         if (m.k !== 'nav' && m.k !== 'pads' && m.k !== 'navFailed' && m.k !== 'failed') return;
         const latest = m.k !== 'failed' && m.token === this.navToken;
         if (m.k === 'nav') {
@@ -212,6 +216,7 @@ export class MapChecks {
           return;
         }
         this.navBusy = false;
+        this.navJob = null;
         if (m.k === 'pads') {
           if (latest) {
             this.padIssues = m.issues;
@@ -227,6 +232,7 @@ export class MapChecks {
         if (next) this.checkNavigation(next.doc, next.token);
       };
       worker.onerror = () => {
+        if (worker !== this.navWorker) return;
         // The worker itself failed to load: on the page from here on.
         this.navWorker?.terminate();
         this.navWorker = null;
@@ -238,11 +244,52 @@ export class MapChecks {
     }
     if (this.noNavWorker) return void this.checkNavigationHere(doc, token);
     this.navBusy = true;
-    const job: ToMapTest = { k: 'nav', doc, computed: this.app.hints.computedOn, token };
+    this.navJob = { doc, token };
+    const job: ToMapTest = { k: 'nav', doc, computed: this.app.hints.computedOn, token, ...(perfOn('padnav') ? {} : { padNav: false }) };
     worker.postMessage(job);
   }
 
   private noNavWorker = false;
+  /** The check the navigation worker is on (what `pause` stops and `resume` starts again). */
+  private navJob: { doc: MapDocument; token: number } | null = null;
+  /** A Test is running: no navigation check starts (`pause`). */
+  private paused = false;
+  /** Checks stopped by a Test starting (the e2e `editor` flow reads it). */
+  navStops = 0;
+
+  /** Whether a navigation check is running in the worker now. */
+  get navRunning(): boolean {
+    return this.navBusy;
+  }
+
+  /**
+   * Test starts (fix 2 of docs/PERF_MAPMAKER_TRACE_2026-11-15.md): a navigation check still running is stopped (its
+   * worker ended: a Recast build can't be interrupted) so it doesn't build a navmesh beside the Test's own build and
+   * loading, and none starts until MapMaker is back. The last navmesh checked stays `prebuilt` (the Test takes it if
+   * it is the map's, else builds its own). `?perfoff=navstop`: the check runs on, as before.
+   */
+  pause(): void {
+    if (!perfOn('navstop')) return;
+    this.paused = true;
+    clearTimeout(this.navTimer);
+    if (!this.navBusy || !this.navWorker) return;
+    this.navWorker.terminate();
+    this.navWorker = null;
+    this.navBusy = false;
+    // Started again on return, unless a later edit's check is already waiting.
+    this.navNext ??= this.navJob;
+    this.navJob = null;
+    this.navStops++;
+  }
+
+  /** Back in MapMaker: the check stopped (or held) while the Test ran starts now. */
+  resume(): void {
+    if (!this.paused) return;
+    this.paused = false;
+    const next = this.navNext;
+    this.navNext = null;
+    if (next) this.checkNavigation(next.doc, next.token);
+  }
 
   /**
    * The last navigation check's navmesh, as built (docs/PERF_MAPMAKER_TRACE_2026-11-15.md fix 4): Test hands it to the
