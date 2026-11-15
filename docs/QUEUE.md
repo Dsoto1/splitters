@@ -47,8 +47,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Main scene drawing on St. John's: about 10 ms a frame and nearly unchanged after draws fell 58 % (owner's 11-15 recording, `docs/PERF_STJOHNS_2026-11-14.md`); find what it spends (per-mesh CPU, material updates, GPU fill at 1920x1080@2) and cut it. After the hitches fix (owner, 2026-11-15).
 
 ## Easy wins
-- S · B · MapMaker: the selection Mirror (Shift+M) learns diagonal symmetry, so an exploded Arena Corner mirrors like the set piece (owner 4a, 2026-11-14; after MapMaker UI Phase 1 frees `editor/mirror.ts`).
-- XS · B · MapMaker: `updateVisibleFaces` cuts a turned box's face into slightly different pieces than a full pass (a few mm² on faces of hundreds of m²); `facesUpdate.test.ts` now compares drawn area. Make the incremental cut match exactly, then tighten the test back.
 
 - XS · B · Tests near their timeouts at load 16-25, CPU-bound (flaky-tests helper, 2026-11-15): botRoles route variety, botai strafing aim, debrisGround, zipStream, server.test's first CTF test with four suites at once.
 
