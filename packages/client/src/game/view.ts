@@ -2694,7 +2694,10 @@ export class GameView {
       ch.root.parent = root;
       fitCharacter(ch);
       if (spec.size && spec.size !== 1) ch.root.scaling.scaleInPlace(spec.size);
-      a.anim = new CharacterAnimator(this.scene, ch);
+      const anim = new CharacterAnimator(this.scene, ch);
+      // Bodies of one look share the first one's torso measurement.
+      anim.torsoLook = specKey;
+      a.anim = anim;
       if (a.culled) a.anim.setDormant(true);
       placeholder.setEnabled(false);
       // Move the held weapon from the capsule to the hand.
