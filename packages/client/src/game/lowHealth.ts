@@ -27,11 +27,11 @@ export const LOW_HEALTH = {
   /** How much colour the world loses at full strength (Babylon's colour curves, -100..100). */
   desaturate: 45,
   /** The edge's opacity at full strength. */
-  edge: 0.85,
+  edge: 0.95,
 } as const;
 
 /** The darkened edge: near-black with a cool cast, reaching further in than the hurt vignette. */
-export const LOW_HEALTH_LOOK: HurtLook = { inner: 0.38, color: [6, 8, 12], alpha: 0.78 };
+export const LOW_HEALTH_LOOK: HurtLook = { inner: 0.3, color: [6, 8, 12], alpha: 0.92 };
 
 /** How strong the warning wants to be at `share` of full health (0..1): 0 above LOW_HEALTH.start. */
 export function lowHealthTarget(share: number): number {

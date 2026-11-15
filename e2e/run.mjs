@@ -7457,6 +7457,14 @@ async function holdUseChecks(browser) {
   check(playing, 'the map plays (MapMaker TEST)');
   if (!playing) return void (await page.context().close());
   await holdBots(page);
+  // Every note the HUD shows (a cancel says why), for the checks' messages.
+  await page.evaluate(() => {
+    const el = document.getElementById('pickup-msg');
+    window.__notes = [];
+    new MutationObserver(() => window.__notes.push(el.textContent)).observe(el, { childList: true, characterData: true, subtree: true });
+  });
+  // (Pictures: the pause menu a headless page shows without the pointer lock, out of the way.)
+  if (shots) await page.addStyleTag({ content: '#pause { visibility: hidden !important; }' });
   const stand = () =>
     sim(page, (m, me) => {
       me.move = { pos: { x: 7.2, y: 0, z: 10 }, velY: 0, grounded: true };
@@ -7465,26 +7473,43 @@ async function holdUseChecks(browser) {
       me.resupplyAt = 0;
     });
   await stand();
+  // Facing the box (the view turns with the page's own input).
+  await page.evaluate(() => Object.assign(window.__cs.input, { yaw: -Math.PI / 2, pitch: -0.3 }));
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   const prompt = await page.waitForFunction(() => /Hold to resupply/.test(document.getElementById('prompt')?.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
   check(prompt, `beside the box the prompt says to hold E (${await page.textContent('#prompt')})`);
-  // E pressed and held (BUTTON_USE once, BUTTON_USE_HOLD while down).
-  await page.evaluate(() => (window.__autoInput = { buttons: 32768, once: 16 }));
+  // E pressed and held (BUTTON_USE once, BUTTON_USE_HOLD while down); pressed again if a slow frame swallowed the press.
+  const press = async () => {
+    for (let i = 0; i < 4; i++) {
+      if (i) await stand();
+      await page.evaluate(() => (window.__autoInput = { buttons: 32768, once: 16 }));
+      if (await simWait(page, (m, me) => me.hold?.kind === 'resupply', null, T(3000))) return true;
+    }
+    return false;
+  };
+  // (After the countdown: the match takes no Use before it plays.)
+  const live = await simWait(page, (m) => m.phase === 'playing', null, T(30000));
+  const pressed = await press();
   const ring = await page.waitForFunction(() => {
     const el = document.getElementById('hold-ring');
     return !!el && !el.hidden && /Resupplying/.test(el.textContent ?? '') && Number(el.querySelector('circle.fill')?.getAttribute('stroke-dashoffset')) < 150;
   }, null, { timeout: T(10000) }).then(() => true, () => false);
-  const midway = await sim(page, (m, me) => ({ hold: me.hold?.kind ?? null, empty: [...me.weapons.values()].some((w) => w.def.reserveMax > 0 && w.reserve === 0) }));
+  const midway = { live, pressed, ...(await sim(page, (m, me) => ({ phase: m.phase, tick: m.tick, at: [+me.move.pos.x.toFixed(2), +me.move.pos.y.toFixed(2), +me.move.pos.z.toFixed(2)], boxes: m.ammoBoxes().map((b) => [+b.pos.x.toFixed(2), +b.pos.y.toFixed(2), +b.pos.z.toFixed(2), b.uses]), seq: me.lastSeq, hold: me.hold?.kind ?? null, empty: [...me.weapons.values()].some((w) => w.def.reserveMax > 0 && w.reserve === 0) }))), notes: await page.evaluate(() => window.__notes) };
   check(ring && midway.hold === 'resupply' && midway.empty, `held, a ring round the crosshair fills ("Resupplying") and nothing is given yet (${JSON.stringify(midway)})`);
-  if (shots) await page.screenshot({ path: `${shots}/hold-ring.png` });
+  if (shots) {
+    // (The picture: the hold held at 60 % while the slow page takes it, then given back its own length.)
+    await sim(page, (m, me) => me.hold && Object.assign(me.hold, { start: m.tick - 600, ticks: 1000 }));
+    await page.waitForFunction(() => window.__cs.lowHealth().hold?.total === 1000, null, { timeout: T(5000) }).catch(() => {});
+    await page.screenshot({ path: `${shots}/hold-ring.png` });
+    await sim(page, (m, me) => me.hold && Object.assign(me.hold, { start: m.tick - 30, ticks: 90 }));
+  }
   const filled = await meWait(page, (m, me) => !me.hold && [...me.weapons.values()].filter((w) => w.def.reserveMax > 0).every((w) => w.reserve === w.def.reserveMax), null, 4, T(30000));
   const gone = await page.waitForFunction(() => document.getElementById('hold-ring')?.hidden !== false, null, { timeout: T(10000) }).then(() => true, () => false);
   check(filled && gone, `once the hold has run you are resupplied and the ring goes (filled ${filled}, ring gone ${gone})`);
   // Again, let go early: it stops and says why.
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   await stand();
-  await page.evaluate(() => (window.__autoInput = { buttons: 32768, once: 16 }));
-  await simWait(page, (m, me) => me.hold?.kind === 'resupply', null, T(10000));
+  await press();
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   const stopped = await page.waitForFunction(() => /Resupply stopped: let go too soon/.test(document.getElementById('pickup-msg')?.textContent ?? document.body.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
   const still = await sim(page, (m, me) => [...me.weapons.values()].some((w) => w.def.reserveMax > 0 && w.reserve === 0));
@@ -7500,7 +7525,8 @@ async function holdUseChecks(browser) {
     }, on);
   const health = (hp) => sim(page, (m, me, hp) => void (me.health = hp), hp);
   const settle = (min) => page.waitForFunction((min) => window.__cs.lowHealth().level >= min, min, { timeout: T(15000) }).then(() => true, () => false);
-  await sim(page, (m, me) => void (me.yaw = Math.PI));
+  await sim(page, (m, me) => void (me.move = { pos: { x: -3, y: 0, z: 32 }, velY: 0, grounded: true }));
+  await page.evaluate(() => Object.assign(window.__cs.input, { yaw: Math.PI * 1.1, pitch: -0.08 }));
   for (const on of [true, false]) {
     await setFlashing(on);
     for (const hp of [30, 10]) {
@@ -9549,6 +9575,22 @@ const FLASHING_DAY = {
         sees: (on, s) => s.rings.length === 4 && s.rings.every((r) => r.px >= 150 && (!on || r.mean >= LOOT_RING_MIN)),
         after: () => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality)),
       },
+      // The low-health warning (game/lowHealth.ts): your health drops to 10 % as the recording starts, so it holds the
+      // warning coming up (the edges darkening, the world greying) and its heartbeat pulse, by day over the white tiles
+      // (the brightest ground: where darkening shows most). Before each run it is let go back to nothing.
+      {
+        name: 'lowhealth',
+        label: 'the low-health warning coming up at 10 % health (edges darkening, the world greying, the heartbeat), by day over white tiles',
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -18.5],
+        look: { yaw: Math.PI, pitch: -0.3 },
+        bots: [],
+        before: () => sim(page, () => void (self.__flashHp = undefined)).then(() => step(45)),
+        at: { 2: () => sim(page, () => void (self.__flashHp = 10)) },
+        seen: () => page.evaluate(() => ({ ...window.__cs.lowHealth(), hp: window.__cs.local.health })),
+        sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
+        after: () => sim(page, () => void (self.__flashHp = undefined)),
+      },
     ];
   },
 };
@@ -9734,7 +9776,9 @@ async function flashingScene(browser, scene) {
       const bots = m.combatants().filter((c) => c.bot);
       const pin = () => {
         put(me, mo.me);
-        me.maxHealth = me.health = 100000;
+        // (A moment may hold your health low: `self.__flashHp`, out of a real 100.)
+        me.maxHealth = self.__flashHp ? 100 : 100000;
+        me.health = self.__flashHp ?? 100000;
         for (const w of me.weapons.values()) if (w.def.magazine) w.mag = w.def.magazine;
         bots.forEach((b, i) => {
           b.maxHealth = b.health = 100000;
@@ -9931,21 +9975,6 @@ async function flashingScene(browser, scene) {
         sim(page, (m) => {
           for (const c of m.combatants()) c.burnTicks = c.poisonTicks = c.slowTicks = 0;
         }).then(() => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality))),
-    },
-    // The low-health warning (game/lowHealth.ts): your health dropped to 10 % as the recording starts, so it holds the
-    // warning coming up (the edges darkening, the world greying) and its heartbeat pulse, in the dark room's doorway.
-    {
-      name: 'lowhealth',
-      label: 'the low-health warning coming up at 10 % health (edges darkening, the world greying, the heartbeat), at night',
-      weapon: 'core.arc_caster',
-      me: [0, 0, 8],
-      look: aim([0, 0, 8], [0, 1, 11.5]),
-      bots: [],
-      before: () => sim(page, (m) => void m.combatants().filter((c) => c.kind === 'human').forEach((c) => (c.health = 100))),
-      at: { 2: () => sim(page, (m) => void m.combatants().filter((c) => c.kind === 'human').forEach((c) => (c.health = 10))) },
-      seen: () => page.evaluate(() => window.__cs.lowHealth()),
-      sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
-      after: () => sim(page, (m) => void m.combatants().filter((c) => c.kind === 'human').forEach((c) => (c.health = 100))),
     },
     {
       name: 'alarm',

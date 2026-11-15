@@ -154,7 +154,7 @@ with the HUD's hurt tint drawn over it, at 160 × 90:
 - four grenade blasts 3-5 m in front of the camera in 0.8 s;
 - a machine gun firing at a wall 3.5 m off in the dark room;
 - six pickups' floor glows coming up 2-4 m in front of you at night, as High graphics draws them;
-- the low-health warning coming up as your health drops to 10 % (`lowhealth`);
+- by day, the low-health warning coming up over white tiles as your health drops to 10 % (`lowhealth`);
 - the alarm light in its dark room;
 - by day (its second scene): sprinting out of a lit tunnel and back, and four pickups' glows coming up on white tiles
   (`lootlight`), where the rings must read too: WCAG contrast at least 1.3 on average over each ring with the setting
