@@ -282,4 +282,20 @@ describe('tuning probes (DRIVE_TRACE)', () => {
     }
     writeFileSync(`${process.env.DRIVE_TRACE}/turns.txt`, out.join('\n'));
   });
+  it.runIf(!!process.env.DRIVE_TRACE)('cost: a driven buggy, rigid against classic', () => {
+    const time = (mode: 'classic' | 'rigid') => {
+      const d = drive([block('ramp', 42, 16, [6, 0.4, 7], 0.3)], { drive: mode });
+      d.run(60);
+      const t0 = performance.now();
+      for (let k = 0; k < 3; k++) {
+        d.run(150, { forward: 1, right: k === 1 ? 0.5 : 0 });
+        d.run(150, { forward: -1 });
+      }
+      return (performance.now() - t0) / 900;
+    };
+    time('rigid');
+    const out = [];
+    for (let i = 0; i < 3; i++) out.push(`classic ${time('classic').toFixed(3)} ms a tick, rigid ${time('rigid').toFixed(3)} ms a tick (whole match step)`);
+    writeFileSync(`${process.env.DRIVE_TRACE}/cost.txt`, out.join('\n'));
+  });
 });
