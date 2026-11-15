@@ -329,15 +329,17 @@ describe('doors turned off the grid', () => {
     }
   });
 
-  it('every shipped map: no door is off the grid, so every door blocks, opens and keeps spawns out as before', () => {
-    const dir = new URL('../../../maps/', import.meta.url);
-    let doors = 0;
-    let gates = 0;
-    for (const f of readdirSync(dir).filter((x) => x.endsWith('.json'))) {
-      const loaded = loadMap(readFileSync(new URL(f, dir), 'utf8'));
-      if (!loaded.ok) continue;
+  // One test per map (one test over every map neared its timeout under load, as terrainFloors did).
+  const mapDir = new URL('../../../maps/', import.meta.url);
+  const mapFiles = readdirSync(mapDir).filter((x) => x.endsWith('.json')).sort();
+  let doors = 0;
+  let gates = 0;
+  for (const f of mapFiles) {
+    it(`${f}: no door is off the grid, so every door blocks, opens and keeps spawns out as before`, () => {
+      const loaded = loadMap(readFileSync(new URL(f, mapDir), 'utf8'));
+      if (!loaded.ok) return;
       // (The coverage map, a test map, carries an Arena Corner (Gate): its 45° portcullis is the one door off the grid.)
-      const gate = f === 'test_coverage.json' ? ((JSON.parse(readFileSync(new URL(f, dir), 'utf8')).setPieces ?? []) as { id: string; piece: string }[]).find((p) => p.piece === 'setpiece.arena_corner_gate') : undefined;
+      const gate = f === 'test_coverage.json' ? ((JSON.parse(readFileSync(new URL(f, mapDir), 'utf8')).setPieces ?? []) as { id: string; piece: string }[]).find((p) => p.piece === 'setpiece.arena_corner_gate') : undefined;
       for (const e of loaded.map.entities) {
         if (e.kind !== 'door') continue;
         if (gate && e.id === `sp_${gate.id}_5`) {
@@ -351,7 +353,9 @@ describe('doors turned off the grid', () => {
         const plane = { ...way, half: { ...way.half, z: DOOR.thickness } };
         expect(orientedAabb(plane)).toEqual(oboxAabb(plane));
       }
-    }
+    });
+  }
+  it('every shipped map was looked at: more than 20 doors on the grid, and the coverage map\'s one 45° portcullis', () => {
     expect(doors).toBeGreaterThan(20);
     expect(gates).toBe(1);
   });
