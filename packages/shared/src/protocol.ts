@@ -213,6 +213,8 @@ export interface PrivateState {
   mo?: [number, number, number] | [number, number, number, number];
   /** Carried grenades or mines as [index into THROWABLES, count]; absent = none. */
   gr?: [number, number];
+  /** A hold to use in progress (sim/holdUse.ts): [kind (HOLD_KINDS index), ticks held, ticks it takes]. */
+  hu?: [number, number, number];
   /** Ticks left on reload / weapon raise (0 = ready). */
   rl: number;
   rs: number;
@@ -318,6 +320,8 @@ export type GameEvent =
    * resupplied, else nothing given (full, empty or waiting); `left` uses left.
    */
   | { e: 'resupply'; s: number; m: number; b?: number; left: number; ok: boolean }
+  /** A hold to use (sim/holdUse.ts) stopped short: `s`'s hold of kind `k` (HOLD_KINDS index), and why. */
+  | { e: 'hold'; s: number; k: number; x: 'released' | 'moved' | 'fired' | 'swapped' | 'hurt' | 'gone' }
   /** An ammo box was destroyed at `p` and cooks off (its blasts follow as `explode` events); `n` the share of stock it held. */
   | { e: 'boxcook'; p: Tuple3; n: number }
   | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit (never on a team kill). */ hs?: 1; /** A team kill: the killer downed a teammate (friendly fire); the feed marks it and nothing rewards it. */ tk?: 1 }

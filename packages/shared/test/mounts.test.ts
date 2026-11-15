@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, TICK_RATE, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, PLAYER, initPhysics, validateMap, type GameEvent, type MapDocument, type MapEntity, type PlayerInput } from '../src/index.ts';
+import { BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, TICK_RATE, BUTTON_USE, BUTTON_USE_HOLD, holdTicks, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, PLAYER, initPhysics, validateMap, type GameEvent, type MapDocument, type MapEntity, type PlayerInput } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -110,8 +110,10 @@ describe('turrets, sentries and vehicles', () => {
       c.throwable = null;
     };
     const resupplies = (ev: GameEvent[]) => ev.filter((e): e is Extract<GameEvent, { e: 'resupply' }> => e.e === 'resupply');
+    // Use pressed and held for the resupply's hold (sim/holdUse.ts), then let go.
     const press = (c: Combatant) => {
-      const ev = d.run(1, () => d.input(c, { buttons: BUTTON_USE }));
+      const ev = d.run(1, () => d.input(c, { buttons: BUTTON_USE | BUTTON_USE_HOLD }));
+      ev.push(...d.run(holdTicks('resupply'), () => d.input(c, { buttons: BUTTON_USE_HOLD })));
       d.run(1, () => d.input(c, {}));
       return resupplies(ev);
     };

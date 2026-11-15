@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BOT_DIFFICULTIES, BUTTON_THROW, BUTTON_USE, COOK_OFF, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, DEPLOYED_BOX, PLACED_BOX, TICK_RATE, cookOff, initPhysics, type GameEvent, type MapDocument, type PlayerInput } from '../src/index.ts';
+import { BOT_DIFFICULTIES, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, holdTicks, COOK_OFF, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, DEPLOYED_BOX, PLACED_BOX, TICK_RATE, cookOff, initPhysics, type GameEvent, type MapDocument, type PlayerInput } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -53,8 +53,10 @@ describe('ammo boxes (sim/resupply.ts)', () => {
     expect(match.snapshot([]).ab).toHaveLength(1);
     place(a, 11.2, 10);
     empty(a);
+    // Use pressed and held for the resupply's hold (sim/holdUse.ts), then let go.
     const press = () => {
-      const ev = d.run(1, () => d.input(a, { buttons: BUTTON_USE }));
+      const ev = d.run(1, () => d.input(a, { buttons: BUTTON_USE | BUTTON_USE_HOLD }));
+      ev.push(...d.run(holdTicks('resupply'), () => d.input(a, { buttons: BUTTON_USE_HOLD })));
       d.run(1, () => d.input(a, {}));
       return resupplies(ev);
     };
@@ -120,7 +122,9 @@ describe('ammo boxes (sim/resupply.ts)', () => {
     const at = match.ammoBoxes().find((b) => !b.placed)!.pos;
     place(a, at.x + 1, at.z);
     empty(a);
-    const ev = d.run(1, () => d.input(a, { buttons: BUTTON_USE }));
+    const ev = d.run(1, () => d.input(a, { buttons: BUTTON_USE | BUTTON_USE_HOLD }));
+    expect(resupplies(ev)).toEqual([]);
+    ev.push(...d.run(holdTicks('resupply'), () => d.input(a, { buttons: BUTTON_USE_HOLD })));
     expect(resupplies(ev)).toMatchObject([{ ok: true, left: DEPLOYED_BOX.uses - 1 }]);
     // A resupply never hands out another kit.
     expect(a.throwable?.kind).not.toBe('ammo_box');
