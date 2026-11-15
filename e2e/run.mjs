@@ -8454,7 +8454,7 @@ async function mapsFlow(browser, part = 0) {
  * MapMaker overhaul Phase 3 part B (docs/MAPMAKER_OVERHAUL_PLAN.md, items 3-7): groups (Ctrl+G: a click picks the
  * whole group, Alt-click one; moved, flipped, duplicated as one; Ctrl+Shift+G), copy and paste between maps (Ctrl+C,
  * Ctrl+V at the pointer, new ids; another theme refused, saying why), templates (New map → Start from), Mirror…
- * (Shift+M: a mirrored copy swaps team things; half the map), and note pins (J: pin, edit, drag, list, delete; format
+ * (Shift+M: a mirrored copy swaps team things; half the map; an exploded Arena Corner as the set piece), and note pins (J: pin, edit, drag, list, delete; format
  * v31). Screenshots go to E2E_SHOTS when set.
  */
 async function editorPartBChecks(browser) {
@@ -8718,6 +8718,60 @@ async function editorPartBChecks(browser) {
   await page.keyboard.press('Control+KeyZ');
   await frames(page, 2);
   check(await page.evaluate(() => !window.__editor.doc.botHints?.some((x) => x.team === 'tide') && window.__editor.doc.paths?.length === 1), 'one undo takes the whole mirror back');
+
+  // ---- Mirror… and diagonal symmetry: an exploded Arena Corner (its storey tiles and lights selected on their own)
+  // flipped east ↔ west (Shift+M, the original not kept) is the set piece flipped, each storey placed turned; one undo.
+  await newMap(page, 0);
+  await page.evaluate(() => {
+    window.__editor.run('Corner', { kind: 'addSetPieces', setPieces: [{ id: 'corner', piece: 'setpiece.arena_corner', x: 3, y: 2, z: 0, rotation: 1, mirror: false }] });
+    window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['corner'] });
+  });
+  await frames(page, 3);
+  await page.click('#ed-sp-explode');
+  await frames(page, 3);
+  const cornerSel = await sel();
+  /** The corner's parts as the map holds them (ids are `sp_corner_<part>` either way). */
+  const cornerParts = () =>
+    page.evaluate(() => {
+      const d = window.__editor.doc;
+      const mine = (id) => id.startsWith('sp_corner_');
+      const r = (v) => Math.round(v * 1000) / 1000;
+      return JSON.stringify({
+        tiles: d.classicStructure.tiles.filter((t) => mine(t.id)).map((t) => [t.id, t.tile, t.x, t.y, t.z, t.rotation, t.edges ?? null, t.glass ?? null, t.upperFloors ?? null]).sort(),
+        things: d.entities.filter((e) => mine(e.id)).map((e) => [e.id, e.kind, ...e.position.map(r), r(e.yaw ?? 0)]).sort(),
+      });
+    });
+  const explodedParts = await cornerParts();
+  const flipCorner = async () => {
+    await page.keyboard.press('Shift+KeyM');
+    await page.waitForSelector('#ed-mirror-dialog[open]', { timeout: T(5000) });
+    await page.selectOption('#ed-mirror-across', 'eastWest');
+    await page.uncheck('#ed-mirror-keep');
+    await page.fill('#ed-mirror-x', '92');
+    await page.dispatchEvent('#ed-mirror-x', 'input');
+    const said = await page.textContent('#ed-mirror-why');
+    await page.click('#ed-mirror-go');
+    await frames(page, 3);
+    return said;
+  };
+  const cornerWhy = await flipCorner();
+  const flippedTiles = await cornerParts();
+  check(cornerSel.tiles.length === 4 && /Flips the 17 selected over \(x = 92 m\)/.test(cornerWhy) && flippedTiles !== explodedParts, `Shift+M flips an exploded Arena Corner, its four storeys and 13 lights (${cornerWhy})`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await cornerParts()) === explodedParts, 'one undo puts the exploded corner back as it was');
+  // The set piece itself flipped across the same line, then exploded: the same tiles, turns, walls and lights.
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['corner'] }));
+  await frames(page, 2);
+  await flipCorner();
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['corner'] }));
+  await frames(page, 3);
+  await page.click('#ed-sp-explode');
+  await frames(page, 3);
+  const pieceFlipped = await cornerParts();
+  check(pieceFlipped === flippedTiles, `the flipped exploded corner is the flipped set piece, part for part (${pieceFlipped === flippedTiles ? 'same' : `${flippedTiles.slice(0, 300)} | ${pieceFlipped.slice(0, 300)}`})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   livePages.delete(page);
   await page.context().close();

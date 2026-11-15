@@ -446,7 +446,7 @@ export class PaletteBuilder {
       b.append(document.createTextNode(`${def.displayName}${def.seats.length ? ` · ${def.seats.length}` : ''}`));
       b.addEventListener('click', () => this.app.setTool({ kind: 'mount', model: id }));
       groups[def.kind === 'vehicle' ? 'vehicle' : 'turret'].append(b);
-      this.app.palette.register(b, { key: b.dataset.tool, name: def.displayName, tags: `${def.kind} vehicle turret mount seats drive`, picture: true });
+      this.app.palette.register(b, { key: b.dataset.tool, name: def.displayName, tags: `${def.kind} vehicle turret mount seats drive ${def.blurb}`, picture: true });
     }
     const parked = this.app.palette.group($('ed-mounts'), 'vehicles:parked', 'Parked Vehicles (scenery)', { open: false });
     for (const def of CORE_PROPS.filter((d) => propGroup(d) === 'vehicles')) this.propButton(parked, def, 'parked car vehicle wreck');
