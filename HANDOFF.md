@@ -17,6 +17,8 @@ The owner added: "I did see a set piece for pens/cells (Roman), and when I chang
 
 - **Claimed (lane B's splitters22, 2026-11-15): painting Phase 1 and the bars bug**, branch `wip/painting-1`. First the Cage Block bars fix (bars, portcullis gates and railings on the metal role or a fixed iron, `ROLE_THEME_SLOT`), then Phase 1 of the plan (two painters, no silent swaps, every visible surface paintable) with "This surface only" reaching any set-piece part. Files: `packages/client/src/editor/paintTools.ts` and the paint UI, `packages/shared/src/map/setPieces.ts`, the bar/railing/gate edge styles, `content/setpieces/*.json` where a surface role is wrong, their tests and e2e. Octagon phase 4 runs alongside (different files).
 
+- **Claimed (a helper of lane A's lead, 2026-11-15): Driving physics step 1** (QUEUE, Features), branch `wip/drive-physics`. `docs/DRIVING_PHYSICS_PLAN.md`, then sprung raycast wheels on a rigid chassis with tyre grip that can fail, for the Buggy alone behind a per-vehicle flag (other vehicles unchanged). Files: `packages/shared/src/sim/` vehicle movement (`vehicles.ts`, `suspension.ts`, a new `sim/wheelPhysics.ts`), `physics/world.ts` (`moveVehicle` only where the flag branches), `content/vehicles/buggy.json` and its generated table, the client's vehicle prediction/drawing where the flag needs it, their tests, the e2e vehicle flow's Buggy check.
+
 ## Start here (session of 2026-11-07, handed off to the next account)
 
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
