@@ -5655,10 +5655,11 @@ export class Match {
       m.driveWait = 0;
     }
     else if (m.speed !== seen.speed) {
-      // Its speed changed from outside (stopped dead, or a crash's loss): the body's horizontal speed follows.
-      const k = seen.speed !== 0 ? m.speed / seen.speed : 0;
-      s.vel = { x: s.vel.x * k, y: s.vel.y, z: s.vel.z * k };
-      if (k === 0) s.spin = { x: 0, y: 0, z: 0 };
+      // Its speed changed from outside (stopped dead, a crash's loss, a test): its speed along its heading becomes that.
+      const f = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
+      const along = s.vel.x * f.x + s.vel.z * f.z;
+      s.vel = { x: s.vel.x + f.x * (m.speed - along), y: s.vel.y, z: s.vel.z + f.z * (m.speed - along) };
+      if (m.speed === 0) s.spin = { x: 0, y: 0, z: 0 };
     }
     // Pushes (blasts, being rammed): straight into its speed.
     if (m.push.x || m.push.z) {

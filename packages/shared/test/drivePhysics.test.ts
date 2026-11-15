@@ -245,6 +245,18 @@ describe('rigid driving: jumps, landings, slopes, flips', () => {
     expect(go()).toEqual(go());
   });
 
+  it('a speed set from outside (a crash, a test) becomes its speed along its heading', () => {
+    const d = drive();
+    d.run(30, { forward: 0.1 });
+    d.m.speed = 18;
+    d.run(1, { forward: 1 });
+    expect(d.m.speed).toBeGreaterThan(16);
+    expect(d.m.speed).toBeLessThan(20);
+    d.m.speed = 0;
+    d.run(1);
+    expect(Math.abs(d.m.speed)).toBeLessThan(1);
+  });
+
   it('?drive=classic (MatchOptions.drive) keeps the old driving', () => {
     const d = drive([], { drive: 'classic' });
     expect(d.m.rigid).toBeUndefined();
