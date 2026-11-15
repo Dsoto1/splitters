@@ -5,7 +5,7 @@
     "id": "sandfall_colosseum",
     "name": "Flavius Rule",
     "author": "Tile Trigger",
-    "description": "A Roman arena (Style Pack 03: Imperial Arena). Fight on the sand between spike traps and fire jets, ride the lift cages up from the hypogeum through hatches in the floor, and watch for the beast lift the emperor sends up through a trapdoor from his box. The main gate is a portcullis worked from a winch; the side gates rise as you come. Outer arcades with stairs up to the seating ring the arena; east lies a forum with a temple and a triumphal arch, west an aqueduct. A portal links the hypogeum's west tunnel to the forum, until the emperor seals it.",
+    "description": "A Roman arena laid out after the Flavius Rule board. Fight on the octagonal sand among the board's pillars and the beast pit's traps, under the emperor's box. Four gates stand on the diagonals: each portcullis is worked by a winch in its passage and a chain on the sand, and short stairs up the podium either side of it stay open when it drops. Galleries ring the stands on every storey, and a gatehouse tower over each gate climbs to a lookout 32 m up. Stair wells off the gate passages and four hatch ladders lead down into the hypogeum's vaulted tunnels. Outside the walls: a ring street, the insulae and the main square to the south.",
     "createdAt": "2026-10-23T00:00:00.000Z",
     "updatedAt": "2026-11-04T00:58:15.320Z",
     "parentId": null,
@@ -21,11 +21,20 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_luhx5lsakz2ieakl",
-      "revision": 30,
-      "contentHash": "sha256:c56ecb2fd1ed863c09a305286c6744fb6e37720e8bfa22411bd6184014c94007",
+      "versionId": "v_x2m3p3c6oogbuw5v",
+      "revision": 31,
+      "contentHash": "sha256:a5dc1b2b367f2eae5cd8655ac9185e80eff41265b54a5bc4b4d1fe9f3e558bc3",
       "schemaVersion": 39,
-      "releasedAt": "2026-11-15T14:25:30.950Z"
+      "releasedAt": "2026-11-15T14:40:49.505Z"
+    },
+    "cardCamera": {
+      "position": [
+        -70,
+        120,
+        -150
+      ],
+      "yaw": 0.44,
+      "pitch": -0.68
     }
   },
   "classicStructure": {
@@ -20906,7 +20915,7 @@
       "name": "Stand fill: N under the low tiers",
       "kind": "block",
       "size": [
-        40,
+        24,
         8,
         16
       ],
@@ -20929,7 +20938,7 @@
       "name": "Stand fill: N under the high tiers",
       "kind": "block",
       "size": [
-        40,
+        24,
         16,
         16
       ],
@@ -20952,7 +20961,7 @@
       "name": "Stand fill: S under the low tiers",
       "kind": "block",
       "size": [
-        40,
+        24,
         8,
         16
       ],
@@ -20975,7 +20984,7 @@
       "name": "Stand fill: S under the high tiers",
       "kind": "block",
       "size": [
-        40,
+        24,
         16,
         16
       ],
@@ -21000,7 +21009,7 @@
       "size": [
         16,
         8,
-        56
+        24
       ],
       "yaw": 0,
       "material": "core.pbr_limestone",
@@ -21023,7 +21032,7 @@
       "size": [
         16,
         16,
-        56
+        24
       ],
       "yaw": 0,
       "material": "core.pbr_limestone",
@@ -21046,7 +21055,7 @@
       "size": [
         8,
         24,
-        56
+        24
       ],
       "yaw": 0,
       "material": "core.pbr_limestone",
@@ -21069,7 +21078,7 @@
       "size": [
         16,
         8,
-        56
+        24
       ],
       "yaw": 0,
       "material": "core.pbr_limestone",
@@ -21092,7 +21101,7 @@
       "size": [
         16,
         16,
-        56
+        24
       ],
       "yaw": 0,
       "material": "core.pbr_limestone",
@@ -21115,7 +21124,7 @@
       "size": [
         8,
         24,
-        56
+        24
       ],
       "yaw": 0,
       "material": "core.pbr_limestone",
