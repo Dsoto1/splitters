@@ -1,0 +1,115 @@
+<!doctype html>
+<!-- Mock-up for docs/MAPMAKER_PAINTING_PLAN.md: the two painters and the cursor label.
+     Rendered to mockup-painters.png with Playwright (chromium, 1200 x 760, deviceScaleFactor 2). A sketch, not the real UI. -->
+<html><head><meta charset="utf-8"><style>
+  * { box-sizing: border-box; }
+  body { margin: 0; width: 1200px; height: 760px; background: #15181d; color: #e6e8eb; font: 14px/1.35 system-ui, sans-serif; }
+  .bar { height: 46px; display: flex; gap: 8px; align-items: center; padding: 0 14px; background: #1f242b; border-bottom: 1px solid #333a44; }
+  .bar .t { padding: 6px 12px; border-radius: 6px; background: #2a3039; color: #c9ced6; }
+  .bar .t.on { background: #3b6fd6; color: #fff; font-weight: 600; }
+  .bar .k { opacity: .7; font-size: 12px; margin-left: 4px; }
+  .bar .spacer { flex: 1; }
+  .bar .chip { font-size: 12px; color: #aab2bd; border: 1px solid #3a424d; border-radius: 12px; padding: 3px 10px; }
+  .main { display: flex; height: 714px; }
+  .view { position: relative; flex: 1; }
+  .dock { width: 330px; background: #1c2026; border-left: 1px solid #333a44; padding: 14px; overflow: hidden; }
+  h3 { margin: 0 0 8px; font-size: 15px; }
+  .brush { display: flex; gap: 10px; align-items: center; background: #252b33; border-radius: 8px; padding: 8px; margin-bottom: 10px; }
+  .sw { width: 34px; height: 34px; border-radius: 5px; flex: none; }
+  .checker { background: conic-gradient(#e9e4da 25%, #6d6a66 0 50%, #e9e4da 0 75%, #6d6a66 0) 0 0/17px 17px; }
+  .row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; font-size: 13px; }
+  select { background: #2a3039; color: #e6e8eb; border: 1px solid #3a424d; border-radius: 5px; padding: 3px 6px; font: inherit; font-size: 13px; }
+  .tabs { display: flex; gap: 0; margin: 12px 0 8px; }
+  .tabs span { flex: 1; text-align: center; padding: 6px; background: #252b33; font-size: 13px; }
+  .tabs span.on { background: #3b6fd6; color: #fff; font-weight: 600; }
+  .tabs span:first-child { border-radius: 6px 0 0 6px; } .tabs span:last-child { border-radius: 0 6px 6px 0; }
+  .grp { font-size: 12px; color: #9aa3ae; margin: 10px 0 5px; text-transform: uppercase; letter-spacing: .04em; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .grid div { height: 44px; border-radius: 5px; position: relative; }
+  .grid div.sel { outline: 2px solid #ffb03b; outline-offset: 1px; }
+  .note { font-size: 12px; color: #9aa3ae; margin-top: 10px; background: #232830; border-radius: 6px; padding: 8px; }
+  .label { position: absolute; background: rgba(16,19,24,.94); border: 1px solid #4a5360; border-radius: 8px; padding: 10px 12px; width: 420px; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
+  .label b { color: #fff; }
+  .chain { display: flex; gap: 6px; align-items: stretch; margin: 8px 0 6px; font-size: 12px; }
+  .chain .c { flex: 1; border-radius: 6px; padding: 5px 7px; background: #252b33; color: #9aa3ae; }
+  .chain .c.win { background: #2f4f2f; color: #d9f2d9; outline: 1px solid #5f9e5f; }
+  .chain .arr { align-self: center; color: #6b7380; }
+  .small { font-size: 12px; color: #aab2bd; }
+  .warn { border-color: #b58a2e; }
+  .warn b { color: #ffcf70; }
+  .tag { position: absolute; font-size: 12px; color: #ffcf70; font-weight: 600; }
+  .cap { position: absolute; left: 14px; font-size: 13px; color: #c9ced6; font-weight: 600; }
+</style></head><body>
+<div class="bar">
+  <span class="t on">Structure paint<span class="k">B</span></span>
+  <span class="t">Ground paint<span class="k">Shift+B</span></span>
+  <span class="t">Walls<span class="k">O</span></span>
+  <span class="spacer"></span>
+  <span class="chip">Structure theme: Industrial Factory</span>
+  <span class="chip">Ground theme: Quarry</span>
+</div>
+<div class="main">
+  <div class="view">
+    <svg width="870" height="714" viewBox="0 0 870 714" style="position:absolute;left:0;top:0">
+      <defs>
+        <pattern id="chk" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#e9e4da"/><rect width="8" height="8" fill="#6d6a66"/><rect x="8" y="8" width="8" height="8" fill="#6d6a66"/></pattern>
+        <pattern id="corr" width="20" height="10" patternUnits="userSpaceOnUse"><rect width="20" height="10" fill="#8a4a3a"/><rect width="20" height="1.5" y="8.5" fill="#c9b9a8"/><rect width="1.5" height="9" x="9" fill="#c9b9a8"/></pattern><pattern id="grey" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#b4b8bc"/><rect width="4" height="10" fill="#9aa0a6"/></pattern>
+        <pattern id="grav" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="#77706a"/><circle cx="3" cy="4" r="1.6" fill="#8f877b"/><circle cx="9" cy="9" r="1.4" fill="#625c56"/></pattern>
+      </defs>
+      <!-- scene 1 (top): a set piece's wall under the cursor -->
+      <rect x="0" y="0" width="870" height="380" fill="#9fb7cc"/>
+      <polygon points="0,300 870,250 870,380 0,380" fill="url(#grav)"/>
+      <!-- factory block: the theme's Grey Corrugated -->
+      <polygon points="60,120 300,100 300,300 60,312" fill="url(#grey)"/>
+      <polygon points="300,100 380,120 380,290 300,300" fill="#8b8883"/>
+      <!-- Bus Shelter set piece: its look's Old Brick -->
+      <polygon points="470,170 720,150 720,282 470,296" fill="url(#corr)" stroke="#ffb03b" stroke-width="4"/>
+      <polygon points="455,160 735,138 745,150 462,174" fill="#4e555c"/>
+      <polygon points="720,150 770,162 770,276 720,282" fill="#5f676e"/>
+      <!-- cursor -->
+      <path d="M600,220 l0,26 l7,-7 l6,13 l5,-2 l-6,-13 l10,0 z" fill="#fff" stroke="#000" stroke-width="1.2"/>
+      <!-- scene 2 (bottom): bare ground -->
+      <rect x="0" y="392" width="870" height="322" fill="#9fb7cc"/>
+      <polygon points="0,560 870,520 870,714 0,714" fill="url(#grav)"/>
+      <polygon points="40,450 200,440 200,575 40,582" fill="url(#grey)"/>
+      <path d="M520,610 l0,26 l7,-7 l6,13 l5,-2 l-6,-13 l10,0 z" fill="#fff" stroke="#000" stroke-width="1.2"/>
+      <line x1="0" y1="386" x2="870" y2="386" stroke="#15181d" stroke-width="12"/>
+    </svg>
+    <div class="cap" style="top:10px">1 · Structure paint over a set piece's wall</div>
+    <div class="label" style="left:420px; top:6px; width:440px;">
+      <div><b>Wall</b> · Bus Shelter (set piece) · back wall</div>
+      <div class="chain">
+        <div class="c">Structure theme<br>Industrial Factory<br>Grey Corrugated</div><div class="arr">→</div>
+        <div class="c win">Set piece look<br>Urban &amp; Civilian<br>Old Brick ✓</div><div class="arr">→</div>
+        <div class="c">Your paint<br>none</div>
+      </div>
+      <div class="small">Click paints <b>Marble Checker</b> on this piece's walls. Alt+click picks up Old Brick. Right-drag resets to the look.</div>
+    </div>
+    <div class="cap" style="top:402px">2 · Structure paint over bare ground</div>
+    <div class="label warn" style="left:300px; top:440px; width:400px;">
+      <div><b>Ground</b> · Gravel (Ground theme: Quarry)</div>
+      <div class="small" style="margin-top:6px">Structure paint doesn't paint the ground. A click does nothing.<br>To paint the ground, use <b>Ground paint (Shift+B)</b>.</div>
+    </div>
+  </div>
+  <div class="dock">
+    <h3>Structure paint</h3>
+    <div class="brush"><div class="sw checker"></div><div><b>Marble Checker</b><div class="small">Tile · no tint</div></div></div>
+    <div class="row">Paint <select><option>This piece's walls</option></select></div>
+    <div class="small">or: this surface only · this level · the whole map</div>
+    <div class="tabs"><span class="on">This map's themes</span><span>All</span></div>
+    <div class="grp">Industrial Factory (the theme)</div>
+    <div class="grid">
+      <div style="background:#a7a49e"></div><div style="background:#8b8883"></div><div style="background:#6d7680"></div><div style="background:#5a4a3c"></div><div style="background:#b5452f"></div>
+    </div>
+    <div class="grp">Style Pack 13 Industrial (the theme's pack)</div>
+    <div class="grid">
+      <div style="background:#9aa4ad"></div><div style="background:#7b5a3a"></div><div style="background:#c9a23a"></div><div style="background:#3d4a52"></div><div style="background:#8c3b2a"></div>
+    </div>
+    <div class="grp">Recent</div>
+    <div class="grid">
+      <div class="checker sel"></div><div style="background:#d9d5cb"></div><div></div><div></div><div></div>
+    </div>
+    <div class="note">Ground types (Grass, Sand, Gravel…) are in Ground paint. Floors and roofs can take paving (rec, question 2).</div>
+  </div>
+</div>
+</body></html>

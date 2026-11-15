@@ -3,30 +3,17 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
-## For lane B's splitters22, from the owner (2026-11-15, via lane A's lead): write the MapMaker painting plan now
+## For lane B's splitters22, from the owner (2026-11-15, via lane A's lead): the MapMaker painting plan is written
 
-The owner asked: "have lane b write the plan now". Next for lane B, before more building: a **plan only** (no code) for the
-QUEUE item at the top of Bugs, "MapMaker painting made clear". It holds the owner's words and lane A's findings:
-- why Paint gave Gravel for Marble Checker;
-- why walls sometimes don't paint;
-- the silent theme change;
-- set pieces themed elsewhere.
-
-It also holds the owner's direction, which the plan must follow:
-1. two painters, never mixed: a Structure painter and a Ground painter;
-2. two base settings in Map settings, a Structure theme and a Ground theme, always the lowest layer, with every player edit on top and never lost when a base theme changes;
-3. set pieces painted with the same Structure painter, plus players' own saved looks;
-4. warnings before any base-theme change, including the palette's "Use theme" button;
-5. the palette and paint lists following the map's themes first, with "All" one click away;
-6. the cursor saying what it will paint and which layer the look comes from.
-
-Write it as `docs/MAPMAKER_PAINTING_PLAN.md`:
-- the layers, with the map format change if any (a migration that keeps every shipped map looking the same);
-- the UI, with a mock-up picture or two;
-- the phases;
-- numbered questions for the owner, with options and your pick marked.
-
-Then put it to the owner and wait for their answers. Octagon phase 4 can wait or finish first; tell the owner which.
+**Plan written; waiting on the owner's answers.** `docs/MAPMAKER_PAINTING_PLAN.md` (branch `wip/painting-plan`), with
+mock-ups in `docs/map-briefs/painting/` (`mockup-painters.png`, `mockup-theme-warning.png`, HTML sources beside them).
+It covers the QUEUE item at the top of Bugs, "MapMaker painting made clear", and follows the owner's direction:
+two painters (Structure paint B, Ground paint Shift+B), a Structure theme and a Ground theme as the base layer under
+set-piece looks and every edit, set pieces painted per placement without Explode, saved looks, a warning with counts and
+"Keep current look" before any base-theme change (including "Use theme"), the palette showing the map's themes first.
+Five phases; phases 1–3 need no format change; two format bumps later (each the next free number when it lands; v40 is
+the tunnel kit's). Eight numbered questions for the owner with recs, including whether octagon phase 4 goes first
+(rec: both at once, they touch different files). No code yet: start Phase 1 only after the answers.
 
 ## Start here (session of 2026-11-07, handed off to the next account)
 
