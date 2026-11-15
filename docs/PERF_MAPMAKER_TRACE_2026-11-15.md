@@ -172,3 +172,84 @@ own `tt:` spans, which only see our script.
 4. **Test start order**: fixes 2, 4 and 5 make Test start quicker; fix 3 makes it play smoother.
    - a) **Fix 3 first (frame rate), then 2, 4, 5 (recommended: it may help every match too)**
    - b) Test start first (2, 4, 5), then 3
+
+## 8. Follow-up recordings (2026-11-15, 17:40 to 17:44 UTC)
+
+Read by the same helper. Three files from the owner's Drive (not in the repo):
+- the in-game recording of a plain local match, `tiletrigger-perf-iron_maw-2026-11-15-17-41-39.json`: Iron Maw (the official map), Team Deathmatch, 65 players, High, render scale Auto, 83 s;
+- its 10 s `tt:` trace, `tiletrigger-iron_maw-2026-11-15-17-40-19.trace.json`;
+- a DevTools recording of a Test of Iron Maw Remix in MapMaker, `Trace-20261115T124305.json.gz` (17:43:06, 97 s), with the advanced rendering instrumentation on. Its main-frame breakdowns (style, layout, accessibility, animate, paint, commit) are in it; GPU-side timings are not.
+
+### In plain English
+
+- **The 12.5 ms a frame is not the graphics card, and it isn't always there.** In the new Test recording it is gone: the
+  same Test on the same map ran at **54 frames a second** (30 before). Our script costs the same as before (12.3 ms a
+  frame, 13.5 before); the browser's unexplained time is now under 1 ms a frame.
+- **The plain match had it too:** frames of 31 ms, our script 19.5 ms, and about **11.5 ms a frame outside our
+  script**. The same 11 to 12.5 ms whether 137 or 722 things were drawn, or 1 or 49 characters were in view. Real
+  graphics-card load would grow with what is drawn, so this looks like a fixed cost a frame in the page itself.
+- **What changed between the two:** the browser tab. The Test at 30 fps and the match ran in a tab that had been
+  open a long time (the first recording's page was already holding 1.2 GB during Test). The new Test ran in another page
+  process (a new process id), and the browser logged a page load at 17:41:42, three seconds after the match recording
+  was saved. That fits your
+  **"Aw, Snap!"**: the old tab died there, or was reloaded, and the new one was fast.
+- **So the likely story is one problem:** a MapMaker session wears the tab down. Memory climbs (1.2 to 1.36 GB of
+  script memory during a Test, on top of what the graphics side holds) until every frame pays a fixed toll of
+  10 to 15 ms, and in the end Chrome kills the tab. This is a strong reading, not yet proven: the recordings show the
+  before and after, not the climb.
+- **The crash itself is not in the recordings.** No context loss, error or abrupt end in either DevTools trace. The new
+  recording's page went up to 1.36 GB, fell back to about 1.0 GB at a garbage collection, and ended normally.
+- **One more thing on your machine:** an ad-blocking browser extension (Chrome id `bgnkhhnnamicmpeenaelnjfhikgbkllg`,
+  AdGuard's) adds about 1,100 event listeners to the page a second during play (12,700 to 55,700 in 76 s). Its time is
+  small (0.1 ms a frame), but it holds memory.
+
+### Details
+
+| | Test 17:05 (first recording) | Plain match 17:40 | Test 17:43 (new) |
+|---|---|---|---|
+| Map, players | Iron Maw Remix, 3 bots | Iron Maw, 65 | Iron Maw Remix, 3 bots (as before) |
+| Frames a second | 34.6 | 32.7 (median frame 31 ms) | **54.0** (median 16.7, 95th percentile 33.3) |
+| Our script a frame | 13.5 ms | 19.5 ms (`tt:` spans); the whole `frame` span 16.2 ms | 12.3 ms (the rAF callback 15.6 ms, of which WebGL calls about 3) |
+| Outside our script a frame | **12.5 ms** | **11.5 ms** (per second 10.1 to 12.5; `frame` start to start 30.7 ms, minus the frame span 16.2 = 14.5 ms) | **under 1 ms**: in Chrome's main-frame breakdown, style 0.3, layout 0.2, input 0.2, paint 0.1, commit 0.1, accessibility 0 ms; the rest is our animation-frame callback |
+| Page process | 1651 | not in the in-game file | 1862; the browser logged a page load at 17:41:42 |
+| Script memory in play | 1.11 to 1.21 GB | not recorded | 1.25 to 1.36 GB, 1.0 GB after a collection at 45 s |
+| DOM nodes, listeners | 34-38 k, 10.0-10.4 k | not recorded | 38-46 k; 12.7 k → 55.7 k (the extension) |
+
+- **Not the graphics card's load:** per second in the match, the outside time hardly moves with draw calls (correlation
+  0.17; 10.7 ms at 137 draws, 11.2 at 619) or with characters in view. Shadows and post-processing don't explain a
+  constant either: the new Test draws the same scene with the same settings without it.
+- **Not our script hidden somewhere:** in the first recording the time sat in each frame's task before and after our
+  callback, with no JavaScript in it. In the new one those parts take under 1 ms.
+- **The new Test's start:** Test at about 6 s, smooth from about 12 s (the other helper's fixes 4 and 5 cover it).
+- **Memory in the new Test:** the editor's page was 0.70 GB; the Test took it to 1.25 GB within 5 s and 1.36 GB by 41 s.
+  Leaving the editor loaded under a Test (section 5) costs about 0.7 GB.
+
+### Fix 3, rewritten: find what wears the tab down
+
+| Step | Size · lane | What | Expected gain |
+|---|---|---|---|
+| 3a | S · A | **A memory readout**: the perf recording and the perf overlay record each second Chrome's script memory (`performance.memory`: used, total, limit), the engine's live textures, meshes, materials, geometries and render targets, DOM nodes, and "outside our script" (already there). MapMaker's status bar shows script memory behind a debug flag. Recorded at every Test start and every Back to MapMaker | The next recording shows the climb and what climbs |
+| 3b | S · A | **A repeat probe** (`tools/perf`, scratch first): open Iron Maw Remix in MapMaker, then 10 rounds of edit, Test 20 s, Back to MapMaker, reading the same numbers through the browser each round; the same with 10 plain matches back to back | Names the action that leaks (Test round trips, edits, the check workers) in an hour, on a software GPU |
+| 3c | M · A (B if it is editor code) | **Fix what 3b finds**: likely candidates are the match's scene, textures and character models not freed on Back to MapMaker, the editor's caches kept for the session, and the 0.7 GB of editor kept under a Test (free its heavy parts while a Test runs) | If this is the toll: 30 → about 50 fps in Tests and matches in a long session on this map (the new Test ran at 54), and no "Aw, Snap!" |
+| 3d | S · A | **Say so in the game**: when "outside our script" stays over 8 ms a frame for 30 s, the perf overlay (and a hitch note in recordings) says the tab is slowing and a reload helps | The owner and players know when to reload; future recordings say which state they were in |
+
+## 9. Questions for the owner (follow-up)
+
+1. **When did the "Aw, Snap!" happen?**
+   - a) **Right after the plain match, as you saved its recording (17:41): the recordings point there (recommended reading)**
+   - b) Earlier, in MapMaker, before the match
+   - c) Not sure
+2. **How long had that tab been open before the match?**
+   - a) **A long while: the first recording's session, with several Tests (recommended reading)**
+   - b) It was fresh
+   - c) Not sure
+3. **A small memory readout in the perf overlay and recordings** (Chrome's script memory and the engine's counts; step 3a):
+   - a) **Yes (recommended)**
+   - b) Only in recordings, not on screen
+   - c) No
+4. **One more check from you, when convenient:** after an hour of MapMaker with several Tests, record 20 s of a Test with the in-game recorder, then reload the tab and record the same Test again.
+   - a) **Yes (recommended: it shows the toll building up, on your machine)**
+   - b) Not now: rely on the probe (3b)
+5. **The ad-blocking extension:** for that check, turn it off for the site?
+   - a) **Yes, for the check only (recommended: it rules it out)**
+   - b) No, keep it as players will have it
