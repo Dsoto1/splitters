@@ -15,6 +15,8 @@ The owner added: "I did see a set piece for pens/cells (Roman), and when I chang
    - Check the other bar, railing and gate edge styles the same way, and `ROLE_THEME_SLOT` (metal → the theme's `solids`, which can be brick or stone) in `map/setPieces.ts`.
    - A bug: fix it first, in the first painting landing or on its own.
 
+- **Claimed (lane B's splitters22, 2026-11-15): painting Phase 1 and the bars bug**, branch `wip/painting-1`. First the Cage Block bars fix (bars, portcullis gates and railings on the metal role or a fixed iron, `ROLE_THEME_SLOT`), then Phase 1 of the plan (two painters, no silent swaps, every visible surface paintable) with "This surface only" reaching any set-piece part. Files: `packages/client/src/editor/paintTools.ts` and the paint UI, `packages/shared/src/map/setPieces.ts`, the bar/railing/gate edge styles, `content/setpieces/*.json` where a surface role is wrong, their tests and e2e. Octagon phase 4 runs alongside (different files).
+
 ## For lane B's splitters22, from the owner (2026-11-15, via lane A's lead): the MapMaker painting plan is written
 
 **Plan written; waiting on the owner's answers.** `docs/MAPMAKER_PAINTING_PLAN.md` (on main), with
