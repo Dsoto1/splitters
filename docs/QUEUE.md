@@ -59,7 +59,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · ? · MapMaker UI spec Phases 2 and 3: synced selection and numeric transforms; live minimap.
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
-- M · A · St. John's: the chapel's spiral stair and our own crest (after step 2, Smythe Hall).
+- L · A · **St. John's campus rework, steps 3-11** (owner's brief and "I'll take your recs", 2026-11-12; `docs/map-briefs/st_johns/PLAN_2026-11-12.md` §3.5; steps 1-2 landed, Smythe Hall 2026-11-14, its Roman rubble 2026-11-15). Next: step 3, turret, `hall_centre`, red trim, Scott Johnston / Hazelwood at three floors (in Collegiate Rubble, like Smythe); then 4 entrance and grounds (skybridge out), 5 Stangeland / Cord, 6 Welles + clock tower, 7 DeKoven + our own crest, 8 Memorial Hall, 9 the chapel (its spiral stair), 10 gym and pool, 11 final pass and the owner's recording. One hall per landing. Lead's slip: only the chapel item was in this queue after step 2; the plan never stopped.
+  - First, before step 3 (owner, 2026-11-15: "the dorms look great"): the dorm room doors (dark wood with cast iron) span the whole 3 m doorway; slim them: a frame brought in (wall returns / a jamb either side) and a single door of a real room door's width, in the dorm bays' doorways (a new edge style or a door option, so other doorways stay 3 m; check nav and bot pathing through the narrower opening). Then Smythe Hall picks it up and step 3's halls use it.
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
 - M · B · Player profiles.
 - M · B · Map pass, like-for-like swaps only (owner: the tuned arenas are left alone; Qasr Medina stays as it is). Sandgate is done; no other map with as clear a swap has been found yet.
@@ -74,9 +75,14 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Fix 3, rewritten (owner's follow-up recordings, `docs/PERF_MAPMAKER_TRACE_2026-11-15.md` section 8): the 11-15 ms a frame outside our script is not the GPU's load and was gone in a fresh tab (the same Test 30 → 54 fps); it came with a long MapMaker session that ended in "Aw, Snap!". Steps: 3a a memory readout in the perf overlay and recordings (S), 3b a repeat probe (edit, Test, back ×10; S), 3c fix what grows (M), 3d an in-game "tab is slowing" note (S).
 - M · A · Test start about 10 s: hand the check's navmesh to the simulation worker when the map is unchanged (fix 4, 4.4 s), then reuse the editor's textures and models and spread the loading (fix 5: an 861 ms freeze and 5.5 s at 4-11 fps).
 - S · B · Cheaper MapMaker edits (46 ms now, smooth): outliner rows, level picker and hover card only when changed (fix 6). Later, L · B: an incremental navmesh for the check (fix 7).
+- S · A · Scaling 1: the navmesh kept between matches, in memory and in the browser's storage for browser hosts (owner 4b; `docs/SCALING_STUDY_2026-11-15.md`, recommended order 1).
+- M · A · Scaling 2: a building's insides hidden when none of its openings is in view, generous near radius (owner 2a; order 2); then interior models loaded on approach (S, order 3). With it, S · B: MapMaker's View-menu overlay of what the game counts as a building and its openings (owner 3a).
+- S · A · Scaling 4: bot path search budget by time (order 4).
+- M · A · Scaling 5: spawn-first build order, no unloading (owner 1b; order 5).
+- L · A · Later: tiled navmesh, when breakable walls should open bot routes (owner 5a). Foliage: nothing until a profile says it costs (owner 6a).
+- L · A · Eventually (owner 7, 2026-11-15): one large open map (a "Far Cry island") with every feature, tile set and theme; plan real streaming, the region graph and budgets past 400 m once the small maps work great.
 
 ## Waiting on the owner
-- The scaling study's seven questions (region streaming, foliage, interiors, bot navigation; `docs/SCALING_STUDY_2026-11-15.md`, recommended picks marked).
 - A long-session recording (owner said yes, 2026-11-15): after an hour of MapMaker with several Tests, 20 s of a Test, then reload and the same Test again, ad blocker off for the site. After the memory readout (fix 3a) lands. The next St. John's match recording after the main-scene work.
 - Lane B: the destructible environment's later steps. Step 1 is on main (props and blocks on an opt-in map, Breakyard); (a), breakable props batched while intact, landed 2026-11-15 (HANDOFF "Landed: breakable props batched while intact"); (b), breakable building walls, is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
