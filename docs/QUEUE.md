@@ -51,6 +51,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · B · MapMaker: the selection Mirror (Shift+M) learns diagonal symmetry, so an exploded Arena Corner mirrors like the set piece (owner 4a, 2026-11-14; after MapMaker UI Phase 1 frees `editor/mirror.ts`).
 - XS · B · MapMaker: `updateVisibleFaces` cuts a turned box's face into slightly different pieces than a full pass (a few mm² on faces of hundreds of m²); `facesUpdate.test.ts` now compares drawn area. Make the incremental cut match exactly, then tighten the test back.
 
+- XS · B · Tests: octagonKit's every-map doors test is one test over all maps and nears its timeout under load (as terrainFloors did); make it one test per map (flaky-tests helper, 2026-11-15). Also near their timeouts at load 16-25, CPU-bound: botRoles route variety, botai strafing aim, debrisGround, zipStream, server.test's first CTF test with four suites at once.
+
 ## Features
 - M · ? · MapMaker UI spec Phases 2 and 3: synced selection and numeric transforms; live minimap.
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
