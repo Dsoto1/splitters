@@ -5155,7 +5155,8 @@
    "solids",
    "underside",
    "trim",
-   "roof"
+   "roof",
+   "metal"
   ],
   "SURFACE_SLOT_LABELS": {
    "floor": "Floor",
@@ -5163,7 +5164,8 @@
    "solids": "Pillars, cover & steps",
    "underside": "Underside (ceiling below)",
    "trim": "Trim & frames",
-   "roof": "Roof (top, outside)"
+   "roof": "Roof (top, outside)",
+   "metal": "Metal (bars, gates & railings)"
   }
  }
 }
