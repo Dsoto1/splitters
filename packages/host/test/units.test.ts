@@ -14,7 +14,7 @@ import { ConfigError, DEFAULT_HUB, loadConfig, parseConfig } from '../src/config
 import { liveArgs, originAllowed, ownPage, startConfig } from '../src/control.ts';
 import { appWindowArgs, browserCandidates, findAppBrowser } from '../src/appWindow.ts';
 import { LogBuffer, launcherCsp, launcherPage, mapCatalog } from '../src/launcher.ts';
-import { DEFAULT_MAPS_DIR, suiteIds } from '../src/host.ts';
+import { DEFAULT_MAPS_DIR, TICKET_KEYS_REFETCH_MS, TICKET_KEYS_RETRY_MS, TicketKeys, suiteIds } from '../src/host.ts';
 import { syncMaps } from '../src/published.ts';
 import { loadMap as loadMapDoc, serializeMap } from '@tiletrigger/shared';
 
@@ -389,6 +389,67 @@ describe("a player's WebRTC link", () => {
     vi.advanceTimersByTime(LINK_LIMITS.closeDelayMs + 1);
     expect(big.closed).toBe(true);
     vi.useRealTimers();
+  });
+});
+
+describe("a player's WebRTC link, closed by the server", () => {
+  it('stays open for a last message until the player hangs up, and closes on its own after closeWaitMs', () => {
+    vi.useFakeTimers();
+    try {
+      // The player reads the reject and leaves: the link closes then, not on a timer.
+      const dc = new FakeDc({ z: 1 });
+      const conn = peerConn(dc);
+      let closed = false;
+      conn.onClose(() => (closed = true));
+      conn.send('{"t":"reject","reason":"kicked"}');
+      conn.close(4003, 'kicked');
+      expect(conn.send('{"t":"snapshot"}')).toBe(0);
+      vi.advanceTimersByTime(LINK_LIMITS.closeDelayMs + 1);
+      expect(dc.closed || closed).toBe(false);
+      dc.close();
+      expect(closed).toBe(true);
+      // A player that never hangs up: closed after closeWaitMs.
+      const mute = new FakeDc({ z: 1 });
+      const c2 = peerConn(mute);
+      let closed2 = false;
+      c2.onClose(() => (closed2 = true));
+      c2.close(4005, 'travel');
+      vi.advanceTimersByTime(LINK_LIMITS.closeWaitMs - 1);
+      expect(mute.closed).toBe(false);
+      vi.advanceTimersByTime(2);
+      expect(mute.closed && closed2).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("the hub's ticket keys", () => {
+  it('a fetch that failed is tried again in a few seconds, not after the 30 s between refreshes', async () => {
+    vi.useFakeTimers();
+    try {
+      const signer = new TicketSigner();
+      let up = false;
+      let asked = 0;
+      const fetcher = (async () => {
+        asked++;
+        if (!up) throw new Error('timed out');
+        return new Response(JSON.stringify(signer.keys()), { status: 200 });
+      }) as unknown as typeof fetch;
+      const keys = new TicketKeys('http://hub.test', fetcher);
+      await keys.refresh();
+      expect(asked).toBe(1);
+      up = true;
+      await vi.advanceTimersByTimeAsync(TICKET_KEYS_RETRY_MS + 1);
+      expect(asked).toBe(2);
+      expect(keys.verify(signer.sign('acct-1', 'ABCDEF').ticket, 'ABCDEF')).toMatchObject({ sub: 'acct-1' });
+      // Keys in hand: no more timers.
+      await vi.advanceTimersByTimeAsync(TICKET_KEYS_REFETCH_MS * 2);
+      expect(asked).toBe(2);
+      keys.stop();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

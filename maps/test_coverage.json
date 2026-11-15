@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_uy3n3ig77rtli7vg",
-      "revision": 33,
-      "contentHash": "sha256:5f3bd22b8c73ff712091e5b96d53f21574f0790d0d382e1048fbc7b88a64456a",
+      "versionId": "v_oleeavvw6vsdgztx",
+      "revision": 34,
+      "contentHash": "sha256:a1f502a3cbabe92a1b7b2a772627653c8c12ef29ae616e3cbff48b443493879e",
       "schemaVersion": 38,
-      "releasedAt": "2026-11-14T22:15:41.863Z"
+      "releasedAt": "2026-11-15T02:21:40.504Z"
     },
     "testOnly": true
   },
@@ -6595,6 +6595,56 @@
       "z": 0,
       "rotation": 0,
       "mirror": false
+    },
+    {
+      "id": "setpiece_eh8bgt6vj2",
+      "piece": "setpiece.corner_tower_square",
+      "x": -20,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_5ufvvtunz5",
+      "piece": "setpiece.dorm_corner_bay",
+      "x": -18,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_atvxwcf8vl",
+      "piece": "setpiece.dorm_entry_bay",
+      "x": -15,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_poqeu5nf5f",
+      "piece": "setpiece.stair_end_bay_arched",
+      "x": -13,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_x1on898jvx",
+      "piece": "setpiece.stair_end_bay_bridge",
+      "x": -11,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
     }
   ]
 }

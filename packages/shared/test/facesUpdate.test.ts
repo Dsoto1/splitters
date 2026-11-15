@@ -101,14 +101,23 @@ describe('updateVisibleFaces', () => {
   });
 
   // The maps MapMaker was slow on (free blocks by the thousand, many turned), and one built from tiles with trim.
+  // Each edit is its own test (they run in order, each on the last one's faces): a full pass over test_coverage takes
+  // seconds, and the eight edits and their full passes were one test under one budget, outgrown on a busy machine
+  // (123 s against 120 at a load of 16).
   for (const id of ['st_johns', 'iron_maw', 'test_coverage']) {
-    it(`matches a full pass after each of a run of edits on ${id}`, () => {
-      let boxes = drawnBoxes(id);
-      let cache: FaceCache = updateVisibleFaces(null, boxes);
+    describe(`matches a full pass after each of a run of edits on ${id}`, () => {
+      let boxes: WorldBox[] = [];
+      let cache: FaceCache;
       const rand = rng(id.length * 7919);
       const pick = () => Math.floor(rand() * boxes.length);
       const step = () => Math.round((rand() * 4 - 2) * 4) / 4;
-      for (let n = 0; n < 8; n++) {
+      it('a full pass to start from', () => {
+        boxes = drawnBoxes(id);
+        cache = updateVisibleFaces(null, boxes);
+        expect(cache.full).toBe(true);
+      }, 120_000);
+      for (let n = 0; n < 8; n++) it(`edit ${n}`, () => {
+        expect(boxes.length, 'the full pass to start from ran').toBeGreaterThan(0);
         const next = [...boxes];
         const kind = n % 4;
         if (kind === 0 || kind === 1) {
@@ -133,7 +142,7 @@ describe('updateVisibleFaces', () => {
         expect([...got.keys()].sort(), `edit ${n}`).toEqual([...want.keys()].sort());
         const off = [...want].filter(([k, a]) => Math.abs(a - got.get(k)!) > 1e-3).map(([k, a]) => `${k}: ${got.get(k)} m², a full pass ${a}`);
         expect(off, `edit ${n}`).toEqual([]);
-      }
-    }, 120_000);
+      }, 120_000);
+    });
   }
 });

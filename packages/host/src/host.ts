@@ -91,26 +91,51 @@ export interface HostDeps {
   onEvent?: (line: string) => void;
 }
 
-/** The hub's public keys for account tickets (tickets.ts), fetched at start and again (at most every 30 s) for an unknown key. */
+/** How often the hub's ticket keys are fetched again for an unknown key; and, after a fetch that failed, how soon. */
+export const TICKET_KEYS_REFETCH_MS = 30_000;
+export const TICKET_KEYS_RETRY_MS = 3_000;
+
+/**
+ * The hub's public keys for account tickets (tickets.ts), fetched once the host has started and again (at most every
+ * 30 s) for an unknown key. A fetch that failed is tried again in 3 s, by a timer until the host has keys and by the
+ * next unknown ticket: it used to wait the 30 s, and the start-up fetch, begun before the map was built, could time
+ * out on a busy machine while the build held the event loop (host.test: the signed-in player joined as a guest).
+ */
 export class TicketKeys {
   private keys = new Map<string, string>();
-  private fetchedAt = 0;
+  private fetchedAt = -Infinity;
+  private retry: ReturnType<typeof setTimeout> | undefined;
   private readonly seen = new Map<string, number>();
   constructor(
     private readonly hub: string,
     private readonly fetcher: Fetch = fetch,
   ) {}
   async refresh(): Promise<void> {
-    if (Date.now() - this.fetchedAt < 30_000) return;
+    if (Date.now() - this.fetchedAt < TICKET_KEYS_REFETCH_MS) return;
     this.fetchedAt = Date.now();
+    clearTimeout(this.retry);
+    let ok = false;
     try {
       const res = await this.fetcher(`${this.hub}/api/v1/ticket-keys`, { signal: AbortSignal.timeout(8000) });
-      if (!res.ok) return;
-      const j = (await res.json()) as { keys?: { kid?: unknown; x?: unknown }[] };
-      for (const k of j.keys ?? []) if (typeof k.kid === 'string' && typeof k.x === 'string' && k.x.length < 100) this.keys.set(k.kid, k.x);
+      if (res.ok) {
+        const j = (await res.json()) as { keys?: { kid?: unknown; x?: unknown }[] };
+        for (const k of j.keys ?? []) if (typeof k.kid === 'string' && typeof k.x === 'string' && k.x.length < 100) this.keys.set(k.kid, k.x);
+        ok = true;
+      }
     } catch {
       // No tickets checked until the hub answers: signed-in players count as guests meanwhile.
     }
+    if (ok) return;
+    this.fetchedAt = Date.now() - TICKET_KEYS_REFETCH_MS + TICKET_KEYS_RETRY_MS;
+    if (!this.keys.size) {
+      this.retry = setTimeout(() => void this.refresh(), TICKET_KEYS_RETRY_MS);
+      this.retry.unref?.();
+    }
+  }
+  /** Stop asking (the host stopped). */
+  stop(): void {
+    clearTimeout(this.retry);
+    this.fetchedAt = Infinity;
   }
   /** The account (and its username) a ticket for `code` proves, or null (an unknown key: fetch again for next time). Each ticket counts once. */
   verify(ticket: string, code: string): { sub: string; name?: string } | null {
@@ -181,7 +206,6 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
   if (playlist === null) throw new Error(`PLAYLIST ${config.playlist} is not a valid playlist of our maps`);
   const startedAt = Date.now();
   const tickets = new TicketKeys(config.hub, deps.fetcher);
-  void tickets.refresh();
   let linkRef: HubLink | null = null;
   let lastStats: ServerStats | null = null;
   /** Ticks over budget since the match process started. */
@@ -222,6 +246,8 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
     onBan: (who, minutes, reason, by) => void deps.bans?.add(who, minutes, reason, by),
     verifyTicket: (ticket) => (linkRef ? tickets.verify(ticket, linkRef.code) : null),
   });
+  // Once the match is built (the build holds the event loop: a fetch begun before it could time out meanwhile).
+  void tickets.refresh();
 
   const link = new HubLink({
     hub: config.hub,
@@ -389,6 +415,7 @@ export async function startHost(config: HostConfig, deps: HostDeps = {}): Promis
     stop: async (reason = 'The server is shutting down') => {
       if (stopping) return;
       stopping = true;
+      tickets.stop();
       // Players see why before their link closes.
       server.notice(reason);
       await Promise.all([advertiser?.stop(), new Promise((r) => setTimeout(r, 500))]);

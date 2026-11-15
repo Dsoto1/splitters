@@ -286,7 +286,9 @@ describe('co-op mission: Outpost Siege', () => {
     me.move = { pos: { x: 34, y: 0, z: 0 }, velY: 0, grounded: true };
     invulnerable(140);
     expect(events.filter((e) => e.e === 'round_end')).toEqual([{ e: 'round_end', winner: null, outcome: 'victory' }]);
-  });
+    // A whole mission (minutes of match ticks): the budget Dead Reel's play-through has; at a load of 16 Blackout's
+    // took 20.2 s against the 20 s default.
+  }, 60000);
 
   it('runs with Player Bots and NPCs fighting for a minute without errors', async () => {
     const map = await load();
@@ -359,7 +361,9 @@ describe('co-op mission: Blackout', () => {
     me.move = { pos: { x: 4, y: 0, z: 52 }, velY: 0, grounded: true };
     invulnerable(140);
     expect(events.filter((e) => e.e === 'round_end')).toEqual([{ e: 'round_end', winner: null, outcome: 'victory' }]);
-  });
+    // A whole mission (minutes of match ticks): the budget Dead Reel's play-through has; at a load of 16 Blackout's
+    // took 20.2 s against the 20 s default.
+  }, 60000);
 });
 
 describe('co-op mission: Dead Reel', () => {
