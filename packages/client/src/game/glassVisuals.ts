@@ -218,6 +218,8 @@ interface Crack {
  * round stopped on a pane.
  */
 export class GlassVisuals {
+  /** Chunks a frame's apply changed (reused across frames). */
+  private readonly dirty = new Set<Chunk>();
   private panes: Pane[] = [];
   private readonly byIndex = new Map<number, Pane>();
   private chunks: Chunk[] = [];
@@ -320,7 +322,9 @@ export class GlassVisuals {
   /** Follow replicated pane states (scenario index -> [health %, …]). */
   apply(states: ReadonlyMap<number, readonly [number, number]>): void {
     if (!this.panes.length) return;
-    const dirty = new Set<Chunk>();
+    // Reused: this runs every frame and almost never finds a pane changed.
+    const dirty = this.dirty;
+    dirty.clear();
     let frames = false;
     for (const p of this.panes) {
       const s = states.get(p.index);

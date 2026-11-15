@@ -5,8 +5,13 @@ import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { installEnvironmentBrdf } from './content/brdf.ts';
+import { installGlStateCache, type GlStateCacheStats } from './glStateCache.ts';
+import { perfOn } from './game/perfSwitches.ts';
 
 export type RendererKind = 'WebGPU' | 'WebGL2';
+
+/** The WebGL state cache's counts (null on WebGPU or with `?perfoff=glcache`): the perf tools read them. */
+export let glCacheStats: GlStateCacheStats | null = null;
 
 const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
 
@@ -77,6 +82,9 @@ export async function createEngine(canvas: HTMLCanvasElement): Promise<{ engine:
   engine.useReverseDepthBuffer = true;
   // Every scene's PBR materials share a BRDF table that needs no GPU pre-pass (see content/brdf.ts).
   engine.onNewSceneAddedObservable.add(installEnvironmentBrdf);
+  // Redundant uniform and draw-buffer calls dropped before they reach the browser (glStateCache.ts; `?perfoff=glcache`).
+  const gl = engine._gl as WebGL2RenderingContext | null;
+  if (gl && perfOn('glcache')) glCacheStats = installGlStateCache(gl).stats;
   return { engine, kind: 'WebGL2', canvas, note };
 }
 
