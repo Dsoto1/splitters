@@ -248,9 +248,10 @@ describe('map format v38', () => {
       // No playable map names a new style: nothing was changed to use them (the coverage map carries one of each, below).
       expect(JSON.stringify(raw).includes('shopfront') || JSON.stringify(raw).includes('window_arched'), id).toBe(false);
     }
-    // The coverage map (one of everything) has a room with both, saved by MapMaker at v38.
+    // The coverage map (one of everything) has a room with both, saved by MapMaker at v38 or later (MapMaker saves at
+    // the current format: v39 since the octagon's gate corner was placed on it).
     const cov = readFileSync(new URL('../../../maps/test_coverage.json', import.meta.url), 'utf8');
-    expect((JSON.parse(cov) as { formatVersion: number }).formatVersion).toBe(38);
+    expect((JSON.parse(cov) as { formatVersion: number }).formatVersion).toBeGreaterThanOrEqual(38);
     expect(cov.includes('"shopfront"') && cov.includes('"window_arched"')).toBe(true);
   });
 });
