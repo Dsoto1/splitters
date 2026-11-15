@@ -46,6 +46,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · A · Status auras: a fourth afflicted character past the three-aura limit (`STATUS_FX_MAX`) wears a flat see-through yellow slab the size of its box; it reads as a placeholder (Spillway helper, SwiftShader, `wip/spillway-finish` `docs/EFFECTS_CHECKS_2026-11-13.md` section 5).
 - XS · A · Status auras: poison and goo are faint in daylight with Reduce flashing on (a light green haze, a trace of pink; the pink stays faint with it off too). Burning reads on every setting.
 
+- S · A · Hitches: a character body's disposal costs about 28 ms when it goes (St. John's recording of 2026-11-14); reuse bodies or spread the disposal over frames. Next for lane A after the flaky tests (owner, 2026-11-15).
+
 ## Easy wins
 - S · B · MapMaker: the selection Mirror (Shift+M) learns diagonal symmetry, so an exploded Arena Corner mirrors like the set piece (owner 4a, 2026-11-14; after MapMaker UI Phase 1 frees `editor/mirror.ts`).
 - XS · B · MapMaker: `updateVisibleFaces` cuts a turned box's face into slightly different pieces than a full pass (a few mm² on faces of hundreds of m²); `facesUpdate.test.ts` now compares drawn area. Make the incremental cut match exactly, then tighten the test back.
@@ -65,6 +67,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Mobile audit: touch layout options: button size, opacity, left-handed, aim hold or toggle (proposal 3).
 - M · A · Mobile audit: Character Select phone layout (proposal 4).
 - M · A · Material surface types: 0 of 150 materials set `surface`, so footsteps and impacts can't tell metal from wood (owner: end of queue).
+- L · A · Driving physics (owner, 2026-11-15): vehicles as real bodies with sprung raycast wheels and tyre grip that can fail. Buggies light, bouncy and easy to flip; jumps land with weight and momentum; the body follows the ground on steep edges and slides back when grip runs out. Multiplayer smooth: the driver's vehicle predicted on their own machine and reconciled, others interpolated. Step 1: a plan plus the Buggy alone, judged offline and at 100–150 ms simulated lag; then the rest of the vehicles, bots, maps. Today the chassis moves like a character controller (`PhysicsWorld.moveVehicle`), with a drawn-only sprung body (`sim/suspension.ts`). After the hitches fix (owner: "finish hitches fix").
 
 ## Waiting on the owner
 - Open questions in `docs/MAPMAKER_EDITING_REPORT_2026-11-13.md`.
