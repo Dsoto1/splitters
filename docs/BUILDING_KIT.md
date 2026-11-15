@@ -231,7 +231,11 @@ on the sand within 4 m of the door, each with a Toggle door rule), as on Flavius
   crosses the tower every 4 m: through the facade's arches into the arcade storeys at 8 and 16 m, onto the attic walk
   at 24 m and its roof at 28 m, and the lookout at 32 m. It claims only the cells the corner leaves free: the outer
   court's cells under it at levels 0-7 and all of level 8. It stands against the facade rather than through it, so the
-  middle and upper storeys keep their facade; the arches open into its landings.
+  middle and upper storeys keep their facade; the arches open into its landings. Its outside faces (owner, phase 3's
+  3a; added in phase 4) have arrow slits, dark strips 0.2 by 1.6 m standing 3 cm proud (two on the outer face either
+  side of the passage and one in the middle of each side, at 6, 14, 22 and 29.5 m), and a string course 0.3 m high and
+  0.15 m proud round all four faces under the lookout's parapet (31.7-32 m). Both are drawn only: the tower's collision
+  is phase 3's (291 boxes; `arenaCornerGate.test.ts` hashes it), its trim 40 → 60 boxes.
 - **Ports:** the ground storey (plain and Gate) now has ports on the sides of its cells that face the two half-sand
   cells, so the sand's Courtyard tiles build no wall there (before, their walls rose up through the podium; with the
   gate they would close its mouth).
