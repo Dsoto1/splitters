@@ -531,7 +531,7 @@ maps and stay in code.
 
 | File | Holds |
 |---|---|
-| `content/materials.json` `materials` | every material, in MapMaker's palette order: `id`, `displayName`, `category` (palette group: `MATERIAL_CATEGORIES`), either a procedural `pattern` (`PATTERN_IDS`) with `base` and `accent` colours, or a scanned `texture` set with `base` (its average colour, for minimaps and icons); `scale` (metres one repeat covers), `shine` (0 matte to 1 glossy), `emissive` (glows whatever the light), optional `surface` (a type in `content/surface-types.json`) and `ballistic` (a class in `BALLISTIC_MATERIALS`), `notes` |
+| `content/materials.json` `materials` | every material, in MapMaker's palette order: `id`, `displayName`, `category` (palette group: `MATERIAL_CATEGORIES`), either a procedural `pattern` (`PATTERN_IDS`) with `base` and `accent` colours, or a scanned `texture` set with `base` (its average colour, for minimaps and icons); `scale` (metres one repeat covers), `shine` (0 matte to 1 glossy), `emissive` (glows whatever the light), optional `surface` (a type in `content/surface-types.json`) and `ballistic` (a class in `BALLISTIC_MATERIALS`), optional `wrap` (upright faces lay the texture along x + z, unbroken round corners and buttresses; for irregular textures that hide the mirroring) and `shadeLift` (0-0.5: that share of its colour added to the light, so its shaded faces still read), `notes` |
 | `content/materials.json` `themes` | every theme: `id`, `displayName`, `sky` colour and `slots` (`floor`, `walls`, `solids`, `underside`, `trim`: each a `material` and optional `tint`) |
 | `content/materials.json` `tintSwatches` | the tints MapMaker offers first (any #rrggbb is allowed) |
 

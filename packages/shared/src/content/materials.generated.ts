@@ -165,6 +165,8 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   { id: 'core.pbr_limestone', displayName: 'Dressed Limestone', category: 'Stone', pattern: 'plain', base: '#c9b8a2', accent: '#c9b8a2', scale: 3, shine: 0.08, texture: 'Tiles139' },
   { id: 'core.pbr_white_marble', displayName: 'White Marble', category: 'Stone', pattern: 'plain', base: '#c9ccd2', accent: '#c9ccd2', scale: 3, shine: 0.5, texture: 'Marble012' },
   { id: 'core.pbr_opus_incertum', displayName: 'Roman Rubblework', category: 'Brick', pattern: 'plain', base: '#8f8068', accent: '#8f8068', scale: 2.5, shine: 0.08, texture: 'Bricks075A' },
+  // design: St. John's halls (the Collegiate stone facade and the collegiate pack's stone; owner, 2026-11-15: "roman rubblework"): Roman Rubblework's photo laid round corners (no restart at a buttress or a wall's corner) and lifted a little in shade. Category Stone, so it stops bullets as the Grey Stone Blocks it replaced did.
+  { id: 'core.pbr_collegiate_rubble', displayName: 'Collegiate Rubble', category: 'Stone', pattern: 'plain', base: '#8f8068', accent: '#8f8068', scale: 2.5, shine: 0.08, texture: 'Bricks075A', wrap: true, shadeLift: 0.12 },
   // section: Style Pack 09 Sands of Egypt
   { id: 'core.pbr_sandstone_blocks', displayName: 'Sandstone Blocks', category: 'Stone', pattern: 'plain', base: '#d8b88e', accent: '#d8b88e', scale: 3, shine: 0.08, texture: 'Tiles142' },
   { id: 'core.pbr_rough_sandstone', displayName: 'Rough Sandstone', category: 'Brick', pattern: 'plain', base: '#b0a27a', accent: '#b0a27a', scale: 2.5, shine: 0.08, texture: 'Bricks083' },
