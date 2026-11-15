@@ -997,7 +997,7 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 - **Not reproduced:** the mobile pad tap (three local runs at loads 16-25 passed; no failure in the last 30 check runs' logs); its check already says the pad's events when it fails.
 - **Still near their budgets at loads of 16-25** (CPU-bound, pass alone; not changed): botRoles route variety, botai strafing aim, debrisGround, octagonKit's every-map doors (one test over every map, as terrainFloors was: split it a map a test; lane B's file), zipStream, and server.test's first CTF test under four suites at once.
 
-**Next in line, after the hitches fix: MapMaker UI spec Phase 1** (`check/mapmaker-ui-1`, green at 72ee2ac2, reviewed and approved by lane A's lead; lane B's splitters22, 2026-11-15): merge origin/main, a check run, then a fast-forward.
+**Landing now: MapMaker UI spec Phase 1** (`check/mapmaker-ui-1`; lane B's splitters22, 2026-11-15; reviewed and approved by lane A's lead). Hold code pushes to main until this line comes down. One merge of origin/main (the hitches fix), one check run, then a fast-forward.
 
 **Next in line, after MapMaker UI Phase 1: Flavius Rule's octagon, phase 3 (the gate corner, stair wells, tower)** (`check/flavius-octagon-3`, green at 61d0d21d, run 43668702949; lane B's splitters22, 2026-11-15). Edits `maps/test_coverage.json` like Smythe Hall: after Smythe lands, lane B takes main's coverage map and places its pieces again in MapMaker.
 
