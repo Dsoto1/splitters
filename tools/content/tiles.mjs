@@ -95,7 +95,7 @@ function schemas(root, materials, edgeIds = []) {
   const edge = obj({
     id: str, label: str, 'rule?': en(['auto', 'open']), 'segments?': arr(segment), 'trim?': arr(trimPiece), 'trimFrom?': num,
     'openings?': arr(tup(4)), 'glass?': bool, 'corner?': bool, 'facade?': bool, 'street?': bool, 'openDefault?': bool,
-    'dressing?': obj({ kind: en(['door', 'window', 'see-through']), 'span?': num }), 'notes?': notes,
+    'dressing?': obj({ kind: en(['door', 'window', 'see-through']), 'span?': num }), 'paint?': en(['metal']), 'notes?': notes,
   });
   const surface = obj({ material: en(materials), 'tint?': str });
   const at2 = tup(2);
@@ -305,7 +305,7 @@ export function build(content, root = ROOT) {
     const shape = {
       segments, trim, ...(e.trimFrom !== undefined ? { trimFrom: e.trimFrom } : {}),
       ...(e.openings ? { openings: e.openings } : {}), ...(e.openDefault ? { openDefault: true } : {}),
-      ...(e.dressing ? { dressing: e.dressing } : {}),
+      ...(e.dressing ? { dressing: e.dressing } : {}), ...(e.paint ? { paint: e.paint } : {}),
     };
     edges.push({ def, shape, flags: { glass: !!e.glass, corner: !!e.corner, facade: !!e.facade, street: !!e.street }, notes: e.notes });
   }

@@ -140,7 +140,7 @@ if (offline && todo.length) {
 console.log(`${items.length} pieces in ${groups.size} groups; rendering ${todo.length}`);
 const failed = [];
 if (todo.length) {
-  const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'], ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}) });
   let done = 0;
   const queue = [...todo];
   const worker = async () => {

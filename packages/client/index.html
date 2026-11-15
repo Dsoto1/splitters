@@ -340,7 +340,8 @@
           <div id="ed-sky"></div>
         </div>
         <div class="ed-pane" data-pane="paint" data-cat="paint" hidden>
-          <h3>Paint</h3>
+          <h3>Structure paint <small>B</small></h3>
+          <p class="note" id="ed-paint-note">Tiles, blocks, bars and set pieces. The ground is Ground paint (Shift+B, in the Terrain tab).</p>
           <div id="ed-brush-row"><img id="ed-brush" alt="" /><span id="ed-brush-label"></span></div>
           <label class="stack">Apply to
             <select id="ed-scope">
@@ -348,6 +349,12 @@
               <option value="sameType">Same piece type</option>
               <option value="level">Whole level</option>
               <option value="all">Whole map</option>
+            </select>
+          </label>
+          <label class="stack">On a set piece
+            <select id="ed-piece-scope" title="A click on a set piece paints that material across the piece (all its stone, say), or this surface only (one part: a wall, the bars, a table)">
+              <option value="piece">Across the piece</option>
+              <option value="part">This surface only</option>
             </select>
           </label>
           <div class="sub-h">Tint</div>

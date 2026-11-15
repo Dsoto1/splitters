@@ -7,7 +7,9 @@ import {
   EditHistory,
   budgetCulprits,
   budgetLevel,
+  breakablePropInBudget,
   countBudgets,
+  isBreakableProp,
   loadMap,
   newMapDocument,
   newTerrain,
@@ -15,6 +17,7 @@ import {
   serializeMap,
   utf8Length,
   validateMap,
+  isEnvModel,
   type MapDocument,
   type MapEntity,
 } from '../src/index.ts';
@@ -132,5 +135,35 @@ describe('the live budget bar (MapMaker Phase 1, item 2)', () => {
     expect(budgetCulprits(doc, 'lights')).toEqual(doc.entities.filter((e) => e.kind === 'light').map((e) => e.id));
     expect(budgetCulprits(doc, 'vehicles').length).toBe(doc.entities.filter((e) => e.kind === 'mount' || e.kind === 'airplane').length);
     expect(budgetCulprits(doc, 'size')).toEqual([]);
+  });
+
+  it('breakable props count in the Destructibles row as the validator counts them, the map switch followed', () => {
+    const r = loadMap(readFileSync(fileURLToPath(new URL('../../../maps/breakyard.json', import.meta.url)), 'utf8'), undefined, { forEditing: true });
+    if (!r.ok) throw new Error('breakyard failed to load');
+    const yard = r.map;
+    expect(yard.metadata.destruction).toBe(true);
+    const props = yard.entities.filter((e) => isBreakableProp(e, true));
+    expect(props.length).toBeGreaterThan(30);
+    const others = yard.entities.filter((e) => e.kind === 'destructible' || (e.kind === 'block' && (e.behaviour !== 'solid' || !!e.glass))).length;
+    const { history, tracker, same } = tracked(yard);
+    same('opened');
+    expect(tracker.counts.destructibles).toBe(others + props.length);
+    expect(new Set(budgetCulprits(yard, 'destructibles'))).toEqual(new Set([...props.map((e) => e.id), ...yard.entities.filter((e) => e.kind === 'destructible' || (e.kind === 'block' && (e.behaviour !== 'solid' || !!e.glass))).map((e) => e.id)]));
+    // "Everything breaks" off: only the log given health still counts.
+    history.execute('off', { kind: 'setMetadata', before: { destruction: true }, after: { destruction: false } });
+    same('switch off');
+    const logs = yard.entities.filter((e) => breakablePropInBudget(e, false));
+    expect(logs.map((e) => e.kind === 'prop' && e.model)).toEqual(['env.deadwood.log']);
+    expect(tracker.counts.destructibles).toBe(others + 1);
+    history.undo();
+    same('undo');
+    expect(tracker.counts.destructibles).toBe(others + props.length);
+    // Over the budget exactly when the validator says so.
+    const crate = props.find((e) => e.kind === 'prop' && !isEnvModel(e.model))!;
+    const many = Array.from({ length: 1030 }, (_, i) => ({ ...crate, id: `many_${i}` }) as MapEntity);
+    history.execute('many', { kind: 'addEntities', entities: many });
+    same('many');
+    expect(budgetLevel(tracker.counts.destructibles, 1024)).toBe('over');
+    expect(resourceBudgetIssues(history.doc).some((i) => i.code === 'budget.destructibles')).toBe(true);
   });
 });

@@ -8,6 +8,7 @@
 | Status | Part 1: the playable build (structures, routes, modes, spawns, pickups). See "Progress" and "Left" |
 | Players | 12 v 12 (Map's pick), 8-24 recommended |
 | Modes | Team Deathmatch, Capture the Flag (gates 3/4 against gates 1/2), King of the Hill (the five medallions), Deathmatch (offered again 2026-11-09) |
+| Octagon | 2026-11-15: the corners rebuilt as Arena Corners (Gate) in MapMaker (OCTAGON_PLAN.md, "Phase 4: as built"); the rows below marked (octagon) changed |
 | Weapon set | Medieval |
 
 ## World
@@ -22,23 +23,23 @@
 ## Layout (cells; levels of 4 m)
 | What | Where | Pieces |
 |---|---|---|
-| Sand (the board's 13 × 13 at 4 m) | cells −3..3, level 0 | 33 Courtyard tiles, the four hatch halls' Corner Hatch tiles (16) |
+| Sand (the board's 13 × 13 at 4 m; octagon: its corner squares under the new podiums) | cells −3..3 less the corner cells (±3, ±3), level 0 | 29 Courtyard tiles, the four hatch halls' Corner Hatch tiles (16) |
 | Pillars (12) | (0, ±24), (±24, 0), (±16, ±16), (±8, ±8) m | Ionic Column ×1.6 (2.1 m thick, 9.6 m tall) |
 | Hatches (4) | the cell corners (±12, ±12) m | Hatch Riser (Corner): a 2 × 2 hall under each, a ladder up |
 | Medallions (5) | (0, 0), (0, ±12), (±12, 0) m | the King of the Hill hills (radius as placed) |
 | Beast pit (red zone) | the centre | spike floors (−6, 2), (6, −2); fire jets (−2, 6), (2, −6) |
-| Stands | four sides × 7 radial lines, depth 4-10 | per line: Arena Bay (Podium) d4 L0; Grand Arcade d6-d9 L0, d8-d9 L2; Upper Tier d6 L2; Upper Tier / Vomitorium (even lines) d8 L4; Grand Arcade facade d10 L0, L2, L4; Arena Attic d10 L6 |
-| Gates 1-4 | the end lines of the south (1 east, 2 west) and north (3 west, 4 east) stands, x = ±3 | Gladiator Gate tile at d4 and a Grand Arcade at d5: a passage from the sand out under the stands to the facade |
+| Stands (octagon: three lines a side, x or y = −1..1) | four sides × 3 radial lines, depth 4-10 | per line: Arena Bay (Podium) d4 L0; Grand Arcade d6-d9 L0, d8-d9 L2; Upper Tier d6 L2; Upper Tier / Vomitorium (even lines) d8 L4; Grand Arcade facade d10 L0, L2, L4; Arena Attic d10 L6 |
+| Corners and gates 1-4 (octagon) | an Arena Corner (Gate) anchored on each sand corner cell (±2, ±2): 1 SE, 2 SW, 3 NW, 4 NE | the 45° stands, their galleries, the gate passage from the sand out through the facade and the gatehouse tower (lookout 32 m), stair wells to the hypogeum, podium stairs either side of the gate; the portcullis is the map's Gate N door |
 | Emperor's box | north stand, centre line (0, 4) | the podium bay exploded, its seating swapped for the Emperor's Box tile |
-| Corner towers (4) | x = ±4, y = ±8..±10 | Stair Tower (8 levels): stairs to every level of the stands, a lookout 32 m up |
-| Corner courts (4) | x, y = ±4..±10 (less the towers) | open ground between the stands; a stair down to the hypogeum in each |
+| Outer courts (4; octagon) | the triangles outside the diagonal facades | open ground round each gatehouse tower |
 | Hypogeum (level −1) | ring under the podiums (cells ±4), the centre crossing, the four halls, connectors at cells ±3 | Hypogeum Tunnel / Junction / Crossing; Cage Blocks north (0, 6..7), south (0, −6..−7), east (5..6, 0): the beasts; west (−6..−7, 0): the gladiators' cells |
-| Ways out of the hypogeum | north (0, 11), south (0, −11) into the main square's approach, east (11, 0), west (−11, 0); the four courts (±4, ±5) | Open Stairs in cuts |
+| Ways out of the hypogeum | north (0, 11), south (0, −11) into the main square's approach, east (11, 0), west (−11, 0); (octagon) the two stair wells off each gate passage, into the ring's corners (±4, ±4), now Vaulted Tunnel Crossings | Open Stairs in cuts; the corners' wells |
 | Village | 16 insulae in rows round the ring street (cells 13-14 out), the main square south (x −4..4, y −13..−18) | Insula, Insula (Tall), Insula (Corner); Triumphal Arch (0, −13), Forum (−1, −16), Temple (0, −18), Colonnades along both sides |
 
 ## Spawns
-- Embers (north): gate 3/4 passages (±24, 0, 44..68), the north courts (±56, 0, 64), (±68, 0, 48): 11, facing south.
-- Tide (south): mirrored, 12, facing north.
+- (Octagon, 2026-11-15) Embers (north): four on each of the gate 3/4 passages, (±37.48, 0, 37.48), (±43.84, 0, 43.84),
+  (±49.5, 0, 49.5), (±53.2, 0, 53.2), facing the sand; two in each north outer court, (±52.5, 0, 78) and (±78, 0, 52.5).
+  12. Tide (south): mirrored, 12.
 - Shared: the main square (0, 0, −110), the east and west streets (±100, 0, ±24), the north street (0, 0, 104), the ring
   tunnel (±32, −4, ±8).
 
@@ -92,3 +93,12 @@
   held 70 s, stuck 98); Deathmatch seed 1 275 kills, spawn deaths 11%. Stuck spots left: the court stairs down into the
   hypogeum ((±36, −2, ±36), (−28, −2, −40)). Bench (24 bots, TDM, 60 s): CPU 3.85 ms a tick (p95 9.45) of 16.7.
   Card shot redone (capture-map-shots: the aerial from the west).
+
+## Octagon (2026-11-15, phase 4; OCTAGON_PLAN.md "Phase 4: as built")
+- In MapMaker: the stands' end lines, the corner courts' Stair Towers, platforms and court stairs and the sand's corner
+  cells deleted; an Arena Corner (Gate) placed at each diagonal (its own portcullis unticked); Gates 1-4, their winches
+  and chains moved to the diagonals (rules unchanged); the ring's corners made Crossings; the fill blocks shortened to
+  24 m; spawns and six pickups moved; description and card camera set.
+- **QA:** validate-map 0 issues; nav audit 0 traps, 0 errors (islands: as before, plus the middle gallery ring, which
+  has no way in); stylePacksAncient and zfight pass. Collision boxes 22,240 → 17,900; lights 253 → 245. Bots and bench:
+  see the plan's "Phase 4: as built".

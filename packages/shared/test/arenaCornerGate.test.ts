@@ -7,6 +7,7 @@
 // every landing and the lookout, and up the podium stairs either side of the gate; the 45° portcullis blocks its own
 // slab when shut and lets bots through when open; a bot presses the chain button to raise it; nothing is drawn twice.
 // A mirrored gate corner is a turned one, its five tiles overlap nowhere, and it keeps to its box and light budgets.
+import { createHash } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   CORE_BOT_PROFILES,
@@ -49,6 +50,8 @@ const library = builtInSetPieces();
 /** The gate corner's tiles, in the set piece's order (parts 0-4), and the part index of its portcullis. */
 const TILES = ['core.arena_corner_ground_gate', 'core.arena_corner_mid', 'core.arena_corner_upper', 'core.arena_corner_attic_gate', 'core.arena_corner_tower'] as const;
 const EIGHTH = Math.PI / 4;
+/** The gatehouse tower's collision as phase 3 built it (a hash of its boxes, rounded to the micrometre). */
+const TOWER_COLLISION = '0e7adc12155c98ea';
 
 // ------------------------------------------------------------------ the pieces
 
@@ -99,6 +102,22 @@ describe('the gate corner pieces', () => {
     console.log(`arena corner gate: collision ${counts.join(' + ')} = ${total}; trim ${trim.join(' + ')} = ${trim.reduce((a, b) => a + b, 0)}; lights ${lights}`);
     expect(total).toBeLessThan(2000);
     expect(lights).toBeLessThanOrEqual(18);
+  });
+  it("the tower's arrow slits and string course (owner, phase 3's 3a) are drawn only: its collision is phase 3's", () => {
+    const map = played(gateMap(0));
+    const geo = cornerBoxes(buildMapGeometry(map)).filter((b) => b.sourceId === 'sp_corner_4');
+    const decor = cornerBoxes(buildMapDecor(map)).filter((b) => b.sourceId === 'sp_corner_4');
+    // (Phase 3's tower: 291 boxes, hashed to the micrometre.)
+    const r = (v: number) => Math.round(v * 1e6) / 1e6 + 0;
+    const key = geo.map((b) => [b.min.map(r), b.max.map(r), b.kind, r(b.yaw ?? 0)]);
+    expect(geo.length).toBe(291);
+    expect(createHash('sha256').update(JSON.stringify(key)).digest('hex').slice(0, 16)).toBe(TOWER_COLLISION);
+    // Sixteen dark slits (two on the outer face and one on each side, at four heights) and the course's four bands.
+    const slits = decor.filter((b) => b.surface?.material === 'core.pbr_castle_stone');
+    expect(slits.length).toBe(16);
+    for (const s of slits) expect(s.max[1] - s.min[1]).toBeCloseTo(1.6, 6);
+    const course = decor.filter((b) => !b.surface && Math.abs(b.min[1] - 31.7) < 1e-6 && Math.abs(b.max[1] - 32) < 1e-6);
+    expect(course.length).toBe(4);
   });
 });
 

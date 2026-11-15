@@ -5,10 +5,11 @@
  * between evaluations, back to round 2's by distance, and `animlinger`, loops kept a moment at weight 0 instead of stopped;
  * St. John's step 2 adds `indoorshadow`, props under a roof kept out of the sun's shadow pass: shared map/indoors.ts;
  * `bodyspread`: a going character put away over the next frames, View.retireAvatar; `glcache`: redundant uniform and
- * draw-buffer calls sent anyway, src/glStateCache.ts).
+ * draw-buffer calls sent anyway, src/glStateCache.ts; the destructible environment's next step adds `breakbatch`,
+ * breakable props in the prop batches while intact, propBatches.ts).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch';
 
 let off: Set<string> | null = null;
 

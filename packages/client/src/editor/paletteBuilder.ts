@@ -31,6 +31,7 @@ import {
   type MapDocument,
   type MountModel,
   type PaintScope,
+  type PieceScope,
   type PropDefinition,
   type ScenarioPaletteKey,
   type SetPieceDefinition,
@@ -504,7 +505,8 @@ export class PaletteBuilder {
         category = def.category;
         const h = document.createElement('div');
         h.className = 'mat-cat';
-        h.textContent = category;
+        // Ground materials go on floors and roofs only (the owner's answer 2a); the ground itself is Ground paint.
+        h.textContent = category === 'Ground' ? 'Ground (floors and roofs only)' : category;
         mats.append(h);
       }
       const b = document.createElement('button');
@@ -546,6 +548,10 @@ export class PaletteBuilder {
       this.syncPaintUi();
     });
     $<HTMLSelectElement>('ed-scope').addEventListener('change', (e) => (this.app.paint.paintScope = (e.target as HTMLSelectElement).value as PaintScope));
+    $<HTMLSelectElement>('ed-piece-scope').addEventListener('change', (e) => {
+      this.app.paint.pieceScope = (e.target as HTMLSelectElement).value as PieceScope;
+      this.app.hover.updateHover();
+    });
     this.syncPaintUi();
   }
 

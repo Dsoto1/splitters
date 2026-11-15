@@ -69,6 +69,7 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
 #ed-brush { width: 40px; height: 40px; border-radius: 6px; border: 1px solid rgba(142, 162, 192, 0.28); }
 #ed-brush-label { font-size: 12px; }
 label.stack { display: flex; flex-direction: column; gap: 4px; color: var(--muted); margin: 6px 0; }
+#ed-paint-note { color: var(--muted); font-size: 12px; margin: 0 0 8px; line-height: 1.35; }
 label.inline-row { flex-direction: row; align-items: center; justify-content: space-between; }
 .sub-h { margin: 10px 0 4px; font-size: 11px; color: var(--muted); }
 #ed-tints { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; }
