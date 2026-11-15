@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_lvvmq6wkdjhej3kp",
-      "revision": 28,
-      "contentHash": "sha256:6bda01d1c00f906f2ca950927778490f039d14410018fbae20ac84d6d6581aa8",
+      "versionId": "v_clkeewk6xyp7yfwi",
+      "revision": 29,
+      "contentHash": "sha256:9c249170b25fe1f8a7845523d5982a44a1e3581794b5b7731cbe6041c0b6e5d4",
       "schemaVersion": 39,
-      "releasedAt": "2026-11-15T13:42:21.877Z"
+      "releasedAt": "2026-11-15T13:47:55.604Z"
     }
   },
   "classicStructure": {
@@ -22640,6 +22640,42 @@
       "x": -10,
       "y": 1,
       "z": 6,
+      "rotation": 3,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_hymephh0he",
+      "piece": "setpiece.arena_corner_gate",
+      "x": 2,
+      "y": 2,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_f6epumzmbr",
+      "piece": "setpiece.arena_corner_gate",
+      "x": 2,
+      "y": -2,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_r9a4recog9",
+      "piece": "setpiece.arena_corner_gate",
+      "x": -2,
+      "y": -2,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_qts0c1br1c",
+      "piece": "setpiece.arena_corner_gate",
+      "x": -2,
+      "y": 2,
+      "z": 0,
       "rotation": 3,
       "mirror": false
     }
