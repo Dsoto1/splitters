@@ -1851,7 +1851,20 @@ export class GameSession {
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
+    this.dropTestHooks();
     this.opts.onExit(reason, this.travel ?? undefined, how ?? (this.rejected ? 'rejected' : undefined), end);
+  }
+
+  /**
+   * The page's automation hooks (`window.__cs`, `__tips`, `__tutorial`) hold this session: its view, scene, HUD and
+   * everything they reach. Left in place after the match they kept the whole match alive under MapMaker (Iron Maw
+   * with 15 bots: about 220 MB of script memory and a disposed scene per Test; the memory probe, fix 3c).
+   */
+  private dropTestHooks(): void {
+    const w = window as unknown as Record<string, { view?: unknown } | undefined>;
+    if (w.__cs?.view === this.view) delete w.__cs;
+    if (this.tips) delete w.__tips;
+    if (this.tutorial) delete w.__tutorial;
   }
 
   /** The map as the welcome brought it (before this page added anything to it), for hosting the match again. */

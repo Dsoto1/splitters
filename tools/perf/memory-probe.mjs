@@ -46,6 +46,34 @@ async function waitForHttp(url) {
   throw new Error(`${url} did not come up`);
 }
 
+/**
+ * Every object of a kind still in the heap after collection, the disposed ones counted apart: a disposed scene, node or
+ * geometry that is still reachable is a leak (something holds it), whatever the scenes' own lists say.
+ */
+async function heapObjects(cdp) {
+  const proto = async (expr) => (await cdp.send('Runtime.evaluate', { expression: expr })).result.objectId;
+  const kinds = {
+    scenes: [`Object.getPrototypeOf(window.__editor.view.scene)`, `function () { return [this.length, this.filter((s) => s.isDisposed).length]; }`],
+    nodes: [`(() => { let p = Object.getPrototypeOf(window.__editor.view.scene.meshes[0]); while (Object.getPrototypeOf(p) !== Object.prototype) p = Object.getPrototypeOf(p); return p; })()`, `function () { let d = 0; for (const n of this) { try { if (n.isDisposed()) d++; } catch {} } return [this.length, d]; }`],
+    geometries: [`Object.getPrototypeOf(window.__editor.view.scene.geometries[0])`, `function () { return [this.length, this.filter((g) => !g.getScene || !g.getScene() || g.getScene().isDisposed).length]; }`],
+    gpuTextures: [`Object.getPrototypeOf(window.__editor.view.scene.getEngine().getLoadedTexturesCache()[0])`, `function () { const live = new Set(window.__editor.view.scene.getEngine().getLoadedTexturesCache()); return [this.length, this.filter((t) => !live.has(t)).length]; }`],
+    materials: [`(() => { let p = Object.getPrototypeOf(window.__editor.view.scene.materials[0]); while (Object.getPrototypeOf(p) !== Object.prototype) p = Object.getPrototypeOf(p); return p; })()`, `function () { return [this.length, this.filter((m) => !m.getScene() || m.getScene().isDisposed).length]; }`],
+  };
+  const out = {};
+  for (const [k, [expr, count]] of Object.entries(kinds)) {
+    try {
+      const id = await proto(expr);
+      const { objects } = await cdp.send('Runtime.queryObjects', { prototypeObjectId: id });
+      const r = await cdp.send('Runtime.callFunctionOn', { objectId: objects.objectId, functionDeclaration: count, returnByValue: true });
+      out[k] = r.result.value;
+      await cdp.send('Runtime.releaseObject', { objectId: objects.objectId });
+    } catch (e) {
+      out[k] = String(e.message ?? e).slice(0, 60);
+    }
+  }
+  return out;
+}
+
 const readings = [];
 let base = null;
 
@@ -64,13 +92,14 @@ async function read(page, cdp, label) {
     frames: metrics.Frames,
     ...Object.fromEntries(['scenes', 'meshes', 'materials', 'geometries', 'textures', 'gpuTextures', 'gpuTextureMB', 'renderTargets', 'skeletons', 'animationGroups', 'transformNodes', 'domNodes', 'workers'].map((k) => [k, m[k]])),
   };
+  r.heap = await heapObjects(cdp);
   readings.push(r);
   base ??= r;
   const d = (k) => {
     const x = r[k] - base[k];
     return `${r[k]}${x ? ` (${x > 0 ? '+' : ''}${Math.round(x * 10) / 10})` : ''}`;
   };
-  console.log(`${label.padEnd(26)} heap ${d('heapMB')} MB · listeners ${d('listeners')} · DOM ${d('nodes')} · docs ${d('documents')} · scenes ${d('scenes')} · meshes ${d('meshes')} · materials ${d('materials')} · geometries ${d('geometries')} · textures ${d('textures')} · GPU textures ${d('gpuTextures')} (${d('gpuTextureMB')} MB, ${d('renderTargets')} targets) · skeletons ${d('skeletons')} · anim groups ${d('animationGroups')} · nodes ${d('transformNodes')} · workers ${d('workers')}`);
+  console.log(`${label.padEnd(26)} heap ${d('heapMB')} MB · listeners ${d('listeners')} · DOM ${d('nodes')} · docs ${d('documents')} · scenes ${d('scenes')} · meshes ${d('meshes')} · materials ${d('materials')} · geometries ${d('geometries')} · textures ${d('textures')} · GPU textures ${d('gpuTextures')} (${d('gpuTextureMB')} MB, ${d('renderTargets')} targets) · skeletons ${d('skeletons')} · anim groups ${d('animationGroups')} · nodes ${d('transformNodes')} · workers ${d('workers')}\n${''.padEnd(27)}in the heap (all / disposed or off-scene): ${Object.entries(r.heap).map(([k, v]) => `${k} ${Array.isArray(v) ? v.join(' / ') : v}`).join(' · ')}`);
   return r;
 }
 
@@ -85,7 +114,7 @@ async function heapSnapshot(cdp, name) {
 }
 
 /** A match running (Test or plain): you are in, past the countdown. */
-const inMatch = (page) => page.waitForFunction(() => window.__cs?.local && !document.getElementById('editor')?.offsetParent, null, { timeout: 240000 });
+const inMatch = (page) => page.waitForFunction(() => !!window.__cs?.local && !document.getElementById('editor')?.offsetParent, null, { timeout: 240000 });
 
 async function leave(page) {
   await page.evaluate(() => document.getElementById('exitmatch').click());
@@ -104,7 +133,7 @@ async function main() {
 
   // MapMaker on the map's remix.
   await page.goto(`${CLIENT}/?mode=editor&test=1`);
-  await page.waitForFunction(() => window.__editor && window.__memory, null, { timeout: 120000 });
+  await page.waitForFunction(() => !!(window.__editor && window.__memory), null, { timeout: 120000 });
   await read(page, cdp, 'MapMaker, blank');
   await page.click('#ed-open');
   const rowSel = `#ed-library li:has-text(${JSON.stringify(MAP)})`;
@@ -147,17 +176,18 @@ async function main() {
   if (MATCHES) {
     // Plain matches: to the menu, then Play → Start, back to back.
     await page.evaluate(() => window.__editor.host.goHome());
-    await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: 60000 });
+    await page.waitForFunction(() => !!window.__front && !document.getElementById('menu').hidden, null, { timeout: 60000 });
     await page.evaluate((m) => localStorage.setItem('cs.arcade', JSON.stringify({ map: m.map, mode: 'core.tdm', bots: m.bots, skill: 'normal', scoreLimit: 999, minutes: 20 })), { map: ARCADE_MAP, bots: BOTS });
     await read(page, cdp, 'menu');
     for (let i = 1; i <= MATCHES; i++) {
-      await page.click('#nav-play');
-      await page.waitForSelector('#arcade-start', { timeout: 30000 });
-      await page.click('#arcade-start');
+      await page.evaluate(() => document.getElementById('nav-play').click());
+      // (Every wait returns a boolean: a handle to a page object would keep it, and what it holds, alive.)
+      await page.waitForFunction(() => !!document.getElementById('arcade-start'), null, { timeout: 30000 });
+      await page.evaluate(() => document.getElementById('arcade-start').click());
       await inMatch(page);
       await sleep(PLAY_S * 1000);
       await leave(page);
-      await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: 60000 });
+      await page.waitForFunction(() => !!window.__front && !document.getElementById('menu').hidden, null, { timeout: 60000 });
       await sleep(3000);
       await read(page, cdp, `match ${i}, back at the menu`);
       if (i === 1) await heapSnapshot(cdp, 'after-match-1');
