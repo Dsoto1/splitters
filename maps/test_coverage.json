@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_c5hr5tyeq4wpcsk3",
-      "revision": 32,
-      "contentHash": "sha256:f8db04fb6c5cdfb7abdf52d6df8f46f912d671b3c8d55cafe6b490ceac33b8e4",
+      "versionId": "v_oleeavvw6vsdgztx",
+      "revision": 34,
+      "contentHash": "sha256:a1f502a3cbabe92a1b7b2a772627653c8c12ef29ae616e3cbff48b443493879e",
       "schemaVersion": 38,
-      "releasedAt": "2026-11-14T02:17:40.574Z"
+      "releasedAt": "2026-11-15T02:21:40.504Z"
     },
     "testOnly": true
   },
@@ -5256,12 +5256,12 @@
     },
     {
       "id": "prop_3jkgg80j04",
-      "kind": "prop",
       "position": [
         150,
         0,
         112
       ],
+      "kind": "prop",
       "model": "kit.street.bus_stop",
       "yaw": 0,
       "scale": 1,
@@ -6586,6 +6586,65 @@
       "rotation": 0,
       "mirror": false,
       "pack": "urban"
+    },
+    {
+      "id": "setpiece_hymephh0he",
+      "piece": "setpiece.arena_corner",
+      "x": -4,
+      "y": 21,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_eh8bgt6vj2",
+      "piece": "setpiece.corner_tower_square",
+      "x": -20,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_5ufvvtunz5",
+      "piece": "setpiece.dorm_corner_bay",
+      "x": -18,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_atvxwcf8vl",
+      "piece": "setpiece.dorm_entry_bay",
+      "x": -15,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_poqeu5nf5f",
+      "piece": "setpiece.stair_end_bay_arched",
+      "x": -13,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_x1on898jvx",
+      "piece": "setpiece.stair_end_bay_bridge",
+      "x": -11,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
     }
   ]
 }

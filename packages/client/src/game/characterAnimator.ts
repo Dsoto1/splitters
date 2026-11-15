@@ -11,7 +11,7 @@ import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { GripTune, ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
 import { gripReport, skinHandFrame, type PalmCues } from './handProbe.ts';
-import { EVERY_FRAME, StepClock, blendAt, type AnimStep } from './animLod.ts';
+import { EVERY_FRAME, StepClock, blendAt, torsoMeasures, type AnimStep } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
 import { GAIT, GAIT_CLIPS, clipCycleRate, clipGaitWeights, clipUpperWeights, gaitCycleRate, gaitWeights, matchClipPhase, matchPhase, strideWarp, type ClipLoop, type GaitClip } from './gait.ts';
@@ -452,6 +452,14 @@ export class CharacterAnimator {
   }
 
   private readonly gate: AnimGate = { skip: false };
+  private posedOnce = false;
+  /** Evaluated awake at least once, or due to be this frame: its bones hold a real pose, not the bind pose. */
+  get posed(): boolean {
+    return this.posedOnce;
+  }
+  private set posed(on: boolean) {
+    this.posedOnce = on;
+  }
   /** Animation LOD: when the clips are next evaluated (animLod.ts). */
   private readonly clock = new StepClock();
   /** Animation LOD's after-clip detail for the evaluations from now on (animLod.ts AnimStep.detail). */
@@ -471,11 +479,15 @@ export class CharacterAnimator {
     b.now = now;
     if (this.dead) {
       this.gate.skip = false;
+      this.posed = true;
       b.on = false;
       this.clock.due(now, frame, EVERY_FRAME);
       return true;
     }
-    const run = this.clock.due(now, frame, step, phase);
+    // Fresh in a stepped band (come into view, or from near), it waits for its own frame of the band (a crowd coming
+    // into view together is spread over frames); GameView keeps one never posed hidden until then (`posed`).
+    const run = this.clock.due(now, frame, step, phase, true);
+    if (run && !this.dormant) this.posed = true;
     this.gate.skip = !run;
     b.on = step.smooth && !this.fp && !this.external;
     if (run) b.evals++;
@@ -741,6 +753,16 @@ export class CharacterAnimator {
       if (!g) continue;
       if (w <= 0.001 && c !== this.current) {
         if (g.isPlaying) this.fadeOut(g);
+        else if (this.slept.delete(g)) {
+          // Faded out while asleep (paused, so fadeOut, which takes playing loops, passed it by): out of the blend
+          // now, not played again on waking at the weight it was last given. A long step (an out-of-view avatar is
+          // evaluated every 8th frame) takes a loop from 1 to 0 at once, so that was its full weight: a character that
+          // stood up out of view woke crouched (Hyena Warrior, characters3).
+          g.weight = 0;
+          for (const a of g.animatables) this.parked.delete(a);
+          g.stop();
+          this.faded.delete(g);
+        }
         continue;
       }
       g.weight = w;
@@ -1653,7 +1675,9 @@ export class CharacterAnimator {
       const pocket = shoulder.add(inward.normalize().scale(POCKET_IN * scale)).add(new Vector3(0, -0.03, 0.05).scale(scale).applyRotationQuaternion(aim));
       // Out along the barrel onto the body's own surface: armour or a big chest stands well in front of the joint.
       // Measured once the body is fully in its aim (the chest turned across the gun), so the surface ahead of the shoulder is the one the barrel crosses.
-      if (this.torso === undefined && this.ik >= 0.999 && Math.abs(this.blade - LONG_GUN_BLADE) < 0.01) this.torso = TorsoSurface.measure(this.ch);
+      // One character's measurement a frame (animLod.ts torsoMeasures): a crowd settles into its aim together at a match's
+      // start, and each measurement skins the torso on the CPU; the others wait a frame or two with the stock unfitted.
+      if (this.torso === undefined && this.ik >= 0.999 && Math.abs(this.blade - LONG_GUN_BLADE) < 0.01 && torsoMeasures.take(this.scene.getFrameId())) this.torso = TorsoSurface.measure(this.ch);
       const barrel = new Vector3(0, 0, 1).applyRotationQuaternion(aim);
       const on = (p: ModelPoint) => point(pocket, aim, [p[0] - grip.shoulder![0], p[1] - grip.shoulder![1], p[2] - grip.shoulder![2]]);
       // Short arms (an otter's) hold the handguard nearer the grip rather than pull the gun back into the body.

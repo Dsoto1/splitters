@@ -111,6 +111,32 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
     ],
     shut: { from: [8, 0, 5.2], to: [[16, 0, 0]] },
     climbs: [{ from: [4.6, 0.3, 0], yaw: Math.PI / 2, ticks: 260, up: 3.5 }],
+  },  // St. John's step 2 (Smythe Hall): the L's turn, a side entry, two end bays' doors, the corner tower.
+  'setpiece.dorm_corner_bay': {
+    // In at the west mouth, round the turn, out of the south mouth; into the north rooms, the east room, the lounge and the washroom.
+    chains: [
+      [[-7, 0, 4], [0, 0, 4], [4, 0, 4], [4, 0, -2], [4, 0, -7]],
+      ...[-2, 2].map((cx): P3[] => [[0, 0, 4], roomFloor(cx, true), byWindow(cx, true), [0, 0, 4]]),
+      [[4, 0, 0], [8.3, 0, -2], [10.6, 0, -1.75], [4, 0, 0]],
+      [[4, 0, 0], [6.6, 0, 2], [8.7, 0, 8.5], [10.8, 0, 2.5], [4, 0, 4]],
+      [[0, 0, 4], [-2, 0, 1.2], [-0.5, 0, -1.2], [0.6, 0, -1.4], [0, 0, 4]],
+    ],
+  },
+  'setpiece.dorm_entry_bay': {
+    // Along the hall; in from outside under the arch, through the entrance hall to the hall; into the two north rooms.
+    chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], [[0, 0, -7], [0, 0, -1], [0, 0, 4]], [[-2.5, 0, -2.6], [2.5, 0, 1.2]], ...[-2, 2].map((cx): P3[] => [[0, 0, 4], roomFloor(cx, true), byWindow(cx, true), [0, 0, 4]])],
+  },
+  'setpiece.stair_end_bay_arched': {
+    chains: [[[-7, 0, 8], [0, 0, 7], [3, 0, 4]], [[0, 0, 7], [-2.5, 4, 3], [0, 4, 8], [3, 4, 4]]],
+    climbs: [{ from: [-1.75, 0.02, 2.6], yaw: Math.PI, ticks: 150, up: 2 }],
+  },
+  'setpiece.stair_end_bay_bridge': {
+    chains: [[[-7, 0, 8], [0, 0, 7], [3, 0, 4]], [[0, 0, 7], [-2.5, 4, 3], [0, 4, 8], [-3.2, 4, 8], [3, 4, 4]]],
+    climbs: [{ from: [-1.75, 0.02, 2.6], yaw: Math.PI, ticks: 150, up: 2 }],
+  },
+  'setpiece.corner_tower_square': {
+    // In at the door, up the ladder to the lookout and down again.
+    chains: [[[1.2, 0, -7], [1.2, 0, -2.6], [1.2, 11.8, -0.6], [1.2, 0, -7]]],
   },
 };
 
@@ -189,6 +215,45 @@ describe('bays end to end make one hall', () => {
       expect(walk(physics, v([-1.75, 0.02, 2.6]), Math.PI, 150).pos.y).toBeGreaterThan(1.7);
     });
   }
+});
+
+/**
+ * Smythe Hall's shape (St. John's step 2): a two-floor L. The short arm runs west to east along z = 4 (cells y 0, 1) from
+ * an arched end bay at x 0 to the Dorm Corner Bay at x 1-2, the long arm south from it along x = 12 (cells x 1, 2): two
+ * Dorm Bays turned a quarter, the Dorm Entry Bay in the ground floor's middle, and the Stair End Bay (upper door) at the
+ * south end, its upper door meeting a Skybridge. The Square Corner Tower stands at the short arm's west end.
+ */
+function smythe(): SetPiecePlacement[] {
+  const at = (id: string, piece: string, x: number, y: number, z: number, rotation: Rotation = 0): SetPiecePlacement => ({ id, piece, x, y, z, rotation, mirror: false, pack: 'collegiate' });
+  const out: SetPiecePlacement[] = [at('end_w', 'setpiece.stair_end_bay_arched', 0, 0, 0), at('end_s', 'setpiece.stair_end_bay_bridge', 2, -4, 0, 3), at('tower', 'setpiece.corner_tower_square', -1, 0, 0), at('bridge', 'setpiece.skybridge_2', 1, -6, 1)];
+  for (const z of [0, 1]) {
+    out.push(at(`corner_${z}`, 'setpiece.dorm_corner_bay', 1, 0, z));
+    for (const y of [-1, -2, -3]) out.push(at(`arm_${y}_${z}`, y === -2 && z === 0 ? 'setpiece.dorm_entry_bay' : 'setpiece.dorm_bay', 1, y, z, 1));
+  }
+  return out;
+}
+
+describe("a two-floor L (Smythe Hall's shape)", () => {
+  it('one hall round the corner on both floors; both stairs, the side entry, the bridge and the tower', { timeout: 240_000 }, () => {
+    const map = mapOf(smythe());
+    const nav = navOf(map);
+    for (const y of [0, 4]) {
+      // From the west end's hall mouth round the corner to the south end's.
+      expect(miss(nav, v([4, y, 4]), v([12, y, -28])), `the hall at ${y} m, end to end`).toBeLessThan(1.2);
+      // A room off each arm and the lounge.
+      expect(miss(nav, v([4, y, 4]), v([6, y, 8.3])), `a north room at ${y} m`).toBeLessThan(1.2);
+      expect(miss(nav, v([4, y, 4]), v([16.3, y, -14])), `a long arm's east room at ${y} m`).toBeLessThan(1.2);
+      expect(miss(nav, v([4, y, 4]), v([16.7, y, 8.5])), `the lounge at ${y} m`).toBeLessThan(1.2);
+    }
+    // In under the far end's arch and up its stair; in at the side entry; up the south stair to the bridge and across it.
+    expect(miss(nav, v([-7, 0, 8]), v([12, 4, 0]))).toBeLessThan(1.2);
+    expect(miss(nav, v([1, 0, -16]), v([12, 0, -16]))).toBeLessThan(1.2);
+    expect(miss(nav, v([12, 0, -26]), v([8, 4, -40]))).toBeLessThan(1.2);
+    expect(miss(nav, v([12, 4, -24]), v([8, 4, -44]))).toBeLessThan(1.2);
+    // The tower's door, ladder and lookout.
+    expect(miss(nav, v([-6.8, 0, -6]), v([-6.8, 11.8, -0.6]))).toBeLessThan(1.2);
+    nav.destroy();
+  });
 });
 
 describe('the wall styles the bays are built with', () => {

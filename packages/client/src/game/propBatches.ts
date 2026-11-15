@@ -27,8 +27,15 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
  * props that break or ride movers (the caller keeps those out).
  */
 
-/** Batches are per model, material and square of this many metres (culled per square). */
+/** Batches are per model, material and square of this many metres (culled per square) at full detail. */
 export const PROP_SECTOR = 128;
+/**
+ * Lighter levels of detail are batched by wider squares: twice as wide a level, at most four times (128, 256, 512 m).
+ * Far copies are small and few to a square: St. John's beds, dressers and chairs at range were a draw for every few.
+ */
+export function propSectorSize(level: number): number {
+  return PROP_SECTOR * Math.min(4, 2 ** Math.max(0, level));
+}
 /**
  * A model is batched only when the map has at least this many copies of it. Fewer copies draw as GPU instances: one
  * draw per material for all of them, where batches split them by square and level of detail (Market Town's 54 props,
@@ -64,23 +71,30 @@ interface Copy {
   r: number;
   level: number;
   small: boolean;
+  /** Under a roof or the floor above (shared `indoorProps`): out of the sun's shadow pass. */
+  indoor: boolean;
+  /** Whether it casts no shadow at range: every copy of the model in its PROP_SECTOR square is small clutter, or it is indoors. */
+  quiet: boolean;
 }
 
 interface Batch {
+  level: number;
+  /** The copies that may draw in it (those at its level do). */
+  copies: Copy[];
   meshes: Mesh[];
   matrices: Float32Array;
   colors: Float32Array | null;
   dirty: boolean;
 }
 
+/** The copies of one model, and their batches by level, square (that level's size) and whether they cast. */
 interface Group {
   model: Model;
-  sector: string;
   copies: Copy[];
   tinted: boolean;
   /** Copies joined since the batches were made: they are made again (sizes change). */
   stale: boolean;
-  batches: Map<number, Batch>;
+  batches: Map<string, Batch>;
 }
 
 /** Shadow-only batch of a model's small copies near the camera. */
@@ -125,8 +139,8 @@ export class PropBatches {
    * Draw the prop under `root` (placed and turned: its world matrix is the copy's) as a copy of model `path` in its
    * square's batch. Resolves false when the model can't be batched: the caller draws it as before.
    */
-  add(path: string, root: TransformNode, small: boolean, tint: string | null): Promise<boolean> {
-    const p = this.join(path, root, small, tint);
+  add(path: string, root: TransformNode, small: boolean, tint: string | null, indoor = false): Promise<boolean> {
+    const p = this.join(path, root, small, tint, indoor);
     this.pending.push(p);
     return p;
   }
@@ -138,7 +152,7 @@ export class PropBatches {
     await Promise.allSettled(this.pending);
   }
 
-  private async join(path: string, root: TransformNode, small: boolean, tint: string | null): Promise<boolean> {
+  private async join(path: string, root: TransformNode, small: boolean, tint: string | null, indoor: boolean): Promise<boolean> {
     const model = await this.model(path);
     if (!model || this.disposed || root.isDisposed()) return false;
     root.computeWorldMatrix(true);
@@ -149,15 +163,14 @@ export class PropBatches {
     const c = Vector3.TransformCoordinates(model.center, w);
     const s = Math.max(w.getRow(0)!.length(), w.getRow(1)!.length(), w.getRow(2)!.length());
     const color: [number, number, number, number] = tint ? [...Color3.FromHexString(tint).asArray(), 1] as [number, number, number, number] : [1, 1, 1, 1];
-    const sector = `${Math.floor(c.x / PROP_SECTOR)}:${Math.floor(c.z / PROP_SECTOR)}`;
-    const key = `${path}|${sector}`;
-    let g = this.groups.get(key);
-    if (!g) this.groups.set(key, (g = { model, sector, copies: [], tinted: false, stale: false, batches: new Map() }));
-    const copy: Copy = { root, matrix, color, x: c.x, y: c.y, z: c.z, r: model.radius * s, level: -1, small };
+    let g = this.groups.get(path);
+    if (!g) this.groups.set(path, (g = { model, copies: [], tinted: false, stale: false, batches: new Map() }));
+    const copy: Copy = { root, matrix, color, x: c.x, y: c.y, z: c.z, r: model.radius * s, level: -1, small, indoor, quiet: small || indoor };
     g.copies.push(copy);
     if (tint) g.tinted = true;
     g.stale = true;
-    if (small) this.nearOf(model).copies.push(copy);
+    // Indoors (under a roof: shared map/indoors.ts) it casts nothing, near the camera or not: the sun never reaches it.
+    if (small && !indoor) this.nearOf(model).copies.push(copy);
     this.lastX = Infinity;
     return true;
   }
@@ -190,10 +203,17 @@ export class PropBatches {
         g.stale = false;
         for (const b of g.batches.values()) this.disposeBatch(b);
         g.batches.clear();
-        for (const k of g.copies) k.level = -1;
-        // Every level's batch made now, not when a copy first needs it: no meshes come and go as you walk about
+        // A copy is quiet (no shadow from its batches) when its model's copies in its PROP_SECTOR square are all small.
+        const loud = new Set<string>();
+        // An indoor copy is always quiet (in a quiet batch of its own square), and never makes its square loud.
+        for (const k of g.copies) if (!k.small && !k.indoor) loud.add(sectorKey(k, PROP_SECTOR));
+        for (const k of g.copies) {
+          k.level = -1;
+          k.quiet = k.indoor || !loud.has(sectorKey(k, PROP_SECTOR));
+        }
+        // Every level's batches made now, not when a copy first needs one: no meshes come and go as you walk about
         // (a new mesh thaws its frozen material), and the loading gate builds every level's shaders.
-        for (let l = 0; l < g.model.levels.length; l++) this.batch(g, l);
+        for (let l = 0; l < g.model.levels.length; l++) for (const k of g.copies) this.batch(g, l, k);
       }
       const levels = g.model.levels;
       for (const c of g.copies) {
@@ -205,25 +225,30 @@ export class PropBatches {
           if (Math.abs(d - edge) < edge * HYSTERESIS) level = c.level;
         }
         if (level === c.level) continue;
-        if (c.level >= 0) this.batch(g, c.level).dirty = true;
-        this.batch(g, level).dirty = true;
+        if (c.level >= 0) this.batch(g, c.level, c).dirty = true;
+        this.batch(g, level, c).dirty = true;
         c.level = level;
       }
-      for (const [level, b] of g.batches) if (b.dirty) this.fill(g, level, b);
+      for (const b of g.batches.values()) if (b.dirty) this.fill(b);
     }
     for (const n of this.near.values()) this.fillNear(n, camera);
   }
 
-  private batch(g: Group, level: number): Batch {
-    let b = g.batches.get(level);
+  /** The batch drawing copy `c` of group `g` at `level` (its square at that level's size, cast or quiet). */
+  private batch(g: Group, level: number, c: Copy): Batch {
+    const size = propSectorSize(level);
+    const sector = sectorKey(c, size);
+    const key = `${level}|${sector}|${c.quiet ? 1 : 0}`;
+    let b = g.batches.get(key);
     if (b) return b;
-    const n = g.copies.length;
+    const copies = g.copies.filter((o) => o.quiet === c.quiet && sectorKey(o, size) === sector);
+    const n = copies.length;
     const matrices = new Float32Array(n * 16);
     const colors = g.tinted ? new Float32Array(n * 4) : null;
     const lod = g.model.levels.length > 1;
-    const allSmall = g.copies.every((c) => c.small);
+    const allSmall = c.quiet;
     const meshes = g.model.levels[level]!.parts.map((part, pi) => {
-      const mesh = this.partMesh(`static_batch_${this.seq++}_${g.model.path}_l${level}_p${pi}_${g.sector}`, part);
+      const mesh = this.partMesh(`static_batch_${this.seq++}_${g.model.path}_l${level}_p${pi}_${sector}`, part);
       mesh.thinInstanceSetBuffer('matrix', matrices, 16, false);
       if (colors) mesh.thinInstanceSetBuffer('color', colors, 4, false);
       // Never changing (no levels of detail): merged into the shadow proxies like the instances were (shadowProxy.ts).
@@ -231,8 +256,8 @@ export class PropBatches {
       mesh.metadata = allSmall ? { castsNoShadow: true, propBatch: true } : lod ? { propBatch: true } : { staticThin: true, propBatch: true };
       return mesh;
     });
-    b = { meshes, matrices, colors, dirty: true };
-    g.batches.set(level, b);
+    b = { level, copies, meshes, matrices, colors, dirty: true };
+    g.batches.set(key, b);
     return b;
   }
 
@@ -249,11 +274,11 @@ export class PropBatches {
     return mesh;
   }
 
-  private fill(g: Group, level: number, b: Batch): void {
+  private fill(b: Batch): void {
     b.dirty = false;
     let count = 0;
-    for (const c of g.copies) {
-      if (c.level !== level) continue;
+    for (const c of b.copies) {
+      if (c.level !== b.level) continue;
       b.matrices.set(c.matrix, 16 * count);
       b.colors?.set(c.color, 4 * count);
       count++;
@@ -361,4 +386,9 @@ function toModel(path: string, sources: readonly Mesh[]): Model | null {
   }
   const center = min.add(max).scale(0.5);
   return { path, levels, center, radius: max.subtract(min).length() / 2 };
+}
+
+/** A copy's square at a given size, as a key. */
+function sectorKey(c: { x: number; z: number }, size: number): string {
+  return `${Math.floor(c.x / size)}:${Math.floor(c.z / size)}`;
 }

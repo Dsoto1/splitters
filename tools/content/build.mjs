@@ -457,7 +457,7 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
   return lockFile.files.length;
 }
 const textureManifest = JSON.parse(readFileSync(join(ROOT, 'content/textures.json'), 'utf8'));
-const textureCount = checkLocked('content/textures.lock.json', 'textures', () => textureManifest.pack, textureManifest.budgets, ['downscaled to 512 px', 'colour, normal and emission maps only'], 'node tools/content/prepare-textures.mjs');
+const textureCount = checkLocked('content/textures.lock.json', 'textures', () => textureManifest.pack, textureManifest.budgets, (f) => ['downscaled to 512 px', 'colour, normal and emission maps only', ...(f.map === 'color' && textureManifest.adjust?.[f.asset]?.contrast ? [`contrast lowered to ${textureManifest.adjust[f.asset].contrast}`] : [])], 'node tools/content/prepare-textures.mjs');
 // The prop surfaces (tools/content/surfaces.mjs): their mapping files checked, their shared pictures locked.
 try {
   loadSurfaces();

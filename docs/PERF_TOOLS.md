@@ -173,6 +173,20 @@ What still mode does, per map:
 4. Prints one row a view (the middle reading of those frames; the range too when the frames differed) and the
    map's mean: draw calls, meshes drawn / all meshes, triangles drawn, shadow casters, materials.
 
+Two options for finding where a view's draws come from:
+
+- `PERF_BREAKDOWN=1` prints, under each row, the view's draws by pass (`main`, the shadow map (`sun_CSMShadowMap` on
+  High), the sun's shafts `volumetricLightScatteringMap`, the water's reflection `waterMirror`, the scene's
+  `DepthRenderer`) and, in each pass, by the mesh that drew them (names with digits stripped, biggest first;
+  `PERF_BREAKDOWN_TOP`, default 40). A mesh's draws are counted through `Mesh._processRendering`, which every pass uses.
+- `PERF_STILL_EXTRA` adds views of your own for one map (JSON): `[{"name": "eye, sun", "spawn": 2645, "look": [58, 40, -44]}]`
+  stands at entity 2645 (a spawn) at eye height and looks along `look`; `"eye": [x, y, z]` and `"target": [x, y, z]`
+  (or `"toSpawn"`) work too. Their rows count in the map's mean.
+
+```
+PERF_STILL=1 PERF_GRAPHICS=high PERF_BREAKDOWN=1 node tools/perf/client-perf.mjs st_johns
+```
+
 What it does not give: a frame rate (nothing is timed; the software renderer's is meaningless anyway), the cost of
 players, effects and gunfire (use the live mode or `pnpm perf:budget` for those), memory, or load time.
 

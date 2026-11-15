@@ -304,3 +304,6 @@ These are the recommended options from `docs/MAPMAKER_UI_AUDIT.md` §10. They ar
     - This account reviews.
     - Phase 1 starts by giving the 11 flows that reach map settings through Esc an `openMapSettings` helper.
     - Phase 1 also adds `coverage` to the editor's flow mapping.
+
+## Owner's answers on Phase 1 as built (2026-11-14: "Recs")
+1a: between 900 and 1,100 px the right dock starts expanded. 2a: the left rail's 44 px comes from the palette. 3a: the map is renamed in Map settings (the title opens them); no inline rename. 4a: Dress all and Settle all stay in the ⋯ menu only.

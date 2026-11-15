@@ -689,6 +689,14 @@ html.touch .mode-pick { grid-template-columns: repeat(auto-fill, minmax(126px, 1
 html.touch .mode-chip b, html.touch .mode-chip b.long { font-size: 12px; letter-spacing: 0; }
 html.touch :is(.variant-label, .variant-chip, .field-label, .fit-chip, .saved-pop h4, .size-chip b) { font-size: 12px; letter-spacing: 0.02em; }
 html.touch .fact-time { font-size: 12px; }
+/* Match Setup on a phone (docs/MOBILE_AUDIT.md, proposal 11): the header that stays while the setup scrolls names the
+   mode too, and the steppers' − and + are 40 px squares for a finger. */
+.setup-facts > .fact-mode { display: none; }
+@media (max-height: 600px), (max-width: 700px) {
+  html.touch .setup-facts > .fact-mode { display: inline; color: var(--cyan); font-weight: 700; letter-spacing: 0.04em; }
+  html.touch .setup-facts > .fact-mode::before { display: none; }
+}
+html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper button { min-width: 40px; min-height: 40px; padding: 0 8px; }
 .info { display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(142, 162, 192, 0.6); color: var(--muted); font: italic 700 11px/1 Georgia, serif; text-transform: none; letter-spacing: 0; cursor: help; }
 .info:hover, .info:focus-visible { color: var(--deep-space); background: var(--cyan); border-color: var(--cyan); outline: none; }
 .tip-card { position: fixed; left: 0; top: 0; z-index: 1000; max-width: 300px; padding: 10px 12px; white-space: pre-line; pointer-events: none; color: var(--text); font: 500 13px/1.4 var(--font-body); background: rgba(11, 15, 26, 0.96); border: 1px solid var(--cyan); border-left-width: 3px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
@@ -1295,6 +1303,26 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
   .opt-body { padding: 12px 16px 18px; }
   .opt-row { grid-template-columns: 1fr; gap: 8px; }
   .opt-control, .opt-stack { justify-content: flex-start; align-items: flex-start; }
+}
+/* The description's (i): only on a phone, where it stands in for the description (docs/MOBILE_AUDIT.md, proposal 7). */
+.opt-label .opt-info { display: none; }
+/* Options on a phone (sideways or upright): the sections are chips along the top, the panel takes the whole height,
+   and each setting is one line, its name (and an (i) for what it does) beside its control. */
+@media (max-height: 600px), (max-width: 760px) {
+  html.touch #menu .screen.options { padding: 8px 12px 10px; }
+  html.touch .screen.options .screen-head h2 { font-size: 20px; }
+  html.touch .opt-layout { flex: 1 1 auto; margin-top: 8px; width: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  html.touch .opt-nav { flex-direction: row; gap: 6px; min-height: 0; padding: 6px 10px; overflow-x: auto; scrollbar-width: none; border-right: 0; border-bottom: 1px solid var(--line); }
+  html.touch .opt-nav button { flex: none; padding: 0 14px; border-radius: 20px; border-color: var(--line); font-size: 13px; letter-spacing: 0.04em; }
+  html.touch .opt-body { padding: 0 14px 12px; }
+  html.touch .opt-title { display: none; }
+  html.touch .opt-row { grid-template-columns: minmax(0, 1fr) minmax(140px, 46%); gap: 12px; padding: 6px 0; }
+  html.touch .opt-label > span { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  html.touch .opt-label small { display: none; }
+  html.touch .opt-label .opt-info { display: inline-grid; width: 26px; height: 26px; font: italic 700 14px/1 Georgia, serif; text-transform: none; letter-spacing: 0; }
+  html.touch .opt-control, html.touch .opt-stack { justify-content: flex-end; align-items: flex-end; }
+  html.touch .opt-sub { margin: 14px 0 4px; }
+  html.touch .opt-note { font-size: 13px; }
 }
 
 /* Fort Wars panel: phase clock, build points and the Builder's piece picker. */

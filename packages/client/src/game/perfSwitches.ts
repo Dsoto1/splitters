@@ -2,10 +2,11 @@
  * Switches for measuring a performance change against the code without it, on the same build (docs/PERF_96.md,
  * "Performance round 2"): `?perfoff=shadowcache,levelmerge,meshsel,animlod2` turns those savings off for the page
  * (round 3 adds `propbatch` and `fogprepass`; round 4 `animlod4`, the animation bands by size on screen and the smoothing
- * between evaluations, back to round 2's by distance, and `animlinger`, loops kept a moment at weight 0 instead of stopped).
+ * between evaluations, back to round 2's by distance, and `animlinger`, loops kept a moment at weight 0 instead of stopped;
+ * St. John's step 2 adds `indoorshadow`, props under a roof kept out of the sun's shadow pass: shared map/indoors.ts).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow';
 
 let off: Set<string> | null = null;
 

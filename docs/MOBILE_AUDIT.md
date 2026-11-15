@@ -127,6 +127,14 @@ Desktop is unchanged: every rule is under `html.touch`, and the lamps change onl
    stays with Room lights off, it isn't the lamps: send a screenshot and Pause → Settings → Copy performance report.
 5. To see the old behaviour for comparison: `?lampbatch=8` (Babylon's 8 a layer, also on Low).
 
+## Proposals 7, 9 and 11: done (`wip/mobile-bugs-1114`, 2026-11-14)
+
+| # | What changed | Check |
+|---|---|---|
+| 7 | **Options in one column on a phone** (`html.touch`, at most 600 px tall or 760 px wide; style.css, `frontEnd.ts` `row`): the sections are chips along the top, the panel takes the whole height, a setting is one line (name left, control right), and its description sits behind an (i) beside the name (the menus' tooltip card, shown on a tap). Desktop unchanged: the (i) is hidden there. | Phone pictures (Pixel 7 839 × 412, S9+ 658 × 320); e2e `mobile` opens Options and its tabs. |
+| 9 | **Terrazzo:** `core.pbr_terrazzo` scale 2 → 1.25 m (finer specks), and its colour map's contrast lowered to 0.55 (`adjust` in `content/textures.json`, applied by `prepare-textures.mjs`, recorded in provenance as a modification): the luminance spread 56 → 31 of 255. Gravel and carpet not changed. | Flatpack Depot's showroom on the phone, before and after. |
+| 11 | **Match Setup:** the header (it stays while the setup body scrolls) names the mode (`.fact-mode`, phones only); every stepper's − and + are 40 × 40 px on touch (were 30 × 40). "Not on this map" was already gone (only the modes a map plays are shown, owner 2026-11-11). | Phone pictures; steppers measured 40 × 40. |
+
 ## Proposals, ranked (impact / size)
 
 | # | Proposal | Impact | Size |
@@ -137,9 +145,9 @@ Desktop is unchanged: every rule is under `html.touch`, and the lamps change onl
 | 4 | **Character Select as a phone layout.** A full-height grid with the details as a slide-up sheet on tap. Add search and favourites, and arrows instead of Q/E caps on touch. | High | M |
 | 5 | (done) **Ammo by the fire cluster on touch** (above Reload, smaller), clearing the lower centre; the weapon name as an icon. | Med | S |
 | 6 | (done) **Scores on touch:** tap the scorebar to show the scoreboard (hold or toggle). | Med | S |
-| 7 | **Phone Options in one column:** setting name and control on one line, the description behind an (i). Tabs as chips at the top. The panel uses the full height. | Med | S-M |
+| 7 | (done) **Phone Options in one column:** setting name and control on one line, the description behind an (i). Tabs as chips at the top. The panel uses the full height. | Med | S-M |
 | 8 | **Textured sci-fi guns.** A material pass for the Quaternius sci-fi pack (metal and paint maps through the existing held-copy tiers), or swap the bulkiest (Flak, Swarm, Laser Rifle) for textured models. | Med | M (content) |
-| 9 | **Speckled floors:** Terrazzo013 finer (scale 1-1.25 m) and lower contrast, or another terrazzo; check gravel and carpet the same way. | Low-Med | S |
+| 9 | (done) **Speckled floors:** Terrazzo013 finer (scale 1-1.25 m) and lower contrast, or another terrazzo; check gravel and carpet the same way. | Low-Med | S |
 | 10 | (done) **Text floor on touch:** HUD and menu text at least 12 px on phones (button labels, mode label, Match Setup's chips), and the pad's "hold: crouch" readable or dropped after the tutorial. | Med | S |
-| 11 | **Match Setup on phones:** a sticky header (map, mode), "Not on this map" folded away, 40 px steppers. | Med | S-M |
+| 11 | (done) **Match Setup on phones:** a sticky header (map, mode), "Not on this map" folded away, 40 px steppers. | Med | S-M |
 | 12 | (done) **Kill feed lines on short phones:** at most 3, so it never reaches the Weapons button (4-5 lines can). | Low | XS |
