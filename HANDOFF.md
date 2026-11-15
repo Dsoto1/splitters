@@ -29,6 +29,8 @@ The owner added: "I did see a set piece for pens/cells (Roman), and when I chang
 
 - **Claimed (a helper of lane A's lead, 2026-11-15): MapMaker Test start, trace fixes 4 and 5** (QUEUE, Features; `docs/PERF_MAPMAKER_TRACE_2026-11-15.md`), branch `wip/test-start`. Fix 4: hand the navigation check's navmesh to the simulation worker when the map is unchanged (only at the hand-off: the check's result, MapMaker's Test start, `simWorkerCore` start, `NavWorld`/`Match` taking a prebuilt navmesh; lane B's check itself is not restructured). Fix 5: a smoother Test start (reuse the editor's loaded textures/models, spread uploads, characters and static batches over frames, split the first-message warm-up). Files: `packages/client/src/editor/mapChecks.ts` and Test start in the editor, `packages/client/src/game/` sim worker hand-off and match start/warm-up, `packages/shared/src/nav/` (a navmesh export/import), `packages/shared/src/sim/match.ts` (an optional prebuilt navmesh), their tests.
 
+- **Claimed (a helper of lane A's lead, 2026-11-15): Driving physics follow-ups from the owner's drive** (bots not shooting at the driver on Rockfall Canyon, the rigid buggy can't climb stairs, speed should carry it further up steep slopes), branch `wip/drive-physics-2`. Files: `packages/shared/src/sim/wheelPhysics.ts`, `sim/match.ts` (driveRigid), bot targeting if that is where the cause is, `content/vehicles/troop_buggy.json`, their tests.
+
 ## Start here (session of 2026-11-07, handed off to the next account)
 
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
