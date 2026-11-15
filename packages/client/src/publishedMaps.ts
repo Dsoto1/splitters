@@ -1,5 +1,4 @@
 import { choosePublished, type BuiltInRecord, type PublishedRelease } from '@tiletrigger/shared';
-import index from 'virtual:map-index';
 import { hubAddress } from './game/hub.ts';
 import { testMode } from './testMode.ts';
 
@@ -33,9 +32,9 @@ export interface PublishedEntry {
 }
 
 /** The built-in maps' records (only maps with a release block have one). */
-const BUILT_IN = new Map((index as { key: string; builtIn?: BuiltInRecord }[]).map((e) => [e.key, e.builtIn]));
-/** Whether maps/<id>.json is built in (a map in the index; one that failed to load counts as not). */
-const builtIn = (id: string) => BUILT_IN.has(id);
+let records: Promise<Map<string, BuiltInRecord | undefined>> | undefined;
+/** Read from the map index when first needed (imported here lazily: unit tests that reach this module have no Vite). */
+const builtInRecords = () => (records ??= import('virtual:map-index').then((m) => new Map((m.default as { key: string; builtIn?: BuiltInRecord }[]).map((e) => [e.key, e.builtIn]))));
 
 /** A hub API address (`maps`, `maps/<id>`, `owner`), or null when there is no hub. */
 export function hubApi(path: string): string | null {
@@ -48,10 +47,10 @@ let inForce: Promise<Map<string, PublishedEntry>> | undefined;
 const files = new Map<string, Promise<unknown>>();
 
 /**
- * Whether a published version is used over the built-in map with that ID (shared choosePublished). `record`: the
- * built-in map's record; undefined for a map not built in, or built in with no release block (then `builtIn`).
+ * Whether a published version is used over the built-in map with that ID (shared choosePublished). `records`: the
+ * built-in maps' records by key (undefined for a built-in map with no release block; a map not in it is not built in).
  */
-export function publishedInForce(e: Pick<PublishedEntry, 'id' | 'hash' | 'at' | 'release'>, records: ReadonlyMap<string, BuiltInRecord | undefined> = BUILT_IN): boolean {
+export function publishedInForce(e: Pick<PublishedEntry, 'id' | 'hash' | 'at' | 'release'>, records: ReadonlyMap<string, BuiltInRecord | undefined>): boolean {
   if (!records.has(e.id)) return true;
   const record = records.get(e.id);
   // Built in, but with no release block: nothing to order them by, so the published version (as before).
@@ -64,7 +63,11 @@ export function publishedInForce(e: Pick<PublishedEntry, 'id' | 'hash' | 'at' | 
  * doesn't answer quickly). A published copy older than the built-in map is left out (publishedInForce).
  */
 export function publishedMaps(): Promise<Map<string, PublishedEntry>> {
-  inForce ??= hubPublishedMaps().then((all) => new Map([...all].filter(([, e]) => publishedInForce(e))));
+  inForce ??= hubPublishedMaps().then(async (all) => {
+    if (!all.size) return all;
+    const recs = await builtInRecords();
+    return new Map([...all].filter(([, e]) => publishedInForce(e, recs)));
+  });
   return inForce;
 }
 
@@ -112,7 +115,7 @@ export async function publishedMapJson(id: string): Promise<unknown> {
  */
 export async function builtInNewerThanPublished(id: string): Promise<boolean> {
   const e = (await hubPublishedMaps()).get(id);
-  const record = BUILT_IN.get(id);
+  const record = e ? (await builtInRecords()).get(id) : undefined;
   if (!e || !record) return false;
   const choice = choosePublished(record, e);
   return choice.use === 'built-in' && !choice.same;
