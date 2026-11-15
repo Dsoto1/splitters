@@ -37,7 +37,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Bugs
 - S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
-- XS · B · MapMaker: the top bar is cut off at 1440 px (map name, Snap, bot skill truncated) (UI audit; UI Phase 1 fixes it).
 - S · A · The Hollow Pilgrim (`meshy_hollowpilgrim`): its support hand stays about 11 cm short of a rifle's handguard (25 cm on the shotgun; its arms are short and `hold.forward` is at its −0.15 limit) and its sleeves stretch (grip audit 9). Needs a wider `hold` range or a skin fix from the download.
 - ? · A · Unconfirmed: the player's own third-person body drawn in first person after a teleport. Tried 2026-11-14 (`wip/mobile-bugs-1114`, SwiftShader): not reproduced. A picture tool's teleport (the sim moving you, once a second, on Flatpack Depot, The Spillway, Training Range) drew only your arms or your full-body legs; on Pantry Raid your own body sat 0.13-0.15 m from the camera as it should. Not finished: an ordinary portal (the mouse hole didn't take a teleported-in player) and a respawn; the machine drew about a frame a minute.
 - ? · A · Unconfirmed: a large flat blue shape seen twice in software pictures (tunnels, The Spillway's long stair). Not seen in this batch's SwiftShader pictures (The Spillway's crest, Flatpack Depot, Training Range, Pantry Raid); the long stair and the tunnels were not visited (2026-11-14, `wip/mobile-bugs-1114`).
@@ -66,7 +65,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - L · A · Driving physics (owner, 2026-11-15): vehicles as real bodies with sprung raycast wheels and tyre grip that can fail. Buggies light, bouncy and easy to flip; jumps land with weight and momentum; the body follows the ground on steep edges and slides back when grip runs out. Multiplayer smooth: the driver's vehicle predicted on their own machine and reconciled, others interpolated. Step 1: a plan plus the Buggy alone, judged offline and at 100–150 ms simulated lag; then the rest of the vehicles, bots, maps. Today the chassis moves like a character controller (`PhysicsWorld.moveVehicle`), with a drawn-only sprung body (`sim/suspension.ts`). After the hitches fix (owner: "finish hitches fix").
 
 ## Waiting on the owner
-- A new recording on a real GPU: St. John's in a match (to measure render cost step 1, the draws, landed 2026-11-14) and MapMaker after an edit on a big map (`docs/MAPMAKER_EDITING_REPORT_2026-11-13.md` question 5; questions 1–4 were answered 2026-11-13).
+- A recording on a real GPU of MapMaker after an edit on a big map (`docs/MAPMAKER_EDITING_REPORT_2026-11-13.md` question 5). The St. John's match recording came in 2026-11-15 (read in `docs/PERF_STJOHNS_2026-11-14.md`); the next one after the main-scene work.
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
