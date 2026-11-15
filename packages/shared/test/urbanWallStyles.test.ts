@@ -194,14 +194,15 @@ describe('the Arched window wall style', () => {
 
 describe('map format v38', () => {
   it('is the current format, with a migration from v37 that changes nothing', () => {
-    expect(MAP_FORMAT_VERSION).toBe(38);
+    // (v39, race mode's dead track settings dropped, came after.)
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(38);
     expect(EDGE_STYLES).toContain('shopfront');
     expect(EDGE_STYLES).toContain('window_arched');
     // The two new styles come last before `open`: every earlier style keeps its place in MapMaker's order.
     expect(EDGE_STYLES.slice(-3)).toEqual(['shopfront', 'window_arched', 'open']);
     const doc = { format: 'tiletrigger.map', formatVersion: 37, anything: { kept: [1, 2, 3] } };
     expect(MIGRATIONS.get(37)!(doc)).toEqual(doc);
-    expect(migrateMapDocument(doc)).toEqual({ doc: { ...doc, formatVersion: 38 }, fromVersion: 37 });
+    expect(migrateMapDocument(doc)).toEqual({ doc: { ...doc, formatVersion: MAP_FORMAT_VERSION }, fromVersion: 37 });
   });
 
   it('a map with a new style is saved as v38 and loads back as it was saved', () => {
@@ -214,11 +215,11 @@ describe('map format v38', () => {
       if ('error' in glass) throw new Error(glass.error);
       map = applyCommand(map, glass);
       const text = serializeMap(map);
-      expect(JSON.parse(text).formatVersion).toBe(38);
+      expect(JSON.parse(text).formatVersion).toBe(MAP_FORMAT_VERSION);
       const again = loadMap(text, undefined, { forEditing: true, openWithErrors: true });
       expect(again.ok ? [] : again.issues).toEqual([]);
       if (!again.ok) continue;
-      expect(again.migratedFrom).toBe(38);
+      expect(again.migratedFrom).toBe(MAP_FORMAT_VERSION);
       expect(again.map.classicStructure.tiles).toEqual(map.classicStructure.tiles);
       expect(again.map.classicStructure.tiles[0]).toMatchObject({ edges: { '0,0,0:N': style }, glass: { '0,0,0:N': 'breakable' } });
     }
@@ -241,7 +242,7 @@ describe('map format v38', () => {
       const r = loadMap(raw, undefined, { forEditing: true, openWithErrors: true });
       expect(r.ok, id).toBe(true);
       if (!r.ok) continue;
-      expect(r.map.formatVersion).toBe(38);
+      expect(r.map.formatVersion).toBe(MAP_FORMAT_VERSION);
       const sides = (tiles: { id: string; edges?: Record<string, string>; glass?: Record<string, string> }[]) => tiles.map((t) => [t.id, t.edges ?? null, t.glass ?? null]);
       expect(sides(r.map.classicStructure.tiles), id).toEqual(sides(raw.classicStructure.tiles));
       // No playable map names a new style: nothing was changed to use them (the coverage map carries one of each, below).

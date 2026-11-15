@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { DEAD_RACE_KEYS, MIGRATIONS, dropRaceSettingsV39 } from '../src/map/migrate.ts';
-import { DEFAULT_RACE, MAP_FORMAT_VERSION, MapDocument, ambientCarEntities, loadMap, migrateMapDocument, racePath, trackGeometry } from '../src/index.ts';
+import { DEFAULT_RACE, MAP_FORMAT_VERSION, MapDocument, releaseCurrent, stampMapRelease, ambientCarEntities, loadMap, migrateMapDocument, racePath, trackGeometry } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
 // Race mode was removed on 2026-11-08; its track settings (laps, start grid, race vehicle, combat) stayed in map files,
@@ -85,4 +85,31 @@ describe('map format v39: race mode\'s dead track settings dropped', () => {
     }
     expect(tracks).toBeGreaterThanOrEqual(5);
   });
+
+  it('a map stamped before v39 keeps its version: the dropped settings were all that changed', () => {
+    let stamped = 0;
+    for (const f of shipped) {
+      const file = raw(f) as { metadata: { release?: { versionId: string; revision: number } }; paths?: { race?: object }[] };
+      if (!file.metadata.release || !file.paths?.some((p) => p.race)) continue;
+      stamped++;
+      for (const forEditing of [false, true]) {
+        const r = loadMap(JSON.stringify(file), undefined, { forEditing });
+        expect(r.ok && r.issues.filter((i) => i.code === 'release.changed'), f).toEqual([]);
+        if (!r.ok) continue;
+        // (As played the map is expanded, so only the map as made hashes to its stamp.)
+        if (forEditing) expect(releaseCurrent(r.map), f).toBe(true);
+        expect(r.map.metadata.release).toMatchObject({ versionId: file.metadata.release.versionId, revision: file.metadata.release.revision, schemaVersion: MAP_FORMAT_VERSION });
+        // Exporting again keeps the version.
+        if (forEditing) expect(stampMapRelease(r.map).metadata.release!.versionId).toBe(file.metadata.release.versionId);
+      }
+    }
+    expect(stamped).toBeGreaterThanOrEqual(1);
+    // A track edited since (its NPC cars) is changed: the stamp is not carried.
+    const file = raw('neon_spire.json') as { metadata: { release?: object }; paths: { race?: { ambient?: number } }[] };
+    if (!file.metadata.release) return;
+    const edited = { ...file, paths: file.paths.map((p) => (p.race ? { ...p, race: { ...p.race, ambient: (p.race.ambient ?? 0) + 1 } } : p)) };
+    const e = loadMap(JSON.stringify(edited));
+    expect(e.ok && e.issues.map((i) => i.code)).toContain('release.changed');
+  });
 });
+
