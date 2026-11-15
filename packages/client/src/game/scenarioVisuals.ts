@@ -133,6 +133,8 @@ export class ScenarioVisuals {
   /** Pack effects that last (a flame trap's fire: content/vfx.json map.lasting `fire.trap`), set by the game view. */
   lasting: LastingFx | null = null;
   private readonly visuals = new Map<number, Visual>();
+  /** The visuals that animate from a state (index, visual), gathered on the first apply after a build: apply walks only these. */
+  private animated: { i: number; v: Visual }[] | null = null;
   /** Jump pads in the game (their meshes are merged; game/fixtureFx.ts): where each stands and its lift's level now. */
   private pads: { id: string; at: { x: number; y: number; z: number }; level: number }[] = [];
   private readonly mats = new Map<string, StandardMaterial>();
@@ -198,6 +200,7 @@ export class ScenarioVisuals {
     this.mergeFixtures(fixtures);
     this.mergeStill(still);
     this.batchDestructibles([...this.visuals.values()].filter((v) => v.batch));
+    this.animated = null;
   }
 
   private batches: Mesh[] = [];
@@ -398,9 +401,15 @@ export class ScenarioVisuals {
     const now = performance.now();
     const dt = Math.min(0.1, (now - this.last) / 1000);
     this.last = now;
-    for (const [i, v] of this.visuals) {
+    // Only the visuals that animate (a door, a light, a breakable), not every one each frame as [index, visual] pairs.
+    if (!this.animated) {
+      this.animated = [];
+      for (const [i, v] of this.visuals) if (v.update) this.animated.push({ i, v });
+    }
+    for (let k = 0; k < this.animated.length; k++) {
+      const { i, v } = this.animated[k]!;
       const s = states.get(i);
-      if (s && v.update) v.update(s[0], s[1], now, dt);
+      if (s) v.update!(s[0], s[1], now, dt);
     }
     // Jump pads: a column of light rising off each (map.lasting `pad`); the plate, ring and chevrons stay as they are.
     if (this.lasting && this.pads.length) {
@@ -416,6 +425,7 @@ export class ScenarioVisuals {
   clear(): void {
     for (const v of this.visuals.values()) v.root.dispose(false, false);
     this.visuals.clear();
+    this.animated = null;
     this.pads = [];
     for (const m of this.merged) m.dispose();
     this.merged = [];

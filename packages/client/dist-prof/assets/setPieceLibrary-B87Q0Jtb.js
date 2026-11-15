@@ -1,0 +1,3529 @@
+import { M as MAX_TILE_LEVEL, a as MAX_TILE_CELL, b as TilePlacement, c as MapEntity, R as RESOURCE_BUDGETS, S as SetPieceDefinition, d as SetPieceRoleValues } from "./scenarioDefs-BcDISE-R.js";
+import { j as coreCatalog, r as rotateXZ, n as cellKey, z as rotateSide, A as boxCorners } from "./settle-BDJE4VMF.js";
+function buildLimitRect(doc) {
+  const r = (MAX_TILE_CELL + 0.5) * doc.classicStructure.cellSize;
+  return { min: [-r, -r], max: [r, r] };
+}
+const BUILD_LEVELS = { min: -MAX_TILE_LEVEL, max: MAX_TILE_LEVEL };
+function playableRect(doc) {
+  if (doc.bounds) return { min: [...doc.bounds.min], max: [...doc.bounds.max], from: "bounds" };
+  const t = doc.terrain;
+  if (!t) return null;
+  return { min: [t.origin[0], t.origin[1]], max: [t.origin[0] + (t.cols - 1) * t.spacing, t.origin[1] + (t.rows - 1) * t.spacing], from: "terrain" };
+}
+function buildZone(doc, x, z) {
+  const inside = (r) => x >= r.min[0] && x <= r.max[0] && z >= r.min[1] && z <= r.max[1];
+  if (!inside(buildLimitRect(doc))) return "beyond";
+  const play = playableRect(doc);
+  return !play || inside(play) ? "play" : "scenery";
+}
+function insideBuildLimit(x, y, z) {
+  return Math.abs(x) <= MAX_TILE_CELL && Math.abs(y) <= MAX_TILE_CELL && Math.abs(z) <= MAX_TILE_LEVEL;
+}
+function buildLimitShort(z) {
+  return Math.abs(z) > MAX_TILE_LEVEL ? `Past the build limit (${MAX_TILE_LEVEL} levels up or down)` : `Past the build limit (${MAX_TILE_CELL} cells from the centre)`;
+}
+function buildLimitReason(doc, z) {
+  const metres = Math.round(MAX_TILE_CELL * doc.classicStructure.cellSize);
+  if (Math.abs(z) > MAX_TILE_LEVEL) return `past the build limit: levels go ${MAX_TILE_LEVEL} up and ${MAX_TILE_LEVEL} down (pick a level within them)`;
+  return `past the build limit (the white dashed outline): tiles stay within ${MAX_TILE_CELL} cells (${metres.toLocaleString("en")} m) of the centre. Inside it, outside the playable boundary is fine for scenery`;
+}
+const SET_PIECE_GRID = { cellSize: 8, levelHeight: 4 };
+const SET_PIECE_PLAYED_MAX = { tiles: 4096, entities: RESOURCE_BUDGETS.entities };
+const setPiecePartId = (placementId, index) => `sp_${placementId}_${index}`;
+function piecesFor(doc, library2) {
+  if (!doc.setPieceDefs?.length) return library2.pieces;
+  const out = new Map(library2.pieces);
+  for (const d of doc.setPieceDefs) if (!out.has(d.id)) out.set(d.id, d);
+  return out;
+}
+function mirrorWidth(def) {
+  const xs = def.footprint.cells.map((c) => c[0]);
+  return Math.min(...xs) + Math.max(...xs);
+}
+const MIRROR_SIDE = { N: "N", E: "W", S: "S", W: "E" };
+function placeCell(p, def, dx, dy) {
+  const mx = p.mirror ? mirrorWidth(def) - dx : dx;
+  const [rx, ry] = rotateXZ(mx, dy, p.rotation);
+  return [p.x + rx, p.y + ry];
+}
+const placeSide = (p, side) => rotateSide(p.mirror ? MIRROR_SIDE[side] : side, p.rotation);
+const round6 = (v) => Math.round(v * 1e6) / 1e6 + 0;
+const QUARTER = Math.PI / 2;
+function snapYaw(yaw) {
+  let y = yaw % (2 * Math.PI);
+  if (y > Math.PI) y -= 2 * Math.PI;
+  if (y <= -Math.PI) y += 2 * Math.PI;
+  const k = Math.round(y / QUARTER);
+  if (Math.abs(y - k * QUARTER) < 1e-6) return k === -2 ? Math.PI : k === 0 ? 0 : k * QUARTER;
+  return round6(y);
+}
+function placePoint(p, def, at) {
+  const { cellSize, levelHeight } = SET_PIECE_GRID;
+  const mx = p.mirror ? mirrorWidth(def) * cellSize - at[0] : at[0];
+  const [rx, rz] = rotateXZ(mx, at[2], p.rotation);
+  return [round6(p.x * cellSize + rx), round6(p.z * levelHeight + at[1]), round6(p.y * cellSize + rz)];
+}
+const placeYaw = (p, yaw) => snapYaw((p.mirror ? -yaw : yaw) + p.rotation * QUARTER);
+function setPieceFootprint(p, def) {
+  const out = [];
+  const [l0, l1] = def.footprint.levels;
+  for (const [dx, dy] of def.footprint.cells) {
+    const [x, y] = placeCell(p, def, dx, dy);
+    for (let dz = Math.min(l0, l1); dz <= Math.max(l0, l1); dz++) out.push([x, y, p.z + dz]);
+  }
+  return out;
+}
+function setPiecePorts(p, def) {
+  return def.ports.map((port) => {
+    const [x, y] = placeCell(p, def, port.cell[0], port.cell[1]);
+    return { x, y, z: p.z + port.level, side: placeSide(p, port.side), kind: port.kind };
+  });
+}
+const r4 = (v) => Math.round(v * 1e4) / 1e4 + 0;
+const boxKey = (b) => [b.min.map(r4).join(","), b.max.map(r4).join(","), r4(b.yaw ?? 0), r4(b.pitch ?? 0), r4(b.roll ?? 0), b.kind ?? "solid", b.surface ? `${b.surface.material}|${b.surface.tint ?? "-"}` : "-"].join(" ");
+const mirrorBox = (b, axis) => ({
+  ...b,
+  min: [2 * axis - b.max[0], b.min[1], b.min[2]],
+  max: [2 * axis - b.min[0], b.max[1], b.max[2]],
+  ...b.yaw ? { yaw: -b.yaw } : {},
+  ...b.roll ? { roll: -b.roll } : {}
+});
+const sameBag = (a, b) => a.length === b.length && [...a].sort().join("\n") === [...b].sort().join("\n");
+const mirrorAxes = /* @__PURE__ */ new WeakMap();
+function tileMirrorAxis(def) {
+  const known = mirrorAxes.get(def);
+  if (known !== void 0) return known;
+  const result = (() => {
+    if (def.model) return null;
+    const xs = def.cells.map((c) => c[0]);
+    const a2 = Math.min(...xs) + Math.max(...xs);
+    const cell = (c) => `${c[0]},${c[1]},${c[2]}`;
+    if (!sameBag(def.cells.map(cell), def.cells.map((c) => cell([a2 - c[0], c[1], c[2]])))) return null;
+    const port = (p, m) => {
+      const [cx, cy] = p.cell ?? [0, 0];
+      return `${m ? MIRROR_SIDE[p.side] : p.side} ${p.level} ${m ? a2 - cx : cx},${cy}`;
+    };
+    if (!sameBag(def.ports.map((p) => port(p, false)), def.ports.map((p) => port(p, true)))) return null;
+    const edges = Object.entries(def.edgeDefaults ?? {});
+    const edge = ([k, v], m) => {
+      if (!m) return `${k}=${v}`;
+      const [c, s] = k.split(":");
+      const [x, y, z] = c.split(",").map(Number);
+      return `${a2 - x},${y},${z}:${MIRROR_SIDE[s]}=${v}`;
+    };
+    if (!sameBag(edges.map((e) => edge(e, false)), edges.map((e) => edge(e, true)))) return null;
+    const axis = a2 * SET_PIECE_GRID.cellSize / 2;
+    for (const list of [def.solids ?? [], def.extraFloors ?? []]) {
+      if (!sameBag(list.map(boxKey), list.map((b) => boxKey(mirrorBox(b, axis))))) return null;
+    }
+    return a2;
+  })();
+  mirrorAxes.set(def, result);
+  return result;
+}
+const DIAGONAL_SIDE = { N: "E", E: "N", S: "W", W: "S" };
+const diagonalAxes = /* @__PURE__ */ new WeakMap();
+const cornerKey = (corners) => corners.map((c) => c.map((v) => (Math.round(v * 1e3) / 1e3 + 0).toFixed(3)).join(",")).sort().join(" ");
+const boxShape = (b, swap) => {
+  const corners = boxCorners({ ...b, min: [...b.min], max: [...b.max] }).map(([x, y, z]) => swap ? [z, y, x] : [x, y, z]);
+  return `${cornerKey(corners)} ${b.kind ?? "solid"} ${b.paint ?? "-"} ${b.surface ? `${b.surface.material}|${b.surface.tint ?? "-"}` : "-"}`;
+};
+function tileDiagonalMirror(def) {
+  const known = diagonalAxes.get(def);
+  if (known !== void 0) return known;
+  const result = (() => {
+    if (def.model) return false;
+    const cell = (c) => `${c[0]},${c[1]},${c[2]}`;
+    if (!sameBag(def.cells.map(cell), def.cells.map((c) => cell([c[1], c[0], c[2]])))) return false;
+    const port = (p, m) => {
+      const [cx, cy] = p.cell ?? [0, 0];
+      return m ? `${DIAGONAL_SIDE[p.side]} ${p.level} ${cy},${cx}` : `${p.side} ${p.level} ${cx},${cy}`;
+    };
+    if (!sameBag(def.ports.map((p) => port(p, false)), def.ports.map((p) => port(p, true)))) return false;
+    const edges = Object.entries(def.edgeDefaults ?? {});
+    if (!sameBag(edges.map(([k, v]) => `${k}=${v}`), edges.map(([k, v]) => `${diagonalKey(k)}=${v}`))) return false;
+    for (const list of [def.solids ?? [], def.extraFloors ?? []]) {
+      if (!sameBag(list.map((b) => boxShape(b, false)), list.map((b) => boxShape(b, true)))) return false;
+    }
+    return true;
+  })();
+  diagonalAxes.set(def, result);
+  return result;
+}
+function diagonalKey(key) {
+  const [c, s] = key.split(":");
+  const [x, y, z] = c.split(",").map(Number);
+  const cell = `${y},${x},${z}`;
+  return s ? `${cell}:${DIAGONAL_SIDE[s]}` : cell;
+}
+const mirrorProblems = /* @__PURE__ */ new WeakMap();
+function setPieceMirrorProblem(def, catalog = coreCatalog) {
+  const known = catalog === coreCatalog ? mirrorProblems.get(def) : void 0;
+  if (known !== void 0) return known;
+  let out = null;
+  for (const part of def.parts) {
+    if (part.kind !== "tile") continue;
+    const t = catalog.get(part.tile);
+    if (!t) out = `${part.tile} is not a tile`;
+    else if (tileMirrorAxis(t) === null && !tileDiagonalMirror(t)) out = `${t.displayName} (${t.id}) isn't its own mirror image`;
+    if (out) break;
+  }
+  if (catalog === coreCatalog) mirrorProblems.set(def, out);
+  return out;
+}
+function mirrorKey(key, a2) {
+  const [c, s] = key.split(":");
+  const [x, y, z] = c.split(",").map(Number);
+  const cell = `${a2 - x + 0},${y},${z}`;
+  return s ? `${cell}:${MIRROR_SIDE[s]}` : cell;
+}
+const ROLE_THEME_SLOT = { stone: "walls", trim: "trim", floor: "floor", paving: "floor", roof: "roof", wood: "solids", metal: "solids" };
+function placementPack(p, theme, library2) {
+  if (p.pack) return library2.packs.get(p.pack) ?? null;
+  for (const pack of library2.packs.values()) if (pack.themes.includes(theme)) return pack;
+  return null;
+}
+function roleValue(role, p, def, pack) {
+  return p.overrides?.roles?.[role] ?? pack?.roles[role] ?? def.roles?.[role];
+}
+function setPieceParts(p, def, theme, library2, catalog = coreCatalog) {
+  const pack = placementPack(p, theme, library2);
+  const hidden = new Set(p.overrides?.hide ?? []);
+  const material = (v) => "role" in v ? roleValue(v.role, p, def, pack) : v;
+  const glass = (v) => {
+    const k = typeof v === "string" ? v : roleValue("glass", p, def, pack);
+    return k === "breakable" || k === "reinforced" ? k : void 0;
+  };
+  const tiles = [];
+  const entities = [];
+  def.parts.forEach((part, i) => {
+    if (hidden.has(i)) return;
+    const id = setPiecePartId(p.id, i);
+    if (part.kind === "tile") tiles.push(TilePlacement.parse(placeTilePart(p, def, part, id, material, glass, (v) => typeof v === "string" ? v : roleValue("facade", p, def, pack), catalog)));
+    else entities.push(MapEntity.parse(placeEntityPart(p, def, part, id, material, glass, (v) => typeof v === "string" ? v : roleValue("door", p, def, pack))));
+  });
+  return { tiles, entities };
+}
+function placeTilePart(p, def, part, id, material, glass, facade, catalog) {
+  const { kind: _k, surfaces, glass: glassIn, options, edges, upperFloors, x, y, z, rotation, tile } = part;
+  let ax = x;
+  let ay = y;
+  let rot = rotation;
+  let key = (k) => k;
+  if (p.mirror) {
+    const tileDef = catalog.get(tile);
+    const a2 = tileDef ? tileMirrorAxis(tileDef) : null;
+    if (a2 === null && tileDef && tileDiagonalMirror(tileDef)) {
+      rot = (7 - rotation) % 4;
+      ax = mirrorWidth(def) - x;
+      key = diagonalKey;
+    } else {
+      rot = (4 - rotation) % 4;
+      const [sx, sy] = rotateXZ(a2 ?? 0, 0, rot);
+      ax = mirrorWidth(def) - x - sx;
+      ay = y - sy;
+      key = (k) => mirrorKey(k, a2 ?? 0);
+    }
+  }
+  const [rx, ry] = rotateXZ(ax, ay, p.rotation);
+  const out = { id, tile, x: p.x + rx, y: p.y + ry, z: p.z + z, rotation: (rot + p.rotation) % 4 };
+  if (surfaces) {
+    const s = {};
+    for (const [slot, v] of Object.entries(surfaces)) {
+      const m = v && material(v);
+      if (m) s[slot] = { material: m.material, tint: m.tint ?? null };
+    }
+    if (Object.keys(s).length) out.surfaces = s;
+  }
+  if (edges && Object.keys(edges).length) out.edges = Object.fromEntries(Object.entries(edges).map(([k, v]) => [key(k), v]).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
+  if (glassIn) {
+    const g = Object.entries(glassIn).flatMap(([k, v]) => {
+      const kind = glass(v);
+      return kind ? [[key(k), kind]] : [];
+    });
+    if (g.length) out.glass = Object.fromEntries(g.sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
+  }
+  if (upperFloors?.length) out.upperFloors = upperFloors.map(key).sort();
+  if (options) {
+    const { facade: f, ...rest } = options;
+    const o = { ...rest };
+    const look = f !== void 0 ? facade(f) : void 0;
+    if (look) o.facade = look;
+    if (Object.keys(o).length) out.options = o;
+  }
+  return out;
+}
+function placeEntityPart(p, def, part, id, material, glass, doorStyle) {
+  const position = placePoint(p, def, part.position);
+  const yaw = placeYaw(p, part.yaw);
+  if (part.kind === "block") {
+    const { material: m, glass: g, tint, size, pitch, roll, ...rest } = part;
+    const surface = m === null ? void 0 : typeof m === "string" ? { material: m, tint: null } : material(m);
+    const tilted = !!(pitch || roll);
+    const r = p.rotation % 2 === 1;
+    const block = {
+      ...rest,
+      id,
+      position,
+      size: !tilted && r ? [size[2], size[1], size[0]] : [size[0], size[1], size[2]],
+      yaw: tilted ? yaw : snapYaw(p.mirror ? -part.yaw : part.yaw),
+      material: surface?.material ?? null,
+      tint: tint ?? surface?.tint ?? null,
+      ...pitch ? { pitch } : {},
+      ...roll ? { roll: p.mirror ? -roll : roll } : {}
+    };
+    const kind = g === void 0 ? void 0 : glass(g);
+    if (kind) block.glass = kind;
+    else delete block.glass;
+    return block;
+  }
+  if (part.kind === "door") {
+    const { style, ...rest } = part;
+    const s = style === void 0 ? void 0 : doorStyle(style);
+    const door = { ...rest, id, position, yaw };
+    if (s) door.style = s;
+    return door;
+  }
+  return { ...part, id, position, yaw };
+}
+const cache = /* @__PURE__ */ new WeakMap();
+function expandSetPieces(doc, library2, catalog = coreCatalog) {
+  const hit = cache.get(doc);
+  if (hit && hit.library === library2 && hit.catalog === catalog) return hit.result;
+  const result = expand(doc, library2, catalog);
+  cache.set(doc, { library: library2, catalog, result });
+  return result;
+}
+function expand(doc, library2, catalog) {
+  const placements = doc.setPieces ?? [];
+  const issues = [];
+  const partOf = /* @__PURE__ */ new Map();
+  const footprints = /* @__PURE__ */ new Map();
+  if (doc.setPieces === void 0 && doc.setPieceDefs === void 0) return { map: doc, issues, partOf, footprints };
+  const pieces = piecesFor(doc, library2);
+  const { setPieces: _p, setPieceDefs: _d, ...rest } = doc;
+  for (const d of doc.setPieceDefs ?? []) {
+    if (!d.id.startsWith("local.")) issues.push({ severity: "error", code: "setpiece.def_id", message: `the map's own set piece ${d.id} must be named local.<name> (setpiece.* are the shipped ones)` });
+    else if ((doc.setPieceDefs ?? []).filter((o) => o.id === d.id).length > 1) issues.push({ severity: "error", code: "setpiece.def_id", message: `the map defines set piece ${d.id} twice` });
+  }
+  const grid = doc.classicStructure.cellSize === SET_PIECE_GRID.cellSize && doc.classicStructure.levelHeight === SET_PIECE_GRID.levelHeight;
+  const tiles = [];
+  const entities = [];
+  for (const p of placements) {
+    const def = pieces.get(p.piece);
+    if (!def) {
+      issues.push({ severity: "error", code: "setpiece.unknown", message: `set piece ${p.id} names an unknown piece "${p.piece}"`, targetId: p.id });
+      continue;
+    }
+    if (!grid) {
+      issues.push({ severity: "error", code: "setpiece.grid", message: `set piece ${p.id}: set pieces need the standard grid (8 m cells, 4 m levels)`, targetId: p.id });
+      continue;
+    }
+    const asymmetric = p.mirror ? def.mirror === "none" ? def.displayName : setPieceMirrorProblem(def, catalog) : null;
+    if (asymmetric) {
+      issues.push({ severity: "error", code: "setpiece.mirror", message: `set piece ${p.id}: ${def.displayName} can't be mirrored (${def.mirror === "none" ? "it says so" : asymmetric}); place it unmirrored`, targetId: p.id });
+      continue;
+    }
+    if (p.pack && !library2.packs.has(p.pack)) issues.push({ severity: "warning", code: "setpiece.pack", message: `set piece ${p.id} names an unknown role pack "${p.pack}": it takes the map's theme`, targetId: p.id });
+    const bad = (p.overrides?.hide ?? []).filter((i) => i >= def.parts.length);
+    if (bad.length) issues.push({ severity: "warning", code: "setpiece.hide", message: `set piece ${p.id} hides part ${bad.join(", ")}, which ${def.displayName} doesn't have (it has ${def.parts.length})`, targetId: p.id });
+    const cells = setPieceFootprint(p, def);
+    footprints.set(p.id, cells);
+    if (cells.some(([x, y, z]) => Math.abs(x) > MAX_TILE_CELL || Math.abs(y) > MAX_TILE_CELL || Math.abs(z) > MAX_TILE_LEVEL)) {
+      issues.push({ severity: "error", code: "setpiece.limit", message: `set piece ${p.id} reaches past the build limit`, targetId: p.id });
+      continue;
+    }
+    const parts = setPieceParts(p, def, doc.classicStructure.theme, library2, catalog);
+    for (const t of parts.tiles) partOf.set(t.id, p.id);
+    for (const e of parts.entities) partOf.set(e.id, p.id);
+    tiles.push(...parts.tiles);
+    entities.push(...parts.entities);
+  }
+  const allTiles = doc.classicStructure.tiles.length + tiles.length;
+  const allEntities = doc.entities.length + entities.length;
+  if (allTiles > SET_PIECE_PLAYED_MAX.tiles || allEntities > SET_PIECE_PLAYED_MAX.entities) {
+    issues.push({
+      severity: "error",
+      code: "budget.setpieces",
+      message: `as played the map has ${allTiles} tiles and ${allEntities} entities (its set pieces add ${tiles.length} and ${entities.length}): at most ${SET_PIECE_PLAYED_MAX.tiles} and ${SET_PIECE_PLAYED_MAX.entities}. Remove some set pieces or other pieces`
+    });
+  }
+  const map = { ...rest, classicStructure: { ...doc.classicStructure, tiles: [...doc.classicStructure.tiles, ...tiles] }, entities: [...doc.entities, ...entities] };
+  return { map, issues, partOf, footprints };
+}
+function setPieceOverlapIssues(doc, expansion, cells) {
+  const out = [];
+  const claimed = /* @__PURE__ */ new Map();
+  for (const [id, fp] of expansion.footprints) {
+    let reported = false;
+    for (const [x, y, z] of fp) {
+      const key = cellKey(x, y, z);
+      const tile = cells.get(key);
+      if (tile && !reported) {
+        out.push({ severity: "error", code: "setpiece.overlap", message: `set piece ${id} and tile ${tile.placement.id} overlap at cell ${key}`, targetId: id });
+        reported = true;
+      }
+      const other = claimed.get(key);
+      if (other && other !== id && !reported) {
+        out.push({ severity: "error", code: "setpiece.overlap", message: `set pieces ${other} and ${id} overlap at cell ${key}`, targetId: id });
+        reported = true;
+      }
+      claimed.set(key, id);
+    }
+  }
+  return out;
+}
+function setPieceCells(doc, pieces, ignore = /* @__PURE__ */ new Set()) {
+  const out = /* @__PURE__ */ new Map();
+  for (const p of doc.setPieces ?? []) {
+    if (ignore.has(p.id)) continue;
+    const def = pieces.get(p.piece);
+    if (!def) continue;
+    for (const [x, y, z] of setPieceFootprint(p, def)) if (!out.has(cellKey(x, y, z))) out.set(cellKey(x, y, z), p);
+  }
+  return out;
+}
+function parseSetPiece(raw) {
+  const r = SetPieceDefinition.safeParse(raw);
+  if (!r.success) return { ok: false, problems: r.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`) };
+  return { ok: true, def: r.data };
+}
+const SET_PIECE_DEFS = [
+  // design: Two Rooms open to each other and at both ends; the hall straddles the line between them (z 2.8 to 5.2 m from the anchor cell's centre). Its walls are blocks 0.72 m thick, a closet deep: three piers a side to the doors' heads (2.6 m) and one beam over them, so each room's 2 m doorway is a reveal 0.6 m deep between two built-in closets (2 m: bots keep 0.8 m off walls). The closets are the wall: a Built-in Closet Front (a still prop, 12 mm proud, no collision) in its face either side of the doorway. A partition 0.12 m thick between the two rooms of a side, and half a partition at each end, so two bays side by side make a whole one. Rooms are 3.88 m wide and 6.18 m from the hall wall to the window (5.58 m past the closets). Each: an Oak Door standing open in the reveal (a still prop, no collision), a sink unit on the left 0.9 m past the closet's front (the closet door has room), two desks with hutches along the left wall (the second by the window), a chair pushed in at each (not solid), a bunk on the right by the window (Twin sash windows, one a room). Clear floor: 2.08 m between the desks and the bunk, 1.93 m between a chair's back and the bunk. One light, in the hall. A room's pieces are in one order for the four rooms, so a placement can hide a room's furniture by part index.
+  {
+    id: "setpiece.dorm_bay",
+    displayName: "Dorm Bay",
+    family: "academy",
+    category: "Interiors",
+    blurb: "8 m of a dormitory floor, 1 × 2 cells: a hall down the middle, two rooms each side, each with an oak door between two built-in closets, a sink, two desks with hutches, a bunk and a sash window. Place bays end to end.",
+    packs: ["collegiate", "gothic"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "windows_sash", "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: { "0,0,0:S": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "windows_sash", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "Entry wall", position: [-3.5, 0, 5.56], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [0, 0, 5.56], size: [2, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [3.5, 0, 5.56], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall (over the doors)", position: [0, 2.6, 5.56], size: [8, 0.9, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [-3.5, 0, 2.44], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [0, 0, 2.44], size: [2, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [3.5, 0, 2.44], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall (over the doors)", position: [0, 2.6, 2.44], size: [8, 0.9, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Room partition", position: [0, 0, 8.71], size: [0.12, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Room partition", position: [0, 0, -0.71], size: [0.12, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 0, -0.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [3.97, 0, -0.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 0, 8.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [3.97, 0, 8.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "prop", model: "kit.door.oak_open", position: [-2, 0, 6.18], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-3.611, 0, 8.57], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-3.611, 0, 10.12], yaw: 1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [-0.637, 0, 10.375], yaw: 0, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-3.47, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-0.53, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hh_cupboard_sink", position: [-3.61, 0, 7.295], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [-3.338, 0, 8.355], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.seat.chair", position: [-3.338, 0, 9.905], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.door.oak_open", position: [2, 0, 6.18], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [0.389, 0, 8.57], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [0.389, 0, 10.12], yaw: 1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [3.363, 0, 10.375], yaw: 0, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [0.53, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [3.47, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hh_cupboard_sink", position: [0.39, 0, 7.295], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [0.662, 0, 8.355], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.seat.chair", position: [0.662, 0, 9.905], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.door.oak_open", position: [2, 0, 1.82], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [3.611, 0, -0.57], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [3.611, 0, -2.12], yaw: -1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [0.637, 0, -2.375], yaw: -3.141593, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [3.47, 0, 2.074], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [0.53, 0, 2.074], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "prop.hh_cupboard_sink", position: [3.61, 0, 0.705], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [3.338, 0, -0.355], yaw: 1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.seat.chair", position: [3.338, 0, -1.905], yaw: 1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.door.oak_open", position: [-2, 0, 1.82], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-0.389, 0, -0.57], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-0.389, 0, -2.12], yaw: -1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [-3.363, 0, -2.375], yaw: -3.141593, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-0.53, 0, 2.074], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-3.47, 0, 2.074], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "prop.hh_cupboard_sink", position: [-0.39, 0, 0.705], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [-0.662, 0, -0.355], yaw: 1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.seat.chair", position: [-0.662, 0, -1.905], yaw: 1.570796, scale: 1, solid: false },
+      { kind: "light", position: [0, 3.3, 4], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 }
+    ]
+  },
+  // design: The Dorm Bay with its north rooms closed: an Oak Door shut and one ajar (both collide as the doorway's slab), the rooms seen through their windows (the bunk, the two desks and the closets' fronts; no chairs, no sink) behind reinforced glass, so nobody climbs in. Turn a bay half round to shut the other side.
+  {
+    id: "setpiece.dorm_bay_closed",
+    displayName: "Dorm Bay (two rooms shut)",
+    family: "academy",
+    category: "Interiors",
+    blurb: "A Dorm Bay with the two north rooms shut: one door closed, one ajar, bulletproof glass in their windows. Half the rooms of a floor to duck into, half not.",
+    packs: ["collegiate", "gothic"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "windows_sash", "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: { "0,0,0:S": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "windows_sash", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: { "0,0,0:N": "reinforced" }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "Entry wall", position: [-3.5, 0, 5.56], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [0, 0, 5.56], size: [2, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [3.5, 0, 5.56], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall (over the doors)", position: [0, 2.6, 5.56], size: [8, 0.9, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [-3.5, 0, 2.44], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [0, 0, 2.44], size: [2, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [3.5, 0, 2.44], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall (over the doors)", position: [0, 2.6, 2.44], size: [8, 0.9, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Room partition", position: [0, 0, 8.71], size: [0.12, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Room partition", position: [0, 0, -0.71], size: [0.12, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 0, -0.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [3.97, 0, -0.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 0, 8.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [3.97, 0, 8.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "prop", model: "kit.door.oak", position: [-2, 0, 5.26], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-3.611, 0, 8.57], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-3.611, 0, 10.12], yaw: 1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [-0.637, 0, 10.375], yaw: 0, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-3.47, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-0.53, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.door.oak_ajar", position: [2, 0, 5.26], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [0.389, 0, 8.57], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [0.389, 0, 10.12], yaw: 1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [3.363, 0, 10.375], yaw: 0, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [0.53, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [3.47, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.door.oak_open", position: [2, 0, 1.82], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [3.611, 0, -0.57], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [3.611, 0, -2.12], yaw: -1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [0.637, 0, -2.375], yaw: -3.141593, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [3.47, 0, 2.074], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [0.53, 0, 2.074], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "prop.hh_cupboard_sink", position: [3.61, 0, 0.705], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [3.338, 0, -0.355], yaw: 1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.seat.chair", position: [3.338, 0, -1.905], yaw: 1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.door.oak_open", position: [-2, 0, 1.82], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-0.389, 0, -0.57], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-0.389, 0, -2.12], yaw: -1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [-3.363, 0, -2.375], yaw: -3.141593, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-0.53, 0, 2.074], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-3.47, 0, 2.074], yaw: -3.141593, scale: 1 },
+      { kind: "prop", model: "prop.hh_cupboard_sink", position: [-0.39, 0, 0.705], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [-0.662, 0, -0.355], yaw: 1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.seat.chair", position: [-0.662, 0, -1.905], yaw: 1.570796, scale: 1, solid: false },
+      { kind: "light", position: [0, 3.3, 4], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 }
+    ]
+  },
+  // design: A Stairwell turned so its foot and its upper landing open north onto the lobby (no wall between them), the lobby a Room with a Room doorway west and an Oak Door standing open in it. The east side is closed by walls of its own but for the hall's mouth (z 2.8 to 5.2 m), which a Dorm Bay's hall meets on both floors. The Stairwell's upper landing leaves a corner open; a floor block closes it and a rail stands over the flight. The stairwell wears the hall's facade (plinth, buttresses, battlements) as the rooms do: a facade is the one room option a piece may give a tile that is not a Room (map/setPieceCheck.ts); its inner walls are in the stone role, its steps in the trim's, and a plaster ceiling under a roof block closes its top (stairs take no ceiling option). Turn it half round for a hall's other end.
+  {
+    id: "setpiece.stair_end_bay",
+    displayName: "Stair End Bay",
+    family: "academy",
+    category: "Interiors",
+    blurb: "The end of a two-floor hall, 1 × 2 cells: a half-turn stairwell south, a lobby with the outside door north, the hall's mouth east on both floors.",
+    packs: ["collegiate", "gothic"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 1, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 0, rotation: 1, edges: { "0,0,0:W": "open", "0,0,0:N": "open", "0,0,0:E": "wall", "0,0,0:S": "wall", "0,0,1:W": "open", "0,0,1:N": "open", "0,0,1:E": "window_sash", "0,0,1:S": "wall" }, glass: { "0,0,1:E": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { role: "stone" }, solids: { role: "trim" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:W": "door_room", "0,0,0:N": "window_sash", "0,0,0:E": "open", "0,0,0:S": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 1, rotation: 0, edges: { "0,0,0:W": "window_sash", "0,0,0:N": "window_sash", "0,0,0:E": "open", "0,0,0:S": "open" }, glass: { "0,0,0:W": { role: "glass" }, "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "East wall", position: [3.75, 0, -0.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 0, 8.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 4, -0.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 4, 8.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Landing", position: [-2.5, 3.75, 2.95], size: [2, 0.25, 2.1], material: "core.pbr_terrazzo", tint: "#b0b3b2" },
+      { kind: "block", name: "Landing ceiling", position: [-2.5, 3.5, 2.95], size: [2, 0.25, 2.1], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Stair rail", position: [-1.75, 4, 1.95], size: [3.5, 1, 0.1], material: { role: "wood" } },
+      { kind: "block", name: "Stair ceiling", position: [0, 7.5, 0], size: [8, 0.2, 8], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Stair roof", position: [0, 7.7, 0], size: [8, 0.3, 8], material: { role: "roof" } },
+      { kind: "prop", model: "kit.door.oak_open", position: [-2.83, 0, 8], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.bench", position: [0, 0, 11.3], yaw: 3.141593, scale: 1, unbreakable: true },
+      { kind: "light", position: [0, 3.3, 7], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [0, 7.3, 7], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 }
+    ]
+  },
+  // design: As the Stair End Bay, a floor taller: a Stairwell takes two levels of its cell, so the second one stands in the other cell (over the lobby), turned to open south onto the first one's upper landing; the top floor's landing room is over the first. Floor blocks close the landings' open corners (the second at the hall's mouth), rails stand over the flights.
+  {
+    id: "setpiece.stair_end_bay_3",
+    displayName: "Stair End Bay (3 floors)",
+    family: "academy",
+    category: "Interiors",
+    blurb: "The end of a three-floor hall, 1 × 2 cells: half-turn stairwells, the first south, the second north over the lobby, a landing room at the top; the hall's mouth east on every floor.",
+    packs: ["collegiate", "gothic"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 2] },
+    mirror: "none",
+    ports: [
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 1, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 2, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 2, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 0, rotation: 1, edges: { "0,0,0:W": "open", "0,0,0:N": "open", "0,0,0:E": "wall", "0,0,0:S": "wall", "0,0,1:W": "open", "0,0,1:N": "open", "0,0,1:E": "window_sash", "0,0,1:S": "wall" }, glass: { "0,0,1:E": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { role: "stone" }, solids: { role: "trim" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:W": "door_room", "0,0,0:N": "window_sash", "0,0,0:E": "open", "0,0,0:S": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 1, z: 1, rotation: 3, edges: { "0,0,0:W": "open", "0,0,0:S": "open", "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,1:W": "open", "0,0,1:S": "open", "0,0,1:E": "window_sash", "0,0,1:N": "wall" }, glass: { "0,0,1:E": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { role: "stone" }, solids: { role: "trim" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 2, rotation: 0, edges: { "0,0,0:S": "window_sash", "0,0,0:W": "window_sash", "0,0,0:E": "open", "0,0,0:N": "open" }, glass: { "0,0,0:S": { role: "glass" }, "0,0,0:W": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "East wall", position: [3.75, 0, -0.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 0, 8.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 4, -0.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 4, 8.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 8, -0.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 8, 8.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Landing", position: [-2.5, 3.75, 2.95], size: [2, 0.25, 2.1], material: "core.pbr_terrazzo", tint: "#b0b3b2" },
+      { kind: "block", name: "Landing ceiling", position: [-2.5, 3.5, 2.95], size: [2, 0.25, 2.1], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Stair rail", position: [-1.75, 4, 1.95], size: [3.5, 1, 0.1], material: { role: "wood" } },
+      { kind: "block", name: "Landing", position: [2.75, 7.75, 5.05], size: [2.5, 0.25, 2.1], material: "core.pbr_terrazzo", tint: "#b0b3b2" },
+      { kind: "block", name: "Landing ceiling", position: [2.75, 7.5, 5.05], size: [2.5, 0.25, 2.1], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Stair rail", position: [1.75, 8, 6.05], size: [3.5, 1, 0.1], material: { role: "wood" } },
+      { kind: "block", name: "Stair ceiling", position: [0, 11.5, 8], size: [8, 0.2, 8], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Stair roof", position: [0, 11.7, 8], size: [8, 0.3, 8], material: { role: "roof" } },
+      { kind: "prop", model: "kit.door.oak_open", position: [-2.83, 0, 8], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.bench", position: [0, 0, 11.3], yaw: 3.141593, scale: 1, unbreakable: true },
+      { kind: "light", position: [0, 3.3, 7], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [0, 7.3, 3], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [0, 11.3, 1], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 }
+    ]
+  },
+  // design: A straight Stairs tile fills its cell (a 7 m flight, 8 m long) and takes two levels, with its foot in the cell west of it and its head in the cell east: so the bay is three cells long and two floors high, and the hall beside the stair runs north of the cells' line (z 4 to 6.4 m), 3.6 m wide at the two ends where it meets a Dorm Bay's hall (z 2.8 to 5.2 m). North of the hall on each floor: a bathroom (toilets in stalls, basins), the office (an Oak Door with a glazed leaf standing open, a desk, bookcases) directly across from the stair, a bathroom (showers, basins). South: the stair hall at the foot (ground floor, west) and at the head (upstairs, east); the officer's quarters behind a shut diamond-panelled Oak Door under the stair's head on the ground floor and over its foot upstairs, seen through reinforced glass. A third floor goes over it as Dorm Bays, reached by the end stairs (a second straight flight cannot stand over the first: a Stairs tile claims both levels of its cell).
+  {
+    id: "setpiece.dorm_office_bay",
+    displayName: "Dorm Office Bay",
+    family: "academy",
+    category: "Interiors",
+    blurb: "The middle of a dormitory hall, 3 × 2 cells, two floors: a straight stair south, the officer's quarters door beside it, and across the hall an office behind a half-glazed door between two bathrooms.",
+    packs: ["collegiate", "gothic"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 1], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 1, kind: "opening" },
+      { side: "E", cell: [2, 0], level: 1, kind: "opening" },
+      { side: "E", cell: [2, 1], level: 1, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "windows_sash", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "windows_sash", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "windows_sash", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "window_sash", "0,0,0:W": "open", "0,0,0:N": "open", "0,0,0:E": "open" }, glass: { "0,0,0:S": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.stairs", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:W": "open", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,0:E": "wall", "0,0,1:W": "wall", "0,0,1:N": "half", "0,0,1:S": "windows_sash", "0,0,1:E": "open" }, glass: { "0,0,1:S": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { role: "stone" }, solids: { role: "trim" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "window_sash", "0,0,0:W": "open", "0,0,0:N": "open", "0,0,0:E": "open" }, glass: { "0,0,0:S": "reinforced" }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 1, rotation: 0, edges: { "0,0,0:N": "windows_sash", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 1, rotation: 0, edges: { "0,0,0:N": "windows_sash", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 1, rotation: 0, edges: { "0,0,0:N": "windows_sash", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 1, rotation: 0, edges: { "0,0,0:S": "window_sash", "0,0,0:W": "open", "0,0,0:N": "open", "0,0,0:E": "open" }, glass: { "0,0,0:S": "reinforced" }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 1, rotation: 0, edges: { "0,0,0:S": "window_sash", "0,0,0:W": "open", "0,0,0:N": "open", "0,0,0:E": "open" }, glass: { "0,0,0:S": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "Stair ceiling", position: [8, 7.5, 0], size: [8, 0.2, 8], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Stair roof", position: [8, 7.7, 0], size: [8, 0.3, 8], material: { role: "roof" } },
+      { kind: "block", name: "Hall wall", position: [-2.5, 0, 6.46], size: [3, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall (over the door)", position: [0, 2.6, 6.46], size: [2, 0.9, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall", position: [4, 0, 6.46], size: [6, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall (over the door)", position: [8, 2.6, 6.46], size: [2, 0.9, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall", position: [12, 0, 6.46], size: [6, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall (over the door)", position: [16, 2.6, 6.46], size: [2, 0.9, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall", position: [18.5, 0, 6.46], size: [3, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Room partition", position: [4, 0, 9.01], size: [0.12, 3.5, 4.98], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Room partition", position: [12, 0, 9.01], size: [0.12, 3.5, 4.98], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 0, -0.35], size: [0.06, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [19.97, 0, -0.35], size: [0.06, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 0, 8.35], size: [0.06, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [19.97, 0, 8.35], size: [0.06, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Quarters wall", position: [13.5, 0, 2.74], size: [3, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Quarters wall (over the door)", position: [16, 2.6, 2.74], size: [2, 0.9, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Quarters wall", position: [18.5, 0, 2.74], size: [3, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "prop", model: "kit.door.oak", position: [16, 0, 2.74], yaw: 3.141593, scale: 1, variant: 2 },
+      { kind: "prop", model: "kit.sofa.two_seat", position: [14.4, 0, -3.11], yaw: 0, scale: 1, unbreakable: true },
+      { kind: "prop", model: "kit.table.round", position: [17.2, 0, -1.2], yaw: 0, scale: 1, unbreakable: true },
+      { kind: "prop", model: "kit.door.oak_open", position: [8, 0, 7.38], yaw: 0, scale: 1, variant: 1 },
+      { kind: "prop", model: "kit.table.desk", position: [8.3, 0, 9.7], yaw: 0, scale: 1, variant: 1, unbreakable: true },
+      { kind: "prop", model: "kit.seat.office", position: [8.3, 0, 10.55], yaw: 3.141593, scale: 1, unbreakable: true },
+      { kind: "prop", model: "kit.seat.chair", position: [4.266, 0, 7.4], yaw: 1.570796, scale: 1, variant: 2, unbreakable: true },
+      { kind: "prop", model: "kit.seat.chair", position: [4.266, 0, 8.1], yaw: 1.570796, scale: 1, variant: 2, unbreakable: true },
+      { kind: "prop", model: "kit.bookcase.tall", position: [11.652, 0, 9.4], yaw: -1.570796, scale: 1, variant: 1, unbreakable: true },
+      { kind: "prop", model: "kit.bookcase.tall", position: [4.348, 0, 10.3], yaw: 1.570796, scale: 1, variant: 2, unbreakable: true },
+      { kind: "prop", model: "kit.door.oak_open", position: [0, 0, 7.38], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.door.oak_open", position: [16, 0, 7.38], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hm_toilet", position: [-3.58, 0, 8.05], yaw: 1.570796, scale: 1 },
+      { kind: "block", name: "Stall", position: [-3.12, 0, 7.35], size: [1.64, 2, 0.06], material: "core.white_tiles" },
+      { kind: "prop", model: "prop.hm_toilet", position: [-3.58, 0, 9.45], yaw: 1.570796, scale: 1 },
+      { kind: "block", name: "Stall", position: [-3.12, 0, 8.75], size: [1.64, 2, 0.06], material: "core.white_tiles" },
+      { kind: "prop", model: "prop.hm_toilet", position: [-3.58, 0, 10.85], yaw: 1.570796, scale: 1 },
+      { kind: "block", name: "Stall", position: [-3.12, 0, 10.15], size: [1.64, 2, 0.06], material: "core.white_tiles" },
+      { kind: "prop", model: "prop.hh_basin", position: [3.754, 0, 7.9], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [3.754, 0, 9.1], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [3.754, 0, 10.3], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hm_shower", position: [19.348, 0, 7.7], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hm_shower", position: [19.348, 0, 8.9], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hm_shower", position: [19.348, 0, 10.1], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [12.246, 0, 7.9], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [12.246, 0, 9.1], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [12.246, 0, 10.3], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.bench", position: [-3.74, 0, -0.5], yaw: 1.570796, scale: 1, unbreakable: true },
+      { kind: "light", position: [0, 3.3, 4.6], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 3.3, 5.2], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [16, 3.3, 4.6], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 3.3, 9.2], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "block", name: "Hall wall", position: [-2.5, 4, 6.46], size: [3, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall (over the door)", position: [0, 6.6, 6.46], size: [2, 0.9, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall", position: [4, 4, 6.46], size: [6, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall (over the door)", position: [8, 6.6, 6.46], size: [2, 0.9, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall", position: [12, 4, 6.46], size: [6, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall (over the door)", position: [16, 6.6, 6.46], size: [2, 0.9, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Hall wall", position: [18.5, 4, 6.46], size: [3, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Room partition", position: [4, 4, 9.01], size: [0.12, 3.5, 4.98], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Room partition", position: [12, 4, 9.01], size: [0.12, 3.5, 4.98], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 4, -0.35], size: [0.06, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [19.97, 4, -0.35], size: [0.06, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 4, 8.35], size: [0.06, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [19.97, 4, 8.35], size: [0.06, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Quarters wall", position: [-2.5, 4, 2.74], size: [3, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Quarters wall (over the door)", position: [0, 6.6, 2.74], size: [2, 0.9, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Quarters wall", position: [2.5, 4, 2.74], size: [3, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "prop", model: "kit.door.oak", position: [0, 4, 2.74], yaw: 3.141593, scale: 1, variant: 2 },
+      { kind: "prop", model: "kit.sofa.two_seat", position: [-1.6, 4, -3.11], yaw: 0, scale: 1, unbreakable: true },
+      { kind: "prop", model: "kit.table.round", position: [1.2, 4, -1.2], yaw: 0, scale: 1, unbreakable: true },
+      { kind: "prop", model: "kit.door.oak_open", position: [8, 4, 7.38], yaw: 0, scale: 1, variant: 1 },
+      { kind: "prop", model: "kit.table.desk", position: [8.3, 4, 9.7], yaw: 0, scale: 1, variant: 1, unbreakable: true },
+      { kind: "prop", model: "kit.seat.office", position: [8.3, 4, 10.55], yaw: 3.141593, scale: 1, unbreakable: true },
+      { kind: "prop", model: "kit.seat.chair", position: [4.266, 4, 7.4], yaw: 1.570796, scale: 1, variant: 2, unbreakable: true },
+      { kind: "prop", model: "kit.seat.chair", position: [4.266, 4, 8.1], yaw: 1.570796, scale: 1, variant: 2, unbreakable: true },
+      { kind: "prop", model: "kit.bookcase.tall", position: [11.652, 4, 9.4], yaw: -1.570796, scale: 1, variant: 1, unbreakable: true },
+      { kind: "prop", model: "kit.bookcase.tall", position: [4.348, 4, 10.3], yaw: 1.570796, scale: 1, variant: 2, unbreakable: true },
+      { kind: "prop", model: "kit.door.oak_open", position: [0, 4, 7.38], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.door.oak_open", position: [16, 4, 7.38], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hm_toilet", position: [-3.58, 4, 8.05], yaw: 1.570796, scale: 1 },
+      { kind: "block", name: "Stall", position: [-3.12, 4, 7.35], size: [1.64, 2, 0.06], material: "core.white_tiles" },
+      { kind: "prop", model: "prop.hm_toilet", position: [-3.58, 4, 9.45], yaw: 1.570796, scale: 1 },
+      { kind: "block", name: "Stall", position: [-3.12, 4, 8.75], size: [1.64, 2, 0.06], material: "core.white_tiles" },
+      { kind: "prop", model: "prop.hm_toilet", position: [-3.58, 4, 10.85], yaw: 1.570796, scale: 1 },
+      { kind: "block", name: "Stall", position: [-3.12, 4, 10.15], size: [1.64, 2, 0.06], material: "core.white_tiles" },
+      { kind: "prop", model: "prop.hh_basin", position: [3.754, 4, 7.9], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [3.754, 4, 9.1], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [3.754, 4, 10.3], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hm_shower", position: [19.348, 4, 7.7], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hm_shower", position: [19.348, 4, 8.9], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hm_shower", position: [19.348, 4, 10.1], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [12.246, 4, 7.9], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [12.246, 4, 9.1], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [12.246, 4, 10.3], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.bench", position: [19.74, 4, -0.5], yaw: -1.570796, scale: 1, unbreakable: true },
+      { kind: "light", position: [0, 7.3, 4.6], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 7.3, 5.2], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [16, 7.3, 4.6], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 7.3, 9.2], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 }
+    ]
+  },
+  // design: The hall of a Dorm Bay (2.4 m wide, z 2.8 to 5.2 m, its walls a closet deep) comes in at the west and turns south at x 2.8 to 5.2 m, so the south mouth meets a Dorm Bay turned a quarter (anchored on this piece's anchor cell): the long arm of an L. North of the west leg, the Dorm Bay's two north rooms as they are; east of the south leg, one room (a north room turned a quarter); in the outer corner a lounge (a sofa and two armchairs on a round rug, a fireplace between the windows, a wide cabinet), entered by an Oak Door standing open on the south leg; in the inner corner a washroom (two toilets in stalls, two showers, three basins) through a doorway on the west leg. The inner corner's west and south sides and the north rooms' west end are half partitions, so the bays beside it close them. Two lights: the hall's turn and the lounge.
+  {
+    id: "setpiece.dorm_corner_bay",
+    displayName: "Dorm Corner Bay",
+    family: "academy",
+    category: "Interiors",
+    blurb: "Where a dormitory hall turns a corner (an L), 2 × 2 cells: the hall comes in from the west and leaves south; two rooms north, one east, a lounge in the outer corner, a washroom in the inner one.",
+    packs: ["collegiate", "gothic"],
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, glass: {}, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "windows_sash", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "windows_sash", "0,0,0:E": "windows_sash", "0,0,0:S": "open", "0,0,0:W": "open" }, glass: { "0,0,0:N": { role: "glass" }, "0,0,0:E": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "windows_sash", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, glass: { "0,0,0:E": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "Entry wall", position: [-3.5, 0, 5.56], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [0, 0, 5.56], size: [2, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [4.46, 0, 5.56], size: [2.92, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall (over the doors)", position: [0.96, 2.6, 5.56], size: [9.92, 0.9, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [5.56, 0, -3.5], size: [0.72, 2.6, 1], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [5.56, 0, 0], size: [0.72, 2.6, 2], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [5.56, 0, 4.1], size: [0.72, 2.6, 2.2], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall (over the doors)", position: [5.56, 2.6, 0.6], size: [0.72, 0.9, 9.2], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Washroom wall", position: [-3.5, 0, 2.44], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Washroom wall", position: [0.9, 0, 2.44], size: [3.8, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Washroom wall (over the door)", position: [-0.6, 2.6, 2.44], size: [6.8, 0.9, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Washroom wall", position: [2.44, 0, -0.96], size: [0.72, 3.5, 6.08], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Room partition", position: [0, 0, 8.71], size: [0.12, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Lounge partition", position: [4, 0, 8.71], size: [0.12, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Lounge partition", position: [8.71, 0, 0], size: [5.58, 3.5, 0.12], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 0, 8.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [8.71, 0, -3.97], size: [5.58, 3.5, 0.06], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 0, -0.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-0.71, 0, -3.97], size: [5.58, 3.5, 0.06], material: "core.pbr_plaster_white" },
+      { kind: "prop", model: "kit.door.oak_open", position: [-2, 0, 6.18], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-3.611, 0, 8.57], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-3.611, 0, 10.12], yaw: 1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [-0.637, 0, 10.375], yaw: 0, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-3.47, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-0.53, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hh_cupboard_sink", position: [-3.61, 0, 7.295], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [-3.338, 0, 8.355], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.seat.chair", position: [-3.338, 0, 9.905], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.door.oak_open", position: [2, 0, 6.18], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [0.389, 0, 8.57], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [0.389, 0, 10.12], yaw: 1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [3.363, 0, 10.375], yaw: 0, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [0.53, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [3.47, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hh_cupboard_sink", position: [0.39, 0, 7.295], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [0.662, 0, 8.355], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.seat.chair", position: [0.662, 0, 9.905], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.door.oak_open", position: [6.18, 0, -2], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [8.57, 0, -0.389], yaw: 3.141592, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [10.12, 0, -0.389], yaw: 3.141592, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [10.375, 0, -3.363], yaw: 1.570796, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [5.926, 0, -0.53], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [5.926, 0, -3.47], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_cupboard_sink", position: [7.295, 0, -0.39], yaw: 3.141592, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [8.355, 0, -0.662], yaw: 0, scale: 1, solid: false },
+      { kind: "prop", model: "kit.seat.chair", position: [9.905, 0, -0.662], yaw: 0, scale: 1, solid: false },
+      { kind: "prop", model: "kit.door.oak_open", position: [6.18, 0, 2], yaw: 1.570796, scale: 1, variant: 1 },
+      { kind: "prop", model: "prop.hm_rug_round", position: [8.7, 0, 3.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hm_couch_large", position: [8.7, 0, 0.58], yaw: 0, scale: 1, unbreakable: true },
+      { kind: "prop", model: "prop.hm_armchair", position: [7, 0, 4.5], yaw: 3.141593, scale: 1, unbreakable: true },
+      { kind: "prop", model: "prop.hm_armchair", position: [10.4, 0, 4.5], yaw: 3.141593, scale: 1, unbreakable: true },
+      { kind: "prop", model: "prop.hm_fireplace", position: [8, 0, 11.18], yaw: 3.141593, scale: 1 },
+      { kind: "prop", model: "kit.bookcase.wide", position: [4.38, 0, 9], yaw: 1.570796, scale: 1, unbreakable: true },
+      { kind: "prop", model: "prop.hm_houseplant_tall", position: [11.1, 0, 11.1], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hm_toilet", position: [-3.58, 0, -3.3], yaw: 1.570796, scale: 1 },
+      { kind: "block", name: "Stall", position: [-3.12, 0, -2.55], size: [1.64, 2, 0.06], material: "core.white_tiles" },
+      { kind: "prop", model: "prop.hm_toilet", position: [-3.58, 0, -1.9], yaw: 1.570796, scale: 1 },
+      { kind: "block", name: "Stall", position: [-3.12, 0, -1.15], size: [1.64, 2, 0.06], material: "core.white_tiles" },
+      { kind: "prop", model: "prop.hm_shower", position: [-1, 0, -3.35], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hm_shower", position: [0.4, 0, -3.35], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [1.898, 0, -1.2], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [1.898, 0, 0], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.hh_basin", position: [1.898, 0, 1.2], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "kit.door.oak_open", position: [-2, 0, 1.82], yaw: 3.141593, scale: 1 },
+      { kind: "light", position: [4, 3.3, 4], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8.7, 3.3, 6], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 }
+    ]
+  },
+  // design: A side entry for a hall's long side (photo 16 of the brief): the south half of a Dorm Bay is an entrance hall, 8 m across, under a Round arch (3.2 m, voussoirs on both faces) in the outer wall, its walls the look's stone inside and out (an arch has no facade to clad it), open to the hall through a 6 m opening between two short piers (the hall's wall is a closet deep, as in a Dorm Bay); benches either side, a rug, two plants. North of the hall, the Dorm Bay's two rooms as they are. Half partitions at its ends, as a Dorm Bay's. Turn it half round for an entry on the other side; a Dorm Bay goes over it on the floor above.
+  {
+    id: "setpiece.dorm_entry_bay",
+    displayName: "Dorm Entry Bay",
+    family: "academy",
+    category: "Interiors",
+    blurb: "A Dorm Bay with a way in from outside on its south side: an entrance hall under a round stone arch where its two south rooms would be, open to the hall; the two north rooms as in a Dorm Bay.",
+    packs: ["collegiate", "gothic"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "arch_round", "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: {}, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { role: "stone" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "windows_sash", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "Entry wall", position: [-3.5, 0, 5.56], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [0, 0, 5.56], size: [2, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall", position: [3.5, 0, 5.56], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Entry wall (over the doors)", position: [0, 2.6, 5.56], size: [8, 0.9, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Room partition", position: [0, 0, 8.71], size: [0.12, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 0, 8.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [3.97, 0, 8.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Vestibule wall", position: [-3.5, 0, 2.44], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Vestibule wall", position: [3.5, 0, 2.44], size: [1, 2.6, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Vestibule wall (over the opening)", position: [0, 2.6, 2.44], size: [8, 0.9, 0.72], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [-3.97, 0, -0.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "End partition", position: [3.97, 0, -0.71], size: [0.06, 3.5, 5.58], material: "core.pbr_plaster_white" },
+      { kind: "prop", model: "kit.door.oak_open", position: [-2, 0, 6.18], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-3.611, 0, 8.57], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [-3.611, 0, 10.12], yaw: 1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [-0.637, 0, 10.375], yaw: 0, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-3.47, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [-0.53, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hh_cupboard_sink", position: [-3.61, 0, 7.295], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [-3.338, 0, 8.355], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.seat.chair", position: [-3.338, 0, 9.905], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.door.oak_open", position: [2, 0, 6.18], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [0.389, 0, 8.57], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk_hutch", position: [0.389, 0, 10.12], yaw: 1.570796, scale: 1, variant: 3 },
+      { kind: "prop", model: "kit.bed.bunk", position: [3.363, 0, 10.375], yaw: 0, scale: 1, variant: 5, unbreakable: true },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [0.53, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.cabinet.closet_front", position: [3.47, 0, 5.926], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hh_cupboard_sink", position: [0.39, 0, 7.295], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [0.662, 0, 8.355], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "kit.seat.chair", position: [0.662, 0, 9.905], yaw: -1.570796, scale: 1, solid: false },
+      { kind: "prop", model: "prop.hm_rug", position: [0, 0, -0.7], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.seat.bench", position: [-3.55, 0, -1.2], yaw: 1.570796, scale: 1, unbreakable: true },
+      { kind: "prop", model: "kit.seat.bench", position: [-3.55, 0, 0], yaw: 1.570796, scale: 1, unbreakable: true },
+      { kind: "prop", model: "kit.seat.bench", position: [3.55, 0, -1.2], yaw: -1.570796, scale: 1, unbreakable: true },
+      { kind: "prop", model: "kit.seat.bench", position: [3.55, 0, 0], yaw: -1.570796, scale: 1, unbreakable: true },
+      { kind: "prop", model: "prop.hm_houseplant_tall", position: [-3.4, 0, -3.1], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hm_houseplant_tall", position: [3.4, 0, -3.1], yaw: 0, scale: 1 },
+      { kind: "light", position: [0, 3.3, 4], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [0, 3.3, -0.6], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 }
+    ]
+  },
+  // design: The Stair End Bay with a Round arch (3.2 m, voussoirs and a keystone on both faces) for the lobby's outside door instead of a Room doorway, and no door leaf in it; the lobby's walls are the look's stone inside and out (an arch has no facade to clad it). Everything else as the Stair End Bay.
+  {
+    id: "setpiece.stair_end_bay_arched",
+    displayName: "Stair End Bay (arched door)",
+    family: "academy",
+    category: "Interiors",
+    blurb: "A Stair End Bay whose outside door is a round stone arch: the far end of a two-floor hall.",
+    packs: ["collegiate", "gothic"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 1, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 0, rotation: 1, edges: { "0,0,0:W": "open", "0,0,0:N": "open", "0,0,0:E": "wall", "0,0,0:S": "wall", "0,0,1:W": "open", "0,0,1:N": "open", "0,0,1:E": "window_sash", "0,0,1:S": "wall" }, glass: { "0,0,1:E": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { role: "stone" }, solids: { role: "trim" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:W": "arch_round", "0,0,0:N": "window_sash", "0,0,0:E": "open", "0,0,0:S": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { role: "stone" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 1, rotation: 0, edges: { "0,0,0:W": "window_sash", "0,0,0:N": "window_sash", "0,0,0:E": "open", "0,0,0:S": "open" }, glass: { "0,0,0:W": { role: "glass" }, "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "East wall", position: [3.75, 0, -0.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 0, 8.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 4, -0.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 4, 8.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Landing", position: [-2.5, 3.75, 2.95], size: [2, 0.25, 2.1], material: "core.pbr_terrazzo", tint: "#b0b3b2" },
+      { kind: "block", name: "Landing ceiling", position: [-2.5, 3.5, 2.95], size: [2, 0.25, 2.1], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Stair rail", position: [-1.75, 4, 1.95], size: [3.5, 1, 0.1], material: { role: "wood" } },
+      { kind: "block", name: "Stair ceiling", position: [0, 7.5, 0], size: [8, 0.2, 8], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Stair roof", position: [0, 7.7, 0], size: [8, 0.3, 8], material: { role: "roof" } },
+      { kind: "prop", model: "kit.seat.bench", position: [0, 0, 11.3], yaw: 3.141593, scale: 1, unbreakable: true },
+      { kind: "light", position: [0, 3.3, 7], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [0, 7.3, 7], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 }
+    ]
+  },
+  // design: The Stair End Bay with a Room doorway (an Oak Door standing open in it) in the upper landing room's outer wall, over the lobby's door, in place of its sash window: a skybridge or walkway on the first floor comes in there. Everything else as the Stair End Bay.
+  {
+    id: "setpiece.stair_end_bay_bridge",
+    displayName: "Stair End Bay (upper door)",
+    family: "academy",
+    category: "Interiors",
+    blurb: "A Stair End Bay with a second outside door on the upper floor, over the lobby's: where a bridge or a walkway meets the hall's end.",
+    packs: ["collegiate", "gothic"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 1, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "door" },
+      { side: "W", cell: [0, 1], level: 1, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 0, rotation: 1, edges: { "0,0,0:W": "open", "0,0,0:N": "open", "0,0,0:E": "wall", "0,0,0:S": "wall", "0,0,1:W": "open", "0,0,1:N": "open", "0,0,1:E": "window_sash", "0,0,1:S": "wall" }, glass: { "0,0,1:E": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { role: "stone" }, solids: { role: "trim" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:W": "door_room", "0,0,0:N": "window_sash", "0,0,0:E": "open", "0,0,0:S": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 1, rotation: 0, edges: { "0,0,0:W": "door_room", "0,0,0:N": "window_sash", "0,0,0:E": "open", "0,0,0:S": "open" }, glass: { "0,0,0:N": { role: "glass" } }, surfaces: { floor: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, walls: { material: "core.pbr_plaster_white" }, solids: { material: "core.pbr_terrazzo", tint: "#b0b3b2" }, underside: { material: "core.pbr_plaster_white" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "East wall", position: [3.75, 0, -0.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 0, 8.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 4, -0.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "East wall", position: [3.75, 4, 8.35], size: [0.5, 3.5, 6.3], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Landing", position: [-2.5, 3.75, 2.95], size: [2, 0.25, 2.1], material: "core.pbr_terrazzo", tint: "#b0b3b2" },
+      { kind: "block", name: "Landing ceiling", position: [-2.5, 3.5, 2.95], size: [2, 0.25, 2.1], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Stair rail", position: [-1.75, 4, 1.95], size: [3.5, 1, 0.1], material: { role: "wood" } },
+      { kind: "block", name: "Stair ceiling", position: [0, 7.5, 0], size: [8, 0.2, 8], material: "core.pbr_plaster_white" },
+      { kind: "block", name: "Stair roof", position: [0, 7.7, 0], size: [8, 0.3, 8], material: { role: "roof" } },
+      { kind: "prop", model: "kit.door.oak_open", position: [-2.83, 0, 8], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.seat.bench", position: [0, 0, 11.3], yaw: 3.141593, scale: 1, unbreakable: true },
+      { kind: "light", position: [0, 3.3, 7], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "light", position: [0, 7.3, 7], fixture: "ceiling", color: "#ffe9c4", intensity: 0.9, range: 9 },
+      { kind: "prop", model: "kit.door.oak_open", position: [-2.83, 4, 8], yaw: 1.570796, scale: 1 }
+    ]
+  },
+  // design: A tower of blocks in the cell's south-east corner (x -1.5 to 3.9, z -3.82 to 1.58 m), so it stands flush against a hall on the cell's east side and flush with that hall's south front: walls 0.5 m thick of the look's stone, a dressed plinth, string courses at each floor, a cornice under a parapet with merlons at the corners and the middle of each side, to 13.75 m. A door 2 m wide (bots keep 0.8 m off walls) under a stepped round head to 2.85 m, dressed with jambs, ring stones and a keystone, opens into a room 4.4 m square; a ladder in it climbs 11.8 m through a hatch to the lookout behind the parapet (the deck is behind the ladder, where a ladder's top lands). Two firing slits 0.22 m wide, one over the other, in the south, west and north faces of the shaft (the east face stands against the hall). Its east face stops 0.1 m short of the cell's edge so it does not share a face with the hall's wall.
+  {
+    id: "setpiece.corner_tower_square",
+    displayName: "Square Corner Tower",
+    family: "academy",
+    category: "Towers",
+    blurb: "A slim square stone tower to stand against a hall's corner, 5.4 m across and 13 m to its battlements: firing slits up three faces, a small round-headed door at its foot, a ladder inside to a lookout on top.",
+    packs: ["collegiate", "gothic"],
+    footprint: { cells: [[0, 0]], levels: [0, 3] },
+    mirror: "free",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "block", name: "South wall", position: [-0.65, 0, -3.57], size: [1.7, 4, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "South wall", position: [3.05, 0, -3.57], size: [1.7, 4, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Door head", position: [0.35, 2.2, -3.57], size: [0.3, 1.8, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Door head", position: [2.05, 2.2, -3.57], size: [0.3, 1.8, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Door head", position: [0.675, 2.6, -3.57], size: [0.35, 1.4, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Door head", position: [1.725, 2.6, -3.57], size: [0.35, 1.4, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Door head", position: [1.2, 2.85, -3.57], size: [0.7, 1.15, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "North wall", position: [1.2, 0, 1.33], size: [5.4, 4, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "West wall", position: [-1.25, 0, -1.12], size: [0.5, 4, 4.4], material: { role: "stone" } },
+      { kind: "block", name: "East wall", position: [3.65, 0, -1.12], size: [0.5, 4, 4.4], material: { role: "stone" } },
+      { kind: "block", name: "South wall", position: [-0.205, 4, -3.57], size: [2.59, 9, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "South wall", position: [2.605, 4, -3.57], size: [2.59, 9, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "South wall", position: [1.2, 4, -3.57], size: [0.22, 1, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "South wall", position: [1.2, 6.6, -3.57], size: [0.22, 2, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "South wall", position: [1.2, 10.2, -3.57], size: [0.22, 2.8, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "North wall", position: [-0.205, 4, 1.33], size: [2.59, 9, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "North wall", position: [2.605, 4, 1.33], size: [2.59, 9, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "North wall", position: [1.2, 4, 1.33], size: [0.22, 1, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "North wall", position: [1.2, 6.6, 1.33], size: [0.22, 2, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "North wall", position: [1.2, 10.2, 1.33], size: [0.22, 2.8, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "West wall", position: [-1.25, 4, -2.275], size: [0.5, 9, 2.09], material: { role: "stone" } },
+      { kind: "block", name: "West wall", position: [-1.25, 4, 0.035], size: [0.5, 9, 2.09], material: { role: "stone" } },
+      { kind: "block", name: "West wall", position: [-1.25, 4, -1.12], size: [0.5, 1, 0.22], material: { role: "stone" } },
+      { kind: "block", name: "West wall", position: [-1.25, 6.6, -1.12], size: [0.5, 2, 0.22], material: { role: "stone" } },
+      { kind: "block", name: "West wall", position: [-1.25, 10.2, -1.12], size: [0.5, 2.8, 0.22], material: { role: "stone" } },
+      { kind: "block", name: "East wall", position: [3.65, 4, -1.12], size: [0.5, 9, 4.4], material: { role: "stone" } },
+      { kind: "block", name: "Door jamb", position: [0.09, 0, -3.845], size: [0.22, 2.2, 0.05], material: { role: "trim" } },
+      { kind: "block", name: "Door jamb", position: [2.31, 0, -3.845], size: [0.22, 2.2, 0.05], material: { role: "trim" } },
+      { kind: "block", name: "Arch stone", position: [0.24, 2.2, -3.845], size: [0.52, 0.4, 0.05], material: { role: "trim" } },
+      { kind: "block", name: "Arch stone", position: [2.16, 2.2, -3.845], size: [0.52, 0.4, 0.05], material: { role: "trim" } },
+      { kind: "block", name: "Arch stone", position: [0.565, 2.6, -3.845], size: [0.57, 0.25, 0.05], material: { role: "trim" } },
+      { kind: "block", name: "Arch stone", position: [1.835, 2.6, -3.845], size: [0.57, 0.25, 0.05], material: { role: "trim" } },
+      { kind: "block", name: "Arch stone", position: [1.2, 2.85, -3.845], size: [1.1, 0.25, 0.05], material: { role: "trim" } },
+      { kind: "block", name: "Keystone", position: [1.2, 2.85, -3.855], size: [0.28, 0.4, 0.07], material: { role: "trim" } },
+      { kind: "block", name: "Plinth", position: [-0.8, 0, -3.86], size: [1.56, 0.5, 0.08], material: { role: "trim" } },
+      { kind: "block", name: "Plinth", position: [3.16, 0, -3.86], size: [1.48, 0.5, 0.08], material: { role: "trim" } },
+      { kind: "block", name: "Plinth", position: [1.16, 0, 1.62], size: [5.48, 0.5, 0.08], material: { role: "trim" } },
+      { kind: "block", name: "Plinth", position: [-1.54, 0, -1.12], size: [0.08, 0.5, 5.4], material: { role: "trim" } },
+      { kind: "block", name: "String course", position: [1.165, 4, -3.855], size: [5.47, 0.18, 0.07], material: { role: "trim" } },
+      { kind: "block", name: "String course", position: [1.165, 4, 1.615], size: [5.47, 0.18, 0.07], material: { role: "trim" } },
+      { kind: "block", name: "String course", position: [-1.535, 4, -1.12], size: [0.07, 0.18, 5.4], material: { role: "trim" } },
+      { kind: "block", name: "String course", position: [1.165, 8, -3.855], size: [5.47, 0.18, 0.07], material: { role: "trim" } },
+      { kind: "block", name: "String course", position: [1.165, 8, 1.615], size: [5.47, 0.18, 0.07], material: { role: "trim" } },
+      { kind: "block", name: "String course", position: [-1.535, 8, -1.12], size: [0.07, 0.18, 5.4], material: { role: "trim" } },
+      { kind: "block", name: "Cornice", position: [1.14, 11.75, -3.88], size: [5.52, 0.25, 0.12], material: { role: "trim" } },
+      { kind: "block", name: "Cornice", position: [1.14, 11.75, 1.64], size: [5.52, 0.25, 0.12], material: { role: "trim" } },
+      { kind: "block", name: "Cornice", position: [-1.56, 11.75, -1.12], size: [0.12, 0.25, 5.4], material: { role: "trim" } },
+      { kind: "block", name: "Floor", position: [1.2, 0, -1.12], size: [4.4, 0.1, 4.4], material: "core.pbr_flagstone" },
+      { kind: "block", name: "Deck", position: [1.2, 11.4, -0.46], size: [4.4, 0.4, 3.08], material: "core.pbr_flagstone" },
+      { kind: "block", name: "Deck", position: [-0.25, 11.4, -2.66], size: [1.5, 0.4, 1.32], material: "core.pbr_flagstone" },
+      { kind: "block", name: "Deck", position: [2.65, 11.4, -2.66], size: [1.5, 0.4, 1.32], material: "core.pbr_flagstone" },
+      { kind: "ladder", name: "Tower ladder", position: [1.2, 0.1, -2.05], yaw: 3.141593, height: 11.7, width: 0.9 },
+      { kind: "block", name: "Merlon", position: [-1.05, 13, -3.57], size: [0.9, 0.75, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Merlon", position: [1.2, 13, -3.57], size: [0.9, 0.75, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Merlon", position: [3.45, 13, -3.57], size: [0.9, 0.75, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Merlon", position: [-1.05, 13, 1.33], size: [0.9, 0.75, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Merlon", position: [1.2, 13, 1.33], size: [0.9, 0.75, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Merlon", position: [3.45, 13, 1.33], size: [0.9, 0.75, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Merlon", position: [-1.25, 13, -1.12], size: [0.5, 0.75, 0.9], material: { role: "stone" } },
+      { kind: "block", name: "Merlon", position: [3.65, 13, -1.12], size: [0.5, 0.75, 0.9], material: { role: "stone" } },
+      { kind: "block", name: "Coping", position: [1.18, 12.88, -3.58], size: [5.44, 0.12, 0.56], material: { role: "trim" } },
+      { kind: "block", name: "Coping", position: [1.18, 12.88, 1.34], size: [5.44, 0.12, 0.56], material: { role: "trim" } },
+      { kind: "block", name: "Coping", position: [-1.26, 12.88, -1.12], size: [0.56, 0.12, 4.36], material: { role: "trim" } },
+      { kind: "block", name: "Coping", position: [3.64, 12.88, -1.12], size: [0.52, 0.12, 4.36], material: { role: "trim" } }
+    ]
+  },
+  {
+    id: "setpiece.arena_bay_podium",
+    displayName: "Arena Bay (Podium)",
+    family: "arena",
+    category: "Arena",
+    blurb: "The lowest bay of the stands: the 2 m podium wall over the sand, its walkway and the first seats, a vaulted gallery behind under the second tier of seats (8 m up at the back).",
+    packs: ["imperial", "desert"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 2] },
+    mirror: "free",
+    ports: [
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 1, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 1, kind: "opening" },
+      { side: "N", cell: [0, 1], level: 2, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "imperial.seating", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "open" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 1, edges: { "0,0,0:E": "wall", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "vault" } },
+      { kind: "tile", tile: "core.cavea", x: 0, y: 1, z: 1, rotation: 0, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "light", position: [-2.6, 2.3, 4.53], yaw: 0, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 }
+    ]
+  },
+  {
+    id: "setpiece.arena_bay_tier",
+    displayName: "Arena Bay (Upper Tier)",
+    family: "arena",
+    category: "Arena",
+    blurb: "A bay of the upper stands: two cells of seats rising two levels, a vaulted gallery under the back half. Place it two cells behind and two levels above the bay in front, on Grand Arcades.",
+    packs: ["imperial", "desert"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 2] },
+    mirror: "free",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 1, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 1, kind: "opening" },
+      { side: "N", cell: [0, 1], level: 2, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.cavea", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 1, edges: { "0,0,0:E": "wall", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "vault" } },
+      { kind: "tile", tile: "core.cavea", x: 0, y: 1, z: 1, rotation: 0, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "light", position: [-2.6, 2.3, 4.53], yaw: 0, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 }
+    ]
+  },
+  {
+    id: "setpiece.arena_vomitorium",
+    displayName: "Arena Bay (Vomitorium)",
+    family: "arena",
+    category: "Arena",
+    blurb: "An upper-tier bay with a vomitorium: from the gallery a passage runs out under the top rows onto the walkway in front, with aisle stairs either side of its mouth up the seats.",
+    packs: ["imperial", "desert"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 2] },
+    mirror: "free",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 1], level: 1, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 1, kind: "opening" },
+      { side: "N", cell: [0, 1], level: 2, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.cavea_vomitorium", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 1, edges: { "0,0,0:E": "arch_round", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "vault" } },
+      { kind: "tile", tile: "core.cavea", x: 0, y: 1, z: 1, rotation: 0, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "light", position: [-2.6, 2.3, 4.53], yaw: 0, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 }
+    ]
+  },
+  {
+    id: "setpiece.arena_arcade",
+    displayName: "Grand Arcade",
+    family: "arena",
+    category: "Arena",
+    blurb: "Two storeys of the colosseum's arcades: a vaulted gallery with a grand round arch in each long side (north and south). Stack them up the outside as the facade, and under the upper tiers of seats.",
+    packs: ["imperial", "desert"],
+    footprint: { cells: [[0, 0]], levels: [0, 1] },
+    mirror: "free",
+    ports: [
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.gallery_grand", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "arch_grand", "0,0,0:S": "arch_grand" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } }
+    ]
+  },
+  {
+    id: "setpiece.arena_attic",
+    displayName: "Arena Attic",
+    family: "arena",
+    category: "Arena",
+    blurb: "The attic storey that tops the facade: a walkway behind the highest seats (open to the south), small windows in the outer wall, a roof.",
+    packs: ["imperial", "desert"],
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 1, edges: { "0,0,0:E": "open", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "light", position: [0, 3.3, 0], fixture: "chandelier", color: "#fff1d6", intensity: 0.8, range: 8 }
+    ]
+  },
+  {
+    id: "setpiece.arena_corner",
+    displayName: "Arena Corner",
+    family: "arena",
+    category: "Arena",
+    blurb: "A 45° corner of the stands for an octagonal arena: podium, rows round the corner with aisles up the mitres and centre, galleries at levels 0, 2 and 4, the facade's arcades and attic. Anchor on the sand's corner cell; turn with R.",
+    packs: ["imperial", "desert"],
+    footprint: { cells: [[2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1], [0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3], [0, 4], [1, 4], [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [0, 5], [1, 5], [2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [0, 6], [1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [0, 7], [1, 7], [2, 7], [3, 7], [4, 7], [0, 8], [1, 8], [2, 8], [3, 8]], levels: [0, 7] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 3], level: 0, kind: "opening" },
+      { side: "S", cell: [3, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 5], level: 2, kind: "opening" },
+      { side: "S", cell: [5, 0], level: 2, kind: "opening" },
+      { side: "W", cell: [0, 7], level: 4, kind: "opening" },
+      { side: "S", cell: [7, 0], level: 4, kind: "opening" },
+      { side: "W", cell: [0, 8], level: 0, kind: "opening" },
+      { side: "S", cell: [8, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 8], level: 2, kind: "opening" },
+      { side: "S", cell: [8, 0], level: 2, kind: "opening" },
+      { side: "W", cell: [0, 8], level: 4, kind: "opening" },
+      { side: "S", cell: [8, 0], level: 4, kind: "opening" },
+      { side: "W", cell: [0, 8], level: 6, kind: "opening" },
+      { side: "S", cell: [8, 0], level: 6, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.arena_corner_ground", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_corner_mid", x: 0, y: 0, z: 2, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_corner_upper", x: 0, y: 0, z: 4, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_corner_attic", x: 0, y: 0, z: 6, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "light", position: [-2.5, 2.3, 20.53], yaw: 0, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [20.53, 2.3, -2.5], yaw: 1.5707963267948966, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [10.032, 2.3, 10.032], yaw: 0.7853981633974483, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [1, 10.3, 36.53], yaw: 0, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [36.53, 10.3, 1], yaw: 1.5707963267948966, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [21.345, 10.3, 21.345], yaw: 0.7853981633974483, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [4, 18.3, 52.53], yaw: 0, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [52.53, 18.3, 4], yaw: 1.5707963267948966, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [28.77, 18.3, 36.548], yaw: 0.7853981633974483, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [36.548, 18.3, 28.77], yaw: 0.7853981633974483, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [4, 27.3, 64], fixture: "chandelier", color: "#fff1d6", intensity: 0.8, range: 8 },
+      { kind: "light", position: [64, 27.3, 4], fixture: "chandelier", color: "#fff1d6", intensity: 0.8, range: 8 },
+      { kind: "light", position: [40.77, 27.3, 40.77], fixture: "chandelier", color: "#fff1d6", intensity: 0.8, range: 8 }
+    ]
+  },
+  {
+    id: "setpiece.arena_corner_gate",
+    displayName: "Arena Corner (Gate)",
+    family: "arena",
+    category: "Arena",
+    blurb: "The Arena Corner with its gate: a Gladiator Gate on the diagonal (its portcullis in the mouth), stair wells down a level, podium stairs beside it, the gatehouse tower over its outer end. Anchor on the sand's corner cell.",
+    packs: ["imperial", "desert"],
+    footprint: { cells: [[2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1], [0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2], [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3], [0, 4], [1, 4], [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [0, 5], [1, 5], [2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [0, 6], [1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [0, 7], [1, 7], [2, 7], [3, 7], [4, 7], [0, 8], [1, 8], [2, 8], [3, 8], [7, 5], [6, 6], [7, 6], [5, 7], [6, 7]], levels: [0, 8] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 3], level: 0, kind: "opening" },
+      { side: "S", cell: [3, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 5], level: 2, kind: "opening" },
+      { side: "S", cell: [5, 0], level: 2, kind: "opening" },
+      { side: "W", cell: [0, 7], level: 4, kind: "opening" },
+      { side: "S", cell: [7, 0], level: 4, kind: "opening" },
+      { side: "W", cell: [0, 8], level: 0, kind: "opening" },
+      { side: "S", cell: [8, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 8], level: 2, kind: "opening" },
+      { side: "S", cell: [8, 0], level: 2, kind: "opening" },
+      { side: "W", cell: [0, 8], level: 4, kind: "opening" },
+      { side: "S", cell: [8, 0], level: 4, kind: "opening" },
+      { side: "W", cell: [0, 8], level: 6, kind: "opening" },
+      { side: "S", cell: [8, 0], level: 6, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.arena_corner_ground_gate", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_corner_mid", x: 0, y: 0, z: 2, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_corner_upper", x: 0, y: 0, z: 4, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_corner_attic_gate", x: 0, y: 0, z: 6, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_corner_tower", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "door", name: "Gate", position: [4.707, 0, 4.707], yaw: 0.7853981633974483, style: "portcullis", startOpen: true, auto: false },
+      { kind: "light", position: [-2.5, 2.3, 20.53], yaw: 0, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [20.53, 2.3, -2.5], yaw: 1.5707963267948966, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [10.032, 3.6, 10.032], yaw: 0.7853981633974483, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [1, 10.3, 36.53], yaw: 0, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [36.53, 10.3, 1], yaw: 1.5707963267948966, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [21.345, 10.3, 21.345], yaw: 0.7853981633974483, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [4, 18.3, 52.53], yaw: 0, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [52.53, 18.3, 4], yaw: 1.5707963267948966, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [28.77, 18.3, 36.548], yaw: 0.7853981633974483, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [36.548, 18.3, 28.77], yaw: 0.7853981633974483, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [4, 27.3, 64], fixture: "chandelier", color: "#fff1d6", intensity: 0.8, range: 8 },
+      { kind: "light", position: [64, 27.3, 4], fixture: "chandelier", color: "#fff1d6", intensity: 0.8, range: 8 },
+      { kind: "light", position: [40.77, 27.3, 40.77], fixture: "chandelier", color: "#fff1d6", intensity: 0.8, range: 8 },
+      { kind: "light", position: [30.87, 3, 30.87], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [22.194, 2.3, 28.515], yaw: 2.356194490192345, fixture: "candle", color: "#ffb070", intensity: 1, range: 9 },
+      { kind: "light", position: [28.515, 2.3, 22.194], yaw: -0.7853981633974483, fixture: "candle", color: "#ffb070", intensity: 1, range: 9 },
+      { kind: "light", position: [45.556, 10.3, 45.556], yaw: -2.356194490192345, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 },
+      { kind: "light", position: [45.556, 26.3, 45.556], yaw: -2.356194490192345, fixture: "candle", color: "#ffd9a0", intensity: 1, range: 9 }
+    ]
+  },
+  // design: Each Atrium climbs one level on its own stair (ground to first, second to third); the Stairwell in the east column joins the lower atrium's balcony (level 1) to the upper atrium's floor (level 2), so every floor is reached. Offices on levels 1-3 open onto the balconies. It can't be mirrored (the stairs): turn it.
+  {
+    id: "setpiece.atrium_tower",
+    displayName: "Atrium Tower",
+    family: "atrium",
+    category: "Towers",
+    blurb: "A four-storey tower round a glazed atrium (two Atriums stacked, balconies all round), a lobby, offices up the east side and a stairwell joining the first floor to the second: 3 × 2 cells, levels 0-3.",
+    packs: ["neon", "suburban", "harbor", "orbital", "military", "collegiate", "urban"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], levels: [0, 3] },
+    mirror: "none",
+    roles: { glass: "breakable" },
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "door" },
+      { side: "W", cell: [0, 1], level: 0, kind: "door" },
+      { side: "E", cell: [2, 0], level: 0, kind: "door" },
+      { side: "N", cell: [2, 1], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.atrium", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "door", "0,1,0:W": "door", "0,0,0:W": "wall", "0,1,0:N": "wall", "1,1,0:N": "wall", "1,0,0:S": "wall", "0,0,1:S": "windows", "1,0,1:S": "windows", "0,0,1:W": "windows", "0,1,1:W": "windows", "0,1,1:N": "windows", "1,1,1:N": "windows" }, glass: { "0,0,1:S": { role: "glass" }, "1,0,1:S": { role: "glass" }, "0,0,1:W": { role: "glass" }, "0,1,1:W": { role: "glass" }, "0,1,1:N": { role: "glass" }, "1,1,1:N": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.atrium", x: 0, y: 0, z: 2, rotation: 0, edges: { "0,0,0:S": "windows", "1,0,0:S": "windows", "0,0,0:W": "windows", "0,1,0:W": "windows", "0,1,0:N": "windows", "1,1,0:N": "windows", "0,0,1:S": "windows", "1,0,1:S": "windows", "0,0,1:W": "windows", "0,1,1:W": "windows", "0,1,1:N": "windows", "1,1,1:N": "windows" }, glass: { "0,0,0:S": { role: "glass" }, "1,0,0:S": { role: "glass" }, "0,0,0:W": { role: "glass" }, "0,1,0:W": { role: "glass" }, "0,1,0:N": { role: "glass" }, "1,1,0:N": { role: "glass" }, "0,0,1:S": { role: "glass" }, "1,0,1:S": { role: "glass" }, "0,0,1:W": { role: "glass" }, "0,1,1:W": { role: "glass" }, "0,1,1:N": { role: "glass" }, "1,1,1:N": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:S": "windows", "0,0,0:N": "open", "0,0,0:W": "wide" }, glass: { "0,0,0:S": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "door", "0,0,0:E": "windows", "0,0,0:S": "open", "0,0,0:W": "wide" }, glass: { "0,0,0:E": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 1, z: 1, rotation: 0, edges: { "0,0,0:N": "wall", "0,0,0:E": "wall", "0,0,1:N": "wall", "0,0,1:E": "wall" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:S": "windows", "0,0,0:N": "wall", "0,0,0:W": "door" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:S": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 2, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:S": "windows", "0,0,0:N": "wall", "0,0,0:W": "door" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:S": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 3, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:S": "windows", "0,0,0:N": "door", "0,0,0:W": "door" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:S": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 3, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:N": "windows", "0,0,0:S": "door", "0,0,0:W": "door" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:N": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "door", name: "South door", position: [0, 0, -4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "door", name: "West door", position: [-4, 0, 8], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "door", name: "East door", position: [20, 0, 0], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "door", name: "North door", position: [16, 0, 12], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "light", position: [4, 3.3, 4], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [4, 7.3, 4], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [4, 11.3, 4], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [4, 15.3, 4], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [16, 3.3, 4], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 9 },
+      { kind: "light", position: [16, 15.3, 8], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 9 },
+      { kind: "prop", model: "kit.seat.bench", position: [4, 0, 7], yaw: 0, scale: 1 },
+      { kind: "block", name: "Atrium roof", position: [4, 15.6, 4], size: [15.5, 0.4, 15.5], material: { role: "roof" } }
+    ]
+  },
+  // design: Rooms with slits on three sides and a door onto the yard (roofed, in the pack's facade), a Courtyard between them and a Courtyard (Low Wall) as the way in. Sandbags in the yard. Everything is its own mirror image.
+  {
+    id: "setpiece.bunker_cluster",
+    displayName: "Bunker Cluster",
+    family: "bunkercluster",
+    category: "Fortifications",
+    blurb: "Three bunkers with firing slits round a sandbagged yard, a low wall across its way in: hold it from inside, or fight into the yard (a cross of five cells in a 3 × 3 square).",
+    packs: ["military", "snow", "harbor", "desert", "jungle"],
+    footprint: { cells: [[1, 0], [0, 1], [1, 1], [2, 1], [1, 2]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [1, 0], level: 0, kind: "opening" }
+    ],
+    markers: [{ name: "yard", kind: "spot", parts: [0] }],
+    parts: [
+      { kind: "tile", tile: "core.yard", x: 1, y: 1, z: 0, rotation: 0, surfaces: { floor: { role: "paving" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "slit", "0,0,0:E": "door", "0,0,0:S": "slit", "0,0,0:W": "slit" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "slit", "0,0,0:E": "slit", "0,0,0:S": "slit", "0,0,0:W": "door" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 2, z: 0, rotation: 0, edges: { "0,0,0:N": "slit", "0,0,0:E": "slit", "0,0,0:S": "door", "0,0,0:W": "slit" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.yard_wall", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "door", name: "West bunker door", position: [4, 0, 8], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "door", name: "East bunker door", position: [12, 0, 8], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "door", name: "North bunker door", position: [8, 0, 12], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "prop", model: "prop.sandbag_wall", position: [5.6, 0, 5.2], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_wall", position: [10.4, 0, 5.2], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.ammo_crate", position: [8, 0, 9], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_corner", position: [5.6, 0, 10.4], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_corner", position: [10.4, 0, 10.4], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.ammo_stack", position: [-2.5, 0, 10.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.ammo_stack", position: [18.5, 0, 10.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.table.dining", position: [8, 0, 18], yaw: 0, scale: 1 },
+      { kind: "light", position: [0, 3, 8], fixture: "bulb", color: "#ffd9a0", intensity: 0.9, range: 8 },
+      { kind: "light", position: [16, 3, 8], fixture: "bulb", color: "#ffd9a0", intensity: 0.9, range: 8 },
+      { kind: "light", position: [8, 3, 16], fixture: "bulb", color: "#ffd9a0", intensity: 0.9, range: 8 }
+    ]
+  },
+  // design: Set pieces part 6 (owner: swap the Bunker tile for a set piece of its own size): two Rooms open to each other, the Bunker's doorways (west, east, south) and slits elsewhere, roofed, in the look's facade; its centre pillar and its cover as blocks where the tile has them.
+  {
+    id: "setpiece.bunker",
+    displayName: "Bunker",
+    family: "bunkercluster",
+    category: "Fortifications",
+    blurb: "Two cells of thick concrete with firing slits, a centre pillar and sandbag cover inside the doors (west, east and south): the Bunker tile as a set piece, in the look of the map.",
+    packs: ["military", "snow", "harbor", "desert", "jungle"],
+    footprint: { cells: [[0, 0], [1, 0]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "door" },
+      { side: "E", cell: [1, 0], level: 0, kind: "door" },
+      { side: "S", cell: [0, 0], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:W": "door", "0,0,0:S": "door", "0,0,0:N": "slit", "0,0,0:E": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:S": "slit", "0,0,0:N": "slit", "0,0,0:W": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "block", name: "Centre pillar", position: [4, 0, 0], size: [1.2, 4, 1.2], material: { role: "stone" } },
+      { kind: "block", name: "Cover", position: [-1.3, 0, -1.5], size: [0.6, 1.1, 1.8], material: "core.sandbags" },
+      { kind: "block", name: "Cover", position: [-1.6, 0, -1.1], size: [2, 1.1, 0.6], material: "core.sandbags" },
+      { kind: "block", name: "Cover", position: [9.3, 0, 1.5], size: [0.6, 1.1, 1.8], material: "core.sandbags" },
+      { kind: "block", name: "Cover", position: [7.75, 0, 3.1], size: [3.5, 0.9, 1], material: { role: "stone" } },
+      { kind: "light", position: [0, 3, 0], fixture: "bulb", color: "#ffd9a0", intensity: 0.9, range: 8 },
+      { kind: "light", position: [8, 3, 0], fixture: "bulb", color: "#ffd9a0", intensity: 0.9, range: 8 }
+    ]
+  },
+  {
+    id: "setpiece.carriageway_1",
+    displayName: "Carriageway",
+    family: "carriageway",
+    category: "Gateways",
+    blurb: "A vaulted passage one cell wide under a building, a segmental stone arch at each end, a door each side into the buildings it joins and a room over the arch.",
+    packs: ["collegiate", "gothic", "medieval", "imperial", "desert", "harbor"],
+    footprint: { cells: [[0, 0]], levels: [0, 1] },
+    mirror: "free",
+    roles: { glass: "breakable" },
+    ports: [
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "door" },
+      { side: "E", cell: [0, 0], level: 0, kind: "door" },
+      { side: "W", cell: [0, 0], level: 1, kind: "door" },
+      { side: "E", cell: [0, 0], level: 1, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "arch_segmental", "0,0,0:S": "arch_segmental", "0,0,0:E": "door", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } }, options: { ceiling: "vault" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 1, rotation: 0, edges: { "0,0,0:N": "windows", "0,0,0:S": "windows" }, glass: { "0,0,0:N": { role: "glass" }, "0,0,0:S": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "door", name: "West door", position: [-4, 0, 0], yaw: 1.5707963267948966, style: { role: "door" }, auto: true },
+      { kind: "door", name: "East door", position: [4, 0, 0], yaw: 1.5707963267948966, style: { role: "door" }, auto: true },
+      { kind: "light", position: [-3.47, 2.3, 2.5], yaw: 1.5707963267948966, fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9 },
+      { kind: "light", position: [3.47, 2.3, -2.5], yaw: -1.5707963267948966, fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9 },
+      { kind: "block", name: "Guard stone", position: [-2.3, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [2.3, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [-2.3, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [2.3, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "light", position: [0, 7.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 }
+    ],
+    markers: [{ name: "passage_doors", kind: "doorPair", parts: [2, 3] }]
+  },
+  {
+    id: "setpiece.carriageway_2",
+    displayName: "Wide Carriageway",
+    family: "carriageway",
+    category: "Gateways",
+    blurb: "A vaulted passage two cells wide under a building: twin segmental arches at each end on a central pier, a column under the vaults' middle beam, a door each side and two rooms over the arches.",
+    packs: ["collegiate", "gothic", "medieval", "imperial", "desert", "harbor"],
+    footprint: { cells: [[0, 0], [1, 0]], levels: [0, 1] },
+    mirror: "free",
+    roles: { glass: "breakable" },
+    ports: [
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "door" },
+      { side: "E", cell: [1, 0], level: 0, kind: "door" },
+      { side: "W", cell: [0, 0], level: 1, kind: "door" },
+      { side: "E", cell: [1, 0], level: 1, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "arch_segmental", "0,0,0:S": "arch_segmental", "0,0,0:E": "open", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } }, options: { ceiling: "vault" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "arch_segmental", "0,0,0:S": "arch_segmental", "0,0,0:E": "door", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } }, options: { ceiling: "vault" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 1, rotation: 0, edges: { "0,0,0:N": "windows", "0,0,0:S": "windows", "0,0,0:E": "open" }, glass: { "0,0,0:N": { role: "glass" }, "0,0,0:S": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 1, rotation: 0, edges: { "0,0,0:N": "windows", "0,0,0:S": "windows", "0,0,0:W": "open" }, glass: { "0,0,0:N": { role: "glass" }, "0,0,0:S": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "door", name: "West door", position: [-4, 0, 0], yaw: 1.5707963267948966, style: { role: "door" }, auto: true },
+      { kind: "door", name: "East door", position: [12, 0, 0], yaw: 1.5707963267948966, style: { role: "door" }, auto: true },
+      { kind: "block", name: "Column", position: [4, 0, 0], size: [0.8, 2.57, 0.8], material: { role: "stone" } },
+      { kind: "light", position: [-3.47, 2.3, 2.5], yaw: 1.5707963267948966, fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9 },
+      { kind: "light", position: [-3.47, 2.3, -2.5], yaw: 1.5707963267948966, fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9 },
+      { kind: "light", position: [11.47, 2.3, 2.5], yaw: -1.5707963267948966, fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9 },
+      { kind: "light", position: [11.47, 2.3, -2.5], yaw: -1.5707963267948966, fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9 },
+      { kind: "block", name: "Guard stone", position: [-2.3, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [2.3, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [5.7, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [10.3, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [-2.3, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [2.3, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [5.7, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [10.3, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "light", position: [0, 7.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [8, 7.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 }
+    ],
+    markers: [{ name: "passage_doors", kind: "doorPair", parts: [4, 5] }]
+  },
+  // design: Clear it at close quarters: in by the rear door (north) or the side door (east), round the loop gun room - ammunition room - crew room - hall. The embrasure (3.5 m by 1.1 m, sill 0.9 m) and the slit are for shooting, not for getting in. The front cells (the anchor row) are the apron: the flanking walls and the canopy over the embrasure stand there, the ground in front is the map's. Its roof is 1.5 m of concrete under 0.6 m of sod.
+  {
+    id: "setpiece.casemate",
+    displayName: "Gun Casemate",
+    family: "casemate",
+    category: "Fortifications",
+    blurb: "A concrete gun casemate under a sod roof: the embrasure faces south between flanking walls under a canopy; ammunition room (slit, side door), hall (rear door) and crew room make a loop.",
+    packs: ["military", "snow", "harbor"],
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1], [0, 2], [1, 2]], levels: [0, 1] },
+    mirror: "free",
+    ports: [
+      { side: "N", cell: [0, 2], level: 0, kind: "door" },
+      { side: "E", cell: [1, 1], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "open", "0,0,0:N": "door", "0,0,0:S": "embrasure", "0,0,0:W": "wall" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "slit", "0,0,0:W": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 2, z: 0, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "door", "0,0,0:W": "wall" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 2, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "door", "0,0,0:W": "door" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "door", name: "Rear door", position: [0, 0, 20], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "door", name: "Side door", position: [12, 0, 8], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "block", name: "Roof slab", position: [4, 4, 12], size: [16, 1, 16], material: { role: "stone" } },
+      { kind: "block", name: "Canopy", position: [0, 4, 2.5], size: [8, 1, 3], material: { role: "stone" } },
+      { kind: "block", name: "Flanking wall", position: [-3.6, 0, 2.5], size: [0.8, 4, 3], material: { role: "stone" } },
+      { kind: "block", name: "Flanking wall", position: [3.6, 0, 2.5], size: [0.8, 4, 3], material: { role: "stone" } },
+      { kind: "block", name: "Sod roof", position: [4, 5, 12], size: [15.4, 0.6, 15.4], material: "core.pbr_forest" },
+      { kind: "block", name: "Gun pedestal", position: [0, 0, 6.45], size: [2, 0.5, 2], material: { role: "stone" } },
+      { kind: "block", name: "Gun pedestal", position: [0, 0, 6.45], size: [2, 0.48, 2], material: { role: "stone" }, yaw: 0.785398 },
+      { kind: "block", name: "Gun carriage", position: [0, 0.5, 6.05], size: [1.2, 0.6, 1.8], material: { role: "metal" } },
+      { kind: "block", name: "Gun shield", position: [0, 0.5, 5.1], size: [2.4, 1.5, 0.1], material: { role: "metal" } },
+      { kind: "block", name: "Gun barrel", position: [0, 1.25, 3.4], size: [0.22, 0.22, 4.2], material: { role: "metal" } },
+      { kind: "block", name: "Recoil cylinder", position: [0, 1, 5.65], size: [0.3, 0.3, 1.2], material: { role: "metal" } },
+      { kind: "block", name: "Gun breech", position: [0, 1, 6.4], size: [0.5, 0.55, 0.8], material: { role: "metal" } },
+      { kind: "prop", model: "prop.ammo_stack", position: [10.9, 0, 5.2], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.ammo_stack", position: [10.9, 0, 10.8], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.ammo_crate", position: [-2.9, 0, 8.6], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.ammo_crate", position: [-2.9, 0, 9.9], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.bed.bunk", position: [10.7, 0, 17.4], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.table.dining", position: [6.4, 0, 18.6], yaw: 0, scale: 1 },
+      { kind: "light", position: [-3.47, 2.3, 6.8], yaw: 1.570796, fixture: "wall", color: "#ffd9a0", intensity: 0.9, range: 8 },
+      { kind: "light", position: [8, 3.3, 8], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 8 },
+      { kind: "light", position: [0, 3.3, 16], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 8 },
+      { kind: "light", position: [8, 3.3, 16], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 8 }
+    ],
+    markers: [{ name: "ways_in", kind: "doorPair", parts: [4, 5] }]
+  },
+  // design: The cell in front (the anchor) is the cave mouth: no floor of its own, rock round the embrasure, the cliff ledge under it in terrain. The gun room has two ways out (the sally port and the hall), the hall three.
+  {
+    id: "setpiece.casemate_cave",
+    displayName: "Cliff Casemate",
+    family: "casemate",
+    category: "Fortifications",
+    blurb: "A casemate set into the cliff: its embrasure looks out through a rock cave mouth (south), a sally port onto the cliff face (west), a hall behind with the rear and side doors. Bury it in the cliff with the terrain tools.",
+    packs: ["military", "snow", "harbor"],
+    footprint: { cells: [[0, 0], [0, 1], [0, 2]], levels: [0, 1] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 1], level: 0, kind: "door" },
+      { side: "N", cell: [0, 2], level: 0, kind: "door" },
+      { side: "E", cell: [0, 2], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "door", "0,0,0:S": "embrasure", "0,0,0:W": "door" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 2, z: 0, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "door", "0,0,0:W": "wall" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "door", name: "Sally port", position: [-4, 0, 8], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "door", name: "Rear door", position: [0, 0, 20], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "door", name: "Side door", position: [4, 0, 16], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "block", name: "Gun pedestal", position: [0, 0, 6.45], size: [2, 0.5, 2], material: { role: "stone" } },
+      { kind: "block", name: "Gun pedestal", position: [0, 0, 6.45], size: [2, 0.48, 2], material: { role: "stone" }, yaw: 0.785398 },
+      { kind: "block", name: "Gun carriage", position: [0, 0.5, 6.05], size: [1.2, 0.6, 1.8], material: { role: "metal" } },
+      { kind: "block", name: "Gun shield", position: [0, 0.5, 5.1], size: [2.4, 1.5, 0.1], material: { role: "metal" } },
+      { kind: "block", name: "Gun barrel", position: [0, 1.25, 3.4], size: [0.22, 0.22, 4.2], material: { role: "metal" } },
+      { kind: "block", name: "Recoil cylinder", position: [0, 1, 5.65], size: [0.3, 0.3, 1.2], material: { role: "metal" } },
+      { kind: "block", name: "Gun breech", position: [0, 1, 6.4], size: [0.5, 0.55, 0.8], material: { role: "metal" } },
+      { kind: "prop", model: "prop.mc_cave_entrance", position: [0, 0, 3.4], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.mc_cave_rock_wall", position: [-2.7, 0, 3], yaw: 0.15, scale: 1 },
+      { kind: "prop", model: "prop.mc_cave_rock_wall", position: [2.7, 0, 3], yaw: -0.15, scale: 1 },
+      { kind: "prop", model: "prop.mc_cave_rocks_a", position: [-2.8, 0, 1.2], yaw: 0.6, scale: 1 },
+      { kind: "prop", model: "prop.rock_pile", position: [2.6, 0, 1], yaw: 2.1, scale: 1 },
+      { kind: "prop", model: "prop.ammo_crate", position: [2.9, 0, 9.5], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.ammo_stack", position: [1.4, 0, 18.8], yaw: 0, scale: 1 },
+      { kind: "light", position: [3.47, 2.3, 9], yaw: -1.570796, fixture: "wall", color: "#ffd9a0", intensity: 0.9, range: 8 },
+      { kind: "light", position: [0, 3.3, 16], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 8 }
+    ]
+  },
+  // design: Open Stairs turned to climb north, Bridge decks (3 m, railed, nothing underneath) on level 1 over open ground, and steel legs and cross-beams of blocks under each deck. The two-cell piece is the Catwalk Gantry (military.gantry) as a set piece.
+  {
+    id: "setpiece.catwalk_bridge_2",
+    displayName: "Catwalk Bridge (Up)",
+    family: "catwalk",
+    category: "Bridges",
+    blurb: "Open steel stairs up to a railed catwalk 4 m up on legs, meeting the level above at its north end (1 × 2 cells; the Catwalk Gantry's footprint, levels and ways in).",
+    packs: ["military", "orbital", "neon", "snow", "harbor", "suburban", "industrial", "urban"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 1], level: 1, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairs_open", x: 0, y: 0, z: 0, rotation: 3, surfaces: { floor: { role: "paving" }, solids: { role: "metal" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.yard", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" } } },
+      { kind: "tile", tile: "core.bridge", x: 0, y: 1, z: 1, rotation: 0, surfaces: { floor: { role: "metal" }, solids: { role: "metal" }, trim: { role: "trim" } } },
+      { kind: "block", name: "Leg", position: [-1.3, 0, 6], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [1.3, 0, 6], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Cross-beam", position: [0, 3.2, 6], size: [2.35, 0.3, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [-1.3, 0, 10], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [1.3, 0, 10], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Cross-beam", position: [0, 3.2, 10], size: [2.35, 0.3, 0.25], material: { role: "metal" } }
+    ]
+  },
+  // design: Open Stairs turned to climb north, Bridge decks (3 m, railed, nothing underneath) on level 1 over open ground, and steel legs and cross-beams of blocks under each deck. The two-cell piece is the Catwalk Gantry (military.gantry) as a set piece.
+  {
+    id: "setpiece.catwalk_bridge_3",
+    displayName: "Catwalk Bridge (3 cells)",
+    family: "catwalk",
+    category: "Bridges",
+    blurb: "A railed catwalk 4 m up on legs with open steel stairs down at both ends, 3 cells long: walk under it or over it.",
+    packs: ["military", "orbital", "neon", "snow", "harbor", "suburban", "industrial", "urban"],
+    footprint: { cells: [[0, 0], [0, 1], [0, 2]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 2], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairs_open", x: 0, y: 0, z: 0, rotation: 3, surfaces: { floor: { role: "paving" }, solids: { role: "metal" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.yard", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" } } },
+      { kind: "tile", tile: "core.bridge", x: 0, y: 1, z: 1, rotation: 0, surfaces: { floor: { role: "metal" }, solids: { role: "metal" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.stairs_open", x: 0, y: 2, z: 0, rotation: 1, surfaces: { floor: { role: "paving" }, solids: { role: "metal" }, trim: { role: "trim" } } },
+      { kind: "block", name: "Leg", position: [-1.3, 0, 6], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [1.3, 0, 6], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Cross-beam", position: [0, 3.2, 6], size: [2.35, 0.3, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [-1.3, 0, 10], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [1.3, 0, 10], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Cross-beam", position: [0, 3.2, 10], size: [2.35, 0.3, 0.25], material: { role: "metal" } }
+    ]
+  },
+  // design: Open Stairs turned to climb north, Bridge decks (3 m, railed, nothing underneath) on level 1 over open ground, and steel legs and cross-beams of blocks under each deck. The two-cell piece is the Catwalk Gantry (military.gantry) as a set piece.
+  {
+    id: "setpiece.catwalk_bridge_4",
+    displayName: "Catwalk Bridge (4 cells)",
+    family: "catwalk",
+    category: "Bridges",
+    blurb: "A railed catwalk 4 m up on legs with open steel stairs down at both ends, 4 cells long: walk under it or over it.",
+    packs: ["military", "orbital", "neon", "snow", "harbor", "suburban", "industrial", "urban"],
+    footprint: { cells: [[0, 0], [0, 1], [0, 2], [0, 3]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 3], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairs_open", x: 0, y: 0, z: 0, rotation: 3, surfaces: { floor: { role: "paving" }, solids: { role: "metal" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.yard", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" } } },
+      { kind: "tile", tile: "core.bridge", x: 0, y: 1, z: 1, rotation: 0, surfaces: { floor: { role: "metal" }, solids: { role: "metal" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.yard", x: 0, y: 2, z: 0, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" } } },
+      { kind: "tile", tile: "core.bridge", x: 0, y: 2, z: 1, rotation: 0, surfaces: { floor: { role: "metal" }, solids: { role: "metal" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.stairs_open", x: 0, y: 3, z: 0, rotation: 1, surfaces: { floor: { role: "paving" }, solids: { role: "metal" }, trim: { role: "trim" } } },
+      { kind: "block", name: "Leg", position: [-1.3, 0, 6], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [1.3, 0, 6], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Cross-beam", position: [0, 3.2, 6], size: [2.35, 0.3, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [-1.3, 0, 10], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [1.3, 0, 10], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Cross-beam", position: [0, 3.2, 10], size: [2.35, 0.3, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [-1.3, 0, 14], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [1.3, 0, 14], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Cross-beam", position: [0, 3.2, 14], size: [2.35, 0.3, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [-1.3, 0, 18], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Leg", position: [1.3, 0, 18], size: [0.25, 3.5, 0.25], material: { role: "metal" } },
+      { kind: "block", name: "Cross-beam", position: [0, 3.2, 18], size: [2.35, 0.3, 0.25], material: { role: "metal" } }
+    ]
+  },
+  // design: Steps 0.25 m by 0.5 m, 15.2 m wide, so a squad climbs abreast; the landing's sandbag walls and the terrace's nests leave the middle and the sides clear.
+  {
+    id: "setpiece.cliff_stair_grand",
+    displayName: "Grand Cliff Stair",
+    family: "cliffstair",
+    category: "Stairs",
+    blurb: "Two levels up a cliff face, 15 m wide: a grand flight, a landing with sandbag cover, a second flight and a terrace at the top, parapets along both sides. Stack another one at the terrace for a taller cliff.",
+    packs: ["military", "harbor", "imperial", "medieval", "desert", "jungle"],
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1], [0, 2], [1, 2], [0, 3], [1, 3]], levels: [0, 2] },
+    mirror: "free",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 3], level: 2, kind: "opening" },
+      { side: "N", cell: [1, 3], level: 2, kind: "opening" },
+      { side: "W", cell: [0, 3], level: 2, kind: "opening" },
+      { side: "E", cell: [1, 3], level: 2, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairs_grand", x: 0, y: 0, z: 0, rotation: 0, surfaces: { solids: { role: "paving" }, walls: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.platform", x: 0, y: 1, z: 1, rotation: 0, edges: { "0,0,0:W": "half" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.platform", x: 1, y: 1, z: 1, rotation: 0, edges: { "0,0,0:E": "half" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairs_grand", x: 0, y: 2, z: 1, rotation: 0, surfaces: { solids: { role: "paving" }, walls: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.platform", x: 0, y: 3, z: 2, rotation: 0, edges: { "0,0,0:W": "half" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.platform", x: 1, y: 3, z: 2, rotation: 0, edges: { "0,0,0:E": "half" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "block", name: "Landing base", position: [4, 0, 8], size: [16, 3.5, 8], material: { role: "stone" } },
+      { kind: "block", name: "Flight base", position: [4, 0, 16], size: [16, 3.5, 8], material: { role: "stone" } },
+      { kind: "block", name: "Terrace base", position: [4, 0, 24], size: [16, 7.5, 8], material: { role: "stone" } },
+      { kind: "prop", model: "prop.sandbag_wall", position: [-0.6, 4, 9.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_wall", position: [8.6, 4, 9.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_nest", position: [-1.2, 8, 25.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_nest", position: [9.2, 8, 25.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.barrier.concrete", position: [4, 4, 6.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.barrier.concrete", position: [4, 8, 22.6], yaw: 0, scale: 1 }
+    ]
+  },
+  // design: Switchbacks in two columns (each stairwell climbs one level; the next starts beside it), so it is 16 m by 8 m for three levels: in at the foot room, out at the head room.
+  {
+    id: "setpiece.cliff_stair_side",
+    displayName: "Cliff Stair Tower",
+    family: "cliffstair",
+    category: "Stairs",
+    blurb: "A narrow way up a cliff: a concrete stair tower of switchback stairs three levels high, firing slits facing south, a door in at the foot (south) and out at the head (north).",
+    packs: ["military", "harbor", "imperial", "medieval", "desert", "jungle"],
+    footprint: { cells: [[0, 0], [1, 0]], levels: [0, 3] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "door" },
+      { side: "N", cell: [0, 0], level: 3, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "wall", "0,0,0:S": "door", "0,0,0:W": "wall" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "slit", "0,0,1:E": "wall", "0,0,1:N": "wall", "0,0,1:S": "slit" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 1, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "slit", "0,0,0:S": "wall", "0,0,1:E": "wall", "0,0,1:N": "slit", "0,0,1:S": "wall" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 1, y: 0, z: 2, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "slit", "0,0,1:E": "wall", "0,0,1:N": "wall", "0,0,1:S": "slit" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 3, rotation: 0, edges: { "0,0,0:N": "door", "0,0,0:S": "slit", "0,0,0:W": "wall" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "door", name: "Foot door", position: [0, 0, -4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "door", name: "Head door", position: [0, 12, 4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "light", position: [0, 3.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 8 },
+      { kind: "light", position: [0, 15.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 8 }
+    ],
+    markers: [{ name: "foot_head", kind: "doorPair", parts: [5, 6] }]
+  },
+  // design: The Grand Cliff Stair as it is (the same flights, landing, terrace and bases, one for one), with a gatehouse on its landing: the landing's head is a twin Gate arch (two storeys of wall 1.2 m thick on both sides of the line, so the gateway is 2.4 m deep: two arches 5 m wide and 5.7 m to the crown on a central pier 3 m wide, crenellated at 12 m), its sides High walls (8 m) instead of parapets, and a pier 1.4 m wide at each end of the gate rising over the battlements. The landing's sandbags stand 1 m further back to clear the gate. A squad still climbs abreast: each arch takes four.
+  {
+    id: "setpiece.cliff_stair_gate",
+    displayName: "Grand Cliff Stair (Gatehouse)",
+    family: "cliffstair",
+    category: "Stairs",
+    blurb: "The Grand Cliff Stair with a gatehouse between its flights: a twin arched gate across the head of the landing, two storeys of crenellated wall, high flanking walls down both sides of the landing and a pier at each end.",
+    packs: ["military", "harbor", "imperial", "medieval", "desert", "jungle"],
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1], [0, 2], [1, 2], [0, 3], [1, 3]], levels: [0, 3] },
+    mirror: "free",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 3], level: 2, kind: "opening" },
+      { side: "N", cell: [1, 3], level: 2, kind: "opening" },
+      { side: "W", cell: [0, 3], level: 2, kind: "opening" },
+      { side: "E", cell: [1, 3], level: 2, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairs_grand", x: 0, y: 0, z: 0, rotation: 0, surfaces: { solids: { role: "paving" }, walls: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.platform", x: 0, y: 1, z: 1, rotation: 0, edges: { "0,0,0:W": "high", "0,0,0:N": "gate_arch" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.platform", x: 1, y: 1, z: 1, rotation: 0, edges: { "0,0,0:E": "high", "0,0,0:N": "gate_arch" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairs_grand", x: 0, y: 2, z: 1, rotation: 0, surfaces: { solids: { role: "paving" }, walls: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.platform", x: 0, y: 3, z: 2, rotation: 0, edges: { "0,0,0:W": "half" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.platform", x: 1, y: 3, z: 2, rotation: 0, edges: { "0,0,0:E": "half" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "block", name: "Landing base", position: [4, 0, 8], size: [16, 3.5, 8], material: { role: "stone" } },
+      { kind: "block", name: "Flight base", position: [4, 0, 16], size: [16, 3.5, 8], material: { role: "stone" } },
+      { kind: "block", name: "Terrace base", position: [4, 0, 24], size: [16, 7.5, 8], material: { role: "stone" } },
+      { kind: "prop", model: "prop.sandbag_wall", position: [-0.6, 4, 8.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_wall", position: [8.6, 4, 8.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_nest", position: [-1.2, 8, 25.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_nest", position: [9.2, 8, 25.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.barrier.concrete", position: [4, 4, 6.2], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.barrier.concrete", position: [4, 8, 22.6], yaw: 0, scale: 1 },
+      { kind: "block", name: "Gate pier", position: [-3.25, 4, 11.4], size: [1.3, 9.1, 2.8], material: { role: "stone" } },
+      { kind: "block", name: "Gate pier", position: [11.25, 4, 11.4], size: [1.3, 9.1, 2.8], material: { role: "stone" } },
+      { kind: "block", name: "Pier cap", position: [-3.25, 13.1, 11.4], size: [1.5, 0.25, 3], material: { role: "trim" } },
+      { kind: "block", name: "Pier cap", position: [11.25, 13.1, 11.4], size: [1.5, 0.25, 3], material: { role: "trim" } },
+      { kind: "light", position: [0, 7.2, 10.2], yaw: 3.141593, fixture: "wall", color: "#ffd9a0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 7.2, 10.2], yaw: 3.141593, fixture: "wall", color: "#ffd9a0", intensity: 0.9, range: 9 }
+    ]
+  },
+  // design: The carriageway's passage (segmental arches, the vault) between a Stairwell (west, turned so its doors face the passage on both floors) and a guard room, with the gate room over the arch joining the stair to the east tower's upper room and its wall-walk door. Put town wall either side. It can't be mirrored (the stairwell): turn it.
+  {
+    id: "setpiece.courtyard_gate",
+    displayName: "Courtyard Gate",
+    family: "courtyardgate",
+    category: "Gateways",
+    blurb: "A gatehouse: a vaulted passage under a segmental arch at each end, a stair tower and a guard room either side with doors off the passage, the gate room over the arch, and a door out east onto a wall-walk: 3 × 1 cells.",
+    packs: ["medieval", "collegiate", "gothic", "desert", "imperial", "jungle", "military"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 1] },
+    mirror: "none",
+    roles: { glass: "none" },
+    ports: [
+      { side: "N", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 0], level: 1, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "arch_segmental", "0,0,0:S": "arch_segmental", "0,0,0:E": "door", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } }, options: { ceiling: "vault" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 1, rotation: 0, edges: { "0,0,0:N": "windows", "0,0,0:S": "windows", "0,0,0:E": "door", "0,0,0:W": "door" }, glass: { "0,0,0:N": { role: "glass" }, "0,0,0:S": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 0, rotation: 2, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:W": "door", "0,0,0:E": "slit", "0,0,0:N": "slit", "0,0,0:S": "slit" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 1, rotation: 0, edges: { "0,0,0:W": "door", "0,0,0:E": "door", "0,0,0:N": "slit", "0,0,0:S": "slit" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "door", name: "Tower door", position: [4, 0, 0], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "door", name: "Guard room door", position: [12, 0, 0], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "door", name: "Wall-walk door", position: [20, 4, 0], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "block", name: "Guard stone", position: [5.7, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [10.3, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [5.7, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [10.3, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "light", position: [4.53, 2.3, 2.5], fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9, yaw: 1.570796 },
+      { kind: "light", position: [11.47, 2.3, -2.5], fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9, yaw: -1.570796 },
+      { kind: "light", position: [8, 7.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [16, 3.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 8 }
+    ]
+  },
+  // design: Set pieces part 6: the Town Gate (medieval.town_gate) as a set piece, in its place: the same cells and levels, Town Wall tiles either side, the passage north to south (5 m under segmental arches, the Town Gate's 4 m), the guard room (4-8 m) open by arches west and east onto the wall-walks, a roof over it behind a parapet, a ladder up through a hatch in its north-east corner (as the Town Gate has). No stair to the walk of its own: the wall's Wall Stairs climb to it.
+  {
+    id: "setpiece.courtyard_gate_wall",
+    displayName: "Town Wall Gatehouse",
+    family: "courtyardgate",
+    category: "Gateways",
+    blurb: "A gate tower in a town wall: Town Wall either side (its walk runs through the tower), a vaulted passage under segmental arches, the guard room over it, a battlemented roof up a ladder: 3 × 1 cells.",
+    packs: ["medieval"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 2] },
+    mirror: "none",
+    roles: { glass: "none" },
+    ports: [
+      { side: "N", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "E", cell: [2, 0], level: 1, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "medieval.town_wall", x: 0, y: 0, z: 0, rotation: 0 },
+      { kind: "tile", tile: "medieval.town_wall", x: 2, y: 0, z: 0, rotation: 0 },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "arch_segmental", "0,0,0:S": "arch_segmental", "0,0,0:E": "wall", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { material: "core.stone_trim" } }, options: { ceiling: "vault", facade: "none" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 1, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "slit", "0,0,0:E": "arch", "0,0,0:W": "arch" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "open", facade: "none" } },
+      { kind: "block", name: "Roof", position: [8, 7.6, -1.25], size: [7, 0.4, 4.5], material: { role: "roof" } },
+      { kind: "block", name: "Roof", position: [6.75, 7.6, 2.25], size: [4.5, 0.4, 2.5], material: { role: "roof" } },
+      { kind: "block", name: "Roof", position: [10.95, 7.6, 2.25], size: [1.1, 0.4, 2.5], material: { role: "roof" } },
+      { kind: "block", name: "Roof", position: [9.7, 7.6, 2.95], size: [1.4, 0.4, 1.1], material: { role: "roof" } },
+      { kind: "block", name: "Parapet", position: [8, 8, 3.75], size: [8, 1.1, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Parapet", position: [8, 8, -3.75], size: [8, 1.1, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Parapet", position: [4.25, 8, 0], size: [0.5, 1.1, 7], material: { role: "stone" } },
+      { kind: "block", name: "Parapet", position: [11.75, 8, 0], size: [0.5, 1.1, 7], material: { role: "stone" } },
+      { kind: "ladder", name: "Roof ladder", position: [9.7, 4, 1.1], yaw: 0, height: 4, width: 0.9 },
+      { kind: "block", name: "Guard stone", position: [5.7, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [10.3, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [5.7, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [10.3, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "light", position: [4.53, 2.3, 2.5], fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9, yaw: 1.570796 },
+      { kind: "light", position: [11.47, 2.3, -2.5], fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9, yaw: -1.570796 },
+      { kind: "light", position: [8, 6.6, -2.6], fixture: "bulb", color: "#ffd9a0", intensity: 0.8, range: 8 }
+    ]
+  },
+  // design: Set pieces part 6: the City Gate (desert.city_gate) as a set piece, in its place: the same cells and levels, City Wall tiles either side, the passage north to south (5 m under segmental arches, the Town Gate's 4 m), the guard room (4-8 m) open by arches west and east onto the wall-walks, a roof over it behind a parapet, a ladder up through a hatch in its north-east corner (as the Town Gate has). No stair to the walk of its own: the wall's Wall Stairs climb to it.
+  {
+    id: "setpiece.city_gate_wall",
+    displayName: "City Wall Gatehouse",
+    family: "courtyardgate",
+    category: "Gateways",
+    blurb: "A gate tower in a city wall: City Wall either side (its walk runs through the tower), a vaulted passage under segmental arches, the guard room over it, a battlemented roof up a ladder: 3 × 1 cells.",
+    packs: ["desert"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 2] },
+    mirror: "none",
+    roles: { glass: "none" },
+    ports: [
+      { side: "N", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "E", cell: [2, 0], level: 1, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "desert.city_wall", x: 0, y: 0, z: 0, rotation: 0 },
+      { kind: "tile", tile: "desert.city_wall", x: 2, y: 0, z: 0, rotation: 0 },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "arch_segmental", "0,0,0:S": "arch_segmental", "0,0,0:E": "wall", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { material: "core.stone_trim" } }, options: { ceiling: "vault", facade: "none" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 1, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "slit", "0,0,0:E": "arch", "0,0,0:W": "arch" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "open", facade: "none" } },
+      { kind: "block", name: "Roof", position: [8, 7.6, -1.25], size: [7, 0.4, 4.5], material: { role: "roof" } },
+      { kind: "block", name: "Roof", position: [6.75, 7.6, 2.25], size: [4.5, 0.4, 2.5], material: { role: "roof" } },
+      { kind: "block", name: "Roof", position: [10.95, 7.6, 2.25], size: [1.1, 0.4, 2.5], material: { role: "roof" } },
+      { kind: "block", name: "Roof", position: [9.7, 7.6, 2.95], size: [1.4, 0.4, 1.1], material: { role: "roof" } },
+      { kind: "block", name: "Parapet", position: [8, 8, 3.75], size: [8, 1.1, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Parapet", position: [8, 8, -3.75], size: [8, 1.1, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Parapet", position: [4.25, 8, 0], size: [0.5, 1.1, 7], material: { role: "stone" } },
+      { kind: "block", name: "Parapet", position: [11.75, 8, 0], size: [0.5, 1.1, 7], material: { role: "stone" } },
+      { kind: "ladder", name: "Roof ladder", position: [9.7, 4, 1.1], yaw: 0, height: 4, width: 0.9 },
+      { kind: "block", name: "Guard stone", position: [5.7, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [10.3, 0, 3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [5.7, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Guard stone", position: [10.3, 0, -3.3], size: [0.4, 0.7, 0.4], material: { role: "stone" } },
+      { kind: "light", position: [4.53, 2.3, 2.5], fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9, yaw: 1.570796 },
+      { kind: "light", position: [11.47, 2.3, -2.5], fixture: "wall", color: "#ffd9a0", intensity: 1.1, range: 9, yaw: -1.570796 },
+      { kind: "light", position: [8, 6.6, -2.6], fixture: "bulb", color: "#ffd9a0", intensity: 0.8, range: 8 }
+    ]
+  },
+  // design: Set pieces part 6: the Temple Pylon tile (egypt.pylon) as a set piece in its place, the same cells and levels: Platforms for its floor and its own masonry, stairs, gilding and reliefs as blocks in their own materials (a relief 2 cm proud of the face is 5 cm here: a block is at least 5 cm deep). It plays as the tile did; explode it to edit the masonry.
+  {
+    id: "setpiece.temple_pylon",
+    displayName: "Temple Pylon",
+    family: "courtyardgate",
+    category: "Gateways",
+    blurb: "Two massive battered towers either side of a 3.2 m gate (north to south), painted reliefs on the front, stairs at the back of each up to a terrace 4 m up behind the battlements: 3 × 1 cells.",
+    packs: ["desert", "imperial"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 2] },
+    mirror: "free",
+    ports: [
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.platform", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" } } },
+      { kind: "tile", tile: "core.platform", x: 1, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" } } },
+      { kind: "tile", tile: "core.platform", x: 2, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" } } },
+      { kind: "block", name: "Tower masonry", position: [1.2, 0, -1.15], size: [10.4, 4, 5.5], material: "core.pbr_sandstone_blocks" },
+      { kind: "block", name: "Tower masonry", position: [14.8, 0, -1.15], size: [10.4, 4, 5.5], material: "core.pbr_sandstone_blocks" },
+      { kind: "block", name: "Tower masonry", position: [1.2, 4, -2.7], size: [10.4, 2, 2.4], material: "core.pbr_sandstone_blocks" },
+      { kind: "block", name: "Tower masonry", position: [14.8, 4, -2.7], size: [10.4, 2, 2.4], material: "core.pbr_sandstone_blocks" },
+      { kind: "block", name: "Tower masonry", position: [1.35, 6, -2.6], size: [10.1, 2, 2.2], material: "core.pbr_sandstone_blocks" },
+      { kind: "block", name: "Tower masonry", position: [14.65, 6, -2.6], size: [10.1, 2, 2.2], material: "core.pbr_sandstone_blocks" },
+      { kind: "block", name: "Tower masonry", position: [8, 3.6, -2.7], size: [3.2, 4.4, 2.4], material: "core.pbr_sandstone_blocks" },
+      { kind: "block", name: "Stair", position: [8, 3.6, 0.05], size: [3.2, 0.4, 3.1], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Gilded band", position: [8, 3.4, -2.7], size: [3.2, 0.2, 2.5], material: "core.gold_leaf" },
+      { kind: "block", name: "Gilded band", position: [8, 7.75, -3.6], size: [23.4, 0.25, 0.2], material: "core.gold_leaf", tint: "#c8a050" },
+      { kind: "block", name: "Tower masonry", position: [8, 8, -3.6], size: [23.9, 0.5, 0.7], material: "core.pbr_sandstone_blocks" },
+      { kind: "block", name: "Painted relief", position: [1.3, 0.8, -3.925], size: [9, 2.8, 0.05], material: "core.hieroglyphs_painted" },
+      { kind: "block", name: "Painted relief", position: [14.7, 0.8, -3.925], size: [9, 2.8, 0.05], material: "core.hieroglyphs_painted" },
+      { kind: "block", name: "Relief", position: [1.4, 4.6, -3.725], size: [8.8, 2.8, 0.05], material: "core.hieroglyphs" },
+      { kind: "block", name: "Relief", position: [14.6, 4.6, -3.725], size: [8.8, 2.8, 0.05], material: "core.hieroglyphs" },
+      { kind: "block", name: "Painted relief", position: [8, 4.4, -3.925], size: [2.8, 3.2, 0.05], material: "core.hieroglyphs_painted" },
+      { kind: "block", name: "Pilaster", position: [0, 0, -3.94], size: [0.5, 6, 0.08], material: "core.pbr_rough_sandstone", tint: "#a08060" },
+      { kind: "block", name: "Pilaster", position: [3, 0, -3.94], size: [0.5, 6, 0.08], material: "core.pbr_rough_sandstone", tint: "#a08060" },
+      { kind: "block", name: "Pilaster", position: [13, 0, -3.94], size: [0.5, 6, 0.08], material: "core.pbr_rough_sandstone", tint: "#a08060" },
+      { kind: "block", name: "Pilaster", position: [16, 0, -3.94], size: [0.5, 6, 0.08], material: "core.pbr_rough_sandstone", tint: "#a08060" },
+      { kind: "block", name: "Stair", position: [-3.75, 0, 2.8], size: [0.5, 0.25, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [-3.25, 0, 2.8], size: [0.5, 0.5, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [-2.75, 0, 2.8], size: [0.5, 0.75, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [-2.25, 0, 2.8], size: [0.5, 1, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [-1.75, 0, 2.8], size: [0.5, 1.25, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [-1.25, 0, 2.8], size: [0.5, 1.5, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [-0.75, 0, 2.8], size: [0.5, 1.75, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [-0.25, 0, 2.8], size: [0.5, 2, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [0.25, 0, 2.8], size: [0.5, 2.25, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [0.75, 0, 2.8], size: [0.5, 2.5, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [1.25, 0, 2.8], size: [0.5, 2.75, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [1.75, 0, 2.8], size: [0.5, 3, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [2.25, 0, 2.8], size: [0.5, 3.25, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [2.75, 0, 2.8], size: [0.5, 3.5, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [3.25, 0, 2.8], size: [0.5, 3.75, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [3.75, 0, 2.8], size: [0.5, 4, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [5.2, 0, 2.8], size: [2.4, 4, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [19.75, 0, 2.8], size: [0.5, 0.25, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [19.25, 0, 2.8], size: [0.5, 0.5, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [18.75, 0, 2.8], size: [0.5, 0.75, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [18.25, 0, 2.8], size: [0.5, 1, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [17.75, 0, 2.8], size: [0.5, 1.25, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [17.25, 0, 2.8], size: [0.5, 1.5, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [16.75, 0, 2.8], size: [0.5, 1.75, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [16.25, 0, 2.8], size: [0.5, 2, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [15.75, 0, 2.8], size: [0.5, 2.25, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [15.25, 0, 2.8], size: [0.5, 2.5, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [14.75, 0, 2.8], size: [0.5, 2.75, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [14.25, 0, 2.8], size: [0.5, 3, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [13.75, 0, 2.8], size: [0.5, 3.25, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [13.25, 0, 2.8], size: [0.5, 3.5, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [12.75, 0, 2.8], size: [0.5, 3.75, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [12.25, 0, 2.8], size: [0.5, 4, 2.4], material: "core.pbr_rough_sandstone" },
+      { kind: "block", name: "Stair", position: [10.8, 0, 2.8], size: [2.4, 4, 2.4], material: "core.pbr_rough_sandstone" }
+    ]
+  },
+  // design: The ring is four Fort Ring quarters (kit tiles: a wall 1.6 m thick and 3.6 m high, 15 m to its middle from the fort's centre, firing slits at eye height) round a 2 x 2 keep: gates at the south-west, south-east and north-west (where the courtyard is narrowest, 2.9 m to the keep's corner, so nobody sees straight in), the north-east quarter whole. The keep's ground floor is the command room, big enough for a final hold zone (6 m round its middle stays inside it and under its ceiling), with two doors south and one west and slits east and west; over it the radio room (north-west) and a roof terrace behind parapets that sees over the ring, reached by a stair along the keep's north wall from the courtyard. It can't be mirrored (the ring's quarters are L-shaped): turn it so its gates face the attack.
+  {
+    id: "setpiece.command_bunker",
+    displayName: "Command Bunker",
+    family: "fort",
+    category: "Fortifications",
+    blurb: "A round fort 31.6 m across round a square keep: three gates in a thick wall with firing slits, the command room (16 m square) in the keep, the radio room and a roof terrace over it, a stair to the roof.",
+    packs: ["military", "harbor", "snow"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [3, 0], [0, 1], [1, 1], [2, 1], [3, 1], [0, 2], [1, 2], [2, 2], [3, 2], [0, 3], [1, 3], [2, 3], [3, 3]], levels: [0, 1] },
+    mirror: "none",
+    ports: [],
+    parts: [
+      { kind: "tile", tile: "core.fort_ring_gate", x: 0, y: 0, z: 0, rotation: 0, edges: { "1,0,0:N": "open", "0,1,0:E": "open" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.fort_ring_gate", x: 3, y: 0, z: 0, rotation: 3, edges: { "1,0,0:N": "open", "0,1,0:E": "open" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.fort_ring_gate", x: 0, y: 3, z: 0, rotation: 1, edges: { "1,0,0:N": "open", "0,1,0:E": "open" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.fort_ring", x: 3, y: 3, z: 0, rotation: 2, edges: { "1,0,0:N": "open", "0,1,0:E": "open" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.room_large", x: 1, y: 1, z: 0, rotation: 0, edges: { "0,0,0:S": "door", "1,0,0:S": "door", "0,1,0:W": "door", "0,0,0:W": "slit", "1,0,0:E": "slit", "1,1,0:E": "slit", "0,1,0:N": "wall", "1,1,0:N": "slit" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 2, z: 1, rotation: 0, edges: { "0,0,0:S": "door", "0,0,0:E": "door", "0,0,0:N": "window", "0,0,0:W": "window" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.platform", x: 1, y: 1, z: 1, rotation: 0, edges: { "0,0,0:S": "half", "0,0,0:W": "half" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.platform", x: 2, y: 1, z: 1, rotation: 0, edges: { "0,0,0:S": "half", "0,0,0:E": "half" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.platform", x: 2, y: 2, z: 1, rotation: 0, edges: { "0,0,0:E": "half" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "block", name: "Roof stair", position: [4.25, 0, 21], size: [0.5, 0.25, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [4.75, 0, 21], size: [0.5, 0.5, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [5.25, 0, 21], size: [0.5, 0.75, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [5.75, 0, 21], size: [0.5, 1, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [6.25, 0, 21], size: [0.5, 1.25, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [6.75, 0, 21], size: [0.5, 1.5, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [7.25, 0, 21], size: [0.5, 1.75, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [7.75, 0, 21], size: [0.5, 2, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [8.25, 0, 21], size: [0.5, 2.25, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [8.75, 0, 21], size: [0.5, 2.5, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [9.25, 0, 21], size: [0.5, 2.75, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [9.75, 0, 21], size: [0.5, 3, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [10.25, 0, 21], size: [0.5, 3.25, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [10.75, 0, 21], size: [0.5, 3.5, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [11.25, 0, 21], size: [0.5, 3.75, 2], material: { role: "stone" } },
+      { kind: "block", name: "Roof stair", position: [11.75, 0, 21], size: [0.5, 4, 2], material: { role: "stone" } },
+      { kind: "block", name: "Stair head", position: [13.75, 0, 21], size: [3.5, 4, 2], material: { role: "stone" } },
+      { kind: "block", name: "Terrace parapet", position: [17.75, 4, 19.8], size: [4.5, 1.1, 0.4], material: { role: "stone" } },
+      { kind: "door", name: "South door", position: [8, 0, 4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "door", name: "South door", position: [16, 0, 4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "door", name: "West door", position: [4, 0, 16], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "prop", model: "kit.table.dining", position: [12, 0, 12], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [12, 0, 10.8], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [12, 0, 13.2], yaw: 3.141593, scale: 1 },
+      { kind: "prop", model: "prop.ammo_stack", position: [6.4, 0, 18.7], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.ammo_stack", position: [17.6, 0, 18.7], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.ammo_crate", position: [18.7, 0, 12], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk", position: [8, 4, 18.7], yaw: 3.141593, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [8, 4, 17.5], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.ammo_crate", position: [5.3, 4, 18.8], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_wall", position: [9, 4, 5.2], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_wall", position: [18.8, 4, 9], yaw: 1.570796, scale: 1 },
+      { kind: "light", position: [8, 3.3, 8], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 9 },
+      { kind: "light", position: [16, 3.3, 8], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 9 },
+      { kind: "light", position: [8, 3.3, 16], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 9 },
+      { kind: "light", position: [16, 3.3, 16], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 9 },
+      { kind: "light", position: [8, 7.3, 16], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 8 },
+      { kind: "light", position: [1.39, 2.7, 1.39], fixture: "bulb", color: "#ffd9a0", intensity: 0.9, range: 7 },
+      { kind: "light", position: [22.61, 2.7, 1.39], fixture: "bulb", color: "#ffd9a0", intensity: 0.9, range: 7 },
+      { kind: "light", position: [1.39, 2.7, 22.61], fixture: "bulb", color: "#ffd9a0", intensity: 0.9, range: 7 }
+    ],
+    markers: [{ name: "command_room", kind: "spot", parts: [4] }, { name: "radio_room", kind: "spot", parts: [5] }, { name: "gates", kind: "spot", parts: [0, 1, 2] }, { name: "keep_doors", kind: "spot", parts: [27, 28, 29] }]
+  },
+  {
+    id: "setpiece.tunnel_straight",
+    displayName: "Hypogeum Tunnel",
+    family: "hypogeum",
+    category: "Hypogeum",
+    blurb: "A barrel-vaulted tunnel north–south under the arena, a torch on its wall.",
+    packs: ["imperial", "desert", "medieval", "gothic"],
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.tunnel_vault", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" } } },
+      { kind: "light", position: [-1.77, 2, 0], yaw: 1.570796, fixture: "candle", color: "#ffb070", intensity: 1.1, range: 8 }
+    ]
+  },
+  {
+    id: "setpiece.tunnel_bend",
+    displayName: "Hypogeum Tunnel Bend",
+    family: "hypogeum",
+    category: "Hypogeum",
+    blurb: "The vaulted tunnel comes in from the south and turns east.",
+    packs: ["imperial", "desert", "medieval", "gothic"],
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.tunnel_vault_bend", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" } } },
+      { kind: "light", position: [-1.77, 2, -1], yaw: 1.570796, fixture: "candle", color: "#ffb070", intensity: 1.1, range: 8 }
+    ]
+  },
+  {
+    id: "setpiece.tunnel_junction",
+    displayName: "Hypogeum Tunnel Junction",
+    family: "hypogeum",
+    category: "Hypogeum",
+    blurb: "The vaulted tunnel runs east–west with a branch south, a groin vault over the crossing.",
+    packs: ["imperial", "desert", "medieval", "gothic"],
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.tunnel_vault_t", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" } } },
+      { kind: "light", position: [0, 2, 1.77], yaw: 3.141593, fixture: "candle", color: "#ffb070", intensity: 1.1, range: 8 }
+    ]
+  },
+  {
+    id: "setpiece.tunnel_cross",
+    displayName: "Hypogeum Tunnel Crossing",
+    family: "hypogeum",
+    category: "Hypogeum",
+    blurb: "Two vaulted tunnels crossing under a groin vault.",
+    packs: ["imperial", "desert", "medieval", "gothic"],
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.tunnel_vault_cross", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" } } },
+      { kind: "light", position: [0, 3, 0], fixture: "none", color: "#ffb070", intensity: 1, range: 8 }
+    ]
+  },
+  {
+    id: "setpiece.tunnel_hatch",
+    displayName: "Hatch Riser",
+    family: "hypogeum",
+    category: "Hypogeum",
+    blurb: "A shaft room under an arena hatch (the hatch centred on the cell above): a ladder up through the hatch's rim into the arena; doorways round the room meet the tunnels.",
+    packs: ["imperial", "desert", "medieval", "gothic"],
+    footprint: { cells: [[0, 0]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "N", cell: [0, 0], level: 0, kind: "door" },
+      { side: "E", cell: [0, 0], level: 0, kind: "door" },
+      { side: "S", cell: [0, 0], level: 0, kind: "door" },
+      { side: "W", cell: [0, 0], level: 0, kind: "door" },
+      { side: "N", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 1, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "imperial.hypogeum_lift", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" } } },
+      { kind: "tile", tile: "imperial.arena_hatch", x: 0, y: 0, z: 1, rotation: 0 },
+      { kind: "ladder", position: [0, 0, 1.15], yaw: 3.141593, height: 4, width: 0.9 },
+      { kind: "light", position: [3.47, 2.2, 3], yaw: -1.570796, fixture: "candle", color: "#ffb070", intensity: 1.1, range: 8 }
+    ]
+  },
+  // design: The 4 m question (docs/SET_PIECES_PLAN.md): with the board centred on a cell, its four hatches fall on cell corners; this piece puts its hatch there, the Hatch Riser one at a cell centre.
+  {
+    id: "setpiece.tunnel_hatch_corner",
+    displayName: "Hatch Riser (Corner)",
+    family: "hypogeum",
+    category: "Hypogeum",
+    blurb: "A hall 2 × 2 cells under the arena with the hatch on the corner its four cells share (a 4 m board square there): a ladder up through it; doorways round the hall.",
+    packs: ["imperial", "desert", "medieval", "gothic"],
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "door" },
+      { side: "S", cell: [1, 0], level: 0, kind: "door" },
+      { side: "N", cell: [0, 1], level: 0, kind: "door" },
+      { side: "N", cell: [1, 1], level: 0, kind: "door" },
+      { side: "W", cell: [0, 0], level: 0, kind: "door" },
+      { side: "W", cell: [0, 1], level: 0, kind: "door" },
+      { side: "E", cell: [1, 0], level: 0, kind: "door" },
+      { side: "E", cell: [1, 1], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room_large", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.hatch_corner", x: 0, y: 0, z: 1, rotation: 0 },
+      { kind: "tile", tile: "core.hatch_corner", x: 1, y: 0, z: 1, rotation: 3 },
+      { kind: "tile", tile: "core.hatch_corner", x: 1, y: 1, z: 1, rotation: 2 },
+      { kind: "tile", tile: "core.hatch_corner", x: 0, y: 1, z: 1, rotation: 1 },
+      { kind: "ladder", position: [4, 0, 2.9], yaw: 3.141593, height: 4, width: 0.9 },
+      { kind: "light", position: [4, 3, 8.5], fixture: "chandelier", color: "#ffb070", intensity: 1.1, range: 10 }
+    ]
+  },
+  {
+    id: "setpiece.cage_block",
+    displayName: "Cage Block",
+    family: "hypogeum",
+    category: "Hypogeum",
+    blurb: "Two beast pens along a vaulted passage (2 × 2 cells): barred fronts with portcullis gates on the passage (north side), bars between the pens; the passage runs on east and west.",
+    packs: ["imperial", "desert", "medieval", "gothic"],
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [1, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 1, edges: { "0,0,0:E": "wall", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "vault" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 1, edges: { "0,0,0:E": "wall", "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "vault" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "bars", "0,0,0:N": "wall", "0,0,0:S": "bars_gate", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "bars_gate", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "door", name: "Pen gate", position: [0, 0, 4], yaw: 0, style: "portcullis", auto: false },
+      { kind: "door", name: "Pen gate", position: [8, 0, 4], yaw: 0, style: "portcullis", auto: false },
+      { kind: "prop", model: "prop.straw_bale", position: [-2, 0, 9.6], yaw: 0.3, scale: 1 },
+      { kind: "prop", model: "prop.straw_bale", position: [9.8, 0, 10.4], yaw: -0.4, scale: 1 },
+      { kind: "prop", model: "prop.water_trough", position: [2.4, 0, 10.9], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.water_trough", position: [5.6, 0, 10.9], yaw: 0, scale: 1 },
+      { kind: "light", position: [0, 2.3, -3.47], yaw: 0, fixture: "candle", color: "#ffb070", intensity: 1.1, range: 8 },
+      { kind: "light", position: [8, 2.3, -3.47], yaw: 0, fixture: "candle", color: "#ffb070", intensity: 1.1, range: 8 }
+    ],
+    markers: [{ name: "pen_gates", kind: "doorPair", parts: [4, 5] }]
+  },
+  {
+    id: "setpiece.cage_lift",
+    displayName: "Lift-Cage Riser",
+    family: "hypogeum",
+    category: "Hypogeum",
+    blurb: "The shaft a beast's cage rises from: a room under an arena hatch, the cage at the bottom, the capstan, a ladder up the hatch's rim. For a cage that rises, hide the cage and put a Lift Cage from the Scenario palette on the shaft floor.",
+    packs: ["imperial", "desert", "medieval", "gothic"],
+    footprint: { cells: [[0, 0]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "N", cell: [0, 0], level: 0, kind: "door" },
+      { side: "E", cell: [0, 0], level: 0, kind: "door" },
+      { side: "S", cell: [0, 0], level: 0, kind: "door" },
+      { side: "W", cell: [0, 0], level: 0, kind: "door" },
+      { side: "N", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 1, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "imperial.hypogeum_lift", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, walls: { role: "stone" } } },
+      { kind: "tile", tile: "imperial.arena_hatch", x: 0, y: 0, z: 1, rotation: 0 },
+      { kind: "prop", model: "prop.im_lift_cage", position: [0, 0, -0.5], yaw: 0, scale: 1 },
+      { kind: "ladder", position: [0, 0, 1.15], yaw: 3.141593, height: 4, width: 0.9 },
+      { kind: "light", position: [3.47, 2.2, 3], yaw: -1.570796, fixture: "candle", color: "#ffb070", intensity: 1.1, range: 8 }
+    ]
+  },
+  {
+    id: "setpiece.insula",
+    displayName: "Insula",
+    family: "insula",
+    category: "Village",
+    blurb: "A Roman apartment block, 3 × 2 cells and three storeys under a tiled roof: two shops on the street (south) either side of the entrance passage, a stair hall with a landing on every floor, flats over.",
+    packs: ["imperial", "desert", "medieval"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], levels: [0, 3] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "door" },
+      { side: "S", cell: [2, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wide", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "door", "0,0,0:S": "door", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wide", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "wall", "0,0,0:S": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 1, z: 0, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "wall", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 1, z: 1, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "windows", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "window", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 1, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 2, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 2, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "windows", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 2, rotation: 0, edges: { "0,0,0:E": "window", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 2, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 2, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "window", "0,0,0:S": "wall", "0,0,0:W": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "Stair roof", position: [16, 11.5, 8], size: [8, 0.5, 8], material: { role: "roof" } },
+      { kind: "block", name: "Roof slope", position: [8, 13.189, 0.1], size: [24, 0.3, 8.2], material: { role: "roof" }, pitch: 0.291457 },
+      { kind: "block", name: "Roof slope", position: [8, 13.189, 7.9], size: [24, 0.3, 8.2], material: { role: "roof" }, pitch: -0.291457 },
+      { kind: "block", name: "Gable", position: [-3.85, 12, 4], size: [0.3, 0.6, 14], material: { role: "stone" } },
+      { kind: "block", name: "Gable", position: [-3.85, 12.6, 4], size: [0.3, 0.7, 10], material: { role: "stone" } },
+      { kind: "block", name: "Gable", position: [-3.85, 13.3, 4], size: [0.3, 0.7, 5.4], material: { role: "stone" } },
+      { kind: "block", name: "Gable", position: [19.85, 12, 4], size: [0.3, 0.6, 14], material: { role: "stone" } },
+      { kind: "block", name: "Gable", position: [19.85, 12.6, 4], size: [0.3, 0.7, 10], material: { role: "stone" } },
+      { kind: "block", name: "Gable", position: [19.85, 13.3, 4], size: [0.3, 0.7, 5.4], material: { role: "stone" } },
+      { kind: "block", name: "Shop counter", position: [0, 0, 1.6], size: [3.4, 1, 0.6], material: { role: "stone" } },
+      { kind: "block", name: "Shop counter", position: [16, 0, 1.6], size: [3.4, 1, 0.6], material: { role: "stone" } },
+      { kind: "prop", model: "prop.im_amphorae", position: [-2.4, 0, 2.4], yaw: 0.4, scale: 1 },
+      { kind: "prop", model: "prop.im_amphorae", position: [18.4, 0, 2.4], yaw: -0.3, scale: 1 },
+      { kind: "prop", model: "prop.im_amphorae", position: [18.6, 0, 9.5], yaw: 1.2, scale: 1 },
+      { kind: "prop", model: "prop.cargo_wooden_crate", position: [13.6, 0, 10.6], yaw: 0.2, scale: 1 },
+      { kind: "door", name: "Street door", position: [8, 0, -4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "light", position: [0, 3.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 8 },
+      { kind: "light", position: [16, 3.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 8 },
+      { kind: "light", position: [8, 3.3, 8], fixture: "chandelier", color: "#ffd9a0", intensity: 0.8, range: 8 }
+    ]
+  },
+  {
+    id: "setpiece.insula_corner",
+    displayName: "Insula (Corner)",
+    family: "insula",
+    category: "Village",
+    blurb: "A corner apartment block, three storeys: the west shop opens on two streets (south and west) round an L-shaped counter (a thermopolium), windows on both street fronts.",
+    packs: ["imperial", "desert", "medieval"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], levels: [0, 3] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "door" },
+      { side: "S", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wide", "0,0,0:W": "wide" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "door", "0,0,0:S": "door", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wide", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "wall", "0,0,0:S": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 1, z: 0, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "wall", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 1, z: 1, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "windows" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "windows", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "window", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 1, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 2, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "windows" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 2, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "windows", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 2, rotation: 0, edges: { "0,0,0:E": "window", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 2, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 2, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "window", "0,0,0:S": "wall", "0,0,0:W": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "Stair roof", position: [16, 11.5, 8], size: [8, 0.5, 8], material: { role: "roof" } },
+      { kind: "block", name: "Roof slope", position: [8, 13.189, 0.1], size: [24, 0.3, 8.2], material: { role: "roof" }, pitch: 0.291457 },
+      { kind: "block", name: "Roof slope", position: [8, 13.189, 7.9], size: [24, 0.3, 8.2], material: { role: "roof" }, pitch: -0.291457 },
+      { kind: "block", name: "Gable", position: [-3.85, 12, 4], size: [0.3, 0.6, 14], material: { role: "stone" } },
+      { kind: "block", name: "Gable", position: [-3.85, 12.6, 4], size: [0.3, 0.7, 10], material: { role: "stone" } },
+      { kind: "block", name: "Gable", position: [-3.85, 13.3, 4], size: [0.3, 0.7, 5.4], material: { role: "stone" } },
+      { kind: "block", name: "Gable", position: [19.85, 12, 4], size: [0.3, 0.6, 14], material: { role: "stone" } },
+      { kind: "block", name: "Gable", position: [19.85, 12.6, 4], size: [0.3, 0.7, 10], material: { role: "stone" } },
+      { kind: "block", name: "Gable", position: [19.85, 13.3, 4], size: [0.3, 0.7, 5.4], material: { role: "stone" } },
+      { kind: "block", name: "Shop counter", position: [0, 0, 1.6], size: [3.4, 1, 0.6], material: { role: "stone" } },
+      { kind: "block", name: "Shop counter", position: [16, 0, 1.6], size: [3.4, 1, 0.6], material: { role: "stone" } },
+      { kind: "block", name: "Shop counter", position: [-1.5, 0, 0.2], size: [0.6, 1, 2.2], material: { role: "stone" } },
+      { kind: "prop", model: "prop.im_amphorae", position: [-2.4, 0, 2.4], yaw: 0.4, scale: 1 },
+      { kind: "prop", model: "prop.im_amphorae", position: [18.4, 0, 2.4], yaw: -0.3, scale: 1 },
+      { kind: "prop", model: "prop.im_amphorae", position: [18.6, 0, 9.5], yaw: 1.2, scale: 1 },
+      { kind: "prop", model: "prop.cargo_wooden_crate", position: [13.6, 0, 10.6], yaw: 0.2, scale: 1 },
+      { kind: "door", name: "Street door", position: [8, 0, -4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "light", position: [0, 3.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 8 },
+      { kind: "light", position: [16, 3.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 8 },
+      { kind: "light", position: [8, 3.3, 8], fixture: "chandelier", color: "#ffd9a0", intensity: 0.8, range: 8 }
+    ]
+  },
+  {
+    id: "setpiece.insula_tall",
+    displayName: "Insula (Tall)",
+    family: "insula",
+    category: "Village",
+    blurb: "A taller apartment block, four storeys with a flat roof: shops on the street, the stair hall climbing past three floors of flats.",
+    packs: ["imperial", "desert", "medieval"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], levels: [0, 3] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "door" },
+      { side: "S", cell: [2, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wide", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "door", "0,0,0:S": "door", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wide", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "wall", "0,0,0:S": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 1, z: 0, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "wall", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 1, z: 1, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 1, z: 2, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "wall", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "windows", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "window", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 1, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 2, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 2, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "windows", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 2, rotation: 0, edges: { "0,0,0:E": "window", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 2, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 3, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 3, rotation: 0, edges: { "0,0,0:E": "door", "0,0,0:N": "door", "0,0,0:S": "windows", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 3, rotation: 0, edges: { "0,0,0:E": "window", "0,0,0:N": "wall", "0,0,0:S": "window", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 3, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 3, rotation: 0, edges: { "0,0,0:E": "window", "0,0,0:N": "window", "0,0,0:S": "wall", "0,0,0:W": "door" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "Stair roof", position: [0, 15.5, 8], size: [8, 0.5, 8], material: { role: "roof" } },
+      { kind: "block", name: "Shop counter", position: [0, 0, 1.6], size: [3.4, 1, 0.6], material: { role: "stone" } },
+      { kind: "block", name: "Shop counter", position: [16, 0, 1.6], size: [3.4, 1, 0.6], material: { role: "stone" } },
+      { kind: "prop", model: "prop.im_amphorae", position: [-2.4, 0, 2.4], yaw: 0.4, scale: 1 },
+      { kind: "prop", model: "prop.im_amphorae", position: [18.4, 0, 2.4], yaw: -0.3, scale: 1 },
+      { kind: "prop", model: "prop.im_amphorae", position: [18.6, 0, 9.5], yaw: 1.2, scale: 1 },
+      { kind: "prop", model: "prop.cargo_wooden_crate", position: [13.6, 0, 10.6], yaw: 0.2, scale: 1 },
+      { kind: "door", name: "Street door", position: [8, 0, -4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "light", position: [0, 3.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 8 },
+      { kind: "light", position: [16, 3.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 8 },
+      { kind: "light", position: [8, 3.3, 8], fixture: "chandelier", color: "#ffd9a0", intensity: 0.8, range: 8 }
+    ]
+  },
+  // design: The craft is 10.7 m long and 3.3 m wide (sized to an LCVP), collides as voxels (its well, ramp and gunwales as modelled: walk up the ramp into the well, shoot over the sides).
+  {
+    id: "setpiece.landing_craft_beached",
+    displayName: "Beached Landing Craft",
+    family: "landing",
+    category: "Beach",
+    blurb: "A landing craft run up on the sand, its ramp down (local north) and its well open: cover to fight from and through, beach obstacles and spilled crates round it. It never moves.",
+    packs: ["military", "harbor"],
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1]], levels: [0, 0] },
+    mirror: "free",
+    parts: [
+      { kind: "prop", model: "prop.lcvp_beached", position: [4, 0, 4], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.hedgehog_beach", position: [-2.2, 0, -1.4], yaw: 0.5, scale: 1 },
+      { kind: "prop", model: "prop.hedgehog_beach", position: [10.4, 0, 0.6], yaw: 1.2, scale: 1 },
+      { kind: "prop", model: "prop.ww2_ammo_crate", position: [6.6, 0, 10.6], yaw: 0.35, scale: 1 },
+      { kind: "prop", model: "prop.ww2_ammo_crate", position: [1.4, 0, 10.9], yaw: -0.6, scale: 1 },
+      { kind: "prop", model: "prop.timber_baulk", position: [9.6, 0, 9.4], yaw: 1.1, scale: 1 }
+    ]
+  },
+  // design: Three Terraces make the apron and the dock edge (their 1 m step-up along the back); three Rooms open to the south and to each other make the shed, with a block floor 1 m up so the dock runs straight in. A truck and crates for cover.
+  {
+    id: "setpiece.loading_dock",
+    displayName: "Loading Dock",
+    family: "loadingdock",
+    category: "Industrial",
+    blurb: "An open-fronted goods shed with its floor 1 m up, a dock edge the length of it with three sets of steps, a truck backed up on the apron and cargo on the dock: 3 × 2 cells.",
+    packs: ["military", "harbor", "snow", "suburban", "neon", "frontier", "industrial", "urban"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:S": "open", "0,0,0:N": "wall", "0,0,0:E": "open", "0,0,0:W": "wall" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "beams" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 0, rotation: 0, edges: { "0,0,0:S": "open", "0,0,0:N": "wall", "0,0,0:E": "open", "0,0,0:W": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "beams" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 0, rotation: 0, edges: { "0,0,0:S": "open", "0,0,0:N": "wall", "0,0,0:E": "wall", "0,0,0:W": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "beams" } },
+      { kind: "tile", tile: "core.terrace", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "open", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.terrace", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "open" }, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.terrace", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "open", "0,0,0:E": "open" }, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "block", name: "Dock floor", position: [8, 0, 7.875], size: [23.5, 1, 7.75], material: { role: "stone" } },
+      { kind: "block", name: "Dock bumper", position: [-2.8, 0.2, 0.85], size: [0.6, 0.6, 0.3], material: { role: "metal" } },
+      { kind: "block", name: "Dock bumper", position: [4, 0.2, 0.85], size: [0.6, 0.6, 0.3], material: { role: "metal" } },
+      { kind: "block", name: "Dock bumper", position: [12, 0.2, 0.85], size: [0.6, 0.6, 0.3], material: { role: "metal" } },
+      { kind: "block", name: "Dock bumper", position: [18.8, 0.2, 0.85], size: [0.6, 0.6, 0.3], material: { role: "metal" } },
+      { kind: "prop", model: "prop.supply_truck", position: [12, 0, -1.25], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.pallet", position: [1, 1, 7], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.crate.wood_long", position: [1, 1, 7], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.cargo_crate_stack", position: [14.5, 1, 9.5], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.crate.wood_long", position: [17.5, 1, 6], yaw: 0.3, scale: 1 },
+      { kind: "prop", model: "kit.drum.steel", position: [-2.6, 1, 10.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.drum.steel", position: [-1.6, 1, 10.7], yaw: 0, scale: 1 },
+      { kind: "light", position: [0, 3.3, 8], fixture: "bulb", color: "#ffe2b0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 3.3, 8], fixture: "bulb", color: "#ffe2b0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [16, 3.3, 8], fixture: "bulb", color: "#ffe2b0", intensity: 0.9, range: 9 }
+    ]
+  },
+  // design: Open Stairs climb from both ends onto a Platform on level 1; under it a Room with no ceiling of its own (the platform is its roof), arches north and south. The piece is its own mirror image, so it says mirror "none" (its stairs are not): turn it instead.
+  {
+    id: "setpiece.twin_stair_overlook",
+    displayName: "Twin-Stair Overlook",
+    family: "overlook",
+    category: "Stairs & Overlooks",
+    blurb: "A lookout platform 4 m up between two open stairs, a half wall to the north to fight over, a railing to the south, and an arched passage under it: 3 × 1 cells.",
+    packs: ["military", "imperial", "medieval", "desert", "jungle", "harbor", "collegiate", "gothic", "suburban", "neon", "urban"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairs_open", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.stairs_open", x: 2, y: 0, z: 0, rotation: 2, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "arch", "0,0,0:S": "arch", "0,0,0:E": "open", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" } }, options: { ceiling: "open" } },
+      { kind: "tile", tile: "core.platform", x: 1, y: 0, z: 1, rotation: 0, edges: { "0,0,0:N": "half", "0,0,0:S": "railing", "0,0,0:E": "open", "0,0,0:W": "open" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "prop", model: "prop.sandbag_wall_low", position: [6, 4, 2.6], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.sandbag_wall_low", position: [10, 4, 2.6], yaw: 0, scale: 1 },
+      { kind: "light", position: [0, 2.6, 0], fixture: "bulb", color: "#ffd9a0", intensity: 0.8, range: 8 }
+    ]
+  },
+  // design: An Intersection and four Streets (their sidewalks and lamps), four Courtyards on the corners with a kerb block 0.15 m up (level with the sidewalks), planters (blocks 0.75 m, waist-high cover) set back from the streets with a gap at the corner, a bench and a lamppost.
+  {
+    id: "setpiece.crossroads_plaza",
+    displayName: "Crossroads Plaza",
+    family: "plaza",
+    category: "Arenas & Plazas",
+    blurb: "Two streets crossing, with a paved square a kerb up on each corner: planter walls along the streets for cover, a bench and a lamp on each, four ways in and out: 3 × 3 cells.",
+    packs: ["suburban", "neon", "harbor", "collegiate", "medieval", "desert", "military", "snow", "urban"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 2], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 1], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.intersection", x: 1, y: 1, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.street", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "open" }, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.street", x: 1, y: 2, z: 0, rotation: 2, edges: { "0,0,0:S": "open" }, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.street", x: 0, y: 1, z: 0, rotation: 1, edges: { "0,0,0:S": "open" }, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.street", x: 2, y: 1, z: 0, rotation: 3, edges: { "0,0,0:S": "open" }, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.yard", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:W": "open", "0,0,0:S": "open" }, surfaces: { floor: { role: "paving" } } },
+      { kind: "block", name: "Kerb", position: [0, 0, 0], size: [8, 0.15, 8], material: { role: "paving" } },
+      { kind: "block", name: "Planter", position: [3.4, 0.15, -1.2], size: [1.2, 0.75, 5.6], material: { role: "stone" } },
+      { kind: "block", name: "Planter", position: [-1.2, 0.15, 3.4], size: [5.6, 0.75, 1.2], material: { role: "stone" } },
+      { kind: "prop", model: "kit.seat.bench", position: [-1.5, 0.15, -1.5], yaw: 0.785, scale: 1 },
+      { kind: "prop", model: "prop.yard_lamp", position: [-3.2, 0.15, -3.2], yaw: 0.785, scale: 1 },
+      { kind: "tile", tile: "core.yard", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "open", "0,0,0:S": "open" }, surfaces: { floor: { role: "paving" } } },
+      { kind: "block", name: "Kerb", position: [16, 0, 0], size: [8, 0.15, 8], material: { role: "paving" } },
+      { kind: "block", name: "Planter", position: [12.6, 0.15, -1.2], size: [1.2, 0.75, 5.6], material: { role: "stone" } },
+      { kind: "block", name: "Planter", position: [17.2, 0.15, 3.4], size: [5.6, 0.75, 1.2], material: { role: "stone" } },
+      { kind: "prop", model: "kit.seat.bench", position: [17.5, 0.15, -1.5], yaw: -0.785, scale: 1 },
+      { kind: "prop", model: "prop.yard_lamp", position: [19.2, 0.15, -3.2], yaw: -0.785, scale: 1 },
+      { kind: "tile", tile: "core.yard", x: 0, y: 2, z: 0, rotation: 0, edges: { "0,0,0:W": "open", "0,0,0:N": "open" }, surfaces: { floor: { role: "paving" } } },
+      { kind: "block", name: "Kerb", position: [0, 0, 16], size: [8, 0.15, 8], material: { role: "paving" } },
+      { kind: "block", name: "Planter", position: [3.4, 0.15, 17.2], size: [1.2, 0.75, 5.6], material: { role: "stone" } },
+      { kind: "block", name: "Planter", position: [-1.2, 0.15, 12.6], size: [5.6, 0.75, 1.2], material: { role: "stone" } },
+      { kind: "prop", model: "kit.seat.bench", position: [-1.5, 0.15, 17.5], yaw: 2.356, scale: 1 },
+      { kind: "prop", model: "prop.yard_lamp", position: [-3.2, 0.15, 19.2], yaw: 2.356, scale: 1 },
+      { kind: "tile", tile: "core.yard", x: 2, y: 2, z: 0, rotation: 0, edges: { "0,0,0:E": "open", "0,0,0:N": "open" }, surfaces: { floor: { role: "paving" } } },
+      { kind: "block", name: "Kerb", position: [16, 0, 16], size: [8, 0.15, 8], material: { role: "paving" } },
+      { kind: "block", name: "Planter", position: [12.6, 0.15, 17.2], size: [1.2, 0.75, 5.6], material: { role: "stone" } },
+      { kind: "block", name: "Planter", position: [17.2, 0.15, 12.6], size: [5.6, 0.75, 1.2], material: { role: "stone" } },
+      { kind: "prop", model: "kit.seat.bench", position: [17.5, 0.15, 17.5], yaw: -2.356, scale: 1 },
+      { kind: "prop", model: "prop.yard_lamp", position: [19.2, 0.15, 19.2], yaw: -2.356, scale: 1 }
+    ]
+  },
+  // design: Nine Tall Rooms open to each other make the hall (their middle column stands inside the core). The gallery is free blocks at 4 m (the level above's floor height), 4.5 m deep so it covers the columns along the walls and meets the gallery doors; the stairs are block flights (16 steps of 0.25 m) landing on the west and east decks through gaps in the rail. It mirrors freely: the flights sit half a turn apart.
+  {
+    id: "setpiece.power_core_hall",
+    displayName: "Power Core Hall",
+    family: "powercore",
+    category: "Industrial",
+    blurb: "A hall 24 m square and two storeys high round a glowing power core: eight columns, a railed gallery all round at 4 m with two stairs up, doors on all four sides and onto the gallery east and west.",
+    packs: ["orbital", "military", "neon", "snow", "harbor", "industrial"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]], levels: [0, 1] },
+    mirror: "free",
+    roles: { glass: "reinforced" },
+    ports: [
+      { side: "S", cell: [1, 0], level: 0, kind: "door" },
+      { side: "N", cell: [1, 2], level: 0, kind: "door" },
+      { side: "W", cell: [0, 1], level: 0, kind: "door" },
+      { side: "E", cell: [2, 1], level: 0, kind: "door" },
+      { side: "W", cell: [0, 1], level: 1, kind: "door" },
+      { side: "E", cell: [2, 1], level: 1, kind: "door" }
+    ],
+    markers: [{ name: "core", kind: "spot", parts: [52] }, { name: "gallery", kind: "spot", parts: [9, 10, 11, 12] }, { name: "gallery_doors", kind: "doorPair", parts: [65, 66] }],
+    parts: [
+      { kind: "tile", tile: "core.room_tall", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:S": "wall", "0,0,0:E": "open", "0,0,0:W": "wall", "0,0,1:N": "open", "0,0,1:S": "windows", "0,0,1:E": "open", "0,0,1:W": "windows" }, glass: { "0,0,1:S": { role: "glass" }, "0,0,1:W": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room_tall", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:S": "door", "0,0,0:E": "open", "0,0,0:W": "open", "0,0,1:N": "open", "0,0,1:S": "windows", "0,0,1:E": "open", "0,0,1:W": "open" }, glass: { "0,0,1:S": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room_tall", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:S": "wall", "0,0,0:E": "wall", "0,0,0:W": "open", "0,0,1:N": "open", "0,0,1:S": "windows", "0,0,1:E": "windows", "0,0,1:W": "open" }, glass: { "0,0,1:S": { role: "glass" }, "0,0,1:E": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room_tall", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "door", "0,0,1:N": "open", "0,0,1:S": "open", "0,0,1:E": "open", "0,0,1:W": "door" }, glass: {}, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room_tall", x: 1, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open", "0,0,1:N": "open", "0,0,1:S": "open", "0,0,1:E": "open", "0,0,1:W": "open" }, glass: {}, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room_tall", x: 2, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:S": "open", "0,0,0:E": "door", "0,0,0:W": "open", "0,0,1:N": "open", "0,0,1:S": "open", "0,0,1:E": "door", "0,0,1:W": "open" }, glass: {}, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room_tall", x: 0, y: 2, z: 0, rotation: 0, edges: { "0,0,0:N": "wall", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "wall", "0,0,1:N": "windows", "0,0,1:S": "open", "0,0,1:E": "open", "0,0,1:W": "windows" }, glass: { "0,0,1:N": { role: "glass" }, "0,0,1:W": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room_tall", x: 1, y: 2, z: 0, rotation: 0, edges: { "0,0,0:N": "door", "0,0,0:S": "open", "0,0,0:E": "open", "0,0,0:W": "open", "0,0,1:N": "windows", "0,0,1:S": "open", "0,0,1:E": "open", "0,0,1:W": "open" }, glass: { "0,0,1:N": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room_tall", x: 2, y: 2, z: 0, rotation: 0, edges: { "0,0,0:N": "wall", "0,0,0:S": "open", "0,0,0:E": "wall", "0,0,0:W": "open", "0,0,1:N": "windows", "0,0,1:S": "open", "0,0,1:E": "windows", "0,0,1:W": "open" }, glass: { "0,0,1:N": { role: "glass" }, "0,0,1:E": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "block", name: "Gallery (south)", position: [8, 3.7, -1.475], size: [23.5, 0.3, 4.55], material: { role: "metal" } },
+      { kind: "block", name: "Gallery (north)", position: [8, 3.7, 17.475], size: [23.5, 0.3, 4.55], material: { role: "metal" } },
+      { kind: "block", name: "Gallery (west)", position: [-1.475, 3.7, 8], size: [4.55, 0.3, 14.4], material: { role: "metal" } },
+      { kind: "block", name: "Gallery (east)", position: [17.475, 3.7, 8], size: [4.55, 0.3, 14.4], material: { role: "metal" } },
+      { kind: "block", name: "Gallery rail", position: [8, 4, 0.75], size: [14.4, 1, 0.1], material: { role: "trim" } },
+      { kind: "block", name: "Gallery rail", position: [8, 4, 15.25], size: [14.4, 1, 0.1], material: { role: "trim" } },
+      { kind: "block", name: "Gallery rail", position: [0.75, 4, 1.4], size: [0.1, 1, 1.2], material: { role: "trim" } },
+      { kind: "block", name: "Gallery rail", position: [0.75, 4, 9.6], size: [0.1, 1, 11.2], material: { role: "trim" } },
+      { kind: "block", name: "Gallery rail", position: [15.25, 4, 6.4], size: [0.1, 1, 11.2], material: { role: "trim" } },
+      { kind: "block", name: "Gallery rail", position: [15.25, 4, 14.6], size: [0.1, 1, 1.2], material: { role: "trim" } },
+      { kind: "block", name: "Gallery stair", position: [8.55, 0, 3], size: [0.5, 0.25, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [8.05, 0, 3], size: [0.5, 0.5, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [7.55, 0, 3], size: [0.5, 0.75, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [7.05, 0, 3], size: [0.5, 1, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [6.55, 0, 3], size: [0.5, 1.25, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [6.05, 0, 3], size: [0.5, 1.5, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [5.55, 0, 3], size: [0.5, 1.75, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [5.05, 0, 3], size: [0.5, 2, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [4.55, 0, 3], size: [0.5, 2.25, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [4.05, 0, 3], size: [0.5, 2.5, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [3.55, 0, 3], size: [0.5, 2.75, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [3.05, 0, 3], size: [0.5, 3, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [2.55, 0, 3], size: [0.5, 3.25, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [2.05, 0, 3], size: [0.5, 3.5, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [1.55, 0, 3], size: [0.5, 3.75, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [1.05, 0, 3], size: [0.5, 4, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [7.45, 0, 13], size: [0.5, 0.25, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [7.95, 0, 13], size: [0.5, 0.5, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [8.45, 0, 13], size: [0.5, 0.75, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [8.95, 0, 13], size: [0.5, 1, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [9.45, 0, 13], size: [0.5, 1.25, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [9.95, 0, 13], size: [0.5, 1.5, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [10.45, 0, 13], size: [0.5, 1.75, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [10.95, 0, 13], size: [0.5, 2, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [11.45, 0, 13], size: [0.5, 2.25, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [11.95, 0, 13], size: [0.5, 2.5, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [12.45, 0, 13], size: [0.5, 2.75, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [12.95, 0, 13], size: [0.5, 3, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [13.45, 0, 13], size: [0.5, 3.25, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [13.95, 0, 13], size: [0.5, 3.5, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [14.45, 0, 13], size: [0.5, 3.75, 2], material: { role: "metal" } },
+      { kind: "block", name: "Gallery stair", position: [14.95, 0, 13], size: [0.5, 4, 2], material: { role: "metal" } },
+      { kind: "block", name: "Core plinth", position: [8, 0, 8], size: [5, 0.5, 5], material: { role: "metal" } },
+      { kind: "block", name: "Core drum", position: [8, 0.5, 8], size: [3, 6, 3], material: "core.circuit", tint: "#6a7a8a" },
+      { kind: "block", name: "Core rib", position: [8, 0.8, 6.45], size: [0.6, 5.4, 0.1], material: "core.glow_trim", tint: "#7fe0ff" },
+      { kind: "block", name: "Core rib", position: [8, 0.8, 9.55], size: [0.6, 5.4, 0.1], material: "core.glow_trim", tint: "#7fe0ff" },
+      { kind: "block", name: "Core rib", position: [6.45, 0.8, 8], size: [0.1, 5.4, 0.6], material: "core.glow_trim", tint: "#7fe0ff" },
+      { kind: "block", name: "Core rib", position: [9.55, 0.8, 8], size: [0.1, 5.4, 0.6], material: "core.glow_trim", tint: "#7fe0ff" },
+      { kind: "block", name: "Core cap", position: [8, 6.5, 8], size: [4, 0.5, 4], material: { role: "metal" } },
+      { kind: "block", name: "Roof", position: [8, 7.6, 8], size: [23.5, 0.4, 23.5], material: { role: "roof" } },
+      { kind: "prop", model: "prop.os_terminal", position: [3.2, 0, 8], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.os_terminal", position: [12.8, 0, 8], yaw: -1.570796, scale: 1 },
+      { kind: "door", name: "South door", position: [8, 0, -4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "door", name: "North door", position: [8, 0, 20], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "door", name: "West door", position: [-4, 0, 8], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "door", name: "East door", position: [20, 0, 8], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "door", name: "West gallery door", position: [-4, 4, 8], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "door", name: "East gallery door", position: [20, 4, 8], yaw: 1.570796, style: { role: "door" }, auto: true },
+      { kind: "light", position: [8, 3, 4.6], fixture: "none", color: "#7fe0ff", intensity: 1.3, range: 14 },
+      { kind: "light", position: [8, 3, 11.4], fixture: "none", color: "#7fe0ff", intensity: 1.3, range: 14 },
+      { kind: "light", position: [0, 7.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 0.9, range: 12 },
+      { kind: "light", position: [16, 7.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 0.9, range: 12 },
+      { kind: "light", position: [0, 7.3, 16], fixture: "ceiling", color: "#fff1d6", intensity: 0.9, range: 12 },
+      { kind: "light", position: [16, 7.3, 16], fixture: "ceiling", color: "#fff1d6", intensity: 0.9, range: 12 }
+    ]
+  },
+  // design: Two Long Ramps (one level over two cells each) wind up round a pair of railed Platforms on level 1; under the platforms a Room with arches on its outer sides, under the upper ramp a corridor out west. It can't be mirrored (the ramps): turn it.
+  {
+    id: "setpiece.ramp_junction",
+    displayName: "Ramp Junction",
+    family: "rampjunction",
+    category: "Stairs & Overlooks",
+    blurb: "Three levels meet: a long ramp from the ground to a railed junction deck on level 1, a second ramp on up to level 2, and an arched passage and a corridor under them at ground level: 3 × 2 cells, levels 0-2.",
+    packs: ["military", "neon", "orbital", "snow", "imperial", "suburban", "harbor", "urban"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], levels: [0, 2] },
+    mirror: "none",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 2, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "S", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [2, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 1], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.ramp", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:W": "open", "1,0,1:E": "open", "0,0,1:S": "railing", "1,0,1:S": "railing" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.platform_rail", x: 2, y: 0, z: 1, rotation: 0, edges: { "0,0,0:W": "open", "0,0,0:N": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.platform_rail", x: 2, y: 1, z: 1, rotation: 0, edges: { "0,0,0:W": "open", "0,0,0:S": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.ramp", x: 1, y: 1, z: 1, rotation: 2, edges: { "0,0,0:W": "open", "1,0,1:E": "arch", "0,0,0:S": "railing", "1,0,0:S": "railing", "0,0,1:S": "railing", "1,0,1:S": "railing", "0,0,1:N": "railing", "1,0,1:N": "railing" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "arch", "0,0,0:E": "arch", "0,0,0:N": "open", "0,0,0:W": "wall" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "open" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "arch", "0,0,0:E": "arch", "0,0,0:S": "open", "0,0,0:W": "arch" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "open" } },
+      { kind: "tile", tile: "core.corridor_clear", x: 1, y: 1, z: 0, rotation: 1, edges: { "0,0,0:S": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.corridor_clear", x: 0, y: 1, z: 0, rotation: 1, edges: { "0,0,0:N": "open", "0,0,0:S": "arch" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "stone" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "light", position: [16, 3.3, 4], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 9 },
+      { kind: "light", position: [4, 3.3, 8], fixture: "strip", color: "#fff1d6", intensity: 0.7, range: 9 }
+    ]
+  },
+  // design: The Reactor Hall tile with the Reactor Core prop; the east column is the airlock (a Corridor with a door at each end), the pump room and, over them, the control room: armoured windows west onto the hall's catwalk and east outside, its door onto the catwalk. It can't be mirrored (the hall's stair): turn it.
+  {
+    id: "setpiece.reactor_room",
+    displayName: "Reactor Room",
+    family: "reactor",
+    category: "Industrial",
+    blurb: "A two-storey reactor hall (the Reactor Hall, its core glowing in the middle, a catwalk all round) behind an airlock, with a pump room beside it and a control room over the airlock looking down through armoured glass: 3 × 2 cells.",
+    packs: ["orbital", "military", "neon", "snow", "industrial"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], levels: [0, 1] },
+    mirror: "none",
+    roles: { glass: "reinforced" },
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "door" },
+      { side: "E", cell: [2, 0], level: 0, kind: "door" },
+      { side: "N", cell: [2, 1], level: 0, kind: "door" }
+    ],
+    markers: [{ name: "airlock", kind: "doorPair", parts: [14, 15] }, { name: "reactor", kind: "spot", parts: [5] }],
+    parts: [
+      { kind: "tile", tile: "orbital.reactor_hall", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "door", "1,0,0:S": "wall", "0,0,0:W": "wall", "0,1,0:W": "wall", "0,1,0:N": "wall", "1,1,0:N": "wall", "1,0,0:E": "door", "1,1,0:E": "door", "0,0,1:S": "wall", "1,0,1:S": "wall", "0,0,1:W": "wall", "0,1,1:W": "wall", "0,1,1:N": "wall", "1,1,1:N": "wall", "1,0,1:E": "windows", "1,1,1:E": "door" }, glass: { "1,0,1:E": "reinforced" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.corridor_clear", x: 2, y: 0, z: 0, rotation: 1, edges: { "0,0,0:N": "door", "0,0,0:S": "door" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 0, rotation: 0, edges: { "0,0,0:N": "door", "0,0,0:E": "wall", "0,0,0:S": "wall", "0,0,0:W": "door" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 1, rotation: 0, edges: { "0,0,0:N": "open", "0,0,0:E": "windows", "0,0,0:S": "wall", "0,0,0:W": "windows" }, glass: { "0,0,0:E": "reinforced", "0,0,0:W": "reinforced" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 1, z: 1, rotation: 0, edges: { "0,0,0:S": "open", "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:W": "door" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "prop", model: "prop.os_reactor_core", position: [4, 0, 4], yaw: 0, scale: 1 },
+      { kind: "block", name: "Hall roof", position: [4, 7.6, 4], size: [15.5, 0.4, 15.5], material: { role: "roof" } },
+      { kind: "prop", model: "prop.os_generator", position: [17.4, 0, 8.4], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.drum.steel", position: [13.2, 0, 10.8], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.drum.steel", position: [14.1, 0, 10.9], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.computer_bank", position: [17.9, 4, 1.8], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.computer_wide", position: [18.4, 4, 6.2], yaw: -1.570796, scale: 1 },
+      { kind: "prop", model: "prop.computer", position: [13.8, 4, 0], yaw: 1.570796, scale: 1 },
+      { kind: "door", name: "South door", position: [0, 0, -4], yaw: 0, style: "blast", auto: true },
+      { kind: "door", name: "Airlock (outer)", position: [20, 0, 0], yaw: 1.570796, style: "blast", auto: true },
+      { kind: "door", name: "Airlock (inner)", position: [12, 0, 0], yaw: 1.570796, style: "sliding", auto: true },
+      { kind: "door", name: "Pump room door", position: [16, 0, 12], yaw: 0, style: "sliding", auto: true },
+      { kind: "door", name: "Control room door", position: [12, 4, 8], yaw: 1.570796, style: "sliding", auto: true },
+      { kind: "light", position: [4, 2.5, 4], fixture: "none", color: "#7fffb0", intensity: 1.5, range: 12 },
+      { kind: "light", position: [4, 7.3, -1], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 10 },
+      { kind: "light", position: [4, 7.3, 9], fixture: "ceiling", color: "#fff1d6", intensity: 0.8, range: 10 },
+      { kind: "light", position: [16, 7.3, 4], fixture: "strip", color: "#fff1d6", intensity: 0.8, range: 8 },
+      { kind: "light", position: [16, 3.3, 8], fixture: "ceiling", color: "#fff1d6", intensity: 0.7, range: 8 }
+    ]
+  },
+  // design: MAP 21 (Iron Coast): free blocks on the standard grid, so bays line up east to west. Standing on the fire step a player's eyes clear the wall top (3.4 m) by about 0.3 m; on the beach the wall and its lip shut them out. Blocks only: on a beach, flatten the ground under it first.
+  {
+    id: "setpiece.sea_wall",
+    displayName: "Sea Wall",
+    family: "seawall",
+    category: "Fortifications",
+    blurb: "An 8 m bay of concrete sea wall, the sea to the south: a footing, a wall 3.4 m high with a stepped wave lip, a fire step 2 m up behind it to shoot over the top from, a stair up to it. Line bays up along a beach.",
+    packs: ["military", "harbor", "snow"],
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "block", name: "Footing", position: [0, 0, -3.5], size: [8, 0.4, 1], material: { role: "stone" } },
+      { kind: "block", name: "Sea wall", position: [0, 0, -2.2], size: [8, 3.4, 1.6], material: { role: "stone" } },
+      { kind: "block", name: "Wave lip", position: [0, 3, -3.3], size: [8, 0.4, 0.6], material: { role: "stone" } },
+      { kind: "block", name: "Wave lip", position: [0, 2.6, -3.15], size: [8, 0.4, 0.3], material: { role: "stone" } },
+      { kind: "block", name: "Fire step", position: [0, 0, -0.4], size: [8, 2, 2], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 3.6], size: [1.5, 0.25, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 3.2], size: [1.5, 0.5, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 2.8], size: [1.5, 0.75, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 2.4], size: [1.5, 1, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 2], size: [1.5, 1.25, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 1.6], size: [1.5, 1.5, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 1.2], size: [1.5, 1.75, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 0.8], size: [1.5, 2, 0.4], material: { role: "stone" } },
+      { kind: "prop", model: "prop.sandbag_wall_low", position: [-1.5, 2, -0.5], yaw: 0, scale: 1 }
+    ]
+  },
+  // design: MAP 21 (Iron Coast) sea wall, breached: the Sea Wall's parts kept either side of the gap, and a rubble mound through it in 0.25 m steps from the beach to the land side, so players and bots go through without a jump. Place it in a line of Sea Walls.
+  {
+    id: "setpiece.sea_wall_breach",
+    displayName: "Sea Wall (Breached)",
+    family: "seawall",
+    category: "Fortifications",
+    blurb: "A bay of sea wall blown open: a gap 4.4 m wide with a rubble ramp you walk straight up and over, broken slabs and torn reinforcing either side; the fire step and its stair stay on the stubs.",
+    packs: ["military", "harbor", "snow"],
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "block", name: "Footing", position: [-3.1, 0, -3.5], size: [1.8, 0.4, 1], material: { role: "stone" } },
+      { kind: "block", name: "Sea wall", position: [-3.1, 0, -2.2], size: [1.8, 3.4, 1.6], material: { role: "stone" } },
+      { kind: "block", name: "Wave lip", position: [-3.1, 3, -3.3], size: [1.8, 0.4, 0.6], material: { role: "stone" } },
+      { kind: "block", name: "Wave lip", position: [-3.1, 2.6, -3.15], size: [1.8, 0.4, 0.3], material: { role: "stone" } },
+      { kind: "block", name: "Fire step", position: [-3.1, 0, -0.4], size: [1.8, 2, 2], material: { role: "stone" } },
+      { kind: "block", name: "Footing", position: [3.1, 0, -3.5], size: [1.8, 0.4, 1], material: { role: "stone" } },
+      { kind: "block", name: "Sea wall", position: [3.1, 0, -2.2], size: [1.8, 3.4, 1.6], material: { role: "stone" } },
+      { kind: "block", name: "Wave lip", position: [3.1, 3, -3.3], size: [1.8, 0.4, 0.6], material: { role: "stone" } },
+      { kind: "block", name: "Wave lip", position: [3.1, 2.6, -3.15], size: [1.8, 0.4, 0.3], material: { role: "stone" } },
+      { kind: "block", name: "Fire step", position: [3.1, 0, -0.4], size: [1.8, 2, 2], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 3.6], size: [1.5, 0.25, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 3.2], size: [1.5, 0.5, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 2.8], size: [1.5, 0.75, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 2.4], size: [1.5, 1, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 2], size: [1.5, 1.25, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 1.6], size: [1.5, 1.5, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 1.2], size: [1.5, 1.75, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Fire-step stair", position: [2.95, 0, 0.8], size: [1.5, 2, 0.4], material: { role: "stone" } },
+      { kind: "block", name: "Rubble", position: [0, 0, -2.2], size: [4.4, 0.25, 3.6], material: { role: "stone" } },
+      { kind: "block", name: "Rubble", position: [0, 0.25, -2.2], size: [3.2, 0.25, 2], material: { role: "stone" } },
+      { kind: "block", name: "Broken slab", position: [-2.9, 0, 2.8], size: [1.6, 0.5, 1.2], material: { role: "stone" }, yaw: 0.35, roll: 0.3 },
+      { kind: "block", name: "Torn reinforcing", position: [-2.1, 1.2, -2.2], size: [0.1, 1.6, 1.4], material: "core.rusty_metal", roll: 0.4 },
+      { kind: "block", name: "Torn reinforcing", position: [2.1, 1, -2.2], size: [0.1, 1.8, 1.4], material: "core.rusty_metal", roll: -0.4 }
+    ]
+  },
+  // design: Four Rooms: the lobby (its door south, the vault door north), the guard post (armoured windows onto the lobby, its own door onto the server floor) and two server rooms open to each other on a raised floor. The racks stand on the raised floor at 0.5 m.
+  {
+    id: "setpiece.server_vault",
+    displayName: "Server Vault",
+    family: "servervault",
+    category: "Interiors",
+    blurb: "A secure server floor behind a vault door: a lobby and a guard post behind armoured glass, then two rows of racks on a raised floor, a fire exit out the far side: 2 × 2 cells.",
+    packs: ["neon", "orbital", "military", "suburban", "snow", "industrial", "urban"],
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "door" },
+      { side: "E", cell: [1, 1], level: 0, kind: "door" }
+    ],
+    markers: [{ name: "server_floor", kind: "spot", parts: [2, 3] }],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "door", "0,0,0:W": "wall", "0,0,0:E": "windows", "0,0,0:N": "door" }, glass: { "0,0,0:E": "reinforced" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:S": "wall", "0,0,0:E": "wall", "0,0,0:W": "windows", "0,0,0:N": "door" }, glass: { "0,0,0:W": "reinforced" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:S": "door", "0,0,0:W": "wall", "0,0,0:N": "wall", "0,0,0:E": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 0, rotation: 0, edges: { "0,0,0:S": "door", "0,0,0:E": "door", "0,0,0:N": "wall", "0,0,0:W": "open" }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "metal" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof" } },
+      { kind: "prop", model: "prop.computer_bank", position: [4, 0, 6.3], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.computer_bank", position: [4, 0, 9.7], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.computer_bank", position: [-2.1, 0, 9.4], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "prop.computer_bank", position: [10.1, 0, 9.4], yaw: 1.570796, scale: 1 },
+      { kind: "prop", model: "kit.table.desk", position: [8, 0, -1.5], yaw: 3.141593, scale: 1 },
+      { kind: "prop", model: "kit.seat.chair", position: [8, 0, -0.4], yaw: 0, scale: 1 },
+      { kind: "prop", model: "prop.computer", position: [8, 0.8, -1.7], yaw: 3.141593, scale: 1 },
+      { kind: "door", name: "Vault door", position: [0, 0, 4], yaw: 0, style: "vault", auto: true },
+      { kind: "door", name: "Lobby door", position: [0, 0, -4], yaw: 0, style: "sliding", auto: true },
+      { kind: "door", name: "Guard post door", position: [8, 0, 4], yaw: 0, style: "sliding", auto: true },
+      { kind: "door", name: "Fire exit", position: [12, 0, 8], yaw: 1.570796, style: "blast", auto: true },
+      { kind: "light", position: [0, 3.3, 0], fixture: "strip", color: "#e8f0ff", intensity: 0.8, range: 8 },
+      { kind: "light", position: [8, 3.3, 0], fixture: "strip", color: "#e8f0ff", intensity: 0.7, range: 8 },
+      { kind: "light", position: [0, 3.3, 8], fixture: "strip", color: "#8fc8ff", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 3.3, 8], fixture: "strip", color: "#8fc8ff", intensity: 0.9, range: 9 }
+    ]
+  },
+  {
+    id: "setpiece.skybridge_2",
+    displayName: "Skybridge (2 cells)",
+    family: "skybridge",
+    category: "Bridges",
+    blurb: "An enclosed bridge 2 cells long between two buildings' upper floors: windows down both sides, a roof, a door at each end, nothing underneath (streets pass below). Place it on level 1 or 2.",
+    packs: ["collegiate", "gothic", "military", "neon", "snow", "suburban", "harbor", "orbital", "industrial", "urban"],
+    footprint: { cells: [[0, 0], [0, 1]], levels: [0, 0] },
+    mirror: "free",
+    roles: { glass: "breakable" },
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "door" },
+      { side: "N", cell: [0, 1], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "door", "0,0,0:N": "open" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:W": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "door" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:W": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "door", name: "South door", position: [0, 0, -4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "door", name: "North door", position: [0, 0, 12], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "light", position: [0, 3.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [0, 3.3, 8], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 }
+    ],
+    markers: [{ name: "end_doors", kind: "doorPair", parts: [2, 3] }]
+  },
+  {
+    id: "setpiece.skybridge_3",
+    displayName: "Skybridge (3 cells)",
+    family: "skybridge",
+    category: "Bridges",
+    blurb: "An enclosed bridge 3 cells long between two buildings' upper floors: windows down both sides, a roof, a door at each end, nothing underneath (streets pass below). Place it on level 1 or 2.",
+    packs: ["collegiate", "gothic", "military", "neon", "snow", "suburban", "harbor", "orbital", "industrial", "urban"],
+    footprint: { cells: [[0, 0], [0, 1], [0, 2]], levels: [0, 0] },
+    mirror: "free",
+    roles: { glass: "breakable" },
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "door" },
+      { side: "N", cell: [0, 2], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "door", "0,0,0:N": "open" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:W": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "open" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:W": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 2, z: 0, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "door" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:W": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "door", name: "South door", position: [0, 0, -4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "door", name: "North door", position: [0, 0, 20], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "light", position: [0, 3.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [0, 3.3, 8], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [0, 3.3, 16], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 }
+    ],
+    markers: [{ name: "end_doors", kind: "doorPair", parts: [3, 4] }]
+  },
+  {
+    id: "setpiece.skybridge_4",
+    displayName: "Skybridge (4 cells)",
+    family: "skybridge",
+    category: "Bridges",
+    blurb: "An enclosed bridge 4 cells long between two buildings' upper floors: windows down both sides, a roof, a door at each end, nothing underneath (streets pass below). Place it on level 1 or 2.",
+    packs: ["collegiate", "gothic", "military", "neon", "snow", "suburban", "harbor", "orbital", "industrial", "urban"],
+    footprint: { cells: [[0, 0], [0, 1], [0, 2], [0, 3]], levels: [0, 0] },
+    mirror: "free",
+    roles: { glass: "breakable" },
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "door" },
+      { side: "N", cell: [0, 3], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "door", "0,0,0:N": "open" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:W": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "open" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:W": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 2, z: 0, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "open" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:W": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 3, z: 0, rotation: 0, edges: { "0,0,0:E": "windows", "0,0,0:W": "windows", "0,0,0:S": "open", "0,0,0:N": "door" }, glass: { "0,0,0:E": { role: "glass" }, "0,0,0:W": { role: "glass" } }, surfaces: { floor: { role: "floor" }, walls: { role: "stone" }, solids: { role: "wood" }, underside: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "door", name: "South door", position: [0, 0, -4], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "door", name: "North door", position: [0, 0, 28], yaw: 0, style: { role: "door" }, auto: true },
+      { kind: "light", position: [0, 3.3, 0], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [0, 3.3, 8], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [0, 3.3, 16], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 },
+      { kind: "light", position: [0, 3.3, 24], fixture: "ceiling", color: "#fff1d6", intensity: 1, range: 10 }
+    ],
+    markers: [{ name: "end_doors", kind: "doorPair", parts: [4, 5] }]
+  },
+  {
+    id: "setpiece.stair_tower_4",
+    displayName: "Stair Tower (4 levels)",
+    family: "stairtower",
+    category: "Stairs",
+    blurb: "Switchback stairs 4 levels up, 3 × 1 cells: a stairwell either side of a hall that has a landing on every level, arches out of the hall north and south on each one (into the stands' galleries).",
+    packs: ["imperial", "desert", "medieval", "gothic", "military", "industrial", "urban"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 4] },
+    mirror: "none",
+    ports: [
+      { side: "N", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 1, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 1, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 2, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 2, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 3, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 3, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 4, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 4, kind: "opening" },
+      { side: "N", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [2, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 0, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 2, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 0, z: 3, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 1, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 2, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 3, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 4, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 4, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "window", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "Stair roof", position: [16, 19.5, 0], size: [8, 0.5, 8], material: { role: "roof" } },
+      { kind: "light", position: [8, 3.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 11.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 19.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 }
+    ]
+  },
+  {
+    id: "setpiece.stair_tower_6",
+    displayName: "Stair Tower (6 levels)",
+    family: "stairtower",
+    category: "Stairs",
+    blurb: "Switchback stairs 6 levels up, 3 × 1 cells: a stairwell either side of a hall that has a landing on every level, arches out of the hall north and south on each one (into the stands' galleries).",
+    packs: ["imperial", "desert", "medieval", "gothic", "military", "industrial", "urban"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 6] },
+    mirror: "none",
+    ports: [
+      { side: "N", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 1, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 1, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 2, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 2, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 3, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 3, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 4, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 4, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 5, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 5, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 6, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 6, kind: "opening" },
+      { side: "N", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [2, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 0, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 2, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 0, z: 3, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 4, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 0, z: 5, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 1, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 2, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 3, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 4, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 5, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 6, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 6, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "window", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "Stair roof", position: [16, 27.5, 0], size: [8, 0.5, 8], material: { role: "roof" } },
+      { kind: "light", position: [8, 3.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 11.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 19.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 27.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 }
+    ]
+  },
+  {
+    id: "setpiece.stair_tower_8",
+    displayName: "Stair Tower (8 levels)",
+    family: "stairtower",
+    category: "Stairs",
+    blurb: "Switchback stairs 8 levels up, 3 × 1 cells: a stairwell either side of a hall that has a landing on every level, arches out of the hall north and south on each one (into the stands' galleries).",
+    packs: ["imperial", "desert", "medieval", "gothic", "military", "industrial", "urban"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0]], levels: [0, 8] },
+    mirror: "none",
+    ports: [
+      { side: "N", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 1, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 1, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 2, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 2, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 3, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 3, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 4, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 4, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 5, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 5, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 6, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 6, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 7, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 7, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 8, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 8, kind: "opening" },
+      { side: "N", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [2, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 0, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 0, z: 1, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 2, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 0, z: 3, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 4, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 0, z: 5, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 0, y: 0, z: 6, rotation: 2, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.stairwell", x: 2, y: 0, z: 7, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "wall", "0,0,0:S": "wall", "0,0,1:E": "window", "0,0,1:N": "window", "0,0,1:S": "window" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 1, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 2, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 3, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 4, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 5, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 6, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 7, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 8, rotation: 0, edges: { "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 2, y: 0, z: 0, rotation: 0, edges: { "0,0,0:E": "wall", "0,0,0:N": "arch_round", "0,0,0:S": "arch_round" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 8, rotation: 0, edges: { "0,0,0:N": "window", "0,0,0:S": "window", "0,0,0:W": "wall" }, surfaces: { floor: { role: "paving" }, walls: { role: "stone" }, solids: { role: "stone" }, trim: { role: "trim" }, roof: { role: "roof" } }, options: { facade: { role: "facade" }, ceiling: "roof" } },
+      { kind: "block", name: "Stair roof", position: [16, 35.5, 0], size: [8, 0.5, 8], material: { role: "roof" } },
+      { kind: "light", position: [8, 3.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 11.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 19.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 27.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 },
+      { kind: "light", position: [8, 35.3, 0], fixture: "chandelier", color: "#ffd9a0", intensity: 0.9, range: 9 }
+    ]
+  },
+  // design: New kit tiles (any map): Arena Pit, Arena Tiers and Arena Tiers (Corner), their floors 0.5 m apart down to 2 m, so on terrain they carve their own hollow (settle.ts terrainUnderFloors, as the sunken trenches). The tiers are 0.5 m (a jump up, a step down); each side has a stair of 0.25 m steps in its middle. The corner tile isn't its own mirror image (its tiers turn the corner), so the piece says mirror "none"; it is symmetric anyway.
+  {
+    id: "setpiece.sunken_arena",
+    displayName: "Sunken Arena",
+    family: "sunkenarena",
+    category: "Arenas & Plazas",
+    blurb: "A fighting pit 14 m square sunk 2 m into the ground, three tiers of steps down to it on every side, a stair down the middle of each, low walls and pillars on its floor: 3 × 3 cells.",
+    packs: ["imperial", "military", "medieval", "desert", "jungle", "neon", "orbital", "collegiate", "gothic", "suburban", "harbor", "snow", "frontier", "urban"],
+    footprint: { cells: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]], levels: [-1, 0] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 2], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 2], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 1], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 1], level: 0, kind: "opening" },
+      { side: "S", cell: [2, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [2, 2], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 2], level: 0, kind: "opening" },
+      { side: "E", cell: [2, 2], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.arena_pit", x: 1, y: 1, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_tiers", x: 1, y: 2, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_tiers", x: 2, y: 1, z: 0, rotation: 1, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_tiers", x: 1, y: 0, z: 0, rotation: 2, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_tiers", x: 0, y: 1, z: 0, rotation: 3, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_tiers_corner", x: 2, y: 2, z: 0, rotation: 0, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_tiers_corner", x: 2, y: 0, z: 0, rotation: 1, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_tiers_corner", x: 0, y: 0, z: 0, rotation: 2, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "tile", tile: "core.arena_tiers_corner", x: 0, y: 2, z: 0, rotation: 3, surfaces: { floor: { role: "paving" }, solids: { role: "stone" }, trim: { role: "trim" } } },
+      { kind: "block", name: "Low wall", position: [8, -2, 4.8], size: [3.2, 1.1, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Low wall", position: [8, -2, 11.2], size: [3.2, 1.1, 0.5], material: { role: "stone" } },
+      { kind: "block", name: "Low wall", position: [4.8, -2, 8], size: [0.5, 1.1, 3.2], material: { role: "stone" } },
+      { kind: "block", name: "Low wall", position: [11.2, -2, 8], size: [0.5, 1.1, 3.2], material: { role: "stone" } },
+      { kind: "block", name: "Pillar", position: [5.5, -2, 10.5], size: [1, 3, 1], material: { role: "stone" } },
+      { kind: "block", name: "Pillar", position: [10.5, -2, 5.5], size: [1, 3, 1], material: { role: "stone" } },
+      { kind: "prop", model: "kit.crate.wood_long", position: [12.8, -2, 3.5], yaw: 0, scale: 1 },
+      { kind: "prop", model: "kit.crate.wood_long", position: [3.5, -2, 12.8], yaw: 1.570796, scale: 1 }
+    ]
+  },
+  {
+    id: "setpiece.trench_straight",
+    displayName: "Trench",
+    family: "trench",
+    category: "Trenches",
+    blurb: "A straight fire bay of sunken trench (east–west): a fire step under the sandbag parapet on the south side, revetted walls, duckboards. Timber revetment.",
+    packs: ["military", "snow", "harbor", "frontier"],
+    footprint: { cells: [[0, 0]], levels: [-1, 0] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.trench_sunk", x: 0, y: 0, z: 0, rotation: 0, surfaces: { walls: { role: "wood" } } },
+      { kind: "prop", model: "prop.ammo_crate", position: [3.2, -0.75, -1.7], yaw: 0, scale: 1 }
+    ]
+  },
+  {
+    id: "setpiece.trench_straight_sandbag",
+    displayName: "Trench (Sandbags)",
+    family: "trench",
+    category: "Trenches",
+    blurb: "A straight fire bay of sunken trench (east–west): a fire step under the sandbag parapet on the south side, revetted walls, duckboards. Sandbag revetment.",
+    packs: ["military", "snow", "harbor", "frontier"],
+    footprint: { cells: [[0, 0]], levels: [-1, 0] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.trench_sunk", x: 0, y: 0, z: 0, rotation: 0, surfaces: { walls: { material: "core.sandbags" } } },
+      { kind: "prop", model: "prop.ammo_crate", position: [3.2, -0.75, -1.7], yaw: 0, scale: 1 }
+    ]
+  },
+  {
+    id: "setpiece.trench_bend",
+    displayName: "Trench Bend",
+    family: "trench",
+    category: "Trenches",
+    blurb: "The sunken trench turns from west to north, a fire step and parapet all round the outside of the bend. Timber revetment.",
+    packs: ["military", "snow", "harbor", "frontier"],
+    footprint: { cells: [[0, 0]], levels: [-1, 0] },
+    mirror: "none",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.trench_sunk_corner", x: 0, y: 0, z: 0, rotation: 0, surfaces: { walls: { role: "wood" } } }
+    ]
+  },
+  {
+    id: "setpiece.trench_bend_sandbag",
+    displayName: "Trench Bend (Sandbags)",
+    family: "trench",
+    category: "Trenches",
+    blurb: "The sunken trench turns from west to north, a fire step and parapet all round the outside of the bend. Sandbag revetment.",
+    packs: ["military", "snow", "harbor", "frontier"],
+    footprint: { cells: [[0, 0]], levels: [-1, 0] },
+    mirror: "none",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.trench_sunk_corner", x: 0, y: 0, z: 0, rotation: 0, surfaces: { walls: { material: "core.sandbags" } } }
+    ]
+  },
+  {
+    id: "setpiece.trench_junction",
+    displayName: "Trench Junction",
+    family: "trench",
+    category: "Trenches",
+    blurb: "The sunken trench runs east–west with a communication trench branching north; fire step along the south. Timber revetment.",
+    packs: ["military", "snow", "harbor", "frontier"],
+    footprint: { cells: [[0, 0]], levels: [-1, 0] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.trench_sunk_t", x: 0, y: 0, z: 0, rotation: 0, surfaces: { walls: { role: "wood" } } }
+    ]
+  },
+  {
+    id: "setpiece.trench_junction_sandbag",
+    displayName: "Trench Junction (Sandbags)",
+    family: "trench",
+    category: "Trenches",
+    blurb: "The sunken trench runs east–west with a communication trench branching north; fire step along the south. Sandbag revetment.",
+    packs: ["military", "snow", "harbor", "frontier"],
+    footprint: { cells: [[0, 0]], levels: [-1, 0] },
+    mirror: "free",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.trench_sunk_t", x: 0, y: 0, z: 0, rotation: 0, surfaces: { walls: { material: "core.sandbags" } } }
+    ]
+  },
+  {
+    id: "setpiece.trench_end",
+    displayName: "Trench End",
+    family: "trench",
+    category: "Trenches",
+    blurb: "The sunken trench ends in timber steps up to the ground (east): the way in and out. Timber revetment.",
+    packs: ["military", "snow", "harbor", "frontier"],
+    footprint: { cells: [[0, 0]], levels: [-1, 0] },
+    mirror: "none",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.trench_sunk_end", x: 0, y: 0, z: 0, rotation: 0, surfaces: { walls: { role: "wood" } } }
+    ]
+  },
+  {
+    id: "setpiece.trench_end_sandbag",
+    displayName: "Trench End (Sandbags)",
+    family: "trench",
+    category: "Trenches",
+    blurb: "The sunken trench ends in timber steps up to the ground (east): the way in and out. Sandbag revetment.",
+    packs: ["military", "snow", "harbor", "frontier"],
+    footprint: { cells: [[0, 0]], levels: [-1, 0] },
+    mirror: "none",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.trench_sunk_end", x: 0, y: 0, z: 0, rotation: 0, surfaces: { walls: { material: "core.sandbags" } } }
+    ]
+  },
+  {
+    id: "setpiece.trench_jog",
+    displayName: "Trench Jog",
+    family: "trench",
+    category: "Trenches",
+    blurb: "The sunken trench jogs one cell north round a traverse (the ground at the south-east is left as it is): a bend, a bend and a fire bay. Turn it the other way for the next jog. Timber revetment.",
+    packs: ["military", "snow", "harbor", "frontier"],
+    footprint: { cells: [[0, 0], [0, 1], [1, 1]], levels: [-1, 0] },
+    mirror: "none",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [1, 1], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.trench_sunk_corner", x: 0, y: 0, z: 0, rotation: 0, surfaces: { walls: { role: "wood" } } },
+      { kind: "tile", tile: "core.trench_sunk_corner", x: 0, y: 1, z: 0, rotation: 2, surfaces: { walls: { role: "wood" } } },
+      { kind: "tile", tile: "core.trench_sunk", x: 1, y: 1, z: 0, rotation: 0, surfaces: { walls: { role: "wood" } } }
+    ]
+  },
+  {
+    id: "setpiece.trench_jog_sandbag",
+    displayName: "Trench Jog (Sandbags)",
+    family: "trench",
+    category: "Trenches",
+    blurb: "The sunken trench jogs one cell north round a traverse (the ground at the south-east is left as it is): a bend, a bend and a fire bay. Turn it the other way for the next jog. Sandbag revetment.",
+    packs: ["military", "snow", "harbor", "frontier"],
+    footprint: { cells: [[0, 0], [0, 1], [1, 1]], levels: [-1, 0] },
+    mirror: "none",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [1, 1], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.trench_sunk_corner", x: 0, y: 0, z: 0, rotation: 0, surfaces: { walls: { material: "core.sandbags" } } },
+      { kind: "tile", tile: "core.trench_sunk_corner", x: 0, y: 1, z: 0, rotation: 2, surfaces: { walls: { material: "core.sandbags" } } },
+      { kind: "tile", tile: "core.trench_sunk", x: 1, y: 1, z: 0, rotation: 0, surfaces: { walls: { material: "core.sandbags" } } }
+    ]
+  },
+  {
+    id: "setpiece.tunnel_lit_run",
+    displayName: "Lit Tunnel Run",
+    family: "tunnels",
+    category: "Tunnels",
+    blurb: "Three concrete tunnel modules in a row, north–south (24 m), a real light at each strip fixture: 3 lights. Buried like the modules; put a portal on each end.",
+    footprint: { cells: [[0, 0], [0, 1], [0, 2]], levels: [0, 0] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 2], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.tunnel_concrete_straight", x: 0, y: 0, z: 0, rotation: 0 },
+      { kind: "tile", tile: "core.tunnel_concrete_straight", x: 0, y: 1, z: 0, rotation: 0 },
+      { kind: "tile", tile: "core.tunnel_concrete_straight", x: 0, y: 2, z: 0, rotation: 0 },
+      { kind: "light", position: [0, 3.1, 0], fixture: "none", color: "#ffe6b8", intensity: 1, range: 9 },
+      { kind: "light", position: [0, 3.1, 8], fixture: "none", color: "#ffe6b8", intensity: 1, range: 9 },
+      { kind: "light", position: [0, 3.1, 16], fixture: "none", color: "#ffe6b8", intensity: 1, range: 9 }
+    ]
+  },
+  {
+    id: "setpiece.tunnel_shaft",
+    displayName: "Tunnel Shaft",
+    family: "tunnels",
+    category: "Tunnels",
+    blurb: "A concrete tunnel module with a hatch to the surface and the ladder up to it (3.85 m, on the west wall). For a tunnel a level under flat ground: the hatch comes out level with the ground.",
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.tunnel_concrete_shaft", x: 0, y: 0, z: 0, rotation: 0 },
+      { kind: "ladder", position: [-1.75, 0, 0], yaw: 1.570796, height: 3.85, width: 0.9 }
+    ]
+  },
+  {
+    id: "setpiece.tunnel_riser",
+    displayName: "Tunnel Riser",
+    family: "tunnels",
+    category: "Tunnels",
+    blurb: "A capped concrete well joining a tunnel (south) to one a level up (north), the ladder between them (4 m) and a real light at the top: 1 light.",
+    footprint: { cells: [[0, 0]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 0], level: 1, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.tunnel_concrete_riser", x: 0, y: 0, z: 0, rotation: 0 },
+      { kind: "ladder", position: [0, 0, 1.75], yaw: 3.141593, height: 4, width: 0.9 },
+      { kind: "light", position: [0, 7, 0], fixture: "none", color: "#ffe6b8", intensity: 1, range: 9 }
+    ]
+  },
+  // design: The deck is 7.24 m wide and 2.56 m deep, against the cell's north edge, its top 0.3 m up: a 0.15 m step in front, so a player walks up and down without jumping and the house's door at ground level stays in reach. Posts 0.2 m square (a block is at least that wide) carry a roof tilted 12 degrees, high at the house, 2.9 m over the deck at its eaves. The rail is eight Board Fence panels (pickets), 1.2 m: cover for a crouching player on the deck. Wood and roof are roles.
+  {
+    id: "setpiece.porch",
+    displayName: "Porch",
+    family: "urban",
+    category: "Town",
+    blurb: "A covered porch for the front of a house, one cell: a plank deck one step up (two low risers, walked both ways), four posts, a picket rail with a gap at the steps and a lean-to roof. The house stands to its north; turn it to suit.",
+    packs: ["urban", "suburban"],
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: "free",
+    parts: [
+      { kind: "block", position: [0, 0, 2.72], size: [7.24, 0.3, 2.56], material: { role: "wood" } },
+      { kind: "block", position: [0, 0, 1.14], size: [1.8, 0.15, 0.6], material: { role: "wood" } },
+      { kind: "block", position: [-3.52, 0.3, 1.56], size: [0.2, 2.64, 0.2], material: { role: "wood" } },
+      { kind: "block", position: [-1, 0.3, 1.56], size: [0.2, 2.64, 0.2], material: { role: "wood" } },
+      { kind: "block", position: [1, 0.3, 1.56], size: [0.2, 2.64, 0.2], material: { role: "wood" } },
+      { kind: "block", position: [3.52, 0.3, 1.56], size: [0.2, 2.64, 0.2], material: { role: "wood" } },
+      { kind: "prop", position: [-2.84, 0.3, 1.56], model: "kit.fence.board", yaw: 0, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [-1.68, 0.3, 1.56], model: "kit.fence.board", yaw: 0, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [1.68, 0.3, 1.56], model: "kit.fence.board", yaw: 0, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [2.84, 0.3, 1.56], model: "kit.fence.board", yaw: 0, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [-3.52, 0.3, 2.24], model: "kit.fence.board", yaw: 1.571, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [-3.52, 0.3, 3.4], model: "kit.fence.board", yaw: 1.571, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [3.52, 0.3, 2.24], model: "kit.fence.board", yaw: 1.571, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [3.52, 0.3, 3.4], model: "kit.fence.board", yaw: 1.571, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "block", position: [0, 3.1, 2.3], size: [7.6, 0.14, 3.3], material: { role: "roof" }, pitch: 0.20944 }
+    ]
+  },
+  // design: 4.2 m wide, 1.55 m deep, the canopy 2.45 m up with a slight fall to the back. The three panes are glass blocks (the glass role: breakable in a town, so shots open it; players do not pass an unbroken pane). Platform Seats from the town pack and a Bus Stop Sign (kit.street.bus_stop: a pole with a flag, a plain picture of a bus, no words or marks), which took the place of the street-name sign that stood there (the same part, in the same place). Posts and canopy are the metal role.
+  {
+    id: "setpiece.bus_shelter",
+    displayName: "Bus Shelter",
+    family: "urban",
+    category: "Town",
+    blurb: "A bus stop, one cell: a steel canopy on four posts, glass at the back and both ends (it shatters when shot), a row of seats under it and a stop sign beside it. Open to the south.",
+    packs: ["urban", "suburban"],
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: "free",
+    parts: [
+      { kind: "block", position: [-2, 0, 1.3], size: [0.2, 2.45, 0.2], material: { role: "metal" } },
+      { kind: "block", position: [-2, 0, -0.05], size: [0.2, 2.45, 0.2], material: { role: "metal" } },
+      { kind: "block", position: [2, 0, 1.3], size: [0.2, 2.45, 0.2], material: { role: "metal" } },
+      { kind: "block", position: [2, 0, -0.05], size: [0.2, 2.45, 0.2], material: { role: "metal" } },
+      { kind: "block", position: [0, 0.25, 1.3], size: [3.9, 2.05, 0.06], material: null, trigger: "logic", respawnSeconds: null, glass: { role: "glass" } },
+      { kind: "block", position: [-2, 0.25, 0.65], size: [0.06, 2.05, 1.2], yaw: 1.570796, material: null, trigger: "logic", respawnSeconds: null, glass: { role: "glass" } },
+      { kind: "block", position: [2, 0.25, 0.65], size: [0.06, 2.05, 1.2], yaw: 1.570796, material: null, trigger: "logic", respawnSeconds: null, glass: { role: "glass" } },
+      { kind: "prop", position: [0, 0, 0.85], model: "prop.mt_bench", yaw: 0, scale: 1, solid: true, tint: null },
+      { kind: "prop", position: [3.1, 0, -0.3], model: "kit.street.bus_stop", yaw: 0, scale: 1, solid: true, tint: null },
+      { kind: "block", position: [0, 2.45, 0.55], size: [4.5, 0.12, 2], material: { role: "metal" }, pitch: -0.087266 }
+    ]
+  },
+  // design: Two Platforms (the deck's south wall style Half Wall, 1.1 m: cover to crouch behind, shot over standing), both floored with Parking Bays (kept in every look). Columns 0.6 m square under the deck's west edge, so a row of bays has one pair every 8 m; the last bay's east edge hangs free. Columns and parapet are the trim role (pale concrete in a town).
+  {
+    id: "setpiece.parking_deck_bay",
+    displayName: "Parking Deck Bay",
+    family: "urban",
+    category: "Town",
+    blurb: "One bay of a parking deck, one cell, two levels: marked bays on the ground and on an open deck 4 m up, on two columns, a half-wall parapet along its south side, two bollards. Place bays side by side; the Parking Deck Ramp climbs to them.",
+    packs: ["urban", "industrial"],
+    footprint: { cells: [[0, 0]], levels: [0, 1] },
+    mirror: "free",
+    ports: [
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 1, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 1, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.platform", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { material: "core.parking_bays", tint: null } } },
+      { kind: "tile", tile: "core.platform", x: 0, y: 0, z: 1, rotation: 0, surfaces: { floor: { material: "core.parking_bays", tint: null }, walls: { role: "trim" } }, edges: { "0,0,0:S": "half" } },
+      { kind: "block", position: [-3.7, 0, -2.4], size: [0.6, 3.5, 0.6], material: { role: "trim" } },
+      { kind: "block", position: [-3.7, 0, 2.4], size: [0.6, 3.5, 0.6], material: { role: "trim" } },
+      { kind: "prop", position: [-3.7, 0, -1.5], model: "kit.barrier.bollard", yaw: 0, scale: 1, solid: true, tint: null },
+      { kind: "prop", position: [-3.7, 0, 1.5], model: "kit.barrier.bollard", yaw: 0, scale: 1, solid: true, tint: null }
+    ]
+  },
+  // design: A tilted block (MapMaker's Roll, 16 degrees), 7 m wide, 6.5 m between its parapets: it leaves the ground 1.65 m inside the west edge and reaches 4.0 m 0.4 m short of the east edge, where a level strip carries on to the edge. Walked up and down on foot and by the vehicle probe (setPiecesUrban.test.ts). The parapets are 1 m, tilted with it. The footprint claims the level above as well (the parapets' heads stand in it). Open underneath: the space under the slab is walked into from either side and narrows to nothing, never shut. The slab and the ground under it are asphalt in every look.
+  {
+    id: "setpiece.parking_deck_ramp",
+    displayName: "Parking Deck Ramp",
+    family: "urban",
+    category: "Town",
+    blurb: "A ramp up to a parking deck, two cells: an asphalt slab climbing east from the ground to 4 m, a parapet each side, two columns under its head. Its top meets a Parking Deck Bay (or any floor one level up) placed against its east end.",
+    packs: ["urban", "industrial"],
+    footprint: { cells: [[0, 0], [1, 0]], levels: [0, 1] },
+    mirror: "free",
+    ports: [
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.platform", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { material: "core.pbr_asphalt", tint: null } } },
+      { kind: "tile", tile: "core.platform", x: 1, y: 0, z: 0, rotation: 0, surfaces: { floor: { material: "core.pbr_asphalt", tint: null } } },
+      { kind: "block", position: [10.4, 0, -2.9], size: [0.5, 3.25, 0.5], material: { role: "trim" } },
+      { kind: "block", position: [10.4, 0, 2.9], size: [0.5, 3.25, 0.5], material: { role: "trim" } },
+      { kind: "block", position: [4.68, 1.608, 0], size: [14.5, 0.4, 7], material: "core.pbr_asphalt", roll: 0.279253 },
+      { kind: "block", position: [11.7, 3.6, 0], size: [0.6, 0.4, 7], material: "core.pbr_asphalt" },
+      { kind: "block", position: [4.487, 1.981, -3.375], size: [14.5, 1, 0.25], material: { role: "trim" }, roll: 0.279253 },
+      { kind: "block", position: [4.487, 1.981, 3.375], size: [14.5, 1, 0.25], material: { role: "trim" }, roll: 0.279253 }
+    ]
+  },
+  // design: A Room with every wall style Open, the Column rows layout and a roof slab; floor and columns the trim role (pale concrete in a town). Walk and shoot through it in every direction; the columns (0.7 m) are the cover.
+  {
+    id: "setpiece.concrete_frame",
+    displayName: "Concrete Frame",
+    family: "urban",
+    category: "Town",
+    blurb: "A bare concrete frame, one cell, one storey: a slab on four columns, every side open, a cable spool and a pallet left on the floor. Place frames side by side for a building site.",
+    packs: ["urban", "industrial", "military"],
+    footprint: { cells: [[0, 0]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "N", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.room", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "trim" }, solids: { role: "trim" } }, edges: { "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, options: { layout: "column_rows", ceiling: "roof" } },
+      { kind: "prop", position: [2.6, 0, -0.2], model: "kit.spool.cable", yaw: 0.349, scale: 1, solid: true, tint: null },
+      { kind: "prop", position: [-2.7, 0, 2.9], model: "prop.pallet", yaw: 0, scale: 1, solid: true, tint: null }
+    ]
+  },
+  // design: Open Stairs and two Rooms, one over the other, as the Concrete Frame. The upper floor is reached by the stair and left by it or by dropping 4 m off an open side.
+  {
+    id: "setpiece.concrete_frame_2",
+    displayName: "Concrete Frame (2 storeys)",
+    family: "urban",
+    category: "Town",
+    blurb: "A bare concrete frame of two storeys with its stair, two cells: Open Stairs climb east onto the upper floor of a two-storey frame, slabs on columns, every side open (mind the edge). A site fence panel on the ground floor.",
+    packs: ["urban", "industrial", "military"],
+    footprint: { cells: [[0, 0], [1, 0]], levels: [0, 1] },
+    mirror: "none",
+    ports: [
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 0], level: 1, kind: "opening" },
+      { side: "E", cell: [1, 0], level: 1, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 1, kind: "opening" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.stairs_open", x: 0, y: 0, z: 0, rotation: 0, surfaces: { solids: { role: "trim" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "trim" }, solids: { role: "trim" } }, edges: { "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, options: { layout: "column_rows", ceiling: "roof" } },
+      { kind: "tile", tile: "core.room", x: 1, y: 0, z: 1, rotation: 0, surfaces: { floor: { role: "trim" }, solids: { role: "trim" } }, edges: { "0,0,0:N": "open", "0,0,0:E": "open", "0,0,0:S": "open", "0,0,0:W": "open" }, options: { layout: "column_rows", ceiling: "roof" } },
+      { kind: "prop", position: [8.2, 0, 2.9], model: "kit.fence.site_panel", yaw: 0, scale: 1, solid: true, tint: null }
+    ]
+  },
+  // design: Reshaped (it was a ring of Round Arcades under a stepped slab roof, which read as a squat concrete pavilion). The stage is four plank blocks turned 0, 45, 90 and 135 degrees, which together make an octagon 9 m across its flats; their tops are 1 cm apart, so no two share a plane. A step 0.25 m high stands at the north, east, south and west sides (two rises of 0.25 m, walked without jumping). Eight posts 0.2 m square (a block is at least that wide) stand just inside the corners; a Town Fence panel (pickets, 2.9 m long and 1.1 m high) closes each diagonal side. The roof is four thin slabs tilted 22 degrees, each high along the middle and low at its outer edge and turned to one side, so they cross: a ridge runs out to a gable peak over each open side (4.8 m) and the corners come down to 2.6 m over the railed sides, outside the stage. Blocks cannot make a cone or a hipped roof; this is the pitched roof they can make. The posts meet the lower slab. Wood, metal (the posts) and roof are roles. 24 parts.
+  {
+    id: "setpiece.bandstand",
+    displayName: "Bandstand",
+    family: "urban",
+    category: "Town",
+    blurb: "A bandstand for a park or a square, 2 x 2 cells: an eight-sided plank stage 0.5 m up with a step on four sides, slender posts, a picket rail between them, and a light pitched roof with a gable over each way in.",
+    packs: ["urban", "suburban", "gothic"],
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1]], levels: [0, 1] },
+    mirror: "free",
+    parts: [
+      { kind: "block", position: [4, 0, 4], size: [9, 0.5, 3.728], material: { role: "wood" } },
+      { kind: "block", position: [4, 0, 4], size: [9, 0.49, 3.728], yaw: 0.785, material: { role: "wood" } },
+      { kind: "block", position: [4, 0, 4], size: [9, 0.48, 3.728], yaw: 1.571, material: { role: "wood" } },
+      { kind: "block", position: [4, 0, 4], size: [9, 0.47, 3.728], yaw: 2.356, material: { role: "wood" } },
+      { kind: "block", position: [4, 0, 8.85], size: [2.6, 0.25, 0.7], material: { role: "wood" } },
+      { kind: "block", position: [8.85, 0, 4], size: [0.7, 0.25, 2.6], material: { role: "wood" } },
+      { kind: "block", position: [4, 0, -0.85], size: [2.6, 0.25, 0.7], material: { role: "wood" } },
+      { kind: "block", position: [-0.85, 0, 4], size: [0.7, 0.25, 2.6], material: { role: "wood" } },
+      { kind: "block", position: [5.76, 0.47, 8.25], size: [0.2, 2.54, 0.2], material: { role: "metal" } },
+      { kind: "block", position: [8.25, 0.47, 5.76], size: [0.2, 2.54, 0.2], material: { role: "metal" } },
+      { kind: "block", position: [8.25, 0.47, 2.24], size: [0.2, 2.54, 0.2], material: { role: "metal" } },
+      { kind: "block", position: [5.76, 0.47, -0.25], size: [0.2, 2.54, 0.2], material: { role: "metal" } },
+      { kind: "block", position: [2.24, 0.47, -0.25], size: [0.2, 2.54, 0.2], material: { role: "metal" } },
+      { kind: "block", position: [-0.25, 0.47, 2.24], size: [0.2, 2.54, 0.2], material: { role: "metal" } },
+      { kind: "block", position: [-0.25, 0.47, 5.76], size: [0.2, 2.54, 0.2], material: { role: "metal" } },
+      { kind: "block", position: [2.24, 0.47, 8.25], size: [0.2, 2.54, 0.2], material: { role: "metal" } },
+      { kind: "prop", position: [7.041, 0.47, 7.041], model: "kit.fence.town", yaw: 2.356, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [7.041, 0.47, 0.959], model: "kit.fence.town", yaw: 0.785, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [0.959, 0.47, 0.959], model: "kit.fence.town", yaw: 2.356, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [0.959, 0.47, 7.041], model: "kit.fence.town", yaw: 0.785, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "block", position: [4, 3.64, 6.7], size: [10.8, 0.1, 5.824], material: { role: "roof" }, pitch: -0.383972 },
+      { kind: "block", position: [6.7, 3.64, 4], size: [10.8, 0.1, 5.824], yaw: 1.571, material: { role: "roof" }, pitch: -0.383972 },
+      { kind: "block", position: [4, 3.64, 1.3], size: [10.8, 0.1, 5.824], yaw: 3.142, material: { role: "roof" }, pitch: -0.383972 },
+      { kind: "block", position: [1.3, 3.64, 4], size: [10.8, 0.1, 5.824], yaw: -1.571, material: { role: "roof" }, pitch: -0.383972 }
+    ]
+  },
+  // design: Two Rooms open to each other (wall styles Shopfront with glass and Door at the front, a doorway at the back of the second), a roof, the facade role; two Platforms of paving in front, which the awnings (no collision) and the sign hang over. The door is the door role, opening as a player comes close. Floors, facade, glass, door and paving are roles.
+  {
+    id: "setpiece.shop_unit",
+    displayName: "Shop Unit",
+    family: "urban",
+    category: "Town",
+    blurb: "A small shop and its pavement, 2 x 2 cells: a front of glass that shatters under striped awnings, a door beside it under a lit sign, a counter and a shelf inside, a back door; a newspaper box and two bollards outside. Street to the south.",
+    packs: ["urban", "suburban"],
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1]], levels: [0, 0] },
+    mirror: "free",
+    ports: [
+      { side: "S", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "W", cell: [0, 0], level: 0, kind: "opening" },
+      { side: "E", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "S", cell: [1, 0], level: 0, kind: "opening" },
+      { side: "N", cell: [1, 1], level: 0, kind: "door" }
+    ],
+    parts: [
+      { kind: "tile", tile: "core.platform", x: 0, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" } } },
+      { kind: "tile", tile: "core.platform", x: 1, y: 0, z: 0, rotation: 0, surfaces: { floor: { role: "paving" } } },
+      { kind: "tile", tile: "core.room", x: 0, y: 1, z: 0, rotation: 0, surfaces: { floor: { role: "floor" } }, edges: { "0,0,0:N": "wall", "0,0,0:W": "wall", "0,0,0:S": "shopfront" }, glass: { "0,0,0:S": { role: "glass" } }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "tile", tile: "core.room", x: 1, y: 1, z: 0, rotation: 0, surfaces: { floor: { role: "floor" } }, edges: { "0,0,0:N": "door", "0,0,0:E": "wall", "0,0,0:W": "open", "0,0,0:S": "door" }, options: { ceiling: "roof", facade: { role: "facade" } } },
+      { kind: "door", position: [8, 0, 4], yaw: 0, style: { role: "door" }, startOpen: false, locked: false, auto: true },
+      { kind: "prop", position: [-1, 0, 9], model: "kit.stall.counter", yaw: 1.571, scale: 1, solid: true, tint: null },
+      { kind: "prop", position: [1.6, 0, 6.6], model: "kit.shelf.gondola", yaw: 0, scale: 1, solid: true, tint: null },
+      { kind: "prop", position: [4.5, 0, 3.2], model: "kit.street.newsbox", yaw: 0, scale: 1, solid: true, tint: null },
+      { kind: "prop", position: [-3, 0, -3.4], model: "kit.barrier.bollard", yaw: 0, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [3, 0, -3.4], model: "kit.barrier.bollard", yaw: 0, scale: 1, solid: true, variant: 1, tint: null },
+      { kind: "prop", position: [-1.6, 3, 2.85], model: "kit.shop.awning", yaw: 3.142, scale: 1, solid: true, tint: null },
+      { kind: "prop", position: [1.6, 3, 2.85], model: "kit.shop.awning", yaw: 3.142, scale: 1, solid: true, tint: null },
+      { kind: "light", position: [8, 3.5, 3.49], yaw: 3.142, color: "#ff4fd8", intensity: 1.2, range: 8, fixture: "sign", text: "OPEN" }
+    ]
+  }
+];
+const SET_PIECE_PACKS = [
+  // design: St. John's (theme Castle Keep), in the materials its halls are built of (maps/st_johns.json: 922 wall blocks of warm grey Grey Stone Blocks, 865 of dressed stone): grey lannonstone walls (dolomite, laid as rubble ashlar), dressed limestone trim, granite setts under the arches, oak floors, doors and beams, slate roofs, battlements (the Collegiate stone facade: lannonstone with a dressed limestone plinth, string course, hood moulds and pinnacles; the Argonne Gate is castellated).
+  { id: "collegiate", displayName: "Collegiate Gothic", themes: ["core.castle"], roles: { stone: { material: "core.cobble", tint: "#d9d5cb" }, trim: { material: "core.stone_trim", tint: "#d8d3c6" }, floor: { material: "core.pbr_floorboards" }, paving: { material: "core.road_setts" }, roof: { material: "core.pbr_slate_roof" }, wood: { material: "core.oak_beam" }, metal: { material: "core.pbr_steel", tint: "#5a5c60" }, facade: "collegiate_stone", door: "oak", glass: "breakable" } },
+  { id: "gothic", displayName: "Gothic Estate", stylePack: "gothic", themes: ["core.gothic_estate", "core.manor"], roles: { stone: { material: "core.pbr_castle_stone", tint: "#9a9aa4" }, trim: { material: "core.stone_trim" }, floor: { material: "core.pbr_floorboards" }, paving: { material: "core.pbr_mossy_cobble" }, roof: { material: "core.pbr_slate_roof" }, wood: { material: "core.dark_wood" }, metal: { material: "core.brass" }, facade: "gothic_stone", door: "oak", glass: "breakable" } },
+  { id: "medieval", displayName: "Medieval Village", stylePack: "medieval", themes: ["core.medieval"], roles: { stone: { material: "core.pbr_castle_stone", tint: "#c8c2b0" }, trim: { material: "core.oak_beam" }, floor: { material: "core.pbr_floorboards" }, paving: { material: "core.cobblestones" }, roof: { material: "core.roof_tiles_red" }, wood: { material: "core.oak_beam" }, metal: { material: "core.pbr_steel", tint: "#5a5c60" }, facade: "timber_frame", door: "oak", glass: "none" } },
+  { id: "imperial", displayName: "Imperial Arena", stylePack: "imperial", themes: ["core.imperial", "core.temple"], roles: { stone: { material: "core.pbr_limestone" }, trim: { material: "core.pbr_white_marble" }, floor: { material: "core.pbr_travertine" }, paving: { material: "core.pbr_travertine", tint: "#d8c8b0" }, roof: { material: "core.pbr_roof" }, wood: { material: "core.pbr_walnut" }, metal: { material: "core.brass" }, facade: "roman", door: "oak", glass: "none" } },
+  { id: "military", displayName: "Military Compound", stylePack: "military", themes: ["core.military", "core.bunker"], roles: { stone: { material: "core.pbr_bunker_panels" }, trim: { material: "core.pbr_steel", tint: "#a8aca8" }, floor: { material: "core.pbr_concrete_dark", tint: "#b4b0a6" }, paving: { material: "core.pbr_concrete" }, roof: { material: "core.pbr_concrete" }, wood: { material: "core.crate_wood" }, metal: { material: "core.pbr_steel" }, facade: "concrete", door: "blast", glass: "reinforced" } },
+  { id: "frontier", displayName: "Frontier Dust", stylePack: "frontier", themes: ["core.frontier", "core.saloon", "core.adobe"], roles: { stone: { material: "core.pbr_weathered_siding" }, trim: { material: "core.pbr_charred_wood" }, floor: { material: "core.pbr_weathered_planks" }, paving: { material: "core.pbr_dusty_road" }, roof: { material: "core.pbr_weathered_planks" }, wood: { material: "core.pbr_planks" }, metal: { material: "core.pbr_rusted_plate" }, facade: "false_front", door: "saloon", glass: "breakable" } },
+  { id: "orbital", displayName: "Orbital Station", stylePack: "orbital", themes: ["core.orbital", "core.station"], roles: { stone: { material: "core.orbital_panel" }, trim: { material: "core.glow_trim" }, floor: { material: "core.grate", tint: "#b8c2cc" }, paving: { material: "core.pbr_tread_plate" }, roof: { material: "core.orbital_panel", tint: "#c8d0d8" }, wood: { material: "core.pbr_white_panel" }, metal: { material: "core.pbr_white_panel" }, facade: "hull", door: "sliding", glass: "reinforced" } },
+  { id: "jungle", displayName: "Jungle Ruins", stylePack: "jungle", themes: ["core.jungle_temple", "core.ancient_temple", "core.ruins"], roles: { stone: { material: "core.carved_stone" }, trim: { material: "core.temple_sandstone" }, floor: { material: "core.mossy_stone" }, paving: { material: "core.pbr_mossy_cobble" }, roof: { material: "core.palm_thatch" }, wood: { material: "core.mossy_planks" }, metal: { material: "core.gold_leaf" }, facade: "temple", door: "oak", glass: "none" } },
+  { id: "neon", displayName: "Neon Megacity", stylePack: "neon", themes: ["core.neon_megacity", "core.neon"], roles: { stone: { material: "core.pbr_concrete_dark", tint: "#8a80a0" }, trim: { material: "core.neon_tube" }, floor: { material: "core.pbr_terrazzo" }, paving: { material: "core.pbr_wet_asphalt" }, roof: { material: "core.pbr_concrete_dark" }, wood: { material: "core.pbr_steel" }, metal: { material: "core.pbr_steel" }, facade: "neon", door: "sliding", glass: "reinforced" } },
+  { id: "suburban", displayName: "Suburban Chaos", stylePack: "suburban", themes: ["core.suburban", "core.garden"], roles: { stone: { material: "core.pbr_brick_red" }, trim: { material: "core.paint_matte", tint: "#f4f2ec" }, floor: { material: "core.oak_planks" }, paving: { material: "core.pbr_hex_paving" }, roof: { material: "core.pbr_slate_roof" }, wood: { material: "core.pbr_clapboard" }, metal: { material: "core.pbr_steel" }, facade: "suburban_brick", door: "oak", glass: "breakable" } },
+  { id: "desert", displayName: "Desert City", stylePack: "desert", themes: ["core.desert_city", "core.egypt", "core.desert"], roles: { stone: { material: "core.ashlar" }, trim: { material: "core.sandstone_tiles", tint: "#e8d8b8" }, floor: { material: "core.sandstone_tiles" }, paving: { material: "core.worn_paving" }, roof: { material: "core.stucco", tint: "#f2e6cc" }, wood: { material: "core.cedar" }, metal: { material: "core.brass" }, facade: "desert_ashlar", door: "oak", glass: "none" } },
+  { id: "harbor", displayName: "Coastal Harbor", stylePack: "harbor", themes: ["core.coastal", "core.harbour"], roles: { stone: { material: "core.quay_granite" }, trim: { material: "core.harbour_paint" }, floor: { material: "core.pier_decking" }, paving: { material: "core.harbour_setts" }, roof: { material: "core.pbr_slate_roof" }, wood: { material: "core.tarred_boards" }, metal: { material: "core.rusty_corrugated" }, facade: "harbour_render", door: "oak", glass: "breakable" } },
+  { id: "snow", displayName: "Snow Outpost", stylePack: "snow", themes: ["core.snow_outpost", "core.arctic"], roles: { stone: { material: "core.prefab_red" }, trim: { material: "core.prefab_white" }, floor: { material: "core.steel_grating" }, paving: { material: "core.packed_snow" }, roof: { material: "core.snowy_concrete" }, wood: { material: "core.prefab_white" }, metal: { material: "core.pbr_steel", tint: "#b8c0c8" }, facade: "prefab", door: "blast", glass: "reinforced" } },
+  { id: "industrial", displayName: "Industrial Factory", stylePack: "industrial", themes: ["core.industrial"], roles: { stone: { material: "core.pbr_grey_corrugated", tint: "#c8ccd0" }, trim: { material: "core.pbr_steel", tint: "#d8b040" }, floor: { material: "core.pbr_concrete_dark", tint: "#b0aca4" }, paving: { material: "core.pbr_concrete" }, roof: { material: "core.pbr_grey_corrugated", tint: "#9aa0a8" }, wood: { material: "core.crate_wood" }, metal: { material: "core.pbr_rusted_plate" }, facade: "corrugated", door: "blast", glass: "reinforced" } },
+  // design: Tileset 11 (docs/map-briefs/urban/URBAN_PLAN.md, A2): an ordinary present-day town: old brick walls with pale concrete bands and sills, terrazzo floors, grey pavers, flat dark concrete roofs, plank and steel fittings, the brick facade, a wooden door, glass that breaks. It is the default for no theme (`themes` is empty): maps in City Block, Factory and Research Lab place set pieces with no pack named, and those keep the look their theme paints. A set piece takes this look when it is placed with the Urban & Civilian pack picked, or when its inspector names it.
+  { id: "urban", displayName: "Urban & Civilian", stylePack: "urban", themes: [], roles: { stone: { material: "core.pbr_brick_old" }, trim: { material: "core.pbr_concrete", tint: "#d6d2c8" }, floor: { material: "core.pbr_terrazzo" }, paving: { material: "core.pbr_hex_paving", tint: "#c4c0b8" }, roof: { material: "core.pbr_concrete_dark" }, wood: { material: "core.pbr_planks" }, metal: { material: "core.pbr_steel", tint: "#7c8088" }, facade: "brick", door: "oak", glass: "breakable" } }
+];
+const SET_PIECE_TILE_ALIASES = [
+  // design: The Catwalk Gantry (1 x 2 cells, levels 0-1: stairs up to a railed catwalk 4 m up on legs, meeting the level above at its north end) as the Catwalk Bridge (Up): the same cells, levels and ways in, open ground under the deck; its stair 4 m wide (the gantry's 2.4 m) and its deck 3 m (2.4 m).
+  { tile: "military.gantry", piece: "setpiece.catwalk_bridge_2", since: "2026-11-08" }
+];
+let library;
+function builtInSetPieces() {
+  return library ??= {
+    pieces: new Map(SET_PIECE_DEFS.map((d) => {
+      const def = SetPieceDefinition.parse(d);
+      return [def.id, def];
+    })),
+    packs: new Map(SET_PIECE_PACKS.map((p) => [p.id, { ...p, roles: SetPieceRoleValues.parse(p.roles) }]))
+  };
+}
+export {
+  BUILD_LEVELS as B,
+  ROLE_THEME_SLOT as R,
+  SET_PIECE_TILE_ALIASES as S,
+  setPieceMirrorProblem as a,
+  builtInSetPieces as b,
+  setPieceFootprint as c,
+  buildLimitShort as d,
+  buildLimitReason as e,
+  buildZone as f,
+  SET_PIECE_GRID as g,
+  expandSetPieces as h,
+  insideBuildLimit as i,
+  setPieceOverlapIssues as j,
+  setPiecePorts as k,
+  setPieceParts as l,
+  placementPack as m,
+  setPiecePartId as n,
+  mirrorWidth as o,
+  piecesFor as p,
+  buildLimitRect as q,
+  playableRect as r,
+  setPieceCells as s,
+  tileMirrorAxis as t,
+  parseSetPiece as u
+};

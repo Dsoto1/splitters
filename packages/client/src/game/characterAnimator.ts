@@ -374,6 +374,8 @@ export class CharacterAnimator {
   private readonly inHand = { pos: Vector3.Zero(), rot: Quaternion.Identity(), valid: false };
   /** Where the torso's front is, for setting a stock on it (measured on the first long-gun frame). */
   private torso: TorsoSurface | null | undefined;
+  /** The avatar's look (its spec), when bodies of one look share a torso measurement (TorsoSurface.measure). */
+  torsoLook: string | undefined;
   private readonly mask = new AnimationGroupMask(UPPER_BODY, AnimationGroupMaskMode.Include);
   /** Legs-only locomotion, so the arms stay on the weapon while running. */
   private readonly legs = new AnimationGroupMask(UPPER_BODY, AnimationGroupMaskMode.Exclude);
@@ -1677,7 +1679,7 @@ export class CharacterAnimator {
       // Measured once the body is fully in its aim (the chest turned across the gun), so the surface ahead of the shoulder is the one the barrel crosses.
       // One character's measurement a frame (animLod.ts torsoMeasures): a crowd settles into its aim together at a match's
       // start, and each measurement skins the torso on the CPU; the others wait a frame or two with the stock unfitted.
-      if (this.torso === undefined && this.ik >= 0.999 && Math.abs(this.blade - LONG_GUN_BLADE) < 0.01 && torsoMeasures.take(this.scene.getFrameId())) this.torso = TorsoSurface.measure(this.ch);
+      if (this.torso === undefined && this.ik >= 0.999 && Math.abs(this.blade - LONG_GUN_BLADE) < 0.01 && torsoMeasures.take(this.scene.getFrameId())) this.torso = TorsoSurface.measure(this.ch, this.torsoLook);
       const barrel = new Vector3(0, 0, 1).applyRotationQuaternion(aim);
       const on = (p: ModelPoint) => point(pocket, aim, [p[0] - grip.shoulder![0], p[1] - grip.shoulder![1], p[2] - grip.shoulder![2]]);
       // Short arms (an otter's) hold the handguard nearer the grip rather than pull the gun back into the body.
