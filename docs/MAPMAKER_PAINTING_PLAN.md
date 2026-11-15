@@ -5,7 +5,7 @@ Lane B's splitters22, 2026-11-15. A plan only: no code yet. It answers the QUEUE
 
 | | |
 |---|---|
-| Status | Owner: all picks (1a–8a), 2026-11-15, and every part of a set piece designable. **Phase 1 built** ("Phase 1: as built", below), with per-part set-piece paint brought forward from Phase 5. |
+| Status | Owner: all picks (1a–8a), 2026-11-15, and every part of a set piece designable. **Phase 1 built** ("Phase 1: as built", below), with per-part set-piece paint brought forward from Phase 5. **Phase 2 built** ("Phase 2: as built"). |
 | Pictures | `map-briefs/painting/mockup-painters.png` (the two painters, the cursor label) and `map-briefs/painting/mockup-theme-warning.png` (the layers, Map settings, the warning). Their HTML sources are beside them. |
 | Map format | **v41** (Phase 1: a tile's `metal` surface and a set piece's `overrides.paint`; v40 stays free for the tunnel kit). Format change A (the Ground theme, Phase 4) takes the next free number when it lands. |
 | Shipped maps | Look exactly the same after every phase. A test proves it. |
@@ -324,6 +324,43 @@ Each phase is small and lands green by itself. Phases 1–3 need no format chang
   - Change and Keep current look are one undo step each;
   - "Use theme" opens the same dialog.
 - Flicker: a dialog, not a bright moment, so nothing new for `flashing`.
+
+**Phase 2: as built (2026-11-15, lane B's splitters22, `wip/painting-2`).** No map format change.
+- **Shared** (`packages/shared/src/editor/paintLayers.ts`, in `editor/` rather than `map/`): `themeChangeImpact(doc,
+  library, to, boxes?)`, `keepCurrentLookCommand(doc, library, to, boxes?)`, `surfaceLayer(doc, library, target,
+  faceSlot?)`, `groundLayerAt(terrain, x, z)` / `baseGround`, `drawnSlots`. A "surface" is one slot a piece draws,
+  read from its boxes (`buildMapGeometry` + `buildMapDecor`): a room's floor, underside, walls, trim…; a block is one.
+  - **Counts.** Surfaces that follow the theme and will change: the map's own tile slots nothing paints, unpainted
+    blocks, and a set piece's part slots nothing above the theme gives (an underside a look leaves to the theme).
+    Set pieces that will change: those on the theme's look whose look changes. Painted surfaces: tile slots, painted
+    blocks, a set piece's painted roles and part paint. Set pieces with a look of their own (`pack`). The sky line when
+    the map has no backdrop of its own. A change where none of it changes skips the dialog (the toast says so).
+  - **Keep current look** pins exactly today's resolved look: tile slots in `surfaces` (the floor before the roof,
+    which follows it), unpainted blocks a `material`, set pieces their look's roles in `overrides.roles` (facade, door
+    and glass too: an absent one pinned as none, sliding, none) and any part still following the theme in
+    `overrides.paint`; then `setTheme`, all one batch (one undo step). **One exception, for the owner:** an unpainted
+    block shows the theme's floor on top and its underside on the sides, and a block holds one material, so a block
+    whose two differ keeps the one it shows most (by area: a slab its top, a wall its sides); the dialog says how many.
+    Exact would need per-face block paint (a format change, e.g. with Phase 5's).
+  - `paintLayers.test.ts`: the counts on a scene and on the coverage map match a real change face by face; Keep
+    leaves every drawn surface (and facade, glass, door) the same on the scene and on the coverage map into four
+    themes and from a look to another, nothing left to change going back, one undo step; paint survives every theme;
+    the chain for a wall, a painted wall, a set piece (theme's look, own look, painted across), a block; the ground.
+- **The warning** (`client/src/editor/themeChangeDialog.ts`, `changeStructureTheme`): every theme path goes through
+  it: Map settings' theme (renamed **Structure theme**), the top bar's `ed-theme` (kept: the chips wait for Phase 3,
+  which regenerates the `mapmaker.png` baseline anyway) and the palette's "Use theme". Counts, "Change N things",
+  "Keep current look", Cancel (and Esc); the select goes back on Cancel. The Ground theme tick box is left out until
+  the Ground theme exists (Phase 4). No `setThemeCommand` caller is left outside the dialog. A dialog: nothing flashes.
+- **The cursor** (`paintTools.ts` `describe`/`card`, `hover.ts`): Structure paint's card by the cursor names the
+  surface (Wall, Floor, Trim, Roof, Metal, Block) and what it is on, shows Structure theme → Set piece look → Your
+  paint as three chips with the shown one marked ✓ (the look's source says "(the theme's)" or is the piece's own),
+  then what a click does, Alt+click and right-click. The status line says the same in words. Over bare ground: "Ground
+  · Gravel (the map's main ground)" and that a click does nothing. Ground paint's card and status name the ground layer
+  and whether it is the map's main ground (its most common layer, MapMaker's existing "main ground") or painted.
+- E2E (`editortools`, `editorThemeWarningChecks`): each path opens the dialog with `themeChangeImpact`'s counts;
+  Cancel and Esc change nothing; Change and Keep are one undo step each, Keep leaving nothing to change back; the card's
+  chain (look shown, then your paint after a click), the ground card, Ground paint's label. `editorux`'s layout checks
+  click Change in the dialog. Screenshots at device scale 2 with `E2E_SHOTS` (`editortools-paint2-*.png`).
 
 **Phase 3: the palette follows the themes.**
 - What it does: the "This map's themes" default, All one click away, theme-first paint lists.
