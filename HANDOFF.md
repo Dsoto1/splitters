@@ -17,6 +17,8 @@ The owner added: "I did see a set piece for pens/cells (Roman), and when I chang
 
 - **Claimed (lane B's splitters22, 2026-11-15): painting Phase 1 and the bars bug**, branch `wip/painting-1`. First the Cage Block bars fix (bars, portcullis gates and railings on the metal role or a fixed iron, `ROLE_THEME_SLOT`), then Phase 1 of the plan (two painters, no silent swaps, every visible surface paintable) with "This surface only" reaching any set-piece part. Files: `packages/client/src/editor/paintTools.ts` and the paint UI, `packages/shared/src/map/setPieces.ts`, the bar/railing/gate edge styles, `content/setpieces/*.json` where a surface role is wrong, their tests and e2e. Octagon phase 4 runs alongside (different files).
 
+- **Claimed (a helper of lane A's lead, 2026-11-15): Hold to resupply and heal, and a clearer low-health warning** (QUEUE, Features), branch `wip/hold-use`. A held-Use state in the sim (resupply at the Supply Buggy and Ammo Boxes; the Medkit's heal), its HUD ring, bots holding it, and a low-health warning within Reduce flashing. Files: `packages/shared/src/sim/{resupply,match,movement}.ts`, a new `sim/holdUse.ts`, `protocol.ts` (private state), `bots/brain.ts` (resupply stop), client `game/{input,hud,hurtVignette,session,touchControls}.ts`, a new `game/lowHealth.ts`, sounds, their tests, e2e `flashing` and a hold check, docs/QUEUE.md item.
+
 ## Start here (session of 2026-11-07, handed off to the next account)
 
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
