@@ -23,7 +23,7 @@ import {
 import { airRoute, botDropIndex, canDrop, dropArea, dropIndex, dropOffsets, dropPlan, dropStretchEnds, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute, type DropPlan } from './airplane.ts';
 import { CHUTE, heightAboveGround } from './parachute.ts';
 import type { NavWorld } from '../nav/index.ts';
-import { buildMapNav } from './mapNav.ts';
+import { buildMapNav, loadMapNav, type PrebuiltNav } from './mapNav.ts';
 import {
   POWERUP_DAMAGE_BIT,
   POWERUP_SPEED_BIT,
@@ -792,6 +792,9 @@ export class Match {
   /** Classes (rules.classes): loadouts, abilities and class bots; null without classes. */
   readonly classes: ClassPlay | null;
 
+  /** The navmesh came from `opts.nav` (built ahead), not built at load. */
+  readonly navReused: boolean;
+
   /** Requires initPhysics() and initNavigation() to have resolved. */
   constructor(
     readonly map: MapDocument,
@@ -802,9 +805,10 @@ export class Match {
      * players and spectators alike, so a match only spectators watch starts
      * once they have), at most START_WAIT_SECONDS, then count down; every
      * later round counts down too. Off (play at once) for headless matches
-     * and tests.
+     * and tests. `nav`: a navmesh built ahead from this map (MapMaker's navigation check, for its Test): taken
+     * instead of building one when it was built from the same (sim/mapNav.ts navInputKey; `navReused`).
      */
-    private readonly opts: { startGate?: boolean } = {},
+    private readonly opts: { startGate?: boolean; nav?: PrebuiltNav | null } = {},
   ) {
     this.geometry = buildMapGeometry(map);
     this.killY = mapKillY(this.geometry, map);
@@ -813,7 +817,9 @@ export class Match {
     this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map), this.envShapes);
     this.sight = new SightCache(this.physics);
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
-    this.nav = buildMapNav(map, this.geometry, this.physics, this.envShapes, this.phys);
+    const nav = loadMapNav(map, this.geometry, this.physics, this.envShapes, this.phys, opts.nav);
+    this.nav = nav.nav;
+    this.navReused = nav.reused;
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
