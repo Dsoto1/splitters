@@ -440,3 +440,11 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
 
 ### The owner's answers on phase 3 (2026-11-15: "Rec works")
 1a: a Vaulted Tunnel Crossing at the hypogeum ring's corner takes both stair wells. 2a: the wells stay below unclaimed cells; documented. 3a: the tower's outside faces get arrow slits and a string course, drawn only (no collision), in phase 4. 4a: the podium stairs stay as built, 2.4 m out on the sand.
+
+### The owner's answers on phase 4 (2026-11-15: "1a 2b 3b 4a")
+1. The sealed middle gallery ring: (a) phase 5 adds a stair up into it from the ground gallery at each corner, in the kit.
+2. The new bot stuck spots (gate passage by the gallery, one stair well): (b) left as they are.
+3. CTF favours Embers: (b) left as it is.
+4. Publishing: (a) the owner republishes from MapMaker once phase 4 lands.
+
+Phase 5 is therefore only the gallery stairs.
