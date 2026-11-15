@@ -130,7 +130,7 @@ export const CORE_MATERIALS: readonly MaterialDefinition[] = [
   { id: 'core.pbr_flagstone', displayName: 'Dark Flagstone', category: 'Tile', pattern: 'plain', base: '#3e3e3c', accent: '#3e3e3c', scale: 3, shine: 0.2, texture: 'Tiles090' },
   { id: 'core.pbr_delft', displayName: 'Delft Tiles', category: 'Tile', pattern: 'plain', base: '#c8ccea', accent: '#c8ccea', scale: 1.5, shine: 0.6, texture: 'Tiles101' },
   { id: 'core.pbr_hex_paving', displayName: 'Hex Paving', category: 'Tile', pattern: 'plain', base: '#a89480', accent: '#a89480', scale: 2, shine: 0.08, texture: 'PavingStones130' },
-  { id: 'core.pbr_terrazzo', displayName: 'Terrazzo', category: 'Tile', pattern: 'plain', base: '#d8ccc4', accent: '#d8ccc4', scale: 2, shine: 0.5, texture: 'Terrazzo013' },
+  { id: 'core.pbr_terrazzo', displayName: 'Terrazzo', category: 'Tile', pattern: 'plain', base: '#d8ccc4', accent: '#d8ccc4', scale: 1.25, shine: 0.5, texture: 'Terrazzo013' },
   { id: 'core.pbr_roof', displayName: 'Clay Roof Tiles', category: 'Tile', pattern: 'plain', base: '#7a4a32', accent: '#7a4a32', scale: 2, shine: 0.08, texture: 'RoofingTiles008' },
   { id: 'core.pbr_carpet', displayName: 'Navy Carpet', category: 'Fabric', pattern: 'plain', base: '#2a3046', accent: '#2a3046', scale: 2, shine: 0.08, texture: 'Carpet012' },
   { id: 'core.pbr_canvas', displayName: 'Army Canvas', category: 'Fabric', pattern: 'plain', base: '#7c7a68', accent: '#7c7a68', scale: 2, shine: 0.08, texture: 'Fabric028' },

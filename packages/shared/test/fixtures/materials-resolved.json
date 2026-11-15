@@ -2999,7 +2999,7 @@
     "pattern": "plain",
     "base": "#d8ccc4",
     "accent": "#d8ccc4",
-    "scale": 2,
+    "scale": 1.25,
     "shine": 0.5,
     "texture": "Terrazzo013"
    },

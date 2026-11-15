@@ -27,6 +27,10 @@ describe('paths', () => {
     const tw = layPathsIntoTerrain(wide.terrain!, wide.paths!);
     expect(tw.materials[cell(0, 0.5)]).not.toBe(wide.terrain!.materials[cell(0, 0.5)]);
     expect(tw.materials[cell(0, 3.5)]).toBe(wide.terrain!.materials[cell(0, 3.5)]);
+    // Nor past its ends: the path runs x -12 to 12, so the cells beyond (in line with it) keep their ground, and
+    // the last whole cells before each end are painted (Low graphics showed a square of path ground past an end).
+    for (const x of [12.5, 13.5, 15, -12.5, -13.5, -15]) expect(tw.materials[cell(x, 0.5)], `x ${x}`).toBe(wide.terrain!.materials[cell(x, 0.5)]);
+    for (const x of [10.5, -10.5]) expect(tw.materials[cell(x, 0.5)], `x ${x}`).not.toBe(wide.terrain!.materials[cell(x, 0.5)]);
   });
 
   it('load lays them once, and a loaded map loads the same again', () => {
