@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_clkeewk6xyp7yfwi",
-      "revision": 29,
-      "contentHash": "sha256:9c249170b25fe1f8a7845523d5982a44a1e3581794b5b7731cbe6041c0b6e5d4",
+      "versionId": "v_luhx5lsakz2ieakl",
+      "revision": 30,
+      "contentHash": "sha256:c56ecb2fd1ed863c09a305286c6744fb6e37720e8bfa22411bd6184014c94007",
       "schemaVersion": 39,
-      "releasedAt": "2026-11-15T13:47:55.604Z"
+      "releasedAt": "2026-11-15T14:25:30.950Z"
     }
   },
   "classicStructure": {
@@ -20042,265 +20042,265 @@
     {
       "id": "spawn_kqa18wzqqr",
       "position": [
-        24,
+        31.82,
         0,
-        44
+        31.82
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": -2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_xjns0ep51n",
       "position": [
-        24,
+        37.48,
         0,
-        52
+        37.48
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": -2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_726obnckwk",
       "position": [
-        24,
+        43.84,
         0,
-        60
+        43.84
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": -2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_0de71bj5jc",
       "position": [
-        24,
+        49.5,
         0,
-        68
+        49.5
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": -2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_wdo25qcg1o",
       "position": [
-        -24,
+        -31.82,
         0,
-        44
+        31.82
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": 2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_1ikvrtts95",
       "position": [
-        -24,
+        -37.48,
         0,
-        52
+        37.48
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": 2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_0z8eyo4qs1",
       "position": [
-        -24,
+        -43.84,
         0,
-        60
+        43.84
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": 2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_zci0r1lnvp",
       "position": [
-        -24,
+        -49.5,
         0,
-        68
+        49.5
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": 2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_v1mkxdancz",
       "position": [
-        56,
+        52.5,
         0,
-        64
+        78
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": -2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_ibfygb9cgn",
       "position": [
-        -56,
+        -52.5,
         0,
-        64
+        78
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": 2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_w0ejwoykvi",
       "position": [
-        68,
+        78,
         0,
-        48
+        52.5
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": -2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_1p97om3xem",
       "position": [
-        -68,
+        -78,
         0,
-        48
+        52.5
       ],
       "kind": "spawn",
-      "yaw": 3.142,
+      "yaw": 2.356,
       "faction": "embers"
     },
     {
       "id": "spawn_c3x6nk03rb",
       "position": [
-        24,
+        31.82,
         0,
-        -44
+        -31.82
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.785,
       "faction": "tide"
     },
     {
       "id": "spawn_24xurehmtr",
       "position": [
-        24,
+        37.48,
         0,
-        -52
+        -37.48
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.785,
       "faction": "tide"
     },
     {
       "id": "spawn_v72l7h6ndc",
       "position": [
-        24,
+        43.84,
         0,
-        -60
+        -43.84
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.785,
       "faction": "tide"
     },
     {
       "id": "spawn_37m424vo8t",
       "position": [
-        24,
+        49.5,
         0,
-        -68
+        -49.5
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.785,
       "faction": "tide"
     },
     {
       "id": "spawn_4vce0lbc6h",
       "position": [
-        -24,
+        -31.82,
         0,
-        -44
+        -31.82
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 0.785,
       "faction": "tide"
     },
     {
       "id": "spawn_7pp11f0yul",
       "position": [
-        -24,
+        -37.48,
         0,
-        -52
+        -37.48
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 0.785,
       "faction": "tide"
     },
     {
       "id": "spawn_7bltg48pmy",
       "position": [
-        -24,
+        -43.84,
         0,
-        -60
+        -43.84
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 0.785,
       "faction": "tide"
     },
     {
       "id": "spawn_p13mhsn6dq",
       "position": [
-        -24,
+        -49.5,
         0,
-        -68
+        -49.5
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 0.785,
       "faction": "tide"
     },
     {
       "id": "spawn_cb1ptewi1q",
       "position": [
-        56,
+        52.5,
         0,
-        -64
+        -78
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.785,
       "faction": "tide"
     },
     {
       "id": "spawn_twd0q3ul2g",
       "position": [
-        -56,
+        -52.5,
         0,
-        -64
+        -78
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 0.785,
       "faction": "tide"
     },
     {
       "id": "spawn_udcffyaki9",
       "position": [
-        68,
+        78,
         0,
-        -48
+        -52.5
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": -0.785,
       "faction": "tide"
     },
     {
       "id": "spawn_z96uulo98o",
       "position": [
-        -68,
+        -78,
         0,
-        -48
+        -52.5
       ],
       "kind": "spawn",
-      "yaw": 0,
+      "yaw": 0.785,
       "faction": "tide"
     },
     {
@@ -20569,7 +20569,7 @@
       "position": [
         20,
         0,
-        -20
+        -12
       ],
       "kind": "pickup",
       "item": "core.grenades",
@@ -20580,7 +20580,7 @@
       "position": [
         -20,
         0,
-        20
+        12
       ],
       "kind": "pickup",
       "item": "core.grenades",
@@ -20688,9 +20688,9 @@
     {
       "id": "pickup_fk415n521p",
       "position": [
-        56,
+        72,
         0,
-        56
+        72
       ],
       "kind": "pickup",
       "item": "core.health_small",
@@ -20699,9 +20699,9 @@
     {
       "id": "pickup_crmvvy5u7v",
       "position": [
-        -56,
+        -72,
         0,
-        -56
+        -72
       ],
       "kind": "pickup",
       "item": "core.health_small",
@@ -20710,9 +20710,9 @@
     {
       "id": "pickup_rlr672rb6p",
       "position": [
-        -60,
+        -74,
         0,
-        56
+        70
       ],
       "kind": "pickup",
       "item": "core.weapon_spear",
@@ -20721,9 +20721,9 @@
     {
       "id": "pickup_5mgjrntssm",
       "position": [
-        60,
+        74,
         0,
-        -56
+        -70
       ],
       "kind": "pickup",
       "item": "core.weapon_spear",
@@ -21129,13 +21129,13 @@
     {
       "id": "door_tedtw6qchd",
       "position": [
-        24,
+        20.707,
         0,
-        -29
+        -20.707
       ],
       "name": "Gate 1",
       "kind": "door",
-      "yaw": 0,
+      "yaw": 2.356,
       "style": "portcullis",
       "startOpen": true,
       "locked": false,
@@ -21144,13 +21144,13 @@
     {
       "id": "button_aesi98f74a",
       "position": [
-        22.9,
+        21.7,
         0,
-        -31.5
+        -23.25
       ],
       "name": "Gate 1 winch",
       "kind": "button",
-      "yaw": 1.571,
+      "yaw": 0.785,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
@@ -21159,13 +21159,13 @@
     {
       "id": "button_tdbkixisa7",
       "position": [
-        21.4,
+        17.88,
         0,
-        -27.6
+        -21.56
       ],
       "name": "Gate 1 chain",
       "kind": "button",
-      "yaw": 0,
+      "yaw": -0.785,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
@@ -21174,13 +21174,13 @@
     {
       "id": "door_6g7izdtngz",
       "position": [
-        -24,
+        -20.707,
         0,
-        -29
+        -20.707
       ],
       "name": "Gate 2",
       "kind": "door",
-      "yaw": 0,
+      "yaw": -2.356,
       "style": "portcullis",
       "startOpen": true,
       "locked": false,
@@ -21189,13 +21189,13 @@
     {
       "id": "button_0wvzby1ezn",
       "position": [
-        -22.9,
+        -21.7,
         0,
-        -31.5
+        -23.25
       ],
       "name": "Gate 2 winch",
       "kind": "button",
-      "yaw": -1.571,
+      "yaw": -0.785,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
@@ -21204,13 +21204,13 @@
     {
       "id": "button_z2c6dw50xs",
       "position": [
-        -21.4,
+        -17.88,
         0,
-        -27.6
+        -21.56
       ],
       "name": "Gate 2 chain",
       "kind": "button",
-      "yaw": 0,
+      "yaw": 0.785,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
@@ -21219,13 +21219,13 @@
     {
       "id": "door_tl8joym4q8",
       "position": [
-        -24,
+        -20.707,
         0,
-        29
+        20.707
       ],
       "name": "Gate 3",
       "kind": "door",
-      "yaw": 0,
+      "yaw": -0.785,
       "style": "portcullis",
       "startOpen": true,
       "locked": false,
@@ -21234,13 +21234,13 @@
     {
       "id": "button_5muruxmphb",
       "position": [
-        -22.9,
+        -21.7,
         0,
-        31.5
+        23.25
       ],
       "name": "Gate 3 winch",
       "kind": "button",
-      "yaw": -1.571,
+      "yaw": -2.356,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
@@ -21249,13 +21249,13 @@
     {
       "id": "button_iq7slrxa5o",
       "position": [
-        -21.4,
+        -17.88,
         0,
-        27.6
+        21.56
       ],
       "name": "Gate 3 chain",
       "kind": "button",
-      "yaw": 3.142,
+      "yaw": 2.356,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
@@ -21264,13 +21264,13 @@
     {
       "id": "door_hfbwg4io6i",
       "position": [
-        24,
+        20.707,
         0,
-        29
+        20.707
       ],
       "name": "Gate 4",
       "kind": "door",
-      "yaw": 0,
+      "yaw": 0.785,
       "style": "portcullis",
       "startOpen": true,
       "locked": false,
@@ -21279,13 +21279,13 @@
     {
       "id": "button_ae2gd16e0e",
       "position": [
-        22.9,
+        21.7,
         0,
-        31.5
+        23.25
       ],
       "name": "Gate 4 winch",
       "kind": "button",
-      "yaw": 1.571,
+      "yaw": 2.356,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
@@ -21294,13 +21294,13 @@
     {
       "id": "button_nmt2tpnmfu",
       "position": [
-        21.4,
+        17.88,
         0,
-        27.6
+        21.56
       ],
       "name": "Gate 4 chain",
       "kind": "button",
-      "yaw": 3.142,
+      "yaw": -2.356,
       "label": "Raise / lower the portcullis",
       "once": false,
       "cooldownSeconds": 2,
@@ -22650,7 +22650,12 @@
       "y": 2,
       "z": 0,
       "rotation": 0,
-      "mirror": false
+      "mirror": false,
+      "overrides": {
+        "hide": [
+          5
+        ]
+      }
     },
     {
       "id": "setpiece_f6epumzmbr",
@@ -22659,7 +22664,12 @@
       "y": -2,
       "z": 0,
       "rotation": 1,
-      "mirror": false
+      "mirror": false,
+      "overrides": {
+        "hide": [
+          5
+        ]
+      }
     },
     {
       "id": "setpiece_r9a4recog9",
@@ -22668,7 +22678,12 @@
       "y": -2,
       "z": 0,
       "rotation": 2,
-      "mirror": false
+      "mirror": false,
+      "overrides": {
+        "hide": [
+          5
+        ]
+      }
     },
     {
       "id": "setpiece_qts0c1br1c",
@@ -22677,7 +22692,12 @@
       "y": 2,
       "z": 0,
       "rotation": 3,
-      "mirror": false
+      "mirror": false,
+      "overrides": {
+        "hide": [
+          5
+        ]
+      }
     }
   ]
 }
