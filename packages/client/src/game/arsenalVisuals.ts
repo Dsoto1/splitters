@@ -625,7 +625,7 @@ export function createAura(scene: Scene, parent: TransformNode): Mesh {
 const auraRims = new WeakMap<Mesh, Mesh>();
 
 /** How opaque the outline's rim (seen edge-on) and its middle (seen face-on) are. */
-export const AURA_RIM = { edge: 0.85, middle: 0.06, power: 1.6 } as const;
+export const AURA_RIM = { edge: 0.9, middle: 0.05, power: 0.6 } as const;
 
 /** The outline's material for a colour (shared, never disposed by effects). */
 function rimMat(scene: Scene, hex: string): StandardMaterial {
