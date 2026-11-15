@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { afterEach, describe, expect, it } from 'vitest';
-import { loadMap, serializeMap } from '@tiletrigger/shared';
+import { loadMap, serializeMap, stampMapRelease } from '@tiletrigger/shared';
 import { TokenError, type VerifiedUser } from '../src/auth.ts';
 import { PublishedMaps, noPublishingHandler, publishHandler } from '../src/publish.ts';
 
@@ -57,6 +57,19 @@ describe('published maps', () => {
     // Taking it down: the built-in map is used again.
     expect(store.unpublish('frost_basin')).toBe(true);
     expect(store.get('frost_basin')).toBeNull();
+  });
+
+  it("lists each published file's own release block, and whether it describes the content (publishedChoice.ts)", () => {
+    const store = new PublishedMaps(temp(), BUILT_IN, undefined, () => 5000);
+    const r = loadMap(renamed('frost_basin', 'Frost Basin Stamped'), undefined, { forEditing: true });
+    if (!r.ok) throw new Error('map failed to load');
+    const stamped = stampMapRelease({ ...r.map, metadata: { ...r.map.metadata, release: undefined } });
+    const rel = stamped.metadata.release!;
+    expect(store.publish(serializeMap(stamped), OWNER).release).toEqual({ mapId: rel.mapId, versionId: rel.versionId, revision: 1, current: true });
+    // Published unstamped after an edit: the block is the older version's, and says so.
+    const edited = serializeMap({ ...stamped, metadata: { ...stamped.metadata, name: 'Edited After' } });
+    expect(store.publish(edited, OWNER).release).toMatchObject({ versionId: rel.versionId, current: false });
+    expect(store.list()[0]!.release?.current).toBe(false);
   });
 
   it('adds a map with a new ID as an official one, and refuses maps that are broken', () => {
