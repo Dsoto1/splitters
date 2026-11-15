@@ -228,6 +228,66 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
 - Phases 1-3 can be checked on the coverage map and a scratch map before Flavius Rule is touched. The owner can look at a corner in MapMaker after phase 2.
 - Phase 1 is small enough to go with phase 2 if the landing slot is short.
 
+### Phase 1: as built (2026-11-14, `wip/flavius-octagon-1`, lane B's splitters22)
+- **`turned`** (`map/catalog.ts` `TurnedPart`, `turnBoxes`): a group of any parts turned by `turns` (quarter turns: 0.5 = 45°) or `yaw` (radians) about `pivot` (default [0, 0]). Centres turn, yaws add, sizes stay; on whole quarter turns plain boxes stay plain (so 90° is exactly the parts built the other way, and two 45° groups nested make a plain 90° one). Groups nest.
+- **`wallRun`** (`WallRunPart`, `wallRunBoxes`): an edge style along any segment, `bays` along it; the segment is the outer face, the thickness `left` (default, as a cell side), `right` or `centre`; `y`, `height` (default 4), `outer` (default true). Along a cell's side, at every quarter turn, its collision and trim equal what that side builds (tested for wall, Round arch, Grand arch and window on all four sides).
+- `edgeSegments` and `edgeTrimBoxes` moved, unchanged, from `map/geometry.ts` to a new `map/edgeShapes.ts` (geometry re-exports them), so the catalog can build from them while it loads (geometry imports the catalog).
+- **Plain arch collision** (`wallRun.plain`): piers plus one lintel from the crown up; the steps over the curve become trim drawn in the walls' paint (new `LocalBox.paint` / `WorldBox.paint: 'walls'`, read by `faceSlot`), so the arch looks the same. Round and Grand arch: 19 collision boxes → 3. Near each pier the stone between the curve and the crown is drawn but passable (up to about 1.3 m on a Round arch, 1.8 m on a Grand arch, right at the pier).
+- **Oriented doors:** `Aabb.obox` (sim/scenarioDefs.ts `orientedAabb`) carries the turned slab for a door off the grid; `segmentHitsAabb` (bot blockers, the button's door), `bodyInAabb` (`Scenario.inShutDoor`, the spawn check) and `NavWorld.markOpenings` (13 × 2 samples over the slab, not 10 × 10 over its 2.4 m square) use it. On-grid doors carry none and run exactly the old code.
+- `tools/content/tiles.mjs` checks both parts (and the parts in a group); `tools/content/test/tiles.test.mjs` covers it.
+- **No shipped map changed:** every map's collision boxes, drawn trim and door planes hash the same as on origin/main dc504c9e (89 maps, 157,199 boxes, 105,100 trim, 296 doors; none off the grid); `octagonKit.test.ts` also checks every map's doors.
+- Visual check: a scratch tile (not committed) with a 45° `turned` flight, a 45° plain Grand arch run and a 45° Round arch run of two bays, in the game's renderer; physics probes through the plain arch (opening clear at 2 and 6 m, the lintel and piers solid).
+
+### Phase 2: as built (2026-11-14, `wip/flavius-octagon-2`, lane B's splitters22)
+- **Tiles** `core.arena_corner_ground` (levels 0-1), `_mid` (2-3), `_upper` (4-5), `_attic` (6-7), palette group
+  Vertical, themed by the slots floor, walls, solids and trim. Each claims only its own two levels; placed relative
+  (each tile's cells are its levels 0-1), the set piece stacks them at 0, 2, 4 and 6. Made by a generator,
+  `tools/content/kit/arenaCorner.mjs` (hooked into `tools/content/tiles.mjs` like the tunnel kit), not by hand in
+  `content/tiles/core.json`: the numbers are the Seating Tier's and the plan's, and the parts are the kit's (box,
+  flight, `wallRun`, `turned`).
+- **Frame:** the anchor is the sand's corner cell (x and z 12..20 m from the arena's centre for the north-east corner);
+  the tile covers 63 cells of the 9 × 9 east and north of it. The two half-sand cells either side of the diagonal's
+  front are not claimed at level 0 (they hold only the podium's edge), so the map's Courtyard tiles there can stay
+  (§4 step 3: only the corner cell itself goes). The cell under the podium at (±3, ±3) is claimed.
+- **Geometry** as §2 and §3.2: depth = max(z − 28, x − 28, (x + z − 40) / √2); podium 0-8 m deep as Arena Seating; 40
+  rows of 0.5 by 1 m from 4 to 24 m, one box each between aisles; mitre aisles 2.4 m clear between 0.5 m cheeks
+  (steps 0.25 by 0.54 m along the mitre, at 22.5° to both sides' rows); a centre aisle (the Seating Tier's) except on
+  the upper tier's front half, where the vomitorium is (passage 3.2 m, an aisle stair 2.4 m either side). Rows on the
+  diagonal run up to 28 m between aisles at the very back of the upper tier (19 m at its front, 22 m beside the
+  vomitorium), a little over the "about 24 m" of §3.2 at the back; the wedge rows are 2-18 m.
+- **Galleries round the corners** (5a) at levels 0, 2 and 4: vaulted (as a vaulted room's), front wall plain, back
+  wall Round arches, blind against the fill at 0 and 2, open into the facade arcade's upper storey at 4 (its bays
+  share the arcade's inner wall's line so the arches line up); the top gallery's front wall has a Round arch on the
+  centre line for the vomitorium. The facade is two-storey Grand arcades all round (levels 0, 2, 4) and the attic walk
+  (windows, roof slab, a 0.6 m parapet in level 7). Plain collision (6a) on every arch.
+- **Mitres:** where two sectors meet, each box runs to the mitre at its deeper edge; the bit past it at its shallower
+  edge lies inside the neighbour's box of the same band (same height). No coplanar faces are left drawn twice
+  (`coplanarOverlaps` over `visibleFaces`, every turn, with the straight bays either side).
+- **Mirror:** each tile is its own mirror image across the diagonal. New `tileDiagonalMirror` (map/setPieces.ts): a
+  set piece mirrored with such a tile places it turned 3 − r at the mirrored anchor (its edge keys swapped across the
+  diagonal), so M on the Arena Corner gives the corner turned. The selection Mirror tool (editor/mirror.ts, held for
+  the MapMaker UI work) still refuses the exploded tiles.
+- **`setpiece.arena_corner`** (`content/setpieces/arena.json`): the four tiles (roles: floor paving, walls and solids
+  stone, trim) and 13 lights (a candle on each gallery's front wall in each sector, two on the top gallery's diagonal
+  beside the vomitorium's arch, a chandelier over the attic in each sector). Ports (openings) where the galleries, the
+  arcades and the attic meet the straight bays.
+- **Budget:** collision 343 + 428 + 456 + 69 = **1,296 boxes** a corner (target: well under 2,700 with the tower);
+  trim 2,022 + 2,230 + 2,453 + 90 = 6,795 (the plain arches' steps and the arcades' dressing are most of it). The
+  generated kit table grows by about 70 KB (`kitTiles.generated.ts`).
+- **The 45° steps:** no navmesh ledge, so no ramp fallback: bots climb the 22.5° mitre steps and the 45° centre steps.
+- **Tests** (`packages/shared/test/arenaCorner.test.ts`, the corner between a straight bay line of each stand with the
+  fill blocks, in all four turns): bots walk each gallery from the north stand round the corner to the east stand at
+  its own height and through the diagonal; up both mitre aisles (five points to depth 44, each by a path at most 1.35
+  times the climb) and the centre aisle to the vomitorium's mouth, through it into the top gallery; the attic. Rows,
+  walkways and floors meet the straight bays' within 1 mm along both joins, depth 0-55 m. Mirrored equals turned
+  (boxes, trim, lights). The four tiles' boxes overlap nowhere (separating axes). Exploded equals placed.
+  `setPiecePlay.test.ts`'s z-fight audit places pieces over 4 cells wide in maps of their own (every turn and
+  mirror); `tilesData.test.ts`'s fixture holds the four tiles by a hash. The coverage map carries one corner (placed in
+  MapMaker; its test requires it like every set piece and kit tile).
+- **Not done (phase 3):** the gate option, its stair well, the tower. Not checked: the vomitorium's side stairs for bots
+  (as in the straight Vomitorium bay, they start from a 1 m row the navmesh doesn't hold; bots reach the upper centre
+  aisle from the attic), a match on a map with corners, the M1.
+
 ## 8. The owner's decisions
 
 1. **How big is the octagon?**
@@ -262,3 +322,6 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
 
 ### The owner's answers (2026-11-14: "Recs")
 1a (clip the sand's corners), 2a (gatehouse towers at 45°), 3a (stair wells off the gate passages), 4b (short stairs up the podium either side of each gate), 5a (galleries round the corners), 6a (plain arch collision, new pieces only), 7a (twelve spawns a team, passages and courts), 8a (the pieces first, phases 1–3 landing alone, then the map). Phase 4 also brings the map's description up to date (it still mentions lift cages, a beast lift, an aqueduct and a portal).
+
+### The owner's answers on phase 2 (2026-11-14: "Recs")
+1a: the half-sand cells either side of the diagonal's front stay unclaimed. 2a: the upper tier's back rows stay as built (up to 28 m between aisles). 3a: the vomitorium's side stairs stay as they are; bots use the aisles. 4a: the selection Mirror (Shift+M) learns diagonal symmetry as a small follow-up once the editor code is free.

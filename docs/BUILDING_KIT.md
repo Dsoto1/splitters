@@ -71,6 +71,83 @@ Every climbable piece is tested for bot paths in all four rotations
 (narrower runs fall foul of the navmesh's ledge filter), and flights need
 clear space at both ends.
 
+### Parts at any angle: `turned` and `wallRun` (octagon kit, phase 1)
+
+A kit tile is a list of parts, each naming one builder (`box`, `flight`, `rail`, `columns`, `vault`, `arc`…). Two
+builders put pieces off the grid; only a plain `box` takes `yaw` (docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md
+§3.1). No shipped tile uses them yet; phase 2 builds the Arena Corner pieces with them.
+
+- **`turned`**: a group of any parts (flights, vaults, columns, rails, boxes, wall runs, other groups) turned about
+  `pivot` ([x, z] in the tile's frame, default the first cell's centre) by `turns` (quarter turns, so 0.5 is 45°) or
+  `yaw` (radians), the same way round as a tile's R. Each box's centre turns and the turn adds to its own yaw, so it
+  keeps its size; on whole quarter turns a plain box stays a plain box, so `turns: 1` is exactly the same parts built
+  the other way. A `kind` on the group goes on what it builds (its trim stays trim).
+
+  ```json
+  { "turned": { "turns": 0.5, "pivot": [8, 8], "parts": [
+      { "flight": { "axis": "x", "dir": 1, "from": 4, "across": [7, 9], "steps": 12 } },
+      { "box": [10, 0, 7, 12.5, 3, 9] } ] } }
+  ```
+
+- **`wallRun`**: a wall in any edge style (Solid wall, Round arch, Grand arch, Window…) along any segment `from` →
+  `to`, not only a cell's side: the style's collision and trim (`map/edgeShapes.ts`, the same pieces a cell side
+  builds), `bays` times along it (each bay a side of its own: "half" is half a bay). The segment is the wall's outer
+  face, its thickness on the `side` of it looking from `from` to `to`: `left` (the default; a cell's side has the cell
+  on its left), `right`, or `centre`. `y` lifts it, `height` is the level height (default 4; a Grand arch is two of
+  them), `outer: false` leaves the outer face undressed. Along a cell's side it builds exactly what that side does.
+- **`plain: true`** (on a `wallRun`; new pieces only, owner 2026-11-14): an arch collides as its two piers and one
+  lintel from the crown up, not one slice for every step over the curve (a Round or Grand arch: 19 boxes become 3).
+  The steps are still drawn, in the walls' paint (`LocalBox.paint`), so the arch looks the same; shots and bodies
+  pass the stone between the curve and the crown near each pier. Styles with one piece over the opening (Window,
+  Doorway, Archway) are the same either way.
+
+  ```json
+  { "wallRun": { "from": [10, -3], "to": [18, 5], "style": "arch_grand", "side": "centre", "plain": true } }
+  ```
+
+`tools/content/tiles.mjs` checks both (one of `yaw` or `turns`; a built edge style; a segment longer than 0; at least
+one bay), and the parts inside a group like any part. Doors placed off the grid (a 45° portcullis) block bots, mark
+the navmesh and keep spawns out by their own turned slab (`Aabb.obox`); doors on the grid are as before. Tests:
+`packages/shared/test/octagonKit.test.ts`.
+
+### The Arena Corner (octagon kit, phase 2)
+
+A 45° corner of the colosseum's stands for an octagonal arena (docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md
+§2, §3.2): **`setpiece.arena_corner`** (Arena stands family) stacks four big tiles, one a storey band, each claiming
+its cells only on its own two levels: **Arena Corner (Ground)** `core.arena_corner_ground` (levels 0-1), **(Middle)**
+`_mid` (2-3), **(Upper)** `_upper` (4-5) and **(Attic)** `_attic` (6-7), in the palette under Vertical and themed by
+the slots like the Seating Tier (seats in solids, lips in trim, walls, vaults and cheeks in walls, walkways and slabs in
+floor).
+
+- **Where it goes:** its anchor is the sand's corner cell; the tile covers the 9 × 9 cells east and north of it (less
+  the sand and the outer court), with straight Arena Bays meeting it to the west (the north stand, arena to the south)
+  and to the south (the east stand, turned one). R turns it to the other corners. The diagonal front runs |x| + |z| =
+  40 m from the arena's centre (22.6 m long, on cell corners), so with three straight bays a side the octagon is within
+  1% of regular. The two half-sand cells either side of the diagonal's front are left free at level 0: a map's sand
+  tiles stay there under the podium's edge.
+- **What is in it:** the podium (2 m wall, walkway, eight rows of 0.25 m, the top walkway at 4 m, as Arena Seating),
+  40 rows of the Seating Tier's (0.5 m by 1 m) from 4 m to 24 m, each one long box between aisles; an aisle up each
+  mitre (2.4 m clear between cheek walls 0.5 m thick that hide both sides' row ends) and one up the diagonal's centre
+  line; a vomitorium on the upper tier's centre line (as the Seating Tier (Vomitorium): a passage 3.2 m wide from the
+  top gallery out under the top rows, an aisle stair either side); the vaulted galleries behind the seats at levels 0,
+  2 and 4 continuing round the corner (blind round arches at the back of the lower two, open into the facade's arcade
+  from the top one); solid fill under the tiers; two-storey Grand arcades round the facade at levels 0, 2 and 4; the
+  attic walk with windows, its roof and parapet. Every arch collides plain (`wallRun.plain`).
+- **How it is made:** `tools/content/kit/arenaCorner.mjs` writes the four tiles from these numbers with the kit's parts
+  (boxes, flights, `wallRun`, `turned`), and `tools/content/tiles.mjs` checks them with the rest of the kit. The north
+  wedge (from the straight bays to the mitre) is written out, the east wedge is its mirror image across the diagonal,
+  and the diagonal is built in its own frame and turned 45°; where two sectors meet at a mitre each box runs to the
+  mitre at its deeper edge, so the bit past it lies inside its neighbour's box of the same band.
+- **Mirror:** each tile is its own mirror image across its diagonal (`tileDiagonalMirror`, map/setPieces.ts), so a
+  mirrored corner (M) is placed as the same tiles turned (three quarter turns more, at the mirrored anchor). The
+  selection Mirror tool (Shift+M) still refuses the four tiles once exploded (it knows only east-west symmetry).
+- **Budget:** a whole corner collides as 1,296 boxes (343, 428, 456 and 69), with 6,795 trim boxes, and brings 13
+  lights (candles in the galleries, chandeliers in the attic).
+- **Bots:** they walk each gallery round the corner, up each mitre aisle from the podium's walkway to the attic, up the
+  centre aisle to the vomitorium's mouth and through it into the top gallery (`packages/shared/test/arenaCorner.test.ts`,
+  every turn). As in the straight Vomitorium bay, the stairs either side of its mouth start from a 1 m row the navmesh
+  does not hold, so bots reach the centre aisle over the top gallery from the attic.
+
 ## Walls and openings (edge styles, `content/tiles/edges.json`)
 
 Any side of any cell can be built as: Auto, Solid wall, Doorway, Wide doorway,

@@ -139,7 +139,10 @@ export class Atmosphere {
           counted = frame;
           this.casterCount = 0;
         }
-        if (m.hasInstances || m.hasThinInstances) {
+        // Instanced meshes always draw (their copies' visibility is kept per pass). A thin-instanced batch is one mesh
+        // whose bounds cover its copies (the environment's and the props' batches by square), so it is tested as any
+        // other caster: each cascade draws only the batches in its square, not all of them three times.
+        if (m.hasInstances) {
           this.casterCount++;
           return true;
         }
@@ -161,7 +164,8 @@ export class Atmosphere {
         const toMap = csm ? csm.getCascadeTransformMatrix(layer) : s.getTransformMatrix();
         if (!toMap) return true;
         const b = m.getBoundingInfo().boundingSphere;
-        if (b.radiusWorld < square.minRadius) return false;
+        // (A thin-instanced batch's bounds are its copies' together: no speck test, as before.)
+        if (b.radiusWorld < square.minRadius && !m.hasThinInstances) return false;
         Vector3.TransformCoordinatesToRef(b.centerWorld, toMap, at);
         const r = b.radiusWorld;
         if (Math.abs(at.x) - r * square.kx > 1 || Math.abs(at.y) - r * square.ky > 1) return false;

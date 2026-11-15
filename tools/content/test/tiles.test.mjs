@@ -77,6 +77,42 @@ describe('tiles generator (tools/content/tiles.mjs)', () => {
     expect(p).toMatch(/id core\.platform is listed twice/);
   });
 
+  it('accepts and checks turned groups and wall runs (the octagon kit, phase 1)', () => {
+    const good = clone(content);
+    const flight = { flight: { axis: 'x', dir: 1, from: -2, across: [-1, 1], steps: 8 } };
+    tile(good, 'core.dead_end').solids.push(
+      { turned: { turns: 0.5, pivot: [0, 0], parts: [flight, { turned: { yaw: 0.3, parts: [{ box: [0, 0, 0, 1, 1, 1] }] } }] } },
+      { wallRun: { from: [-4, -4], to: [4, 4], style: 'arch_grand', bays: 2, side: 'centre', plain: true }, kind: 'solid' },
+    );
+    expect(tiles.build(good).problems).toEqual([]);
+    // Schema problems first (the tile's other checks wait until its schema is right).
+    const bad = clone(content);
+    tile(bad, 'core.dead_end').solids.push(
+      { turned: { turns: 1, parts: [] } },
+      { wallRun: { from: [0, 0], to: [4, 0], style: 'auto' } },
+      { wallRun: { from: [0, 0], to: [4, 0], style: 'wall', side: 'inside' } },
+    );
+    const s = tiles.build(bad).problems.join('\n');
+    expect(s).toMatch(/\(core\.dead_end\)\.solids\[1\]\.turned\.parts: a list of at least 1/);
+    expect(s).toMatch(/\(core\.dead_end\)\.solids\[2\]\.wallRun\.style: one of wall, door/);
+    expect(s).toMatch(/\(core\.dead_end\)\.solids\[3\]\.wallRun\.side: one of left, right, centre/);
+    const c = clone(content);
+    tile(c, 'core.dead_end').solids.push(
+      { turned: { parts: [flight] } },
+      { turned: { yaw: 1, turns: 1, parts: [{ box: [1, 0, 0, 0, 1, 1] }] } },
+      { wallRun: { from: [0, 0], to: [0, 0], style: 'arch_round' } },
+      { wallRun: { from: [0, 0], to: [4, 0], style: 'wall', bays: 0 } },
+      { wallRun: { from: [0, 0], to: [4, 0], style: 'wall' }, yaw: 1 },
+    );
+    const p = tiles.build(c).problems.join('\n');
+    expect(p).toMatch(/\(core\.dead_end\): solids\[1\]: a turned group has one of yaw \(radians\) or turns/);
+    expect(p).toMatch(/\(core\.dead_end\): solids\[2\]: a turned group has one of yaw/);
+    expect(p).toMatch(/\(core\.dead_end\): solids\[2\]\.turned\.parts\[0\]: box is \[x0, y0, z0, x1, y1, z1\]/);
+    expect(p).toMatch(/\(core\.dead_end\): solids\[3\]: a wall run goes from one point to another/);
+    expect(p).toMatch(/\(core\.dead_end\): solids\[4\]: a wall run has at least 1 bay/);
+    expect(p).toMatch(/\(core\.dead_end\): solids\[5\]: yaw, pitch and roll go on a box/);
+  });
+
   it('keeps every tile and edge style the maps and Style Packs name', () => {
     const c = clone(content);
     c.core.tiles = c.core.tiles.filter((t) => !['core.room', 'core.catwalk'].includes(t.id));

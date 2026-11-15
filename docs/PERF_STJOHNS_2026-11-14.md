@@ -47,3 +47,59 @@ The matches differ (11-10 was Roulette with 104 players), so read the trend, not
 | after | 15, 13 | 38, 25 | 52, 39 | 20, 23 |
 
 (Two runs each; the bots in view differ a little between runs. Timings are this box's CPU, about 2–5 times an M1 Pro's.)
+
+## St. John's performance step 1: the draws (2026-11-14, `wip/render-draws`)
+
+**Where the 1,519 came from.** Measured with `PERF_STILL=1 PERF_GRAPHICS=high PERF_BREAKDOWN=1` (`tools/perf/client-perf.mjs`: every draw put down to its pass and the mesh drawing it), St. John's, nobody else in the map, SwiftShader. The "before" build is main (c681e8bc) with one change: the sun shafts' occluder list refreshed every 2 s instead of every 120 frames, as on a real GPU at about 34 fps (120 frames in software rendering was a minute, so the pass was often still empty). The eye-level views came to 1,312-1,663 draws, the owner's 1,519. Typical eye-level view, "eye, sun" (1,411):
+
+| Source | Sun shafts pass | Main view | Shadow map (3 cascades) | Water reflection, depth | All |
+|---|---|---|---|---|---|
+| Environment trees and shrubs (thin-instance batches) | 219 | 107 | 192 | 8 | 526 |
+| Shadow proxies (static geometry merged for shadows) | 206 | 0 | 0 (cached) | 0 | 206 |
+| Prop batches (beds, dressers, chairs, trees) | 115 | 46 | 18 | 1 | 180 |
+| Terrain plants (grass, flowers) | 72 | 34 | 0 | 0 | 106 |
+| Paths and roads | 49 | 36 | 0 | 0 | 85 |
+| Level (merged blocks, terrain) | 28 | 19 | 0 | 30 | 77 |
+| Props drawn as instances | 17 | 48 | 0 | 2 | 67 |
+| Doors (oak doors, about 13 boxes each) | 0 | 39 | 0-72 | 0 | 39-111 |
+| Everything else (vehicles, pickups, fixtures, backdrop, post) | 20 | 46 | 5 | 8 | 79 |
+
+So: **the sun shafts' occluder pass (High, sunny skies) was half of it** (700-740 draws a frame, as many as the main view), then the environment's batches (St. John's 139 trees in 8 variants made 133 batches: one or two trees each, in the view, the shafts and three cascades), the doors, the paths.
+
+**What changed (general code, every map; looks the same on High):**
+1. **Sun shafts** (`game/skyEffects.ts`): the pass is cleared black and occluders draw black, so only an occluder that hides the sun's disc changes a pixel. Each frame it now draws the disc and only the occluders whose bounds reach the narrow cone from the camera to the disc (`coversSun`), and the disc alone when the sun is out of view (`sunInView`, with a 20 degree margin). Its list is gathered every 2 s (was every 120 frames). 700+ draws to 1-90.
+2. **Environment batches** (`environment/environmentVisuals.ts`): batched by squares that grow with the level of detail (64 m at full detail, 128, 256, then 512 m: `sectorSize`), so far trees of a variant share a batch. Same levels per tree, same geometry.
+3. **Shadow cascades test thin-instanced batches** (`game/atmosphere.ts`): an environment or prop batch draws only into the cascades its bounds reach (it drew into all three).
+4. **Prop batches** (`game/propBatches.ts`): lighter levels by wider squares (128, 256, 512 m: `propSectorSize`); which copies cast is kept as before (by their 128 m square).
+5. **Doors** (`game/scenarioVisuals.ts` `mergeRigidParts`): a door's parts that move together and share a material are one mesh (an oak door's 13 boxes are 4). The game only; MapMaker keeps the parts.
+6. **Paths** (`pathMeshes.ts` `mergePathMeshes`): ribbons and paint of the same material (style and draw rank) merged per 128 m square. The game only.
+
+**Before and after** (High, still cameras; draw calls, all passes; "casters" as the tool counts them):
+
+| View | Draws before | Draws after | Meshes drawn before / after | Triangles before / after | Casters before / after |
+|---|---|---|---|---|---|
+| overview SW | 1,492 | 542 | 974 / 820 | 2.77 / 1.35 M | 91 / 47 |
+| overview NE | 1,533 | 555 | 857 / 699 | 2.92 / 1.51 M | 95 / 51 |
+| eye, middle spawn | 1,510 | 568 | 617 / 526 | 2.69 / 1.47 M | 583 / 467 |
+| eye, far spawn | 1,663 | 627 | 851 / 701 | 3.19 / 1.73 M | 158 / 76 |
+| eye, sun (the sun in view) | 1,412 | 518 | 575 / 492 | 2.60 / 1.46 M | 583 / 497 |
+| eye, quad | 1,313 | 480 | 441 / 384 | 2.54 / 1.32 M | 561 / 491 |
+| eye, east | 1,479 | 523 | 504 / 422 | 2.80 / 1.27 M | 572 / 492 |
+| **mean of 7** | **1,486** | **545** | 688 / 578 | 2.79 / 1.44 M | 378 / 303 |
+
+(Two "before" runs agreed within 1 draw on the mean. Timings are not given: this is software rendering. The match adds the players: about 5.5 ms of characters on the owner's recording.)
+
+**Other big maps** (High, the four standard still views, mean; Norman Shores and Backwoods have the sun in some views):
+
+| Map | Draws before | Draws after | Meshes drawn before / after | Triangles before / after | Casters before / after |
+|---|---|---|---|---|---|
+| St. John's (7 views) | 1,486 | 545 | 688 / 578 | 2.79 / 1.44 M | 378 / 303 |
+| Norman Shores | 2,206 | 1,058 | 951 / 825 | 5.03 / 3.32 M | 380 / 304 |
+| Capitol Mall | 969 | 529 | 709 / 708 | 3.51 / 2.03 M | 437 / 440 |
+| Backwoods | 1,690 | 851 | 771 / 730 | 3.24 / 2.13 M | 940 / 880 |
+
+Norman Shores keeps about 310 draws in the scene's own depth map (`DepthRenderer`: the mist and water read it; on High it should come from the pre-pass), the next thing to look at there; it was not changed here.
+
+**Looks:** pictures of every view before and after (the helper's scratchpad, `compare/`: before, after, difference ×4) differ only where things move by the clock (grass and leaves in the wind, water ripples, a boat, a spinning pickup): mean difference 0.1-2.9 levels of 255. The sun's shafts with the sun in view (St. John's "eye, sun", Norman Shores' middle spawn) are the same.
+
+**Not changed:** MapMaker (doors and paths stay one mesh a part; the environment and prop batches are the same code there), destructibles (breakable props are not batched; destructible blocks unchanged), quality tiers (Low has no shadows or shafts: it gets the batch, door and path savings). Not yet on a real GPU: the owner's next recording will say what the 21 ms of rendering became.

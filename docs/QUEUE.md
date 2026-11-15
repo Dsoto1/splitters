@@ -29,12 +29,15 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
-- L · B (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 (builders `turned`/`wallRun`, plain arch collision, oriented doors) on `wip/flavius-octagon-1`.
+- L · B (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 landed 2026-11-14 (the `turned`/`wallRun` parts, plain arch collision, oriented doors); phase 2 landed 2026-11-15 (the Arena Corner tiles and set piece); phase 3 next: gate, stair well, tower.
+
+- M · A · Flaky tests made sturdy by root cause (Arsenal damage numbers, dedicated host, all-maps terrain, characters3 Imp grip, mobile pad tap, the load-16 timeouts and bench) · `wip/flaky-1114` (a helper of lane A's lead)
 
 ## Ready to land
-- M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Waiting on lane A's lead's review** (owner: "this account reviews"); `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. Owner questions on the dock width, the rail, renaming and Dress/Settle all are with the owner.
+- M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Waiting on lane A's lead's review** (owner: "this account reviews"); `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. The owner's answers: as built (recs, 2026-11-14).
 
 ## Bugs
+- S · A · Sun Warrior (`meshy_goldenwarrior`): the grip needs a fix (owner, 2026-11-14, after playing: "sun warrior grip needs fix but most look good"); grip audit score 10. Check The Hollow Pilgrim's support hand (12 cm off, score 11) in the same pass.
 - S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
 - XS · B · MapMaker: the top bar is cut off at 1440 px (map name, Snap, bot skill truncated) (UI audit; UI Phase 1 fixes it).
 - XS · A · Low graphics: a patch of painted ground cells beside a path end on St. John's (ground paint, not the path fix).
@@ -44,6 +47,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · A · Status auras: poison and goo are faint in daylight with Reduce flashing on (a light green haze, a trace of pink; the pink stays faint with it off too). Burning reads on every setting.
 
 ## Easy wins
+- S · B · MapMaker: the selection Mirror (Shift+M) learns diagonal symmetry, so an exploded Arena Corner mirrors like the set piece (owner 4a, 2026-11-14; after MapMaker UI Phase 1 frees `editor/mirror.ts`).
+- XS · B · MapMaker: `updateVisibleFaces` cuts a turned box's face into slightly different pieces than a full pass (a few mm² on faces of hundreds of m²); `facesUpdate.test.ts` now compares drawn area. Make the incremental cut match exactly, then tighten the test back.
 - S · A · Mobile audit: Options in one column on phones (proposal 7).
 - S · A · Mobile audit: Match Setup on phones, sticky header and bigger steppers (proposal 11).
 - XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
@@ -73,6 +78,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-14 · A · St. John's render cost, step 1: draw calls on High about 1,490 to 550 on St. John's (Norman Shores 2,210 to 1,060, Backwoods 1,690 to 850, Capitol Mall 970 to 530), looks unchanged: the sun shafts draw only what can hide the sun, far trees and props batch over wider squares, cascades cull batches, doors and paths merged (fb595302).
 - 2026-11-14 · A · Twelve new characters from the owner's Drive (Meshy Community CC0, Experimental until the owner looks them over), Azure Sentinel and Spud Marshal recoloured, The Hollow Pilgrim glides; Coffee Brown recorded as Meshy, owned.
 - 2026-11-14 · A · The match-start animation spike: one torso measurement a frame (it skinned the torso on the CPU, 10-33 ms a character, all at once as a crowd settled into its aim), and a crowd coming into view posed over its band's frames (never-posed characters hidden until their first pose); in a crowd-into-view repro max animated a frame 38-47 → 13-15, charAnim 195-333 → 39-52 ms (e361f045).
 - 2026-11-14 · A · The owner's St. John's match recording read: about 34 fps (25 on 11-10), characters 5.5 ms (13.6), hitches 28 in 164 s (546 in 204 s); rendering is now about 21 of 29 ms and the draw count (1,519) hasn't moved (`docs/PERF_STJOHNS_2026-11-14.md`).
