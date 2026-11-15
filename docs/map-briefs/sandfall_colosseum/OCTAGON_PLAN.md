@@ -385,6 +385,13 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
   is the middle gallery ring (level 2, depth 24-32), which now has no way in (see the questions); `stylePacksAncient`
   updated (gate corners, crossings, 45 sand cells, gates on the diagonals, fill at 24 m, box cap 20,000, spawns,
   description). Bench (24 bots, TDM, 60 s, load ~12): 3.42 → 3.62 ms a tick (p95 7.77 → 7.92) of 16.7.
+- **Client perf** (`PERF_STILL=1`, SwiftShader, mean of the four still views; old map built the same way): low draw
+  calls 185 → 185, triangles 1.18 → 1.28 M; medium draws 212 → 205, triangles 1.29 → 1.39 M, shadow casters 96 → 88.
+  Not measured on the owner's M1.
+- **Pictures** (the session's scratchpad `oct4-shots/`): MapMaker's plan before and after, an aerial before and after,
+  eye level from the sand toward the north-east gate and the south-east one, the north-east tower's lookout and outside
+  face, a match, the card picture (`packages/client/public/maps/shots/sandfall_colosseum.jpg`, retaken from the card
+  camera).
 - **Bots** (bot-report, 24 bots (DM 16), 240 s, seeds 1/2/3; stuck recoveries before → after): TDM 75/56/106 →
   86/47/83 (kills 147/166/106 → 156/112/138); CTF 234/324/232 → 148/261/161 (captures 6/4/6 → 7/8/9, tide 0/0/1);
   King of the Hill 118/104/99 → 126/95/131 (hill held 37/74/65 → 77/94/68 s); Deathmatch 42/79/117 → 28/28/41. The
