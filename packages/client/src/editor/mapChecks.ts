@@ -2,6 +2,7 @@ import {
   coplanarIssues,
   coplanarSpots,
   initPhysics,
+  mapAsPlayed,
   setPiecePortStates,
   validateMap,
   type CoplanarSpot,
@@ -9,6 +10,7 @@ import {
   type ValidationIssue
 } from '@tiletrigger/shared';
 import type { FromMapTest, ToMapTest } from './mapTestWorkerCore.ts';
+import type { PrebuiltNav } from '@tiletrigger/shared/match';
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
 
@@ -164,10 +166,9 @@ export class MapChecks {
     this.zIssues = zIssues;
     if (this.overlapsOn) this.app.view.setOverlaps(this.zSpots);
     this.renderIssues();
-    // Navigation as played: set pieces expanded into their parts, on the ground as shown (paths laid in, kept under
-    // the floors).
-    const ground = this.app.view.ground;
-    const doc = ground && ground !== this.app.viewDoc.terrain ? { ...this.app.viewDoc, terrain: ground } : this.app.viewDoc;
+    // Navigation as played: the worker plays the map as made as loadMap does (set pieces expanded into their parts, on
+    // the ground as shown: paths laid in, kept under the floors, props re-bedded), so its navmesh is the Test's.
+    const doc = this.app.doc;
     // Navigation a moment after the last edit, in the test worker (mapTestWorker.ts): the page keeps drawing and taking
     // edits while the navmesh is built. One check at a time; an edit made meanwhile is checked when it comes back.
     clearTimeout(this.navTimer);
@@ -200,6 +201,8 @@ export class MapChecks {
         const latest = m.k !== 'failed' && m.token === this.navToken;
         if (m.k === 'nav') {
           if (latest) {
+            // The navmesh as built, for a Test of the map as it is (the match takes it only if built from the same).
+            this.prebuilt = m.result.prebuilt ?? null;
             this.navIssues = m.result.issues;
             // "What bots know" (bot hints): the bots' own spots, worked out on the same navmesh.
             this.app.hints.setComputed(m.result.computed ?? null);
@@ -230,16 +233,22 @@ export class MapChecks {
         this.navBusy = false;
         this.navNext = null;
         this.noNavWorker = true;
-        void this.checkNavigationHere(this.app.viewDoc, this.navToken);
+        void this.checkNavigationHere(this.app.doc, this.navToken);
       };
     }
     if (this.noNavWorker) return void this.checkNavigationHere(doc, token);
     this.navBusy = true;
-    const job: ToMapTest = { k: 'nav', map: doc, computed: this.app.hints.computedOn, token };
+    const job: ToMapTest = { k: 'nav', doc, computed: this.app.hints.computedOn, token };
     worker.postMessage(job);
   }
 
   private noNavWorker = false;
+
+  /**
+   * The last navigation check's navmesh, as built (docs/PERF_MAPMAKER_TRACE_2026-11-15.md fix 4): Test hands it to the
+   * match, which takes it when its key is the played map's (sim/mapNav.ts navInputKey) and builds its own otherwise.
+   */
+  prebuilt: PrebuiltNav | null = null;
 
   /** The check on the page (no worker): the navmesh as the match builds it, the navigation audit, and the jump pads flown (`pad.flight`). */
   private async checkNavigationHere(doc: MapDocument, token: number): Promise<void> {
@@ -248,7 +257,7 @@ export class MapChecks {
     if (token !== this.navToken) return;
     try {
       await initPhysics();
-      const nav = validateMapPlay(doc, false, { computed: this.app.hints.computedOn });
+      const nav = validateMapPlay(mapAsPlayed(doc), false, { computed: this.app.hints.computedOn });
       // (validateMapPlay: the pads' flights are in its issues.)
       this.navIssues = nav.issues;
       this.padIssues = [];

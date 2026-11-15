@@ -29,6 +29,7 @@ export type KeyAction =
   | 'resetView'
   | 'logic'
   | 'paint'
+  | 'groundPaint'
   | 'terrain'
   | 'walls'
   | 'erase'
@@ -118,7 +119,8 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   tool('measure', 'U', 'KeyU', 'Measure: distance, height difference and slope between points'),
   tool('notes', 'J', 'KeyJ', 'Note pins: click to pin a note for the map\'s makers, click a pin to edit it, drag to move it'),
   tool('botHints', 'Y', 'KeyY', 'Bot hints: mark chokepoints, sniper, camp and staging spots and jump links for bots'),
-  tool('paint', 'B', 'KeyB', 'Paint surfaces'),
+  { action: 'groundPaint', group: 'Tools', keys: 'Shift+B', what: 'Ground paint: the ground only (the Terrain tool\'s Paint brush); buildings stay as they are', codes: ['KeyB'], shift: true },
+  { action: 'paint', group: 'Tools', keys: 'B', what: 'Structure paint: tiles, blocks, bars and set pieces (never the ground: Shift+B)', codes: ['KeyB'], shift: false },
   tool('walls', 'O', 'KeyO', 'Walls & openings (again: the next style)'),
   tool('terrain', 'T', 'KeyT', 'Terrain (again: the next brush)'),
   { action: 'raceTrack', group: 'Tools', keys: 'Shift+G', what: 'Paths, on the track (NPC traffic)', codes: ['KeyG'], shift: true },
@@ -144,7 +146,7 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   { action: 'resetView', group: 'View and camera', keys: 'Home', what: "Back to the level's overview", codes: ['Home'] },
   { action: 'brushBigger', group: 'Brushes', keys: ']', what: 'Bigger brush (Terrain, Environment brush)', codes: ['BracketRight'] },
   { action: 'brushSmaller', group: 'Brushes', keys: '[', what: 'Smaller brush (Terrain, Environment brush)', codes: ['BracketLeft'] },
-  { action: 'pickStyle', group: 'Brushes', keys: 'I', what: 'Paint: pick up the look under the pointer', codes: ['KeyI'] },
+  { action: 'pickStyle', group: 'Brushes', keys: 'I', what: 'Structure paint: pick up the look under the pointer', codes: ['KeyI'] },
   { action: 'keys', group: 'Map and panels', keys: '?', what: 'This list of keys', codes: ['Slash'], chars: ['?'], shift: true },
   { action: 'search', group: 'Map and panels', keys: '/', what: 'Search the palette', codes: ['Slash'] },
 ];

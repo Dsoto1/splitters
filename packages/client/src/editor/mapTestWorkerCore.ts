@@ -1,6 +1,6 @@
 // Everything MapMaker's test worker runs (mapTestWorker.ts loads it with a dynamic import, for the reason
 // game/simWorkerCore.ts gives: Safari gives a chunk imported from a module worker's entry file a second Rapier).
-import { coplanarIssues, coplanarSpots, initPhysics, validateMap, type CoplanarSpot, type MapDocument, type ValidationIssue } from '@tiletrigger/shared';
+import { coplanarIssues, coplanarSpots, initPhysics, mapAsPlayed, validateMap, type CoplanarSpot, type MapDocument, type ValidationIssue } from '@tiletrigger/shared';
 import type { BotTestOptions, BotTestResult, ExposureResult, validateMapNavigation } from '@tiletrigger/shared/match';
 
 /** The navigation check's answer (MapChecks: the issues, and the bots' own spots when asked for). */
@@ -10,8 +10,11 @@ export type NavCheck = ReturnType<typeof validateMapNavigation>;
 export type ToMapTest =
   | { k: 'bots'; map: MapDocument; opts: BotTestOptions }
   | { k: 'exposure'; map: MapDocument }
-  /** The map's navigation check after an edit (MapChecks.validate): this worker stays, one check after another. */
-  | { k: 'nav'; map: MapDocument; computed: boolean; token: number }
+  /**
+   * The map's navigation check after an edit (MapChecks.validate): this worker stays, one check after another. `doc`
+   * the map as made: checked as played (mapAsPlayed, what loadMap gives the Test), so its navmesh can go to the Test.
+   */
+  | { k: 'nav'; doc: MapDocument; computed: boolean; token: number }
   /**
    * The map's own checks and its coplanar overlaps after an edit (MapChecks.validate; a second worker that stays, so
    * they never wait behind a navmesh): `doc` the document, `view` it with its set pieces expanded, `partOf` each
@@ -36,7 +39,7 @@ export type FromMapTest =
 /** How long a slice of the match runs before the page hears how far it got (ms of the worker's time). */
 const REPORT_MS = 150;
 
-export async function runMapTest(m: ToMapTest, post: (m: FromMapTest) => void): Promise<void> {
+export async function runMapTest(m: ToMapTest, post: (m: FromMapTest, transfer?: Transferable[]) => void): Promise<void> {
   if (m.k === 'check') {
     // Nothing here needs the match (physics, navigation): the checks MapMaker ran on the page after every edit.
     try {
@@ -61,8 +64,13 @@ export async function runMapTest(m: ToMapTest, post: (m: FromMapTest) => void): 
   if (m.k === 'nav') {
     // The navmesh as the match builds it and the navigation audit: seconds on a big map, so here, not on the page
     // (on the page it froze MapMaker after every edit: the owner's recording of 2026-11-12, 12.7 s of 26).
+    let map: MapDocument;
     try {
-      post({ k: 'nav', token: m.token, result: mod.validateMapNavigation(m.map, false, { computed: m.computed }) });
+      map = mapAsPlayed(m.doc);
+      // With the navmesh as built (`prebuilt`): the page hands it to a Test of this map (MapChecks.prebuilt).
+      const result = mod.validateMapNavigation(map, false, { computed: m.computed, prebuilt: true });
+      const mesh = result.prebuilt?.nav.mesh;
+      post({ k: 'nav', token: m.token, result }, mesh ? [mesh.buffer as ArrayBuffer] : []);
     } catch (e) {
       post({ k: 'navFailed', token: m.token, error: (e as Error).message });
       return;
@@ -71,7 +79,7 @@ export async function runMapTest(m: ToMapTest, post: (m: FromMapTest) => void): 
     // of the map: a second answer, so the navigation issues don't wait for it. It ends the check.
     let issues: ValidationIssue[] = [];
     try {
-      issues = mod.padFlightIssues(mod.flyPads(m.map));
+      issues = mod.padFlightIssues(mod.flyPads(map));
     } catch {
       // A map no match can be made of: the navigation check has said what it could.
     }

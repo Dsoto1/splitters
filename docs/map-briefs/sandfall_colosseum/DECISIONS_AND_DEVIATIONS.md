@@ -93,3 +93,18 @@
 - **Hatch ladders turned round:** their tops let you off 0.9 m on from the ladder, which was still over the 3.2 m
   hatch, so climbers dropped back in; turned, they let you off onto the sand. Bot stuck recoveries (240 s, 24 bots,
   seed 1): King of the Hill 604 → 98, CTF 555 → 223, TDM 260 → 160; no idle spells at the ladders after.
+
+## The octagon (owner, 2026-11-14/15; phase 4 built 2026-11-15, `wip/flavius-octagon-4`)
+- The owner's answers, all recs (OCTAGON_PLAN.md §8): clip the sand's corners (1a), a gatehouse tower over each gate
+  (2a), stair wells off the passages (3a) into a Vaulted Tunnel Crossing at each ring corner (phase 3's 1a), podium
+  stairs either side of each gate (4b), galleries round the corners (5a), plain arch collision for the new pieces (6a),
+  twelve spawns a team in the passages and courts (7a), the pieces before the map (8a); the tower's arrow slits and
+  string course drawn only (phase 3's 3a).
+- **Deviation:** the gate corners keep their placement as set pieces (not exploded); each one's own portcullis is
+  left out (Parts list) and the map's Gate 1-4 doors hang in the same slab, so the rules that name them are untouched.
+- **Deviation:** the innermost passage spawn sits at 75 m from the centre (by the facade), not about 45 m: at 45 m it
+  stood over the hypogeum's lowered ground, where validate-map finds no floor under it.
+- **Deviation:** the sand's half cells beside each diagonal keep their Courtyard tiles (phase 2's 1a); only the four
+  corner cells went (the plan's step 3 said twelve).
+- **Left for phase 5:** the stuck spots where the gate passage crosses the podium gallery and in a stair well; the
+  middle gallery ring (level 2) has no way in now that the Stair Towers' halls are gone; the owner's M1 check.

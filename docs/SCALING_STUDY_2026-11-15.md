@@ -399,6 +399,8 @@ MapMaker's "what the game counts as indoors" overlay (S, lane B) can come with 2
 
 ## Questions for the owner
 
+**Owner's answers (2026-11-15): all picks** (1b, 2a, 3a, 4b, 5a, 6a, 7a), and for 7: "plan for b eventually. I want to have the small map working great, which could evolve to one large map that encompasses all of these features and mechanics/tiles/themes (like a Far Cry island)." So 400 m stays the cap for now; real streaming, the region graph and big-map budgets get a plan later, once the small maps work great.
+
 1. **Region streaming: what do we do?**
    a. Nothing now; revisit only if maps grow past 400 m.
    b. **Spawn-first build order only (quicker match starts), no unloading. ★ recommended**

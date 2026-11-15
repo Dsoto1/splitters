@@ -41,9 +41,12 @@ export function schemas() {
     'wheels?': arr(tup(2), 1), 'hub?': num, travel: num, bump: num, freq: num, damping: num, squat: num, lean: num, tumble: num, land: num,
     maxTilt: num, steer: num,
   });
+  const rigid = obj({
+    on: bool, com: num, grip: num, slide: num, corner: tup(2), inertia: num, airLevel: num, airPitch: num, airRoll: num, rightAfter: tup(2), launch: num, rearSteer: num,
+  });
   const vehicle = obj({
     maxSpeed: num, reverseSpeed: num, accel: num, turnRate: num, 'hover?': bool, 'grip?': num, 'mass?': num,
-    'fly?': obj({ climb: num, ceiling: num }), 'draft?': num, 'suspension?': suspension, 'drift?': num, 'pivot?': num, 'idleBrake?': num, 'routeFit?': num,
+    'fly?': obj({ climb: num, ceiling: num }), 'draft?': num, 'suspension?': suspension, 'rigid?': rigid, 'drift?': num, 'pivot?': num, 'idleBrake?': num, 'routeFit?': num,
   });
   const sentry = obj({ weapon: str, range: num, turnRate: num, 'arc?': obj({ windUpSeconds: num, lockSeconds: num, ventSeconds: num }) });
   const mount = obj({

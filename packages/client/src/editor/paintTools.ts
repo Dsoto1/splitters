@@ -1,27 +1,31 @@
 import {
-  applyBrush,
   applyCommand,
+  coreCatalog,
+  coreMaterials,
   EDGE_STYLE_LABELS,
   EDGE_STYLES,
   edgeGlassAt,
-  faceSlot,
+  emptyPaint,
   GLASS_EDGES,
   GLASS_KIND_LABELS,
-  paintCommand,
+  materialRefusal,
   resolveSurface,
   setEdgeCommand,
   setEdgeGlassCommand,
+  structurePaintCommand,
+  structurePaintTarget,
   SURFACE_SLOT_LABELS,
-  TERRAIN_MATERIAL_LABELS,
-  terrainMaterialFor,
+  targetName,
   type EdgeStyle,
   type EdgeTarget,
   type GlassKind,
-  type MapDocument,
+  type PaintRefusal,
   type PaintScope,
-  type SurfaceSlot,
+  type PieceScope,
+  type ResolvedStyle,
+  type StructureTarget,
   type SurfaceStyle,
-  type TerrainMaterial
+  type TilePlacement,
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
 
@@ -36,40 +40,57 @@ export class PaintTools {
   paintStyle: SurfaceStyle = { material: 'core.red_brick', tint: null };
   paintScope: PaintScope = 'surface';
 
-  /** Tile and surface slot under the cursor in paint mode. */
-  paintTarget(): { tile: MapDocument['classicStructure']['tiles'][number]; slot: SurfaceSlot } | null {
-    const hit = this.app.hoverFace;
-    if (!hit) return null;
-    const tile = this.app.doc.classicStructure.tiles.find((t) => t.id === hit.box.sourceId);
-    return tile ? { tile, slot: faceSlot(hit.box, hit.normal) } : null;
-  }
+  /** On a set piece: paint the material across the piece (the owner's answer 5a, the default) or this part only. */
+  pieceScope: PieceScope = 'piece';
 
   /**
-   * The ground Paint lays on the terrain: the terrain layer closest to the brush's material (a style pack's Packed
-   * Snow paints snow, Shingle gravel: terrainMaterialFor), else the Terrain tab's ground. It used to fall back to
-   * the Terrain tab's ground for every pack ground, so painting Packed Snow laid dirt or grass.
+   * What Structure paint (B) would paint under the pointer: a tile's surface, a free block, a set-piece part, or why
+   * not (the ground: Ground paint is Shift+B; a prop; glass). Painting plan Phase 1.
    */
-  get groundPaint(): TerrainMaterial {
-    return terrainMaterialFor(this.paintStyle.material) ?? this.app.terrain.terrainMaterial;
+  paintTarget(): StructureTarget | PaintRefusal {
+    return structurePaintTarget(this.app.doc, this.app.expansion, this.app.setPieceLib, this.app.hoverFace);
   }
 
-  /** Paint the terrain under the pointer (a brush of the Terrain tab's radius). */
-  paintGroundAtHover(): void {
-    const t = this.app.doc.terrain;
-    const p = this.app.paintGround;
-    if (!t || !p) return;
-    const m = this.groundPaint;
-    const after = applyBrush(t, { brush: 'paint', x: p.x, z: p.z, radius: this.app.terrain.brushRadius, strength: 1, material: m });
-    if (after.materials.every((v, i) => v === t.materials[i])) return;
-    this.app.run(`Paint ${TERRAIN_MATERIAL_LABELS[m].toLowerCase()} ground`, { kind: 'setTerrain', before: t, after });
+  /** The look a target shows now (what Alt/I picks up, and the label's "now"). */
+  currentLook(t: StructureTarget): ResolvedStyle {
+    const doc = this.app.viewDoc;
+    if (t.kind === 'tile') return resolveSurface(doc, t.tile, t.slot);
+    if (t.kind === 'part' && t.slot) return resolveSurface(doc, t.drawn as TilePlacement, t.slot);
+    const block = t.kind === 'block' ? t.block : (t.drawn as Extract<StructureTarget, { kind: 'block' }>['block']);
+    const own = block.material ? coreMaterials.get(block.material) : undefined;
+    return own ? { material: own, tint: block.tint ?? null } : { ...resolveSurface(doc, undefined, 'solids'), tint: block.tint ?? null };
   }
 
-  paintAtHover(clear: boolean): void {
+  /** The status line for Structure paint: what is under the cursor, what it shows now, and what a click does. */
+  label(): string {
+    const t = this.paintTarget();
+    if (t.kind === 'refused') return t.message;
+    const now = this.currentLook(t).material.displayName;
+    const brush = coreMaterials.get(this.paintStyle.material)?.displayName ?? this.paintStyle.material;
+    const refusal = materialRefusal(t, this.paintStyle.material);
+    const name = targetName(t, (id) => coreCatalog.get(id)?.displayName ?? id);
+    if (refusal) return `${name} · now ${now} · ${refusal}`;
+    const where = t.kind === 'part' ? (this.pieceScope === 'part' ? 'this part only' : `across this ${t.def.displayName}`) : t.kind === 'block' ? (this.paintScope === 'surface' ? 'this block' : 'these blocks') : SCOPE_WORDS[this.paintScope];
+    return `${name} · now ${now} · click paints ${brush} ${where}`;
+  }
+
+  paintAtHover(clear: boolean, first = true): void {
     const target = this.paintTarget();
-    if (!target) return;
-    const scopeLabel: Record<PaintScope, string> = { surface: '', sameType: ' (all of this piece)', level: ' (whole level)', all: ' (whole map)' };
-    const label = `${clear ? 'Reset' : 'Paint'} ${SURFACE_SLOT_LABELS[target.slot].toLowerCase()}${scopeLabel[this.paintScope]}`;
-    this.app.run(label, paintCommand(this.app.doc, target.tile.id, target.slot, clear ? null : this.paintStyle, this.paintScope));
+    if (target.kind === 'refused') {
+      // Says so (once a stroke): nothing is painted.
+      if (first) this.app.toast(target.message, target.reason !== 'ground');
+      return;
+    }
+    if (!clear) {
+      const refusal = materialRefusal(target, this.paintStyle.material);
+      if (refusal) {
+        if (first) this.app.toast(refusal, true);
+        return;
+      }
+    }
+    const cmd = structurePaintCommand(this.app.doc, target, clear ? null : this.paintStyle, this.paintScope, this.pieceScope);
+    if (emptyPaint(cmd)) return;
+    this.app.run(paintLabel(target, clear, this.paintScope, this.pieceScope), cmd);
   }
 
   /** Glass the wall tool puts in windows, twin windows and firing slits (none, breakable or reinforced). */
@@ -97,8 +118,8 @@ export class PaintTools {
   /** Eyedropper: copy the hovered surface's effective style into the brush. */
   pickStyleAtHover(): void {
     const target = this.paintTarget();
-    if (!target) return;
-    const s = resolveSurface(this.app.doc, target.tile, target.slot);
+    if (target.kind === 'refused') return this.app.toast(target.message, target.reason !== 'ground');
+    const s = this.currentLook(target);
     this.paintStyle = { material: s.material.id, tint: s.tint };
     this.app.palettes.syncPaintUi();
     this.app.toast(`Picked ${s.material.displayName}${s.tint ? ` tinted ${s.tint}` : ''}`);
@@ -114,3 +135,18 @@ export class PaintTools {
     this.app.setTool({ kind: 'edge', style: next });
   }
 }
+
+const SCOPE_WORDS: Record<PaintScope, string> = { surface: 'on this surface', sameType: 'on every piece of this type', level: 'on this level', all: 'on the whole map' };
+
+/** The undo label: "Paint walls", "Paint block", "Paint paving across Cage Block", "Reset metal (part of Cage Block)". */
+function paintLabel(t: StructureTarget, clear: boolean, scope: PaintScope, pieceScope: PieceScope): string {
+  const verb = clear ? 'Reset' : 'Paint';
+  if (t.kind === 'block') return `${verb} block${scope === 'surface' ? '' : 's'}`;
+  if (t.kind === 'tile') {
+    const scopeLabel: Record<PaintScope, string> = { surface: '', sameType: ' (all of this piece)', level: ' (whole level)', all: ' (whole map)' };
+    return `${verb} ${SURFACE_SLOT_LABELS[t.slot].toLowerCase()}${scopeLabel[scope]}`;
+  }
+  const what = t.slot ? SURFACE_SLOT_LABELS[t.slot].toLowerCase() : 'block';
+  return pieceScope === 'part' ? `${verb} ${what} (part of ${t.def.displayName})` : `${verb} ${what} across ${t.def.displayName}`;
+}
+

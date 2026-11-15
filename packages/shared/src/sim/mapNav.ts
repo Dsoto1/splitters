@@ -3,7 +3,7 @@ import { blockBoxes, boxesRay, buildMapGeometry, mapKillY, mapTerrainMesh, propB
 import { environmentNavTriangles, environmentShapes, joinTriangles, type EnvWorldShape } from '../map/environment.ts';
 import type { MapDocument } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
-import { NavWorld, validateNavigation, type DropOptions } from '../nav/index.ts';
+import { NavWorld, validateNavigation, type DropOptions, type NavExport } from '../nav/index.ts';
 import { auditNavigation, type NavAudit } from '../nav/audit.ts';
 import type { ValidationIssue } from '../map/validate.ts';
 import { LIQUID_SPECS, SWIM_DEPTH, liquidAt, mapLiquids } from './liquids.ts';
@@ -84,19 +84,102 @@ export function buildMapNav(map: MapDocument, geometry: readonly WorldBox[], phy
   );
 }
 
+/** A 53-bit string hash (cyrb53), two lanes over the text's UTF-16 units: a key, not a secret. */
+function hashText(text: string, h1 = 0xdeadbeef, h2 = 0x41c6ce57): [number, number] {
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761);
+    h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return [h1 >>> 0, h2 >>> 0];
+}
+
+/** The same hash over a typed array's bytes, 32 bits at a time. */
+function hashWords(words: Uint32Array, seed: [number, number]): [number, number] {
+  let [h1, h2] = seed;
+  for (let i = 0; i < words.length; i++) {
+    const c = words[i]!;
+    h1 = Math.imul(h1 ^ c, 2654435761);
+    h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return [h1 >>> 0, h2 >>> 0];
+}
+
+/**
+ * What a map's navmesh is built from (buildMapNav, at load: no `extra`, parkour on), as a key: two maps with the same
+ * key get the same navmesh. It hashes what the build reads, worked out (the level's boxes, the terrain's triangles, the
+ * environment's shapes, the scenario's solids and blockers, the bot hints' jumps, the lifts' links, the kill height,
+ * gravity and fall damage) and every placement but props, by its place in the list (a portal's pair goes by it); a
+ * prop counts only through the boxes and shapes it makes. So MapMaker's navigation check, which builds from the map as
+ * shown (set pieces expanded, the ground as shown), can hand its navmesh to the Test's match, which plays the map as
+ * loadMap gives it, exactly when the two come out the same (NavWorld.export / Match `nav`).
+ */
+export function navInputKey(map: MapDocument, geometry: readonly WorldBox[], envShapes: readonly EnvWorldShape[], phys: { gravity: number; fallDamage: boolean }): string {
+  const terrain = mapTerrainMesh(map);
+  const text = JSON.stringify([
+    phys.gravity,
+    phys.fallDamage,
+    mapKillY(geometry, map),
+    geometry,
+    envShapes,
+    propBoxes(map, true),
+    blockBoxes(map, true),
+    windowPanes(map),
+    hintJumps(map),
+    liftLinks(map),
+    map.entities.map((e, i) => (e.kind === 'prop' ? i : [i, e])),
+  ]);
+  let h = hashText(text);
+  if (terrain) {
+    h = hashWords(new Uint32Array(terrain.positions.buffer, terrain.positions.byteOffset, terrain.positions.length), h);
+    h = hashWords(new Uint32Array(terrain.indices.buffer, terrain.indices.byteOffset, terrain.indices.length), h);
+  } else h = hashText('no terrain', ...h);
+  return `${NAV_KEY_VERSION}:${h[0].toString(36)}${h[1].toString(36)}:${text.length.toString(36)}`;
+}
+
+/** Bump when buildMapNav's inputs change (so an old key can't match a new build). */
+const NAV_KEY_VERSION = 1;
+
+/** A navmesh built ahead (MapMaker's navigation check), with the key of what it was built from (navInputKey). */
+export interface PrebuiltNav {
+  key: string;
+  nav: NavExport;
+}
+
+/**
+ * The navmesh a match builds at load (buildMapNav), or `prebuilt`'s when its key is this map's: the same NavWorld,
+ * without the build (seconds on a big map). `reused` says which.
+ */
+export function loadMapNav(map: MapDocument, geometry: readonly WorldBox[], physics: PhysicsWorld, envShapes: readonly EnvWorldShape[], phys: { gravity: number; fallDamage: boolean }, prebuilt?: PrebuiltNav | null): { nav: NavWorld; reused: boolean } {
+  if (prebuilt && prebuilt.key === navInputKey(map, geometry, envShapes, phys)) {
+    try {
+      return { nav: NavWorld.import(prebuilt.nav), reused: true };
+    } catch {
+      // Data that doesn't import (another build's): built here, as without it.
+    }
+  }
+  return { nav: buildMapNav(map, geometry, physics, envShapes, phys), reused: false };
+}
+
 /**
  * The navigation checks of a map as a match would play it (validate-map, the all-maps test, MapMaker's validator):
  * its navmesh and physics built as the match builds them, then validateNavigation with the navigation audit.
  * `official`: a map in maps/ (the audit's findings and blocked spawn points are errors; for creators, warnings).
  */
-export function validateMapNavigation(map: MapDocument, official: boolean, opts: { computed?: boolean } = {}): { issues: ValidationIssue[]; audit: NavAudit; computed?: ComputedBotSpots } {
+export function validateMapNavigation(map: MapDocument, official: boolean, opts: { computed?: boolean; prebuilt?: boolean } = {}): { issues: ValidationIssue[]; audit: NavAudit; computed?: ComputedBotSpots; prebuilt?: PrebuiltNav } {
   const built = mapNavigation(map);
   try {
+    // (`prebuilt`: the navmesh as built, before the checks read it, for a match of this map: MapMaker's Test.)
+    const prebuilt = opts.prebuilt ? { key: navInputKey(map, built.geometry, built.envShapes, built.phys), nav: built.nav.export() } : null;
     const drop = { ...dropOptions(map, built.physics, built.geometry, built.phys), official };
     const audit = auditNavigation(map, built.nav, built.physics, drop);
     // Bot hints (v33) off the navmesh: warnings (map/botHints.ts).
     const issues = [...validateNavigation(map, built.nav, built.physics, { ...drop, done: audit }), ...botHintNavIssues(map, built.nav)];
-    return { issues, audit, ...(opts.computed ? { computed: computedBotSpots(built) } : {}) };
+    return { issues, audit, ...(opts.computed ? { computed: computedBotSpots(built) } : {}), ...(prebuilt ? { prebuilt } : {}) };
   } finally {
     built.physics.free();
     built.nav.destroy();

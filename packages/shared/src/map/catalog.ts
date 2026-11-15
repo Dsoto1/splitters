@@ -23,7 +23,7 @@ import { industrialPackTiles } from './packTilesIndustrial.ts';
 import { orbitalPackTiles } from './packTilesOrbital.ts';
 import { desertPackTiles } from './packTilesDesert.ts';
 import { junglePackTiles } from './packTilesJungle.ts';
-import { edgeSegments, edgeTrimBoxes } from './edgeShapes.ts';
+import { edgePaint, edgeSegments, edgeTrimBoxes } from './edgeShapes.ts';
 
 export * from './tileOptions.ts';
 import { SIDES, type Ceiling, type Corner, type EdgeStyle, type Facade, type FloorInsert, type RoomLayout, type TileCategory, type TilePort } from './tileOptions.ts';
@@ -49,7 +49,7 @@ export interface LocalBox {
    * A `trim` box drawn in the walls' paint, not the trim's: a plain arch's stepped spandrels (the kit's `wallRun` with
    * `plain`), which look like the wall around them but never collide.
    */
-  paint?: 'walls';
+  paint?: 'walls' | 'metal';
 }
 
 /** MapMaker's tile options that are tiles of their own (TileDefinition.optionOf), so a map needs no new field for one. */
@@ -598,6 +598,12 @@ export function turnBoxes(boxes: readonly LocalBox[], yaw: number, px = 0, pz = 
   });
 }
 
+/** Whether a placed tile draws anything in its `metal` surface: a side of bars or a barred gate (its own or its defaults'). */
+export function tileHasMetal(def: Pick<TileDefinition, 'edgeDefault' | 'edgeDefaults'> | undefined, placement: { edges?: Readonly<Record<string, string>> | undefined }): boolean {
+  const metal = (s: string | undefined) => !!s && s !== 'auto' && s !== 'open' && !!edgePaint(s as Parameters<typeof edgePaint>[0]);
+  return Object.values(placement.edges ?? {}).some(metal) || metal(def?.edgeDefault) || Object.values(def?.edgeDefaults ?? {}).some(metal);
+}
+
 /**
  * The boxes of a wall run (WallRunPart) in the tile's frame: each bay built along +x with its thickness towards +z
  * (a cell's south side, the cell to the north), then mirrored for `right`, moved onto the segment and turned along it.
@@ -612,6 +618,7 @@ export function wallRunBoxes(w: WallRunPart, kind: NonNullable<LocalBox['kind']>
   const height = w.height ?? 4;
   const base = w.y ?? 0;
   const segs = edgeSegments(w.style, half, height);
+  const metal = edgePaint(w.style);
   const thick = Math.max(0, ...segs.map((g) => g[4]));
   // Across the wall: v in from the outer face; `right` mirrors it, `centre` puts the line through the middle.
   const across = (v0: number, v1: number): [number, number] => (w.side === 'right' ? [-v1, -v0] : w.side === 'centre' ? [v0 - thick / 2, v1 - thick / 2] : [v0, v1]);
@@ -623,7 +630,7 @@ export function wallRunBoxes(w: WallRunPart, kind: NonNullable<LocalBox['kind']>
     const [v0, v1] = across(0, t);
     const b: LocalBox = { min: [u0, base + y0, v0], max: [u1, base + y1, v1] };
     // A plain arch: the steps over the curve are drawn (in the walls' paint) but never collide; one lintel does.
-    bay.push(plain && y0 > 1e-6 ? { ...b, kind: 'trim', paint: 'walls' } : { ...b, kind });
+    bay.push(plain && y0 > 1e-6 ? { ...b, kind: 'trim', paint: 'walls' } : { ...b, kind, ...(metal ? { paint: metal } : {}) });
   }
   if (plain) {
     const [v0, v1] = across(0, Math.max(...raised.map((g) => g[4])));
@@ -633,7 +640,7 @@ export function wallRunBoxes(w: WallRunPart, kind: NonNullable<LocalBox['kind']>
   }
   for (const p of edgeTrimBoxes(w.style, half, height, w.outer ?? true)) {
     const [v0, v1] = across(p.v0, p.v1);
-    bay.push({ min: [p.u0, base + p.y0, v0], max: [p.u1, base + p.y1, v1], kind: 'trim', ...(p.tilt ? { roll: p.tilt } : {}), ...(p.surface ? { surface: p.surface } : {}) });
+    bay.push({ min: [p.u0, base + p.y0, v0], max: [p.u1, base + p.y1, v1], kind: 'trim', ...(p.tilt ? { roll: p.tilt } : {}), ...(p.surface ? { surface: p.surface } : metal ? { paint: metal } : {}) });
   }
   // Each bay along the segment, then the whole run turned from +x onto it about its start.
   const yaw = Math.atan2(-(z1 - z0), x1 - x0);

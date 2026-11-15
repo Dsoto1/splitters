@@ -106,6 +106,8 @@ import type { EditorResume } from '../editorResume.ts';
 import { ToolBar } from './toolBar.ts';
 import { ViewMenu } from './viewMenu.ts';
 import { EditorTour } from './tour.ts';
+import type { PrebuiltNav } from '@tiletrigger/shared/match';
+import { perfOn } from '../game/perfSwitches.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -113,6 +115,8 @@ export interface TestRequest {
   difficulty: 'easy' | 'normal' | 'hard';
   /** Play from here: you start at this spot (feet), facing this way, not at a spawn point. */
   startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
+  /** The navigation check's navmesh (MapChecks.prebuilt): the match takes it if it was built from this map. */
+  nav?: PrebuiltNav | null;
 }
 
 export interface EditorHost {
@@ -271,8 +275,6 @@ export class EditorApp {
   /** Boxes currently shown (respecting floor isolation), for surface picking. */
   visibleBoxes: WorldBox[] = [];
   hoverFace: BoxHit | null = null;
-  /** Paint tool: the terrain under the pointer when it, not a surface, is what a click paints. */
-  paintGround: Vec3 | null = null;
 
   constructor(readonly host: EditorHost) {
     this.input = new EditorInput(this);
@@ -717,7 +719,7 @@ export class EditorApp {
       pickup: ['Place', 'Click places the pickup · right-click removes a pickup'],
       scenario: ['Place', 'Click places it (doors, walls and lasers snap to doorways) · right-click removes an object · R turns it 90° (Shift+R 15°) · L opens Logic'],
       npc: ['Place', 'Click drops the NPCs here · right-click removes them · R turns them 90° (Shift+R 15°) · soldiers, faction and orders in the inspector'],
-      paint: ['Paint', 'Click or drag paints surfaces and the ground (terrain) · right-click (Shift+drag) resets them to the theme · Alt+click or I picks a style up'],
+      paint: ['Structure paint', "Click or drag paints tiles, blocks, bars and set pieces (never the ground: Shift+B is Ground paint) · on a set piece: across the piece, or this part only · right-click (Shift+drag) resets to the look or theme · Alt+click or I picks a look up"],
       edge: ['Walls', 'Click or drag along wall and floor edges to build them this way · right-click (Shift+drag) resets them · O cycles the style'],
       prop: ['Place', 'Click places the prop on what is under the pointer: a tabletop, a roof, the ground (Ctrl: no snap) · right-click removes a prop · R turns it 15° (Shift+R 5°) · Randomise in the Props tab'],
       mount: ['Place', 'Click places it · right-click removes a vehicle · R turns it 15° (Shift+R 5°) · players get in and out with E'],
@@ -731,6 +733,8 @@ export class EditorApp {
     };
     // A zipline's ends go where you click (the Route tool's hands, two points only).
     if (tool.kind === 'route' && this.routes.label === 'zipline end') hints.route = ['Zipline ends', 'Click the ground or a platform to put the far end there (click the start first to move that) · drag either end · Esc when done'];
+    // Ground paint is the Terrain tool's Paint brush (Shift+B).
+    if (tool.kind === 'terrain' && this.terrain.terrainBrush === 'paint') hints.terrain = ['Ground paint', 'Click or drag paints the ground only: buildings stay as they are (Structure paint, B, paints them) · [ ] brush size · the ground list in the Terrain tab'];
     const [name, hint] = hints[tool.kind];
     const what = PLACING.has(tool.kind) ? `: ${this.toolName(tool)}` : tool.kind === 'edge' ? `: ${EDGE_STYLE_LABELS[tool.style]}` : '';
     const hintEl = $('ed-toolhint');
@@ -985,7 +989,7 @@ export class EditorApp {
     // As played: paths laid into the ground, terrain under the floors (what loadMap gives every match).
     const played = loadMap(this.doc);
     this.tour.note({ kind: 'test' });
-    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}) });
+    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}), nav: perfOn('navhandoff') ? this.checks.prebuilt : null });
   }
 
   toast(message: string, error = false): void {

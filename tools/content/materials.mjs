@@ -90,8 +90,9 @@ export function build(content, root = ROOT) {
   const problems = [];
   const patterns = tsList(root, MATERIALS_TS, 'PATTERN_IDS');
   const categories = tsList(root, MATERIALS_TS, 'MATERIAL_CATEGORIES');
-  // A theme gives every slot a default but the roof (an unpainted roof looks like the room's floor).
-  const slots = tsList(root, MATERIALS_TS, 'SURFACE_SLOTS').filter((s) => s !== 'roof');
+  // A theme gives every slot a default but the roof (an unpainted roof looks like the room's floor) and the metal (bars
+  // and barred gates: optional, a Metal; absent, DEFAULT_METAL in map/materials.ts).
+  const slots = tsList(root, MATERIALS_TS, 'SURFACE_SLOTS').filter((s) => s !== 'roof' && s !== 'metal');
   const textureSets = new Set(readJson(root, 'content/textures.json').textures);
 
   const material = obj({
@@ -99,7 +100,7 @@ export function build(content, root = ROOT) {
     scale: num, shine: num, 'emissive?': bool, 'surface?': en(surfaceTypeIds(root)), 'ballistic?': en(tsList(root, 'packages/shared/src/sim/gunplay.ts', 'BALLISTIC_MATERIALS')), 'wrap?': bool, 'shadeLift?': num, 'notes?': notes,
   });
   const style = obj({ material: str, 'tint?': str });
-  const theme = obj({ id: str, displayName: str, sky: str, slots: obj(Object.fromEntries(slots.map((s) => [s, style]))), 'notes?': notes });
+  const theme = obj({ id: str, displayName: str, sky: str, slots: obj({ ...Object.fromEntries(slots.map((s) => [s, style])), 'metal?': style }), 'notes?': notes });
 
   const top = content.materials;
   for (const k of Object.keys(top ?? {})) if (!['$comment', 'materials', 'themes', 'tintSwatches'].includes(k)) problems.push(`${FILE}: unknown field "${k}"`);
@@ -158,6 +159,14 @@ export function build(content, root = ROOT) {
       if (!ids.has(st.material) && materials.length === top.materials.length) problems.push(`${where}: slots.${s} names material ${st.material}, which isn't in ${FILE}`);
       if (st.tint !== undefined) colour(st.tint, `${where}: slots.${s}.tint`);
       out[s] = st.tint !== undefined ? { material: st.material, tint: st.tint } : { material: st.material };
+    }
+    const metal = t.slots.metal;
+    if (metal) {
+      const m = (Array.isArray(top?.materials) ? top.materials : []).find((x) => x?.id === metal.material);
+      if (!m) problems.push(`${where}: slots.metal names material ${metal.material}, which isn't in ${FILE}`);
+      else if (m.category !== 'Metal') problems.push(`${where}: slots.metal (bars and gates) must be a Metal, not ${m.category} (${metal.material})`);
+      if (metal.tint !== undefined) colour(metal.tint, `${where}: slots.metal.tint`);
+      out.metal = metal.tint !== undefined ? { material: metal.material, tint: metal.tint } : { material: metal.material };
     }
     themes.push({ def: { id: t.id, displayName: t.displayName, sky: t.sky, slots: out }, notes: t.notes });
   }

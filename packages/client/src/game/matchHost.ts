@@ -40,7 +40,7 @@ import {
   mapPlayerCaps,
 } from '@tiletrigger/shared';
 import { Zipper } from '@tiletrigger/shared/peerZip';
-import type { BotDebugFrame } from '@tiletrigger/shared/match';
+import type { BotDebugFrame, PrebuiltNav } from '@tiletrigger/shared/match';
 
 /** How often (ticks) the bot debug view gets a frame while on: four a second. */
 const BOT_DEBUG_EVERY = Math.round(TICK_RATE / 4);
@@ -76,6 +76,13 @@ export interface LocalMatchOptions {
   party?: string;
   /** MapMaker's Play from here: this browser's player starts here (feet, facing; editor/playFromHere.ts), not at a spawn. */
   startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
+  /**
+   * MapMaker's Test: the navigation check's navmesh of the map (editor/mapChecks.ts `prebuilt`), taken instead of
+   * building one when it was built from the same (Match `nav`).
+   */
+  nav?: PrebuiltNav | null;
+  /** Rigid driving for every vehicle that has it, or the classic driving for all (`?drive=`; MatchOptions.drive). */
+  drive?: 'classic' | 'rigid';
 }
 
 /** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts): its name only. */
@@ -236,6 +243,9 @@ export class MatchHost {
     private readonly sink: MatchHostSink,
   ) {}
 
+  /** How long the match took to make (ms; the navmesh most of it, unless it was handed one: `Match.navReused`). */
+  loadMs = 0;
+
   /** Load the simulation, start the match and its loop. Resolves once the welcome has gone out. */
   async start(): Promise<void> {
     // The match module pulls in Recast; load it only when a local match starts.
@@ -246,7 +256,14 @@ export class MatchHost {
     const cp = this.opts.restore;
     const rules = cp?.rules ?? this.opts.rules ?? rulesForMap(this.map);
     const test = this.opts.test;
-    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true });
+    const t0 = performance.now();
+    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, nav: this.opts.nav, ...(this.opts.drive ? { drive: this.opts.drive } : {}) });
+    this.loadMs = Math.round(performance.now() - t0);
+    if (this.opts.nav !== undefined) {
+      console.info(`match made in ${this.loadMs} ms (${match.navReused ? "the navigation check's navmesh" : 'navmesh built'})`);
+      // (Its data is the match's now: not kept a second time.)
+      this.opts.nav = null;
+    }
     const bots = new BotFiller(match, BOT_DIFFICULTIES[cp?.skill ?? this.opts.difficulty], { botSet: this.opts.botSet ?? null });
     const fill = Math.min(cp?.fill ?? this.opts.botFill, MAX_PLAYER_SLOTS);
     let me: Combatant;

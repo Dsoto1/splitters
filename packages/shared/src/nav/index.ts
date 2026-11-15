@@ -1,4 +1,4 @@
-import { createNavMeshData, freeCompactHeightfield, freeContourSet, freeHeightfield, freePolyMesh, freePolyMeshDetail, getNavMeshPositionsAndIndices, init as initRecast, NavMesh, NavMeshCreateParams, NavMeshQuery, QueryFilter } from 'recast-navigation';
+import { createNavMeshData, exportNavMesh, freeCompactHeightfield, freeContourSet, freeHeightfield, freePolyMesh, freePolyMeshDetail, getNavMeshPositionsAndIndices, importNavMesh, init as initRecast, NavMesh, NavMeshCreateParams, NavMeshQuery, QueryFilter } from 'recast-navigation';
 import { boxesToTriangles, type WorldBox } from '../map/geometry.ts';
 import type { MapDocument } from '../map/schema.ts';
 import type { ValidationIssue } from '../map/validate.ts';
@@ -198,6 +198,23 @@ export interface NavEscape {
 const NO_ESCAPE: readonly NavEscape[] = [];
 
 /**
+ * A built navmesh as data (NavWorld.export): Detour's tile with the build's polygon flags and areas in it, and what the
+ * build worked out beside it. NavWorld.import makes the same NavWorld again without building: MapMaker's navigation
+ * check hands its navmesh to the Test's match this way (sim/mapNav.ts navInputKey).
+ */
+export interface NavExport {
+  mesh: Uint8Array;
+  spawnSeeds: Vec3[];
+  lowSpans: number;
+  drops: number;
+  insideSolid: number;
+  exposed: number;
+  exposedArea: number;
+  parkour: ParkourLink[];
+  walkReach: Uint8Array | null;
+}
+
+/**
  * Navigation mesh generated from map geometry, so bots work on any Classic
  * Grid layout without authored waypoints (MASTER_SPEC_V2 §7, MULTIPLAYER_AI_SCALE).
  */
@@ -275,6 +292,41 @@ export class NavWorld {
     } finally {
       if (relink) freeIntermediates(inter);
     }
+  }
+
+  /**
+   * The navmesh as it came out of build, as data (NavExport): call it before anything changes it in a match
+   * (markOpenings, markLifts, setGone, linkFailed).
+   */
+  export(): NavExport {
+    return {
+      mesh: exportNavMesh(this.navMesh),
+      spawnSeeds: this.spawnSeeds.map((p) => ({ ...p })),
+      lowSpans: this.lowSpans,
+      drops: this.drops,
+      insideSolid: this.insideSolid,
+      exposed: this.exposed,
+      exposedArea: this.exposedArea,
+      parkour: this.parkour.map((l) => ({ ...l, start: { ...l.start }, end: { ...l.end } })),
+      walkReach: this.walkReach ? this.walkReach.slice() : null,
+    };
+  }
+
+  /** The NavWorld an export was made of, as build left it (initNavigation first). */
+  static import(data: NavExport): NavWorld {
+    const { navMesh } = importNavMesh(data.mesh);
+    const world = new NavWorld(navMesh, new NavMeshQuery(navMesh, { maxNodes: MAX_NODES }));
+    world.spawnSeeds = data.spawnSeeds.map((p) => ({ ...p }));
+    world.lowSpans = data.lowSpans;
+    world.drops = data.drops;
+    world.insideSolid = data.insideSolid;
+    world.exposed = data.exposed;
+    world.exposedArea = data.exposedArea;
+    world.setParkour(
+      data.parkour.map((l) => ({ ...l, start: { ...l.start }, end: { ...l.end } })),
+      data.walkReach ? data.walkReach.slice() : null,
+    );
+    return world;
   }
 
   /** Ledge-drop links the build added (NavWorld.build `drops`). */

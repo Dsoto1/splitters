@@ -193,7 +193,7 @@ const RULES = [
   [/^packages\/client\/src\/(communityMaps|game\/communityPlays)\.ts$/, ['community', 'lobby'], ['client']],
   [/^packages\/client\/src\/game\/hostLeft\.ts$/, ['hostgame', 'handoff'], ['client']],
   [/^packages\/client\/src\/game\/spectatorCam\.ts$/, ['offline', 'teams', 'hostgame'], ['client']],
-  [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera|riderPlacement|ownBody)\.ts$/, ['vehicles', 'traffic'], ['client']],
+  [/^packages\/client\/src\/game\/(mountVisuals|mountState|vehicleCamera|vehiclePrediction|riderPlacement|ownBody)\.ts$/, ['vehicles', 'traffic'], ['client']],
   [/^packages\/client\/src\/roadMeshes\.ts$/, ['traffic'], ['client']],
   // Drawn paths (roads, trails), shared with MapMaker's path tool.
   [/^packages\/client\/src\/pathMeshes\.ts$/, ['traffic', 'editorux'], ['client']],

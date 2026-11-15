@@ -97,7 +97,6 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
   // retired tile plays as the set piece that replaced it (setPieceAliases.ts: the piece covers exactly its cells, so
   // nothing new can overlap), and MapMaker keeps it as made and offers Replace all.
   const issues = validateMap(parsed.data, catalog, library);
-  const doc = opts.forEditing ? parsed.data : withTileAliases(parsed.data);
   if (issues.some((i) => i.severity === 'error') && !(opts.forEditing && opts.openWithErrors)) return { ok: false, issues };
   // MapMaker (`forEditing`) keeps the map as made: its set pieces as placements, its paths, and its own ground, which
   // it never lowers under a floor, so the parts, the laid paths and the ground kept under the floors follow a piece, a
@@ -107,8 +106,17 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
   // A retired prop plays as the kit family that replaced it (propAliases.ts: the family has its size, so collision is
   // unchanged), set pieces' props included; MapMaker keeps it as made.
   // A retired vehicle plays as the one that replaced it (mountAliases.ts); MapMaker keeps it as made.
-  const map = opts.forEditing ? parsed.data : withGroundAsPlayed(withMountAliases(withPropAliases(expandSetPieces(doc, library, catalog).map)), catalog);
+  const map = opts.forEditing ? parsed.data : mapAsPlayed(parsed.data, library, catalog);
   return { ok: true, map, issues, migratedFrom: migrated.fromVersion };
+}
+
+/**
+ * A map as played (loadMap without `forEditing`) from the map as made: retired tiles as their set pieces, set pieces
+ * expanded, retired props and vehicles as their replacements, on the ground as played. MapMaker's navigation check
+ * builds from this too, so its navmesh is the Test's (sim/mapNav.ts navInputKey).
+ */
+export function mapAsPlayed(doc: MapDocument, library: SetPieceLibrary = builtInSetPieces(), catalog: TileCatalog = coreCatalog): MapDocument {
+  return withGroundAsPlayed(withMountAliases(withPropAliases(expandSetPieces(withTileAliases(doc), library, catalog).map)), catalog);
 }
 
 /**

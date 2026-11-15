@@ -267,7 +267,8 @@ function glowPicture(): HTMLCanvasElement {
   const c = document.createElement('canvas');
   c.width = 256;
   c.height = 144;
-  const ctx = c.getContext('2d')!;
+  // (On the CPU: read back once, see hurtVignette.ts paintVignette.)
+  const ctx = c.getContext('2d', { willReadFrequently: true })!;
   ctx.save();
   ctx.translate(128, 72);
   ctx.scale(1, 144 / 256);

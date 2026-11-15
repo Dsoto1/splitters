@@ -37,6 +37,7 @@ import {
   windowPanes,
   type EdgeStyle,
   type MapDocument,
+  type WorldBox,
   type ResolvedEdge,
 } from '../src/index.ts';
 import { boxPackTiles } from '../src/map/packTiles.ts';
@@ -82,6 +83,12 @@ function styleMap(): MapDocument {
   return makeMap(tiles);
 }
 
+/**
+ * Boxes as the fixture saw them: bars, gates and railings now say they are drawn in the Metal surface (`paint: 'metal'`,
+ * map format v41; metalBars.test.ts tests that), which changes no shape.
+ */
+const shapes = (boxes: WorldBox[]) => boxes.map((b) => (b.paint === 'metal' ? (({ paint: _p, ...rest }) => rest)(b) : b));
+
 /** What a map builds from its tiles and edges: geometry, trim, facades, window glass, validation and room dressing. */
 function built(map: MapDocument) {
   const geometry = buildMapGeometry(map);
@@ -93,8 +100,8 @@ function built(map: MapDocument) {
     }
   });
   return {
-    geometry: hash(geometry),
-    decor: hash(buildMapDecor(map)),
+    geometry: hash(shapes(geometry)),
+    decor: hash(shapes(buildMapDecor(map))),
     facades: hash(buildFacades(map)),
     panes: hash(windowPanes(map)),
     issues: hash(validateMap(map)),

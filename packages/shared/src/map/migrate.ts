@@ -101,6 +101,13 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v38 -> v39: race mode's dead settings go (race mode was removed on 2026-11-08): a track path's `race` keeps
   // its curbs, NPC cars (`ambient`, `ambientVehicle`) and pit lane, and loses `laps`, `grid`, `vehicle` and `combat`.
   [38, dropRaceSettingsV39],
+  // v39 -> v40: kept free for the tunnel kit's later steps (HANDOFF); nothing changes.
+  [39, (doc) => ({ ...doc })],
+  // v40 -> v41: painting (docs/MAPMAKER_PAINTING_PLAN.md, Phase 1): a tile's optional `metal` surface (bars, barred
+  // gates and railings, drawn in it instead of the walls' stone) and a set piece's optional per-part paint
+  // (`overrides.paint`). Absent = as before (bars and railings follow the theme's metal, else iron): v40 data is
+  // valid as is. The bump is for the other direction: an older build would drop the paint without a word.
+  [40, (doc) => ({ ...doc })],
 ]);
 
 /** Race mode's own settings on a track path, unused since race mode was removed (v38 -> v39 drops them). */
