@@ -6474,6 +6474,21 @@ async function fortsFlow(browser) {
 }
 
 /**
+ * Hold `buttons` (window.__autoInput) until `fn(match, me, arg)` holds where the match runs, then let go; true if it
+ * held within `seconds` of your own inputs (meWait). For a press the check needs to land, instead of a one-tick
+ * `once`: that is a single input, and a check resting on it had nothing to fall back on when it didn't take (arsenal
+ * on CI: "a quick melee press breaks a reload where it is (reloading false, broken false)": the R never started a
+ * reload). Why it didn't take wasn't found (a loaded page sampled here sent its inputs and the host dropped none of
+ * them). Held, the press lasts until the host shows it. Semi-automatic guns fire once a hold.
+ */
+async function holdUntil(page, buttons, fn, arg, seconds) {
+  await page.evaluate((b) => (window.__autoInput = { buttons: b }), buttons);
+  const ok = await meWait(page, fn, arg, seconds);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  return ok;
+}
+
+/**
  * Gunplay pass 2 (docs/GUNPLAY_AUDIT.md): damage numbers (Options → HUD, off by default) float the hit's damage over
  * the bot and show nothing when off; auto-reload (on by default) starts an emptied pistol's reload without R; a
  * quick melee press breaks a reload. `target` is a held bot (holdBots) in front of you.
@@ -6496,30 +6511,48 @@ async function gunplayReadoutChecks(page, target, { face, aimAt }) {
   await stand(4);
   await aimAt(target.slot);
   const shown = () => page.evaluate(() => window.__cs.damageNumbers.shown());
+  // Every number as it comes and as it is first placed over its target, noted as it happens: a number lives 0.9 s and
+  // at least 3 drawn frames, 3.6 s at most, and at under a frame a second it can come and go between two looks (CI and
+  // a load of 20 locally: "shown [], health lost 19").
+  await page.evaluate(() => {
+    const root = document.getElementById('damage-numbers');
+    window.__dmg = { added: [], placed: [] };
+    const placed = (el) => {
+      if (!el.classList?.contains('dmg-num') || el.style.visibility === 'hidden' || el.dataset.noted) return;
+      el.dataset.noted = '1';
+      const r = el.getBoundingClientRect();
+      window.__dmg.placed.push({ text: el.textContent, x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), onScreen: r.x > 0 && r.y > 0 && r.x < innerWidth && r.y < innerHeight });
+    };
+    window.__dmgWatch?.disconnect();
+    window.__dmgWatch = new MutationObserver((changes) => {
+      for (const c of changes) {
+        for (const n of c.addedNodes) if (n.classList?.contains('dmg-num')) window.__dmg.added.push(n.textContent);
+        placed(c.target);
+      }
+    });
+    window.__dmgWatch.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+  });
   // On: one shot, one number over the bot (the pistol's 24 at 4 m), on screen.
   await page.evaluate(() => localStorage.setItem('tiletrigger.damageNumbers', '1'));
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
-  const hit = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
+  const hit = await holdUntil(page, 2, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
   // Shown, and placed over the bot by a frame (hidden until then).
-  await page.waitForFunction(() => [...document.querySelectorAll('#damage-numbers .dmg-num')].some((e) => e.style.visibility !== 'hidden'), null, { timeout: T(5000) }).catch(() => {});
-  const nums = await shown();
-  const placed = await page.evaluate(() => {
-    const el = document.querySelector('#damage-numbers .dmg-num');
-    const r = el?.getBoundingClientRect();
-    return r ? { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), hidden: el.style.visibility === 'hidden', onScreen: r.x > 0 && r.y > 0 && r.x < innerWidth && r.y < innerHeight } : null;
-  });
+  await page.waitForFunction(() => window.__dmg.placed.length > 0, null, { timeout: T(10000) }).catch(() => {});
+  const nums = await page.evaluate(() => window.__dmg.added);
+  const placed = await page.evaluate(() => window.__dmg.placed[0] ?? null);
   // (Character stats can soften a bot's hits: the number is what its health lost.)
   const lost = await sim(page, (m, _me, t) => String(Math.round(100 - m.actor(t.slot).health)), target);
-  check(hit && nums.includes(lost) && !!placed && !placed.hidden && placed.onScreen && placed.w > 0, `damage numbers (on): the pistol's hit floats its damage over the bot (shown ${JSON.stringify(nums)}, health lost ${lost}, ${JSON.stringify(placed)})`);
+  check(hit && nums.includes(lost) && !!placed && placed.text === lost && placed.onScreen && placed.w > 0, `damage numbers (on): the pistol's hit floats its damage over the bot (shown ${JSON.stringify(nums)}, health lost ${lost}, ${JSON.stringify(placed)})`);
   // Off (the default): the next hit shows nothing once the last number has gone.
   await page.evaluate(() => localStorage.setItem('tiletrigger.damageNumbers', '0'));
   await page.waitForFunction(() => window.__cs.damageNumbers.shown().length === 0, null, { timeout: T(5000) }).catch(() => {});
   await stand(4);
   await meWait(page, (m, me) => me.fireCooldown === 0, null, 2);
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
-  const hit2 = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
+  await page.evaluate(() => (window.__dmg.added = []));
+  const hit2 = await holdUntil(page, 2, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
+  // A few snapshots later (any number would have come with the hit's).
   await meWait(page, () => false, null, 0.3);
-  const none = await shown();
+  const none = [...(await page.evaluate(() => window.__dmg.added)), ...(await shown())];
+  await page.evaluate(() => window.__dmgWatch?.disconnect());
   check(hit2 && none.length === 0, `damage numbers (off): a hit shows none (${JSON.stringify(none)})`);
   await page.evaluate(() => localStorage.removeItem('tiletrigger.damageNumbers'));
   // Auto-reload (on by default): the last round out, the reload starts without R.
@@ -6529,18 +6562,15 @@ async function gunplayReadoutChecks(page, target, { face, aimAt }) {
     w.reserve = 24;
   });
   await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[0] === 1, null, { timeout: T(5000) }).catch(() => {});
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
-  const started = await meWait(page, (m, me) => me.reloadTicks > 0, null, 2);
+  const started = await holdUntil(page, 2, (m, me) => me.reloadTicks > 0, null, 2);
   const full = started && await meWait(page, (m, me) => me.weapons.get(me.current).mag === me.weapons.get(me.current).def.magazine, null, 3);
   check(started && full, `auto-reload: the pistol emptied, its reload starts by itself and fills the magazine (started ${started}, full ${full})`);
   // A quick melee press breaks a reload: R with rounds left, then Y (auto-reload off here: past "magazine out" it
   // would start the reload again once Y is let go).
   await page.evaluate(() => localStorage.setItem('tiletrigger.autoReload', '0'));
   await sim(page, (m, me) => (me.weapons.get(me.current).mag = 4));
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 4 }));
-  const reloading = await meWait(page, (m, me) => me.reloadTicks > 0, null, 2);
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2048 }));
-  const broke = reloading && await meWait(page, (m, me) => me.reloadTicks === 0 && me.weapons.get(me.current).mag < me.weapons.get(me.current).def.magazine, null, 1);
+  const reloading = await holdUntil(page, 4, (m, me) => me.reloadTicks > 0, null, 2);
+  const broke = reloading && await holdUntil(page, 2048, (m, me) => me.reloadTicks === 0 && me.weapons.get(me.current).mag < me.weapons.get(me.current).def.magazine, null, 1);
   check(reloading && broke, `a quick melee press breaks a reload where it is (reloading ${reloading}, broken ${broke})`);
   await page.evaluate(() => {
     window.__autoInput = { buttons: 0 };
@@ -10212,40 +10242,75 @@ async function gripsInPlay(browser) {
   check(errors.length === 0, `no page errors in play (${errors.join('; ')})`);
   await page.context().close();
 
-  // A creature skin (the Imp) in third person: the gun forward along the aim at chest height, both hands on it.
+  await impGrips(browser);
+}
+
+/**
+ * A creature skin (the Imp) in third person: the gun forward along the aim at chest height, a hand on its grip. Each
+ * step waits for what it needs (third person, your body drawn by the camera, the gun in its hands, a settled grip)
+ * and says what was missing when it doesn't come: on a loaded runner the pistol and the rifle both read nothing
+ * (`r: null`) once, with no way to tell why.
+ */
+async function impGrips(browser) {
   const imp = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
-  await imp.goto(`${CLIENT}/?offline=training_range&test=1&god=1&look=npc:imp`);
+  // You alone on the range (&bots=1: one player in all). Its bots fought round the god-mode you: their knockback
+  // carried you about the range's weapon pickups (once 25 m from the spawns, drawn with the Singularity picked up
+  // there). Alone, the given guns are the only ones.
+  await imp.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1&look=npc:imp`);
   await imp.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(120000) });
-  // Into play and third person, for sure: on a slow page the pause menu can come up after a first click on Resume
-  // (and then H does nothing), and a third-person camera pulled in against a wall doesn't draw your body: turn away.
-  for (let i = 0; i < 12; i++) {
-    if (await imp.isVisible('#resume')) await imp.click('#resume').catch(() => {});
-    const state = await imp.evaluate(() => {
-      const a = window.__cs.view.avatars.get(window.__cs.slot);
-      return { third: window.__cs.thirdPerson(), drawn: !!a && !a.hiddenSelf && a.root.isEnabled() };
-    });
-    if (state.third && state.drawn) break;
-    if (!state.third) await imp.keyboard.press('KeyH');
-    else await imp.evaluate(() => (window.__cs.input.yaw += 1.2));
-    await sleep(1000);
+  // What the drawn creature has, for the checks and for the message.
+  const seen = async () => ({
+    ...(await imp.evaluate(() => {
+      const cs = window.__cs;
+      const a = cs.view.avatars.get(cs.slot);
+      const report = cs.view.gripReport().creatures.find((c) => c.slot === cs.slot);
+      return { third: cs.thirdPerson(), paused: !document.getElementById('pause').hidden, avatar: !!a, hidden: !!a?.hiddenSelf, enabled: !!a?.root.isEnabled(), held: cs.local.held, inHands: a?.weaponSlot ?? null, listed: !!report, report: report?.report ?? null };
+    })),
+    host: await sim(imp, (m, me) => ({ current: me.current, at: [me.move.pos.x, me.move.pos.z].map((v) => +v.toFixed(1)), others: m.combatants().length - 1 })).catch(() => null),
+  });
+  // Into play and third person, your body drawn: on a slow page the pause menu can come up after a first click on
+  // Resume (and then H does nothing), and a third-person camera pulled in against a wall doesn't draw your body: turn
+  // away. Until the camera draws it holding its first gun (a grip report), however long a slow page takes.
+  let state = await seen();
+  const until = Date.now() + T(90000);
+  while (Date.now() < until) {
+    state = await seen();
+    if (state.third && !state.paused && state.report && !state.hidden && state.enabled) break;
+    if (state.paused) await imp.click('#resume').catch(() => {});
+    else if (!state.third) await imp.keyboard.press('KeyH');
+    else if (state.hidden || !state.enabled || (state.listed && !state.report)) await imp.evaluate(() => (window.__cs.input.yaw += 1.2));
+    await imp.waitForFunction((was) => window.__cs.thirdPerson() !== was || !document.getElementById('pause').hidden, state.third, { timeout: T(2000) }).catch(() => {});
   }
+  const ok = (r) => !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12;
   const held = [];
   for (const w of ['core.pistol', 'core.rifle']) {
     await imp.evaluate((id) => window.__give(id), w);
-    // Until the given gun is in the drawn creature's hands (a gun model loads first; slow on a software-rendered page).
+    // The given gun's code, from the host (the give reaches it first): your own `held` follows a snapshot later, so
+    // a wait on "the drawn gun is the one held" passed at once on the gun before (a slow page read the switch after).
+    const code = await sim(imp, (m, me) => me.current);
+    // Until the given gun is in the drawn creature's hands (a gun model loads first; slow on a software-rendered
+    // page) with the hand settled on its grip (the pose eases in), on a drawn frame each time it is read.
     await imp
-      .waitForFunction(() => {
-        const a = window.__cs.view.avatars.get(window.__cs.slot);
-        return a?.weaponSlot === window.__cs.local.held && !!window.__cs.view.gripReport().creatures.find((c) => c.slot === window.__cs.slot)?.report;
-      }, null, { timeout: T(30000), polling: 250 })
+      .waitForFunction(
+        (code) => {
+          try {
+            const cs = window.__cs;
+            const a = cs.view.avatars.get(cs.slot);
+            const r = cs.view.gripReport().creatures.find((c) => c.slot === cs.slot)?.report;
+            return cs.local.held === code && a?.weaponSlot === code && !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12;
+          } catch {
+            // (Mid-swap: the old gun disposed under the report.)
+            return false;
+          }
+        },
+        code,
+        { timeout: T(60000), polling: 250 },
+      )
       .catch(() => {});
-    let r = null;
-    for (let i = 0; i < 20; i++) {
-      await sleep(300);
-      r = await imp.evaluate((s) => window.__cs.view.gripReport().creatures.find((c) => c.slot === s)?.report ?? null, await imp.evaluate(() => window.__cs.slot));
-      if (r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12) break;
-    }
-    held.push({ w, ok: !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) } });
+    const s = await seen();
+    const r = s.report;
+    const fine = s.inHands === code && s.held === code && ok(r);
+    held.push({ w, ok: fine, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) }, ...(fine ? {} : { seen: { ...s, report: undefined } }) });
   }
   check(held.every((h) => h.ok), `an Imp player holds the gun forward at the chest with a hand on its grip (${JSON.stringify(held)})`);
   // (An artifact for a look: a slow page's screenshot timing out isn't a failed check.)

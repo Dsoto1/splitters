@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import WebSocket from 'ws';
 import { DEFAULT_DEATHMATCH_RULES, DEFAULT_RULES, MAP_FORMAT_VERSION, PROTOCOL_VERSION, type ClientMessage, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
 import { startServer, type RunningServer } from '../src/server.ts';
@@ -66,6 +66,9 @@ const connect = (port: number, name: string, admin?: string) => {
   };
   return { ws, waitFor, send, next, got };
 };
+
+/** Waits for a condition the server reaches on its own time (a busy machine runs its ticks and sockets late). */
+const until = (ok: () => unknown, timeout = 20_000) => vi.waitFor(() => expect(ok(), ok.toString()).toBeTruthy(), { timeout, interval: 20 });
 
 describe('host controls on a dedicated server', () => {
   const suite = () => {
@@ -138,8 +141,7 @@ describe('host controls on a dedicated server', () => {
     admin.send({ t: 'host', cmd: { c: 'map', map: 'room_b', mode: 'core.deathmatch' } });
     expect((await travelling).text).toBe('Changing map to room b (Deathmatch)…');
     expect(await admin.waitFor('travel')).toEqual({ t: 'travel', map: 'room b' });
-    await new Promise((r) => setTimeout(r, 100));
-    expect(server.match.map.metadata.id).toBe('room_b');
+    await until(() => server!.match.map.metadata.id === 'room_b');
     expect(server.match.rules.scoreLimit).toBe(33);
     // The game reconnects by itself (with the token it joined with) and is still admin.
     const again = connect(server.port, 'Alice', 'sesame');
@@ -190,8 +192,7 @@ describe('host controls on a dedicated server', () => {
     admin.send({ t: 'host', cmd: { c: 'end' } });
     expect(await ended).toMatchObject({ e: 'round_end', up: { map: 'room c', mode: 'core.deathmatch' } });
     expect(await bob.waitFor('travel')).toEqual({ t: 'travel', map: 'room c' });
-    await new Promise((r) => setTimeout(r, 100));
-    expect(server.match.map.metadata.id).toBe('room_c');
+    await until(() => server!.match.map.metadata.id === 'room_c');
     expect(server.rotation()).toMatchObject({ current: 0, next: 1 });
     // Skip to the next map now.
     const back = connect(server.port, 'Alice', 'sesame');
@@ -200,8 +201,7 @@ describe('host controls on a dedicated server', () => {
     back.send({ t: 'host', cmd: { c: 'skip' } });
     expect((await skipping).text).toBe('Changing map to room b (Deathmatch)…');
     await back.waitFor('travel');
-    await new Promise((r) => setTimeout(r, 100));
-    expect(server.match.map.metadata.id).toBe('room_b');
+    await until(() => server!.match.map.metadata.id === 'room_b');
     // Round again: room c is next.
     expect(server.rotation()).toMatchObject({ current: 1, next: 0 });
     for (const c of [admin, bob, back]) c.ws.close();
@@ -224,14 +224,13 @@ describe('host controls on a dedicated server', () => {
     const names = () => server!.match.combatants().filter((c) => c.kind === 'bot').map((c) => c.name).sort();
     // Kept bots change in place at once (Sir Clank is now in Spacewalker's look); the newcomer arrives with the staging.
     expect(server.match.combatants().find((c) => c.name === 'Sir Clank')?.look).toBe('core.astronaut');
-    for (let i = 0; i < 100 && names().length < 3; i++) await new Promise((r) => setTimeout(r, 20));
+    await until(() => names().length >= 3);
     expect(names()).toEqual(['Newbie', 'Sir Clank', 'Zorp']);
     expect(server.botSet()).toMatchObject({ name: 'Trio', entries: [{ name: 'Sir Clank', look: 'core.astronaut' }, { name: 'Zorp' }, { name: 'Newbie' }] });
     // A map change keeps the set.
     admin.send({ t: 'host', cmd: { c: 'map', map: 'room_b' } });
     await admin.waitFor('travel');
-    for (let i = 0; i < 100 && server.match.map.metadata.id !== 'room_b'; i++) await new Promise((r) => setTimeout(r, 20));
-    expect(server.match.map.metadata.id).toBe('room_b');
+    await until(() => server!.match.map.metadata.id === 'room_b');
     expect(names()).toEqual(['Newbie', 'Sir Clank', 'Zorp']);
     admin.ws.close();
   }, 30_000);
@@ -240,15 +239,12 @@ describe('host controls on a dedicated server', () => {
     const dir = suite();
     server = await startServer({ port: 0, map: join(dir, 'room_a.json'), mapsDir: dir, botFill: 2, seed: 1, startGate: false, mode: 'core.deathmatch', serverRules: { modes: { deathmatch: { score: 7 } } }, motd: 'Welcome to the yard' });
     const s = server;
-    const until = async (ok: () => boolean) => {
-      for (let i = 0; i < 200 && !ok(); i++) await new Promise((r) => setTimeout(r, 20));
-      return ok();
-    };
+    const reached = (ok: () => boolean) => until(ok).then(() => true);
     expect(s.match.rules.scoreLimit).toBe(7);
     // The join message reaches each player as they join.
     const p = connect(s.port, 'Visitor');
     await p.waitFor('welcome');
-    expect(await until(() => p.got.some((m) => m.t === 'notice' && m.text === 'Welcome to the yard'))).toBe(true);
+    expect(await reached(() => p.got.some((m) => m.t === 'notice' && m.text === 'Welcome to the yard'))).toBe(true);
     // Score: waits for the restart, as the pause menu's does.
     expect(s.setRule('score', 9, 'Console')).toBeNull();
     expect(s.match.rules.scoreLimit).toBe(7);
@@ -260,13 +256,13 @@ describe('host controls on a dedicated server', () => {
     expect(s.setRule('gravity', 'low', 'Console')).toBeNull();
     expect(s.rules().pending).toContain('gravity');
     expect(s.command({ c: 'restart' }, 'Console')).toBeNull();
-    expect(await until(() => s.match !== before)).toBe(true);
+    expect(await reached(() => s.match !== before)).toBe(true);
     expect([s.match.map.metadata.id, s.match.rules.gravity, s.match.rules.scoreLimit]).toEqual(['room_a', 0.4, 9]);
     expect(s.rules().pending).toEqual([]);
     // This map only: room_b plays the mode's own time limit; the score limit (this mode's) carries on.
     expect(s.setRule('time', 3, 'Console', { map: true })).toBeNull();
     expect(s.command({ c: 'map', map: 'room_b' }, 'Console')).toBeNull();
-    expect(await until(() => s.match.map.metadata.id === 'room_b')).toBe(true);
+    expect(await reached(() => s.match.map.metadata.id === 'room_b')).toBe(true);
     expect([s.match.rules.timeLimitSeconds, s.match.rules.scoreLimit, s.match.rules.gravity]).toEqual([DEFAULT_DEATHMATCH_RULES.timeLimitSeconds, 9, 0.4]);
     expect(s.rules().set).toEqual({ modes: { deathmatch: { score: 9 } }, gravity: 'low', maps: { room_a: { time: 3 } } });
     // An in-game admin's rules (the pause menu) are the server's too.
