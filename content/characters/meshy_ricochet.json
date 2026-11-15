@@ -5,7 +5,7 @@
   "order": 26,
   "name": "Ricochet",
   "look": "core.ricochet",
-  "group": "creatures",
+  "group": "space",
   "nameTheme": "alien",
   "bio": "Bounces off walls, ceilings and, given half a chance, you.",
   "body": "male",

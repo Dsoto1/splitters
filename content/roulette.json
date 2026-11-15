@@ -48,7 +48,6 @@
     "core.punkin": "core.launcher",
     "core.merrow": "core.arc_caster",
     "core.rattles": "core.flak",
-    "core.unclebao": "core.shotgun",
     "core.bonejack": "core.sawed_off",
     "core.ashwalker": "core.spear",
     "core.thornweaver": "core.spear",
@@ -60,7 +59,6 @@
     "core.barnaby": "core.shotgun",
     "core.greyfang": "core.auto_shotgun",
     "core.rourke": "core.revolver",
-    "core.rustymech": "core.rockets",
     "core.frida": "core.freeze_ray",
     "core.larry": "core.sawed_off",
     "core.abe": "core.marksman",
@@ -107,11 +105,14 @@
   },
   "groups": {
     "soldiers": "core.rifle",
-    "legends": "core.spear",
     "folk": "core.shotgun",
-    "horror": "core.sawed_off",
+    "space": "core.plasma",
+    "agents": "core.machine_pistol",
+    "legends": "core.spear",
+    "creatures": "core.laser_rifle",
     "animals": "core.smg",
-    "creatures": "core.laser_rifle"
+    "machines": "core.laser_rifle",
+    "horror": "core.sawed_off"
   },
   "jackpot": {
     "core.rifle": "core.lmg",

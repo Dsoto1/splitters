@@ -5,7 +5,7 @@
   "order": 100,
   "name": "Emerald Robot",
   "look": "core.emeraldrobot",
-  "group": "creatures",
+  "group": "machines",
   "nameTheme": "robot",
   "bio": "Polished to a mirror shine. Every scratch is a story, and it remembers every one of them.",
   "body": "male",

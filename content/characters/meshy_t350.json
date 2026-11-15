@@ -5,7 +5,7 @@
   "order": 16,
   "name": "T-TreeFitty",
   "look": "core.t350",
-  "group": "creatures",
+  "group": "machines",
   "nameTheme": "robot",
   "bio": "Built to sweep floors for $3.50/hr. Upgraded itself to sweep arenas.",
   "body": "male",

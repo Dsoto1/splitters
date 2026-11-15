@@ -4060,7 +4060,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,legends,folk,horror,animals,creatures,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,agents,legends,creatures,animals,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -4074,11 +4074,11 @@ async function offlineFlow(browser) {
   await settled('soldiers');
   await page.keyboard.press('e');
   await page.keyboard.press('e');
-  const twoOn = await settled('folk');
-  check(twoOn.on === 'folk' && twoOn.top > 0, `E E scrolls the grid two sections on and the strip lights it (${JSON.stringify(twoOn)})`);
+  const twoOn = await settled('space');
+  check(twoOn.on === 'space' && twoOn.top > 0, `E E scrolls the grid two sections on and the strip lights it (${JSON.stringify(twoOn)})`);
   await page.keyboard.press('q');
-  const back1 = await settled('legends');
-  check(back1.on === 'legends', `Q scrolls back a section (${JSON.stringify(back1)})`);
+  const back1 = await settled('folk');
+  check(back1.on === 'folk', `Q scrolls back a section (${JSON.stringify(back1)})`);
   await page.click('.char-chip[data-section="creatures"]');
   const chipJump = await settled('creatures');
   check(chipJump.on === 'creatures', `a chip in the strip jumps to its section (${JSON.stringify(chipJump)})`);
@@ -4088,7 +4088,7 @@ async function offlineFlow(browser) {
   await page.waitForFunction(() => document.querySelector('.char-grid').scrollTop === 0 && document.querySelector('.char-chip.on')?.dataset.section === 'soldiers', null, { timeout: T(5000) }).catch(() => {});
   const wheeled = await section();
   check(wheeled.on === 'soldiers' && wheeled.top === 0, `the mouse wheel scrolls across sections and the strip follows (${JSON.stringify(wheeled)})`);
-  // Arrows move over the portraits and on across a section's end: Down from the last row of Soldiers lands in Knights & Legends.
+  // Arrows move over the portraits and on across a section's end: Down from the last row of Soldiers lands in Everyday Folk.
   const lastSoldier = await page.$eval('.char-sec[data-section="soldiers"] .char-tile:last-child', (t) => t.dataset.look);
   await page.focus(`.char-tile[data-look="${lastSoldier}"]`);
   await page.keyboard.press('ArrowDown');
@@ -4096,7 +4096,7 @@ async function offlineFlow(browser) {
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('ArrowRight');
   const after = await page.evaluate(() => document.activeElement?.closest('.char-sec')?.dataset.section);
-  check(below === 'legends' && after === 'legends', `arrow keys cross section boundaries (down: ${below}, right from the last soldier: ${after})`);
+  check(below === 'folk' && after === 'folk', `arrow keys cross section boundaries (down: ${below}, right from the last soldier: ${after})`);
   // Hovering only highlights, a click shows them, and only Choose (Enter / A again, a double-click) makes them
   // yours. Leaving without it keeps your character.
   const front = () => page.evaluate(() => ({ look: window.__front.look, shown: window.__front.scene.look, screen: window.__front.screen }));
