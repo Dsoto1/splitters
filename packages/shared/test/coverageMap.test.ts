@@ -90,6 +90,14 @@ describe('the coverage map', () => {
     expect(placements.filter((p) => !parts.has(`sp_${p.id}`)).map((p) => p.piece)).toEqual([]);
   });
 
+  it("has an Arena Corner with its gate (octagon phase 3): the set piece, both Gate tiles, the gatehouse tower and its 45° portcullis", () => {
+    const placements = (raw.setPieces ?? []) as { id: string; piece: string }[];
+    const gate = placements.find((p) => p.piece === 'setpiece.arena_corner_gate');
+    expect(gate, 'setpiece.arena_corner_gate').toBeDefined();
+    expect(missing(['core.arena_corner_ground_gate', 'core.arena_corner_attic_gate', 'core.arena_corner_tower'], tiles)).toEqual([]);
+    expect(map.entities.some((e) => e.kind === 'door' && e.id.startsWith(`sp_${gate!.id}_`) && e.style === 'portcullis' && Math.abs(Math.sin(2 * e.yaw)) > 0.99)).toBe(true);
+  });
+
   it('has the markers of every game mode, terrain, roads, a track (NPC traffic), an AI route and logic', () => {
     expect(new Set(map.entities.flatMap((e) => (e.kind === 'flag' ? [e.team] : []))).size).toBeGreaterThanOrEqual(2);
     expect(playableModes(map)).toEqual(expect.arrayContaining(['core.ctf', 'core.forts', 'core.koth', 'core.bomb', 'core.hostage', 'core.breakthrough', 'core.zombies']));

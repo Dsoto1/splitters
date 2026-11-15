@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_uy3n3ig77rtli7vg",
-      "revision": 33,
-      "contentHash": "sha256:5f3bd22b8c73ff712091e5b96d53f21574f0790d0d382e1048fbc7b88a64456a",
+      "versionId": "v_6xfkkigkefjoutmx",
+      "revision": 34,
+      "contentHash": "sha256:07b9ceef6aa933abbeb55817310149370fe5971dc994ba32bc298785178683fc",
       "schemaVersion": 38,
-      "releasedAt": "2026-11-14T22:15:41.863Z"
+      "releasedAt": "2026-11-15T01:42:15.910Z"
     },
     "testOnly": true
   },
@@ -6591,6 +6591,15 @@
       "id": "setpiece_hymephh0he",
       "piece": "setpiece.arena_corner",
       "x": -4,
+      "y": 21,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_qts0c1br1c",
+      "piece": "setpiece.arena_corner_gate",
+      "x": 8,
       "y": 21,
       "z": 0,
       "rotation": 0,
