@@ -2,7 +2,7 @@
 //
 //   node tools/perf/test-start.mjs [map names as the Open dialog lists them…]      (after `pnpm build`)
 //   START_RUNS=<n>       runs a map and a variant (default 2; the first page load of a run pays for the cold cache)
-//   START_VARIANTS=a,b   `?perfoff=` values to compare, `-` for none (default: `-,navhandoff`)
+//   START_VARIANTS=a,b   `?perfoff=` values to compare, `-` for none, `+` between switches (default: `-,navhandoff+startslices`)
 //   START_PORT / START_URL / CHROMIUM   as tools/perf/editor-edit.mjs
 //   START_JSON=<file>    the numbers as JSON
 //
@@ -20,7 +20,7 @@ const PORT = process.env.START_PORT ?? '4991';
 const CLIENT = process.env.START_URL ?? `http://localhost:${PORT}`;
 const MAPS = process.argv.slice(2).length ? process.argv.slice(2) : ['Iron Maw'];
 const RUNS = Number(process.env.START_RUNS ?? 2);
-const VARIANTS = (process.env.START_VARIANTS ?? '-,navhandoff').split(',');
+const VARIANTS = (process.env.START_VARIANTS ?? '-,navhandoff+startslices').split(',');
 const RECORD_MS = 20000;
 
 const server = process.env.START_URL ? { pid: 0 } : spawn('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', PORT, '--strictPort'], { stdio: 'ignore', detached: true });
@@ -53,7 +53,7 @@ async function run(browser, mapName, variant) {
     if (/TEST ready|match made/.test(t)) logs.push(t);
   });
   page.on('pageerror', (e) => console.log(`  page error: ${e.message}`));
-  const off = variant === '-' ? '' : `&perfoff=${variant}`;
+  const off = variant === '-' ? '' : `&perfoff=${variant.replaceAll('+', ',')}`;
   await page.goto(`${CLIENT}/?mode=editor&test=1${off}`);
   await page.waitForFunction(() => window.__editor, null, { timeout: 120000 });
   await page.evaluate(() => window.__editor.setOwner?.(true));
@@ -63,8 +63,9 @@ async function run(browser, mapName, variant) {
   const before = await page.evaluate(() => window.__editor.doc.metadata.id);
   await page.locator(rowSel).first().locator('button').first().click();
   await page.waitForFunction((b) => window.__editor.doc.metadata.id !== b, before, { timeout: 180000 });
-  // The navigation check's answer (its navmesh with it), and no check still running.
+  // This map's navigation check answered (its navmesh with it: not the starter map's from before), none still running.
   const c0 = Date.now();
+  await page.evaluate(() => (window.__editor.checks.prebuilt = null));
   await page.waitForFunction(() => window.__editor.checks.prebuilt && !window.__editor.checks.navBusy, null, { timeout: 300000, polling: 250 });
   const checkS = (Date.now() - c0) / 1000;
   await sleep(1500);
