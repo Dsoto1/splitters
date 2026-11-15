@@ -7710,6 +7710,31 @@ async function vehiclesFlow(browser) {
     .then((h) => h.jsonValue(), () => page.evaluate(() => window.__dropLog));
   await page.evaluate(() => (window.__match.step = window.__dropStep));
   check(landed?.up > 0.95 && landed.air > 20 && landed.roll > 0.3 && landed.drawnRoll > 0.04, `dropped from 8 m leaning, it falls, lands and ends up on its wheels, drawn leaning as it fell (${JSON.stringify(landed)})`);
+  // On its roof it stays there (owner, 2026-11-15: "2b"): the prompt offers Space to flip back, and jump does.
+  await page.evaluate(() => {
+    const match = window.__match;
+    const m = match.mounts[match.slots[window.__cs.slot].mount.index];
+    m.pos = { x: m.home.pos.x, y: m.home.pos.y + 2.5, z: m.home.pos.z };
+    m.yaw = m.home.yaw;
+    m.speed = 0;
+    // Upside down: half a turn about its forward axis.
+    const f = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
+    const q0 = { x: 0, y: Math.sin(m.yaw / 2), z: 0, w: Math.cos(m.yaw / 2) };
+    const q = { w: -f.x * q0.x - f.z * q0.z, x: f.x * q0.w - f.z * q0.y, y: f.z * q0.x - f.x * q0.z, z: f.x * q0.y + f.z * q0.w };
+    const l = Math.hypot(q.x, q.y, q.z, q.w);
+    m.rigid = { ...m.rigid, pos: { ...m.pos }, q: { x: q.x / l, y: q.y / l, z: q.z / l, w: q.w / l }, vel: { x: 0, y: 0, z: 0 }, spin: { x: 0, y: 0, z: 0 }, air: 0, rest: 0, righting: 0, tipped: 0 };
+    m.rigidSeen = { pos: m.pos, yaw: m.yaw, speed: 0 };
+    window.__autoInput = { buttons: 0 };
+  });
+  const offered = await page.waitForFunction(() => /Flip back/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: T(15000) }).then(() => true, () => false);
+  const onRoof = await page.evaluate(() => { const m = window.__match.mounts[window.__match.slots[window.__cs.slot].mount.index]; return +(1 - 2 * (m.rigid.q.x ** 2 + m.rigid.q.z ** 2)).toFixed(2); });
+  check(offered && onRoof < -0.5, `on its roof it stays there and the prompt offers Space to flip back (${JSON.stringify({ offered, up: onRoof, prompt: await page.evaluate(() => document.getElementById('prompt').textContent) })})`);
+  await page.evaluate(() => (window.__autoInput = { buttons: 1 }));
+  const flipped = await page
+    .waitForFunction(() => { const m = window.__match.mounts[window.__match.slots[window.__cs.slot].mount.index]; return m.rigid.contact === 4 && 1 - 2 * (m.rigid.q.x ** 2 + m.rigid.q.z ** 2) > 0.95; }, null, { timeout: T(15000) })
+    .then(() => true, () => false);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  check(flipped, 'jump rolls it back onto its wheels');
   // The drive and the turn leave the buggy anywhere (against a rock, on a slope): back to its spawn on open ground,
   // stopped, before the camera and seat checks below.
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
