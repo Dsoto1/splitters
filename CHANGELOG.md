@@ -7,6 +7,8 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Fewer hitches when bodies go.** In a crowded match past its body limit, and when a new round clears every body, the bodies are now put away over the next few frames instead of all in one (St. John's: a new round's frame of 30-50 ms on a slow machine is now about 5 ms).
+- **Map format v39.** Race mode's leftover track settings (laps, start grid, race vehicle, combat) are dropped from maps as they load and no longer written; a track keeps its curbs, NPC cars and pit lane.
 - **Options and Match Setup on phones.** Options is one column on a phone: the sections are chips along the top, the panel takes the whole height, and every setting is one line, its name and control side by side, with what it does behind an (i). Match Setup's header, which stays put while the setup scrolls, names the mode too, and the steppers' − and + are 40 px squares.
 - **Calmer terrazzo.** The speckled terrazzo floors (Flatpack Depot, the labs and offices) have finer, softer specks that no longer read as noise on a phone.
 - **Sun Warrior holds his guns properly**: his fingers close round the grip and his hands sit on the grip and the handguard, in first and third person. The Hollow Pilgrim's shooting hand sits on the grip.
