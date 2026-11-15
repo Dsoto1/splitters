@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_JUMP, BUTTON_STEER_LOOK, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, initPhysics, rigidOf, uprightness, type MapDocument, type MapEntity, type MatchRules, type PlayerInput, type RigidState } from '../src/index.ts';
+import { BUTTON_JUMP, BUTTON_STEER_LOOK, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, initPhysics, rigidOf, tippedOver, uprightness, type MapDocument, type MapEntity, type MatchRules, type PlayerInput, type RigidState } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -186,7 +186,7 @@ describe('rigid driving: jumps, landings, slopes, flips', () => {
     expect(steep.after).toBeLessThan(steep.top - 0.5);
   });
 
-  it('kerbed on one side at speed it tips; on its side or roof it rights itself', () => {
+  it('kerbed on one side at speed it tips; on its side or roof jump rolls it back (owner: "2b"); empty, it rights itself', () => {
     // A kicker under the left wheels only.
     const d = drive([block('kerb', 34, 14.6, [1.6, 0.4, 5], 0.45)]);
     d.run(20);
@@ -194,25 +194,42 @@ describe('rigid driving: jumps, landings, slopes, flips', () => {
     d.run(150, { forward: 1 }, () => (roll = Math.max(roll, Math.abs(d.m.susp!.r))));
     d.save('kerb');
     expect(roll).toBeGreaterThan(0.5);
-    // Upside down in the air: it lands on its roof, then rolls itself back onto its wheels.
-    const r = d.m.rigid!;
-    r.q = { x: 0, y: Math.sin(Math.PI / 4) * 0, z: 1, w: 0 };
-    r.pos = { x: 60, y: 2.5, z: 16 };
-    r.vel = { x: 0, y: 0, z: 0 };
-    r.spin = { x: 0, y: 0, z: 0 };
-    d.m.pos = r.pos;
-    (d.m as unknown as { rigidSeen: { pos: unknown } }).rigidSeen.pos = r.pos;
+    // Upside down in the air: it lands on its roof and stays there until the driver presses jump.
+    const roofAt = (x: number) => {
+      const r = d.m.rigid!;
+      r.q = { x: 0, y: 0, z: 1, w: 0 };
+      r.pos = { x, y: 2.5, z: 16 };
+      r.vel = { x: 0, y: 0, z: 0 };
+      r.spin = { x: 0, y: 0, z: 0 };
+      d.m.pos = r.pos;
+      (d.m as unknown as { rigidSeen: { pos: unknown } }).rigidSeen.pos = r.pos;
+    };
+    roofAt(60);
     let roof = false;
+    d.run(240, {}, () => (roof ||= d.m.rigid!.hull && uprightness(d.m.rigid!) < -0.8));
+    expect(roof).toBe(true);
+    expect(tippedOver(d.m.rigid!)).toBe(true);
+    expect(uprightness(d.m.rigid!)).toBeLessThan(-0.8);
     let upright = -1;
-    for (let k = 0; k < 360; k++) {
-      d.run(1);
-      if (d.m.rigid!.hull && uprightness(d.m.rigid!) < -0.8) roof = true;
-      if (roof && upright < 0 && uprightness(d.m.rigid!) > 0.95 && d.m.rigid!.contact === 4) upright = k;
+    for (let k = 0; k < 240 && upright < 0; k++) {
+      d.run(1, { buttons: k < 10 ? BUTTON_JUMP : 0 });
+      if (uprightness(d.m.rigid!) > 0.95 && d.m.rigid!.contact === 4) upright = k;
     }
     d.save('roof');
-    expect(roof).toBe(true);
     expect(upright).toBeGreaterThan(0);
-    expect(upright).toBeLessThan(300);
+    expect(upright).toBeLessThan(150);
+    // Empty: back on its wheels by itself within a few seconds.
+    roofAt(80);
+    d.send({ buttons: BUTTON_USE });
+    d.match.step();
+    expect(d.c.mount).toBeFalsy();
+    let empty = -1;
+    for (let k = 0; k < 600 && empty < 0; k++) {
+      d.match.step();
+      if (k > 60 && uprightness(d.m.rigid!) > 0.95 && d.m.rigid!.contact === 4) empty = k;
+    }
+    expect(empty).toBeGreaterThan(0);
+    expect(empty).toBeLessThan(500);
   });
 
   it('is deterministic: the same inputs give the same states and snapshots', () => {

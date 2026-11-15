@@ -64,6 +64,7 @@ import {
   SPEED_BOOST,
   TICK_DT,
   rigidOf,
+  tippedOver,
   TICK_RATE,
   HOLD_KINDS,
   HOLD_LABEL,
@@ -161,7 +162,7 @@ import { testMode } from '../testMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { DamageNumbers, SprayReadout, autoReloadOn } from './combatReadouts.ts';
-import { MountState } from './mountState.ts';
+import { MountState, type ClientMount } from './mountState.ts';
 import { RiderPlacement } from './riderPlacement.ts';
 import { ownBodyDrawn } from './ownBody.ts';
 import { LocalTransport } from './localTransport.ts';
@@ -2608,7 +2609,9 @@ export class GameSession {
     let full: { def: { displayName: string } } | null = null;
     if (local.alive && this.seat) {
       const m = this.mounts?.mounts.get(this.seat[0]);
-      const hint = m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]) ? { key: 'H', text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
+      const drives = !!m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]);
+      // A rigid vehicle on its side or roof: jump rolls it back onto its wheels (wheelPhysics.ts tippedOver).
+      const hint = drives && this.tipped(m) ? { key: 'Space', text: 'Flip back' } : drives ? { key: 'H', text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
       this.hud.setPrompt(m?.def.airplane ? 'Jump out (E or Space), then Space to open your parachute' : `Get out of the ${m?.def.displayName ?? 'vehicle'}`, false, hint);
     } else if (local.alive && local.state.zip !== undefined) {
       const two = local.weapon && !oneHanded(local.weapon);
@@ -2927,6 +2930,16 @@ export class GameSession {
     const setup = m ? rigidOf(m.def) : null;
     if (!m || !setup) return;
     local.vehicle = new VehiclePrediction(m.index, m.def, setup, local.physics, m.body, vp);
+  }
+
+  /** Your rigid vehicle is on its side or roof and still: jump flips it back (predicted state, else the snapshots'). */
+  private tipped(m: ClientMount): boolean {
+    const v = this.local?.vehicle;
+    if (v && v.mount === m.index) return tippedOver(v.state);
+    const t = rigidOf(m.def);
+    if (!m.susp || !t) return false;
+    // The snapshot's pitch and roll (drawn yaw, pitch, roll): its up axis's height is cos(pitch) cos(roll).
+    return Math.cos(m.susp.p) * Math.cos(m.susp.r) < 0.45 && Math.hypot(m.vel.x, m.vel.y, m.vel.z) < 2.5 && m.susp.wheel.filter((w) => w > 0.01 - t.travel).length < 2;
   }
 
   /** Your predicted vehicle drawn where prediction has it (between its last two ticks), not where the snapshots do. */

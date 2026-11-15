@@ -49,9 +49,12 @@ A rigid body: position, velocity, orientation (a quaternion) and spin, unit mass
   (`airPitch`, `airRoll`) works on what changed since take-off: the throttle and steering held over the lip are
   neutral, so holding W through a jump doesn't dive the nose; pressing W noses down, S (or letting go of W) lifts it,
   A/D roll.
-- **Flips and self-righting.** Tipped past about 63° with fewer than two wheels down and nearly stopped for
-  `rightAfter` seconds (1.2 with a driver, 4 empty), it rolls itself back onto its wheels over about a second (a spin
-  toward upright and a little lift). Riders stay in.
+- **Flips and righting (owner's answer 2b).** Tipped past about 63° with fewer than two wheels down, nearly stopped
+  and resting on something (`tippedOver`), the driver rolls it back onto its wheels with **jump** (Space: the
+  handbrake, which does nothing on its side; Use stays "get out"), after `rightAfter[0]` (0.3 s) at rest; the HUD's
+  use prompt shows "Space Flip back" instead of the camera hint while it can. Empty, it rights itself after
+  `rightAfter[1]` (4 s), so nobody finds a buggy on its roof. Righting is a spin toward upright and a little lift over
+  about a second; riders stay in.
 - **What the rest of the match sees.** `pos` is the body's origin (the feet), `yaw` its heading, `speed` and `slide`
   its velocity along and across the heading, `airborne` no wheel and no hull touching; the hit box turns with the body
   (`setBoxTransform`), seats too (riders sit in a rolled buggy where it is drawn). Crashes, running people over,
@@ -69,7 +72,7 @@ A rigid body: position, velocity, orientation (a quaternion) and spin, unit mass
 | Steering | lock 0.6 rad (was drawn 0.5), 70 % less at top speed; rear steer 0.6 of the front's at a standstill |
 | Engine | 18 m/s, accel 10 m/s² with a 1.7× launch at a standstill, reverse 7 m/s (as before) |
 | Air | levelling 5 rad/s² per rad, air pitch 10 and roll 6 rad/s² |
-| Righting | 1.2 s tipped with a driver, 4 s empty |
+| Righting | jump, once it has rested 0.3 s tipped (a driver); on its own after 4 s (empty) |
 
 Measured in `packages/shared/test/drivePhysics.test.ts` (DRIVE_TRACE writes the traces):
 - Flat out off a 1 m kicker at 18 m/s: 27 ticks in the air, 1.78 m up, 9 m out, lands on its front wheels then the
@@ -78,7 +81,7 @@ Measured in `packages/shared/test/drivePhysics.test.ts` (DRIVE_TRACE writes the 
   speed. The classic drive turned 1.7 rad/s at 6 m/s (radius 3.5 m) by turning the heading directly.
 - Climbs a 25° slope from a short run-up; on 50° it slides back to the foot with the throttle held.
 - A kicker under the left wheels at 18 m/s rolls it onto its side (roll > 0.5 rad, often all the way); it rights
-  itself; dropped on its roof it lands there and is back on four wheels within 5 s.
+  stays on its roof until the driver presses jump, then is back on four wheels within 2.5 s; empty, within 8 s.
 - Deterministic: the same inputs give the same states and snapshots.
 
 ## Netcode
@@ -148,6 +151,10 @@ No AWS cost: it runs on the hosting player's machine.
    and capped as now, Reduce flashing unaffected), a flip button if the owner wants control over self-righting.
 
 ## Owner questions
+
+**Owner's answers, 2026-11-15** (via lane A's lead): 1a, 2b, 3a, 4a ("for now"), 5a, 6a. So: flips as they are;
+righting only on the driver's key (jump; empty ones still right themselves after 4 s); air control as built; the
+6 m turn stays for now; 46° grip; the Troop Buggy alone first, the owner drives it, then the rest one by one.
 
 1. **How easy to flip?** Step 1 rolls the Troop Buggy onto its side off a kerb under one side at full speed, and
    rarely in a flat-out turn on level ground.

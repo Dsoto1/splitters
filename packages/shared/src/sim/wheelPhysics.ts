@@ -39,7 +39,7 @@ export interface RigidTuning {
   /** Air control (rad/s²): W/S pitch, A/D roll. */
   airPitch: number;
   airRoll: number;
-  /** Seconds tipped over and stopped before it rights itself, with a driver and without. */
+  /** Seconds tipped over and stopped before it can be righted: with a driver, by pressing jump; empty, on its own. */
   rightAfter: [number, number];
   /** The rear wheels' steering against the front's at a standstill (a share, fading out by top speed). */
   rearSteer: number;
@@ -253,6 +253,14 @@ export function newRigid(setup: RigidSetup, pos: Vec3, yaw: number): RigidState 
 /** Its up axis's height share (1 upright, 0 on its side, -1 on its roof). */
 export function uprightness(s: RigidState): number {
   return rotate(s.q, v3(0, 1, 0)).y;
+}
+
+/**
+ * On its side or roof (tipped past about 63°), fewer than two wheels down, nearly stopped and resting on something:
+ * it can be rolled back onto its wheels (jump, with a driver: the HUD says so).
+ */
+export function tippedOver(s: RigidState, up = uprightness(s)): boolean {
+  return up < 0.45 && s.contact < 2 && len(s.vel) < 2.5 && !(s.contact === 0 && !s.hull);
 }
 
 /** Forward and rightward speed (m/s) along its heading on the level (the classic `speed` and `slide`). */
@@ -583,10 +591,12 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
   if (s.righting > 0) {
     s.righting--;
     if (upY > 0.92 && s.righting > 0) s.righting = Math.min(s.righting, 6);
-  } else if (upY < 0.45 && contact < 2 && len(s.vel) < 2.5 && !(contact === 0 && !s.hull)) {
+  } else if (tippedOver(s, upY)) {
     s.tipped++;
+    // With a driver: when they press jump (the handbrake, no use on its side), once it has come to rest a moment
+    // (owner, 2026-11-15: "2b"); empty: on its own after a while.
     const after = Math.round(t.rightAfter[input.piloted ? 0 : 1] / dt);
-    if (s.tipped >= after) {
+    if (s.tipped >= after && (!input.piloted || input.brake)) {
       s.tipped = 0;
       s.righting = Math.round(1.4 / dt);
     }
