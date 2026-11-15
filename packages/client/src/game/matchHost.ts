@@ -76,6 +76,8 @@ export interface LocalMatchOptions {
   party?: string;
   /** MapMaker's Play from here: this browser's player starts here (feet, facing; editor/playFromHere.ts), not at a spawn. */
   startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
+  /** Rigid driving for every vehicle that has it, or the classic driving for all (`?drive=`; MatchOptions.drive). */
+  drive?: 'classic' | 'rigid';
 }
 
 /** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts): its name only. */
@@ -246,7 +248,7 @@ export class MatchHost {
     const cp = this.opts.restore;
     const rules = cp?.rules ?? this.opts.rules ?? rulesForMap(this.map);
     const test = this.opts.test;
-    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true });
+    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, ...(this.opts.drive ? { drive: this.opts.drive } : {}) });
     const bots = new BotFiller(match, BOT_DIFFICULTIES[cp?.skill ?? this.opts.difficulty], { botSet: this.opts.botSet ?? null });
     const fill = Math.min(cp?.fill ?? this.opts.botFill, MAX_PLAYER_SLOTS);
     let me: Combatant;

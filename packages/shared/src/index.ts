@@ -61,6 +61,7 @@ export * from './sim/mounts.ts';
 export * from './sim/resupply.ts';
 export * from './sim/holdUse.ts';
 export * from './sim/suspension.ts';
+export * from './sim/wheelPhysics.ts';
 export * from './sim/parachute.ts';
 export * from './sim/airplane.ts';
 export * from './sim/items.ts';
