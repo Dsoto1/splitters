@@ -75,6 +75,30 @@ What to look for: if `render` is large but `shadows` and `post` are small, the c
 **Copy performance report** (same menu) gives the last minute as text, now with the same split (avg,
 slowest 5 %, worst per system) and the counts.
 
+Two more lines (fix 3a and 3d of `docs/PERF_MAPMAKER_TRACE_2026-11-15.md`, the worn-down tab):
+
+```
+tab        outside our script 0.4 ms a frame (late frames)
+memory     script 642 MB · 3,730 meshes, 891 materials, 2,835 geometries, 433 textures (792 MB, 7 targets) in 6 scenes · 28.3k DOM nodes · 3 workers
+```
+
+- **tab**: the time between frames less our own frame callback, counted only on a frame later than the
+  screen's refresh and our own work explain (`game/tabToll.ts`). A fresh tab reads about 0 to 1 ms; the
+  owner's worn-down tab read 11 to 12.5 ms. Over 8 ms for 30 s in a row, in a tab that earlier ran clean,
+  the match says once that the tab is slowing and a reload helps (a plain message line, nothing flashes;
+  never in a browser test's match). A reload in MapMaker or its Test reopens MapMaker on the map.
+- **memory** (`memoryReadout.ts`, read once a second while shown): Chrome's script memory
+  (`performance.memory`; other browsers have none), the engine's live meshes, materials, geometries and
+  textures summed over its scenes (the menu, MapMaker, the match, the portraits and thumbnails), the
+  textures on the graphics card with their size (estimated: four bytes a texel, a third more for mips) and
+  render targets, the page's elements and our workers. A snapshot is also taken at every MapMaker Test start
+  and every Back to MapMaker (`window.__memory.snapshots`). MapMaker's status bar shows it with `?memory=1`
+  or `localStorage['tiletrigger.memoryReadout'] = '1'`.
+- **The repeat probe**: `node tools/perf/memory-probe.mjs` (after `pnpm build`) opens a big map in MapMaker,
+  runs rounds of a small edit, a Test with bots and Back to MapMaker, then plain matches from the menu, and
+  after each collects garbage and prints what the page holds, including objects still in the heap that were
+  disposed (a disposed scene there is a leak). Its options are at the top of the file.
+
 ## The recording file
 
 `format: "tiletrigger-perf-recording"`, version 1:
@@ -86,7 +110,11 @@ slowest 5 %, worst per system) and the counts.
   `flames`, `hud`, `net`, `game`, `renderScene`, `renderCull`, `renderShadow`, `renderPost`), draws,
   meshes, shadow casters, characters drawn, effects drawn, the counts (`animated`, `skinned`, `ragdolls`,
   `lasting`, `effects`, `built`: characters let through to be built), shaders built that second, the
-  server's tick average and max (-1 when not on a server).
+  server's tick average and max (-1 when not on a server); from 2026-11-15 also `outsideMs` (the tab line
+  above) and the memory readout's figures (`heapMB`, `heapTotalMB`, `scenes`, `meshes`, `materials`,
+  `geometries`, `textures`, `gpuTextures`, `gpuTextureMB`, `renderTargets`, `skeletons`, `domNodes`,
+  `workers`; -1 where the browser has none). `memory` holds the heap limit, the Test start and Back to
+  MapMaker snapshots made during the recording, and whether the match said the tab was slowing.
 - `histograms`: per system, frames per bucket (`buckets`, ms edges), for whole-match p95s.
 - `hitches`: every frame over 50 ms (up to 2,000): when, how long, how much of it the frame's own work
   covered (`busy`) and how much happened outside it (`outside`: building a character, a garbage collection,

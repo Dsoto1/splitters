@@ -313,6 +313,9 @@ export class LocalTransport implements Transport {
     this.startHere(start);
   }
 
+  /** The test hooks this transport put on the page (installHooks): taken off when it closes. */
+  private hook?: SimHook;
+
   private installHooks(): void {
     const transport = this;
     const hook: SimHook = {
@@ -328,6 +331,7 @@ export class LocalTransport implements Transport {
         }),
     };
     const w = window as unknown as { __sim: SimHook; __give: (id: string) => void };
+    this.hook = hook;
     w.__sim = hook;
     w.__give = (id) => this.toHost({ k: 'give', id });
   }
@@ -469,6 +473,14 @@ export class LocalTransport implements Transport {
     window.clearInterval(this.upTimer);
     this.upTimer = undefined;
     this.links.clear();
+    // The test hooks (`__sim`, `__give`, and `__match` for a match on this thread) would keep the ended match, and
+    // through `onClose` its session, view and scene, alive under MapMaker or the menu (the memory probe, fix 3c).
+    const w = window as unknown as { __sim?: SimHook; __give?: unknown; __match?: unknown };
+    if (this.hook && w.__sim === this.hook) {
+      delete w.__sim;
+      delete w.__give;
+    }
+    if (this.inThread) delete w.__match;
     this.toHost({ k: 'stop' });
     this.stopped = true;
     this.snapshots?.clear();

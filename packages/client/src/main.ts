@@ -1,4 +1,6 @@
 import './renamedStorage.ts';
+import { countWorkers, noteMemory } from './memoryReadout.ts';
+import { editorResumeOnReload, forgetEditorMap, type EditorResume } from './editorResume.ts';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import '@fontsource/chakra-petch/500.css';
 import '@fontsource/chakra-petch/600.css';
@@ -40,6 +42,8 @@ import { shippedPicture } from './frontend/mapThumbs.ts';
 import { joinParty, myParty, rememberJoin } from './game/party.ts';
 import { FOLLOW_TRAVEL_MS, RECONNECT_FOR_MS, afterLinkEnds } from './game/rejoinPolicy.ts';
 
+// The memory readout counts our workers (made, less terminated) from the first one on.
+countWorkers();
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
 // Browser tests' deterministic mode (?test=1): offline only, see testMode.ts.
@@ -384,6 +388,8 @@ class App {
     }
     await this.init();
     this.mode = 'menu';
+    // Out of MapMaker: a reload from here is the menu's.
+    forgetEditorMap();
     this.editor?.hide();
     this.front!.show(status);
   }
@@ -426,7 +432,8 @@ class App {
     }, this.portraits);
   }
 
-  async openEditor(): Promise<void> {
+  /** MapMaker; `resume` after a reload of the tab while it was open: the map that was being made (editorResume.ts). */
+  async openEditor(resume?: EditorResume | null): Promise<void> {
     const [{ EditorApp }] = await Promise.all([import('./editor/editorApp.ts'), this.init(), initLocalMaps()]);
     finishBoot();
     const first = !this.editor;
@@ -438,8 +445,9 @@ class App {
     });
     $('menu').hidden = true;
     this.mode = 'editor';
-    // Always a blank starter map; the user opens what they want from Open….
-    this.editor.startFresh();
+    // A blank starter map (the user opens what they want from Open…), or after a reload the map that was being made.
+    if (resume) void this.editor.resume(resume);
+    else this.editor.startFresh();
     this.editor.show();
     // The first time, its sky, ground and shaders are still on their way: fade the view in when they are.
     if (first) revealWhenReady(capped(this.editor.view.scene.whenReadyAsync(), 2000));
@@ -455,6 +463,7 @@ class App {
   }
 
   private startTestWith(m: MatchCode, req: TestRequest, t0: number): void {
+    noteMemory('test start');
     this.editor!.hide();
     this.startSession(m, new m.LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty, ...(req.startAt ? { startAt: req.startAt } : {}), ...(req.nav ? { nav: req.nav } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Back to MapMaker',
@@ -467,6 +476,7 @@ class App {
       onExit: (reason) => {
         this.mode = 'editor';
         this.editor!.show();
+        noteMemory('back to MapMaker');
         m.prewarmSimWorker();
         if (reason) this.editor!.toast(`Test ended: ${reason}`, true);
       },
@@ -1014,7 +1024,7 @@ else if (params.get('mode') === 'assets') {
     const { engine, canvas, kind } = await createEngine($<HTMLCanvasElement>('view'));
     await openEnvLab(engine, canvas, kind);
   })();
-} else if (params.get('mode') === 'editor') void app.openEditor();
+} else if (params.get('mode') === 'editor') void app.openEditor(editorResumeOnReload());
 else if (params.get('mode') === 'designer') void app.openDesigner();
 else if (params.has('tutorial')) void app.playTutorial();
 else if (params.has('offline')) {
@@ -1030,4 +1040,9 @@ else if (params.has('offline')) {
   void app.init().then(() => app.joinCode(params.get('join') ?? '', app.front!.displayName || 'Player'));
 }
 else if (params.has('autojoin')) void app.init().then(() => app.playOnline(app.front!.server, app.front!.name));
-else void app.showMenu();
+else {
+  // A reload of the tab while MapMaker (or its Test) was open goes back to MapMaker on that map, not to the menu.
+  const resume = editorResumeOnReload();
+  if (resume) void app.openEditor(resume);
+  else void app.showMenu();
+}

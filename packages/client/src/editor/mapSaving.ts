@@ -26,6 +26,7 @@ import {
   writeDraft
 } from './storage.ts';
 import { templatePicker } from './templatePicker.ts';
+import { rememberEditorMap, type EditorResume } from '../editorResume.ts';
 
 /** Saving and loading the map: drafts kept while unsaved, Save, Quit, New, Open… and replacing the document being edited (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class MapSaving {
@@ -51,6 +52,51 @@ export class MapSaving {
     this.autosaveTimer = undefined;
     if (this.isDirty()) writeDraft(this.app.doc);
     else clearDraft(this.app.doc.metadata.id);
+    this.remember();
+  }
+
+  /** This tab's note of the map being made, for a reload to come back to (editorResume.ts). */
+  remember(): void {
+    const m = this.app.doc.metadata;
+    rememberEditorMap({ id: m.id, name: m.name, ...(m.parentId ? { parentId: m.parentId } : {}) });
+  }
+
+  /**
+   * After a reload of the tab (MapMaker or its Test was open): the map that was being made, as it was. Its unsaved
+   * draft first (still unsaved), else its saved copy, the official map (the owner's, same id) or the template a
+   * remix came from. Resolves false when none is there (a blank map that was never changed): a fresh start then.
+   */
+  async resume(r: EditorResume): Promise<boolean> {
+    const draft = listDrafts().find((d) => d.map.metadata.id === r.id);
+    if (draft) {
+      this.replaceDocument(draft.map);
+      this.savedRevision = -1;
+      this.app.topBar.updateTopBar();
+      this.app.toast(`Back to "${draft.map.metadata.name}" after the reload: your unsaved changes are here`);
+      return true;
+    }
+    if (inLibrary(r.id)) {
+      const opened = await openFromLibrary(r.id, true);
+      if ('map' in opened) {
+        this.replaceDocument(opened.map);
+        this.app.toast(`Back to "${opened.map.metadata.name}" after the reload`);
+        return true;
+      }
+    }
+    const official = MAP_INDEX.some((e) => e.key === r.id) ? await loadBuiltInMap(r.id, { forEditing: true }).catch(() => null) : null;
+    if (official) {
+      this.replaceDocument(official);
+      this.app.toast(`Back to the official ${official.metadata.name} after the reload`);
+      return true;
+    }
+    // A remix not changed since it was made: the template again, as the same remix.
+    const parent = r.parentId ? await loadBuiltInMap(r.parentId, { forEditing: true }).catch(() => null) : null;
+    if (parent) {
+      this.replaceDocument({ ...parent, metadata: { ...parent.metadata, id: r.id, name: r.name, parentId: parent.metadata.id } });
+      this.app.toast(`Back to "${r.name}" after the reload`);
+      return true;
+    }
+    return false;
   }
 
   /** Before switching maps: unsaved changes stay in Open… as a draft. */
@@ -118,6 +164,7 @@ export class MapSaving {
     this.app.setLevel(0, true);
     this.app.view.focus({ x: 0, y: 0, z: 0 });
     this.app.refresh(true);
+    this.remember();
   }
 
   /** New: pick a size of open ground (or the sky, with no terrain) and a ground material. */

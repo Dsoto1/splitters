@@ -13,6 +13,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
+import { freeIfSceneGone } from './sceneGone.ts';
 import './gltf.ts';
 import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, clipSetOf, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook, type GripTune } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
@@ -206,7 +207,7 @@ export class CharacterLibrary {
     const key = `gear:${name}`;
     let p = this.files.get(key) as Promise<AssetContainer | null> | undefined;
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(`${GEAR_MODEL_BASE}${name}.glb`), this.scene, GLB).catch(() => null);
+      p = LoadAssetContainerAsync(versioned(`${GEAR_MODEL_BASE}${name}.glb`), this.scene, GLB).then(freeIfSceneGone(this.scene), () => null);
       this.files.set(key, p as Promise<AssetContainer>);
     }
     return p;
@@ -215,7 +216,7 @@ export class CharacterLibrary {
   private load(file: string): Promise<AssetContainer> {
     let p = this.files.get(file);
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(`${CHARACTER_BASE}${file}`), this.scene, GLB);
+      p = LoadAssetContainerAsync(versioned(`${CHARACTER_BASE}${file}`), this.scene, GLB).then(freeIfSceneGone(this.scene));
       this.files.set(file, p);
     }
     return p;

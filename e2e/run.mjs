@@ -408,10 +408,24 @@ async function editorFlow(browser) {
   await page.click('#ed-quit-cancel');
   check(!(await page.evaluate(() => document.getElementById('ed-quit-dialog').open || document.getElementById('editor').hidden)), 'Cancel stays in MapMaker');
   await page.waitForFunction((id) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(id), id, { timeout: T(10000) });
+  // A reload of the tab (or Chrome's "Aw, Snap!") comes back to the map being made, its unsaved changes included.
   await page.reload();
+  await page.waitForFunction((id) => window.__editor?.doc.metadata.id === id, id, { timeout: T(30000) }).catch(() => {});
+  d = await doc();
+  const dirtyAfterReload = await page.evaluate(() => document.getElementById('ed-dirty').classList.contains('on') && !document.getElementById('editor').hidden && document.getElementById('menu').hidden);
+  check(d.metadata.id === id && d.metadata.name === 'Draft Edit' && d.classicStructure.tiles.length === 3 && dirtyAfterReload, `a reload in MapMaker reopens the map being made, its unsaved draft still unsaved (${d.metadata.name}, ${d.classicStructure.tiles.length} tiles, unsaved ${dirtyAfterReload})`);
+  // A reload during its Test comes back to MapMaker on the map too, not into the Test or the menu.
+  await page.keyboard.press('F5');
+  await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
+  await page.reload();
+  await page.waitForFunction((id) => window.__editor?.doc.metadata.id === id, id, { timeout: T(30000) }).catch(() => {});
+  const fromTest = await page.evaluate(() => ({ id: window.__editor?.doc.metadata.id, name: window.__editor?.doc.metadata.name, editor: !document.getElementById('editor').hidden, menu: !document.getElementById('menu').hidden, test: !!window.__cs?.local }));
+  check(fromTest.id === id && fromTest.name === 'Draft Edit' && fromTest.editor && !fromTest.menu && !fromTest.test, `a reload during MapMaker's Test comes back to MapMaker with the map open (${JSON.stringify(fromTest)})`);
+  // Coming in afresh (not a reload) still opens the blank starter map, the draft kept in Open….
+  await page.goto(page.url());
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   d = await doc();
-  check(d.metadata.id !== id && d.metadata.name === 'Untitled Map' && d.classicStructure.tiles.length === 1 && d.entities.length === 1, 'reopening MapMaker shows the blank starter map');
+  check(d.metadata.id !== id && d.metadata.name === 'Untitled Map' && d.classicStructure.tiles.length === 1 && d.entities.length === 1, 'opening MapMaker afresh shows the blank starter map');
   await page.click('#ed-open');
   const lib = await page.$$eval('#ed-library li', (ls) => ls.map((l) => l.textContent));
   check(lib.some((t) => t.includes('Untitled Map') && t.includes('Saved')), 'saved map is listed in the library');

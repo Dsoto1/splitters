@@ -102,6 +102,7 @@ import { LeftRail } from './leftRail.ts';
 import { MapSettingsView } from './mapSettingsView.ts';
 import { RightDock } from './rightDock.ts';
 import { StatusBar } from './statusBar.ts';
+import type { EditorResume } from '../editorResume.ts';
 import { ToolBar } from './toolBar.ts';
 import { ViewMenu } from './viewMenu.ts';
 import { EditorTour } from './tour.ts';
@@ -460,6 +461,14 @@ export class EditorApp {
     this.tour.maybeStart();
   }
 
+  /**
+   * Entering MapMaker after a reload of the tab while it was open (editorResume.ts): the map being made, its unsaved
+   * changes included; a blank starter when there is nothing to come back to.
+   */
+  async resume(r: EditorResume): Promise<void> {
+    if (!(await this.saving.resume(r).catch(() => false))) this.startFresh();
+  }
+
   get doc(): MapDocument {
     return this.history.doc;
   }
@@ -573,6 +582,7 @@ export class EditorApp {
     this.notes.frame();
     this.hints.frame();
     this.plan.update();
+    this.statusBar.memoryTick();
     this.view.render();
   }
 
