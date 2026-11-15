@@ -148,6 +148,7 @@ import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type Chara
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep, animStepByShare } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
+import { sliced } from './sliced.ts';
 import { FrameSpread } from './frameSpread.ts';
 import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts';
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
@@ -352,6 +353,8 @@ const BODY_POOL_TOTAL = 16;
 const RETIRE_MS = 1.5;
 /** Frames longer than this (ms: a CPU-rendered page) let more than one character be built after them (one per 16 ms). */
 const BUILD_CATCH_UP_MS = 250;
+/** A slice of the match's loading work spread over frames (sliced.ts): this much at most before a frame is drawn (ms). */
+const START_SLICE_MS = 8;
 /** Ragdoll parts parked in the effects world's pool when the map is built (a standard body's, this many times). */
 const RAGDOLL_PREWARM_BODIES = 12;
 /**
@@ -731,8 +734,11 @@ export class GameView {
     this.impacts.warm();
     void GodotVfx.preload(...mappedPacks()).then(() => {
       if (this.scene.isDisposed) return;
-      // Every effect content/vfx.json's map can play (impacts, explosions, moments of play, lightning, lasting ones).
-      for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect);
+      // Every effect content/vfx.json's map can play (impacts, explosions, moments of play, lightning, lasting ones),
+      // a few a frame (`?perfoff=startslices`: all at once): in one go they were 350 ms of the welcome's task, MapMaker's
+      // Test start's longest freeze (docs/PERF_MAPMAKER_TRACE_2026-11-15.md fix 5).
+      if (!perfOn('startslices')) for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect);
+      else void sliced(mappedEffects(), (r) => this.vfx.warm(r.pack, r.effect), START_SLICE_MS, () => this.scene.isDisposed);
     });
   }
 
@@ -835,11 +841,14 @@ export class GameView {
     try {
       await GodotVfx.preload(...mappedPacks());
       const ends: (() => void)[] = [];
-      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
-      for (const r of mappedEffects()) {
+      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then); started a few a
+      // frame, as in buildMap.
+      const start = (r: { pack: string; effect: string }) => {
         const end = this.vfx.warm(r.pack, r.effect, true);
         if (end) ends.push(end);
-      }
+      };
+      if (perfOn('startslices')) await sliced(mappedEffects(), start, START_SLICE_MS, () => this.scene.isDisposed);
+      else for (const r of mappedEffects()) start(r);
       effects = ends.length;
       await this.afterFrames(4, 2500);
       await ready();

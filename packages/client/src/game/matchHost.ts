@@ -257,7 +257,11 @@ export class MatchHost {
     const t0 = performance.now();
     const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, nav: this.opts.nav });
     this.loadMs = Math.round(performance.now() - t0);
-    if (this.opts.nav !== undefined) console.info(`match made in ${this.loadMs} ms (${match.navReused ? "the navigation check's navmesh" : 'navmesh built'})`);
+    if (this.opts.nav !== undefined) {
+      console.info(`match made in ${this.loadMs} ms (${match.navReused ? "the navigation check's navmesh" : 'navmesh built'})`);
+      // (Its data is the match's now: not kept a second time.)
+      this.opts.nav = null;
+    }
     const bots = new BotFiller(match, BOT_DIFFICULTIES[cp?.skill ?? this.opts.difficulty], { botSet: this.opts.botSet ?? null });
     const fill = Math.min(cp?.fill ?? this.opts.botFill, MAX_PLAYER_SLOTS);
     let me: Combatant;

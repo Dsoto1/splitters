@@ -106,6 +106,7 @@ import { ToolBar } from './toolBar.ts';
 import { ViewMenu } from './viewMenu.ts';
 import { EditorTour } from './tour.ts';
 import type { PrebuiltNav } from '@tiletrigger/shared/match';
+import { perfOn } from '../game/perfSwitches.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -978,7 +979,7 @@ export class EditorApp {
     // As played: paths laid into the ground, terrain under the floors (what loadMap gives every match).
     const played = loadMap(this.doc);
     this.tour.note({ kind: 'test' });
-    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}), nav: this.checks.prebuilt });
+    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}), nav: perfOn('navhandoff') ? this.checks.prebuilt : null });
   }
 
   toast(message: string, error = false): void {
