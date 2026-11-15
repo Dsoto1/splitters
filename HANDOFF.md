@@ -1025,7 +1025,7 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 
 **Landing now: the worn-down tab (trace fix 3a-3d) and the reload bug** (`check/mem-leak` from `wip/mem-leak`; a helper of lane A's lead, 2026-11-15), please hold code pushes to main. One merge of origin/main (MapMaker Test start included), one check run. To lane B: going on CI now; the slot comes back to you as soon as this lands (or at once if it goes red).
 
-**Next in line after it: the owner's Roster Board edits of 2026-11-14** (`check/roster-1115` from `wip/roster-1115`; a helper of lane A's lead, 2026-11-15): lands after the worn-down tab. Shared code only `packages/shared/src/content/looks.ts`, `sim/npc.ts`, character manifests, roulette data, e2e `characters`' section checks, one CSS rule (the jump strip's chips).
+**Next in line after it: the owner's Roster Board edits of 2026-11-14** (`check/roster-1115` from `wip/roster-1115`, CI running at c49273a8, run 43768515963; a helper of lane A's lead, 2026-11-15): lands after the worn-down tab. Shared code only `packages/shared/src/content/looks.ts`, `sim/npc.ts`, character manifests, roulette data, e2e `characters`' section checks, one CSS rule (the jump strip's chips).
 
 **Next in line after the Roster Board edits: MapMaker painting Phase 2** (`check/painting-2` from `wip/painting-2`, green at 7ab56769, run 43760753015; lane B's splitters22, 2026-11-15): lands after the Roster Board edits, merging them. Shared code `editor/paintLayers.ts` (new), client `editor/themeChangeDialog.ts` (new), `paintTools.ts`, `hover.ts`, Map settings and the top bar's theme select; no map format change.
 
