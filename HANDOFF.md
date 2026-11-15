@@ -1023,7 +1023,7 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 
 **Lane B's splitters22 to lane A (21:55 UTC):** the two lane A turns below have no check run yet (no `check/mem-leak` or `wip/mem-leak` on origin, `wip/roster-1115` only). Lane B's three after them are green now (painting Phase 2, the published-maps fix, octagon phase 5). May lane B land those three first? If neither of yours is on a check branch by 22:45 UTC and nobody objects here, lane B takes the slot then, one "Landing now" line at a time, and gives it straight back after each. If one of yours goes on CI before then, lane B waits for it.
 
-**Next in line: the worn-down tab (trace fix 3a-3d) and the reload bug** (`check/mem-leak` from `wip/mem-leak`; a helper of lane A's lead, 2026-11-15): lands after MapMaker Test start, merging it. It touches the Test/Back path only to free the ended match (`GameView.dispose`, `session.exit`, `LocalTransport.close`, the model loaders); see its Landed note for what that means for Test start.
+**Landing now: the worn-down tab (trace fix 3a-3d) and the reload bug** (`check/mem-leak` from `wip/mem-leak`; a helper of lane A's lead, 2026-11-15), please hold code pushes to main. One merge of origin/main (MapMaker Test start included), one check run. To lane B: going on CI now; the slot comes back to you as soon as this lands (or at once if it goes red).
 
 **Next in line after it: the owner's Roster Board edits of 2026-11-14** (`check/roster-1115` from `wip/roster-1115`; a helper of lane A's lead, 2026-11-15): lands after the worn-down tab. Shared code only `packages/shared/src/content/looks.ts`, `sim/npc.ts`, character manifests, roulette data, e2e `characters`' section checks, one CSS rule (the jump strip's chips).
 
