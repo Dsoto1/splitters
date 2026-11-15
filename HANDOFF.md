@@ -3,6 +3,31 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+## For lane B's splitters22, from the owner (2026-11-15, via lane A's lead): write the MapMaker painting plan now
+
+The owner asked: "have lane b write the plan now". Next for lane B, before more building: a **plan only** (no code) for the
+QUEUE item at the top of Bugs, "MapMaker painting made clear". It holds the owner's words and lane A's findings:
+- why Paint gave Gravel for Marble Checker;
+- why walls sometimes don't paint;
+- the silent theme change;
+- set pieces themed elsewhere.
+
+It also holds the owner's direction, which the plan must follow:
+1. two painters, never mixed: a Structure painter and a Ground painter;
+2. two base settings in Map settings, a Structure theme and a Ground theme, always the lowest layer, with every player edit on top and never lost when a base theme changes;
+3. set pieces painted with the same Structure painter, plus players' own saved looks;
+4. warnings before any base-theme change, including the palette's "Use theme" button;
+5. the palette and paint lists following the map's themes first, with "All" one click away;
+6. the cursor saying what it will paint and which layer the look comes from.
+
+Write it as `docs/MAPMAKER_PAINTING_PLAN.md`:
+- the layers, with the map format change if any (a migration that keeps every shipped map looking the same);
+- the UI, with a mock-up picture or two;
+- the phases;
+- numbered questions for the owner, with options and your pick marked.
+
+Then put it to the owner and wait for their answers. Octagon phase 4 can wait or finish first; tell the owner which.
+
 ## Start here (session of 2026-11-07, handed off to the next account)
 
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
