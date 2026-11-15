@@ -10,8 +10,8 @@ import { resolveBackdrop } from './backdrop.ts';
 import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './border.ts';
 import { pathsExtent } from './paths.ts';
 import { CORNER_EDGE_STYLES, EDGE_SHAPES, FACADE_EDGE_STYLES, STREET_EDGE_STYLES } from '../content/edgeStyles.generated.ts';
-import { edgeSegments, edgeTrimBoxes, shapeOf, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
-export { edgeSegments, edgeTrimBoxes, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
+import { edgePaint, edgeSegments, edgeTrimBoxes, shapeOf, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
+export { edgePaint, edgeSegments, edgeTrimBoxes, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
 
 /**
  * `trim` boxes are visual only (baseboards, cornices, frames): never in physics
@@ -44,8 +44,8 @@ export interface WorldBox {
   surface?: { material: string; tint: string | null };
   /** A room's roof slab (room option Ceiling): its top is painted as the tile's `roof` surface. */
   roof?: true;
-  /** A trim box drawn in the walls' paint (LocalBox.paint: a plain arch's spandrels). */
-  paint?: 'walls';
+  /** A trim box drawn in the walls' paint (LocalBox.paint: a plain arch's spandrels); `metal`: a bar, gate or railing (EdgeShape.paint). */
+  paint?: 'walls' | 'metal';
 }
 
 /** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
@@ -569,10 +569,16 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
         // Trim marked `outside` dresses the wall's outer face too where nothing is built beyond (an arch from the street).
         const [dx, dy] = SIDE_DIRS[side];
         const outer = !cells.has(cellKey(gx + dx, gy + dy, gz));
-        for (const p of edgeTrimBoxes(style, half, levelHeight, outer)) boxes.push(sideTrimBox(side, cx, cz, half, baseY, p, id));
+        const metal = edgePaint(style);
+        for (const p of edgeTrimBoxes(style, half, levelHeight, outer)) {
+          const b = sideTrimBox(side, cx, cz, half, baseY, p, id);
+          boxes.push(metal && !b.surface ? { ...b, paint: metal } : b);
+        }
       } else {
+        const metal = edgePaint(style);
         for (const [u0, u1, y0, y1, t] of edgeSegments(style, half, levelHeight)) {
-          boxes.push(sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, 0, t, id, 'wall'));
+          const b = sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, 0, t, id, 'wall');
+          boxes.push(metal ? { ...b, paint: metal } : b);
         }
       }
     }

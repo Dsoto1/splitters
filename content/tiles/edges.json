@@ -257,6 +257,7 @@
     {
       "id": "railing",
       "label": "Railing",
+      "paint": "metal",
       "segments": [{ "u": ["-half", "half"], "y": [0, 1], "t": 0.12 }],
       "trim": [
         { "repeat": { "from": "-half+0.1", "through": "half-0.1", "step": 2 }, "u": [-0.06, 0.06], "y": [0, 1.08], "depth": 0.04 },
@@ -314,6 +315,7 @@
     {
       "id": "bars",
       "label": "Bars",
+      "paint": "metal",
       "segments": [
         { "repeat": { "from": "-half+0.15", "below": "half-0.1", "step": 0.3 }, "u": [-0.03, 0.03], "y": [0, "height"], "t": 0.1 },
         { "u": ["-half", "half"], "y": [0, 0.12], "t": 0.12 },
@@ -326,6 +328,7 @@
     {
       "id": "bars_gate",
       "label": "Barred gate",
+      "paint": "metal",
       "segments": [
         { "repeat": { "from": "-half+0.15", "below": -1.6, "step": 0.3 }, "u": [-0.03, 0.03], "y": [0, "height"], "t": 0.1 },
         { "repeat": { "from": 1.75, "below": "half-0.1", "step": 0.3 }, "u": [-0.03, 0.03], "y": [0, "height"], "t": 0.1 },

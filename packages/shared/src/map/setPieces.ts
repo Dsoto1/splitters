@@ -280,8 +280,11 @@ function mirrorKey(key: string, a2: number): string {
 
 // ---------------------------------------------------------------- roles
 
-/** Which slot of the map's theme paints a material role no pack gives (the part's surface is then left as the theme's). */
-export const ROLE_THEME_SLOT: Record<SetPieceMaterialRole, 'walls' | 'trim' | 'floor' | 'roof' | 'solids'> = { stone: 'walls', trim: 'trim', floor: 'floor', paving: 'floor', roof: 'roof', wood: 'solids', metal: 'solids' };
+/**
+ * Which slot of the map's theme paints a material role no pack gives (the part's surface is then left as the theme's).
+ * Metal is the `metal` slot (the theme's metal, else iron: bars and railings), never `solids`, which can be brick.
+ */
+export const ROLE_THEME_SLOT: Record<SetPieceMaterialRole, 'walls' | 'trim' | 'floor' | 'roof' | 'solids' | 'metal'> = { stone: 'walls', trim: 'trim', floor: 'floor', paving: 'floor', roof: 'roof', wood: 'solids', metal: 'metal' };
 
 /** The role pack a placement is themed by: its own, else the one for the map's theme (null: the theme's own look). */
 export function placementPack(p: Pick<SetPiecePlacement, 'pack'>, theme: string, library: Pick<SetPieceLibrary, 'packs'>): SetPieceRolePack | null {

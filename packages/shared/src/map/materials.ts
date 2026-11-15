@@ -20,11 +20,15 @@ export { CORE_MATERIALS, CORE_THEMES, TINT_SWATCHES };
 /**
  * Paintable surface groups of a Classic Grid tile. `roof` is the top of a room's roof (room option Ceiling: Roof,
  * skylight or beams); until it is painted it looks like the room's floor, so it has no theme default of its own.
+ * `metal` (format v41) is what bars, barred gates and railings are drawn in (edge styles with `paint: "metal"`): a
+ * theme's own metal when it names one, else DEFAULT_METAL; never the walls' stone.
  */
-export const SURFACE_SLOTS = ['floor', 'walls', 'solids', 'underside', 'trim', 'roof'] as const;
+export const SURFACE_SLOTS = ['floor', 'walls', 'solids', 'underside', 'trim', 'roof', 'metal'] as const;
 export type SurfaceSlot = (typeof SURFACE_SLOTS)[number];
-/** The slots a theme gives a default for. */
-export type ThemeSlot = Exclude<SurfaceSlot, 'roof'>;
+/** The slots a theme must give a default for (`metal` is optional: DEFAULT_METAL). */
+export type ThemeSlot = Exclude<SurfaceSlot, 'roof' | 'metal'>;
+/** The metal of bars, barred gates and railings in a theme that names none: dark weathered steel (iron). */
+export const DEFAULT_METAL = 'core.pbr_steel';
 
 export const SURFACE_SLOT_LABELS: Record<SurfaceSlot, string> = {
   floor: 'Floor',
@@ -33,6 +37,7 @@ export const SURFACE_SLOT_LABELS: Record<SurfaceSlot, string> = {
   underside: 'Underside (ceiling below)',
   trim: 'Trim & frames',
   roof: 'Roof (top, outside)',
+  metal: 'Metal (bars, gates & railings)',
 };
 
 /** Procedural patterns a material can use; each has its painter in client code (packages/client/src/materials/patterns.ts). */
@@ -172,7 +177,7 @@ export interface ThemeDefinition {
   id: string;
   displayName: string;
   /** Default style for each slot when a tile does not override it. */
-  slots: Record<ThemeSlot, SurfaceStyleDef>;
+  slots: Record<ThemeSlot, SurfaceStyleDef> & { metal?: SurfaceStyleDef };
   sky: string;
 }
 

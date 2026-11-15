@@ -155,6 +155,8 @@ export const TileSurfaces = z.object({
   trim: SurfaceStyle.optional(),
   /** The top of a room's roof (absent: as the floor). */
   roof: SurfaceStyle.optional(),
+  /** Bars, barred gates and railings (format v41; absent: the theme's metal, else iron). */
+  metal: SurfaceStyle.optional(),
 });
 
 /** One side of one tile cell, in the tile's own frame: "dx,dy,dz:N". */
@@ -1109,7 +1111,7 @@ export const SetPieceTilePart = TilePlacement.omit({ id: true }).extend({
   y: z.number().int().min(-64).max(64),
   z: z.number().int().min(-16).max(16),
   surfaces: z
-    .object({ floor: PartSurface.optional(), walls: PartSurface.optional(), solids: PartSurface.optional(), underside: PartSurface.optional(), trim: PartSurface.optional(), roof: PartSurface.optional() })
+    .object({ floor: PartSurface.optional(), walls: PartSurface.optional(), solids: PartSurface.optional(), underside: PartSurface.optional(), trim: PartSurface.optional(), roof: PartSurface.optional(), metal: PartSurface.optional() })
     .optional(),
   glass: z.record(EdgeKey, z.union([z.enum(GLASS_KINDS), z.object({ role: z.literal('glass') })])).optional(),
   options: z
