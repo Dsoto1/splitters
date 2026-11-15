@@ -211,6 +211,11 @@ export interface PrivateState {
    * (SeatDef.ammo: the Tank's shells)]. A driver working an empty gunner seat's gun (driverFires) gets that gun's.
    */
   mo?: [number, number, number] | [number, number, number, number];
+  /**
+   * Driving a rigid vehicle (sim/wheelPhysics.ts): its whole state, to predict it from (rigidWire: [mount index,
+   * position, orientation, velocity, spin, steering, tipped, righting, air ticks, flags]). Older clients ignore it.
+   */
+  vp?: number[];
   /** Carried grenades or mines as [index into THROWABLES, count]; absent = none. */
   gr?: [number, number];
   /** A hold to use in progress (sim/holdUse.ts): [kind (HOLD_KINDS index), ticks held, ticks it takes]. */

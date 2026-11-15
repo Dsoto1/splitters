@@ -10,6 +10,7 @@
 
 import { MOUNT_DEFS, MOUNT_MODELS, ROUTE_CRAFT_DEFS } from '../content/mounts.generated.ts';
 import type { SuspensionTuning } from './suspension.ts';
+import type { RigidTuning } from './wheelPhysics.ts';
 import type { ResupplySpec } from './resupply.ts';
 
 /**
@@ -202,6 +203,12 @@ export interface MountDef {
      * dives under braking and lands bouncing. Absent: the body is drawn settling to the ground (View.suspend).
      */
     suspension?: SuspensionTuning;
+    /**
+     * Rigid driving (sim/wheelPhysics.ts, docs/DRIVING_PHYSICS_PLAN.md): the chassis is a real body on its
+     * suspension's wheels, with tyre grip that can fail; `on` false keeps the classic driving unless a match asks for
+     * rigid (MatchOptions.drive, `?drive=rigid`). Needs `suspension`. Absent: classic driving.
+     */
+    rigid?: RigidTuning & { on: boolean };
     /** Share of tyre grip lost at top speed (rising with the square of speed): loose at speed, so it powerslides. Default 0. */
     drift?: number;
     /** Tracks: turns on the spot at this rate (rad/s) standing still, fading out by 5 m/s (where steering takes over). Default none. */

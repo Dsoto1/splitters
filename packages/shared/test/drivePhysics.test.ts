@@ -1,0 +1,263 @@
+import { writeFileSync } from 'node:fs';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { BUTTON_JUMP, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, initPhysics, rigidOf, uprightness, type MapDocument, type MapEntity, type MatchRules, type PlayerInput, type RigidState } from '../src/index.ts';
+import { Match, initNavigation, type Combatant } from '../src/match.ts';
+import { makeMap } from './helpers.ts';
+
+beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
+
+const rules: MatchRules = { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0, respawnDelayTicks: 100_000 };
+type MountEntity = Omit<Extract<MapEntity, { kind: 'mount' }>, 'id' | 'kind'>;
+
+/** A long open yard (x -4..124, z -4..36) with the buggy at (8, 16) facing +x, and any blocks. */
+function strip(blocks: MapEntity[] = [], at: [number, number, number] = [8, 0, 16], yaw = Math.PI / 2): MapDocument {
+  const tiles = [];
+  for (let x = 0; x < 16; x++) for (let y = 0; y < 5; y++) tiles.push({ id: `y${x}_${y}`, tile: 'core.yard', x, y, z: 0, rotation: 0 as const });
+  const map = makeMap(tiles, [[0, 0, 0]]);
+  const m: MountEntity = { position: at, model: 'troop_buggy', yaw, faction: null, respawnSeconds: null };
+  return { ...map, entities: [...map.entities, { id: 'mount_0', kind: 'mount' as const, ...m }, ...blocks] };
+}
+/** A block; `pitch` tips it (a ramp), `roll` leans it. */
+export const block = (id: string, x: number, z: number, size: [number, number, number], pitch = 0, y = 0, yaw = Math.PI / 2): MapEntity =>
+  ({ id, kind: 'block', position: [x, y, z], yaw, size, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120, ...(pitch ? { pitch } : {}) }) as MapEntity;
+
+interface MountRt {
+  pos: { x: number; y: number; z: number };
+  yaw: number;
+  speed: number;
+  slide: number;
+  airborne: boolean;
+  health: number;
+  rigid?: RigidState;
+  susp?: { p: number; r: number; wheel: number[]; contact: number };
+}
+const mountOf = (match: Match) => (match as unknown as { mounts: MountRt[] }).mounts[0]!;
+
+/** A driver in the buggy, with helpers to drive it tick by tick and record a trace. */
+export function drive(blocks: MapEntity[] = [], opts: { drive?: 'classic' | 'rigid'; at?: [number, number, number]; yaw?: number } = {}) {
+  const match = new Match(strip(blocks, opts.at, opts.yaw), rules, 1, opts.drive ? { drive: opts.drive } : {});
+  const c = match.addHuman('driver')! as Combatant;
+  match.step();
+  const m = mountOf(match);
+  c.move = { pos: { x: m.pos.x, y: m.pos.y, z: m.pos.z - 2 }, velY: 0, grounded: true };
+  let seq = 0;
+  const send = (i: Partial<PlayerInput>) => match.queueInputs(c.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: c.yaw, pitch: 0, buttons: 0, ...i }]);
+  send({ buttons: BUTTON_USE });
+  match.step();
+  send({});
+  match.step();
+  expect(c.mount?.index).toBeDefined();
+  const trace: string[] = ['t,x,y,z,speed,slide,yaw,pitch,roll,air,contact,sliding,up'];
+  let t = 0;
+  const run = (n: number, i: Partial<PlayerInput> = {}, each?: () => void) => {
+    for (let k = 0; k < n; k++) {
+      send(i);
+      match.step();
+      t++;
+      const r = m.rigid;
+      trace.push([t, m.pos.x, m.pos.y, m.pos.z, m.speed, m.slide, m.yaw, m.susp?.p ?? 0, m.susp?.r ?? 0, m.airborne ? 1 : 0, r?.contact ?? 0, r?.sliding ?? 0, r ? uprightness(r) : 1].map((v) => +v.toFixed(4)).join(','));
+      each?.();
+    }
+  };
+  const save = (name: string) => {
+    const dir = process.env.DRIVE_TRACE;
+    if (dir) writeFileSync(`${dir}/${name}.csv`, trace.join('\n'));
+  };
+  return { match, c, m, run, save, send };
+}
+
+describe('rigid driving (sim/wheelPhysics.ts)', () => {
+  it('the Troop Buggy has it, on; nothing else does', () => {
+    expect(rigidOf(MOUNT_DEFS.troop_buggy)).not.toBeNull();
+    expect(MOUNT_DEFS.troop_buggy.vehicle?.rigid?.on).toBe(true);
+    for (const def of Object.values(MOUNT_DEFS)) if (def.id !== 'troop_buggy') expect(def.vehicle?.rigid, def.id).toBeUndefined();
+  });
+
+  it('sits on its springs, drives off and turns', () => {
+    const d = drive();
+    d.run(60);
+    const rest = { ...d.m.pos };
+    expect(Math.abs(rest.y)).toBeLessThan(0.05);
+    expect(d.m.rigid!.contact).toBe(4);
+    d.run(120, { forward: 1 });
+    d.save('flat');
+    console.log('flat', d.m.pos, d.m.speed);
+    expect(d.m.speed).toBeGreaterThan(14);
+    d.run(60, { forward: 1, right: 1 });
+    console.log('turn', d.m.yaw, d.m.speed, d.m.slide, d.m.susp?.r);
+    d.save('turn');
+  });
+});
+
+describe('rigid driving: jumps, landings, slopes, flips', () => {
+  it('a ramp jump: it flies with its momentum, falls with gravity and lands on its springs', () => {
+    // A kicker 1 m high at x 38..45, 7 m long.
+    const d = drive([block('ramp', 42, 16, [6, 0.4, 7], 0.3)]);
+    d.run(20);
+    let air = 0;
+    let peak = 0;
+    let landed = -1;
+    let land = { comp: 0, speed: 0 };
+    let landSpeed = 0;
+    let vy = 0;
+    const dbg: string[] = [];
+    for (let k = 0; k < 300; k++) {
+      d.run(1, { forward: 1 });
+      const r = d.m.rigid!;
+      expect(Number.isFinite(r.pos.x + r.pos.y + r.q.w + r.vel.y + r.spin.x)).toBe(true);
+      if (d.m.airborne) {
+        air++;
+        peak = Math.max(peak, d.m.pos.y);
+        vy = r.vel.y;
+      } else if (air > 10 && landed < 0) {
+        landed = k;
+        landSpeed = -vy;
+      }
+      if (process.env.DRIVE_TRACE) dbg.push(`${k} ${r.pos.x.toFixed(2)} ${d.m.airborne} ${r.contact} ${r.comp.map((c) => c.toFixed(3))} y ${r.pos.y.toFixed(3)} vy ${r.vel.y.toFixed(2)}`);
+      if (landed >= 0 && k < landed + 45) land = { comp: Math.max(land.comp, ...r.comp), speed: Math.max(land.speed, d.m.speed) };
+    }
+    d.save('jump');
+    if (process.env.DRIVE_TRACE) writeFileSync(`${process.env.DRIVE_TRACE}/jump-wheels.txt`, dbg.join('\n'));
+    // Off the lip at speed: a real flight, higher than the lip, coming down at speed.
+    expect(air).toBeGreaterThan(20);
+    expect(peak).toBeGreaterThan(1.3);
+    expect(landSpeed).toBeGreaterThan(4);
+    // The landing squashes the springs, keeps going (momentum), and it ends upright on four wheels.
+    expect(land.comp).toBeGreaterThan(0.08);
+    expect(land.speed).toBeGreaterThan(10);
+    expect(uprightness(d.m.rigid!)).toBeGreaterThan(0.95);
+    expect(d.m.rigid!.contact).toBe(4);
+  });
+
+  it('air control: S in the air lifts the nose, W drops it', () => {
+    // From the throttle held over the lip (W): S (-1) lifts the nose, W held stays neutral.
+    const fly = (forward: number) => {
+      const d = drive([block('ramp', 42, 16, [6, 0.4, 7], 0.3)]);
+      d.run(20);
+      let pitch = 0;
+      for (let k = 0; k < 300 && !(d.m.airborne && d.m.rigid!.air > 2); k++) d.run(1, { forward: 1 });
+      d.run(12, { forward }, () => (pitch = d.m.susp!.p));
+      expect(d.m.airborne).toBe(true);
+      return pitch;
+    };
+    const flat = fly(1);
+    expect(fly(-1)).toBeGreaterThan(flat + 0.15);
+    // And W pressed in the air after a coasting take-off noses it down.
+    const coast = (forward: number) => {
+      const d = drive([block('ramp', 42, 16, [6, 0.4, 7], 0.3)]);
+      d.run(20);
+      let pitch = 0;
+      for (let k = 0; k < 300 && !(d.m.airborne && d.m.rigid!.air > 2); k++) d.run(1, { forward: d.m.pos.x > 36 ? 0 : 1 });
+      d.run(12, { forward }, () => (pitch = d.m.susp!.p));
+      expect(d.m.airborne).toBe(true);
+      return pitch;
+    };
+    expect(coast(1)).toBeLessThan(coast(0) - 0.15);
+  });
+
+  it('a hard landing from high up dents it, as the classic drive did', () => {
+    const d = drive([], { at: [20, 9, 16] });
+    const before = d.m.health;
+    d.run(120);
+    expect(d.m.health).toBeLessThan(before);
+    expect(uprightness(d.m.rigid!)).toBeGreaterThan(0.95);
+  });
+
+  it('climbs a 25 degree slope; on a 50 degree one the grip fails and it slides back down', () => {
+    const slope = (deg: number) => {
+      const a = (deg * Math.PI) / 180;
+      // A long slab tilted up toward +x from x 20 (its low end at the ground).
+      const L = 14;
+      const d = drive([block('slope', 20 + (L / 2) * Math.cos(a), 16, [6, 0.6, L], a, (L / 2) * Math.sin(a) - 0.3 * Math.cos(a))], { at: [14, 0, 16] });
+      d.run(30);
+      let top = 0;
+      let after = 0;
+      d.run(240, { forward: 1 }, () => (top = Math.max(top, d.m.pos.y)));
+      d.run(60, { forward: 1 }, () => (after = d.m.pos.y));
+      d.save(`slope${deg}`);
+      return { top, after, x: d.m.pos.x, up: uprightness(d.m.rigid!), sliding: d.m.rigid!.sliding };
+    };
+    const easy = slope(25);
+    // Up and over the top (14 m at 25 degrees: 5.9 m up).
+    expect(easy.top).toBeGreaterThan(5);
+    const steep = slope(50);
+    // It gets a little way up on its run-up, then slides back down to the foot, throttle held.
+    expect(steep.top).toBeLessThan(4);
+    expect(steep.after).toBeLessThan(steep.top - 0.5);
+  });
+
+  it('kerbed on one side at speed it tips; on its side or roof it rights itself', () => {
+    // A kicker under the left wheels only.
+    const d = drive([block('kerb', 34, 14.6, [1.6, 0.4, 5], 0.45)]);
+    d.run(20);
+    let roll = 0;
+    d.run(150, { forward: 1 }, () => (roll = Math.max(roll, Math.abs(d.m.susp!.r))));
+    d.save('kerb');
+    expect(roll).toBeGreaterThan(0.5);
+    // Upside down in the air: it lands on its roof, then rolls itself back onto its wheels.
+    const r = d.m.rigid!;
+    r.q = { x: 0, y: Math.sin(Math.PI / 4) * 0, z: 1, w: 0 };
+    r.pos = { x: 60, y: 2.5, z: 16 };
+    r.vel = { x: 0, y: 0, z: 0 };
+    r.spin = { x: 0, y: 0, z: 0 };
+    d.m.pos = r.pos;
+    (d.m as unknown as { rigidSeen: { pos: unknown } }).rigidSeen.pos = r.pos;
+    let roof = false;
+    let upright = -1;
+    for (let k = 0; k < 360; k++) {
+      d.run(1);
+      if (d.m.rigid!.hull && uprightness(d.m.rigid!) < -0.8) roof = true;
+      if (roof && upright < 0 && uprightness(d.m.rigid!) > 0.95 && d.m.rigid!.contact === 4) upright = k;
+    }
+    d.save('roof');
+    expect(roof).toBe(true);
+    expect(upright).toBeGreaterThan(0);
+    expect(upright).toBeLessThan(300);
+  });
+
+  it('is deterministic: the same inputs give the same states and snapshots', () => {
+    const go = () => {
+      const d = drive([block('ramp', 42, 16, [6, 0.4, 7], 0.3), block('kerb', 70, 14.6, [1.6, 0.4, 5], 0.45)]);
+      const out: string[] = [];
+      for (let k = 0; k < 400; k++) {
+        d.run(1, { forward: 1, right: k > 200 ? 0.6 : 0, buttons: k > 300 && k < 330 ? BUTTON_JUMP : 0 });
+        out.push(JSON.stringify([d.match.snapshot([]).ms, d.match.privateState(d.c.slot)?.vp]));
+      }
+      return out;
+    };
+    expect(go()).toEqual(go());
+  });
+
+  it('?drive=classic (MatchOptions.drive) keeps the old driving', () => {
+    const d = drive([], { drive: 'classic' });
+    expect(d.m.rigid).toBeUndefined();
+    d.run(60, { forward: 1 });
+    expect(d.m.speed).toBeGreaterThan(5);
+    expect(d.match.privateState(d.c.slot)?.vp).toBeUndefined();
+  });
+});
+
+describe('tuning probes (DRIVE_TRACE)', () => {
+  it.runIf(!!process.env.DRIVE_TRACE)('turns at 6, 10 and 17 m/s', () => {
+    const out: string[] = [];
+    for (const v of [6, 10, 17]) {
+      const d = drive();
+      d.run(30);
+      let k = 0;
+      while (d.m.speed < v && k++ < 400) d.run(1, { forward: 1 });
+      let turned = 0;
+      let last = d.m.yaw;
+      const spin = () => {
+        turned += Math.atan2(Math.sin(d.m.yaw - last), Math.cos(d.m.yaw - last));
+        last = d.m.yaw;
+      };
+      let maxRoll = 0;
+      d.run(90, { forward: v / 18, right: 1 }, () => (spin(), (maxRoll = Math.max(maxRoll, Math.abs(d.m.susp!.r)))));
+      const y1 = turned;
+      d.run(60, { forward: v / 18, right: 1 }, spin);
+      out.push(`v ${v}: yaw rate ${(turned - y1).toFixed(2)} rad/s (first 1.5 s ${(y1 / 1.5).toFixed(2)}), speed ${d.m.speed.toFixed(1)}, slide ${d.m.slide.toFixed(2)}, max roll ${maxRoll.toFixed(2)}, up ${uprightness(d.m.rigid!).toFixed(2)}`);
+      d.save(`turn${v}`);
+    }
+    writeFileSync(`${process.env.DRIVE_TRACE}/turns.txt`, out.join('\n'));
+  });
+});
