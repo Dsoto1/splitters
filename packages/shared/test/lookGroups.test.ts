@@ -42,7 +42,8 @@ describe("Character Select's groups", () => {
     const at = (g: string) => CORE_LOOKS.filter((l) => l.group === g).map((l) => l.id);
     expect(at('horror')).toEqual(expect.arrayContaining(['core.shambler', 'core.rattles', 'core.bonejack', 'core.punkin']));
     expect(at('animals')).toEqual(expect.arrayContaining(['core.bandit', 'core.biscuit', 'core.shiba', 'core.teddy']));
-    expect(at('legends')).toEqual(expect.arrayContaining(['core.knight', 'core.aldric', 'core.merrow']));
+    expect(at('legends')).toEqual(expect.arrayContaining(['core.knight', 'core.abe', 'core.anubis']));
+    expect(at('folk')).toEqual(expect.arrayContaining(['core.aldric', 'core.merrow', 'core.hazmat']));
     expect(at('creatures')).toEqual(expect.arrayContaining(['core.snikkit', 'core.trex', 'core.grizzelda']));
     expect(at('machines')).toEqual(expect.arrayContaining(['core.emeraldrobot', 'core.t350', 'core.botboy']));
     expect(at('space')).toEqual(expect.arrayContaining(['core.visitor', 'core.astronaut', 'core.spacemarine']));

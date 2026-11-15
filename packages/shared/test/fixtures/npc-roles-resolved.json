@@ -684,7 +684,7 @@
   "npc:trooper"
  ],
  "lookGroups": {
-  "npc:trooper": "soldiers",
+  "npc:trooper": "agents",
   "npc:gunner": "soldiers",
   "npc:heavy": "soldiers",
   "npc:sniper": "soldiers",
