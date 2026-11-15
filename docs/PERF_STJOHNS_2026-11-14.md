@@ -169,3 +169,85 @@ Unit tests: `client/test/frameSpread.test.ts`. On an M1 Pro expect roughly a thi
   colliders must be current when it replays), so it is left for its own change.
 - Also seen: a material glow change (`setGlow`, the spawn-protection shimmer easing in tenths) marks every mesh of
   the scene for a shader check (`_markAllSubMeshesAsDirty` walks `scene.meshes`): about 1 ms a respawn here.
+
+## Main scene drawing: what renderScene spends (2026-11-15, `wip/render-scene-2`)
+
+The queue item "Main scene drawing on St. John's": renderScene stayed about 9.6 ms on the owner's M1 Pro when the draws
+fell 58 %. Measured by a helper of lane A's lead in a scratch Playwright driver (not in the repo; built on
+`client-perf.mjs`'s still mode): St. John's, High, nobody else in the map, the eye-level views "eye, middle spawn" and
+"eye, far spawn", an unminified build, SwiftShader on a shared 4-core box at a load of 11-16. Two readings per frame:
+every WebGL call counted by the pass it falls in (the render targets: shadow cascades and sun shafts; the main
+pass: Babylon's draw phase) and whether it changed anything (a uniform set to the value its program already holds, a
+binding to what is already bound); and a CDP CPU profile of the page's main thread. The owner's recording and trace
+of 11-15 were not on this machine any more (the scratch folder was cleared by a restart), so the trace's own samples
+were not read; what the owner's next recording should show is listed at the end.
+
+**Where the main pass goes (before):**
+
+| Per frame | eye, middle spawn | eye, far spawn |
+|---|---|---|
+| Draws (all passes) / meshes drawn | 584 / 683 | 638 / 877 |
+| GL calls, main pass | 3,992 (1,276 change nothing) | 5,174 |
+| GL calls, render targets (shadows, shafts) | 1,196 (309 change nothing) | 948 |
+| Uniform numbers sent, main pass | 20,890 | 26,677 |
+| Of the main pass's calls | `drawBuffers` 728, `uniform1fv` 613 (all unchanged values), `uniformMatrix4fv` 577 (550 unchanged), `bindVertexArray` 450, `bindTexture` 291 (77 unchanged) | about the same shares |
+
+- **The sun's shadow, sent again on every draw.** Each draw that receives the sun's shadow sets the three cascades'
+  `lightMatrix` (48 numbers), `viewFrustumZ` and `frustumLengths` (307 of each a frame at the middle spawn, every
+  one the value already set): Babylon caches single values per program, never arrays or lists of matrices. Thin
+  instanced batches set the same identity `world` matrix again (243 of 270 in the main pass, 237 of 243 in the
+  shadow cascades).
+- **Draw buffers switched twice a draw.** The pre-pass renderer (the scene's extra targets on High) sets the draw
+  buffers to its targets before each draw and back to one after it, though most neighbours want the same: 728 calls.
+- **The page's own JavaScript** under the render, from the profile: about 24 ms a frame on this loaded box (likely
+  3-5 ms on an M1 Pro): active-mesh evaluation 1.8-2.1 ms, `isReady` checks 1.6-1.8 (the shadow generator's
+  per-draw readiness check builds its defines each time), light binding (`_bindLight`, `_updateLightData`) 1.5-2.5
+  (a material that isn't frozen binds the lights on every draw), the rendering manager's lists 0.3-1.0. The rest of
+  the sampled time was spent blocked inside GL calls, waiting for SwiftShader to draw: here that is the software
+  renderer and says nothing about a real GPU.
+- **What a GL call costs here** (a scratch page, 100,000 calls, no drawing): 0.10 µs (`uniform1fv`), 0.13 µs
+  (`uniformMatrix4fv`, 48 numbers), 0.25 µs (`drawBuffers` switching) of page time each, on this box. Each call is
+  also decoded and checked in the GPU process and translated by ANGLE to Metal on a Mac; that part was not
+  measurable here.
+
+**What changed (general code, every map; WebGL2 only):**
+1. **`src/glStateCache.ts`** (installed by `createEngine`; `?perfoff=glcache` turns it off): a uniform set to the value
+   its program already holds is dropped (kept per program and uniform name; a sub-range, a transposed matrix or more
+   than 64 numbers go straight through; linking a program again starts it afresh), and a `drawBuffers` call is held
+   until a draw, clear or framebuffer switch uses it and is sent only when it differs from what that framebuffer
+   has. Both follow GL's own rules (uniform values belong to their program, draw buffers to their framebuffer), so
+   what is drawn cannot change. Unit tests: `client/test/glStateCache.test.ts`.
+2. **`ScenarioVisuals.apply`** walks only the visuals that animate (doors, lights, breakables), not every visual as
+   `[index, visual]` pairs each frame (6 MB of garbage in 40 s in the hitches profile); the glass panes' changed
+   set is reused.
+3. **The torso surface measured once per look** (`TorsoSurface.measure(ch, look)`, the avatar's spec): its points
+   are in the chest joint's own space, the same for every body of a look, so a second body of a look takes the
+   first one's (it skinned the torso on the CPU for every new body: 17 MB in 40 s and a few ms a body).
+
+**After (same views, same counts of draws and meshes):**
+
+| Per frame | eye, middle spawn before / after | eye, far spawn before / after |
+|---|---|---|
+| GL calls, main pass | 3,992 / 2,206 (-45 %) | 5,174 / 2,714 (-48 %) |
+| GL calls, render targets | 1,196 / 946 (-21 %) | 948 / 723 (-24 %) |
+| Uniform numbers sent, main pass | 20,890 / 458 | 26,677 / 696 |
+| `drawBuffers` calls, main pass | 728 / 8 | 1,010 / 10 |
+| Draws, all passes | 584 / 584 | 638 / 638 |
+
+On the page alone this saves about 0.3-0.5 ms a frame at this box's per-call cost (2,000-2,700 calls); the GPU
+process does the same less. Whether it moves the owner's 9.6 ms depends on what that time is, which only the owner's
+machine can say.
+
+**Looks:** SCREENSHOTS_LINE
+
+**For the owner's next recording (St. John's, a match, High; F3's copy plus a 10 s trace):**
+- renderScene against 9.6 ms, and the frame rate. A fall of 1-2 ms says the page's GL calls were the cost.
+- In the trace, the **GPU process's main thread** (`CrGpuMain`): how busy it is in a frame. If it is busy nearly the
+  whole frame, the page waits on it inside GL calls (the wait shows as renderScene on the page), and these cuts
+  should show there first. If it has room, the next cut is the page's own per-draw JavaScript (the shadow generator's
+  `isReady` per draw, light binding for unfrozen materials: the backdrop belt's props and the set-piece props, about
+  220 of the 683 meshes drawn at the middle spawn, use materials that are not frozen).
+- The **GPU's own time** (the trace's GPU rows, or Chrome's `--enable-gpu-benchmarking`): at 1920 x 1080 on a 2x
+  screen the default render scale draws 2400 x 1350 (`renderRatio`: at most 1.25); if the GPU is the bound one, the
+  tests are the render scale (Options → Display) and Medium's shadows on the same view.
+- Which render scale the recording used (Options → Display; say it with the recording if the report does not).
