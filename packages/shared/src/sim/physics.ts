@@ -144,6 +144,8 @@ const START_LIFT = CONTROLLER_OFFSET / 2;
 export class PhysicsWorld {
   readonly world: RAPIER.World;
   readonly controller: RAPIER.KinematicCharacterController;
+  /** Sweeps rigid vehicle hulls (sweepChassis). */
+  private readonly chassisController: RAPIER.KinematicCharacterController;
   /** Set when a movable world collider changed; queries need a broad-phase update first. */
   private dirty = false;
   /** The level box behind each static collider (bullets read what it is made of). */
@@ -190,6 +192,14 @@ export class PhysicsWorld {
     this.controller.enableSnapToGround(PLAYER.maxStepHeight);
     this.controller.setMaxSlopeClimbAngle((PLAYER.maxSlopeDegrees * Math.PI) / 180);
     this.controller.setApplyImpulsesToDynamicBodies(false);
+    // Rigid vehicle chassis (sim/wheelPhysics.ts): plain collide-and-slide, no steps, no snapping, no slope rules (the
+    // wheels and the hull's contact points hold it up; this only keeps the hull out of walls and floors).
+    this.chassisController = this.world.createCharacterController(CONTROLLER_OFFSET);
+    this.chassisController.disableAutostep();
+    this.chassisController.disableSnapToGround();
+    this.chassisController.setMaxSlopeClimbAngle(Math.PI / 2);
+    this.chassisController.setMinSlopeSlideAngle(Math.PI / 2);
+    this.chassisController.setApplyImpulsesToDynamicBodies(false);
     // Populate the broad phase so scene queries see the static colliders.
     this.world.step();
   }
@@ -549,6 +559,53 @@ export class PhysicsWorld {
   groundBelow(origin: Vec3, maxDist: number, skip: RAPIER.Collider): number | null {
     const hit = this.world.castRay(this.rayFrom(origin, DOWN), maxDist, true, undefined, GROUND_QUERY, skip);
     return hit ? hit.timeOfImpact : null;
+  }
+
+  /**
+   * From `origin` along `dir` (unit) to the first thing a vehicle stands on or drives into (as groundBelow), leaving
+   * out `skip`: the distance and the surface normal there (facing back along the ray), or null within maxDist.
+   * Rigid vehicles' wheel and hull rays (sim/wheelPhysics.ts).
+   */
+  groundRay(origin: Vec3, dir: Vec3, maxDist: number, skip: RAPIER.Collider): { dist: number; normal: Vec3 } | null {
+    const hit = this.world.castRayAndGetNormal(this.rayFrom(origin, dir), maxDist, true, undefined, GROUND_QUERY, skip);
+    if (!hit) return null;
+    const n = hit.normal;
+    // Started inside a solid: Rapier gives a zero normal; point it back along the ray.
+    if (n.x === 0 && n.y === 0 && n.z === 0) return { dist: hit.timeOfImpact, normal: { x: -dir.x, y: -dir.y, z: -dir.z } };
+    return { dist: hit.timeOfImpact, normal: { x: n.x, y: n.y, z: n.z } };
+  }
+
+  /** The queries a rigid vehicle's step makes (wheelPhysics.ts ChassisWorld), against everything but its own box. */
+  chassisWorld(probe: RAPIER.Collider, body: RAPIER.Collider): { ray(o: Vec3, d: Vec3, len: number): { dist: number; normal: Vec3 } | null; sweep(c: Vec3, q: Rot, d: Vec3): { moved: Vec3; normals: Vec3[] } } {
+    return { ray: (o, d, len) => this.groundRay(o, d, len, body), sweep: (c, q, d) => this.sweepChassis(probe, body, c, q, d) };
+  }
+
+  /** A rigid vehicle's hull for sweeps (sweepChassis): a capsule along its length (local +Z), out of the broad phase. */
+  createChassisProbe(radius: number, halfLength: number): RAPIER.Collider {
+    return this.world.createCollider(RAPIER.ColliderDesc.capsule(Math.max(0.05, halfLength), radius).setCollisionGroups(PLAYER_COLLIDER_GROUPS).setEnabled(false));
+  }
+
+  /**
+   * Sweep a chassis probe from `centre` (its middle) turned by `rot` (the vehicle's; the capsule lies along its +Z) by
+   * `delta`, sliding along whatever it meets (level, built pieces, other vehicles, fields; not `body`, its own box).
+   * The movement it got and the normals it met (pointing away from what it hit).
+   */
+  sweepChassis(probe: RAPIER.Collider, body: RAPIER.Collider, centre: Vec3, rot: Rot, delta: Vec3): { moved: Vec3; normals: Vec3[] } {
+    // The capsule's axis is its local +Y: turn it onto the vehicle's +Z (a quarter turn about X), then by `rot`.
+    const s = Math.SQRT1_2;
+    const q = { x: rot.w * s + rot.x * s, y: rot.y * s + rot.z * s, z: rot.z * s - rot.y * s, w: rot.w * s - rot.x * s };
+    probe.setTranslation(centre);
+    probe.setRotation(q);
+    const skip = (c: RAPIER.Collider) => c.handle !== body.handle;
+    this.chassisController.computeColliderMovement(probe, delta, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, MOVE_QUERY, skip);
+    const m = this.chassisController.computedMovement();
+    const normals: Vec3[] = [];
+    const n = this.chassisController.numComputedCollisions();
+    for (let i = 0; i < n; i++) {
+      const c = this.chassisController.computedCollision(i);
+      if (c?.normal1) normals.push({ x: -c.normal1.x, y: -c.normal1.y, z: -c.normal1.z });
+    }
+    return { moved: { x: m.x, y: m.y, z: m.z }, normals };
   }
 
   /** The shared ray, set to `origin` and `dir`. */

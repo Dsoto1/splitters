@@ -8083,6 +8083,84 @@ async function vehiclesFlow(browser) {
     return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, tires: pivots.filter((p) => p.getChildren().length).length, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
   });
   check(sprung.susp && sprung.wheels === 4 && sprung.pivots === 4 && sprung.tires === 4 && sprung.rolled, `the buggy rides the sim's suspension, its tires on hub pivots rolling (${JSON.stringify(sprung)})`);
+  // Rigid driving (docs/DRIVING_PHYSICS_PLAN.md): the Troop Buggy is a real body on its wheels, and the driver's
+  // own copy is predicted (vehiclePrediction.ts) and stays with the host's.
+  const rigid = await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const m = me.mount ? window.__match.mounts[me.mount.index] : null;
+    const v = window.__cs.local.vehicle;
+    // The prediction runs ahead of the host by the inputs it hasn't seen yet (a slow page sends several a frame).
+    const ahead = Math.abs(m?.speed ?? 0) * ((window.__cs.local.pendingCount + 4) / 60) + 0.5;
+    return { rigid: !!m?.rigid, predicted: v?.mount === m?.index, off: v && m ? +Math.hypot(v.state.pos.x - m.pos.x, v.state.pos.z - m.pos.z).toFixed(2) : null, ahead: +ahead.toFixed(2), worst: v ? +v.worstCorrection.toFixed(2) : null };
+  });
+  check(rigid.rigid && rigid.predicted && rigid.off !== null && rigid.off < rigid.ahead && rigid.worst < 1.5, `the buggy drives as a rigid body and your own is predicted, with the host's (${JSON.stringify(rigid)})`);
+  // Dropped from 8 m leaning half a radian: it falls, lands (on its wheels, or tips and rights itself) and ends up
+  // on four wheels; the drawn body leans with the sim's roll (the snapshot's ms) on the way. Logged every tick.
+  await page.evaluate(() => {
+    window.__autoInput = { buttons: 0 };
+    const match = window.__match;
+    const me = match.slots[window.__cs.slot];
+    const m = match.mounts[me.mount.index];
+    m.pos = { x: m.home.pos.x, y: m.home.pos.y + 8, z: m.home.pos.z };
+    m.yaw = m.home.yaw;
+    m.speed = 0;
+    const f = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
+    // A lean to the right about its own forward axis, turned from facing `yaw`.
+    const a = { x: f.x * Math.sin(-0.25), y: 0, z: f.z * Math.sin(-0.25), w: Math.cos(-0.25) };
+    const q0 = { x: 0, y: Math.sin(m.yaw / 2), z: 0, w: Math.cos(m.yaw / 2) };
+    const q = { w: a.w * q0.w - a.x * q0.x - a.y * q0.y - a.z * q0.z, x: a.w * q0.x + a.x * q0.w + a.y * q0.z - a.z * q0.y, y: a.w * q0.y - a.x * q0.z + a.y * q0.w + a.z * q0.x, z: a.w * q0.z + a.x * q0.y - a.y * q0.x + a.z * q0.w };
+    m.rigid = { ...m.rigid, pos: { ...m.pos }, q, vel: { x: 0, y: 0, z: 0 }, spin: { x: 0, y: 0, z: 0 }, air: 0, rest: 0, righting: 0, tipped: 0 };
+    m.rigidSeen = { pos: m.pos, yaw: m.yaw, speed: 0 };
+    const log = (window.__dropLog = { air: 0, roll: 0, drawnRoll: 0, ticks: 0 });
+    const step = match.step;
+    window.__dropStep = step;
+    match.step = function () {
+      const out = step.call(this);
+      log.ticks++;
+      if (m.airborne) log.air++;
+      log.roll = Math.max(log.roll, Math.abs(m.susp.r));
+      return out;
+    };
+  });
+  const landed = await page
+    .waitForFunction(() => {
+      const me = window.__match.slots[window.__cs.slot];
+      const m = me.mount ? window.__match.mounts[me.mount.index] : null;
+      if (!m?.rigid) return null;
+      const log = window.__dropLog;
+      const node = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
+      if (node) log.drawnRoll = Math.max(log.drawnRoll, Math.abs(node.rotation.z));
+      const up = 1 - 2 * (m.rigid.q.x * m.rigid.q.x + m.rigid.q.z * m.rigid.q.z);
+      return log.air > 20 && !m.airborne && m.rigid.contact === 4 && up > 0.95 && Math.abs(m.pos.y - m.home.pos.y) < 0.3 ? { ...log, up: +up.toFixed(3) } : null;
+    }, null, { timeout: T(20000), polling: 'raf' })
+    .then((h) => h.jsonValue(), () => page.evaluate(() => window.__dropLog));
+  await page.evaluate(() => (window.__match.step = window.__dropStep));
+  check(landed?.up > 0.95 && landed.air > 20 && landed.roll > 0.3 && landed.drawnRoll > 0.04, `dropped from 8 m leaning, it falls, lands and ends up on its wheels, drawn leaning as it fell (${JSON.stringify(landed)})`);
+  // On its roof it stays there (owner, 2026-11-15: "2b"): the prompt offers Space to flip back, and jump does.
+  await page.evaluate(() => {
+    const match = window.__match;
+    const m = match.mounts[match.slots[window.__cs.slot].mount.index];
+    m.pos = { x: m.home.pos.x, y: m.home.pos.y + 2.5, z: m.home.pos.z };
+    m.yaw = m.home.yaw;
+    m.speed = 0;
+    // Upside down: half a turn about its forward axis.
+    const f = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
+    const q0 = { x: 0, y: Math.sin(m.yaw / 2), z: 0, w: Math.cos(m.yaw / 2) };
+    const q = { w: -f.x * q0.x - f.z * q0.z, x: f.x * q0.w - f.z * q0.y, y: f.z * q0.x - f.x * q0.z, z: f.x * q0.y + f.z * q0.w };
+    const l = Math.hypot(q.x, q.y, q.z, q.w);
+    m.rigid = { ...m.rigid, pos: { ...m.pos }, q: { x: q.x / l, y: q.y / l, z: q.z / l, w: q.w / l }, vel: { x: 0, y: 0, z: 0 }, spin: { x: 0, y: 0, z: 0 }, air: 0, rest: 0, righting: 0, tipped: 0 };
+    m.rigidSeen = { pos: m.pos, yaw: m.yaw, speed: 0 };
+    window.__autoInput = { buttons: 0 };
+  });
+  const offered = await page.waitForFunction(() => /Flip back/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: T(15000) }).then(() => true, () => false);
+  const onRoof = await page.evaluate(() => { const m = window.__match.mounts[window.__match.slots[window.__cs.slot].mount.index]; return +(1 - 2 * (m.rigid.q.x ** 2 + m.rigid.q.z ** 2)).toFixed(2); });
+  check(offered && onRoof < -0.5, `on its roof it stays there and the prompt offers Space to flip back (${JSON.stringify({ offered, up: onRoof, prompt: await page.evaluate(() => document.getElementById('prompt').textContent) })})`);
+  await page.evaluate(() => (window.__autoInput = { buttons: 1 }));
+  const flipped = await page
+    .waitForFunction(() => { const m = window.__match.mounts[window.__match.slots[window.__cs.slot].mount.index]; return m.rigid.contact === 4 && 1 - 2 * (m.rigid.q.x ** 2 + m.rigid.q.z ** 2) > 0.95; }, null, { timeout: T(15000) })
+    .then(() => true, () => false);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  check(flipped, 'jump rolls it back onto its wheels');
   // The drive and the turn leave the buggy anywhere (against a rock, on a slope): back to its spawn on open ground,
   // stopped, before the camera and seat checks below.
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));

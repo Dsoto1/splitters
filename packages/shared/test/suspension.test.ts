@@ -32,7 +32,8 @@ const mountOf = (match: Match) => (match as unknown as { mounts: MountRt[] }).mo
 
 /** A driver in the mount, with helpers to drive it tick by tick and record the trace. */
 function drive(model: string, blocks: MapEntity[] = []) {
-  const match = new Match(strip(model, blocks), rules, 1);
+  // The classic driving these tests describe (the Troop Buggy drives rigid by default: drivePhysics.test.ts).
+  const match = new Match(strip(model, blocks), rules, 1, { drive: 'classic' });
   const c = match.addHuman('driver')! as Combatant;
   match.step();
   c.move = { pos: { x: 8, y: 0, z: 14 }, velY: 0, grounded: true };
