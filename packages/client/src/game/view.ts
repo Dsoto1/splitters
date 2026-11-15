@@ -113,7 +113,7 @@ import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { PosedBody, RAGDOLL_PREWARM, Ragdoll, type DeadBody } from './ragdoll.ts';
 import { RAGDOLL_BUDGET, fitBudget, screenShare, tierFor, type RagdollTier } from './ragdollBudget.ts';
 import { Atmosphere, SMALL_CASTER_REACH } from './atmosphere.ts';
-import { PROP_BATCH_MIN, PropBatches } from './propBatches.ts';
+import { PropBatches, joinsPropBatch } from './propBatches.ts';
 import { castSmall } from './shadowFlags.ts';
 import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
@@ -700,11 +700,14 @@ export class GameView {
     for (const e of doc.entities) if (e.kind === 'prop' && !drawnAsEnv.has(e.id) && !carried.has(e.id)) copies.set(modelKey(e), (copies.get(modelKey(e)) ?? 0) + 1);
     // Props under a roof or the floor above cast no sun shadow (shared map/indoors.ts): the roof's shadow covers them.
     const indoor = perfOn('indoorshadow') ? indoorProps(doc, boxes) : () => false;
+    // A prop that can break (the placement's own health, the catalogue's, or the map's destruction) is a copy in a batch
+    // of breakables while intact, out of it once broken (setPropShown); `?perfoff=breakbatch`: its own node, as before.
+    const breakBatched = perfOn('breakbatch');
     doc.entities.forEach((e, i) => {
       if (e.kind !== 'prop' || drawnAsEnv.has(e.id)) return;
-      // (A prop that can break is its own node, switched off when it goes: the placement's own health, or the map's destruction.)
-      const batch = batches && (copies.get(modelKey(e)) ?? 0) >= PROP_BATCH_MIN && !isBreakableProp(e, !!doc.metadata.destruction) ? batches : null;
-      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain, batch, !carried.has(e.id) && indoor(e));
+      const breakable = isBreakableProp(e, !!doc.metadata.destruction);
+      const batch = batches && joinsPropBatch(copies.get(modelKey(e)) ?? 0, breakable, !!getProp(e.model)?.breakable, breakBatched) ? batches : null;
+      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain, batch, !carried.has(e.id) && indoor(e), breakable);
       // A chandelier (and other hung props) is drawn with its top against the ceiling over it.
       if (!carried.has(e.id)) node.position.y += hungPropLift(boxes, e);
       const lift = flush.get(e.id);
@@ -3014,8 +3017,15 @@ export class GameView {
   applyPropStates(states: ReadonlyMap<number, readonly [number, number]>): void {
     for (const [i, node] of this.props) {
       const s = states.get(i);
-      if (s) node.setEnabled(s[0] > 0);
+      if (s) this.setPropShown(node, s[0] > 0);
     }
+  }
+
+  /** A breakable prop drawn or not: its node, and its copy in a prop batch (PropBatches.shown) when it changes. */
+  private setPropShown(node: TransformNode, on: boolean): void {
+    if (node.isEnabled(false) === on) return;
+    node.setEnabled(on);
+    this.propBatches?.shown(node);
   }
 
   /** Props carried by movers follow them (`tick` fractional, like the blocks they ride). */
@@ -3031,7 +3041,8 @@ export class GameView {
 
   /** A broken prop vanishes (the session adds its debris). */
   breakProp(index: number): void {
-    this.props.get(index)?.setEnabled(false);
+    const node = this.props.get(index);
+    if (node) this.setPropShown(node, false);
   }
 
   updateProjectiles(positions: ReadonlyMap<number, [number, number, number, number]>): void {
