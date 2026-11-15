@@ -1,7 +1,7 @@
 import { createHmac, generateKeyPairSync, createSign, type KeyObject } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import WebSocket from 'ws';
 import { LOBBY_HEARTBEAT_SECONDS, LOBBY_STALE_SECONDS } from '@tiletrigger/shared';
 import { JwksCache, accountHandler, authConfigScript, cognitoFromEnv, verifyCognitoToken, type CognitoConfig } from '../src/auth.ts';
@@ -26,6 +26,9 @@ async function serve(handler: (req: IncomingMessage, res: import('node:http').Se
 }
 
 const req = (remote: string, xff?: string) => ({ socket: { remoteAddress: remote }, headers: xff ? { 'x-forwarded-for': xff } : {} }) as unknown as IncomingMessage;
+
+/** Waits for a condition the server reaches on its own time (a busy machine runs its ticks and sockets late). */
+const until = (ok: () => unknown, timeout = 20_000) => vi.waitFor(() => expect(ok(), ok.toString()).toBeTruthy(), { timeout, interval: 20 });
 
 describe('client address', () => {
   it('trusts X-Forwarded-For only behind our own proxy, and only its last entry', () => {
@@ -170,8 +173,7 @@ describe('broker limits', () => {
     expect(b && c).toBeTruthy();
     expect(await open('guest-3')).toBeNull();
     a!.close();
-    await new Promise((r) => setTimeout(r, 100));
-    expect(broker.isLive('QRT29B')).toBe(false);
+    await until(() => !broker.isLive('QRT29B'));
     const d = await open('guest-4');
     expect(d).not.toBeNull();
     for (const w of [b, c, d]) w?.close();

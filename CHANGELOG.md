@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Fixes from the flaky-test sweep.** A player kicked or refused by a dedicated host is told why even on a congested link (the host waits for them to leave, 5 s at most, before closing the link). A dedicated host started on a busy machine recognises signed-in players from the start (it asked for the hub's keys while it was still building the map, and waited 30 s to ask again). Damage numbers show at least once on a very slow page. A character who stood up while out of view no longer comes back into view crouched (Hyena Warrior).
 - **Options and Match Setup on phones.** Options is one column on a phone: the sections are chips along the top, the panel takes the whole height, and every setting is one line, its name and control side by side, with what it does behind an (i). Match Setup's header, which stays put while the setup scrolls, names the mode too, and the steppers' − and + are 40 px squares.
 - **Calmer terrazzo.** The speckled terrazzo floors (Flatpack Depot, the labs and offices) have finer, softer specks that no longer read as noise on a phone.
 - **Sun Warrior holds his guns properly**: his fingers close round the grip and his hands sit on the grip and the handguard, in first and third person. The Hollow Pilgrim's shooting hand sits on the grip.
