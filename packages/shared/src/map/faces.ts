@@ -115,20 +115,21 @@ interface Group {
   members: FrameBox[];
 }
 
-/** Which frame a box is compared in: its key (boxes with the same key share it), the frame's rotation from this box, and whether x and z swap. */
-function boxFrame(b: WorldBox): { key: string; q: () => Rot; swap: boolean } {
-  if (b.pitch || b.roll) {
-    // Tilted: only boxes turned and tilted exactly the same way share a frame.
-    return { key: `t${Math.round((b.yaw ?? 0) * 1e6)},${Math.round(b.pitch! * 1e6 || 0)},${Math.round(b.roll! * 1e6 || 0)}`, q: () => boxQuat(b.yaw, b.pitch, b.roll), swap: false };
-  }
+/** Which frame a box is compared in: its key (boxes with the same key share it), its turn within a quarter (t), and whether x and z swap. */
+function boxFrame(b: WorldBox): { key: string; t: number; swap: boolean } {
+  // Tilted: only boxes turned and tilted exactly the same way share a frame.
+  if (b.pitch || b.roll) return { key: `t${Math.round((b.yaw ?? 0) * 1e6)},${Math.round(b.pitch! * 1e6 || 0)},${Math.round(b.roll! * 1e6 || 0)}`, t: NaN, swap: false };
   // Turned: a quarter turn more or less is the same frame with x and z swapped.
   const yaw = b.yaw ?? 0;
-  if (!yaw) return { key: 'y0', q: () => boxQuat(0), swap: false };
+  if (!yaw) return UNTURNED;
   let t = ((yaw % QUARTER) + QUARTER) % QUARTER;
   if (t < 1e-7 || QUARTER - t < 1e-7) t = 0;
   const k = (((Math.round((yaw - t) / QUARTER) % 4) + 4) % 4) as 0 | 1 | 2 | 3;
-  return { key: `y${Math.round(t * 1e6)}`, q: () => boxQuat(t), swap: k % 2 === 1 };
+  return { key: `y${Math.round(t * 1e6)}`, t, swap: k % 2 === 1 };
 }
+const UNTURNED = { key: 'y0', t: 0, swap: false } as const;
+/** The rotation of a frame, from a box in it. */
+const frameQuat = (b: WorldBox, t: number): Rot => (Number.isNaN(t) ? boxQuat(b.yaw, b.pitch, b.roll) : boxQuat(t));
 
 /**
  * The frames of a box list, in the order they first appear in it, each with its rotation (from the first box in it).
@@ -141,7 +142,7 @@ export function faceFrames(boxes: readonly WorldBox[]): FaceFrames {
   for (const b of boxes) {
     if (!isDrawnBox(b)) continue;
     const f = boxFrame(b);
-    if (!out.has(f.key)) out.set(f.key, { q: f.q(), order: out.size });
+    if (!out.has(f.key)) out.set(f.key, { q: frameQuat(b, f.t), order: out.size });
   }
   return out;
 }
@@ -152,11 +153,11 @@ function frameGroups(boxes: readonly WorldBox[], drawn: (b: WorldBox) => boolean
   for (let i = 0; i < boxes.length; i++) {
     const b = boxes[i]!;
     if (!drawn(b)) continue;
-    const { key, q, swap } = boxFrame(b);
+    const { key, t, swap } = boxFrame(b);
     let g = groups.get(key);
     if (!g) {
       const known = frames?.get(key);
-      groups.set(key, (g = { q: known?.q ?? q(), members: [], order: known?.order ?? Infinity }));
+      groups.set(key, (g = { q: known?.q ?? frameQuat(b, t), members: [], order: known?.order ?? Infinity }));
     }
     const c = centre(b);
     const fc = isIdentity(g.q) ? c : rot(conj(g.q), c);
