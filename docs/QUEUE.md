@@ -74,6 +74,15 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
+## Known issues and loose ends (found in HANDOFF, 2026-11-15)
+- ? · A · Mobile: the dark wall block on the owner's Galaxy S25+ (docs/MOBILE_AUDIT.md); if it still shows on Medium, the one-lamp-per-layer mode becomes Medium's default (owner said yes; confirm the reading).
+- ? · ? · Iron Coast's coast-border canopy has a dark lip.
+- ? · ? · Sandsweep plays weak as a battle map.
+- XS · ? · Dead race-track settings left in map files.
+- S · A · Gunplay gaps from the audit (docs/GUNPLAY_AUDIT.md appendix A): no multi-client latency/loss test (G3); bots pick weapons by a hand-set range (G4); Training Range lacks a damage readout on hit, dummies that don't shoot back, armoured targets, a trajectory view.
+- ? · A · The owner's playtest checklist (artifact 5LRzv2dDfPVrp4TU2d3rwW): no answers yet.
+- ? · A · Roster Board renames: apply the owner's edits in one batch when the owner has made them.
+
 ## Parked
 - ? · ? · A hover model for the Hauler (owner, 2026-11-14: "leave hauler for now"; the Sky Cruiser is the only unused hover model).
 - L · A · A full weapon release: Stormvolt Blaster plus any other new guns (new weapon types are paused by the owner).
