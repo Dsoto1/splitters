@@ -690,6 +690,11 @@
         }
       ]
     },
+    "ui.heartbeat": {
+      "synth": "heartbeat",
+      "variants": 2,
+      "gain": 0.55
+    },
     "cue.alarm": {
       "synth": "alarm",
       "variants": 1,

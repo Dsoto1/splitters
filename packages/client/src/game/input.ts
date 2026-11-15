@@ -1,5 +1,5 @@
 import { LookFilter, browserLookScale } from './lookFilter.ts';
-import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@tiletrigger/shared';
+import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'tiletrigger.mouse';
@@ -157,7 +157,7 @@ export class InputState {
   /** A spectator control was used (a pick, the camera toggle, Y): the session sends it as activity. */
   private specUsed = false;
   /** Gamepad state from the last frame: sticks, and which buttons were down (for presses). */
-  private pad = { move: { x: 0, y: 0 }, fire: false, zoom: false, sprint: false, jump: false, prev: [] as boolean[] };
+  private pad = { move: { x: 0, y: 0 }, fire: false, zoom: false, sprint: false, jump: false, use: false, prev: [] as boolean[] };
   /** A controller has been used since the page loaded (its sticks and triggers count). */
   padActive = false;
   /** Weapon wheel: its key, whether it's open, and where it points (x right, y down; length up to 1). */
@@ -513,7 +513,7 @@ export class InputState {
     const p = this.pad;
     if (!pad) {
       p.move = { x: 0, y: 0 };
-      p.fire = p.zoom = p.sprint = p.jump = false;
+      p.fire = p.zoom = p.sprint = p.jump = p.use = false;
       return;
     }
     const down = pad.buttons.map((b) => b.pressed || b.value > 0.4);
@@ -531,6 +531,7 @@ export class InputState {
     p.fire = !!down[PAD.rt];
     p.zoom = !!down[PAD.lt];
     p.jump = !!down[PAD.a];
+    p.use = !!down[PAD.rb];
     if (this.spectating) {
       // Watching: the shoulder buttons pick the next or previous player, Y switches the camera (follow / free).
       if (pressed(PAD.rb)) this.specStep++;
@@ -698,6 +699,8 @@ export class InputState {
     if (this.crouchOn) buttons |= BUTTON_CROUCH;
     if (this.proneOn) buttons |= BUTTON_PRONE;
     if (this.useQueued) buttons |= BUTTON_USE;
+    // E (or the pad's RB, or the touch Use button) still down: a hold to use (resupplying) goes on while it is.
+    if (this.keys.has('KeyE') || this.pad.use) buttons |= BUTTON_USE_HOLD;
     if (this.respawnQueued) buttons |= BUTTON_RESPAWN;
     this.respawnQueued = false;
     this.jumpQueued = this.jumpNext;
