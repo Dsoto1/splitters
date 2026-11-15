@@ -22,6 +22,7 @@ import {
   placeSetPieceCommand,
   replaceTilesWithSetPieceCommand,
   SET_PIECE_MATERIAL_ROLES,
+  roleTakesGround,
   setPieceFootprint,
   setPieceFromSelection,
   setPieceMirrorRefusal,
@@ -631,6 +632,8 @@ export class SetPieceTools {
     if ((SET_PIECE_MATERIAL_ROLES as readonly string[]).includes(role)) {
       let group: HTMLOptGroupElement | null = null;
       for (const m of coreMaterials.all()) {
+        // Ground materials on the floor, paving and roof roles only (painting plan, 2a).
+        if (m.category === 'Ground' && !roleTakesGround(role) && m.id !== nowKey) continue;
         if (group?.label !== m.category) {
           group = document.createElement('optgroup');
           group.label = m.category;

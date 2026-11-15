@@ -20,6 +20,9 @@ export type ResolvedEdge = Exclude<EdgeStyle, 'auto' | 'open'> | 'none';
 /** The shape of a built edge style (content/tiles/edges.json); none for `none`. */
 export const shapeOf = (style: ResolvedEdge): EdgeShape | undefined => (style === 'none' ? undefined : EDGE_SHAPES[style]);
 
+/** The surface a style's segments and trim are drawn in instead of the walls' and trim's: `metal` (bars, gates, railings). */
+export const edgePaint = (style: ResolvedEdge): 'metal' | undefined => shapeOf(style)?.paint;
+
 /** An edge value along a side `half` long each way from its middle, on a level `height` high. */
 function edgeValue(v: EdgeValue, half: number, height: number): number {
   if (typeof v === 'number') return v;

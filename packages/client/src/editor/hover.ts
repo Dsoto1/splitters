@@ -1,7 +1,6 @@
 import {
   checkNote,
   coreCatalog,
-  coreMaterials,
   coreThemes,
   EDGE_STYLE_LABELS,
   edgeChoiceAt,
@@ -17,14 +16,10 @@ import {
   MOUNT_DEFS,
   NPC_PALETTE,
   placementCells,
-  resolveSurface,
   rosterSize,
   SCENARIO_PALETTE,
-  SURFACE_SLOT_LABELS,
   TERRAIN_MATERIAL_LABELS,
-  TERRAIN_SURFACES,
   terrainHeightAt,
-  terrainMaterialFor,
   terrainRaycast,
   tileAt,
   tileGhostCheck,
@@ -50,7 +45,8 @@ export class Hover {
   constructor(readonly app: EditorApp) {}
 
   /** The boxes Paint and Walls can point at: everything drawn but the invisible barriers (map edge, ground fence). */
-  paintable: { from: WorldBox[]; boxes: WorldBox[]; tiles: WorldBox[] } = { from: [], boxes: [], tiles: [] };
+  /** What Paint and Walls cast at: everything drawn but the invisible walls; for Structure paint, thin boxes a little fatter. */
+  paintable: { from: WorldBox[]; boxes: WorldBox[]; paint: WorldBox[] } = { from: [], boxes: [], paint: [] };
 
   /** The level an entity stands on (things a little below a floor, like props bedded into ground, count as on it). */
   entityLevel(e: MapEntity): number {
@@ -256,20 +252,18 @@ export class Hover {
     this.app.hoverCell = this.app.hoverPoint ? [Math.round(this.app.hoverPoint.x / cellSize), Math.round(this.app.hoverPoint.z / cellSize), this.app.level] : null;
     if (this.app.tool.kind === 'path') this.app.paths.hover(this.app.hoverPoint);
     if (this.app.tool.kind === 'measure') this.app.measure.setHover(this.app.placing.measurePointAtHover());
-    this.app.paintGround = null;
     if (this.app.tool.kind === 'paint' || this.app.tool.kind === 'edge') {
       const ray = this.app.view.pointerRay(clientX, clientY);
       // Only what is drawn: the invisible walls round the map (60 m high) would catch the ray first from far out.
       if (this.paintable.from !== this.app.visibleBoxes) {
         const boxes = this.app.visibleBoxes.filter((b) => b.kind !== 'barrier');
-        const tiles = new Set(this.app.doc.classicStructure.tiles.map((t) => t.id));
-        this.paintable = { from: this.app.visibleBoxes, boxes, tiles: boxes.filter((b) => tiles.has(b.sourceId)) };
+        this.paintable = { from: this.app.visibleBoxes, boxes, paint: boxes.map(pickMargin) };
       }
-      // Paint paints tiles' surfaces (a rock or crate in the way is not one: the ground under it is what it paints).
-      const face = ray ? raycastBoxes(ray.origin, ray.dir, this.app.tool.kind === 'paint' ? this.paintable.tiles : this.paintable.boxes) : null;
-      // The ground in front of a surface hides it; with nothing nearer, the ground is what Paint paints.
+      // Structure paint casts at everything drawn (tiles, free blocks, set-piece parts, bars; props say they aren't
+      // paintable), thin boxes caught at their edges; a miss is never the ground (painting plan Phase 1).
+      const face = ray ? raycastBoxes(ray.origin, ray.dir, this.app.tool.kind === 'paint' ? this.paintable.paint : this.paintable.boxes) : null;
+      // The ground in front of a surface hides it.
       this.app.hoverFace = face && (!ground || face.distance < ground.distance) ? face : null;
-      if (this.app.tool.kind === 'paint' && !this.app.hoverFace && ground) this.app.paintGround = ground.at;
     } else this.app.hoverFace = null;
     this.app.paint.hoverEdge = null;
     if (this.app.tool.kind === 'edge' && this.app.hoverFace) {
@@ -451,7 +445,7 @@ export class Hover {
       const t = this.app.shownGround;
       const colors: Record<TerrainBrush, string> = { raise: '#ffd34d', lower: '#ff7a4d', smooth: '#7fd8ff', flatten: '#c7a6ff', roughen: '#b8e07a', paint: '#ffffff', foliage: '#6fdc6a' };
       this.app.view.setBrushRing(h ? t : null, h?.x ?? 0, h?.z ?? 0, this.app.terrain.brushRadius, colors[this.app.terrain.terrainBrush]);
-      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.app.terrain.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.app.terrain.terrainMaterial]}` : this.app.terrain.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.app.terrain.foliageLevel]}` : this.app.terrain.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.app.terrain.brushRadius} m` : '';
+      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.app.terrain.terrainBrush === 'paint' ? `Ground paint · click paints ${TERRAIN_MATERIAL_LABELS[this.app.terrain.terrainMaterial]} (buildings stay as they are)` : this.app.terrain.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.app.terrain.foliageLevel]}` : this.app.terrain.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.app.terrain.brushRadius} m` : '';
       this.app.view.setFaceHighlight(null, null);
       this.app.view.setHoverCell(this.app.doc, null);
       this.app.view.setGhost(this.app.doc, null, null, 0, true);
@@ -479,19 +473,12 @@ export class Hover {
       this.app.view.setGhost(this.app.doc, null, null, 0, true);
       return;
     }
-    // Paint lights only a surface it can paint (a tile's), never a prop or block it would leave as it is.
-    const face = this.app.tool.kind === 'paint' && !this.app.paint.paintTarget() ? null : this.app.hoverFace;
+    // Structure paint lights only what it can paint, never a prop or the ground it leaves as they are.
+    const face = this.app.tool.kind === 'paint' && this.app.paint.paintTarget().kind === 'refused' ? null : this.app.hoverFace;
     this.app.view.setFaceHighlight(face?.box ?? null, face?.localNormal ?? null);
     if (this.app.tool.kind === 'paint') {
-      const target = this.app.paint.paintTarget();
-      const g = this.app.paintGround;
-      // On the ground: the ring it paints, as the Terrain tab's Paint brush shows it.
-      this.app.view.setBrushRing(g ? this.app.shownGround : null, g?.x ?? 0, g?.z ?? 0, this.app.terrain.brushRadius, '#ffb03b');
-      $('ed-target').textContent = target
-        ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.app.doc, target.tile, target.slot).material.displayName}`
-        : g
-          ? `Ground · paint ${TERRAIN_MATERIAL_LABELS[this.app.paint.groundPaint]}${TERRAIN_SURFACES[this.app.paint.groundPaint] === this.app.paint.paintStyle.material || !terrainMaterialFor(this.app.paint.paintStyle.material) ? '' : ` (${coreMaterials.get(this.app.paint.paintStyle.material)?.displayName ?? 'swatch'})`} · radius ${this.app.terrain.brushRadius} m`
-          : '';
+      this.app.view.setBrushRing(null, 0, 0, 0);
+      $('ed-target').textContent = this.app.paint.label();
     } else if (this.app.tool.kind === 'path') {
       const over = this.app.paths.hovering;
       $('ed-target').textContent = this.app.paths.dragging ? 'Moving the point' : over === 'point' ? (this.app.paths.joining ? 'Click to join the ends (a loop) · drag to move this point' : 'Drag to move this point · right-click removes it') : over === 'path' ? 'Click to edit this path · Shift-click puts a point here' : '';
@@ -553,4 +540,14 @@ export class Hover {
     return this.entityGhostAt.value;
   }
   entityGhostAt: { key: string; value: { title: string; note: GhostNote } | null } | null = null;
+}
+
+/** Thinner than this (bars, railings, a 10 cm wall), a box is caught a little outside its faces. */
+const THIN = 0.2;
+const MARGIN = 0.04;
+/** A box fattened by MARGIN on each thin axis (the same object when it isn't thin), so Structure paint catches a thin wall's edge. */
+function pickMargin(b: WorldBox): WorldBox {
+  const grow = [0, 1, 2].map((i) => (b.max[i]! - b.min[i]! < THIN ? MARGIN : 0));
+  if (!grow.some(Boolean)) return b;
+  return { ...b, min: [b.min[0] - grow[0]!, b.min[1] - grow[1]!, b.min[2] - grow[2]!], max: [b.max[0] + grow[0]!, b.max[1] + grow[1]!, b.max[2] + grow[2]!] };
 }

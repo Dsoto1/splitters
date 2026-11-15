@@ -10,7 +10,6 @@ import {
   moverGroupOf,
   placementCells,
   selectionGroup,
-  TERRAIN_BRUSHES,
   withMoverGroups,
   type KeyAction,
   type Vec3
@@ -153,20 +152,14 @@ export class EditorInput {
     const b = this.brush;
     const tool = this.app.tool;
     if (!b) return;
-    if (tool.kind === 'paint' && this.app.paintGround && !this.app.hoverFace) {
-      const p = this.app.paintGround;
-      if (b.at && Math.hypot(p.x - b.at.x, p.z - b.at.z) < this.app.terrain.brushRadius * 0.5) return;
-      b.at = { x: p.x, z: p.z };
-      b.key = null;
-      if (!b.invert) this.app.paint.paintGroundAtHover();
-      return;
-    }
     if (tool.kind === 'paint') {
+      // Structure paint: each surface once a stroke; over the ground (or a prop) nothing, said once.
       const t = this.app.paint.paintTarget();
-      const key = t ? `${t.tile.id}:${t.slot}` : null;
-      if (!key || key === b.key) return;
+      const key = t.kind === 'tile' ? `${t.tile.id}:${t.slot}` : t.kind === 'block' ? t.block.id : t.kind === 'part' ? `${t.placement.id}:${t.index}:${t.slot}` : `refused:${t.reason}`;
+      if (key === b.key) return;
+      const said = b.key !== null && b.key.startsWith('refused:');
       b.key = key;
-      return this.app.paint.paintAtHover(b.invert);
+      return this.app.paint.paintAtHover(b.invert, first || (t.kind === 'refused' && !said));
     }
     if (tool.kind === 'edge') {
       const key = this.app.paint.hoverEdge ? JSON.stringify(this.app.paint.hoverEdge) : null;
@@ -485,10 +478,10 @@ export class EditorInput {
     resetView: () => this.app.resetView(),
     logic: () => this.app.logic.toggle(),
     paint: () => this.app.setTool({ kind: 'paint' }),
-    terrain: () => {
-      const i = this.app.tool.kind === 'terrain' ? (TERRAIN_BRUSHES.indexOf(this.app.terrain.terrainBrush) + 1) % TERRAIN_BRUSHES.length : TERRAIN_BRUSHES.indexOf(this.app.terrain.terrainBrush);
-      this.app.terrain.setTerrainBrush(TERRAIN_BRUSHES[i]!);
-    },
+    // Shift+B: Ground paint, the Terrain tool's Paint brush (painting plan Phase 1).
+    groundPaint: () => this.app.terrain.setTerrainBrush('paint'),
+    // T cycles the sculpt brushes (Ground paint has its own key).
+    terrain: () => this.app.terrain.terrainTool(this.app.tool.kind === 'terrain'),
     walls: () => this.app.paint.wallsTool(this.app.tool.kind === 'edge'),
     erase: () => this.app.setTool({ kind: 'erase' }),
     // U: the measure tool (MapMaker overhaul Phase 1 item 3).
