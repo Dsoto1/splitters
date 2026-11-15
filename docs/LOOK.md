@@ -136,11 +136,11 @@ What flickered, and what the setting does to each:
 | Diving into water or another liquid | the haze snaps on and off at the surface | eased over a third of a second |
 | Pickups' floor glows (`lootGlow.ts`, Binbun's Loot VFX) | streaks turning slowly, a slow bob, sparkles drifting up; eased in over a second | held still, no sparkles, 0.5 of its strength instead of 0.8, eased in over two seconds; its dark outline as dark as with the setting off (it adds no light) |
 | Status auras on other characters (`statusFx.ts`, Binbun's Stylized Status FX: burning, poisoned, slowed by goo, chilled or frozen) and the plain shell | flames, bubbles and ice crystals drifting at the pack's speed, eased in over a quarter second; the plain shell pulses about twice a second | half speed, 0.65 of its strength instead of 0.8, eased in over about 0.8 s; the plain shell holds still |
+| The low-health warning (`lowHealth.ts`, below 35 % health) | the screen's edges darken toward near-black and the world loses colour, eased in over 0.6 s and out over 1 s; a heartbeat every 1.35 s at 35 % to every 1 s near death; the health bar brightens 25 % with each beat (a soft sin² bump over 0.4 s) | the same darkening and grey, eased in over 1.2 s; the bar's bump at 0.6 of that. Never a red, never brighter than the scene, never more than once a second. Its moment in the flicker check: `lowhealth` |
 | A portal's swirl and a jump pad's lift (`fixtureFx.ts`, Binbun's Portal VFX and Magic Area VFX) | the swirl turns slowly and draws inward, the lift's streaks rise slowly; eased in over about a second | held still, dimmer (portal 0.7 of its strength, pad 0.6), eased in over about two seconds |
 
 Not changed (nothing flashes there): smoke grenades' haze (already eased), status tints (CSS transitions), the sky (no
-storm lightning exists; a storm flash would have to be capped and eased the same way), the health bar (no low-health
-pulse exists).
+storm lightning exists; a storm flash would have to be capped and eased the same way).
 
 ### The flicker check (e2e flow `flashing`, `e2e/flicker.mjs`)
 
@@ -154,6 +154,7 @@ with the HUD's hurt tint drawn over it, at 160 × 90:
 - four grenade blasts 3-5 m in front of the camera in 0.8 s;
 - a machine gun firing at a wall 3.5 m off in the dark room;
 - six pickups' floor glows coming up 2-4 m in front of you at night, as High graphics draws them;
+- by day, the low-health warning coming up over white tiles as your health drops to 10 % (`lowhealth`);
 - the alarm light in its dark room;
 - by day (its second scene): sprinting out of a lit tunnel and back, and four pickups' glows coming up on white tiles
   (`lootlight`), where the rings must read too: WCAG contrast at least 1.3 on average over each ring with the setting

@@ -7,6 +7,11 @@ import { Minimap } from './minimap.ts';
 import { ScoreBoard, type BoardData, type BoardRow } from './scoreBoard.ts';
 import { readSquads, squadGroups, squadHonours, type SquadHonours } from './squadBoard.ts';
 import { HEAVY_LOOK, HURT_LOOKS, HeavyFade, HurtFade, paintVignette } from './hurtVignette.ts';
+import { LOW_HEALTH_LOOK } from './lowHealth.ts';
+
+/** The hold ring's radius and length (viewBox units). */
+const HOLD_RING_R = 26;
+const HOLD_RING_LEN = 2 * Math.PI * HOLD_RING_R;
 import { reduceFlashing } from './reduceFlashing.ts';
 import { feedLines } from './feedLimit.ts';
 import { isTouchDevice } from '../touchDevice.ts';
@@ -311,6 +316,18 @@ export class Hud {
     if (!layer) {
       layer = document.createElement('div');
       layer.id = 'ping-markers';
+      this.modeMarkers.after(layer);
+    }
+    this.drawMarkers(layer, list);
+  }
+
+  /** Hints (the low-health warning's nearest health), drawn like the objective markers on their own layer. */
+  setHintMarkers(list: ScreenMarker[]): void {
+    let layer = document.getElementById('hint-markers');
+    if (!layer) {
+      if (!list.length) return;
+      layer = document.createElement('div');
+      layer.id = 'hint-markers';
       this.modeMarkers.after(layer);
     }
     this.drawMarkers(layer, list);
@@ -904,6 +921,63 @@ export class Hud {
     if (shown !== this.hurtShown) el.style.opacity = this.hurtShown = shown;
   }
   private hurtShown = '';
+
+  /**
+   * A hold to use (sim/holdUse.ts: resupplying, healing): a ring round the crosshair that fills as it runs, with what
+   * it is under it. Steady (no blinking); null hides it.
+   */
+  setHold(label: string | null, progress: number): void {
+    if (label === null) {
+      if (this.holdEl && !this.holdEl.hidden) this.holdEl.hidden = true;
+      return;
+    }
+    if (!this.holdEl) {
+      this.holdEl = document.createElement('div');
+      this.holdEl.id = 'hold-ring';
+      this.holdEl.innerHTML = `<svg viewBox="0 0 64 64" aria-hidden="true"><circle class="track" cx="32" cy="32" r="${HOLD_RING_R}"/><circle class="fill" cx="32" cy="32" r="${HOLD_RING_R}" stroke-dasharray="${HOLD_RING_LEN.toFixed(2)}"/></svg><span></span>`;
+      (document.getElementById('hud') ?? document.body).append(this.holdEl);
+    }
+    this.holdEl.hidden = false;
+    const span = this.holdEl.querySelector('span')!;
+    if (span.textContent !== label) span.textContent = label;
+    const left = (HOLD_RING_LEN * (1 - Math.max(0, Math.min(1, progress)))).toFixed(2);
+    const fill = this.holdEl.querySelector<SVGCircleElement>('circle.fill')!;
+    if (fill.getAttribute('stroke-dashoffset') !== left) fill.setAttribute('stroke-dashoffset', left);
+  }
+  private holdEl: HTMLElement | null = null;
+
+  /**
+   * The low-health warning's HUD parts (lowHealth.ts): the health bar's slow pulse (`pulse` 0..1, at most once a
+   * second, low contrast) and the screen edge's darkening (`edge` 0..1, a near-black, not a red).
+   */
+  setLowHealth(edge: number, pulse: number): void {
+    const shown = edge > 0.002 ? edge.toFixed(3) : '0';
+    if (shown !== this.lowShown) {
+      this.lowShown = shown;
+      if (!this.lowEl && edge > 0.002) {
+        this.lowEl = document.createElement('div');
+        this.lowEl.id = 'low-health';
+        this.lowEl.style.backgroundImage = `url(${paintVignette(LOW_HEALTH_LOOK).toDataURL()})`;
+        (document.getElementById('hud') ?? document.body).prepend(this.lowEl);
+      }
+      if (this.lowEl) this.lowEl.style.opacity = shown;
+    }
+    const p = pulse > 0.002 ? pulse.toFixed(2) : '0';
+    if (p !== this.lowPulse) {
+      this.lowPulse = p;
+      this.healthBar.style.setProperty('--low-pulse', p);
+      this.healthBar.classList.toggle('pulse', pulse > 0.002);
+    }
+  }
+  private lowEl: HTMLElement | null = null;
+  private lowShown = '';
+  private lowPulse = '';
+
+  /** The low-health edge as drawn now (the flicker check draws it over its frames). */
+  lowHealthOverlay(): { image: HTMLCanvasElement; opacity: number } {
+    return { image: (this.lowPicture ??= paintVignette(LOW_HEALTH_LOOK)), opacity: Number(this.lowShown || 0) };
+  }
+  private lowPicture: HTMLCanvasElement | null = null;
 
   /** You took a heavy hit (content/match-play.json heavyHit): the screen's edges darken for a moment (hurtVignette.ts HeavyFade). */
   heavyHit(amount: number): void {
