@@ -33,7 +33,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 
 ## Ready to land
-- M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Reviewed by lane A's lead 2026-11-15: approved, land it** (merges cleanly with main at 901c19f3; main has moved since 72ee2ac2, so merge main and re-check before the fast-forward). Read: dockPrefs (safe parse, legacy carry-over, clamps), popupMenu (ARIA menu, outside-click listener added on open and removed on close), the map settings field ids (only Dress all, Settle all and the layers heading moved out, as the spec says), the as-built list; `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. The owner's answers: as built (recs, 2026-11-14).
+- (none)
 
 ## Bugs
 - S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
@@ -85,6 +85,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-15 · B · MapMaker UI Phase 1: Map settings in the right dock, an inspector for the selection only, a 3-state dock (Shift+\), a tool bar per tab with a ⋯ menu of every tool, a View menu, a short status bar; the top bar fits at 1440 px.
 - 2026-11-15 · A · Hitches (`wip/hitches-1115`): a going character body is hidden at once and put away over the next frames (1.5 ms a frame): St. John's here, the worst frame of body work in play 15 → 5-7 ms, a new round's 32 bodies 32-52 ms in one frame → 5-7 ms; the recording's other hitches listed with their causes in `docs/PERF_STJOHNS_2026-11-14.md`.
 - 2026-11-15 · A · Dead race-track settings: map format v39 drops a track's `laps`, `grid`, `vehicle` and `combat`; MapMaker no longer writes them; shipped maps load the same otherwise (no map file edited).
 - 2026-11-15 · A · Flaky tests made sturdy by cause: a kicked player is told why on a slow link, a busy host recognises signed-in players, damage numbers drawn at least once on a slow page, Hyena Warrior no longer wakes crouched; server tests wait on conditions, the bench reads CPU time, tests that outgrew one budget split; the Imp grip and arsenal checks wait on the host (HANDOFF Landed note).
