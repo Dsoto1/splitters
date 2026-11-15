@@ -272,3 +272,6 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
 
 ### The owner's answers (2026-11-14: "Recs")
 1a (clip the sand's corners), 2a (gatehouse towers at 45°), 3a (stair wells off the gate passages), 4b (short stairs up the podium either side of each gate), 5a (galleries round the corners), 6a (plain arch collision, new pieces only), 7a (twelve spawns a team, passages and courts), 8a (the pieces first, phases 1–3 landing alone, then the map). Phase 4 also brings the map's description up to date (it still mentions lift cages, a beast lift, an aqueduct and a portal).
+
+### The owner's answers on phase 2 (2026-11-14: "Recs")
+1a: the half-sand cells either side of the diagonal's front stay unclaimed. 2a: the upper tier's back rows stay as built (up to 28 m between aisles). 3a: the vomitorium's side stairs stay as they are; bots use the aisles. 4a: the selection Mirror (Shift+M) learns diagonal symmetry as a small follow-up once the editor code is free.
