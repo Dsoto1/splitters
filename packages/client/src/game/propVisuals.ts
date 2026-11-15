@@ -16,9 +16,10 @@ import type { PropBatches } from './propBatches.ts';
  * matrices are frozen once the model is in. In the game (`instanced`)
  * untinted props are GPU instances of their model merged per material, so big
  * maps stay cheap to draw; with `batches`, static ones are thin instances in their square's batch instead (the
- * root stays, with no meshes under it). Take one down with `disposePropNode`.
+ * root stays, with no meshes under it). `indoor` (shared `indoorProps`): under a roof, so it stays out of the sun's
+ * shadow pass. Take one down with `disposePropNode`.
  */
-export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity, name: string, frozen = true, instanced = false, terrain: TerrainData | null = null, batches: PropBatches | null = null): TransformNode {
+export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity, name: string, frozen = true, instanced = false, terrain: TerrainData | null = null, batches: PropBatches | null = null, indoor = false): TransformNode {
   const root = new TransformNode(name, scene);
   root.position.set(e.position[0], e.position[1], e.position[2]);
   root.scaling.setAll(e.scale);
@@ -30,7 +31,7 @@ export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity
   // An environment species draws its variant's file (summer, autumn, snow…), a kit family its variant's (content/kitProps.ts).
   const file = kitModelFile(e.model, e.variant) ?? envModelFile(e.model, e.variant) ?? def.file;
   // The game's static props (not breakable, not carried): copies in their square's batch (propBatches.ts), tint and all.
-  const batched = batches && frozen && !def.breakable ? batches.add(file, root, small, e.tint ?? null) : Promise.resolve(false);
+  const batched = batches && frozen && !def.breakable ? batches.add(file, root, small, e.tint ?? null, indoor) : Promise.resolve(false);
   const model = batched.then((ok) => (ok ? null : instanced && !e.tint ? models.instantiateStatic(file, `${name}_model`) : models.instantiate(file, `${name}_model`, false)));
   void model.then((node) => {
     if (!node) return;
@@ -49,6 +50,8 @@ export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity
       if (frozen) m.freezeWorldMatrix();
       // Small clutter casts its shadow only near the camera (Atmosphere, SMALL_CASTER_REACH).
       if (small) m.metadata = { ...(m.metadata as object | null), smallCaster: true };
+      // Indoors (under a roof or the floor above: shared `indoorProps`) it casts no sun shadow at all: the roof's covers it.
+      if (indoor) m.metadata = { ...(m.metadata as object | null), castsNoShadow: true };
     }
   });
   return root;
