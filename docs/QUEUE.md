@@ -73,7 +73,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Waiting on the owner
 - The scaling study's seven questions (region streaming, foliage, interiors, bot navigation; `docs/SCALING_STUDY_2026-11-15.md`, recommended picks marked).
-- The MapMaker recording of 2026-11-15's four questions (`docs/PERF_MAPMAKER_TRACE_2026-11-15.md` section 7, recommended picks marked), and its follow-up recording (a plain match and a Test on Iron Maw Remix with advanced rendering instrumentation). The next St. John's match recording after the main-scene work.
+- The MapMaker recording's follow-up recording (a plain match and a Test on Iron Maw Remix, 20 s each, with "Enable advanced rendering instrumentation" ticked and screenshots off; owner said yes, 2026-11-15, all picks on `docs/PERF_MAPMAKER_TRACE_2026-11-15.md` section 7). Fix 3 waits on it. The next St. John's match recording after the main-scene work.
 - Lane B: the destructible environment's later steps. Step 1 is on main (props and blocks on an opt-in map, Breakyard); (a), breakable props batched while intact, landed 2026-11-15 (HANDOFF "Landed: breakable props batched while intact"); (b), breakable building walls, is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 

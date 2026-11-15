@@ -155,6 +155,8 @@ own `tt:` spans, which only see our script.
 
 ## 7. Questions for the owner
 
+**Owner's answers (2026-11-15): all recommended picks** (1a Test is the slow part, 2a a follow-up recording of both, 3a keep checking after every edit, 4a fix 3 first, then 2, 4, 5). Fix 3 waits on the follow-up recording; the Test-start fixes 4 and 5 (lane A) start meanwhile, fix 2 and fix 1 go to lane B.
+
 1. **What felt slow to you in this session?**
    - a) Pressing Test and the test itself **(recommended reading of the recording: editing ran at 59 frames a second, Test took 10 s to start and ran at 30)**
    - b) Editing itself (say which action)
