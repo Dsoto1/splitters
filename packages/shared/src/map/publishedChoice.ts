@@ -17,6 +17,8 @@ import type { MapDocument } from './schema.ts';
 export interface BuiltInRecord {
   /** mapContentHash of the map as it is now, loaded for editing (as the hub hashes a published map). */
   hash: string;
+  /** Whether its release block still describes it (releaseCurrent: its content unchanged since that export or publish). */
+  current?: boolean;
   /** Its `metadata.release`: the version it records (from its last export or publish). */
   release?: { mapId: string; versionId: string; revision: number; contentHash: string; releasedAt: string };
 }
@@ -39,6 +41,8 @@ export interface PublishedRef {
 
 export interface PublishedChoice {
   use: 'published' | 'built-in';
+  /** The published copy is the built-in map's content (nothing is newer). */
+  same?: boolean;
   /** Why, in a few words (logged by hosts and the workflow). */
   why: string;
 }
@@ -46,7 +50,7 @@ export interface PublishedChoice {
 /** The built-in map's record (load it for editing first, as the hub does). */
 export function builtInRecord(map: MapDocument): BuiltInRecord {
   const r = map.metadata.release;
-  return { hash: mapContentHash(map), ...(r ? { release: { mapId: r.mapId, versionId: r.versionId, revision: r.revision, contentHash: r.contentHash, releasedAt: r.releasedAt } } : {}) };
+  return { hash: mapContentHash(map), ...(r ? { current: releaseCurrent(map), release: { mapId: r.mapId, versionId: r.versionId, revision: r.revision, contentHash: r.contentHash, releasedAt: r.releasedAt } } : {}) };
 }
 
 /** A published map's release block (undefined when it has none). */
@@ -58,7 +62,8 @@ export function publishedRelease(map: MapDocument): PublishedRelease | undefined
 /**
  * Which version of a map to use: the published one or the one built in (`builtIn` undefined: not built in).
  *   1. Not built in: published (an official map added by publishing).
- *   2. The same content: built in (nothing to fetch).
+ *   2. The same content: built in (nothing to fetch). The published version the built-in map records, while its
+ *      release block still describes it, counts as the same.
  *   3. The built-in map records no release: published (nothing to order them by).
  *   4. The published version is the one the built-in map records (same content hash, or same version ID): built in,
  *      which has changed since.
@@ -69,11 +74,13 @@ export function publishedRelease(map: MapDocument): PublishedRelease | undefined
  */
 export function choosePublished(builtIn: BuiltInRecord | undefined, p: PublishedRef): PublishedChoice {
   if (!builtIn) return { use: 'published', why: 'not built in' };
-  if (p.hash === builtIn.hash) return { use: 'built-in', why: 'the same as the built-in map' };
   const r = builtIn.release;
-  if (!r) return { use: 'published', why: 'the built-in map records no release' };
   const pr = p.release;
-  if (p.hash === r.contentHash || (pr?.current && pr.versionId === r.versionId)) return { use: 'built-in', why: `the published copy is revision ${r.revision}, which the built-in map has changed since` };
+  const recorded = !!r && (p.hash === r.contentHash || (!!pr?.current && pr.versionId === r.versionId));
+  // The same content (a release block that still describes the built-in map counts: the hash moves with a format bump).
+  if (p.hash === builtIn.hash || (recorded && builtIn.current)) return { use: 'built-in', same: true, why: 'the same as the built-in map' };
+  if (!r) return { use: 'published', why: 'the built-in map records no release' };
+  if (recorded) return { use: 'built-in', why: `the published copy is revision ${r.revision}, which the built-in map has changed since` };
   if (pr?.current && pr.mapId === r.mapId && pr.revision !== r.revision) {
     return pr.revision < r.revision
       ? { use: 'built-in', why: `the built-in map is revision ${r.revision}, the published copy an older revision ${pr.revision}` }

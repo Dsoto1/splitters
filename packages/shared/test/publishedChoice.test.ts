@@ -7,18 +7,21 @@ import { builtInRecord, choosePublished, loadMap, mapContentHash, publishedRelea
 const H = (c: string) => `sha256:${c.repeat(64)}`;
 const T = (iso: string) => Date.parse(iso);
 /** A built-in map stamped revision 32 at 14:45 (hash a) and changed since (hash b). */
-const changed: BuiltInRecord = { hash: H('b'), release: { mapId: 'm_aaaaaaaaaaaaaaaa', versionId: 'v_aaaaaaaaaaaaaaaa', revision: 32, contentHash: H('a'), releasedAt: '2026-11-15T14:45:51.578Z' } };
+const changed: BuiltInRecord = { hash: H('b'), current: false, release: { mapId: 'm_aaaaaaaaaaaaaaaa', versionId: 'v_aaaaaaaaaaaaaaaa', revision: 32, contentHash: H('a'), releasedAt: '2026-11-15T14:45:51.578Z' } };
 /** The same map exported at 14:45 and unchanged since (its release block describes it). */
-const exported: BuiltInRecord = { hash: H('a'), release: changed.release };
+const exported: BuiltInRecord = { hash: H('a'), current: true, release: changed.release };
 
 describe('published or built-in', () => {
   it('the same content: the built-in map (nothing to fetch)', () => {
-    expect(choosePublished(exported, { hash: H('a'), at: T('2026-11-16T00:00:00Z') }).use).toBe('built-in');
+    expect(choosePublished(exported, { hash: H('a'), at: T('2026-11-16T00:00:00Z') })).toMatchObject({ use: 'built-in', same: true });
+    // Stamped at an older format: the hash now differs, the block still describes the map; the recorded version is the same.
+    expect(choosePublished({ ...exported, hash: H('9') }, { hash: H('a'), at: T('2026-11-16T00:00:00Z') })).toMatchObject({ use: 'built-in', same: true });
   });
 
   it('the repository changed since the version it records: the built-in map, however late that was published', () => {
     // By content hash (the hub hashes the published file the same way).
     expect(choosePublished(changed, { hash: H('a'), at: T('2026-11-15T19:00:00Z') })).toMatchObject({ use: 'built-in', why: expect.stringMatching(/revision 32/) });
+    expect(choosePublished(changed, { hash: H('a'), at: T('2026-11-15T19:00:00Z') }).same).toBeUndefined();
     // By version ID, where the published file's block describes it (a hash that drifted with a format change).
     expect(choosePublished(changed, { hash: H('c'), at: T('2026-11-15T19:00:00Z'), release: { mapId: 'm_aaaaaaaaaaaaaaaa', versionId: 'v_aaaaaaaaaaaaaaaa', revision: 32, current: true } }).use).toBe('built-in');
   });

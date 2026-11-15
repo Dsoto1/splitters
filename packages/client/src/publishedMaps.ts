@@ -111,8 +111,11 @@ export async function publishedMapJson(id: string): Promise<unknown> {
  * "the game's version is newer than your last publish").
  */
 export async function builtInNewerThanPublished(id: string): Promise<boolean> {
-  const all = await hubPublishedMaps();
-  return all.has(id) && builtIn(id) && !(await publishedMaps()).has(id) && all.get(id)!.hash !== BUILT_IN.get(id)?.hash;
+  const e = (await hubPublishedMaps()).get(id);
+  const record = BUILT_IN.get(id);
+  if (!e || !record) return false;
+  const choice = choosePublished(record, e);
+  return choice.use === 'built-in' && !choice.same;
 }
 
 /** Forget what was fetched (after the owner publishes, so this page sees the new version). */
