@@ -37,6 +37,7 @@ import {
   type SurfaceStyle,
 } from './schema.ts';
 import { RESOURCE_BUDGETS } from './budgets.ts';
+import { DEFAULT_METAL, coreThemes } from './materials.ts';
 import type { ValidationIssue } from './validate.ts';
 
 export type { SetPieceDefinition, SetPiecePlacement };
@@ -304,7 +305,12 @@ function roleValue<K extends keyof SetPieceRoleValues>(role: K, p: SetPiecePlace
 export function setPieceParts(p: SetPiecePlacement, def: SetPieceDefinition, theme: string, library: Pick<SetPieceLibrary, 'packs'>, catalog: TileCatalog = coreCatalog): { tiles: TilePlacement[]; entities: MapEntity[] } {
   const pack = placementPack(p, theme, library);
   const hidden = new Set(p.overrides?.hide ?? []);
-  const material = (v: SurfaceStyle | { role: SetPieceMaterialRole }): SurfaceStyle | undefined => ('role' in v ? roleValue(v.role, p, def, pack) : v);
+  // Metal no look gives is the theme's metal, else iron (ROLE_THEME_SLOT), never the theme's solids (which can be brick).
+  const metal = (): SurfaceStyle => {
+    const m = coreThemes.get(theme)?.slots.metal;
+    return { material: m?.material ?? DEFAULT_METAL, tint: m?.tint ?? null };
+  };
+  const material = (v: SurfaceStyle | { role: SetPieceMaterialRole }): SurfaceStyle | undefined => ('role' in v ? (roleValue(v.role, p, def, pack) ?? (v.role === 'metal' ? metal() : undefined)) : v);
   const glass = (v: string | { role: 'glass' }): 'breakable' | 'reinforced' | undefined => {
     const k = typeof v === 'string' ? v : roleValue('glass', p, def, pack);
     return k === 'breakable' || k === 'reinforced' ? k : undefined;
@@ -314,9 +320,25 @@ export function setPieceParts(p: SetPiecePlacement, def: SetPieceDefinition, the
   def.parts.forEach((part, i) => {
     if (hidden.has(i)) return;
     const id = setPiecePartId(p.id, i);
+    // Paint on this one part (format v41) wins over its role and the look: a tile part's surfaces, a block's material.
+    const paint = p.overrides?.paint?.[String(i)];
     // Through the map schema: each part as a map file would hold it (its fields in the schema's order).
-    if (part.kind === 'tile') tiles.push(TilePlacement.parse(placeTilePart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('facade', p, def, pack)), catalog)));
-    else entities.push(MapEntity.parse(placeEntityPart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('door', p, def, pack)))));
+    if (part.kind === 'tile') {
+      const t = placeTilePart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('facade', p, def, pack)), catalog);
+      if (paint && !('material' in paint)) {
+        const s = { ...t.surfaces };
+        for (const [slot, v] of Object.entries(paint) as [keyof typeof s, SurfaceStyle | undefined][]) if (v) s[slot] = { material: v.material, tint: v.tint ?? null };
+        if (Object.keys(s).length) t.surfaces = s;
+      }
+      tiles.push(TilePlacement.parse(t));
+    } else {
+      const e = placeEntityPart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('door', p, def, pack)));
+      if (paint && 'material' in paint && e.kind === 'block' && !e.glass) {
+        e.material = paint.material;
+        e.tint = paint.tint ?? null;
+      }
+      entities.push(MapEntity.parse(e));
+    }
   });
   return { tiles, entities };
 }
@@ -492,6 +514,12 @@ function expand(doc: MapDocument, library: SetPieceLibrary, catalog: TileCatalog
     if (p.pack && !library.packs.has(p.pack)) issues.push({ severity: 'warning', code: 'setpiece.pack', message: `set piece ${p.id} names an unknown role pack "${p.pack}": it takes the map's theme`, targetId: p.id });
     const bad = (p.overrides?.hide ?? []).filter((i) => i >= def.parts.length);
     if (bad.length) issues.push({ severity: 'warning', code: 'setpiece.hide', message: `set piece ${p.id} hides part ${bad.join(', ')}, which ${def.displayName} doesn't have (it has ${def.parts.length})`, targetId: p.id });
+    // Paint on a part (v41) must name a part that takes it: surfaces on a tile part, a material on a block part.
+    const misfit = Object.entries(p.overrides?.paint ?? {}).filter(([k, v]) => {
+      const part = def.parts[Number(k)];
+      return !part || (part.kind === 'tile' ? 'material' in v : part.kind !== 'block' || !('material' in v));
+    });
+    if (misfit.length) issues.push({ severity: 'warning', code: 'setpiece.paint', message: `set piece ${p.id} paints part ${misfit.map(([k]) => k).join(', ')}, which ${def.displayName} has no such surface on (it is left as it is)`, targetId: p.id });
     const cells = setPieceFootprint(p, def);
     footprints.set(p.id, cells);
     if (cells.some(([x, y, z]) => Math.abs(x) > MAX_TILE_CELL || Math.abs(y) > MAX_TILE_CELL || Math.abs(z) > MAX_TILE_LEVEL)) {

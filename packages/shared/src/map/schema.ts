@@ -1200,8 +1200,18 @@ export const SetPiecePlacement = z.object({
   mirror: z.boolean().default(false),
   /** The role pack that themes it (content/setpieces/roles.json); absent: the one for the map's theme, if any. */
   pack: z.string().regex(/^[a-z0-9_]{2,32}$/).optional(),
-  /** Small per-placement tweaks: a role's value, or parts left out (by index). */
-  overrides: z.object({ roles: SetPieceRoleValues.optional(), hide: z.array(z.number().int().min(0).max(1023)).max(1024).optional() }).optional(),
+  /**
+   * Small per-placement tweaks: a role's value, parts left out (by index), and (format v41) paint on single parts by
+   * index: a tile part's surfaces (`{ "walls": … }`) or a block part's material (`{ "material": …, "tint": … }`). Paint
+   * wins over the role and the look (MapMaker's Structure paint, "This surface only").
+   */
+  overrides: z
+    .object({
+      roles: SetPieceRoleValues.optional(),
+      hide: z.array(z.number().int().min(0).max(1023)).max(1024).optional(),
+      paint: z.record(z.string().regex(/^(0|[1-9]\d{0,3})$/, 'part indices: "0" to "1023"'), z.union([SurfaceStyle, TileSurfaces])).optional(),
+    })
+    .optional(),
 });
 export type SetPiecePlacement = z.infer<typeof SetPiecePlacement>;
 

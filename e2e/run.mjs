@@ -1245,7 +1245,8 @@ async function editoruxFlow(browser) {
       ed.setSelection({ tiles: [], entities: [] });
     });
   }
-  // Paint from far out: the ground under the pointer, not the invisible wall round the map.
+  // Ground paint from far out (Shift+B; painting plan Phase 1): the ground under the pointer, not the invisible wall
+  // round the map. Structure paint there says it doesn't paint the ground.
   await page.evaluate(() => window.__editor.setTool({ kind: 'paint' }));
   await page.evaluate(() => {
     window.__editor.view.focus({ x: 30, y: 0, z: 30 });
@@ -1254,12 +1255,18 @@ async function editoruxFlow(browser) {
   await settle();
   const far = await at(30, 0, 30);
   await page.mouse.move(far.x, far.y);
-  await page.waitForFunction(() => !!window.__editor.paintGround, null, { timeout: T(5000) }).catch(() => {});
-  const farHover = await page.evaluate(() => ({ face: window.__editor.hoverFace?.box.kind ?? null, ground: !!window.__editor.paintGround, target: document.getElementById('ed-target').textContent }));
-  check(farHover.ground && farHover.face === null && /^Ground/.test(farHover.target), `zoomed far out, Paint points at the ground (${JSON.stringify(farHover)})`);
+  await settle();
+  const farStructure = await page.evaluate(() => ({ face: window.__editor.hoverFace?.box.kind ?? null, target: document.getElementById('ed-target').textContent }));
+  check(farStructure.face === null && /Structure paint doesn't paint the ground/.test(farStructure.target), `zoomed far out, Structure paint says it doesn't paint the ground (${JSON.stringify(farStructure)})`);
+  await page.keyboard.press('Shift+KeyB');
+  await page.mouse.move(far.x + 1, far.y);
+  await page.waitForFunction(() => !!window.__editor.terrain.terrainHover, null, { timeout: T(5000) }).catch(() => {});
+  const farHover = await page.evaluate(() => ({ tool: window.__editor.tool.kind, brush: window.__editor.terrain.terrainBrush, ground: !!window.__editor.terrain.terrainHover, target: document.getElementById('ed-target').textContent }));
+  check(farHover.tool === 'terrain' && farHover.brush === 'paint' && farHover.ground && /^Ground paint/.test(farHover.target), `zoomed far out, Ground paint points at the ground (${JSON.stringify(farHover)})`);
   const ground0 = await page.evaluate(() => window.__editor.doc.terrain.materials.join(''));
-  await page.mouse.click(far.x, far.y);
-  check(await page.evaluate((g) => window.__editor.doc.terrain.materials.join('') !== g, ground0), 'a click with Paint from far out paints the ground');
+  await page.mouse.click(far.x + 1, far.y);
+  await settle();
+  check(await page.evaluate((g) => window.__editor.doc.terrain.materials.join('') !== g, ground0), 'a click with Ground paint from far out paints the ground');
   // One rotation step per kind: R turns a spawn 45°, Shift+R a finer 15°.
   // Back from the rocks at (30, 30): (6, 0, 0) is behind the camera there.
   await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
@@ -1783,17 +1790,18 @@ async function editorLayoutChecks(browser) {
   await page.keyboard.press('KeyK');
   check(overlapsOn && spawnHidden && spawnBack && planOn && !(await page.evaluate(() => window.__editor.plan.on)), `View → Overlaps, a map layer (MapMaker only, not in the map) and Plan view do what their old places did (overlaps ${overlapsOn}, layer ${spawnHidden}/${spawnBack}, plan ${planOn})`);
 
-  // ---- The tool bar: each tab its own tools (Paint, Terrain and the Environment brush on Environment's only); the
+  // ---- The tool bar: each tab its own tools (Structure paint on Build's and Environment's, Ground paint, Terrain and the
+  // Environment brush on Environment's only); the
   // ⋯ menu lists every tool and action in every tab.
   const want = {
-    build: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-walls', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    build: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-walls', 'ed-tb-paint', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
     props: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
     entities: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-bothints', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
-    environment: ['ed-tb-select', 'ed-tb-erase', 'ed-tb-paint', 'ed-tb-terrain', 'ed-tb-envbrush', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    environment: ['ed-tb-select', 'ed-tb-erase', 'ed-tb-paint', 'ed-tb-groundpaint', 'ed-tb-terrain', 'ed-tb-envbrush', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
     paths: ['ed-tb-select', 'ed-tb-erase', 'ed-tb-paths', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
     test: ['ed-tb-select', 'ed-tb-bothints', 'ed-tb-measure', 'ed-tb-notes', 'ed-tb-plan', 'ed-maptest', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
   };
-  const everyTool = ['select', 'place', 'erase', 'walls', 'paint', 'terrain', 'envbrush', 'paths', 'bothints', 'measure', 'notes', 'rotate', 'delete', 'mirror', 'mirror-dialog', 'duplicate', 'group', 'ungroup', 'plan', 'dress-all', 'settle-all', 'keys', 'help'].map((t) => `ed-tb-${t}`).concat('ed-maptest');
+  const everyTool = ['select', 'place', 'erase', 'walls', 'paint', 'groundpaint', 'terrain', 'envbrush', 'paths', 'bothints', 'measure', 'notes', 'rotate', 'delete', 'mirror', 'mirror-dialog', 'duplicate', 'group', 'ungroup', 'plan', 'dress-all', 'settle-all', 'keys', 'help'].map((t) => `ed-tb-${t}`).concat('ed-maptest');
   const bars = {};
   const menus = {};
   await page.keyboard.press('KeyV');
@@ -1813,7 +1821,7 @@ async function editorLayoutChecks(browser) {
   // From the Build tab, the menu reaches the Environment tools: each picks its tool (and its tab), lit on the bar.
   await page.click('#ed-modes [data-ws="build"]');
   const picked = {};
-  for (const [item, kind] of [['ed-tb-paint', 'paint'], ['ed-tb-terrain', 'terrain'], ['ed-tb-envbrush', 'envbrush'], ['ed-tb-measure', 'measure'], ['ed-tb-notes', 'note'], ['ed-tb-paths', 'path'], ['ed-tb-walls', 'edge'], ['ed-tb-bothints', 'bothint'], ['ed-tb-erase', 'erase'], ['ed-tb-select', 'select']]) {
+  for (const [item, kind] of [['ed-tb-paint', 'paint'], ['ed-tb-terrain', 'terrain'], ['ed-tb-groundpaint', 'terrain'], ['ed-tb-envbrush', 'envbrush'], ['ed-tb-measure', 'measure'], ['ed-tb-notes', 'note'], ['ed-tb-paths', 'path'], ['ed-tb-walls', 'edge'], ['ed-tb-bothints', 'bothint'], ['ed-tb-erase', 'erase'], ['ed-tb-select', 'select']]) {
     await page.click('#ed-tb-more');
     await page.click(`#${item}-item`);
     await frames(page, 1);
@@ -1953,12 +1961,88 @@ async function editorInspectorKeepChecks(page, { doc, clickAt, settle }) {
  */
 async function editorpiecesFlow(browser) {
   await editorSetPieceChecks(browser);
+  await editorPiecePaintChecks(browser);
   await editorSetPiecePart5Checks(browser);
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
 }
 
+/**
+ * Set pieces with Structure paint (owner, 2026-11-15: 5a, and every part designable): a click paints that material
+ * across the piece (its role in this placement), "This surface only" paints one part (the Cage Block's bars too), no
+ * Explode; a theme change keeps both; each is one undo step.
+ */
+async function editorPiecePaintChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/setpieces-paint-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page);
+  const settle = () => frames(page, 3);
+  const hover = async (x, y, z) => {
+    const p = await page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    return p;
+  };
+  const piece = () => page.evaluate(() => window.__editor.doc.setPieces.find((p) => p.id === 'cage'));
+  // A Cage Block at cells (2..3, -3..-2) on the Imperial theme: its passage along z = -24, the pens' barred fronts on
+  // it at z = -20; the camera in the passage looking north at them.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Theme', { kind: 'setTheme', before: ed.doc.classicStructure.theme, after: 'core.imperial' });
+    ed.history.execute('Place', { kind: 'addSetPieces', setPieces: [{ id: 'cage', piece: 'setpiece.cage_block', x: 2, y: -3, z: 0, rotation: 0, mirror: false }] });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.setTool({ kind: 'paint' });
+    ed.paint.paintStyle = { material: 'core.pbr_brick_old', tint: null };
+    ed.view.yaw = 0;
+    ed.view.pitch = -0.15;
+    ed.view.applyCamera();
+    ed.view.camera.position.set(16, 1.7, -26.5);
+  });
+  await settle();
+  // Default (across the piece): the passage floor is the piece's Paving, so all its Paving turns brick.
+  const scope = await page.evaluate(() => document.getElementById('ed-piece-scope')?.value);
+  let p = await hover(16, 0, -23);
+  const wallLabel = await page.evaluate(() => document.getElementById('ed-target').textContent);
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  let c = await piece();
+  check(scope === 'piece' && c.overrides?.roles?.paving?.material === 'core.pbr_brick_old' && !c.overrides.paint && /Cage Block/.test(wallLabel), `a click on a set piece paints that material across the piece (its Paving), no Explode (${JSON.stringify({ scope, overrides: c.overrides, wallLabel })})`);
+  await shot('across');
+  // This surface only: one bar of one pen gold, the other pen's bars as they were.
+  await page.selectOption('#ed-piece-scope', 'part');
+  await page.evaluate(() => (window.__editor.paint.paintStyle = { material: 'core.gold_leaf', tint: null }));
+  p = await hover(13, 0.06, -20.01);
+  const barLabel = await page.evaluate(() => document.getElementById('ed-target').textContent);
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  c = await piece();
+  const paintKeys = Object.keys(c.overrides?.paint ?? {});
+  check(paintKeys.length === 1 && Object.values(c.overrides.paint)[0].metal?.material === 'core.gold_leaf' && /^Metal/.test(barLabel), `"This surface only" paints one part's bars (${JSON.stringify({ paint: c.overrides?.paint, barLabel })})`);
+  await shot('part');
+  // A theme change keeps both; undo takes each back.
+  await page.evaluate(() => window.__editor.history.execute('Theme', { kind: 'setTheme', before: window.__editor.doc.classicStructure.theme, after: 'core.city' }));
+  c = await piece();
+  const drawn = await page.evaluate(() => window.__editor.viewDoc.classicStructure.tiles.filter((t) => t.id.startsWith('sp_cage_')).map((t) => t.surfaces?.metal?.material ?? null));
+  check(c.overrides?.roles?.paving && c.overrides?.paint && drawn.includes('core.gold_leaf'), `a theme change keeps the piece's paint (${JSON.stringify(drawn)})`);
+  // (The first undo takes the theme back.)
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  c = await piece();
+  check(!c.overrides?.paint && c.overrides?.roles?.paving, 'undo takes the part paint back, then...');
+  await page.keyboard.press('Control+KeyZ');
+  c = await piece();
+  check(!c.overrides, '...the piece paint, one step each');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function editortoolsFlow(browser) {
+  await editorPaintChecks(browser);
   await editorTurnChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
@@ -1966,6 +2050,133 @@ async function editortoolsFlow(browser) {
   await editorBotHintChecks(browser);
   await editorTileOptionChecks(browser);
   await editorBuriedPickChecks(browser);
+}
+
+/**
+ * The two painters (docs/MAPMAKER_PAINTING_PLAN.md Phase 1; owner's answers 1a 2a): Structure paint (B) paints tiles,
+ * free blocks, thin walls and bars, never the ground (it says so); Ground paint (Shift+B, the Terrain tool's Paint
+ * brush) offers the ground layers only and passes under buildings; a ground material never goes on a wall; every
+ * paint is one undo step.
+ */
+async function editorPaintChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-paint-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const settle = () => frames(page, 3);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const status = () => page.evaluate(() => document.getElementById('ed-target').textContent);
+  const toast = () => page.evaluate(() => document.getElementById('ed-toast')?.textContent ?? '');
+  const undoLabel = () => page.evaluate(() => window.__editor.history.undoLabel);
+  const hover = async (x, y, z) => {
+    const p = await page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    return p;
+  };
+  // A block, a thin wall (a 10 cm block) and a room with bars on its south side, by the start room.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const block = (id, position, size) => ({ id, kind: 'block', position, size, yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
+    ed.history.execute('Place', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addEntities', entities: [block('paint_blk', [16, 0, 0], [3, 2, 3]), block('paint_thin', [16, 0, 8], [4, 3, 0.1])] },
+        { kind: 'addTiles', tiles: [{ id: 'paint_bars', tile: 'core.room', x: -2, y: 0, z: 0, rotation: 0, edges: { '0,0,0:S': 'bars' } }] },
+      ],
+    });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 0 });
+  });
+  await settle();
+  // Structure paint (B), Old Brick.
+  await page.keyboard.press('KeyB');
+  await page.evaluate(() => {
+    window.__editor.paint.paintStyle = { material: 'core.red_brick', tint: null };
+    window.__editor.palettes.syncPaintUi();
+  });
+  const tool = await page.evaluate(() => window.__editor.tool.kind);
+  // Over bare ground: nothing happens, and it says so.
+  let p = await hover(6, 0, -14);
+  const groundLabel = await status();
+  const ground0 = await page.evaluate(() => window.__editor.doc.terrain.materials.join(''));
+  const undo0 = await undoLabel();
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  const groundAfter = { same: await page.evaluate((g) => window.__editor.doc.terrain.materials.join('') === g, ground0), undo: await undoLabel(), toast: await toast() };
+  check(tool === 'paint' && /Structure paint doesn't paint the ground\. Use Ground paint \(Shift\+B\)/.test(groundLabel) && groundAfter.same && groundAfter.undo === undo0 && /Ground paint/.test(groundAfter.toast), `Structure paint over bare ground changes nothing and says so (${JSON.stringify({ tool, groundLabel, ...groundAfter })})`);
+  await shot('ground-refused');
+  // A free block, then a thin wall at its very edge.
+  p = await hover(16, 2, 0);
+  const blockLabel = await status();
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  const blk = (await doc()).entities.find((e) => e.id === 'paint_blk');
+  check(blk.material === 'core.red_brick' && /Block/.test(blockLabel) && (await undoLabel()) === 'Paint block', `Structure paint paints a free block, one undo step (${JSON.stringify({ material: blk.material, blockLabel, undo: await undoLabel() })})`);
+  p = await hover(17.97, 1.5, 7.95);
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  const thin = (await doc()).entities.find((e) => e.id === 'paint_thin');
+  check(thin.material === 'core.red_brick', `a thin wall (10 cm) paints, at its very edge (${thin.material})`);
+  // The bars: their own Metal surface (never the walls').
+  await page.evaluate(() => (window.__editor.paint.paintStyle = { material: 'core.brass', tint: null }));
+  p = await hover(-16, 0.06, -4.02);
+  const barLabel = await status();
+  await shot('cursor-label');
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  const bars = (await doc()).classicStructure.tiles.find((t) => t.id === 'paint_bars');
+  check(bars.surfaces?.metal?.material === 'core.brass' && !bars.surfaces.walls && /^Metal/.test(barLabel), `Structure paint reaches the bars: the room's Metal surface, its walls left (${JSON.stringify({ surfaces: bars.surfaces, barLabel })})`);
+  // A ground material never goes on a wall: refused, with the reason.
+  await page.evaluate(() => (window.__editor.paint.paintStyle = { material: 'core.pbr_gravel', tint: null }));
+  const before = JSON.stringify((await doc()).classicStructure.tiles);
+  p = await hover(-16, 2, 3.9);
+  const wallLabel = await status();
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  check(JSON.stringify((await doc()).classicStructure.tiles) === before && /floors and roofs only/.test(wallLabel + (await toast())), `a ground material is refused on a wall, with the reason (${wallLabel})`);
+  // On a floor it goes (2a).
+  p = await hover(-17, 0, 1);
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  check((await doc()).classicStructure.tiles.find((t) => t.id === 'paint_bars').surfaces?.floor?.material === 'core.pbr_gravel', 'a ground material paints a floor');
+  // Undo takes each back, one at a time.
+  for (let i = 0; i < 4; i++) await page.keyboard.press('Control+KeyZ');
+  await settle();
+  const undone = await doc();
+  check(!undone.classicStructure.tiles.find((t) => t.id === 'paint_bars').surfaces && undone.entities.find((e) => e.id === 'paint_blk').material === null, 'undo takes every paint back');
+
+  // Ground paint (Shift+B): the Terrain tool's Paint brush, the ground layers only (no Marble Checker), and it passes
+  // under a building.
+  await page.keyboard.press('Shift+KeyB');
+  await settle();
+  const gp = await page.evaluate(() => ({
+    tool: window.__editor.tool.kind,
+    brush: window.__editor.terrain.terrainBrush,
+    grounds: [...document.querySelectorAll('#ed-tr-materials [data-ground]')].map((b) => b.dataset.ground),
+    checker: !!document.querySelector('#ed-tr-materials [data-material="core.pbr_checker"], #ed-tr-materials [data-ground="checker"]'),
+    lit: document.getElementById('ed-tb-groundpaint')?.classList.contains('active') ?? false,
+    hint: document.getElementById('ed-toolhint').textContent,
+  }));
+  check(gp.tool === 'terrain' && gp.brush === 'paint' && gp.grounds.length === 8 && !gp.checker && gp.lit && /^Ground paint/.test(gp.hint), `Shift+B is Ground paint: the ground layers only, no Marble Checker (${JSON.stringify(gp)})`);
+  await shot('ground-paint');
+  await page.evaluate(() => (window.__editor.terrain.terrainMaterial = 'stone'));
+  const roomBefore = JSON.stringify((await doc()).classicStructure.tiles);
+  const cells0 = await page.evaluate(() => window.__editor.doc.terrain.materials.join(''));
+  p = await hover(0, 0, 0);
+  await page.mouse.down();
+  await page.mouse.up();
+  await settle();
+  const gAfter = await page.evaluate((c) => ({ changed: window.__editor.doc.terrain.materials.join('') !== c, undo: window.__editor.history.undoLabel }), cells0);
+  check(gAfter.changed && JSON.stringify((await doc()).classicStructure.tiles) === roomBefore, `Ground paint under a building paints the ground and leaves the building (${JSON.stringify(gAfter)})`);
+  await page.keyboard.press('Control+KeyZ');
+  check(await page.evaluate((c) => window.__editor.doc.terrain.materials.join('') === c, cells0), 'undo takes the ground paint back');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**

@@ -47,8 +47,19 @@ export class TerrainTools {
 
   // ---------------------------------------------------------------- terrain
 
+  /** The last brush other than Ground paint (Terrain picks it up again). */
+  sculptBrush: TerrainBrush = 'raise';
+
+  /** The Terrain tool (T): its last sculpt brush; `cycle` moves on to the next (Ground paint is Shift+B, not in the cycle). */
+  terrainTool(cycle: boolean): void {
+    const brushes: TerrainBrush[] = TERRAIN_BRUSHES.filter((b) => b !== 'paint');
+    const now = brushes.indexOf(this.sculptBrush);
+    this.setTerrainBrush(cycle && this.terrainBrush !== 'paint' ? brushes[(now + 1) % brushes.length]! : this.sculptBrush);
+  }
+
   setTerrainBrush(brush: TerrainBrush): void {
     this.terrainBrush = brush;
+    if (brush !== 'paint') this.sculptBrush = brush;
     this.app.setTool({ kind: 'terrain' });
     for (const b of document.querySelectorAll<HTMLElement>('[data-ground]')) b.classList.toggle('active', brush === 'paint' && b.dataset.ground === this.terrainMaterial);
     for (const b of document.querySelectorAll<HTMLElement>('[data-foliage]')) b.classList.toggle('active', brush === 'foliage' && Number(b.dataset.foliage) === this.foliageLevel);
@@ -98,7 +109,7 @@ export class TerrainTools {
     const s = this.stroke;
     if (!s) return;
     this.stroke = null;
-    const label = this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial]}` : this.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.foliageLevel]}` : `Terrain ${this.terrainBrush}`;
+    const label = this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial].toLowerCase()} ground` : this.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.foliageLevel]}` : `Terrain ${this.terrainBrush}`;
     if (s.now !== s.before) this.app.run(label, { kind: 'setTerrain', before: s.before, after: s.now });
   }
 
@@ -194,7 +205,7 @@ export class TerrainTools {
       const b = document.createElement('button');
       b.className = 'tile-btn';
       b.dataset.tool = `terrain:${brush}`;
-      const label = `${brush[0]!.toUpperCase()}${brush.slice(1)}`;
+      const label = brush === 'paint' ? 'Ground paint' : `${brush[0]!.toUpperCase()}${brush.slice(1)}`;
       b.innerHTML = `<svg viewBox="0 0 56 56">${icons[brush]}</svg>${label}`;
       b.addEventListener('click', () => this.setTerrainBrush(brush));
       brushes.append(b);
@@ -206,7 +217,7 @@ export class TerrainTools {
       const b = document.createElement('button');
       b.className = 'mat-btn';
       b.dataset.ground = m;
-      b.title = `Paint the ground with ${TERRAIN_MATERIAL_LABELS[m]}`;
+      b.title = `Ground paint (Shift+B): ${TERRAIN_MATERIAL_LABELS[m]}`;
       b.innerHTML = `${def ? `<img alt="" src="${materialThumbnail(def)}">` : ''}<span class="lbl">${TERRAIN_MATERIAL_LABELS[m]}</span>`;
       b.addEventListener('click', () => {
         this.terrainMaterial = m;

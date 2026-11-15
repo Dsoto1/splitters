@@ -44,6 +44,7 @@ import {
   SIDES,
   SURFACE_SLOT_LABELS,
   SURFACE_SLOTS,
+  takesGround,
   tileHasMetal,
   updateTileCommand,
   upperFloorLevels,
@@ -259,7 +260,7 @@ export class Inspector {
     const h3 = document.createElement('h3');
     h3.textContent = 'Surfaces';
     el.append(h3);
-    // The Paint tool's own "Apply to", shared: a change here is a change there.
+    // Structure paint's own "Apply to", shared: a change here is a change there.
     const scope = document.createElement('select');
     scope.id = 'ed-insp-scope';
     for (const [v, label] of [['surface', 'This surface'], ['sameType', 'Same piece type'], ['level', 'Whole level'], ['all', 'Whole map']] as const) scope.append(new Option(label, v, false, v === this.app.paint.paintScope));
@@ -533,7 +534,8 @@ export class Inspector {
     const current = t.surfaces?.[slot];
     const mat = document.createElement('select');
     mat.append(new Option(slot === 'roof' ? 'Same as the floor' : `Theme (${resolveSurface({ ...this.app.doc }, undefined, slot).material.displayName})`, '', false, !current));
-    for (const def of coreMaterials.all()) mat.append(new Option(def.displayName, def.id, false, current?.material === def.id));
+    // Ground materials go on floors and roofs only (painting plan, the owner's answer 2a).
+    for (const def of coreMaterials.all()) if (def.category !== 'Ground' || takesGround(slot) || current?.material === def.id) mat.append(new Option(def.displayName, def.id, false, current?.material === def.id));
     const tint = document.createElement('input');
     tint.type = 'color';
     tint.value = current?.tint ?? '#ffffff';
@@ -544,12 +546,14 @@ export class Inspector {
     tint.addEventListener('change', () => current && apply({ material: current.material, tint: tint.value.toLowerCase() }));
     const wrap = document.createElement('div');
     wrap.className = 'surface-row';
-    // The Paint tool's current brush, onto this surface.
+    // Structure paint's current brush, onto this surface.
     const brush = document.createElement('button');
     brush.type = 'button';
     brush.className = 'ed-use-brush';
     brush.textContent = 'Brush';
-    brush.title = `Paint it with the Paint tool's brush (${coreMaterials.get(this.app.paint.paintStyle.material)?.displayName ?? this.app.paint.paintStyle.material})`;
+    const brushDef = coreMaterials.get(this.app.paint.paintStyle.material);
+    brush.disabled = brushDef?.category === 'Ground' && !takesGround(slot);
+    brush.title = brush.disabled ? `${brushDef!.displayName} is a ground: on buildings it goes on floors and roofs only` : `Paint it with Structure paint's brush (${brushDef?.displayName ?? this.app.paint.paintStyle.material})`;
     brush.addEventListener('click', () => apply(this.app.paint.paintStyle));
     wrap.append(text(SURFACE_SLOT_LABELS[slot]), mat, tint, brush);
     return wrap;
