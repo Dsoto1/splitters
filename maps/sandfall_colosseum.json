@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_x2m3p3c6oogbuw5v",
-      "revision": 31,
-      "contentHash": "sha256:a5dc1b2b367f2eae5cd8655ac9185e80eff41265b54a5bc4b4d1fe9f3e558bc3",
+      "versionId": "v_gglevakhtqkw4p5w",
+      "revision": 32,
+      "contentHash": "sha256:9c4e8391eb36a9f8d0188b5f1c9fa2e19cac96e229d922ec42976de56f0db169",
       "schemaVersion": 39,
-      "releasedAt": "2026-11-15T14:40:49.505Z"
+      "releasedAt": "2026-11-15T14:45:51.578Z"
     },
     "cardCamera": {
       "position": [
@@ -20051,9 +20051,9 @@
     {
       "id": "spawn_kqa18wzqqr",
       "position": [
-        31.82,
+        53.2,
         0,
-        31.82
+        53.2
       ],
       "kind": "spawn",
       "yaw": -2.356,
@@ -20095,9 +20095,9 @@
     {
       "id": "spawn_wdo25qcg1o",
       "position": [
-        -31.82,
+        -53.2,
         0,
-        31.82
+        53.2
       ],
       "kind": "spawn",
       "yaw": 2.356,
@@ -20183,9 +20183,9 @@
     {
       "id": "spawn_c3x6nk03rb",
       "position": [
-        31.82,
+        53.2,
         0,
-        -31.82
+        -53.2
       ],
       "kind": "spawn",
       "yaw": -0.785,
@@ -20227,9 +20227,9 @@
     {
       "id": "spawn_4vce0lbc6h",
       "position": [
-        -31.82,
+        -53.2,
         0,
-        -31.82
+        -53.2
       ],
       "kind": "spawn",
       "yaw": 0.785,
