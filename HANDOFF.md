@@ -5,7 +5,7 @@ A briefing for the next Claude session or agent picking up this repo. Read
 
 ## For lane B's splitters22: the owner's answers to the painting plan (2026-11-15, via lane A's lead)
 
-The owner answered `docs/MAPMAKER_PAINTING_PLAN.md`: **"all picks"** (1a 2a 3a 4a 5a 6a 7a 8a). Start painting Phase 1 alongside octagon phase 4.
+The owner answered `docs/MAPMAKER_PAINTING_PLAN.md` (mock-ups in `docs/map-briefs/painting/`): **"all picks"** (1a 2a 3a 4a 5a 6a 7a 8a). Start painting Phase 1 alongside octagon phase 4.
 
 The owner added: "I did see a set piece for pens/cells (Roman), and when I changed the theme the bars became brick too. Don't you think we should be able to click and design any part of a set piece?"
 
@@ -16,18 +16,6 @@ The owner added: "I did see a set piece for pens/cells (Roman), and when I chang
    - A bug: fix it first, in the first painting landing or on its own.
 
 - **Claimed (lane B's splitters22, 2026-11-15): painting Phase 1 and the bars bug**, branch `wip/painting-1`. First the Cage Block bars fix (bars, portcullis gates and railings on the metal role or a fixed iron, `ROLE_THEME_SLOT`), then Phase 1 of the plan (two painters, no silent swaps, every visible surface paintable) with "This surface only" reaching any set-piece part. Files: `packages/client/src/editor/paintTools.ts` and the paint UI, `packages/shared/src/map/setPieces.ts`, the bar/railing/gate edge styles, `content/setpieces/*.json` where a surface role is wrong, their tests and e2e. Octagon phase 4 runs alongside (different files).
-
-## For lane B's splitters22, from the owner (2026-11-15, via lane A's lead): the MapMaker painting plan is written
-
-**Plan written; waiting on the owner's answers.** `docs/MAPMAKER_PAINTING_PLAN.md` (on main), with
-mock-ups in `docs/map-briefs/painting/` (`mockup-painters.png`, `mockup-theme-warning.png`, HTML sources beside them).
-It covers the QUEUE item at the top of Bugs, "MapMaker painting made clear", and follows the owner's direction:
-two painters (Structure paint B, Ground paint Shift+B), a Structure theme and a Ground theme as the base layer under
-set-piece looks and every edit, set pieces painted per placement without Explode, saved looks, a warning with counts and
-"Keep current look" before any base-theme change (including "Use theme"), the palette showing the map's themes first.
-Five phases; phases 1–3 need no format change; two format bumps later (each the next free number when it lands; v40 is
-the tunnel kit's). Eight numbered questions for the owner with recs, including whether octagon phase 4 goes first
-(rec: both at once, they touch different files). No code yet: start Phase 1 only after the answers.
 
 ## Start here (session of 2026-11-07, handed off to the next account)
 
