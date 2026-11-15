@@ -103,3 +103,24 @@ Norman Shores keeps about 310 draws in the scene's own depth map (`DepthRenderer
 **Looks:** pictures of every view before and after (the helper's scratchpad, `compare/`: before, after, difference ×4) differ only where things move by the clock (grass and leaves in the wind, water ripples, a boat, a spinning pickup): mean difference 0.1-2.9 levels of 255. The sun's shafts with the sun in view (St. John's "eye, sun", Norman Shores' middle spawn) are the same.
 
 **Not changed:** MapMaker (doors and paths stay one mesh a part; the environment and prop batches are the same code there), destructibles (breakable props are not batched; destructible blocks unchanged), quality tiers (Low has no shadows or shafts: it gets the batch, door and path savings). Not yet on a real GPU: the owner's next recording will say what the 21 ms of rendering became.
+
+## Re-recorded 2026-11-15 (after render cost step 1, the draws)
+
+The owner's recording `tiletrigger-perf-st_john_s-2026-11-15-02-01-45.json` (build 613b8e0, which has step 1): same M1 Pro, High, 65 players, local; Capture the Flag this time (11-14 was Team Deathmatch), 451 s.
+
+| Per second, mean | 11-14 | 11-15 |
+|---|---|---|
+| Frames per second | 36.1 | 41.1 (median 39) |
+| Frame | 28.8 ms | 25.3 ms |
+| Draws | 1,491 | 625 |
+| Meshes / casters | 731 / 254 | 622 / 139 |
+| renderShadow | 7.0 ms | 4.2 ms |
+| renderScene | 10.7 ms | 9.6 ms |
+| renderCull | 3.2 ms | 3.1 ms |
+| characters (charAnim) | 5.4 (3.5) ms | 5.3 (3.8) ms |
+| effects + ragdolls | 0.8 ms | 1.5 ms (CTF: more fights in view) |
+| Hitches over 50 ms | 28 in 164 s (0.17/s) | 31 in 451 s (0.07/s) |
+
+- The draws fell as measured in software (about 1,490 to 625); shadows saved about 3 ms. renderScene fell only 1 ms for 58 % fewer draws, so the main pass is no longer bound by draw count: next look at what it spends (per-mesh CPU, material/uniform updates, or GPU fill at 1920x1080@2).
+- The match-start spike is gone (no charAnim hitch at 5 s). Of 31 hitches: 13 are outside the frame (browser or GC), 13 renderScene, 3 characters, 2 net (a 10 ms net step).
+- Biggest left per frame: renderScene ~10 ms, characters ~5 ms, shadow ~4 ms, cull ~3 ms.

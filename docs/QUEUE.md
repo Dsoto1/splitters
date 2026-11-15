@@ -34,7 +34,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Flaky tests made sturdy by root cause (Arsenal damage numbers, dedicated host, all-maps terrain, characters3 Imp grip, mobile pad tap, the load-16 timeouts and bench) · `wip/flaky-1114` (a helper of lane A's lead)
 
 ## Ready to land
-- M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Waiting on lane A's lead's review** (owner: "this account reviews"); `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. The owner's answers: as built (recs, 2026-11-14).
+- M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Reviewed by lane A's lead 2026-11-15: approved, land it** (merges cleanly with main at 901c19f3; main has moved since 72ee2ac2, so merge main and re-check before the fast-forward). Read: dockPrefs (safe parse, legacy carry-over, clamps), popupMenu (ARIA menu, outside-click listener added on open and removed on close), the map settings field ids (only Dress all, Settle all and the layers heading moved out, as the spec says), the as-built list; `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. The owner's answers: as built (recs, 2026-11-14).
 
 ## Bugs
 - S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
@@ -42,6 +42,11 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · A · The Hollow Pilgrim (`meshy_hollowpilgrim`): its support hand stays about 11 cm short of a rifle's handguard (25 cm on the shotgun; its arms are short and `hold.forward` is at its −0.15 limit) and its sleeves stretch (grip audit 9). Needs a wider `hold` range or a skin fix from the download.
 - ? · A · Unconfirmed: the player's own third-person body drawn in first person after a teleport. Tried 2026-11-14 (`wip/mobile-bugs-1114`, SwiftShader): not reproduced. A picture tool's teleport (the sim moving you, once a second, on Flatpack Depot, The Spillway, Training Range) drew only your arms or your full-body legs; on Pantry Raid your own body sat 0.13-0.15 m from the camera as it should. Not finished: an ordinary portal (the mouse hole didn't take a teleported-in player) and a respawn; the machine drew about a frame a minute.
 - ? · A · Unconfirmed: a large flat blue shape seen twice in software pictures (tunnels, The Spillway's long stair). Not seen in this batch's SwiftShader pictures (The Spillway's crest, Flatpack Depot, Training Range, Pantry Raid); the long stair and the tunnels were not visited (2026-11-14, `wip/mobile-bugs-1114`).
+
+- S · A · Hitches: a character body's disposal costs about 28 ms when it goes (St. John's recording of 2026-11-14); reuse bodies or spread the disposal over frames. Next for lane A after the flaky tests (owner, 2026-11-15).
+- S · A · Sky Cruiser as a new vehicle (owner, 2026-11-15: "just add sky cruiser as a vehicle in the game, available in mapmaker like others. no need to add to map yet"): `Meshy_AI_Sky_Cruiser_1108121108_texture.glb` (owner's Drive, Meshy Community CC0, batch of 2026-11-08); a flying craft with seats and guns fitted to the model, on the MapMaker palette and `maps/test_coverage.json` only (through MapMaker); provenance. Next free helper with the hitches fix.
+- S · A · St. John's halls in Roman Rubblework (owner, 2026-11-15: "roman rubblework, show me pictures first"): the `collegiate_stone` facade's skin (`core.cobble` today, geometry.ts) tried as `core.pbr_opus_incertum`, blended: continuous across pieces and corners, colour tuned to the pale trim, stones at life size. Pictures first (the hall, the drill field, a corner and a window close up; before and after), owner picks, then it lands. After Smythe Hall lands.
+- M · A · Main scene drawing on St. John's: about 10 ms a frame and nearly unchanged after draws fell 58 % (owner's 11-15 recording, `docs/PERF_STJOHNS_2026-11-14.md`); find what it spends (per-mesh CPU, material updates, GPU fill at 1920x1080@2) and cut it. After the hitches fix (owner, 2026-11-15).
 
 ## Easy wins
 - S · B · MapMaker: the selection Mirror (Shift+M) learns diagonal symmetry, so an exploded Arena Corner mirrors like the set piece (owner 4a, 2026-11-14; after MapMaker UI Phase 1 frees `editor/mirror.ts`).
@@ -59,14 +64,23 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Mobile audit: touch layout options: button size, opacity, left-handed, aim hold or toggle (proposal 3).
 - M · A · Mobile audit: Character Select phone layout (proposal 4).
 - M · A · Material surface types: 0 of 150 materials set `surface`, so footsteps and impacts can't tell metal from wood (owner: end of queue).
+- L · A · Driving physics (owner, 2026-11-15): vehicles as real bodies with sprung raycast wheels and tyre grip that can fail. Buggies light, bouncy and easy to flip; jumps land with weight and momentum; the body follows the ground on steep edges and slides back when grip runs out. Multiplayer smooth: the driver's vehicle predicted on their own machine and reconciled, others interpolated. Step 1: a plan plus the Buggy alone, judged offline and at 100–150 ms simulated lag; then the rest of the vehicles, bots, maps. Today the chassis moves like a character controller (`PhysicsWorld.moveVehicle`), with a drawn-only sprung body (`sim/suspension.ts`). After the hitches fix (owner: "finish hitches fix").
 
 ## Waiting on the owner
-- Open questions in `docs/MAPMAKER_EDITING_REPORT_2026-11-13.md`.
+- A new recording on a real GPU: St. John's in a match (to measure render cost step 1, the draws, landed 2026-11-14) and MapMaker after an edit on a big map (`docs/MAPMAKER_EDITING_REPORT_2026-11-13.md` question 5; questions 1–4 were answered 2026-11-13).
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
+## Known issues and loose ends (found in HANDOFF, 2026-11-15)
+- ? · A · Mobile: the dark wall block on the owner's Galaxy S25+ (docs/MOBILE_AUDIT.md); if it still shows on Medium, the one-lamp-per-layer mode becomes Medium's default (owner said yes; confirm the reading).
+- ? · ? · Iron Coast's coast-border canopy has a dark lip.
+- ? · ? · Sandsweep plays weak as a battle map.
+- XS · ? · Dead race-track settings left in map files.
+- S · A · Gunplay gaps from the audit (docs/GUNPLAY_AUDIT.md appendix A): no multi-client latency/loss test (G3); bots pick weapons by a hand-set range (G4); Training Range lacks a damage readout on hit, dummies that don't shoot back, armoured targets, a trajectory view.
+- ? · A · The owner's playtest checklist (artifact 5LRzv2dDfPVrp4TU2d3rwW): no answers yet.
+- ? · A · Roster Board renames: apply the owner's edits in one batch when the owner has made them.
+
 ## Parked
-- ? · ? · A hover model for the Hauler (owner, 2026-11-14: "leave hauler for now"; the Sky Cruiser is the only unused hover model).
 - L · A · A full weapon release: Stormvolt Blaster plus any other new guns (new weapon types are paused by the owner).
 - S · A · Sound pass 2 (paused by the owner).
 - ? · A · Packed inputs to cut upload bandwidth.
