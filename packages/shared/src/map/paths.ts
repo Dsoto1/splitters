@@ -105,10 +105,16 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
         if (!near) continue;
         const d = Math.abs(near.lateral);
         const i = r * (t.cols - 1) + c;
+        // How far past an open path's end the cell's centre is (negative: short of it; 0 for a cell nearer a sample
+        // between the ends). Past the end the lateral distance alone says nothing: a cell beyond the last point,
+        // in line with the path, was painted, a square of path ground beside the path's end (shown hard-edged on
+        // Low graphics, where the paint doesn't blend).
+        const end = g.loop ? 0 : near.index === 0 ? -1 : near.index === g.samples.length - 1 ? 1 : 0;
+        const past = end ? ((x - near.sample.x) * near.sample.dx + (z - near.sample.z) * near.sample.dz) * end : -Infinity;
         // Paint only cells wholly under the path (the ground is one material per cell, so painting the edge
         // cells drew a staircase of squares along the road); plants go a little wider.
-        if (paint >= 0 && d <= half - t.spacing * 0.71) materials[i] = paint;
-        if (foliage.length && d <= half + t.spacing * 0.35) foliage[i] = 0;
+        if (paint >= 0 && d <= half - t.spacing * 0.71 && past <= -t.spacing * 0.71) materials[i] = paint;
+        if (foliage.length && d <= half + t.spacing * 0.35 && past <= t.spacing * 0.35) foliage[i] = 0;
       }
     }
   }

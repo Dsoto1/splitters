@@ -23,7 +23,7 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`, v30 the menu card shot's camera,
  * `metadata.cardCamera`, v31 MapMaker's groups and note pins, `groups` and `editorNotes`, v32 a terrain up to 321 vertices a side and the border
  * style `coast`, v33 bot hints, `botHints`, v34 the time of day and weather, `timeOfDay` and `weather`, v37 a placed tile's
- * material `family`: the tunnel kit).
+ * material `family`: the tunnel kit, v39 race mode's dead track settings dropped).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -894,14 +894,6 @@ export const Track = z.object({
   points: z.array(Vec3Tuple).min(2).max(200),
   width: z.number().min(5).max(30).default(12),
   loop: z.boolean().default(true),
-  /** Laps of a circuit (point to point is always one run). */
-  laps: z.number().int().min(1).max(20).default(3),
-  /** Places on the start grid (two abreast behind the start line). */
-  grid: z.number().int().min(2).max(16).default(8),
-  /** Vehicle everyone races in (Arcade can change it). */
-  vehicle: RaceVehicleId,
-  /** Weapons, vehicle guns and the sideline sentries on (Arcade can change it). */
-  combat: z.boolean().default(false),
   surface: z.enum(TRACK_SURFACES).default('asphalt'),
   /** Red-and-white curbs along both edges. */
   curbs: z.boolean().default(true),
@@ -945,16 +937,11 @@ export type PatrolStyle = (typeof PATROL_STYLES)[number];
  */
 export const PATH_CURVES = ['smooth', 'classic'] as const;
 
-/** A race path's settings (absent: these defaults). */
+/**
+ * A track path's settings (absent: these defaults). Race mode's own (laps, start grid, race vehicle, combat) went
+ * with it: format v39 drops them (migrate.ts dropRaceSettingsV39), and the schema strips them from anything else.
+ */
 export const RaceSettings = z.object({
-  /** Laps of a circuit (point to point is always one run). */
-  laps: z.number().int().min(1).max(20).default(3),
-  /** Places on the start grid (two abreast behind the start line). */
-  grid: z.number().int().min(2).max(16).default(8),
-  /** Vehicle everyone races in (Arcade can change it). */
-  vehicle: RaceVehicleId,
-  /** Weapons, vehicle guns and the sideline sentries on (Arcade can change it). */
-  combat: z.boolean().default(false),
   /** Red-and-white curbs along both edges. */
   curbs: z.boolean().default(true),
   /**

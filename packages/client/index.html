@@ -182,7 +182,7 @@
       <header id="ed-top">
         <button id="ed-home" title="Quit to the main menu (asks first if there are unsaved changes)">◀ <span class="wide">Quit</span></button>
         <span class="ed-brand"><i>Tile</i> <b>Trigger</b> <small>MapMaker</small></span>
-        <input id="ed-name" maxlength="80" aria-label="Map name" />
+        <button id="ed-title" type="button" aria-controls="ed-map-settings" aria-expanded="false" title="Map settings: name, theme, players, modes, picture, card shot, time and weather"><span id="ed-title-name">Untitled Map</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8zM19.4 13.4l1.8 1.4-1.8 3.1-2.2-.8a7 7 0 0 1-1.9 1.1L15 21h-3.6l-.4-2.4a7 7 0 0 1-1.9-1.1l-2.2.8L5 15.2l1.8-1.4a7 7 0 0 1 0-2.2L5 10.2l1.8-3.1 2.2.8a7 7 0 0 1 1.9-1.1L11.4 3H15l.4 2.4a7 7 0 0 1 1.9 1.1l2.2-.8 1.8 3.1-1.8 1.4a7 7 0 0 1 0 2.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
         <span id="ed-dirty" title="Unsaved changes"></span>
         <div class="group ed-file">
           <button id="ed-new" title="New map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z M14 3v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 11v6M9 14h6" stroke="currentColor" stroke-width="2"/></svg><span class="wide">New</span></button>
@@ -197,7 +197,6 @@
           <button id="ed-undo" title="Ctrl+Z">↶</button>
           <button id="ed-redo" title="Ctrl+Y">↷</button>
         </div>
-        <button id="ed-status" class="pill">Checking…</button>
         <div class="tabs ed-modes" id="ed-modes">
           <button id="ed-build-btn" class="tab on" data-ws="build" title="Build: tiles, set pieces, walls and openings">Build</button>
           <button id="ed-props-btn" class="tab" data-ws="props" title="Props: furniture, clutter and dressing by theme; lights and liquids">Props</button>
@@ -208,20 +207,20 @@
           <button id="ed-testmode-btn" class="tab" data-ws="test" title="Test: play the map, play from here, the bot test and the plan view">Test</button>
         </div>
         <div class="spacer"></div>
-        <button id="ed-grid" class="ed-toggle on" aria-pressed="true" title="Grid lines on the level being edited, round where you're looking (the playable boundary and build limit always show)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="wide">Grid</span></button>
-        <button id="ed-grid-full" class="ed-toggle" aria-pressed="false" title="Full grid: the grid over the whole build area, out to the build limit (off: just round where you're looking)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10H7zM12 7v10M7 12h10" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2 7V2h5M17 2h5v5M22 17v5h-5M7 22H2v-5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="wide">Full grid</span></button>
-        <button id="ed-overlaps" class="ed-toggle" aria-pressed="false" title="Highlight places where a block's face lies in the same plane as another piece's (only one look shows there)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h12v12H3zM9 3h12v12H9z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="wide">Overlaps</span></button>
+        <button id="ed-view-btn" type="button" title="View: grid, full grid, overlaps, the plan view and the map layers (MapMaker only, not saved)"><span>View</span> <span aria-hidden="true">▾</span></button>
         <select id="ed-snap" title="Snap for spawns, items, objects and props (hold Ctrl while placing for none)"><option value="fine">Snap 25 cm</option><option value="normal" selected>Snap 50 cm</option><option value="coarse">Snap 1 m</option><option value="off">Snap off</option></select>
         <label class="ed-pick" title="Map theme"><span class="wide">Theme</span><select id="ed-theme" title="Map theme"></select></label>
         <select id="ed-bots" title="Bots in TEST"></select>
         <select id="ed-skill" title="Bot skill in TEST"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select>
-        <button id="ed-plan" class="ed-toggle" aria-pressed="false" title="Plan view: the level being edited from straight above, with spawns, objectives and pickups (K)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2z M9 3v16M15 5v16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span class="wide">Plan</span></button>
-        <button id="ed-maptest" class="ed-toggle" aria-pressed="false" title="Test the map: a bot match in the background with heatmaps of where bots went, got stuck and died, and how exposed each spawn is"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="19" cy="6" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span class="wide">Bot test</span></button>
         <button id="ed-test-here" title="Play from here: a test match with you standing below the camera, facing where it looks (Shift+F5)">▶ <span class="wide">Here</span></button>
         <button id="ed-test" class="primary" title="Play the map now with these bots (F5)">▶ PLAY TEST</button>
       </header>
-      <button id="ed-pal-toggle" class="ed-side-toggle" type="button" title="Hide the palette (\)" aria-label="Hide the palette" aria-expanded="true">‹</button>
-      <button id="ed-right-toggle" class="ed-side-toggle" type="button" title="Hide the side panel (Shift+\)" aria-label="Hide the side panel" aria-expanded="true">›</button>
+      <nav id="ed-rail" aria-label="MapMaker">
+        <button id="ed-rail-map" type="button" aria-pressed="false" aria-controls="ed-map-settings" title="Map settings: name, theme, players, modes, picture, card shot, time and weather"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2z M9 3v16M15 5v16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span>Map</span></button>
+        <button id="ed-rail-assets" type="button" aria-pressed="true" aria-controls="ed-palette" title="The asset browser: tiles, set pieces, props, gameplay pieces and more (open: its search, /)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Assets</span></button>
+        <button id="ed-pal-toggle" type="button" aria-controls="ed-palette" title="Fold the asset browser to the rail (\)" aria-label="Fold the asset browser" aria-expanded="true">‹</button>
+      </nav>
+      <button id="ed-right-toggle" class="ed-side-toggle" type="button" aria-controls="ed-right" title="Hide the right dock (Shift+\)" aria-label="Hide the right dock" aria-expanded="true">›</button>
       <aside id="ed-palette">
         <div class="ed-pal-head">
           <div class="tabs ed-pal-tabs" id="ed-pal-tabs" role="tablist" aria-label="Palette">
@@ -358,19 +357,34 @@
           <div id="ed-materials"></div>
         </div>
       </aside>
-      <aside id="ed-right">
+      <aside id="ed-right" aria-label="Right dock">
+        <div id="ed-dock-grip" role="separator" aria-orientation="vertical" aria-label="Dock width (drag, or the arrow keys; double-click resets)" tabindex="0"></div>
+        <div class="ed-dock-bar">
+          <button id="ed-dock-compact" type="button" aria-keyshortcuts="Shift+Backslash" title="Compact: the minimap only (Shift+\)" aria-label="Make the dock compact">▭</button>
+          <button id="ed-dock-hide" type="button" aria-keyshortcuts="Shift+Backslash" title="Hide the right dock (Shift+\)" aria-label="Hide the right dock">›</button>
+        </div>
+        <div id="ed-dock-mini" class="ed-dock-mini" hidden>
+          <div class="ed-dock-mini-map" role="img" aria-label="Minimap (coming in a later update)"><span>Minimap</span><small>Coming in a later update</small></div>
+          <button id="ed-dock-expand" type="button" title="The Outliner and Properties (Shift+\)">Expand</button>
+        </div>
+        <section id="ed-map-settings" aria-labelledby="ed-ms-title" hidden>
+          <header class="ed-ms-head"><h2 id="ed-ms-title">Map settings</h2><button id="ed-ms-close" type="button" title="Close Map settings" aria-label="Close Map settings">×</button></header>
+          <div id="ed-ms-body"></div>
+        </section>
+        <div id="ed-dock-panels">
         <section class="ed-panel" data-panel="outliner" id="ed-outliner-panel">
           <h3 class="ed-panel-head"><button type="button" aria-expanded="true" title="Everything in the map: search, select and frame, hide and lock (editor only)">Outliner</button><span id="ed-ol-count"></span></h3>
           <div class="ed-panel-body" id="ed-outliner"></div>
         </section>
         <section class="ed-panel" data-panel="inspector">
-          <h3 class="ed-panel-head"><button type="button" aria-expanded="true">Inspector</button></h3>
+          <h3 class="ed-panel-head"><button type="button" aria-expanded="true">Properties</button></h3>
           <div class="ed-panel-body"><section id="ed-inspector"></section></div>
         </section>
         <section class="ed-panel" data-panel="issues">
           <h3 class="ed-panel-head"><button type="button" aria-expanded="true">Validation</button></h3>
           <div class="ed-panel-body"><ul id="ed-issues"></ul></div>
         </section>
+        </div>
       </aside>
       <div id="ed-overlay">
       <div id="ed-toolbar" role="toolbar" aria-label="Tools"></div>
@@ -388,9 +402,10 @@
       </nav>
       <footer id="ed-bottom">
         <span id="ed-level-name-bottom"></span>
+        <span id="ed-sel" hidden></span>
         <span id="ed-counts"></span>
         <span id="ed-target"></span>
-        <span id="ed-hint"></span>
+        <button id="ed-status" class="pill" type="button" title="Problems: open the list in the right dock">Checking…</button>
       </footer>
       <div id="ed-tip" hidden></div>
       <div id="ed-marquee" hidden></div>

@@ -165,6 +165,23 @@ async function waitForHttp(url, ms = 20000) {
   throw new Error(`timed out waiting for ${url}`);
 }
 
+/**
+ * Open MapMaker's Map settings (the map's name, theme, players, modes, picture, card shot, time and weather…) and wait
+ * for them. Every flow that reads or edits Map settings goes through here, so a change to where they live is one edit.
+ */
+async function openMapSettings(page) {
+  // The top bar's title opens them in the right dock (MapMaker UI spec Phase 1); a second click would close them.
+  if (await page.evaluate(() => document.getElementById('ed-map-settings')?.hidden !== false)) await page.click('#ed-title');
+  await page.waitForSelector('#ed-prop-name', { state: 'visible', timeout: T(10000) });
+}
+
+/** Tick or untick an item of MapMaker's View menu (grid, full grid, overlaps, plan view, map layers): open, click, close. */
+async function viewItem(page, id) {
+  if ((await page.getAttribute('#ed-view-btn', 'aria-expanded')) !== 'true') await page.click('#ed-view-btn');
+  await page.click(`#${id}`);
+  if ((await page.getAttribute('#ed-view-btn', 'aria-expanded')) === 'true') await page.click('#ed-view-btn');
+}
+
 /** Click a MapMaker palette tool, opening the palette tab that holds it first. */
 async function clickTool(page, selector) {
   await page.evaluate((sel) => {
@@ -277,8 +294,10 @@ async function editorFlow(browser) {
   check((await tileOf()).y === 1, 'redo reapplies the move');
   await page.keyboard.press('Control+KeyZ');
 
-  // Paint: brick walls on the start room, then checker floors on every room via scope.
-  await page.click('[data-tool="paint"]');
+  // Paint: brick walls on the start room, then checker floors on every room via scope. (Paint is on the Environment
+  // tab's tool bar, UI Phase 1.)
+  await page.click('#ed-modes [data-ws="environment"]');
+  await page.click('#ed-tb-paint');
   await page.click('[data-material="core.red_brick"]');
   const wall = await page.evaluate(() => window.__editor.view.project({ x: 0, y: 2, z: 3.5 }));
   await page.mouse.move(wall.x, wall.y);
@@ -375,8 +394,9 @@ async function editorFlow(browser) {
   await page.keyboard.press('Control+KeyS');
   const id = (await doc()).metadata.id;
   // An edit after saving: Quit asks first (in-game dialog), and the change is kept as a draft.
-  await page.fill('#ed-name', 'Draft Edit');
-  await page.press('#ed-name', 'Enter');
+  await openMapSettings(page);
+  await page.fill('#ed-prop-name', 'Draft Edit');
+  await page.press('#ed-prop-name', 'Tab');
   await page.waitForFunction(() => window.__editor.doc.metadata.name === 'Draft Edit', null, { timeout: T(10000) });
   await page.click('#ed-home');
   const quitAsk = await page.evaluate(() => ({
@@ -408,7 +428,7 @@ async function editorFlow(browser) {
   check(await page.evaluate(() => document.getElementById('ed-dirty').classList.contains('on')), 'an opened draft still counts as unsaved');
 
   // Set thumbnail: frame the editor camera's view and capture it as the map's own picture.
-  await page.keyboard.press('Escape');
+  await openMapSettings(page);
   await page.waitForSelector('#ed-thumb-set', { timeout: T(5000) }).catch(() => {});
   check(await page.evaluate(() => document.querySelector('.ed-map-thumbs .pic')?.classList.contains('none')), 'Map properties: a new map has no picture yet');
   check(await planDrawn(page, '.ed-map-thumbs .plan canvas'), 'Map properties shows the plan, separate from the picture');
@@ -431,7 +451,7 @@ async function editorFlow(browser) {
   const kept = await page.waitForFunction((p) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(p.slice(0, 200)), pic ?? '-', { timeout: T(10000) }).then(() => true, () => false);
   check(kept, 'the picture is saved with the map');
   // Map properties → Bots → Bot characters: tick Soldiers, the map keeps it (one undo step).
-  await page.keyboard.press('Escape');
+  await openMapSettings(page);
   await page.waitForSelector('#ed-cast', { state: 'attached', timeout: T(10000) });
   await page.evaluate(() => (document.getElementById('ed-cast').open = true));
   await page.click('#ed-cast input[data-cast="soldiers"]');
@@ -638,7 +658,9 @@ async function editoruxFlow(browser) {
   check(await page.isVisible('#ed-toolbar #ed-tb-erase') && (await page.textContent('#ed-tb-erase')).includes('X'), 'tool bar shows Erase with its key');
   check((await page.getAttribute('#ed-tb-select', 'class')).includes('active') && (await page.textContent('#ed-toolhint')).includes('Select'), 'Select is the lit tool and the hint says what it does');
 
-  check(parseFloat(await page.evaluate(() => getComputedStyle(document.getElementById('ed-palette')).width)) >= 300, 'the palette is wide (300 px or more)');
+  // (The left rail, UI Phase 1, takes its 44 px from the palette, not from the view.)
+  const leftSide = await page.evaluate(() => ({ pal: document.getElementById('ed-palette').getBoundingClientRect().right, cols: getComputedStyle(document.querySelector('#ed-palette .tiles')).gridTemplateColumns.split(' ').length }));
+  check(leftSide.pal >= 300 && leftSide.cols === 3, `the rail and palette are wide (300 px or more), three cards a row (${JSON.stringify(leftSide)})`);
   // Palette pictures come from the prebuilt atlases, one image per content source (a Style Pack's tiles, a content
   // pack's props), loaded as their pieces are shown.
   await page.waitForFunction(() => document.querySelector('#ed-tiles .thumb.atlas .spr'), null, { timeout: T(30000) }).catch(() => {});
@@ -931,18 +953,18 @@ async function editoruxFlow(browser) {
   const limitRefusal = (await page.textContent('#ed-toast')) ?? '';
   check((await doc()).classicStructure.tiles.length === areaTiles + 1 && /build limit/.test(limitRefusal), `a room past the build limit is refused, naming it (${limitRefusal})`);
   check(/Past the build limit/.test(beyondNote ?? ''), `hovering past it says so (${beyondNote})`);
-  await page.click('#ed-grid-full');
+  await viewItem(page, 'ed-grid-full');
   await settle();
   const a2 = await area();
-  check(a2.gridOn && a2.reach > 2000 && (await page.getAttribute('#ed-grid-full', 'aria-pressed')) === 'true', `Full grid covers the whole build area (${JSON.stringify(a2)})`);
-  await page.click('#ed-grid-full');
+  check(a2.gridOn && a2.reach > 2000 && (await page.getAttribute('#ed-grid-full', 'aria-checked')) === 'true', `View → Full grid covers the whole build area (${JSON.stringify(a2)})`);
+  await viewItem(page, 'ed-grid-full');
   await settle();
   check((await area()).reach < 400, 'and off again it is local');
-  await page.click('#ed-grid');
+  await viewItem(page, 'ed-grid');
   await settle();
   const a3 = await area();
-  check(!a3.gridOn && a3.limit && a3.bounds, `Grid off hides the grid, not the boundary or the build limit (${JSON.stringify(a3)})`);
-  await page.click('#ed-grid');
+  check(!a3.gridOn && a3.limit && a3.bounds && (await page.getAttribute('#ed-grid', 'aria-checked')) === 'false', `View → Grid off hides the grid, not the boundary or the build limit (${JSON.stringify(a3)})`);
+  await viewItem(page, 'ed-grid');
   await page.keyboard.press('Control+KeyZ');
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).classicStructure.tiles.length === areaTiles && JSON.stringify((await doc()).bounds) === JSON.stringify(boundsBefore), 'undo takes the room and the boundary back out');
@@ -1279,14 +1301,14 @@ async function editoruxFlow(browser) {
   check((await doc()).entities.length === before, 'a stroke undoes in one step');
   await editorPhase1aChecks(page, { doc, at, clickAt, settle, shot });
   await editorInspectorKeepChecks(page, { doc, clickAt, settle });
-  // At 1400 px the top bar keeps Export and Import (and the owner's Publish) beside the Bot test button.
+  // At 1400 px the top bar keeps Export and Import (and the owner's Publish), the View menu and the bots' skill.
   await settle();
   const bar1400 = await page.evaluate(() => {
     const t = document.getElementById('ed-top');
     const shown = (id) => getComputedStyle(document.getElementById(id)).display !== 'none';
-    return { fits: t.scrollWidth <= t.clientWidth + 1, shown: ['ed-export', 'ed-import', 'ed-maptest', 'ed-skill'].filter(shown), cls: t.className, width: innerWidth };
+    return { fits: t.scrollWidth <= t.clientWidth + 1, shown: ['ed-export', 'ed-import', 'ed-view-btn', 'ed-skill'].filter(shown), cls: t.className, width: innerWidth };
   });
-  check(bar1400.fits && bar1400.shown.length === 4, `at 1400 px the top bar fits with Export, Import, Bot test and the bots' skill shown (${JSON.stringify(bar1400)})`);
+  check(bar1400.fits && bar1400.shown.length === 4, `at 1400 px the top bar fits with Export, Import, View and the bots' skill shown (${JSON.stringify(bar1400)})`);
   await shot('topbar-1400');
   // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
   await page.setViewportSize({ width: 1280, height: 720 });
@@ -1298,6 +1320,7 @@ async function editoruxFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await editorInterfaceChecks(browser);
+  await editorLayoutChecks(browser);
   await editorTourChecks(browser);
 }
 
@@ -1468,7 +1491,7 @@ async function editorInterfaceChecks(browser) {
   await shot('mode-paths');
   await page.click('#ed-modes [data-ws="props"]');
   await frames(page, 2);
-  check(await page.isVisible('#ed-pal-tabs [data-pane="lights"]') && !(await page.$('#ed-mode-section')), 'the Props mode has props and lights; its inspector is Map properties');
+  check(await page.isVisible('#ed-pal-tabs [data-pane="lights"]') && !(await page.$('#ed-mode-section')) && (await page.isVisible('#ed-insp-empty')) && !(await page.$('#ed-inspector #ed-prop-name')), 'the Props mode has props and lights; its inspector is the one empty line (Map settings are in their own view)');
   // A tool picked from another mode's card (here by key) moves the tabs to its mode.
   await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
   await frames(page, 2);
@@ -1560,6 +1583,299 @@ async function editorInterfaceChecks(browser) {
   await page.click('#ed-pal-quick [data-q="only"]');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+}
+
+/**
+ * MapMaker UI spec Phase 1 (docs/MAPMAKER_UI_SPEC.md, the owner's answers to the Phase 0 audit): the top bar at
+ * 1440 px with nothing cut off; the inspector's one empty line; Map settings in the right dock from the title, the
+ * rail's Map entry and the empty line (one view, the 3D view live beside it, a field of each group edited and undone,
+ * the card shot framed from it); the dock's three states on Shift+\ and its buttons, each kept across a reload, a
+ * hidden dock left hidden by a selection, compact under 900 px; the View menu (and its keys); each tab's tool bar and
+ * the ⋯ menu reaching every tool in every tab; the short status bar; and the old controls' actions from their places.
+ */
+async function editorLayoutChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-layout-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await frames(page, 3);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const undoLabel = () => page.evaluate(() => window.__editor.history.undoLabel ?? null);
+
+  // ---- The top bar at 1440 px: it fits, and the map name, Snap, the theme and the bots' skill show whole.
+  await page.evaluate(() => window.__editor.run('Rename map', { kind: 'setMetadata', before: { name: window.__editor.doc.metadata.name }, after: { name: 'Flatpack Depot Nights' } }));
+  await frames(page, 3);
+  const bar = await page.evaluate(() => {
+    const t = document.getElementById('ed-top');
+    const name = document.getElementById('ed-title-name');
+    const probe = document.createElement('span');
+    document.body.append(probe);
+    // A select shows its option whole when the option's text, in the select's font, fits inside it with the arrow.
+    const whole = (id) => {
+      const el = document.getElementById(id);
+      probe.style.font = getComputedStyle(el).font;
+      probe.textContent = el.selectedOptions[0]?.textContent ?? '';
+      return getComputedStyle(el).display !== 'none' && probe.getBoundingClientRect().width + 18 <= el.clientWidth;
+    };
+    const r = { fits: t.scrollWidth <= t.clientWidth + 1, cls: t.className, name: name.scrollWidth <= name.clientWidth + 1 && name.textContent === 'Flatpack Depot Nights', snap: whole('ed-snap'), theme: whole('ed-theme'), skill: whole('ed-skill'), bots: whole('ed-bots') };
+    probe.remove();
+    return r;
+  });
+  // (fit-3 only draws gaps and paddings closer; from fit-4 things go.)
+  check(bar.fits && bar.name && bar.snap && bar.theme && bar.skill && bar.bots && !/fit-[4-7]/.test(bar.cls), `at 1440 px the top bar fits with the map name, Snap, theme, bots and skill whole (${JSON.stringify(bar)})`);
+  await shot('1440');
+
+  // ---- The inspector shows only the selection: nothing selected is one line.
+  const empty = await page.evaluate(() => ({ text: document.getElementById('ed-insp-empty')?.textContent, fields: document.querySelectorAll('#ed-inspector input, #ed-inspector select, #ed-inspector textarea').length, settings: !!document.querySelector('#ed-inspector #ed-prop-name') }));
+  check(empty.text === 'Nothing selected · Map settings…' && !empty.settings && empty.fields === 0, `with nothing selected the inspector is one line, "Nothing selected · Map settings…" (${JSON.stringify(empty)})`);
+
+  // ---- Map settings: in the right dock, from the title; the view beside it stays live.
+  await page.click('#ed-title');
+  await page.waitForSelector('#ed-prop-name', { state: 'visible', timeout: T(5000) });
+  const ms = await page.evaluate(() => {
+    const dock = document.getElementById('ed-right').getBoundingClientRect();
+    const at = document.elementFromPoint(dock.left - 200, innerHeight / 2);
+    return {
+      inDock: document.getElementById('ed-right').contains(document.getElementById('ed-map-settings')) && !document.getElementById('ed-map-settings').hidden,
+      panels: document.getElementById('ed-dock-panels').hidden,
+      expanded: document.getElementById('ed-title').getAttribute('aria-expanded'),
+      rail: document.getElementById('ed-rail-map').getAttribute('aria-pressed'),
+      groups: [...document.querySelectorAll('#ed-ms-body h3.ed-ms-group')].map((h) => h.textContent),
+      modal: !!document.querySelector('dialog[open]'),
+      view: at?.tagName,
+    };
+  });
+  check(ms.inDock && ms.panels && ms.expanded === 'true' && ms.rail === 'true' && JSON.stringify(ms.groups) === '["General","Gameplay","Presentation","Advanced"]' && !ms.modal && ms.view === 'CANVAS', `the title opens Map settings in the right dock (General, Gameplay, Presentation, Advanced), not a modal: the view beside it takes the pointer (${JSON.stringify(ms)})`);
+  await shot('map-settings');
+  // One field of each group, each one undo step.
+  const theme0 = (await doc()).classicStructure.theme;
+  const otherTheme = await page.evaluate((t) => [...document.querySelectorAll('#ed-prop-theme option')].map((o) => o.value).find((v) => v !== t), theme0);
+  await page.selectOption('#ed-prop-theme', otherTheme);
+  await page.waitForFunction((t) => window.__editor.doc.classicStructure.theme === t, otherTheme, { timeout: T(5000) }).catch(() => {});
+  const general = { theme: (await doc()).classicStructure.theme, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  await page.selectOption('#ed-gravity', '0.5');
+  const gameplay = { gravity: (await doc()).physics?.gravity, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  await page.selectOption('#ed-blood-amount', 'heavy');
+  const presentation = { blood: (await doc()).blood?.amount, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  await page.click('#ed-prop-testonly');
+  const advanced = { testOnly: (await doc()).metadata.testOnly, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  const back = await doc();
+  check(general.theme === otherTheme && general.undo === 'Change theme' && gameplay.gravity === 0.5 && presentation.blood === 'heavy' && advanced.testOnly === true && back.classicStructure.theme === theme0 && !back.physics && !back.blood && !back.metadata.testOnly, `a field of each group edits the map in one undo step, and undo takes it back (${JSON.stringify({ general, gameplay, presentation, advanced })})`);
+  check(await page.isVisible('#ed-map-settings'), 'Map settings stay open through edits and undo');
+  // The card shot is framed from inside Map settings (the frame keeps clear of the dock); they are still there after.
+  await page.click('#ed-card-set');
+  await page.waitForSelector('.ed-card-frame', { timeout: T(5000) });
+  const frame = await page.evaluate(() => ({ crop: document.querySelector('.ed-card-crop').getBoundingClientRect().right, dock: document.getElementById('ed-right').getBoundingClientRect().left }));
+  await page.click('#ed-card-save');
+  await page.waitForFunction(() => !!window.__editor.doc.metadata.cardCamera, null, { timeout: T(5000) }).catch(() => {});
+  await page.waitForSelector('#ed-card-preview:not([disabled])', { timeout: T(5000) }).catch(() => {});
+  check(frame.crop <= frame.dock + 1 && !!(await doc()).metadata.cardCamera && (await page.isVisible('#ed-map-settings')) && !(await page.isDisabled('#ed-card-preview')), `Set card shot… frames the view beside the dock and saves; Map settings are still open with Preview live (${JSON.stringify(frame)})`);
+  await page.click('#ed-undo');
+  // Close, then the rail's Map entry and the empty line's link open the same view.
+  await page.click('#ed-ms-close');
+  check(!(await page.isVisible('#ed-map-settings')) && (await page.isVisible('#ed-inspector')) && (await page.getAttribute('#ed-title', 'aria-expanded')) === 'false', 'its close button gives the dock back to the Outliner and Properties');
+  await page.click('#ed-rail-map');
+  const fromRail = await page.isVisible('#ed-map-settings #ed-prop-name');
+  await page.click('#ed-rail-map');
+  const railCloses = !(await page.isVisible('#ed-map-settings'));
+  await page.click('#ed-insp-map-settings');
+  const fromLine = await page.isVisible('#ed-map-settings #ed-prop-name');
+  check(fromRail && railCloses && fromLine, `the rail's Map entry and the inspector's "Map settings…" open the same view (rail ${fromRail}, again closes ${railCloses}, line ${fromLine})`);
+  // Selecting something shows it: Map settings step aside.
+  const spawn = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'spawn')?.id);
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id] }), spawn);
+  await frames(page, 2);
+  check(!(await page.isVisible('#ed-map-settings')) && (await page.isVisible('#ed-inspector')) && !(await page.$('#ed-insp-empty')) && (await page.textContent('#ed-sel')) === '1 selected', `selecting a spawn closes Map settings and the inspector shows it; the status bar says 1 selected (${await page.textContent('#ed-sel')})`);
+
+  // ---- The status bar: the selection on other levels; the problems pill opens the list.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.run('Spawn up', { kind: 'addEntities', entities: [{ id: 'lay_up', kind: 'spawn', position: [4, 4.2, 4], yaw: 0, team: null }] });
+  });
+  await frames(page, 2);
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id, 'lay_up'] }), spawn);
+  await frames(page, 2);
+  const sel2 = await page.textContent('#ed-sel');
+  await page.keyboard.press('PageUp');
+  await frames(page, 2);
+  const sel3 = await page.textContent('#ed-sel');
+  await page.keyboard.press('PageDown');
+  check(sel2 === '2 selected · 1 on another level' && sel3 === '2 selected · 1 on another level' && (await page.evaluate(() => window.__editor.selection.entities.length)) === 2, `a level change keeps the selection and the status bar says how much is on other levels (${sel2} / ${sel3})`);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+
+  // ---- The right dock's three states: Shift+\ cycles them, each kept across a reload; the view gains the width.
+  const viewRight = () => page.evaluate(() => Math.round(document.getElementById('ed-overlay').getBoundingClientRect().right));
+  const dockState = () => page.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, right: !!document.getElementById('ed-right').offsetParent, panels: !!document.getElementById('ed-dock-panels').offsetParent, mini: !!document.getElementById('ed-dock-mini').offsetParent, toggle: document.getElementById('ed-right-toggle').getAttribute('aria-expanded'), stored: localStorage.getItem('tiletrigger.editor.dock') }));
+  const r0 = await viewRight();
+  await page.keyboard.press('Shift+Backslash');
+  await frames(page, 2);
+  const compact = { ...(await dockState()), view: await viewRight() };
+  await shot('dock-compact');
+  await page.keyboard.press('Shift+Backslash');
+  await frames(page, 2);
+  const hidden = { ...(await dockState()), view: await viewRight() };
+  await shot('dock-hidden');
+  check(compact.state === 'compact' && compact.right && compact.mini && !compact.panels && compact.view > r0, `Shift+\\ makes the dock compact: the minimap's card only, the view wider (${JSON.stringify(compact)}, view ${r0} → ${compact.view})`);
+  check(hidden.state === 'hidden' && !hidden.right && hidden.toggle === 'false' && hidden.view > compact.view && JSON.parse(hidden.stored).right === 'hidden', `again hides it, an edge tab left to bring it back, the view wider still (${JSON.stringify(hidden)})`);
+  // Selecting never opens a hidden dock.
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id] }), spawn);
+  await frames(page, 2);
+  check((await dockState()).state === 'hidden' && (await page.textContent('#ed-sel')) === '1 selected', 'selecting with the dock hidden leaves it hidden; the status bar shows the selection');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const afterReload = await dockState();
+  await page.click('#ed-right-toggle');
+  const shown = await dockState();
+  await page.click('#ed-dock-compact');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const compactKept = await dockState();
+  await page.click('#ed-dock-expand');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const expandedKept = await dockState();
+  check(afterReload.state === 'hidden' && shown.state === 'expanded' && shown.panels && compactKept.state === 'compact' && expandedKept.state === 'expanded' && expandedKept.panels, `each state is kept across a reload, and the edge tab, Compact and Expand buttons switch them (${[afterReload, shown, compactKept, expandedKept].map((d) => d.state).join(' → ')})`);
+  // Shift+\ while Map settings are open: they come back with the dock.
+  await page.click('#ed-title');
+  await page.keyboard.press('Shift+Backslash');
+  await page.keyboard.press('Shift+Backslash');
+  await page.keyboard.press('Shift+Backslash');
+  await frames(page, 2);
+  check((await dockState()).state === 'expanded' && (await page.isVisible('#ed-map-settings #ed-prop-name')), 'three presses of Shift+\\ come back round to the expanded dock, Map settings still open');
+  await page.click('#ed-ms-close');
+
+  // ---- The View menu: grid, full grid, overlaps, plan view, map layers; a menu button with its keys.
+  await page.focus('#ed-view-btn');
+  await page.keyboard.press('ArrowDown');
+  const firstFocus = await page.evaluate(() => document.activeElement?.id);
+  await page.keyboard.press('ArrowDown');
+  const secondFocus = await page.evaluate(() => document.activeElement?.id);
+  const menuShown = await page.evaluate(() => ({ open: !document.getElementById('ed-view-menu').hidden, expanded: document.getElementById('ed-view-btn').getAttribute('aria-expanded'), items: [...document.querySelectorAll('#ed-view-menu [role="menuitemcheckbox"]')].map((b) => `${b.id}:${b.getAttribute('aria-checked')}`) }));
+  await shot('view-menu');
+  await page.keyboard.press('Escape');
+  const closed = await page.evaluate(() => ({ open: !document.getElementById('ed-view-menu').hidden, focus: document.activeElement?.id, tool: window.__editor.tool.kind }));
+  check(menuShown.open && menuShown.expanded === 'true' && firstFocus === 'ed-grid' && secondFocus === 'ed-grid-full' && JSON.stringify(menuShown.items) === JSON.stringify(['ed-grid:true', 'ed-grid-full:false', 'ed-overlaps:false', 'ed-plan:false', 'ed-layer-tile:true', 'ed-layer-prop:true', 'ed-layer-pickup:true', 'ed-layer-logic:true', 'ed-layer-spawn:true']) && !closed.open && closed.focus === 'ed-view-btn', `the View menu opens from its button with the arrow keys, lists grid, full grid, overlaps, plan view and the map layers, and Esc closes it to its button (${JSON.stringify({ menuShown, firstFocus, secondFocus, closed })})`);
+  await viewItem(page, 'ed-overlaps');
+  const overlapsOn = await page.evaluate(() => window.__editor.checks.overlapsOn && document.getElementById('ed-overlaps').getAttribute('aria-checked') === 'true');
+  await viewItem(page, 'ed-overlaps');
+  // (The reloads above started a fresh map: its own spawn.)
+  const spawnNow = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'spawn')?.id);
+  await viewItem(page, 'ed-layer-spawn');
+  await frames(page, 1);
+  const spawnHidden = await page.evaluate((id) => window.__editor.view.hiddenLayers.has('spawn') && !window.__editor.view.entityShown(id), spawnNow);
+  await viewItem(page, 'ed-layer-spawn');
+  await frames(page, 1);
+  const spawnBack = await page.evaluate((id) => !window.__editor.view.hiddenLayers.has('spawn') && window.__editor.view.entityShown(id) && JSON.stringify(window.__editor.doc).indexOf('hiddenLayers') < 0, spawnNow);
+  await viewItem(page, 'ed-plan');
+  const planOn = await page.evaluate(() => window.__editor.plan.on);
+  await page.keyboard.press('KeyK');
+  check(overlapsOn && spawnHidden && spawnBack && planOn && !(await page.evaluate(() => window.__editor.plan.on)), `View → Overlaps, a map layer (MapMaker only, not in the map) and Plan view do what their old places did (overlaps ${overlapsOn}, layer ${spawnHidden}/${spawnBack}, plan ${planOn})`);
+
+  // ---- The tool bar: each tab its own tools (Paint, Terrain and the Environment brush on Environment's only); the
+  // ⋯ menu lists every tool and action in every tab.
+  const want = {
+    build: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-walls', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    props: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    entities: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-bothints', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    environment: ['ed-tb-select', 'ed-tb-erase', 'ed-tb-paint', 'ed-tb-terrain', 'ed-tb-envbrush', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    paths: ['ed-tb-select', 'ed-tb-erase', 'ed-tb-paths', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    test: ['ed-tb-select', 'ed-tb-bothints', 'ed-tb-measure', 'ed-tb-notes', 'ed-tb-plan', 'ed-maptest', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+  };
+  const everyTool = ['select', 'place', 'erase', 'walls', 'paint', 'terrain', 'envbrush', 'paths', 'bothints', 'measure', 'notes', 'rotate', 'delete', 'mirror', 'mirror-dialog', 'duplicate', 'group', 'ungroup', 'plan', 'dress-all', 'settle-all', 'keys', 'help'].map((t) => `ed-tb-${t}`).concat('ed-maptest');
+  const bars = {};
+  const menus = {};
+  await page.keyboard.press('KeyV');
+  for (const ws of Object.keys(want)) {
+    await page.click(`#ed-modes [data-ws="${ws}"]`);
+    await frames(page, 2);
+    bars[ws] = await page.evaluate(() => [...document.querySelectorAll('#ed-toolbar .tb-btn')].filter((b) => b.offsetParent).map((b) => b.id));
+    await page.click('#ed-tb-more');
+    menus[ws] = await page.evaluate(() => [...document.querySelectorAll('#ed-tb-menu [data-tool-item]')].filter((b) => b.offsetParent).map((b) => b.dataset.toolItem));
+    if (ws === 'build') await shot('overflow');
+    await page.click('#ed-tb-more');
+  }
+  const badBars = Object.keys(want).filter((ws) => JSON.stringify(bars[ws]) !== JSON.stringify(want[ws]));
+  const badMenus = Object.keys(want).filter((ws) => everyTool.some((id) => !menus[ws].includes(id)));
+  check(!badBars.length, `each tab's tool bar shows its own tools (wrong: ${badBars.map((ws) => `${ws} ${JSON.stringify(bars[ws])}`).join('; ') || 'none'})`);
+  check(!badMenus.length && Object.values(menus).every((m) => m.length === everyTool.length), `every tab's ⋯ menu lists all ${everyTool.length} tools and actions (short: ${badMenus.join(', ') || 'none'})`);
+  // From the Build tab, the menu reaches the Environment tools: each picks its tool (and its tab), lit on the bar.
+  await page.click('#ed-modes [data-ws="build"]');
+  const picked = {};
+  for (const [item, kind] of [['ed-tb-paint', 'paint'], ['ed-tb-terrain', 'terrain'], ['ed-tb-envbrush', 'envbrush'], ['ed-tb-measure', 'measure'], ['ed-tb-notes', 'note'], ['ed-tb-paths', 'path'], ['ed-tb-walls', 'edge'], ['ed-tb-bothints', 'bothint'], ['ed-tb-erase', 'erase'], ['ed-tb-select', 'select']]) {
+    await page.click('#ed-tb-more');
+    await page.click(`#${item}-item`);
+    await frames(page, 1);
+    picked[item] = await page.evaluate(([id, k]) => window.__editor.tool.kind === k && !!document.getElementById(id)?.offsetParent && document.getElementById(id).classList.contains('active'), [item, kind]);
+  }
+  check(Object.values(picked).every(Boolean), `each tool picked from the ⋯ menu is the tool in hand, lit on the bar (${JSON.stringify(picked)})`);
+  // Its actions too: Keys opens the key list, Mirror… its dialog, Bot test its panel, Plan view the plan.
+  await page.click('#ed-tb-more');
+  await page.click('#ed-tb-keys-item');
+  const keysOpen = await page.evaluate(() => document.getElementById('ed-keys')?.open);
+  await page.keyboard.press('Escape');
+  await page.click('#ed-tb-more');
+  await page.click('#ed-maptest-item');
+  const mtOpen = await page.evaluate(() => window.__editor.mapTest.isShown);
+  await page.evaluate(() => window.__editor.mapTest.show(false));
+  await page.click('#ed-tb-more');
+  await page.click('#ed-tb-plan-item');
+  const planFromMenu = await page.evaluate(() => window.__editor.plan.on);
+  await page.keyboard.press('KeyK');
+  check(keysOpen && mtOpen && planFromMenu, `the ⋯ menu's Keys, Bot test and Plan view work (${keysOpen}, ${mtOpen}, ${planFromMenu})`);
+  // Delete is off with nothing selected, on the bar and in the menu.
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.click('#ed-tb-more');
+  const delOff = await page.evaluate(() => document.getElementById('ed-tb-delete').disabled && document.getElementById('ed-tb-delete-item').disabled);
+  await page.click('#ed-tb-more');
+  check(delOff, 'Delete waits for a selection, on the bar and in the menu');
+
+  // ---- The old controls from their places: the top bar's theme and Snap, the rail's collapse, the problems pill.
+  await page.selectOption('#ed-theme', otherTheme);
+  const themeTop = (await doc()).classicStructure.theme === otherTheme && (await undoLabel()) === 'Change theme';
+  await page.click('#ed-undo');
+  await page.selectOption('#ed-snap', 'coarse');
+  const snap = await page.evaluate(() => window.__editor.snapMode);
+  await page.selectOption('#ed-snap', 'normal');
+  await page.click('#ed-pal-toggle');
+  const folded = await page.evaluate(() => ({ cls: document.getElementById('editor').classList.contains('pal-collapsed'), pal: !!document.getElementById('ed-palette').offsetParent, rail: !!document.getElementById('ed-rail').offsetParent, stored: JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}').left }));
+  await page.click('#ed-rail-assets');
+  const reopened = await page.evaluate(() => !!document.getElementById('ed-palette').offsetParent);
+  await page.keyboard.press('Backslash');
+  const byKey = await page.evaluate(() => !document.getElementById('ed-palette').offsetParent);
+  await page.keyboard.press('Backslash');
+  check(themeTop && snap === 'coarse' && folded.cls && !folded.pal && folded.rail && folded.stored === 'rail' && reopened && byKey, `the top bar's theme and Snap work; the rail folds the asset browser and Assets (and \\) brings it back (${JSON.stringify({ themeTop, snap, folded, reopened, byKey })})`);
+  await page.keyboard.press('Shift+Backslash');
+  await page.keyboard.press('Shift+Backslash');
+  await page.click('#ed-status');
+  await frames(page, 3);
+  const problems = await page.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, list: !!document.getElementById('ed-issues').offsetParent, inBar: document.getElementById('ed-status').parentElement.id }));
+  check(problems.state === 'expanded' && problems.list && problems.inBar === 'ed-bottom', `the problems pill, now in the status bar, opens the dock on the problems list (${JSON.stringify(problems)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
+
+  // ---- Under 900 px wide the dock starts compact (the expanded state is still the one kept).
+  const narrow = await browser.newContext({ viewport: { width: 860, height: 700 } });
+  const small = await narrow.newPage();
+  await small.goto(`${CLIENT}/?mode=editor&test=1`);
+  await small.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const n = await small.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, card: !!document.getElementById('ed-dock-mini').offsetParent, fits: document.getElementById('ed-top').scrollWidth <= document.getElementById('ed-top').clientWidth + 1 }));
+  await small.click('#ed-title');
+  const nOpen = await small.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, settings: !!document.getElementById('ed-prop-name')?.offsetParent }));
+  check(n.state === 'compact' && n.card && n.fits && nOpen.state === 'expanded' && nOpen.settings, `at 860 px the dock starts compact and the top bar fits; the title still opens Map settings, expanding it (${JSON.stringify({ n, nOpen })})`);
+  await narrow.close();
 }
 
 /**
@@ -1787,6 +2103,7 @@ async function editorSkyWeatherChecks(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   page.once('dialog', (d) => d.accept());
   await newMap(page, 96);
+  await openMapSettings(page);
   const sun = () =>
     page.evaluate(() => {
       const l = window.__editor.view.scene.getLightByName('sun');
@@ -1991,6 +2308,8 @@ async function editorMapTestChecks(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   await page.setInputFiles('#ed-import-file', fileURLToPath(new URL('../maps/skyward.json', import.meta.url)));
   await page.waitForFunction(() => window.__editor.doc.metadata.id === 'skyward', null, { timeout: T(30000) });
+  // Bot test is on the Test tab's tool bar (MapMaker UI spec Phase 1).
+  await page.click('#ed-modes [data-ws="test"]');
   await page.click('#ed-maptest');
   const opened = await page.evaluate(() => ({ shown: !document.getElementById('ed-maptest-panel').hidden, modes: [...document.querySelectorAll('#ed-mt-mode option')].map((o) => o.value), pressed: document.getElementById('ed-maptest').getAttribute('aria-pressed') }));
   check(opened.shown && opened.pressed === 'true' && opened.modes[0] === 'core.deathmatch' && opened.modes.includes('core.tdm'), `Bot test opens the Test panel with the modes the map plays, its main one first (${JSON.stringify(opened)})`);
@@ -2013,7 +2332,7 @@ async function editorMapTestChecks(browser) {
   const cancelled = await page.evaluate(() => ({ running: window.__editor.mapTest.running, progress: !document.getElementById('ed-mt-progress').hidden, result: !!window.__editor.mapTest.result, run: !document.getElementById('ed-mt-run').disabled, frames: window.__editor.mapTest.frames.count }));
   check(during.running && !during.grid && during.bar > 0, `the bot test run goes on in the background, its progress shown, while MapMaker draws and takes a click (${JSON.stringify(during)}, ${cancelled.frames} frames drawn meanwhile)`);
   check(!cancelled.running && !cancelled.progress && !cancelled.result && cancelled.run, `Cancel ends the run at once, with no result (${JSON.stringify(cancelled)})`);
-  await page.click('#ed-grid');
+  await viewItem(page, 'ed-grid');
   if (process.env.E2E_SHOTS) {
     // The picture of a run going: another, cancelled after the shot.
     await page.click('#ed-mt-run');
@@ -2057,13 +2376,13 @@ async function editorMapTestChecks(browser) {
   await page.click('#ed-mt-layers input[data-layer="went"]');
   const on = await page.evaluate(() => !!window.__editor.view.scene.getMeshByName('edMapTest_went'));
   check(off && on, `a heatmap layer turns off and on (${off}, ${on})`);
-  // The plan view shows them too, from above.
-  await page.click('#ed-plan');
+  // The plan view shows them too, from above (the Test tab's Plan button).
+  await page.click('#ed-tb-plan');
   await frames(page, 4);
   const plan = await page.evaluate(() => ({ plan: window.__editor.plan.on, went: !!window.__editor.view.scene.getMeshByName('edMapTest_went')?.isEnabled() }));
   check(plan.plan && plan.went, `the heatmaps show in the plan view (${JSON.stringify(plan)})`);
   await shot('bottest-plan');
-  await page.click('#ed-plan');
+  await page.click('#ed-tb-plan');
   // Spawn exposure: a label on every spawn, sightlines, warnings for the exposed ones.
   await page.click('#ed-mt-exposure');
   await page.waitForFunction(() => window.__editor.mapTest.exposure, null, { timeout: T(60000) }).catch(() => {});
@@ -2818,7 +3137,7 @@ async function editorWorkflowChecks(browser) {
   await page.mouse.move(700, 400);
   await page.keyboard.press('KeyK');
   await frames(page, 3);
-  const plan = await page.evaluate(() => ({ on: window.__editor.plan.on, mode: window.__editor.view.camera.mode, pressed: document.getElementById('ed-plan').getAttribute('aria-pressed'), title: document.getElementById('ed-plan-title')?.textContent, overlay: !!document.getElementById('ed-plan-overlay'), clip: !!window.__editor.view.scene.clipPlane }));
+  const plan = await page.evaluate(() => ({ on: window.__editor.plan.on, mode: window.__editor.view.camera.mode, pressed: document.getElementById('ed-plan').getAttribute('aria-checked'), title: document.getElementById('ed-plan-title')?.textContent, overlay: !!document.getElementById('ed-plan-overlay'), clip: !!window.__editor.view.scene.clipPlane }));
   check(plan.on && plan.mode === 1 && plan.pressed === 'true' && plan.title === 'Plan · Ground' && plan.overlay && plan.clip, `K switches to the plan view: an orthographic camera from above, cut above the floor, its icons over it (${JSON.stringify(plan)})`);
   // North is up and east is right on screen.
   const n = await at(0, 0, 10);
@@ -2860,13 +3179,13 @@ async function editorWorkflowChecks(browser) {
   const png = file ? readFileSync(file) : null;
   if (png && process.env.E2E_SHOTS) writeFileSync(`${process.env.E2E_SHOTS}/editorux-plan-export.png`, png);
   check(download?.suggestedFilename() === 'untitled_map-ground-plan.png' && png && png.subarray(1, 4).toString() === 'PNG' && png.length > 20000, `Export PNG downloads the plan (${download?.suggestedFilename()}, ${png?.length ?? 0} bytes)`);
-  await page.click('#ed-plan');
+  await viewItem(page, 'ed-plan');
   await frames(page, 2);
   const after = await camera();
-  check(!(await page.evaluate(() => window.__editor.plan.on || !!document.getElementById('ed-plan-overlay') || !!window.__editor.view.scene.clipPlane)) && JSON.stringify(after) === JSON.stringify(view3d), `the Plan button goes back to the 3D view as it was (${JSON.stringify(after)})`);
+  check(!(await page.evaluate(() => window.__editor.plan.on || !!document.getElementById('ed-plan-overlay') || !!window.__editor.view.scene.clipPlane)) && JSON.stringify(after) === JSON.stringify(view3d), `View → Plan view goes back to the 3D view as it was (${JSON.stringify(after)})`);
 
   // ---- The card shot: Map properties → Set card shot…, eye level by default, Enter saves; Preview in the frame.
-  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await openMapSettings(page);
   await page.waitForSelector('#ed-card-set', { timeout: T(5000) });
   check(await page.isDisabled('#ed-card-preview'), 'no card camera yet: Preview is off');
   await setCamera(-10, 12, -18, 0.6, -0.15);
@@ -3262,6 +3581,8 @@ async function editorSetPieceChecks(browser) {
     window.__editor.setSelection({ tiles: [], entities: [], setPieces: [id] });
   }, gate.id);
   await settle();
+  // The issues list comes from the map check in its worker, after the edits above: wait for it (a busy check runs late).
+  await page.waitForFunction(() => [...document.querySelectorAll('#ed-issues li')].some((li) => /faces a wall/.test(li.textContent)), null, { timeout: T(20000) }).catch(() => {});
   const ports = await page.evaluate(() => ({
     warn: [...document.querySelectorAll('#ed-inspector .ed-sp-ports li.warning')].map((li) => li.textContent),
     issue: [...document.querySelectorAll('#ed-issues li')].map((li) => li.textContent).find((t) => /faces a wall/.test(t)) ?? null,
@@ -3519,7 +3840,7 @@ async function offlineFlow(browser) {
   await until(async () => Math.abs(await yaw()) < 0.01, T(3000));
   check(Math.abs(await yaw()) < 0.01, 'and leaving Character Select faces them forward again');
   check((await page.evaluate(() => window.__front.screen)) === 'profile', 'Back from Character Select returns to Profile, where it was opened');
-  // One grid in sections by what a character is (experimental characters under their own, before yours: the twelve of 2026-11-14) (a compact header each), a jump strip that lights the
+  // One grid in sections by what a character is (an experimental character would sit under its own section, before yours; today none is) (a compact header each), a jump strip that lights the
   // section in view; Q / E scroll to the next / previous one, and so does scrolling with the wheel.
   await openChars();
   const layout = await page.evaluate(() => ({
@@ -3528,7 +3849,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,legends,folk,horror,animals,creatures,experimental,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,legends,folk,horror,animals,creatures,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -4258,8 +4579,9 @@ async function canyonFlow(browser) {
   await page.click('#ed-tr-new');
   check(await page.evaluate(() => !!window.__editor.doc.terrain), 'MapMaker creates terrain');
   await clickTool(page, '[data-tool="terrain:raise"]');
-  // Clear of the new map's starting room (ground under a floor stays below it).
-  const p = await page.evaluate(() => window.__editor.view.project({ x: 18, y: 0, z: 0 }));
+  // Clear of the new map's starting room (ground under a floor stays below it), and of the right dock (at 960 px it is
+  // expanded since UI Phase 1; it was hidden under 1,100 px before).
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 9, y: 0, z: 0 }));
   await page.mouse.move(p.x, p.y);
   await page.mouse.down();
   // Hold until the hill has grown (headless frame rates vary), at most 6 s.
@@ -4311,9 +4633,10 @@ async function canyonFlow(browser) {
   const oblong = await page.evaluate(() => { const t = window.__editor.doc.terrain; return t && { cols: t.cols, rows: t.rows, spacing: t.spacing, label: document.getElementById('ed-tr-size').textContent }; });
   check(oblong?.cols === 153 && oblong.rows === 129 && oblong.spacing === 2.5, `Create terrain makes a 380 x 320 m terrain at 2.5 m (${JSON.stringify(oblong)})`);
   // Map properties: the modes a map also offers besides its main one. (Escape leaves the tool, again lets go of the
-  // spawn placed above: nothing selected shows the map's properties.)
+  // spawn placed above.)
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
+  await openMapSettings(page);
   // (At this width the inspector may be folded away: the box is clicked where it is.)
   await page.waitForSelector('#ed-prop-also input[data-mode="core.tdm"]', { state: 'attached', timeout: T(5000) });
   await page.evaluate(() => document.querySelector('#ed-prop-also input[data-mode="core.tdm"]').click());
@@ -4356,6 +4679,7 @@ async function sceneryFlow(browser) {
   await page.waitForFunction(() => window.__editor.doc.backdrop?.sky === 'sunset' && window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky'), null, { timeout: T(5000) }).catch(() => {});
   const bd = await page.evaluate(() => ({ sky: window.__editor.doc.backdrop?.sky, mesh: window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky') }));
   check(bd.sky === 'sunset' && bd.mesh, `MapMaker sets the map's sky (${bd.sky})`);
+  await openMapSettings(page);
   await page.click('#ed-blood-amount');
   await page.selectOption('#ed-blood-amount', 'heavy');
   await page.click('.ed-row-buttons button:has-text("Alien")');
@@ -5987,6 +6311,7 @@ async function weaponsetsFlow(browser) {
   await ed.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   ed.once('dialog', (d) => d.accept());
   await newMap(ed, 96);
+  await openMapSettings(ed);
   await ed.waitForSelector('#ed-prop-weapons', { timeout: T(10000) });
   const field = await ed.evaluate(() => ({ value: document.getElementById('ed-prop-weapons').value, options: [...document.querySelectorAll('#ed-prop-weapons option')].map((o) => o.value), set: window.__editor.doc.weaponSet ?? null }));
   check(field.value === 'standard' && field.options.join() === 'standard,military,scifi,medieval,chaos,mixed' && field.set === null, `MapMaker's Map properties offer a weapon set, Standard by default (${JSON.stringify(field)})`);
@@ -6474,6 +6799,21 @@ async function fortsFlow(browser) {
 }
 
 /**
+ * Hold `buttons` (window.__autoInput) until `fn(match, me, arg)` holds where the match runs, then let go; true if it
+ * held within `seconds` of your own inputs (meWait). For a press the check needs to land, instead of a one-tick
+ * `once`: that is a single input, and a check resting on it had nothing to fall back on when it didn't take (arsenal
+ * on CI: "a quick melee press breaks a reload where it is (reloading false, broken false)": the R never started a
+ * reload). Why it didn't take wasn't found (a loaded page sampled here sent its inputs and the host dropped none of
+ * them). Held, the press lasts until the host shows it. Semi-automatic guns fire once a hold.
+ */
+async function holdUntil(page, buttons, fn, arg, seconds) {
+  await page.evaluate((b) => (window.__autoInput = { buttons: b }), buttons);
+  const ok = await meWait(page, fn, arg, seconds);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  return ok;
+}
+
+/**
  * Gunplay pass 2 (docs/GUNPLAY_AUDIT.md): damage numbers (Options → HUD, off by default) float the hit's damage over
  * the bot and show nothing when off; auto-reload (on by default) starts an emptied pistol's reload without R; a
  * quick melee press breaks a reload. `target` is a held bot (holdBots) in front of you.
@@ -6496,30 +6836,48 @@ async function gunplayReadoutChecks(page, target, { face, aimAt }) {
   await stand(4);
   await aimAt(target.slot);
   const shown = () => page.evaluate(() => window.__cs.damageNumbers.shown());
+  // Every number as it comes and as it is first placed over its target, noted as it happens: a number lives 0.9 s and
+  // at least 3 drawn frames, 3.6 s at most, and at under a frame a second it can come and go between two looks (CI and
+  // a load of 20 locally: "shown [], health lost 19").
+  await page.evaluate(() => {
+    const root = document.getElementById('damage-numbers');
+    window.__dmg = { added: [], placed: [] };
+    const placed = (el) => {
+      if (!el.classList?.contains('dmg-num') || el.style.visibility === 'hidden' || el.dataset.noted) return;
+      el.dataset.noted = '1';
+      const r = el.getBoundingClientRect();
+      window.__dmg.placed.push({ text: el.textContent, x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), onScreen: r.x > 0 && r.y > 0 && r.x < innerWidth && r.y < innerHeight });
+    };
+    window.__dmgWatch?.disconnect();
+    window.__dmgWatch = new MutationObserver((changes) => {
+      for (const c of changes) {
+        for (const n of c.addedNodes) if (n.classList?.contains('dmg-num')) window.__dmg.added.push(n.textContent);
+        placed(c.target);
+      }
+    });
+    window.__dmgWatch.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+  });
   // On: one shot, one number over the bot (the pistol's 24 at 4 m), on screen.
   await page.evaluate(() => localStorage.setItem('tiletrigger.damageNumbers', '1'));
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
-  const hit = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
+  const hit = await holdUntil(page, 2, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
   // Shown, and placed over the bot by a frame (hidden until then).
-  await page.waitForFunction(() => [...document.querySelectorAll('#damage-numbers .dmg-num')].some((e) => e.style.visibility !== 'hidden'), null, { timeout: T(5000) }).catch(() => {});
-  const nums = await shown();
-  const placed = await page.evaluate(() => {
-    const el = document.querySelector('#damage-numbers .dmg-num');
-    const r = el?.getBoundingClientRect();
-    return r ? { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), hidden: el.style.visibility === 'hidden', onScreen: r.x > 0 && r.y > 0 && r.x < innerWidth && r.y < innerHeight } : null;
-  });
+  await page.waitForFunction(() => window.__dmg.placed.length > 0, null, { timeout: T(10000) }).catch(() => {});
+  const nums = await page.evaluate(() => window.__dmg.added);
+  const placed = await page.evaluate(() => window.__dmg.placed[0] ?? null);
   // (Character stats can soften a bot's hits: the number is what its health lost.)
   const lost = await sim(page, (m, _me, t) => String(Math.round(100 - m.actor(t.slot).health)), target);
-  check(hit && nums.includes(lost) && !!placed && !placed.hidden && placed.onScreen && placed.w > 0, `damage numbers (on): the pistol's hit floats its damage over the bot (shown ${JSON.stringify(nums)}, health lost ${lost}, ${JSON.stringify(placed)})`);
+  check(hit && nums.includes(lost) && !!placed && placed.text === lost && placed.onScreen && placed.w > 0, `damage numbers (on): the pistol's hit floats its damage over the bot (shown ${JSON.stringify(nums)}, health lost ${lost}, ${JSON.stringify(placed)})`);
   // Off (the default): the next hit shows nothing once the last number has gone.
   await page.evaluate(() => localStorage.setItem('tiletrigger.damageNumbers', '0'));
   await page.waitForFunction(() => window.__cs.damageNumbers.shown().length === 0, null, { timeout: T(5000) }).catch(() => {});
   await stand(4);
   await meWait(page, (m, me) => me.fireCooldown === 0, null, 2);
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
-  const hit2 = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
+  await page.evaluate(() => (window.__dmg.added = []));
+  const hit2 = await holdUntil(page, 2, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
+  // A few snapshots later (any number would have come with the hit's).
   await meWait(page, () => false, null, 0.3);
-  const none = await shown();
+  const none = [...(await page.evaluate(() => window.__dmg.added)), ...(await shown())];
+  await page.evaluate(() => window.__dmgWatch?.disconnect());
   check(hit2 && none.length === 0, `damage numbers (off): a hit shows none (${JSON.stringify(none)})`);
   await page.evaluate(() => localStorage.removeItem('tiletrigger.damageNumbers'));
   // Auto-reload (on by default): the last round out, the reload starts without R.
@@ -6529,18 +6887,15 @@ async function gunplayReadoutChecks(page, target, { face, aimAt }) {
     w.reserve = 24;
   });
   await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[0] === 1, null, { timeout: T(5000) }).catch(() => {});
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
-  const started = await meWait(page, (m, me) => me.reloadTicks > 0, null, 2);
+  const started = await holdUntil(page, 2, (m, me) => me.reloadTicks > 0, null, 2);
   const full = started && await meWait(page, (m, me) => me.weapons.get(me.current).mag === me.weapons.get(me.current).def.magazine, null, 3);
   check(started && full, `auto-reload: the pistol emptied, its reload starts by itself and fills the magazine (started ${started}, full ${full})`);
   // A quick melee press breaks a reload: R with rounds left, then Y (auto-reload off here: past "magazine out" it
   // would start the reload again once Y is let go).
   await page.evaluate(() => localStorage.setItem('tiletrigger.autoReload', '0'));
   await sim(page, (m, me) => (me.weapons.get(me.current).mag = 4));
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 4 }));
-  const reloading = await meWait(page, (m, me) => me.reloadTicks > 0, null, 2);
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2048 }));
-  const broke = reloading && await meWait(page, (m, me) => me.reloadTicks === 0 && me.weapons.get(me.current).mag < me.weapons.get(me.current).def.magazine, null, 1);
+  const reloading = await holdUntil(page, 4, (m, me) => me.reloadTicks > 0, null, 2);
+  const broke = reloading && await holdUntil(page, 2048, (m, me) => me.reloadTicks === 0 && me.weapons.get(me.current).mag < me.weapons.get(me.current).def.magazine, null, 1);
   check(reloading && broke, `a quick melee press breaks a reload where it is (reloading ${reloading}, broken ${broke})`);
   await page.evaluate(() => {
     window.__autoInput = { buttons: 0 };
@@ -7870,6 +8225,7 @@ async function trafficFlow(browser) {
   await page.keyboard.press('Escape');
   // Map properties: Race is no longer a mode. It isn't offered, and a map that still lists it can drop it (undo puts it back).
   await page.keyboard.press('Escape');
+  await openMapSettings(page);
   await page.evaluate(() => window.__editor.run('Old modes', { kind: 'setMetadata', before: { supportedModes: window.__editor.doc.metadata.supportedModes }, after: { supportedModes: ['core.race', 'core.tdm'] } }));
   await page.waitForSelector('#ed-prop-drop-race', { state: 'attached', timeout: T(5000) });
   const raceOffered = await page.evaluate(() => !!document.querySelector('option[value="core.race"]'));
@@ -8025,7 +8381,7 @@ async function coverageFlow(browser) {
   const r = opened ? await ed.evaluate(() => ({ errors: window.__editor.issues.filter((i) => i.severity === 'error').map((i) => i.message), entities: window.__editor.doc.entities.length, tiles: window.__editor.doc.classicStructure.tiles.length, setPieces: window.__editor.doc.setPieces?.length ?? 0, testOnly: !!window.__editor.doc.metadata.testOnly })) : null;
   check(!!r && !r.errors.length && r.entities === file.entities.length && r.tiles === file.classicStructure.tiles.length && r.setPieces === (file.setPieces?.length ?? 0) && r.testOnly, `the coverage map opens in MapMaker whole (its set pieces kept as placements), marked as a test map (${JSON.stringify(r)})`);
   // Map properties show it as a test map.
-  if (opened) await ed.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  if (opened) await openMapSettings(ed);
   const box = opened && (await ed.evaluate(() => document.getElementById('ed-prop-testonly')?.checked ?? null));
   check(box === true, `Map properties: "Test map" is ticked (${box})`);
   check(edErrors.length === 0, `no page errors in MapMaker (${edErrors.join('; ')})`);
@@ -8292,7 +8648,7 @@ async function editorPartBChecks(browser) {
   await frames(page, 2);
   check((await doc()).editorNotes[0].text === 'Sniper line: add a wall', 'clicking the pin opens it to edit');
   await page.keyboard.press('KeyV');
-  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await openMapSettings(page);
   await frames(page, 2);
   check((await page.textContent('#ed-notes-list')).includes('Notes (1)') && (await page.textContent('#ed-notes-list')).includes('Sniper line: add a wall'), 'Map properties lists the notes');
   await shot('notes');
@@ -10212,40 +10568,75 @@ async function gripsInPlay(browser) {
   check(errors.length === 0, `no page errors in play (${errors.join('; ')})`);
   await page.context().close();
 
-  // A creature skin (the Imp) in third person: the gun forward along the aim at chest height, both hands on it.
+  await impGrips(browser);
+}
+
+/**
+ * A creature skin (the Imp) in third person: the gun forward along the aim at chest height, a hand on its grip. Each
+ * step waits for what it needs (third person, your body drawn by the camera, the gun in its hands, a settled grip)
+ * and says what was missing when it doesn't come: on a loaded runner the pistol and the rifle both read nothing
+ * (`r: null`) once, with no way to tell why.
+ */
+async function impGrips(browser) {
   const imp = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
-  await imp.goto(`${CLIENT}/?offline=training_range&test=1&god=1&look=npc:imp`);
+  // You alone on the range (&bots=1: one player in all). Its bots fought round the god-mode you: their knockback
+  // carried you about the range's weapon pickups (once 25 m from the spawns, drawn with the Singularity picked up
+  // there). Alone, the given guns are the only ones.
+  await imp.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1&look=npc:imp`);
   await imp.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(120000) });
-  // Into play and third person, for sure: on a slow page the pause menu can come up after a first click on Resume
-  // (and then H does nothing), and a third-person camera pulled in against a wall doesn't draw your body: turn away.
-  for (let i = 0; i < 12; i++) {
-    if (await imp.isVisible('#resume')) await imp.click('#resume').catch(() => {});
-    const state = await imp.evaluate(() => {
-      const a = window.__cs.view.avatars.get(window.__cs.slot);
-      return { third: window.__cs.thirdPerson(), drawn: !!a && !a.hiddenSelf && a.root.isEnabled() };
-    });
-    if (state.third && state.drawn) break;
-    if (!state.third) await imp.keyboard.press('KeyH');
-    else await imp.evaluate(() => (window.__cs.input.yaw += 1.2));
-    await sleep(1000);
+  // What the drawn creature has, for the checks and for the message.
+  const seen = async () => ({
+    ...(await imp.evaluate(() => {
+      const cs = window.__cs;
+      const a = cs.view.avatars.get(cs.slot);
+      const report = cs.view.gripReport().creatures.find((c) => c.slot === cs.slot);
+      return { third: cs.thirdPerson(), paused: !document.getElementById('pause').hidden, avatar: !!a, hidden: !!a?.hiddenSelf, enabled: !!a?.root.isEnabled(), held: cs.local.held, inHands: a?.weaponSlot ?? null, listed: !!report, report: report?.report ?? null };
+    })),
+    host: await sim(imp, (m, me) => ({ current: me.current, at: [me.move.pos.x, me.move.pos.z].map((v) => +v.toFixed(1)), others: m.combatants().length - 1 })).catch(() => null),
+  });
+  // Into play and third person, your body drawn: on a slow page the pause menu can come up after a first click on
+  // Resume (and then H does nothing), and a third-person camera pulled in against a wall doesn't draw your body: turn
+  // away. Until the camera draws it holding its first gun (a grip report), however long a slow page takes.
+  let state = await seen();
+  const until = Date.now() + T(90000);
+  while (Date.now() < until) {
+    state = await seen();
+    if (state.third && !state.paused && state.report && !state.hidden && state.enabled) break;
+    if (state.paused) await imp.click('#resume').catch(() => {});
+    else if (!state.third) await imp.keyboard.press('KeyH');
+    else if (state.hidden || !state.enabled || (state.listed && !state.report)) await imp.evaluate(() => (window.__cs.input.yaw += 1.2));
+    await imp.waitForFunction((was) => window.__cs.thirdPerson() !== was || !document.getElementById('pause').hidden, state.third, { timeout: T(2000) }).catch(() => {});
   }
+  const ok = (r) => !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12;
   const held = [];
   for (const w of ['core.pistol', 'core.rifle']) {
     await imp.evaluate((id) => window.__give(id), w);
-    // Until the given gun is in the drawn creature's hands (a gun model loads first; slow on a software-rendered page).
+    // The given gun's code, from the host (the give reaches it first): your own `held` follows a snapshot later, so
+    // a wait on "the drawn gun is the one held" passed at once on the gun before (a slow page read the switch after).
+    const code = await sim(imp, (m, me) => me.current);
+    // Until the given gun is in the drawn creature's hands (a gun model loads first; slow on a software-rendered
+    // page) with the hand settled on its grip (the pose eases in), on a drawn frame each time it is read.
     await imp
-      .waitForFunction(() => {
-        const a = window.__cs.view.avatars.get(window.__cs.slot);
-        return a?.weaponSlot === window.__cs.local.held && !!window.__cs.view.gripReport().creatures.find((c) => c.slot === window.__cs.slot)?.report;
-      }, null, { timeout: T(30000), polling: 250 })
+      .waitForFunction(
+        (code) => {
+          try {
+            const cs = window.__cs;
+            const a = cs.view.avatars.get(cs.slot);
+            const r = cs.view.gripReport().creatures.find((c) => c.slot === cs.slot)?.report;
+            return cs.local.held === code && a?.weaponSlot === code && !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12;
+          } catch {
+            // (Mid-swap: the old gun disposed under the report.)
+            return false;
+          }
+        },
+        code,
+        { timeout: T(60000), polling: 250 },
+      )
       .catch(() => {});
-    let r = null;
-    for (let i = 0; i < 20; i++) {
-      await sleep(300);
-      r = await imp.evaluate((s) => window.__cs.view.gripReport().creatures.find((c) => c.slot === s)?.report ?? null, await imp.evaluate(() => window.__cs.slot));
-      if (r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12) break;
-    }
-    held.push({ w, ok: !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) } });
+    const s = await seen();
+    const r = s.report;
+    const fine = s.inHands === code && s.held === code && ok(r);
+    held.push({ w, ok: fine, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) }, ...(fine ? {} : { seen: { ...s, report: undefined } }) });
   }
   check(held.every((h) => h.ok), `an Imp player holds the gun forward at the chest with a hand on its grip (${JSON.stringify(held)})`);
   // (An artifact for a look: a slow page's screenshot timing out isn't a failed check.)

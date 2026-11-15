@@ -58,6 +58,11 @@ const GATE_MARGIN = 4;
 /** Grid rows are this far apart; the front row this far behind the line. */
 const GRID_ROW = 7;
 const GRID_FRONT = 6;
+/**
+ * Places on the start grid, which sets how far down an open track its start line is. Race mode's own setting (`grid`)
+ * went with it (format v39); every track keeps the old default's start line.
+ */
+const START_GRID = 8;
 /** Bucket size for the road lookup grid. */
 const CELL = 8;
 
@@ -118,7 +123,7 @@ export class TrackGeometry {
     this.samples = centreLine(track, this.loop, shape);
     const last = this.samples[this.samples.length - 1]!;
     this.length = this.loop ? last.s + hypot(this.samples[0]!.x - last.x, this.samples[0]!.z - last.z) : last.s;
-    const depth = GRID_FRONT + Math.ceil(track.grid / 2) * GRID_ROW + 4;
+    const depth = GRID_FRONT + Math.ceil(START_GRID / 2) * GRID_ROW + 4;
     this.start = this.loop ? 0 : Math.min(depth, this.length * 0.4);
     this.gates = this.buildGates();
     this.samples.forEach((p, i) => {
@@ -210,7 +215,7 @@ export class TrackGeometry {
   }
 
   /** Start grid: `count` places two abreast behind the start line, facing down the road. */
-  grid(count = this.track.grid): GridSlot[] {
+  grid(count = START_GRID): GridSlot[] {
     const out: GridSlot[] = [];
     const side = Math.min(this.width * 0.25, 3.2);
     for (let i = 0; i < count; i++) {
@@ -316,7 +321,7 @@ function centreLine(track: Track, loop: boolean, shape: CurveShape): TrackSample
  * written out so the menu (raceTrack) doesn't run the zod schemas
  * (test/menuSplit.test.ts checks they match RaceSettings.parse({})).
  */
-export const DEFAULT_RACE: RaceSettings = { laps: 3, grid: 8, vehicle: 'hover_bike', combat: false, curbs: true, ambient: 0, ambientVehicle: 'hover_bike', pit: null };
+export const DEFAULT_RACE: RaceSettings = { curbs: true, ambient: 0, ambientVehicle: 'hover_bike', pit: null };
 
 /** How a smooth path's centre line is drawn through its points (see CurveShape). */
 const SMOOTH_CURVE = { step: 1, centripetal: true } as const;
@@ -325,7 +330,7 @@ const SMOOTH_CURVE = { step: 1, centripetal: true } as const;
 export function pathTrack(p: MapPath): Track {
   const race = { ...DEFAULT_RACE, ...p.race };
   // A retired vehicle a track still names is its replacement here, so MapMaker's view of the map as made agrees with play.
-  return { ...race, vehicle: liveMount(race.vehicle), ambientVehicle: liveMount(race.ambientVehicle), points: p.points, width: p.width, loop: p.closed, surface: p.style === 'dirt' ? 'dirt' : 'asphalt' };
+  return { ...race, ambientVehicle: liveMount(race.ambientVehicle), points: p.points, width: p.width, loop: p.closed, surface: p.style === 'dirt' ? 'dirt' : 'asphalt' };
 }
 
 const geometry = new WeakMap<MapPath, TrackGeometry>();

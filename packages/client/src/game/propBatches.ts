@@ -71,7 +71,9 @@ interface Copy {
   r: number;
   level: number;
   small: boolean;
-  /** Whether it casts no shadow at range: every copy of the model in its PROP_SECTOR square is small clutter. */
+  /** Under a roof or the floor above (shared `indoorProps`): out of the sun's shadow pass. */
+  indoor: boolean;
+  /** Whether it casts no shadow at range: every copy of the model in its PROP_SECTOR square is small clutter, or it is indoors. */
   quiet: boolean;
 }
 
@@ -137,8 +139,8 @@ export class PropBatches {
    * Draw the prop under `root` (placed and turned: its world matrix is the copy's) as a copy of model `path` in its
    * square's batch. Resolves false when the model can't be batched: the caller draws it as before.
    */
-  add(path: string, root: TransformNode, small: boolean, tint: string | null): Promise<boolean> {
-    const p = this.join(path, root, small, tint);
+  add(path: string, root: TransformNode, small: boolean, tint: string | null, indoor = false): Promise<boolean> {
+    const p = this.join(path, root, small, tint, indoor);
     this.pending.push(p);
     return p;
   }
@@ -150,7 +152,7 @@ export class PropBatches {
     await Promise.allSettled(this.pending);
   }
 
-  private async join(path: string, root: TransformNode, small: boolean, tint: string | null): Promise<boolean> {
+  private async join(path: string, root: TransformNode, small: boolean, tint: string | null, indoor: boolean): Promise<boolean> {
     const model = await this.model(path);
     if (!model || this.disposed || root.isDisposed()) return false;
     root.computeWorldMatrix(true);
@@ -163,11 +165,12 @@ export class PropBatches {
     const color: [number, number, number, number] = tint ? [...Color3.FromHexString(tint).asArray(), 1] as [number, number, number, number] : [1, 1, 1, 1];
     let g = this.groups.get(path);
     if (!g) this.groups.set(path, (g = { model, copies: [], tinted: false, stale: false, batches: new Map() }));
-    const copy: Copy = { root, matrix, color, x: c.x, y: c.y, z: c.z, r: model.radius * s, level: -1, small, quiet: small };
+    const copy: Copy = { root, matrix, color, x: c.x, y: c.y, z: c.z, r: model.radius * s, level: -1, small, indoor, quiet: small || indoor };
     g.copies.push(copy);
     if (tint) g.tinted = true;
     g.stale = true;
-    if (small) this.nearOf(model).copies.push(copy);
+    // Indoors (under a roof: shared map/indoors.ts) it casts nothing, near the camera or not: the sun never reaches it.
+    if (small && !indoor) this.nearOf(model).copies.push(copy);
     this.lastX = Infinity;
     return true;
   }
@@ -202,10 +205,11 @@ export class PropBatches {
         g.batches.clear();
         // A copy is quiet (no shadow from its batches) when its model's copies in its PROP_SECTOR square are all small.
         const loud = new Set<string>();
-        for (const k of g.copies) if (!k.small) loud.add(sectorKey(k, PROP_SECTOR));
+        // An indoor copy is always quiet (in a quiet batch of its own square), and never makes its square loud.
+        for (const k of g.copies) if (!k.small && !k.indoor) loud.add(sectorKey(k, PROP_SECTOR));
         for (const k of g.copies) {
           k.level = -1;
-          k.quiet = !loud.has(sectorKey(k, PROP_SECTOR));
+          k.quiet = k.indoor || !loud.has(sectorKey(k, PROP_SECTOR));
         }
         // Every level's batches made now, not when a copy first needs one: no meshes come and go as you walk about
         // (a new mesh thaws its frozen material), and the loading gate builds every level's shaders.

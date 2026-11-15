@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 38,
+  "formatVersion": 39,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_6xfkkigkefjoutmx",
-      "revision": 34,
-      "contentHash": "sha256:07b9ceef6aa933abbeb55817310149370fe5971dc994ba32bc298785178683fc",
-      "schemaVersion": 38,
-      "releasedAt": "2026-11-15T01:42:15.910Z"
+      "versionId": "v_gjtyijhdzfey32zt",
+      "revision": 35,
+      "contentHash": "sha256:e0ff1a8f9c5e9d19d72a7efa98446b199269de22c8bacbdd2ef5df5c477a8c71",
+      "schemaVersion": 39,
+      "releasedAt": "2026-11-15T06:57:17.485Z"
     },
     "testOnly": true
   },
@@ -5834,10 +5834,6 @@
       "style": "asphalt",
       "lay": true,
       "race": {
-        "laps": 3,
-        "grid": 8,
-        "vehicle": "hover_bike",
-        "combat": false,
         "curbs": true,
         "ambient": 0,
         "ambientVehicle": "hover_bike",
@@ -6597,7 +6593,57 @@
       "mirror": false
     },
     {
-      "id": "setpiece_qts0c1br1c",
+      "id": "setpiece_eh8bgt6vj2",
+      "piece": "setpiece.corner_tower_square",
+      "x": -20,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_5ufvvtunz5",
+      "piece": "setpiece.dorm_corner_bay",
+      "x": -18,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_atvxwcf8vl",
+      "piece": "setpiece.dorm_entry_bay",
+      "x": -15,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_poqeu5nf5f",
+      "piece": "setpiece.stair_end_bay_arched",
+      "x": -13,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_x1on898jvx",
+      "piece": "setpiece.stair_end_bay_bridge",
+      "x": -11,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_1l9n4n5r5x",
       "piece": "setpiece.arena_corner_gate",
       "x": 8,
       "y": 21,

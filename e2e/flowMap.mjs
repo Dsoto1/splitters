@@ -171,7 +171,8 @@ const RULES = [
   [/^packages\/client\/src\/(touchDevice|game\/(touchControls|weaponWheel))\.ts$/, ['mobile', 'offline', 'fireteams'], ['client']],
   // Phones' lamps (the tile mask, Room lights, the indoor fill on Low) and the kill feed's lines (docs/MOBILE_AUDIT.md).
   [/^packages\/client\/src\/game\/(clusteredLights|roomLights|indoorFill|feedLimit)\.ts$/, ['mobile', 'offline', 'flashing', 'setpieces'], ['client']],
-  [/^packages\/client\/src\/editor\//, ['editor', ...EDITOR_UX_FLOWS, 'scenery', 'canyon', 'traffic', 'weaponsets', 'visual'], ['client']],
+  // (Every flow that opens Map settings: the coverage map's flow checks its Test map box there.)
+  [/^packages\/client\/src\/editor\//, ['editor', ...EDITOR_UX_FLOWS, 'scenery', 'canyon', 'traffic', 'weaponsets', 'coverage', 'visual'], ['client']],
   [/^packages\/client\/src\/designer\//, ['designer', ...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/tools\/characterViewer/, [...CHARACTER_FLOWS], ['client']],
   // Your own body and arms in first person, and where hands are drawn on guns (the grip checks).

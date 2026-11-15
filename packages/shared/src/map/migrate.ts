@@ -98,7 +98,26 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // the other direction: a build that only knows v37 refuses a v38 map outright, instead of failing on a style it
   // has never heard of.
   [37, (doc) => ({ ...doc })],
+  // v38 -> v39: race mode's dead settings go (race mode was removed on 2026-11-08): a track path's `race` keeps
+  // its curbs, NPC cars (`ambient`, `ambientVehicle`) and pit lane, and loses `laps`, `grid`, `vehicle` and `combat`.
+  [38, dropRaceSettingsV39],
 ]);
+
+/** Race mode's own settings on a track path, unused since race mode was removed (v38 -> v39 drops them). */
+export const DEAD_RACE_KEYS = ['laps', 'grid', 'vehicle', 'combat'] as const;
+
+/** v38 -> v39: each path's `race` without DEAD_RACE_KEYS (everything else as it was). */
+export function dropRaceSettingsV39(doc: Record<string, unknown>): Record<string, unknown> {
+  if (!Array.isArray(doc.paths)) return { ...doc };
+  const paths = (doc.paths as unknown[]).map((p) => {
+    if (!p || typeof p !== 'object' || !('race' in p)) return p;
+    const race = (p as { race?: unknown }).race;
+    if (!race || typeof race !== 'object') return p;
+    const kept = Object.fromEntries(Object.entries(race).filter(([k]) => !(DEAD_RACE_KEYS as readonly string[]).includes(k)));
+    return { ...p, race: kept };
+  });
+  return { ...doc, paths };
+}
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */
 const V22_TRACK_DEFAULTS: Record<string, unknown> = { width: 12, loop: true, laps: 3, grid: 8, vehicle: 'kart', combat: false, surface: 'asphalt', curbs: true, ambient: 0, ambientVehicle: 'kart', pit: null };

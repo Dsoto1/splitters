@@ -12,6 +12,7 @@ import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
+import { FresnelParameters } from '@babylonjs/core/Materials/fresnelParameters';
 import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { SMOKE, STATUS_BURN, STATUS_CHILL, STATUS_FROZEN, STATUS_POISON, STATUS_SLOW, ZONE_KINDS, type ProjectileVisual, type SmokeCloud, type Vec3, type ZoneSnapshot } from '@tiletrigger/shared';
 import { indicator, reduceFlashing } from './reduceFlashing.ts';
@@ -602,23 +603,64 @@ export function statusColor(bits: number): string | null {
   return null;
 }
 
-/** A see-through shell round a character showing its status (a block of ice when frozen). */
+/**
+ * A character's plain status look (game/statusFx.ts: where no pack aura is drawn, and under a poisoned or gooed one's
+ * in daylight): a block of ice round a frozen one, else a glowing outline in the status' colour, a body-sized
+ * ellipsoid whose rim is opaque and whose middle is clear (an opacity fresnel; one draw, no texture, no particles).
+ * It holds still on every setting: a steady glow (docs/LOOK.md, "Reduce flashing").
+ */
 export function createAura(scene: Scene, parent: TransformNode): Mesh {
   const shell = CreateCylinder('aura', { diameter: 1.0, height: 1.95, tessellation: 12 }, scene);
   shell.position.y = 0.95;
   shell.parent = parent;
   shell.isPickable = false;
+  const rim = CreateSphere('aura_rim', { diameterX: 0.95, diameterY: 2.0, diameterZ: 0.95, segments: 10 }, scene);
+  rim.parent = shell;
+  rim.isPickable = false;
+  auraRims.set(shell, rim);
   shell.setEnabled(false);
   return shell;
 }
 
-export function setAura(scene: Scene, aura: Mesh, bits: number, now: number): void {
+const auraRims = new WeakMap<Mesh, Mesh>();
+
+/** How opaque the outline's rim (seen edge-on) and its middle (seen face-on) are. */
+export const AURA_RIM = { edge: 0.9, middle: 0.05, power: 0.6 } as const;
+
+/** The outline's material for a colour (shared, never disposed by effects). */
+function rimMat(scene: Scene, hex: string): StandardMaterial {
+  let byKey = materials.get(scene);
+  if (!byKey) materials.set(scene, (byKey = new Map()));
+  const key = `rim|${hex}`;
+  let m = byKey.get(key);
+  if (!m) {
+    m = new StandardMaterial(`aura_rim_${hex}`, scene);
+    m.disableLighting = true;
+    m.diffuseColor = Color3.Black();
+    m.specularColor = Color3.Black();
+    m.emissiveColor = Color3.FromHexString(hex);
+    // The shader adds the fresnel term to the material's alpha: 0 here, so the middle is AURA_RIM.middle.
+    m.alpha = 0;
+    m.opacityFresnelParameters = new FresnelParameters({ leftColor: new Color3(AURA_RIM.edge, AURA_RIM.edge, AURA_RIM.edge), rightColor: new Color3(AURA_RIM.middle, AURA_RIM.middle, AURA_RIM.middle), power: AURA_RIM.power, bias: 0 });
+    m.disableDepthWrite = true;
+    byKey.set(key, m);
+  }
+  return m;
+}
+
+export function setAura(scene: Scene, aura: Mesh, bits: number, _now: number): void {
   const color = statusColor(bits);
   aura.setEnabled(!!color);
   if (!color) return;
   const frozen = (bits & STATUS_FROZEN) !== 0;
-  // Reduce flashing: the shell holds still (it pulsed about twice a second).
-  const still = frozen || reduceFlashing();
-  aura.material = mat(scene, color, frozen ? 0.4 : 0.9, frozen ? 0.55 : still ? 0.18 : 0.18 + 0.08 * Math.sin(now * 0.012));
-  aura.scaling.set(frozen ? 1.05 : still ? 1 : 1 + Math.sin(now * 0.01) * 0.04, 1, frozen ? 1.05 : still ? 1 : 1 + Math.cos(now * 0.01) * 0.04);
+  const rim = auraRims.get(aura);
+  // Frozen: the block of ice, still. Otherwise the outline, still (the old see-through slab read as a placeholder
+  // beside the pack auras, and pulsed about twice a second with Reduce flashing off).
+  aura.isVisible = frozen || !rim;
+  if (aura.isVisible) aura.material = mat(scene, color, frozen ? 0.4 : 0.9, frozen ? 0.55 : 0.18);
+  aura.scaling.set(frozen ? 1.05 : 1, 1, frozen ? 1.05 : 1);
+  if (rim) {
+    rim.setEnabled(!frozen);
+    if (!frozen) rim.material = rimMat(scene, color);
+  }
 }

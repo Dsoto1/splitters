@@ -813,8 +813,8 @@ export class PathTool {
 
   /**
    * The track's settings (the path's `race`): its NPC cars, their vehicle, the curbs, where the cars start and the
-   * pit lane. Race mode is gone (2026-11-09), so its laps, start grid, race vehicle and combat switch are not shown
-   * (they stay in the data, read by nothing).
+   * pit lane. Race mode is gone (2026-11-09): its laps, start grid, race vehicle and combat switch went from the
+   * format too (v39).
    */
   private racePane(
     el: HTMLElement,
@@ -837,10 +837,10 @@ export class PathTool {
     const vehicles = [...(kept ? [[r.ambientVehicle, kept] as const] : []), ...RACE_VEHICLES.map((v) => [v, VEHICLE_LABELS[v]] as const)];
     check('ed-path-curbs', 'Red and white curbs', 'Curbs along both edges of the track', r.curbs, (v) => setRace('Curbs', { curbs: v }));
     row('NPC cars (lap the track in every mode)', num('ed-path-ambient', r.ambient, 0, 12, 1, (v) => v !== undefined && setRace('NPC cars', { ambient: v })));
-    if (r.ambient) row('NPC car', select('ed-path-ambient-vehicle', vehicles, r.ambientVehicle, (v) => setRace('NPC car', { ambientVehicle: v as RaceSettings['vehicle'] })));
-    // The track still names a retired vehicle (its cars, or the race vehicle it had when Race was a mode): one
-    // button puts the vehicle it drives as in the map, with every one of them placed on it.
-    const old = ([r.ambientVehicle, r.vehicle] as string[]).find(isRetiredMount);
+    if (r.ambient) row('NPC car', select('ed-path-ambient-vehicle', vehicles, r.ambientVehicle, (v) => setRace('NPC car', { ambientVehicle: v as RaceSettings['ambientVehicle'] })));
+    // The track's cars are a retired vehicle: one button puts the vehicle they drive as in the map, with every one
+    // of them placed on it.
+    const old = isRetiredMount(r.ambientVehicle) ? r.ambientVehicle : undefined;
     if (old) {
       const to = VEHICLE_LABELS[liveMount(old) as (typeof RACE_VEHICLES)[number]] ?? liveMount(old);
       buttons([

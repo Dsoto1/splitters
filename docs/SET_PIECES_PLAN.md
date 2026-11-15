@@ -691,6 +691,36 @@ and back, the stairs, shut rooms stay shut; five bays end to end on one floor, a
 three floors with both end stairs and the middle stair; the wall styles; costs). The coverage map has the
 demonstration hall on two floors, the three-floor end bay, and a Room with the three wall styles and the new props.
 
+## As built: part 8 (Smythe Hall's pieces; 2026-11-14)
+St. John's step 2 (docs/map-briefs/st_johns/PLAN_2026-11-12.md, 3.3 and 3.5): the pieces Smythe Hall's L needed
+beyond part 7, in the same `academy.json`. Smythe itself was rebuilt from them in MapMaker (the plan's section 4b).
+
+| Piece | Cells, levels | Mirror | What it is |
+|---|---|---|---|
+| Dorm Corner Bay (`setpiece.dorm_corner_bay`) | 2 × 2, level 0 | free | Where a hall turns: a Dorm Bay's hall comes in at the west and leaves south (x 2.8 to 5.2 m), so the south mouth meets a Dorm Bay turned a quarter on the same anchor column. Two rooms north (a Dorm Bay's north rooms), one east (a north room turned a quarter), a lounge in the outer corner (sofa, two armchairs on a round rug, a fireplace between the windows, a wide cabinet; an Oak Door standing open), a washroom in the inner corner (two toilets in stalls, two showers, three basins). Two lights. |
+| Dorm Entry Bay (`setpiece.dorm_entry_bay`) | 1 × 2, level 0 | free | A side entry: the south half of a Dorm Bay is an entrance hall under a Round arch in the outer wall, open to the hall through 6 m between two short piers; benches, a rug, two plants. The north rooms as a Dorm Bay's. A Dorm Bay goes over it upstairs. |
+| Stair End Bay (arched door) (`setpiece.stair_end_bay_arched`) | 1 × 2, levels 0-1 | none | The Stair End Bay with a Round arch (no leaf) for the lobby's outside door: a hall's far end. |
+| Stair End Bay (upper door) (`setpiece.stair_end_bay_bridge`) | 1 × 2, levels 0-1 | none | The Stair End Bay with a Room doorway and an open Oak Door in the upper landing room's outer wall, over the lobby's door: where a skybridge or a walkway meets the hall's end. |
+| Square Corner Tower (`setpiece.corner_tower_square`) | 1 × 1, levels 0-3 | free | A tower of blocks in the cell's south-east corner, 5.4 m square and 13.75 m to its merlons, to stand against a hall's end flush with its front: a dressed plinth, string courses, a cornice, battlements; firing slits up three faces; a small door (2 m wide, a stepped round head to 2.85 m with jambs, ring stones and a keystone) into a room 4.4 m square; a ladder through a hatch to a lookout. |
+
+What they needed to know:
+- **A corner can't have a room in each quadrant.** The hall's turn touches the outer corner's cell only at a point, so a
+  room there would have no straight wall to the hall for its door. The outer corner is a lounge entered from the south
+  leg (where the second east room would be); the inner corner a washroom off the west leg.
+- **A lounge must leave bots 1.6 m.** The first layout (a round table between the sofa and two armchairs) closed the
+  lounge's north half to bots: the gaps were 0.9 to 1.4 m. The table went; the armchairs stand 1.8 m apart and 2.8 m
+  from the sofa.
+- **A ladder's top lands behind it** (`ladderLinks`: 0.9 m behind its face at its height). A ladder against a wall
+  lands in the wall; so the tower's ladder stands at the north edge of a hatch, the deck behind it. A 4.3 m tower
+  had no deck left for bots once the navmesh kept 0.8 m off the parapet and the hatch; 5.4 m leaves 1.5 × 2.8 m.
+- **Footprints are tight.** Trim proud of a block's face counts: the tower's plinth and string courses stood 0.08 m
+  past the cell's edge, so the tower sits 0.18 m in from the cell's south edge (0.18 m behind the hall's front).
+
+Tests: `setPiecesAcademy.test.ts` walks each in every turn and mirror, and builds Smythe's L (the arched end, the
+corner on two floors, a long arm of Dorm Bays with the entry bay, the upper-door end meeting a Skybridge, the tower):
+the hall end to end on both floors, rooms off both arms, the lounge, both stairs, the side entry, across the bridge,
+up the tower's ladder.
+
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks
    and validation.

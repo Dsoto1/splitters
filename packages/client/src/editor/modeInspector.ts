@@ -22,12 +22,12 @@ export function fillTestPane(app: EditorApp, el: HTMLElement): void {
   here.id = 'ed-tp-here';
   const check = document.createElement('h3');
   check.textContent = 'Check';
-  const bots = button('Bot test', () => document.getElementById('ed-maptest')?.click());
+  const bots = button('Bot test', () => app.mapTest.show(!app.mapTest.isShown));
   bots.id = 'ed-tp-bots';
   bots.title = 'A bot match in the background: heatmaps of where bots went, got stuck and died, and how exposed each spawn is';
   const plan = button('Plan view (K)', () => app.plan.toggle());
   plan.id = 'ed-tp-plan';
-  const problems = button('Problems list', () => document.getElementById('ed-issues')?.scrollIntoView({ behavior: 'smooth' }));
+  const problems = button('Problems list', () => app.dock.showProblems());
   problems.id = 'ed-tp-problems';
   const col = (...els: HTMLElement[]) => {
     const d = document.createElement('div');
@@ -44,7 +44,24 @@ export function fillTestPane(app: EditorApp, el: HTMLElement): void {
   );
 }
 
-/** The mode's own section for the inspector with nothing selected, or null (Build, Props, Logic, Environment: Map properties alone). */
+/** The inspector with nothing selected (MapMaker UI spec Phase 1): "Nothing selected · Map settings…", the link opening Map settings. */
+export function emptyLine(openSettings: () => void): HTMLElement {
+  const p = document.createElement('p');
+  p.className = 'ed-insp-empty';
+  p.id = 'ed-insp-empty';
+  p.append(document.createTextNode('Nothing selected · '));
+  const link = document.createElement('button');
+  link.type = 'button';
+  link.className = 'ed-link';
+  link.id = 'ed-insp-map-settings';
+  link.textContent = 'Map settings…';
+  link.title = "The map's name, theme, players, modes, picture, card shot, time and weather";
+  link.addEventListener('click', openSettings);
+  p.append(link);
+  return p;
+}
+
+/** The mode's own section for the inspector with nothing selected, or null (Build, Props, Logic, Environment: the empty line alone). */
 export function modeSection(app: EditorApp): HTMLElement | null {
   const ws = app.paletteWs;
   const doc = app.doc;

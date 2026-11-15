@@ -1,5 +1,4 @@
 import {
-  autoPlayerCaps,
   buildOccupancy,
   CEILING_LABELS,
   CEILINGS,
@@ -27,11 +26,9 @@ import {
   guessRoomType,
   levelName,
   modelBudget,
-  mapPlayerCaps,
   moverGroupOf,
   paintCommand,
   piecesFor,
-  playableModes,
   PROP_CATEGORIES,
   replacePropsCommand,
   resolveSurface,
@@ -42,7 +39,6 @@ import {
   roomCells,
   seededRandom,
   setFacingCommand,
-  setupFamily,
   setPieceMirrorRefusal,
   setUpperFloorsCommand,
   SIDES,
@@ -67,7 +63,7 @@ import {
   getKitFamily,
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
-import { modeSection } from './modeInspector.ts';
+import { emptyLine, modeSection } from './modeInspector.ts';
 import { $, button, fillWhenOpened, h2, numberInput, row, small, text, type ChoiceGroups } from './editorDom.ts';
 import { dressable, dressTag } from './editorParts.ts';
 import { groupSection, type GroupHost } from './groupPanel.ts';
@@ -82,10 +78,7 @@ import { replaceTilePanel } from './retiredTiles.ts';
 import { tileOptionPanel } from './tileOptionPanel.ts';
 import { tunnelPanel } from './tunnelPanel.ts';
 
-/** How long after the last edit that left Map properties standing it is built again (after the problems list has caught up: mapChecks.ts). */
-const CATCH_UP_MS = 500;
-
-/** The side panel's inspector: what's selected (a tile, a set piece, an entity, a moving build, several things) or Map properties with nothing selected; the tile's walls, room options, upper floors, dressing and surfaces (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
+/** The right dock's Properties (the inspector): only what's selected (a tile, a set piece, an entity, a moving build, several things); with nothing selected one line that links to Map settings (mapSettingsView.ts, MapMaker UI spec Phase 1) and the tab's own section; the tile's walls, room options, upper floors, dressing and surfaces (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class Inspector {
   constructor(readonly app: EditorApp) {}
 
@@ -100,69 +93,37 @@ export class Inspector {
 
   /**
    * The inspector rebuilt, the field being typed in kept as it was (inspectorKeep.ts: a placement's rebuild dropped the
-   * first edit). Map properties, already shown, is left standing when nothing it shows has changed (`mapPropertiesStand`).
+   * first edit). With nothing selected, the empty line and the tab's section, already shown, are left standing when
+   * nothing they show has changed (`emptyStands`).
    */
   renderInspector(): void {
-    if (this.mapPropertiesStand()) return;
-    this.rebuild();
-  }
-
-  private rebuild(): void {
-    clearTimeout(this.later);
-    this.later = undefined;
+    if (this.emptyStands()) return;
     rebuildKeepingEdit($('ed-inspector'), () => this.buildInspector());
   }
 
-  /** What Map properties (with the mode's own section over it) was last built from, while it is what the inspector shows. */
-  private built: { doc: MapDocument; ws: string; layers: string; placed: string } | null = null;
-  /** The rebuild owed after edits that left Map properties standing (its plan and its quality gates follow the map). */
-  private later?: number;
+  /** What the empty inspector (the line and the tab's section) was last built from, while it is what the inspector shows. */
+  private built: { doc: MapDocument; ws: string; placed: string } | null = null;
 
   /**
-   * Map properties as shown is still right, so it is not built again. Building it works out the map's problems on the
-   * page, measures the file and redraws the plan: 25 to 50 ms of every edit on a big map with nothing selected, and of
-   * every click on empty ground. It is built again at once when anything it reads at once has changed: any of the
-   * map's settings (every part of the document but the things placed on it), the mode (its own section), the layer
-   * boxes, and what it works out from the things placed (the modes the map plays, the player caps, Settle all props,
-   * the Gameplay mode's counts). An edit that only moves, adds or removes things leaves it standing, and the plan and
-   * the quality gates (which do follow those) are brought up to date a moment after the last such edit, as the
-   * problems list is. The Test mode's section lists the problems themselves: it is always built again.
+   * The empty inspector as shown is still right: the same tab, and no change to the map's settings (every part of the
+   * document but the things placed on it: the Sky pane is drawn from them too) or to the Gameplay tab's counts. The
+   * Test tab's section lists the problems themselves: it is always built again.
    */
-  private mapPropertiesStand(): boolean {
+  private emptyStands(): boolean {
     const b = this.built;
     if (!b || this.app.selCount() !== 0 || this.app.hints.selected()) return false;
     const doc = this.app.doc;
-    if (this.app.paletteWs !== b.ws || this.app.paletteWs === 'test' || this.layersKey() !== b.layers) return false;
+    if (this.app.paletteWs !== b.ws || this.app.paletteWs === 'test') return false;
     if (doc === b.doc) return true;
     for (const k of new Set([...Object.keys(doc), ...Object.keys(b.doc)]) as Set<keyof MapDocument>) if (k !== 'entities' && doc[k] !== b.doc[k]) return false;
-    if (this.placedKey(doc) !== b.placed) return false;
-    clearTimeout(this.later);
-    this.later = window.setTimeout(() => this.catchUp(), CATCH_UP_MS);
-    return true;
+    return this.placedKey(doc) === b.placed;
   }
 
-  /** A moment after the last edit that left Map properties standing: built from the map as it is now (not in the middle of a drag). */
-  private catchUp(): void {
-    this.later = undefined;
-    if (!this.built || this.built.doc === this.app.doc) return;
-    if (this.app.input.drag) {
-      this.later = window.setTimeout(() => this.catchUp(), CATCH_UP_MS);
-      return;
-    }
-    this.rebuild();
-  }
-
-  private layersKey(): string {
-    return [...this.app.view.hiddenLayers].sort().join();
-  }
-
-  /** What Map properties and the mode's section work out at once from the things placed on the map. */
+  /** What the Gameplay tab's section counts. */
   private placedKey(doc: MapDocument): string {
-    const modes = playableModes(doc);
-    const caps = modes.filter((m) => setupFamily(m) === 'ffa' || setupFamily(m) === 'teams').map((m) => [mapPlayerCaps(doc, m), autoPlayerCaps(doc, m)]);
+    if (this.app.paletteWs !== 'entities') return '';
     const count = (kinds: readonly string[]) => doc.entities.filter((e) => kinds.includes(e.kind)).length;
-    const gameplay = this.app.paletteWs === 'entities' ? [['spawn'], ['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'sector', 'objective'], ['pickup'], ['encounter'], ['mount']].map(count) : [];
-    return JSON.stringify([modes, caps, doc.entities.some((e) => e.kind === 'prop'), gameplay]);
+    return JSON.stringify([['spawn'], ['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'sector', 'objective'], ['pickup'], ['encounter'], ['mount']].map(count));
   }
 
   buildInspector(): void {
@@ -177,11 +138,12 @@ export class Inspector {
     const pieces = this.app.selPieces();
     const doc = this.app.doc;
     if (this.app.selCount() === 0) {
-      // The mode's own section first (modeInspector.ts), then Map properties.
+      // Only what's selected (MapMaker UI spec §3, the owner's answer 3): one line that opens Map settings, then the
+      // tab's own section where it has one (modeInspector.ts).
+      el.append(emptyLine(() => this.app.mapSettings.open()));
       const mode = modeSection(this.app);
       if (mode) el.append(mode);
-      this.app.mapProps.renderMapProperties(el);
-      this.built = { doc, ws: this.app.paletteWs, layers: this.layersKey(), placed: this.placedKey(doc) };
+      this.built = { doc, ws: this.app.paletteWs, placed: this.placedKey(doc) };
       return;
     }
     if (pieces.length === 1 && tiles.length + entities.length === 0) {

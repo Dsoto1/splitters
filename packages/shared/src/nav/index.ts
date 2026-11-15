@@ -1481,7 +1481,7 @@ export function validateNavigation(map: MapDocument, nav: NavWorld, physics?: Ph
 /**
  * Race tracks: every checkpoint must be on drivable ground and reachable from
  * the one before (vehicles and racing bots follow the same ground the navmesh
- * covers), and every start-grid place must be on it.
+ * covers). (Race mode's start grid went with it: nothing starts there now.)
  */
 export function validateTrackNavigation(map: MapDocument, nav: NavWorld): ValidationIssue[] {
   const g = trackGeometry(map);
@@ -1498,7 +1498,5 @@ export function validateTrackNavigation(map: MapDocument, nav: NavWorld): Valida
     const b = spots[(i + 1) % spots.length];
     if (a && b && !nav.findPath(a, b)) issues.push({ severity: 'warning', code: 'nav.checkpoint_unreachable', message: `checkpoint ${((i + 1) % spots.length) + 1} cannot be reached from checkpoint ${i + 1}` });
   }
-  const off = g.grid().filter((p) => !nav.closestPoint(p, { x: 2, y: 4, z: 2 })).length;
-  if (off) issues.push({ severity: 'warning', code: 'nav.grid_off_mesh', message: `${off} start-grid place${off > 1 ? 's are' : ' is'} not on drivable ground` });
   return issues;
 }

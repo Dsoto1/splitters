@@ -251,20 +251,23 @@ describe('terrain under floors', () => {
     expect(played(moved).entities.find((e) => e.id === 'rock')!.position).toEqual(made.position);
   });
 
-  it('every shipped map loads for editing with its own ground, and as played with no terrain through a floor', () => {
-    const dir = new URL('../../../maps/', import.meta.url);
-    for (const f of readdirSync(dir).filter((f) => f.endsWith('.json'))) {
-      const text = readFileSync(new URL(f, dir), 'utf8');
-      const raw = JSON.parse(text) as { terrain?: { heights: number[] } | null };
-      if (!raw.terrain) continue;
-      const r = loadMap(text);
-      expect(r.ok, f).toBe(true);
-      if (!r.ok) continue;
-      expect(terrainUnderFloors(r.map), f).toBe(r.map.terrain);
-      // MapMaker opens it with the ground as made: exported again with no edits, the ground is the same.
-      const ed = loadMap(text, undefined, { forEditing: true });
-      expect(ed.ok && ed.map.terrain!.heights, f).toEqual(raw.terrain.heights);
-    }
+  // One test a map with ground: they were one test under one budget, which the growing map list outgrew on a busy
+  // machine (24.6 s against 20 at a load of 16; each map loads twice).
+  const MAPS_DIR = new URL('../../../maps/', import.meta.url);
+  const withGround = readdirSync(MAPS_DIR).filter((f) => f.endsWith('.json') && !!(JSON.parse(readFileSync(new URL(f, MAPS_DIR), 'utf8')) as { terrain?: unknown }).terrain);
+  it('finds shipped maps with ground to check', () => expect(withGround.length).toBeGreaterThan(5));
+  it.each(withGround)('%s loads for editing with its own ground, and as played with no terrain through a floor', (f) => {
+    const text = readFileSync(new URL(f, MAPS_DIR), 'utf8');
+    const raw = JSON.parse(text) as { terrain?: { heights: number[] } | null };
+    expect(raw.terrain, f).toBeTruthy();
+    if (!raw.terrain) return;
+    const r = loadMap(text);
+    expect(r.ok, f).toBe(true);
+    if (!r.ok) return;
+    expect(terrainUnderFloors(r.map), f).toBe(r.map.terrain);
+    // MapMaker opens it with the ground as made: exported again with no edits, the ground is the same.
+    const ed = loadMap(text, undefined, { forEditing: true });
+    expect(ed.ok && ed.map.terrain!.heights, f).toEqual(raw.terrain.heights);
   });
 
   it("MapMaker's view of the ground is loadMap's: the same pieces in the same order", () => {

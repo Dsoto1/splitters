@@ -753,6 +753,16 @@ export class CharacterAnimator {
       if (!g) continue;
       if (w <= 0.001 && c !== this.current) {
         if (g.isPlaying) this.fadeOut(g);
+        else if (this.slept.delete(g)) {
+          // Faded out while asleep (paused, so fadeOut, which takes playing loops, passed it by): out of the blend
+          // now, not played again on waking at the weight it was last given. A long step (an out-of-view avatar is
+          // evaluated every 8th frame) takes a loop from 1 to 0 at once, so that was its full weight: a character that
+          // stood up out of view woke crouched (Hyena Warrior, characters3).
+          g.weight = 0;
+          for (const a of g.animatables) this.parked.delete(a);
+          g.stop();
+          this.faded.delete(g);
+        }
         continue;
       }
       g.weight = w;

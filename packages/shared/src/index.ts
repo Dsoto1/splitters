@@ -14,6 +14,7 @@ export * from './map/borderCoast.ts';
 export * from './map/terrainPaint.ts';
 export * from './map/track.ts';
 export * from './map/settle.ts';
+export * from './map/indoors.ts';
 export * from './map/groundBore.ts';
 export * from './map/paths.ts';
 export * from './map/backdrop.ts';

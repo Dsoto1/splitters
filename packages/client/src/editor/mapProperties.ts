@@ -18,7 +18,6 @@ import {
   botSetLabel,
   castLooks,
   CHARACTER_GROUPS,
-  coreCatalog,
   coreThemes,
   DEFAULT_BLOOD,
   fitBounds,
@@ -63,8 +62,8 @@ import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
 import { cardShotSection, type CardShotHost } from './cardShot.ts';
 import type { EditorApp } from './editorApp.ts';
-import { button, escapeHtml, h2, numberInput, row, small, text } from './editorDom.ts';
-import { CARD_HIDDEN_KINDS, dressable, SHIPPED_IDS } from './editorParts.ts';
+import { button, escapeHtml, numberInput, row, small, text } from './editorDom.ts';
+import { CARD_HIDDEN_KINDS, SHIPPED_IDS } from './editorParts.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { removedModesRow } from './removedModes.ts';
 import { skyWeatherSection, type SkyWeatherHost } from './skyWeatherSection.ts';
@@ -501,16 +500,23 @@ export class MapProperties {
     el.append(head, box);
   }
 
-  /** Nothing selected: Map properties (name, theme, players, modes, teams, weapons, bots, sky and weather, layers…). */
+  /**
+   * Map settings (mapSettingsView.ts, in the right dock): name, description, theme, picture and card shot (General);
+   * modes, teams, players, weapons, bots, breaking, gravity and the boundary (Gameplay); time and weather, blood and
+   * the sky (Presentation); the map ID, tier and test map (Advanced). Every field is an undoable command. The map
+   * layers (a view filter) are in the top bar's View menu; Dress all and Settle all (one-off actions) in the tool
+   * bar's ⋯ menu.
+   */
   renderMapProperties(el: HTMLElement): void {
     const doc = this.app.doc;
-    el.append(h2('Map properties'));
-    // The map's picture (Set thumbnail) and plan (reference board: map properties).
-    el.append(thumbnailSection(this.thumbHost));
-    // The menu card shot's camera (MapMaker overhaul Phase 3 item 8).
-    el.append(cardShotSection(this.cardHost));
-    // Note pins (MapMaker overhaul Phase 3 item 7): every note, to go to or delete.
-    el.append(this.app.notes.section());
+    const group = (id: string, title: string) => {
+      const h = document.createElement('h3');
+      h.className = 'ed-ms-group';
+      h.id = `ed-ms-${id}`;
+      h.textContent = title;
+      el.append(h);
+    };
+    group('general', 'General');
     const name = document.createElement('input');
     name.type = 'text';
     name.id = 'ed-prop-name';
@@ -522,18 +528,29 @@ export class MapProperties {
     });
     el.append(row('Name', name));
     const theme = document.createElement('select');
+    theme.id = 'ed-prop-theme';
     for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
     theme.addEventListener('change', () => this.app.run('Change theme', setThemeCommand(this.app.doc, theme.value)));
     el.append(row('Theme', theme));
+    const desc = document.createElement('textarea');
+    desc.rows = 3;
+    desc.value = doc.metadata.description;
+    desc.placeholder = 'Description';
+    desc.addEventListener('change', () => this.app.run('Edit description', { kind: 'setMetadata', before: { description: doc.metadata.description }, after: { description: desc.value.slice(0, 2000) } }));
+    desc.setAttribute('aria-label', 'Description');
+    el.append(desc);
     const occupied = [...doc.classicStructure.tiles.flatMap((t) => placementCells(t) ?? []), ...[...this.app.expansion.footprints.values()].flat()];
     if (occupied.length) {
       const span = (i: 0 | 1 | 2) => Math.max(...occupied.map((c) => c[i])) - Math.min(...occupied.map((c) => c[i])) + 1;
       el.append(row('Size', text(`${span(0)} × ${span(1)} cells · ${span(2)} level${span(2) === 1 ? '' : 's'}`)));
     }
-    const rp = doc.metadata.recommendedPlayers;
-    const setPlayers = (min: number, max: number) =>
-      this.app.run('Set player count', { kind: 'setMetadata', before: { recommendedPlayers: rp }, after: { recommendedPlayers: { min: Math.max(1, Math.min(96, min)), max: Math.max(1, Math.min(96, max)) } } });
-    el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
+    // The map's picture (Set thumbnail) and plan (reference board: map properties).
+    el.append(thumbnailSection(this.thumbHost));
+    // The menu card shot's camera (MapMaker overhaul Phase 3 item 8).
+    el.append(cardShotSection(this.cardHost));
+    // Note pins (MapMaker overhaul Phase 3 item 7): every note, to go to or delete.
+    el.append(this.app.notes.section());
+    group('gameplay', 'Gameplay');
     const mode = document.createElement('select');
     const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
     for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.breakthrough', 'Breakthrough'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena']] as const) mode.append(new Option(label, id, false, id === current));
@@ -581,38 +598,54 @@ export class MapProperties {
     alsoRow.title = 'Other modes Match Setup offers on this map; the Mode above is its own pick and what TEST plays';
     el.append(alsoRow);
     if (current === 'core.tdm' || current === 'core.koth' || current === 'core.elim' || current === 'core.breakthrough') this.renderTeamSetup(el);
+    const rp = doc.metadata.recommendedPlayers;
+    const setPlayers = (min: number, max: number) =>
+      this.app.run('Set player count', { kind: 'setMetadata', before: { recommendedPlayers: rp }, after: { recommendedPlayers: { min: Math.max(1, Math.min(96, min)), max: Math.max(1, Math.min(96, max)) } } });
+    el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
     this.renderWeaponSet(el);
     this.renderMapBots(el);
     this.renderPlayerCaps(el);
+    // Destructible environment (v36): every solid prop can be shot apart (natural rocks stay; a prop marked Unbreakable stays).
+    const destruction = document.createElement('input');
+    destruction.type = 'checkbox';
+    destruction.id = 'ed-prop-destruction';
+    destruction.checked = !!doc.metadata.destruction;
+    destruction.addEventListener('change', () => this.app.run(destruction.checked ? 'Everything breaks' : 'Only breakable pieces break', { kind: 'setMetadata', before: { destruction: doc.metadata.destruction }, after: { destruction: destruction.checked || undefined } }));
+    const destructionRow = row('Everything breaks', destruction);
+    destructionRow.title = 'Every solid prop can be shot apart, not only crates, barrels and the like. Natural rocks, walls, floors, terrain and doors stay; mark a prop Unbreakable to keep it. Broken pieces come back at the next round.';
+    el.append(destructionRow);
+    this.renderPhysicsPanel(el);
+    this.renderBoundsPanel(el);
+    group('presentation', 'Presentation');
     // Time of day and weather (MapMaker overhaul Phase 5).
     el.append(skyWeatherSection(this.skyWeatherHost));
-    const layersHead = document.createElement('h3');
-    layersHead.id = 'ed-layers-head';
-    layersHead.textContent = 'Map layers';
-    const layers = document.createElement('div');
-    layers.className = 'ed-layers';
-    for (const [key, label] of [['tile', 'Tiles'], ['prop', 'Props'], ['pickup', 'Pickups'], ['logic', 'Logic & traps'], ['spawn', 'Spawn points']] as const) {
-      const box = document.createElement('input');
-      box.type = 'checkbox';
-      box.dataset.layer = key;
-      box.checked = !this.app.view.hiddenLayers.has(key);
-      box.addEventListener('change', () => {
-        if (box.checked) this.app.view.hiddenLayers.delete(key);
-        else this.app.view.hiddenLayers.add(key);
-        this.app.view.applyTileLayer();
-        this.app.updateSelectionVisuals();
-      });
-      const lab = document.createElement('label');
-      lab.append(box, document.createTextNode(label));
-      layers.append(lab);
-    }
-    el.append(layersHead, layers);
-    const desc = document.createElement('textarea');
-    desc.rows = 3;
-    desc.value = doc.metadata.description;
-    desc.placeholder = 'Description';
-    desc.addEventListener('change', () => this.app.run('Edit description', { kind: 'setMetadata', before: { description: doc.metadata.description }, after: { description: desc.value.slice(0, 2000) } }));
-    el.append(desc);
+    this.renderBloodPanel(el);
+    const sky = button('Sky, scenery & border…', () => {
+      this.app.topBar.setWorkspace('environment');
+      this.app.showPane('sky');
+    });
+    sky.title = 'The sky, distant scenery, haze and the border live in Environment → Sky';
+    el.append(sky);
+    group('advanced', 'Advanced');
+    // The map's ID (its file name in maps/: `iron_coast` is maps/iron_coast.json), for a new official or test map.
+    const mapId = document.createElement('input');
+    mapId.type = 'text';
+    mapId.id = 'ed-prop-id';
+    mapId.value = doc.metadata.id;
+    mapId.maxLength = 64;
+    mapId.pattern = '[a-z0-9_]{4,64}';
+    mapId.addEventListener('change', () => {
+      const v = mapId.value.trim();
+      if (!/^[a-z0-9_]{4,64}$/.test(v)) {
+        mapId.value = doc.metadata.id;
+        return this.app.toast('A map ID is 4 to 64 lowercase letters, digits and underscores (its file name in maps/)', true);
+      }
+      if (v !== this.app.doc.metadata.id) this.app.run('Change map ID', { kind: 'setMetadata', before: { id: this.app.doc.metadata.id }, after: { id: v } });
+    });
+    const idRow = row('Map ID', mapId);
+    idRow.title = "The map's ID: lowercase letters, digits and underscores; an official map's file is maps/<ID>.json. Set it once, before the map is shared: a published or exported map keeps its ID.";
+    el.append(idRow);
+
     // The map's tier (map/qualityGates.ts; owner, 2026-11-11): experimental maps are listed under their own heading and
     // left out of Quick Play, playlists and official rotations; a map goes to core only when its gates pass.
     const tier = document.createElement('select');
@@ -643,53 +676,5 @@ export class MapProperties {
     const testRow = row('Test map', testOnly);
     testRow.title = 'A map for the automated tests: hidden from the map lists, templates, rotations and the host picker';
     el.append(testRow);
-    // Destructible environment (v36): every solid prop can be shot apart (natural rocks stay; a prop marked Unbreakable stays).
-    const destruction = document.createElement('input');
-    destruction.type = 'checkbox';
-    destruction.id = 'ed-prop-destruction';
-    destruction.checked = !!doc.metadata.destruction;
-    destruction.addEventListener('change', () => this.app.run(destruction.checked ? 'Everything breaks' : 'Only breakable pieces break', { kind: 'setMetadata', before: { destruction: doc.metadata.destruction }, after: { destruction: destruction.checked || undefined } }));
-    const destructionRow = row('Everything breaks', destruction);
-    destructionRow.title = 'Every solid prop can be shot apart, not only crates, barrels and the like. Natural rocks, walls, floors, terrain and doors stay; mark a prop Unbreakable to keep it. Broken pieces come back at the next round.';
-    el.append(destructionRow);
-    // The map's ID (its file name in maps/: `iron_coast` is maps/iron_coast.json), for a new official or test map.
-    const mapId = document.createElement('input');
-    mapId.type = 'text';
-    mapId.id = 'ed-prop-id';
-    mapId.value = doc.metadata.id;
-    mapId.maxLength = 64;
-    mapId.pattern = '[a-z0-9_]{4,64}';
-    mapId.addEventListener('change', () => {
-      const v = mapId.value.trim();
-      if (!/^[a-z0-9_]{4,64}$/.test(v)) {
-        mapId.value = doc.metadata.id;
-        return this.app.toast('A map ID is 4 to 64 lowercase letters, digits and underscores (its file name in maps/)', true);
-      }
-      if (v !== this.app.doc.metadata.id) this.app.run('Change map ID', { kind: 'setMetadata', before: { id: this.app.doc.metadata.id }, after: { id: v } });
-    });
-    const idRow = row('Map ID', mapId);
-    idRow.title = "The map's ID: lowercase letters, digits and underscores; an official map's file is maps/<ID>.json. Set it once, before the map is shared: a published or exported map keeps its ID.";
-    el.append(idRow);
-
-    const sky = button('Sky, scenery & border…', () => {
-      this.app.topBar.setWorkspace('environment');
-      this.app.showPane('sky');
-    });
-    sky.title = 'The sky, distant scenery, haze and the border live in Environment → Sky';
-    el.append(sky);
-    this.renderBloodPanel(el);
-    this.renderPhysicsPanel(el);
-    if (doc.classicStructure.tiles.some((t) => dressable(coreCatalog.get(t.tile)))) {
-      const all = button('Dress all bare rooms', () => this.app.inspector.dressAllRooms());
-      all.id = 'ed-dress-all';
-      all.title = 'Furnish every room with no props in it, as a room type guessed from its size and the theme (undo takes it back)';
-      el.append(all);
-    }
-    if (doc.terrain && doc.entities.some((e) => e.kind === 'prop')) {
-      const settle = button('Settle all props on ground', () => this.app.edits.settleProps());
-      settle.id = 'ed-settle-all';
-      el.append(settle, small('Beds every prop standing on the terrain into the slope under it; props on floors and blocks stay put.'));
-    }
-    this.renderBoundsPanel(el);
   }
 }

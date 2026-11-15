@@ -21,7 +21,7 @@ import { MapDocument, type MapEntity } from './schema.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
 import { validateScenario } from './validateScenario.ts';
 import { RESOURCE_BUDGETS, resourceBudgetIssues, utf8Length } from './budgets.ts';
-import { releaseCurrent } from './identity.ts';
+import { carryReleaseOverRaceDrop, releaseCurrent } from './identity.ts';
 import { validateTrack } from './track.ts';
 import { airplaneIssues } from '../sim/airplane.ts';
 import { arcSentryIssues } from '../sim/mounts.ts';
@@ -90,6 +90,8 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
       issues: parsed.error.issues.map((i) => ({ severity: 'error', code: 'schema', message: `${i.path.join('.') || '(root)'}: ${i.message}` })),
     };
   }
+  // A release stamp from before v39 whose map changed only by losing race mode's dead track settings keeps its version.
+  if (migrated.fromVersion < 39) parsed.data = carryReleaseOverRaceDrop(raw, parsed.data);
   const library = opts.library ?? builtInSetPieces();
   // The map is checked as written (a retired tile is still a tile, and its release hash is the file's); as played a
   // retired tile plays as the set piece that replaced it (setPieceAliases.ts: the piece covers exactly its cells, so

@@ -56,20 +56,4 @@ export class KeyOverlay {
   close(): void {
     if (this.dialog.open) this.dialog.close();
   }
-
-  /** The tool bar's Keys button, styled as its others. */
-  mountButton(bar: HTMLElement): HTMLButtonElement {
-    const b = document.createElement('button');
-    b.id = 'ed-tb-keys';
-    b.className = 'tb-btn';
-    b.title = 'Every key MapMaker binds (?)';
-    b.innerHTML =
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 10h1M9.5 10h1M13 10h1M16.5 10h1M7 14h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="tb-label">Keys</span><kbd>?</kbd>';
-    b.addEventListener('click', () => {
-      b.blur();
-      this.open();
-    });
-    bar.append(b);
-    return b;
-  }
 }

@@ -24,8 +24,8 @@ export function aliasedMount<E extends MapEntity>(e: E): E {
 /** The path with its track's retired vehicles swapped for their replacements (the path itself otherwise). */
 export function aliasedPath<P extends MapPath>(p: P): P {
   const r = p.race;
-  if (!r || (!isRetiredMount(r.vehicle) && !isRetiredMount(r.ambientVehicle))) return p;
-  return { ...p, race: { ...r, vehicle: liveMount(r.vehicle), ambientVehicle: liveMount(r.ambientVehicle) } };
+  if (!r || !isRetiredMount(r.ambientVehicle)) return p;
+  return { ...p, race: { ...r, ambientVehicle: liveMount(r.ambientVehicle) } };
 }
 
 /** Where a map names retired vehicles: the placed ones (entity ids) and the track paths (path ids), by retired id. */
@@ -33,7 +33,7 @@ export function retiredMountUses(doc: Pick<MapDocument, 'entities' | 'paths'>): 
   const by = new Map<RetiredMountModel, { model: RetiredMountModel; entities: string[]; paths: string[] }>();
   const of = (model: RetiredMountModel) => by.get(model) ?? (by.set(model, { model, entities: [], paths: [] }), by.get(model)!);
   for (const e of doc.entities) if (e.kind === 'mount' && isRetiredMount(e.model)) of(e.model).entities.push(e.id);
-  for (const p of doc.paths ?? []) for (const v of new Set([p.race?.vehicle, p.race?.ambientVehicle])) if (isRetiredMount(v)) of(v).paths.push(p.id);
+  for (const p of doc.paths ?? []) if (isRetiredMount(p.race?.ambientVehicle)) of(p.race.ambientVehicle).paths.push(p.id);
   return [...by.values()];
 }
 

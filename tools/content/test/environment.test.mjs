@@ -1,5 +1,5 @@
-// The environment generator (tools/content/environment.mjs, docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): it builds
-// byte-identical output twice and matches what is shipped; every level of detail is within its budget; collision
+// The environment generator (tools/content/environment.mjs, docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §10): it matches
+// what is shipped and builds byte-identical output twice; every level of detail is within its budget; collision
 // shapes sit inside the visual bounds; the cliff's seam vertices line up across panels and variants; the leaf cards
 // cover enough of their rectangles; and nothing in it draws from Math.random.
 import { readFileSync, readdirSync } from 'node:fs';
@@ -21,17 +21,23 @@ describe('environment generator', () => {
     expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.deadwood.log', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass']);
   });
 
-  it('builds byte-identical output twice, the same as is shipped and locked', async () => {
+  // The two builds are two tests: one test under one budget for both, a busy machine took 64 s against its 60.
+  it('builds the same as is shipped and locked', async () => {
     first = await build(content, species);
+    for (const [file, buf] of first.files) expect(sha(readFileSync(join(ROOT, 'packages/client/public', file))), `${file} is out of date (run node tools/content/environment.mjs)`).toBe(sha(buf));
+    expect(readFileSync(join(ROOT, 'content/environment.lock.json'), 'utf8')).toBe(first.lock);
+    expect(readFileSync(join(ROOT, 'packages/shared/src/content/environment.generated.ts'), 'utf8')).toBe(first.shared);
+    expect(readFileSync(join(ROOT, 'packages/client/src/content/environment.generated.ts'), 'utf8')).toBe(first.client);
+  }, 60000);
+
+  it('builds byte-identical output twice', async () => {
+    first ??= await build(content, species);
     const second = await build(content, species);
     expect([...second.files.keys()]).toEqual([...first.files.keys()]);
     for (const [file, buf] of first.files) expect(sha(second.files.get(file)), file).toBe(sha(buf));
     expect(second.lock).toBe(first.lock);
     expect(second.shared).toBe(first.shared);
-    for (const [file, buf] of first.files) expect(sha(readFileSync(join(ROOT, 'packages/client/public', file))), `${file} is out of date (run node tools/content/environment.mjs)`).toBe(sha(buf));
-    expect(readFileSync(join(ROOT, 'content/environment.lock.json'), 'utf8')).toBe(first.lock);
-    expect(readFileSync(join(ROOT, 'packages/shared/src/content/environment.generated.ts'), 'utf8')).toBe(first.shared);
-    expect(readFileSync(join(ROOT, 'packages/client/src/content/environment.generated.ts'), 'utf8')).toBe(first.client);
+    expect(second.client).toBe(first.client);
   }, 60000);
 
   it('every level of detail is within its budget and every file within its byte budget', async () => {

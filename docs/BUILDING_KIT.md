@@ -3,6 +3,52 @@
 Everything here is data in `packages/shared` and works in MapMaker, offline
 matches and the dedicated server alike.
 
+## MapMaker's layout: top bar, rail, tool bar, right dock, status bar (UI spec Phase 1)
+
+The layout of `docs/MAPMAKER_UI_SPEC.md` Phase 1 (owner's answers in the spec). Every tool and setting MapMaker had
+is still there; this says where each one is now.
+
+- **Top bar:** Quit; the **map's title** (a click opens **Map settings**; the name is edited there); New, Open…, Save,
+  Export, Import (Publish for the owner); Undo and Redo; the seven **mode tabs**; **View ▾**; **Snap**; the map's
+  **theme**; TEST's **bots** and **skill** (not saved with the map: the map's own bots are in Map settings → Gameplay →
+  Bots); ▶ Here and ▶ PLAY TEST. On a narrow window it tightens in steps (`fitTopBar`, `fit-1`…`fit-7`); at 1280 px and
+  up nothing is cut off. Under about 1,000 px the theme picker goes first (it is in Map settings too), then the bots.
+- **View ▾** (`viewMenu.ts`): Grid, Full grid, Overlaps, **Plan view** (K) and the **map layers** (Tiles, Props,
+  Pickups, Logic & traps, Spawn points). They only change what MapMaker shows; none is saved in the map. The arrow keys
+  move in the menu, Esc closes it.
+- **Left rail** (`leftRail.ts`): **Map** (Map settings), **Assets** (opens the asset browser, the palette; with it
+  open, goes to its search) and the fold arrow (`\`: fold the asset browser to the rail and back).
+- **Tool bar** (over the view; `toolBar.ts`, the table in `toolBarTools.ts`): each mode tab shows its own tools.
+  Build: Select, Place, Erase, Walls, Rotate, Delete. Props: Select, Place, Erase, Rotate, Delete. Gameplay: those and
+  Bot hints. Environment: Select, Erase, **Paint, Terrain, Plants** (the Environment brush), Rotate, Delete. Paths:
+  Select, Erase, Paths, Rotate, Delete. Test: Select, Bot hints, Measure, Notes, **Plan**, **Bot test**. Every tab has
+  Keys and Help, and **More (⋯)**: a menu of every tool and action (Mirror, Mirror…, Duplicate, Group, Ungroup, Plan
+  view, Bot test, **Dress all bare rooms**, **Settle all props on ground**, Keys, Help), so nothing another tab keeps on
+  its bar is more than two clicks away. Every key works in every tab as before; the tool in hand stays on the bar, lit
+  (dashed when it is another tab's).
+- **Right dock** (`rightDock.ts`): three states, cycled by **`Shift+\`** and by its own buttons (▭ compact, › hide; the
+  edge tab brings a hidden dock back), kept in this browser (`tiletrigger.editor.dock`, carried over once from the old
+  `tiletrigger.editor.sidebars`):
+  - **expanded:** Outliner, **Properties** (the inspector) and Validation, each folding from its heading; drag the
+    dock's inner edge to make it wider or narrower (double-click: back to the default);
+  - **compact:** a small card where the minimap will be (Phase 3 builds it), with Expand;
+  - **hidden:** gone; the view has the width. Selecting something never opens a hidden dock; the status bar says what
+    is selected.
+  Under 900 px wide the dock starts compact.
+- **Map settings** (`mapSettingsView.ts`, fields in `mapProperties.ts`): a view in the right dock, not a dialog, so
+  the 3D view stays live beside it (the time-of-day preview, framing the picture and the card shot). The title, the
+  rail's Map and the inspector's "Map settings…" open it; × closes it; selecting something closes it. Its groups:
+  **General** (name, theme, description, size, picture, card shot, notes), **Gameplay** (mode, also offered, teams,
+  players, weapon set, bots and their characters, players by mode, everything breaks, gravity and falls, boundary),
+  **Presentation** (time of day and weather, blood, Sky, scenery & border…) and **Advanced** (map ID, tier, test map).
+  Every field is one undo step, as before.
+- **Properties** (the inspector) shows only the selection. With nothing selected it is one line, **"Nothing selected ·
+  Map settings…"**, and then the tab's own section where it has one (Paths: the map's paths; Test: ready or not;
+  Gameplay: the counts).
+- **Status bar** (`statusBar.ts`): the level · what's selected (and how much of it is on other levels: a level change
+  keeps the selection) · the map's counts (the full list in its tooltip) · the budget pill · what's under the pointer ·
+  the **problems pill** (it opens the dock on the Validation list). The every-key line it had is the `?` list.
+
 ## MapMaker's modes, panels and outliner (MapMaker overhaul Phase 2)
 
 - **Mode tabs** (top bar; `client/src/editor/editorModes.ts`): **Build** (Tiles, Set pieces, Walls), **Props** (Props,
@@ -12,10 +58,11 @@ matches and the dedicated server alike.
   here, the bot test, the plan view, the problems list; picking Test no longer plays at once). Every palette pane is in
   one mode; a card picked from search, favourites or by its key moves the tabs to its mode. With nothing selected the
   inspector starts with the mode's own section (Paths: the map's paths; Test: ready or not, its first problem, spawns and
-  pickups; Gameplay: counts of spawns, objectives, pickups, NPC squads and vehicles), then Map properties.
-- **Folding panels:** the side panel's Outliner, Inspector and Validation fold from their headings; the palette's groups
-  fold from theirs; Backslash and Shift+Backslash fold the whole palette and side panel. All of it stays as each person
-  left it (this browser's storage).
+  pickups; Gameplay: counts of spawns, objectives, pickups, NPC squads and vehicles), after the line that links to
+  Map settings (UI Phase 1: Map settings are no longer in the inspector).
+- **Folding panels:** the right dock's Outliner, Properties and Validation fold from their headings; the palette's
+  groups fold from theirs; Backslash folds the asset browser to the left rail and Shift+Backslash cycles the right
+  dock (above). All of it stays as each person left it (this browser's storage).
 - **Outliner** (side panel; `client/src/editor/outlinerPanel.ts`, the list's rules shared `editor/outliner.ts`): every
   tile, set piece and entity, grouped by kind and, inside a kind on several levels, by level. Search matches names, kinds
   and ids (every word). A click selects and frames (Shift adds), moving to its level. The eye hides a thing from
@@ -479,14 +526,14 @@ with the map but never collides, and has its own paintable slot.
 MapMaker draws the build area on the level being edited
 (`client/src/editor/buildAreaVisuals.ts`, rules in `shared/src/editor/buildArea.ts`):
 
-- **The grid** (top bar **Grid**) is local: it covers the cells round where the
+- **The grid** (View → **Grid**) is local: it covers the cells round where the
   camera looks at the level being edited, fades out with distance, and draws
   every 4th line stronger. It grows as the camera rises (12 to 40 cells) and is
   rebuilt only when its centre moves 4 cells, so it stays cheap.
-  **Full grid** (next to it) draws every cell of the whole build area instead,
+  **Full grid** (View → Full grid) draws every cell of the whole build area instead,
   on demand. Grid off hides either; the outlines stay.
 - **The playable boundary** (orange, at the level and 6 m up with corner posts):
-  the map's **Boundary** (Map properties), or, when it has none, its terrain's
+  the map's **Boundary** (Map settings → Gameplay), or, when it has none, its terrain's
   edge. A faint copy shows through hills and buildings.
 - **The build limit** (white, dashed, with corner posts that span the levels):
   where placement stops. Tiles stand within **256 cells** (2,048 m with 8 m
@@ -518,7 +565,7 @@ shows the budget nearest its limit: green OK, amber Near (80 %), red Over, each
 with its word. Click the name to select what it counts; the arrow lists every
 budget above it (docs/MAP_BUDGETS.md).
 
-**Keys:** `?` (or the tool bar's Keys button) lists every key MapMaker binds,
+**Keys:** `?` (or the tool bar's Keys button, in every tab) lists every key MapMaker binds,
 from the same table its keys are bound with (`shared/src/editor/keymap.ts`).
 
 ## Floors over tall pieces (format v26)
@@ -1456,7 +1503,7 @@ in the same themes and paint slots as straight walls.
 - **Wall styles** (Walls & Openings tool): High wall (2 storeys), Towering
   wall (4 storeys) and Tall fence (3 m bars you can see and shoot through),
   next to the earlier doors, windows, arches and railings.
-- **Boundary** (Map properties): None, Invisible walls, Solid walls or Tall
+- **Boundary** (Map settings → Gameplay): None, Invisible walls, Solid walls or Tall
   fence round a rectangle. Choosing a style fits it round everything built,
   4 m out; "Fit to map" refits; the edges and height can be typed in. An
   invisible barrier always reaches 60 m up, so nothing is thrown or jumped
@@ -1666,13 +1713,13 @@ template automatically.
   round). It says why when it can't (nothing below, no room, too steep, outside the boundary). In the plan view it
   starts you on the level shown, under the middle of the view. Esc (twice in a browser with the mouse captured) or
   the pause menu's Back to MapMaker brings you back where you were, undo and all.
-- **The plan view (K, Plan).** The level being edited from straight above, cut 0.6 of a level above its floor, so
+- **The plan view (K; View → Plan view; the Test tab's Plan).** The level being edited from straight above, cut 0.6 of a level above its floor, so
   roofs and the levels above are out of the way. Tiles are outlined in white (the level below dashed); icons show the
   spawns (team colours, pointing the way they face), flags, hills (with their zones), objectives (bomb sites,
   Breakthrough objectives, hostages and rescue zones, with their letters) and pickups. PgUp / PgDn change the level;
   select, move and place as in 3D; the wheel zooms about the pointer, a right or middle drag (or WASD) pans, Home
   fits the map, F centres the selection. **Export PNG** downloads the plan with a scale bar, a north arrow and a key.
-- **Tier (Map properties → Tier; map format v35, `map/qualityGates.ts`).** A map is **Core** or **Experimental**
+- **Tier (Map settings → Advanced → Tier; map format v35, `map/qualityGates.ts`).** A map is **Core** or **Experimental**
   (owner, 2026-11-11). Experimental maps are listed under "Experimental maps" in the menus and are never Quick Play's
   pick, the featured map or on the next-map ballot (a host can still put one in a rotation by hand). A new map starts
   experimental; a file without the field is core (every map offered before the tiers). Choosing Core is refused, with
@@ -1682,7 +1729,7 @@ template automatically.
   match for every offered map, and exits 1 when a core map fails one (an experimental map's only report); a test
   (`shared/test/qualityGates.test.ts`) holds every core map of `maps/` to the gates that need only the map.
   Characters have the same two tiers and their own headless gates, printed after the maps': docs/CHARACTERS.md, "Tier".
-- **Everything breaks (Map properties → Everything breaks; map format v36, `map/geometry.ts` `isBreakableProp`).** Off,
+- **Everything breaks (Map settings → Gameplay → Everything breaks; map format v36, `map/geometry.ts` `isBreakableProp`).** Off,
   only the catalogue's breakable props break (crates, barrels, furniture…). On, every solid prop can be shot apart;
   natural rocks, walls, floors, terrain and doors stay. A prop the catalogue gives no health takes one from what it is
   made of and how big it is (`propHealth`, `sim/scenarioDefs.ts`). In a prop's inspector: **Unbreakable** keeps a piece
@@ -1691,12 +1738,12 @@ template automatically.
   the switch says; only a fallen log (`env.deadwood.log`) can break, and only with a **Health** of its own in its
   inspector (0, the default: solid cover), on any map. A map with the switch on draws its props one
   by one (no batching) and counts them in the breakable budget (1024), so keep it small.
-- **The card shot (Map properties → Card shot).** Set card shot… shows the menu card's frame (16:9) with the card
+- **The card shot (Map settings → General → Card shot).** Set card shot… shows the menu card's frame (16:9) with the card
   picture's own lens; Eye level (on by default) keeps the camera 1.7 m over what's under it as you fly. Enter saves
   the camera in the map (`metadata.cardCamera`), Esc cancels; Preview shows the saved shot in the frame; Clear goes
   back to the automatic camera. The card picture (`maps/shots/<id>.jpg`, 640×360) is rendered from it by
   `tools/content/capture-map-shots.mjs`; MapMaker stores no picture for it (Set thumbnail is the maker's own picture).
-- **Bot test (the top bar).** Opens the Test panel, beside the view; keep building while it's open.
+- **Bot test (the Test tab's tool bar, and ⋯ in every tab).** Opens the Test panel, beside the view; keep building while it's open.
   - **Run bots:** a bot match on the map as it is now, played in the background (its own worker): the mode (those the
     map plays), Bots a team (team modes) or Bots (free-for-all, up to 32), and the length (30 s to 5 min). The bar shows
     how far it got; Cancel ends it at once. Then a summary (kills, stuck recoveries, failed route searches, the
@@ -1731,7 +1778,7 @@ template automatically.
   mirror image among their turns (most model buildings) can only go through a point. Terrain and paths are left as
   they are.
 - **Note pins (J).** Notes for the map's makers ("too long a sightline from B"): click the map to pin one, click a pin
-  to read or edit it (Ctrl+Enter saves), drag it to move it. Map properties → Notes lists them. They are saved in the
+  to read or edit it (Ctrl+Enter saves), drag it to move it. Map settings → General → Notes lists them. They are saved in the
   map and never shown in play.
 
 ## Bot hints (MapMaker, format v33)
@@ -1757,7 +1804,7 @@ Skies, distant scenery, ground past the border, terrain plants and the Nature ta
 
 ### Time of day and weather (map format v34)
 
-Map properties (nothing selected) → **Time of day & weather**:
+Map settings → Presentation → **Time of day & weather**:
 - **Time of day:** tick it and drag the slider (quarter hours), or click Dawn, Morning, Noon, Afternoon, Dusk or Night.
   The view shows the time as you drag; letting go sets it (one undo step). The map's sky (Environment → Sky) is its
   look by day; the time moves the sun (east at dawn, high in the south at noon, west at dusk, the moon at night) and

@@ -105,7 +105,7 @@ export class MapTestPanel {
       this.linesOn = (e.target as HTMLInputElement).checked;
       this.drawExposure();
     });
-    document.getElementById('ed-maptest')?.addEventListener('click', () => this.show(this.el.hidden));
+    // The Test tab's Bot test button (toolBar.ts) and the Test pane's (modeInspector.ts) call show().
   }
 
   private $<T extends HTMLElement = HTMLElement>(id: string): T {
@@ -114,6 +114,11 @@ export class MapTestPanel {
 
   get running(): boolean {
     return !!this.worker;
+  }
+
+  /** Whether the panel is open (the tool bar's Bot test toggles it). */
+  get isShown(): boolean {
+    return !this.el.hidden;
   }
 
   show(on: boolean): void {

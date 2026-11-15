@@ -31,22 +31,17 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## In flight
 - L · B (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 landed 2026-11-14 (the `turned`/`wallRun` parts, plain arch collision, oriented doors); phase 2 landed 2026-11-15 (the Arena Corner tiles and set piece); phase 3 next: gate, stair well, tower.
 
-- M · A · Flaky tests made sturdy by root cause (Arsenal damage numbers, dedicated host, all-maps terrain, characters3 Imp grip, mobile pad tap, the load-16 timeouts and bench) · `wip/flaky-1114` (a helper of lane A's lead)
 
 ## Ready to land
-- M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Waiting on lane A's lead's review** (owner: "this account reviews"); `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. The owner's answers: as built (recs, 2026-11-14).
+- (none)
 
 ## Bugs
-- S · A · Sun Warrior (`meshy_goldenwarrior`): the grip needs a fix (owner, 2026-11-14, after playing: "sun warrior grip needs fix but most look good"); grip audit score 10. Check The Hollow Pilgrim's support hand (12 cm off, score 11) in the same pass.
 - S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
 - XS · B · MapMaker: the top bar is cut off at 1440 px (map name, Snap, bot skill truncated) (UI audit; UI Phase 1 fixes it).
-- XS · A · Low graphics: a patch of painted ground cells beside a path end on St. John's (ground paint, not the path fix).
-- ? · A · Unconfirmed: the player's own third-person body drawn in first person after a teleport. Check a normal portal and respawn first.
-- ? · A · Unconfirmed: a large flat blue shape seen twice in software pictures (tunnels, The Spillway's long stair).
-- XS · A · Status auras: a fourth afflicted character past the three-aura limit (`STATUS_FX_MAX`) wears a flat see-through yellow slab the size of its box; it reads as a placeholder (Spillway helper, SwiftShader, `wip/spillway-finish` `docs/EFFECTS_CHECKS_2026-11-13.md` section 5).
-- XS · A · Status auras: poison and goo are faint in daylight with Reduce flashing on (a light green haze, a trace of pink; the pink stays faint with it off too). Burning reads on every setting.
+- S · A · The Hollow Pilgrim (`meshy_hollowpilgrim`): its support hand stays about 11 cm short of a rifle's handguard (25 cm on the shotgun; its arms are short and `hold.forward` is at its −0.15 limit) and its sleeves stretch (grip audit 9). Needs a wider `hold` range or a skin fix from the download.
+- ? · A · Unconfirmed: the player's own third-person body drawn in first person after a teleport. Tried 2026-11-14 (`wip/mobile-bugs-1114`, SwiftShader): not reproduced. A picture tool's teleport (the sim moving you, once a second, on Flatpack Depot, The Spillway, Training Range) drew only your arms or your full-body legs; on Pantry Raid your own body sat 0.13-0.15 m from the camera as it should. Not finished: an ordinary portal (the mouse hole didn't take a teleported-in player) and a respawn; the machine drew about a frame a minute.
+- ? · A · Unconfirmed: a large flat blue shape seen twice in software pictures (tunnels, The Spillway's long stair). Not seen in this batch's SwiftShader pictures (The Spillway's crest, Flatpack Depot, Training Range, Pantry Raid); the long stair and the tunnels were not visited (2026-11-14, `wip/mobile-bugs-1114`).
 
-- S · A · Hitches: a character body's disposal costs about 28 ms when it goes (St. John's recording of 2026-11-14); reuse bodies or spread the disposal over frames. Next for lane A after the flaky tests (owner, 2026-11-15).
 - S · A · Sky Cruiser as a new vehicle (owner, 2026-11-15: "just add sky cruiser as a vehicle in the game, available in mapmaker like others. no need to add to map yet"): `Meshy_AI_Sky_Cruiser_1108121108_texture.glb` (owner's Drive, Meshy Community CC0, batch of 2026-11-08); a flying craft with seats and guns fitted to the model, on the MapMaker palette and `maps/test_coverage.json` only (through MapMaker); provenance. Next free helper with the hitches fix.
 - S · A · St. John's halls in Roman Rubblework (owner, 2026-11-15: "roman rubblework, show me pictures first"): the `collegiate_stone` facade's skin (`core.cobble` today, geometry.ts) tried as `core.pbr_opus_incertum`, blended: continuous across pieces and corners, colour tuned to the pale trim, stones at life size. Pictures first (the hall, the drill field, a corner and a window close up; before and after), owner picks, then it lands. After Smythe Hall lands.
 - M · A · Main scene drawing on St. John's: about 10 ms a frame and nearly unchanged after draws fell 58 % (owner's 11-15 recording, `docs/PERF_STJOHNS_2026-11-14.md`); find what it spends (per-mesh CPU, material updates, GPU fill at 1920x1080@2) and cut it. After the hitches fix (owner, 2026-11-15).
@@ -54,15 +49,14 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Easy wins
 - S · B · MapMaker: the selection Mirror (Shift+M) learns diagonal symmetry, so an exploded Arena Corner mirrors like the set piece (owner 4a, 2026-11-14; after MapMaker UI Phase 1 frees `editor/mirror.ts`).
 - XS · B · MapMaker: `updateVisibleFaces` cuts a turned box's face into slightly different pieces than a full pass (a few mm² on faces of hundreds of m²); `facesUpdate.test.ts` now compares drawn area. Make the incremental cut match exactly, then tighten the test back.
-- S · A · Mobile audit: Options in one column on phones (proposal 7).
-- S · A · Mobile audit: Match Setup on phones, sticky header and bigger steppers (proposal 11).
-- XS · A · Mobile audit: finer, lower-contrast terrazzo (proposal 9).
+
+- XS · B · Tests near their timeouts at load 16-25, CPU-bound (flaky-tests helper, 2026-11-15): botRoles route variety, botai strafing aim, debrisGround, zipStream, server.test's first CTF test with four suites at once.
 
 ## Features
 - M · ? · MapMaker UI spec Phases 2 and 3: synced selection and numeric transforms; live minimap.
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
-- L · A · St. John's step 2: Smythe Hall (corner piece, side entry, about 1,150 props, perf run), then the chapel's spiral stair and our own crest.
+- M · A · St. John's: the chapel's spiral stair and our own crest (after step 2, Smythe Hall).
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
 - M · B · Player profiles.
 - M · B · Map pass, like-for-like swaps only (owner: the tuned arenas are left alone; Qasr Medina stays as it is). Sandgate is done; no other map with as clear a swap has been found yet.
@@ -81,7 +75,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Mobile: the dark wall block on the owner's Galaxy S25+ (docs/MOBILE_AUDIT.md); if it still shows on Medium, the one-lamp-per-layer mode becomes Medium's default (owner said yes; confirm the reading).
 - ? · ? · Iron Coast's coast-border canopy has a dark lip.
 - ? · ? · Sandsweep plays weak as a battle map.
-- XS · ? · Dead race-track settings left in map files.
 - S · A · Gunplay gaps from the audit (docs/GUNPLAY_AUDIT.md appendix A): no multi-client latency/loss test (G3); bots pick weapons by a hand-set range (G4); Training Range lacks a damage readout on hit, dummies that don't shoot back, armoured targets, a trajectory view.
 - ? · A · The owner's playtest checklist (artifact 5LRzv2dDfPVrp4TU2d3rwW): no answers yet.
 - ? · A · Roster Board renames: apply the owner's edits in one batch when the owner has made them.
@@ -92,6 +85,12 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-15 · B · MapMaker UI Phase 1: Map settings in the right dock, an inspector for the selection only, a 3-state dock (Shift+\), a tool bar per tab with a ⋯ menu of every tool, a View menu, a short status bar; the top bar fits at 1440 px.
+- 2026-11-15 · A · Hitches (`wip/hitches-1115`): a going character body is hidden at once and put away over the next frames (1.5 ms a frame): St. John's here, the worst frame of body work in play 15 → 5-7 ms, a new round's 32 bodies 32-52 ms in one frame → 5-7 ms; the recording's other hitches listed with their causes in `docs/PERF_STJOHNS_2026-11-14.md`.
+- 2026-11-15 · A · Dead race-track settings: map format v39 drops a track's `laps`, `grid`, `vehicle` and `combat`; MapMaker no longer writes them; shipped maps load the same otherwise (no map file edited).
+- 2026-11-15 · A · Flaky tests made sturdy by cause: a kicked player is told why on a slow link, a busy host recognises signed-in players, damage numbers drawn at least once on a slow page, Hyena Warrior no longer wakes crouched; server tests wait on conditions, the bench reads CPU time, tests that outgrew one budget split; the Imp grip and arsenal checks wait on the host (HANDOFF Landed note).
+- 2026-11-15 · A · Mobile easy wins and lane A bugs (`wip/mobile-bugs-1114`): Options in one column on phones (chips, one-line rows, descriptions behind an (i)); Match Setup's fixed header names the mode, 40 px steppers; finer, softer terrazzo (1.25 m, contrast 0.55); status auras: a steady glowing outline instead of the see-through slab past the three nearest, and kept under poison and goo for daylight; no square of path ground past an open path's end (St. John's on Low); the twelve characters of 2026-11-14 to core (owner); Sun Warrior's grip (fingers re-fitted, hands on the gun; grip audit 10 → 0) and The Hollow Pilgrim's shooting hand (11 → 9; its support hand stays about 11 cm short: arm reach). The match-start 185 ms frame was already done (e361f045).
+- 2026-11-14 · A · St. John's step 2: Smythe Hall rebuilt in MapMaker from dorm bays (two floors, the L on the grid), with five new pieces: Dorm Corner Bay, Dorm Entry Bay, Stair End Bay (arched door / upper door), Square Corner Tower; props indoors out of the sun's shadow pass on every map (the caster rise brought back: St. John's middle-spawn view 390 → 387 casters); perf before/after in `docs/map-briefs/st_johns/PLAN_2026-11-12.md` 4b.
 - 2026-11-14 · A · St. John's render cost, step 1: draw calls on High about 1,490 to 550 on St. John's (Norman Shores 2,210 to 1,060, Backwoods 1,690 to 850, Capitol Mall 970 to 530), looks unchanged: the sun shafts draw only what can hide the sun, far trees and props batch over wider squares, cascades cull batches, doors and paths merged (fb595302).
 - 2026-11-14 · A · Twelve new characters from the owner's Drive (Meshy Community CC0, Experimental until the owner looks them over), Azure Sentinel and Spud Marshal recoloured, The Hollow Pilgrim glides; Coffee Brown recorded as Meshy, owned.
 - 2026-11-14 · A · The match-start animation spike: one torso measurement a frame (it skinned the torso on the CPU, 10-33 ms a character, all at once as a crowd settled into its aim), and a crowd coming into view posed over its band's frames (never-posed characters hidden until their first pose); in a crowd-into-view repro max animated a frame 38-47 → 13-15, charAnim 195-333 → 39-52 ms (e361f045).

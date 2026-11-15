@@ -148,6 +148,54 @@ Document current component tree, editor tools, map schema, selection and undo pi
 ### Phase 1 — Layout refactor
 Introduce left rail, contextual asset panel, top workspace organization, and collapsible/resizable right dock. Preserve all existing tools, even if temporarily placed under an overflow menu. Add Map Settings access from both top bar and left rail.
 
+**As built (lane B's splitters22, `wip/mapmaker-ui-1`, 2026-11-14).** The how-to is `docs/BUILDING_KIT.md`, "MapMaker's
+layout". Files are under `packages/client/src/editor/`.
+
+- **Map settings in the right dock** (`mapSettingsView.ts`; the fields stay in `mapProperties.ts`). The title in the
+  top bar (`#ed-title`, it replaced the inline name field), the rail's Map and the inspector's "Map settings…" open the
+  same view. × closes it, and so does selecting something. It is built only while open, keeping the "left standing"
+  rule that Map properties had in the inspector. The fields are grouped **General** (name, theme, description, size,
+  picture, card shot, notes), **Gameplay** (mode, also offered, teams, players, weapon set, bots and characters,
+  players by mode, everything breaks, gravity and falls, boundary), **Presentation** (time and weather, blood, the Sky
+  button) and **Advanced** (map ID, tier, test map). Nothing new was invented, and every field is still an undoable
+  command. Two kinds of item were moved out because they are not settings: Map layers went to View, and Dress all /
+  Settle all went to the tool bar's ⋯ menu.
+- **Inspector (now "Properties")** shows only the selection. With nothing selected it shows one line, "Nothing selected
+  · Map settings…", then the tab's own section (`modeInspector.ts`). It is left standing while nothing it shows
+  changes.
+- **Right dock** (`rightDock.ts`, pure state in `dockPrefs.ts`):
+  - expanded / compact / hidden, cycled by Shift+\ (the existing `toggleSidePanel` key; its words in `keymap.ts`) and
+    by the dock's ▭ and › buttons and its edge tab;
+  - kept in `tiletrigger.editor.dock`, carried over once from `tiletrigger.editor.sidebars`;
+  - width can be dragged on the inner edge, or set with the arrow keys on that edge (220–520 px, at most 45 % of the
+    window), and is kept;
+  - starts compact under 900 px (the old rule removed the dock under 1,100 px);
+  - compact is a card holding a minimap placeholder until Phase 3;
+  - selecting never opens it. Map settings and the problems pill do open it.
+  - The Outliner draws only while it can be seen.
+- **Left rail** (`leftRail.ts`): Map, Assets, and fold (`\`). It takes its 44 px from the palette's width, not the
+  view's.
+- **Tool bar** (`toolBar.ts`, table in `toolBarTools.ts`): each tab has its own tools.
+  - Paint, Terrain and the Environment brush are on Environment's bar only. Bot test and Plan are on Test's bar.
+  - Every tab has a ⋯ menu listing all 24 tools and actions.
+  - It is built once; changing tab only shows and hides buttons.
+  - The tool in hand stays on the bar, drawn dashed when it belongs to another tab.
+- **Top bar:** title, file buttons, Undo/Redo, the 7 tabs, **View ▾** (`viewMenu.ts`: Grid, Full grid, Overlaps, Plan
+  view, the map layers), Snap, theme, TEST bots and skill, ▶ Here, ▶ PLAY TEST.
+  - The problems pill moved to the status bar, and Bot test to the Test bar.
+  - The fit steps now only tighten until fit-3; from fit-4 things go, and fit-6/7 cover under 1,000 px.
+  - At 1440 px and at 1280 px nothing is cut off.
+- **Status bar** (`statusBar.ts`): level · selection ("N selected · M on other levels": the owner's answer 6) ·
+  short counts · budget · hover target · problems pill. The keys line is gone; the same keys are in the `?` list.
+- **Menus** (`popupMenu.ts`): WAI-ARIA menu buttons with the arrow keys, Home/End and Esc. Checkbox items stay open.
+  Nothing in them runs per frame.
+- **Not done (later phases):** the minimap (the compact card is a placeholder), Minimap/Outliner tabs in the dock,
+  unified selection, numeric transforms, Tile View.
+- **Tests:**
+  - unit `client/test/editorLayout.test.ts`;
+  - e2e: `openMapSettings` and `viewItem` helpers in `e2e/run.mjs`, and `editorLayoutChecks` in `editorux`;
+  - `coverage` is now in the editor's flow mapping.
+
 ### Phase 2 — Unified selection + Outliner/Inspector
 Implement selection controller and synchronized highlight across 3D viewport, outliner, and inspector. Add reliable object-focused properties and transform commands.
 
