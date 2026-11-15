@@ -28,25 +28,6 @@ const faceText = (f: RenderFace) => {
   return `${f.box}|${f.normal.map(r).join(',')}|${turn(pts).join(' ')}|${turn(flat).join(' ')}|${f.flatNormal.map(r).join(',')}`;
 };
 const text = (faces: readonly RenderFace[]) => faces.map(faceText).sort();
-/** Each box's drawn area facing each way (m²), by box and facing. */
-const drawnArea = (faces: readonly RenderFace[]) => {
-  const sum = new Map<string, number>();
-  for (const f of faces) {
-    const p = f.corners;
-    const n: [number, number, number] = [0, 0, 0];
-    for (let i = 1; i + 1 < p.length; i++) {
-      const u = [0, 1, 2].map((k) => p[i]![k]! - p[0]![k]!);
-      const v = [0, 1, 2].map((k) => p[i + 1]![k]! - p[0]![k]!);
-      n[0] += u[1]! * v[2]! - u[2]! * v[1]!;
-      n[1] += u[2]! * v[0]! - u[0]! * v[2]!;
-      n[2] += u[0]! * v[1]! - u[1]! * v[0]!;
-    }
-    const key = `${f.box}|${f.normal.map(r).join(',')}`;
-    sum.set(key, (sum.get(key) ?? 0) + Math.hypot(n[0]!, n[1]!, n[2]!) / 2);
-  }
-  return sum;
-};
-
 const box = (min: [number, number, number], max: [number, number, number], kind: WorldBox['kind'] = 'wall', extra: Partial<WorldBox> = {}): WorldBox => ({ min, max, kind, sourceId: 't', ...extra });
 const moved = (b: WorldBox, d: [number, number, number]): WorldBox => ({ ...b, min: [b.min[0] + d[0], b.min[1] + d[1], b.min[2] + d[2]], max: [b.max[0] + d[0], b.max[1] + d[1], b.max[2] + d[2]] });
 
@@ -89,6 +70,23 @@ describe('updateVisibleFaces', () => {
     const after = updateVisibleFaces(updateVisibleFaces(null, a), b);
     expect(after.full).toBe(false);
     expect(after.changed).toBe(true);
+    expect(text(after.faces)).toEqual(text(visibleFaces(b)));
+  });
+
+  it("cuts a turned box's faces in the frame a full pass uses, to the last bit", () => {
+    // Yaws 0.7 and 0.7 − π/2 share a frame, but their remainders of a quarter turn differ in the last bit: a full pass
+    // takes the frame's turn from the first box in the list (the far one), so the partial pass must too.
+    const far = box([100, 0, 0], [102, 1, 2], 'solid', { yaw: 0.7 });
+    const floor = box([-10, -0.5, -10], [10, 0, 10], 'floor');
+    const wall = box([0, 0, 0], [3, 2, 0.4], 'wall', { yaw: 0.7 - Math.PI / 2 });
+    const crate = box([-8, 0, -8], [-7, 1, -7], 'solid');
+    const before = updateVisibleFaces(null, [far, floor, wall, crate]);
+    const b = [far, floor, wall, moved(crate, [9, 0, 8.5])];
+    const after = updateVisibleFaces(before, b);
+    expect(after.full).toBe(false);
+    expect(after.redone).toBeLessThan(4);
+    const exact = (faces: readonly RenderFace[]) => faces.filter((f) => f.box === 2).map((f) => JSON.stringify(f)).sort();
+    expect(exact(after.faces)).toEqual(exact(visibleFaces(b)));
     expect(text(after.faces)).toEqual(text(visibleFaces(b)));
   });
 
@@ -135,13 +133,7 @@ describe('updateVisibleFaces', () => {
         cache = updateVisibleFaces(cache, next);
         boxes = next;
         expect(cache.full, `edit ${n}`).toBe(false);
-        // The same faces drawn: each box's faces facing each way cover the same area. (The cut of a turned box's face
-        // into pieces can differ by the boxes clipped with it, by a few square millimetres on a face of hundreds of m².)
-        const got = drawnArea(cache.faces);
-        const want = drawnArea(visibleFaces(boxes));
-        expect([...got.keys()].sort(), `edit ${n}`).toEqual([...want.keys()].sort());
-        const off = [...want].filter(([k, a]) => Math.abs(a - got.get(k)!) > 1e-3).map(([k, a]) => `${k}: ${got.get(k)} m², a full pass ${a}`);
-        expect(off, `edit ${n}`).toEqual([]);
+        expect(text(cache.faces), `edit ${n}`).toEqual(text(visibleFaces(boxes)));
       }, 120_000);
     });
   }
