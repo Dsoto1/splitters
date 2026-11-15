@@ -64,6 +64,10 @@ import {
   SPEED_BOOST,
   TICK_DT,
   TICK_RATE,
+  HOLD_KINDS,
+  HOLD_LABEL,
+  HOLD_CANCEL_TEXT,
+  type HoldKind,
   type CarryOver,
   weaponByCode,
   DESTRUCTIBLE_SPECS,
@@ -198,6 +202,7 @@ import { markerSetting } from './crosshair.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
+import { LowHealthWarning } from './lowHealth.ts';
 import { WeatherAudio } from './weatherAudio.ts';
 import { impactSoundId, impactStyle } from './fxMap.ts';
 import { ScenarioState } from './scenarioState.ts';
@@ -663,6 +668,10 @@ export class GameSession {
   private readonly markers = markerSetting();
   /** Health and armour last frame, and where the latest shot at you (or blast) came from, for the damage flash. */
   private lastHealth = 100;
+  /** The hold to use in progress, as the last snapshot gave it (PrivateState `hu`), and when it came. */
+  private holdUse: { kind: HoldKind; done: number; total: number; at: number } | null = null;
+  /** The low-health warning (lowHealth.ts). */
+  private readonly lowHealth = new LowHealthWarning();
   private lastArmor = 0;
   private hurtFrom: { x: number; z: number; at: number } | null = null;
   private kibPerSec = 0;
@@ -2002,6 +2011,8 @@ export class GameSession {
         this.uav = msg.me?.uv ?? 0;
         this.jam = msg.me?.jm ?? 0;
         this.streak = msg.me?.ks ?? 0;
+        // A hold to use (sim/holdUse.ts): its progress, run on between snapshots by the clock.
+        this.holdUse = msg.me?.hu ? { kind: HOLD_KINDS[msg.me.hu[0]] ?? 'resupply', done: msg.me.hu[1], total: msg.me.hu[2], at: performance.now() } : null;
         if (this.local) this.local.zones = this.zones;
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
         if (this.classesOn) {
@@ -2213,6 +2224,10 @@ export class GameSession {
             const cam = this.view.cameraPosition();
             const near = 1 - Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) / 12;
             if (near > 0) this.view.shake(near * ev.n * 0.6);
+          } else if (ev.e === 'hold') {
+            // A hold to use stopped short (sim/holdUse.ts): say why.
+            if (ev.s === this.slot) this.hud.pickup(`${HOLD_KINDS[ev.k] === 'heal' ? 'Healing' : 'Resupply'} stopped: ${HOLD_CANCEL_TEXT[ev.x]}`);
+            if (ev.s === this.slot) this.holdUse = null;
           } else if (ev.e === 'resupply') {
             // The Supply Buggy's back (sim/resupply.ts): what you got, or why nothing.
             if (ev.s === this.slot) this.hud.pickup(ev.ok ? `Resupplied (${ev.left} left)` : ev.left > 0 ? 'Nothing to resupply yet' : 'Out of supplies');
@@ -2599,10 +2614,10 @@ export class GameSession {
       this.hud.setPrompt('Grab the zipline');
     } else if (box) {
       // Beside an ammo box: Use resupplies (the server's rule, Match.resupplyAtBox).
-      this.hud.setPrompt(`Resupply from the ammo box (${box.uses} left)`);
+      this.hud.setPrompt(this.holdUse ? null : `Hold to resupply from the ammo box (${box.uses} left)`);
     } else if (supply) {
       // At the Supply Buggy's back: Use resupplies instead of getting in (the server's rule, Match.resupplyAtMount).
-      this.hud.setPrompt(supply.supply > 0 ? `Resupply from the ${supply.def.displayName} (${supply.supply} left)` : `The ${supply.def.displayName} is out of supplies`, supply.supply <= 0);
+      this.hud.setPrompt(this.holdUse ? null : supply.supply > 0 ? `Hold to resupply from the ${supply.def.displayName} (${supply.supply} left)` : `The ${supply.def.displayName} is out of supplies`, supply.supply <= 0);
     } else if (enter) {
       const seat = enter.mount.def.seats[enter.seat]!;
       const verb = seat.role === 'driver' ? (enter.mount.def.kind === 'vehicle' ? 'Drive' : 'Use') : seat.role === 'gunner' ? 'Man the gun on' : 'Ride in';
@@ -2712,6 +2727,68 @@ export class GameSession {
     const next = STREAK_REWARDS.find((r) => r.kills > this.streak);
     return `STREAK ${this.streak}${next ? ` · ${next.name} at ${next.kills}` : ''}`;
   }
+
+  /**
+   * The hold ring (sim/holdUse.ts) and the low-health warning (lowHealth.ts) this frame: the ring's progress runs on
+   * from the last snapshot by the clock; the warning eases with your health and points at the nearest health.
+   */
+  private updateHoldAndWarning(local: LocalPlayer): void {
+    const now = performance.now();
+    const h = local.alive ? this.holdUse : null;
+    if (h) {
+      const done = h.done + ((now - h.at) / 1000) * TICK_RATE;
+      const label = HOLD_LABEL[h.kind];
+      this.hud.setHold(label, Math.min(1, done / h.total));
+    } else this.hud.setHold(null, 0);
+    const calm = reduceFlashing();
+    const w = this.lowHealth.update(now, local.health / PLAYER.maxHealth, local.alive && !this.spectator, calm);
+    this.hud.setLowHealth(w.edge, w.pulse);
+    this.view.setGradeSaturation(w.saturation);
+    if (w.beat) this.sfx.heartbeat(w.level);
+    this.healthHint(local, w.level > 0.01 && local.alive);
+  }
+
+  /**
+   * Low on health: a marker on the nearest health pack that is there to take (on screen, or an arrow at the edge),
+   * with its distance. Placed packs only (a random pickup shows what it holds: `pickupItems`).
+   */
+  private healthHint(local: LocalPlayer, on: boolean): void {
+    if (!on || !this.map) {
+      if (this.hintShown) this.hud.setHintMarkers([]);
+      this.hintShown = false;
+      return;
+    }
+    const eye = local.eye;
+    let best: { x: number; y: number; z: number } | null = null;
+    let bestD = Infinity;
+    for (const e of this.map.entities) {
+      if (e.kind !== 'pickup' || this.taken.has(e.id)) continue;
+      const item = getItem(this.pickupItems.get(e.id) ?? e.item);
+      if (item?.effect.kind !== 'health') continue;
+      const d = Math.hypot(e.position[0] - eye.x, e.position[2] - eye.z);
+      if (d < bestD) {
+        bestD = d;
+        best = { x: e.position[0], y: e.position[1] + 0.6, z: e.position[2] };
+      }
+    }
+    this.hintShown = true;
+    if (!best || bestD < 2) {
+      this.hud.setHintMarkers([]);
+      return;
+    }
+    const w = window.innerWidth;
+    const hgt = window.innerHeight;
+    const color = '#8fe3a6';
+    const label = `Health ${Math.round(bestD)} m`;
+    const screen = this.view.project(best);
+    if (screen && screen.x > 30 && screen.x < w - 30 && screen.y > 60 && screen.y < hgt - 30) this.hud.setHintMarkers([{ id: 'health', x: screen.x, y: screen.y, color, icon: '+', label }]);
+    else {
+      const bearing = Math.atan2(best.x - eye.x, best.z - eye.z) - this.input.yaw;
+      const a = Math.atan2(Math.sin(bearing), Math.cos(bearing));
+      this.hud.setHintMarkers([{ id: 'health', x: w / 2 + Math.sin(a) * (w / 2 - 70), y: hgt / 2 - Math.cos(a) * (hgt / 2 - 70), color, icon: '+', label, edge: a }]);
+    }
+  }
+  private hintShown = false;
 
   /** Team pings as screen markers (or edge arrows), following a pinged enemy while they're seen. */
   private updatePings(local: LocalPlayer, poses: readonly { slot: number; x: number; y: number; z: number; alive: boolean }[], now: number): void {
@@ -3239,6 +3316,7 @@ export class GameSession {
       this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount);
       this.updateScopeSway(dt, zoomed);
       this.hud.setHealth(local.health, local.armor, local.alive);
+      this.updateHoldAndWarning(local);
       // Took damage since last frame: flash, pointing at the latest shot or blast near you.
       const lost = this.lastHealth + this.lastArmor - local.health - local.armor;
       if (local.alive && lost > 0) {
