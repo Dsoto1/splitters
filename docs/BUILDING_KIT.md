@@ -77,7 +77,8 @@ is still there; this says where each one is now.
   points at the end / at the start**.
 - **What an edit costs on a big map** (owner, 2026-11-11: selecting and editing lagged). After an edit MapMaker
   clips again only the level boxes near what changed (`map/facesUpdate.ts`; a full pass on St. John's 2,500 blocks
-  took a third of a second), rebuilds only the level meshes the edit touched (cut by style and 48 m ground square),
+  took a third of a second), in the whole map's frames for turned boxes (`faceFrames`), so the faces come out exactly
+  as a full pass cuts them, rebuilds only the level meshes the edit touched (cut by style and 48 m ground square),
   puts an entity's marker again only when it or what it stands on changed, and runs the map's own checks and the
   overlaps check in a worker (`mapTestWorkerCore.ts`, a `check` job), the issues list following a moment later.
   `node tools/perf/editor-edit.mjs` measures a click, a move and an undo on a map: the page's script time, frames apart.
@@ -187,7 +188,9 @@ floor).
   mitre at its deeper edge, so the bit past it lies inside its neighbour's box of the same band.
 - **Mirror:** each tile is its own mirror image across its diagonal (`tileDiagonalMirror`, map/setPieces.ts), so a
   mirrored corner (M) is placed as the same tiles turned (three quarter turns more, at the mirrored anchor). The
-  selection Mirror tool (Shift+M) still refuses the four tiles once exploded (it knows only east-west symmetry).
+  selection Mirror (Shift+M, and M's flip in place) does the same with the tiles once exploded (`tileMirrorTwin`,
+  editor/mirror.ts): an exploded corner mirrors exactly as the set piece does, its lights and the gate's portcullis
+  with it, in one undo step.
 - **Budget:** a whole corner collides as 1,296 boxes (343, 428, 456 and 69), with 6,795 trim boxes, and brings 13
   lights (candles in the galleries, chandeliers in the attic).
 - **Bots:** they walk each gallery round the corner, up each mitre aisle from the podium's walkway to the attic, up the
@@ -1774,8 +1777,10 @@ template automatically.
   (east ↔ west, north ↔ south) or a point (a half turn) and where it is (it snaps to a cell's middle or edge). Keep
   the original adds a mirrored copy, whose team things swap to the other team (spawns, flag bases, team zones, doors,
   buttons, team vehicles); untick it to flip the selection itself. Half the map copies one half onto the other, which
-  must be empty; things on the line stay. The dialog says what it will do before you press Mirror. Tiles that have no
-  mirror image among their turns (most model buildings) can only go through a point. Terrain and paths are left as
+  must be empty; things on the line stay. The dialog says what it will do before you press Mirror. A tile that is its
+  own mirror image, or whose mirror image is itself turned (a corner; an Arena Corner storey, across its diagonal),
+  is placed turned, so an exploded Arena Corner mirrors as the set piece does. Tiles that have no mirror image among
+  their turns (most model buildings) can only go through a point. Terrain and paths are left as
   they are.
 - **Note pins (J).** Notes for the map's makers ("too long a sightline from B"): click the map to pin one, click a pin
   to read or edit it (Ctrl+Enter saves), drag it to move it. Map settings → General → Notes lists them. They are saved in the
