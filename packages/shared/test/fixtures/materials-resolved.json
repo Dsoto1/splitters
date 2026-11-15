@@ -3830,6 +3830,37 @@
   },
   {
    "material": {
+    "id": "core.pbr_collegiate_rubble",
+    "displayName": "Collegiate Rubble",
+    "category": "Stone",
+    "pattern": "plain",
+    "base": "#8f8068",
+    "accent": "#8f8068",
+    "scale": 2.5,
+    "shine": 0.08,
+    "texture": "Bricks075A",
+    "wrap": true,
+    "shadeLift": 0.12
+   },
+   "keys": [
+    "id",
+    "displayName",
+    "category",
+    "pattern",
+    "base",
+    "accent",
+    "scale",
+    "shine",
+    "texture",
+    "wrap",
+    "shadeLift"
+   ],
+   "found": true,
+   "ballistic": "stone",
+   "terrain": "sand"
+  },
+  {
+   "material": {
     "id": "core.pbr_sandstone_blocks",
     "displayName": "Sandstone Blocks",
     "category": "Stone",
@@ -4132,6 +4163,7 @@
   "core.pbr_limestone",
   "core.pbr_white_marble",
   "core.pbr_opus_incertum",
+  "core.pbr_collegiate_rubble",
   "core.pbr_sandstone_blocks",
   "core.pbr_rough_sandstone",
   "core.parking_bays",

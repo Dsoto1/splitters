@@ -22,7 +22,9 @@
 // timed. PERF_BOTS, PERF_SECONDS and PERF_MODE are not used (the map's own mode runs).
 // Effects are left out (flame sprites and particle bursts animate, so their draws never stop changing):
 // PERF_STILL_FX=1 keeps them. PERF_SHOTS=<folder> also saves a picture of each view (to check what a camera sees).
-// PERF_STILL_EXTRA adds views (JSON, see stillViews). PERF_BREAKDOWN=1 also prints each view's draws by pass (main view,
+// PERF_STILL_EXTRA adds views (JSON, see stillViews; a view may set its own `fov`, radians). PERF_DSF=2 renders at that
+// device scale factor and PERF_SIZE=1280x720 sets the viewport (pictures for the owner); PERF_NOGUN=1 hides the
+// first-person weapon and arms (their draws then leave the counts too). PERF_BREAKDOWN=1 also prints each view's draws by pass (main view,
 // shadow map, sun shafts, reflections) and by the mesh drawing them (names, digits stripped; PERF_BREAKDOWN_TOP=40).
 //
 // SwiftShader renders on the CPU, so its frame rate is far below a real GPU's;
@@ -85,8 +87,9 @@ function stillViews(map) {
   }
   // PERF_STILL_EXTRA: more views for one map, as JSON: [{ "name", "spawn" (index) or "eye" [x, y, z], and "target"
   // [x, y, z], "toSpawn" (index) or "look" [dx, dy, dz] from the eye }] (e.g. a view into the sun for its shafts).
+  // PERF_STILL_EXTRA_ONLY=1: those views alone (pictures of chosen spots).
   if (process.env.PERF_STILL_EXTRA) views.push(...JSON.parse(process.env.PERF_STILL_EXTRA));
-  return views;
+  return process.env.PERF_STILL_EXTRA_ONLY === '1' ? views.slice(views.length - JSON.parse(process.env.PERF_STILL_EXTRA ?? '[]').length) : views;
 }
 
 const preview = spawn('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', PORT, '--strictPort'], { stdio: 'ignore', detached: true });
@@ -118,7 +121,7 @@ async function measureStill(id, ctx, page, errors) {
   if (!ok) return void console.log(`${id}: match did not start ${errors.join('; ')}`);
   // Pictures of the views (PERF_SHOTS=<folder>) without the menus over them.
   if (process.env.PERF_SHOTS) await page.addStyleTag({ content: '#hud, #pause, #crosshair, #countdown, #loading-screen, #toast, .toast { display: none !important; }' });
-  await page.evaluate(([fx, bdOn]) => {
+  await page.evaluate(([fx, bdOn, gunOff]) => {
     const m = window.__match;
     const view = window.__cs.view;
     const me = m.slots[window.__cs.slot];
@@ -193,10 +196,12 @@ async function measureStill(id, ctx, page, errors) {
     // Effects animate (a fire's flame sprites, particle bursts), so their draws never stop changing: left out, unless
     // PERF_STILL_FX=1 asks for them (the rows then read the middle of what was seen, a few percent apart run to run).
     const noFx = !fx;
+    const noGun = gunOff;
     if (noFx) scene.particlesEnabled = false;
     scene.onBeforeRenderObservable.add(() => {
       // Before every frame: a mode that starts a new round brings its players back.
       clear();
+      if (noGun) for (const mesh of scene.meshes) if (mesh.renderingGroupId === 1 && mesh.isEnabled(false)) mesh.setEnabled(false);
       if (noFx) for (const mesh of scene.meshes) if (mesh.isEnabled(false) && /^(gv_|sc_flame)/.test(mesh.name)) mesh.setEnabled(false);
       still.draws = 0;
       if (bd) {
@@ -214,7 +219,7 @@ async function measureStill(id, ctx, page, errors) {
       still.frames.push([still.draws, scene.getActiveMeshes().length, scene.meshes.length, scene.getActiveIndices() / 3, casters, scene.materials.length]);
       if (still.frames.length > 400) still.frames.splice(0, 200);
     });
-  }, [process.env.PERF_STILL_FX === '1', process.env.PERF_BREAKDOWN === '1']);
+  }, [process.env.PERF_STILL_FX === '1', process.env.PERF_BREAKDOWN === '1', process.env.PERF_NOGUN === '1']);
   const sums = [0, 0, 0, 0, 0, 0];
   let n = 0;
   for (const v of stillViews(map)) {
@@ -228,7 +233,7 @@ async function measureStill(id, ctx, page, errors) {
       const dz = t[2] - eye[2];
       const flat = Math.hypot(dx, dz);
       // Yaw 0 looks along +Z; a view straight at its own spot looks north instead.
-      const pose = { eye: { x: eye[0], y: eye[1], z: eye[2] }, yaw: flat > 0.01 ? Math.atan2(dx, dz) : 0, pitch: flat > 0.01 ? Math.atan2(dy, flat) : 0, fov: 1.35 };
+      const pose = { eye: { x: eye[0], y: eye[1], z: eye[2] }, yaw: flat > 0.01 ? Math.atan2(dx, dz) : 0, pitch: flat > 0.01 ? Math.atan2(dy, flat) : 0, fov: v.fov ?? 1.35 };
       window.__still.pose = pose;
       window.__still.frames.length = 0;
       return pose;
@@ -308,7 +313,8 @@ const args = process.env.PERF_GPU ? [] : ['--use-gl=angle', '--use-angle=swiftsh
 const browser = await chromium.launch({ args });
 const rows = [];
 for (const id of maps) {
-  const ctx = await browser.newContext({ viewport: { width: 960, height: 540 } });
+  const [vw, vh] = (process.env.PERF_SIZE ?? '960x540').split('x').map(Number);
+  const ctx = await browser.newContext({ viewport: { width: vw, height: vh }, deviceScaleFactor: Number(process.env.PERF_DSF ?? 1) });
   await ctx.addInitScript((g) => {
     try {
       localStorage.setItem('tiletrigger.graphics', g);
