@@ -29,7 +29,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
-- L · B (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 landed 2026-11-14 (the `turned`/`wallRun` parts, plain arch collision, oriented doors); phase 2 next: the corner tiles.
+- L · B (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 landed 2026-11-14 (the `turned`/`wallRun` parts, plain arch collision, oriented doors); phase 2 landed 2026-11-15 (the Arena Corner tiles and set piece); phase 3 next: gate, stair well, tower.
 
 - M · A · Flaky tests made sturdy by root cause (Arsenal damage numbers, dedicated host, all-maps terrain, characters3 Imp grip, mobile pad tap, the load-16 timeouts and bench) · `wip/flaky-1114` (a helper of lane A's lead)
 
@@ -45,6 +45,10 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Unconfirmed: a large flat blue shape seen twice in software pictures (tunnels, The Spillway's long stair).
 - XS · A · Status auras: a fourth afflicted character past the three-aura limit (`STATUS_FX_MAX`) wears a flat see-through yellow slab the size of its box; it reads as a placeholder (Spillway helper, SwiftShader, `wip/spillway-finish` `docs/EFFECTS_CHECKS_2026-11-13.md` section 5).
 - XS · A · Status auras: poison and goo are faint in daylight with Reduce flashing on (a light green haze, a trace of pink; the pink stays faint with it off too). Burning reads on every setting.
+
+- S · A · Hitches: a character body's disposal costs about 28 ms when it goes (St. John's recording of 2026-11-14); reuse bodies or spread the disposal over frames. Next for lane A after the flaky tests (owner, 2026-11-15).
+- S · A · Sky Cruiser as a new vehicle (owner, 2026-11-15: "just add sky cruiser as a vehicle in the game, available in mapmaker like others. no need to add to map yet"): `Meshy_AI_Sky_Cruiser_1108121108_texture.glb` (owner's Drive, Meshy Community CC0, batch of 2026-11-08); a flying craft with seats and guns fitted to the model, on the MapMaker palette and `maps/test_coverage.json` only (through MapMaker); provenance. Next free helper with the hitches fix.
+- M · A · Main scene drawing on St. John's: about 10 ms a frame and nearly unchanged after draws fell 58 % (owner's 11-15 recording, `docs/PERF_STJOHNS_2026-11-14.md`); find what it spends (per-mesh CPU, material updates, GPU fill at 1920x1080@2) and cut it. After the hitches fix (owner, 2026-11-15).
 
 ## Easy wins
 - S · B · MapMaker: the selection Mirror (Shift+M) learns diagonal symmetry, so an exploded Arena Corner mirrors like the set piece (owner 4a, 2026-11-14; after MapMaker UI Phase 1 frees `editor/mirror.ts`).
@@ -65,14 +69,23 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Mobile audit: touch layout options: button size, opacity, left-handed, aim hold or toggle (proposal 3).
 - M · A · Mobile audit: Character Select phone layout (proposal 4).
 - M · A · Material surface types: 0 of 150 materials set `surface`, so footsteps and impacts can't tell metal from wood (owner: end of queue).
+- L · A · Driving physics (owner, 2026-11-15): vehicles as real bodies with sprung raycast wheels and tyre grip that can fail. Buggies light, bouncy and easy to flip; jumps land with weight and momentum; the body follows the ground on steep edges and slides back when grip runs out. Multiplayer smooth: the driver's vehicle predicted on their own machine and reconciled, others interpolated. Step 1: a plan plus the Buggy alone, judged offline and at 100–150 ms simulated lag; then the rest of the vehicles, bots, maps. Today the chassis moves like a character controller (`PhysicsWorld.moveVehicle`), with a drawn-only sprung body (`sim/suspension.ts`). After the hitches fix (owner: "finish hitches fix").
 
 ## Waiting on the owner
-- Open questions in `docs/MAPMAKER_EDITING_REPORT_2026-11-13.md`.
+- A new recording on a real GPU: St. John's in a match (to measure render cost step 1, the draws, landed 2026-11-14) and MapMaker after an edit on a big map (`docs/MAPMAKER_EDITING_REPORT_2026-11-13.md` question 5; questions 1–4 were answered 2026-11-13).
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
+## Known issues and loose ends (found in HANDOFF, 2026-11-15)
+- ? · A · Mobile: the dark wall block on the owner's Galaxy S25+ (docs/MOBILE_AUDIT.md); if it still shows on Medium, the one-lamp-per-layer mode becomes Medium's default (owner said yes; confirm the reading).
+- ? · ? · Iron Coast's coast-border canopy has a dark lip.
+- ? · ? · Sandsweep plays weak as a battle map.
+- XS · ? · Dead race-track settings left in map files.
+- S · A · Gunplay gaps from the audit (docs/GUNPLAY_AUDIT.md appendix A): no multi-client latency/loss test (G3); bots pick weapons by a hand-set range (G4); Training Range lacks a damage readout on hit, dummies that don't shoot back, armoured targets, a trajectory view.
+- ? · A · The owner's playtest checklist (artifact 5LRzv2dDfPVrp4TU2d3rwW): no answers yet.
+- ? · A · Roster Board renames: apply the owner's edits in one batch when the owner has made them.
+
 ## Parked
-- ? · ? · A hover model for the Hauler (owner, 2026-11-14: "leave hauler for now"; the Sky Cruiser is the only unused hover model).
 - L · A · A full weapon release: Stormvolt Blaster plus any other new guns (new weapon types are paused by the owner).
 - S · A · Sound pass 2 (paused by the owner).
 - ? · A · Packed inputs to cut upload bandwidth.

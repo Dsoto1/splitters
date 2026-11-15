@@ -28,6 +28,7 @@ import {
   type MapEntity,
   type MoveState,
   type Rotation,
+  type SetPieceDefinition,
   type SetPiecePlacement,
   type Side,
   type TilePlacement,
@@ -53,6 +54,7 @@ const OPEN_SIDED = [
   'setpiece.arena_attic',
   'setpiece.arena_bay_podium',
   'setpiece.arena_bay_tier',
+  'setpiece.arena_corner',
   'setpiece.arena_vomitorium',
   'setpiece.bandstand',
   'setpiece.bunker_cluster',
@@ -194,9 +196,18 @@ describe('z-fighting audit over every set piece', () => {
     const pieces: SetPiecePlacement[] = [];
     let n = 0;
     const packs = ['collegiate', 'military', 'medieval', 'orbital'];
+    // Pieces wider than 4 cells (the Arena Corner, 9 × 9) each in a map of their own, one per turn and mirror.
+    const wide = (def: SetPieceDefinition) => Math.max(...def.footprint.cells.flat()) - Math.min(...def.footprint.cells.flat()) >= 4;
     for (const def of library.pieces.values()) {
       for (const rotation of [0, 1, 2, 3] as Rotation[]) {
         for (const mirror of def.mirror === 'free' ? [false, true] : [false]) {
+          if (wide(def)) {
+            const map = played(mapOf([room('home', -30, -30)], [{ id: 'piece_wide', piece: def.id, x: 0, y: 0, z: 0, rotation, mirror, pack: packs[rotation % packs.length] }]));
+            const boxes: WorldBox[] = [...buildMapGeometry(map), ...buildMapDecor(map)];
+            const left = coplanarOverlaps(boxes, { faces: visibleFaces(boxes) });
+            expect(left.slice(0, 5).map((o) => `${def.id} ${rotation} ${mirror}: ${boxes[o.a]!.sourceId} / ${boxes[o.b]!.sourceId} at ${o.center.map((v) => v.toFixed(2))}`)).toEqual([]);
+            continue;
+          }
           // 8 cells apart, 16 a row: the largest pieces (the command bunker, 4 × 4) turn about their anchor into the cells behind it.
           pieces.push({ id: `piece_${n}`, piece: def.id, x: (n % 16) * 8 - 64, y: Math.floor(n / 16) * 8 - 96, z: def.id.includes('skybridge') ? 1 : 0, rotation, mirror, pack: packs[n % packs.length] });
           n++;

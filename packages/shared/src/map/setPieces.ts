@@ -20,7 +20,7 @@
  * swapped (it stays axis-aligned). Props are placed mirrored in position and facing, not in shape.
  */
 import { coreCatalog, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
-import { cellKey, rotateSide, rotateXZ } from './geometry.ts';
+import { boxCorners, cellKey, rotateSide, rotateXZ } from './geometry.ts';
 import {
   MAX_TILE_CELL,
   MAX_TILE_LEVEL,
@@ -199,6 +199,56 @@ export function tileMirrorAxis(def: TileDefinition): number | null {
   return result;
 }
 
+const DIAGONAL_SIDE: Record<Side, Side> = { N: 'E', E: 'N', S: 'W', W: 'S' };
+const diagonalAxes = new WeakMap<TileDefinition, boolean>();
+/** A box's corners, each rounded to the millimetre, sorted: two boxes built different ways compare as shapes. */
+const cornerKey = (corners: readonly (readonly number[])[]) =>
+  corners
+    .map((c) => c.map((v) => (Math.round(v * 1000) / 1000 + 0).toFixed(3)).join(','))
+    .sort()
+    .join(' ');
+const boxShape = (b: LocalBox, swap: boolean) => {
+  const corners = boxCorners({ ...b, min: [...b.min], max: [...b.max] }).map(([x, y, z]) => (swap ? [z, y, x] : [x, y, z]));
+  return `${cornerKey(corners)} ${b.kind ?? 'solid'} ${b.paint ?? '-'} ${b.surface ? `${b.surface.material}|${b.surface.tint ?? '-'}` : '-'}`;
+};
+/**
+ * A tile that is its own mirror image across the diagonal x = z through its anchor cell's centre (north and east
+ * swapped: the Arena Corner tiles, octagon phase 2): its cells, ports, default edges and boxes all map onto themselves.
+ * Mirrored (east and west swapped) such a tile is the same tile turned: x → −x is the diagonal mirror and then three
+ * quarter turns, so a mirrored set piece places it turned (3 − r) at its mirrored anchor. Boxes compare by their
+ * corners (to the millimetre), so turned and tilted boxes count too.
+ */
+export function tileDiagonalMirror(def: TileDefinition): boolean {
+  const known = diagonalAxes.get(def);
+  if (known !== undefined) return known;
+  const result = ((): boolean => {
+    if (def.model) return false;
+    const cell = (c: readonly number[]) => `${c[0]},${c[1]},${c[2]}`;
+    if (!sameBag(def.cells.map(cell), def.cells.map((c) => cell([c[1]!, c[0]!, c[2]!])))) return false;
+    const port = (p: TileDefinition['ports'][number], m: boolean) => {
+      const [cx, cy] = p.cell ?? [0, 0];
+      return m ? `${DIAGONAL_SIDE[p.side]} ${p.level} ${cy},${cx}` : `${p.side} ${p.level} ${cx},${cy}`;
+    };
+    if (!sameBag(def.ports.map((p) => port(p, false)), def.ports.map((p) => port(p, true)))) return false;
+    const edges = Object.entries(def.edgeDefaults ?? {});
+    if (!sameBag(edges.map(([k, v]) => `${k}=${v}`), edges.map(([k, v]) => `${diagonalKey(k)}=${v}`))) return false;
+    for (const list of [def.solids ?? [], def.extraFloors ?? []]) {
+      if (!sameBag(list.map((b) => boxShape(b, false)), list.map((b) => boxShape(b, true)))) return false;
+    }
+    return true;
+  })();
+  diagonalAxes.set(def, result);
+  return result;
+}
+
+/** A tile-frame key ("dx,dy,dz" or "dx,dy,dz:S") mirrored across the tile's diagonal (dx and dy swapped, N ↔ E, S ↔ W). */
+function diagonalKey(key: string): string {
+  const [c, s] = key.split(':') as [string, Side | undefined];
+  const [x, y, z] = c.split(',').map(Number) as [number, number, number];
+  const cell = `${y},${x},${z}`;
+  return s ? `${cell}:${DIAGONAL_SIDE[s]}` : cell;
+}
+
 const mirrorProblems = new WeakMap<SetPieceDefinition, string | null>();
 /**
  * Why a piece can't be placed mirrored, or null when it can: every tile in it must be its own mirror image
@@ -213,7 +263,7 @@ export function setPieceMirrorProblem(def: SetPieceDefinition, catalog: TileCata
     if (part.kind !== 'tile') continue;
     const t = catalog.get(part.tile);
     if (!t) out = `${part.tile} is not a tile`;
-    else if (tileMirrorAxis(t) === null) out = `${t.displayName} (${t.id}) isn't its own mirror image`;
+    else if (tileMirrorAxis(t) === null && !tileDiagonalMirror(t)) out = `${t.displayName} (${t.id}) isn't its own mirror image`;
     if (out) break;
   }
   if (catalog === coreCatalog) mirrorProblems.set(def, out);
@@ -290,12 +340,20 @@ function placeTilePart(
     // The tile mirrored onto itself (tileMirrorAxis; definitions that need it are checked to have it), turned the
     // other way, its anchor moved so it covers the mirrored cells.
     const tileDef = catalog.get(tile);
-    const a2 = (tileDef && tileMirrorAxis(tileDef)) ?? 0;
-    rot = (4 - rotation) % 4;
-    const [sx, sy] = rotateXZ(a2, 0, rot);
-    ax = mirrorWidth(def) - x - sx;
-    ay = y - sy;
-    key = (k: string) => mirrorKey(k, a2);
+    const a2 = tileDef ? tileMirrorAxis(tileDef) : null;
+    if (a2 === null && tileDef && tileDiagonalMirror(tileDef)) {
+      // Its own mirror across its diagonal: east and west swapped is that mirror and three quarter turns, about its
+      // anchor cell, so it stays on the mirrored cells turned 3 − r.
+      rot = (7 - rotation) % 4;
+      ax = mirrorWidth(def) - x;
+      key = diagonalKey;
+    } else {
+      rot = (4 - rotation) % 4;
+      const [sx, sy] = rotateXZ(a2 ?? 0, 0, rot);
+      ax = mirrorWidth(def) - x - sx;
+      ay = y - sy;
+      key = (k: string) => mirrorKey(k, a2 ?? 0);
+    }
   }
   const [rx, ry] = rotateXZ(ax, ay, p.rotation);
   const out: TilePlacement = { id, tile, x: p.x + rx, y: p.y + ry, z: p.z + z, rotation: ((rot + p.rotation) % 4) as Rotation };

@@ -124,6 +124,10 @@
   "core.tunnel_brick_shaft",
   "core.tunnel_brick_riser",
   "core.tunnel_brick_chamber",
+  "core.arena_corner_ground",
+  "core.arena_corner_mid",
+  "core.arena_corner_upper",
+  "core.arena_corner_attic",
   "military.barracks",
   "military.guard_tower",
   "military.pillbox",
@@ -50958,6 +50962,22 @@
      ]
     ]
    }
+  },
+  {
+   "id": "core.arena_corner_ground",
+   "hash": "030d28052c664b353704c96f"
+  },
+  {
+   "id": "core.arena_corner_mid",
+   "hash": "fbe4696fb2c5c349141c8733"
+  },
+  {
+   "id": "core.arena_corner_upper",
+   "hash": "25f2c9934a96bc568ccada9a"
+  },
+  {
+   "id": "core.arena_corner_attic",
+   "hash": "03d3d87bcb926b5017c600b5"
   }
  ],
  "dimensions": {
