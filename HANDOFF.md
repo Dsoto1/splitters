@@ -1033,7 +1033,7 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 
 **Next in line after the published-maps fix: Flavius Rule octagon phase 5, the gallery stairs** (`check/flavius-octagon-5` from `wip/flavius-octagon-5`, green at 85b2ab81, run 43761068896; lane B's splitters22, 2026-11-15). `tools/content/kit/arenaCorner.mjs`, regenerated palette atlases and tile fixtures; no map file edit.
 
-**Next in line after octagon phase 5: Driving physics follow-ups from the owner's drive** (`check/drive-physics-2` from `wip/drive-physics-2`; a helper of lane A's lead, 2026-11-15): bots hear driven vehicles, the rigid buggy climbs stairs and carries its speed up slopes, lighter. Shared code `sim/wheelPhysics.ts`, `sim/match.ts` (engine noise), `sim/physics.ts` (chassis sweep), `content/vehicles/troop_buggy.json`, e2e `vehicles`.
+**Next in line after octagon phase 5: Driving physics follow-ups from the owner's drive** (`check/drive-physics-2` from `wip/drive-physics-2`, green at f7163a46, run 43767793817; a helper of lane A's lead, 2026-11-15): bots hear driven vehicles, the rigid buggy climbs stairs and carries its speed up slopes, lighter. Shared code `sim/wheelPhysics.ts`, `sim/match.ts` (engine noise), `sim/physics.ts` (chassis sweep), `content/vehicles/troop_buggy.json`, e2e `vehicles`.
 
 **Next in line after the Driving physics follow-ups: Scaling 1, navmeshes kept between matches** (`check/navmesh-cache` from `wip/navmesh-cache`; a helper of lane A's lead, 2026-11-15). Shared code: `sim/mapNav.ts` (NavCache, loadMapNav), `sim/match.ts` (`navBuilt`), `nav/index.ts` (`navSettingsKey`); client `game/navCache.ts`, `matchHost.ts`, `editor/mapTestWorkerCore.ts` (the check's navmesh copied, not transferred).
 
