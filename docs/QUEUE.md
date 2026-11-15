@@ -34,7 +34,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Flaky tests made sturdy by root cause (Arsenal damage numbers, dedicated host, all-maps terrain, characters3 Imp grip, mobile pad tap, the load-16 timeouts and bench) · `wip/flaky-1114` (a helper of lane A's lead)
 
 ## Ready to land
-- M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Waiting on lane A's lead's review** (owner: "this account reviews"); `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. The owner's answers: as built (recs, 2026-11-14).
+- M · B (lane B's splitters22) · MapMaker UI spec Phase 1: built, green on `check/mapmaker-ui-1` at 72ee2ac2 (run 43608912572, full suite). **Reviewed by lane A's lead 2026-11-15: approved, land it** (merges cleanly with main at 901c19f3; main has moved since 72ee2ac2, so merge main and re-check before the fast-forward). Read: dockPrefs (safe parse, legacy carry-over, clamps), popupMenu (ARIA menu, outside-click listener added on open and removed on close), the map settings field ids (only Dress all, Settle all and the layers heading moved out, as the spec says), the as-built list; `docs/MAPMAKER_UI_SPEC.md` "As built" under Phase 1 lists every change and where each control went. The owner's answers: as built (recs, 2026-11-14).
 
 ## Bugs
 - S · A · Sun Warrior (`meshy_goldenwarrior`): the grip needs a fix (owner, 2026-11-14, after playing: "sun warrior grip needs fix but most look good"); grip audit score 10. Check The Hollow Pilgrim's support hand (12 cm off, score 11) in the same pass.
