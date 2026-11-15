@@ -185,16 +185,16 @@ describe('retired vehicles (Go-Kart, Ice Cream Truck)', () => {
 
   it("an old track whose NPC cars are karts laps hover bikes; a track that doesn't say gets them too", () => {
     const file = oldTrackFile();
-    expect(file.paths[0]!.race).toMatchObject({ vehicle: 'kart', ambientVehicle: 'kart' });
+    expect(file.paths[0]!.race).toMatchObject({ ambientVehicle: 'kart' });
     // As written the path still says kart; the track as the game reads it is on hover bikes either way.
     const written = MapDocument.parse(file);
-    expect(written.paths![0]!.race).toMatchObject({ vehicle: 'kart', ambientVehicle: 'kart' });
-    expect(raceTrack(written)).toMatchObject({ vehicle: 'hover_bike', ambientVehicle: 'hover_bike', ambient: 3 });
+    expect(written.paths![0]!.race).toMatchObject({ ambientVehicle: 'kart' });
+    expect(raceTrack(written)).toMatchObject({ ambientVehicle: 'hover_bike', ambient: 3 });
     expect(withTrackVehicles(written).entities.filter((e) => e.kind === 'mount').map((e) => e.model)).toEqual(['hover_bike', 'hover_bike', 'hover_bike']);
     const r = loadMap(JSON.stringify(file));
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.map.paths![0]!.race).toMatchObject({ vehicle: 'hover_bike', ambientVehicle: 'hover_bike' });
+    expect(r.map.paths![0]!.race).toMatchObject({ ambientVehicle: 'hover_bike' });
     expect(r.issues.filter((i) => i.code === 'mount.retired').map((i) => i.message)[0]).toMatch(/Go-Kart is retired \(the track's cars \(race_track\)\)/);
     const match = new Match(r.map, { ...DEFAULT_DEATHMATCH_RULES, timeLimitSeconds: 0 }, 3);
     const cars = mountsOf(match).filter((m) => m.ambient);
@@ -205,7 +205,7 @@ describe('retired vehicles (Go-Kart, Ice Cream Truck)', () => {
     // No race settings at all, or none that name a vehicle: the defaults (the Go-Kart was the default).
     const { race: _race, ...plain } = file.paths[0]!;
     const bare = loadMap(JSON.stringify({ ...file, paths: [plain] }));
-    expect(bare.ok && raceTrack(bare.map)).toMatchObject({ vehicle: 'hover_bike', ambientVehicle: 'hover_bike' });
+    expect(bare.ok && raceTrack(bare.map)).toMatchObject({ ambientVehicle: 'hover_bike' });
     const some = loadMap(JSON.stringify({ ...file, paths: [{ ...plain, race: { ambient: 2 } }] }));
     expect(some.ok && raceTrack(some.map)).toMatchObject({ ambient: 2, ambientVehicle: 'hover_bike' });
   });
@@ -220,7 +220,7 @@ describe('retired vehicles (Go-Kart, Ice Cream Truck)', () => {
     expect([r.placed, r.tracks]).toEqual([1, 1]);
     const next = applyCommand(doc, r.command);
     expect(next.entities.find((e) => e.id === 'mount_kart')).toMatchObject({ kind: 'mount', model: 'hover_bike', position: [4, 0, 12] });
-    expect(next.paths![0]!.race).toMatchObject({ vehicle: 'hover_bike', ambientVehicle: 'hover_bike', ambient: 3 });
+    expect(next.paths![0]!.race).toMatchObject({ ambientVehicle: 'hover_bike', ambient: 3 });
     // The other retired vehicle is its own Replace all; undo puts the karts back.
     expect(retiredMountUses(next)).toEqual([{ model: 'ice_cream_truck', entities: ['mount_van'], paths: [] }]);
     expect(applyCommand(next, invertCommand(r.command))).toEqual(doc);

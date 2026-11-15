@@ -391,8 +391,10 @@ file, unchanged, no format bump) carries **NPC traffic**.
 - **Grip.** On any map with a track, wheeled vehicles grip the road 1.7× better and are 15% slower off it
   (`sim/road.ts`); hovercraft don't care.
 - **Checkpoints** are still sampled along the track (track data: `TrackGeometry.gates`), and MapMaker still shows
-  them; nothing scores them now. The track's other race settings (laps, grid, vehicle, combat) are kept in the file
-  but unused.
+  them; nothing scores them now. The track's other race settings (laps, grid, vehicle, combat) are gone: map format
+  v39 drops them from older files (`migrate.ts` `dropRaceSettingsV39`) and MapMaker no longer writes them; a track
+  keeps its curbs, NPC cars and pit lane. (A stamped map with a track reads "changed since it was exported" until
+  it is exported again: the dropped settings were in its content hash.)
 - **Old maps.** A map whose modes still list `core.race` loads and simply doesn't offer it (`isGameMode` drops it;
   only Deathmatch is offered when it listed nothing else); the validator warns `race.removed` so MapMaker can drop it
   in Map properties. Saved setups, rotations, playlists and host commands that ask for race are refused or fall back.

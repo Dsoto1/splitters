@@ -50,15 +50,16 @@ describe('one path primitive: migration (v22 -> v23)', () => {
     expect(paths).toHaveLength(2);
     // The track's id doesn't clash with an existing path's.
     expect(paths[0]).toMatchObject({ id: 'race_track_2', closed: true, uses: ['road', 'race'], width: 10, style: 'dirt', lay: false, curve: 'classic' });
-    // v22 defaults filled in: laps 3, grid 8, kart, curbs; the settings the track had kept.
-    expect(paths[0]!.race).toEqual({ laps: 3, grid: 8, vehicle: 'kart', combat: false, curbs: true, ambient: 2, ambientVehicle: 'kart', pit: null });
+    // v22 defaults filled in (curbs, kart cars); the settings the track had kept. Race mode's own (laps, grid, race
+    // vehicle, combat) went on the way up (v38 -> v39).
+    expect(paths[0]!.race).toEqual({ curbs: true, ambient: 2, ambientVehicle: 'kart', pit: null });
     expect(paths[1]).toEqual({ id: 'race_track', style: 'cobble', width: 4, points: [[0, 0, 0], [10, 0, 0], [10, 0, 10]], closed: true, uses: ['road'], lay: true });
     const map = MapDocument.parse(doc);
     expect(racePath(map)!.id).toBe('race_track_2');
     // The Go-Kart is retired: the path still says `kart` as written, and the track drives Hover Bikes (map/mountAliases.ts).
-    expect(racePath(map)!.race).toMatchObject({ vehicle: 'kart', ambientVehicle: 'kart' });
-    expect(raceTrack(map)).toMatchObject({ vehicle: 'hover_bike', ambientVehicle: 'hover_bike' });
-    expect(raceTrack(map)).toMatchObject({ loop: true, width: 10, surface: 'dirt', ambient: 2, laps: 3 });
+    expect(racePath(map)!.race).toMatchObject({ ambientVehicle: 'kart' });
+    expect(raceTrack(map)).toMatchObject({ ambientVehicle: 'hover_bike' });
+    expect(raceTrack(map)).toMatchObject({ loop: true, width: 10, surface: 'dirt', ambient: 2 });
   });
 
   it('a map without a track or paths gains nothing; an open path stays open', () => {
@@ -86,7 +87,7 @@ describe('one path primitive: migration (v22 -> v23)', () => {
       const map = loaded(raw(id));
       const after = trackGeometry(map)!;
       // The Go-Kart these tracks ran is retired (2026-11-12): the same track, on the vehicle that replaced it.
-      expect(after.track).toEqual({ ...old.track, vehicle: liveMount(old.track.vehicle), ambientVehicle: liveMount(old.track.ambientVehicle) });
+      expect(after.track).toEqual({ ...old.track, ambientVehicle: liveMount(old.track.ambientVehicle) });
       expect(after.samples).toEqual(old.samples);
       expect(after.gates).toEqual(old.gates);
       expect(after.length).toBe(old.length);

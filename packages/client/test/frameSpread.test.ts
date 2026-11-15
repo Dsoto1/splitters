@@ -4,7 +4,7 @@ import { FrameSpread } from '../src/game/frameSpread.ts';
 /** A clock each step moves on by its own cost (ms). */
 function spread(budget: number) {
   let now = 0;
-  const q = new FrameSpread(budget, () => now);
+  const q = new FrameSpread(budget, 20, () => now);
   const ran: string[] = [];
   const step = (name: string, ms: number) => () => {
     ran.push(name);
@@ -35,6 +35,30 @@ describe('FrameSpread (a going body put away over frames)', () => {
     expect(q.run()).toBe(1);
     expect(q.size).toBe(0);
     expect(q.run()).toBe(0);
+  });
+
+  it('drains a steady stream on a slow page instead of piling it up', () => {
+    // A page drawing a frame a second while three bodies (nine steps) go every frame, each step 2 ms (over the budget).
+    const { q, step } = spread(1.5);
+    let most = 0;
+    for (let frame = 0; frame < 600; frame++) {
+      for (let i = 0; i < 9; i++) q.push(step('x', 2));
+      q.run();
+      most = Math.max(most, q.size);
+    }
+    // It settles where a frame's share (a twentieth) is what comes in: about 20 frames' worth, never more.
+    expect(most).toBeLessThanOrEqual(9 * 21);
+  });
+
+  it('spreads a burst over about drainFrames frames however slow its steps are', () => {
+    const { q, step } = spread(1.5);
+    for (let i = 0; i < 96; i++) q.push(step('x', 5));
+    const perFrame: number[] = [];
+    while (q.size) perFrame.push(q.run());
+    expect(perFrame[0]).toBe(5);
+    expect(Math.max(...perFrame)).toBe(5);
+    expect(perFrame.length).toBeGreaterThan(20);
+    expect(perFrame.length).toBeLessThan(80);
   });
 
   it('flushes everything at once', () => {
