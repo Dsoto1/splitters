@@ -447,8 +447,37 @@ function towerParts() {
     t.diag.push(diagBox(VB, V1, TOP + PH, TOP + PH + 0.6, -u - 0.35, -u + 0.35, 'trim'));
   }
   for (let v = V0 + 0.8; v < V1 - 0.3; v += 1.6) t.diag.push(diagBox(v - 0.35, v + 0.35, TOP + PH, TOP + PH + 0.6, -H, -IN, 'trim'));
+  towerFaces(t);
   return t;
 }
+
+/**
+ * The tower's outside faces (owner, phase 3's 3a): arrow slits and a string course, drawn only (no collision). A slit
+ * is a dark strip 0.2 by 1.6 m standing 3 cm proud of the face, in each storey band between the arcade storeys; the
+ * string course a band 0.3 m high, 0.15 m proud, round all four faces under the lookout's parapet (its floor's edge).
+ */
+function towerFaces(t) {
+  const { half: H, v0: V0, v1: V1, top: TOP } = TOWER;
+  const { proud: P, w: SW, h: SH, at: HEIGHTS, cols: COLS, side: SIDE } = SLITS;
+  const dark = { surface: { material: 'core.pbr_castle_stone', tint: '#2a241e' } };
+  for (const y of HEIGHTS) {
+    const [y0, y1] = [y - SH / 2, y + SH / 2];
+    // The outer face (v = V1), a slit either side of the passage; each side face (u = -H), one in its middle.
+    for (const u of COLS) t.diag.push({ ...diagBox(V1, V1 + P, y0, y1, -u - SW / 2, -u + SW / 2, 'trim'), ...dark });
+    t.diag.push({ ...diagBox(SIDE - SW / 2, SIDE + SW / 2, y0, y1, -H - P, -H, 'trim'), ...dark });
+  }
+  // The string course: the outer and inner faces' bands run over the corners; the sides' between them.
+  const [c0, c1] = [TOP - 0.3, TOP];
+  const SC = STRING_COURSE;
+  t.axis.push(diagBox(V1, V1 + SC, c0, c1, -H - SC, H + SC, 'trim'));
+  t.axis.push(diagBox(V0 - SC, V0, c0, c1, -H - SC, H + SC, 'trim'));
+  t.diag.push(diagBox(V0, V1, c0, c1, -H - SC, -H, 'trim'));
+}
+
+/** The arrow slits: how far proud, width and height, the heights of their middles (between the landings), the outer face's columns (u off the centre line), the side faces' slit (its depth). */
+const SLITS = { proud: 0.03, w: 0.2, h: 1.6, at: [6, 14, 22, 29.5], cols: [7.5], side: 61 };
+/** How far the string course stands proud of the faces. */
+const STRING_COURSE = 0.15;
 
 // ---------------------------------------------------------------- the four tiles
 
