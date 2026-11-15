@@ -75,9 +75,14 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · A · Fix 3, rewritten (owner's follow-up recordings, `docs/PERF_MAPMAKER_TRACE_2026-11-15.md` section 8): the 11-15 ms a frame outside our script is not the GPU's load and was gone in a fresh tab (the same Test 30 → 54 fps); it came with a long MapMaker session that ended in "Aw, Snap!". Steps: 3a a memory readout in the perf overlay and recordings (S), 3b a repeat probe (edit, Test, back ×10; S), 3c fix what grows (M), 3d an in-game "tab is slowing" note (S).
 - M · A · Test start about 10 s: hand the check's navmesh to the simulation worker when the map is unchanged (fix 4, 4.4 s), then reuse the editor's textures and models and spread the loading (fix 5: an 861 ms freeze and 5.5 s at 4-11 fps).
 - S · B · Cheaper MapMaker edits (46 ms now, smooth): outliner rows, level picker and hover card only when changed (fix 6). Later, L · B: an incremental navmesh for the check (fix 7).
+- S · A · Scaling 1: the navmesh kept between matches, in memory and in the browser's storage for browser hosts (owner 4b; `docs/SCALING_STUDY_2026-11-15.md`, recommended order 1).
+- M · A · Scaling 2: a building's insides hidden when none of its openings is in view, generous near radius (owner 2a; order 2); then interior models loaded on approach (S, order 3). With it, S · B: MapMaker's View-menu overlay of what the game counts as a building and its openings (owner 3a).
+- S · A · Scaling 4: bot path search budget by time (order 4).
+- M · A · Scaling 5: spawn-first build order, no unloading (owner 1b; order 5).
+- L · A · Later: tiled navmesh, when breakable walls should open bot routes (owner 5a). Foliage: nothing until a profile says it costs (owner 6a).
+- L · A · Eventually (owner 7, 2026-11-15): one large open map (a "Far Cry island") with every feature, tile set and theme; plan real streaming, the region graph and budgets past 400 m once the small maps work great.
 
 ## Waiting on the owner
-- The scaling study's seven questions (region streaming, foliage, interiors, bot navigation; `docs/SCALING_STUDY_2026-11-15.md`, recommended picks marked).
 - A long-session recording (owner said yes, 2026-11-15): after an hour of MapMaker with several Tests, 20 s of a Test, then reload and the same Test again, ad blocker off for the site. After the memory readout (fix 3a) lands. The next St. John's match recording after the main-scene work.
 - Lane B: the destructible environment's later steps. Step 1 is on main (props and blocks on an opt-in map, Breakyard); (a), breakable props batched while intact, landed 2026-11-15 (HANDOFF "Landed: breakable props batched while intact"); (b), breakable building walls, is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
