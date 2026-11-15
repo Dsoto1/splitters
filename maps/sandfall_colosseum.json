@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 39,
   "metadata": {
     "id": "sandfall_colosseum",
     "name": "Flavius Rule",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_prmawkdzrmtay5mm",
-      "versionId": "v_lf2dudatskomagqc",
-      "revision": 27,
-      "contentHash": "sha256:2b69ea8cd0a46c630ffc9b69fa518ed68acfb4667003e420b095f2d7016ad017",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T20:48:58.773Z"
+      "versionId": "v_lvvmq6wkdjhej3kp",
+      "revision": 28,
+      "contentHash": "sha256:6bda01d1c00f906f2ca950927778490f039d14410018fbae20ac84d6d6581aa8",
+      "schemaVersion": 39,
+      "releasedAt": "2026-11-15T13:42:21.877Z"
     }
   },
   "classicStructure": {
@@ -33,38 +33,6 @@
     "levelHeight": 4,
     "theme": "core.imperial",
     "tiles": [
-      {
-        "id": "tile_1hkgs5zc79",
-        "tile": "imperial.gate",
-        "x": -3,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_2rawspoptz",
-        "tile": "imperial.gate",
-        "x": 3,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_zet4noerxi",
-        "tile": "imperial.gate",
-        "x": 3,
-        "y": -4,
-        "z": 0,
-        "rotation": 2
-      },
-      {
-        "id": "tile_blgl41dxqn",
-        "tile": "imperial.gate",
-        "x": -3,
-        "y": -4,
-        "z": 0,
-        "rotation": 2
-      },
       {
         "id": "sp_setpiece_svyomxnw1s_1",
         "tile": "core.room",
@@ -764,7 +732,7 @@
       },
       {
         "id": "sp_setpiece_zfgnmgw7wt_32",
-        "tile": "core.tunnel_vault_t",
+        "tile": "core.tunnel_vault_cross",
         "x": 4,
         "y": 4,
         "z": -1,
@@ -782,7 +750,7 @@
       },
       {
         "id": "sp_setpiece_zfgnmgw7wt_33",
-        "tile": "core.tunnel_vault_t",
+        "tile": "core.tunnel_vault_cross",
         "x": -4,
         "y": 4,
         "z": -1,
@@ -800,7 +768,7 @@
       },
       {
         "id": "sp_setpiece_zfgnmgw7wt_34",
-        "tile": "core.tunnel_vault_t",
+        "tile": "core.tunnel_vault_cross",
         "x": 4,
         "y": -4,
         "z": -1,
@@ -818,7 +786,7 @@
       },
       {
         "id": "sp_setpiece_zfgnmgw7wt_35",
-        "tile": "core.tunnel_vault_t",
+        "tile": "core.tunnel_vault_cross",
         "x": -4,
         "y": -4,
         "z": -1,
@@ -1981,14 +1949,6 @@
         }
       },
       {
-        "id": "sp_setpiece_ahf9s9w7y2_0",
-        "tile": "core.yard",
-        "x": -3,
-        "y": -3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
         "id": "sp_setpiece_ahf9s9w7y2_1",
         "tile": "core.yard",
         "x": -2,
@@ -2024,14 +1984,6 @@
         "id": "sp_setpiece_ahf9s9w7y2_5",
         "tile": "core.yard",
         "x": 2,
-        "y": -3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "sp_setpiece_ahf9s9w7y2_6",
-        "tile": "core.yard",
-        "x": 3,
         "y": -3,
         "z": 0,
         "rotation": 0
@@ -2181,14 +2133,6 @@
         "rotation": 0
       },
       {
-        "id": "sp_setpiece_ahf9s9w7y2_25",
-        "tile": "core.yard",
-        "x": -3,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
         "id": "sp_setpiece_ahf9s9w7y2_26",
         "tile": "core.yard",
         "x": -2,
@@ -2224,14 +2168,6 @@
         "id": "sp_setpiece_ahf9s9w7y2_30",
         "tile": "core.yard",
         "x": 2,
-        "y": 3,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "sp_setpiece_ahf9s9w7y2_31",
-        "tile": "core.yard",
-        "x": 3,
         "y": 3,
         "z": 0,
         "rotation": 0
@@ -2403,38 +2339,6 @@
         "y": 0,
         "z": -1,
         "rotation": 2
-      },
-      {
-        "id": "tile_3pf7hqi8mg",
-        "tile": "core.stairs_open",
-        "x": 4,
-        "y": 5,
-        "z": -1,
-        "rotation": 3
-      },
-      {
-        "id": "tile_85k7nabf2f",
-        "tile": "core.stairs_open",
-        "x": -4,
-        "y": 5,
-        "z": -1,
-        "rotation": 3
-      },
-      {
-        "id": "tile_wphcmtbc66",
-        "tile": "core.stairs_open",
-        "x": 4,
-        "y": -5,
-        "z": -1,
-        "rotation": 1
-      },
-      {
-        "id": "tile_h3o4iln86p",
-        "tile": "core.stairs_open",
-        "x": -4,
-        "y": -5,
-        "z": -1,
-        "rotation": 1
       },
       {
         "id": "sp_setpiece_3crg1e10ma_0",
@@ -13243,38 +13147,6 @@
           "ceiling": "roof",
           "facade": "roman"
         }
-      },
-      {
-        "id": "tile_yjbek7hcru",
-        "tile": "core.platform",
-        "x": 4,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_oac1aqnoq9",
-        "tile": "core.platform",
-        "x": -4,
-        "y": 4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_rbe9zpyg1h",
-        "tile": "core.platform",
-        "x": 4,
-        "y": -4,
-        "z": 0,
-        "rotation": 0
-      },
-      {
-        "id": "tile_m07stn4w6q",
-        "tile": "core.platform",
-        "x": -4,
-        "y": -4,
-        "z": 0,
-        "rotation": 0
       }
     ]
   },
@@ -20913,34 +20785,6 @@
       "respawnSeconds": null
     },
     {
-      "id": "prop_7e0gnh621z",
-      "position": [
-        16,
-        2,
-        29.5
-      ],
-      "kind": "prop",
-      "model": "prop.im_vexillum",
-      "yaw": 3.142,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_ffo0x4cuaz",
-      "position": [
-        -16,
-        2,
-        29.5
-      ],
-      "kind": "prop",
-      "model": "prop.im_vexillum",
-      "yaw": -3.139,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_ddu4yitgjw",
       "position": [
         -8,
@@ -20964,20 +20808,6 @@
       "kind": "prop",
       "model": "prop.im_vexillum",
       "yaw": -3.139,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_ji3noijjid",
-      "position": [
-        -16,
-        2,
-        -29.5
-      ],
-      "kind": "prop",
-      "model": "prop.im_vexillum",
-      "yaw": 0.005,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -21011,34 +20841,6 @@
       "tint": null
     },
     {
-      "id": "prop_02ota10vnn",
-      "position": [
-        16,
-        2,
-        -29.5
-      ],
-      "kind": "prop",
-      "model": "prop.im_vexillum",
-      "yaw": 0.005,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_p1rtrec7ks",
-      "position": [
-        29.5,
-        2,
-        -16
-      ],
-      "kind": "prop",
-      "model": "prop.im_vexillum",
-      "yaw": -1.562,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_shh44yoa3d",
       "position": [
         29.5,
@@ -21067,34 +20869,6 @@
       "tint": null
     },
     {
-      "id": "prop_k7ugut9nb2",
-      "position": [
-        29.5,
-        2,
-        16
-      ],
-      "kind": "prop",
-      "model": "prop.im_vexillum",
-      "yaw": -1.562,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_2ag0me10gg",
-      "position": [
-        -29.5,
-        2,
-        -16
-      ],
-      "kind": "prop",
-      "model": "prop.im_vexillum",
-      "yaw": 1.582,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_mu2dmueykq",
       "position": [
         -29.5,
@@ -21114,20 +20888,6 @@
         -29.5,
         2,
         8
-      ],
-      "kind": "prop",
-      "model": "prop.im_vexillum",
-      "yaw": 1.582,
-      "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_tceb27nut4",
-      "position": [
-        -29.5,
-        2,
-        16
       ],
       "kind": "prop",
       "model": "prop.im_vexillum",
@@ -22299,186 +22059,6 @@
   "dependencies": [],
   "setPieces": [
     {
-      "id": "setpiece_44bb7mzhxj",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": 5,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_15nsld3tnf",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": 6,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_6zbj6nu2co",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": 7,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_5hj76dlmct",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": 8,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_4udywkx17m",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": 9,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_78zbgrb7rz",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": 10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_wjc2chowl0",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": 8,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_13wkbth2dd",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": 9,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_teqdkh6dug",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": 10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_opyobzb5i4",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": 10,
-      "z": 4,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_kv6xtp59n3",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -3,
-      "y": 6,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_btis0ml6y5",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -3,
-      "y": 8,
-      "z": 4,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_nul09yje10",
-      "piece": "setpiece.arena_attic",
-      "x": -3,
-      "y": 10,
-      "z": 6,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_dbkzj136em",
-      "piece": "setpiece.arena_bay_podium",
-      "x": -2,
-      "y": 4,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_it82iqooyb",
-      "piece": "setpiece.arena_arcade",
-      "x": -2,
-      "y": 10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_zd52efuyft",
-      "piece": "setpiece.arena_arcade",
-      "x": -2,
-      "y": 10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_kia4sdnaq2",
-      "piece": "setpiece.arena_arcade",
-      "x": -2,
-      "y": 10,
-      "z": 4,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_aesi98f74a",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -2,
-      "y": 6,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_lp2bfsnvzt",
-      "piece": "setpiece.arena_vomitorium",
-      "x": -2,
-      "y": 8,
-      "z": 4,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_b5l8mlzayb",
-      "piece": "setpiece.arena_attic",
-      "x": -2,
-      "y": 10,
-      "z": 6,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
       "id": "setpiece_tdbkixisa7",
       "piece": "setpiece.arena_bay_podium",
       "x": -1,
@@ -22656,366 +22236,6 @@
       "y": 10,
       "z": 6,
       "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_9ai7s7pke8",
-      "piece": "setpiece.arena_bay_podium",
-      "x": 2,
-      "y": 4,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_vczzqf9oy4",
-      "piece": "setpiece.arena_arcade",
-      "x": 2,
-      "y": 10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_a56miey662",
-      "piece": "setpiece.arena_arcade",
-      "x": 2,
-      "y": 10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_hzxzpg27ro",
-      "piece": "setpiece.arena_arcade",
-      "x": 2,
-      "y": 10,
-      "z": 4,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_i6icfl3l9v",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 2,
-      "y": 6,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_sg11thlv16",
-      "piece": "setpiece.arena_vomitorium",
-      "x": 2,
-      "y": 8,
-      "z": 4,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_jvr61jvmol",
-      "piece": "setpiece.arena_attic",
-      "x": 2,
-      "y": 10,
-      "z": 6,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_j9yecgjywn",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": 5,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_filaokornj",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": 6,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_h81c9zkzd9",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": 7,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_m8z2dj2aax",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": 8,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_eblre1vo36",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": 9,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_etmffsmque",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": 10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_1csf0iob58",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": 8,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_tourqr0psm",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": 9,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_6qzmgo35w2",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": 10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_9lx3ylz1zf",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": 10,
-      "z": 4,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_q7ziawxifh",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 3,
-      "y": 6,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_fm0ruwc8o5",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 3,
-      "y": 8,
-      "z": 4,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_jldplh5007",
-      "piece": "setpiece.arena_attic",
-      "x": 3,
-      "y": 10,
-      "z": 6,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_sbgan4j2a1",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": -5,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_vy2fcwvdk2",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": -6,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_kile84md57",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": -7,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_gy1sfq7ntw",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": -8,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_1xigems0x1",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_q1lompuayi",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": -10,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_kw4qlcmiqv",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": -8,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_29hjjq3hrb",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": -9,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_0nb4o4pxzy",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": -10,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_0pxufk394v",
-      "piece": "setpiece.arena_arcade",
-      "x": 3,
-      "y": -10,
-      "z": 4,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_d5zt4yyhj0",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 3,
-      "y": -6,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_3qpinqy5u3",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 3,
-      "y": -8,
-      "z": 4,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_oxek0engma",
-      "piece": "setpiece.arena_attic",
-      "x": 3,
-      "y": -10,
-      "z": 6,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_9bgs3okdql",
-      "piece": "setpiece.arena_bay_podium",
-      "x": 2,
-      "y": -4,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_t44jrg11al",
-      "piece": "setpiece.arena_arcade",
-      "x": 2,
-      "y": -10,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_qcc611aacg",
-      "piece": "setpiece.arena_arcade",
-      "x": 2,
-      "y": -10,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_3kqltu23a8",
-      "piece": "setpiece.arena_arcade",
-      "x": 2,
-      "y": -10,
-      "z": 4,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_3r4u06wl99",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 2,
-      "y": -6,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_d4vjq9pda0",
-      "piece": "setpiece.arena_vomitorium",
-      "x": 2,
-      "y": -8,
-      "z": 4,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_wh6o1addbp",
-      "piece": "setpiece.arena_attic",
-      "x": 2,
-      "y": -10,
-      "z": 6,
-      "rotation": 2,
       "mirror": false
     },
     {
@@ -23208,249 +22428,6 @@
       "mirror": false
     },
     {
-      "id": "setpiece_7qq69afz5q",
-      "piece": "setpiece.arena_bay_podium",
-      "x": -2,
-      "y": -4,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_jm1pbx7zof",
-      "piece": "setpiece.arena_arcade",
-      "x": -2,
-      "y": -10,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_3d4hf63k2h",
-      "piece": "setpiece.arena_arcade",
-      "x": -2,
-      "y": -10,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_aublr0q1wi",
-      "piece": "setpiece.arena_arcade",
-      "x": -2,
-      "y": -10,
-      "z": 4,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_4v4bia3069",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -2,
-      "y": -6,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_7uo15en17l",
-      "piece": "setpiece.arena_vomitorium",
-      "x": -2,
-      "y": -8,
-      "z": 4,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_s7ry8dzemf",
-      "piece": "setpiece.arena_attic",
-      "x": -2,
-      "y": -10,
-      "z": 6,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_q52u4h22j7",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": -5,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_plz8exz4g4",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": -6,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_uh2d0bu03f",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": -7,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_dijlikqqxw",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": -8,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_0e9vgsezbr",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_d6pf2cey2o",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": -10,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_pt0bcuzhef",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": -8,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_asvo9tbyqy",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": -9,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_8c0gmbpkeq",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": -10,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_fjtxyqdyrr",
-      "piece": "setpiece.arena_arcade",
-      "x": -3,
-      "y": -10,
-      "z": 4,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_d0l82u6mm7",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -3,
-      "y": -6,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_x871v8xbzm",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -3,
-      "y": -8,
-      "z": 4,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_p4ts0vyibz",
-      "piece": "setpiece.arena_attic",
-      "x": -3,
-      "y": -10,
-      "z": 6,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_u3nr0vxul0",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 6,
-      "y": 3,
-      "z": 2,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_a1c4r4zlia",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 8,
-      "y": 3,
-      "z": 4,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_0hmhsxsvo7",
-      "piece": "setpiece.arena_attic",
-      "x": 10,
-      "y": 3,
-      "z": 6,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_pw3zdeqxai",
-      "piece": "setpiece.arena_bay_podium",
-      "x": 4,
-      "y": 2,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_h3210uycki",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 6,
-      "y": 2,
-      "z": 2,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_lnc9ofs22a",
-      "piece": "setpiece.arena_vomitorium",
-      "x": 8,
-      "y": 2,
-      "z": 4,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_8vlr4j5t9k",
-      "piece": "setpiece.arena_attic",
-      "x": 10,
-      "y": 2,
-      "z": 6,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
       "id": "setpiece_uh9u3gvm63",
       "piece": "setpiece.arena_bay_podium",
       "x": 4,
@@ -23559,132 +22536,6 @@
       "mirror": false
     },
     {
-      "id": "setpiece_v5q5l7edvo",
-      "piece": "setpiece.arena_bay_podium",
-      "x": 4,
-      "y": -2,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_ss70w3iidj",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 6,
-      "y": -2,
-      "z": 2,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_d4fxd4kp16",
-      "piece": "setpiece.arena_vomitorium",
-      "x": 8,
-      "y": -2,
-      "z": 4,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_hyptamuloh",
-      "piece": "setpiece.arena_attic",
-      "x": 10,
-      "y": -2,
-      "z": 6,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_6cm1nt72ms",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 6,
-      "y": -3,
-      "z": 2,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_gzw348iump",
-      "piece": "setpiece.arena_bay_tier",
-      "x": 8,
-      "y": -3,
-      "z": 4,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_esm1uivvk9",
-      "piece": "setpiece.arena_attic",
-      "x": 10,
-      "y": -3,
-      "z": 6,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_amdxpzu5km",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -6,
-      "y": -3,
-      "z": 2,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_ckzgix7c2i",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -8,
-      "y": -3,
-      "z": 4,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_rvgkg15r79",
-      "piece": "setpiece.arena_attic",
-      "x": -10,
-      "y": -3,
-      "z": 6,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_so8ijycpyy",
-      "piece": "setpiece.arena_bay_podium",
-      "x": -4,
-      "y": -2,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_wtilxr0ryt",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -6,
-      "y": -2,
-      "z": 2,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_m31w16oqui",
-      "piece": "setpiece.arena_vomitorium",
-      "x": -8,
-      "y": -2,
-      "z": 4,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_55tvxldgg7",
-      "piece": "setpiece.arena_attic",
-      "x": -10,
-      "y": -2,
-      "z": 6,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
       "id": "setpiece_w5q4b90plg",
       "piece": "setpiece.arena_bay_podium",
       "x": -4,
@@ -23789,141 +22640,6 @@
       "x": -10,
       "y": 1,
       "z": 6,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_5ueoam5poy",
-      "piece": "setpiece.arena_bay_podium",
-      "x": -4,
-      "y": 2,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_tmtr8xlqle",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -6,
-      "y": 2,
-      "z": 2,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_viz5yk842x",
-      "piece": "setpiece.arena_vomitorium",
-      "x": -8,
-      "y": 2,
-      "z": 4,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_a93evwd7as",
-      "piece": "setpiece.arena_attic",
-      "x": -10,
-      "y": 2,
-      "z": 6,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_focnog5huj",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -6,
-      "y": 3,
-      "z": 2,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_yvlsvsvarq",
-      "piece": "setpiece.arena_bay_tier",
-      "x": -8,
-      "y": 3,
-      "z": 4,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_ljb5883hoh",
-      "piece": "setpiece.arena_attic",
-      "x": -10,
-      "y": 3,
-      "z": 6,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_otw0kngwu7",
-      "piece": "setpiece.arena_bay_podium",
-      "x": 4,
-      "y": 3,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_izyh4iq7c2",
-      "piece": "setpiece.arena_bay_podium",
-      "x": 4,
-      "y": -3,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_gx8dmo86dd",
-      "piece": "setpiece.arena_bay_podium",
-      "x": -4,
-      "y": 3,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_xl0guvp2wd",
-      "piece": "setpiece.arena_bay_podium",
-      "x": -4,
-      "y": -3,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_95kbeus5nk",
-      "piece": "setpiece.stair_tower_8",
-      "x": 4,
-      "y": 10,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_si1aq8kkv4",
-      "piece": "setpiece.stair_tower_8",
-      "x": -4,
-      "y": 8,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_ig837ybnuj",
-      "piece": "setpiece.stair_tower_8",
-      "x": 4,
-      "y": -8,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_4xr4ucdg5n",
-      "piece": "setpiece.stair_tower_8",
-      "x": -4,
-      "y": -10,
-      "z": 0,
       "rotation": 3,
       "mirror": false
     }
