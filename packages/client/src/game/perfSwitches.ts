@@ -8,10 +8,11 @@
  * draw-buffer calls sent anyway, src/glStateCache.ts; the destructible environment's next step adds `breakbatch`,
  * breakable props in the prop batches while intact, propBatches.ts; MapMaker's Test start adds `navhandoff`, the
  * navigation check's navmesh handed to the Test's match, editor/mapChecks.ts `prebuilt`, and `startslices`, the
- * match's loading work spread over frames, game/sliced.ts).
+ * match's loading work spread over frames, game/sliced.ts; Scaling 1 adds `navcache`, a browser host's navmeshes
+ * kept between matches in its storage, game/navCache.ts).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache';
 
 let off: Set<string> | null = null;
 

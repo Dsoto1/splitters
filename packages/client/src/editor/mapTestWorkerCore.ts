@@ -69,8 +69,8 @@ export async function runMapTest(m: ToMapTest, post: (m: FromMapTest, transfer?:
       map = mapAsPlayed(m.doc);
       // With the navmesh as built (`prebuilt`): the page hands it to a Test of this map (MapChecks.prebuilt).
       const result = mod.validateMapNavigation(map, false, { computed: m.computed, prebuilt: true });
-      const mesh = result.prebuilt?.nav.mesh;
-      post({ k: 'nav', token: m.token, result }, mesh ? [mesh.buffer as ArrayBuffer] : []);
+      // (Copied, not transferred: this worker's navCache keeps it too, for the jump pads' match below.)
+      post({ k: 'nav', token: m.token, result });
     } catch (e) {
       post({ k: 'navFailed', token: m.token, error: (e as Error).message });
       return;

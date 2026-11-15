@@ -134,6 +134,9 @@ const FOUR = [
   { x: 0, y: 0, z: -1 },
 ];
 
+/** What the navmesh is built with (Recast's settings, the clearance, low headroom), as text: part of a cached navmesh's key (sim/mapNav.ts navInputKey). */
+export const navSettingsKey = (): string => JSON.stringify([RECAST_CONFIG, LOW_HEADROOM, MAX_NODES, PLACE_CELL]);
+
 /** Recast's settings for the bots' navmesh (NavWorld.build). */
 const RECAST_CONFIG = {
   cs: CELL,

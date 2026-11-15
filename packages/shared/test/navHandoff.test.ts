@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { initPhysics, loadMap, mapAsPlayed, rulesForMap, type MapDocument } from '../src/index.ts';
-import { BotFiller, Match, initNavigation, validateMapNavigation, type PrebuiltNav } from '../src/match.ts';
+import { BotFiller, Match, NavCache, initNavigation, navCache, validateMapNavigation, type NavExport, type PrebuiltNav } from '../src/match.ts';
 
 // MapMaker's navigation check hands its navmesh to the Test's match (docs/PERF_MAPMAKER_TRACE_2026-11-15.md fix 4):
 // the match must come out exactly as if it had built its own.
@@ -45,6 +45,8 @@ describe('the navigation check hands its navmesh to the Test', () => {
     it(`${id}: the match takes the check's navmesh and plays exactly as with its own`, { timeout: 240_000 }, () => {
       const { edit, played } = both(id);
       const prebuilt = checkNav(edit);
+      // (The check keeps its navmesh in navCache too: the fresh match builds its own.)
+      navCache.clear();
       const fresh = play(played, null, 300);
       const handed = play(played, prebuilt, 300);
       expect(fresh.reused).toBe(false);
@@ -70,5 +72,43 @@ describe('the navigation check hands its navmesh to the Test', () => {
     const low = new Match(played, { ...rulesForMap(played), gravity: 0.5 }, 7, { nav: prebuilt });
     expect(low.navReused).toBe(false);
     low.destroy();
+  });
+});
+
+describe('navmeshes kept between matches (navCache: Scaling 1)', () => {
+  it('the second match of a map takes the first one\'s navmesh, and plays exactly as with a fresh build', { timeout: 240_000 }, () => {
+    const { played } = both('iron_maw');
+    navCache.clear();
+    const hits = navCache.hits;
+    const first = play(played, null, 300);
+    expect(first.reused).toBe(false);
+    const second = play(played, null, 300);
+    expect(second.reused).toBe(true);
+    expect(navCache.hits).toBe(hits + 1);
+    expect(Buffer.from(second.navmesh).equals(Buffer.from(first.navmesh))).toBe(true);
+    expect(second.snapshots).toEqual(first.snapshots);
+    // Another map, or the same with other gravity, builds its own.
+    expect(new Match(played, { ...rulesForMap(played), gravity: 0.5 }, 7).navReused).toBe(false);
+  });
+
+  it('keeps the most recently used, within its count and bytes', () => {
+    const nav = (bytes: number): NavExport => ({ mesh: new Uint8Array(bytes), spawnSeeds: [], lowSpans: 0, drops: 0, insideSolid: 0, exposed: 0, exposedArea: 0, parkour: [], walkReach: null });
+    const c = new NavCache(2, 1000);
+    c.put('a', nav(100));
+    c.put('b', nav(100));
+    expect(c.get('a')).toBeDefined();
+    c.put('c', nav(100));
+    // b was the least recently used.
+    expect([c.get('a'), c.get('b'), c.get('c')].map(Boolean)).toEqual([true, false, true]);
+    c.put('d', nav(950));
+    expect(c.size).toBe(1);
+    expect(c.get('d')).toBeDefined();
+    // Too big to keep at all; a detached (transferred) one is gone.
+    c.put('e', nav(2000));
+    expect(c.get('e')).toBeUndefined();
+    const gone = nav(100);
+    c.put('f', gone);
+    structuredClone(gone.mesh.buffer, { transfer: [gone.mesh.buffer] });
+    expect(c.get('f')).toBeUndefined();
   });
 });
