@@ -46,7 +46,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · A · The Hollow Pilgrim (`meshy_hollowpilgrim`): its support hand stays about 11 cm short of a rifle's handguard (25 cm on the shotgun; its arms are short and `hold.forward` is at its −0.15 limit) and its sleeves stretch (grip audit 9). Needs a wider `hold` range or a skin fix from the download.
 - ? · A · Unconfirmed: a large flat blue shape seen twice in software pictures (tunnels, The Spillway's long stair). Not seen in this batch's SwiftShader pictures (The Spillway's crest, Flatpack Depot, Training Range, Pantry Raid); the long stair and the tunnels were not visited (2026-11-14, `wip/mobile-bugs-1114`).
 
-- S · A · St. John's halls in Roman Rubblework (owner, 2026-11-15: "roman rubblework, show me pictures first"): the `collegiate_stone` facade's skin (`core.cobble` today, geometry.ts) tried as `core.pbr_opus_incertum`, blended: continuous across pieces and corners, colour tuned to the pale trim, stones at life size. Pictures first (the hall, the drill field, a corner and a window close up; before and after), owner picks, then it lands. After Smythe Hall lands.
 - M · A · Main scene drawing on St. John's: about 10 ms a frame and nearly unchanged after draws fell 58 % (owner's 11-15 recording, `docs/PERF_STJOHNS_2026-11-14.md`); find what it spends (per-mesh CPU, material updates, GPU fill at 1920x1080@2) and cut it. After the hitches fix (owner, 2026-11-15).
 
 ## Easy wins
@@ -88,6 +87,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-15 · A · St. John's halls in Roman Rubblework (owner: "I already like the roman rubble"): Smythe Hall's outside walls and corner tower in a new material, Collegiate Rubble (Roman Rubblework's photo, tint #c8cad2), its stones running on unbroken round corners and buttresses (`wrap`) and lifted a little in shade (`shadeLift` 0.12); shoots as stone like the blocks it replaced; draws unchanged.
 - 2026-11-15 · A · Closed, not reproduced: the player's own body in first person after a teleport (the owner: "portals work fine"; a helper's software teleports on four maps showed only arms, 2026-11-14). Reopen if it is seen again.
 - 2026-11-15 · A · Sky Cruiser: already the Gunship's model since 2026-11-12, so no new vehicle (owner: "Ur recs 1"); MapMaker's vehicle search reads descriptions, and "Sky Cruiser" finds the Gunship.
 - 2026-11-15 · B · MapMaker UI Phase 1: Map settings in the right dock, an inspector for the selection only, a 3-state dock (Shift+\), a tool bar per tab with a ⋯ menu of every tool, a View menu, a short status bar; the top bar fits at 1440 px.
