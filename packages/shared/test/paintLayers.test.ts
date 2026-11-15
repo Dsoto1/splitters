@@ -166,7 +166,7 @@ describe('themeChangeImpact: the warning counts', () => {
   });
 
   it('a backdrop of its own: the sky does not follow', () => {
-    const doc = { ...scene(), backdrop: { sky: 'clear', horizon: 'hills', ground: 'grass', haze: 0.4 } } as MapDocument;
+    const doc = { ...scene(), backdrop: { sky: 'clear', scenery: 'hills', ground: 'grass' } } as unknown as MapDocument;
     expect(themeChangeImpact(doc, library, 'core.industrial').skyFollows).toBe(false);
   });
 
