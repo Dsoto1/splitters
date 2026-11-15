@@ -238,7 +238,7 @@ On the page alone this saves about 0.3-0.5 ms a frame at this box's per-call cos
 process does the same less. Whether it moves the owner's 9.6 ms depends on what that time is, which only the owner's
 machine can say.
 
-**Looks:** SCREENSHOTS_LINE
+**Looks:** pictures of the three views (overview SW, eye middle spawn, eye far spawn; 640 x 360, High) before and after differ only where the wind moves things: overview 0.18 levels of 255 on average (0.35 % of pixels by more than 8), far spawn 0.43 (0.72 %), middle spawn 2.71 (8 %: the oak in front and the grass swaying, the walls, sky and gun identical). The helper's scratchpad, `shots/` (before, after, difference x4).
 
 **For the owner's next recording (St. John's, a match, High; F3's copy plus a 10 s trace):**
 - renderScene against 9.6 ms, and the frame rate. A fall of 1-2 ms says the page's GL calls were the cost.
