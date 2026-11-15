@@ -380,3 +380,6 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
 
 ### The owner's answers on phase 2 (2026-11-14: "Recs")
 1a: the half-sand cells either side of the diagonal's front stay unclaimed. 2a: the upper tier's back rows stay as built (up to 28 m between aisles). 3a: the vomitorium's side stairs stay as they are; bots use the aisles. 4a: the selection Mirror (Shift+M) learns diagonal symmetry as a small follow-up once the editor code is free.
+
+### The owner's answers on phase 3 (2026-11-15: "Rec works")
+1a: a Vaulted Tunnel Crossing at the hypogeum ring's corner takes both stair wells. 2a: the wells stay below unclaimed cells; documented. 3a: the tower's outside faces get arrow slits and a string course, drawn only (no collision), in phase 4. 4a: the podium stairs stay as built, 2.4 m out on the sand.
