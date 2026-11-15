@@ -2085,12 +2085,12 @@ async function editorPaintChecks(browser) {
     ed.history.execute('Place', {
       kind: 'batch',
       commands: [
-        { kind: 'addEntities', entities: [block('paint_blk', [16, 0, 0], [3, 2, 3]), block('paint_thin', [16, 0, 8], [4, 3, 0.1])] },
-        { kind: 'addTiles', tiles: [{ id: 'paint_bars', tile: 'core.room', x: -2, y: 0, z: 0, rotation: 0, edges: { '0,0,0:S': 'bars' } }] },
+        { kind: 'addEntities', entities: [block('paint_blk', [-8, 0, 0], [2, 2, 2]), block('paint_thin', [-8, 0, 6], [3, 3, 0.1])] },
+        { kind: 'addTiles', tiles: [{ id: 'paint_bars', tile: 'core.room', x: 1, y: 1, z: 0, rotation: 0, edges: { '0,0,0:S': 'bars' } }] },
       ],
     });
     ed.setSelection({ tiles: [], entities: [] });
-    ed.view.focus({ x: 0, y: 0, z: 0 });
+    ed.view.focus({ x: 0, y: 0, z: 2 });
   });
   await settle();
   // Structure paint (B), Old Brick.
@@ -2101,7 +2101,7 @@ async function editorPaintChecks(browser) {
   });
   const tool = await page.evaluate(() => window.__editor.tool.kind);
   // Over bare ground: nothing happens, and it says so.
-  let p = await hover(6, 0, -14);
+  let p = await hover(10, 0, -4);
   const groundLabel = await status();
   const ground0 = await page.evaluate(() => window.__editor.doc.terrain.materials.join(''));
   const undo0 = await undoLabel();
@@ -2111,20 +2111,20 @@ async function editorPaintChecks(browser) {
   check(tool === 'paint' && /Structure paint doesn't paint the ground\. Use Ground paint \(Shift\+B\)/.test(groundLabel) && groundAfter.same && groundAfter.undo === undo0 && /Ground paint/.test(groundAfter.toast), `Structure paint over bare ground changes nothing and says so (${JSON.stringify({ tool, groundLabel, ...groundAfter })})`);
   await shot('ground-refused');
   // A free block, then a thin wall at its very edge.
-  p = await hover(16, 2, 0);
+  p = await hover(-8, 2, 0);
   const blockLabel = await status();
   await page.mouse.click(p.x, p.y);
   await settle();
   const blk = (await doc()).entities.find((e) => e.id === 'paint_blk');
   check(blk.material === 'core.red_brick' && /Block/.test(blockLabel) && (await undoLabel()) === 'Paint block', `Structure paint paints a free block, one undo step (${JSON.stringify({ material: blk.material, blockLabel, undo: await undoLabel() })})`);
-  p = await hover(17.97, 1.5, 7.95);
+  p = await hover(-6.52, 1.5, 5.95);
   await page.mouse.click(p.x, p.y);
   await settle();
   const thin = (await doc()).entities.find((e) => e.id === 'paint_thin');
   check(thin.material === 'core.red_brick', `a thin wall (10 cm) paints, at its very edge (${thin.material})`);
   // The bars: their own Metal surface (never the walls').
   await page.evaluate(() => (window.__editor.paint.paintStyle = { material: 'core.brass', tint: null }));
-  p = await hover(-16, 0.06, -4.02);
+  p = await hover(8, 0.06, 3.99);
   const barLabel = await status();
   await shot('cursor-label');
   await page.mouse.click(p.x, p.y);
@@ -2134,13 +2134,13 @@ async function editorPaintChecks(browser) {
   // A ground material never goes on a wall: refused, with the reason.
   await page.evaluate(() => (window.__editor.paint.paintStyle = { material: 'core.pbr_gravel', tint: null }));
   const before = JSON.stringify((await doc()).classicStructure.tiles);
-  p = await hover(-16, 2, 3.9);
+  p = await hover(3.99, 2, 8);
   const wallLabel = await status();
   await page.mouse.click(p.x, p.y);
   await settle();
   check(JSON.stringify((await doc()).classicStructure.tiles) === before && /floors and roofs only/.test(wallLabel + (await toast())), `a ground material is refused on a wall, with the reason (${wallLabel})`);
   // On a floor it goes (2a).
-  p = await hover(-17, 0, 1);
+  p = await hover(8, 0, 11);
   await page.mouse.click(p.x, p.y);
   await settle();
   check((await doc()).classicStructure.tiles.find((t) => t.id === 'paint_bars').surfaces?.floor?.material === 'core.pbr_gravel', 'a ground material paints a floor');

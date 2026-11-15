@@ -5,9 +5,9 @@ Lane B's splitters22, 2026-11-15. A plan only: no code yet. It answers the QUEUE
 
 | | |
 |---|---|
-| Status | Written. Waiting on the owner's answers (the questions near the end). |
+| Status | Owner: all picks (1a–8a), 2026-11-15, and every part of a set piece designable. **Phase 1 built** ("Phase 1: as built", below), with per-part set-piece paint brought forward from Phase 5. |
 | Pictures | `map-briefs/painting/mockup-painters.png` (the two painters, the cursor label) and `map-briefs/painting/mockup-theme-warning.png` (the layers, Map settings, the warning). Their HTML sources are beside them. |
-| Map format | Two bumps, each the next free number when it lands (main is v39 today; HANDOFF gives v40 to the tunnel kit's later steps). |
+| Map format | **v41** (Phase 1: a tile's `metal` surface and a set piece's `overrides.paint`; v40 stays free for the tunnel kit). Format change A (the Ground theme, Phase 4) takes the next free number when it lands. |
 | Shipped maps | Look exactly the same after every phase. A test proves it. |
 
 ## The owner's direction, in short
@@ -259,6 +259,50 @@ Each phase is small and lands green by itself. Phases 1–3 need no format chang
   - a free block and a thin wall paint;
   - Ground paint under a building leaves its walls.
 - E2E (`editorux`): today's "Paint from far out paints the ground" check moves to Ground paint.
+
+**Phase 1: as built (2026-11-15, lane B's splitters22, `wip/painting-1`).**
+- **The bars bug first** (owner, 2026-11-15): a Cage Block's bars drew in its walls' Stone (and `ROLE_THEME_SLOT` sent
+  metal to the theme's solids), so a theme or look change made them brick. Now a tile has a **Metal** surface
+  (`surfaces.metal`, format v41; `SURFACE_SLOTS`): edge styles with `"paint": "metal"` (bars, barred gate, railing)
+  draw their segments and trim in it. Unpainted it is the theme's optional `metal` (content/materials.json, checked to
+  be a Metal) else `DEFAULT_METAL` (`core.pbr_steel`). `ROLE_THEME_SLOT.metal` is `metal`, and a metal role no look
+  gives resolves to that metal in expansion too. Cage Block's barred pens take the look's metal role (brass in the
+  Imperial and Desert looks, steel in Medieval; brass in Gothic). `metalBars.test.ts`: every bar, gate and railing
+  face, across every theme and every look, is a Metal. The tile inspector shows a Metal row only on tiles that have
+  some. Shipped maps that change, all on purpose: the 18 whose own tiles have bars or railings (railings and bars were the theme's
+  walls: brick, concrete, plaster; now iron) and blackout, crossroads, iron_maw (a Loading Dock's metal blocks on a
+  theme with no look: were the theme's solids, now iron), and the coverage map. No map file changed.
+- **Structure paint (B)** (`paintTools.ts`, shared `editor/paintTargets.ts`): the Paint tool, on the Build and
+  Environment bars. It casts at everything drawn but the invisible walls (`hover.ts`); boxes thinner than 20 cm are
+  caught 4 cm outside their faces. It paints a tile's slot, a free block (scopes as for tiles: same type = the same
+  material), a set-piece part, and bars (the Metal slot). Over bare ground it does nothing and the status line and a
+  toast say "Structure paint doesn't paint the ground. Use Ground paint (Shift+B)."; a prop says "Prop: its own model,
+  not paintable", glass that it stays glass. A miss never paints the ground; `terrainMaterialFor` is gone from the
+  paint path. The status line says what is under the cursor, its look now, and what a click paints where (the
+  three-layer chain is Phase 2).
+- **2a**: a Ground material goes on a tile's floor and roof (and a block: slabs and ramps, as the Parking Deck Ramp's
+  asphalt), never on walls, trim, pillars, the underside or metal: refused with the reason, left out of the tile
+  inspector's lists for those slots and of the set-piece roles but floor, paving and roof. Structure paint's list
+  heads the ground materials "Ground (floors and roofs only)".
+- **Ground paint (Shift+B)**: the Terrain tool's Paint brush, named Ground paint (its button on the Terrain tab, a
+  Ground button on the Environment bar, the line under the bar). Its list is the eight ground layers (Phase 4 brings
+  the rest). It never touched buildings; it passes under them. T cycles the sculpt brushes only.
+- **Set pieces, every part (owner's 5a and extra ask), brought forward from Phase 5's format change B:** a new
+  "On a set piece" choice in the Paint tab, **Across the piece** (default) or **This surface only**. Across the piece
+  sets the role in this placement (`overrides.roles`: all its Paving, say) and clears part paint it reaches; a slot or
+  block with no role paints every part given the same way. This surface only writes `overrides.paint` (by part index,
+  as `hide`): a tile part's surfaces, a block part's material. Expansion applies it last, so it wins over the role and
+  the look; it lasts through a theme change, mirror, turn, Explode and the file; paint on a part without that surface
+  is a validator warning. Props, doors, ladders and lights have no paintable surface. Saved looks and `lookDefs`
+  stay in Phase 5.
+- **Undo**: every click or drag is one step (tiles, blocks, set pieces, the ground stroke).
+- Tests: `paintTargets.test.ts` (targets, refusals, the 2a rule, commands, set-piece paint lasting),
+  `metalBars.test.ts`, keymap. E2E: `editortools` (`editorPaintChecks`: the ground refused, a block, a 10 cm wall at its
+  edge, bars, gravel refused on a wall and taken by a floor, undo, Shift+B's list and a stroke under a room),
+  `editorpieces` (`editorPiecePaintChecks`: across the piece, one pen's bars, a theme change, undo), `editorux` (far-out
+  Ground paint, the tool bars).
+- Open for the owner: whether a Cage Block's bars should follow the look's metal (brass in Imperial) or stay iron in
+  every look; railings in iron on the 18 maps that have them (pictures with the landing).
 
 **Phase 2: the layers on the cursor, and the warning.**
 - What it does:
