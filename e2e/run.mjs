@@ -3262,6 +3262,8 @@ async function editorSetPieceChecks(browser) {
     window.__editor.setSelection({ tiles: [], entities: [], setPieces: [id] });
   }, gate.id);
   await settle();
+  // The issues list comes from the map check in its worker, after the edits above: wait for it (a busy check runs late).
+  await page.waitForFunction(() => [...document.querySelectorAll('#ed-issues li')].some((li) => /faces a wall/.test(li.textContent)), null, { timeout: T(20000) }).catch(() => {});
   const ports = await page.evaluate(() => ({
     warn: [...document.querySelectorAll('#ed-inspector .ed-sp-ports li.warning')].map((li) => li.textContent),
     issue: [...document.querySelectorAll('#ed-issues li')].map((li) => li.textContent).find((t) => /faces a wall/.test(t)) ?? null,
