@@ -7,7 +7,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/core/Meshes/meshLODLevel';
-import { PROP_SECTOR, PropBatches } from '../src/game/propBatches.ts';
+import { PROP_SECTOR, PropBatches, propSectorSize } from '../src/game/propBatches.ts';
 import { buildShadowProxies, proxyable } from '../src/game/shadowProxy.ts';
 
 const engines: NullEngine[] = [];
@@ -131,5 +131,24 @@ describe('static prop batches', () => {
     expect(near.every((m) => m.layerMask === 0 && m.isEnabled() && m.thinInstanceCount === 1)).toBe(true);
     batches.update(new Vector3(200, 0, 0));
     expect(near.every((m) => !m.isEnabled())).toBe(true);
+  });
+  it('batches far copies by wider squares: two squares apart at full detail, one batch at range', async () => {
+    expect([0, 1, 2, 3].map(propSectorSize)).toEqual([PROP_SECTOR, PROP_SECTOR * 2, PROP_SECTOR * 4, PROP_SECTOR * 4]);
+    const s = scene();
+    const src = sources(s, 'tree', true);
+    const batches = new PropBatches(s, async () => src, 15);
+    // Two copies in neighbouring full-detail squares, the same square at the next level.
+    await batches.add('tree', placed(s, 'a', PROP_SECTOR - 8, 0), false, null);
+    await batches.add('tree', placed(s, 'b', PROP_SECTOR + 8, 0), false, null);
+    batches.update(new Vector3(-300, 0, 0));
+    const far = batchMeshes(s).filter((m) => m.isEnabled());
+    expect(far.map((m) => [m.name.includes('_l1_') ? 1 : 0, m.thinInstanceCount])).toEqual([[1, 2]]);
+    // Near both: one full-detail batch in each square.
+    batches.update(new Vector3(PROP_SECTOR, 0, 0));
+    const near = batchMeshes(s).filter((m) => m.isEnabled());
+    expect(near.map((m) => [m.name.includes('_l0_') ? 0 : 1, m.thinInstanceCount])).toEqual([
+      [0, 1],
+      [0, 1],
+    ]);
   });
 });
