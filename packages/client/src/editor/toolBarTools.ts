@@ -27,6 +27,8 @@ export interface BarTool {
   group: 'Tools' | 'Selection' | 'Views and checks' | 'Map tools' | 'Help';
   /** The tool kinds that light it (it is the tool in hand). */
   lights?: readonly Tool['kind'][];
+  /** Lit only when this also holds (Terrain and Ground paint share the terrain tool: its brush tells them apart). */
+  litWhen?: (app: EditorApp) => boolean;
   /** Only live with a selection. */
   needsSelection?: boolean;
   run: (app: EditorApp) => void;
@@ -42,8 +44,9 @@ export const BAR_TOOLS: readonly BarTool[] = [
   { id: 'ed-tb-place', label: 'Place', icon: 'place', key: 'P', title: 'Place the last piece you picked from the palette', tabs: ['build', 'props', 'entities'], group: 'Tools', lights: PLACING_KINDS, run: (a) => a.placeTool() },
   { id: 'ed-tb-erase', label: 'Erase', icon: 'erase', key: 'X', title: 'Erase: click anything to delete it', tabs: ['build', 'props', 'entities', 'environment', 'paths'], group: 'Tools', lights: ['erase'], run: (a) => a.setTool({ kind: 'erase' }) },
   { id: 'ed-tb-walls', label: 'Walls', icon: 'edge', key: 'O', title: 'Walls & openings: doors, windows, arches on any side', tabs: ['build'], group: 'Tools', lights: ['edge'], run: (a) => a.paint.wallsTool(false) },
-  { id: 'ed-tb-paint', label: 'Paint', icon: 'paint', key: 'B', title: 'Paint surfaces and the ground', tabs: ['environment'], group: 'Tools', lights: ['paint'], run: (a) => a.setTool({ kind: 'paint' }) },
-  { id: 'ed-tb-terrain', label: 'Terrain', icon: 'terrain', key: 'T', title: 'Sculpt and paint the terrain', tabs: ['environment'], group: 'Tools', lights: ['terrain'], run: (a) => a.terrain.setTerrainBrush(a.terrain.terrainBrush) },
+  { id: 'ed-tb-paint', label: 'Paint', icon: 'paint', key: 'B', title: 'Structure paint: tiles, blocks, bars and set pieces (never the ground)', tabs: ['build', 'environment'], group: 'Tools', lights: ['paint'], run: (a) => a.setTool({ kind: 'paint' }) },
+  { id: 'ed-tb-groundpaint', label: 'Ground', icon: 'terrain', key: 'Shift+B', title: 'Ground paint: the ground only; buildings stay as they are', tabs: ['environment'], group: 'Tools', lights: ['terrain'], litWhen: (a) => a.terrain.terrainBrush === 'paint', run: (a) => a.terrain.setTerrainBrush('paint') },
+  { id: 'ed-tb-terrain', label: 'Terrain', icon: 'terrain', key: 'T', title: 'Sculpt the terrain (raise, lower, smooth, flatten, roughen, plants)', tabs: ['environment'], group: 'Tools', lights: ['terrain'], litWhen: (a) => a.terrain.terrainBrush !== 'paint', run: (a) => a.terrain.terrainTool(false) },
   { id: 'ed-tb-envbrush', label: 'Plants', icon: 'envbrush', key: 'N', title: 'Environment brush: paint trees, rocks and plants as a mix (settings in the Nature tab)', tabs: ['environment'], group: 'Tools', lights: ['envbrush'], run: (a) => a.setTool({ kind: 'envbrush' }) },
   { id: 'ed-tb-paths', label: 'Paths', icon: 'path', key: 'G', title: 'Paths: roads, streets and trails (Shift+G: the track for NPC traffic)', tabs: ['paths'], group: 'Tools', lights: ['path', 'route'], run: (a) => a.setTool({ kind: 'path' }) },
   { id: 'ed-tb-bothints', label: 'Bot hints', icon: 'bothint', key: 'Y', title: 'Bot hints: mark spots, chokes and jumps for bots', tabs: ['entities', 'test'], group: 'Tools', lights: ['bothint'], run: (a) => a.setTool({ kind: 'bothint', hint: a.lastHint }) },
@@ -76,6 +79,6 @@ export function overflowGroups(): { group: BarTool['group']; tools: BarTool[] }[
 }
 
 /** Whether `tool` (the one in hand) lights this bar tool. */
-export function lightsFor(t: BarTool, tool: Tool): boolean {
-  return !!t.lights?.includes(tool.kind);
+export function lightsFor(t: BarTool, tool: Tool, app?: EditorApp): boolean {
+  return !!t.lights?.includes(tool.kind) && (!t.litWhen || !app || t.litWhen(app));
 }

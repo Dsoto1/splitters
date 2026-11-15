@@ -52,12 +52,13 @@ describe('the right dock (dockPrefs)', () => {
 describe('the contextual tool bar (toolBarTools)', () => {
   const ids = (ws: string) => barToolsFor(ws).map((t) => t.id);
 
-  it("puts Paint, Terrain and the Environment brush on the Environment tab's bar only (the owner's answer 2)", () => {
-    for (const id of ['ed-tb-paint', 'ed-tb-terrain', 'ed-tb-envbrush']) {
+  it("puts Ground paint, Terrain and the Environment brush on the Environment tab's bar only (the owner's answer 2), Structure paint on Build's too (painting plan Phase 1)", () => {
+    for (const id of ['ed-tb-groundpaint', 'ed-tb-terrain', 'ed-tb-envbrush']) {
       expect(BAR_TOOLS.find((t) => t.id === id)?.tabs).toEqual(['environment']);
     }
-    expect(ids('environment')).toEqual(expect.arrayContaining(['ed-tb-paint', 'ed-tb-terrain', 'ed-tb-envbrush']));
-    expect(ids('build')).toEqual(['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-walls', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help']);
+    expect(BAR_TOOLS.find((t) => t.id === 'ed-tb-paint')?.tabs).toEqual(['build', 'environment']);
+    expect(ids('environment')).toEqual(expect.arrayContaining(['ed-tb-paint', 'ed-tb-groundpaint', 'ed-tb-terrain', 'ed-tb-envbrush']));
+    expect(ids('build')).toEqual(['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-walls', 'ed-tb-paint', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help']);
     expect(ids('test')).toEqual(['ed-tb-select', 'ed-tb-bothints', 'ed-tb-measure', 'ed-tb-notes', 'ed-tb-plan', 'ed-maptest', 'ed-tb-keys', 'ed-tb-help']);
   });
 

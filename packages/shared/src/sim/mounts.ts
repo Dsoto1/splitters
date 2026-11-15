@@ -10,6 +10,7 @@
 
 import { MOUNT_DEFS, MOUNT_MODELS, ROUTE_CRAFT_DEFS } from '../content/mounts.generated.ts';
 import type { SuspensionTuning } from './suspension.ts';
+import type { RigidTuning } from './wheelPhysics.ts';
 import type { ResupplySpec } from './resupply.ts';
 
 /**
@@ -202,6 +203,12 @@ export interface MountDef {
      * dives under braking and lands bouncing. Absent: the body is drawn settling to the ground (View.suspend).
      */
     suspension?: SuspensionTuning;
+    /**
+     * Rigid driving (sim/wheelPhysics.ts, docs/DRIVING_PHYSICS_PLAN.md): the chassis is a real body on its
+     * suspension's wheels, with tyre grip that can fail; `on` false keeps the classic driving unless a match asks for
+     * rigid (MatchOptions.drive, `?drive=rigid`). Needs `suspension`. Absent: classic driving.
+     */
+    rigid?: RigidTuning & { on: boolean };
     /** Share of tyre grip lost at top speed (rising with the square of speed): loose at speed, so it powerslides. Default 0. */
     drift?: number;
     /** Tracks: turns on the spot at this rate (rad/s) standing still, fading out by 5 m/s (where steering takes over). Default none. */
@@ -489,4 +496,17 @@ export function arcSentryIssues(entities: readonly { kind: string; id: string; p
     if (near) out.push({ severity: 'warning', code: 'mount.arc_spawn', message: `${getMountDef(e.model)!.displayName} ${e.id} is ${near.d.toFixed(1)} m from spawn ${near.id}: players it shoots at could spawn inside its wind-up. Keep it ${ARC_SENTRY_SPAWN_CLEAR} m away, or give it that spawn's team`, targetId: e.id });
   }
   return out;
+}
+
+/** Look-to-steer's gain: steering (-1..1) per radian between where the driver looks and where the vehicle points. */
+export const LOOK_STEER_GAIN = 2.2;
+
+/**
+ * Look-to-steer (the Warthog way): the wheel turns toward where the driver looks (`lookYaw`), on top of A/D
+ * (`right`); backing up it steers the other way round, so the nose still swings toward the look. The match and the
+ * driver's own prediction of a rigid vehicle (client vehiclePrediction.ts) both use it.
+ */
+export function lookSteer(right: number, lookYaw: number, vehicleYaw: number, speed: number): number {
+  const off = Math.atan2(Math.sin(lookYaw - vehicleYaw), Math.cos(lookYaw - vehicleYaw));
+  return Math.max(-1, Math.min(1, right + off * LOOK_STEER_GAIN * (speed < -0.5 ? -1 : 1)));
 }

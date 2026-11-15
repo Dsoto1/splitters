@@ -343,6 +343,63 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
   gate corner (placed in MapMaker); its unit test requires every set piece and kit tile, option twins included.
 - **Not done (phase 4):** Flavius Rule itself. Not checked: a match on a map with the gate corner, the M1.
 
+### Phase 4: as built (2026-11-15, `wip/flavius-octagon-4`, lane B's splitters22)
+- **Driven in the real MapMaker** (a `vite preview` build, Playwright as a person: Import, the Select tool's drag-box,
+  Delete, clicks, the Set pieces palette, R, the inspector's fields, the tile type select, the set piece's Parts list,
+  Map settings, Set card shot, Export). No map JSON edited by hand; no editor code changed.
+- **The tower's faces** (owner's phase-3 answer 3a): arrow slits and a string course on `core.arena_corner_tower`
+  (`tools/content/kit/arenaCorner.mjs` `towerFaces`), drawn only: its collision is phase 3's exactly (291 boxes,
+  hashed in `arenaCornerGate.test.ts`), trim 40 → 60. Palette pictures re-rendered.
+- **Step 1-2, cleared:** on levels 0, 2, 4 and 6 a drag-box from each corner's outer edge over the two end lines of
+  each stand and the court (8 boxes a level, each deleted at once): 116 set pieces (the end lines' podiums, tiers,
+  vomitoria, arcades and attics, the four Stair Towers), the four Gladiator Gate tiles, the four Platform tiles over the
+  ring's corners and the four court Open Stairs (they reach level 0); the eight legion standards on the end bays'
+  podium walls, one by one. The map's logic, spawns and pickups were hidden (View → map layers) so the box kept them.
+  (A first try with Shift-added boxes over many levels caught the selection's rotate ring and moved pieces; it was
+  thrown away by importing again.)
+- **Step 3, the sand:** the four Courtyard tiles on the corner cells (±3, ±3) deleted; the half cells beside them stay
+  (45 sand cells: 33 Courtyard + 16 Corner Hatch less 4). Sand 3,136 → 2,624 m².
+- **Step 4, the corners:** `setpiece.arena_corner_gate` at (2, 2) R0 (north-east), (2, −2) R1, (−2, −2) R2, (−2, 2) R3,
+  each ghost green. Their own portcullis (part 5) is unticked in each placement's Parts list (`overrides.hide: [5]`),
+  so the map's Gate 1-4 doors and rules carry on.
+- **Step 5, gates:** Gate 4 (NE) (20.707, 0, 20.707) facing 45°, Gate 1 (SE) 135°, Gate 2 (SW) 225°, Gate 3 (NW) 315°:
+  the set piece's own slab, 1 m in from the podium's face, still raised at the start. Winches in the passage 3.5 m in,
+  1.1 m off the centre line, facing across it (NE (21.7, 23.25)); chains on the sand against the podium 2.6 m to the
+  side (NE (17.88, 21.56)), the others mirrored; each within 3 m of its door. The eight rules are unchanged.
+- **Step 6, hypogeum:** the ring's four corner tiles (±4, ±4, −1) turned from Junction into **Vaulted Tunnel Crossing**
+  in the inspector (owner 1a), keeping their paint; open to both stair wells. No ground flattening was needed (nav
+  audit).
+- **Step 7, fill:** the ten "Stand fill" blocks 24 m along their stand (N/S width, E/W depth).
+- **Step 8, spawns** (7a): the same 24 team spawns moved. Per corner, four on the gate passage's centre line at
+  37.48, 43.84, 49.5 and 53.2 m along each axis (53, 62, 70 and 75 m from the centre; the innermost first went at
+  31.8 m, over the hypogeum's lowered ground, which validate-map flags as no floor), facing the sand; two in the outer
+  court at (52.5, 78) and (78, 52.5) (mirrored), clear of the tower. Pickups moved off the new podium: grenades
+  (±20, ∓20) → (±20, ∓12); health (±56, ±56) → (±72, ±72); spears (∓60, ±56) → (∓74, ±70).
+- **Step 10, Map settings:** the description rewritten (no lift cages, beast lift, aqueduct or portal); a card camera
+  at (−70, 120, −150), yaw 0.44, pitch −0.68 (the octagon from the south-west, eye level off). Modes unchanged: TDM
+  (default), CTF, King of the Hill, Deathmatch; 12 v 12, 8-24 players.
+- **Kept:** 4 m squares, the board's pillars, hatches, medallions and beast pit, the emperor's box, the hypogeum, the
+  village, the volcano. The file saves at map format v39 (MapMaker's own).
+- **Budget:** collision boxes **22,240 → 17,900**; drawn trim 29,811 → 43,379; lights 253 → 245 of 256; doors 28.
+- **Checks:** validate-map 0 issues; nav audit 0 traps, 0 errors, islands 14 (9,025 m²) → 15 (11,017 m²): the new one
+  is the middle gallery ring (level 2, depth 24-32), which now has no way in (see the questions); `stylePacksAncient`
+  updated (gate corners, crossings, 45 sand cells, gates on the diagonals, fill at 24 m, box cap 20,000, spawns,
+  description). Bench (24 bots, TDM, 60 s, load ~12): 3.42 → 3.62 ms a tick (p95 7.77 → 7.92) of 16.7.
+- **Client perf** (`PERF_STILL=1`, SwiftShader, mean of the four still views; old map built the same way): low draw
+  calls 185 → 185, triangles 1.18 → 1.28 M; medium draws 212 → 205, triangles 1.29 → 1.39 M, shadow casters 96 → 88.
+  Not measured on the owner's M1.
+- **Pictures** (the session's scratchpad `oct4-shots/`): MapMaker's plan before and after, an aerial before and after,
+  eye level from the sand toward the north-east gate and the south-east one, the north-east tower's lookout and outside
+  face, a match, the card picture (`packages/client/public/maps/shots/sandfall_colosseum.jpg`, retaken from the card
+  camera).
+- **Bots** (bot-report, 24 bots (DM 16), 240 s, seeds 1/2/3; stuck recoveries before → after): TDM 75/56/106 →
+  86/47/83 (kills 147/166/106 → 156/112/138); CTF 234/324/232 → 148/261/161 (captures 6/4/6 → 7/8/9, tide 0/0/1);
+  King of the Hill 118/104/99 → 126/95/131 (hill held 37/74/65 → 77/94/68 s); Deathmatch 42/79/117 → 28/28/41. The
+  old court stairs' stuck spots are gone. New ones: the gate passage where it crosses the podium gallery (about
+  (±24, 0, ±24..28); KotH 130 of its listed recoveries, "cover" and "fight"), a south-east stair well in one CTF match
+  ((40, −2, −35), 98 recoveries of a flag runner), the hatch halls as before. The towers and podium stairs barely show.
+- **Not done (phase 5):** the stuck spots above; the middle gallery's way in; the M1.
+
 ## 8. The owner's decisions
 
 1. **How big is the octagon?**
@@ -383,3 +440,11 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
 
 ### The owner's answers on phase 3 (2026-11-15: "Rec works")
 1a: a Vaulted Tunnel Crossing at the hypogeum ring's corner takes both stair wells. 2a: the wells stay below unclaimed cells; documented. 3a: the tower's outside faces get arrow slits and a string course, drawn only (no collision), in phase 4. 4a: the podium stairs stay as built, 2.4 m out on the sand.
+
+### The owner's answers on phase 4 (2026-11-15: "1a 2b 3b 4a")
+1. The sealed middle gallery ring: (a) phase 5 adds a stair up into it from the ground gallery at each corner, in the kit.
+2. The new bot stuck spots (gate passage by the gallery, one stair well): (b) left as they are.
+3. CTF favours Embers: (b) left as it is.
+4. Publishing: (a) the owner republishes from MapMaker once phase 4 lands.
+
+Phase 5 is therefore only the gallery stairs.

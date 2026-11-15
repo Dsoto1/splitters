@@ -123,13 +123,13 @@ export class ToolBar {
 
   /** The bar button lit by the tool in hand, if any. */
   private litId(): string {
-    return BAR_TOOLS.find((t) => t.tabs.length && lightsFor(t, this.app.tool))?.id ?? '';
+    return BAR_TOOLS.find((t) => t.tabs.length && lightsFor(t, this.app.tool, this.app))?.id ?? '';
   }
 
   /** The tool in hand lit (setTool), on the bar and in the menu. */
   syncTool(): void {
     for (const t of BAR_TOOLS) {
-      const on = lightsFor(t, this.app.tool);
+      const on = lightsFor(t, this.app.tool, this.app);
       this.buttons.get(t.id)?.classList.toggle('active', on);
     }
     this.syncTab();
@@ -155,7 +155,7 @@ export class ToolBar {
       if (t.id === 'ed-tb-dress-all') off = !doc.classicStructure.tiles.some((x) => dressable(coreCatalog.get(x.tile)));
       if (t.id === 'ed-tb-settle-all') off = !doc.terrain || !doc.entities.some((e) => e.kind === 'prop');
       item.disabled = off;
-      item.classList.toggle('active', lightsFor(t, this.app.tool));
+      item.classList.toggle('active', lightsFor(t, this.app.tool, this.app));
     }
   }
 

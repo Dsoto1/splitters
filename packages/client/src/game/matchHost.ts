@@ -81,6 +81,8 @@ export interface LocalMatchOptions {
    * building one when it was built from the same (Match `nav`).
    */
   nav?: PrebuiltNav | null;
+  /** Rigid driving for every vehicle that has it, or the classic driving for all (`?drive=`; MatchOptions.drive). */
+  drive?: 'classic' | 'rigid';
 }
 
 /** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts): its name only. */
@@ -255,7 +257,7 @@ export class MatchHost {
     const rules = cp?.rules ?? this.opts.rules ?? rulesForMap(this.map);
     const test = this.opts.test;
     const t0 = performance.now();
-    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, nav: this.opts.nav });
+    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, nav: this.opts.nav, ...(this.opts.drive ? { drive: this.opts.drive } : {}) });
     this.loadMs = Math.round(performance.now() - t0);
     if (this.opts.nav !== undefined) {
       console.info(`match made in ${this.loadMs} ms (${match.navReused ? "the navigation check's navmesh" : 'navmesh built'})`);

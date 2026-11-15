@@ -63,6 +63,8 @@ import {
   PhysicsWorld,
   SPEED_BOOST,
   TICK_DT,
+  rigidOf,
+  tippedOver,
   TICK_RATE,
   HOLD_KINDS,
   HOLD_LABEL,
@@ -160,7 +162,7 @@ import { testMode } from '../testMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { DamageNumbers, SprayReadout, autoReloadOn } from './combatReadouts.ts';
-import { MountState } from './mountState.ts';
+import { MountState, type ClientMount } from './mountState.ts';
 import { RiderPlacement } from './riderPlacement.ts';
 import { ownBodyDrawn } from './ownBody.ts';
 import { LocalTransport } from './localTransport.ts';
@@ -201,6 +203,7 @@ import { zoomLookScale } from './lookFilter.ts';
 import { markerSetting } from './crosshair.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
+import { VehiclePrediction, predictVehicles } from './vehiclePrediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
 import { LowHealthWarning } from './lowHealth.ts';
 import { WeatherAudio } from './weatherAudio.ts';
@@ -2060,6 +2063,7 @@ export class GameSession {
             this.livedBefore = true;
             this.wantWeapon = 0;
           }
+          this.trackVehicle(msg.me?.vp);
           this.local.reconcile(me, msg.ack, msg.me, msg.tick);
           this.damageNumbers.take(msg.me?.dd, performance.now());
           // A switch the server has made is done: stop asking for it, or every input would take back the server's
@@ -2605,7 +2609,9 @@ export class GameSession {
     let full: { def: { displayName: string } } | null = null;
     if (local.alive && this.seat) {
       const m = this.mounts?.mounts.get(this.seat[0]);
-      const hint = m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]) ? { key: 'H', text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
+      const drives = !!m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]);
+      // A rigid vehicle on its side or roof: jump rolls it back onto its wheels (wheelPhysics.ts tippedOver).
+      const hint = drives && this.tipped(m) ? { key: 'Space', text: 'Flip back' } : drives ? { key: 'H', text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
       this.hud.setPrompt(m?.def.airplane ? 'Jump out (E or Space), then Space to open your parachute' : `Get out of the ${m?.def.displayName ?? 'vehicle'}`, false, hint);
     } else if (local.alive && local.state.zip !== undefined) {
       const two = local.weapon && !oneHanded(local.weapon);
@@ -2907,6 +2913,47 @@ export class GameSession {
     this.wantWeapon = slot;
   }
 
+  /**
+   * Driving a rigid vehicle (PrivateState.vp): predict it (vehiclePrediction.ts), from the snapshot that first
+   * carries it until one doesn't (out of the seat, wrecked, or a host without rigid driving).
+   */
+  private trackVehicle(vp: readonly number[] | undefined): void {
+    const local = this.local;
+    if (!local) return;
+    const have = local.vehicle;
+    if (have && (!vp || vp[0] !== have.mount)) {
+      have.dispose();
+      local.vehicle = null;
+    }
+    if (!vp || local.vehicle || !predictVehicles()) return;
+    const m = this.mounts?.mounts.get(vp[0]!);
+    const setup = m ? rigidOf(m.def) : null;
+    if (!m || !setup) return;
+    local.vehicle = new VehiclePrediction(m.index, m.def, setup, local.physics, m.body, vp);
+  }
+
+  /** Your rigid vehicle is on its side or roof and still: jump flips it back (predicted state, else the snapshots'). */
+  private tipped(m: ClientMount): boolean {
+    const v = this.local?.vehicle;
+    if (v && v.mount === m.index) return tippedOver(v.state);
+    const t = rigidOf(m.def);
+    if (!m.susp || !t) return false;
+    // The snapshot's pitch and roll (drawn yaw, pitch, roll): its up axis's height is cos(pitch) cos(roll).
+    return Math.cos(m.susp.p) * Math.cos(m.susp.r) < 0.45 && Math.hypot(m.vel.x, m.vel.y, m.vel.z) < 2.5 && m.susp.wheel.filter((w) => w > 0.01 - t.travel).length < 2;
+  }
+
+  /** Your predicted vehicle drawn where prediction has it (between its last two ticks), not where the snapshots do. */
+  private drawPredictedVehicle(dt: number): void {
+    const v = this.local?.vehicle;
+    const m = v && this.mounts?.mounts.get(v.mount);
+    if (!v || !m || !m.alive) return;
+    v.fade(dt);
+    const pose = v.pose(this.acc / TICK_DT);
+    m.shown.pos = pose.pos;
+    m.shown.yaw = pose.yaw;
+    m.susp = { h: 0, p: pose.pitch, r: pose.roll, steer: pose.steer, wheel: pose.comp };
+  }
+
   /** Advance prediction at a fixed 60 Hz and render one frame. */
   /** The tutorial (opts.tutorial) and the first-time tips (opts.tips): coachHud.ts draws both. */
   private coach: CoachHud | null = null;
@@ -3194,6 +3241,7 @@ export class GameSession {
 
       // Seated: the camera rides the vehicle (cockpit or chase, see VehicleCamera); seat guns replace your own weapon.
       this.mounts?.smooth(dt);
+      this.drawPredictedVehicle(dt);
       // Vehicles are posed before the camera, so a cockpit view rides the model drawn this frame (no lag, no jitter).
       if (this.mounts) this.view.updateMounts(this.mounts.mounts.values(), this.mannedTurret());
       const ride = local.alive && this.seat ? this.mounts?.mounts.get(this.seat[0]) : undefined;

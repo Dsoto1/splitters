@@ -27,7 +27,7 @@ function v38(): Record<string, unknown> {
 
 describe('map format v39: race mode\'s dead track settings dropped', () => {
   it('the v38 -> v39 migration drops laps, grid, vehicle and combat and keeps the rest of the track', () => {
-    expect(MAP_FORMAT_VERSION).toBe(39);
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(39);
     expect(MIGRATIONS.get(38)).toBe(dropRaceSettingsV39);
     const before = v38();
     const copy = JSON.parse(JSON.stringify(before));
@@ -89,7 +89,7 @@ describe('map format v39: race mode\'s dead track settings dropped', () => {
   it('a map stamped before v39 keeps its version: the dropped settings were all that changed', () => {
     let stamped = 0;
     for (const f of shipped) {
-      const file = raw(f) as { metadata: { release?: { versionId: string; revision: number } }; paths?: { race?: object }[] };
+      const file = raw(f) as { metadata: { release?: { versionId: string; revision: number; schemaVersion: number } }; paths?: { race?: object }[] };
       if (!file.metadata.release || !file.paths?.some((p) => p.race)) continue;
       stamped++;
       for (const forEditing of [false, true]) {
@@ -98,7 +98,9 @@ describe('map format v39: race mode\'s dead track settings dropped', () => {
         if (!r.ok) continue;
         // (As played the map is expanded, so only the map as made hashes to its stamp.)
         if (forEditing) expect(releaseCurrent(r.map), f).toBe(true);
-        expect(r.map.metadata.release).toMatchObject({ versionId: file.metadata.release.versionId, revision: file.metadata.release.revision, schemaVersion: MAP_FORMAT_VERSION });
+        // (A stamp from v39 on needed no carrying: it keeps its own format; one from before is carried to today's.)
+        const schemaVersion = file.metadata.release.schemaVersion >= 39 ? file.metadata.release.schemaVersion : MAP_FORMAT_VERSION;
+        expect(r.map.metadata.release).toMatchObject({ versionId: file.metadata.release.versionId, revision: file.metadata.release.revision, schemaVersion });
         // Exporting again keeps the version.
         if (forEditing) expect(stampMapRelease(r.map).metadata.release!.versionId).toBe(file.metadata.release.versionId);
       }

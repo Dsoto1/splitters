@@ -338,12 +338,17 @@ describe('doors turned off the grid', () => {
     it(`${f}: no door is off the grid, so every door blocks, opens and keeps spawns out as before`, () => {
       const loaded = loadMap(readFileSync(new URL(f, mapDir), 'utf8'));
       if (!loaded.ok) return;
-      // (The coverage map, a test map, carries an Arena Corner (Gate): its 45° portcullis is the one door off the grid.)
+      // (The coverage map, a test map, carries an Arena Corner (Gate): its 45° portcullis is off the grid. Flavius Rule
+      // (phase 4) hangs its own Gate 1-4 portcullis doors at 45° in its four gate corners, each piece's own left out.)
       const gate = f === 'test_coverage.json' ? ((JSON.parse(readFileSync(new URL(f, mapDir), 'utf8')).setPieces ?? []) as { id: string; piece: string }[]).find((p) => p.piece === 'setpiece.arena_corner_gate') : undefined;
       for (const e of loaded.map.entities) {
         if (e.kind !== 'door') continue;
-        if (gate && e.id === `sp_${gate.id}_5`) {
+        if ((gate && e.id === `sp_${gate.id}_5`) || (f === 'sandfall_colosseum.json' && /^Gate [1-4]$/.test(e.name ?? ''))) {
           expect(offGrid(e.yaw)).toBe(true);
+          // Its oriented slab, not the 45° square round it, is what blocks and keeps spawns out.
+          const way = doorway(e);
+          const plane = { ...way, half: { ...way.half, z: DOOR.thickness } };
+          expect(orientedAabb(plane).obox).toBeTruthy();
           gates++;
           continue;
         }
@@ -355,8 +360,8 @@ describe('doors turned off the grid', () => {
       }
     });
   }
-  it('every shipped map was looked at: more than 20 doors on the grid, and the coverage map\'s one 45° portcullis', () => {
+  it('every shipped map was looked at: more than 20 doors on the grid, the coverage map\'s one 45° portcullis and Flavius Rule\'s four', () => {
     expect(doors).toBeGreaterThan(20);
-    expect(gates).toBe(1);
+    expect(gates).toBe(5);
   });
 });

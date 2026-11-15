@@ -227,6 +227,12 @@ one by adding an entry.
 
 ## Suspension (the Warthog feel)
 
+**Rigid driving (2026-11-15, the Troop Buggy):** the Troop Buggy is a real body on these springs now: the springs push
+the chassis itself, so it pitches, rolls and can flip, and its tyres have a friction limit (it slides back down slopes
+past about 46°, drifts flat out, the handbrake locks the rear). The driver's own buggy is predicted. Everything below
+still describes the other vehicles; the design, numbers and netcode are in docs/DRIVING_PHYSICS_PLAN.md
+(`?drive=classic` drives the old way, `?vehiclepredict=0` turns the prediction off).
+
 The buggy, the gun jeep and the troop truck ride on **raycast suspension** in the simulation
 (`shared/src/sim/suspension.ts`, tuning in `MOUNT_DEFS[…].vehicle.suspension`):
 one ray straight down per wheel each tick finds the ground under it, and a
