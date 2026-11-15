@@ -200,6 +200,23 @@ describe.each([0, 1, 2, 3] as Rotation[])('the gate corner between straight stan
     }
   });
 
+  it('bots go from the sand through the gate passage into the ground gallery and up each gallery stair (phase 5) into the middle gallery, and back', () => {
+    const sand = onDiagonal(k, 0, -6, 0);
+    for (const s of [-1, 1]) {
+      const side = s < 0 ? 'west' : 'east';
+      const mid = onDiagonal(k, 10 * s, 29, 8);
+      const up = route(nav, sand, mid);
+      expect(up, `up the ${side} stair`).not.toBeNull();
+      // On that stair's flights (in the fill behind the ground gallery, between the floors), not round by another way.
+      const onStair = (p: { u: number; v: number; y: number }) => p.u * s > 4.9 && p.u * s < 15.4 && p.v > 16 && p.v < 27 && p.y > 0.6 && p.y < 7.6;
+      expect(inDiagonal(k, up!).some(onStair), `up the ${side} stair`).toBe(true);
+      expect(pathLength(up!), `up the ${side} stair`).toBeLessThan(70);
+      const down = route(nav, mid, sand);
+      expect(down, `down the ${side} stair`).not.toBeNull();
+      expect(inDiagonal(k, down!).some(onStair), `down the ${side} stair`).toBe(true);
+    }
+  });
+
   it('the 45° portcullis blocks its own slab when shut and lets bots through when open', () => {
     const shut = new Match(played(gateMap(k), true), undefined, 1);
     const [b] = shut.scenario.blockers(null);
