@@ -148,6 +148,7 @@ import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type Chara
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep, animStepByShare } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
+import { FrameSpread } from './frameSpread.ts';
 import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts';
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
@@ -344,6 +345,11 @@ const BODY_POOL_PER_LOOK = 2;
  * (about 30,000 entries, which every clip start and stop searches: St. John's, 2026-11-10).
  */
 const BODY_POOL_TOTAL = 16;
+/**
+ * Time (ms) a frame may spend putting away going characters (View.retireAvatar: back to the body pool, or disposed),
+ * after the first step: a crowded match past MAX_CORPSES lost a body with every death, a new round all of them at once.
+ */
+const RETIRE_MS = 1.5;
 /** Frames longer than this (ms: a CPU-rendered page) let more than one character be built after them (one per 16 ms). */
 const BUILD_CATCH_UP_MS = 250;
 /** Ragdoll parts parked in the effects world's pool when the map is built (a standard body's, this many times). */
@@ -1175,7 +1181,7 @@ export class GameView {
     a.flash?.setEnabled(false);
     a.flashRig?.hide();
     this.corpses.push({ a, slot, born: performance.now() });
-    while (this.corpses.length > (this.keepBodies ? MAX_CORPSES_KEPT : MAX_CORPSES)) this.disposeAvatar(this.corpses.shift()!.a);
+    while (this.corpses.length > (this.keepBodies ? MAX_CORPSES_KEPT : MAX_CORPSES)) this.retireAvatar(this.corpses.shift()!.a);
   }
 
   /** Ray test against the level's static shapes (null before the map is built). */
@@ -1190,7 +1196,7 @@ export class GameView {
 
   /** Remove every body (a new round). */
   clearCorpses(): void {
-    for (const c of this.corpses) this.disposeAvatar(c.a);
+    for (const c of this.corpses) this.retireAvatar(c.a);
     this.corpses = [];
     this.lyingDead.clear();
   }
@@ -1448,7 +1454,7 @@ export class GameView {
         const age = (now - c.born) / 1000 - CORPSE_STAY;
         if (age <= 0) return true;
         if (age >= CORPSE_SINK) {
-          this.disposeAvatar(c.a);
+          this.retireAvatar(c.a);
           return false;
         }
         // Sink into the ground: the ragdoll lets go and the body slides down.
@@ -2072,6 +2078,8 @@ export class GameView {
     let deathsStarted = 0;
     // Fresh deaths start their bodies nearest first, RAGDOLL_BUDGET.startsPerFrame a frame at most (and DEATH_START_MS
     // of work): a blast that kills thirty spreads its starts over a few frames, the ones you see best first.
+    // Last frames' going characters first: one back in the pool can be this frame's respawn.
+    this.retiring.run();
     const starting = this.deathsToStart(poses, eye);
     for (const p of poses) {
       if (p.slot === localSlot) {
@@ -2116,7 +2124,7 @@ export class GameView {
       const want = spec(p.slot);
       const key = JSON.stringify(want);
       if (a && a.specKey !== key) {
-        this.disposeAvatar(a);
+        this.retireAvatar(a);
         a = undefined;
       }
       if (!a) {
@@ -2365,7 +2373,7 @@ export class GameView {
     this.statusFx.flush(now, reduceFlashing());
     for (const [slot, a] of this.avatars) {
       if (!seen.has(slot)) {
-        this.disposeAvatar(a);
+        this.retireAvatar(a);
         this.avatars.delete(slot);
       }
     }
@@ -2790,6 +2798,54 @@ export class GameView {
       b.mesh.thinInstanceCount = b.count;
       b.mesh.thinInstanceBufferUpdated('matrix');
     }
+  }
+
+  /** Going characters' remaining steps (retireAvatar), RETIRE_MS of them a frame. */
+  private readonly retiring = new FrameSpread(RETIRE_MS);
+
+  /** Characters still being put away (tests). */
+  retiringSteps(): number {
+    return this.retiring.size;
+  }
+
+  /**
+   * An avatar going (a body past MAX_CORPSES or sunk away, a new round, a look changed, a player gone): hidden and out
+   * of every list at once, its ragdoll and the rest that ties it to the scene dropped; then over the next frames
+   * (RETIRE_MS a frame) its character back in the body pool (thawing its frozen pose recomputes every joint) or
+   * disposed, and its node tree. A frame that lost several bodies paid for every one (`?perfoff=bodyspread`: so again).
+   */
+  private retireAvatar(a: Avatar): void {
+    if (!perfOn('bodyspread') || this.scene.isDisposed) return this.disposeAvatar(a);
+    if (this.fpBody?.a === a) this.dropFpBody();
+    this.atmosphere.shadowless.delete(a.root);
+    a.root.setEnabled(false);
+    a.hitbox?.dispose();
+    a.hitbox = undefined;
+    a.flash?.material?.dispose();
+    a.flash?.dispose();
+    a.flash = undefined;
+    if (a.flashRig) {
+      a.flashRig.dispose();
+      a.flashRig = undefined;
+      this.remoteRigs--;
+    }
+    a.ragdoll?.dispose();
+    a.ragdoll = undefined;
+    this.dropCanopy(a);
+    this.retiring.push(
+      () => {
+        if (a.anim instanceof CharacterAnimator && this.keepBody(a.specKey, a.anim)) a.anim = undefined;
+      },
+      () => {
+        a.anim?.dispose();
+        a.anim = undefined;
+      },
+      () => {
+        a.weaponNode?.dispose();
+        a.weaponNode = undefined;
+        disposeTree(a.root, true);
+      },
+    );
   }
 
   private disposeAvatar(a: Avatar): void {
@@ -4161,6 +4217,7 @@ export class GameView {
   }
 
   dispose(): void {
+    this.retiring.flush();
     this.weather.dispose();
     setCharacterLodCrowd(false);
     for (const list of this.bodyPool.values()) for (const anim of list) anim.dispose();

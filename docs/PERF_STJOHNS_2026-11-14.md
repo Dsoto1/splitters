@@ -124,3 +124,48 @@ The owner's recording `tiletrigger-perf-st_john_s-2026-11-15-02-01-45.json` (bui
 - The draws fell as measured in software (about 1,490 to 625); shadows saved about 3 ms. renderScene fell only 1 ms for 58 % fewer draws, so the main pass is no longer bound by draw count: next look at what it spends (per-mesh CPU, material/uniform updates, or GPU fill at 1920x1080@2).
 - The match-start spike is gone (no charAnim hitch at 5 s). Of 31 hitches: 13 are outside the frame (browser or GC), 13 renderScene, 3 characters, 2 net (a 10 ms net step).
 - Biggest left per frame: renderScene ~10 ms, characters ~5 ms, shadow ~4 ms, cull ~3 ms.
+
+## The hitches left in the 11-15 recording (2026-11-15, `wip/hitches-1115`)
+
+Read by a helper of lane A's lead from the owner's 11-15 recording and its 10 s trace, then measured in a scratch
+Playwright driver (not in the repo): St. John's, Low, 63 bots, SwiftShader on a loaded 4-core box, three bots killed
+a second so the bodies run past the 32-body limit, then a new round (`clearCorpses`). Going bodies' work (taking a
+body past the limit out, the bodies of a new round, the spread steps) timed in the page per frame; before and after
+in the same build (`?perfoff=bodyspread` is the old code), two runs each.
+
+**Bodies going (the character-body disposal).** When a body goes (past MAX_CORPSES, sunk away on Fade, a new round,
+a look changed, a player gone) its character went back to the body pool, or was disposed, in that frame: thawing its
+frozen pose recomputes every joint (most of it), then the clips, materials and node tree. One body was 1-6 ms here; a
+frame with several deaths paid for each, and a new round all of them at once. Now `View.retireAvatar` hides it and
+drops its ragdoll, hitbox, flash and canopy at once, and the rest goes over the next frames (`game/frameSpread.ts`:
+1.5 ms a frame after the first step, and at least a twentieth of what waits, so a slow page still keeps up). The
+pool is topped up first thing in `updateAvatars`, before that frame's respawns.
+
+| ms of body work in a frame (this box) | before | after |
+|---|---|---|
+| in play: p95 | 4.9, 7.3 | 3.0, 2.7 |
+| in play: worst frame | 15.0 (42.6 when the match replayed and cleared its bodies) | 7.4, 5.1 |
+| a new round with 32 bodies: worst frame | 32.4 (and 42.6, 51.6 at a replay) | 4.7, 7.4 (53 and 44 ms in all, over 31 and 12+ frames) |
+
+Unit tests: `client/test/frameSpread.test.ts`. On an M1 Pro expect roughly a third to a half of these figures.
+
+**The rest of the recording's 31 hitches, not changed here:**
+- **13 outside the frame (60-110 ms, our own work about 25 ms):** garbage collection or the browser. An allocation
+  profile of the page (St. John's, 40 s) puts most of the frame's garbage in Babylon itself: starting and stopping
+  clips (`driveClipGait`: Animatables for every clip change, about 13 MB), the scene's per-frame instance lists
+  (`_registerInstanceForRenderId`, 9 MB), skinning on the CPU (`getPositionData` for `TorsoSurface.measure`, once per
+  new body: 17 MB in 40 s with bots respawning, the biggest site that is ours), `propVisuals.apply` iterating every
+  prop visual as `[id, visual]` pairs each frame (6 MB; Smythe Hall's claim, left alone), interpolation's `sample`
+  (4 MB). Candidates: the torso surface measured once per look instead of once per body (it is a few ms a body too,
+  4-5 ms on an M1 Pro); `propVisuals.apply` over only the visuals that animate.
+- **13 renderScene (8-23 ms of a 50-60 ms frame):** the main pass itself, the "Main scene drawing" item in the queue.
+- **3 characters (10-13 ms, charAnim 5-10 ms):** the frames where several characters' clips start together and a
+  new body measures its torso; the clip starts are Babylon's (`beginDirectAnimation`), the measure is capped at one a
+  frame (match-start fix).
+- **2 net (about 10 ms; one message of 6-13 ms in the trace):** a snapshot with many events, plus the per-snapshot work:
+  reconciling the local player (replaying its inputs), and committing the prediction world after the vehicles move
+  (`mountState.apply`: a physics pipeline step per snapshot, about a tenth of the net time in a profile). Doing them
+  once a frame instead of once a snapshot needs the reconcile moved out of `session.ts`'s message handler (the
+  colliders must be current when it replays), so it is left for its own change.
+- Also seen: a material glow change (`setGlow`, the spawn-protection shimmer easing in tenths) marks every mesh of
+  the scene for a shader check (`_markAllSubMeshesAsDirty` walks `scene.meshes`): about 1 ms a respawn here.

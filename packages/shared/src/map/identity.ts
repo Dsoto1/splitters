@@ -66,6 +66,36 @@ export function releaseCurrent(map: MapDocument): boolean {
   return r.schemaVersion !== map.formatVersion && r.contentHash === mapContentHash({ ...map, formatVersion: r.schemaVersion as MapDocument['formatVersion'] });
 }
 
+/**
+ * A stamp made before format v39 still describes a map whose only change since is v39's: race mode's dead track
+ * settings dropped (migrate.ts dropRaceSettingsV39; they were in the content hash). `raw` is the file as read: its
+ * tracks' old settings (absent: the defaults then) are put back to check the stamp, and a stamp that matches is
+ * carried over to the map as it is now (same mapId, versionId and revision; the new hash and format). Anything else:
+ * the map unchanged.
+ */
+export function carryReleaseOverRaceDrop(raw: unknown, map: MapDocument): MapDocument {
+  const r = map.metadata.release;
+  if (!r || r.schemaVersion >= 39 || !map.paths?.some((p) => p.race) || releaseCurrent(map)) return map;
+  const rawPaths = raw && typeof raw === 'object' && Array.isArray((raw as { paths?: unknown }).paths) ? ((raw as { paths: { id?: unknown; race?: Record<string, unknown> }[] }).paths) : [];
+  const byId = new Map(rawPaths.map((p) => [p.id, p.race]));
+  // The defaults the schema filled in then (the race vehicle's was the Go-Kart until 2026-11-12).
+  for (const vehicle of ['hover_bike', 'kart']) {
+    const old = {
+      ...map,
+      formatVersion: r.schemaVersion as MapDocument['formatVersion'],
+      paths: map.paths.map((p) => (p.race ? { ...p, race: { laps: 3, grid: 8, vehicle, combat: false, ...pick(byId.get(p.id)), ...p.race } } : p)),
+    } as MapDocument;
+    if (mapContentHash(old) === r.contentHash) return { ...map, metadata: { ...map.metadata, release: { ...r, contentHash: mapContentHash(map), schemaVersion: MAP_FORMAT_VERSION } } };
+  }
+  return map;
+}
+
+/** A raw track's race-mode settings (laps, grid, vehicle, combat) as the file has them. */
+function pick(race: Record<string, unknown> | undefined): Record<string, unknown> {
+  if (!race || typeof race !== 'object') return {};
+  return Object.fromEntries(['laps', 'grid', 'vehicle', 'combat'].filter((k) => k in race).map((k) => [k, race[k]]));
+}
+
 /** A versionId derived from a content hash, for maps hosted without a release block (same content, same ID). */
 export const derivedVersionId = (hash: string): string => `v_${hexToBase32(hash.replace(/^sha256:/, '')).slice(0, 16)}`;
 
