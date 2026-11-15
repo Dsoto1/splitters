@@ -70,7 +70,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Waiting on the owner
 - A recording on a real GPU of MapMaker after an edit on a big map (`docs/MAPMAKER_EDITING_REPORT_2026-11-13.md` question 5). The St. John's match recording came in 2026-11-15 (read in `docs/PERF_STJOHNS_2026-11-14.md`); the next one after the main-scene work.
-- Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
+- Lane B: the destructible environment's later steps. Step 1 is on main (props and blocks on an opt-in map, Breakyard); (a), breakable props batched while intact, is done (`wip/destruction-batching`, HANDOFF "Claimed: destructible environment, the next step, (a)"); (b), breakable building walls, is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
 ## Known issues and loose ends (found in HANDOFF, 2026-11-15)
