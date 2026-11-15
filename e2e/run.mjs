@@ -7800,7 +7800,13 @@ async function vehiclesFlow(browser) {
   // Walk up to a free buggy, press E once, and drive. Bots like the vehicles by the bases too:
   // keep them out of them for this test, and pick a buggy nobody is in.
   await page.evaluate(() => {
-    for (const c of window.__match.slots) if (c?.bot) c.bot.nextMountTick = Number.MAX_SAFE_INTEGER;
+    // (They hold their fire too: they hear a driven buggy now, and a loaded runner's long drive gave them time to wreck
+    // it before the checks below; god mode covers you, not the buggy.)
+    for (const c of window.__match.slots) if (c?.bot) {
+      c.bot.nextMountTick = Number.MAX_SAFE_INTEGER;
+      const think = c.bot.think.bind(c.bot);
+      c.bot.think = (v) => ({ ...think(v), buttons: 0 });
+    }
     const me = window.__match.slots[window.__cs.slot];
     const free = window.__match.mounts.filter((m) => m.def.id === 'troop_buggy' && m.alive && m.seats.every((s) => s === null));
     const home = me.faction === 'tide' ? 60 : -60;
@@ -7872,6 +7878,18 @@ async function vehiclesFlow(browser) {
   const parts = await page.evaluate(() => window.__cs.view.cockpitInteriorState());
   check(interiorOn && bodyCut.some((share) => share < 0.9) && parts?.triangles > 5000, `in the cockpit the buggy's cockpit parts are drawn and its body's cockpit triangles are left out (${interiorOn}, ${parts?.triangles} triangles, body drawn ${bodyCut.map((v) => v.toFixed(2)).join(', ')})`);
   const start = await page.evaluate(() => ({ ...window.__match.slots[window.__cs.slot].move.pos }));
+  // Kept whole while it's driven about (a loaded runner drives it a long way, past the sentries); undone before the
+  // blast checks below.
+  await page.evaluate(() => {
+    const m = window.__match.mounts[window.__match.slots[window.__cs.slot].mount.index];
+    const step = window.__match.step;
+    window.__keepWhole = step;
+    window.__match.step = function () {
+      const out = step.call(this);
+      if (m.alive) m.health = m.def.health;
+      return out;
+    };
+  });
   await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
   // Headless frame rates vary: wait for the drive rather than a fixed time.
   await page
@@ -8168,6 +8186,7 @@ async function vehiclesFlow(browser) {
     await page.waitForFunction(() => !window.__match.slots[window.__cs.slot].mount, null, { timeout: T(5000) }).catch(() => {});
   }
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await page.evaluate(() => window.__keepWhole && (window.__match.step = window.__keepWhole));
   // Blow the buggy up: it goes up in a vehicle explosion and leaves a charred wreck the client keeps solid.
   const boom = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
