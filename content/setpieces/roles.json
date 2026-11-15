@@ -6,7 +6,7 @@
       "displayName": "Collegiate Gothic",
       "themes": ["core.castle"],
       "roles": {
-        "stone": { "material": "core.pbr_opus_incertum", "tint": "#c8cad2" },
+        "stone": { "material": "core.pbr_collegiate_rubble", "tint": "#c8cad2" },
         "trim": { "material": "core.stone_trim", "tint": "#d8d3c6" },
         "floor": { "material": "core.pbr_floorboards" },
         "paving": { "material": "core.road_setts" },

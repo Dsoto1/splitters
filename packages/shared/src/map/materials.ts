@@ -160,6 +160,14 @@ export interface MaterialDefinition {
   surface?: SurfaceTypeId;
   /** Its ballistic class when it should differ from its surface type's (sim/gunplay.ts BALLISTIC_MATERIALS). */
   ballistic?: BallisticMaterial;
+  /**
+   * Laid round corners: on upright faces the texture runs along x + z instead of along the face's own axis, so it
+   * carries on unbroken across every upright edge (round a wall's corner, onto a buttress's sides) instead of starting
+   * again on each face. Neighbouring faces show it mirrored, which an irregular stone texture hides.
+   */
+  wrap?: boolean;
+  /** A little of its own colour added to the light (0-0.5), so its faces in shade still read as the material. */
+  shadeLift?: number;
 }
 
 export interface SurfaceStyleDef {

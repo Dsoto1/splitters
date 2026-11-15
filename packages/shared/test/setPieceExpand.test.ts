@@ -270,7 +270,7 @@ describe('set pieces: every shipped piece in each turn, mirror and role pack', (
     const map = expandSetPieces(doc, shipped).map;
     const passage = map.classicStructure.tiles.find((t) => t.id === 'sp_piece_1_0')!;
     // St. John's wall stone (Roman Rubblework toned grey) and dressed trim, granite setts.
-    const stone = { material: 'core.pbr_opus_incertum', tint: '#c8cad2' };
+    const stone = { material: 'core.pbr_collegiate_rubble', tint: '#c8cad2' };
     expect(passage.surfaces).toEqual({ floor: { material: 'core.road_setts', tint: null }, walls: stone, solids: stone, trim: { material: 'core.stone_trim', tint: '#d8d3c6' } });
     expect(passage.options).toEqual({ ceiling: 'vault' });
     const above = map.classicStructure.tiles.find((t) => t.id === 'sp_piece_1_1')!;
@@ -279,7 +279,7 @@ describe('set pieces: every shipped piece in each turn, mirror and role pack', (
     const doors = map.entities.filter((e) => e.kind === 'door');
     expect(doors.map((d) => d.kind === 'door' && d.style)).toEqual(['oak', 'oak']);
     const guard = map.entities.find((e) => e.id === 'sp_piece_1_6')!;
-    expect(guard.kind === 'block' && [guard.material, guard.tint]).toEqual(['core.pbr_opus_incertum', '#c8cad2']);
+    expect(guard.kind === 'block' && [guard.material, guard.tint]).toEqual(['core.pbr_collegiate_rubble', '#c8cad2']);
     // St. John's theme (Castle Keep) takes Collegiate Gothic without naming it.
     const castle = expandSetPieces(withPiece({ piece: 'setpiece.carriageway_1', x: 0, y: 0, z: 0, rotation: 0, mirror: false }, 'core.castle'), shipped).map;
     expect(castle.classicStructure.tiles.find((t) => t.id === 'sp_piece_1_0')!.surfaces).toEqual(passage.surfaces);

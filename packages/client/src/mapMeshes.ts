@@ -59,13 +59,14 @@ class FaceBuffer {
 
   /** Add one face (a convex polygon) with UVs in world metres divided by the material's repeat size. */
   /** `flat`/`fn`: the face before any turn, whose two axes perpendicular to the normal lay out the texture. */
-  add(corners: number[][], n: readonly [number, number, number], uvScale: number, flat: number[][] = corners, fn: readonly [number, number, number] = n): void {
+  /** `wrap`: upright faces lay the texture along x + z, unbroken round corners (MaterialDefinition.wrap). */
+  add(corners: number[][], n: readonly [number, number, number], uvScale: number, flat: number[][] = corners, fn: readonly [number, number, number] = n, wrap = false): void {
     const base = this.positions.length / 3;
     corners.forEach((c, i) => {
       const f = flat[i]!;
       this.positions.push(c[0]!, c[1]!, c[2]!);
       this.normals.push(n[0], n[1], n[2]);
-      const u = fn[0] !== 0 ? f[2]! : f[0]!;
+      const u = wrap && fn[1] === 0 ? f[0]! + f[2]! : fn[0] !== 0 ? f[2]! : f[0]!;
       const v = fn[1] !== 0 ? f[2]! : f[1]!;
       this.uvs.push(u * uvScale, v * uvScale);
     });
@@ -201,7 +202,7 @@ export class MapStyler {
         return had.mesh;
       }
       const buf = new FaceBuffer();
-      for (const f of g.faces) buf.add(f.corners, f.normal, 1 / g.style.material.scale, f.flat, f.flatNormal);
+      for (const f of g.faces) buf.add(f.corners, f.normal, 1 / g.style.material.scale, f.flat, f.flatNormal, g.style.material.wrap);
       const mesh = new Mesh(`${name}_${key}`, this.scene);
       buf.toVertexData().applyToMesh(mesh);
       mesh.material = this.material(g.style);
@@ -607,13 +608,14 @@ export class MapStyler {
       const tint = style.tint ? Color3.FromHexString(style.tint) : Color3.White();
       const specular = def.shine * 0.6;
       const power = 16 + def.shine * 96;
+      const lift = def.shadeLift ?? 0;
       if (def.texture) {
         const id = def.texture;
         const url = (map: string) => versioned(`${import.meta.env.BASE_URL}textures/${id}_${map}.jpg`);
-        sources.push({ mesh, key: `img:${id}`, size: 512, color: () => jpegPixels(url('color'), 512), normal: () => jpegPixels(url('normal'), 512), tint, specular, power });
+        sources.push({ mesh, key: `img:${id}`, size: 512, color: () => jpegPixels(url('color'), 512), normal: () => jpegPixels(url('normal'), 512), tint, specular, power, lift });
       } else {
         const size = patternSize(def);
-        sources.push({ mesh, key: `pat:${def.id}`, size, color: async () => materialPixels(def, size), normal: null, tint, specular, power });
+        sources.push({ mesh, key: `pat:${def.id}`, size, color: async () => materialPixels(def, size), normal: null, tint, specular, power, lift });
       }
     }
     return sources;
@@ -706,6 +708,8 @@ export class MapStyler {
       mat.diffuseColor = style.tint ? Color3.FromHexString(style.tint) : Color3.White();
       mat.specularColor = new Color3(def.shine * 0.6, def.shine * 0.6, def.shine * 0.6);
       mat.specularPower = 16 + def.shine * 96;
+      // Shade lift: emissive is added to the light before the colour texture multiplies it (StandardMaterial).
+      if (def.shadeLift && !def.emissive) mat.emissiveColor = mat.diffuseColor.scale(def.shadeLift);
       if (def.emissive && def.texture) {
         mat.emissiveTexture = this.image(def.texture, 'emission');
         mat.emissiveColor = style.tint ? Color3.FromHexString(style.tint) : Color3.White();
