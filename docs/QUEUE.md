@@ -70,7 +70,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - L · A · Driving physics (owner, 2026-11-15): vehicles as real bodies with sprung raycast wheels and tyre grip that can fail. Buggies light, bouncy and easy to flip; jumps land with weight and momentum; the body follows the ground on steep edges and slides back when grip runs out. Multiplayer smooth: the driver's vehicle predicted on their own machine and reconciled, others interpolated. Step 1: a plan plus the Buggy alone, judged offline and at 100–150 ms simulated lag; then the rest of the vehicles, bots, maps. Today the chassis moves like a character controller (`PhysicsWorld.moveVehicle`), with a drawn-only sprung body (`sim/suspension.ts`). After the hitches fix (owner: "finish hitches fix").
 
 ## Waiting on the owner
-- Open questions in `docs/MAPMAKER_EDITING_REPORT_2026-11-13.md`.
+- A new recording on a real GPU: St. John's in a match (to measure render cost step 1, the draws, landed 2026-11-14) and MapMaker after an edit on a big map (`docs/MAPMAKER_EDITING_REPORT_2026-11-13.md` question 5; questions 1–4 were answered 2026-11-13).
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
