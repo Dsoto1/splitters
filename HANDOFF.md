@@ -3,6 +3,10 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+## For lane B's splitters22: MapMaker trace fixes for you (2026-11-15, via lane A's lead)
+
+The owner's real-GPU MapMaker recording is read: `docs/PERF_MAPMAKER_TRACE_2026-11-15.md` (owner: all picks). Yours, in QUEUE: **fix 1** (the navigation check builds the navmesh twice: `shared/src/sim/padFlight.ts` `flyer` makes a whole Match; build once, skip pad flights on maps without pads), **fix 2** (stop the navigation check when Test starts), **fix 6/7** (cheaper edits; later an incremental tiled navmesh for the check; owner: keep checking after every edit). Lane A takes fix 3 (the 12.5 ms outside script in play, after the owner's follow-up recording) and fixes 4-5 (Test start: hand the check's navmesh to the sim worker, smoother loading). Fix 4 touches the check's output: tell us in HANDOFF if you change its shape.
+
 ## For lane B's splitters22: the owner's answers to the painting plan (2026-11-15, via lane A's lead)
 
 The owner answered `docs/MAPMAKER_PAINTING_PLAN.md` (mock-ups in `docs/map-briefs/painting/`): **"all picks"** (1a 2a 3a 4a 5a 6a 7a 8a). Start painting Phase 1 alongside octagon phase 4.
