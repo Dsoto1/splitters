@@ -18,7 +18,7 @@ const beam = (id: string, z: number) =>
 
 const check = async (map: MapDocument): Promise<FromMapTest[]> => {
   const got: FromMapTest[] = [];
-  await runMapTest({ k: 'nav', map, computed: false, token: 7 }, (m) => got.push(m));
+  await runMapTest({ k: 'nav', doc: map, computed: false, token: 7 }, (m) => got.push(m));
   return got;
 };
 
@@ -27,6 +27,13 @@ describe("MapMaker's check worker", () => {
     const got = await check(padYard());
     expect(got.map((m) => m.k)).toEqual(['nav', 'pads']);
     expect(got[1]).toEqual({ k: 'pads', token: 7, issues: [] });
+  });
+
+  it("hands on the navmesh it built, keyed by what it was built from (for MapMaker's Test)", async () => {
+    const got = await check(padYard());
+    const nav = got[0] as Extract<FromMapTest, { k: 'nav' }>;
+    expect(nav.result.prebuilt?.key).toMatch(/^\d+:/);
+    expect(nav.result.prebuilt?.nav.mesh.byteLength).toBeGreaterThan(100);
   });
 
   it('a pad whose body flies into a roof beam the predicted ray passes is a warning that names the pad and the miss', async () => {

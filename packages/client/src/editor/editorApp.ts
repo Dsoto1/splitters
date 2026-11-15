@@ -105,6 +105,8 @@ import { StatusBar } from './statusBar.ts';
 import { ToolBar } from './toolBar.ts';
 import { ViewMenu } from './viewMenu.ts';
 import { EditorTour } from './tour.ts';
+import type { PrebuiltNav } from '@tiletrigger/shared/match';
+import { perfOn } from '../game/perfSwitches.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -112,6 +114,8 @@ export interface TestRequest {
   difficulty: 'easy' | 'normal' | 'hard';
   /** Play from here: you start at this spot (feet), facing this way, not at a spawn point. */
   startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
+  /** The navigation check's navmesh (MapChecks.prebuilt): the match takes it if it was built from this map. */
+  nav?: PrebuiltNav | null;
 }
 
 export interface EditorHost {
@@ -975,7 +979,7 @@ export class EditorApp {
     // As played: paths laid into the ground, terrain under the floors (what loadMap gives every match).
     const played = loadMap(this.doc);
     this.tour.note({ kind: 'test' });
-    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}) });
+    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}), nav: perfOn('navhandoff') ? this.checks.prebuilt : null });
   }
 
   toast(message: string, error = false): void {
