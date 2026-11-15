@@ -271,7 +271,7 @@ export class Inspector {
     el.append(row('Apply to', scope));
     // The roof's top only where the room has a roof (room option Ceiling).
     const roofed = !!t.options?.ceiling && t.options.ceiling !== 'open';
-    // Metal (bars, barred gates, railings) only where the tile has some.
+    // Metal (bars, barred gates) only where the tile has some.
     const metal = !!t.surfaces?.metal || tileHasMetal(coreCatalog.get(t.tile), t);
     for (const slot of SURFACE_SLOTS) if ((slot !== 'roof' || roofed || t.surfaces?.roof) && (slot !== 'metal' || metal)) el.append(this.surfaceRow(t, slot));
     el.append(small(`ID ${t.id}`));

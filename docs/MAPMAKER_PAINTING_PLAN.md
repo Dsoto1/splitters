@@ -263,15 +263,19 @@ Each phase is small and lands green by itself. Phases 1–3 need no format chang
 **Phase 1: as built (2026-11-15, lane B's splitters22, `wip/painting-1`).**
 - **The bars bug first** (owner, 2026-11-15): a Cage Block's bars drew in its walls' Stone (and `ROLE_THEME_SLOT` sent
   metal to the theme's solids), so a theme or look change made them brick. Now a tile has a **Metal** surface
-  (`surfaces.metal`, format v41; `SURFACE_SLOTS`): edge styles with `"paint": "metal"` (bars, barred gate, railing)
-  draw their segments and trim in it. Unpainted it is the theme's optional `metal` (content/materials.json, checked to
+  (`surfaces.metal`, format v41; `SURFACE_SLOTS`): edge styles with `"paint": "metal"` (bars, barred gate) draw
+  their segments in it. Unpainted it is the theme's optional `metal` (content/materials.json, checked to
   be a Metal) else `DEFAULT_METAL` (`core.pbr_steel`). `ROLE_THEME_SLOT.metal` is `metal`, and a metal role no look
-  gives resolves to that metal in expansion too. Cage Block's barred pens take the look's metal role (brass in the
-  Imperial and Desert looks, steel in Medieval; brass in Gothic). `metalBars.test.ts`: every bar, gate and railing
-  face, across every theme and every look, is a Metal. The tile inspector shows a Metal row only on tiles that have
-  some. Shipped maps that change, all on purpose: the 18 whose own tiles have bars or railings (railings and bars were the theme's
-  walls: brick, concrete, plaster; now iron) and blackout, crossroads, iron_maw (a Loading Dock's metal blocks on a
-  theme with no look: were the theme's solids, now iron), and the coverage map. No map file changed.
+  gives resolves to that metal in expansion too. The owner's answers (2026-11-15, "1a 2a 3a"): **the Cage Block's
+  bars are iron in every look** (no metal role on its pens: the theme's metal, which no theme names, so
+  `core.pbr_steel`, as a tile's own bars on Sandfall); **railings stay in the walls' surface** (no `paint` on
+  `railing`: they look as before); **the tall fence is as it was**. `metalBars.test.ts`: every bar and gate face,
+  across every theme and every look, is a Metal, the Cage Block's are `core.pbr_steel` in every look, and a railing
+  is the walls' surface. The tile inspector shows a Metal row only on tiles with bars. Shipped maps that change, all
+  on purpose: the 8 whose own tiles have bars or a barred gate (cinder_foundry, hollowmere_manor, iron_tide,
+  ironhold_prison, norman_shores, obsidian_orb, pump_tower, sandfall_colosseum: bars were the theme's walls, now
+  iron), blackout, crossroads and iron_maw (a Loading Dock's metal blocks on a theme with no look: were the theme's
+  solids, now iron), and the coverage map. No map file changed.
 - **Structure paint (B)** (`paintTools.ts`, shared `editor/paintTargets.ts`): the Paint tool, on the Build and
   Environment bars. It casts at everything drawn but the invisible walls (`hover.ts`); boxes thinner than 20 cm are
   caught 4 cm outside their faces. It paints a tile's slot, a free block (scopes as for tiles: same type = the same
@@ -301,8 +305,7 @@ Each phase is small and lands green by itself. Phases 1–3 need no format chang
   edge, bars, gravel refused on a wall and taken by a floor, undo, Shift+B's list and a stroke under a room),
   `editorpieces` (`editorPiecePaintChecks`: across the piece, one pen's bars, a theme change, undo), `editorux` (far-out
   Ground paint, the tool bars).
-- Open for the owner: whether a Cage Block's bars should follow the look's metal (brass in Imperial) or stay iron in
-  every look; railings in iron on the 18 maps that have them (pictures with the landing).
+- The owner's three calls on it are answered (1a 2a 3a, above).
 
 **Phase 2: the layers on the cursor, and the warning.**
 - What it does:

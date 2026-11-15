@@ -126,8 +126,8 @@ describe('Structure paint: what a click does', () => {
     const after = applyCommand(doc, structurePaintCommand(doc, bars, GOLD, 'surface', 'part'));
     expect(after.setPieces![0]!.overrides).toEqual({ paint: { '2': { metal: GOLD } } });
     const metal = expansion(after).map.classicStructure.tiles.filter((t) => t.id.startsWith('sp_cage_')).map((t) => t.surfaces?.metal?.material ?? null);
-    // Imperial's look gives brass; the painted pen is gold.
-    expect(metal).toEqual([null, null, 'core.gold_leaf', 'core.brass']);
+    // The other pen keeps the theme's metal (no surface of its own: iron in every look); the painted pen is gold.
+    expect(metal).toEqual([null, null, 'core.gold_leaf', null]);
     // A role change later doesn't reach the painted part.
     const roles = applyCommand(after, { kind: 'updateSetPieces', before: after.setPieces!, after: [{ ...after.setPieces![0]!, overrides: { ...after.setPieces![0]!.overrides, roles: { metal: BRICK } } }] });
     expect(expansion(roles).map.classicStructure.tiles.find((t) => t.id === 'sp_cage_2')!.surfaces?.metal?.material).toBe('core.gold_leaf');
@@ -188,6 +188,6 @@ describe('set-piece paint lasts (format v41)', () => {
     const odd = scene({ overrides: { paint: { '2': GOLD, '99': { walls: GOLD } } } });
     const ex = expansion(odd);
     expect(ex.issues.some((i) => i.code === 'setpiece.paint' && /part 2, 99/.test(i.message))).toBe(true);
-    expect(ex.map.classicStructure.tiles.find((t) => t.id === 'sp_cage_2')!.surfaces?.metal?.material).toBe('core.brass');
+    expect(ex.map.classicStructure.tiles.find((t) => t.id === 'sp_cage_2')!.surfaces?.metal).toBeUndefined();
   });
 });

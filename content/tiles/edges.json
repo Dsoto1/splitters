@@ -257,7 +257,6 @@
     {
       "id": "railing",
       "label": "Railing",
-      "paint": "metal",
       "segments": [{ "u": ["-half", "half"], "y": [0, 1], "t": 0.12 }],
       "trim": [
         { "repeat": { "from": "-half+0.1", "through": "half-0.1", "step": 2 }, "u": [-0.06, 0.06], "y": [0, 1.08], "depth": 0.04 },

@@ -598,7 +598,7 @@ export function turnBoxes(boxes: readonly LocalBox[], yaw: number, px = 0, pz = 
   });
 }
 
-/** Whether a placed tile draws anything in its `metal` surface: a side of bars, a barred gate or a railing (its own or its defaults'). */
+/** Whether a placed tile draws anything in its `metal` surface: a side of bars or a barred gate (its own or its defaults'). */
 export function tileHasMetal(def: Pick<TileDefinition, 'edgeDefault' | 'edgeDefaults'> | undefined, placement: { edges?: Readonly<Record<string, string>> | undefined }): boolean {
   const metal = (s: string | undefined) => !!s && s !== 'auto' && s !== 'open' && !!edgePaint(s as Parameters<typeof edgePaint>[0]);
   return Object.values(placement.edges ?? {}).some(metal) || metal(def?.edgeDefault) || Object.values(def?.edgeDefaults ?? {}).some(metal);

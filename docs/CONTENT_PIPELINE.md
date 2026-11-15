@@ -922,7 +922,7 @@ a part builds (a box, a flight's steps) a library material of its own. Edge valu
 2. **An edge style:** add it to `content/tiles/edges.json` (between `auto` and `open`, which stay first and last);
    maps store a side's style by id, so never rename or remove one a map uses. Give `segments` and `trim` (an empty
    list for none), and the flags that apply. MapMaker offers it at once (Walls & Openings, the inspector; its icon is
-   drawn from the segments) and maps accept it. Bars, gates and railings take `"paint": "metal"`: their segments and
+   drawn from the segments) and maps accept it. Bars and barred gates take `"paint": "metal"` (railings and fences don't: the walls' surface, owner 2026-11-15): their segments and
    trim are drawn in the tile's Metal surface (format v41: the theme's optional `metal` in `content/materials.json`,
    which must be a Metal, else iron), never the walls' stone (`shared/test/metalBars.test.ts` checks every theme and
    look).

@@ -25,7 +25,7 @@ export function resolveSurface(
   }
   const theme = themes.get(doc.classicStructure.theme) ?? themes.get(FALLBACK_THEME)!;
   if (slot === 'metal') {
-    // Bars, barred gates and railings: their own paint, else the theme's metal, else iron; never the walls' stone.
+    // Bars and barred gates: their own paint, else the theme's metal, else iron; never the walls' stone.
     const chosen = tile?.surfaces?.metal ?? theme.slots.metal ?? { material: DEFAULT_METAL };
     return { material: materials.get(chosen.material) ?? materials.get(DEFAULT_METAL)!, tint: chosen.tint ?? null };
   }

@@ -155,7 +155,7 @@ export const TileSurfaces = z.object({
   trim: SurfaceStyle.optional(),
   /** The top of a room's roof (absent: as the floor). */
   roof: SurfaceStyle.optional(),
-  /** Bars, barred gates and railings (format v41; absent: the theme's metal, else iron). */
+  /** Bars and barred gates (format v41; absent: the theme's metal, else iron). */
   metal: SurfaceStyle.optional(),
 });
 

@@ -103,7 +103,7 @@ export interface EdgeShape {
   openDefault?: boolean;
   /** How room dressing reads it: a way in, a window gap, or see-through (default: wall to stand things against). */
   dressing?: { kind: 'door' | 'window'; span: number } | { kind: 'see-through' };
-  /** Drawn in the tile's `metal` surface, not its walls and trim (bars, barred gates, railings: never the walls' stone). */
+  /** Drawn in the tile's `metal` surface, not its walls and trim (bars, barred gates: never the walls' stone). */
   paint?: 'metal';
 }
 

@@ -44,7 +44,7 @@ export interface WorldBox {
   surface?: { material: string; tint: string | null };
   /** A room's roof slab (room option Ceiling): its top is painted as the tile's `roof` surface. */
   roof?: true;
-  /** A trim box drawn in the walls' paint (LocalBox.paint: a plain arch's spandrels); `metal`: a bar, gate or railing (EdgeShape.paint). */
+  /** A trim box drawn in the walls' paint (LocalBox.paint: a plain arch's spandrels); `metal`: a bar or barred gate (EdgeShape.paint). */
   paint?: 'walls' | 'metal';
 }
 

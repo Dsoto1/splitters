@@ -91,7 +91,7 @@ export function build(content, root = ROOT) {
   const patterns = tsList(root, MATERIALS_TS, 'PATTERN_IDS');
   const categories = tsList(root, MATERIALS_TS, 'MATERIAL_CATEGORIES');
   // A theme gives every slot a default but the roof (an unpainted roof looks like the room's floor) and the metal (bars
-  // and railings: optional, a Metal; absent, DEFAULT_METAL in map/materials.ts).
+  // and barred gates: optional, a Metal; absent, DEFAULT_METAL in map/materials.ts).
   const slots = tsList(root, MATERIALS_TS, 'SURFACE_SLOTS').filter((s) => s !== 'roof' && s !== 'metal');
   const textureSets = new Set(readJson(root, 'content/textures.json').textures);
 
@@ -164,7 +164,7 @@ export function build(content, root = ROOT) {
     if (metal) {
       const m = (Array.isArray(top?.materials) ? top.materials : []).find((x) => x?.id === metal.material);
       if (!m) problems.push(`${where}: slots.metal names material ${metal.material}, which isn't in ${FILE}`);
-      else if (m.category !== 'Metal') problems.push(`${where}: slots.metal (bars, gates, railings) must be a Metal, not ${m.category} (${metal.material})`);
+      else if (m.category !== 'Metal') problems.push(`${where}: slots.metal (bars and gates) must be a Metal, not ${m.category} (${metal.material})`);
       if (metal.tint !== undefined) colour(metal.tint, `${where}: slots.metal.tint`);
       out.metal = metal.tint !== undefined ? { material: metal.material, tint: metal.tint } : { material: metal.material };
     }
