@@ -1201,8 +1201,9 @@ const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; dept
   adobe: { skin: 'core.pbr_adobe', tint: null, depth: 0.16 },
   // 05 Gothic Estate, 06 Jungle Ruins, 08 Suburban Chaos.
   gothic_stone: { skin: 'core.pbr_castle_stone', tint: '#9a9aa4', depth: 0.14 },
-  // Collegiate Gothic (the set pieces' look for St. John's): grey lannonstone laid as rubble ashlar, dressed limestone.
-  collegiate_stone: { skin: 'core.cobble', tint: '#d9d5cb', depth: 0.14 },
+  // Collegiate Gothic (the set pieces' look for St. John's): grey lannonstone laid as rubble, dressed limestone trim.
+  // The rubble photo's ochre stones toned to a grey buff (the tint is a multiply), a shade darker than the trim.
+  collegiate_stone: { skin: 'core.pbr_opus_incertum', tint: '#c8cad2', depth: 0.14 },
   manor_brick: { skin: 'core.pbr_brick_red', tint: '#a07c70', depth: 0.1 },
   temple: { skin: 'core.pbr_castle_stone', tint: '#d8d8b8', depth: 0.16 },
   overgrown: { skin: 'core.pbr_jungle_rock', tint: null, depth: 0.16 },
