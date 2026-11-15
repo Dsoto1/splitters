@@ -733,9 +733,9 @@ html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper 
 #menu .screen.characters { display: flex; flex-direction: column; }
 /* The jump strip over the grid: a chip per section, the one in view lit; Q / E at its ends. */
 .char-jump { flex: none; display: flex; align-items: center; gap: 6px; width: min(900px, 64vw); margin-top: 16px; padding: 6px 8px; background: var(--glass); border: 1px solid var(--line); border-bottom: 0; border-radius: 4px 4px 0 0; }
-.char-jump-chips { flex: 1; min-width: 0; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.char-jump-chips { flex: 1; min-width: 0; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
 .char-jump-chips::-webkit-scrollbar { display: none; }
-.char-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; font: 600 12px var(--font-display); letter-spacing: 0.05em; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 3px; }
+.char-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px; font: 600 12px var(--font-display); letter-spacing: 0.03em; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 3px; }
 .char-chip:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); border-color: var(--line); }
 .char-chip.on { color: var(--text); background: rgba(0, 209, 255, 0.14); border-color: rgba(0, 209, 255, 0.6); }
 /* One grid through every section; it takes the room between the strip and the info panel and scrolls; a fade says there's more below. */
