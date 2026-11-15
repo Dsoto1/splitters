@@ -108,7 +108,7 @@ describe('navmeshes kept between matches (navCache: Scaling 1)', () => {
     expect(c.get('e')).toBeUndefined();
     const gone = nav(100);
     c.put('f', gone);
-    structuredClone(gone.mesh.buffer, { transfer: [gone.mesh.buffer] });
+    structuredClone(gone.mesh.buffer, { transfer: [gone.mesh.buffer as ArrayBuffer] });
     expect(c.get('f')).toBeUndefined();
   });
 });
