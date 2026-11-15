@@ -280,7 +280,7 @@ heap that are disposed.
      growing with every map, character and gun seen. This is the likeliest wear on the owner's tab: video memory
      filling until the driver pages, then "Aw, Snap!".
 - **After the fixes the probe is flat**: script memory back in MapMaker 349 → 351 MB over 10 Tests (0.2 MB a round),
-  textures on the card 178 every round; 10 plain matches 377 → 383 MB, settling by the fourth.
+  textures on the card 178 every round; 10 plain matches 377 → 384 MB, settling by the fourth.
 - **What it doesn't change:** MapMaker stays loaded under a Test (about 300 MB of script memory and 330 MB of
   textures on Iron Maw; a Test adds about 400 MB and 440 MB more while it runs). Freeing MapMaker's heavy parts during
   a Test would make Back to MapMaker slower; not done (a follow-up if the owner's long-session recording still climbs).
@@ -298,7 +298,7 @@ heap that are disposed.
 | Textures on the graphics card | 178, 178, 178, 224, 224 | 178, 200, 205, 236, 283, 288, 293 (346 → 600 MB) | 178 every round |
 | DOM nodes, listeners | flat | flat | flat |
 
-Plain matches back to back (after both fixes): script memory at the menu 377, 380, 382, 383, 383, 383, 383 MB…;
+Plain matches back to back (after both fixes): script memory at the menu 377, 380, 382, 383, 383, 383, 383, 383, 384, 384 MB;
 textures on the card 178 throughout; DOM nodes +12 and listeners +4 a match (the menu footer's fullscreen hint kept
 every old footer alive: fixed with the rest). On Sandgate (a short check of the texture fix): textures 68 → 102 →
 104 → 107 after three Tests before, 71 → 71 → 71 → 71 after.
