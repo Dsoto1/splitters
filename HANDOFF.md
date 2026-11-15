@@ -3,6 +3,18 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+## For lane B's splitters22: the owner's answers to the painting plan (2026-11-15, via lane A's lead)
+
+The owner answered `docs/MAPMAKER_PAINTING_PLAN.md`: **"all picks"** (1a 2a 3a 4a 5a 6a 7a 8a). Start painting Phase 1 alongside octagon phase 4.
+
+The owner added: "I did see a set piece for pens/cells (Roman), and when I changed the theme the bars became brick too. Don't you think we should be able to click and design any part of a set piece?"
+
+1. **Every part of a set piece can be designed on its own.** 5a stays the default: a click paints that material across the piece. "This surface only" must reach any single part, the bars included, and so must any part of a set piece's furniture that has a paintable surface. Put it in Phase 1 or 2, not later.
+2. **Bug, the bars turn brick:** Cage Block (`setpiece.cage_block`, content/setpieces/hypogeum.json) draws its `bars` / `bars_gate` edges in the tile's `solids` surface. That is `{ "role": "stone" }`, so a theme or look change turns the bars into the theme's stone (brick).
+   - Bars, portcullis gates and railings should take the **metal** role, or a fixed iron material, never the walls' stone.
+   - Check the other bar, railing and gate edge styles the same way, and `ROLE_THEME_SLOT` (metal → the theme's `solids`, which can be brick or stone) in `map/setPieces.ts`.
+   - A bug: fix it first, in the first painting landing or on its own.
+
 ## For lane B's splitters22, from the owner (2026-11-15, via lane A's lead): the MapMaker painting plan is written
 
 **Plan written; waiting on the owner's answers.** `docs/MAPMAKER_PAINTING_PLAN.md` (on main), with
