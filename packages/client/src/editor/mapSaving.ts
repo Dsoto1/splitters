@@ -8,7 +8,7 @@ import {
   type TerrainMaterial
 } from '@tiletrigger/shared';
 import { loadBuiltInMap, MAP_INDEX } from '../mapIndex.ts';
-import { publishedMaps } from '../publishedMaps.ts';
+import { builtInNewerThanPublished, publishedMaps } from '../publishedMaps.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $, button, escapeHtml } from './editorDom.ts';
 import { NEW_MAP_SIZES, SHIPPED_IDS, STARTER_TERRAIN, starterMap } from './editorParts.ts';
@@ -178,6 +178,8 @@ export class MapSaving {
         if (!m) return this.app.toast(`Couldn't open ${id}`, true);
         this.replaceDocument(m);
         this.app.toast(`Editing the official ${m.metadata.name}: Publish puts your changes live for everyone`);
+        // The game's own version won over the published one (publishedMaps.ts): say so.
+        void builtInNewerThanPublished(id).then((newer) => newer && this.app.toast(`${m.metadata.name}: the game's version is newer than your last publish, so this is the game's version`));
       });
     const template = (id: string, name: (m: MapDocument) => string) => (this.app.owner ? edit(id) : remix(id, name));
     const kind = this.app.owner ? 'Official map' : 'Template';
