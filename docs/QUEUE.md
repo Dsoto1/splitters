@@ -37,12 +37,10 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Bugs
 - S · B · MapMaker: typing X or Z in the inspector skips the drag's millimetre rounding and terrain re-settle, and probably moves a mover without its parts (UI audit; fold into UI Phase 2's shared transform command).
-- XS · B · MapMaker: the top bar is cut off at 1440 px (map name, Snap, bot skill truncated) (UI audit; UI Phase 1 fixes it).
 - S · A · The Hollow Pilgrim (`meshy_hollowpilgrim`): its support hand stays about 11 cm short of a rifle's handguard (25 cm on the shotgun; its arms are short and `hold.forward` is at its −0.15 limit) and its sleeves stretch (grip audit 9). Needs a wider `hold` range or a skin fix from the download.
 - ? · A · Unconfirmed: the player's own third-person body drawn in first person after a teleport. Tried 2026-11-14 (`wip/mobile-bugs-1114`, SwiftShader): not reproduced. A picture tool's teleport (the sim moving you, once a second, on Flatpack Depot, The Spillway, Training Range) drew only your arms or your full-body legs; on Pantry Raid your own body sat 0.13-0.15 m from the camera as it should. Not finished: an ordinary portal (the mouse hole didn't take a teleported-in player) and a respawn; the machine drew about a frame a minute.
 - ? · A · Unconfirmed: a large flat blue shape seen twice in software pictures (tunnels, The Spillway's long stair). Not seen in this batch's SwiftShader pictures (The Spillway's crest, Flatpack Depot, Training Range, Pantry Raid); the long stair and the tunnels were not visited (2026-11-14, `wip/mobile-bugs-1114`).
 
-- S · A · Sky Cruiser as a new vehicle (owner, 2026-11-15: "just add sky cruiser as a vehicle in the game, available in mapmaker like others. no need to add to map yet"): `Meshy_AI_Sky_Cruiser_1108121108_texture.glb` (owner's Drive, Meshy Community CC0, batch of 2026-11-08); a flying craft with seats and guns fitted to the model, on the MapMaker palette and `maps/test_coverage.json` only (through MapMaker); provenance. Next free helper with the hitches fix.
 - S · A · St. John's halls in Roman Rubblework (owner, 2026-11-15: "roman rubblework, show me pictures first"): the `collegiate_stone` facade's skin (`core.cobble` today, geometry.ts) tried as `core.pbr_opus_incertum`, blended: continuous across pieces and corners, colour tuned to the pale trim, stones at life size. Pictures first (the hall, the drill field, a corner and a window close up; before and after), owner picks, then it lands. After Smythe Hall lands.
 - M · A · Main scene drawing on St. John's: about 10 ms a frame and nearly unchanged after draws fell 58 % (owner's 11-15 recording, `docs/PERF_STJOHNS_2026-11-14.md`); find what it spends (per-mesh CPU, material updates, GPU fill at 1920x1080@2) and cut it. After the hitches fix (owner, 2026-11-15).
 
@@ -65,7 +63,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - L · A · Driving physics (owner, 2026-11-15): vehicles as real bodies with sprung raycast wheels and tyre grip that can fail. Buggies light, bouncy and easy to flip; jumps land with weight and momentum; the body follows the ground on steep edges and slides back when grip runs out. Multiplayer smooth: the driver's vehicle predicted on their own machine and reconciled, others interpolated. Step 1: a plan plus the Buggy alone, judged offline and at 100–150 ms simulated lag; then the rest of the vehicles, bots, maps. Today the chassis moves like a character controller (`PhysicsWorld.moveVehicle`), with a drawn-only sprung body (`sim/suspension.ts`). After the hitches fix (owner: "finish hitches fix").
 
 ## Waiting on the owner
-- A new recording on a real GPU: St. John's in a match (to measure render cost step 1, the draws, landed 2026-11-14) and MapMaker after an edit on a big map (`docs/MAPMAKER_EDITING_REPORT_2026-11-13.md` question 5; questions 1–4 were answered 2026-11-13).
+- A recording on a real GPU of MapMaker after an edit on a big map (`docs/MAPMAKER_EDITING_REPORT_2026-11-13.md` question 5). The St. John's match recording came in 2026-11-15 (read in `docs/PERF_STJOHNS_2026-11-14.md`); the next one after the main-scene work.
 - Lane B: the destructible environment's later steps (batching breakable props while intact; breakable building walls). Step 1 is on main (props and blocks on an opt-in map, Breakyard); what comes next is undecided.
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
@@ -83,6 +81,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-15 · A · Sky Cruiser: already the Gunship's model since 2026-11-12, so no new vehicle (owner: "Ur recs 1"); MapMaker's vehicle search reads descriptions, and "Sky Cruiser" finds the Gunship.
 - 2026-11-15 · B · MapMaker UI Phase 1: Map settings in the right dock, an inspector for the selection only, a 3-state dock (Shift+\), a tool bar per tab with a ⋯ menu of every tool, a View menu, a short status bar; the top bar fits at 1440 px.
 - 2026-11-15 · A · Hitches (`wip/hitches-1115`): a going character body is hidden at once and put away over the next frames (1.5 ms a frame): St. John's here, the worst frame of body work in play 15 → 5-7 ms, a new round's 32 bodies 32-52 ms in one frame → 5-7 ms; the recording's other hitches listed with their causes in `docs/PERF_STJOHNS_2026-11-14.md`.
 - 2026-11-15 · A · Dead race-track settings: map format v39 drops a track's `laps`, `grid`, `vehicle` and `combat`; MapMaker no longer writes them; shipped maps load the same otherwise (no map file edited).
