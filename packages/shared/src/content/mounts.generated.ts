@@ -539,7 +539,7 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
       fly: { climb: 5, ceiling: 30 },
     },
     cockpitEye: [0, 2.35, 2.3],
-    blurb: 'A flying gunship (the dropship\'s flight model): the pilot fires blasters ahead, two door gunners cover the sides',
+    blurb: 'A flying gunship, the Sky Cruiser (the dropship\'s flight model): the pilot fires blasters ahead, two door gunners cover the sides',
   },
   // model: "Snowmobile" by roygbpjyt (Meshy Community, CC0; content/guns.json pack meshy-community-snowmobile): 3.0 m long, 1.31 m across the skis, 1.15 m to the top of the windscreen, skis ahead (+Z) and the track behind. It replaced the Kenney Holiday Kit long sled on 2026-11-04.
   // half: The body is 3.0 m long and 1.31 m wide at the skis (0.72 m along the seat and track); the box stops at 1.1 m, just under the windscreen's top (1.15 m).

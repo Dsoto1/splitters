@@ -96,7 +96,7 @@ export function build(content, root = ROOT) {
 
   const material = obj({
     id: str, displayName: str, category: en(categories), 'pattern?': en(patterns), 'texture?': str, base: str, 'accent?': str,
-    scale: num, shine: num, 'emissive?': bool, 'surface?': en(surfaceTypeIds(root)), 'ballistic?': en(tsList(root, 'packages/shared/src/sim/gunplay.ts', 'BALLISTIC_MATERIALS')), 'notes?': notes,
+    scale: num, shine: num, 'emissive?': bool, 'surface?': en(surfaceTypeIds(root)), 'ballistic?': en(tsList(root, 'packages/shared/src/sim/gunplay.ts', 'BALLISTIC_MATERIALS')), 'wrap?': bool, 'shadeLift?': num, 'notes?': notes,
   });
   const style = obj({ material: str, 'tint?': str });
   const theme = obj({ id: str, displayName: str, sky: str, slots: obj(Object.fromEntries(slots.map((s) => [s, style]))), 'notes?': notes });
@@ -130,11 +130,13 @@ export function build(content, root = ROOT) {
     }
     if (!(m.scale > 0)) problems.push(`${where}: scale must be above 0 (metres a repeat covers)`);
     if (!(m.shine >= 0 && m.shine <= 1)) problems.push(`${where}: shine must be 0-1`);
+    if (m.shadeLift !== undefined && !(m.shadeLift >= 0 && m.shadeLift <= 0.5)) problems.push(`${where}: shadeLift must be 0-0.5`);
     // The resolved definition, in the hand-written table's key order.
     const def = {
       id: m.id, displayName: m.displayName, category: m.category, pattern: m.pattern ?? 'plain', base: m.base, accent: m.accent ?? m.base,
       scale: m.scale, shine: m.shine, ...(m.emissive ? { emissive: true } : {}), ...(m.texture !== undefined ? { texture: m.texture } : {}),
       ...(m.surface !== undefined ? { surface: m.surface } : {}), ...(m.ballistic !== undefined ? { ballistic: m.ballistic } : {}),
+      ...(m.wrap ? { wrap: true } : {}), ...(m.shadeLift !== undefined ? { shadeLift: m.shadeLift } : {}),
     };
     materials.push({ def, notes: m.notes });
   }

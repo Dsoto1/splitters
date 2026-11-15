@@ -55,6 +55,21 @@ describe('TorsoSurface', () => {
     expect(deep.clearance(butt, new Vector3(0, 0, 1), 0.04, 0)).toBeCloseTo(0.4, 2);
   });
 
+  it('measures a look once: a second body of it takes the first one\'s points on its own chest', () => {
+    const butt = new Vector3(0.1, 1.45, 0);
+    const first = TorsoSurface.measure(body(0.4).ch, 'look-a')!;
+    // A body of the same look (its chest made slimmer here only to show the points come from the first).
+    const second = body(0.2);
+    const shared = TorsoSurface.measure(second.ch, 'look-a')!;
+    expect(shared.clearance(butt, new Vector3(0, 0, 1), 0.04, 0)).toBeCloseTo(first.clearance(butt, new Vector3(0, 0, 1), 0.04, 0), 5);
+    // On its own chest joint: it follows that body, not the first.
+    second.chest.position.z = 0.1;
+    expect(shared.clearance(butt, new Vector3(0, 0, 1), 0.04, 0)).toBeGreaterThan(first.clearance(butt, new Vector3(0, 0, 1), 0.04, 0) + 0.05);
+    // Another look is measured on its own.
+    const other = TorsoSurface.measure(body(0.2).ch, 'look-b')!;
+    expect(first.clearance(butt, new Vector3(0, 0, 1), 0.04, 0) - other.clearance(butt, new Vector3(0, 0, 1), 0.04, 0)).toBeCloseTo(0.1, 2);
+  });
+
   it('follows the chest joint as the body turns', () => {
     const { ch, chest } = body(0.3);
     const torso = TorsoSurface.measure(ch)!;

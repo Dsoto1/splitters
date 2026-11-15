@@ -7422,6 +7422,129 @@ async function classesFlow(browser) {
   await frames(arena, 5);
   check(errs.length === 0, `no page errors (${errs.join('; ')})`);
   await arena.context().close();
+  await holdUseChecks(browser);
+}
+
+/**
+ * Hold to use (sim/holdUse.ts) and the low-health warning (game/lowHealth.ts), in MapMaker TEST on a map with an Ammo
+ * Box: beside it, short of ammo, the prompt says "Hold"; E pressed and held shows the ring round the crosshair
+ * ("Resupplying") and gives nothing until the hold has run, then fills you up; let go early and it stops and says
+ * so. At 10 % health the screen's edges darken and the HUD points at the nearest health pack. `HOLD_SHOTS=<dir>`:
+ * pictures (device scale 2) of the ring and of the warning at 30 % and 10 %, Reduce flashing on and off.
+ */
+async function holdUseChecks(browser) {
+  const shots = process.env.HOLD_SHOTS;
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 }, deviceScaleFactor: shots ? 2 : 1 })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // An Ammo Box crate and a health pack 12 m off, as MapMaker places them (one undo step).
+  const made = await page.evaluate(() => {
+    const ed = window.__editor;
+    const entities = [
+      { id: 'hold_box', kind: 'pickup', item: 'core.ammo', position: [6, 0, 10], respawnSeconds: 30 },
+      { id: 'hold_health', kind: 'pickup', item: 'core.health_large', position: [-8, 0, 16], respawnSeconds: 30 },
+    ];
+    return ed.run('Hold to use check', { kind: 'addEntities', entities });
+  });
+  check(!!made, 'MapMaker places an Ammo Box and a health pack');
+  await page.keyboard.press('F5');
+  const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(playing, 'the map plays (MapMaker TEST)');
+  if (!playing) return void (await page.context().close());
+  await holdBots(page);
+  // Every note the HUD shows (a cancel says why), for the checks' messages.
+  await page.evaluate(() => {
+    const el = document.getElementById('pickup-msg');
+    window.__notes = [];
+    new MutationObserver(() => window.__notes.push(el.textContent)).observe(el, { childList: true, characterData: true, subtree: true });
+  });
+  // (Pictures: the pause menu a headless page shows without the pointer lock, out of the way.)
+  if (shots) await page.addStyleTag({ content: '#pause { visibility: hidden !important; }' });
+  const stand = () =>
+    sim(page, (m, me) => {
+      me.move = { pos: { x: 7.2, y: 0, z: 10 }, velY: 0, grounded: true };
+      me.yaw = -Math.PI / 2;
+      for (const w of me.weapons.values()) w.reserve = 0;
+      me.resupplyAt = 0;
+    });
+  await stand();
+  // Facing the box (the view turns with the page's own input).
+  await page.evaluate(() => Object.assign(window.__cs.input, { yaw: -Math.PI / 2, pitch: -0.3 }));
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const prompt = await page.waitForFunction(() => /Hold to resupply/.test(document.getElementById('prompt')?.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(prompt, `beside the box the prompt says to hold E (${await page.textContent('#prompt')})`);
+  // E pressed and held (BUTTON_USE once, BUTTON_USE_HOLD while down); pressed again if a slow frame swallowed the press.
+  const press = async () => {
+    for (let i = 0; i < 4; i++) {
+      if (i) await stand();
+      await page.evaluate(() => (window.__autoInput = { buttons: 32768, once: 16 }));
+      if (await simWait(page, (m, me) => me.hold?.kind === 'resupply', null, T(3000))) return true;
+    }
+    return false;
+  };
+  // (After the countdown: the match takes no Use before it plays.)
+  const live = await simWait(page, (m) => m.phase === 'playing', null, T(30000));
+  const pressed = await press();
+  const ring = await page.waitForFunction(() => {
+    const el = document.getElementById('hold-ring');
+    return !!el && !el.hidden && /Resupplying/.test(el.textContent ?? '') && Number(el.querySelector('circle.fill')?.getAttribute('stroke-dashoffset')) < 150;
+  }, null, { timeout: T(10000) }).then(() => true, () => false);
+  const midway = { live, pressed, ...(await sim(page, (m, me) => ({ phase: m.phase, tick: m.tick, at: [+me.move.pos.x.toFixed(2), +me.move.pos.y.toFixed(2), +me.move.pos.z.toFixed(2)], boxes: m.ammoBoxes().map((b) => [+b.pos.x.toFixed(2), +b.pos.y.toFixed(2), +b.pos.z.toFixed(2), b.uses]), seq: me.lastSeq, hold: me.hold?.kind ?? null, empty: [...me.weapons.values()].some((w) => w.def.reserveMax > 0 && w.reserve === 0) }))), notes: await page.evaluate(() => window.__notes) };
+  check(ring && midway.hold === 'resupply' && midway.empty, `held, a ring round the crosshair fills ("Resupplying") and nothing is given yet (${JSON.stringify(midway)})`);
+  if (shots) {
+    // (The picture: the hold held at 60 % while the slow page takes it, then given back its own length.)
+    await sim(page, (m, me) => me.hold && Object.assign(me.hold, { start: m.tick - 600, ticks: 1000 }));
+    await page.waitForFunction(() => window.__cs.lowHealth().hold?.total === 1000, null, { timeout: T(5000) }).catch(() => {});
+    await page.screenshot({ path: `${shots}/hold-ring.png` });
+    await sim(page, (m, me) => me.hold && Object.assign(me.hold, { start: m.tick - 30, ticks: 90 }));
+  }
+  const filled = await meWait(page, (m, me) => !me.hold && [...me.weapons.values()].filter((w) => w.def.reserveMax > 0).every((w) => w.reserve === w.def.reserveMax), null, 4, T(30000));
+  const gone = await page.waitForFunction(() => document.getElementById('hold-ring')?.hidden !== false, null, { timeout: T(10000) }).then(() => true, () => false);
+  check(filled && gone, `once the hold has run you are resupplied and the ring goes (filled ${filled}, ring gone ${gone})`);
+  // Again, let go early: it stops and says why.
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await stand();
+  await press();
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const stopped = await page.waitForFunction(() => /Resupply stopped: let go too soon/.test(document.getElementById('pickup-msg')?.textContent ?? document.body.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  const still = await sim(page, (m, me) => [...me.weapons.values()].some((w) => w.def.reserveMax > 0 && w.reserve === 0));
+  check(stopped && still, `let go early, it stops, says so and gives nothing (note ${stopped}, still empty ${still})`);
+
+  // The low-health warning: at 10 % the edges darken and the HUD points at the health pack; back to full, it goes.
+  const setFlashing = (on) =>
+    page.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (!box || box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  const health = (hp) => sim(page, (m, me, hp) => void (me.health = hp), hp);
+  const settle = (min) => page.waitForFunction((min) => window.__cs.lowHealth().level >= min, min, { timeout: T(15000) }).then(() => true, () => false);
+  await sim(page, (m, me) => void (me.move = { pos: { x: -3, y: 0, z: 32 }, velY: 0, grounded: true }));
+  await page.evaluate(() => Object.assign(window.__cs.input, { yaw: Math.PI * 1.1, pitch: -0.08 }));
+  for (const on of [true, false]) {
+    await setFlashing(on);
+    for (const hp of [30, 10]) {
+      await health(hp);
+      const up = await settle(hp === 10 ? 0.75 : 0.3);
+      const s = await page.evaluate(() => ({ ...window.__cs.lowHealth(), hint: document.querySelector('#hint-markers [data-id="health"]')?.textContent ?? null }));
+      if (hp === 10) check(up && s.edge > 0.5 && /Health \d+ m/.test(s.hint ?? ''), `at 10 % health (Reduce flashing ${on ? 'on' : 'off'}) the edges darken and the HUD points at the nearest health pack (${JSON.stringify(s)})`);
+      if (shots) await page.screenshot({ path: `${shots}/low-health-${hp}-flashing-${on ? 'reduced' : 'off'}.png` });
+    }
+    await health(100);
+    const calm = await page.waitForFunction(() => window.__cs.lowHealth().level === 0 && !document.querySelector('#hint-markers [data-id="health"]'), null, { timeout: T(15000) }).then(() => true, () => false);
+    check(calm, `back to full health the warning eases away (Reduce flashing ${on ? 'on' : 'off'})`);
+  }
+  await setFlashing(true);
+  await page.evaluate(() => delete window.__autoInput);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await page.context().close();
 }
 
 async function vehiclesFlow(browser) {
@@ -8454,7 +8577,7 @@ async function mapsFlow(browser, part = 0) {
  * MapMaker overhaul Phase 3 part B (docs/MAPMAKER_OVERHAUL_PLAN.md, items 3-7): groups (Ctrl+G: a click picks the
  * whole group, Alt-click one; moved, flipped, duplicated as one; Ctrl+Shift+G), copy and paste between maps (Ctrl+C,
  * Ctrl+V at the pointer, new ids; another theme refused, saying why), templates (New map → Start from), Mirror…
- * (Shift+M: a mirrored copy swaps team things; half the map), and note pins (J: pin, edit, drag, list, delete; format
+ * (Shift+M: a mirrored copy swaps team things; half the map; an exploded Arena Corner as the set piece), and note pins (J: pin, edit, drag, list, delete; format
  * v31). Screenshots go to E2E_SHOTS when set.
  */
 async function editorPartBChecks(browser) {
@@ -8718,6 +8841,60 @@ async function editorPartBChecks(browser) {
   await page.keyboard.press('Control+KeyZ');
   await frames(page, 2);
   check(await page.evaluate(() => !window.__editor.doc.botHints?.some((x) => x.team === 'tide') && window.__editor.doc.paths?.length === 1), 'one undo takes the whole mirror back');
+
+  // ---- Mirror… and diagonal symmetry: an exploded Arena Corner (its storey tiles and lights selected on their own)
+  // flipped east ↔ west (Shift+M, the original not kept) is the set piece flipped, each storey placed turned; one undo.
+  await newMap(page, 0);
+  await page.evaluate(() => {
+    window.__editor.run('Corner', { kind: 'addSetPieces', setPieces: [{ id: 'corner', piece: 'setpiece.arena_corner', x: 3, y: 2, z: 0, rotation: 1, mirror: false }] });
+    window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['corner'] });
+  });
+  await frames(page, 3);
+  await page.click('#ed-sp-explode');
+  await frames(page, 3);
+  const cornerSel = await sel();
+  /** The corner's parts as the map holds them (ids are `sp_corner_<part>` either way). */
+  const cornerParts = () =>
+    page.evaluate(() => {
+      const d = window.__editor.doc;
+      const mine = (id) => id.startsWith('sp_corner_');
+      const r = (v) => Math.round(v * 1000) / 1000;
+      return JSON.stringify({
+        tiles: d.classicStructure.tiles.filter((t) => mine(t.id)).map((t) => [t.id, t.tile, t.x, t.y, t.z, t.rotation, t.edges ?? null, t.glass ?? null, t.upperFloors ?? null]).sort(),
+        things: d.entities.filter((e) => mine(e.id)).map((e) => [e.id, e.kind, ...e.position.map(r), r(e.yaw ?? 0)]).sort(),
+      });
+    });
+  const explodedParts = await cornerParts();
+  const flipCorner = async () => {
+    await page.keyboard.press('Shift+KeyM');
+    await page.waitForSelector('#ed-mirror-dialog[open]', { timeout: T(5000) });
+    await page.selectOption('#ed-mirror-across', 'eastWest');
+    await page.uncheck('#ed-mirror-keep');
+    await page.fill('#ed-mirror-x', '92');
+    await page.dispatchEvent('#ed-mirror-x', 'input');
+    const said = await page.textContent('#ed-mirror-why');
+    await page.click('#ed-mirror-go');
+    await frames(page, 3);
+    return said;
+  };
+  const cornerWhy = await flipCorner();
+  const flippedTiles = await cornerParts();
+  check(cornerSel.tiles.length === 4 && /Flips the 17 selected over \(x = 92 m\)/.test(cornerWhy) && flippedTiles !== explodedParts, `Shift+M flips an exploded Arena Corner, its four storeys and 13 lights (${cornerWhy})`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await cornerParts()) === explodedParts, 'one undo puts the exploded corner back as it was');
+  // The set piece itself flipped across the same line, then exploded: the same tiles, turns, walls and lights.
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['corner'] }));
+  await frames(page, 2);
+  await flipCorner();
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['corner'] }));
+  await frames(page, 3);
+  await page.click('#ed-sp-explode');
+  await frames(page, 3);
+  const pieceFlipped = await cornerParts();
+  check(pieceFlipped === flippedTiles, `the flipped exploded corner is the flipped set piece, part for part (${pieceFlipped === flippedTiles ? 'same' : `${flippedTiles.slice(0, 300)} | ${pieceFlipped.slice(0, 300)}`})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   livePages.delete(page);
   await page.context().close();
@@ -9252,6 +9429,13 @@ function installFrameGrab(size) {
         ctx.drawImage(heavy.image, 0, 0, out.width, out.height);
         ctx.globalAlpha = 1;
       }
+      // The low-health warning's darkened edge (HTML too: hud.ts lowHealthOverlay).
+      const low = window.__cs.hud.lowHealthOverlay?.();
+      if (low && low.opacity > 0.002) {
+        ctx.globalAlpha = Math.min(1, low.opacity);
+        ctx.drawImage(low.image, 0, 0, out.width, out.height);
+        ctx.globalAlpha = 1;
+      }
       // Roulette's jackpot glow (HTML too: rouletteHud.ts glowOverlay).
       const glow = window.__cs.rouletteGlow?.();
       if (glow && glow.opacity > 0.002) {
@@ -9390,6 +9574,22 @@ const FLASHING_DAY = {
         seen: () => lootRingContrast(page, step, ['day_pickup_0', 'day_pickup_1', 'day_pickup_2', 'day_pickup_3']),
         sees: (on, s) => s.rings.length === 4 && s.rings.every((r) => r.px >= 150 && (!on || r.mean >= LOOT_RING_MIN)),
         after: () => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality)),
+      },
+      // The low-health warning (game/lowHealth.ts): your health drops to 10 % as the recording starts, so it holds the
+      // warning coming up (the edges darkening, the world greying) and its heartbeat pulse, by day over the white tiles
+      // (the brightest ground: where darkening shows most). Before each run it is let go back to nothing.
+      {
+        name: 'lowhealth',
+        label: 'the low-health warning coming up at 10 % health (edges darkening, the world greying, the heartbeat), by day over white tiles',
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -18.5],
+        look: { yaw: Math.PI, pitch: -0.3 },
+        bots: [],
+        before: () => sim(page, () => void (self.__flashHp = undefined)).then(() => step(45)),
+        at: { 2: () => sim(page, () => void (self.__flashHp = 10)) },
+        seen: () => page.evaluate(() => ({ ...window.__cs.lowHealth(), hp: window.__cs.local.health })),
+        sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
+        after: () => sim(page, () => void (self.__flashHp = undefined)),
       },
     ];
   },
@@ -9576,7 +9776,9 @@ async function flashingScene(browser, scene) {
       const bots = m.combatants().filter((c) => c.bot);
       const pin = () => {
         put(me, mo.me);
-        me.maxHealth = me.health = 100000;
+        // (A moment may hold your health low: `self.__flashHp`, out of a real 100.)
+        me.maxHealth = self.__flashHp ? 100 : 100000;
+        me.health = self.__flashHp ?? 100000;
         for (const w of me.weapons.values()) if (w.def.magazine) w.mag = w.def.magazine;
         bots.forEach((b, i) => {
           b.maxHealth = b.health = 100000;

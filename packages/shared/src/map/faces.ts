@@ -115,31 +115,50 @@ interface Group {
   members: FrameBox[];
 }
 
-/** Split the drawn boxes into groups sharing a frame, each box as an axis-aligned box in its frame. */
-function frameGroups(boxes: readonly WorldBox[], drawn: (b: WorldBox) => boolean): Group[] {
-  const groups = new Map<string, Group>();
+/** Which frame a box is compared in: its key (boxes with the same key share it), its turn within a quarter (t), and whether x and z swap. */
+function boxFrame(b: WorldBox): { key: string; t: number; swap: boolean } {
+  // Tilted: only boxes turned and tilted exactly the same way share a frame.
+  if (b.pitch || b.roll) return { key: `t${Math.round((b.yaw ?? 0) * 1e6)},${Math.round(b.pitch! * 1e6 || 0)},${Math.round(b.roll! * 1e6 || 0)}`, t: NaN, swap: false };
+  // Turned: a quarter turn more or less is the same frame with x and z swapped.
+  const yaw = b.yaw ?? 0;
+  if (!yaw) return UNTURNED;
+  let t = ((yaw % QUARTER) + QUARTER) % QUARTER;
+  if (t < 1e-7 || QUARTER - t < 1e-7) t = 0;
+  const k = (((Math.round((yaw - t) / QUARTER) % 4) + 4) % 4) as 0 | 1 | 2 | 3;
+  return { key: `y${Math.round(t * 1e6)}`, t, swap: k % 2 === 1 };
+}
+const UNTURNED = { key: 'y0', t: 0, swap: false } as const;
+/** The rotation of a frame, from a box in it. */
+const frameQuat = (b: WorldBox, t: number): Rot => (Number.isNaN(t) ? boxQuat(b.yaw, b.pitch, b.roll) : boxQuat(t));
+
+/**
+ * The frames of a box list, in the order they first appear in it, each with its rotation (from the first box in it).
+ * A pass over part of the list (updateVisibleFaces) given these compares its boxes in the frames a pass over the whole
+ * list would, in the same order, so it cuts their faces exactly as that pass does.
+ */
+export type FaceFrames = ReadonlyMap<string, { q: Rot; order: number }>;
+export function faceFrames(boxes: readonly WorldBox[]): FaceFrames {
+  const out = new Map<string, { q: Rot; order: number }>();
+  for (const b of boxes) {
+    if (!isDrawnBox(b)) continue;
+    const f = boxFrame(b);
+    if (!out.has(f.key)) out.set(f.key, { q: frameQuat(b, f.t), order: out.size });
+  }
+  return out;
+}
+
+/** Split the drawn boxes into groups sharing a frame, each box as an axis-aligned box in its frame (in `frames`' order and rotations, when given). */
+function frameGroups(boxes: readonly WorldBox[], drawn: (b: WorldBox) => boolean, frames?: FaceFrames): Group[] {
+  const groups = new Map<string, Group & { order: number }>();
   for (let i = 0; i < boxes.length; i++) {
     const b = boxes[i]!;
     if (!drawn(b)) continue;
-    let key: string;
-    let q: Rot;
-    let swap = false;
-    if (b.pitch || b.roll) {
-      // Tilted: only boxes turned and tilted exactly the same way share a frame.
-      key = `t${Math.round((b.yaw ?? 0) * 1e6)},${Math.round(b.pitch! * 1e6 || 0)},${Math.round(b.roll! * 1e6 || 0)}`;
-      q = boxQuat(b.yaw, b.pitch, b.roll);
-    } else {
-      // Turned: a quarter turn more or less is the same frame with x and z swapped.
-      const yaw = b.yaw ?? 0;
-      let t = ((yaw % QUARTER) + QUARTER) % QUARTER;
-      if (t < 1e-7 || QUARTER - t < 1e-7) t = 0;
-      const k = (((Math.round((yaw - t) / QUARTER) % 4) + 4) % 4) as 0 | 1 | 2 | 3;
-      swap = k % 2 === 1;
-      key = `y${Math.round(t * 1e6)}`;
-      q = boxQuat(t);
-    }
+    const { key, t, swap } = boxFrame(b);
     let g = groups.get(key);
-    if (!g) groups.set(key, (g = { q, members: [] }));
+    if (!g) {
+      const known = frames?.get(key);
+      groups.set(key, (g = { q: known?.q ?? frameQuat(b, t), members: [], order: known?.order ?? Infinity }));
+    }
     const c = centre(b);
     const fc = isIdentity(g.q) ? c : rot(conj(g.q), c);
     const h: Vec3 = [(b.max[0] - b.min[0]) / 2, (b.max[1] - b.min[1]) / 2, (b.max[2] - b.min[2]) / 2];
@@ -148,7 +167,9 @@ function frameGroups(boxes: readonly WorldBox[], drawn: (b: WorldBox) => boolean
     const exact = !b.yaw && !b.pitch && !b.roll;
     g.members.push({ i, min: exact ? [...b.min] : [fc[0] - h[0], fc[1] - h[1], fc[2] - h[2]], max: exact ? [...b.max] : [fc[0] + h[0], fc[1] + h[1], fc[2] + h[2]] });
   }
-  return [...groups.values()];
+  const list = [...groups.values()];
+  if (frames) list.sort((a, b) => a.order - b.order);
+  return list.map(({ q, members }) => ({ q, members }));
 }
 
 /** Boxes of one frame bucketed on a grid over x and z, to find neighbours quickly. */
@@ -581,11 +602,12 @@ function clipAcrossFrames(boxes: readonly WorldBox[], groups: readonly Group[], 
  * The faces to draw for these boxes (props and barriers draw nothing). `draw`, when given, picks
  * the boxes whose faces are wanted; every drawn box still hides and outranks (MapMaker draws one
  * level at a time but the levels still meet). A face is a convex polygon: a rectangle, or a piece
- * of one where a box in another frame cut it.
+ * of one where a box in another frame cut it. `frames` (faceFrames of a longer list this one is part of): compare
+ * the boxes in that list's frames, so their faces come out exactly as a pass over the whole list cuts them.
  */
-export function visibleFaces(boxes: readonly WorldBox[], draw: (i: number) => boolean = () => true): RenderFace[] {
+export function visibleFaces(boxes: readonly WorldBox[], draw: (i: number) => boolean = () => true, frames?: FaceFrames): RenderFace[] {
   const out: RenderFace[] = [];
-  const groups = frameGroups(boxes, isDrawnBox);
+  const groups = frameGroups(boxes, isDrawnBox, frames);
   const frameOf = new Int32Array(boxes.length).fill(-1);
   groups.forEach((g, k) => {
     for (const m of g.members) frameOf[m.i] = k;

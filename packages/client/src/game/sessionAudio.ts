@@ -56,6 +56,11 @@ export class SessionAudio {
   /** When each arc sentry (mount index) last crackled: its arc hits ten times a second, heard every ARC_SOUND_MS. */
   private readonly arcSoundAt = new Map<number, number>();
 
+  /** The low-health warning's heartbeat (lowHealth.ts): louder as it gets worse, never loud. */
+  heartbeat(level: number): void {
+    this.audio.play('ui.heartbeat', { gain: 0.45 + 0.55 * Math.max(0, Math.min(1, level)) });
+  }
+
   /** Whether a block (entity index) is up: force fields only hum while they stand. */
   blockPresent: (i: number) => boolean = () => true;
 

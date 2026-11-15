@@ -53,7 +53,7 @@
     "fly": { "climb": 5, "ceiling": 30 }
   },
   "cockpitEye": [0, 2.35, 2.3],
-  "blurb": "A flying gunship (the dropship's flight model): the pilot fires blasters ahead, two door gunners cover the sides",
+  "blurb": "A flying gunship, the Sky Cruiser (the dropship's flight model): the pilot fires blasters ahead, two door gunners cover the sides",
   "notes": {
     "model": "Sky Cruiser (Meshy Community, CC0; the owner's Drive, Meshy_AI_Sky_Cruiser_1108121108_texture.glb; content/guns.json vehicles/sky_cruiser.glb, 2026-11-12): a red and white hover craft, 8.6 m long, with a blunt nose (a scooped hood over a bumper), a closed cab behind it, a door standing open on each side over a wide step board, and a caged engine deck at the tail. One closed shell: the cab has no inside, and each door opening is an alcove 0.8 m deep with a bench painted on its back wall. It replaced the Space Kit cargo craft (vehicles/gunship.glb), which this vehicle no longer names.",
     "half": "Fitted to the hull (2026-11-12; measured on the model, slices of its triangles; the mount's frame is the model's plus the 0.35 m it hovers): the hull is 4.2 m wide at its sills and front pods (the box was 4.8 m), the cab's roof 2.9-3.0 m up (the box was 2.4 m), 8.6 m long (unchanged). The step boards under the doors reach 3.0 m either side and the tail's cage 3.45 m up, outside the box: not solid, like the Hauler's fins. It hovers the class's 0.35 m, like the Speeder and the Hauler. The chase camera's distance and height come from this box (11.6 m back, was 11.3).",

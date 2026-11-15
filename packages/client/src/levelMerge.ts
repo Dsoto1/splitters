@@ -57,11 +57,13 @@ export interface MergeSource {
   /** Specular colour (grey) and power, as the per-style material had them. */
   specular: number;
   power: number;
+  /** Shade lift (MaterialDefinition.shadeLift), 0 for none. */
+  lift?: number;
 }
 
 /**
  * The StandardMaterial's few per-surface inputs from the vertex: the diffuse colour (tint), the colour and normal-map
- * texels from layers of array textures, the specular colour and power. Everything else in the shader is
+ * texels from layers of array textures, the specular colour and power, and the shade lift. Everything else in the shader is
  * StandardMaterial's own. The replacements match Babylon 9's (minified) default shader text; a mismatch leaves the
  * material sampling its 1×1 stand-in textures, which the level-merge e2e check would show as untextured walls.
  */
@@ -125,6 +127,8 @@ export class LevelArrayPlugin extends MaterialPluginBase {
       // undefined derivatives (GLSL ES 3.0), which some phone GPUs show as sparkling.
       '!normalW=perturbNormal\\(TBN,TEXRD\\(bumpSampler,vBumpUV\\+uvOffset\\)\\.xyz,vBumpInfos\\.y\\);':
         `normalW=perturbNormal(TBN,mix(texture(levelNormals,vec3(vBumpUV+uvOffset,max(vLevelB.x,0.0))${bias}).xyz,vec3(0.5,0.5,1.0),step(vLevelB.x,-0.5)),vBumpInfos.y);`,
+      // Shade lift: a share of the tint as emissive, added to the light before the colour texel multiplies it.
+      '!vec3 emissiveColor=vEmissiveColor;': 'vec3 emissiveColor=vEmissiveColor+diffuseColor*vLevelB.w;',
       // Specular colour and power.
       '!float glossiness=vSpecularColor\\.a;vec3 specularColor=vSpecularColor\\.rgb;': 'float glossiness=vLevelB.z;vec3 specularColor=vec3(vLevelB.y);',
     };
@@ -192,7 +196,7 @@ export function mergeGeometry(group: Layered, read: (m: Mesh) => { positions: Ar
           c.normals.push(nrm[v * 3]!, nrm[v * 3 + 1]!, nrm[v * 3 + 2]!);
           c.uvs.push(uvs[v * 2]!, uvs[v * 2 + 1]!);
           c.a.push(s.tint.r, s.tint.g, s.tint.b, colorLayer);
-          c.b.push(normalLayer, s.specular, s.power, 0);
+          c.b.push(normalLayer, s.specular, s.power, s.lift ?? 0);
         }
         c.indices.push(at);
       }

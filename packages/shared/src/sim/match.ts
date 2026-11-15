@@ -62,7 +62,8 @@ import { rollPickup } from './pickupRoll.ts';
 import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPPLY_REACH, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
-import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
+import { bodyHeightOf, eyeHeightOf, stanceOf, BUTTON_USE_HOLD } from './movement.ts';
+import { HOLD_HEAL_SCALE, HOLD_HEAL_SLACK, HOLD_KINDS, isHoldHealTool, startHold, stepHold, type HoldCancel, type HoldUse } from './holdUse.ts';
 import { thirdPersonAim, type RayQuery } from './thirdPerson.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies } from '../content/environment.ts';
@@ -418,6 +419,8 @@ export interface Combatant {
   useTick?: number;
   /** Tick from which this player may resupply again (sim/resupply.ts: a short wait between two). */
   resupplyAt?: number;
+  /** A hold to use in progress (sim/holdUse.ts: resupplying, or healing with the Medkit). */
+  hold?: HoldUse;
   windup: number;
   /** A person on foot in the third-person view (their input's BUTTON_THIRD_PERSON): rounds go toward the crosshair. */
   thirdPerson?: boolean;
@@ -2306,6 +2309,13 @@ export class Match {
         const k = c.bot.difficulty.aim.recoilComp ?? 0.5;
         input.rc = [c.gun.rp * k, c.gun.ry * k];
       }
+      // Resupplying (sim/holdUse.ts): a bot waits it out, standing still with E held, unless it has to fight (firing
+      // cancels the hold; it presses again when it is next beside the stock and short).
+      if (c.hold?.kind === 'resupply' && !(input.buttons & (BUTTON_FIRE | BUTTON_ALT | BUTTON_THROW | BUTTON_MELEE))) {
+        input.buttons = (input.buttons & ~(BUTTON_JUMP | BUTTON_SPRINT)) | BUTTON_USE_HOLD;
+        input.forward = 0;
+        input.right = 0;
+      }
       c.queue.push(input);
       if (every > 1) this.botThought.set(c.slot, { input, tick: this.tick });
     }
@@ -3196,13 +3206,17 @@ export class Match {
       if (input.buttons & BUTTON_USE && (c.move.zip !== undefined) !== (zipBefore !== undefined)) input.buttons &= ~BUTTON_USE;
       if (input.buttons & BUTTON_USE) {
         c.useTick = this.tick;
-        // Get out, get in, or use whatever you are looking at.
-        if (c.mount) {
+        // Get out, get in, or use whatever you are looking at (a press during a hold to use is part of it).
+        if (c.hold) {
+          // Holding already.
+        } else if (c.mount) {
           const ride = this.mounts[c.mount.index];
           if (!ride?.route || this.mayJumpOut(c, ride)) this.leaveMount(c, true);
         } else if (!this.resupplyAtBox(c) && !this.resupplyAtMount(c) && !this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
         if (this.phase !== 'playing') break;
       }
+      // A hold to use (sim/holdUse.ts): goes on, completes, or is cancelled (firing below cancels a resupply).
+      if (c.hold) this.stepHoldUse(c, input);
       // A mode tool (the Fort Wars Builder) takes the trigger for itself.
       if (!c.mount && this.mode?.useInput?.(c, input)) input.buttons &= ~(BUTTON_FIRE | BUTTON_ALT | BUTTON_ZOOM | BUTTON_RELOAD);
       // Seated: the seat's gun if it has one; drivers without one can't shoot; passengers use their own.
@@ -3472,6 +3486,14 @@ export class Match {
       return;
     }
     const heal = getWeapon(def.id).heal;
+    if (heal && isHoldHealTool(getWeapon(def.id))) {
+      // The Medkit is held, not clicked (sim/holdUse.ts): the trigger starts a heal, holding it finishes it.
+      if (!shooter.hold) {
+        const target = this.medkitTarget(shooter, eye, aim, def.range);
+        if (target) shooter.hold = startHold('heal', this.tick, shooter.current, { target: target.slot });
+      }
+      return;
+    }
     if (heal) {
       this.useMedkit(shooter, eye, aim, heal, def.range);
       return;
@@ -4379,6 +4401,15 @@ export class Match {
 
   /** Heal the hurt teammate you're aiming at within reach, or else yourself. */
   private useMedkit(shooter: Combatant, eye: Vec3, aim: Vec3, amount: number, range: number): void {
+    const target = this.medkitTarget(shooter, eye, aim, range);
+    if (!target) return;
+    const n = Math.min(amount, target.maxHealth - target.health);
+    target.health += n;
+    this.pendingEvents.push({ e: 'heal', s: shooter.slot, t: target.slot, n });
+  }
+
+  /** Whom a heal tool works on: the hurt teammate you're aiming at within reach, or else yourself when hurt; null: nobody. */
+  private medkitTarget(shooter: Combatant, eye: Vec3, aim: Vec3, range: number): Combatant | null {
     let best: Combatant | null = null;
     let bestD = range;
     for (const c of this.actors()) {
@@ -4389,11 +4420,70 @@ export class Match {
         bestD = d;
       }
     }
-    const target = best ?? (shooter.health < shooter.maxHealth ? shooter : null);
-    if (!target) return;
-    const n = Math.min(amount, target.maxHealth - target.health);
-    target.health += n;
-    this.pendingEvents.push({ e: 'heal', s: shooter.slot, t: target.slot, n });
+    return best ?? (shooter.health < shooter.maxHealth ? shooter : null);
+  }
+
+  // ---------------------------------------------------------------- hold to use (sim/holdUse.ts)
+
+  /** One tick of `c`'s hold: in reach and held it goes on; done, it gives; otherwise it stops and says why. */
+  private stepHoldUse(c: Combatant, input: PlayerInput): void {
+    const h = c.hold!;
+    const heal = h.kind === 'heal';
+    const held = (input.buttons & (heal ? BUTTON_FIRE : BUTTON_USE_HOLD)) !== 0;
+    const fired = (input.buttons & (BUTTON_FIRE | BUTTON_ALT | BUTTON_THROW | BUTTON_MELEE)) !== 0;
+    const result = stepHold(h, this.tick, { held, inReach: !c.mount && c.alive && this.holdInReach(c, h), fired, weapon: c.current, hurtAt: c.hurtAt });
+    if (result === null) return;
+    c.hold = undefined;
+    if (result !== 'done') {
+      // Out of stock or the target gone reads as "nothing left there", not as having moved.
+      const why: HoldCancel = result === 'moved' && !c.mount && c.alive && !this.holdSourceStands(h) ? 'gone' : result;
+      this.pendingEvents.push({ e: 'hold', s: c.slot, k: HOLD_KINDS.indexOf(h.kind), x: why });
+      return;
+    }
+    if (heal) {
+      const t = this.slots[h.target!] ?? this.npcs.get(h.target!);
+      const amount = (getWeapon(weaponByCode(h.weapon)?.id ?? '').heal ?? 0) * HOLD_HEAL_SCALE;
+      if (!t || !t.alive || amount <= 0) return;
+      const n = Math.min(amount, t.maxHealth - t.health);
+      t.health += n;
+      this.pendingEvents.push({ e: 'heal', s: c.slot, t: t.slot, n });
+      return;
+    }
+    if (h.box !== undefined) {
+      const b = this.boxes.find((x) => x.id === h.box);
+      if (b) this.giveFromBox(c, b);
+    } else if (h.mount !== undefined) {
+      const m = this.mounts.find((x) => x.index === h.mount);
+      if (m) this.giveFromMount(c, m);
+    }
+  }
+
+  /** Whatever a hold works on still stands (the box, the vehicle with stock, the target alive and hurt). */
+  private holdSourceStands(h: HoldUse): boolean {
+    if (h.kind === 'heal') {
+      const t = this.slots[h.target!] ?? this.npcs.get(h.target!);
+      return !!t && t.alive && t.health < t.maxHealth;
+    }
+    if (h.box !== undefined) return this.boxes.some((b) => b.id === h.box && b.body && b.uses > 0);
+    const m = h.mount !== undefined ? this.mounts.find((x) => x.index === h.mount) : undefined;
+    return !!m && m.alive && m.supply > 0;
+  }
+
+  /** Still in reach of what the hold works on (and it still stands). */
+  private holdInReach(c: Combatant, h: HoldUse): boolean {
+    if (!this.holdSourceStands(h)) return false;
+    if (h.kind === 'heal') {
+      const t = (this.slots[h.target!] ?? this.npcs.get(h.target!))!;
+      if (t === c) return true;
+      const range = (weaponByCode(h.weapon)?.range ?? 3) + HOLD_HEAL_SLACK;
+      return hypot(t.move.pos.x - c.move.pos.x, t.move.pos.z - c.move.pos.z) <= range && Math.abs(t.move.pos.y - c.move.pos.y) <= range;
+    }
+    if (h.box !== undefined) {
+      const b = this.boxes.find((x) => x.id === h.box)!;
+      return Math.abs(c.move.pos.y - b.pos.y) <= 1.6 && horizontalDistance(c.move.pos, b.pos) <= AMMO_BOX_REACH;
+    }
+    const m = this.mounts.find((x) => x.index === h.mount)!;
+    return resupplyReach(m.def.resupply!, m.pos, m.yaw, c.move.pos) !== null;
   }
 
   private spawnProjectile(owner: number, spec: ProjectileSpec, weapon: string, pos: Vec3, vel: Vec3): void {
@@ -4699,10 +4789,28 @@ export class Match {
       }
     }
     if (!best) return false;
+    // Something to give and no wait: hold Use (sim/holdUse.ts); otherwise say why not at once.
+    if (this.tick >= (c.resupplyAt ?? 0) && this.resupplyWanted(c)) c.hold = startHold('resupply', this.tick, c.current, { box: best.id });
+    else this.pendingEvents.push({ e: 'resupply', s: c.slot, m: -1, b: best.id, left: best.uses, ok: false });
+    return true;
+  }
+
+  /** The throwable a resupply hands out when none is carried (the weapon set's first kind), or null. */
+  private resupplySpawnThrowable(c: Combatant): ThrowableKind | null {
+    return this.weaponSet && !restrictedWeapons(this.rules) ? (setLoadout(this.weaponSet, this.rules, { seed: this.seed, slot: c.slot, life: 0, sniper: false }).throwable?.kind ?? null) : null;
+  }
+
+  /** A resupply would give `c` something now (worked out on copies: nothing is changed). */
+  private resupplyWanted(c: Combatant): boolean {
+    const guns = [...c.weapons.values()].map((w) => ({ def: w.def, reserve: w.reserve, alt: w.alt }));
+    return resupplyLoadout(guns, c.throwable ? { ...c.throwable } : null, this.resupplySpawnThrowable(c)).given;
+  }
+
+  /** A finished hold at an ammo box: the stock, a use spent, the wait begun. */
+  private giveFromBox(c: Combatant, best: AmmoBox): void {
     let given = false;
-    if (this.tick >= (c.resupplyAt ?? 0)) {
-      const spawn = this.weaponSet && !restrictedWeapons(this.rules) ? (setLoadout(this.weaponSet, this.rules, { seed: this.seed, slot: c.slot, life: 0, sniper: false }).throwable?.kind ?? null) : null;
-      const r = resupplyLoadout(c.weapons.values(), c.throwable, spawn);
+    if (best.body && best.uses > 0 && this.tick >= (c.resupplyAt ?? 0)) {
+      const r = resupplyLoadout(c.weapons.values(), c.throwable, this.resupplySpawnThrowable(c));
       if (r.given) {
         given = true;
         c.throwable = r.throwable;
@@ -4712,7 +4820,6 @@ export class Match {
     }
     this.pendingEvents.push({ e: 'resupply', s: c.slot, m: -1, b: best.id, left: best.uses, ok: given });
     if (best.uses <= 0) this.removeBox(best);
-    return true;
   }
 
   /** Standing boxes for the snapshot (`ab`): [id, x, y, z, yaw, health %, uses left, 1 when deployed]. */
@@ -4763,12 +4870,19 @@ export class Match {
       }
     }
     if (!best) return false;
+    // Something to give, stock and no wait: hold Use (sim/holdUse.ts); otherwise say why not at once.
+    if (best.supply > 0 && this.tick >= (c.resupplyAt ?? 0) && this.resupplyWanted(c)) c.hold = startHold('resupply', this.tick, c.current, { mount: best.index });
+    else this.pendingEvents.push({ e: 'resupply', s: c.slot, m: best.index, left: best.supply, ok: false });
+    return true;
+  }
+
+  /** A finished hold at a resupply vehicle's tailgate: the stock, a use spent, the wait begun. */
+  private giveFromMount(c: Combatant, best: MountRt): void {
     const spec = best.def.resupply!;
     let left = best.supply;
     let given = false;
-    if (left > 0 && this.tick >= (c.resupplyAt ?? 0)) {
-      const spawn = this.weaponSet && !restrictedWeapons(this.rules) ? (setLoadout(this.weaponSet, this.rules, { seed: this.seed, slot: c.slot, life: 0, sniper: false }).throwable?.kind ?? null) : null;
-      const r = resupplyLoadout(c.weapons.values(), c.throwable, spawn);
+    if (best.alive && left > 0 && this.tick >= (c.resupplyAt ?? 0)) {
+      const r = resupplyLoadout(c.weapons.values(), c.throwable, this.resupplySpawnThrowable(c));
       if (r.given) {
         given = true;
         c.throwable = r.throwable;
@@ -4777,7 +4891,6 @@ export class Match {
       }
     }
     this.pendingEvents.push({ e: 'resupply', s: c.slot, m: best.index, left, ok: given });
-    return true;
   }
 
   private enterMount(c: Combatant): boolean {
@@ -5970,6 +6083,7 @@ export class Match {
   }
 
   private kill(victim: Combatant, killer: Combatant | null, weapon: string, head = false): void {
+    victim.hold = undefined;
     this.leaveMount(victim, false);
     victim.alive = false;
     victim.health = 0;
@@ -6989,6 +7103,7 @@ export class Match {
       ...(this.classes?.privateState(c) ?? {}),
       ...(c.discPower ? { dp: [DISC_POWERS.indexOf(c.discPower.kind), c.discPower.shots] as [number, number] } : {}),
       ...(this.roulette ? { rp: this.roulette.privateState(c) } : {}),
+      ...(c.hold ? { hu: [HOLD_KINDS.indexOf(c.hold.kind), Math.max(0, this.tick - c.hold.start), c.hold.ticks] as [number, number, number] } : {}),
     };
   }
 
@@ -7069,7 +7184,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false, sheltered = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
 }
 
 /** Refill a view made by toView for this tick. */

@@ -153,7 +153,7 @@ import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts'
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
-import { loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
+import { WORLD_GRADE, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
@@ -947,6 +947,14 @@ export class GameView {
     const eye = this.scene.activeCamera?.globalPosition;
     const near = !eye || Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z) <= SHOT_OVERLAY_REACH;
     if (strength >= 1.6 && near) anim.trigger(zone === 1 ? 'hit_head' : 'hit');
+  }
+
+  /** The low-health warning's grey (lowHealth.ts): colour taken off the world grade's saturation (`delta` ≤ 0). */
+  setGradeSaturation(delta: number): void {
+    const c = this.scene.imageProcessingConfiguration.colorCurves;
+    if (!c) return;
+    const v = WORLD_GRADE.saturation + Math.round(delta * 2) / 2;
+    if (c.globalSaturation !== v) c.globalSaturation = v;
   }
 
   cameraPosition(): Vec3 {
@@ -2686,7 +2694,10 @@ export class GameView {
       ch.root.parent = root;
       fitCharacter(ch);
       if (spec.size && spec.size !== 1) ch.root.scaling.scaleInPlace(spec.size);
-      a.anim = new CharacterAnimator(this.scene, ch);
+      const anim = new CharacterAnimator(this.scene, ch);
+      // Bodies of one look share the first one's torso measurement.
+      anim.torsoLook = specKey;
+      a.anim = anim;
       if (a.culled) a.anim.setDormant(true);
       placeholder.setEnabled(false);
       // Move the held weapon from the capsule to the hand.
