@@ -1864,8 +1864,10 @@ export class GameSession {
    * with 15 bots: about 220 MB of script memory and a disposed scene per Test; the memory probe, fix 3c).
    */
   private dropTestHooks(): void {
-    const w = window as unknown as Record<string, { view?: unknown } | undefined>;
-    if (w.__cs?.view === this.view) delete w.__cs;
+    const w = window as unknown as Record<string, { view?: unknown; map?: unknown } | undefined>;
+    // What a test may still read once the match has gone (the end-of-match board's "Next map", the map it was), and
+    // nothing that reaches the session.
+    if (w.__cs?.view === this.view) w.__cs = { ended: true, map: w.__cs.map, slot: this.slot, hud: { nextMap: this.hud.nextMap } } as { map?: unknown };
     if (this.tips) delete w.__tips;
     if (this.tutorial) delete w.__tutorial;
   }
