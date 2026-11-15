@@ -3938,8 +3938,9 @@ export class GameView {
     st.t = now;
     const k = Math.min(1, dt * 18);
     st.h += (want.h - st.h) * k;
-    st.p += (want.p - st.p) * k;
-    st.r += (want.r - st.r) * k;
+    // The short way round (a rigid vehicle rolling over goes from +π to -π).
+    st.p += Math.atan2(Math.sin(want.p - st.p), Math.cos(want.p - st.p)) * k;
+    st.r += Math.atan2(Math.sin(want.r - st.r), Math.cos(want.r - st.r)) * k;
     st.steer += (want.steer - st.steer) * k;
     want.wheel.forEach((w, i) => (st.wheel[i] = (st.wheel[i] ?? w) + (w - (st.wheel[i] ?? w)) * k));
     // Babylon: rotation.x + is nose down, rotation.z + lifts the right side.

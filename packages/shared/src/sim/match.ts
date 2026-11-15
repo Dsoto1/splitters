@@ -19,6 +19,7 @@ import { add, createRng, distance, dot, horizontalDistance, lookAngles, normaliz
 import {
   MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
   airCraftDef, BUILT_MOUNT_BASE, enterReach, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole, ammoRefillTicks, ammoRefilledBy, armourScale, firingSeat, sealedMount, type MountHit,
+  lookSteer,
 } from './mounts.ts';
 import { airRoute, botDropIndex, canDrop, dropArea, dropIndex, dropOffsets, dropPlan, dropStretchEnds, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute, type DropPlan } from './airplane.ts';
 import { CHUTE, heightAboveGround } from './parachute.ts';
@@ -74,6 +75,7 @@ import { BUTTON_AUTO_RELOAD, BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
+import { newRigid, rigidOf, rigidSpeeds, rigidWire, rotate as rotateQ, stepRigid, yawPitchRoll, type RigidSetup, type RigidState } from './wheelPhysics.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
 import { mapGroundBores, nearGroundCut, type GroundCut } from '../map/groundBore.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
@@ -152,6 +154,8 @@ function lyingItem(p: Projectile): ItemDefinition | undefined {
 export const START_WAIT_SECONDS = 30;
 export const COUNTDOWN_SECONDS = 3;
 /** Vehicle crashes: closing speed (m/s) below which nothing is hurt, and damage per m/s over it (split by weight). */
+/** Most ticks a driven rigid vehicle waits for its driver's next input before it goes on without (MountRt.driveWait): a lost packet's resend at 150 ms. */
+const DRIVE_WAIT_MAX = 12;
 const RAM_MIN_SPEED = 5;
 /** A vehicle nobody drives brakes at this rate (m/s²) when its data has no `vehicle.idleBrake`. */
 const DEFAULT_IDLE_BRAKE = 10;
@@ -247,6 +251,23 @@ interface MountRt {
   /** Raycast suspension (wheeled light vehicles, sim/suspension.ts): its tuning and the sprung body. */
   suspSetup?: SuspensionSetup;
   susp?: SuspensionState;
+  /**
+   * Rigid driving (sim/wheelPhysics.ts: a real body on sprung raycast wheels; MountDef.vehicle.rigid): its numbers,
+   * its state, the hull's sweep capsule, and the pose and speed it last left in pos, yaw and speed (so a move from
+   * outside, a respawn or a test putting it somewhere, starts it again there).
+   */
+  rigidSetup?: RigidSetup;
+  rigid?: RigidState;
+  chassisProbe?: RAPIER.Collider;
+  /**
+   * The driver's inputs applied this tick: a driven rigid vehicle steps once for each, as the driver's own prediction
+   * steps once per input (Match.driveRigid).
+   */
+  driveQueue?: MountRt['drive'][];
+  /** Ticks waited for the driver's next input, and whether the driver is sending them (not just got in, not gone quiet). */
+  driveWait?: number;
+  driveFed?: boolean;
+  rigidSeen?: { pos: Vec3; yaw: number; speed: number };
   cooldown: number;
   /** Who damaged it last (credit for the explosion). */
   lastHitBy: number | null;
@@ -637,8 +658,6 @@ function arcFlags(m: MountRt): number {
   if (!arc || st.target === null || st.vent > 0) return 0;
   return st.charge < Math.round(arc.windUpSeconds * TICK_RATE) ? MOUNT_FLAG_CHARGING : MOUNT_FLAG_ARC;
 }
-/** Look-to-steer: steering (-1..1) per radian the driver looks off the nose. */
-const LOOK_STEER_GAIN = 2.2;
 /** The vehicle probe's feet ride this far over the ground (the character controller's skin): the wheels' rest. */
 const VEHICLE_SKIN = 0.02;
 /** Suspension rays a tick before vehicles start reusing last tick's ground (24 four-wheelers). */
@@ -804,7 +823,7 @@ export class Match {
      * later round counts down too. Off (play at once) for headless matches
      * and tests.
      */
-    private readonly opts: { startGate?: boolean } = {},
+    private readonly opts: { startGate?: boolean; drive?: 'classic' | 'rigid' } = {},
   ) {
     this.geometry = buildMapGeometry(map);
     this.killY = mapKillY(this.geometry, map);
@@ -3117,12 +3136,10 @@ export class Match {
           const down = !!(input.buttons & BUTTON_CROUCH);
           // Look-to-steer (the Warthog way): the wheel turns toward where the driver looks, on top of A/D; backing up
           // it steers the other way round, so the nose still swings toward the look.
-          let right = input.right;
-          if (input.buttons & BUTTON_STEER_LOOK && m.def.vehicle && !m.def.vehicle.fly) {
-            const off = Math.atan2(Math.sin(c.yaw - m.yaw), Math.cos(c.yaw - m.yaw));
-            right = Math.max(-1, Math.min(1, right + off * LOOK_STEER_GAIN * (m.speed < -0.5 ? -1 : 1)));
-          }
+          const right = input.buttons & BUTTON_STEER_LOOK && m.def.vehicle && !m.def.vehicle.fly ? lookSteer(input.right, c.yaw, m.yaw, m.speed) : input.right;
           m.drive = m.def.vehicle?.fly ? { forward: input.forward, right, lift: (up ? 1 : 0) - (down ? 1 : 0) } : { forward: input.forward, right, brake: up };
+          // A rigid vehicle steps once per driver input, as the driver's prediction does (driveRigid).
+          if (m.rigid) (m.driveQueue ??= []).push(m.drive);
         }
         if (seat.arc !== undefined) {
           const centre = m.yaw + (seat.facing ?? 0);
@@ -4624,6 +4641,15 @@ export class Match {
       m.suspSetup = setup;
       m.susp = newSuspension(setup);
     }
+    // Rigid driving where the vehicle has it on (or the match asks for it: MatchOptions.drive); not afloat.
+    const rigid = rigidOf(def);
+    const drive = this.opts.drive;
+    if (rigid && !floats && (drive === 'rigid' || (drive !== 'classic' && def.vehicle?.rigid?.on))) {
+      m.rigidSetup = rigid;
+      m.rigid = newRigid(rigid, pos, yaw);
+      m.rigidSeen = { pos: m.pos, yaw, speed: 0 };
+      m.chassisProbe = this.physics.createChassisProbe(rigid.probeR, rigid.probeHalf);
+    }
     this.mounts.push(m);
     this.mountBodies.set(body.handle, m);
   }
@@ -4677,7 +4703,13 @@ export class Match {
 
   /** Where a seat's occupant stands right now. */
   private seatFeet(m: MountRt, seat: number): Vec3 {
-    return mountToWorld(m.pos, m.yaw, m.def.seats[seat]!.offset);
+    const o = m.def.seats[seat]!.offset;
+    // A rigid vehicle leans, pitches and rolls over: its seats go with it.
+    if (m.rigid && m.alive) {
+      const d = rotateQ(m.rigid.q, { x: o[0], y: o[1], z: o[2] });
+      return { x: m.pos.x + d.x, y: m.pos.y + d.y, z: m.pos.z + d.z };
+    }
+    return mountToWorld(m.pos, m.yaw, o);
   }
 
   /**
@@ -5463,6 +5495,7 @@ export class Match {
    * dents the vehicle. Walls bleed speed, less for heavy ones.
    */
   private driveVehicle(m: MountRt, ticks = 1): void {
+    if (m.rigid) return this.driveRigid(m, ticks);
     const dt = TICK_DT * ticks;
     const v = m.def.vehicle!;
     const { forward, right, brake } = m.drive;
@@ -5585,8 +5618,13 @@ export class Match {
     m.vel = { x: vx, z: vz };
     this.ramMounts(m, vx, vz, driver);
     if (!m.alive) return;
-    // Running people over.
+    this.runOver(m, driver);
+  }
+
+  /** Running people over (5 m/s and up), credited to the driver. */
+  private runOver(m: MountRt, driver: Combatant | null): void {
     if (Math.abs(m.speed) < 5) return;
+    const dir = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
     for (const c of this.actors()) {
       if (!c.alive || m.seats.includes(c.slot) || (m.runOver.get(c.slot) ?? 0) > this.tick) continue;
       const rel = { x: c.move.pos.x - m.pos.x, z: c.move.pos.z - m.pos.z };
@@ -5600,6 +5638,109 @@ export class Match {
       this.damage(c, Math.abs(m.speed) * 5, driver, 'core.roadkill');
       this.pendingEvents.push({ e: 'crash', p: tuple(chest(c.move.pos)), n: Math.min(1, Math.abs(m.speed) / 40) });
     }
+  }
+
+  /**
+   * A rigid vehicle's tick (sim/wheelPhysics.ts): the body on its wheels, then what the classic drive does after a
+   * move (hard landings, the wedge watch, crashes, running people over), and the box, seats and snapshot from its pose.
+   */
+  private driveRigid(m: MountRt, ticks: number): void {
+    const t = m.rigidSetup!;
+    const v = m.def.vehicle!;
+    const seen = m.rigidSeen!;
+    let s = m.rigid!;
+    // Put somewhere from outside (a respawn, a test, a teleport): it starts again there, upright and still.
+    if (m.pos !== seen.pos || m.yaw !== seen.yaw) {
+      s = m.rigid = newRigid(t, m.pos, m.yaw);
+      m.driveWait = 0;
+    }
+    else if (m.speed !== seen.speed) {
+      // Its speed changed from outside (stopped dead, a crash's loss, a test): its speed along its heading becomes that.
+      const f = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
+      const along = s.vel.x * f.x + s.vel.z * f.z;
+      s.vel = { x: s.vel.x + f.x * (m.speed - along), y: s.vel.y, z: s.vel.z + f.z * (m.speed - along) };
+      if (m.speed === 0) s.spin = { x: 0, y: 0, z: 0 };
+    }
+    // Pushes (blasts, being rammed): straight into its speed.
+    if (m.push.x || m.push.z) {
+      s.vel = { x: s.vel.x + m.push.x, y: s.vel.y, z: s.vel.z + m.push.z };
+      m.push = { x: 0, z: 0 };
+      s.rest = 0;
+    }
+    const piloted = m.def.seats.some((seat, i) => seat.role === 'driver' && m.seats[i] !== null) || !!m.ambient;
+    const road = roadHandling(this.road, m.pos, false);
+    const world = this.physics.chassisWorld(m.chassisProbe!, m.body);
+    const before = { ...m.pos };
+    let landing = 0;
+    let blocked = 0;
+    // Driven, it steps once per driver input, as the driver's prediction does (and as players move: one move per
+    // input), so the host runs exactly what the driver predicted however the link bunches the inputs. A tick with
+    // none in waits for them (DRIVE_WAIT_MAX ticks at most: then it goes on with the last controls).
+    const queue = m.driveQueue ?? [];
+    m.driveQueue = [];
+    const driven = m.def.seats.some((seat, i) => seat.role === 'driver' && m.seats[i] !== null);
+    const run = (drive: MountRt['drive']) => {
+      const r = stepRigid(s, t, world, { forward: drive.forward, right: drive.right, brake: !!drive.brake, piloted, grip: road.grip, speed: road.speed }, TICK_DT);
+      landing = Math.max(landing, r.landing);
+      blocked = Math.max(blocked, r.blocked);
+    };
+    if (!driven || ticks > 1) {
+      for (let k = 0; k < ticks; k++) run(m.drive);
+      m.driveWait = 0;
+      m.driveFed = false;
+    } else if (queue.length) {
+      for (const drive of queue) run(drive);
+      m.driveWait = 0;
+      m.driveFed = true;
+    } else {
+      m.driveWait = (m.driveWait ?? 0) + 1;
+      if (m.driveWait > DRIVE_WAIT_MAX) m.driveFed = false;
+      if (!m.driveFed) run(m.drive);
+    }
+    const forward = m.drive.forward;
+    const pose = yawPitchRoll(s.q);
+    const speeds = rigidSpeeds(s);
+    m.pos = { ...s.pos };
+    m.yaw = pose.yaw;
+    m.speed = speeds.forward;
+    m.slide = speeds.side;
+    m.velY = s.vel.y;
+    m.airborne = s.contact === 0 && !s.hull;
+    // Hard landing: as the classic drive, by how fast it came down and how heavy it is.
+    if (landing > 11) this.damageMount(m, (landing - 11) * 6 * (v.mass ?? 1), null);
+    // The drawn body: no sprung offset of its own (the pose is the body's), its pitch and roll, steering and springs.
+    const susp = m.susp!;
+    susp.h = susp.hv = susp.pv = susp.rv = 0;
+    susp.p = pose.pitch;
+    susp.r = pose.roll;
+    susp.steer = s.steer;
+    for (let i = 0; i < susp.wheel.length; i++) susp.wheel[i] = s.comp[i] ?? 0;
+    susp.contact = s.contact;
+    susp.settled = s.rest > 0;
+    const mid = rotateQ(s.q, { x: 0, y: m.def.half[1], z: 0 });
+    this.physics.setBoxTransform(m.body, { x: m.pos.x + mid.x, y: m.pos.y + mid.y, z: m.pos.z + mid.z }, s.q);
+    if (m.pos.y < this.killY) {
+      this.destroyMount(m, false);
+      return;
+    }
+    // Wedged: driven and getting nowhere for a while (bots leave it for something else until it is got out).
+    const throttle = piloted && Math.abs(forward) > 0.2;
+    const step = Math.hypot(m.pos.x - before.x, m.pos.z - before.z);
+    m.stall = throttle && step < WEDGE_STEP * ticks ? m.stall + ticks : Math.max(0, m.stall - 2 * ticks);
+    if (m.stall >= WEDGE_TICKS && !m.wedged) m.wedged = { at: { ...m.pos } };
+    else if (m.wedged && Math.hypot(m.pos.x - m.wedged.at.x, m.pos.z - m.wedged.at.z) > WEDGE_FREED) {
+      m.wedged = undefined;
+      m.stall = 0;
+    }
+    void blocked;
+    const driverSlot = m.seats[m.def.seats.findIndex((seat) => seat.role === 'driver')] ?? null;
+    const driver = driverSlot === null ? null : (this.actor(driverSlot) ?? null);
+    m.vel = { x: s.vel.x, z: s.vel.z };
+    const speed = m.speed;
+    this.ramMounts(m, s.vel.x, s.vel.z, driver);
+    m.rigidSeen = { pos: m.pos, yaw: m.yaw, speed };
+    if (!m.alive) return;
+    this.runOver(m, driver);
   }
 
   /** Suspension rays cast this tick (stepMounts resets it): past SUSPENSION_RAY_BUDGET, vehicles sample less often. */
@@ -7077,6 +7218,13 @@ export class Match {
     return null;
   }
 
+  /** The driver of a rigid vehicle gets its whole state, to predict it from (PrivateState.vp, wheelPhysics.ts rigidWire). */
+  private rigidPrivate(c: Combatant): { vp?: number[] } {
+    const m = this.mounts[c.mount!.index];
+    if (!m?.rigid || !m.alive || m.def.seats[c.mount!.seat]?.role !== 'driver') return {};
+    return { vp: rigidWire(m.index, m.rigid) };
+  }
+
   /** The owning player's inventory and timers. */
   privateState(slot: number): PrivateState | undefined {
     const c = this.slots[slot];
@@ -7086,6 +7234,7 @@ export class Match {
       ...(statusSpeed(c) !== 1 ? { ms: Math.round(statusSpeed(c) * 1000) } : {}),
       ...(c.speedMul !== 1 || c.stats.jump !== 1 || c.stats.stamina !== 1 ? { bs: [Math.round(c.speedMul * 1000), Math.round(c.stats.jump * 1000), Math.round(c.stats.stamina * 1000)] as [number, number, number] } : {}),
       ...(c.mount ? { mo: this.seatState(c) } : {}),
+      ...(c.mount ? this.rigidPrivate(c) : {}),
       ...(c.throwable ? { gr: [THROWABLES.indexOf(c.throwable.kind), c.throwable.count] as [number, number] } : {}),
       rl: c.reloadTicks,
       rs: c.raiseTicks,

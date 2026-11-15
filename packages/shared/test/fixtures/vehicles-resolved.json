@@ -399,7 +399,27 @@
       "tumble": 1.4,
       "land": 0.5,
       "maxTilt": 0.45,
-      "steer": 0.5
+      "steer": 0.6
+     },
+     "rigid": {
+      "on": true,
+      "com": 0.85,
+      "grip": 1.05,
+      "slide": 0.75,
+      "corner": [
+       9,
+       8
+      ],
+      "inertia": 0.8,
+      "airLevel": 5,
+      "airPitch": 10,
+      "airRoll": 6,
+      "rightAfter": [
+       0.3,
+       4
+      ],
+      "launch": 1.7,
+      "rearSteer": 0.6
      }
     },
     "blurb": "Six aboard: a driver, a front passenger, two seated behind them and two standing in the back row, all five riders shooting their own weapons"
