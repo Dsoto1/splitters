@@ -12,6 +12,7 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import '@babylonjs/core/Meshes/meshLODLevel';
 import '@babylonjs/core/Meshes/instancedMesh';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
+import { freeIfSceneGone } from './sceneGone.ts';
 // Side-effect import: registers the glTF 2.0 loader plugin.
 import './gltf.ts';
 import { MODEL_FALLBACKS, MOUNT_DEFS, THROWABLE_DEFS } from '@tiletrigger/shared';
@@ -47,6 +48,8 @@ export class ModelLibrary {
     }
     if (!p) {
       p = LoadAssetContainerAsync(versioned(/^(props|kit|creatures|city|packs|env)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB).then(async (c) => {
+        // The scene went while the file loaded: free it now (sceneGone.ts) and make nothing more in that scene.
+        if (this.scene.isDisposed) return freeIfSceneGone(this.scene)(c);
         this.lods.set(path, takeLods(c));
         // Kit props carry their surfaces (tools/content/surfaces.mjs; the generated kit families, tools/content/kitprops.mjs,
         // the same material extras): shared detail maps on their materials.
