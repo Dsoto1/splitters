@@ -156,6 +156,10 @@ export const COUNTDOWN_SECONDS = 3;
 /** Vehicle crashes: closing speed (m/s) below which nothing is hurt, and damage per m/s over it (split by weight). */
 /** Most ticks a driven rigid vehicle waits for its driver's next input before it goes on without (MountRt.driveWait): a lost packet's resend at 150 ms. */
 const DRIVE_WAIT_MAX = 12;
+/** A driven vehicle is heard by bots (an engine noise, Match.noteCombat) when going this fast (m/s), every this many ticks, out to at most this far (m). */
+const ENGINE_HEARD_SPEED = 2;
+const ENGINE_NOISE_TICKS = 30;
+const ENGINE_NOISE_RANGE = 40;
 const RAM_MIN_SPEED = 5;
 /** A vehicle nobody drives brakes at this rate (m/s²) when its data has no `vehicle.idleBrake`. */
 const DEFAULT_IDLE_BRAKE = 10;
@@ -2712,6 +2716,15 @@ export class Match {
         if (!c.bot || !c.alive || !this.hostile(shooter, c)) continue;
         if (ev.hit.includes(c.slot) || segmentDistance(c.move.pos, from, to, CHEST) < 1.6) c.shotAt = { tick: this.tick, from };
       }
+    }
+    // A vehicle being driven is heard (its engine), twice a second, further the faster it goes: before, bots only knew
+    // of one they could see, so a buggy coming up behind them, or its driver getting out there, went unnoticed until
+    // the driver fired (owner, 2026-11-15).
+    for (const m of this.mounts) {
+      if (!m.alive || !m.def.vehicle || m.def.airplane || Math.abs(m.speed) < ENGINE_HEARD_SPEED || (this.tick + m.index) % ENGINE_NOISE_TICKS !== 0) continue;
+      const driver = m.seats[m.def.seats.findIndex((seat) => seat.role === 'driver')];
+      if (driver === null || driver === undefined) continue;
+      this.noises.push({ pos: { ...m.pos }, tick: this.tick, by: driver, range: Math.min(ENGINE_NOISE_RANGE, 15 + Math.abs(m.speed) * 1.5) });
     }
     if (this.noises.length > 48) this.noises.splice(0, this.noises.length - 48);
   }
