@@ -43,6 +43,8 @@ export interface RigidTuning {
   rightAfter: [number, number];
   /** The rear wheels' steering against the front's at a standstill (a share, fading out by top speed). */
   rearSteer: number;
+  /** Gravity on it, as a share of the players' (lighter: more air time, livelier over bumps). Default 1. */
+  gravity?: number;
   /** Low-speed drive boost: the engine's push at a standstill, as a multiple of `accel` (falls to 1 by half speed). */
   launch: number;
 }
@@ -140,6 +142,15 @@ const MAX_SPIN = 14;
 const MAX_SPEED = 60;
 /** How fast (m/s) a hard contact pushes a corner or a bottomed-out wheel back out of what it is in. */
 const CONTACT_PUSH = 2.5;
+const WHEEL_PUSH = 1.2;
+/** The front ray's place ahead of the hub, as a share of the tyre's radius. */
+const TYRE_AHEAD = 0.75;
+/** Steps up to this high (m) over the ground under a wheel are lifted onto as the tyre's front reaches them. */
+const STEP_UP = 0.32;
+/** Level enough to be a step's tread (the normal's height). */
+const STEP_FLAT = 0.985;
+/** Share of the speed along its heading a knock on the wheels keeps (solveContacts). */
+const KNOCK_KEEP = 0.92;
 const HULL_FRICTION = 0.55;
 /** How much of the speed into a wall or floor the hull sweep gives back. */
 const HULL_BOUNCE = 0.15;
@@ -189,8 +200,10 @@ export function rigidOf(def: MountDef): RigidSetup | null {
             idleBrake: v.idleBrake ?? 10,
             drift: v.drift ?? 0,
             probeR,
-            probeHalf: Math.max(0.05, hz - probeR - 0.1),
-            probeY: hy + 0.05,
+            // Short of the axles and high in the hull: only walls and what the hull itself hits (the wheels ride over
+            // a ramp's foot or a step under its ends).
+            probeHalf: Math.max(0.05, Math.min(hz - probeR - 0.1, Math.min(...points.map((p) => Math.abs(p[1]))) * 0.8 - probeR)),
+            probeY: hy + 0.15,
             belly: Math.max(0.05, def.rideHeight ?? 0.05),
           }
         : null;
@@ -287,6 +300,8 @@ interface HullHit {
   n: Vec3;
   /** Where the corner was when the ray found it. */
   at: Vec3;
+  /** An underside corner on something low enough for its tyre to roll up. */
+  roll: boolean;
 }
 
 /** The body's inverse inertia applied to a world vector. */
@@ -299,15 +314,22 @@ function invInertia(s: RigidState, t: RigidSetup, v: Vec3): Vec3 {
  * Hard contacts as impulses (a few sequential passes): each stops the point going further in, pushes it back out at
  * a capped speed (no spring to store a landing and throw it back up), and with `friction` scrubs it along the surface.
  */
-function solveContacts(s: RigidState, t: RigidSetup, com: Vec3, stops: { at: Vec3; n: Vec3; depth: number; friction: number }[]): void {
+function solveContacts(s: RigidState, t: RigidSetup, com: Vec3, stops: Stop[], tickSpeed: number): void {
   const total = stops.map(() => 0);
+  // Momentum through a knock on the wheels (a crest, a step, the foot of a slope): a tyre rolls up it rather than
+  // stopping dead, so most of the speed the knock takes along the heading is kept, turned along the new ground.
+  const fwd = rotate(s.q, v3(0, 0, 1));
+  const before = dot(s.vel, fwd);
+  const speedBefore = len(s.vel);
+  const wheelsOnly = stops.every((c) => c.wheel);
   for (let pass = 0; pass < 3; pass++) {
     for (let i = 0; i < stops.length; i++) {
       const c = stops[i]!;
       const r = sub(c.at, com);
       const vel = add(s.vel, cross(s.spin, r));
       const vn = dot(vel, c.n);
-      const out = c.depth > 0.01 ? Math.min(CONTACT_PUSH, (c.depth - 0.01) * 10) : 0;
+      // (A wheel's bump stop pushes out gentler: a step's knock lifts the tyre, it doesn't throw the nose up.)
+      const out = c.depth > 0.01 ? (c.wheel ? Math.min(WHEEL_PUSH, (c.depth - 0.01) * 5) : Math.min(CONTACT_PUSH, (c.depth - 0.01) * 10)) : 0;
       const rn = cross(r, c.n);
       const k = 1 + dot(c.n, cross(invInertia(s, t, rn), r));
       const j = Math.max(-total[i]!, (out - vn) / k);
@@ -329,13 +351,36 @@ function solveContacts(s: RigidState, t: RigidSetup, com: Vec3, stops: { at: Vec
       s.spin = sub(s.spin, invInertia(s, t, scale(rt, jt)));
     }
   }
+  if (wheelsOnly && Math.abs(before) > 2) {
+    // Only the speed along its heading comes back, along its heading (up the new ground when it is climbing): a knock
+    // that throws the nose up isn't made any faster. (Of the speed the tick started with, so a knock that lasts a few
+    // substeps doesn't take KNOCK_KEEP each time.)
+    const sign = Math.sign(before);
+    const along = dot(s.vel, fwd) * sign;
+    const keep = Math.min(speedBefore, Math.abs(tickSpeed)) * KNOCK_KEEP;
+    if (along > 0 && along < keep && fwd.y * sign > -0.2) s.vel = add(s.vel, scale(fwd, (keep - along) * sign));
+  }
+}
+
+/** A hard contact: a point, the surface normal there, how deep, friction along it, and whether it is a wheel's bump stop. */
+interface Stop {
+  at: Vec3;
+  n: Vec3;
+  depth: number;
+  friction: number;
+  wheel?: boolean;
 }
 
 /** The hull's contact points in the body's frame: its eight corners, the long sides a touch inside the tyres. */
 function hullCorners(t: RigidSetup): Vec3[] {
   const [hx, hy, hz] = t.half;
   const out: Vec3[] = [];
-  for (const y of [t.belly, hy * 2]) for (const x of [-hx * 0.9, hx * 0.9]) for (const z of [-hz, hz]) out.push(v3(x, y, z));
+  // The underside's corners at the front and rear axles, at hub height (the tyres are the ends down there: a ramp's
+  // foot or a stair's riser meets the tyre, which rolls up it); the top's at the box's ends.
+  const front = Math.max(...t.points.map((p) => p[1]));
+  const rear = Math.min(...t.points.map((p) => p[1]));
+  for (const x of [-hx * 0.9, hx * 0.9]) for (const z of [rear, front]) out.push(v3(x, Math.max(t.belly, t.hubY), z));
+  for (const x of [-hx * 0.9, hx * 0.9]) for (const z of [-hz, hz]) out.push(v3(x, hy * 2, z));
   return out;
 }
 const cornerCache = new WeakMap<RigidSetup, Vec3[]>();
@@ -360,12 +405,23 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
   const down0 = scale(up0, -1);
   const start = t.bump + 0.15;
   const reach = start + t.radius + t.travel + 0.05;
+  // Two rays a wheel: under the hub, and under the front of the tyre the way it is rolling (TYRE_AHEAD of its radius
+  // ahead), so a kerb, a stair's riser or the foot of a steep slope lifts the tyre as its round front meets it instead
+  // of nothing until the hub is over it and then a hard knock (one ray can't see a step coming).
+  const rolling = dot(s.vel, rotate(s.q, v3(0, 0, 1)));
+  const ahead = (rolling >= 0 ? 1 : -1) * t.radius * TYRE_AHEAD;
   const hits: (WheelHit | null)[] = [];
-  for (let i = 0; i < n; i++) {
-    const [x, z] = t.points[i]!;
+  const fronts: (WheelHit | null)[] = [];
+  const cast = (x: number, z: number): WheelHit | null => {
     const a = add(s.pos, rotate(s.q, v3(x, t.hubY + start, z)));
     const h = world.ray(a, down0, reach);
-    hits.push(h && dot(h.normal, up0) > WHEEL_FACING ? { p: add(a, scale(down0, h.dist)), n: h.normal } : null);
+    // (A ray that starts inside something, the front one in a wall, found no ground: not a step to climb.)
+    return h && h.dist > 1e-3 && dot(h.normal, up0) > WHEEL_FACING ? { p: add(a, scale(down0, h.dist)), n: h.normal } : null;
+  };
+  for (let i = 0; i < n; i++) {
+    const [x, z] = t.points[i]!;
+    hits.push(cast(x, z));
+    fronts.push(Math.abs(rolling) > 0.5 ? cast(x, z + ahead) : null);
   }
   const hullHits: HullHit[] = [];
   const looks = up0.y < 0.9 || s.contact < n || s.hull || s.comp.some((c) => c > t.bump * 0.8);
@@ -381,12 +437,21 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
       if (!h) continue;
       // How deep the corner is past the surface, along that surface's normal.
       const depth = (l - h.dist) * Math.max(0.2, -dot(scale(d, 1 / l), h.normal));
-      hullHits.push({ corner: c, depth, n: h.normal, at: add(o, d) });
+      // An underside corner (in the tyre, at the axle) on something whose top is under the tyre's top: the tyre can
+      // roll up it (a step, a kerb). Anything taller is a wall to it.
+      let roll = false;
+      if (c.y < t.half[1]) {
+        const over = add(add(o, d), scale(up0, t.radius));
+        const top = world.ray(over, down0, t.radius + 0.05);
+        roll = !!top && top.dist > 0.02 && dot(top.normal, up0) > 0.5;
+      }
+      hullHits.push({ corner: c, depth, n: h.normal, at: add(o, d), roll });
     }
   }
   s.hull = hullHits.length > 0;
 
   const h = dt / SUBSTEPS;
+  const g = GRAVITY * (t.gravity ?? 1);
   const comAt = v3(0, t.com, 0);
   const startPos = { ...s.pos };
   const startCom = add(s.pos, rotate(s.q, comAt));
@@ -419,37 +484,61 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     const up = rotate(s.q, v3(0, 1, 0));
     const fwd = rotate(s.q, v3(0, 0, 1));
     const rgt = rotate(s.q, v3(1, 0, 0));
-    let force = v3(0, -GRAVITY, 0);
+    let force = v3(0, -g, 0);
     let torque = v3(0, 0, 0);
     const vf = dot(s.vel, fwd);
     // Hard contacts this substep (bump stops, the hull's corners): solved as impulses after the forces.
-    const stops: { at: Vec3; n: Vec3; depth: number; friction: number }[] = [];
+    const stops: Stop[] = [];
     contact = 0;
     sliding = 0;
     for (let i = 0; i < n; i++) {
-      const hit = hits[i];
       const [x, z] = t.points[i]!;
       const a = add(s.pos, rotate(s.q, v3(x, t.hubY, z)));
-      const un = hit ? dot(up, hit.n) : 0;
-      // Hub to the ground's plane, along the chassis' down; the tyre's rest is its radius.
-      const d = hit && un > WHEEL_FACING ? dot(sub(a, hit.p), hit.n) / un : Infinity;
-      const x_ = t.radius - d;
+      // Hub to the ground's plane, along the chassis' down; the tyre's rest is its radius. Ahead of the hub the tyre's
+      // round front is that much higher (sqrt(r² - ahead²) under the hub's height): whichever ray compresses it more.
+      let hit = hits[i] ?? null;
+      let un = hit ? dot(up, hit.n) : 0;
+      let d = hit && un > WHEEL_FACING ? dot(sub(a, hit.p), hit.n) / un : Infinity;
+      let x_ = t.radius - d;
+      let edge = false;
+      const fh = fronts[i];
+      if (fh) {
+        const fa = add(a, scale(fwd, ahead));
+        const fu = dot(up, fh.n);
+        const fd = fu > WHEEL_FACING ? dot(sub(fa, fh.p), fh.n) / fu : Infinity;
+        // A step up no higher than STEP_UP over the (level) ground under the hub, onto level ground (a stair, a kerb; not
+        // a ramp or a bank, which the round front climbs), is taken as if already under
+        // the hub, so the tyre lifts onto it as its front reaches it (the classic drive's step-up); anything taller
+        // only meets the tyre's round front.
+        const rise = t.radius - fd - x_;
+        const step = rise > 0.02 && rise <= STEP_UP && x_ > -t.travel && fh.n.y > STEP_FLAT && (!hit || hit.n.y > STEP_FLAT);
+        const fx = step ? t.radius - fd : Math.sqrt(t.radius * t.radius - ahead * ahead) - fd;
+        if (fx > x_ + 0.01) {
+          hit = fh;
+          un = fu;
+          d = t.radius - fx;
+          x_ = fx;
+          edge = true;
+        }
+      }
       if (!hit || x_ <= -t.travel) {
         s.comp[i] = -t.travel;
         continue;
       }
       contact++;
-      const nrm = hit.n;
+      // On a step's edge (the front ray won) the tyre touches the nosing on its round front: it pushes and grips along
+      // the line from there to the hub, so driving on climbs the step instead of shoving the riser.
+      const nrm = edge ? norm(add(scale(fwd, -ahead), scale(up, Math.sqrt(t.radius * t.radius - ahead * ahead)))) : hit.n;
       const cp = sub(a, scale(up, d));
       const arm = sub(cp, com);
       const va = add(s.vel, cross(s.spin, sub(a, com)));
-      const xdot = -dot(va, nrm) / un;
+      const xdot = -dot(va, hit.n) / un;
       // Past the bump stop the spring stays at its stop's force; the stop itself is a hard contact (below).
-      let fs = GRAVITY / n + t.k * Math.min(x_, t.bump) + t.c * xdot;
-      if (x_ > t.bump) stops.push({ at: cp, n: nrm, depth: (x_ - t.bump) * un, friction: 0 });
+      let fs = g / n + t.k * Math.min(x_, t.bump) + t.c * xdot;
+      if (x_ > t.bump) stops.push({ at: cp, n: nrm, depth: (x_ - t.bump) * un, friction: 0, wheel: true });
       fs = Math.max(0, fs);
       s.comp[i] = clamp(x_, -t.travel, t.bump);
-      const load = fs * un;
+      const load = fs * (edge ? dot(up, nrm) : un);
       // The tyre's own axes on the ground: the front pair steered.
       const front = z > 0;
       const c_ = front ? cd : cb;
@@ -496,7 +585,14 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     for (const hh of hullHits) {
       const q = add(s.pos, rotate(s.q, hh.corner));
       const depth = hh.depth - dot(sub(q, hh.at), hh.n);
-      if (depth > -0.02) stops.push({ at: q, n: hh.n, depth, friction: HULL_FRICTION });
+      if (depth <= -0.02) continue;
+      // The underside's corners sit in the tyres (at the axles, hub high): what they meet the tyre rolls up (a stair's
+      // riser, a kerb, the foot of a bank), so they push up and back like a tyre's round front, not flat back, and
+      // count as the wheels' knocks (momentum kept).
+      if (hh.roll) {
+        const tilted = norm(add(scale(hh.n, 0.55), scale(up, 0.85)));
+        stops.push({ at: q, n: tilted, depth: depth * 0.6, friction: 0, wheel: true });
+      } else stops.push({ at: q, n: hh.n, depth, friction: HULL_FRICTION });
     }
     // Angular acceleration: the torque in the body's frame over its inertia, back to the world.
     const tb = unrotate(s.q, torque);
@@ -530,7 +626,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
       const axis = len(axis0) > 0.05 ? norm(axis0) : fwd;
       const want = scale(axis, 3.2);
       alpha = add(alpha, scale(sub(want, s.spin), 8));
-      if (up.y < 0.6) force = add(force, v3(0, GRAVITY * 0.75, 0));
+      if (up.y < 0.6) force = add(force, v3(0, g * 0.75, 0));
     }
     s.vel = add(s.vel, scale(force, h));
     s.spin = add(s.spin, scale(alpha, h));
@@ -540,7 +636,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     if (spin > MAX_SPIN) s.spin = scale(s.spin, MAX_SPIN / spin);
     const sp = len(s.vel);
     if (sp > MAX_SPEED) s.vel = scale(s.vel, MAX_SPEED / sp);
-    if (stops.length) solveContacts(s, t, com, stops);
+    if (stops.length) solveContacts(s, t, com, stops, speed0);
     // The centre of mass moves; the body turns about it.
     com = add(com, scale(s.vel, h));
     const w = s.spin;
@@ -563,7 +659,10 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
   const swept = world.sweep(midBefore, s.q, wanted);
   const got = swept.moved;
   const wl = len(wanted);
-  if (wl > 1e-6 && len(sub(got, wanted)) > 1e-4) {
+  // Held fast with nothing to say what by: the capsule started inside something (put there, or squeezed in). The sweep
+  // would hold it there for good, wheels spinning; it moves as asked and the hull's corners push it out instead.
+  const stuck = swept.normals.length === 0 && len(got) < wl * 0.05;
+  if (wl > 1e-6 && !stuck && len(sub(got, wanted)) > 1e-4) {
     out.blocked = clamp(1 - len(got) / wl, 0, 1);
     s.pos = add(startPos, got);
     // Speed into what it met is lost (a little comes back), and it scrubs along it.

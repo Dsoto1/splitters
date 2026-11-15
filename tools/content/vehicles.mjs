@@ -42,7 +42,7 @@ export function schemas() {
     maxTilt: num, steer: num,
   });
   const rigid = obj({
-    on: bool, com: num, grip: num, slide: num, corner: tup(2), inertia: num, airLevel: num, airPitch: num, airRoll: num, rightAfter: tup(2), launch: num, rearSteer: num,
+    on: bool, com: num, grip: num, slide: num, corner: tup(2), inertia: num, airLevel: num, airPitch: num, airRoll: num, rightAfter: tup(2), launch: num, rearSteer: num, 'gravity?': num,
   });
   const vehicle = obj({
     maxSpeed: num, reverseSpeed: num, accel: num, turnRate: num, 'hover?': bool, 'grip?': num, 'mass?': num,

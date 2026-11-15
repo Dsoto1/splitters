@@ -192,12 +192,14 @@ export class PhysicsWorld {
     this.controller.enableSnapToGround(PLAYER.maxStepHeight);
     this.controller.setMaxSlopeClimbAngle((PLAYER.maxSlopeDegrees * Math.PI) / 180);
     this.controller.setApplyImpulsesToDynamicBodies(false);
-    // Rigid vehicle chassis (sim/wheelPhysics.ts): plain collide-and-slide, no steps, no snapping, no slope rules (the
+    // Rigid vehicle chassis (sim/wheelPhysics.ts): plain collide-and-slide, no steps, no snapping (the
     // wheels and the hull's contact points hold it up; this only keeps the hull out of walls and floors).
     this.chassisController = this.world.createCharacterController(CONTROLLER_OFFSET);
     this.chassisController.disableAutostep();
     this.chassisController.disableSnapToGround();
-    this.chassisController.setMaxSlopeClimbAngle(Math.PI / 2);
+    // Steeper than 60° is a wall to the hull: it slides along it, never up it (a vertical wall at the 90° climb angle
+    // let a pushing hull slide straight up it).
+    this.chassisController.setMaxSlopeClimbAngle(Math.PI / 3);
     this.chassisController.setMinSlopeSlideAngle(Math.PI / 2);
     this.chassisController.setApplyImpulsesToDynamicBodies(false);
     // Populate the broad phase so scene queries see the static colliders.
