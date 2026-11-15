@@ -235,6 +235,8 @@ Read by the same helper. Three files from the owner's Drive (not in the repo):
 
 ## 9. Questions for the owner (follow-up)
 
+**Owner's answers (2026-11-15):** 1) the "Aw, Snap!" came during a Test play of Iron Maw in MapMaker with 15 bots (so in MapMaker's Test, not right after the plain match); 2) the tab had been open a while, not sure how long; 3) a, yes to the memory readout; 4) a, yes to the long-session recording later; 5) a, ad blocker off for that check. Also: reloading the tab takes the owner to the main menu, not back to MapMaker and the map being built (queued as a bug).
+
 1. **When did the "Aw, Snap!" happen?**
    - a) **Right after the plain match, as you saved its recording (17:41): the recordings point there (recommended reading)**
    - b) Earlier, in MapMaker, before the match
