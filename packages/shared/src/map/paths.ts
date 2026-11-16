@@ -28,6 +28,8 @@ export const PATH_LOOKS: Record<PathStyle, { label: string; surface: string; tin
   dirt: { label: 'Dirt trail', surface: 'core.pbr_dusty_road', tint: null, ground: 'dirt', lines: false },
   sand: { label: 'Sand', surface: 'core.pbr_sand', tint: null, ground: 'sand', lines: false },
   planks: { label: 'Boardwalk', surface: 'core.pbr_weathered_planks', tint: null, ground: 'dirt', lines: false },
+  // A red brick walk (St. John's step 4; map format v43): Red Brick laid flat, stone ground under it.
+  brick: { label: 'Brick walk', surface: 'core.pbr_brick_red', tint: null, ground: 'stone', lines: false },
 };
 
 const smooth = (v: number): number => {

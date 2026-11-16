@@ -840,6 +840,29 @@ a shingled cone 3.4 m across and 4.6 m to its finial's tip over a short eaves sk
 and `red`; collides as three stacked boxes. It caps the Round Corner Turret (`setpiece.corner_turret_round`) or any
 round tower.
 
+**Paired dorm furniture** (St. John's step 4: a map as played holds at most 4,096 entities, and a dorm room was 9
+props): `kit.table.desk_hutch_pair` (generator kind `deskpair`: two Desks with Hutches side by side 0.15 m apart, a
+Chair pushed in at each, built from the desk's and the chair's own generators and seeds so it looks as the separate
+pieces did; it collides as the two desks' four boxes, `bounds: "within"`, the chairs not at all, as the separate
+chairs placed not solid; variant `empty` has no chairs) and `kit.cabinet.closet_front_pair` (`closetpair`: the two
+Built-in Closet Fronts either side of a doorway, centres 2.94 m apart, no collision). Every dorm piece and the Hall
+Centre has a set piece option **Room furniture**: Paired (the default) or Separate pieces (the old parts, kept at their
+part indices, so `overrides.hide` on them still works with Separate). A room is then 5 props: door, desk pair, closet
+pair, sink, bunk. `setPiecesAcademy.test.ts` checks that Paired collides exactly as Separate in every piece and turn.
+
+**The grounds** (`tools/content/kit/grounds.mjs`; St. John's step 4). Fieldstone is laid by `fieldFace`: rows of
+rounded stones of mixed colour, each a pillow (its foot on a dark mortar ground, its face smaller and a few centimetres
+proud, the sides sloping between on shared corners so it shades round); lighter levels lay the stones flat, the
+farthest only the ground. Flat-shaded triangles cost about 90 bytes each in a GLB, so the 140 kB a file allows is about
+1,500 triangles: the stones are kept large. Families: `kit.monument.cairn` (a 5.5 m cairn on a dressed plinth with a
+pointed-arched niche on its +z face; collides as the plinth and three steps), `kit.monument.island_bed` (an oval kerbed
+bed 6 × 9 m with a fieldstone wall 0.4 m high, mulch and flower clumps; three stepped boxes, a step up),
+`kit.monument.marker` (a dark marker stone, a border and a plain star cut in it), `kit.wall.fieldstone` (4 m) and
+`kit.wall.fieldstone_short` (2 m; variants fieldstone and limestone), `kit.wall.pier` and `kit.wall.pier_lamp` (a
+gate pier with a blank bronze plaque; the lamp's globe in an iron cage is paint: stand a light by it),
+`kit.lamp.post_banner` (a black lamp post with a lantern and a banner of plain colours and a chevron on an arm reaching
++x; collides as the post), `kit.seat.bench_stone`. Nothing in them glows or blinks.
+
 #### The dome kit
 
 Desert City domes built from parts, from the owner's reference sheet (2026-11-12): `tools/content/kit/dome.mjs`,

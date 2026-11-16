@@ -62,6 +62,275 @@
         { "index": 1, "name": "mossy", "seed": 5202, "look": { "stone": "#7f7d73", "dark": "#262622", "moss": "#586b38", "jitter": 0.14 } },
         { "index": 2, "name": "sandstone", "seed": 5203, "look": { "stone": "#a8946f", "dark": "#3a3024", "jitter": 0.12 } }
       ]
+    },
+    {
+      "id": "kit.wall.fieldstone",
+      "displayName": "Low Fieldstone Wall",
+      "category": "Fences & Walls",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4): a low wall of rounded field stones 4 m long, 0.9 m high and 0.5 m thick under a cap of rough flat stones (the campus entrance's walls). Collides as its box."
+      },
+      "size": [
+        4,
+        0.9,
+        0.5
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "fieldwall",
+        "cap": 0.1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "fieldstone",
+          "seed": 11301,
+          "look": {
+            "stones": [
+              "#8d877c",
+              "#a39a88",
+              "#7a7268",
+              "#9b7f6a",
+              "#b0a593",
+              "#6f6a63",
+              "#a08a74",
+              "#857b6e",
+              "#94887a"
+            ],
+            "mortar": "#4c4740",
+            "dressed": "#bdb6a6",
+            "jitter": 0.08,
+            "cap": "#a19a8d"
+          }
+        },
+        {
+          "index": 1,
+          "name": "limestone",
+          "seed": 11302,
+          "look": {
+            "stones": [
+              "#bdb4a0",
+              "#b0a690",
+              "#c8c0ae",
+              "#a89e8a"
+            ],
+            "mortar": "#5a554c",
+            "cap": "#c2baa8",
+            "jitter": 0.06
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.wall.fieldstone_short",
+      "displayName": "Low Fieldstone Wall (2 m)",
+      "category": "Fences & Walls",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4): the Low Fieldstone Wall 2 m long, for curves (turn short runs by 15° steps) and ends."
+      },
+      "size": [
+        2,
+        0.9,
+        0.5
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "fieldwall",
+        "cap": 0.1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "fieldstone",
+          "seed": 11311,
+          "look": {
+            "stones": [
+              "#8d877c",
+              "#a39a88",
+              "#7a7268",
+              "#9b7f6a",
+              "#b0a593",
+              "#6f6a63",
+              "#a08a74",
+              "#857b6e",
+              "#94887a"
+            ],
+            "mortar": "#4c4740",
+            "dressed": "#bdb6a6",
+            "jitter": 0.08,
+            "cap": "#a19a8d"
+          }
+        },
+        {
+          "index": 1,
+          "name": "limestone",
+          "seed": 11312,
+          "look": {
+            "stones": [
+              "#bdb4a0",
+              "#b0a690",
+              "#c8c0ae",
+              "#a89e8a"
+            ],
+            "mortar": "#5a554c",
+            "cap": "#c2baa8",
+            "jitter": 0.06
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.wall.pier",
+      "displayName": "Fieldstone Gate Pier",
+      "category": "Fences & Walls",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4): a gate pier of field stones 1 m square and 1.8 m to the top of its dressed cap, a blank bronze plaque on its front (+z). Collides as its box."
+      },
+      "size": [
+        1,
+        1.8,
+        1
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "pier",
+        "pier": 1.6,
+        "cap": 0.2,
+        "plaque": [
+          0.42,
+          0.3,
+          1.15
+        ],
+        "lamp": 0
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "fieldstone",
+          "seed": 11401,
+          "look": {
+            "stones": [
+              "#8d877c",
+              "#a39a88",
+              "#7a7268",
+              "#9b7f6a",
+              "#b0a593",
+              "#6f6a63",
+              "#a08a74",
+              "#857b6e",
+              "#94887a"
+            ],
+            "mortar": "#4c4740",
+            "dressed": "#bdb6a6",
+            "jitter": 0.08,
+            "bronze": "#6e5a34"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.wall.pier_lamp",
+      "displayName": "Fieldstone Gate Pier with Lamp",
+      "category": "Fences & Walls",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4): the Fieldstone Gate Pier with a round globe in an iron cage on its cap, 2.6 m to the finial. Nothing in it glows: stand a light by the globe. Collides as the pier and a box round the lamp."
+      },
+      "size": [
+        1,
+        2.6,
+        1
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "pier",
+        "pier": 1.6,
+        "cap": 0.2,
+        "plaque": [
+          0.42,
+          0.3,
+          1.15
+        ],
+        "lamp": 0.22
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "fieldstone",
+          "seed": 11411,
+          "look": {
+            "stones": [
+              "#8d877c",
+              "#a39a88",
+              "#7a7268",
+              "#9b7f6a",
+              "#b0a593",
+              "#6f6a63",
+              "#a08a74",
+              "#857b6e",
+              "#94887a"
+            ],
+            "mortar": "#4c4740",
+            "dressed": "#bdb6a6",
+            "jitter": 0.08,
+            "bronze": "#6e5a34",
+            "iron": "#1e1f21",
+            "globe": "#efe6cf"
+          }
+        }
+      ]
     }
   ]
 }
