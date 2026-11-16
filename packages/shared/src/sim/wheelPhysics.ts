@@ -6,6 +6,12 @@ import { PLAYER } from './constants.ts';
  * Rigid vehicles (docs/DRIVING_PHYSICS_PLAN.md, step 1): a chassis that is a real body (position, velocity,
  * orientation, spin) on sprung raycast wheels, with tyres whose grip can fail.
  *
+ * Driving physics 4 (the default; owner's answers 1a 2a 3a 4a 5b): the body is a Rapier dynamic body
+ * (ChassisWorld.solve: PhysicsWorld.solveChassis, a rounded convex hull of the real body) that our springs and tyres
+ * push as forces, Rapier resolving every contact the hull makes; no bump stop (a progressive bump rubber), hull
+ * corners, sweep, speed keep or air levelling. Without `solve` (`?drive=own`) the step's own hull contacts and capsule
+ * sweep below do it, as driving physics 3 did.
+ *
  * - **Wheels.** One ray per wheel along the chassis' own down finds the ground and its slope. A preloaded spring and
  *   a damper per wheel push along the chassis' up at the hub: the body bounces, squats, dives, leans and lands on
  *   its springs, and the push is off the centre of mass, so it pitches and rolls for real (and can roll over).

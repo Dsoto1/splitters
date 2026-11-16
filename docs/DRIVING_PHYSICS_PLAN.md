@@ -266,6 +266,73 @@ It is bigger than one landing. Steps, each checked and driven:
       **(recommended)**
    b) Straight to the default once the measurements hold
 
+## Driving physics 4: as built (2026-11-16, `wip/drive-physics-4`)
+
+The owner's answers to the Rapier plan (QUEUE's driving line, 2026-11-16): **1a** the body a Rapier rigid body with our
+springs and tyres as forces, **2a** air control only, **3a** rock and wall hits from real contacts, **4a** prediction up
+to about 10 cm, faded, **5b** straight to the default. Built for the Troop Buggy (the only rigid vehicle); the other
+wheeled vehicles stay classic until step 2 of "Later steps".
+
+- **The body in Rapier** (`PhysicsWorld.createChassisBody` / `solveChassis`, `wheelPhysics.ts` `ChassisWorld.solve`):
+  a dynamic body in the match's own physics world with unit mass, the buggy's inertia and centre of mass (as our
+  forces are accelerations), and a rounded convex hull of the real body instead of the 1.6 m box (`hullOf`): the belly
+  between the axles at hub height (a flat plate at the model's 0.24 m ride height hung it up on every stair top and
+  crest), a ring at the tyres' middle height out to their fronts and backs (the nose rises at about 47° from the axles,
+  so a slope's foot meets the tyres first), the roll cage's top; rounded 8 cm so it slides off seams; friction 0.2 and
+  no bounce (the lower of its and the world's). It meets what bodies meet (static geometry, other vehicles' boxes,
+  fields, glass, lattices), never players, shots-only shapes, its own box (a contact hook) or another hull; no query
+  sees it.
+- **Deterministic, host-authoritative, fixed steps.** The body is switched off except during its own step and on
+  afresh each step, so no contact cache carries over: a step depends only on the state and the world (the same seed
+  and inputs give the same snapshots: `drivePhysics.test.ts`), and the driver's prediction replays the host's steps.
+  Each step runs Rapier's pipeline directly with `dt` = a substep (1/120 s) and 8 solver iterations (4 left the
+  client's replays up to 27 cm off in a wedge; 8: under 1 cm). Rapier steps on the tick's last substep and on every
+  substep while the hull touches something; the other substep is integrated by the step itself (half the cost).
+- **Our wheels and tyres as forces**, as tuned (grip 1.05, the 46° slope, rear steer, drift, launch): the springs push
+  the body, the tyres grip and slide, the step-up onto stairs stays (a tyre lifting onto a step pushes at most 6× its
+  share of the weight, so a stair's top doesn't kick the tail up). **Gone:** the hard bump stop (now a progressive bump
+  rubber past 0.16 m: 8× the spring's stiffness growing with depth, damped, giving back a fifth as it extends, a
+  wheel's push capped at 8× its share of the weight; what it can't take, the hull's contact with the ground takes), the
+  hull's corner rays, the capsule sweep, the 92 % speed keep, the air levelling and the arcade spin damping in the air.
+  Air control (W/S, A/D on what changed since take-off) and righting (jump, after 0.3 s; empty, 4 s) stay.
+- **The old way behind a switch:** `?drive=own` (MatchOptions.drive `'own'`) drives the rigid buggy with driving physics
+  3's own hull contacts and sweep, for comparison; `?drive=classic` as before. The driver's prediction follows whatever
+  the host runs (`vp`'s last number, 1 for the Rapier body).
+
+**Measured** (`drivePhysics.test.ts`, its DRIVE_TRACE probes, `driveSnags.test.ts` with DRIVE_MODE=own for before,
+`drivePerf.test.ts`, `vehiclePrediction.test.ts`):
+
+| | Driving physics 3 (`own`) | Driving physics 4 |
+|---|---|---|
+| Sharp ticks a km, clear lines: Rockfall Canyon / Coverage Test | 43 / 130 | 31 / 81 |
+| Sharp ticks a km, free drive (3 min): Rockfall Canyon / Coverage Test | 218 / 26 | 97 / 11 |
+| ... of them a visible obstacle (canyon) | 84 | 25 |
+| Up a 50° slab at 6 / 12 / 18 m/s (top 12.3 m) | 5.7 / 11.7 / over | 7.4 / 9.9 / 11.5 m |
+| The kit's stairs at 0.35 / 0.8 throttle; the steeper flight | up in 7 s / 1 s; up | up in 9.7 s / 4.2 s; up |
+| Lag harness worst error, no loss: 0 / 100 / 150 ms (jitter) / Canyon 150 ms | 2 / 6 / 8 / 14 cm | 0.01 / 0.02 / 0.03 / 0.3 cm |
+| Lag harness, 150 ms with 2 % loss: worst | 24 cm | 20 cm (a lost input's stall, as before) |
+| Whole match step, 8 driven buggies on Norman Shores (this box) | 0.8-0.9 ms | 2.0-2.4 ms (classic 2.2-2.4) |
+
+- **Snag cases** (`drivePhysics.test.ts`, "driving physics 4: the snags"): a seam between two floor slabs 1 cm apart at
+  8 m/s (where driving physics 2's sweep froze on the coverage map) gives no sharp tick and keeps 7+ m/s; a 15 cm kerb at
+  8 and 16 m/s keeps 80 % of the speed with at most two sharp ticks; a 1.2 m rock box at 12 m/s stops it (never climbed);
+  a jump flies with no torque but the drag (no levelling), and a 9 m drop lands on the springs and the hull and ends on
+  four wheels; the 25° climb, the 50° slide-back, the kerb roll and the flip back (jump; empty on its own) as before.
+- **What the sharp ticks are now:** on the canyon's clear lines the hull touching from below on crests (21 a km) and
+  the bump rubber; on its free drive the hull from below and the rubber (35 a km each) and visible obstacles (25). The
+  invisible snags of driving physics 3 (the bump stop's impulse, the corners at hub height, the sweep, the speed keep)
+  are gone. Landings (canyon, 22): the rubber in 15, the hull's contact in 13.
+- **Feel, honestly:** a jump lands how it was taken (off the 1 m kicker it leaves nose-down, as the rear wheels push
+  last, and lands on its front wheels; S lifts the nose). Flat out into a 50° slope's foot the nose meets the face: a
+  real hit, so 18 m/s carries little further than 12 m/s (driving physics 3's speed keep carried it over the top).
+  Driving off a 4 m ledge without air control can nose it over onto its roof (the stairs test checks it upright a
+  second after the top, on a 30 m landing).
+- **Cost:** a hull step is about 0.1 ms on a big map (most of it Rapier's narrow phase against the terrain's mesh);
+  with Rapier on one substep of two, about 0.15-0.2 ms a buggy a tick. The driver's client pays the same per predicted
+  tick plus its replays. A per-vehicle small world (the plan's first idea) wouldn't help the terrain's share.
+- **Pictures** (DSF 2, chase camera, time frozen, `?sim=main&vehiclepredict=0`): a jump and its landing and a hit on a
+  rock at 15 m/s on Rockfall Canyon (the helper's scratchpad `shots-drive4/`: `jump-00..15.png`, `wall-00..11.png`).
+
 ## Netcode
 
 - **Host-authoritative, as now.** The host (a browser, the dedicated server) runs the rigid step; nothing new on AWS.
@@ -285,7 +352,8 @@ It is bigger than one landing. Steps, each checked and driven:
   Snapshot size unchanged. Step 2 moves them to the interpolator (render a snapshot interval behind, as remote
   players), so a fast one doesn't carry a 100 ms extrapolation.
 - **Off switches.** `?vehiclepredict=0` draws your vehicle from snapshots (to compare); `?drive=classic` drives
-  everything the old way; `?drive=rigid` turns rigid driving on for a vehicle whose `rigid.on` is false.
+  everything the old way; `?drive=rigid` turns rigid driving on for a vehicle whose `rigid.on` is false; `?drive=own`
+  drives it rigid with driving physics 3's own hull solver instead of the Rapier body (driving physics 4).
 
 ### Judged: the lag harness (`packages/client/test/vehiclePrediction.test.ts`)
 
