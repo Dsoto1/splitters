@@ -15,6 +15,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landing now: train** (driving physics 3 A+B, `wip/drive-physics-3b`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
 
+- **Claimed (a helper of lane A's lead, 2026-11-16): characters leak their cloned materials and textures** (QUEUE Bugs), branch `wip/char-leak`. Files: `packages/client/src/content/characters.ts`, `characterAtlas.ts`, a new `content/ownedAssets.ts`, a new `packages/client/test/characterLeak.test.ts`; the measurements with `tools/perf/` scripts if one is needed. No map format change.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - (none)
 
