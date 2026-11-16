@@ -23,6 +23,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 **Rules**
 - Bugs and broken gameplay go to the top of "Bugs".
+- Map rebuilds and map work go in "Maps", apart from features and fixes (owner, 2026-11-16).
 - New ideas go to the end of "Features" or "Parked", unless the owner bumps them (owner rule, 2026-11-08).
 - Move an item to "Done" in the same commit that lands it. Keep "Done" to the last week; older items live in HANDOFF and CHANGELOG.
 - **Easy-win batches:** a free helper takes 3–5 easy wins and lands them together in one check run.
@@ -30,12 +31,34 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
-- L · B (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 landed 2026-11-14 (the `turned`/`wallRun` parts, plain arch collision, oriented doors); phase 2 landed 2026-11-15 (the Arena Corner tiles and set piece); phase 3 landed 2026-11-15 (gate corner, stair wells, 45° gatehouse tower); phase 4 in progress: Flavius Rule rebuilt in MapMaker (`wip/flavius-octagon-4`; the owner's phase-3 answers: recs).
+- M · A · Battle Rifle: fire modes, full-quality model, real 3-4x scope (`wip/battle-rifle`).
+- S · A · Beams and muzzle effects stay on the muzzle (`wip/beam-muzzle`).
+- S · A · Characters' cloned materials and textures disposed (`wip/char-leak`).
+- Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 - (none)
+
+## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
+(Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)
+- L · B · **in flight** (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 landed 2026-11-14 (the `turned`/`wallRun` parts, plain arch collision, oriented doors); phase 2 landed 2026-11-15 (the Arena Corner tiles and set piece); phase 3 landed 2026-11-15 (gate corner, stair wells, 45° gatehouse tower); phase 4 in progress: Flavius Rule rebuilt in MapMaker (`wip/flavius-octagon-4`; the owner's phase-3 answers: recs).
+- L · A · **St. John's campus rework, steps 4-11** (also the entity budget: PLAN 4c) (owner's brief and "I'll take your recs", 2026-11-12; `docs/map-briefs/st_johns/PLAN_2026-11-12.md` §3.5; steps 1-4 landed: Smythe Hall 2026-11-14, its Roman rubble 2026-11-15, Scott Johnston / Hazelwood and the slim room doors 2026-11-16, entrance and grounds with lighter dorm rooms 2026-11-16). Left over from step 4's row (Q3, Q14): the gateway moved to St. John's Road with a Cadet Post, the parking strip and the volleyball court. Next: 5 Stangeland / Cord, 6 Welles + clock tower, 7 DeKoven + our own crest, 8 Memorial Hall, 9 the chapel (its spiral stair), 10 gym and pool, 11 final pass and the owner's recording. One hall per landing. Lead's slip: only the chapel item was in this queue after step 2; the plan never stopped.
+  - **Step 4b, next for St. John's (owner, 2026-11-16: "you can move the gateway further out with a guard post, the parking strip and volleyball court. also the spruces and curved limestone if able to improve the shadow cost"):** the gateway moved out onto the higher ground with a Cadet Post (guard post), the parking strip, the volleyball court (PLAN 4d, Q3, Q14; set piece parts that follow the ground, or the gateway from props), and back in photo 16's spruces and photo 18's curved limestone wall, pier and lamp posts at Scott Johnston / Hazelwood's arch once small shadow casters are made cheap (a renderer change: small or distant casters batched, or dropped from the shadow map past a size/distance, so the view stays inside the 10 % rule; the front view read 46 → 61 casters with them).
+  - Part of step 3, one landing (owner, 2026-11-15: "the dorms look great"; then "I trust your judgment on the doors, lump it into the step 3", the look is the lead's call): the dorm room doors (dark wood with cast iron) span the whole 3 m doorway; slim them: a frame brought in (wall returns / a jamb either side) and a single door of a real room door's width, in the dorm bays' doorways (a new edge style or a door option, so other doorways stay 3 m; check nav and bot pathing through the narrower opening). Then Smythe Hall picks it up and step 3's halls use it.
+- M · B · Map pass, like-for-like swaps only (owner: the tuned arenas are left alone; Qasr Medina stays as it is). Sandgate is done; no other map with as clear a swap has been found yet.
+- ? · ? · Iron Coast's coast-border canopy has a dark lip.
+- ? · ? · Sandsweep plays weak as a battle map.
+- S · A · **Island plan, planning only, back of the queue** (owner, 2026-11-15): written, `docs/ISLAND_PLAN.md` for one large open map with every feature, tile set and theme ("like a Far Cry island"), to keep with the scaling study. Lead's recommended target about 1 km × 1 km, 32-64 players; sizes, budgets (entities, memory, bandwidth, host CPU), what each needs (tiled navmesh, far stand-ins, interest management, spawn-first build, region editing in MapMaker; real streaming only past that), steps. A plan only: no work starts from it without the owner.
+- S · A · Iron Coast: place the Sea Wall and its breach (the set piece is on main, not on `maps/iron_coast.json`; SET_PIECES_PLAN "Left for later").
+- S · ? · **Owner to decide:** Verdant Protocol (MAP 04): built and green on `check/mapmaker-verdant`, never landed; balance favours Tide. Land it, rebalance first, or drop?
+- S · ? · **Owner to decide:** The Spillway's gatehouses: none, one or two.
+- S · ? · **Owner to decide:** Iron Maw: raise the recommended player cap (32) to 64-96 (a format change); give the excavator a walkable deck.
+- S–M · ? · **Owner to decide:** Sunken Kingdom: a real dome (the Desert City dome kit exists), two-level tiers, CTF flags bots never take (`map-briefs/sunken_kingdom/DECISIONS_AND_DEVIATIONS.md`).
+- L · ? · **Owner to decide:** Dustwater expansion: a bigger town, mines, two through-trains tunnel to tunnel (STAGED_IDEAS §1, four open questions).
+- S · ? · **Owner to decide:** Mercy Ward rooftop zombies (STAGED_IDEAS §2; the rest of that batch is done or moot).
+- L · ? · **Owner to decide:** new maps from MAP_IDEAS' top list: Low Bridge, Wheel of Peril, Meltdown Protocol, Matchstick Hotel, Floodgate; and its kit gaps (turning movers, random pick in logic, liquids as logic targets, slippery ground, bulletproof glass, a hurt-zone action).
 
 ## Bugs
 - S · B · **MapMaker's Arid environment preset "didn't seem to work" (owner, 2026-11-16).** Likely cause (lead, not yet reproduced): picking a preset also sets the brush's ground filter (`envBrush.ts` `withPreset`: Arid paints only on sand, dirt, gravel and stone), so on a grass map a stroke places nothing and says nothing. Reproduce on a grass map and on sand; then: say so on the brush card ("Arid paints on sand, dirt, gravel, stone: nothing here matches", with "Paint on any ground"), or keep the preset's ground as a suggestion the player turns on; check the dry variants (acacia, laurel, grass) show as dry in the game.
@@ -71,12 +94,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · ? · MapMaker UI spec Phase 3: live minimap. (Phase 2, synced selection and numeric transforms, built 2026-11-16 on `wip/mapmaker-ui-2`, with the inspector X/Z bug fixed through the shared transform command: `docs/MAPMAKER_UI_SPEC.md`, "Phase 2: as built".)
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
 - L · A · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
-- L · A · **St. John's campus rework, steps 4-11** (also the entity budget: PLAN 4c) (owner's brief and "I'll take your recs", 2026-11-12; `docs/map-briefs/st_johns/PLAN_2026-11-12.md` §3.5; steps 1-4 landed: Smythe Hall 2026-11-14, its Roman rubble 2026-11-15, Scott Johnston / Hazelwood and the slim room doors 2026-11-16, entrance and grounds with lighter dorm rooms 2026-11-16). Left over from step 4's row (Q3, Q14): the gateway moved to St. John's Road with a Cadet Post, the parking strip and the volleyball court. Next: 5 Stangeland / Cord, 6 Welles + clock tower, 7 DeKoven + our own crest, 8 Memorial Hall, 9 the chapel (its spiral stair), 10 gym and pool, 11 final pass and the owner's recording. One hall per landing. Lead's slip: only the chapel item was in this queue after step 2; the plan never stopped.
-  - **Step 4b, next for St. John's (owner, 2026-11-16: "you can move the gateway further out with a guard post, the parking strip and volleyball court. also the spruces and curved limestone if able to improve the shadow cost"):** the gateway moved out onto the higher ground with a Cadet Post (guard post), the parking strip, the volleyball court (PLAN 4d, Q3, Q14; set piece parts that follow the ground, or the gateway from props), and back in photo 16's spruces and photo 18's curved limestone wall, pier and lamp posts at Scott Johnston / Hazelwood's arch once small shadow casters are made cheap (a renderer change: small or distant casters batched, or dropped from the shadow map past a size/distance, so the view stays inside the 10 % rule; the front view read 46 → 61 casters with them).
-  - Part of step 3, one landing (owner, 2026-11-15: "the dorms look great"; then "I trust your judgment on the doors, lump it into the step 3", the look is the lead's call): the dorm room doors (dark wood with cast iron) span the whole 3 m doorway; slim them: a frame brought in (wall returns / a jamb either side) and a single door of a real room door's width, in the dorm bays' doorways (a new edge style or a door option, so other doorways stay 3 m; check nav and bot pathing through the narrower opening). Then Smythe Hall picks it up and step 3's halls use it.
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
 - M · B · Player profiles.
-- M · B · Map pass, like-for-like swaps only (owner: the tuned arenas are left alone; Qasr Medina stays as it is). Sandgate is done; no other map with as clear a swap has been found yet.
 - M · A · Mobile audit: map cards on phones and "Pick a map" in Quick Play (proposal 2).
 - M · A · Mobile audit: touch layout options: button size, opacity, left-handed, aim hold or toggle (proposal 3).
 - M · A · Mobile audit: Character Select phone layout (proposal 4).
@@ -91,17 +110,32 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · A · Scaling 4: bot path search budget by time (order 4).
 - M · A · Scaling 5: spawn-first build order, no unloading (owner 1b; order 5).
 - L · A · Later: tiled navmesh, when breakable walls should open bot routes (owner 5a). Foliage: nothing until a profile says it costs (owner 6a).
-- S · A · **Island plan, planning only, back of the queue** (owner, 2026-11-15): written, `docs/ISLAND_PLAN.md` for one large open map with every feature, tile set and theme ("like a Far Cry island"), to keep with the scaling study. Lead's recommended target about 1 km × 1 km, 32-64 players; sizes, budgets (entities, memory, bandwidth, host CPU), what each needs (tiled navmesh, far stand-ins, interest management, spawn-first build, region editing in MapMaker; real streaming only past that), steps. A plan only: no work starts from it without the owner.
+- S–M · A · Combat accessibility: toggle aim (ADS), a camera-shake setting, controller vibration (GUNPLAY_GAPS §42).
+- M · A · Gun handling extras: sprint-exit time, movement speed per weapon (with prediction parity), scope holdover marks (GAPS §5, §27, §35-36; G2).
+- M · A · A weapon tuning screen: recoil path, spread cones and damage over distance side by side (GAPS §45).
+- S · A · Hit model: arms as their own hit zone, a shield/weak-point hit marker (GAPS §11, §21-22).
+- M · B · MapMaker painting Phase 5: save and name your own looks (MAPMAKER_PAINTING_PLAN "Phase 5"; answers given).
+- M · B · MapMaker UI spec Phase 5: hardening and polish (saved-map and migration tests, resizing, large-map speed, keyboard use, preferences kept; MAPMAKER_UI_SPEC §10).
+- M · A · Held weapons in one material (a content-pipeline atlas): fewer draws and shadow casters in crowds (PERF_96 round 3).
+- S · A · Pickups drawn as thin instances (35-55 meshes a map; PERF_96 round 3).
+- L · A · Far characters cheaper: shared animation for the same clip and phase, fewer bones far off, baked animation for merged far bodies (PERF_96 round 4; with the Flavius Rule animation-by-distance work).
+- M · A · Cheaper movement for bots far from every human, for full dedicated hosts (PERF_96 round 4).
+- M · A · Per-player hub-signed join tickets, checked on every join (MULTIPLAYER_REVIEW §4 item 1).
+- M–L · A · Host Service paired to an account through the hub, so hosting works from any device (HOSTING "Next steps"; MULTIPLAYER_SECURITY §6).
+- M · A · Hosted 48 v 48 bandwidth: binary player entries, skip the replay when the server agrees, lower snapshot rates for far players (PERF_96).
+- M · A · Host Service installer: start on boot, tray icon (HOSTING "Next steps").
+- S–M · A · The seven Roster Board characters still needing hand or face work (alienbiker, anubis, beaniealien, pruitt, resolvesoldier, vanguard, zhao; the board's open requests).
+- M · A · Textures for the flat grey sci-fi guns (Flak, Swarm, Laser Rifle; MOBILE_AUDIT proposal 8).
+- M · B · Kit-prop generators, Phase 6 tail: scaffolding and rubble families, measure the share of generated props (PROCEDURAL_ENVIRONMENT §11).
 
 ## Waiting on the owner
+- Owner to decide (non-map, found 2026-11-16): MapMaker/match combat rules for creators (headshots, ammo, reload, penetration, damage and health scales; GUNPLAY G5, which knobs); a longer lag-compensation window past ~120 ms ping (GUNPLAY_AUDIT G3); official servers in the game browser (running cost); moderation and rules before launch (OPEN_QUESTIONS); Character Lab, an owner-only rigging tool; Machine Pistol balance.
 - A long-session recording (owner said yes, 2026-11-15): after an hour of MapMaker with several Tests, 20 s of a Test, then reload and the same Test again, ad blocker off for the site. The memory readout is in (fix 3a, F3 and the recording; MapMaker's status bar with `?memory=1`): the recording now shows whether memory still climbs. The next St. John's match recording after the main-scene work.
 - Lane B: the destructible environment's later steps. Step 1 is on main (props and blocks on an opt-in map, Breakyard); (a), breakable props batched while intact, landed 2026-11-15 (HANDOFF "Landed: breakable props batched while intact"); (b), breakable building walls: **queued, after MapMaker UI Phase 3 (the minimap)** (owner, 2026-11-16: "Yes but let's keep that queued", on lane B's recommendation): walls a map maker marks breakable (per wall, tile, building or set piece; HP; explosives only by default), host-authoritative break into a hole with debris (Reduce flashing safe), collision and sight updated, a per-map budget like the breakable props' batches; probably a map format change. Bots first treat a broken section as still blocked; routing through holes waits for the tiled navmesh (SCALING_STUDY item 5, L).
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
 ## Known issues and loose ends (found in HANDOFF, 2026-11-15)
 - ? · A · Mobile: the dark wall block on the owner's Galaxy S25+ (docs/MOBILE_AUDIT.md); if it still shows on Medium, the one-lamp-per-layer mode becomes Medium's default (owner said yes; confirm the reading).
-- ? · ? · Iron Coast's coast-border canopy has a dark lip.
-- ? · ? · Sandsweep plays weak as a battle map.
 - S · A · Gunplay gaps from the audit (docs/GUNPLAY_AUDIT.md appendix A; the multi-client latency/loss test is done: `pnpm net-report`): bots pick weapons by a hand-set range (G4); Training Range lacks a damage readout on hit, dummies that don't shoot back, armoured targets, a trajectory view.
 - ? · A · The owner's playtest checklist (artifact 5LRzv2dDfPVrp4TU2d3rwW): no answers yet.
 
