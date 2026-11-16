@@ -2224,6 +2224,7 @@ async function editortoolsFlow(browser) {
   await editorPaintChecks(browser);
   await editorThemeWarningChecks(browser);
   await editorTurnChecks(browser);
+  await editorTransformChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
@@ -3510,6 +3511,114 @@ async function measureRampCheck(page, { focus, clickAt, frames, shot }) {
  * drag is one undo step; the inspector's quick facings set the facing in one click (a tile's too). Screenshots go to
  * E2E_SHOTS when set.
  */
+/**
+ * MapMaker UI spec Phase 2, the shared transform command (shared editor/transform.ts): typing X, Height or Z in the
+ * inspector moves a thing exactly as a drag or a nudge does (rounded to the millimetre, a prop on the terrain bedded
+ * where it lands), a moving build selected whole moves with its blocks and props, and each typed value is one undo
+ * step; Esc in a field puts the value back without an edit.
+ */
+async function editorTransformChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const pos = async (id) => (await doc()).entities.find((e) => e.id === id)?.position;
+  const rev = () => page.evaluate(() => window.__editor.history.revision);
+  // Ground rising 1 m in 10 to the east, a crate on it, and a moving build (a lift block and a barrel on a mover).
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    const after = { ...t, heights: t.heights.map((_, i) => Math.round(((i % t.cols) * t.spacing + t.origin[0] + 60) * 10)) };
+    const prop = (id, model, position) => ({ id, kind: 'prop', model, position, yaw: 0, scale: 1, solid: true, tint: null });
+    ed.run('Setup', {
+      kind: 'batch',
+      commands: [
+        { kind: 'setTerrain', before: t, after },
+        { kind: 'addEntities', entities: [
+          prop('e2e_crate', 'core.crate', [0, t.baseY + 6, 20]),
+          { id: 'e2e_lift', kind: 'block', position: [6, 8, 30], yaw: 0, size: [3, 0.3, 3], material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8 },
+          prop('e2e_barrel', 'kit.drum.steel', [6, 8.15, 30]),
+          { id: 'e2e_mover', kind: 'mover', position: [6, 8, 30], yaw: 0, blocks: ['e2e_lift'], props: ['e2e_barrel'], points: [[0, 0, 0], [0, 3, 0]], mode: 'pingpong', speed: 1, turnSpeed: 45, wait: 1, startActive: true },
+        ] },
+      ],
+    });
+    // Bedded on the slope, as Settle on ground does.
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: ['e2e_crate'] });
+    ed.edits.settleProps(['e2e_crate']);
+  });
+  await frames(page, 3);
+  /** The inspector's number field in the row labelled `label`, filled with `value` and committed with Enter (or cancelled with Esc). */
+  const typeField = async (label, value, key = 'Enter') => {
+    const ok = await page.evaluate((label) => {
+      for (const r of document.querySelectorAll('#ed-inspector .row')) {
+        if (r.firstElementChild?.textContent?.trim() !== label) continue;
+        const input = r.querySelector('input[type=number]');
+        if (!input) continue;
+        document.querySelectorAll('[data-e2e-field]').forEach((x) => x.removeAttribute('data-e2e-field'));
+        input.setAttribute('data-e2e-field', '1');
+        return true;
+      }
+      return false;
+    }, label);
+    if (!ok) return false;
+    await page.fill('[data-e2e-field]', String(value));
+    await page.press('[data-e2e-field]', key);
+    await frames(page, 3);
+    await page.evaluate(() => document.activeElement?.blur?.());
+    return true;
+  };
+  const select = async (ids) => {
+    await page.evaluate((ids) => window.__editor.setSelection({ tiles: [], entities: ids }), ids);
+    await frames(page, 2);
+  };
+
+  // The crate on the slope: X typed 10 m east is rounded to the millimetre and bedded on the ground there.
+  const crate0 = await pos('e2e_crate');
+  await select(['e2e_crate']);
+  const r0 = await rev();
+  check(await typeField('X', 10.123456), 'the prop inspector has an X field');
+  const typed = await pos('e2e_crate');
+  check(typed?.[0] === 10.123 && (await rev()) === r0 + 1, `typing X rounds to the millimetre, as a drag does, in one undo step (${JSON.stringify(typed)}, ${(await rev()) - r0} steps)`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check(JSON.stringify(await pos('e2e_crate')) === JSON.stringify(crate0), 'one undo puts it back');
+  // The same 10 m by the arrow keys (a nudge is half a metre): where it lands, the typed X gives the same height.
+  await select(['e2e_crate']);
+  for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowRight');
+  await frames(page, 2);
+  const nudged = await pos('e2e_crate');
+  for (let i = 0; i < 20; i++) await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  await select(['e2e_crate']);
+  await typeField('X', crate0[0] + 10);
+  const typed10 = await pos('e2e_crate');
+  check(nudged && typed10 && nudged[0] === typed10[0] && Math.abs(nudged[1] - typed10[1]) < 1e-6 && typed10[1] > crate0[1] + 0.9, `typing X beds a prop on the terrain where it lands, as a nudge does (nudged ${JSON.stringify(nudged)}, typed ${JSON.stringify(typed10)}, from ${JSON.stringify(crate0)})`);
+  await page.keyboard.press('Control+KeyZ');
+  // Z too; and Esc in the field puts the value back with no edit.
+  await select(['e2e_crate']);
+  const r1 = await rev();
+  await typeField('Z', 25, 'Escape');
+  check((await rev()) === r1 && (await pos('e2e_crate'))?.[2] === crate0[2], `Esc in a field cancels: no edit (${(await rev()) - r1} steps)`);
+
+  // The moving build selected whole (as a click on any part selects it): X moves the mover, its block and its barrel.
+  await select(['e2e_mover', 'e2e_lift', 'e2e_barrel']);
+  const r2 = await rev();
+  await typeField('X', 2);
+  const build = await Promise.all(['e2e_mover', 'e2e_lift', 'e2e_barrel'].map(pos));
+  check(build.every((p) => p?.[0] === 2) && (await rev()) === r2 + 1, `typing X on a moving build moves the mover with its parts, one step (${JSON.stringify(build)})`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await pos('e2e_lift'))?.[0] === 6 && (await pos('e2e_mover'))?.[0] === 6, 'one undo puts the whole build back');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function editorTurnChecks(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
