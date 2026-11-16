@@ -95,7 +95,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Waiting on the owner
 - A long-session recording (owner said yes, 2026-11-15): after an hour of MapMaker with several Tests, 20 s of a Test, then reload and the same Test again, ad blocker off for the site. The memory readout is in (fix 3a, F3 and the recording; MapMaker's status bar with `?memory=1`): the recording now shows whether memory still climbs. The next St. John's match recording after the main-scene work.
-- Lane B: the destructible environment's later steps. Step 1 is on main (props and blocks on an opt-in map, Breakyard); (a), breakable props batched while intact, landed 2026-11-15 (HANDOFF "Landed: breakable props batched while intact"); (b), breakable building walls, is undecided.
+- Lane B: the destructible environment's later steps. Step 1 is on main (props and blocks on an opt-in map, Breakyard); (a), breakable props batched while intact, landed 2026-11-15 (HANDOFF "Landed: breakable props batched while intact"); (b), breakable building walls: **queued, after MapMaker UI Phase 3 (the minimap)** (owner, 2026-11-16: "Yes but let's keep that queued", on lane B's recommendation): walls a map maker marks breakable (per wall, tile, building or set piece; HP; explosives only by default), host-authoritative break into a hole with debris (Reduce flashing safe), collision and sight updated, a per-map budget like the breakable props' batches; probably a map format change. Bots first treat a broken section as still blocked; routing through holes waits for the tiled navmesh (SCALING_STUDY item 5, L).
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
 ## Known issues and loose ends (found in HANDOFF, 2026-11-15)
