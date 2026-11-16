@@ -42,6 +42,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - A red train: re-run a known flake once, drop a failing branch and go again, a conflict goes back to the branch's owner.
 - "Next in line" notes are no longer needed. Branches already waiting (St. John's step 4, painting Phase 3) simply push their check runs now, if they haven't, and go on "Ready to land".
 
+**Landing now: train** (beams on the muzzle, `wip/beam-muzzle`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - (none)
 
