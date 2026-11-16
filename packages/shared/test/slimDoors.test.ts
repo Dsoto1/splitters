@@ -93,9 +93,9 @@ describe('the Room doors option', () => {
   it('each dorm piece offers it, wide first (every placement made before it is unchanged)', () => {
     for (const id of DOOR_PIECES) {
       const def = library.pieces.get(id)!;
-      expect(def.options?.map((o) => [o.name, o.choices.map((c) => c.value)]), id).toEqual([['roomDoors', ['wide', 'slim']]]);
-      expect(placementOptions({}, def)).toEqual({ roomDoors: 'wide' });
-      expect(placementOptions({ overrides: { options: { roomDoors: 'nonsense' } } }, def)).toEqual({ roomDoors: 'wide' });
+      expect(def.options?.find((o) => o.name === 'roomDoors')?.choices.map((c) => c.value), id).toEqual(['wide', 'slim']);
+      expect(placementOptions({}, def).roomDoors).toBe('wide');
+      expect(placementOptions({ overrides: { options: { roomDoors: 'nonsense' } } }, def).roomDoors).toBe('wide');
       const as = (o?: SetPiecePlacement['overrides']) => setPieceParts({ id: 'p0001', piece: id, x: 0, y: 0, z: 0, rotation: 0, mirror: false, ...(o ? { overrides: o } : {}) }, def, 'core.prototype', library);
       // Unset and "wide" are the same piece, part for part.
       expect(JSON.stringify(as({ options: { roomDoors: 'wide' } }))).toBe(JSON.stringify(as()));

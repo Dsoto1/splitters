@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 42,
+  "formatVersion": 43,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_kbs6lzie53h4ai27",
-      "revision": 3,
-      "contentHash": "sha256:6cd197d0fbb748f610d5247478af3c8bb2a487f217d3a92d5fa788f7ced147df",
-      "schemaVersion": 42,
-      "releasedAt": "2026-11-16T02:08:30.041Z"
+      "versionId": "v_jj5z2ycisydtmsvy",
+      "revision": 9,
+      "contentHash": "sha256:327f76e8abb345ed96cc44fe0b1d46f63ebd7c2f2d3dd06dc3d2de3c307fdb70",
+      "schemaVersion": 43,
+      "releasedAt": "2026-11-16T11:06:59.213Z"
     }
   },
   "classicStructure": {
@@ -477,9 +477,9 @@
     {
       "id": "prop_072",
       "position": [
-        -130.733,
-        -0.74,
-        3.949
+        -3,
+        0.13,
+        37.4
       ],
       "kind": "prop",
       "model": "prop.cannon",
@@ -491,9 +491,9 @@
     {
       "id": "prop_073",
       "position": [
-        -130.087,
-        -0.74,
-        5.426
+        -1.9,
+        0.13,
+        39.2
       ],
       "kind": "prop",
       "model": "prop.cannonballs",
@@ -41743,12 +41743,12 @@
     {
       "id": "hill_2938",
       "position": [
-        43.343,
-        0.544,
-        -20.551
+        47,
+        0.11,
+        -13.5
       ],
       "kind": "hill",
-      "radius": 5
+      "radius": 6
     },
     {
       "id": "hill_2939",
@@ -51688,107 +51688,19 @@
       "fixture": "ceiling"
     },
     {
-      "id": "block_khxrxl8ury",
+      "id": "block_hymephh0he",
       "position": [
-        48.0208,
+        48.015,
         4.44,
-        -23.966
+        -23.96
       ],
       "kind": "block",
       "size": [
-        2.7192,
-        0.3,
-        0.5997
+        2.77,
+        2.8,
+        0.6
       ],
       "yaw": 0.02443,
-      "material": "core.pbr_floorboards",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_tquzw0p561",
-      "position": [
-        48,
-        4.44,
-        -22.7789
-      ],
-      "kind": "block",
-      "size": [
-        5,
-        0.3,
-        1.5579
-      ],
-      "yaw": 0,
-      "material": "core.pbr_floorboards",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_98nm4l1jvf",
-      "position": [
-        48,
-        4.2,
-        -21.5
-      ],
-      "kind": "block",
-      "size": [
-        5,
-        0.3,
-        1
-      ],
-      "yaw": 0,
-      "material": "core.pbr_floorboards",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_hr13ctdq3n",
-      "position": [
-        48,
-        3.95,
-        -20.51
-      ],
-      "kind": "block",
-      "size": [
-        5,
-        0.3,
-        0.98
-      ],
-      "yaw": 0,
-      "material": "core.pbr_floorboards",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_5jm6p1irqq",
-      "position": [
-        45.25,
-        3.95,
-        -21.7889
-      ],
-      "kind": "block",
-      "size": [
-        0.5,
-        4,
-        3.5379
-      ],
-      "yaw": 0,
       "material": "core.cobble",
       "tint": "#d9d5cb",
       "behaviour": "solid",
@@ -51798,70 +51710,486 @@
       "health": 120
     },
     {
-      "id": "block_5vusr22woo",
+      "id": "prop_nf0dwoyfwh",
+      "kind": "prop",
       "position": [
-        50.75,
-        3.95,
-        -21.7889
+        47,
+        -0.1,
+        -13.5
       ],
-      "kind": "block",
-      "size": [
-        0.5,
-        4,
-        3.5379
-      ],
-      "yaw": 0,
-      "material": "core.cobble",
-      "tint": "#d9d5cb",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
+      "model": "kit.monument.island_bed",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     },
     {
-      "id": "block_u238itk78f",
+      "id": "prop_kxt97fjea1",
+      "kind": "prop",
       "position": [
-        48,
-        7.95,
-        -21.7889
+        47,
+        0.39,
+        -13.5
       ],
-      "kind": "block",
-      "size": [
-        6,
-        0.3,
-        3.5379
-      ],
-      "yaw": 0,
-      "material": "core.pbr_slate_roof",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
+      "model": "kit.monument.cairn",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     },
     {
-      "id": "block_7teaq5a5jf",
+      "id": "prop_267rbbnuyv",
+      "kind": "prop",
       "position": [
-        48,
-        3.99,
+        66,
+        -0.27,
+        -12.25
+      ],
+      "model": "kit.wall.pier_lamp",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_y4gt4c3qb9",
+      "kind": "light",
+      "position": [
+        66,
+        2.17,
         -12
       ],
-      "kind": "block",
-      "size": [
-        7.1,
-        0.26,
-        16.04
+      "yaw": 0,
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_n5s3ryobjo",
+      "kind": "prop",
+      "position": [
+        66,
+        -0.26,
+        -5.25
+      ],
+      "model": "kit.wall.pier_lamp",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "light_xenic0jtc7",
+      "kind": "light",
+      "position": [
+        66,
+        2.19,
+        -5
       ],
       "yaw": 0,
-      "material": "core.pbr_floorboards",
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 12,
+      "fixture": "none"
+    },
+    {
+      "id": "prop_2qlnxd34ea",
+      "kind": "prop",
+      "position": [
+        66,
+        -0.21,
+        -2.75
+      ],
+      "model": "kit.wall.fieldstone",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_fsa97gvh6l",
+      "kind": "prop",
+      "position": [
+        66,
+        -0.25,
+        -14.5
+      ],
+      "model": "kit.wall.fieldstone",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_xydkdiq81y",
+      "kind": "prop",
+      "position": [
+        66,
+        -0.19,
+        -18.5
+      ],
+      "model": "kit.wall.fieldstone",
+      "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_5bxv5yvo55",
+      "kind": "prop",
+      "position": [
+        61.5,
+        -0.17,
+        -4.75
+      ],
+      "model": "kit.lamp.post_banner",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_fgmp14ivs9",
+      "kind": "prop",
+      "position": [
+        61.5,
+        -0.16,
+        -12.5
+      ],
+      "model": "kit.lamp.post_banner",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_tl30ft0cz1",
+      "kind": "prop",
+      "position": [
+        -115.5,
+        -0.07,
+        -57.25
+      ],
+      "model": "env.conifer.spruce",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_e9ve96z7su",
+      "kind": "prop",
+      "position": [
+        -108.5,
+        -0.07,
+        -57.25
+      ],
+      "model": "env.conifer.spruce",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_tr4r41p3am",
+      "kind": "prop",
+      "position": [
+        -114.5,
+        -0.66,
+        -50
+      ],
+      "model": "kit.wall.fieldstone_short",
+      "yaw": -0.38,
+      "scale": 1,
+      "solid": true,
       "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
+      "variant": 1
+    },
+    {
+      "id": "prop_9ubd3st9so",
+      "kind": "prop",
+      "position": [
+        -116.5,
+        -0.65,
+        -50.75
+      ],
+      "model": "kit.wall.fieldstone_short",
+      "yaw": -0.38,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 1
+    },
+    {
+      "id": "prop_d4rs7b9o6a",
+      "kind": "prop",
+      "position": [
+        -118.25,
+        -0.67,
+        -51.5
+      ],
+      "model": "kit.wall.fieldstone_short",
+      "yaw": -0.38,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 1
+    },
+    {
+      "id": "prop_nti51wqjod",
+      "kind": "prop",
+      "position": [
+        -120.25,
+        -0.73,
+        -52.25
+      ],
+      "model": "kit.wall.fieldstone_short",
+      "yaw": -0.38,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 1
+    },
+    {
+      "id": "prop_2sptmcg17o",
+      "kind": "prop",
+      "position": [
+        -113.25,
+        -0.68,
+        -49
+      ],
+      "model": "kit.wall.pier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_l8ia5u6s6v",
+      "kind": "prop",
+      "position": [
+        -100,
+        -0.55,
+        -49.5
+      ],
+      "model": "kit.lamp.post_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 1
+    },
+    {
+      "id": "prop_gfphrwcu4m",
+      "kind": "prop",
+      "position": [
+        -124.5,
+        -0.88,
+        -53.25
+      ],
+      "model": "kit.lamp.post_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 1
+    },
+    {
+      "id": "prop_knx965e8yh",
+      "kind": "prop",
+      "position": [
+        -15,
+        0.95,
+        -46.25
+      ],
+      "model": "kit.seat.bench_stone",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_bwm6dx3rzs",
+      "kind": "prop",
+      "position": [
+        -15,
+        -0.1,
+        -51
+      ],
+      "model": "kit.seat.bench_stone",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_1uv8pqu80f",
+      "kind": "prop",
+      "position": [
+        -27,
+        0.61,
+        -46.25
+      ],
+      "model": "kit.seat.bench_stone",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_h0fs6hnrit",
+      "kind": "prop",
+      "position": [
+        -27,
+        -0.08,
+        -51
+      ],
+      "model": "kit.seat.bench_stone",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_f2j73ul1fp",
+      "kind": "prop",
+      "position": [
+        -11.5,
+        1,
+        -46.5
+      ],
+      "model": "kit.lamp.post_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_4w4gahf2ex",
+      "kind": "prop",
+      "position": [
+        -20.5,
+        -0.07,
+        -50.75
+      ],
+      "model": "kit.lamp.post_banner",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0i07qvvgew",
+      "kind": "prop",
+      "position": [
+        -31,
+        0.8,
+        -46.5
+      ],
+      "model": "kit.lamp.post_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_h834l7ibc1",
+      "kind": "prop",
+      "position": [
+        -34.25,
+        0.91,
+        -50.5
+      ],
+      "model": "kit.lamp.post_banner",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_wdka1x98gt",
+      "kind": "prop",
+      "position": [
+        -17,
+        0.09,
+        38.5
+      ],
+      "model": "kit.monument.marker",
+      "yaw": 3.142,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_y5bvdg1erx",
+      "kind": "prop",
+      "position": [
+        -23,
+        0.08,
+        43
+      ],
+      "model": "env.shrub.laurel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_fiygypvjc0",
+      "kind": "prop",
+      "position": [
+        -16,
+        0.06,
+        43
+      ],
+      "model": "env.shrub.laurel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_dr0d83ta8c",
+      "kind": "prop",
+      "position": [
+        -9,
+        0.07,
+        43
+      ],
+      "model": "env.shrub.laurel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_adcuasc4t5",
+      "kind": "prop",
+      "position": [
+        -2,
+        0.1,
+        43
+      ],
+      "model": "env.shrub.laurel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_qa7ssv9k9q",
+      "kind": "prop",
+      "position": [
+        5,
+        0.02,
+        43
+      ],
+      "model": "env.shrub.laurel",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -52140,6 +52468,465 @@
     "style": "invisible",
     "height": 8
   },
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "forest",
+    "ground": "grass",
+    "haze": 0.4,
+    "mist": 0.2
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
+  "weaponSet": "military",
+  "dependencies": [],
+  "setPieces": [
+    {
+      "id": "setpiece_khjt0z69qh",
+      "piece": "setpiece.carriageway_1",
+      "x": 1,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_on330x7tqt",
+      "piece": "setpiece.stair_end_bay_arched",
+      "x": 5,
+      "y": 4,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_qxfg57rgtu",
+      "piece": "setpiece.corner_tower_square",
+      "x": 4,
+      "y": 4,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_gnormrx3xx",
+      "piece": "setpiece.dorm_corner_bay",
+      "x": 6,
+      "y": 4,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_g9sbbpnwrm",
+      "piece": "setpiece.dorm_bay",
+      "x": 6,
+      "y": 3,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_tb0jpttlgd",
+      "piece": "setpiece.dorm_entry_bay",
+      "x": 6,
+      "y": 2,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_ki80jn7ntk",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": 6,
+      "y": 1,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_2ls5ymrezs",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": 6,
+      "y": 3,
+      "z": 1,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_4brurges11",
+      "piece": "setpiece.dorm_bay",
+      "x": 6,
+      "y": 1,
+      "z": 1,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_c35wf9iphd",
+      "piece": "setpiece.dorm_corner_bay",
+      "x": 6,
+      "y": 4,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_x6k4wkf6iv",
+      "piece": "setpiece.dorm_bay",
+      "x": 6,
+      "y": 2,
+      "z": 1,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_4tw978dgz3",
+      "piece": "setpiece.stair_end_bay_3",
+      "x": -17,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        }
+      }
+    },
+    {
+      "id": "setpiece_58q7mf5eb8",
+      "piece": "setpiece.stair_end_bay_3",
+      "x": -10,
+      "y": -9,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        }
+      }
+    },
+    {
+      "id": "setpiece_3459ewaolt",
+      "piece": "setpiece.hall_centre",
+      "x": -13,
+      "y": -9,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_zzt4gpx8uz",
+      "piece": "setpiece.dorm_bay",
+      "x": -16,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_7mfvzrvurk",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -15,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_qafubgr7py",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -12,
+      "y": -9,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_cr7rogzi50",
+      "piece": "setpiece.dorm_bay",
+      "x": -11,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_u2ewet59uc",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -16,
+      "y": -9,
+      "z": 1,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_jc0zvl1blx",
+      "piece": "setpiece.dorm_bay",
+      "x": -15,
+      "y": -10,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_4z3im1onkr",
+      "piece": "setpiece.dorm_bay",
+      "x": -12,
+      "y": -10,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_r9njdxq9rt",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -11,
+      "y": -10,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_95teh77rdu",
+      "piece": "setpiece.dorm_bay",
+      "x": -16,
+      "y": -10,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_8ko5gz8jen",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -15,
+      "y": -9,
+      "z": 2,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_lmojxl69zk",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -12,
+      "y": -10,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_z50uwvld7g",
+      "piece": "setpiece.dorm_bay",
+      "x": -11,
+      "y": -10,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_uh8juorp1c",
+      "piece": "setpiece.corner_turret_round",
+      "x": -15,
+      "y": -8,
+      "z": 0,
+      "rotation": 2,
+      "mirror": true
+    },
+    {
+      "id": "setpiece_emzzmg1o44",
+      "piece": "setpiece.corner_turret_round",
+      "x": -12,
+      "y": -8,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_e43xh5zvfu",
+      "piece": "setpiece.corner_turret_round",
+      "x": -18,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "top": "red"
+        }
+      }
+    },
+    {
+      "id": "setpiece_f6epumzmbr",
+      "piece": "setpiece.stair_end_bay",
+      "x": 7,
+      "y": 0,
+      "z": 0,
+      "rotation": 3,
+      "mirror": false,
+      "pack": "collegiate"
+    }
+  ],
   "paths": [
     {
       "id": "osm_21644223_0",
@@ -53412,19 +54199,19 @@
           -66.3
         ],
         [
-          -94.23,
-          -0.71,
-          -66.18
+          -93,
+          -0.15,
+          -56.55
         ],
         [
-          -108.47,
-          -0.74,
-          -65.56
+          -111.97,
+          -0.57,
+          -51.21
         ],
         [
-          -122.71,
-          -0.76,
-          -64.94
+          -126.95,
+          -0.65,
+          -57.16
         ],
         [
           -136.95,
@@ -53987,474 +54774,92 @@
       "width": 3,
       "style": "cobble",
       "lay": true
-    }
-  ],
-  "backdrop": {
-    "sky": "clear",
-    "scenery": "forest",
-    "ground": "grass",
-    "haze": 0.4,
-    "mist": 0.2
-  },
-  "physics": null,
-  "blood": null,
-  "teamSetup": {
-    "sizes": [
-      12,
-      12
-    ]
-  },
-  "weaponSet": "military",
-  "dependencies": [],
-  "setPieces": [
-    {
-      "id": "setpiece_khjt0z69qh",
-      "piece": "setpiece.carriageway_1",
-      "x": 1,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
     },
     {
-      "id": "setpiece_l8uv6jzkm0",
-      "piece": "setpiece.skybridge_2",
-      "x": 6,
-      "y": -2,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false
+      "id": "path_c325imzuj4",
+      "points": [
+        [
+          61,
+          -0.1,
+          -12.21
+        ],
+        [
+          55.5,
+          0.31,
+          -17
+        ],
+        [
+          47,
+          0.39,
+          -18.9
+        ],
+        [
+          38.5,
+          0.32,
+          -17
+        ],
+        [
+          35.31,
+          -0.03,
+          -9.44
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "road"
+      ],
+      "width": 4,
+      "style": "concrete",
+      "lay": true
     },
     {
-      "id": "setpiece_on330x7tqt",
-      "piece": "setpiece.stair_end_bay_arched",
-      "x": 5,
-      "y": 4,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
+      "id": "path_sguy17mghr",
+      "points": [
+        [
+          -112,
+          0,
+          -60.3
+        ],
+        [
+          -112,
+          -0.5,
+          -52.68
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "road"
+      ],
+      "width": 3,
+      "style": "flagstone",
+      "lay": true
     },
     {
-      "id": "setpiece_qxfg57rgtu",
-      "piece": "setpiece.corner_tower_square",
-      "x": 4,
-      "y": 4,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_gnormrx3xx",
-      "piece": "setpiece.dorm_corner_bay",
-      "x": 6,
-      "y": 4,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_g9sbbpnwrm",
-      "piece": "setpiece.dorm_bay",
-      "x": 6,
-      "y": 3,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_tb0jpttlgd",
-      "piece": "setpiece.dorm_entry_bay",
-      "x": 6,
-      "y": 2,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_ki80jn7ntk",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": 6,
-      "y": 1,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_2ls5ymrezs",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": 6,
-      "y": 3,
-      "z": 1,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_4brurges11",
-      "piece": "setpiece.dorm_bay",
-      "x": 6,
-      "y": 1,
-      "z": 1,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_69d12r6we9",
-      "piece": "setpiece.stair_end_bay_bridge",
-      "x": 7,
-      "y": 0,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_c35wf9iphd",
-      "piece": "setpiece.dorm_corner_bay",
-      "x": 6,
-      "y": 4,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_x6k4wkf6iv",
-      "piece": "setpiece.dorm_bay",
-      "x": 6,
-      "y": 2,
-      "z": 1,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_4tw978dgz3",
-      "piece": "setpiece.stair_end_bay_3",
-      "x": -17,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        }
-      }
-    },
-    {
-      "id": "setpiece_58q7mf5eb8",
-      "piece": "setpiece.stair_end_bay_3",
-      "x": -10,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        }
-      }
-    },
-    {
-      "id": "setpiece_3459ewaolt",
-      "piece": "setpiece.hall_centre",
-      "x": -13,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_zzt4gpx8uz",
-      "piece": "setpiece.dorm_bay",
-      "x": -16,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_7mfvzrvurk",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -15,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_qafubgr7py",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -12,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_cr7rogzi50",
-      "piece": "setpiece.dorm_bay",
-      "x": -11,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_u2ewet59uc",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -16,
-      "y": -9,
-      "z": 1,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_jc0zvl1blx",
-      "piece": "setpiece.dorm_bay",
-      "x": -15,
-      "y": -10,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_4z3im1onkr",
-      "piece": "setpiece.dorm_bay",
-      "x": -12,
-      "y": -10,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_r9njdxq9rt",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -11,
-      "y": -10,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_95teh77rdu",
-      "piece": "setpiece.dorm_bay",
-      "x": -16,
-      "y": -10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_8ko5gz8jen",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -15,
-      "y": -9,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_lmojxl69zk",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -12,
-      "y": -10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_z50uwvld7g",
-      "piece": "setpiece.dorm_bay",
-      "x": -11,
-      "y": -10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_uh8juorp1c",
-      "piece": "setpiece.corner_turret_round",
-      "x": -15,
-      "y": -8,
-      "z": 0,
-      "rotation": 2,
-      "mirror": true
-    },
-    {
-      "id": "setpiece_emzzmg1o44",
-      "piece": "setpiece.corner_turret_round",
-      "x": -12,
-      "y": -8,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_e43xh5zvfu",
-      "piece": "setpiece.corner_turret_round",
-      "x": -18,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "top": "red"
-        }
-      }
+      "id": "path_8hbnsknb2v",
+      "points": [
+        [
+          -8.6,
+          0.5,
+          -49
+        ],
+        [
+          -20,
+          0.46,
+          -48.6
+        ],
+        [
+          -35.42,
+          1.29,
+          -48.44
+        ]
+      ],
+      "closed": false,
+      "uses": [
+        "road"
+      ],
+      "width": 3,
+      "style": "brick",
+      "lay": true
     }
   ]
 }
