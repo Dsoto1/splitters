@@ -52,6 +52,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Landing now: train** (the Battle Rifle, `wip/battle-rifle`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
 
 **Checking** (branch · run; remove the line when it turns green or red):
+- `wip/hostgame-spectate` · run 43948075116 (`check/hostgame-spectate` at 8c1d7ffe; e2e hostgame: the same cause and fix as `wip/hostgame-friend` (the round held open), the e2e flow only, without its `listen` in hostcontrolsFlow (undefined there: its run 43940333168 failed on that); a helper of lane B's splitters22; full suite: e2e/run.mjs changed)
 - `wip/dropship-model` · run 43941962252 (`check/dropship-model` at 3c1400aa; lane A's helper; full suite: content and shared code)
 - `wip/hostgame-friend` · run 43940333168 (`check/hostgame-friend` at f1bc84d3; e2e hostgame: the bots' 15 kills ended the host's match under the flow, so the friend followed into a new session; a helper of lane B's splitters22; full suite: e2e/run.mjs changed)
 
