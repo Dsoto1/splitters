@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_mcdh6svno2zmnrjp",
-      "revision": 10,
-      "contentHash": "sha256:81128707eb159fcb053284e786646a21a56fbf2e5f8e188eabb955984648cb1a",
+      "versionId": "v_bewuojoizbn232ro",
+      "revision": 11,
+      "contentHash": "sha256:606aba1cfdc5b5fd037386813bf895cf8037bd08b3acd64cf22a642b3c87d9e8",
       "schemaVersion": 43,
-      "releasedAt": "2026-11-16T11:44:50.213Z"
+      "releasedAt": "2026-11-16T12:01:44.080Z"
     }
   },
   "classicStructure": {
@@ -51871,9 +51871,9 @@
         -57.25
       ],
       "kind": "prop",
-      "model": "env.conifer.spruce",
+      "model": "env.broadleaf.oak",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
@@ -51885,9 +51885,9 @@
         -57.25
       ],
       "kind": "prop",
-      "model": "env.conifer.spruce",
+      "model": "env.broadleaf.oak",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.75,
       "solid": true,
       "tint": null
     },
