@@ -29,7 +29,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims and the landing lock still live in HANDOFF. This file only lists.
 
 ## In flight
-- S · A · e2e `vehicles` flaky since the driving physics follow-ups (the arc sentry's wind-up, the buggy's 8 m drop) · `wip/vehicles-flow` (a helper of lane A's lead, 2026-11-16)
 - L · B (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 landed 2026-11-14 (the `turned`/`wallRun` parts, plain arch collision, oriented doors); phase 2 landed 2026-11-15 (the Arena Corner tiles and set piece); phase 3 landed 2026-11-15 (gate corner, stair wells, 45° gatehouse tower); phase 4 in progress: Flavius Rule rebuilt in MapMaker (`wip/flavius-octagon-4`; the owner's phase-3 answers: recs).
 
 
@@ -52,6 +51,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Easy wins
 
+- XS · A · e2e `vehicles` "a badly damaged buggy catches fire": the buggy burns out in about 200 ticks while the check waits on wall clock for the page to draw it burning (failed once locally under load; HANDOFF "Landed: the e2e `vehicles` flakes").
 - XS · B · Tests near their timeouts at load 16-25, CPU-bound (flaky-tests helper, 2026-11-15): botRoles route variety, botai strafing aim, debrisGround, zipStream, server.test's first CTF test with four suites at once.
 
 ## Features
@@ -96,6 +96,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-16 · A · e2e `vehicles` flakes root-caused (`wip/vehicles-flow`, green on `check/vehicles-flow` at 5076287d): the arc sentry's wind-up was read against what the page drew (a snapshot behind; on a slow page the whole lock had passed), now judged in match ticks; the buggy's 8 m drop picked up a throttle input still in flight, which air control turned into a nose-up for the whole fall, now it waits for the release to reach the match. Test-only; plus a test that bots engage you once out of the buggy.
 - 2026-11-16 · A · St. John's step 3 (`wip/stjohns-3`, green on `check/stjohns-3` at 39028d1a): Scott Johnston / Hazelwood rebuilt in MapMaker at three floors (8 cells: end stairs, four Dorm Bays a floor, the new Hall Centre with its block forward, Round Corner Turrets, red trim), and every dorm room door slim (1.2 m in a doorway brought in by the piers; Smythe too): set piece options (map format v42), passages for bots through the slim doors. St. John's as played is at 4,068 of 4,096 entities (PLAN 4c).
 - 2026-11-16 · A · Driving physics follow-ups from the owner's first drive (`wip/drive-physics-2`): bots hear a driven vehicle (an engine noise) and turn on it and on its driver once out; the rigid Troop Buggy climbs the kit's stairs (a ray under each tyre's front, a step-up onto treads), carries its speed up steep slopes (6/12/18 m/s up a 50° slab: 5.7 / 11.7 m / over the top, was 3.0 / 5.8 / 8.1 m), no longer freezes when its hull sweep starts wedged, and is lighter (gravity 0.85, softer springs, less inertia, more air control). Numbers: `docs/DRIVING_PHYSICS_PLAN.md`, "After the owner's first drive".
 - 2026-11-16 · A · e2e `hostgame` / `dedicatedhost` red after the admin's restart (`wip/hostflows-fix`): not the restart, but pages frozen 20 s or more building shaders in software rendering; the Host Service and a friend now give a stalled page 60 s while its connection is up, a dedicated host's silent link reconnects after 30 s (a lost close left a page on a dead match), and `window.__cs` between sessions keeps its readers (HANDOFF Landed note).
