@@ -392,6 +392,28 @@ describe("a player's WebRTC link", () => {
   });
 });
 
+describe("a player's WebRTC link, up while the page is busy", () => {
+  it('reports the peer connection up while it is connected and open, not once closing', () => {
+    const dc = new FakeDc({ z: 1 }) as FakeDc & { peerConnection?: unknown };
+    const state = { connectionState: 'connected' };
+    dc.peerConnection = state;
+    const conn = peerConn(dc);
+    expect(conn.up?.()).toBe(true);
+    state.connectionState = 'disconnected';
+    expect(conn.up?.()).toBe(false);
+    state.connectionState = 'connected';
+    vi.useFakeTimers();
+    try {
+      conn.close(4009, 'no answer');
+      expect(conn.up?.()).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+    // No peer connection to ask (a test double): not up.
+    expect(peerConn(new FakeDc({})).up?.()).toBe(false);
+  });
+});
+
 describe("a player's WebRTC link, closed by the server", () => {
   it('stays open for a last message until the player hangs up, and closes on its own after closeWaitMs', () => {
     vi.useFakeTimers();

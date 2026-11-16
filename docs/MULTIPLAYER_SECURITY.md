@@ -242,7 +242,9 @@ limits joining itself, so one person with many tabs can't fill a game:
 - **Waiting connections:** at most 64 that haven't said hello (each has 5 s).
 - **Idle:** idle 90 s → a bot plays for them (AWAY); still idle after 10
   minutes (`IDLE_KICK_MINUTES`, 0 off) → removed, freeing the place.
-  A connection silent for 20 s is closed (its place kept 60 s).
+  A connection silent for 20 s is closed (its place kept 60 s); 60 s while
+  loading, or while a WebRTC link's peer connection is still up (a stalled
+  page, not a gone one: `silentLimitMs`, `PlayerConn.up`).
 - **Relays:** coturn's per-credential and total quotas and bandwidth caps
   (section 3); relay credentials only for live games, per address and game.
 
