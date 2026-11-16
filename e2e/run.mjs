@@ -2186,11 +2186,11 @@ async function editorThemeViewChecks(browser) {
   const recent = await paint();
   check(allMats.view === 'all' && allMats.heads.length === 0 && allMats.mats.length === allMats.total && recent.heads.join() === 'theme,packs,recent' && recent.mats.at(-1) === 'core.checker' && (await page.evaluate(() => window.__editor.paint.paintStyle.material)) === 'core.checker', `All lists every material; one picked there shows under Recent in This map's themes (${JSON.stringify({ all: allMats.mats.length, total: allMats.total, recent: recent.heads })})`);
 
-  // Ground paint: the map's grounds first (a new terrain is grass), then the others.
+  // Ground paint: the Base chip, then the Ground theme's grounds (a new terrain is Meadow: Grass first), then the others.
   await page.click('#ed-pal-tabs [data-pane="terrain"]');
   await settle();
   const ground = await page.evaluate(() => [...document.getElementById('ed-tr-materials').children].map((c) => c.dataset.ground ?? `# ${c.textContent}`));
-  check(ground[0] === "# This map's grounds" && ground[1] === 'grass' && ground[2] === '# Other grounds' && ground.filter((g) => !g.startsWith('#')).length === 8, `Ground paint lists the map's grounds first (${ground.join(', ')})`);
+  check(ground[0] === 'base' && ground[1] === '# Ground theme: Meadow' && ground[2] === 'core.pbr_grass' && ground.includes('# Other grounds') && ground.filter((g) => !g.startsWith('#')).length === 22, `Ground paint lists the base, then the Ground theme's grounds first, then every other ground (${ground.join(', ')})`);
   await page.evaluate(() => document.querySelector('#ed-tr-materials')?.scrollIntoView({ block: 'center' }));
   await shot('ground');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -2463,7 +2463,7 @@ async function editorPaintChecks(browser) {
   const undone = await doc();
   check(!undone.classicStructure.tiles.find((t) => t.id === 'paint_bars').surfaces && undone.entities.find((e) => e.id === 'paint_blk').material === null, 'undo takes every paint back');
 
-  // Ground paint (Shift+B): the Terrain tool's Paint brush, the ground layers only (no Marble Checker), and it passes
+  // Ground paint (Shift+B): the Terrain tool's Paint brush, the 21 grounds and the base only (no Marble Checker), and it passes
   // under a building.
   await page.keyboard.press('Shift+KeyB');
   await settle();
@@ -2475,9 +2475,9 @@ async function editorPaintChecks(browser) {
     lit: document.getElementById('ed-tb-groundpaint')?.classList.contains('active') ?? false,
     hint: document.getElementById('ed-toolhint').textContent,
   }));
-  check(gp.tool === 'terrain' && gp.brush === 'paint' && gp.grounds.length === 8 && !gp.checker && gp.lit && /^Ground paint/.test(gp.hint), `Shift+B is Ground paint: the ground layers only, no Marble Checker (${JSON.stringify(gp)})`);
+  check(gp.tool === 'terrain' && gp.brush === 'paint' && gp.grounds.length === 22 && !gp.checker && gp.lit && /^Ground paint/.test(gp.hint), `Shift+B is Ground paint: the grounds only, no Marble Checker (${JSON.stringify(gp)})`);
   await shot('ground-paint');
-  await page.evaluate(() => (window.__editor.terrain.terrainMaterial = 'stone'));
+  await page.evaluate(() => (window.__editor.terrain.terrainMaterial = 'core.pbr_rock'));
   const roomBefore = JSON.stringify((await doc()).classicStructure.tiles);
   const cells0 = await page.evaluate(() => window.__editor.doc.terrain.materials.join(''));
   p = await hover(0, 0, 0);
@@ -2664,14 +2664,14 @@ async function editorThemeWarningChecks(browser) {
   await settle();
   await hover(-30, 0, -20);
   const groundCard = await page.evaluate(() => ({ head: document.querySelector('#ed-tip b')?.textContent, text: document.getElementById('ed-tip').textContent, status: document.getElementById('ed-target').textContent }));
-  check(/^Ground · .*main ground/.test(groundCard.head) && /A click does nothing/.test(groundCard.text) && /Ground paint \(Shift\+B\)/.test(groundCard.status), `over bare ground the card names the ground and says a click does nothing (${JSON.stringify(groundCard)})`);
+  check(/^Ground · .*\(Ground theme: /.test(groundCard.head) && /A click does nothing/.test(groundCard.text) && /Ground paint \(Shift\+B\)/.test(groundCard.status), `over bare ground the card names the ground and says a click does nothing (${JSON.stringify(groundCard)})`);
   await shot('cursor-ground');
-  // Ground paint names the ground layer: the main ground, or painted.
+  // Ground paint names the ground: the Ground theme's base, or painted.
   await page.keyboard.press('Shift+KeyB');
   await settle();
   await hover(-30, 0, -20);
   const gp = await page.evaluate(() => ({ head: document.querySelector('#ed-tip b')?.textContent, status: document.getElementById('ed-target').textContent }));
-  check(/^Ground · .*\(the map's main ground\)/.test(gp.head) && /Ground paint · Ground · .*main ground.* · click paints/.test(gp.status), `Ground paint names the ground layer and that it is the main ground (${JSON.stringify(gp)})`);
+  check(/^Ground · .*\(Ground theme: [A-Z]\w+\)/.test(gp.head) && /Ground paint · Ground · .*Ground theme: [A-Z].* · click paints/.test(gp.status), `Ground paint names the ground and that it is the Ground theme's base (${JSON.stringify(gp)})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await context.close();
 }
@@ -2791,7 +2791,107 @@ async function editorTileOptionChecks(browser) {
 async function editorenvFlow(browser) {
   await editorMapTestChecks(browser);
   await editorEnvironmentChecks(browser);
+  await editorGroundThemeChecks(browser);
   await editorSkyWeatherChecks(browser);
+}
+
+/**
+ * The Ground theme (painting Phase 4, map format v45): a new terrain is all base (Meadow, its chip in the top bar);
+ * Packed Snow paints as Packed Snow (its own mesh, no stand-in); Map settings' Ground theme asks first with the
+ * counts (m² that follow, m² painted), Cancel changes nothing, Change moves only the base cells (painted ones stay)
+ * in one undo step, Keep current look keeps every cell; a Structure theme change offers its match as a tick box.
+ */
+async function editorGroundThemeChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-ground-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.on('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await frames(page, 3);
+  const state = () =>
+    page.evaluate(() => {
+      const t = window.__editor.doc.terrain;
+      const meshes = window.__editor.view.scene.meshes.filter((m) => m.name.startsWith('edmap_terrain_') && !m.isDisposed()).map((m) => m.name.slice('edmap_terrain_'.length));
+      return { theme: t.groundTheme, grounds: t.grounds ?? [], base: t.materials.filter((m) => m === 0).length, cells: t.materials.length, painted: t.materials.filter((m) => m > 0).length, snow: t.materials.filter((m) => m > 0 && t.grounds[m - 1] === 'core.packed_snow').length, spacing: t.spacing, meshes, chip: document.getElementById('ed-ground-chip-name').textContent, undo: window.__editor.history.undoLabel };
+    });
+  const s0 = await state();
+  check(s0.theme === 'ground.meadow' && s0.base === s0.cells && s0.chip === 'Meadow' && s0.meshes.includes('grass'), `a new terrain is all the base of its Ground theme, Meadow, shown on the top bar's chip (${JSON.stringify({ ...s0, meshes: s0.meshes.join() })})`);
+  // Packed Snow with Ground paint: added to the map's grounds and drawn as itself.
+  await page.keyboard.press('Shift+KeyB');
+  await page.click('#ed-tr-materials [data-ground="core.packed_snow"]');
+  await page.evaluate(() => {
+    const v = window.__editor.view;
+    v.yaw = 0;
+    v.focus({ x: 10, y: 0, z: 10 });
+    v.dolly(-20);
+    window.__editor.setBrushRadius(6);
+  });
+  await frames(page, 3);
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 10, y: 0, z: 10 }));
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 2);
+  await page.mouse.down();
+  await frames(page, 2);
+  await page.mouse.up();
+  await frames(page, 3);
+  const s1 = await state();
+  check(s1.grounds.includes('core.packed_snow') && s1.snow > 0 && s1.meshes.includes('core.packed_snow') && /Packed Snow/.test(s1.undo ?? ''), `Packed Snow paints as Packed Snow: in the map's grounds, its own terrain mesh, one undo step (${JSON.stringify({ ...s1, meshes: s1.meshes.join() })})`);
+  await shot('packed-snow');
+  // Map settings' Ground theme: the warning, with the counts.
+  await openMapSettings(page);
+  const note = await page.evaluate(() => document.getElementById('ed-prop-ground-note')?.textContent ?? '');
+  check(/^base Grass · 2 grounds$/.test(note), `Map settings names the base and how many grounds the map uses (${note})`);
+  await page.selectOption('#ed-prop-ground-theme', 'ground.desert');
+  await page.waitForSelector('#ed-ground-dialog', { timeout: T(5000) });
+  const dlg = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('#ed-ground-dialog [data-count]')].map((l) => [l.dataset.count, l.textContent])));
+  const m2 = (n) => Math.round(n).toLocaleString('en-GB');
+  const want = { follows: m2(s1.base * s1.spacing * s1.spacing), painted: m2(s1.painted * s1.spacing * s1.spacing) };
+  check(dlg.follows?.includes(`${want.follows} m² of ground`) && /from Grass to Desert Sand/.test(dlg.follows) && dlg.painted?.includes(`${want.painted} m² you painted`) && /border/.test(dlg.border ?? ''), `the Ground theme warning counts the ground that follows and the ground painted (${JSON.stringify({ dlg, want })})`);
+  await shot('warning');
+  await page.click('#ed-ground-cancel');
+  const s2 = await state();
+  check(s2.theme === 'ground.meadow' && s2.undo === s1.undo && (await page.inputValue('#ed-prop-ground-theme')) === 'ground.meadow', `Cancel changes nothing and puts the select back (${JSON.stringify({ theme: s2.theme, undo: s2.undo })})`);
+  await page.selectOption('#ed-prop-ground-theme', 'ground.desert');
+  await page.waitForSelector('#ed-ground-dialog', { timeout: T(5000) });
+  await page.click('#ed-ground-change');
+  await frames(page, 3);
+  const s3 = await state();
+  check(s3.theme === 'ground.desert' && s3.snow === s1.snow && s3.base === s1.base && s3.meshes.includes('sand') && !s3.meshes.includes('grass') && s3.meshes.includes('core.packed_snow') && s3.chip === 'Desert' && s3.undo === 'Change Ground theme', `Change moves the base cells to Desert Sand and the painted Packed Snow stays (${JSON.stringify({ ...s3, meshes: s3.meshes.join() })})`);
+  await shot('changed');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 3);
+  const s4 = await state();
+  check(s4.theme === 'ground.meadow' && s4.meshes.includes('grass') && s4.snow === s1.snow, `one undo puts the Ground theme back (${JSON.stringify({ theme: s4.theme, meshes: s4.meshes.join() })})`);
+  // Keep current look: the theme changes, every cell keeps its ground (the base cells become painted Grass).
+  await openMapSettings(page);
+  await page.selectOption('#ed-prop-ground-theme', 'ground.snowfield');
+  await page.waitForSelector('#ed-ground-dialog', { timeout: T(5000) });
+  await page.click('#ed-ground-keep');
+  await frames(page, 3);
+  const s5 = await state();
+  check(s5.theme === 'ground.snowfield' && s5.base === 0 && s5.grounds.includes('core.pbr_grass') && s5.meshes.includes('grass') && !s5.meshes.includes('snow') && s5.snow === s1.snow, `Keep current look changes the theme and keeps every cell's ground (${JSON.stringify({ ...s5, meshes: s5.meshes.join() })})`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  // A Structure theme change offers its matching Ground theme as a tick box (off); ticked, both change in one step.
+  await openMapSettings(page);
+  await page.selectOption('#ed-prop-theme', 'core.desert_city');
+  await page.waitForSelector('#ed-theme-dialog', { timeout: T(5000) });
+  const tick = await page.evaluate(() => ({ text: document.getElementById('ed-theme-ground-row')?.textContent ?? '', on: document.getElementById('ed-theme-ground')?.checked }));
+  check(/Also change the Ground theme to Desert \(Desert City's match\): [\d,]+ m² of ground follows it/.test(tick.text) && tick.on === false, `the Structure theme warning offers the matching Ground theme, unticked (${JSON.stringify(tick)})`);
+  await shot('structure-tick');
+  await page.check('#ed-theme-ground');
+  await page.click('#ed-theme-change');
+  await frames(page, 3);
+  const both = await page.evaluate(() => ({ theme: window.__editor.doc.classicStructure.theme, ground: window.__editor.doc.terrain.groundTheme, undo: window.__editor.history.undoLabel }));
+  await page.keyboard.press('Control+KeyZ');
+  const back = await page.evaluate(() => ({ theme: window.__editor.doc.classicStructure.theme, ground: window.__editor.doc.terrain.groundTheme }));
+  check(both.theme === 'core.desert_city' && both.ground === 'ground.desert' && back.theme !== 'core.desert_city' && back.ground === 'ground.meadow', `ticked, the Structure and Ground themes change in one undo step (${JSON.stringify({ both, back })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -3150,8 +3250,9 @@ async function editorEnvironmentChecks(browser) {
     const t = ed.doc.terrain;
     const xOf = (i) => t.origin[0] + (i % t.cols) * t.spacing;
     const heights = t.heights.map((h, i) => Math.round(Math.min(24, Math.max(0, xOf(i) * 0.6)) * 100));
-    const materials = t.materials.map((m, i) => (t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing > 0 && t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing < 40 ? 2 : m));
-    ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights, materials } });
+    // Painted Mossy Rock (the stone kind) on the slope: the terrain's own ground 1.
+    const materials = t.materials.map((m, i) => (t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing > 0 && t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing < 40 ? 1 : m));
+    ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights, materials, grounds: ['core.pbr_rock'] } });
     ed.history.execute('Spawn', { kind: 'addEntities', entities: [{ id: 'spawn_env', kind: 'spawn', position: [-20, 0, 0], yaw: 0, faction: null }] });
     ed.history.execute('Route', { kind: 'setPaths', before: ed.doc.paths ?? null, after: [{ id: 'route_env', points: [[-45, 0, 12], [-5, 0, 12]], uses: ['route'], style: 'dirt', width: 3, closed: false, lay: false }] });
   });
@@ -6214,6 +6315,89 @@ async function physicsfxFlow(browser) {
   await page.context().close();
   await glassChecks(browser);
   await destructionChecks(browser);
+  await beamMuzzleChecks(browser);
+}
+
+/**
+ * Beams stay on the muzzle (owner, 2026-11-16: the freeze gun's beam "glides around" while you move): frame by frame
+ * on the page's frame clock (60 a game second), strafing left and right, turning and jumping with the trigger held,
+ * how far each drawn beam's start is from the muzzle as drawn that frame. The freeze ray in first person and third
+ * person (Reduce flashing on, as by default: its steady beam), and the laser rifle with Reduce flashing off (a new
+ * beam every other tick). Before the fix they were 20-90 cm off (game/muzzleAnchor.ts).
+ */
+async function beamMuzzleChecks(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 480, height: 270 } });
+  await ctx.addInitScript(installFrameClock);
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__match, null, { timeout: T(120000) });
+  // Both guns in hand once, so their models are in before the page's clock stops (models load in real time).
+  for (const id of ['core.laser_rifle', 'core.freeze_ray']) {
+    await page.evaluate((w) => window.__give(w), id);
+    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
+  }
+  // Third person first: your character's gun in its hands loads in real time too.
+  await page.keyboard.press('KeyH');
+  const tpOn = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
+  await page.evaluate(() => window.__frameClock.freeze());
+  /** `frames` frames of strafing, turning and jumping, firing: the worst and median start-to-muzzle distance (cm). */
+  const run = (o) =>
+    page.evaluate(({ third, frames }) => {
+      const cs = window.__cs;
+      const v = cs.view;
+      const yaw0 = cs.input.yaw;
+      const ds = [];
+      for (let f = 0; f < frames; f++) {
+        window.__autoInput = { right: Math.floor(f / 40) % 2 ? -1 : 1, forward: 0, buttons: 2 | (f % 50 === 5 ? 1 : 0) };
+        cs.input.yaw = yaw0 + Math.sin(f / 25) * 0.6;
+        window.__frameClock.step(1000 / 60);
+        const m = third ? v.muzzleOf(cs.slot) : v.localMuzzle();
+        if (!m || f < 15) continue;
+        const starts = [];
+        for (const key of ['beam:me', `s${cs.slot}`]) {
+          const s = v.steadyArcs.start(key);
+          if (s) starts.push(s);
+        }
+        for (const fx of v.effects) {
+          const mesh = fx.mesh;
+          if (mesh.name !== 'beam' || mesh.isDisposed() || !mesh.isEnabled()) continue;
+          mesh.computeWorldMatrix(true);
+          const e = mesh.getBoundingInfo().boundingBox.extendSize.y;
+          const w = mesh.getWorldMatrix().m;
+          starts.push({ x: -e * w[4] + w[12], y: -e * w[5] + w[13], z: -e * w[6] + w[14] });
+        }
+        if (starts.length) ds.push(Math.max(...starts.map((s) => Math.hypot(s.x - m.x, s.y - m.y, s.z - m.z))));
+      }
+      window.__autoInput = { right: 0, forward: 0, buttons: 0 };
+      for (let f = 0; f < 30; f++) window.__frameClock.step(1000 / 60);
+      ds.sort((a, b) => a - b);
+      return { frames: ds.length, worst: ds.length ? +(ds[ds.length - 1] * 100).toFixed(1) : null, median: ds.length ? +(ds[ds.length >> 1] * 100).toFixed(1) : null };
+    }, o);
+  const stepUntil = (fn, arg) => page.evaluate(([src, arg]) => { const ok = eval(src); for (let i = 0; i < 120 && !ok(arg); i++) window.__frameClock.step(1000 / 60); return ok(arg); }, [fn.toString(), arg]);
+  const ok = (r) => r.frames >= 60 && r.worst !== null && r.worst < 3;
+  const tp = await run({ third: true, frames: 150 });
+  check(tpOn && ok(tp), `the freeze ray's beam stays on your character's gun in third person while you strafe, turn and jump (${tpOn ? JSON.stringify(tp) : 'no third person'} cm)`);
+  await page.keyboard.press('KeyH');
+  const fpOn = await stepUntil(() => !window.__cs.thirdPerson() && !!window.__cs.view.localMuzzle());
+  const fp = await run({ third: false, frames: 150 });
+  check(fpOn && ok(fp), `the freeze ray's beam stays on the muzzle in first person (Reduce flashing on: ${fpOn ? JSON.stringify(fp) : 'no first person'} cm)`);
+  await page.evaluate(() => window.__give('core.laser_rifle'));
+  const laserIn = await stepUntil((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, 'core.laser_rifle');
+  const setFlashing = (on) =>
+    page.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  await setFlashing(false);
+  const laser = await run({ third: false, frames: 150 });
+  await setFlashing(true);
+  check(laserIn && ok(laser), `the laser rifle's beams (a new one every other tick, Reduce flashing off) start on the muzzle while you move (${laserIn ? JSON.stringify(laser) : 'no laser'} cm)`);
+  check(errors.length === 0, `no page errors in the beam checks (${errors.join('; ')})`);
+  await ctx.close();
 }
 
 /**

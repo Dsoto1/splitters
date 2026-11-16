@@ -4,7 +4,7 @@
  * atlas each piece's preview lives in. Plain data, no Babylon, so the atlas
  * tool (tools/content/palette-items.ts) and the tests read the same rules.
  */
-import { CORE_PROPS, DEFAULT_METAL, ENV_SPECIES, KIT_ALIASES, MOUNT_DEFS, MOUNT_MODELS, STYLE_PACKS, builtInSetPieces, coreCatalog, envModelFile, isTileOptionTwin, stylePackHas, type PropDefinition, type SetPieceDefinition, type StylePack, type ThemeDefinition } from '@tiletrigger/shared';
+import { CORE_PROPS, DEFAULT_METAL, ENV_SPECIES, KIT_ALIASES, MOUNT_DEFS, MOUNT_MODELS, STYLE_PACKS, builtInSetPieces, coreCatalog, envModelFile, isTileOptionTwin, stylePackHas, cellGround, cellPainted, terrainGroundTheme, type TerrainData, type PropDefinition, type SetPieceDefinition, type StylePack, type ThemeDefinition } from '@tiletrigger/shared';
 
 /** Palette categories: each tab has one, with one colour used on the tab, its headings and a thin accent on its pieces. */
 export const PALETTE_CATEGORIES = {
@@ -319,19 +319,23 @@ export function themePaintList(theme: Pick<ThemeDefinition, 'slots'> | undefined
 }
 
 /**
- * Ground paint's order (plan: "the Ground theme's list first, then the other Ground materials"; until the Ground theme
- * comes, Phase 4): the grounds this map's terrain has, most cells first (so the map's main ground leads), then those
- * the Structure theme's packs use (their `materials` hold the ground's surface), then the rest, each in its own order.
- * Returns the order and how many lead (the map's and the theme's), for the list's two headings.
+ * Ground paint's order (plan: "the Ground theme's list first, then the other Ground materials"; painting Phase 4):
+ * the terrain's Ground theme's grounds (its base first), then the grounds this terrain has painted that the theme
+ * doesn't list (most cells first), then every other ground in its own order. Returns the order and how many lead
+ * (the theme's and the map's), for the list's two headings. No terrain: every ground in its own order.
  */
-export function themeGroundOrder<G extends string>(grounds: readonly G[], cells: ArrayLike<number> | null, surface: (g: G) => string, packs: readonly StylePack[]): { order: G[]; lead: number } {
-  const counts = new Map<number, number>();
-  if (cells) for (let i = 0; i < cells.length; i++) counts.set(cells[i]!, (counts.get(cells[i]!) ?? 0) + 1);
-  const used = grounds.map((g, i) => ({ g, n: counts.get(i) ?? 0 })).filter((x) => x.n > 0).sort((a, b) => b.n - a.n).map((x) => x.g);
-  const packMats = new Set(packs.flatMap((p) => p.materials));
-  const suits = grounds.filter((g) => !used.includes(g) && packMats.has(surface(g)));
-  const lead = [...used, ...suits];
-  return { order: [...lead, ...grounds.filter((g) => !lead.includes(g))], lead: lead.length };
+export function themeGroundOrder(all: readonly string[], terrain: Pick<TerrainData, 'materials' | 'groundTheme' | 'grounds'> | null): { order: string[]; lead: number } {
+  if (!terrain) return { order: [...all], lead: 0 };
+  const theme = terrainGroundTheme(terrain).grounds.filter((g) => all.includes(g));
+  const counts = new Map<string, number>();
+  for (let i = 0; i < terrain.materials.length; i++) {
+    if (!cellPainted(terrain, i)) continue;
+    const g = cellGround(terrain, i);
+    counts.set(g, (counts.get(g) ?? 0) + 1);
+  }
+  const painted = [...counts].filter(([g]) => !theme.includes(g) && all.includes(g)).sort((a, b) => b[1] - a[1]).map(([g]) => g);
+  const lead = [...theme, ...painted];
+  return { order: [...lead, ...all.filter((g) => !lead.includes(g))], lead: lead.length };
 }
 
 /** Scenario palette entries (Objects & Logic tab) by sub-group; game-mode objects, lights and NPC spawners have their own tabs. */

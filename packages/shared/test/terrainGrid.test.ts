@@ -14,6 +14,7 @@ import {
   MAX_TERRAIN_VERTS,
   Terrain,
   TERRAIN_MATERIALS,
+  TERRAIN_SURFACES,
   changeGridCommand,
   loadMap,
   migrateMapDocument,
@@ -45,7 +46,9 @@ function coastTerrain(): TerrainData {
     }
   }
   const w = t.cols - 1;
-  t.materials = t.materials.map((_, i) => (i % w < w / 3 ? TERRAIN_MATERIALS.indexOf('sand') : i % w < (2 * w) / 3 ? TERRAIN_MATERIALS.indexOf('stone') : 0));
+  // Painted Desert Sand, painted Mossy Rock, the base.
+  t.grounds = [TERRAIN_SURFACES.sand, TERRAIN_SURFACES.stone];
+  t.materials = t.materials.map((_, i) => (i % w < w / 3 ? 1 : i % w < (2 * w) / 3 ? 2 : 0));
   t.foliage = t.materials.map((_, i) => (Math.floor(i / w) % 5));
   return t;
 }
@@ -185,7 +188,7 @@ describe('Change grid: resampling', () => {
     const counts = (vals: number[]) => TERRAIN_MATERIALS.map((_, k) => vals.filter((v) => v === k).length);
     const before = counts(t.materials);
     const after = counts(coarse.materials);
-    for (const k of [0, TERRAIN_MATERIALS.indexOf('sand'), TERRAIN_MATERIALS.indexOf('stone')]) expect(after[k]! / coarse.materials.length).toBeCloseTo(before[k]! / t.materials.length, 1);
+    for (const k of [0, 1, 2]) expect(after[k]! / coarse.materials.length).toBeCloseTo(before[k]! / t.materials.length, 1);
     // Plants following the ground (no painted layer) stay that way.
     expect(resampleTerrain({ ...t, foliage: [] }, 1.25).foliage).toEqual([]);
   });

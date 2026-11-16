@@ -1,4 +1,4 @@
-import { DEFAULT_TERRAIN_VERTS, TERRAIN_MATERIALS, smoothGrid, type TerrainData, type TerrainMaterial } from '@tiletrigger/shared';
+import { DEFAULT_GROUND_THEME, DEFAULT_TERRAIN_VERTS, cellKind, smoothGrid, type TerrainData } from '@tiletrigger/shared';
 
 /**
  * Terrain heights from a height grid file (MapMaker → Terrain, owner only):
@@ -137,9 +137,10 @@ export function gridAreaHeightAt(g: HeightGrid, x: number, z: number, reach: num
  * terrain. `smoothing` (metres, default none) runs a Gaussian of that sigma
  * over the file first (smoothGrid: small bumps go, slopes keep their
  * gradient). Ground paint and plants are kept from `current` where it
- * reaches, the rest is `ground`. Missing data takes the nearest height there is.
+ * reaches (and its Ground theme and grounds), the rest is the base of the Ground
+ * theme (`current`'s, else `groundTheme`). Missing data takes the nearest height there is.
  */
-export function terrainFromHeightGrid(g: HeightGrid, opts: { current?: TerrainData | null; ground?: TerrainMaterial; datum?: number | null; smoothing?: number } = {}): HeightGridTerrain {
+export function terrainFromHeightGrid(g: HeightGrid, opts: { current?: TerrainData | null; groundTheme?: string; datum?: number | null; smoothing?: number } = {}): HeightGridTerrain {
   if (opts.smoothing && opts.smoothing > 0) g = { ...g, values: smoothGrid(g.values, g.cols, g.rows, opts.smoothing / g.cell) };
   const w = (g.cols - 1) * g.cell;
   const d = (g.rows - 1) * g.cell;
@@ -166,10 +167,12 @@ export function terrainFromHeightGrid(g: HeightGrid, opts: { current?: TerrainDa
     }
   }
   if (missing) fillMissing(heights, cols, rows, Math.round((low - datum) * 100));
-  const ground = TERRAIN_MATERIALS.indexOf(opts.ground ?? 'grass');
   const cur = opts.current ?? null;
   const cells = (cols - 1) * (rows - 1);
-  const materials: number[] = new Array(cells).fill(ground);
+  // Unreached cells are the base (0): they follow the Ground theme.
+  const materials: number[] = new Array(cells).fill(0);
+  const groundTheme = cur?.groundTheme ?? opts.groundTheme ?? DEFAULT_GROUND_THEME;
+  const grounds = cur?.grounds ? [...cur.grounds] : [];
   const foliage: number[] = cur?.foliage.length ? new Array(cells).fill(-1) : [];
   if (cur) {
     for (let r = 0; r < rows - 1; r++) {
@@ -184,9 +187,10 @@ export function terrainFromHeightGrid(g: HeightGrid, opts: { current?: TerrainDa
     }
   }
   // Cells the old terrain didn't reach: plants follow their ground (grass grows on grass and moss).
-  for (let i = 0; i < foliage.length; i++) if (foliage[i]! < 0) foliage[i] = materials[i] === 0 || materials[i] === TERRAIN_MATERIALS.indexOf('moss') ? 2 : 0;
+  const ground = { materials, groundTheme, grounds };
+  for (let i = 0; i < foliage.length; i++) if (foliage[i]! < 0) foliage[i] = cellKind(ground, i) === 'grass' || cellKind(ground, i) === 'moss' ? 2 : 0;
   return {
-    terrain: { origin: [round2(g.x0), round2(g.z0)], spacing: sp, cols, rows, baseY, heights, materials, boundary: cur?.boundary ?? true, foliage },
+    terrain: { origin: [round2(g.x0), round2(g.z0)], spacing: sp, cols, rows, baseY, heights, materials, groundTheme, grounds, boundary: cur?.boundary ?? true, foliage },
     datum,
     resampled: thinned,
   };

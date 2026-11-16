@@ -16,7 +16,7 @@ import { coreMaterials, coreThemes, SURFACE_SLOTS, type SurfaceSlot } from '../m
 import { SET_PIECE_MATERIAL_ROLES, SET_PIECE_ROLES, type MapDocument, type MapEntity, type SetPieceDefinition, type SetPiecePlacement, type SetPieceRoleValues, type SurfaceStyle, type TilePlacement, type TileSurfaces } from '../map/schema.ts';
 import { expandSetPieces, piecesFor, placementPack, setPieceParts, type SetPieceExpansion, type SetPieceLibrary } from '../map/setPieces.ts';
 import { faceSlot, resolveSurface, styleKey, type ResolvedStyle } from '../map/surfaces.ts';
-import { TERRAIN_MATERIALS, type TerrainData, type TerrainMaterial } from '../map/terrain.ts';
+import { cellGround, cellPainted, groundBase, groundIndex, groundThemeDef, terrainGroundTheme, type TerrainData } from '../map/terrain.ts';
 import type { EditCommand } from './commands.ts';
 import { partRole, type StructureTarget } from './paintTargets.ts';
 
@@ -402,28 +402,15 @@ export function surfaceLayer(doc: MapDocument, library: SetPieceLibrary, target:
 
 // ---------------------------------------------------------------- the ground
 
-/** Ground paint's cursor: the ground layer under it and whether it is the map's base ground or painted. */
+/** Ground paint's cursor: the ground under it, the map's base ground (its Ground theme's) and whether the cell is painted. */
 export interface GroundLayer {
-  material: TerrainMaterial;
-  /** The map's base ground: its main ground, the most common layer (Phase 4 makes it the Ground theme's base). */
-  base: TerrainMaterial;
+  /** The ground the cell shows (a material id). */
+  material: string;
+  /** The base ground (the Ground theme's), a material id. */
+  base: string;
+  /** The Ground theme's id. */
+  theme: string;
   painted: boolean;
-}
-
-const baseCache = new WeakMap<readonly number[], TerrainMaterial>();
-
-/** The map's base ground: the layer most of its cells are (MapMaker's "main ground"; the first such, on a tie). */
-export function baseGround(t: Pick<TerrainData, 'materials'>): TerrainMaterial {
-  const hit = baseCache.get(t.materials);
-  if (hit) return hit;
-  const counts = new Map<number, number>();
-  for (const m of t.materials) counts.set(m, (counts.get(m) ?? 0) + 1);
-  let best = 0;
-  let most = -1;
-  for (const [m, n] of counts) if (n > most) [best, most] = [m, n];
-  const base = TERRAIN_MATERIALS[best] ?? 'grass';
-  baseCache.set(t.materials, base);
-  return base;
 }
 
 /** The ground layer at a point (null: off the terrain). */
@@ -431,7 +418,52 @@ export function groundLayerAt(t: TerrainData, x: number, z: number): GroundLayer
   const c = Math.floor((x - t.origin[0]) / t.spacing);
   const r = Math.floor((z - t.origin[1]) / t.spacing);
   if (c < 0 || r < 0 || c >= t.cols - 1 || r >= t.rows - 1) return null;
-  const material = TERRAIN_MATERIALS[t.materials[r * (t.cols - 1) + c] ?? 0] ?? 'grass';
-  const base = baseGround(t);
-  return { material, base, painted: material !== base };
+  const i = r * (t.cols - 1) + c;
+  return { material: cellGround(t, i), base: groundBase(t), theme: terrainGroundTheme(t).id, painted: cellPainted(t, i) };
+}
+
+/** What a Ground theme change would do (the warning's counts): the ground area that follows it, and what stays. */
+export interface GroundThemeImpact {
+  from: string;
+  to: string;
+  /** The base ground before and after (material ids). */
+  baseFrom: string;
+  baseTo: string;
+  /** Square metres of ground that follow the theme (unpainted cells): they change when the bases differ. */
+  followsM2: number;
+  /** Square metres you painted: they stay. */
+  paintedM2: number;
+  /** Whether the ground past the border follows (the map has no backdrop of its own). */
+  borderFollows: boolean;
+}
+
+export function groundThemeImpact(doc: Pick<MapDocument, 'terrain' | 'backdrop'>, to: string): GroundThemeImpact | null {
+  const t = doc.terrain;
+  if (!t) return null;
+  const cell = t.spacing * t.spacing;
+  let follows = 0;
+  for (let i = 0; i < t.materials.length; i++) if (!cellPainted(t, i)) follows++;
+  const from = terrainGroundTheme(t).id;
+  return { from, to, baseFrom: groundBase(t), baseTo: groundThemeDef(to).base, followsM2: follows * cell, paintedM2: (t.materials.length - follows) * cell, borderFollows: !doc.backdrop };
+}
+
+/** Whether the change would look different (the bases differ and some ground follows the theme). */
+export const groundImpactChanges = (i: GroundThemeImpact | null): boolean => !!i && i.baseFrom !== i.baseTo && i.followsM2 > 0;
+
+/** The terrain on Ground theme `to`, every cell as it shows now unless it follows the theme ("Keep current look": the base cells painted the old base). Null: the list is full. */
+export function groundThemeTerrain(t: TerrainData, to: string, keep: boolean): TerrainData | null {
+  if (!keep) return { ...t, groundTheme: to };
+  const slot = groundIndex(t, groundBase(t));
+  if (!slot) return null;
+  const k = slot.value;
+  const materials = slot.terrain.materials.map((m, i) => (cellPainted(slot.terrain, i) ? m : k));
+  return { ...slot.terrain, materials, groundTheme: to };
+}
+
+/** The Ground theme change as one command (undo puts the terrain back). Null: no terrain, or Keep with the list full. */
+export function setGroundThemeCommand(doc: Pick<MapDocument, 'terrain'>, to: string, keep = false): EditCommand | null {
+  const t = doc.terrain;
+  if (!t) return null;
+  const after = groundThemeTerrain(t, to, keep);
+  return after ? { kind: 'setTerrain', before: t, after } : null;
 }

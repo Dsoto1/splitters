@@ -225,6 +225,7 @@
         <button id="ed-view-btn" type="button" title="View: grid, full grid, overlaps, the plan view and the map layers (MapMaker only, not saved)"><span>View</span> <span aria-hidden="true">▾</span></button>
         <select id="ed-snap" title="Snap for spawns, items, objects and props (hold Ctrl while placing for none)"><option value="fine">Snap 25 cm</option><option value="normal" selected>Snap 50 cm</option><option value="coarse">Snap 1 m</option><option value="off">Snap off</option></select>
         <button id="ed-theme-chip" class="ed-pick ed-chip" type="button" aria-controls="ed-map-settings" title="Structure theme: change it in Map settings"><span class="wide">Structure theme</span><b id="ed-theme-chip-name">Prototype</b></button>
+        <button id="ed-ground-chip" class="ed-pick ed-chip" type="button" aria-controls="ed-map-settings" title="Ground theme: change it in Map settings"><span class="wide">Ground theme</span><b id="ed-ground-chip-name">Meadow</b></button>
         <select id="ed-bots" title="Bots in TEST"></select>
         <select id="ed-skill" title="Bot skill in TEST"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select>
         <button id="ed-test-here" title="Play from here: a test match with you standing below the camera, facing where it looks (Shift+F5)">▶ <span class="wide">Here</span></button>
@@ -322,7 +323,7 @@
               <label class="stack">Width (m)<input id="ed-tr-new-w" type="number" min="32" max="400" step="4" placeholder="size" /></label>
               <label class="stack">Depth (m)<input id="ed-tr-new-d" type="number" min="32" max="400" step="4" placeholder="size" /></label>
             </div>
-            <label class="stack">Ground<select id="ed-tr-new-ground"></select></label>
+            <label class="stack" title="The base ground every cell starts as (and follows until you paint it)">Ground theme<select id="ed-tr-new-ground"></select></label>
             <button id="ed-tr-new" class="primary">Create terrain</button>
           </div>
           <div id="ed-tr-edit" hidden>
@@ -339,10 +340,10 @@
             <label class="check" title="Ground under blocks standing on it (and 1.5 m round them) stays as it is, so buildings, walls and pads don't float or sink"><input id="ed-tr-smooth-hold" type="checkbox" checked /> Keep the ground under blocks</label>
             <div class="sub-h">Ground paint</div>
             <div id="ed-tr-materials" class="mats"></div>
-            <button id="ed-tr-cliffs">Paint steep slopes as stone</button>
-            <div class="ed-tr-swap" title="Swap the ground the terrain is mostly made of for another material; what you painted by hand stays">
-              <label class="stack">Main ground<select id="ed-tr-base"></select></label>
-              <button id="ed-tr-base-set">Change</button>
+            <button id="ed-tr-cliffs">Paint steep slopes as rock</button>
+            <div class="ed-tr-swap" title="The Ground theme: the base ground every cell you haven't painted shows. It is changed in Map settings, which says first what would change; what you painted stays">
+              <div class="ed-note" id="ed-tr-theme"></div>
+              <button id="ed-tr-theme-set">Change…</button>
             </div>
             <div class="sub-h">Plants</div>
             <div id="ed-tr-foliage" class="seg"></div>
@@ -443,7 +444,7 @@
         <h2>New map</h2>
         <p class="ed-note">Start on open ground in the size you want, or in the sky (no terrain: build floating platforms). Terrain can be added or removed later in Environment → Terrain.</p>
         <div id="ed-new-sizes" class="ed-new-sizes" role="radiogroup" aria-label="Map size"></div>
-        <label class="ed-dialog-field"><span>Ground</span><select id="ed-new-ground"></select></label>
+        <label class="ed-dialog-field"><span>Ground theme</span><select id="ed-new-ground"></select></label>
         <div class="ed-dialog-actions">
           <button id="ed-new-create" class="primary">Create</button>
           <button id="ed-new-cancel">Cancel</button>
