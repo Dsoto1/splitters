@@ -5,6 +5,7 @@
 // its frame. Here: the option swaps exactly the door parts; the doorway is 1.2 m; without the links the rooms are cut
 // off and with them every open room is reached in every turn; a body that follows the route's corners walks in and
 // out; and bots in a match, ordered to hold in a room, get there.
+import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   CORE_BOT_PROFILES,
@@ -35,7 +36,7 @@ import {
   type SetPiecePlacement,
   type Vec3,
 } from '../src/index.ts';
-import { BotFiller, Match, NavWorld, initNavigation } from '../src/match.ts';
+import { BotFiller, Match, NavWorld, initNavigation, mapNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -215,5 +216,20 @@ describe('slim doorways', () => {
     const inside = bots.filter((p) => p.z > 5.95 && p.x > -4 && p.x < 0).length;
     expect(bots.length).toBeGreaterThan(0);
     expect(inside, `bots in the room: ${JSON.stringify(bots.map((p) => [+p.x.toFixed(1), +p.z.toFixed(1)]))}`).toBeGreaterThan(0);
+  });
+
+  it("on St. John's, every open slim door (Smythe Hall, Scott Johnston / Hazelwood) is walked through from a spawn", { timeout: 240_000 }, () => {
+    const r = loadMap(readFileSync(new URL('../../../maps/st_johns.json', import.meta.url), 'utf8'));
+    if (!r.ok) throw new Error('st_johns failed to load');
+    const map = r.map;
+    const { nav } = mapNavigation(map);
+    const spawn = map.entities.find((e) => e.kind === 'spawn' && e.id === 'spawn_2902')!;
+    const from = { x: spawn.position[0], y: spawn.position[1], z: spawn.position[2] };
+    const links = passageLinks(map.entities);
+    // Each door gives two links (in and out): both ends of each, from the spawn.
+    expect(links.length).toBeGreaterThanOrEqual(2 * 40);
+    const far = links.filter((l) => miss(nav, from, l.end) > 1.2).map((l) => [+l.end.x.toFixed(1), +l.end.y.toFixed(1), +l.end.z.toFixed(1)]);
+    expect(far, 'passage ends no route reaches').toEqual([]);
+    nav.destroy();
   });
 });
