@@ -11,11 +11,11 @@
  * content/materials.generated.ts. The types, the pattern and category lists and
  * the lookups stay here; the painters stay in client/materials/patterns.ts.
  */
-import { CORE_MATERIALS, CORE_THEMES, TINT_SWATCHES } from '../content/materials.generated.ts';
+import { CORE_MATERIALS, CORE_THEMES, GROUND_THEMES, TINT_SWATCHES } from '../content/materials.generated.ts';
 import type { BallisticMaterial } from '../sim/gunplay.ts';
 import type { SurfaceTypeId } from '../sim/surfaceTypes.ts';
 
-export { CORE_MATERIALS, CORE_THEMES, TINT_SWATCHES };
+export { CORE_MATERIALS, CORE_THEMES, GROUND_THEMES, TINT_SWATCHES };
 
 /**
  * Paintable surface groups of a Classic Grid tile. `roof` is the top of a room's roof (room option Ceiling: Roof,
@@ -187,6 +187,21 @@ export interface ThemeDefinition {
   /** Default style for each slot when a tile does not override it. */
   slots: Record<ThemeSlot, SurfaceStyleDef> & { metal?: SurfaceStyleDef };
   sky: string;
+  /** Its matching Ground theme (a `ground.*` id): offered with it in the theme warning, and a new terrain's default. */
+  ground: string;
+}
+
+/**
+ * A Ground theme (docs/MAPMAKER_PAINTING_PLAN.md, Phase 4): the base ground every unpainted terrain cell shows, the
+ * grounds MapMaker's Ground paint offers first (the base first), and the Structure themes it suits.
+ */
+export interface GroundThemeDefinition {
+  id: string;
+  displayName: string;
+  /** The ground material an unpainted cell shows. */
+  base: string;
+  grounds: readonly string[];
+  suits: readonly string[];
 }
 
 class Registry<T extends { id: string }> {
@@ -207,5 +222,6 @@ class Registry<T extends { id: string }> {
 
 export const coreMaterials = new Registry(CORE_MATERIALS);
 export const coreThemes = new Registry(CORE_THEMES);
+export const groundThemes = new Registry(GROUND_THEMES);
 export type MaterialCatalog = Registry<MaterialDefinition>;
 export type ThemeCatalog = Registry<ThemeDefinition>;

@@ -188,16 +188,17 @@ dialog { border-top: 3px solid var(--cyan); }
 #ed-plan-bar b { color: var(--cyan); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; padding: 0 4px; }
 .ed-layers { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; margin: 4px 0; }
 .ed-layers label { display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 12px; }
-#ed-theme-chip-name { display: inline-block; max-width: 140px; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; color: var(--text); font: 600 12px var(--font-body); text-transform: none; letter-spacing: 0; }
+#ed-theme-chip-name, #ed-ground-chip-name { display: inline-block; max-width: 140px; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; color: var(--text); font: 600 12px var(--font-body); text-transform: none; letter-spacing: 0; }
 .ed-pal-tabs .tab { padding: 6px 2px; font-size: 10px; letter-spacing: 0.04em; min-width: 0; }
 @media (max-width: 1500px) {
   #ed-top { gap: 5px; }
   #ed-top button, #ed-top .tab { padding: 5px 7px; font-size: 11px; }
-  #ed-theme-chip-name { max-width: 118px; }
+  #ed-theme-chip-name, #ed-ground-chip-name { max-width: 118px; }
 }
 
 /* Terrain tab */
 #ed-tr-materials { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; }
+#ed-tr-materials .ground-base-icon { display: block; font-size: 22px; line-height: 32px; text-align: center; color: var(--cyan); }
 #ed-tr-create button, #ed-tr-edit > button { width: 100%; margin: 6px 0; }
 .ed-note { color: var(--muted); font-size: 11px; line-height: 1.4; margin: 4px 0 8px; }
 /* Map properties → Time of day & weather (skyWeatherSection.ts). */
@@ -344,7 +345,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
   #ed-top .narrow { display: inline; }
   #ed-modes .tab { padding: 5px 7px; }
   #ed-top .ed-file button { padding: 5px 6px; }
-  #ed-theme-chip-name { max-width: 104px; }
+  #ed-theme-chip-name, #ed-ground-chip-name { max-width: 104px; }
   #ed-bots, #ed-skill { max-width: 76px; }
 }
 @media (max-width: 1100px) {
@@ -948,6 +949,8 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-theme-counts li.tw-info::before { content: 'i'; color: var(--info); font-style: italic; }
 .ed-theme-warn .ed-dialog-actions { justify-content: flex-start; }
 .ed-theme-warn button.keep { border-color: rgba(46, 204, 113, 0.6); background: rgba(46, 204, 113, 0.14); }
+.ed-theme-warn .ed-theme-ground { display: block; margin: 8px 0 4px; color: var(--text); font-size: 13px; line-height: 1.4; }
+.ed-theme-warn .ed-theme-ground input { margin-right: 6px; vertical-align: -2px; }
 .ed-theme-warn #ed-theme-keep-note { margin: 12px 0 0; font-size: 12px; }
 
 /* Structure paint's card by the cursor: the layers, base theme → set piece look → your paint, the one shown marked. */

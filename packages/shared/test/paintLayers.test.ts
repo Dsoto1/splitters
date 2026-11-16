@@ -301,12 +301,13 @@ describe('surfaceLayer: the cursor\'s chain', () => {
 });
 
 describe('groundLayerAt: the ground under Ground paint', () => {
-  it('names the layer and whether it is the base (the most common) or painted', () => {
-    const t = newTerrain(16, 2, [0, 0], 'gravel');
-    t.materials[0] = 3;
+  it('names the ground, the Ground theme and its base, and whether the cell is painted', () => {
+    const t = newTerrain(16, 2, [0, 0], 'ground.quarry');
+    t.grounds = ['core.pbr_sand'];
+    t.materials[0] = 1;
     const corner = groundLayerAt(t, t.origin[0] + 0.5, t.origin[1] + 0.5)!;
-    expect(corner).toEqual({ material: 'sand', base: 'gravel', painted: true });
-    expect(groundLayerAt(t, 0.5, 0.5)).toEqual({ material: 'gravel', base: 'gravel', painted: false });
+    expect(corner).toEqual({ material: 'core.pbr_sand', base: 'core.pbr_gravel', theme: 'ground.quarry', painted: true });
+    expect(groundLayerAt(t, 0.5, 0.5)).toEqual({ material: 'core.pbr_gravel', base: 'core.pbr_gravel', theme: 'ground.quarry', painted: false });
     expect(groundLayerAt(t, 1000, 0)).toBeNull();
   });
 });

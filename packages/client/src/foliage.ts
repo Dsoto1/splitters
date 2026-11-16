@@ -6,7 +6,7 @@ import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { BaseTexture } from '@babylonjs/core/Materials/Textures/baseTexture';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { TERRAIN_MATERIALS, groundCutAt, terrainCuts, boxBounds, cellFoliage, envModelFile, getProp, plantShare, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
+import { cellKind, groundCutAt, terrainCuts, boxBounds, cellFoliage, envModelFile, getProp, plantShare, terrainHeightAt, type TerrainData, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { loadGraphicsQuality } from './game/graphicsSettings.ts';
 import { envMaterialsFor } from './environment/envMaterials.ts';
@@ -381,7 +381,8 @@ export function place(t: TerrainData, boxes: readonly WorldBox[], seed: string, 
       if (d >= WATER_DEPTH[0] && d <= WATER_DEPTH[1]) wet = { reed: REEDS_PER_CELL };
     }
     if (!level && !wet) continue;
-    const material = TERRAIN_MATERIALS[t.materials[i]!] ?? 'grass';
+    // The kind of ground it is (terrain.ts cellKind: Packed Snow grows as snow), never its look.
+    const material = cellKind(t, i);
     for (const [kind, amount] of Object.entries(wet ?? recipe(material, level)) as [Kind, number][]) {
       // The generated grass clump is a few blades, not a patch: more of them, the same ground covered.
       const grassy = kind === 'grass' || kind === 'tall';

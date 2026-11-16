@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TERRAIN_MATERIALS, buildMapDecor, buildMapGeometry, mapGroundBores, terrainCuts, withGroundAsPlayed, type TerrainData } from '@tiletrigger/shared';
+import { TERRAIN_SURFACES, buildMapDecor, buildMapGeometry, mapGroundBores, terrainCuts, withGroundAsPlayed, type TerrainData } from '@tiletrigger/shared';
 import { makeMap } from '../../shared/test/helpers.ts';
 import { place } from '../src/foliage.ts';
 
@@ -13,7 +13,7 @@ function flat(): TerrainData {
     rows: cols,
     baseY: 0,
     heights: new Array(cols * cols).fill(0),
-    materials: new Array((cols - 1) * (cols - 1)).fill(TERRAIN_MATERIALS.indexOf('grass')),
+    materials: new Array((cols - 1) * (cols - 1)).fill(0),
     boundary: false,
     foliage: [],
   };
@@ -83,7 +83,8 @@ describe('terrain plants', () => {
   it('grows our generated pebbles on stone, gravel and snow (grey) and on sand (sandy), never Kenney stones', () => {
     for (const [material, want] of [['stone', 'env.rock.pebbles'], ['gravel', 'env.rock.pebbles'], ['snow', 'env.rock.pebbles'], ['sand', 'env.rock.pebbles#1']] as const) {
       const t = flat();
-      t.materials.fill(TERRAIN_MATERIALS.indexOf(material));
+      t.grounds = [TERRAIN_SURFACES[material]];
+      t.materials.fill(1);
       // Sand grows pebbles at level 2 (shrubs and grass above it).
       t.foliage = new Array(t.materials.length).fill(material === 'sand' ? 2 : 4);
       const out = place(t, [], `pebbles-${material}`);

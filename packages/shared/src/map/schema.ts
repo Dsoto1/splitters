@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { MAP_FORMAT, MAP_FORMAT_VERSION, NPC_ROLES, SQUAD_ORDERS } from './mapKeys.ts';
 import { CEILINGS, CORNERS, EDGE_STYLES, FACADES, FLOOR_INSERTS, ROOM_LAYOUTS } from './tileOptions.ts';
-import { MAX_TERRAIN_VERTS, TERRAIN_MATERIALS } from './terrain.ts';
+import { MAX_GROUNDS, MAX_TERRAIN_VERTS } from './terrain.ts';
 import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
 import { BORDER_STYLES } from './border.ts';
 import { PRECIPITATION } from './weather.ts';
@@ -848,14 +848,24 @@ export const Terrain = z
     rows: z.number().int().min(2).max(MAX_TERRAIN_VERTS),
     baseY: z.number().finite().default(0),
     heights: z.array(z.number().int().min(-5000).max(20000)),
-    materials: z.array(z.number().int().min(0).max(TERRAIN_MATERIALS.length - 1)),
+    /** 0: the base (the Ground theme's); k: painted with grounds[k − 1] (map format v45). */
+    materials: z.array(z.number().int().min(0).max(MAX_GROUNDS)),
+    /** The Ground theme (content/materials.json groundThemes); absent: terrain.ts DEFAULT_GROUND_THEME. */
+    groundTheme: z.string().min(1).max(64).optional(),
+    /** The map's own grounds (ground material ids) that painted cells name. */
+    grounds: z.array(z.string().min(1).max(64)).max(MAX_GROUNDS).optional(),
     boundary: z.boolean().default(true),
     /** Plant cover per cell, 0 (bare) to 4 (lush, with bushes); empty = chosen from each cell's material. */
     foliage: z.array(z.number().int().min(0).max(4)).default([]),
   })
   .refine((t) => t.heights.length === t.cols * t.rows, 'terrain needs cols × rows heights')
   .refine((t) => t.foliage.length === 0 || t.foliage.length === (t.cols - 1) * (t.rows - 1), 'terrain foliage needs a value for every cell')
-  .refine((t) => t.materials.length === (t.cols - 1) * (t.rows - 1), 'terrain needs a material for every cell');
+  .refine((t) => t.materials.length === (t.cols - 1) * (t.rows - 1), 'terrain needs a material for every cell')
+  .refine((t) => {
+    const n = t.grounds?.length ?? 0;
+    for (const m of t.materials) if (m > n) return false;
+    return true;
+  }, "a terrain cell names a ground the terrain's grounds list doesn't have");
 
 /**
  * The play area's edge: walls round a rectangle (world X/Z), so creators can

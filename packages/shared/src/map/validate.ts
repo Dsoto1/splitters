@@ -1,6 +1,6 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { isCastId } from '../content/botThemes.ts';
-import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
+import { SURFACE_SLOTS, coreMaterials, coreThemes, groundThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { itemCategory } from '../sim/pickupRoll.ts';
 import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
@@ -12,16 +12,16 @@ import { mapGroundBores } from './groundBore.ts';
 import { withPathsLaid } from './paths.ts';
 import { EDGE_STYLE_LABELS, SIDE_DIRS } from './tileOptions.ts';
 import { PLAYER } from '../sim/constants.ts';
-import { terrainHeightAt } from './terrain.ts';
+import { DEFAULT_GROUND_THEME, isGroundMaterial, terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
 import { botHintIssues } from './botHints.ts';
 import { floatingProps, terrainUnderFloors, withGroundAsPlayed } from './settle.ts';
-import { migrateMapDocument, MapMigrationError } from './migrate.ts';
+import { carryReleaseOverGroundLayers, migrateMapDocument, MapMigrationError, withOldGroundEncoding } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
 import { validateScenario } from './validateScenario.ts';
 import { RESOURCE_BUDGETS, resourceBudgetIssues, utf8Length } from './budgets.ts';
-import { carryReleaseOverRaceDrop, releaseCurrent } from './identity.ts';
+import { carryReleaseOverRaceDrop, mapContentHash, releaseCurrent } from './identity.ts';
 import { validateTrack } from './track.ts';
 import { airplaneIssues } from '../sim/airplane.ts';
 import { arcSentryIssues } from '../sim/mounts.ts';
@@ -91,7 +91,15 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
     };
   }
   // A release stamp from before v39 whose map changed only by losing race mode's dead track settings keeps its version.
-  if (migrated.fromVersion < 39) parsed.data = carryReleaseOverRaceDrop(raw, parsed.data);
+  // One from before v45 whose map changed only by v45's ground encoding (groundLayersV45) keeps its version too, and
+  // one from before v39 checks its race settings with the ground put back as it was then.
+  if (migrated.fromVersion < 45) parsed.data = carryReleaseOverGroundLayers(parsed.data);
+  if (migrated.fromVersion < 39 && !releaseCurrent(parsed.data)) {
+    const asOld = withOldGroundEncoding(parsed.data) ?? parsed.data;
+    const carried = carryReleaseOverRaceDrop(raw, asOld);
+    const r = carried.metadata.release;
+    if (carried !== asOld && r) parsed.data = { ...parsed.data, metadata: { ...parsed.data.metadata, release: { ...r, contentHash: mapContentHash(parsed.data) } } };
+  }
   const library = opts.library ?? builtInSetPieces();
   // The map is checked as written (a retired tile is still a tile, and its release hash is the file's); as played a
   // retired tile plays as the set piece that replaced it (setPieceAliases.ts: the piece covers exactly its cells, so
@@ -308,6 +316,11 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
         issues.push({ severity: 'error', code: 'material.unknown', message: `tile ${t.id} uses unknown material "${style.material}"`, targetId: t.id });
       }
     }
+  }
+  // The ground (map format v45): a Ground theme that exists, and grounds that are ground materials (nothing else draws as ground).
+  if (map.terrain) {
+    if (map.terrain.groundTheme && !groundThemes.get(map.terrain.groundTheme)) issues.push({ severity: 'warning', code: 'ground.theme_unknown', message: `unknown Ground theme "${map.terrain.groundTheme}": the ground shows ${DEFAULT_GROUND_THEME}'s base` });
+    for (const g of map.terrain.grounds ?? []) if (!isGroundMaterial(g)) issues.push({ severity: 'error', code: 'material.unknown', message: `the terrain's grounds name "${g}", which is not a ground material` });
   }
   const blocks = map.entities.filter((e) => e.kind === 'block');
   for (const b of blocks) {

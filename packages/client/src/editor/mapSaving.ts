@@ -2,16 +2,15 @@ import {
   emptySelection,
   isRetiredMap,
   newId,
-  TERRAIN_MATERIAL_LABELS,
-  TERRAIN_MATERIALS,
+  DEFAULT_GROUND_THEME,
+  groundThemes,
   type MapDocument,
-  type TerrainMaterial
 } from '@tiletrigger/shared';
 import { loadBuiltInMap, MAP_INDEX } from '../mapIndex.ts';
 import { builtInNewerThanPublished, publishedMaps } from '../publishedMaps.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $, button, escapeHtml } from './editorDom.ts';
-import { NEW_MAP_SIZES, SHIPPED_IDS, STARTER_TERRAIN, starterMap } from './editorParts.ts';
+import { NEW_MAP_SIZES, SHIPPED_IDS, STARTER_TERRAIN, groundThemeLabel, starterMap } from './editorParts.ts';
 import { libraryThumb } from './libraryThumbs.ts';
 import {
   clearDraft,
@@ -167,7 +166,7 @@ export class MapSaving {
     this.remember();
   }
 
-  /** New: pick a size of open ground (or the sky, with no terrain) and a ground material. */
+  /** New: pick a size of open ground (or the sky, with no terrain) and its Ground theme. */
   newMapDialog(): void {
     const dialog = $<HTMLDialogElement>('ed-new-dialog');
     const sizes = $('ed-new-sizes');
@@ -189,7 +188,8 @@ export class MapSaving {
       }),
     );
     const ground = $<HTMLSelectElement>('ed-new-ground');
-    if (!ground.options.length) for (const m of TERRAIN_MATERIALS) ground.append(new Option(TERRAIN_MATERIAL_LABELS[m], m, m === 'grass', m === 'grass'));
+    // The new terrain's Ground theme (painting Phase 4): every cell starts as its base.
+    if (!ground.options.length) for (const g of groundThemes.all()) ground.append(new Option(groundThemeLabel(g), g.id, g.id === DEFAULT_GROUND_THEME, g.id === DEFAULT_GROUND_THEME));
     pick(STARTER_TERRAIN);
     // Start from a template (MapMaker overhaul Phase 3 item 5; templatePicker.ts), or open ground in a size.
     const template = templatePicker(dialog, sizes);
@@ -203,7 +203,7 @@ export class MapSaving {
           this.replaceDocument(doc);
           this.app.toast(`New map from the ${template.label(from)} template: make it your own`);
         });
-      this.replaceDocument(starterMap(size || null, ground.value as TerrainMaterial));
+      this.replaceDocument(starterMap(size || null, ground.value));
     };
     $('ed-new-cancel').onclick = () => dialog.close();
     dialog.showModal();
