@@ -12404,9 +12404,26 @@ async function hostgameFlow(browser) {
   const peer = `&hub=127.0.0.1:${PEER_PORT}`;
   const host = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   const errors = [];
+  // The pages' warnings (a link closed, a session ended), for a failed check about the friend's session.
+  const consoleLines = [];
+  const began = Date.now();
+  const listen = (page, name) =>
+    page.on('console', (m) => {
+      const line = `${((Date.now() - began) / 1000).toFixed(0)} ${name}: ${m.text().slice(0, 160)}`;
+      if (process.env.E2E_HOSTGAME_LOG) console.log(`  ${line}`);
+      if (m.type() === 'warning' || m.type() === 'error' || /^match made/.test(m.text())) consoleLines.push(line);
+    });
+  const whoSaw = () => ` [console: ${consoleLines.slice(-8).join(' / ')}]`;
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
+  listen(host, 'host');
   await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+  // No end to the match: on a slow runner the bots reached Deathmatch's 15 kills about three minutes in, and the
+  // match's end took the friend along to the next one (a new session: `__cs` was the ended-match stub under the checks).
+  await sim(host, (m) => {
+    m.phaseEndTick = Infinity;
+    m.rules.scoreLimit = 0;
+  });
   // CI renders in software, slowly: generous waits (readiness is checked by what follows each load),
   // and the Host button pressed again if the first press got no answer.
   const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');
@@ -12418,6 +12435,7 @@ async function hostgameFlow(browser) {
   check(/^[A-Z0-9]{6}$/.test(code), `hosting opens a join code (${code})`);
   const friend = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   friend.on('pageerror', (e) => errors.push(`friend: ${e.message}`));
+  listen(friend, 'friend');
   await friend.addInitScript(() => localStorage.setItem('cs.name', 'Friend'));
   await friend.goto(`${CLIENT}/?join=${code}${peer}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   const joined = await friend.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) }).then(() => true, () => false);
@@ -12472,7 +12490,8 @@ async function hostgameFlow(browser) {
     const idle = await sim(host, (m, _me, s) => m.idleSeconds(s), fslot);
     await friend.evaluate(() => delete window.__autoInput);
     const fstate = await friend.evaluate(() => window.__cs.spec());
-    check(specOn && fstate.spectator && fstate.out && idle < 2, `a friend spectates in the hosted match, their camera input counting as activity (${idle.toFixed(1)} s idle; spectator ${fstate.spectator}, ${fstate.free ? 'free camera' : `following ${fstate.following}`})`);
+    const specOk = specOn && fstate.spectator && fstate.out && idle < 2;
+    check(specOk, `a friend spectates in the hosted match, their camera input counting as activity (${idle.toFixed(1)} s idle; spectator ${fstate.spectator}, ${fstate.free ? 'free camera' : `following ${fstate.following}`})${specOk ? '' : `${(await friend.evaluate(() => !!window.__cs.ended)) ? ', the friend between sessions' : ''}${whoSaw()}`}`);
     await friend.evaluate(() => window.__cs.spectate(false));
     const backIn = await simWait(host, (m, _me, s) => m.slots[s]?.kind === 'human' && !m.isSpectator(s), fslot, T(10000));
     await friend.waitForFunction(() => !window.__cs.spec().spectator, null, { timeout: T(5000) }).catch(() => {});
@@ -12751,6 +12770,7 @@ async function hostcontrolsFlow(browser) {
   const code = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
   const friend = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   friend.on('pageerror', (e) => errors.push(`friend: ${e.message}`));
+  listen(friend, 'friend');
   await friend.addInitScript(() => localStorage.setItem('cs.name', 'Friend'));
   await friend.goto(`${CLIENT}/?join=${code}${peer}`, { waitUntil: 'domcontentloaded' });
   const joined = await friend.waitForFunction(playing, null, { timeout: T(60000) }).then(() => true, () => false);

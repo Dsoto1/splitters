@@ -26,6 +26,9 @@ describe('window.__cs between sessions', () => {
     expect(r.phase()).toBe('ended');
     expect(r.spec().spectator).toBe(false);
     expect(r.spec().following).toBe(-1);
+    // Asked to spectate between sessions: it answers, not spectating, rather than throwing.
+    expect(r.spectate()).toBe(false);
+    expect(r.spec().spectator).toBe(false);
     expect(r.rules()).toBeNull();
     expect(r.timeLeft()).toBe(0);
     expect(r.host()).toBeNull();
