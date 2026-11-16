@@ -52,7 +52,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed in a train** (`check/train-20261116-205423` at e80e056e, run 43954588076, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released): lane B's e2e `hostgame` fix and the Assets panel's Paint list; lane A's random bots and the Dropship's new model. Notes under each claim.
 
-**Landing now: train** (punchier hits, damage by speed, clearer ranges, `wip/punchier-hits`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
+**Landed: punchier hits, damage by speed and clearer ranges in a train** (`check/train-20261116-224557` at e41aa635, run 43973163585, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). Follow-up: the Heavy Revolver's short range (owner: "short range yes"), `wip/revolver-range`.
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - `wip/drive-physics-4` · run 43974011193 (`check/drive-physics-4` at f5909242; driving physics 4, the Troop Buggy on a Rapier rigid body; a helper of lane B's splitters22; full suite: shared sim changed)
