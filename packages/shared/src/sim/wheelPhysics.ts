@@ -659,9 +659,10 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
   const swept = world.sweep(midBefore, s.q, wanted);
   const got = swept.moved;
   const wl = len(wanted);
-  // Held fast with nothing to say what by: the capsule started inside something (put there, or squeezed in). The sweep
+  // Held fast with nothing in the way: the capsule started inside something (put there, or squeezed in). The sweep
   // would hold it there for good, wheels spinning; it moves as asked and the hull's corners push it out instead.
-  const stuck = swept.normals.length === 0 && len(got) < wl * 0.05;
+  // (Or it reports touches, none of them against the way it is going: wedged on a seam or a ceiling it started in.)
+  const stuck = len(got) < wl * 0.05 && !swept.normals.some((nn) => dot(wanted, nn) < -0.3 * wl);
   if (wl > 1e-6 && !stuck && len(sub(got, wanted)) > 1e-4) {
     out.blocked = clamp(1 - len(got) / wl, 0, 1);
     s.pos = add(startPos, got);
