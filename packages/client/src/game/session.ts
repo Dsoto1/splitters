@@ -27,6 +27,7 @@ import {
   matchStats,
   CORE_WEAPONS,
   gunplayOf,
+  bulletPhysics,
   traceBullet,
   THROWABLE_DEFS,
   predictThrow,
@@ -384,6 +385,24 @@ export class GameSession {
   }
 
   /** Hit confirmation on the crosshair for your shot: head, armor or body, told apart by shape (and by sound, in SessionAudio). */
+  /** The drag a weapon's rounds fly with under this match's ballistics, so drawn rounds slow as the host's do. */
+  private dragOf(def: WeaponDefinition | undefined): number {
+    const b = def ? gunplayOf(def).ballistic : null;
+    return b ? bulletPhysics(b, this.rules ?? {}).drag : 0;
+  }
+
+  /** A round of `def` fired from `from` hit you: the view's hit kick (view.hitKick), a pellet its share of the blast. */
+  private kickMe(def: WeaponDefinition | undefined, from: { x: number; z: number }): void {
+    if (!def) return;
+    const me = this.view.cameraPosition();
+    const dx = from.x - me.x;
+    const dz = from.z - me.z;
+    const len = Math.hypot(dx, dz) || 1;
+    // Right of the view is (cos yaw, -sin yaw): + when the round came from the right.
+    const side = ((dx * Math.cos(this.input.yaw) - dz * Math.sin(this.input.yaw)) / len);
+    this.view.hitKick(stoppingPower(def) / Math.max(1, def.pellets), side);
+  }
+
   private hitFeedback(hits: readonly (number | null)[], zones: readonly number[] | undefined, armor: boolean): void {
     const target = hits.find((h): h is number => h !== null && h !== undefined);
     if (target === undefined) return;
@@ -2156,7 +2175,7 @@ export class GameSession {
                   const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
                   const len = Math.hypot(d.x, d.y, d.z) || 1;
                   const physics = this.local.physics;
-                  const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: 0 }, def?.range ?? 300, (o, dir, l) => physics.raycastHit(o, dir, l)?.dist ?? null);
+                  const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: this.dragOf(def) }, def?.range ?? 300, (o, dir, l) => physics.raycastHit(o, dir, l)?.dist ?? null);
                   this.view.shotVisual({ eye, muzzle, to: flight.end, color, victim: null, zone: 0, strength, def, speed: ev.v, land: false });
                 }
                 return;
@@ -2170,6 +2189,7 @@ export class GameSession {
               if (victim === this.slot) {
                 this.hurtFrom = { x: eye.x, z: eye.z, at: performance.now() };
                 this.lastHitBy = { slot: ev.s, from: eye, at: performance.now() };
+                this.kickMe(def, eye);
               }
               if (victim !== null) {
                 const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
@@ -2202,7 +2222,10 @@ export class GameSession {
             const to = { x: ev.to[0], y: ev.to[1], z: ev.to[2] };
             const strength = Math.min(2.5, Math.max(0.6, (def?.damage ?? 20) / 25));
             const zone = ev.z ?? 0;
-            if (ev.hit === this.slot) this.hurtFrom = { x: from.x, z: from.z, at: performance.now() };
+            if (ev.hit === this.slot) {
+              this.hurtFrom = { x: from.x, z: from.z, at: performance.now() };
+              this.kickMe(def, from);
+            }
             if (ev.hit !== null) {
               const d = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
               const len = Math.hypot(d.x, d.y, d.z) || 1;
